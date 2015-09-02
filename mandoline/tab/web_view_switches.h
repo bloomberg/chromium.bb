@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HTML_VIEWER_HTML_VIEWER_SWITCHES_H_
-#define COMPONENTS_HTML_VIEWER_HTML_VIEWER_SWITCHES_H_
+#ifndef MANDOLINE_TAB_WEB_VIEW_SWITCHES_H_
+#define MANDOLINE_TAB_WEB_VIEW_SWITCHES_H_
 
-namespace html_viewer {
+namespace web_view {
 namespace switches {
 
 // If true a new HTMLFrameTreeManager is always created, even if a matching
@@ -14,6 +14,6 @@ namespace switches {
 extern const char kOOPIFAlwaysCreateNewFrameTree[];
 
 }  // namespace switches
-}  // namespace html_viewer;
+}  // namespace web_view
 
-#endif  // COMPONENTS_HTML_VIEWER_HTML_VIEWER_SWITCHES_H_
+#endif  // MANDOLINE_TAB_WEB_VIEW_SWITCHES_H_

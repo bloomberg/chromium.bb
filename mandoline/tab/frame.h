@@ -37,13 +37,24 @@ enum class ViewOwnership {
 //
 // When the FrameTreeClient creates a new Frame there is no associated
 // FrameTreeClient for the child Frame.
+//
+// Each frame has an identifier of the app providing the FrameTreeClient
+// (|app_id|). This id is used when servicing a request to navigate the frame.
+// When navigating, if the id of the new app matches that of the existing app,
+// then it is expected that the new FrameTreeClient will take over rendering to
+// the existing view. Because of this a new ViewTreeClient is not obtained and
+// Embed() is not invoked on the View. The FrameTreeClient can detect this case
+// by the argument |reuse_existing_view| supplied to OnConnect(). Typically the
+// id is that of content handler id, but this is left up to the
+// FrameTreeDelegate to decide.
 class Frame : public mojo::ViewObserver, public FrameTreeServer {
  public:
   using ClientPropertyMap = std::map<std::string, std::vector<uint8_t>>;
 
   Frame(FrameTree* tree,
         mojo::View* view,
-        uint32_t id,
+        uint32_t frame_id,
+        uint32_t app_id,
         ViewOwnership view_ownership,
         FrameTreeClient* frame_tree_client,
         scoped_ptr<FrameUserData> user_data,
@@ -67,6 +78,8 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   const mojo::View* view() const { return view_; }
 
   uint32_t id() const { return id_; }
+
+  uint32_t app_id() const { return app_id_; }
 
   const ClientPropertyMap& client_properties() const {
     return client_properties_;
@@ -94,13 +107,37 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
  private:
   friend class FrameTree;
 
-  // Initializes the client by sending it the state of the tree.
-  void InitClient();
+  // Identifies whether the FrameTreeClient is from the same app or a different
+  // app.
+  enum class ClientType { SAME_APP, NEW_APP };
 
-  // Called in response to FrameTreeClient::OnWillNavigate().
-  void OnWillNavigateAck(FrameTreeClient* frame_tree_client,
-                         scoped_ptr<FrameUserData> user_data,
-                         mojo::ViewTreeClientPtr view_tree_client);
+  struct FrameTreeServerBinding;
+
+  // Initializes the client by sending it the state of the tree.
+  // |frame_tree_server_binding| contains the current FrameTreeServerBinding
+  // (if any) and is destroyed after the connection responds to OnConnect().
+  //
+  // If |client_type| is SAME_APP we can't destroy the existing client
+  // (and related data) until we get back the ack from OnConnect(). This way
+  // we know the client has completed the switch. If we did not do this it
+  // would be possible for the app to see it's existing FrameTreeServer
+  // connection lost (and assume the frame is being torn down) before the
+  // OnConnect().
+  void InitClient(ClientType client_type,
+                  scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding);
+
+  // Callback from OnConnect(). This does nothing (other than destroying
+  // |frame_tree_server_binding|). See InitClient() for details as to why
+  // destruction of |frame_tree_server_binding| happens after OnConnect().
+  static void OnConnectAck(
+      scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding);
+
+  // Completes a navigation request; swapping the existing FrameTreeClient to
+  // the supplied arguments.
+  void ChangeClient(FrameTreeClient* frame_tree_client,
+                    scoped_ptr<FrameUserData> user_data,
+                    mojo::ViewTreeClientPtr view_tree_client,
+                    uint32 app_id);
 
   void SetView(mojo::View* view);
 
@@ -119,6 +156,10 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   // as there is a View and once OnWillNavigate() has returned. If there is
   // no View the navigation waits until the View is available.
   void StartNavigate(mojo::URLRequestPtr request);
+  void OnCanNavigateFrame(uint32_t app_id,
+                          FrameTreeClient* frame_tree_client,
+                          scoped_ptr<FrameUserData> user_data,
+                          mojo::ViewTreeClientPtr view_tree_client);
 
   // The implementation of the various FrameTreeServer functions that take
   // frame_id call into these.
@@ -169,7 +210,10 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   FrameTree* const tree_;
   // WARNING: this may be null. See class description for details.
   mojo::View* view_;
+  // ID for the frame, which is the same as that of the view.
   const uint32_t id_;
+  // ID of the app providing the FrameTreeClient and ViewTreeClient.
+  uint32_t app_id_;
   Frame* parent_;
   ViewOwnership view_ownership_;
   std::vector<Frame*> children_;
@@ -187,9 +231,11 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   // the time of StartNavigate().
   mojo::URLRequestPtr pending_navigate_;
 
-  mojo::Binding<FrameTreeServer> frame_tree_server_binding_;
+  scoped_ptr<mojo::Binding<FrameTreeServer>> frame_tree_server_binding_;
 
   base::WeakPtrFactory<Frame> weak_factory_;
+
+  base::WeakPtrFactory<Frame> navigate_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Frame);
 };

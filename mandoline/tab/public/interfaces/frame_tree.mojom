@@ -110,11 +110,26 @@ interface FrameTreeServer {
   DidNavigateLocally(uint32 frame_id, string url);
 };
 
+enum ViewConnectType {
+  // Indicates the app is already a ViewTreeClient and the existing view should
+  // be used. In this case the app is not asked for a new ViewTreeClient.
+  USE_EXISTING,
+
+  // Indicates a new ViewTreeClient is obtained and the View provided to
+  // OnEmbed() should be used.
+  USE_NEW
+};
+
 interface FrameTreeClient {
   // Called once per client. |frame_data| gives the contents of the tree.
+  // |view_id| is the id of the view the FrameTreeClient should render to. If
+  // a ViewTreeClient is asked for then |view_id| is the same id as that of the
+  // View supplied to ViewTreeClient::OnEmbed().
   OnConnect(FrameTreeServer server,
             uint32 change_id,
-            array<FrameData> frame_data);
+            uint32 view_id,
+            ViewConnectType view_connect_type,
+            array<FrameData> frame_data) => ();
 
   // Called when a new frame is added to the tree.
   OnFrameAdded(uint32 change_id, FrameData frame_data);
@@ -133,7 +148,8 @@ interface FrameTreeClient {
                      HTMLMessageEvent event);
 
   // Called prior to starting a new navigation in |target_frame_id|. This is
-  // only called on the FrameTreeClient that is rendering to |target_frame_id|.
-  // The navigation does not start until the callback is received.
-  OnWillNavigate(uint32 target_frame_id) => ();
+  // only called on the FrameTreeClient that is rendering to |target_frame_id|
+  // and only when another content handler is going to start handling the
+  // rendering.
+  OnWillNavigate(uint32 target_frame_id);
 };

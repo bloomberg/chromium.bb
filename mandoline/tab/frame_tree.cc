@@ -4,12 +4,15 @@
 
 #include "mandoline/tab/frame_tree.h"
 
+#include "base/command_line.h"
 #include "mandoline/tab/frame_tree_delegate.h"
 #include "mandoline/tab/frame_user_data.h"
+#include "mandoline/tab/web_view_switches.h"
 
 namespace mandoline {
 
-FrameTree::FrameTree(mojo::View* view,
+FrameTree::FrameTree(uint32_t root_app_id,
+                     mojo::View* view,
                      FrameTreeDelegate* delegate,
                      FrameTreeClient* root_client,
                      scoped_ptr<FrameUserData> user_data,
@@ -19,6 +22,7 @@ FrameTree::FrameTree(mojo::View* view,
       root_(this,
             view,
             view->id(),
+            root_app_id,
             ViewOwnership::DOESNT_OWN_VIEW,
             root_client,
             user_data.Pass(),
@@ -31,22 +35,30 @@ FrameTree::FrameTree(mojo::View* view,
 FrameTree::~FrameTree() {
 }
 
+// static
+bool FrameTree::AlwaysCreateNewFrameTree() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      web_view::switches::kOOPIFAlwaysCreateNewFrameTree);
+}
+
 Frame* FrameTree::CreateAndAddFrame(mojo::View* view,
                                     Frame* parent,
+                                    uint32_t app_id,
                                     FrameTreeClient* client,
                                     scoped_ptr<FrameUserData> user_data) {
-  return CreateAndAddFrameImpl(view, view->id(), parent, client,
+  return CreateAndAddFrameImpl(view, view->id(), app_id, parent, client,
                                user_data.Pass(), Frame::ClientPropertyMap());
 }
 
 void FrameTree::CreateSharedFrame(
     Frame* parent,
     uint32_t frame_id,
+    uint32_t app_id,
     const Frame::ClientPropertyMap& client_properties) {
   mojo::View* frame_view = root_.view()->GetChildById(frame_id);
   // |frame_view| may be null if the View hasn't been created yet. If this is
   // the case the View will be connected to the Frame in Frame::OnTreeChanged.
-  CreateAndAddFrameImpl(frame_view, frame_id, parent, nullptr, nullptr,
+  CreateAndAddFrameImpl(frame_view, frame_id, app_id, parent, nullptr, nullptr,
                         client_properties);
 }
 
@@ -57,12 +69,14 @@ uint32_t FrameTree::AdvanceChangeID() {
 Frame* FrameTree::CreateAndAddFrameImpl(
     mojo::View* view,
     uint32_t frame_id,
+    uint32_t app_id,
     Frame* parent,
     FrameTreeClient* client,
     scoped_ptr<FrameUserData> user_data,
     const Frame::ClientPropertyMap& client_properties) {
-  Frame* frame = new Frame(this, view, frame_id, ViewOwnership::OWNS_VIEW,
-                           client, user_data.Pass(), client_properties);
+  Frame* frame =
+      new Frame(this, view, frame_id, app_id, ViewOwnership::OWNS_VIEW, client,
+                user_data.Pass(), client_properties);
   frame->Init(parent);
   return frame;
 }

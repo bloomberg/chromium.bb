@@ -4,6 +4,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
@@ -27,6 +28,7 @@ using mandoline::Frame;
 using mandoline::FrameConnection;
 using mandoline::FrameTree;
 using mandoline::FrameTreeClient;
+using mandoline::FrameTreeDelegate;
 
 namespace mojo {
 
@@ -36,6 +38,11 @@ const char kAddFrameWithEmptyPageScript[] =
     "var iframe = document.createElement(\"iframe\");"
     "iframe.src = \"http://127.0.0.1:%u/files/empty_page.html\";"
     "document.body.appendChild(iframe);";
+
+void OnGotContentHandlerForRoot(bool* got_callback) {
+  *got_callback = true;
+  ignore_result(ViewManagerTestBase::QuitRunLoop());
+}
 
 mojo::ApplicationConnection* ApplicationConnectionForFrame(Frame* frame) {
   return static_cast<FrameConnection*>(frame->user_data())
@@ -101,18 +108,11 @@ class TestFrameTreeDelegateImpl : public mandoline::TestFrameTreeDelegate {
   }
 
   // TestFrameTreeDelegate:
-  bool CanNavigateFrame(
-      Frame* target,
-      mojo::URLRequestPtr request,
-      mandoline::FrameTreeClient** frame_tree_client,
-      scoped_ptr<mandoline::FrameUserData>* frame_user_data,
-      mojo::ViewTreeClientPtr* tree_client) override {
-    scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-    frame_connection->Init(app_, request.Pass(), tree_client);
-    *frame_tree_client = frame_connection->frame_tree_client();
-    *frame_user_data = frame_connection.Pass();
-
-    return true;
+  void CanNavigateFrame(Frame* target,
+                        mojo::URLRequestPtr request,
+                        const CanNavigateFrameCallback& callback) override {
+    FrameConnection::CreateConnectionForCanNavigateFrame(
+        app_, target, request.Pass(), callback);
   }
 
   void DidStartNavigation(Frame* frame) override {
@@ -147,6 +147,10 @@ class HTMLFrameTest : public ViewManagerTestBase {
         new TestFrameTreeDelegateImpl(application_impl()));
     FrameConnection* root_connection =
         InitFrameTree(embed_view, "http://127.0.0.1:%u/files/empty_page2.html");
+    if (!root_connection) {
+      ADD_FAILURE() << "unable to establish root connection";
+      return nullptr;
+    }
     const std::string frame_text =
         GetFrameText(root_connection->application_connection());
     if (frame_text != "child2") {
@@ -195,14 +199,19 @@ class HTMLFrameTest : public ViewManagerTestBase {
     frame_tree_delegate_.reset(
         new TestFrameTreeDelegateImpl(application_impl()));
     scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
+    bool got_callback = false;
+    frame_connection->Init(
+        application_impl(), BuildRequestForURL(url_string),
+        base::Bind(&OnGotContentHandlerForRoot, &got_callback));
+    ignore_result(ViewManagerTestBase::DoRunLoopWithTimeout());
+    if (!got_callback)
+      return nullptr;
     FrameConnection* result = frame_connection.get();
-    ViewTreeClientPtr tree_client;
-    frame_connection->Init(application_impl(), BuildRequestForURL(url_string),
-                           &tree_client);
     FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-    frame_tree_.reset(new FrameTree(view, frame_tree_delegate_.get(),
-                                    frame_tree_client,
-                                    frame_connection.Pass(),
+    ViewTreeClientPtr tree_client = frame_connection->GetViewTreeClient();
+    frame_tree_.reset(new FrameTree(result->GetContentHandlerID(), view,
+                                    frame_tree_delegate_.get(),
+                                    frame_tree_client, frame_connection.Pass(),
                                     Frame::ClientPropertyMap()));
     frame_tree_delegate_->set_frame_tree(frame_tree_.get());
     view->Embed(tree_client.Pass());
@@ -250,6 +259,7 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
 
   FrameConnection* root_connection = InitFrameTree(
       embed_view, "http://127.0.0.1:%u/files/page_with_single_frame.html");
+  ASSERT_TRUE(root_connection);
 
   ASSERT_EQ("Page with single frame",
             GetFrameText(root_connection->application_connection()));
@@ -276,8 +286,8 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
 TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
   View* embed_view = window_manager()->CreateView();
 
-  InitFrameTree(embed_view,
-                "http://127.0.0.1:%u/files/page_with_single_frame.html");
+  ASSERT_TRUE(InitFrameTree(
+      embed_view, "http://127.0.0.1:%u/files/page_with_single_frame.html"));
 
   // page_with_single_frame contains a child frame. The child frame should
   // create a new View and Frame.

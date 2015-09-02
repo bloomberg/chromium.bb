@@ -5,6 +5,9 @@
 #ifndef MANDOLINE_TAB_FRAME_TREE_DELEGATE_H_
 #define MANDOLINE_TAB_FRAME_TREE_DELEGATE_H_
 
+#include <string>
+
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
@@ -18,6 +21,14 @@ class HTMLMessageEvent;
 
 class FrameTreeDelegate {
  public:
+  // Callback from CanNavigateFrame(). The uint32_t is the id of the app the
+  // FrameTreeClient comes from; typically the content handler id.
+  using CanNavigateFrameCallback =
+      base::Callback<void(uint32_t,
+                          FrameTreeClient*,
+                          scoped_ptr<FrameUserData>,
+                          mojo::ViewTreeClientPtr)>;
+
   // Returns whether a request to post a message from |source| to |target|
   // is allowed. |source| and |target| are never null.
   virtual bool CanPostMessageEventToFrame(const Frame* source,
@@ -35,14 +46,14 @@ class FrameTreeDelegate {
   // background tab, vs new foreground tab.
   virtual void NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) = 0;
 
-  // Returns true if |target| can navigation to |request|. If the navigation is
-  // allowed the client should set the arguments appropriately.
-  virtual bool CanNavigateFrame(
-      Frame* target,
-      mojo::URLRequestPtr request,
-      FrameTreeClient** frame_tree_client,
-      scoped_ptr<FrameUserData>* frame_user_data,
-      mojo::ViewTreeClientPtr* view_tree_client) = 0;
+  // Asks the client if navigation is allowed. If the navigation is allowed
+  // |callback| should be called to continue the navigation. |callback|
+  // may be called synchronously or asynchronously. In the callback
+  // ViewTreeClientPtr should only be set if an app other than
+  // frame->app_id() is used to render |request|.
+  virtual void CanNavigateFrame(Frame* target,
+                                mojo::URLRequestPtr request,
+                                const CanNavigateFrameCallback& callback) = 0;
 
   // Invoked when a navigation in |frame| has been initiated.
   virtual void DidStartNavigation(Frame* frame) = 0;

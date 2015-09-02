@@ -141,10 +141,14 @@ class TestFrameTreeClient : public FrameTreeClient {
   // TestFrameTreeClient:
   void OnConnect(FrameTreeServerPtr server,
                  uint32_t change_id,
-                 mojo::Array<FrameDataPtr> frames) override {
+                 uint32_t view_id,
+                 ViewConnectType view_connect_type,
+                 mojo::Array<FrameDataPtr> frames,
+                 const OnConnectCallback& callback) override {
     connect_count_++;
     connect_frames_ = frames.Pass();
     server_ = server.Pass();
+    callback.Run();
   }
   void OnFrameAdded(uint32_t change_id, FrameDataPtr frame) override {
     adds_.push_back(frame.Pass());
@@ -156,10 +160,7 @@ class TestFrameTreeClient : public FrameTreeClient {
   void OnPostMessageEvent(uint32_t source_frame_id,
                           uint32_t target_frame_id,
                           HTMLMessageEventPtr event) override {}
-  void OnWillNavigate(uint32_t frame_id,
-                      const OnWillNavigateCallback& callback) override {
-    callback.Run();
-  }
+  void OnWillNavigate(uint32_t frame_id) override {}
 
  private:
   int connect_count_;
@@ -174,7 +175,7 @@ class TestFrameTreeClient : public FrameTreeClient {
 TEST_F(FrameTest, RootGetsConnect) {
   TestFrameTreeDelegate tree_delegate;
   TestFrameTreeClient root_client;
-  FrameTree tree(window_manager()->GetRoot(), &tree_delegate, &root_client,
+  FrameTree tree(0u, window_manager()->GetRoot(), &tree_delegate, &root_client,
                  nullptr, Frame::ClientPropertyMap());
   ASSERT_EQ(1, root_client.connect_count());
   mojo::Array<FrameDataPtr> frames = root_client.connect_frames();
@@ -187,7 +188,7 @@ TEST_F(FrameTest, RootGetsConnect) {
 TEST_F(FrameTest, SingleChild) {
   TestFrameTreeDelegate tree_delegate;
   TestFrameTreeClient root_client;
-  FrameTree tree(window_manager()->GetRoot(), &tree_delegate, &root_client,
+  FrameTree tree(0u, window_manager()->GetRoot(), &tree_delegate, &root_client,
                  nullptr, Frame::ClientPropertyMap());
 
   View* child = window_manager()->CreateView();
@@ -197,7 +198,7 @@ TEST_F(FrameTest, SingleChild) {
 
   TestFrameTreeClient child_client;
   Frame* child_frame =
-      tree.CreateAndAddFrame(child, tree.root(), &child_client, nullptr);
+      tree.CreateAndAddFrame(child, tree.root(), 0u, &child_client, nullptr);
   EXPECT_EQ(tree.root(), child_frame->parent());
 
   ASSERT_EQ(1, child_client.connect_count());

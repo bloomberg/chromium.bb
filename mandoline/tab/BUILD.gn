@@ -4,6 +4,13 @@
 
 import("//mojo/public/mojo_application.gni")
 
+source_set("switches") {
+  sources = [
+    "web_view_switches.cc",
+    "web_view_switches.h",
+  ]
+}
+
 source_set("lib") {
   sources = [
     "frame.cc",
@@ -17,6 +24,8 @@ source_set("lib") {
     "frame_tree.h",
     "frame_tree_delegate.h",
     "frame_user_data.h",
+    "pending_web_view_load.cc",
+    "pending_web_view_load.h",
     "web_view_application_delegate.cc",
     "web_view_application_delegate.h",
     "web_view_impl.cc",
@@ -24,6 +33,7 @@ source_set("lib") {
   ]
 
   deps = [
+    ":switches",
     "//base",
     "//components/clipboard/public/interfaces",
     "//components/devtools_service/public/cpp",

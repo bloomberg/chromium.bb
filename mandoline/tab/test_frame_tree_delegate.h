@@ -22,12 +22,9 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
   void NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) override;
-  bool CanNavigateFrame(
-      Frame* target,
-      mojo::URLRequestPtr request,
-      FrameTreeClient** frame_tree_client,
-      scoped_ptr<FrameUserData>* frame_user_data,
-      mojo::ViewTreeClientPtr* view_tree_client) override;
+  void CanNavigateFrame(Frame* target,
+                        mojo::URLRequestPtr request,
+                        const CanNavigateFrameCallback& callback) override;
   void DidStartNavigation(Frame* frame) override;
 
  private:

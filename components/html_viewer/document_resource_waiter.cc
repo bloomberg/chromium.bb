@@ -9,6 +9,8 @@
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/view_manager/public/cpp/view.h"
 
+using mandoline::ViewConnectType;
+
 namespace html_viewer {
 
 DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
@@ -19,6 +21,8 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
       response_(response.Pass()),
       root_(nullptr),
       change_id_(0u),
+      view_id_(0u),
+      view_connect_type_(mandoline::VIEW_CONNECT_TYPE_USE_NEW),
       frame_tree_client_binding_(this) {}
 
 DocumentResourceWaiter::~DocumentResourceWaiter() {
@@ -29,12 +33,18 @@ void DocumentResourceWaiter::Release(
         frame_tree_client_request,
     mandoline::FrameTreeServerPtr* frame_tree_server,
     mojo::Array<mandoline::FrameDataPtr>* frame_data,
-    uint32_t* change_id) {
+    uint32_t* change_id,
+    uint32_t* view_id,
+    ViewConnectType* view_connect_type,
+    OnConnectCallback* on_connect_callback) {
   DCHECK(IsReady());
   *frame_tree_client_request = frame_tree_client_request_.Pass();
   *frame_tree_server = server_.Pass();
   *frame_data = frame_data_.Pass();
   *change_id = change_id_;
+  *view_id = view_id_;
+  *view_connect_type = view_connect_type_;
+  *on_connect_callback = on_connect_callback_;
 }
 
 mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
@@ -42,8 +52,9 @@ mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
 }
 
 bool DocumentResourceWaiter::IsReady() const {
-  return root_ && root_->viewport_metrics().device_pixel_ratio != 0.0f &&
-         !frame_data_.is_null();
+  return (!frame_data_.is_null() &&
+          ((view_connect_type_ == mandoline::VIEW_CONNECT_TYPE_USE_EXISTING) ||
+           (root_ && root_->viewport_metrics().device_pixel_ratio != 0.0f)));
 }
 
 void DocumentResourceWaiter::Bind(
@@ -58,11 +69,17 @@ void DocumentResourceWaiter::Bind(
 void DocumentResourceWaiter::OnConnect(
     mandoline::FrameTreeServerPtr server,
     uint32_t change_id,
-    mojo::Array<mandoline::FrameDataPtr> frame_data) {
+    uint32_t view_id,
+    ViewConnectType view_connect_type,
+    mojo::Array<mandoline::FrameDataPtr> frame_data,
+    const OnConnectCallback& callback) {
   DCHECK(frame_data_.is_null());
   change_id_ = change_id;
+  view_id_ = view_id;
+  view_connect_type_ = view_connect_type;
   server_ = server.Pass();
   frame_data_ = frame_data.Pass();
+  on_connect_callback_ = callback;
   CHECK(frame_data_.size() > 0u);
   frame_tree_client_request_ = frame_tree_client_binding_.Unbind();
   if (IsReady())
@@ -97,9 +114,7 @@ void DocumentResourceWaiter::OnPostMessageEvent(
   NOTREACHED();
 }
 
-void DocumentResourceWaiter::OnWillNavigate(
-    uint32_t target_frame_id,
-    const OnWillNavigateCallback& callback) {
+void DocumentResourceWaiter::OnWillNavigate(uint32_t target_frame_id) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTIMPLEMENTED();
 }

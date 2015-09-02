@@ -32,6 +32,7 @@ using mandoline::HTMLMessageEvent;
 namespace web_view {
 
 class FrameDevToolsAgent;
+class PendingWebViewLoad;
 
 class WebViewImpl : public mojom::WebView,
                     public mojo::ViewTreeDelegate,
@@ -45,6 +46,11 @@ class WebViewImpl : public mojom::WebView,
   ~WebViewImpl() override;
 
  private:
+  friend class PendingWebViewLoad;
+
+  // See description above |pending_load_| for details.
+  void OnLoad();
+
   // Overridden from WebView:
   void LoadRequest(mojo::URLRequestPtr request) override;
   void GetViewTreeClient(
@@ -68,12 +74,9 @@ class WebViewImpl : public mojom::WebView,
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
   void NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) override;
-  bool CanNavigateFrame(
-      Frame* target,
-      mojo::URLRequestPtr request,
-      mandoline::FrameTreeClient** frame_tree_client,
-      scoped_ptr<mandoline::FrameUserData>* frame_user_data,
-      mojo::ViewTreeClientPtr* view_tree_client) override;
+  void CanNavigateFrame(Frame* target,
+                        mojo::URLRequestPtr request,
+                        const CanNavigateFrameCallback& callback) override;
   void DidStartNavigation(Frame* frame) override;
 
   // Overridden from FrameDevToolsAgent::Delegate:
@@ -86,7 +89,10 @@ class WebViewImpl : public mojom::WebView,
   mojo::View* content_;
   scoped_ptr<FrameTree> frame_tree_;
 
-  mojo::URLRequestPtr pending_request_;
+  // When LoadRequest() is called a PendingWebViewLoad is created to wait for
+  // state needed to process the request. When the state is obtained OnLoad()
+  // is invoked.
+  scoped_ptr<PendingWebViewLoad> pending_load_;
 
   scoped_ptr<FrameDevToolsAgent> devtools_agent_;
 

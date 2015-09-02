@@ -4,7 +4,6 @@
 
 #include "mandoline/tab/web_view_impl.h"
 
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "components/devtools_service/public/cpp/switches.h"
 #include "components/view_manager/public/cpp/scoped_view_ptr.h"
@@ -14,6 +13,7 @@
 #include "mandoline/tab/frame_connection.h"
 #include "mandoline/tab/frame_devtools_agent.h"
 #include "mandoline/tab/frame_tree.h"
+#include "mandoline/tab/pending_web_view_load.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "url/gurl.h"
@@ -21,6 +21,7 @@
 // TODO(beng): remove once these classes are in the web_view namespace.
 using mandoline::FrameConnection;
 using mandoline::FrameTreeClient;
+using mandoline::FrameTreeDelegate;
 using mandoline::FrameUserData;
 
 namespace web_view {
@@ -57,18 +58,12 @@ WebViewImpl::~WebViewImpl() {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WebViewImpl, WebView implementation:
-
-void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
-  if (!content_) {
-    // We haven't been embedded yet, store the request for when we are.
-    pending_request_ = request.Pass();
-    return;
-  }
-  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  mojo::ViewTreeClientPtr view_tree_client;
-  frame_connection->Init(app_, request.Pass(), &view_tree_client);
+void WebViewImpl::OnLoad() {
+  scoped_ptr<PendingWebViewLoad> pending_load(pending_load_.Pass());
+  scoped_ptr<FrameConnection> frame_connection(
+      pending_load->frame_connection());
+  mojo::ViewTreeClientPtr view_tree_client =
+      frame_connection->GetViewTreeClient();
 
   Frame::ClientPropertyMap client_properties;
   if (devtools_agent_) {
@@ -79,9 +74,19 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
   }
 
   FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  frame_tree_.reset(new FrameTree(content_, this, frame_tree_client,
-                                  frame_connection.Pass(), client_properties));
+  const uint32_t content_handler_id = frame_connection->GetContentHandlerID();
+  frame_tree_.reset(new FrameTree(content_handler_id, content_, this,
+                                  frame_tree_client, frame_connection.Pass(),
+                                  client_properties));
   content_->Embed(view_tree_client.Pass());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebViewImpl, WebView implementation:
+
+void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
+  pending_load_.reset(new PendingWebViewLoad(this));
+  pending_load_->Init(request.Pass());
 }
 
 void WebViewImpl::GetViewTreeClient(
@@ -103,8 +108,8 @@ void WebViewImpl::OnEmbed(mojo::View* root) {
   content_->SetVisible(true);
   content_->AddObserver(this);
 
-  if (!pending_request_.is_null())
-    LoadRequest(pending_request_.Pass());
+  if (pending_load_ && pending_load_->is_content_handler_id_valid())
+    OnLoad();
 }
 
 void WebViewImpl::OnConnectionLost(mojo::ViewTreeConnection* connection) {
@@ -152,17 +157,11 @@ void WebViewImpl::NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) {
   client_->TopLevelNavigate(request.Pass());
 }
 
-bool WebViewImpl::CanNavigateFrame(
-    Frame* target,
-    mojo::URLRequestPtr request,
-    FrameTreeClient** frame_tree_client,
-    scoped_ptr<FrameUserData>* frame_user_data,
-    mojo::ViewTreeClientPtr* view_tree_client) {
-  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  frame_connection->Init(app_, request.Pass(), view_tree_client);
-  *frame_tree_client = frame_connection->frame_tree_client();
-  *frame_user_data = frame_connection.Pass();
-  return true;
+void WebViewImpl::CanNavigateFrame(Frame* target,
+                                   mojo::URLRequestPtr request,
+                                   const CanNavigateFrameCallback& callback) {
+  FrameConnection::CreateConnectionForCanNavigateFrame(
+      app_, target, request.Pass(), callback);
 }
 
 void WebViewImpl::DidStartNavigation(Frame* frame) {}

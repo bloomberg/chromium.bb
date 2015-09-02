@@ -24,14 +24,10 @@ void TestFrameTreeDelegate::ProgressChanged(double progress) {}
 void TestFrameTreeDelegate::NavigateTopLevel(Frame* source,
                                              mojo::URLRequestPtr request) {}
 
-bool TestFrameTreeDelegate::CanNavigateFrame(
+void TestFrameTreeDelegate::CanNavigateFrame(
     Frame* target,
     mojo::URLRequestPtr request,
-    FrameTreeClient** frame_tree_client,
-    scoped_ptr<FrameUserData>* frame_user_data,
-    mojo::ViewTreeClientPtr* view_tree_client) {
-  return false;
-}
+    const CanNavigateFrameCallback& callback) {}
 
 void TestFrameTreeDelegate::DidStartNavigation(Frame* frame) {}
 

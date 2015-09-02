@@ -97,8 +97,9 @@ TEST_F(AXProviderTest, HelloWorld) {
 
   mandoline::FrameTreeClientPtr frame_tree_client;
   connection->ConnectToService(&frame_tree_client);
-  frame_tree_client->OnConnect(frame_tree_server_ptr.Pass(), 1u,
-                               array.Pass());
+  frame_tree_client->OnConnect(
+      frame_tree_server_ptr.Pass(), 1u, embed_view->id(),
+      mandoline::VIEW_CONNECT_TYPE_USE_NEW, array.Pass(), base::Closure());
 
   // Connect to the AxProvider of the HTML document and get the AxTree.
   AxProviderPtr ax_provider;

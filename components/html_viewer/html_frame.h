@@ -136,6 +136,9 @@ class HTMLFrame : public blink::WebFrameClient,
   // frame.
   DevToolsAgentImpl* devtools_agent() { return devtools_agent_.get(); }
 
+  // Returns true if the Frame is local, false if remote.
+  bool IsLocal() const;
+
   // Returns true if this or one of the frames descendants is local.
   bool HasLocalDescendant() const;
 
@@ -197,9 +200,6 @@ class HTMLFrame : public blink::WebFrameClient,
   void SetValueFromClientProperty(const std::string& name,
                                   mojo::Array<uint8_t> new_data);
 
-  // Returns true if the Frame is local, false if remote.
-  bool IsLocal() const;
-
   // The local root is the first ancestor (starting at this) that has its own
   // connection.
   HTMLFrame* GetLocalRoot();
@@ -228,6 +228,11 @@ class HTMLFrame : public blink::WebFrameClient,
       mojo::View* view,
       const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties);
 
+  // Invoked when changing the delegate. This informs the new delegate to take
+  // over. This is used when a different connection is going to take over
+  // responsibility for the frame.
+  void SwapDelegate(HTMLFrameDelegate* delegate);
+
   GlobalState* global_state() { return frame_tree_manager_->global_state(); }
 
   // Returns the Frame associated with the specified WebFrame.
@@ -248,7 +253,10 @@ class HTMLFrame : public blink::WebFrameClient,
   // mandoline::FrameTreeClient:
   void OnConnect(mandoline::FrameTreeServerPtr server,
                  uint32_t change_id,
-                 mojo::Array<mandoline::FrameDataPtr> frame_data) override;
+                 uint32_t view_id,
+                 mandoline::ViewConnectType view_connect_type,
+                 mojo::Array<mandoline::FrameDataPtr> frame_data,
+                 const OnConnectCallback& callback) override;
   void OnFrameAdded(uint32_t change_id,
                     mandoline::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t change_id, uint32_t frame_id) override;
@@ -259,8 +267,7 @@ class HTMLFrame : public blink::WebFrameClient,
       uint32_t source_frame_id,
       uint32_t target_frame_id,
       mandoline::HTMLMessageEventPtr serialized_event) override;
-  void OnWillNavigate(uint32_t target_frame_id,
-                      const OnWillNavigateCallback& callback) override;
+  void OnWillNavigate(uint32_t target_frame_id) override;
 
   // blink::WebRemoteFrameClient:
   virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);

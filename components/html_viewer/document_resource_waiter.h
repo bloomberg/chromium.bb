@@ -35,7 +35,10 @@ class DocumentResourceWaiter : public mandoline::FrameTreeClient {
                    frame_tree_client_request,
                mandoline::FrameTreeServerPtr* frame_tree_server,
                mojo::Array<mandoline::FrameDataPtr>* frame_data,
-               uint32_t* change_id);
+               uint32_t* view_id,
+               uint32_t* change_id,
+               mandoline::ViewConnectType* view_connect_type,
+               OnConnectCallback* on_connect_callback);
 
   mojo::URLResponsePtr ReleaseURLResponse();
 
@@ -51,7 +54,10 @@ class DocumentResourceWaiter : public mandoline::FrameTreeClient {
   // mandoline::FrameTreeClient:
   void OnConnect(mandoline::FrameTreeServerPtr server,
                  uint32_t change_id,
-                 mojo::Array<mandoline::FrameDataPtr> frame_data) override;
+                 uint32_t view_id,
+                 mandoline::ViewConnectType view_connect_type,
+                 mojo::Array<mandoline::FrameDataPtr> frame_data,
+                 const OnConnectCallback& callback) override;
   void OnFrameAdded(uint32_t change_id,
                     mandoline::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t change_id, uint32_t frame_id) override;
@@ -61,8 +67,7 @@ class DocumentResourceWaiter : public mandoline::FrameTreeClient {
   void OnPostMessageEvent(uint32_t source_frame_id,
                           uint32_t target_frame_id,
                           mandoline::HTMLMessageEventPtr event) override;
-  void OnWillNavigate(uint32_t target_frame_id,
-                      const OnWillNavigateCallback& callback) override;
+  void OnWillNavigate(uint32_t target_frame_id) override;
 
   GlobalState* global_state_;
   HTMLDocumentOOPIF* document_;
@@ -71,6 +76,9 @@ class DocumentResourceWaiter : public mandoline::FrameTreeClient {
   mandoline::FrameTreeServerPtr server_;
   mojo::Array<mandoline::FrameDataPtr> frame_data_;
   uint32_t change_id_;
+  uint32_t view_id_;
+  mandoline::ViewConnectType view_connect_type_;
+  OnConnectCallback on_connect_callback_;
 
   // Once we get OnConnect() we unbind |frame_tree_client_binding_| and put it
   // here.

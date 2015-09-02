@@ -4,10 +4,13 @@
 
 #include "mandoline/tab/frame_connection.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
+#include "mandoline/tab/frame_tree.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
@@ -20,6 +23,25 @@
 #endif
 
 namespace mandoline {
+namespace {
+
+// Callback from when the content handler id is obtained.
+void OnGotContentHandlerForFrame(
+    const uint32_t existing_content_handler_id,
+    const FrameTreeDelegate::CanNavigateFrameCallback& callback,
+    scoped_ptr<FrameConnection> connection) {
+  mojo::ViewTreeClientPtr view_tree_client;
+  if (existing_content_handler_id != connection->GetContentHandlerID() ||
+      FrameTree::AlwaysCreateNewFrameTree()) {
+    view_tree_client = connection->GetViewTreeClient();
+  }
+  FrameConnection* connection_ptr = connection.get();
+  callback.Run(connection_ptr->GetContentHandlerID(),
+               connection_ptr->frame_tree_client(), connection.Pass(),
+               view_tree_client.Pass());
+}
+
+}  // namespace
 
 FrameConnection::FrameConnection() : application_connection_(nullptr) {
 }
@@ -27,9 +49,22 @@ FrameConnection::FrameConnection() : application_connection_(nullptr) {
 FrameConnection::~FrameConnection() {
 }
 
+// static
+void FrameConnection::CreateConnectionForCanNavigateFrame(
+    mojo::ApplicationImpl* app,
+    Frame* frame,
+    mojo::URLRequestPtr request,
+    const FrameTreeDelegate::CanNavigateFrameCallback& callback) {
+  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
+  FrameConnection* connection = frame_connection.get();
+  connection->Init(app, request.Pass(),
+                   base::Bind(&OnGotContentHandlerForFrame, frame->app_id(),
+                              callback, base::Passed(&frame_connection)));
+}
+
 void FrameConnection::Init(mojo::ApplicationImpl* app,
                            mojo::URLRequestPtr request,
-                           mojo::ViewTreeClientPtr* view_tree_client) {
+                           const base::Closure& on_got_id_callback) {
   DCHECK(!application_connection_);
 
   mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
@@ -67,12 +102,27 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
 
   application_connection_ = app->ConnectToApplicationWithCapabilityFilter(
       request.Pass(), filter.Pass());
-  application_connection_->ConnectToService(view_tree_client);
   application_connection_->ConnectToService(&frame_tree_client_);
   frame_tree_client_.set_connection_error_handler([]() {
     // TODO(sky): implement this.
     NOTIMPLEMENTED();
   });
+
+  application_connection_->AddContentHandlerIDCallback(on_got_id_callback);
+}
+
+mojo::ViewTreeClientPtr FrameConnection::GetViewTreeClient() {
+  DCHECK(application_connection_);
+  mojo::ViewTreeClientPtr view_tree_client;
+  application_connection_->ConnectToService(&view_tree_client);
+  return view_tree_client.Pass();
+}
+
+uint32_t FrameConnection::GetContentHandlerID() const {
+  uint32_t content_handler_id = mojo::Shell::kInvalidContentHandlerID;
+  if (!application_connection_->GetContentHandlerID(&content_handler_id))
+    NOTREACHED();
+  return content_handler_id;
 }
 
 }  // namespace mandoline

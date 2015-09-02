@@ -41,16 +41,23 @@ FrameDataPtr FrameToFrameData(const Frame* frame) {
 
 }  // namespace
 
+struct Frame::FrameTreeServerBinding {
+  scoped_ptr<FrameUserData> user_data;
+  scoped_ptr<mojo::Binding<FrameTreeServer>> frame_tree_server_binding;
+};
+
 Frame::Frame(FrameTree* tree,
              View* view,
-             uint32_t id,
+             uint32_t frame_id,
+             uint32_t app_id,
              ViewOwnership view_ownership,
              FrameTreeClient* frame_tree_client,
              scoped_ptr<FrameUserData> user_data,
              const ClientPropertyMap& client_properties)
     : tree_(tree),
       view_(nullptr),
-      id_(id),
+      id_(frame_id),
+      app_id_(app_id),
       parent_(nullptr),
       view_ownership_(view_ownership),
       user_data_(user_data.Pass()),
@@ -58,8 +65,8 @@ Frame::Frame(FrameTree* tree,
       loading_(false),
       progress_(0.f),
       client_properties_(client_properties),
-      frame_tree_server_binding_(this),
-      weak_factory_(this) {
+      weak_factory_(this),
+      navigate_weak_ptr_factory_(this) {
   if (view)
     SetView(view);
 }
@@ -88,7 +95,7 @@ void Frame::Init(Frame* parent) {
       parent->Add(this);
   }
 
-  InitClient();
+  InitClient(ClientType::NEW_APP, nullptr);
 }
 
 // static
@@ -135,7 +142,9 @@ double Frame::GatherProgress(int* frame_count) const {
   return progress_;
 }
 
-void Frame::InitClient() {
+void Frame::InitClient(
+    ClientType client_type,
+    scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding) {
   std::vector<const Frame*> frames;
   tree_->root()->BuildFrameTree(&frames);
 
@@ -145,28 +154,54 @@ void Frame::InitClient() {
 
   // TODO(sky): error handling.
   FrameTreeServerPtr frame_tree_server_ptr;
-  frame_tree_server_binding_.Bind(GetProxy(&frame_tree_server_ptr).Pass());
+  frame_tree_server_binding_.reset(new mojo::Binding<FrameTreeServer>(
+      this, GetProxy(&frame_tree_server_ptr).Pass()));
   if (frame_tree_client_) {
-    frame_tree_client_->OnConnect(frame_tree_server_ptr.Pass(),
-                                  tree_->change_id(), array.Pass());
+    frame_tree_client_->OnConnect(
+        frame_tree_server_ptr.Pass(), tree_->change_id(), view_->id(),
+        client_type == ClientType::SAME_APP ? VIEW_CONNECT_TYPE_USE_EXISTING
+                                            : VIEW_CONNECT_TYPE_USE_NEW,
+        array.Pass(),
+        base::Bind(&OnConnectAck, base::Passed(&frame_tree_server_binding)));
     tree_->delegate_->DidStartNavigation(this);
   }
 }
 
-void Frame::OnWillNavigateAck(FrameTreeClient* frame_tree_client,
-                              scoped_ptr<FrameUserData> user_data,
-                              mojo::ViewTreeClientPtr view_tree_client) {
+// static
+void Frame::OnConnectAck(
+    scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding) {}
+
+void Frame::ChangeClient(FrameTreeClient* frame_tree_client,
+                         scoped_ptr<FrameUserData> user_data,
+                         mojo::ViewTreeClientPtr view_tree_client,
+                         uint32_t app_id) {
   while (!children_.empty())
     delete children_[0];
 
+  ClientType client_type = view_tree_client.get() == nullptr
+                               ? ClientType::SAME_APP
+                               : ClientType::NEW_APP;
+  scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding;
+
+  if (client_type == ClientType::SAME_APP) {
+    // See comment in InitClient() for details.
+    frame_tree_server_binding.reset(new FrameTreeServerBinding);
+    frame_tree_server_binding->user_data = user_data_.Pass();
+    frame_tree_server_binding->frame_tree_server_binding =
+        frame_tree_server_binding_.Pass();
+  }
+
   user_data_ = user_data.Pass();
   frame_tree_client_ = frame_tree_client;
-  frame_tree_server_binding_.Close();
+  frame_tree_server_binding_.reset();
   loading_ = false;
   progress_ = 0.f;
+  app_id_ = app_id;
 
-  view_->Embed(view_tree_client.Pass());
-  InitClient();
+  if (client_type == ClientType::NEW_APP)
+    view_->Embed(view_tree_client.Pass());
+
+  InitClient(client_type, frame_tree_server_binding.Pass());
 }
 
 void Frame::SetView(mojo::View* view) {
@@ -222,23 +257,34 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
     return;
   }
 
-  FrameTreeClient* frame_tree_client = nullptr;
+  // Drop any pending navigation requests.
+  navigate_weak_ptr_factory_.InvalidateWeakPtrs();
+
   scoped_ptr<FrameUserData> user_data;
   mojo::ViewTreeClientPtr view_tree_client;
-  if (!tree_->delegate_->CanNavigateFrame(this, request.Pass(),
-                                          &frame_tree_client, &user_data,
-                                          &view_tree_client)) {
-    return;
-  }
+  tree_->delegate_->CanNavigateFrame(
+      this, request.Pass(),
+      base::Bind(&Frame::OnCanNavigateFrame,
+                 navigate_weak_ptr_factory_.GetWeakPtr()));
+}
 
-  // TODO(sky): consider what state this should correspond to. Should we
-  // disallow certain operations until we get the ack?
-  Frame* ancestor_with_frame_tree_client = GetAncestorWithFrameTreeClient();
-  DCHECK(ancestor_with_frame_tree_client);
-  ancestor_with_frame_tree_client->frame_tree_client_->OnWillNavigate(
-      id_, base::Bind(&Frame::OnWillNavigateAck, weak_factory_.GetWeakPtr(),
-                      frame_tree_client, base::Passed(&user_data),
-                      base::Passed(&view_tree_client)));
+void Frame::OnCanNavigateFrame(uint32_t app_id,
+                               FrameTreeClient* frame_tree_client,
+                               scoped_ptr<FrameUserData> user_data,
+                               mojo::ViewTreeClientPtr view_tree_client) {
+  if (app_id == app_id_ && !FrameTree::AlwaysCreateNewFrameTree()) {
+    // The app currently rendering the frame will continue rendering it. In this
+    // case we do not use the ViewTreeClient (because the app has a View already
+    // and ends up reusing it).
+    DCHECK(!view_tree_client.get());
+  } else {
+    Frame* ancestor_with_frame_tree_client = GetAncestorWithFrameTreeClient();
+    DCHECK(ancestor_with_frame_tree_client);
+    ancestor_with_frame_tree_client->frame_tree_client_->OnWillNavigate(id_);
+    DCHECK(view_tree_client.get());
+  }
+  ChangeClient(frame_tree_client, user_data.Pass(), view_tree_client.Pass(),
+               app_id);
 }
 
 void Frame::LoadingStartedImpl() {
@@ -285,7 +331,7 @@ Frame* Frame::FindTargetFrame(uint32_t frame_id) {
   // id isn't known to us.
 
   Frame* frame = FindFrame(frame_id);
-  if (frame->frame_tree_client_) {
+  if (frame && frame->frame_tree_client_) {
     // The frame has it's own client/server pair. It should make requests using
     // the server it has rather than an ancestor.
     DVLOG(1) << "ignore request for a frame that has its own client.";
@@ -419,7 +465,7 @@ void Frame::OnCreatedFrame(
     return;
   }
 
-  tree_->CreateSharedFrame(parent_frame, frame_id,
+  tree_->CreateSharedFrame(parent_frame, frame_id, app_id_,
                            client_properties.To<ClientPropertyMap>());
 }
 

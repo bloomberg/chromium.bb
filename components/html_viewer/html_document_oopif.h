@@ -42,6 +42,7 @@ class HTMLFactory;
 class HTMLFrame;
 class HTMLFrameTreeManager;
 class TestHTMLViewerImpl;
+class ViewTreeDelegateImpl;
 class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
@@ -88,6 +89,20 @@ class HTMLDocumentOOPIF
     std::set<mojo::InterfaceRequest<TestHTMLViewer>*> test_interface_requests;
   };
 
+  // Any state that needs to be moved when rendering transfers from one frame
+  // to another is stored here.
+  struct TransferableState {
+    TransferableState();
+    ~TransferableState();
+
+    // Takes the state from |other|.
+    void Move(TransferableState* other);
+
+    bool owns_view_tree_connection;
+    mojo::View* root;
+    scoped_ptr<ViewTreeDelegateImpl> view_tree_delegate_impl;
+  };
+
   ~HTMLDocumentOOPIF() override;
 
   void LoadIfNecessary();
@@ -107,10 +122,12 @@ class HTMLDocumentOOPIF
   void OnViewDestroyed(mojo::View* view) override;
 
   // HTMLFrameDelegate:
-  void OnFrameDidFinishLoad() override;
   mojo::ApplicationImpl* GetApp() override;
   HTMLFactory* GetHTMLFactory() override;
+  void OnFrameDidFinishLoad() override;
   void OnFrameSwappedToRemote() override;
+  void OnSwap(HTMLFrame* frame, HTMLFrameDelegate* old_delegate) override;
+  void OnFrameDestroyed() override;
 
   // mojo::InterfaceFactory<mojo::AxProvider>:
   void Create(mojo::ApplicationConnection* connection,
@@ -158,7 +175,7 @@ class HTMLDocumentOOPIF
 
   HTMLFactory* factory_;
 
-  mojo::View* root_;
+  TransferableState transferable_state_;
 
   // Cache interface request of DevToolsAgent if |frame_| hasn't been
   // initialized.

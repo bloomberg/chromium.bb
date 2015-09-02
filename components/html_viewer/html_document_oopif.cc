@@ -45,12 +45,50 @@ bool IsTestInterfaceEnabled() {
 
 }  // namespace
 
+// A ViewTreeDelegate implementation that delegates to a (swappable) delegate.
+// This is used when one HTMLDocumentOOPIF takes over for another delegate
+// (OnSwap()).
+class ViewTreeDelegateImpl : public mojo::ViewTreeDelegate {
+ public:
+  explicit ViewTreeDelegateImpl(mojo::ViewTreeDelegate* delegate)
+      : delegate_(delegate) {}
+  ~ViewTreeDelegateImpl() override {}
+
+  void set_delegate(mojo::ViewTreeDelegate* delegate) { delegate_ = delegate; }
+
+ private:
+  // ViewTreeDelegate:
+  void OnEmbed(mojo::View* root) override { delegate_->OnEmbed(root); }
+  void OnUnembed() override { delegate_->OnUnembed(); }
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override {
+    delegate_->OnConnectionLost(connection);
+  }
+
+  mojo::ViewTreeDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewTreeDelegateImpl);
+};
+
 HTMLDocumentOOPIF::BeforeLoadCache::BeforeLoadCache() {
 }
 
 HTMLDocumentOOPIF::BeforeLoadCache::~BeforeLoadCache() {
   STLDeleteElements(&ax_provider_requests);
   STLDeleteElements(&test_interface_requests);
+}
+
+HTMLDocumentOOPIF::TransferableState::TransferableState()
+    : owns_view_tree_connection(false), root(nullptr) {}
+
+HTMLDocumentOOPIF::TransferableState::~TransferableState() {}
+
+void HTMLDocumentOOPIF::TransferableState::Move(TransferableState* other) {
+  owns_view_tree_connection = other->owns_view_tree_connection;
+  root = other->root;
+  view_tree_delegate_impl = other->view_tree_delegate_impl.Pass();
+
+  other->root = nullptr;
+  other->owns_view_tree_connection = false;
 }
 
 HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
@@ -66,8 +104,7 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
       global_state_(global_state),
       frame_(nullptr),
       delete_callback_(delete_callback),
-      factory_(factory),
-      root_(nullptr) {
+      factory_(factory) {
   // TODO(sky): nuke headless. We're not going to care about it anymore.
   DCHECK(!global_state_->is_headless());
 
@@ -93,11 +130,19 @@ void HTMLDocumentOOPIF::Destroy() {
     } else {
       delete this;
     }
-  } else {
+  } else if (frame_) {
     // Closing the frame ends up destroying the ViewManager, which triggers
-    // deleting this (OnViewManagerDestroyed()).
-    if (frame_)
-      frame_->Close();
+    // deleting this (OnConnectionLost()).
+    frame_->Close();
+  } else if (transferable_state_.root) {
+    transferable_state_.root->RemoveObserver(this);
+    // This triggers deleting us.
+    if (transferable_state_.owns_view_tree_connection)
+      delete transferable_state_.root->connection();
+    else
+      delete this;
+  } else {
+    delete this;
   }
 }
 
@@ -115,10 +160,13 @@ void HTMLDocumentOOPIF::LoadIfNecessary() {
 void HTMLDocumentOOPIF::Load() {
   DCHECK(resource_waiter_ && resource_waiter_->IsReady());
 
+  // Note: |view| is null if we're taking over for an existing frame.
   mojo::View* view = resource_waiter_->root();
-  global_state_->InitIfNecessary(
-      view->viewport_metrics().size_in_pixels.To<gfx::Size>(),
-      view->viewport_metrics().device_pixel_ratio);
+  if (view) {
+    global_state_->InitIfNecessary(
+        view->viewport_metrics().size_in_pixels.To<gfx::Size>(),
+        view->viewport_metrics().device_pixel_ratio);
+  }
 
   scoped_ptr<WebURLRequestExtraData> extra_data(new WebURLRequestExtraData);
   extra_data->synthetic_response =
@@ -127,15 +175,14 @@ void HTMLDocumentOOPIF::Load() {
   frame_ = HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       global_state_, view, resource_waiter_.Pass(), this);
 
-  // If the frame wasn't created we can destroy the connection.
+  // If the frame wasn't created we can destroy ourself.
   if (!frame_) {
-    root_->RemoveObserver(this);
-    // This triggers deleting us.
-    delete root_->connection();
+    Destroy();
     return;
   }
 
-  view->RemoveObserver(this);
+  if (view)
+    view->RemoveObserver(this);
 
   if (devtools_agent_request_.is_pending()) {
     if (frame_->devtools_agent()) {
@@ -164,9 +211,9 @@ HTMLDocumentOOPIF::BeforeLoadCache* HTMLDocumentOOPIF::GetBeforeLoadCache() {
 }
 
 void HTMLDocumentOOPIF::OnEmbed(View* root) {
-  root_ = root;
+  transferable_state_.root = root;
 
-  // We're an observer until the document is loaded.
+  // We're an observer until we start the load.
   root->AddObserver(this);
   resource_waiter_->set_root(root);
 
@@ -219,8 +266,36 @@ HTMLFactory* HTMLDocumentOOPIF::GetHTMLFactory() {
 
 void HTMLDocumentOOPIF::OnFrameSwappedToRemote() {
   // When the frame becomes remote HTMLDocumentOOPIF is no longer needed.
-  // Deleting the ViewManager triggers deleting us.
-  delete root_->connection();
+  frame_ = nullptr;
+  Destroy();
+}
+
+void HTMLDocumentOOPIF::OnSwap(HTMLFrame* frame,
+                               HTMLFrameDelegate* old_delegate) {
+  DCHECK(frame->IsLocal());
+  DCHECK(frame->view());
+  DCHECK(!frame_);
+  DCHECK(!transferable_state_.root);
+  if (!old_delegate) {
+    // We're taking over a child of a local root that isn't associated with a
+    // delegate. In this case the frame's view is not the root of the
+    // ViewTreeConnection.
+    transferable_state_.owns_view_tree_connection = false;
+    transferable_state_.root = frame->view();
+  } else {
+    HTMLDocumentOOPIF* old_document =
+        static_cast<HTMLDocumentOOPIF*>(old_delegate);
+    transferable_state_.Move(&old_document->transferable_state_);
+    if (transferable_state_.view_tree_delegate_impl)
+      transferable_state_.view_tree_delegate_impl->set_delegate(this);
+    old_document->frame_ = nullptr;
+    old_document->Destroy();
+  }
+}
+
+void HTMLDocumentOOPIF::OnFrameDestroyed() {
+  if (!transferable_state_.owns_view_tree_connection)
+    delete this;
 }
 
 void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
@@ -273,7 +348,12 @@ void HTMLDocumentOOPIF::Create(
 void HTMLDocumentOOPIF::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  mojo::ViewTreeConnection::Create(this, request.Pass());
+  DCHECK(!transferable_state_.view_tree_delegate_impl);
+  transferable_state_.view_tree_delegate_impl.reset(
+      new ViewTreeDelegateImpl(this));
+  transferable_state_.owns_view_tree_connection = true;
+  mojo::ViewTreeConnection::Create(
+      transferable_state_.view_tree_delegate_impl.get(), request.Pass());
 }
 
 }  // namespace html_viewer

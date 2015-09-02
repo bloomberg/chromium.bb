@@ -239,6 +239,10 @@ blink::WebWidget* HTMLFrame::GetWebWidget() {
   return html_widget_ ? html_widget_->GetWidget() : nullptr;
 }
 
+bool HTMLFrame::IsLocal() const {
+  return web_frame_->isWebLocalFrame();
+}
+
 bool HTMLFrame::HasLocalDescendant() const {
   if (IsLocal())
     return true;
@@ -261,6 +265,9 @@ HTMLFrame::~HTMLFrame() {
   parent_ = nullptr;
 
   frame_tree_manager_->OnFrameDestroyed(this);
+
+  if (delegate_)
+    delegate_->OnFrameDestroyed();
 
   if (view_) {
     view_->RemoveObserver(this);
@@ -292,10 +299,6 @@ void HTMLFrame::SetValueFromClientProperty(const std::string& name,
     state_.name = FrameNameFromClientProperty(new_data);
     web_frame_->toWebRemoteFrame()->setReplicatedName(state_.name);
   }
-}
-
-bool HTMLFrame::IsLocal() const {
-  return web_frame_->isWebLocalFrame();
 }
 
 HTMLFrame* HTMLFrame::GetLocalRoot() {
@@ -406,6 +409,13 @@ void HTMLFrame::SwapToLocal(
   web_layer_.reset();
 }
 
+void HTMLFrame::SwapDelegate(HTMLFrameDelegate* delegate) {
+  DCHECK(IsLocal());
+  HTMLFrameDelegate* old_delegate = delegate_;
+  delegate_ = delegate;
+  delegate->OnSwap(this, old_delegate);
+}
+
 HTMLFrame* HTMLFrame::FindFrameWithWebFrame(blink::WebFrame* web_frame) {
   if (web_frame_ == web_frame)
     return this;
@@ -486,7 +496,10 @@ void HTMLFrame::OnViewFocusChanged(mojo::View* gained_focus,
 
 void HTMLFrame::OnConnect(mandoline::FrameTreeServerPtr server,
                           uint32_t change_id,
-                          mojo::Array<mandoline::FrameDataPtr> frame_data) {
+                          uint32_t view_id,
+                          mandoline::ViewConnectType view_connect_type,
+                          mojo::Array<mandoline::FrameDataPtr> frame_data,
+                          const OnConnectCallback& callback) {
   // OnConnect() is only sent once, and has been received (by
   // DocumentResourceWaiter) by the time we get here.
   NOTREACHED();
@@ -557,17 +570,12 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
                                                         msg_event);
 }
 
-void HTMLFrame::OnWillNavigate(uint32_t target_frame_id,
-                               const OnWillNavigateCallback& callback) {
-  // Assume this process won't service the connection and swap to remote.
-  // It's entirely possible this process will service the connection and we
-  // don't need to swap, but the naive approach is much simpler.
+void HTMLFrame::OnWillNavigate(uint32_t target_frame_id) {
   HTMLFrame* target = frame_tree_manager_->root_->FindFrame(target_frame_id);
   if (target && target->IsLocal() &&
       target != frame_tree_manager_->local_root_) {
     target->SwapToRemote();
   }
-  callback.Run();
 }
 
 blink::WebMediaPlayer* HTMLFrame::createMediaPlayer(

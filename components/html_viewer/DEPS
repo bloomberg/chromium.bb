@@ -17,6 +17,8 @@ include_rules = [
   "+gin",
   "+mandoline/services",
   "+mandoline/tab/public/interfaces",
+  "+mandoline/tab/web_view_switches.cc",
+  "+mandoline/tab/web_view_switches.h",
   "+media",
   "+mojo/application",
   "+mojo/cc",

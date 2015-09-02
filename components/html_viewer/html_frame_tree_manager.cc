@@ -15,8 +15,8 @@
 #include "components/html_viewer/html_factory.h"
 #include "components/html_viewer/html_frame.h"
 #include "components/html_viewer/html_frame_delegate.h"
-#include "components/html_viewer/html_viewer_switches.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "mandoline/tab/web_view_switches.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
@@ -59,16 +59,28 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   mandoline::FrameTreeServerPtr frame_tree_server;
   mojo::Array<mandoline::FrameDataPtr> frame_data;
   uint32_t change_id;
+  uint32_t view_id;
+  mandoline::ViewConnectType view_connect_type;
+  mandoline::FrameTreeClient::OnConnectCallback on_connect_callback;
   resource_waiter->Release(&frame_tree_client_request, &frame_tree_server,
-                           &frame_data, &change_id);
+                           &frame_data, &change_id, &view_id,
+                           &view_connect_type, &on_connect_callback);
   resource_waiter.reset();
+
+  on_connect_callback.Run();
 
   HTMLFrameTreeManager* frame_tree = nullptr;
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kOOPIFAlwaysCreateNewFrameTree)) {
-    if (instances_->count(frame_data[0]->frame_id))
-      frame_tree = (*instances_)[frame_data[0]->frame_id];
+          web_view::switches::kOOPIFAlwaysCreateNewFrameTree) &&
+      instances_->count(frame_data[0]->frame_id)) {
+    frame_tree = (*instances_)[frame_data[0]->frame_id];
+  }
+
+  if (view_connect_type == mandoline::VIEW_CONNECT_TYPE_USE_EXISTING &&
+      !frame_tree) {
+    DVLOG(1) << "was told to use existing view but do not have frame tree";
+    return nullptr;
   }
 
   if (!frame_tree) {
@@ -76,6 +88,17 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     frame_tree->Init(delegate, view, frame_data, change_id);
     if (frame_data[0]->frame_id == view->id())
       (*instances_)[frame_data[0]->frame_id] = frame_tree;
+  } else if (view_connect_type == mandoline::VIEW_CONNECT_TYPE_USE_EXISTING) {
+    HTMLFrame* existing_frame = frame_tree->root_->FindFrame(view_id);
+    if (!existing_frame) {
+      DVLOG(1) << "was told to use existing view but could not find view";
+      return nullptr;
+    }
+    if (!existing_frame->IsLocal()) {
+      DVLOG(1) << "was told to use existing view, but frame is remote";
+      return nullptr;
+    }
+    existing_frame->SwapDelegate(delegate);
   } else {
     // We're going to share a frame tree. There are two possibilities:
     // . We already know about the frame, in which case we swap it to local.
@@ -111,7 +134,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     }
   }
 
-  HTMLFrame* frame = frame_tree->root_->FindFrame(view->id());
+  HTMLFrame* frame = frame_tree->root_->FindFrame(view_id);
   DCHECK(frame);
   frame->Bind(frame_tree_server.Pass(), frame_tree_client_request.Pass());
   return frame;

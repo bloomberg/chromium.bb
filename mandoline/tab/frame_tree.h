@@ -28,12 +28,19 @@ class FrameTree {
   // |view| is the view to do the initial embedding in. It is assumed |view|
   // outlives FrameTree.
   // |client_properties| is the client properties for the root frame.
-  FrameTree(mojo::View* view,
+  // |root_app_id| is a unique identifier of the app providing |root_client|.
+  // See Frame for details on app id's.
+  FrameTree(uint32_t root_app_id,
+            mojo::View* view,
             FrameTreeDelegate* delegate,
             FrameTreeClient* root_client,
             scoped_ptr<FrameUserData> user_data,
             const Frame::ClientPropertyMap& client_properties);
   ~FrameTree();
+
+  // Returns true if there should be a distinct renderer per frame. This is
+  // useful for testing.
+  static bool AlwaysCreateNewFrameTree();
 
   Frame* root() { return &root_; }
 
@@ -41,6 +48,7 @@ class FrameTree {
 
   Frame* CreateAndAddFrame(mojo::View* view,
                            Frame* parent,
+                           uint32_t app_id,
                            FrameTreeClient* client,
                            scoped_ptr<FrameUserData> user_data);
 
@@ -50,6 +58,7 @@ class FrameTree {
   // details.
   void CreateSharedFrame(Frame* parent,
                          uint32_t frame_id,
+                         uint32_t app_id,
                          const Frame::ClientPropertyMap& client_properties);
 
  private:
@@ -61,6 +70,7 @@ class FrameTree {
   Frame* CreateAndAddFrameImpl(
       mojo::View* view,
       uint32_t frame_id,
+      uint32_t app_id,
       Frame* parent,
       FrameTreeClient* client,
       scoped_ptr<FrameUserData> user_data,
