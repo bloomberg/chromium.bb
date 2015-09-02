@@ -93,10 +93,11 @@
 
 #more-info-expander {
   -webkit-padding-start: 0;
+  margin-top: 10px;
 }
 
 #more-info-container.visible {
-  margin-bottom: 1.5em;
+  margin-bottom: 10px;
 }
 
 #more-info-container {
