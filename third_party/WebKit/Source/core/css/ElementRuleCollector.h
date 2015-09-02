@@ -58,7 +58,6 @@ public:
     const CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(m_ruleData);
         visitor->trace(m_parentStyleSheet);
     }
 
