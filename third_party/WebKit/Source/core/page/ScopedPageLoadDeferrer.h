@@ -30,24 +30,17 @@ namespace blink {
 class LocalFrame;
 class Page;
 
-class CORE_EXPORT ScopedPageLoadDeferrer final : public NoBaseWillBeGarbageCollectedFinalized<ScopedPageLoadDeferrer> {
+class CORE_EXPORT ScopedPageLoadDeferrer final {
     WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScopedPageLoadDeferrer);
+    WTF_MAKE_FAST_ALLOCATED(ScopedPageLoadDeferrer);
 public:
-    ScopedPageLoadDeferrer(Page* exclusion = nullptr);
+    explicit ScopedPageLoadDeferrer(Page* exclusion = nullptr);
     ~ScopedPageLoadDeferrer();
-
-#if ENABLE(OILPAN)
-    void dispose();
-#endif
-
-    DECLARE_TRACE();
 
 private:
     void detach();
 
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>, 16> m_deferredFrames;
-    bool m_detached;
+    Vector<RefPtrWillBePersistent<LocalFrame>, 16> m_deferredFrames;
 };
 
 } // namespace blink

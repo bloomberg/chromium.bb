@@ -222,10 +222,10 @@ const double WebView::maxTextSizeMultiplier = 3.0;
 
 // Used to defer all page activity in cases where the embedder wishes to run
 // a nested event loop. Using a stack enables nesting of message loop invocations.
-static WillBeHeapVector<RawPtrWillBeMember<ScopedPageLoadDeferrer>>& pageLoadDeferrerStack()
+static Vector<OwnPtr<ScopedPageLoadDeferrer>>& pageLoadDeferrerStack()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapVector<RawPtrWillBeMember<ScopedPageLoadDeferrer>>>, deferrerStack, (adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<ScopedPageLoadDeferrer>>())));
-    return *deferrerStack;
+    DEFINE_STATIC_LOCAL(Vector<OwnPtr<ScopedPageLoadDeferrer>>, deferrerStack, ());
+    return deferrerStack;
 }
 
 // Ensure that the WebDragOperation enum values stay in sync with the original
@@ -356,19 +356,12 @@ void WebView::resetVisitedLinkState()
 
 void WebView::willEnterModalLoop()
 {
-    pageLoadDeferrerStack().append(new ScopedPageLoadDeferrer());
+    pageLoadDeferrerStack().append(adoptPtr(new ScopedPageLoadDeferrer()));
 }
 
 void WebView::didExitModalLoop()
 {
     ASSERT(pageLoadDeferrerStack().size());
-
-    ScopedPageLoadDeferrer* deferrer = pageLoadDeferrerStack().last();
-#if ENABLE(OILPAN)
-    deferrer->dispose();
-#else
-    delete deferrer;
-#endif
     pageLoadDeferrerStack().removeLast();
 }
 

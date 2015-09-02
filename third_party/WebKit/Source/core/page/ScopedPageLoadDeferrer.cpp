@@ -31,7 +31,7 @@
 
 namespace blink {
 
-ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion) : m_detached(false)
+ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 {
     const HashSet<Page*>& pages = Page::ordinaryPages();
     for (const Page* page : pages) {
@@ -57,36 +57,17 @@ ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion) : m_detached(fal
 
 void ScopedPageLoadDeferrer::detach()
 {
-    if (m_detached)
-        return;
-
     for (size_t i = 0; i < m_deferredFrames.size(); ++i) {
         if (Page* page = m_deferredFrames[i]->page())
             page->setDefersLoading(false);
     }
 
     Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
-    m_detached = true;
 }
-
-#if ENABLE(OILPAN)
-void ScopedPageLoadDeferrer::dispose()
-{
-    detach();
-    m_deferredFrames.clear();
-}
-#endif
 
 ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer()
 {
     detach();
-}
-
-DEFINE_TRACE(ScopedPageLoadDeferrer)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_deferredFrames);
-#endif
 }
 
 } // namespace blink
