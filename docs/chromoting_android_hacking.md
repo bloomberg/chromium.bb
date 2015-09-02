@@ -65,8 +65,6 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="chrome/common/extensions/docs/examples/extensions/irc/servlet/src"/>
 <classpathentry kind="src" path="chrome/android/java/src"/>
 <classpathentry kind="src" path="chrome/android/uiautomator_tests/src"/>
-<classpathentry kind="src" path="chrome/android/shell/java/src"/>
-<classpathentry kind="src" path="chrome/android/shell/javatests/src"/>
 <classpathentry kind="src" path="chrome/android/javatests/src"/>
 <classpathentry kind="src" path="sync/test/android/javatests/src"/>
 <classpathentry kind="src" path="sync/android/java/src"/>
