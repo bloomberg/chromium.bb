@@ -4,22 +4,29 @@
 
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/painter.h"
-
-
-namespace {
-const int kBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE);
-}
-
 
 EVBubbleView::EVBubbleView(const gfx::FontList& font_list,
                            SkColor text_color,
                            SkColor parent_background_color,
                            LocationBarView* location_bar)
-    : IconLabelBubbleView(kBackgroundImages, NULL, IDR_OMNIBOX_HTTPS_VALID,
-                          font_list, text_color, parent_background_color, true),
+    : IconLabelBubbleView(IDR_OMNIBOX_HTTPS_VALID,
+                          font_list,
+                          text_color,
+                          parent_background_color,
+                          true),
       page_info_helper_(this, location_bar) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // The insets for IDR_OMNIBOX_EV_BUBBLE for which to perfom nine-slicing.
+    static const int kImageInset = 4;
+    gfx::Insets insets(kImageInset, kImageInset, kImageInset, kImageInset);
+    SetBackgroundImageWithInsets(IDR_OMNIBOX_EV_BUBBLE, insets);
+  } else {
+    static const int kBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE);
+    SetBackgroundImageGrid(kBackgroundImages);
+  }
 }
 
 EVBubbleView::~EVBubbleView() {

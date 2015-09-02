@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
@@ -29,16 +30,24 @@ class Painter;
 // content settings.
 class IconLabelBubbleView : public views::View {
  public:
-  // |hover_background_images| is an optional set of images to be used in place
-  // of |background_images| during mouse hover.
-  IconLabelBubbleView(const int background_images[],
-                      const int hover_background_images[],
-                      int contained_image,
+  IconLabelBubbleView(int contained_image,
                       const gfx::FontList& font_list,
                       SkColor text_color,
                       SkColor parent_background_color,
                       bool elide_in_middle);
   ~IconLabelBubbleView() override;
+
+  // Sets a background that paints |background_images| in a scalable grid.
+  // Subclasses are required to call this or SetBackgroundImageWithInsets during
+  // construction.
+  void SetBackgroundImageGrid(const int background_images[]);
+
+  // Divides the image designated by |background_image_id| into nine regions.
+  // The four corners are specified by |insets|, the remainder are stretched to
+  // fill the background. Subclasses are required to call this or
+  // SetBackgroundImageGrid during construction.
+  void SetBackgroundImageWithInsets(int background_image_id,
+                                    gfx::Insets& insets);
 
   void SetLabel(const base::string16& label);
   void SetImage(const gfx::ImageSkia& image);
@@ -61,8 +70,6 @@ class IconLabelBubbleView : public views::View {
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
 
@@ -76,20 +83,24 @@ class IconLabelBubbleView : public views::View {
   // symmetrical padding.)
   int GetBubbleOuterPadding(bool by_icon) const;
 
+  // Sets a background color on |label_| based on |background_image_color| and
+  // |parent_background_color_|.
+  void SetLabelBackgroundColor(SkColor background_image_color);
+
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   // For painting the background.
   scoped_ptr<views::Painter> background_painter_;
-  scoped_ptr<views::Painter> hover_background_painter_;
 
   // The contents of the bubble.
   views::ImageView* image_;
   views::Label* label_;
 
   bool is_extension_icon_;
-  bool in_hover_;
+
+  SkColor parent_background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(IconLabelBubbleView);
 };

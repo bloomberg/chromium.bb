@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/controls/image_view.h"
@@ -21,8 +22,8 @@
 
 
 namespace {
-const int kBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
-const int kStayOpenTimeMS = 3200;  // Time spent with animation fully open.
+// Time spent with animation fully open.
+const int kStayOpenTimeMS = 3200;
 }
 
 
@@ -37,9 +38,7 @@ ContentSettingImageView::ContentSettingImageView(
     const gfx::FontList& font_list,
     SkColor text_color,
     SkColor parent_background_color)
-    : IconLabelBubbleView(kBackgroundImages,
-                          nullptr,
-                          0,
+    : IconLabelBubbleView(0,
                           font_list,
                           text_color,
                           parent_background_color,
@@ -52,6 +51,18 @@ ContentSettingImageView::ContentSettingImageView(
       pause_animation_(false),
       pause_animation_state_(0.0),
       bubble_widget_(NULL) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // The insets for IDR_OMNIBOX_CONTENT_SETTING_BUBBLE for which to perfom
+    // nine-slicing.
+    static const int kImageInset = 4;
+    gfx::Insets insets(kImageInset, kImageInset, kImageInset, kImageInset);
+    SetBackgroundImageWithInsets(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE, insets);
+  } else {
+    static const int kBackgroundImages[] =
+        IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
+    SetBackgroundImageGrid(kBackgroundImages);
+  }
+
   image()->SetHorizontalAlignment(views::ImageView::LEADING);
   image()->set_interactive(true);
   label()->SetElideBehavior(gfx::NO_ELIDE);

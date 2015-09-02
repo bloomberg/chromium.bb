@@ -14,22 +14,30 @@
 #include "components/search_engines/template_url_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/views/painter.h"
-
-
-namespace {
-const int kBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE);
-}
-
 
 SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
                                          SkColor text_color,
                                          SkColor parent_background_color,
                                          Profile* profile)
-    : IconLabelBubbleView(kBackgroundImages, NULL, IDR_KEYWORD_SEARCH_MAGNIFIER,
-                          font_list, text_color, parent_background_color,
+    : IconLabelBubbleView(IDR_KEYWORD_SEARCH_MAGNIFIER,
+                          font_list,
+                          text_color,
+                          parent_background_color,
                           false),
       profile_(profile) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // The inset for IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE for which to perfom
+    // nine-slicing.
+    static const int kImageInset = 4;
+    gfx::Insets insets(kImageInset, kImageInset, kImageInset, kImageInset);
+    SetBackgroundImageWithInsets(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE, insets);
+  } else {
+    static const int kBackgroundImages[] =
+        IMAGE_GRID(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE);
+    SetBackgroundImageGrid(kBackgroundImages);
+  }
   full_label_.SetFontList(font_list);
   full_label_.SetVisible(false);
   partial_label_.SetFontList(font_list);

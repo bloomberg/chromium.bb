@@ -13,20 +13,29 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 
+namespace {
 
-IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
-                                         const int hover_background_images[],
-                                         int contained_image,
+SkColor CalculateImageColor(gfx::ImageSkia* image) {
+  // We grab the color of the middle pixel of the image, which we treat as
+  // the representative color of the entire image (reasonable, given the current
+  // appearance of these assets).
+  const SkBitmap& bitmap(image->GetRepresentation(1.0f).sk_bitmap());
+  SkAutoLockPixels pixel_lock(bitmap);
+  return bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2);
+}
+
+}  // namespace
+
+IconLabelBubbleView::IconLabelBubbleView(int contained_image,
                                          const gfx::FontList& font_list,
                                          SkColor text_color,
                                          SkColor parent_background_color,
                                          bool elide_in_middle)
-    : background_painter_(
-          views::Painter::CreateImageGridPainter(background_images)),
+    : background_painter_(nullptr),
       image_(new views::ImageView()),
       label_(new views::Label(base::string16(), font_list)),
       is_extension_icon_(false),
-      in_hover_(false) {
+      parent_background_color_(parent_background_color) {
   if (contained_image) {
     image_->SetImage(
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -38,39 +47,36 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
   image_->set_interactive(false);
   AddChildView(image_);
 
-  if (hover_background_images) {
-    hover_background_painter_.reset(
-        views::Painter::CreateImageGridPainter(hover_background_images));
-  }
-
   label_->SetEnabledColor(text_color);
-  // Calculate the actual background color for the label.  The background images
-  // are painted atop |parent_background_color|.  We grab the color of the
-  // middle pixel of the middle image of the background, which we treat as the
-  // representative color of the entire background (reasonable, given the
-  // current appearance of these images).  Then we alpha-blend it over the
-  // parent background color to determine the actual color the label text will
-  // sit atop.
-  const SkBitmap& bitmap(
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          background_images[4])->GetRepresentation(1.0f).sk_bitmap());
-  SkAutoLockPixels pixel_lock(bitmap);
-  SkColor background_image_color =
-      bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2);
-  // Tricky bit: We alpha blend an opaque version of |background_image_color|
-  // against |parent_background_color| using the original image grid color's
-  // alpha. This is because AlphaBlend(a, b, 255) always returns |a| unchanged
-  // even if |a| is a color with non-255 alpha.
-  label_->SetBackgroundColor(
-      color_utils::AlphaBlend(SkColorSetA(background_image_color, 255),
-                              parent_background_color,
-                              SkColorGetA(background_image_color)));
+
   if (elide_in_middle)
     label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
   AddChildView(label_);
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {
+}
+
+void IconLabelBubbleView::SetBackgroundImageGrid(
+    const int background_images[]) {
+  background_painter_.reset(
+      views::Painter::CreateImageGridPainter(background_images));
+  // Use the middle image of the background to represent the color of the entire
+  // background.
+  gfx::ImageSkia* background_image =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          background_images[4]);
+  SetLabelBackgroundColor(CalculateImageColor(background_image));
+}
+
+void IconLabelBubbleView::SetBackgroundImageWithInsets(int background_image_id,
+                                                       gfx::Insets& insets) {
+  gfx::ImageSkia* background_image =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          background_image_id);
+  background_painter_.reset(
+      views::Painter::CreateImagePainter(*background_image, insets));
+  SetLabelBackgroundColor(CalculateImageColor(background_image));
 }
 
 void IconLabelBubbleView::SetLabel(const base::string16& label) {
@@ -127,18 +133,6 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   return size;
 }
 
-void IconLabelBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
-  in_hover_ = true;
-  if (hover_background_painter_.get())
-    SchedulePaint();
-}
-
-void IconLabelBubbleView::OnMouseExited(const ui::MouseEvent& event) {
-  in_hover_ = false;
-  if (hover_background_painter_.get())
-    SchedulePaint();
-}
-
 int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) const {
   ui::ThemeProvider* theme_provider = GetThemeProvider();
   const int bubble_horizontal_padding = theme_provider->GetDisplayProperty(
@@ -151,6 +145,20 @@ int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) const {
          (by_icon ? 0 : right_padding);
 }
 
+void IconLabelBubbleView::SetLabelBackgroundColor(
+    SkColor background_image_color) {
+  // The background images are painted atop |parent_background_color_|.
+  // Alpha-blend |background_image_color| with |parent_background_color_| to
+  // determine the actual color the label text will sit atop.
+  // Tricky bit: We alpha blend an opaque version of |background_image_color|
+  // against |parent_background_color_| using the original image grid color's
+  // alpha. This is because AlphaBlend(a, b, 255) always returns |a| unchanged
+  // even if |a| is a color with non-255 alpha.
+  label_->SetBackgroundColor(color_utils::AlphaBlend(
+      SkColorSetA(background_image_color, 255), parent_background_color_,
+      SkColorGetA(background_image_color)));
+}
+
 const char* IconLabelBubbleView::GetClassName() const {
   return "IconLabelBubbleView";
 }
@@ -158,7 +166,6 @@ const char* IconLabelBubbleView::GetClassName() const {
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldShowBackground())
     return;
-  views::Painter* painter = (in_hover_ && hover_background_painter_) ?
-      hover_background_painter_.get() : background_painter_.get();
-  painter->Paint(canvas, size());
+  if (background_painter_)
+    background_painter_->Paint(canvas, size());
 }
