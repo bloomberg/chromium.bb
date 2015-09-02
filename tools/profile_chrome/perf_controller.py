@@ -110,6 +110,7 @@ class PerfProfilerController(controllers.BaseController):
   def _PrepareDevice(device):
     if not 'BUILDTYPE' in os.environ:
       os.environ['BUILDTYPE'] = 'Release'
+    binary_manager.InitDependencyManager(None)
     return android_profiling_helper.PrepareDeviceForPerf(device)
 
   @classmethod
