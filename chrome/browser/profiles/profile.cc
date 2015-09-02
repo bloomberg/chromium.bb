@@ -60,7 +60,7 @@ TestingProfile* Profile::AsTestingProfile() {
   return NULL;
 }
 
-chrome::ChromeZoomLevelPrefs* Profile::GetZoomLevelPrefs() {
+ChromeZoomLevelPrefs* Profile::GetZoomLevelPrefs() {
   return NULL;
 }
 

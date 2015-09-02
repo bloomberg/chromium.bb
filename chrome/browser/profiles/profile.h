@@ -17,6 +17,7 @@
 #include "content/public/browser/content_browser_client.h"
 
 class ChromeAppCacheService;
+class ChromeZoomLevelPrefs;
 class DevToolsNetworkControllerHandle;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
@@ -33,10 +34,6 @@ class TabContentsProvider;
 namespace base {
 class SequencedTaskRunner;
 class Time;
-}
-
-namespace chrome {
-class ChromeZoomLevelPrefs;
 }
 
 namespace chrome_browser_net {
@@ -196,7 +193,7 @@ class Profile : public content::BrowserContext {
   // Retrieves a pointer to the PrefService that manages the default zoom
   // level and the per-host zoom levels for this user profile.
   // TODO(wjmaclean): Remove this when HostZoomMap migrates to StoragePartition.
-  virtual chrome::ChromeZoomLevelPrefs* GetZoomLevelPrefs();
+  virtual ChromeZoomLevelPrefs* GetZoomLevelPrefs();
 
   // Retrieves a pointer to the PrefService that manages the preferences
   // for OffTheRecord Profiles.  This PrefService is lazily created the first

@@ -26,8 +26,6 @@ namespace ui_zoom {
 class ZoomEventManager;
 }
 
-namespace chrome {
-
 // A class to manage per-partition default and per-host zoom levels in Chrome's
 // preference system. It implements an interface between the content/ zoom
 // levels in HostZoomMap and Chrome's preference system. All changes
@@ -79,7 +77,5 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeZoomLevelPrefs);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ZOOM_CHROME_ZOOM_LEVEL_PREFS_H_

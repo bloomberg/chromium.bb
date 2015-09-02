@@ -115,7 +115,7 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
         prefs->GetDictionary(prefs::kPartitionPerHostZoomLevels);
     const base::DictionaryValue* values = NULL;
     std::string partition_key =
-        chrome::ChromeZoomLevelPrefs::GetHashForTesting(base::FilePath());
+        ChromeZoomLevelPrefs::GetHashForTesting(base::FilePath());
     dictionaries->GetDictionary(partition_key, &values);
     std::vector<std::string> results;
     if (values) {
@@ -164,7 +164,7 @@ class HostZoomMapBrowserTestWithPrefs : public HostZoomMapBrowserTest {
     // values for the same input, so make sure we test with the hash appropriate
     // for the platform.
     std::string hash_string =
-        chrome::ChromeZoomLevelPrefs::GetHashForTesting(base::FilePath());
+        ChromeZoomLevelPrefs::GetHashForTesting(base::FilePath());
     std::string partition_key_placeholder(PARTITION_KEY_PLACEHOLDER);
     size_t start_index;
     while ((start_index = prefs_data_.find(partition_key_placeholder)) !=

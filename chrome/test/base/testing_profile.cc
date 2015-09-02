@@ -622,7 +622,7 @@ base::FilePath TestingProfile::GetPath() const {
 
 scoped_ptr<content::ZoomLevelDelegate> TestingProfile::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return make_scoped_ptr(new chrome::ChromeZoomLevelPrefs(
+  return make_scoped_ptr(new ChromeZoomLevelPrefs(
       GetPrefs(), GetPath(), partition_path,
       ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
@@ -782,8 +782,8 @@ const PrefService* TestingProfile::GetPrefs() const {
   return prefs_.get();
 }
 
-chrome::ChromeZoomLevelPrefs* TestingProfile::GetZoomLevelPrefs() {
-  return static_cast<chrome::ChromeZoomLevelPrefs*>(
+ChromeZoomLevelPrefs* TestingProfile::GetZoomLevelPrefs() {
+  return static_cast<ChromeZoomLevelPrefs*>(
       GetDefaultStoragePartition(this)->GetZoomLevelDelegate());
 }
 

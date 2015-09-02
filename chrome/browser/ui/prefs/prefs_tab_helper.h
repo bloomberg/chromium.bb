@@ -60,7 +60,7 @@ class PrefsTabHelper : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   scoped_ptr<base::CallbackList<void(void)>::Subscription>
       style_sheet_subscription_;
-  scoped_ptr<chrome::ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+  scoped_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
       default_zoom_level_subscription_;
   base::WeakPtrFactory<PrefsTabHelper> weak_ptr_factory_;
 

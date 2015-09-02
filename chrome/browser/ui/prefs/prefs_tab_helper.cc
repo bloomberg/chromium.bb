@@ -453,7 +453,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
     // If the tab is in an incognito profile, we track changes in the default
     // zoom level of the parent profile instead.
     Profile* profile_to_track = profile_->GetOriginalProfile();
-    chrome::ChromeZoomLevelPrefs* zoom_level_prefs =
+    ChromeZoomLevelPrefs* zoom_level_prefs =
         profile_to_track->GetZoomLevelPrefs();
 
     base::Closure renderer_callback = base::Bind(

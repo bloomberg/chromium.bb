@@ -709,9 +709,9 @@ Profile::ProfileType ProfileImpl::GetProfileType() const {
   return REGULAR_PROFILE;
 }
 
-scoped_ptr<content::ZoomLevelDelegate>
-ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
-  return make_scoped_ptr(new chrome::ChromeZoomLevelPrefs(
+scoped_ptr<content::ZoomLevelDelegate> ProfileImpl::CreateZoomLevelDelegate(
+    const base::FilePath& partition_path) {
+  return make_scoped_ptr(new ChromeZoomLevelPrefs(
       GetPrefs(), GetPath(), partition_path,
       ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
@@ -898,8 +898,8 @@ const PrefService* ProfileImpl::GetPrefs() const {
   return prefs_.get();
 }
 
-chrome::ChromeZoomLevelPrefs* ProfileImpl::GetZoomLevelPrefs() {
-  return static_cast<chrome::ChromeZoomLevelPrefs*>(
+ChromeZoomLevelPrefs* ProfileImpl::GetZoomLevelPrefs() {
+  return static_cast<ChromeZoomLevelPrefs*>(
       GetDefaultStoragePartition(this)->GetZoomLevelDelegate());
 }
 

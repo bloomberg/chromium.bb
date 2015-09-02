@@ -404,7 +404,7 @@ class BrowserOptionsHandler
 
   StringPrefMember auto_open_files_;
 
-  scoped_ptr<chrome::ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+  scoped_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
       default_zoom_level_subscription_;
 
   PrefChangeRegistrar profile_pref_registrar_;

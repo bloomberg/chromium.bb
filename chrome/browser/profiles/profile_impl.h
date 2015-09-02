@@ -107,7 +107,7 @@ class ProfileImpl : public Profile {
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
-  chrome::ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
+  ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;
   net::URLRequestContextGetter* GetRequestContextForExtensions() override;
   net::SSLConfigService* GetSSLConfigService() override;

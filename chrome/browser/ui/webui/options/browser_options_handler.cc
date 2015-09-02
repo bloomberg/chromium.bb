@@ -858,7 +858,7 @@ void BrowserOptionsHandler::PageLoadStarted() {
 void BrowserOptionsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
-  chrome::ChromeZoomLevelPrefs* zoom_level_prefs = profile->GetZoomLevelPrefs();
+  ChromeZoomLevelPrefs* zoom_level_prefs = profile->GetZoomLevelPrefs();
   // Only regular profiles are able to edit default zoom level, or delete per-
   // host zoom levels, via the settings menu. We only require a zoom_level_prefs
   // if the profile is able to change these preference types.

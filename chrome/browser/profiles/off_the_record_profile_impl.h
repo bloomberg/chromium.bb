@@ -130,7 +130,7 @@ class OffTheRecordProfileImpl : public Profile {
   PrefServiceSyncable* prefs_;
 
   scoped_ptr<content::HostZoomMap::Subscription> track_zoom_subscription_;
-  scoped_ptr<chrome::ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+  scoped_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
       parent_default_zoom_level_subscription_;
   scoped_ptr<OffTheRecordProfileIOData::Handle> io_data_;
 
