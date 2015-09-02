@@ -12,9 +12,6 @@
         'command': [
           '<(PRODUCT_DIR)/angle_end2end_tests<(EXECUTABLE_SUFFIX)',
         ],
-        'files': [
-          '<(PRODUCT_DIR)/angle_end2end_tests<(EXECUTABLE_SUFFIX)',
-        ],
       },
     }],
   ],

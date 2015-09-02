@@ -39,7 +39,6 @@
         'files': [
           '../../testing/test_env.py',
           '<(PRODUCT_DIR)/ui_test.pak',
-          '<(PRODUCT_DIR)/wm_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

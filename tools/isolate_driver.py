@@ -118,9 +118,9 @@ def using_blacklist(item):
   if item.endswith('.isolated.gen.json'):
     return True
   IGNORED = (
-    '.a', '.cc', '.css', '.def', '.frag', '.h', '.html', '.js', '.json',
-    '.manifest', '.o', '.obj', '.pak', '.png', '.pdb', '.strings', '.test',
-    '.txt', '.vert',
+    '.a', '.cc', '.css', '.dat', '.def', '.frag', '.h', '.html', '.isolate',
+    '.js', '.json', '.manifest', '.o', '.obj', '.pak', '.png', '.pdb', '.py',
+    '.strings', '.test', '.txt', '.vert',
   )
   # ninja files use native path format.
   ext = os.path.splitext(item)[1]
@@ -180,11 +180,12 @@ def post_process_deps(build_dir, dependencies):
       return i[:-4]
     return i
 
-  def f(i):
+  def is_exe(i):
     # This script is only for adding new binaries that are created as part of
     # the component build.
     ext = os.path.splitext(i)[1]
-    if ext not in ['.dll', '.nexe', '.so', '.dylib']:
+    # On POSIX, executables have no extension.
+    if ext not in ('', '.dll', '.dylib', '.exe', '.nexe', '.so'):
       return False
 
     # Check for execute access and strip directories. This gets rid of all the
@@ -192,7 +193,7 @@ def post_process_deps(build_dir, dependencies):
     p = os.path.join(build_dir, i)
     return os.access(p, os.X_OK) and not os.path.isdir(p)
 
-  return filter(f, map(filter_item, dependencies))
+  return filter(is_exe, map(filter_item, dependencies))
 
 
 def create_wrapper(args, isolate_index, isolated_index):

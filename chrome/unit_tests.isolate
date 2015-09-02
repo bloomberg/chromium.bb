@@ -88,7 +88,6 @@
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/pyproto/google/',
-          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

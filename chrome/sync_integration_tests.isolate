@@ -52,7 +52,6 @@
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/pyproto/',
           '<(PRODUCT_DIR)/resources.pak',
-          '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

@@ -11,9 +11,6 @@
         'command': [
           '<(PRODUCT_DIR)/angle_unittests<(EXECUTABLE_SUFFIX)',
         ],
-        'files': [
-          '<(PRODUCT_DIR)/angle_unittests<(EXECUTABLE_SUFFIX)',
-        ],
       },
     }],
     ['OS=="mac" and asan==1 and fastbuild==0', {

@@ -30,7 +30,6 @@
       'variables': {
         'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/ash_unittests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/chrome_200_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',

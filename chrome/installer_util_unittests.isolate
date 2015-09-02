@@ -9,7 +9,6 @@
           '<(PRODUCT_DIR)/installer_util_unittests.exe',
         ],
         'files': [
-          '<(PRODUCT_DIR)/installer_util_unittests.exe',
           'test/data/extensions/',
           'test/data/installer/',
         ],

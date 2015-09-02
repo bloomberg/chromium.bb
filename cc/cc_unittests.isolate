@@ -39,7 +39,6 @@
         'files': [
           'test/data/',
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/cc_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

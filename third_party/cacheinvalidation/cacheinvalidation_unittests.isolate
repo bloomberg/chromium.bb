@@ -9,9 +9,6 @@
           '<(PRODUCT_DIR)/cacheinvalidation_unittests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-bot-mode',
         ],
-        'files': [
-          '<(PRODUCT_DIR)/cacheinvalidation_unittests<(EXECUTABLE_SUFFIX)',
-        ],
       },
     }],
   ],

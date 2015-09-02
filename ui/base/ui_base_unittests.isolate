@@ -39,7 +39,6 @@
         'files': [
           '../../testing/test_env.py',
           'test/data/data_pack_unittest/truncated-header.pak',
-          '<(PRODUCT_DIR)/ui_base_unittests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/ui_test.pak',
         ],
       },

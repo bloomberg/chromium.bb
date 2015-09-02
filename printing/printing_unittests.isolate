@@ -16,7 +16,6 @@
         ],
         'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/printing_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
