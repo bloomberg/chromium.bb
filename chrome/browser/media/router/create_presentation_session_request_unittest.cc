@@ -65,7 +65,7 @@ TEST_F(CreatePresentationSessionRequestTest, Getters) {
   EXPECT_EQ(frame_url, request.frame_url());
   EXPECT_EQ(kPresentationUrl,
             PresentationUrlFromMediaSource(request.media_source()));
-  // Since we didn't explicitly call MaybeInvoke*, the error callback will be
+  // Since we didn't explicitly call Invoke*, the error callback will be
   // invoked when |request| is destroyed.
 }
 
@@ -79,7 +79,7 @@ TEST_F(CreatePresentationSessionRequestTest, SuccessCallback) {
                  base::Unretained(this), session_info),
       base::Bind(&CreatePresentationSessionRequestTest::FailOnError,
                  base::Unretained(this)));
-  request.MaybeInvokeSuccessCallback(kPresentationId, kRouteId);
+  request.InvokeSuccessCallback(kPresentationId, kRouteId);
   EXPECT_TRUE(cb_invoked_);
 }
 
@@ -96,7 +96,7 @@ TEST_F(CreatePresentationSessionRequestTest, ErrorCallback) {
                  base::Unretained(this)),
       base::Bind(&CreatePresentationSessionRequestTest::OnError,
                  base::Unretained(this), error));
-  request.MaybeInvokeErrorCallback(error);
+  request.InvokeErrorCallback(error);
   EXPECT_TRUE(cb_invoked_);
 }
 

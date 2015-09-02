@@ -128,7 +128,7 @@ MediaRouterUI::~MediaRouterUI() {
   // If |presentation_request_| still exists, then it means presentation route
   // request was never attempted.
   if (presentation_request_) {
-    presentation_request_->MaybeInvokeErrorCallback(content::PresentationError(
+    presentation_request_->InvokeErrorCallback(content::PresentationError(
         content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
         "Dialog closed."));
   }

@@ -63,7 +63,7 @@ void MediaRouterDialogControllerAndroid::OnDialogDismissed(
   if (!request)
     return;
 
-  request->MaybeInvokeErrorCallback(content::PresentationError(
+  request->InvokeErrorCallback(content::PresentationError(
       content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
       "The device picker dialog has been dismissed"));
 }

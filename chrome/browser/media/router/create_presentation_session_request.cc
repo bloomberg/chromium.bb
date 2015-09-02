@@ -32,7 +32,7 @@ CreatePresentationSessionRequest::~CreatePresentationSessionRequest() {
   }
 }
 
-void CreatePresentationSessionRequest::MaybeInvokeSuccessCallback(
+void CreatePresentationSessionRequest::InvokeSuccessCallback(
     const std::string& presentation_id,
     const MediaRoute::Id& route_id) {
   DCHECK(!cb_invoked_);
@@ -46,7 +46,7 @@ void CreatePresentationSessionRequest::MaybeInvokeSuccessCallback(
   }
 }
 
-void CreatePresentationSessionRequest::MaybeInvokeErrorCallback(
+void CreatePresentationSessionRequest::InvokeErrorCallback(
     const content::PresentationError& error) {
   DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
@@ -62,11 +62,11 @@ void CreatePresentationSessionRequest::HandleRouteResponse(
     const std::string& presentation_id,
     const std::string& error) {
   if (!route) {
-    presentation_request->MaybeInvokeErrorCallback(
+    presentation_request->InvokeErrorCallback(
         content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN, error));
   } else {
-    presentation_request->MaybeInvokeSuccessCallback(
-        presentation_id, route->media_route_id());
+    presentation_request->InvokeSuccessCallback(presentation_id,
+                                                route->media_route_id());
   }
 }
 

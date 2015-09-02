@@ -49,11 +49,11 @@ class CreatePresentationSessionRequest {
   const GURL& frame_url() const { return frame_url_; }
 
   // Invokes |success_cb_| or |error_cb_| with the given arguments.
-  // These functions can only be invoked once per instance. Further invocations
-  // are no-op.
-  void MaybeInvokeSuccessCallback(const std::string& presentation_id,
-                                  const MediaRoute::Id& route_id);
-  void MaybeInvokeErrorCallback(const content::PresentationError& error);
+  // These functions can only be invoked once per instance. It is an error
+  // to invoke these functions more than once.
+  void InvokeSuccessCallback(const std::string& presentation_id,
+                             const MediaRoute::Id& route_id);
+  void InvokeErrorCallback(const content::PresentationError& error);
 
   // Handle route creation/joining response by invoking the right callback.
   static void HandleRouteResponse(
