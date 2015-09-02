@@ -339,6 +339,7 @@ public:
     CrossThreadPersistent(const RawPtr<U>& other) : Parent(other.get()) { }
 };
 
+// Combines the behavior of CrossThreadPersistent and WeakPersistent.
 template<typename T>
 class CrossThreadWeakPersistent : public PersistentBase<T, WeakPersistentConfiguration, CrossThreadPersistentConfiguration> {
     typedef PersistentBase<T, WeakPersistentConfiguration, CrossThreadPersistentConfiguration> Parent;
