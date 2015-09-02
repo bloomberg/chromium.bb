@@ -17,7 +17,7 @@ import java.util.Locale;
  * the origin of logs, and enable or disable logging in different parts of the code.
  * </p>
  * <p>
- * @see usage documentation: <a href="README_logging.md">README_logging.md</a>.
+ * Usage documentation: {@code //docs/logging.md}.
  * </p>
  */
 public class Log {
