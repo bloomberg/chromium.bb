@@ -169,6 +169,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   // Number of bytes received when the stream was closed.
   int64 closed_stream_received_bytes_;
+  // Number of bytes sent when the stream was closed.
+  int64_t closed_stream_sent_bytes_;
 
   // The caller's callback to be used for asynchronous operations.
   CompletionCallback callback_;

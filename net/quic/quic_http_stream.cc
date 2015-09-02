@@ -41,6 +41,7 @@ QuicHttpStream::QuicHttpStream(
       response_status_(OK),
       response_headers_received_(false),
       closed_stream_received_bytes_(0),
+      closed_stream_sent_bytes_(0),
       user_buffer_len_(0),
       weak_factory_(this) {
   DCHECK(session_);
@@ -253,6 +254,8 @@ bool QuicHttpStream::CanReuseConnection() const {
 }
 
 int64 QuicHttpStream::GetTotalReceivedBytes() const {
+  // TODO(sclittle): Currently, this only includes response body bytes. Change
+  // this to include headers and QUIC overhead as well.
   if (stream_) {
     return stream_->stream_bytes_read();
   }
@@ -261,8 +264,13 @@ int64 QuicHttpStream::GetTotalReceivedBytes() const {
 }
 
 int64_t QuicHttpStream::GetTotalSentBytes() const {
-  // TODO(sclittle): Implement this for real. http://crbug.com/518897.
-  return 0;
+  // TODO(sclittle): Currently, this only includes request body bytes. Change
+  // this to include headers and QUIC overhead as well.
+  if (stream_) {
+    return stream_->stream_bytes_written();
+  }
+
+  return closed_stream_sent_bytes_;
 }
 
 bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
@@ -547,6 +555,7 @@ void QuicHttpStream::ResetStream() {
   if (!stream_)
     return;
   closed_stream_received_bytes_ = stream_->stream_bytes_read();
+  closed_stream_sent_bytes_ = stream_->stream_bytes_written();
   stream_ = nullptr;
 
   // If |request_body_stream_| is non-NULL, Reset it, to abort any in progress

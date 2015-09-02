@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_http_stream.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/thread_task_runner_handle.h"
@@ -381,6 +383,11 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
                                          callback_.callback()));
   EXPECT_TRUE(stream_->IsResponseBodyComplete());
   EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 // Regression test for http://crbug.com/288128
@@ -424,6 +431,11 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
                                          callback_.callback()));
   EXPECT_TRUE(stream_->IsResponseBodyComplete());
   EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 // Regression test for http://crbug.com/409101
@@ -442,6 +454,9 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendRequest) {
   EXPECT_EQ(ERR_CONNECTION_CLOSED,
             stream_->SendRequest(headers_, &response_,
                                  callback_.callback()));
+
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 // Regression test for http://crbug.com/409871
@@ -462,6 +477,11 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeReadResponseHeaders) {
   session_->connection()->CloseConnection(QUIC_NO_ERROR, true);
 
   EXPECT_NE(OK, stream_->ReadResponseHeaders(callback_.callback()));
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 TEST_P(QuicHttpStreamTest, SendPostRequest) {
@@ -510,6 +530,13 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
 
   EXPECT_TRUE(stream_->IsResponseBodyComplete());
   EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(static_cast<int64_t>(strlen(kUploadData)),
+            stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(strlen(kResponseBody)),
+            stream_->GetTotalReceivedBytes());
 }
 
 TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
@@ -565,6 +592,13 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
 
   EXPECT_TRUE(stream_->IsResponseBodyComplete());
   EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(static_cast<int64_t>(strlen(kUploadData) * 2),
+            stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(strlen(kResponseBody)),
+            stream_->GetTotalReceivedBytes());
 }
 
 TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
@@ -617,6 +651,13 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
                                       callback_.callback()));
   EXPECT_TRUE(stream_->IsResponseBodyComplete());
   EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(static_cast<int64_t>(strlen(kUploadData)),
+            stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(strlen(kResponseBody)),
+            stream_->GetTotalReceivedBytes());
 }
 
 TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
@@ -667,6 +708,12 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
 
   EXPECT_TRUE(stream_->IsResponseBodyComplete());
   EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(strlen(kResponseBody)),
+            stream_->GetTotalReceivedBytes());
 }
 
 TEST_P(QuicHttpStreamTest, DestroyedEarly) {
@@ -701,6 +748,11 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 TEST_P(QuicHttpStreamTest, Priority) {
@@ -747,6 +799,11 @@ TEST_P(QuicHttpStreamTest, Priority) {
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(AtEof());
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 // Regression test for http://crbug.com/294870
@@ -779,6 +836,11 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
             reliable_stream->EffectivePriority());
   reliable_stream->SetDelegate(delegate);
+
+  // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
+  // payload.
+  EXPECT_EQ(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 }  // namespace test
