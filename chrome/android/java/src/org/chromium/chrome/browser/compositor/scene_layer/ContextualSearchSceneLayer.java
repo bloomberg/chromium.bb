@@ -72,7 +72,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 R.drawable.contextual_search_bar_background,
                 R.id.contextual_search_view,
                 R.drawable.contextual_search_bar_shadow,
-                R.drawable.blue_google_icon,
+                R.drawable.google_icon,
                 R.drawable.breadcrumb_arrow,
                 ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
                 R.drawable.progress_bar_background,
