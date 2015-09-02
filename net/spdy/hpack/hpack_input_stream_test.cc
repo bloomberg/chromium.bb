@@ -162,19 +162,19 @@ TEST_F(HpackInputStreamTest, SevenByteIntegersEightBitPrefix) {
 TEST_F(HpackInputStreamTest, OneByteIntegersOneToSevenBitPrefixes) {
   // Minimums.
   EXPECT_EQ(0x00u, DecodeValidUint32(7, string("\x00", 1)));
-  EXPECT_EQ(0x00u, DecodeValidUint32(7, string("\x80", 1)));
+  EXPECT_EQ(0x00u, DecodeValidUint32(7, "\x80"));
   EXPECT_EQ(0x00u, DecodeValidUint32(6, string("\x00", 1)));
-  EXPECT_EQ(0x00u, DecodeValidUint32(6, string("\xc0", 1)));
+  EXPECT_EQ(0x00u, DecodeValidUint32(6, "\xc0"));
   EXPECT_EQ(0x00u, DecodeValidUint32(5, string("\x00", 1)));
-  EXPECT_EQ(0x00u, DecodeValidUint32(5, string("\xe0", 1)));
+  EXPECT_EQ(0x00u, DecodeValidUint32(5, "\xe0"));
   EXPECT_EQ(0x00u, DecodeValidUint32(4, string("\x00", 1)));
-  EXPECT_EQ(0x00u, DecodeValidUint32(4, string("\xf0", 1)));
+  EXPECT_EQ(0x00u, DecodeValidUint32(4, "\xf0"));
   EXPECT_EQ(0x00u, DecodeValidUint32(3, string("\x00", 1)));
-  EXPECT_EQ(0x00u, DecodeValidUint32(3, string("\xf8", 1)));
+  EXPECT_EQ(0x00u, DecodeValidUint32(3, "\xf8"));
   EXPECT_EQ(0x00u, DecodeValidUint32(2, string("\x00", 1)));
-  EXPECT_EQ(0x00u, DecodeValidUint32(2, string("\xfc", 1)));
+  EXPECT_EQ(0x00u, DecodeValidUint32(2, "\xfc"));
   EXPECT_EQ(0x00u, DecodeValidUint32(1, string("\x00", 1)));
-  EXPECT_EQ(0x00u, DecodeValidUint32(1, string("\xfe", 1)));
+  EXPECT_EQ(0x00u, DecodeValidUint32(1, "\xfe"));
 
   // Maximums.
   EXPECT_EQ(0x7eu, DecodeValidUint32(7, "\x7e"));
@@ -190,7 +190,7 @@ TEST_F(HpackInputStreamTest, OneByteIntegersOneToSevenBitPrefixes) {
   EXPECT_EQ(0x02u, DecodeValidUint32(2, "\x02"));
   EXPECT_EQ(0x02u, DecodeValidUint32(2, "\xfe"));
   EXPECT_EQ(0x00u, DecodeValidUint32(1, string("\x00", 1)));
-  EXPECT_EQ(0x00u, DecodeValidUint32(1, string("\xfe", 1)));
+  EXPECT_EQ(0x00u, DecodeValidUint32(1, "\xfe"));
 
   // Invalid.
   ExpectDecodeUint32Invalid(7, "\x7f");

@@ -33,8 +33,9 @@ bool HpackInputStream::MatchPrefixAndConsume(HpackPrefix prefix) {
   uint32 peeked = 0;
   size_t peeked_count = 0;
 
-  if (!PeekBits(&peeked_count, &peeked))
+  if (!PeekBits(&peeked_count, &peeked)) {
     return false;
+  }
 
   if ((peeked >> (32 - prefix.bit_size)) == prefix.bits) {
     ConsumeBits(prefix.bit_size);
@@ -44,16 +45,18 @@ bool HpackInputStream::MatchPrefixAndConsume(HpackPrefix prefix) {
 }
 
 bool HpackInputStream::PeekNextOctet(uint8* next_octet) {
-  if ((bit_offset_ > 0) || buffer_.empty())
+  if ((bit_offset_ > 0) || buffer_.empty()) {
     return false;
+  }
 
   *next_octet = buffer_[0];
   return true;
 }
 
 bool HpackInputStream::DecodeNextOctet(uint8* next_octet) {
-  if (!PeekNextOctet(next_octet))
+  if (!PeekNextOctet(next_octet)) {
     return false;
+  }
 
   buffer_.remove_prefix(1);
   return true;
@@ -70,16 +73,18 @@ bool HpackInputStream::DecodeNextUint32(uint32* I) {
 
   uint8 next_marker = (1 << N) - 1;
   uint8 next_octet = 0;
-  if (!DecodeNextOctet(&next_octet))
+  if (!DecodeNextOctet(&next_octet)) {
     return false;
+  }
   *I = next_octet & next_marker;
 
   bool has_more = (*I == next_marker);
   size_t shift = 0;
   while (has_more && (shift < 32)) {
     uint8 next_octet = 0;
-    if (!DecodeNextOctet(&next_octet))
+    if (!DecodeNextOctet(&next_octet)) {
       return false;
+    }
     has_more = (next_octet & 0x80) != 0;
     next_octet &= 0x7f;
     uint32 addend = next_octet << shift;
@@ -96,14 +101,17 @@ bool HpackInputStream::DecodeNextUint32(uint32* I) {
 
 bool HpackInputStream::DecodeNextIdentityString(StringPiece* str) {
   uint32 size = 0;
-  if (!DecodeNextUint32(&size))
+  if (!DecodeNextUint32(&size)) {
     return false;
+  }
 
-  if (size > max_string_literal_size_)
+  if (size > max_string_literal_size_) {
     return false;
+  }
 
-  if (size > buffer_.size())
+  if (size > buffer_.size()) {
     return false;
+  }
 
   *str = StringPiece(buffer_.data(), size);
   buffer_.remove_prefix(size);
@@ -113,11 +121,13 @@ bool HpackInputStream::DecodeNextIdentityString(StringPiece* str) {
 bool HpackInputStream::DecodeNextHuffmanString(const HpackHuffmanTable& table,
                                                string* str) {
   uint32 encoded_size = 0;
-  if (!DecodeNextUint32(&encoded_size))
+  if (!DecodeNextUint32(&encoded_size)) {
     return false;
+  }
 
-  if (encoded_size > buffer_.size())
+  if (encoded_size > buffer_.size()) {
     return false;
+  }
 
   HpackInputStream bounded_reader(max_string_literal_size_,
                                   StringPiece(buffer_.data(), encoded_size));

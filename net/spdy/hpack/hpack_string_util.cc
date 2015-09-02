@@ -11,8 +11,9 @@ namespace net {
 bool StringPiecesEqualConstantTime(base::StringPiece str1,
                                    base::StringPiece str2) {
   size_t size = str1.size();
-  if (str2.size() != size)
+  if (str2.size() != size) {
     return false;
+  }
 
   uint8 x = 0;
   for (size_t i = 0; i < size; ++i) {

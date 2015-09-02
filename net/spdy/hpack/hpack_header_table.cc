@@ -19,11 +19,13 @@ bool HpackHeaderTable::EntryComparator::operator()(
     const HpackEntry* lhs,
     const HpackEntry* rhs) const {
   int result = lhs->name().compare(rhs->name());
-  if (result != 0)
+  if (result != 0) {
     return result < 0;
+  }
   result = lhs->value().compare(rhs->value());
-  if (result != 0)
+  if (result != 0) {
     return result < 0;
+  }
   const size_t lhs_index = lhs->IsLookup() ? 0 : 1 + lhs->InsertionIndex();
   const size_t rhs_index = rhs->IsLookup() ? 0 : 1 + rhs->InsertionIndex();
   DCHECK(lhs == rhs || lhs_index != rhs_index)
