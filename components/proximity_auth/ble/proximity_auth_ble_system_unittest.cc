@@ -25,6 +25,8 @@ namespace proximity_auth {
 
 namespace {
 
+const char kTestUser[] = "example@gmail.com";
+
 class MockConnectionFinder : public ConnectionFinder {
  public:
   MockConnectionFinder() {}
@@ -68,11 +70,9 @@ class ProximityAuthBleSystemTestable : public ProximityAuthBleSystem {
   ProximityAuthBleSystemTestable(
       ScreenlockBridge* screenlock_bridge,
       ProximityAuthClient* proximity_auth_client,
-      scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory,
       PrefService* pref_service)
       : ProximityAuthBleSystem(screenlock_bridge,
                                proximity_auth_client,
-                               cryptauth_client_factory.Pass(),
                                pref_service) {}
 
   ConnectionFinder* CreateConnectionFinder() override {
@@ -89,13 +89,11 @@ class ProximityAuthBleSystemTest : public testing::Test {
   void SetUp() override {
     BluetoothLowEnergyDeviceWhitelist::RegisterPrefs(pref_service_.registry());
 
-    scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory(
-        new MockCryptAuthClientFactory(
-            MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS));
-
     proximity_auth_system_.reset(new ProximityAuthBleSystemTestable(
-        ScreenlockBridge::Get(), &proximity_auth_client_,
-        cryptauth_client_factory.Pass(), &pref_service_));
+        ScreenlockBridge::Get(), &proximity_auth_client_, &pref_service_));
+
+    ON_CALL(proximity_auth_client_, GetAuthenticatedUsername())
+        .WillByDefault(Return(kTestUser));
   }
 
   // Injects the thread's TaskRunner for testing.

@@ -676,7 +676,6 @@ void EasyUnlockService::UpdateAppState() {
       proximity_auth_ble_system_.reset(
           new proximity_auth::ProximityAuthBleSystem(
               proximity_auth::ScreenlockBridge::Get(), &proximity_auth_client_,
-              proximity_auth_client_.CreateCryptAuthClientFactory(),
               profile_->GetPrefs()));
     }
 

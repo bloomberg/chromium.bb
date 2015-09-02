@@ -19,7 +19,7 @@
 #include "components/proximity_auth/bluetooth_throttler_impl.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client.h"
+#include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
@@ -76,17 +76,14 @@ const char kUserPodIconLockedTooltip[] = "Unable to find an unlocked phone.";
 ProximityAuthBleSystem::ProximityAuthBleSystem(
     ScreenlockBridge* screenlock_bridge,
     ProximityAuthClient* proximity_auth_client,
-    scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory,
     PrefService* pref_service)
     : screenlock_bridge_(screenlock_bridge),
       proximity_auth_client_(proximity_auth_client),
-      cryptauth_client_factory_(cryptauth_client_factory.Pass()),
       device_whitelist_(new BluetoothLowEnergyDeviceWhitelist(pref_service)),
       bluetooth_throttler_(new BluetoothThrottlerImpl(
           make_scoped_ptr(new base::DefaultTickClock()))),
       device_authenticated_(false),
       is_polling_screen_state_(false),
-      unlock_keys_requested_(false),
       weak_ptr_factory_(this) {
   PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
   screenlock_bridge_->AddObserver(this);
@@ -103,68 +100,43 @@ void ProximityAuthBleSystem::RegisterPrefs(PrefRegistrySimple* registry) {
   BluetoothLowEnergyDeviceWhitelist::RegisterPrefs(registry);
 }
 
-void ProximityAuthBleSystem::OnGetMyDevices(
-    const cryptauth::GetMyDevicesResponse& response) {
-  PA_LOG(INFO) << "Found " << response.devices_size()
-               << " devices on CryptAuth.";
-  unlock_keys_.clear();
-  for (const auto& device : response.devices()) {
-    // Cache BLE devices (|bluetooth_address().empty() == true|) that are
-    // keys (|unlock_key() == 1|).
-    if (device.unlock_key() && device.bluetooth_address().empty()) {
-      std::string base64_public_key;
-      Base64UrlEncode(device.public_key(), &base64_public_key);
-      unlock_keys_[base64_public_key] = device.friendly_device_name();
-
-      PA_LOG(INFO) << "friendly_name = " << device.friendly_device_name();
-      PA_LOG(INFO) << "public_key = " << base64_public_key;
-    }
-  }
-  PA_LOG(INFO) << "Found " << unlock_keys_.size() << " unlock keys.";
-
-  RemoveStaleWhitelistedDevices();
-}
-
-void ProximityAuthBleSystem::OnGetMyDevicesError(const std::string& error) {
-  PA_LOG(INFO) << "GetMyDevices failed: " << error;
-}
-
-// This should be called exclusively after the user has logged in. For instance,
-// calling |GetUnlockKeys| from the constructor cause |GetMyDevices| to always
-// return an error.
-void ProximityAuthBleSystem::GetUnlockKeys() {
-  PA_LOG(INFO) << "Fetching unlock keys.";
-  unlock_keys_requested_ = true;
-  if (cryptauth_client_factory_) {
-    cryptauth_client_ = cryptauth_client_factory_->CreateInstance();
-    cryptauth::GetMyDevicesRequest request;
-    cryptauth_client_->GetMyDevices(
-        request, base::Bind(&ProximityAuthBleSystem::OnGetMyDevices,
-                            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ProximityAuthBleSystem::OnGetMyDevicesError,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
 void ProximityAuthBleSystem::RemoveStaleWhitelistedDevices() {
   PA_LOG(INFO) << "Removing stale whitelist devices.";
-  std::vector<std::string> public_keys = device_whitelist_->GetPublicKeys();
-  PA_LOG(INFO) << "There were " << public_keys.size()
+  std::vector<std::string> b64_public_keys = device_whitelist_->GetPublicKeys();
+  PA_LOG(INFO) << "There were " << b64_public_keys.size()
                << " whitelisted devices.";
 
-  for (const auto& public_key : public_keys) {
-    if (unlock_keys_.find(public_key) == unlock_keys_.end()) {
-      PA_LOG(INFO) << "Removing device: " << public_key;
-      device_whitelist_->RemoveDeviceWithPublicKey(public_key);
+  std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
+      proximity_auth_client_->GetCryptAuthDeviceManager()->unlock_keys();
+
+  for (const auto& b64_public_key : b64_public_keys) {
+    std::string public_key;
+    if (!Base64UrlDecode(b64_public_key, &public_key))
+      continue;
+
+    bool public_key_registered = false;
+    for (const auto& unlock_key : unlock_keys) {
+      public_key_registered |= unlock_key.public_key() == public_key;
+    }
+
+    if (!public_key_registered) {
+      PA_LOG(INFO) << "Removing device: " << b64_public_key;
+      device_whitelist_->RemoveDeviceWithPublicKey(b64_public_key);
     }
   }
-  public_keys = device_whitelist_->GetPublicKeys();
-  PA_LOG(INFO) << "There are " << public_keys.size() << " whitelisted devices.";
+  b64_public_keys = device_whitelist_->GetPublicKeys();
+  PA_LOG(INFO) << "There are " << b64_public_keys.size()
+               << " whitelisted devices.";
 }
 
 void ProximityAuthBleSystem::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
   PA_LOG(INFO) << "OnScreenDidLock: " << screen_type;
+  if (!IsAnyUnlockKeyBLE()) {
+    PA_LOG(INFO) << "No BLE device registered as unlock key";
+    return;
+  }
+
   switch (screen_type) {
     case ScreenlockBridge::LockHandler::SIGNIN_SCREEN:
       connection_finder_.reset();
@@ -228,8 +200,8 @@ void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
   PA_LOG(INFO) << "Message with " << message.payload().size()
                << " bytes received.";
 
-  // The first message should contain a public key registered in |unlock_keys_|
-  // to authenticate the device.
+  // The first message should contain a public key registered with
+  // CryptAuthDeviceManager to authenticate the device.
   if (!device_authenticated_) {
     std::string out_public_key;
     if (HasUnlockKey(message.payload(), &out_public_key)) {
@@ -248,24 +220,6 @@ void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
 
     } else {
       PA_LOG(INFO) << "Key not found. Authentication failed.";
-
-      // Fetch unlock keys from CryptAuth.
-      //
-      // This is necessary as fetching the keys before the user is logged in
-      // (e.g. on the constructor) doesn't work and detecting when it logs in
-      // (i.e. on |OnScreenDidUnlock()| when |screen_type ==
-      // ScreenlockBridge::LockHandler::SIGNIN_SCREEN|) also doesn't work in all
-      // cases. See crbug.com/515418.
-      //
-      // Note that keys are only fetched once for a given instance. So if
-      // CryptAuth unlock keys are updated after (e.g. adding a new unlock key)
-      // they won't be refetched until a new instance of ProximityAuthBleSystem
-      // is created. Moreover, if an unlock key XXX is removed from CryptAuth,
-      // it'll only be invalidated here (removed from the persistent
-      // |device_white_list_|) when some other key YYY is sent for
-      // authentication.
-      if (!unlock_keys_requested_)
-        GetUnlockKeys();
       connection_->Disconnect();
     }
     return;
@@ -287,6 +241,10 @@ void ProximityAuthBleSystem::OnAuthAttempted(const std::string& user_id) {
                   << " != " << user_id;
     return;
   }
+
+  // Ignore this auth attempt if there is no BLE unlock key.
+  if (!IsAnyUnlockKeyBLE())
+    return;
 
   // Accept the auth attempt and authorize the screen unlock if the remote
   // device is connected and its screen is unlocked.
@@ -356,6 +314,22 @@ void ProximityAuthBleSystem::StopPollingScreenState() {
   is_polling_screen_state_ = false;
 }
 
+bool ProximityAuthBleSystem::IsAnyUnlockKeyBLE() {
+  CryptAuthDeviceManager* device_manager =
+      proximity_auth_client_->GetCryptAuthDeviceManager();
+  if (!device_manager)
+    return false;
+
+  for (const auto& unlock_key : device_manager->unlock_keys()) {
+    // TODO(tengs): We currently assume that any device registered as an unlock
+    // key, but does not have a Bluetooth address, is a BLE device.
+    if (unlock_key.bluetooth_address().empty())
+      return true;
+  }
+
+  return false;
+}
+
 bool ProximityAuthBleSystem::HasUnlockKey(const std::string& message,
                                           std::string* out_public_key) {
   std::string message_prefix(kPublicKeyMessagePrefix);
@@ -364,7 +338,21 @@ bool ProximityAuthBleSystem::HasUnlockKey(const std::string& message,
   std::string public_key = message.substr(message_prefix.size());
   if (out_public_key)
     (*out_public_key) = public_key;
-  return unlock_keys_.find(public_key) != unlock_keys_.end() ||
+
+  std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
+      proximity_auth_client_->GetCryptAuthDeviceManager()->unlock_keys();
+
+  std::string decoded_public_key;
+  if (!Base64UrlDecode(public_key, &decoded_public_key))
+    return false;
+
+  bool unlock_key_registered = false;
+  for (const auto& unlock_key : unlock_keys) {
+    unlock_key_registered |= unlock_key.public_key() == decoded_public_key;
+  }
+
+  RemoveStaleWhitelistedDevices();
+  return unlock_key_registered ||
          device_whitelist_->HasDeviceWithPublicKey(public_key);
 }
 
@@ -415,15 +403,18 @@ void ProximityAuthBleSystem::UpdateLockScreenUI() {
   switch (screenlock_ui_state_) {
     case ScreenlockUIState::SPINNER:
       icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER);
+      icon_options.SetTooltip(base::UTF8ToUTF16(kUserPodIconLockedTooltip),
+                              false);
       break;
     case ScreenlockUIState::UNAUTHENTICATED:
       icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED);
+      icon_options.SetTooltip(base::UTF8ToUTF16(kUserPodIconLockedTooltip),
+                              false);
       break;
     case ScreenlockUIState::AUTHENTICATED:
       auth_value = base::UTF8ToUTF16(kUserPodUnlockText);
       icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED);
-      icon_options.SetTooltip(base::UTF8ToUTF16(kUserPodIconLockedTooltip),
-                              false);
+      icon_options.SetTooltip(base::UTF8ToUTF16(kUserPodUnlockText), false);
       auth_type = ScreenlockBridge::LockHandler::USER_CLICK;
       break;
     default:

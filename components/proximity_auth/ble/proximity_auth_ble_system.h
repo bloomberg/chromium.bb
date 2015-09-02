@@ -43,7 +43,6 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   ProximityAuthBleSystem(
       ScreenlockBridge* screenlock_bridge,
       ProximityAuthClient* proximity_auth_client,
-      scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory,
       PrefService* pref_service);
   ~ProximityAuthBleSystem() override;
 
@@ -73,16 +72,9 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   virtual ConnectionFinder* CreateConnectionFinder();
 
  private:
-  // Fetches the the public keys of devices that can be used as unlock keys.
-  void GetUnlockKeys();
-
   // Checks if the devices in |device_whitelist_| have their public keys
-  // registered in CryptAuth (|unlock_keys_|), removes the ones that do not.
+  // registered in CryptAuth, removes the ones that do not.
   void RemoveStaleWhitelistedDevices();
-
-  // Callbacks for cryptauth::CryptAuthClient::GetMyDevices.
-  void OnGetMyDevices(const cryptauth::GetMyDevicesResponse& response);
-  void OnGetMyDevicesError(const std::string& error);
 
   // Handler for a new connection found event.
   void OnConnectionFound(scoped_ptr<Connection> connection);
@@ -94,8 +86,11 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   // Stop polling for screen state of the remote device, if currently active.
   void StopPollingScreenState();
 
-  // Checks if |message| contains a valid public key (registered in
-  // |unlock_keys_|). If so, returns the public key in |out_public_key|.
+  // Returns true if any unlock key registered with CryptAuth is a BLE device.
+  bool IsAnyUnlockKeyBLE();
+
+  // Checks if |message| contains a valid whitelisted public key. If so, returns
+  // the public key in |out_public_key|.
   bool HasUnlockKey(const std::string& message, std::string* out_public_key);
 
   // Called when |spinner_timer_| is fired to stop showing the spinner on the
@@ -110,15 +105,6 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
   // Not owned. Must outlive this object.
   ProximityAuthClient* proximity_auth_client_;
-
-  // Creates CryptAuth client instances to make API calls.
-  scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory_;
-
-  // We only support one concurrent API call.
-  scoped_ptr<CryptAuthClient> cryptauth_client_;
-
-  // Maps devices public keys to the device friendly name.
-  std::map<std::string, std::string> unlock_keys_;
 
   scoped_ptr<ConnectionFinder> connection_finder_;
 
@@ -137,9 +123,6 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   // True if |this| instance is currently polling the phone for the phone's
   // screenlock state.
   bool is_polling_screen_state_;
-
-  // True if a call to |GetUnlockKeys()| was already made.
-  bool unlock_keys_requested_;
 
   // The user id or email of the last focused user on the lock screen.
   std::string last_focused_user_;
