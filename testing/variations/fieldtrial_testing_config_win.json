@@ -59,6 +59,30 @@
             "group_name": "Enabled"
         }
     ],
+    "NetworkQualityEstimator": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "Unknown.DefaultMedianRTTMsec": "121",
+                "Unknown.DefaultMedianKbps": "1916",
+                "Ethernet.DefaultMedianRTTMsec": "106",
+                "Ethernet.DefaultMedianKbps": "3263",
+                "WiFi.DefaultMedianRTTMsec": "168",
+                "WiFi.DefaultMedianKbps": "2736",
+                "2G.DefaultMedianRTTMsec": "1337",
+                "2G.DefaultMedianKbps": "81",
+                "3G.DefaultMedianRTTMsec": "297",
+                "3G.DefaultMedianKbps": "658",
+                "4G.DefaultMedianRTTMsec": "159",
+                "4G.DefaultMedianKbps": "1756",
+                "None.DefaultMedianRTTMsec": "272",
+                "None.DefaultMedianKbps": "567",
+                "Bluetooth.DefaultMedianRTTMsec": "135",
+                "Bluetooth.DefaultMedianKbps": "449",
+                "HalfLifeSeconds": "60"
+            }
+        }
+    ],
     "NewProfileManagement": [
         {
             "group_name": "Enabled"
