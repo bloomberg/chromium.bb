@@ -24,12 +24,11 @@ void EventDispatcher::AddAccelerator(uint32_t id,
                                      mojo::KeyboardCode keyboard_code,
                                      mojo::EventFlags flags) {
 #if !defined(NDEBUG)
-  std::for_each(accelerators_.begin(), accelerators_.end(),
-                [id, keyboard_code, flags](const Entry& entry) {
-                  DCHECK(entry.first != id);
-                  DCHECK(entry.second.keyboard_code != keyboard_code ||
-                         entry.second.flags != flags);
-                });
+  for (const auto& pair : accelerators_) {
+    DCHECK(pair.first != id);
+    DCHECK(pair.second.keyboard_code != keyboard_code ||
+           pair.second.flags != flags);
+  }
 #endif
   accelerators_.insert(Entry(id, Accelerator(keyboard_code, flags)));
 }
@@ -41,15 +40,17 @@ void EventDispatcher::RemoveAccelerator(uint32_t id) {
 }
 
 void EventDispatcher::OnEvent(ServerView* root, mojo::EventPtr event) {
+  ViewTreeHostImpl* host = connection_manager_->GetViewTreeHostByView(root);
+  ServerView* focused_view = host->GetFocusedView();
   if (event->pointer_data) {
     const gfx::Point root_point(static_cast<int>(event->pointer_data->x),
                                 static_cast<int>(event->pointer_data->y));
-    ServerView* target = connection_manager_->GetFocusedView();
+    ServerView* target = focused_view;
     if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target ||
         !root->Contains(target)) {
       target = FindDeepestVisibleView(root, root_point);
       CHECK(target);
-      connection_manager_->SetFocusedView(target);
+      host->SetFocusedView(target);
     }
     const gfx::PointF local_point(ConvertPointFBetweenViews(
         root, target,
@@ -66,7 +67,7 @@ void EventDispatcher::OnEvent(ServerView* root, mojo::EventPtr event) {
       connection_manager_->OnAccelerator(root, accelerator_id, event.Pass());
       return;
     }
-    ServerView* focused_view = connection_manager_->GetFocusedView();
+
     if (focused_view)
       connection_manager_->DispatchInputEventToView(focused_view, event.Pass());
   }
@@ -75,15 +76,14 @@ void EventDispatcher::OnEvent(ServerView* root, mojo::EventPtr event) {
 bool EventDispatcher::HandleAccelerator(mojo::KeyboardCode keyboard_code,
                                         mojo::EventFlags flags,
                                         uint32_t* accelerator_id) {
-  auto it = std::find_if(accelerators_.begin(), accelerators_.end(),
-                         [keyboard_code, flags](const Entry& entry) {
-                           return entry.second.keyboard_code == keyboard_code &&
-                                  entry.second.flags == flags;
-                         });
-  bool found = it != accelerators_.end();
-  if (found)
-    *accelerator_id = it->first;
-  return found;
+  for (const auto& pair : accelerators_) {
+    if (pair.second.keyboard_code == keyboard_code &&
+        pair.second.flags == flags) {
+      *accelerator_id = pair.first;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace view_manager

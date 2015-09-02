@@ -27,6 +27,7 @@ namespace view_manager {
 class AccessPolicy;
 class ConnectionManager;
 class ServerView;
+class ViewTreeHostImpl;
 
 // An instance of ViewTreeImpl is created for every ViewTree request.
 // ViewTreeImpl tracks all the state and views created by a client. ViewTreeImpl
@@ -63,6 +64,8 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   const ViewId* root() const { return root_.get(); }
 
   bool is_embed_root() const { return is_embed_root_; }
+
+  ViewTreeHostImpl* GetHost();
 
   // Invoked when a connection is about to be destroyed.
   void OnWillDestroyViewTreeImpl(ViewTreeImpl* connection);
@@ -198,7 +201,7 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   void Embed(mojo::Id transport_view_id,
              mojo::ViewTreeClientPtr client,
              const mojo::Callback<void(bool)>& callback) override;
-  void SetFocus(uint32_t view_id, const SetFocusCallback& callback) override;
+  void SetFocus(uint32_t view_id) override;
   void SetViewTextInputState(uint32_t view_id,
                              mojo::TextInputStatePtr state) override;
   void SetImeVisibility(uint32_t view_id,

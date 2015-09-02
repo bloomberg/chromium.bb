@@ -28,7 +28,6 @@ namespace view_manager {
 
 class ClientConnection;
 class ConnectionManagerDelegate;
-class FocusController;
 class ServerView;
 class ViewTreeHostConnection;
 class ViewTreeImpl;
@@ -37,7 +36,6 @@ class ViewTreeImpl;
 // ViewTreeImpl) as well as providing the root of the hierarchy.
 class ConnectionManager : public ServerViewDelegate,
                           public ServerViewObserver,
-                          public FocusControllerDelegate,
                           public mojo::CustomSurfaceConverter {
  public:
   // Create when a ViewTreeImpl is about to make a change. Ensures clients are
@@ -118,9 +116,6 @@ class ConnectionManager : public ServerViewDelegate,
   // Returns the View identified by |id|.
   ServerView* GetView(const ViewId& id);
 
-  void SetFocusedView(ServerView* view);
-  ServerView* GetFocusedView();
-
   // Returns whether |view| is a descendant of some root view but not itself a
   // root view.
   bool IsViewAttachedToRoot(const ServerView* view) const;
@@ -154,6 +149,9 @@ class ConnectionManager : public ServerViewDelegate,
   }
   const ViewTreeImpl* GetConnectionWithRoot(const ViewId& id) const;
 
+  ViewTreeHostImpl* GetViewTreeHostByView(const ServerView* view);
+  const ViewTreeHostImpl* GetViewTreeHostByView(const ServerView* view) const;
+
   // Returns the first ancestor of |service| that is marked as an embed root.
   ViewTreeImpl* GetEmbedRoot(ViewTreeImpl* service);
 
@@ -170,10 +168,6 @@ class ConnectionManager : public ServerViewDelegate,
                       mojo::KeyboardCode keyboard_code,
                       mojo::EventFlags flags);
   void RemoveAccelerator(ViewTreeHostImpl* host, uint32_t id);
-
-  // Set IME's visibility for the specified view. If the view is not the current
-  // focused view, this function will do nothing.
-  void SetImeVisibility(ServerView* view, bool visible);
 
   // These functions trivially delegate to all ViewTreeImpls, which in
   // term notify their clients.
@@ -218,8 +212,6 @@ class ConnectionManager : public ServerViewDelegate,
   // Adds |connection| to internal maps.
   void AddConnection(ClientConnection* connection);
 
-  ViewTreeHostImpl* GetViewTreeHostByView(const ServerView* view) const;
-
   // Overridden from ServerViewDelegate:
   scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
       const mojo::CompositorFramePtr& input) override;
@@ -248,10 +240,6 @@ class ConnectionManager : public ServerViewDelegate,
       const std::vector<uint8_t>* new_data) override;
   void OnViewTextInputStateChanged(ServerView* view,
                                    const ui::TextInputState& state) override;
-
-  // FocusControllerDelegate:
-  void OnFocusChanged(ServerView* old_focused_view,
-                      ServerView* new_focused_view) override;
 
   // Overriden from CustomSurfaceConverter:
   bool ConvertSurfaceDrawQuad(const mojo::QuadPtr& input,
@@ -283,8 +271,6 @@ class ConnectionManager : public ServerViewDelegate,
   ScopedChange* current_change_;
 
   bool in_destructor_;
-
-  scoped_ptr<FocusController> focus_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

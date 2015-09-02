@@ -6,8 +6,10 @@
 
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/display_manager.h"
+#include "components/view_manager/focus_controller.h"
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/view_tree_host_delegate.h"
+#include "components/view_manager/view_tree_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace view_manager {
@@ -26,7 +28,8 @@ ViewTreeHostImpl::ViewTreeHostImpl(
           DisplayManager::Create(is_headless,
                                  app_impl,
                                  gpu_state,
-                                 surfaces_state)) {
+                                 surfaces_state)),
+      focus_controller_(new FocusController(this)) {
   display_manager_->Init(this);
   if (client_) {
     client_.set_connection_error_handler(
@@ -65,13 +68,36 @@ const mojo::ViewportMetrics& ViewTreeHostImpl::GetViewportMetrics() const {
   return display_manager_->GetViewportMetrics();
 }
 
-void ViewTreeHostImpl::UpdateTextInputState(const ui::TextInputState& state) {
-  if (!display_manager_)
+void ViewTreeHostImpl::SetFocusedView(ServerView* new_focused_view) {
+  ServerView* old_focused_view = focus_controller_->GetFocusedView();
+  if (old_focused_view == new_focused_view)
+    return;
+  DCHECK(root_view()->Contains(new_focused_view));
+  focus_controller_->SetFocusedView(new_focused_view);
+  // TODO(beng): have the FocusController notify us via FocusControllerDelegate.
+  OnFocusChanged(old_focused_view, new_focused_view);
+}
+
+ServerView* ViewTreeHostImpl::GetFocusedView() {
+  return focus_controller_->GetFocusedView();
+}
+
+void ViewTreeHostImpl::DestroyFocusController() {
+  focus_controller_.reset();
+}
+
+void ViewTreeHostImpl::UpdateTextInputState(ServerView* view,
+                                            const ui::TextInputState& state) {
+  // Do not need to update text input for unfocused views.
+  if (!display_manager_ || focus_controller_->GetFocusedView() != view)
     return;
   display_manager_->UpdateTextInputState(state);
 }
 
-void ViewTreeHostImpl::SetImeVisibility(bool visible) {
+void ViewTreeHostImpl::SetImeVisibility(ServerView* view, bool visible) {
+  // Do not need to show or hide IME for unfocused view.
+  if (focus_controller_->GetFocusedView() != view)
+    return;
   display_manager_->SetImeVisibility(visible);
 }
 
@@ -127,6 +153,67 @@ void ViewTreeHostImpl::OnViewportMetricsChanged(
   // TODO(fsamuel): We shouldn't broadcast this to all connections but only
   // those within a window root.
   connection_manager_->ProcessViewportMetricsChanged(old_metrics, new_metrics);
+}
+
+void ViewTreeHostImpl::OnFocusChanged(ServerView* old_focused_view,
+                                      ServerView* new_focused_view) {
+  // There are up to four connections that need to be notified:
+  // . the connection containing |old_focused_view|.
+  // . the connection with |old_focused_view| as its root.
+  // . the connection containing |new_focused_view|.
+  // . the connection with |new_focused_view| as its root.
+  // Some of these connections may be the same. The following takes care to
+  // notify each only once.
+  ViewTreeImpl* owning_connection_old = nullptr;
+  ViewTreeImpl* embedded_connection_old = nullptr;
+
+  if (old_focused_view) {
+    owning_connection_old = connection_manager_->GetConnection(
+        old_focused_view->id().connection_id);
+    if (owning_connection_old) {
+      owning_connection_old->ProcessFocusChanged(old_focused_view,
+                                                 new_focused_view);
+    }
+    embedded_connection_old =
+        connection_manager_->GetConnectionWithRoot(old_focused_view->id());
+    if (embedded_connection_old) {
+      DCHECK_NE(owning_connection_old, embedded_connection_old);
+      embedded_connection_old->ProcessFocusChanged(old_focused_view,
+                                                   new_focused_view);
+    }
+  }
+  ViewTreeImpl* owning_connection_new = nullptr;
+  ViewTreeImpl* embedded_connection_new = nullptr;
+  if (new_focused_view) {
+    owning_connection_new = connection_manager_->GetConnection(
+        new_focused_view->id().connection_id);
+    if (owning_connection_new &&
+        owning_connection_new != owning_connection_old &&
+        owning_connection_new != embedded_connection_old) {
+      owning_connection_new->ProcessFocusChanged(old_focused_view,
+                                                 new_focused_view);
+    }
+    embedded_connection_new =
+        connection_manager_->GetConnectionWithRoot(new_focused_view->id());
+    if (embedded_connection_new &&
+        embedded_connection_new != owning_connection_old &&
+        embedded_connection_new != embedded_connection_old) {
+      DCHECK_NE(owning_connection_new, embedded_connection_new);
+      embedded_connection_new->ProcessFocusChanged(old_focused_view,
+                                                   new_focused_view);
+    }
+  }
+
+  // Ensure that we always notify the root connection of a focus change.
+  ViewTreeImpl* root_tree = GetViewTree();
+  if (root_tree != owning_connection_old &&
+      root_tree != embedded_connection_old &&
+      root_tree != owning_connection_new &&
+      root_tree != embedded_connection_new) {
+    root_tree->ProcessFocusChanged(old_focused_view, new_focused_view);
+  }
+
+  UpdateTextInputState(new_focused_view, new_focused_view->text_input_state());
 }
 
 }  // namespace view_manager

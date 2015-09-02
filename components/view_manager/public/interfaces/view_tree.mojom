@@ -139,7 +139,7 @@ interface ViewTree {
   // embed roots see the complete tree at their embed point.
   Embed(uint32 view_id, ViewTreeClient client) => (bool success);
 
-  SetFocus(uint32 view_id) => (bool success);
+  SetFocus(uint32 view_id);
 
   // Set text input state for the given view.
   SetViewTextInputState(uint32 view_id, TextInputState state);

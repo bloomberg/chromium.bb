@@ -30,6 +30,9 @@ void ViewTreeHostConnection::CloseConnection() {
   // sure we signal the ConnectionManager only once.
   if (connection_closed_)
     return;
+  // We have to shut down the focus system for this host before destroying the
+  // host, as destruction of the view tree will attempt to change focus.
+  host_->DestroyFocusController();
   connection_manager()->OnHostConnectionClosed(this);
   connection_closed_ = true;
   delete this;

@@ -357,9 +357,9 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
 
   connection_manager()->OnEvent(host_connection()->view_tree_host(),
                                 CreatePointerDownEvent(21, 22));
-  // Focus should go to child1. This results in notifying both the window
+  // Focus should go to child1. This result in notifying both the window
   // manager and client connection being notified.
-  EXPECT_EQ(v1, connection_manager()->GetFocusedView());
+  EXPECT_EQ(v1, connection1->GetHost()->GetFocusedView());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("Focused id=2,1",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
@@ -379,7 +379,7 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   connection_manager()->OnEvent(host_connection()->view_tree_host(),
                                 CreatePointerDownEvent(61, 22));
   EXPECT_EQ(host_connection()->view_tree_host()->root_view(),
-            connection_manager()->GetFocusedView());
+            host_connection()->view_tree_host()->GetFocusedView());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("Focused id=0,2",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
@@ -398,7 +398,7 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   connection_manager()->OnEvent(host_connection()->view_tree_host(),
                                 CreatePointerDownEvent(61, 22));
   EXPECT_EQ(host_connection()->view_tree_host()->root_view(),
-            connection_manager()->GetFocusedView());
+            host_connection()->view_tree_host()->GetFocusedView());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("InputEvent view=0,2 event_action=4",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);

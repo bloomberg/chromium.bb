@@ -10,6 +10,7 @@
 #include "components/view_manager/default_access_policy.h"
 #include "components/view_manager/display_manager.h"
 #include "components/view_manager/server_view.h"
+#include "components/view_manager/view_tree_host_impl.h"
 #include "components/view_manager/window_manager_access_policy.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/ime/ime_type_converters.h"
@@ -59,7 +60,9 @@ void ViewTreeImpl::Init(mojo::ViewTreeClient* client, mojo::ViewTreePtr tree) {
   if (root_.get())
     GetUnknownViewsFrom(GetView(*root_), &to_send);
 
-  const ServerView* focused_view = connection_manager_->GetFocusedView();
+  // TODO(beng): verify that host can actually be nullptr here.
+  ViewTreeHostImpl* host = GetHost();
+  const ServerView* focused_view = host ? host->GetFocusedView() : nullptr;
   if (focused_view)
     focused_view = access_policy_->GetViewForFocusChange(focused_view);
   const mojo::Id focused_view_transport_id(
@@ -79,6 +82,11 @@ const ServerView* ViewTreeImpl::GetView(const ViewId& id) const {
 
 bool ViewTreeImpl::IsRoot(const ViewId& id) const {
   return root_.get() && *root_ == id;
+}
+
+ViewTreeHostImpl* ViewTreeImpl::GetHost() {
+  return root_.get() ?
+      connection_manager_->GetViewTreeHostByView(GetView(*root_)) : nullptr;
 }
 
 void ViewTreeImpl::OnWillDestroyViewTreeImpl(
@@ -626,7 +634,10 @@ void ViewTreeImpl::SetImeVisibility(uint32_t view_id,
   if (success) {
     if (!state.is_null())
       view->SetTextInputState(state.To<ui::TextInputState>());
-    connection_manager_->SetImeVisibility(view, visible);
+
+    ViewTreeHostImpl* host = GetHost();
+    if (host)
+      host->SetImeVisibility(view, visible);
   }
 }
 
@@ -640,15 +651,16 @@ void ViewTreeImpl::Embed(mojo::Id transport_view_id,
   callback.Run(Embed(ViewIdFromTransportId(transport_view_id), client.Pass()));
 }
 
-void ViewTreeImpl::SetFocus(uint32_t view_id,
-                            const SetFocusCallback& callback) {
+void ViewTreeImpl::SetFocus(uint32_t view_id) {
   ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  bool success = view && view->IsDrawn() && access_policy_->CanSetFocus(view);
-  if (success) {
+  // TODO(beng): consider shifting non-policy drawn check logic to VTH's
+  //             FocusController.
+  if (view && view->IsDrawn() && access_policy_->CanSetFocus(view)) {
     ConnectionManager::ScopedChange change(this, connection_manager_, false);
-    connection_manager_->SetFocusedView(view);
+    ViewTreeHostImpl* host = GetHost();
+    if (host)
+      host->SetFocusedView(view);
   }
-  callback.Run(success);
 }
 
 bool ViewTreeImpl::IsRootForAccessPolicy(const ViewId& id) const {

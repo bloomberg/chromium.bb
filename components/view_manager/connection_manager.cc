@@ -10,7 +10,6 @@
 #include "cc/quads/shared_quad_state.h"
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager_delegate.h"
-#include "components/view_manager/focus_controller.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
 #include "components/view_manager/view_tree_host_connection.h"
@@ -48,17 +47,11 @@ ConnectionManager::ConnectionManager(
       next_host_id_(0),
       event_dispatcher_(this),
       current_change_(nullptr),
-      in_destructor_(false),
-      focus_controller_(new FocusController(this)) {
+      in_destructor_(false) {
 }
 
 ConnectionManager::~ConnectionManager() {
   in_destructor_ = true;
-
-  // Deleting views will attempt to advance focus. When we're being destroyed
-  // that is not necessary. Additionally |focus_controller_| needs to be
-  // destroyed before |host_|.
-  focus_controller_.reset();
 
   // Copy the HostConnectionMap because it will be mutated as the connections
   // are closed.
@@ -110,9 +103,6 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
 
   connection_map_.erase(connection->service()->id());
 
-  // TODO(sky): I may want to advance focus differently if focus is in
-  // |connection|.
-
   // Notify remaining connections so that they can cleanup.
   for (auto& pair : connection_map_) {
     pair.second->service()->OnWillDestroyViewTreeImpl(
@@ -124,10 +114,6 @@ void ConnectionManager::OnHostConnectionClosed(
   ViewTreeHostConnection* connection) {
   auto it = host_connection_map_.find(connection->view_tree_host());
   DCHECK(it != host_connection_map_.end());
-
-  // Clear focus if the focused view is in this viewport.
-  if (GetRootView(GetFocusedView()) == it->first->root_view())
-    SetFocusedView(nullptr);
 
   // Get the ClientConnection by ViewTreeImpl ID.
   ConnectionMap::iterator service_connection_it =
@@ -202,22 +188,6 @@ ServerView* ConnectionManager::GetView(const ViewId& id) {
   return service ? service->GetView(id) : nullptr;
 }
 
-void ConnectionManager::SetFocusedView(ServerView* view) {
-  if (!focus_controller_)
-    return;
-  ServerView* old_focused = GetFocusedView();
-  if (old_focused == view)
-    return;
-  focus_controller_->SetFocusedView(view);
-  OnFocusChanged(old_focused, view);
-}
-
-ServerView* ConnectionManager::GetFocusedView() {
-  if (!focus_controller_)
-    return nullptr;
-  return focus_controller_->GetFocusedView();
-}
-
 bool ConnectionManager::IsViewAttachedToRoot(const ServerView* view) const {
   for (auto& pair : host_connection_map_) {
     if (pair.first->IsViewAttachedToRoot(view))
@@ -267,6 +237,23 @@ const ViewTreeImpl* ConnectionManager::GetConnectionWithRoot(
   return nullptr;
 }
 
+ViewTreeHostImpl* ConnectionManager::GetViewTreeHostByView(
+    const ServerView* view) {
+  return const_cast<ViewTreeHostImpl*>(
+      static_cast<const ConnectionManager*>(this)->GetViewTreeHostByView(view));
+}
+
+const ViewTreeHostImpl* ConnectionManager::GetViewTreeHostByView(
+    const ServerView* view) const {
+  while (view && view->parent())
+    view = view->parent();
+  for (auto& pair : host_connection_map_) {
+    if (view == pair.first->root_view())
+      return pair.first;
+  }
+  return nullptr;
+}
+
 ViewTreeImpl* ConnectionManager::GetEmbedRoot(ViewTreeImpl* service) {
   while (service) {
     const ViewId* root_id = service->root();
@@ -307,15 +294,6 @@ void ConnectionManager::AddAccelerator(ViewTreeHostImpl* host,
 
 void ConnectionManager::RemoveAccelerator(ViewTreeHostImpl* host, uint32_t id) {
   event_dispatcher_.RemoveAccelerator(id);
-}
-
-void ConnectionManager::SetImeVisibility(ServerView* view, bool visible) {
-  // Do not need to show or hide IME for unfocused view.
-  if (focus_controller_->GetFocusedView() != view)
-    return;
-
-  ViewTreeHostImpl* host = GetViewTreeHostByView(view);
-  host->SetImeVisibility(visible);
 }
 
 void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
@@ -390,17 +368,6 @@ void ConnectionManager::AddConnection(ClientConnection* connection) {
   connection_map_[connection->service()->id()] = connection;
 }
 
-ViewTreeHostImpl* ConnectionManager::GetViewTreeHostByView(
-    const ServerView* view) const {
-  while (view && view->parent())
-    view = view->parent();
-  for (auto& pair : host_connection_map_) {
-    if (view == pair.first->root_view())
-      return pair.first;
-  }
-  return nullptr;
-}
-
 scoped_ptr<cc::CompositorFrame>
 ConnectionManager::UpdateViewTreeFromCompositorFrame(
     const mojo::CompositorFramePtr& input) {
@@ -417,7 +384,7 @@ void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
 }
 
 const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
-  ViewTreeHostImpl* host = GetViewTreeHostByView(view);
+  const ViewTreeHostImpl* host = GetViewTreeHostByView(view);
   return host ? host->root_view() : nullptr;
 }
 
@@ -502,79 +469,8 @@ void ConnectionManager::OnViewSharedPropertyChanged(
 void ConnectionManager::OnViewTextInputStateChanged(
     ServerView* view,
     const ui::TextInputState& state) {
-  // Do not need to update text input for unfocused views.
-  if (focus_controller_->GetFocusedView() != view)
-    return;
-
   ViewTreeHostImpl* host = GetViewTreeHostByView(view);
-  host->UpdateTextInputState(state);
-}
-
-void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
-                                       ServerView* new_focused_view) {
-  // There are up to four connections that need to be notified:
-  // . the connection containing |old_focused_view|.
-  // . the connection with |old_focused_view| as its root.
-  // . the connection containing |new_focused_view|.
-  // . the connection with |new_focused_view| as its root.
-  // Some of these connections may be the same. The following takes care to
-  // notify each only once.
-  ViewTreeImpl* owning_connection_old = nullptr;
-  ViewTreeImpl* embedded_connection_old = nullptr;
-
-  if (old_focused_view) {
-    owning_connection_old = GetConnection(old_focused_view->id().connection_id);
-    if (owning_connection_old) {
-      owning_connection_old->ProcessFocusChanged(old_focused_view,
-                                                 new_focused_view);
-    }
-    embedded_connection_old = GetConnectionWithRoot(old_focused_view->id());
-    if (embedded_connection_old) {
-      DCHECK_NE(owning_connection_old, embedded_connection_old);
-      embedded_connection_old->ProcessFocusChanged(old_focused_view,
-                                                   new_focused_view);
-    }
-  }
-  ViewTreeImpl* owning_connection_new = nullptr;
-  ViewTreeImpl* embedded_connection_new = nullptr;
-  if (new_focused_view) {
-    owning_connection_new = GetConnection(new_focused_view->id().connection_id);
-    if (owning_connection_new &&
-        owning_connection_new != owning_connection_old &&
-        owning_connection_new != embedded_connection_old) {
-      owning_connection_new->ProcessFocusChanged(old_focused_view,
-                                                 new_focused_view);
-    }
-    embedded_connection_new = GetConnectionWithRoot(new_focused_view->id());
-    if (embedded_connection_new &&
-        embedded_connection_new != owning_connection_old &&
-        embedded_connection_new != embedded_connection_old) {
-      DCHECK_NE(owning_connection_new, embedded_connection_new);
-      embedded_connection_new->ProcessFocusChanged(old_focused_view,
-                                                   new_focused_view);
-    }
-  }
-
-  for (auto& pair : host_connection_map_) {
-    ViewTreeImpl* service = pair.first->GetViewTree();
-    if (service != owning_connection_old &&
-        service != embedded_connection_old &&
-        service != owning_connection_new &&
-        service != embedded_connection_new) {
-      service->ProcessFocusChanged(old_focused_view, new_focused_view);
-    }
-  }
-
-  ViewTreeHostImpl* old_host =
-      old_focused_view ? GetViewTreeHostByView(old_focused_view) : nullptr;
-
-  ViewTreeHostImpl* new_host =
-      new_focused_view ? GetViewTreeHostByView(new_focused_view) : nullptr;
-
-  if (new_host)
-    new_host->UpdateTextInputState(new_focused_view->text_input_state());
-  else if (old_host)
-    old_host->UpdateTextInputState(ui::TextInputState());
+  host->UpdateTextInputState(view, state);
 }
 
 bool ConnectionManager::ConvertSurfaceDrawQuad(

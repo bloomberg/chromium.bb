@@ -150,7 +150,7 @@ void ViewTreeClientImpl::SetFocus(Id view_id) {
   // In order for us to get here we had to have exposed a view, which implies we
   // got a connection.
   DCHECK(tree_);
-  tree_->SetFocus(view_id, ActionCompletedCallback());
+  tree_->SetFocus(view_id);
 }
 
 void ViewTreeClientImpl::SetVisible(Id view_id, bool visible) {
