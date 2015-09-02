@@ -77,7 +77,8 @@ class ProfileErrorBrowserTest : public InProcessBrowserTest,
 // won't be able to corrupt it.
 #define MAYBE_CorruptedProfile DISABLED_CorruptedProfile
 #else
-#define MAYBE_CorruptedProfile CorruptedProfile
+// http://crbug.com/527145
+#define MAYBE_CorruptedProfile DISABLED_CorruptedProfile
 #endif
 
 IN_PROC_BROWSER_TEST_P(ProfileErrorBrowserTest, MAYBE_CorruptedProfile) {
