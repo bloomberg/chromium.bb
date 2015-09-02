@@ -6,6 +6,9 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/shared_memory.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/tests/common/controller.h"
@@ -49,4 +52,41 @@ TEST(HandleInheritanceTests, TestStdoutInheritance) {
   }
 }
 
+SBOX_TESTS_COMMAND int
+HandleInheritanceTests_ValidInheritedHandle(int argc, wchar_t **argv) {
+  if (argc != 1)
+    return SBOX_TEST_FAILED_TO_RUN_TEST;
+  base::SharedMemoryHandle handle = nullptr;
+  base::StringToUint(argv[0], reinterpret_cast<unsigned int *>(&handle));
+
+  // This handle we inherited must be both valid and closeable.
+  DWORD flags = 0;
+  if (!GetHandleInformation(handle, &flags))
+    return SBOX_TEST_FAILED;
+  if ((flags & HANDLE_FLAG_PROTECT_FROM_CLOSE) != 0)
+    return SBOX_TEST_FAILED;
+
+  return SBOX_TEST_SUCCEEDED;
 }
+
+TEST(HandleInheritanceTests, InheritByValue) {
+  // Handle inheritance doesn't work on XP.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+
+  base::SharedMemory test_shared_memory;
+  ASSERT_TRUE(test_shared_memory.CreateAnonymous(1000));
+  ASSERT_TRUE(test_shared_memory.Map(0));
+
+  TestRunner runner;
+  void *shared_handle =
+      runner.GetPolicy()->AddHandleToShare(test_shared_memory.handle());
+
+  std::string command_line =
+      "HandleInheritanceTests_ValidInheritedHandle " +
+      base::UintToString(reinterpret_cast<unsigned int>(shared_handle));
+  int result = runner.RunTest(base::UTF8ToUTF16(command_line).c_str());
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED, result);
+}
+
+}  // namespace sandbox
