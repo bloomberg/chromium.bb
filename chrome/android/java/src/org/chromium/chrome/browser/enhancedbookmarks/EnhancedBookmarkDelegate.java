@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 import android.support.v4.widget.DrawerLayout;
 
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.List;
@@ -143,4 +144,9 @@ interface EnhancedBookmarkDelegate {
      * @return LargeIconBridge instance. By sharing the instance, we can also share the cache.
      */
     LargeIconBridge getLargeIconBridge();
+
+    /**
+     * @return SnackbarManager instance.
+     */
+    SnackbarManager getSnackbarManager();
 }

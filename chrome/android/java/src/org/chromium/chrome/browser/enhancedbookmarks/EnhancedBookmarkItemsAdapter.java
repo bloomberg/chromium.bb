@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIS
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPromoHeader.PromoHeaderShowingChangeListener;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
+import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceDialog;
 import org.chromium.chrome.browser.offlinepages.OfflinePageStorageSpaceHeader;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -276,6 +277,9 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                         @Override
                         public void onFreeUpSpaceDone() {
                             refreshOfflinePagesFilterView();
+                            mDelegate.getSnackbarManager().showSnackbar(
+                                    OfflinePageFreeUpSpaceDialog.createStorageClearedSnackbar(
+                                            mContext));
                         }
 
                         @Override
