@@ -95,24 +95,14 @@ class DeviceImpl : public Device {
                           mojo::Array<uint8_t> data,
                           uint32_t timeout,
                           const ControlTransferOutCallback& callback) override;
-  void BulkTransferIn(uint8_t endpoint_number,
-                      uint32_t length,
-                      uint32_t timeout,
-                      const BulkTransferInCallback& callback) override;
-  void BulkTransferOut(uint8_t endpoint_number,
-                       mojo::Array<uint8_t> data,
-                       uint32_t timeout,
-                       const BulkTransferOutCallback& callback) override;
-  void InterruptTransferIn(
-      uint8_t endpoint_number,
-      uint32_t length,
-      uint32_t timeout,
-      const InterruptTransferInCallback& callback) override;
-  void InterruptTransferOut(
-      uint8_t endpoint_number,
-      mojo::Array<uint8_t> data,
-      uint32_t timeout,
-      const InterruptTransferOutCallback& callback) override;
+  void GenericTransferIn(uint8_t endpoint_number,
+                         uint32_t length,
+                         uint32_t timeout,
+                         const GenericTransferInCallback& callback) override;
+  void GenericTransferOut(uint8_t endpoint_number,
+                          mojo::Array<uint8_t> data,
+                          uint32_t timeout,
+                          const GenericTransferOutCallback& callback) override;
   void IsochronousTransferIn(
       uint8_t endpoint_number,
       uint32_t num_packets,

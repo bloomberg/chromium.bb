@@ -234,62 +234,27 @@ void DeviceImpl::ControlTransferOut(
                           weak_factory_.GetWeakPtr(), callback));
 }
 
-void DeviceImpl::BulkTransferIn(uint8_t endpoint_number,
-                                uint32_t length,
-                                uint32_t timeout,
-                                const BulkTransferInCallback& callback) {
+void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
+                                   uint32_t length,
+                                   uint32_t timeout,
+                                   const GenericTransferInCallback& callback) {
   if (!device_handle_) {
     callback.Run(TRANSFER_STATUS_ERROR, mojo::Array<uint8_t>());
     return;
   }
 
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
-  device_handle_->BulkTransfer(
+  device_handle_->GenericTransfer(
       USB_DIRECTION_INBOUND, endpoint_number, buffer, length, timeout,
       base::Bind(&DeviceImpl::OnTransferIn, weak_factory_.GetWeakPtr(),
                  callback));
 }
 
-void DeviceImpl::BulkTransferOut(uint8_t endpoint_number,
-                                 mojo::Array<uint8_t> data,
-                                 uint32_t timeout,
-                                 const BulkTransferOutCallback& callback) {
-  if (!device_handle_) {
-    callback.Run(TRANSFER_STATUS_ERROR);
-    return;
-  }
-
-  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
-  const std::vector<uint8_t>& storage = data.storage();
-  std::copy(storage.begin(), storage.end(), buffer->data());
-  device_handle_->BulkTransfer(
-      USB_DIRECTION_OUTBOUND, endpoint_number, buffer, data.size(), timeout,
-      base::Bind(&DeviceImpl::OnTransferOut, weak_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void DeviceImpl::InterruptTransferIn(
-    uint8_t endpoint_number,
-    uint32_t length,
-    uint32_t timeout,
-    const InterruptTransferInCallback& callback) {
-  if (!device_handle_) {
-    callback.Run(TRANSFER_STATUS_ERROR, mojo::Array<uint8_t>());
-    return;
-  }
-
-  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
-  device_handle_->InterruptTransfer(
-      USB_DIRECTION_INBOUND, endpoint_number, buffer, length, timeout,
-      base::Bind(&DeviceImpl::OnTransferIn, weak_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void DeviceImpl::InterruptTransferOut(
+void DeviceImpl::GenericTransferOut(
     uint8_t endpoint_number,
     mojo::Array<uint8_t> data,
     uint32_t timeout,
-    const InterruptTransferOutCallback& callback) {
+    const GenericTransferOutCallback& callback) {
   if (!device_handle_) {
     callback.Run(TRANSFER_STATUS_ERROR);
     return;
@@ -298,7 +263,7 @@ void DeviceImpl::InterruptTransferOut(
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
   const std::vector<uint8_t>& storage = data.storage();
   std::copy(storage.begin(), storage.end(), buffer->data());
-  device_handle_->InterruptTransfer(
+  device_handle_->GenericTransfer(
       USB_DIRECTION_OUTBOUND, endpoint_number, buffer, data.size(), timeout,
       base::Bind(&DeviceImpl::OnTransferOut, weak_factory_.GetWeakPtr(),
                  callback));

@@ -168,11 +168,11 @@ interface Device {
                      uint32 timeout)
       => (TransferStatus status);
 
-  // Initiates an inbound bulk transfer request on a specific endpoint. The
+  // Initiates an inbound generic transfer request on a specific endpoint. The
   // interface to which |endpoint_number| belongs must be claimed, and the
   // appropriate alternate setting must be set on that interface before
   // transfers can be initiated on the endpoint. The endpoint must be of type
-  // BULK.
+  // BULK or INTERRUPT.
   //
   // |length| specifies the expected number of bytes to receive for this
   // transfer. The size of |data| will never exceed |length|, and |data| will be
@@ -181,51 +181,21 @@ interface Device {
   // |timeout| specifies the request timeout in milliseconds. A timeout of 0
   // indicates no timeout: the request will remain pending indefinitely until
   // completed or otherwise terminated.
-  BulkTransferIn(uint8 endpoint_number, uint32 length, uint32 timeout)
+  GenericTransferIn(uint8 endpoint_number, uint32 length, uint32 timeout)
       => (TransferStatus status, array<uint8>? data);
 
-  // Initiates an outbound bulk transfer request on a specific endpoint. The
+  // Initiates an outbound generic transfer request on a specific endpoint. The
   // interface to which |endpoint_number| belongs must be claimed, and the
   // appropriate alternate setting must be set on that interface before
   // transfers can be initiated on the endpoint. The endpoint must be of type
-  // BULK.
+  // BULK or INTERRUPT.
   //
   // |data| specifies the bytes to send the device in the body of the request.
   //
   // |timeout| specifies the request timeout in milliseconds. A timeout of 0
   // indicates no timeout: the request will remain pending indefinitely until
   // completed or otherwise terminated.
-  BulkTransferOut(uint8 endpoint_number, array<uint8> data, uint32 timeout)
-      => (TransferStatus status);
-
-  // Initiates an inbound interrupt transfer request on a specific endpoint. The
-  // interface to which |endpoint_number| belongs must be claimed, and the
-  // appropriate alternate setting must be set on that interface before
-  // transfers can be initiated on the endpoint. The endpoint must be of type
-  // INTERRUPT.
-  //
-  // |length| specifies the expected number of bytes to receive for this
-  // transfer. The size of |data| will never exceed |length|, and |data| will be
-  // null if |status| is neither COMPLETED, BABBLE, or SHORT_PACKET.
-  //
-  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
-  // indicates no timeout: the request will remain pending indefinitely until
-  // completed or otherwise terminated.
-  InterruptTransferIn(uint8 endpoint_number, uint32 length, uint32 timeout)
-      => (TransferStatus status, array<uint8>? data);
-
-  // Initiates an outbound interrupt transfer request on a specific endpoint.
-  // The interface to which |endpoint_number| belongs must be claimed, and the
-  // appropriate alternate setting must be set on that interface before
-  // transfers can be initiated on the endpoint. The endpoint must be of type
-  // INTERRUPT.
-  //
-  // |data| specifies the bytes to send the device in the body of the request.
-  //
-  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
-  // indicates no timeout: the request will remain pending indefinitely until
-  // completed or otherwise terminated.
-  InterruptTransferOut(uint8 endpoint_number, array<uint8> data, uint32 timeout)
+  GenericTransferOut(uint8 endpoint_number, array<uint8> data, uint32 timeout)
       => (TransferStatus status);
 
   // Initiates an inbound isochronous transfer request on a specific endpoint.

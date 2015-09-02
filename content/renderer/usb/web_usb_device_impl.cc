@@ -27,7 +27,6 @@ const char kDeviceNotFound[] = "Device not found.";
 const char kDeviceNotOpened[] = "Device not opened.";
 const char kDeviceUnavailable[] = "Device unavailable.";
 const char kDeviceResetFailed[] = "Unable to reset the device.";
-const char kNotImplementedError[] = "Not implemented.";
 const char kReleaseInterfaceFailed[] = "Unable to release interface.";
 const char kSetConfigurationFailed[] = "Unable to set device configuration.";
 const char kSetInterfaceFailed[] = "Unable to set device interface.";
@@ -295,7 +294,32 @@ void WebUSBDeviceImpl::transfer(
     size_t data_size,
     unsigned int timeout,
     blink::WebUSBDeviceBulkTransferCallbacks* callbacks) {
-  RejectWithDeviceError(kNotImplementedError, make_scoped_ptr(callbacks));
+  auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
+  if (!device_) {
+    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
+  } else {
+    switch (direction) {
+      case WebUSBDevice::TransferDirection::In:
+        device_->GenericTransferIn(
+            endpoint_number, data_size, timeout,
+            base::Bind(&OnTransferIn, base::Passed(&scoped_callbacks)));
+        break;
+      case WebUSBDevice::TransferDirection::Out: {
+        std::vector<uint8_t> bytes;
+        if (data)
+          bytes.assign(data, data + data_size);
+        mojo::Array<uint8_t> mojo_bytes;
+        mojo_bytes.Swap(&bytes);
+        device_->GenericTransferOut(
+            endpoint_number, mojo_bytes.Pass(), timeout,
+            base::Bind(&OnTransferOut, base::Passed(&scoped_callbacks),
+                       data_size));
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+  }
 }
 
 void WebUSBDeviceImpl::reset(blink::WebUSBDeviceResetCallbacks* callbacks) {

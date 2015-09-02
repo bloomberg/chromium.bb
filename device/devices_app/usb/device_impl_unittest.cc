@@ -165,12 +165,8 @@ class USBDeviceImplTest : public testing::Test {
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ResetDevice));
     ON_CALL(mock_handle(), ControlTransfer(_, _, _, _, _, _, _, _, _, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ControlTransfer));
-    ON_CALL(mock_handle(), BulkTransfer(_, _, _, _, _, _))
-        .WillByDefault(
-            Invoke(this, &USBDeviceImplTest::BulkOrInterruptTransfer));
-    ON_CALL(mock_handle(), InterruptTransfer(_, _, _, _, _, _))
-        .WillByDefault(
-            Invoke(this, &USBDeviceImplTest::BulkOrInterruptTransfer));
+    ON_CALL(mock_handle(), GenericTransfer(_, _, _, _, _, _))
+        .WillByDefault(Invoke(this, &USBDeviceImplTest::GenericTransfer));
     ON_CALL(mock_handle(), IsochronousTransfer(_, _, _, _, _, _, _, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::IsochronousTransfer));
 
@@ -293,13 +289,12 @@ class USBDeviceImplTest : public testing::Test {
       OutboundTransfer(buffer, length, callback);
   }
 
-  void BulkOrInterruptTransfer(
-      UsbEndpointDirection direction,
-      uint8_t endpoint,
-      scoped_refptr<net::IOBuffer> buffer,
-      size_t length,
-      unsigned int timeout,
-      const UsbDeviceHandle::TransferCallback& callback) {
+  void GenericTransfer(UsbEndpointDirection direction,
+                       uint8_t endpoint,
+                       scoped_refptr<net::IOBuffer> buffer,
+                       size_t length,
+                       unsigned int timeout,
+                       const UsbDeviceHandle::TransferCallback& callback) {
     if (direction == USB_DIRECTION_INBOUND)
       InboundTransfer(callback);
     else
@@ -557,7 +552,7 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   EXPECT_CALL(mock_handle(), Close());
 }
 
-TEST_F(USBDeviceImplTest, BulkTransfer) {
+TEST_F(USBDeviceImplTest, GenericTransfer) {
   DevicePtr device = GetMockDeviceProxy();
 
   std::string message1 = "say hello please";
@@ -572,67 +567,24 @@ TEST_F(USBDeviceImplTest, BulkTransfer) {
   AddMockOutboundData(fake_outbound_data);
   AddMockInboundData(fake_inbound_data);
 
-  EXPECT_CALL(mock_handle(), BulkTransfer(USB_DIRECTION_OUTBOUND, 0, _,
-                                          fake_outbound_data.size(), 0, _));
+  EXPECT_CALL(mock_handle(), GenericTransfer(USB_DIRECTION_OUTBOUND, 0, _,
+                                             fake_outbound_data.size(), 0, _));
 
   {
     base::RunLoop loop;
-    device->BulkTransferOut(
+    device->GenericTransferOut(
         0, mojo::Array<uint8_t>::From(fake_outbound_data), 0,
         base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
                    loop.QuitClosure()));
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), BulkTransfer(USB_DIRECTION_INBOUND, 0, _,
-                                          fake_inbound_data.size(), 0, _));
+  EXPECT_CALL(mock_handle(), GenericTransfer(USB_DIRECTION_INBOUND, 0, _,
+                                             fake_inbound_data.size(), 0, _));
 
   {
     base::RunLoop loop;
-    device->BulkTransferIn(
-        0, static_cast<uint32_t>(fake_inbound_data.size()), 0,
-        base::Bind(&ExpectTransferInAndThen, TRANSFER_STATUS_COMPLETED,
-                   fake_inbound_data, loop.QuitClosure()));
-    loop.Run();
-  }
-
-  EXPECT_CALL(mock_handle(), Close());
-}
-
-TEST_F(USBDeviceImplTest, InterruptTransfer) {
-  DevicePtr device = GetMockDeviceProxy();
-
-  std::string message1 = "say hello please";
-  std::vector<uint8_t> fake_outbound_data(message1.size());
-  std::copy(message1.begin(), message1.end(), fake_outbound_data.begin());
-
-  std::string message2 = "hello world!";
-  std::vector<uint8_t> fake_inbound_data(message2.size());
-  std::copy(message2.begin(), message2.end(), fake_inbound_data.begin());
-
-  AddMockConfig(ConfigBuilder(0).AddInterface(7, 0, 1, 2, 3));
-  AddMockOutboundData(fake_outbound_data);
-  AddMockInboundData(fake_inbound_data);
-
-  EXPECT_CALL(mock_handle(),
-              InterruptTransfer(USB_DIRECTION_OUTBOUND, 0, _,
-                                fake_outbound_data.size(), 0, _));
-
-  {
-    base::RunLoop loop;
-    device->InterruptTransferOut(
-        0, mojo::Array<uint8_t>::From(fake_outbound_data), 0,
-        base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
-                   loop.QuitClosure()));
-    loop.Run();
-  }
-
-  EXPECT_CALL(mock_handle(), InterruptTransfer(USB_DIRECTION_INBOUND, 0, _,
-                                               fake_inbound_data.size(), 0, _));
-
-  {
-    base::RunLoop loop;
-    device->InterruptTransferIn(
+    device->GenericTransferIn(
         0, static_cast<uint32_t>(fake_inbound_data.size()), 0,
         base::Bind(&ExpectTransferInAndThen, TRANSFER_STATUS_COMPLETED,
                    fake_inbound_data, loop.QuitClosure()));
