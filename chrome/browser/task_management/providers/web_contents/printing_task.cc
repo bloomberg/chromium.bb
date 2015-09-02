@@ -34,7 +34,9 @@ void PrintingTask::OnTitleChanged(content::NavigationEntry* entry) {
 }
 
 void PrintingTask::OnFaviconChanged() {
-  set_icon(*RendererTask::GetFaviconFromWebContents(web_contents()));
+  const gfx::ImageSkia* icon =
+      RendererTask::GetFaviconFromWebContents(web_contents());
+  set_icon(icon ? *icon : gfx::ImageSkia());
 }
 
 }  // namespace task_management

@@ -122,8 +122,9 @@ class TaskManagerInterface {
       blink::WebCache::ResourceTypeStats* stats) const = 0;
 
   // Gets the list of task IDs currently tracked by the task manager. The list
-  // will be sorted by the process IDs on which the tasks are running, then by
-  // the task IDs themselves.
+  // will be sorted such that the task representing the browser process is at
+  // the top of the list and the rest of the IDs will be sorted by the process
+  // IDs on which the tasks are running, then by the task IDs themselves.
   virtual const TaskIdList& GetTaskIdsList() const = 0;
 
   // Gets the number of task-manager tasks running on the same process on which

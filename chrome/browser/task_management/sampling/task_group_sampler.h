@@ -48,8 +48,7 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
       const OnIdleWakeupsCallback& on_idle_wakeups);
 
   // Refreshes the expensive process' stats (CPU usage, memory usage, and idle
-  // wakeups per second) on the worker thread. It will crash if
-  // SetOnRefreshCallbacks() hasn't been called yet.
+  // wakeups per second) on the worker thread.
   void Refresh(int64 refresh_flags);
 
  private:

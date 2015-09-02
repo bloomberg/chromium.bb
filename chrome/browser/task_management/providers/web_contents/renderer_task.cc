@@ -75,6 +75,9 @@ RendererTask::RendererTask(const base::string16& title,
       v8_memory_used_(0),
       webcache_stats_(),
       profile_name_(GetRendererProfileName(render_process_host_)) {
+  // All renderer tasks are capable of reporting network usage, so the default
+  // invalid value of -1 doesn't apply here.
+  OnNetworkBytesRead(0);
 }
 
 RendererTask::~RendererTask() {

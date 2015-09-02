@@ -39,7 +39,9 @@ void TabContentsTask::OnTitleChanged(content::NavigationEntry* entry) {
 }
 
 void TabContentsTask::OnFaviconChanged() {
-  set_icon(*RendererTask::GetFaviconFromWebContents(web_contents()));
+  const gfx::ImageSkia* icon =
+      RendererTask::GetFaviconFromWebContents(web_contents());
+  set_icon(icon ? *icon : gfx::ImageSkia());
 }
 
 Task::Type TabContentsTask::GetType() const {

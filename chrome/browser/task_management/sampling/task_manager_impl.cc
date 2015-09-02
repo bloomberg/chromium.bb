@@ -186,8 +186,19 @@ const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
 
   if (sorted_task_ids_.empty()) {
     sorted_task_ids_.reserve(task_groups_by_task_id_.size());
-    for (const auto& groups_pair : task_groups_by_proc_id_)
+
+    // Ensure browser process group of task IDs are at the beginning of the
+    // list.
+    const TaskGroup* browser_group =
+        task_groups_by_proc_id_.at(base::GetCurrentProcId());
+    browser_group->AppendSortedTaskIds(&sorted_task_ids_);
+
+    for (const auto& groups_pair : task_groups_by_proc_id_) {
+      if (groups_pair.second == browser_group)
+        continue;
+
       groups_pair.second->AppendSortedTaskIds(&sorted_task_ids_);
+    }
   }
 
   return sorted_task_ids_;
@@ -290,8 +301,7 @@ void TaskManagerImpl::Refresh() {
                                enabled_resources_flags());
   }
 
-  TaskIdList task_ids(GetTaskIdsList());
-  NotifyObserversOnRefresh(task_ids);
+  NotifyObserversOnRefresh(GetTaskIdsList());
 }
 
 void TaskManagerImpl::StartUpdating() {

@@ -66,8 +66,10 @@ class TaskManagerObserver {
 
   // Notifies the observer that the task manager has just finished a refresh
   // cycle to calculate the resources usage of all tasks whose IDs are given in
-  // |task_ids|. |task_ids| will be sorted by process IDs first, then by task
-  // IDs.
+  // |task_ids|. |task_ids| will be sorted such that the task representing the
+  // browser process is at the top of the list and the rest of the IDs will be
+  // sorted by the process IDs on which the tasks are running, then by the task
+  // IDs themselves.
   virtual void OnTasksRefreshed(const TaskIdList& task_ids) = 0;
 
   const base::TimeDelta& desired_refresh_time() const {
