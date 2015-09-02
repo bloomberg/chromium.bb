@@ -549,17 +549,10 @@ TEST_F(InMemoryURLIndexTest, MAYBE_Retrieval) {
   EXPECT_FALSE(matches[0].can_inline);
 
   // Search which should result in very poor result.
+  // No results since it will be suppressed by default scoring.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("qui c"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(1U, matches.size());
-  // The results should have a poor score.
-  EXPECT_LT(matches[0].raw_score, 500);
-  EXPECT_EQ(33, matches[0].url_info.id());
-  EXPECT_EQ("http://quiteuselesssearchresultxyz.com/",
-            matches[0].url_info.url().spec());  // Note: URL gets lowercased.
-  EXPECT_EQ(ASCIIToUTF16("Practically Useless Search Result"),
-            matches[0].url_info.title());
-  EXPECT_FALSE(matches[0].can_inline);
+  ASSERT_EQ(0U, matches.size());
 
   // Search which will match at the end of an URL with encoded characters.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("Mice"),
@@ -679,10 +672,10 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);
 
-  // "ww.cnn.com" - found because we allow mid-term matches in hostnames
+  // "ww.cnn.com" - found because we suppress mid-term matches.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("ww.cnn.com"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(1U, matches.size());
+  ASSERT_EQ(0U, matches.size());
 
   // "www.cnn.com" - found, can inline
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.cnn.com"),

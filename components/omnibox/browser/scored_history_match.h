@@ -186,6 +186,10 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // are given topicality score of 0. By default it is initalized to -1.
   static float topicality_threshold_;
 
+  // |hqp_relevance_buckets_str_| is used to control the hqp score ranges.
+  // It is the string representation of |hqp_relevance_buckets_|.
+  static char hqp_relevance_buckets_str_[];
+
   // |hqp_relevance_buckets_| gives mapping from (topicality*frequency)
   // to the final relevance scoring. Please see GetFinalRelevancyScore()
   // for more details and scoring method.

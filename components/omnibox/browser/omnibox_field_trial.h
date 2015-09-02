@@ -22,10 +22,11 @@ class TimeDelta;
 struct HUPScoringParams {
   // A set of parameters describing how to cap a given count score.  First,
   // we apply a half-life based decay of the given count and then find the
-  // maximum relevance score in the corresponding bucket list.
+  // maximum relevance score based on the decay factor or counts specified
+  // in the corresponding bucket list. See comment on |buckets_| for details.
   class ScoreBuckets {
    public:
-    // (decayed_count, max_relevance) pair.
+    // Stores the max relevance at each count/decay factor threshold.
     typedef std::pair<double, int> CountMaxRelevance;
 
     ScoreBuckets();
@@ -44,6 +45,11 @@ struct HUPScoringParams {
       half_life_days_ = half_life_days;
     }
 
+    bool use_decay_factor() const { return use_decay_factor_; }
+    void set_use_decay_factor(bool use_decay_factor) {
+      use_decay_factor_ = use_decay_factor;
+    }
+
     std::vector<CountMaxRelevance>& buckets() { return buckets_; }
     const std::vector<CountMaxRelevance>& buckets() const { return buckets_; }
 
@@ -58,11 +64,11 @@ struct HUPScoringParams {
     // Set to -1 if not used.
     int half_life_days_;
 
-    // The relevance score caps for given decayed count values.
-    // Each pair (decayed_count, max_score) indicates what the maximum relevance
-    // score is of a decayed count equal or greater than decayed_count.
+    // The relevance score caps at successively decreasing threshold values.
+    // The thresholds are either decayed counts or decay factors, depending on
+    // the value of |use_decay_factor_|.
     //
-    // Consider this example:
+    // Consider this example specifying the decayed counts:
     //   [(1, 1000), (0.5, 500), (0, 100)]
     // If decayed count is 2 (which is >= 1), the corresponding match's maximum
     // relevance will be capped at 1000.  In case of 0.5, the score is capped
@@ -70,6 +76,9 @@ struct HUPScoringParams {
     //
     // This list is sorted by the pair's first element in descending order.
     std::vector<CountMaxRelevance> buckets_;
+
+    // True when the bucket thresholds are decay factors rather than counts.
+    bool use_decay_factor_;
   };
 
   HUPScoringParams() : experimental_scoring_enabled(false) {}
@@ -210,6 +219,7 @@ class OmniboxFieldTrial {
   // Initializes the HUP |scoring_params| based on the active HUP scoring
   // experiment.  If there is no such experiment, this function simply sets
   // |scoring_params|->experimental_scoring_enabled to false.
+  static void GetDefaultHUPScoringParams(HUPScoringParams* scoring_params);
   static void GetExperimentalHUPScoringParams(HUPScoringParams* scoring_params);
 
   // For the HQPBookmarkValue experiment that's part of the
@@ -338,9 +348,11 @@ class OmniboxFieldTrial {
   static const char kHUPNewScoringTypedCountRelevanceCapParam[];
   static const char kHUPNewScoringTypedCountHalfLifeTimeParam[];
   static const char kHUPNewScoringTypedCountScoreBucketsParam[];
+  static const char kHUPNewScoringTypedCountUseDecayFactorParam[];
   static const char kHUPNewScoringVisitedCountRelevanceCapParam[];
   static const char kHUPNewScoringVisitedCountHalfLifeTimeParam[];
   static const char kHUPNewScoringVisitedCountScoreBucketsParam[];
+  static const char kHUPNewScoringVisitedCountUseDecayFactorParam[];
 
   // Parameter names used by the HQP experimental scoring experiments.
   static const char kHQPExperimentalScoringEnabledParam[];

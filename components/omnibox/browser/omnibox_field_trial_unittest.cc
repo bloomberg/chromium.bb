@@ -446,6 +446,29 @@ TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrial) {
             scoring_params.visited_count_buckets.buckets()[1]);
 }
 
+TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrialWithDecayFactor) {
+  {
+    std::map<std::string, std::string> params;
+    params[OmniboxFieldTrial::kHUPNewScoringEnabledParam] = "1";
+    params[OmniboxFieldTrial::kHUPNewScoringTypedCountHalfLifeTimeParam] = "10";
+    params[OmniboxFieldTrial::kHUPNewScoringTypedCountUseDecayFactorParam] =
+        "1";
+    params[OmniboxFieldTrial::kHUPNewScoringTypedCountScoreBucketsParam] =
+        "0.1:100,0.5:500,1.0:1000";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  HUPScoringParams scoring_params;
+  OmniboxFieldTrial::GetExperimentalHUPScoringParams(&scoring_params);
+  EXPECT_TRUE(scoring_params.experimental_scoring_enabled);
+  EXPECT_EQ(10, scoring_params.typed_count_buckets.half_life_days());
+  ASSERT_EQ(3u, scoring_params.typed_count_buckets.buckets().size());
+  ASSERT_TRUE(scoring_params.typed_count_buckets.use_decay_factor());
+}
+
 TEST_F(OmniboxFieldTrialTest, HalfLifeTimeDecay) {
   HUPScoringParams::ScoreBuckets buckets;
 

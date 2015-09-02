@@ -112,7 +112,11 @@ bool ScoredHistoryMatch::allow_tld_matches_ = false;
 bool ScoredHistoryMatch::allow_scheme_matches_ = false;
 size_t ScoredHistoryMatch::num_title_words_to_allow_ = 10u;
 bool ScoredHistoryMatch::hqp_experimental_scoring_enabled_ = false;
-float ScoredHistoryMatch::topicality_threshold_ = -1;
+float ScoredHistoryMatch::topicality_threshold_ = 0.8f;
+// Default HQP relevance buckets. See GetFinalRelevancyScore()
+// for more details on these numbers.
+char ScoredHistoryMatch::hqp_relevance_buckets_str_[] =
+    "0.0:400,1.5:600,5.0:900,10.5:1203,15.0:1300,20.0:1399";
 std::vector<ScoredHistoryMatch::ScoreMaxRelevance>*
     ScoredHistoryMatch::hqp_relevance_buckets_ = nullptr;
 
@@ -540,8 +544,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
   const float final_topicality_score = topicality_score / num_terms;
 
   // Demote the URL if the topicality score is less than threshold.
-  if (hqp_experimental_scoring_enabled_ &&
-      (final_topicality_score < topicality_threshold_)) {
+  if (final_topicality_score < topicality_threshold_) {
     return 0.0;
   }
 
@@ -645,7 +648,8 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(
 void ScoredHistoryMatch::InitHQPExperimentalParams() {
   // These are default HQP relevance scoring buckets.
   // See GetFinalRelevancyScore() for details.
-  std::string hqp_relevance_buckets_str = "0.0:400,1.5:600,12.0:1300,20.0:1399";
+  std::string hqp_relevance_buckets_str = std::string(
+      hqp_relevance_buckets_str_);
 
   // Fetch the experiment params if they are any.
   hqp_experimental_scoring_enabled_ =

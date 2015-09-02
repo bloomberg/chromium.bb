@@ -753,7 +753,8 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
                                   expected1, arraysize(expected1)));
   EXPECT_LE(1410, matches_[0].relevance);
   EXPECT_LT(matches_[0].relevance, 1420);
-  EXPECT_EQ(matches_[0].relevance - 1, matches_[1].relevance);
+  // It uses the default scoring.
+  EXPECT_EQ(matches_[1].relevance, 1203);
 
   const UrlAndLegalDefault expected2[] = {
     { "http://moo/b", true },
@@ -1049,16 +1050,8 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
     }
     autocomplete_->scoring_params_ = test_cases[i].scoring_params;
 
-    // Test the control (scoring disabled).
-    autocomplete_->scoring_params_.experimental_scoring_enabled = false;
-    ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
-                                    std::string(), false, output, max_matches));
-    for (int j = 0; j < max_matches; ++j) {
-      EXPECT_EQ(test_cases[i].matches[j].control_relevance,
-                matches_[j].relevance);
-    }
-
-    // Test the experiment (scoring enabled).
+    // Test the experiment (scoring enabled). When scoring is disabled, it uses
+    // the default experimental scoring.
     autocomplete_->scoring_params_.experimental_scoring_enabled = true;
     ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
                                     std::string(), false, output, max_matches));

@@ -45,16 +45,43 @@ std::string DynamicFieldTrialName(int id) {
   return base::StringPrintf("%s%d", kAutocompleteDynamicFieldTrialPrefix, id);
 }
 
+void InitializeBucketsFromString(const std::string& bucket_string,
+                                 ScoreBuckets* score_buckets) {
+  // Clear the buckets.
+  score_buckets->buckets().clear();
+  base::StringPairs kv_pairs;
+  if (base::SplitStringIntoKeyValuePairs(bucket_string, ':', ',', &kv_pairs)) {
+    for (base::StringPairs::const_iterator it = kv_pairs.begin();
+         it != kv_pairs.end(); ++it) {
+      ScoreBuckets::CountMaxRelevance bucket;
+      base::StringToDouble(it->first, &bucket.first);
+      base::StringToInt(it->second, &bucket.second);
+      score_buckets->buckets().push_back(bucket);
+    }
+    std::sort(score_buckets->buckets().begin(),
+              score_buckets->buckets().end(),
+              std::greater<ScoreBuckets::CountMaxRelevance>());
+  }
+}
+
 void InitializeScoreBuckets(const VariationParams& params,
                             const char* relevance_cap_param,
                             const char* half_life_param,
                             const char* score_buckets_param,
+                            const char* use_decay_factor_param,
                             ScoreBuckets* score_buckets) {
   VariationParams::const_iterator it = params.find(relevance_cap_param);
   if (it != params.end()) {
     int relevance_cap;
     if (base::StringToInt(it->second, &relevance_cap))
       score_buckets->set_relevance_cap(relevance_cap);
+  }
+
+  it = params.find(use_decay_factor_param);
+  if (it != params.end()) {
+    int use_decay_factor;
+    if (base::StringToInt(it->second, &use_decay_factor))
+      score_buckets->set_use_decay_factor(use_decay_factor != 0);
   }
 
   it = params.find(half_life_param);
@@ -67,20 +94,8 @@ void InitializeScoreBuckets(const VariationParams& params,
   it = params.find(score_buckets_param);
   if (it != params.end()) {
     // The value of the score bucket is a comma-separated list of
-    // {DecayedCount + ":" + MaxRelevance}.
-    base::StringPairs kv_pairs;
-    if (base::SplitStringIntoKeyValuePairs(it->second, ':', ',', &kv_pairs)) {
-      for (base::StringPairs::const_iterator it = kv_pairs.begin();
-           it != kv_pairs.end(); ++it) {
-        ScoreBuckets::CountMaxRelevance bucket;
-        base::StringToDouble(it->first, &bucket.first);
-        base::StringToInt(it->second, &bucket.second);
-        score_buckets->buckets().push_back(bucket);
-      }
-      std::sort(score_buckets->buckets().begin(),
-                score_buckets->buckets().end(),
-                std::greater<ScoreBuckets::CountMaxRelevance>());
-    }
+    // {DecayedCount/DecayedFactor + ":" + MaxRelevance}.
+    InitializeBucketsFromString(it->second, score_buckets);
   }
 }
 
@@ -262,6 +277,31 @@ void OmniboxFieldTrial::GetDemotionsByType(
   }
 }
 
+void OmniboxFieldTrial::GetDefaultHUPScoringParams(
+    HUPScoringParams* scoring_params) {
+  ScoreBuckets* type_score_buckets = &scoring_params->typed_count_buckets;
+  type_score_buckets->set_half_life_days(30);
+  type_score_buckets->set_use_decay_factor(false);
+  // Default typed count buckets based on decayed typed count. The
+  // values here are based on the results of field trials to determine what
+  // maximized overall result quality.
+  const std::string& typed_count_score_buckets_str =
+    "1.0:1413,0.97:1390,0.93:1360,0.85:1340,0.72:1320,0.50:1250,0.0:1203";
+  InitializeBucketsFromString(typed_count_score_buckets_str,
+                              type_score_buckets);
+
+  ScoreBuckets* visit_score_buckets = &scoring_params->visited_count_buckets;
+  visit_score_buckets->set_half_life_days(30);
+  visit_score_buckets->set_use_decay_factor(false);
+  // Buckets based on visit count.  Like the typed count buckets above, the
+  // values here were chosen based on field trials.  Note that when a URL hasn't
+  // been visited in the last 30 days, we clamp its score to 100, which
+  // basically demotes it below any other results in the dropdown.
+  const std::string& visit_count_score_buckets_str = "4.0:790,0.5:590,0.0:100";
+  InitializeBucketsFromString(visit_count_score_buckets_str,
+                              visit_score_buckets);
+}
+
 void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
     HUPScoringParams* scoring_params) {
   scoring_params->experimental_scoring_enabled = false;
@@ -281,10 +321,12 @@ void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
   InitializeScoreBuckets(params, kHUPNewScoringTypedCountRelevanceCapParam,
       kHUPNewScoringTypedCountHalfLifeTimeParam,
       kHUPNewScoringTypedCountScoreBucketsParam,
+      kHUPNewScoringTypedCountUseDecayFactorParam,
       &scoring_params->typed_count_buckets);
   InitializeScoreBuckets(params, kHUPNewScoringVisitedCountRelevanceCapParam,
       kHUPNewScoringVisitedCountHalfLifeTimeParam,
       kHUPNewScoringVisitedCountScoreBucketsParam,
+      kHUPNewScoringVisitedCountUseDecayFactorParam,
       &scoring_params->visited_count_buckets);
 }
 
@@ -435,12 +477,16 @@ const char OmniboxFieldTrial::kHUPNewScoringTypedCountHalfLifeTimeParam[] =
     "TypedCountHalfLifeTime";
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountScoreBucketsParam[] =
     "TypedCountScoreBuckets";
+const char OmniboxFieldTrial::kHUPNewScoringTypedCountUseDecayFactorParam[] =
+    "TypedCountUseDecayFactor";
 const char OmniboxFieldTrial::kHUPNewScoringVisitedCountRelevanceCapParam[] =
     "VisitedCountRelevanceCap";
 const char OmniboxFieldTrial::kHUPNewScoringVisitedCountHalfLifeTimeParam[] =
     "VisitedCountHalfLifeTime";
 const char OmniboxFieldTrial::kHUPNewScoringVisitedCountScoreBucketsParam[] =
     "VisitedCountScoreBuckets";
+const char OmniboxFieldTrial::kHUPNewScoringVisitedCountUseDecayFactorParam[] =
+    "VisitedCountUseDecayFactor";
 
 const char OmniboxFieldTrial::kHQPExperimentalScoringEnabledParam[] =
     "HQPExperimentalScoringEnabled";

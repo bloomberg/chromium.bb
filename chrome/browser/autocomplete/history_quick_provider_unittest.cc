@@ -404,13 +404,6 @@ TEST_F(HistoryQuickProviderTest, SingleMatchWithCursor) {
                     expected_urls, false,
                     ASCIIToUTF16("slashdot.org/favorite_page.html"),
                     base::string16());
-  // If the cursor is in the middle of a valid URL suggestion, it should be
-  // allowed to be the default match.  The inline completion will be empty
-  // though as no completion is necessary.
-  RunTestWithCursor(ASCIIToUTF16("slashdot.org/favorite_page.html"), 5, false,
-                    expected_urls, true,
-                    ASCIIToUTF16("slashdot.org/favorite_page.html"),
-                    base::string16());
 }
 
 TEST_F(HistoryQuickProviderTest, WordBoundariesWithPunctuationMatch) {
@@ -749,7 +742,6 @@ TEST_F(HistoryQuickProviderTest, CullSearchResults) {
 
   // A search results page should not be returned when typing a query.
   std::vector<std::string> expected_urls;
-  expected_urls.push_back("http://anotherengine.com/?q=thequery");
   RunTest(ASCIIToUTF16("thequery"), false, expected_urls, false,
           ASCIIToUTF16("anotherengine.com/?q=thequery"), base::string16());
 

@@ -114,23 +114,25 @@ double CalculateRelevanceUsingScoreBuckets(
     const HUPScoringParams::ScoreBuckets& score_buckets,
     const base::TimeDelta& time_since_last_visit,
     int undecayed_relevance,
-    int count) {
+    int undecayed_count) {
   // Back off if above relevance cap.
   if ((score_buckets.relevance_cap() != -1) &&
       (undecayed_relevance >= score_buckets.relevance_cap()))
     return undecayed_relevance;
 
   // Time based decay using half-life time.
-  double decayed_count = count;
+  double decayed_count = undecayed_count;
+  double decay_factor = score_buckets.HalfLifeTimeDecay(time_since_last_visit);
   if (decayed_count > 0)
-    decayed_count *= score_buckets.HalfLifeTimeDecay(time_since_last_visit);
+    decayed_count *= decay_factor;
 
-  // Find a threshold where decayed_count >= bucket.
   const HUPScoringParams::ScoreBuckets::CountMaxRelevance* score_bucket = NULL;
+  const double factor = (score_buckets.use_decay_factor() ?
+      decay_factor : decayed_count);
   for (size_t i = 0; i < score_buckets.buckets().size(); ++i) {
     score_bucket = &score_buckets.buckets()[i];
-    if (decayed_count >= score_bucket->first)
-      break;  // Buckets are in descending order, so we can ignore the rest.
+    if (factor >= score_bucket->first)
+      break;
   }
 
   return (score_bucket && (undecayed_relevance > score_bucket->second)) ?
@@ -146,9 +148,6 @@ int CalculateRelevanceScoreUsingScoringParams(
     const history::HistoryMatch& match,
     int old_relevance,
     const HUPScoringParams& scoring_params) {
-  if (!scoring_params.experimental_scoring_enabled)
-    return old_relevance;
-
   const base::TimeDelta time_since_last_visit =
       base::Time::Now() - match.url_info.last_visit();
 
@@ -463,6 +462,8 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderClient* client,
     : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_URL, client),
       listener_(listener),
       params_(NULL) {
+  // Initialize the default HUP scoring params.
+  OmniboxFieldTrial::GetDefaultHUPScoringParams(&scoring_params_);
   // Initialize HUP scoring params based on the current experiment.
   OmniboxFieldTrial::GetExperimentalHUPScoringParams(&scoring_params_);
 }

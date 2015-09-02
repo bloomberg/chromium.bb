@@ -110,6 +110,7 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
   ScoredHistoryMatch scored_match;
   scored_match.url_matches = MatchTermInString(term, url, 0);
   scored_match.title_matches = MatchTermInString(term, title, 0);
+  scored_match.topicality_threshold_ = -1;
   RowWordStarts word_starts;
   String16SetFromString16(url, &word_starts.url_word_starts_);
   String16SetFromString16(title, &word_starts.title_word_starts_);
