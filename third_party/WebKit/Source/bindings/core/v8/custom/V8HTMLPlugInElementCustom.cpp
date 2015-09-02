@@ -34,7 +34,6 @@
 #include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/SharedPersistent.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8HTMLAppletElement.h"
 #include "bindings/core/v8/V8HTMLEmbedElement.h"
 #include "bindings/core/v8/V8HTMLObjectElement.h"
 #include "bindings/core/v8/V8NPObject.h"
@@ -118,13 +117,6 @@ void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> val
 }
 } // namespace
 
-void V8HTMLAppletElement::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    getScriptableObjectProperty<V8HTMLAppletElement>(name.As<v8::String>(), info);
-}
-
 void V8HTMLEmbedElement::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!name->IsString())
@@ -137,13 +129,6 @@ void V8HTMLObjectElement::namedPropertyGetterCustom(v8::Local<v8::Name> name, co
     if (!name->IsString())
         return;
     getScriptableObjectProperty<V8HTMLObjectElement>(name.As<v8::String>(), info);
-}
-
-void V8HTMLAppletElement::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    setScriptableObjectProperty<V8HTMLAppletElement>(name.As<v8::String>(), value, info);
 }
 
 void V8HTMLEmbedElement::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -160,11 +145,6 @@ void V8HTMLObjectElement::namedPropertySetterCustom(v8::Local<v8::Name> name, v8
     setScriptableObjectProperty<V8HTMLObjectElement>(name.As<v8::String>(), value, info);
 }
 
-void V8HTMLAppletElement::indexedPropertyGetterCustom(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    getScriptableObjectProperty<V8HTMLAppletElement>(index, info);
-}
-
 void V8HTMLEmbedElement::indexedPropertyGetterCustom(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     getScriptableObjectProperty<V8HTMLEmbedElement>(index, info);
@@ -173,11 +153,6 @@ void V8HTMLEmbedElement::indexedPropertyGetterCustom(uint32_t index, const v8::P
 void V8HTMLObjectElement::indexedPropertyGetterCustom(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     getScriptableObjectProperty<V8HTMLObjectElement>(index, info);
-}
-
-void V8HTMLAppletElement::indexedPropertySetterCustom(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    setScriptableObjectProperty<V8HTMLAppletElement>(index, value, info);
 }
 
 void V8HTMLEmbedElement::indexedPropertySetterCustom(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)

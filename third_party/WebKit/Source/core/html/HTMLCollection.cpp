@@ -228,7 +228,7 @@ static inline bool isMatchingHTMLElement(const HTMLCollection& htmlCollection, c
     case MapAreas:
         return element.hasTagName(areaTag);
     case DocApplets:
-        return element.hasTagName(appletTag) || (isHTMLObjectElement(element) && toHTMLObjectElement(element).containsJavaApplet());
+        return isHTMLObjectElement(element) && toHTMLObjectElement(element).containsJavaApplet();
     case DocEmbeds:
         return element.hasTagName(embedTag);
     case DocLinks:
@@ -311,7 +311,6 @@ static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
     // The document.all collection returns only certain types of elements by name,
     // although it returns any type of element by id.
     return element.hasTagName(aTag)
-        || element.hasTagName(appletTag)
         || element.hasTagName(areaTag)
         || element.hasTagName(embedTag)
         || element.hasTagName(formTag)

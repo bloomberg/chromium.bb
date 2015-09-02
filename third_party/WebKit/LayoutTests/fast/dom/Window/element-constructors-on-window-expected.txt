@@ -4,8 +4,6 @@ HTMLElement: function HTMLElement() { [native code] }
 
 HTMLAnchorElement: function HTMLAnchorElement() { [native code] }
 
-HTMLAppletElement: function HTMLAppletElement() { [native code] }
-
 HTMLAreaElement: function HTMLAreaElement() { [native code] }
 
 HTMLBaseElement: function HTMLBaseElement() { [native code] }

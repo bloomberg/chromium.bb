@@ -16,11 +16,10 @@ WindowNameCollection::WindowNameCollection(ContainerNode& document, const Atomic
 
 bool WindowNameCollection::elementMatches(const Element& element) const
 {
-    // Match only images, forms, applets, embeds and objects by name,
+    // Match only images, forms, embeds and objects by name,
     // but anything by id
     if (isHTMLImageElement(element)
         || isHTMLFormElement(element)
-        || isHTMLAppletElement(element)
         || isHTMLEmbedElement(element)
         || isHTMLObjectElement(element)) {
         if (element.getNameAttribute() == m_name)

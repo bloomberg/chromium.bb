@@ -434,8 +434,6 @@ bool XSSAuditor::filterStartToken(const FilterTokenRequest& request)
         didBlockScript |= filterParamToken(request);
     else if (hasName(request.token, embedTag))
         didBlockScript |= filterEmbedToken(request);
-    else if (hasName(request.token, appletTag))
-        didBlockScript |= filterAppletToken(request);
     else if (hasName(request.token, iframeTag) || hasName(request.token, frameTag))
         didBlockScript |= filterFrameToken(request);
     else if (hasName(request.token, metaTag))
@@ -540,19 +538,6 @@ bool XSSAuditor::filterEmbedToken(const FilterTokenRequest& request)
         didBlockScript |= eraseAttributeIfInjected(request, codeAttr, String(), SrcLikeAttributeTruncation);
         didBlockScript |= eraseAttributeIfInjected(request, srcAttr, blankURL().string(), SrcLikeAttributeTruncation);
         didBlockScript |= eraseAttributeIfInjected(request, typeAttr);
-    }
-    return didBlockScript;
-}
-
-bool XSSAuditor::filterAppletToken(const FilterTokenRequest& request)
-{
-    ASSERT(request.token.type() == HTMLToken::StartTag);
-    ASSERT(hasName(request.token, appletTag));
-
-    bool didBlockScript = false;
-    if (isContainedInRequest(canonicalizedSnippetForTagName(request))) {
-        didBlockScript |= eraseAttributeIfInjected(request, codeAttr, String(), SrcLikeAttributeTruncation);
-        didBlockScript |= eraseAttributeIfInjected(request, objectAttr);
     }
     return didBlockScript;
 }

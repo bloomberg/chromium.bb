@@ -46,7 +46,6 @@ PASS: canGet('targetWindow.EvalError') should be 'false' and is.
 PASS: canGet('targetWindow.Event') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLAnchorElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLAudioElement') should be 'false' and is.
-PASS: canGet('targetWindow.HTMLAppletElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLAreaElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLBRElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLBaseElement') should be 'false' and is.

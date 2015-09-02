@@ -251,18 +251,6 @@ html element a
 html element abbr
 html element acronym
 html element address
-html element applet
-    property align
-    property alt
-    property archive
-    property code
-    property codeBase
-    property height
-    property hspace
-    property name
-    property object
-    property vspace
-    property width
 html element area
     property alt
     property coords

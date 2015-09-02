@@ -102,7 +102,6 @@ var intermediateTags = [
 
     "button",       // scoping
 
-    "applet",       // scoping
     "object",       // scoping
 
     "span",         // phrasing

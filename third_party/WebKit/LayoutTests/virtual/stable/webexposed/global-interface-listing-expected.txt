@@ -1234,30 +1234,6 @@ interface HTMLAnchorElement
     setter text
     setter type
     setter username
-interface HTMLAppletElement
-    getter align
-    getter alt
-    getter archive
-    getter code
-    getter codeBase
-    getter height
-    getter hspace
-    getter name
-    getter object
-    getter vspace
-    getter width
-    method constructor
-    setter align
-    setter alt
-    setter archive
-    setter code
-    setter codeBase
-    setter height
-    setter hspace
-    setter name
-    setter object
-    setter vspace
-    setter width
 interface HTMLAreaElement
     getter alt
     getter coords

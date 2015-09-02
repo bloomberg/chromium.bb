@@ -57,8 +57,8 @@ PASS removeTestElements(); document.images.length is 0
 
 document.applets
 PASS document.applets.length is 0
-PASS elements[0] = insertElementWithId('applet', 'foo'); document.applets.length is 1
-PASS elements[1] = insertElementWithId('applet', 'foo'); document.applets.length is 2
+PASS elements[0] = insertElementWithId('object', 'foo', {"type":"application/x-java-applet"}); document.applets.length is 1
+PASS elements[1] = insertElementWithId('object', 'foo', {"type":"application/x-java-applet"}); document.applets.length is 2
 PASS document.applets['foo'] is elements[0]
 PASS removeTestElements(); document.applets.length is 0
 

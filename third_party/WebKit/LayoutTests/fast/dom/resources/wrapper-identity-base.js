@@ -17,7 +17,6 @@ var staticWindowProperties = [
     'EvalError',
     'Event',
     'HTMLAnchorElement',
-    'HTMLAppletElement',
     'HTMLAreaElement',
     'HTMLBRElement',
     'HTMLBaseElement',

@@ -26,7 +26,6 @@ PASS: canGetDescriptor(targetWindow, 'EvalError') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'Event') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'HTMLAnchorElement') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'HTMLAudioElement') should be 'false' and is.
-PASS: canGetDescriptor(targetWindow, 'HTMLAppletElement') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'HTMLAreaElement') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'HTMLBRElement') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'HTMLBaseElement') should be 'false' and is.

@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+FAIL If there is one applet, it should be returned (name) assert_equals: expected (string) "test1" but got (undefined) undefined
+FAIL If there are two applets, a collection should be returned. (name) assert_equals: expected (string) "test2" but got (undefined) undefined
+FAIL If there is one applet, it should be returned (id) assert_true: "test3" in document should be true expected true got false
+FAIL If there are two applets, a collection should be returned. (id) assert_true: "test4" in document should be true expected true got false
+FAIL If there are two applets, a collection should be returned. (name and id) assert_equals: expected (string) "test5" but got (undefined) undefined
+FAIL If there are two applets, a collection should be returned. (id and name) assert_equals: expected (string) "test6" but got (undefined) undefined
+FAIL A name shouldn't affect getting an applet by id assert_true: "test7" in document should be true expected true got false
+FAIL An id shouldn't affect getting an applet by name assert_equals: expected (string) "test8" but got (undefined) undefined
+Harness: the test ran to completion.
+

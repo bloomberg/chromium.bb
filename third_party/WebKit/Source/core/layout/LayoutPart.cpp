@@ -96,7 +96,7 @@ LayoutPart::~LayoutPart()
 
 Widget* LayoutPart::widget() const
 {
-    // Plugin widgets are stored in their DOM node. This includes HTMLAppletElement.
+    // Plugin widgets are stored in their DOM node.
     Element* element = toElement(node());
 
     if (element && element->isFrameOwnerElement())

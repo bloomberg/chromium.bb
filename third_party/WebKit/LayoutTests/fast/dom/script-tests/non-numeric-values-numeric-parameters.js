@@ -380,8 +380,6 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/html/CanvasRenderingContext2D.idl:        void setMiterLimit(in float limit);
 
 ../../../../WebCore/html/HTMLAnchorElement.idl:        attribute long tabIndex;
-../../../../WebCore/html/HTMLAppletElement.idl:                 attribute [ConvertFromString] long hspace;
-../../../../WebCore/html/HTMLAppletElement.idl:                 attribute [ConvertFromString] long vspace;
 ../../../../WebCore/html/HTMLAreaElement.idl:        attribute long tabIndex;
 ../../../../WebCore/html/HTMLBodyElement.idl:                 attribute long scrollLeft;
 ../../../../WebCore/html/HTMLBodyElement.idl:                 attribute long scrollTop;

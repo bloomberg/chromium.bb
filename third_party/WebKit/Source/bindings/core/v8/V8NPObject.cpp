@@ -35,7 +35,6 @@
 #include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GlobalValueMap.h"
-#include "bindings/core/v8/V8HTMLAppletElement.h"
 #include "bindings/core/v8/V8HTMLEmbedElement.h"
 #include "bindings/core/v8/V8HTMLObjectElement.h"
 #include "bindings/core/v8/V8NPUtils.h"
@@ -72,14 +71,10 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
     NPObject* npObject;
     v8::Isolate* isolate = info.GetIsolate();
 
-    // These three types are subtypes of HTMLPlugInElement.
-    HTMLPlugInElement* element = V8HTMLAppletElement::toImplWithTypeCheck(isolate, info.Holder());
-    if (!element) {
-        element = V8HTMLEmbedElement::toImplWithTypeCheck(isolate, info.Holder());
-        if (!element) {
-            element = V8HTMLObjectElement::toImplWithTypeCheck(isolate, info.Holder());
-        }
-    }
+    // These two types are subtypes of HTMLPlugInElement.
+    HTMLPlugInElement* element = V8HTMLEmbedElement::toImplWithTypeCheck(isolate, info.Holder());
+    if (!element)
+        element = V8HTMLObjectElement::toImplWithTypeCheck(isolate, info.Holder());
     if (element) {
         if (RefPtr<SharedPersistent<v8::Object>> wrapper = element->pluginWrapper()) {
             v8::HandleScope handleScope(isolate);

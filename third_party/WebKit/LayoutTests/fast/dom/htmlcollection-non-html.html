@@ -2,7 +2,8 @@
 <head>
 <script src="../../resources/js-test.js"></script>
 <script>
-var elem;
+'use strict';
+var elem, select;
 var ns = "http://not-html.test";
 
 function testDocumentProperty(attributeName, elementName, base) {
@@ -21,19 +22,21 @@ function testDocumentProperty(attributeName, elementName, base) {
   document.body.removeChild(elem);
 }
 
-function testDocumentPropertyWithAttribute(attributeName, elementName, elementAttributeName, base) {
+function testDocumentPropertyWithAttributes(attributeName, elementName, attributes, base) {
   var elem;
   if (typeof base == 'undefined')
     base = 0;
 
   elem = document.createElementNS(ns, elementName);
-  elem.setAttribute(elementAttributeName, "foo");
+  for (let k in attributes)
+    elem.setAttribute(k, attributes[k]);
   document.body.appendChild(elem);
   shouldBe("document." + attributeName + ".length", base + "");
   document.body.removeChild(elem);
 
   elem = document.createElement(elementName);
-  elem.setAttribute(elementAttributeName, "foo");
+  for (let k in attributes)
+    elem.setAttribute(k, attributes[k]);
   document.body.appendChild(elem);
   shouldBe("document." + attributeName + ".length", base + 1 + "");
   document.body.removeChild(elem);
@@ -75,15 +78,15 @@ function runTest() {
 
   testDocumentProperty("images", "img");
   testDocumentProperty("forms", "form");
-  testDocumentProperty("applets", "applet");
+  testDocumentPropertyWithAttributes("applets", "object", {type: "application/x-java-applet"});
   testDocumentProperty("embeds", "embed");
 
   // Note that this is run before the final script element on this page is inserted
   testDocumentProperty("scripts", "script", 3);
 
-  testDocumentPropertyWithAttribute("links", "a", "href");
-  testDocumentPropertyWithAttribute("links", "area", "href");
-  testDocumentPropertyWithAttribute("anchors", "a", "name");
+  testDocumentPropertyWithAttributes("links", "a", {href: "foo"});
+  testDocumentPropertyWithAttributes("links", "area", {href: "foo"});
+  testDocumentPropertyWithAttributes("anchors", "a", {name: "foo"});
 
   testElementProperty("map", "areas", "area");
   testElementProperty("table", "rows", "tr");

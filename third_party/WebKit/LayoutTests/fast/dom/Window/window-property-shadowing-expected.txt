@@ -89,7 +89,6 @@ PASS: ProcessingInstruction successfully shadowed
 PASS: HTMLDocument successfully shadowed
 PASS: HTMLElement successfully shadowed
 PASS: HTMLAnchorElement successfully shadowed
-PASS: HTMLAppletElement successfully shadowed
 PASS: HTMLAreaElement successfully shadowed
 PASS: HTMLBRElement successfully shadowed
 PASS: HTMLBaseElement successfully shadowed

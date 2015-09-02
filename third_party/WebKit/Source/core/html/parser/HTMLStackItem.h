@@ -134,7 +134,6 @@ public:
             return false;
         const AtomicString& tagName = localName();
         return tagName == HTMLNames::addressTag
-            || tagName == HTMLNames::appletTag
             || tagName == HTMLNames::areaTag
             || tagName == HTMLNames::articleTag
             || tagName == HTMLNames::asideTag

@@ -2,8 +2,8 @@
 
 <p>This test covers the various ways of accessing DOM elements through
 the document object by name, id or index, directly as properties of
-the document object. This lookup is supposed to include applet, embed,
-form, image, object and iframe by name, but only applet and object by
+the document object. This lookup is supposed to include embed,
+form, image, object and iframe by name, but only object by
 id. It should give the element itself in the case of a single match,
 or an HTMLCollection in the case of multiple matches; except that when
 exactly one item that is an iframe matches, it will give the window
@@ -49,17 +49,6 @@ if (window.testRunner)
 <form name="form5" width="0" height="0"></form>
 <form name="form5" width="0" height="0"></form>
 <form id="form5" width="0" height="0"></form>
-
-<applet name="applet1" width="0" height="0"></applet>
-<applet name="applet2" width="0" height="0"></applet>
-<applet name="applet2" width="0" height="0"></applet>
-<applet id="applet3" width="0" height="0"></applet>
-<applet id="applet4" width="0" height="0"></applet>
-<applet id="applet4" width="0" height="0"></applet>
-<applet id="applet5" width="0" height="0"></applet>
-<applet name="applet5" width="0" height="0"></applet>
-<applet name="applet5" width="0" height="0"></applet>
-<applet id="applet5" width="0" height="0"></applet>
 
 <embed name="embed1" width="0" height="0"></embed>
 <embed name="embed2" width="0" height="0"></embed>
@@ -112,7 +101,6 @@ if (window.testRunner)
 
 <img id="mixed1" width="0" height="0">
 <form id="mixed1" width="0" height="0"></form>
-<applet id="mixed1" width="0" height="0"></applet>
 <embed id="mixed1" width="0" height="0"></embed>
 <object id="mixed1" width="0" height="0"></object>
 <iframe id="mixed1" width="0" height="0"></iframe>
@@ -120,7 +108,6 @@ if (window.testRunner)
 
 <img name="mixed2" width="0" height="0">
 <form name="mixed2" width="0" height="0"></form>
-<applet name="mixed2" width="0" height="0"></applet>
 <embed name="mixed2" width="0" height="0"></embed>
 <object name="mixed2" width="0" height="0"></object>
 <iframe name="mixed2" width="0" height="0"></iframe>
@@ -128,14 +115,12 @@ if (window.testRunner)
 
 <img id="mixed3" width="0" height="0">
 <form id="mixed3" width="0" height="0"></form>
-<applet id="mixed3" width="0" height="0"></applet>
 <embed id="mixed3" width="0" height="0"></embed>
 <object id="mixed3" width="0" height="0"></object>
 <span id="mixed3" width="0" height="0"></span>
 
 <img name="mixed4" width="0" height="0">
 <form name="mixed4" width="0" height="0"></form>
-<applet name="mixed4" width="0" height="0"></applet>
 <embed name="mixed4" width="0" height="0"></embed>
 <object name="mixed4" width="0" height="0"></object>
 <span name="mixed4" width="0" height="0"></span>
@@ -214,14 +199,6 @@ testProperty("Form by name (multiple)", "form2");
 testProperty("Form by id (unique)", "form3");
 testProperty("Form by id (multiple)", "form4");
 testProperty("Form by id/name mixed", "form5");
-print("<br>");
-
-testProperty("Nonexistent applet name", "applet0");
-testProperty("Applet by name (unique)", "applet1");
-testProperty("Applet by name (multiple)", "applet2");
-testProperty("Applet by id (unique)", "applet3");
-testProperty("Applet by id (multiple)", "applet4");
-testProperty("Applet by id/name mixed", "applet5");
 print("<br>");
 
 testProperty("Nonexistent object name", "object0");

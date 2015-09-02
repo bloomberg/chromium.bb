@@ -411,8 +411,6 @@ bool HTMLObjectElement::containsJavaApplet() const
             return true;
         if (isHTMLObjectElement(child) && toHTMLObjectElement(child).containsJavaApplet())
             return true;
-        if (isHTMLAppletElement(child))
-            return true;
     }
 
     return false;

@@ -125,11 +125,6 @@ public:
         HTMLPlugInElement*, const KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,
         const WTF::String&, bool loadManually, DetachedPluginPolicy) override;
-    PassRefPtrWillBeRawPtr<Widget> createJavaAppletWidget(
-        HTMLAppletElement*,
-        const KURL& /* base_url */,
-        const Vector<WTF::String>& paramNames,
-        const Vector<WTF::String>& paramValues) override;
     PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*) override;
     ObjectContentType objectContentType(
         const KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages) override;

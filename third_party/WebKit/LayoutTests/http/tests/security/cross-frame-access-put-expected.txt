@@ -16,7 +16,6 @@ ALERT: PASS: window.EntityReference should be 'undefined' and is.
 ALERT: PASS: window.EvalError should be 'function EvalError() { [native code] }' and is.
 ALERT: PASS: window.Event should be 'function Event() { [native code] }' and is.
 ALERT: PASS: window.HTMLAnchorElement should be 'function HTMLAnchorElement() { [native code] }' and is.
-ALERT: PASS: window.HTMLAppletElement should be 'function HTMLAppletElement() { [native code] }' and is.
 ALERT: PASS: window.HTMLAreaElement should be 'function HTMLAreaElement() { [native code] }' and is.
 ALERT: PASS: window.HTMLBaseElement should be 'function HTMLBaseElement() { [native code] }' and is.
 ALERT: PASS: window.HTMLBodyElement should be 'function HTMLBodyElement() { [native code] }' and is.
@@ -203,7 +202,6 @@ PASS: Unable to set property Element: SecurityError: Blocked a frame with origin
 PASS: Unable to set property EvalError: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property Event: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property HTMLAnchorElement: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
-PASS: Unable to set property HTMLAppletElement: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property HTMLAreaElement: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property HTMLBaseElement: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property HTMLBodyElement: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.

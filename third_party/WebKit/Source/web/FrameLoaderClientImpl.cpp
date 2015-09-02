@@ -41,8 +41,8 @@
 #include "core/events/UIEventWithKeyState.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLAppletElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/loader/DocumentLoader.h"
@@ -746,16 +746,6 @@ PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createPlugin(
     }
 
     return container;
-}
-
-PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(
-    HTMLAppletElement* element,
-    const KURL& /* baseURL */,
-    const Vector<String>& paramNames,
-    const Vector<String>& paramValues)
-{
-    return createPlugin(element, KURL(), paramNames, paramValues,
-        "application/x-java-applet", false, FailOnDetachedPlugin);
 }
 
 PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(

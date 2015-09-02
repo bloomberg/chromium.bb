@@ -5,8 +5,8 @@ PASS Interfaces for acronym
 PASS Interfaces for ACRONYM 
 PASS Interfaces for address 
 PASS Interfaces for ADDRESS 
-PASS Interfaces for applet 
-PASS Interfaces for APPLET 
+FAIL Interfaces for applet assert_equals: Element applet should have HTMLAppletElement as its primary interface. expected "[object HTMLAppletElement]" but got "[object HTMLUnknownElement]"
+FAIL Interfaces for APPLET assert_equals: Element APPLET should have HTMLAppletElement as its primary interface. expected "[object HTMLAppletElement]" but got "[object HTMLUnknownElement]"
 PASS Interfaces for audio 
 PASS Interfaces for AUDIO 
 PASS Interfaces for b 

@@ -177,10 +177,6 @@ PASS tagClassString('address') is "HTMLElement"
 FAIL tagPrototypeClassString('address') should be HTMLElementPrototype. Was Object.
 PASS tagConstructorClassString('address') is "Function"
 PASS tagConstructorName('address') is "HTMLElement"
-PASS tagClassString('applet') is "HTMLAppletElement"
-FAIL tagPrototypeClassString('applet') should be HTMLAppletElementPrototype. Was Object.
-PASS tagConstructorClassString('applet') is "Function"
-PASS tagConstructorName('applet') is "HTMLAppletElement"
 PASS tagClassString('area') is "HTMLAreaElement"
 FAIL tagPrototypeClassString('area') should be HTMLAreaElementPrototype. Was Object.
 PASS tagConstructorClassString('area') is "Function"
