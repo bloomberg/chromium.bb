@@ -4,6 +4,7 @@ include_rules = [
   "+components/font_service",
   "+components/resource_provider",
   "+components/view_manager",
+  "+components/web_view",
   "+mojo/application",
   "+mojo/common",
   "+mojo/logging",

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame_tree.mojom.h"
 
 namespace blink {
 class WebView;

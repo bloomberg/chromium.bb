@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_WEB_VIEW_SWITCHES_H_
-#define MANDOLINE_TAB_WEB_VIEW_SWITCHES_H_
+#ifndef COMPONENTS_WEB_VIEW_WEB_VIEW_SWITCHES_H_
+#define COMPONENTS_WEB_VIEW_WEB_VIEW_SWITCHES_H_
 
 namespace web_view {
 namespace switches {
@@ -16,4 +16,4 @@ extern const char kOOPIFAlwaysCreateNewFrameTree[];
 }  // namespace switches
 }  // namespace web_view
 
-#endif  // MANDOLINE_TAB_WEB_VIEW_SWITCHES_H_
+#endif  // COMPONENTS_WEB_VIEW_WEB_VIEW_SWITCHES_H_

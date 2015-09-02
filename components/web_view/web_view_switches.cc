@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/web_view_switches.h"
+#include "components/web_view/web_view_switches.h"
 
 namespace web_view {
 namespace switches {

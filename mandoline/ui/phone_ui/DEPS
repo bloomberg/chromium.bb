@@ -1,5 +1,6 @@
 include_rules = [
   "+components/view_manager",
+  "+components/web_view/public",
   "+mojo/application",
   "+mojo/common",
   "+mojo/converters",

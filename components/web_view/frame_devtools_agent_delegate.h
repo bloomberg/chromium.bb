@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_FRAME_DEVTOOLS_AGENT_DELEGATE_H_
-#define MANDOLINE_TAB_FRAME_DEVTOOLS_AGENT_DELEGATE_H_
+#ifndef COMPONENTS_WEB_VIEW_FRAME_DEVTOOLS_AGENT_DELEGATE_H_
+#define COMPONENTS_WEB_VIEW_FRAME_DEVTOOLS_AGENT_DELEGATE_H_
 
 class GURL;
 
@@ -18,4 +18,4 @@ class FrameDevToolsAgentDelegate {
 
 }  // namespace web_view
 
-#endif  // MANDOLINE_TAB_FRAME_DEVTOOLS_AGENT_DELEGATE_H_
+#endif  // COMPONENTS_WEB_VIEW_FRAME_DEVTOOLS_AGENT_DELEGATE_H_

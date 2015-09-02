@@ -6,7 +6,7 @@
 #define COMPONENTS_HTML_VIEWER_DOCUMENT_RESOURCE_WAITER_H_
 
 #include "base/basictypes.h"
-#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/frame_connection.h"
+#include "components/web_view/frame_connection.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -10,7 +10,7 @@
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
-#include "mandoline/tab/frame_tree.h"
+#include "components/web_view/frame_tree.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"

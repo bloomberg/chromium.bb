@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_FRAME_TREE_DELEGATE_H_
-#define MANDOLINE_TAB_FRAME_TREE_DELEGATE_H_
+#ifndef COMPONENTS_WEB_VIEW_FRAME_TREE_DELEGATE_H_
+#define COMPONENTS_WEB_VIEW_FRAME_TREE_DELEGATE_H_
 
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
-#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
 namespace mandoline {
@@ -64,4 +64,4 @@ class FrameTreeDelegate {
 
 }  // namespace mandoline
 
-#endif  // MANDOLINE_TAB_FRAME_TREE_DELEGATE_H_
+#endif  // COMPONENTS_WEB_VIEW_FRAME_TREE_DELEGATE_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_FRAME_TREE_H_
-#define MANDOLINE_TAB_FRAME_TREE_H_
+#ifndef COMPONENTS_WEB_VIEW_FRAME_TREE_H_
+#define COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 
-#include "mandoline/tab/frame.h"
+#include "components/web_view/frame.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 
 namespace mojo {
@@ -97,4 +97,4 @@ class FrameTree {
 
 }  // namespace mandoline
 
-#endif  // MANDOLINE_TAB_FRAME_TREE_H_
+#endif  // COMPONENTS_WEB_VIEW_FRAME_TREE_H_

@@ -10,8 +10,8 @@
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
-#include "mandoline/tab/public/cpp/web_view.h"
-#include "mandoline/tab/public/interfaces/web_view.mojom.h"
+#include "components/web_view/public/cpp/web_view.h"
+#include "components/web_view/public/interfaces/web_view.mojom.h"
 // TODO(beng): move this file somewhere common.
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"

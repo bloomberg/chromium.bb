@@ -52,7 +52,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//mandoline/tab/public/interfaces",
+    "//components/web_view/public/interfaces",
   ]
 
   if (is_linux && !is_android) {
@@ -96,7 +96,7 @@ mojo_native_application("mandoline_frame_apptests") {
     "//base/test:test_config",
     "//components/view_manager/public/cpp",
     "//components/view_manager/public/interfaces",
-    "//mandoline/tab/public/interfaces",
+    "//components/web_view/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
     "//ui/mojo/geometry:interfaces",

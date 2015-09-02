@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_FRAME_H_
-#define MANDOLINE_TAB_FRAME_H_
+#ifndef COMPONENTS_WEB_VIEW_FRAME_H_
+#define COMPONENTS_WEB_VIEW_FRAME_H_
 
 #include <map>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/view_observer.h"
-#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mandoline {
@@ -242,4 +242,4 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
 }  // namespace mandoline
 
-#endif  // MANDOLINE_TAB_FRAME_H_
+#endif  // COMPONENTS_WEB_VIEW_FRAME_H_

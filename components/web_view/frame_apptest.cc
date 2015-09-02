@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/frame.h"
+#include "components/web_view/frame.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -14,11 +14,11 @@
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/view_manager/public/cpp/view_tree_host_factory.h"
-#include "mandoline/tab/frame.h"
-#include "mandoline/tab/frame_tree.h"
-#include "mandoline/tab/frame_tree_delegate.h"
-#include "mandoline/tab/frame_user_data.h"
-#include "mandoline/tab/test_frame_tree_delegate.h"
+#include "components/web_view/frame.h"
+#include "components/web_view/frame_tree.h"
+#include "components/web_view/frame_tree_delegate.h"
+#include "components/web_view/frame_user_data.h"
+#include "components/web_view/test_frame_tree_delegate.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"

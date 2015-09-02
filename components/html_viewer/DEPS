@@ -14,11 +14,11 @@ include_rules = [
   "+components/startup_metric_utils",
   "+components/view_manager",
   "+components/webcrypto",
+  "+components/web_view/public/interfaces",
+  "+components/web_view/web_view_switches.cc",
+  "+components/web_view/web_view_switches.h",
   "+gin",
   "+mandoline/services",
-  "+mandoline/tab/public/interfaces",
-  "+mandoline/tab/web_view_switches.cc",
-  "+mandoline/tab/web_view_switches.h",
   "+media",
   "+mojo/application",
   "+mojo/cc",
@@ -54,7 +54,7 @@ specific_include_rules = {
     "+third_party/mojo/src/mojo/edk/embedder/test_embedder.h",
   ],
   "html_frame_apptest\.cc": [
-    "+mandoline/tab",
+    "+components/web_view",
     "+third_party/mojo/src/mojo/edk/embedder/test_embedder.h",
   ],
   "layout_test_.*": [

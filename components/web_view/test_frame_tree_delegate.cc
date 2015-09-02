@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/test_frame_tree_delegate.h"
+#include "components/web_view/test_frame_tree_delegate.h"
 
 namespace mandoline {
 

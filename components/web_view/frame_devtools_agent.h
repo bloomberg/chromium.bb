@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_FRAME_DEVTOOLS_AGENT_H_
-#define MANDOLINE_TAB_FRAME_DEVTOOLS_AGENT_H_
+#ifndef COMPONENTS_WEB_VIEW_FRAME_DEVTOOLS_AGENT_H_
+#define COMPONENTS_WEB_VIEW_FRAME_DEVTOOLS_AGENT_H_
 
 #include <map>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
-#include "mandoline/tab/frame.h"
+#include "components/web_view/frame.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -80,4 +80,4 @@ class FrameDevToolsAgent : public devtools_service::DevToolsAgent {
 
 }  // namespace web_view
 
-#endif  // MANDOLINE_TAB_FRAME_DEVTOOLS_AGENT_H_
+#endif  // COMPONENTS_WEB_VIEW_FRAME_DEVTOOLS_AGENT_H_

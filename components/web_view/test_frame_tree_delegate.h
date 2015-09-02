@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_TEST_FRAME_TREE_DELEGATE_H_
-#define MANDOLINE_TAB_TEST_FRAME_TREE_DELEGATE_H_
+#ifndef COMPONENTS_WEB_VIEW_TEST_FRAME_TREE_DELEGATE_H_
+#define COMPONENTS_WEB_VIEW_TEST_FRAME_TREE_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "mandoline/tab/frame_tree_delegate.h"
+#include "components/web_view/frame_tree_delegate.h"
 
 namespace mandoline {
 
@@ -33,4 +33,4 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
 
 }  // namespace mandoline
 
-#endif  // MANDOLINE_TAB_TEST_FRAME_TREE_DELEGATE_H_
+#endif  // COMPONENTS_WEB_VIEW_TEST_FRAME_TREE_DELEGATE_H_

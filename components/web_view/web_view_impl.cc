@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/web_view_impl.h"
+#include "components/web_view/web_view_impl.h"
 
 #include "base/command_line.h"
 #include "components/devtools_service/public/cpp/switches.h"
 #include "components/view_manager/public/cpp/scoped_view_ptr.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
-#include "mandoline/tab/frame.h"
-#include "mandoline/tab/frame_connection.h"
-#include "mandoline/tab/frame_devtools_agent.h"
-#include "mandoline/tab/frame_tree.h"
-#include "mandoline/tab/pending_web_view_load.h"
+#include "components/web_view/frame.h"
+#include "components/web_view/frame_connection.h"
+#include "components/web_view/frame_devtools_agent.h"
+#include "components/web_view/frame_tree.h"
+#include "components/web_view/pending_web_view_load.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "url/gurl.h"

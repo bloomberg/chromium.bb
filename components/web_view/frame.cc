@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/frame.h"
+#include "components/web_view/frame.h"
 
 #include <algorithm>
 
@@ -12,9 +12,9 @@
 #include "base/stl_util.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_property.h"
-#include "mandoline/tab/frame_tree.h"
-#include "mandoline/tab/frame_tree_delegate.h"
-#include "mandoline/tab/frame_user_data.h"
+#include "components/web_view/frame_tree.h"
+#include "components/web_view/frame_tree_delegate.h"
+#include "components/web_view/frame_user_data.h"
 
 using mojo::View;
 

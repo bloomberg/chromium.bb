@@ -17,7 +17,7 @@
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
-#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/pending_web_view_load.h"
+#include "components/web_view/pending_web_view_load.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "mandoline/tab/frame_connection.h"
-#include "mandoline/tab/web_view_impl.h"
+#include "components/web_view/frame_connection.h"
+#include "components/web_view/web_view_impl.h"
 
 using mandoline::FrameConnection;
 

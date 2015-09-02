@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/frame_devtools_agent.h"
+#include "components/web_view/frame_devtools_agent.h"
 
 #include <string.h>
 
@@ -13,7 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "mandoline/tab/frame_devtools_agent_delegate.h"
+#include "components/web_view/frame_devtools_agent_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"

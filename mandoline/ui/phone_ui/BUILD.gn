@@ -13,7 +13,7 @@ mojo_native_application("phone_ui") {
   deps = [
     ":lib",
     "//mojo/application/public/cpp",
-    "//mandoline/tab:web_view",
+    "//components/web_view:web_view",
   ]
 }
 
@@ -27,8 +27,8 @@ source_set("lib") {
     "//base",
     "//components/view_manager/public/cpp",
     "//components/view_manager/public/interfaces",
-    "//mandoline/tab/public/cpp",
-    "//mandoline/tab/public/interfaces",
+    "//components/web_view/public/cpp",
+    "//components/web_view/public/interfaces",
     "//mandoline/ui/desktop_ui/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common",

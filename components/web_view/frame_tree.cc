@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/frame_tree.h"
+#include "components/web_view/frame_tree.h"
 
 #include "base/command_line.h"
-#include "mandoline/tab/frame_tree_delegate.h"
-#include "mandoline/tab/frame_user_data.h"
-#include "mandoline/tab/web_view_switches.h"
+#include "components/web_view/frame_tree_delegate.h"
+#include "components/web_view/frame_user_data.h"
+#include "components/web_view/web_view_switches.h"
 
 namespace mandoline {
 

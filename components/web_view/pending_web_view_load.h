@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_PENDING_WEB_VIEW_LOAD_H_
-#define MANDOLINE_TAB_PENDING_WEB_VIEW_LOAD_H_
+#ifndef COMPONENTS_WEB_VIEW_PENDING_WEB_VIEW_LOAD_H_
+#define COMPONENTS_WEB_VIEW_PENDING_WEB_VIEW_LOAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
@@ -47,4 +47,4 @@ class PendingWebViewLoad {
 
 }  // namespace web_view
 
-#endif  // MANDOLINE_TAB_PENDING_WEB_VIEW_LOAD_H_
+#endif  // COMPONENTS_WEB_VIEW_PENDING_WEB_VIEW_LOAD_H_

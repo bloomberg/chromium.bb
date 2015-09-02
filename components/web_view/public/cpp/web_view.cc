@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/public/cpp/web_view.h"
+#include "components/web_view/public/cpp/web_view.h"
 
 #include "components/view_manager/public/cpp/view.h"
 #include "mojo/application/public/cpp/application_impl.h"

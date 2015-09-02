@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/tab/web_view_application_delegate.h"
+#include "components/web_view/web_view_application_delegate.h"
 
-#include "mandoline/tab/web_view_impl.h"
+#include "components/web_view/web_view_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 
 namespace web_view {

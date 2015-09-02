@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_WEB_VIEW_APPLICATION_DELEGATE_H_
-#define MANDOLINE_TAB_WEB_VIEW_APPLICATION_DELEGATE_H_
+#ifndef COMPONENTS_WEB_VIEW_WEB_VIEW_APPLICATION_DELEGATE_H_
+#define COMPONENTS_WEB_VIEW_WEB_VIEW_APPLICATION_DELEGATE_H_
 
 #include "base/macros.h"
-#include "mandoline/tab/public/interfaces/web_view.mojom.h"
+#include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
@@ -44,4 +44,4 @@ class WebViewApplicationDelegate
 
 }  // namespace web_view
 
-#endif  // MANDOLINE_TAB_WEB_VIEW_APPLICATION_DELEGATE_H_
+#endif  // COMPONENTS_WEB_VIEW_WEB_VIEW_APPLICATION_DELEGATE_H_

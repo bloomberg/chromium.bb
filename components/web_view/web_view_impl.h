@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_TAB_WEB_VIEW_IMPL_H_
-#define MANDOLINE_TAB_WEB_VIEW_IMPL_H_
+#ifndef COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
+#define COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
-#include "mandoline/tab/frame_devtools_agent_delegate.h"
-#include "mandoline/tab/frame_tree_delegate.h"
-#include "mandoline/tab/public/interfaces/web_view.mojom.h"
+#include "components/web_view/frame_devtools_agent_delegate.h"
+#include "components/web_view/frame_tree_delegate.h"
+#include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mandoline {
@@ -101,4 +101,4 @@ class WebViewImpl : public mojom::WebView,
 
 }  // namespace web_view
 
-#endif  // MANDOLINE_TAB_WEB_VIEW_IMPL_H_
+#endif  // COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
