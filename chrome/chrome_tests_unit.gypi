@@ -942,7 +942,6 @@
       'browser/policy/managed_bookmarks_policy_handler_unittest.cc',
       'browser/policy/policy_path_parser_unittest.cc',
       'browser/policy/profile_policy_connector_unittest.cc',
-      'browser/policy/url_blacklist_manager_unittest.cc',
       'browser/prefs/proxy_policy_unittest.cc',
       'browser/profiles/incognito_mode_policy_handler_unittest.cc',
       'browser/sessions/restore_on_startup_policy_handler_unittest.cc',

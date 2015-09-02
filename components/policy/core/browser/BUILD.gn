@@ -84,10 +84,12 @@ source_set("unit_tests") {
     "browser_policy_connector_unittest.cc",
     "configuration_policy_handler_unittest.cc",
     "configuration_policy_pref_store_unittest.cc",
+    "url_blacklist_manager_unittest.cc",
     "url_blacklist_policy_handler_unittest.cc",
   ]
   deps = [
     "//components/policy:policy_component_test_support",
+    "//components/url_formatter",
     "//testing/gmock",
     "//testing/gtest",
   ]
