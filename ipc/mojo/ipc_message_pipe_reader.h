@@ -7,8 +7,10 @@
 
 #include <vector>
 
+#include "base/atomicops.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "ipc/ipc_message.h"
 #include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
@@ -30,7 +32,9 @@ class AsyncHandleWaiter;
 //  * Create the subclass instance with a MessagePipeHandle.
 //    The constructor automatically start listening on the pipe.
 //
-// MessageReader has to be used in IO thread. It isn't thread-safe.
+// All functions must be called on the IO thread, except for Send(), which can
+// be called on any thread. All |Delegate| functions will be called on the IO
+// thread.
 //
 class MessagePipeReader {
  public:
@@ -62,7 +66,7 @@ class MessagePipeReader {
   MessagePipeReader(mojo::ScopedMessagePipeHandle handle, Delegate* delegate);
   virtual ~MessagePipeReader();
 
-  MojoHandle handle() const { return pipe_.get().value(); }
+  MojoHandle handle() const { return handle_copy_; }
 
   // Returns received bytes.
   const std::vector<char>& data_buffer() const {
@@ -100,10 +104,18 @@ class MessagePipeReader {
   std::vector<char>  data_buffer_;
   std::vector<MojoHandle> handle_buffer_;
   mojo::ScopedMessagePipeHandle pipe_;
+  // Constant copy of the message pipe handle. For use by Send(), which can run
+  // concurrently on non-IO threads.
+  // TODO(amistry): This isn't quite right because handles can be re-used and
+  // using this can run into the ABA problem. Currently, this is highly unlikely
+  // because Mojo internally uses an increasing uint32_t as handle values, but
+  // this could change. See crbug.com/524894.
+  const MojoHandle handle_copy_;
   // |delegate_| and |async_waiter_| are null once the message pipe is closed.
   Delegate* delegate_;
   scoped_ptr<AsyncHandleWaiter> async_waiter_;
-  MojoResult pending_send_error_;
+  base::subtle::Atomic32 pending_send_error_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeReader);
 };
