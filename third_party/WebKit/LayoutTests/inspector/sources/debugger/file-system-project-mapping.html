@@ -335,7 +335,7 @@ function test()
             function projectRemoved()
             {
                 InspectorTest.addResult("Received project removed event.");
-                next();
+                setImmediate(next);
             }
         },
 
