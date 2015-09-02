@@ -105,7 +105,6 @@ class SystemUse24HourClockPolicyTest
   DISALLOW_COPY_AND_ASSIGN(SystemUse24HourClockPolicyTest);
 };
 
-// Disabled due to flakiness - http://crbug.com/450651.
 IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckUnset) {
   bool system_use_24hour_clock;
   EXPECT_FALSE(CrosSettings::Get()->GetBoolean(kSystemUse24HourClock,
@@ -119,7 +118,6 @@ IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckUnset) {
   EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayDateHourType());
 }
 
-// Disabled due to flakiness - http://crbug.com/450651.
 IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckTrue) {
   bool system_use_24hour_clock = true;
   EXPECT_FALSE(CrosSettings::Get()->GetBoolean(kSystemUse24HourClock,
@@ -146,7 +144,6 @@ IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckTrue) {
   EXPECT_EQ(base::k24HourClock, TestGetPrimarySystemTrayDateHourType());
 }
 
-// Disabled due to flakiness - http://crbug.com/450651.
 IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckFalse) {
   bool system_use_24hour_clock = true;
   EXPECT_FALSE(CrosSettings::Get()->GetBoolean(kSystemUse24HourClock,
