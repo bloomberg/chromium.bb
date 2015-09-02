@@ -1835,6 +1835,8 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
 {
     if (isContextLost())
         return;
+    if (!validateTexFuncLevel("copyTexImage2D", target, level))
+        return;
     if (!validateTexFuncParameters("copyTexImage2D", NotTexSubImage2D, target, level, internalformat, width, height, border, internalformat, GL_UNSIGNED_BYTE))
         return;
     if (!validateSettableTexFormat("copyTexImage2D", internalformat))
@@ -3997,6 +3999,7 @@ void WebGLRenderingContextBase::texImage2DBase(GLenum target, GLint level, GLenu
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     // FIXME: Handle errors.
     WebGLTexture* tex = validateTextureBinding("texImage2D", target, true);
+    ASSERT(validateTexFuncLevel("texImage2D", target, level));
     ASSERT(validateTexFuncParameters("texImage2D", NotTexSubImage2D, target, level, internalformat, width, height, border, format, type));
     ASSERT(tex);
     ASSERT(!isNPOTStrict() || !level || !WebGLTexture::isNPOT(width, height));
@@ -4037,13 +4040,13 @@ void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenu
 
 bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexImageFunctionType functionType, TexFuncValidationSourceType sourceType, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint xoffset, GLint yoffset)
 {
+    if (!validateTexFuncLevel(functionName, target, level))
+        return false;
     WebGLTexture* texture = validateTextureBinding(functionName, target, true);
     if (!texture)
         return false;
 
     if (functionType == TexSubImage2D) {
-        if (!validateTexFuncLevel(functionName, target, level))
-            return false;
         if (!texture->isValid(target, level)) {
             synthesizeGLError(GL_INVALID_OPERATION, "texSubImage2D", "no previously defined texture image");
             return false;
@@ -4131,7 +4134,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceArrayBufferView, target, level, internalformat, width, height, border, format, type, 0, 0)
-        || !validateTexFuncData("texImage2D", level, width, height, internalformat, format, type, pixels, NullAllowed))
+        || !validateTexFuncData("texImage2D", level, width, height, format, type, pixels, NullAllowed))
         return;
     void* data = pixels ? pixels->baseAddress() : 0;
     Vector<uint8_t> tempData;
@@ -4406,6 +4409,7 @@ void WebGLRenderingContextBase::texSubImage2DBase(GLenum target, GLint level, GL
         ASSERT_NOT_REACHED();
         return;
     }
+    ASSERT(validateTexFuncLevel("texSubImage2D", target, level));
     ASSERT(validateTexFuncParameters("texSubImage2D", TexSubImage2D, target, level, tex->getInternalFormat(target, level), width, height, 0, format, type));
     ASSERT(validateSize("texSubImage2D", xoffset, yoffset));
     ASSERT(validateSettableTexFormat("texSubImage2D", format));
@@ -4455,9 +4459,8 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     if (!texture)
         return;
 
-    GLenum internalformat = texture->getInternalFormat(target, level);
     if (isContextLost() || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceArrayBufferView, target, level, 0, width, height, 0, format, type, xoffset, yoffset)
-        || !validateTexFuncData("texSubImage2D", level, width, height, internalformat, format, type, pixels, NullNotAllowed))
+        || !validateTexFuncData("texSubImage2D", level, width, height, format, type, pixels, NullNotAllowed))
         return;
     void* data = pixels->baseAddress();
     Vector<uint8_t> tempData;
@@ -5509,9 +5512,6 @@ bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionNa
 bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionName, TexImageFunctionType functionType, GLenum target,
     GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type)
 {
-    if (!validateTexFuncLevel(functionName, target, level))
-        return false;
-
     // We absolutely have to validate the format and type combination.
     // The texImage2D entry points taking HTMLImage, etc. will produce
     // temporary data based on this combination, so it must be legal.
@@ -5529,7 +5529,7 @@ bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionNa
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum internalformat, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition)
+bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     if (!pixels) {
