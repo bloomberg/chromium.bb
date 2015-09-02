@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_
 #define UI_VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_
 
+#include "build/build_config.h"
+#include "ui/views/layout/grid_layout.h"
+
 // This file contains some constants we use to implement our standard panel
 // layout.
 // see: spec 21/4
@@ -79,6 +82,13 @@ const int kCheckboxIndent = 10;
 // Horizontal spacing between the end of an item (i.e. an icon or a checkbox)
 // and the start of its corresponding text.
 const int kItemLabelSpacing = 10;
+
+// Horizontal alignment used for a control's introductory label in a GridLayout.
+#if defined(OS_MACOSX)
+const GridLayout::Alignment kControlLabelGridAlignment = GridLayout::TRAILING;
+#else
+const GridLayout::Alignment kControlLabelGridAlignment = GridLayout::LEADING;
+#endif
 
 }  // namespace views
 

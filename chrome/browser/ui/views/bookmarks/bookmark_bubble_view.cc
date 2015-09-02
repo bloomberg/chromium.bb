@@ -194,7 +194,7 @@ void BookmarkBubbleView::Init() {
   // The column layout used for middle and bottom rows.
   cs = layout->AddColumnSet(CONTENT_COLUMN_SET_ID);
   cs->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+  cs->AddColumn(views::kControlLabelGridAlignment, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
 

@@ -5,13 +5,12 @@
 #ifndef UI_VIEWS_LAYOUT_GRID_LAYOUT_H_
 #define UI_VIEWS_LAYOUT_GRID_LAYOUT_H_
 
-#include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/view.h"
 
 // GridLayout is a LayoutManager that positions child Views in a grid. You
 // define the structure of the Grid first, then add the Views.

@@ -51,8 +51,8 @@ LoginView::LoginView(const base::string16& explanation,
   const int labels_column_set_id = 1;
   column_set = layout->AddColumnSet(labels_column_set_id);
   column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::kControlLabelGridAlignment, GridLayout::CENTER,
+                        0, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
