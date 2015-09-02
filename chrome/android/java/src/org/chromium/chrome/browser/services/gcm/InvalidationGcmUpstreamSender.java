@@ -46,7 +46,7 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
                 SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
                 new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
-                    public void tokenAvailable(String token) {
+                    public void tokenAvailable(String token, boolean isTransientError) {
                         sendUpstreamMessage(to, data, token);
                     }
                 });

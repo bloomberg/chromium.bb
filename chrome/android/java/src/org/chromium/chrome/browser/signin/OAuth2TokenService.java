@@ -136,7 +136,7 @@ public final class OAuth2TokenService {
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    nativeOAuth2TokenFetched(null, nativeCallback);
+                    nativeOAuth2TokenFetched(null, false, nativeCallback);
                 }
             });
             return;
@@ -147,8 +147,8 @@ public final class OAuth2TokenService {
         accountManagerHelper.getAuthTokenFromForeground(
                 null, account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
-                    public void tokenAvailable(String token) {
-                        nativeOAuth2TokenFetched(token, nativeCallback);
+                    public void tokenAvailable(String token, boolean isTransientError) {
+                        nativeOAuth2TokenFetched(token, isTransientError, nativeCallback);
                     }
                 });
     }
@@ -192,7 +192,7 @@ public final class OAuth2TokenService {
                 context, activity, account, scope,
                 new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
-                    public void tokenAvailable(String token) {
+                    public void tokenAvailable(String token, boolean isTransientError) {
                         result.set(token);
                         semaphore.release();
                     }
@@ -314,7 +314,7 @@ public final class OAuth2TokenService {
 
     private static native Object nativeGetForProfile(Profile profile);
     private static native void nativeOAuth2TokenFetched(
-            String authToken, long nativeCallback);
+            String authToken, boolean isTransientError, long nativeCallback);
     private native void nativeValidateAccounts(long nativeOAuth2TokenServiceDelegateAndroid,
             String currentlySignedInAccount, boolean forceNotifications);
     private native void nativeFireRefreshTokenAvailableFromJava(

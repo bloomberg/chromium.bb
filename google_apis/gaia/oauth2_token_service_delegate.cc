@@ -48,8 +48,7 @@ void OAuth2TokenServiceDelegate::RemoveObserver(
 
 // static
 bool OAuth2TokenServiceDelegate::IsError(const GoogleServiceAuthError& error) {
-  // TODO(rogerta): should we distinguish between transient and persistent?
-  return error.state() != GoogleServiceAuthError::NONE;
+  return error.IsPersistentError();
 }
 
 void OAuth2TokenServiceDelegate::StartBatchChanges() {

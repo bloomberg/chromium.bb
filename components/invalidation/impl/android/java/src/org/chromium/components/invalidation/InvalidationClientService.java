@@ -211,7 +211,7 @@ public class InvalidationClientService extends AndroidListener {
                 account, invalidAuthToken, getOAuth2ScopeWithType(),
                 new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
-                    public void tokenAvailable(String token) {
+                    public void tokenAvailable(String token, boolean isTransientError) {
                         if (token != null) {
                             setAuthToken(InvalidationClientService.this.getApplicationContext(),
                                     pendingIntent, token, getOAuth2ScopeWithType());

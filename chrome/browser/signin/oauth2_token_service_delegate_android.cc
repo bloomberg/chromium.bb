@@ -199,6 +199,9 @@ bool OAuth2TokenServiceDelegateAndroid::RefreshTokenHasError(
 void OAuth2TokenServiceDelegateAndroid::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
+  DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAuthError"
+           << " account=" << account_id
+           << " error=" << error.ToString();
   if (error.state() == GoogleServiceAuthError::NONE) {
     errors_.erase(account_id);
   } else {
@@ -264,6 +267,10 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     signed_in_account = ConvertJavaStringToUTF8(env, j_current_acc);
   if (!signed_in_account.empty())
     signed_in_account = gaia::CanonicalizeEmail(signed_in_account);
+
+  // Clear any auth errors so that client can retry to get access tokens.
+  errors_.clear();
+
   ValidateAccounts(signed_in_account, j_force_notifications != JNI_FALSE);
 }
 
@@ -456,17 +463,19 @@ void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
 void OAuth2TokenFetched(JNIEnv* env,
                         jclass clazz,
                         jstring authToken,
+                        jboolean isTransientError,
                         jlong nativeCallback) {
   std::string token;
   if (authToken)
     token = ConvertJavaStringToUTF8(env, authToken);
   scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
       reinterpret_cast<FetchOAuth2TokenCallback*>(nativeCallback));
-  // Android does not provide enough information to know if the credentials are
-  // wrong, so assume any error is transient by using CONNECTION_FAILED.
-  GoogleServiceAuthError err(authToken
-                                 ? GoogleServiceAuthError::NONE
-                                 : GoogleServiceAuthError::CONNECTION_FAILED);
+  GoogleServiceAuthError
+      err(authToken
+              ? GoogleServiceAuthError::NONE
+              : isTransientError
+                    ? GoogleServiceAuthError::CONNECTION_FAILED
+                    : GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   heap_callback->Run(err, token, base::Time());
 }
 
