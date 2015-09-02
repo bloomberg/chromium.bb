@@ -490,6 +490,7 @@ double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& c
 
     switch (type()) {
     case UnitType::Ems:
+    case UnitType::QuirkyEms:
         factor = conversionData.emFontSize();
         break;
     case UnitType::Exs:
@@ -678,6 +679,7 @@ bool CSSPrimitiveValue::unitTypeToLengthUnitType(UnitType unitType, LengthUnitTy
         lengthType = UnitTypePixels;
         return true;
     case CSSPrimitiveValue::UnitType::Ems:
+    case CSSPrimitiveValue::UnitType::QuirkyEms:
         lengthType = UnitTypeFontSize;
         return true;
     case CSSPrimitiveValue::UnitType::Exs:
@@ -787,6 +789,7 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::Percentage:
         return "%";
     case UnitType::Ems:
+    case UnitType::QuirkyEms:
         return "em";
     case UnitType::Exs:
         return "ex";
@@ -849,7 +852,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::Shape:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
-    case UnitType::QuirkyEms:
         break;
     };
     ASSERT_NOT_REACHED();
@@ -874,6 +876,7 @@ String CSSPrimitiveValue::customCSSText() const
     case UnitType::Number:
     case UnitType::Percentage:
     case UnitType::Ems:
+    case UnitType::QuirkyEms:
     case UnitType::Exs:
     case UnitType::Rems:
     case UnitType::Chs:
@@ -929,7 +932,6 @@ String CSSPrimitiveValue::customCSSText() const
         break;
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
-    case UnitType::QuirkyEms:
         ASSERT_NOT_REACHED();
         break;
     }

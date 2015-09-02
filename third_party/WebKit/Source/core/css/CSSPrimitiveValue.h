@@ -108,6 +108,12 @@ public:
         String,
         PropertyID,
         ValueID,
+
+        // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
+        // The basic idea is that a stylesheet can use the value __qem (for quirky em) instead of em.
+        // When the quirky value is used, if you're in quirks mode, the margin will collapse away
+        // inside a table cell. This quirk is specified in the HTML spec but our impl is different.
+        // TODO: Remove this. crbug.com/443952
         QuirkyEms,
     };
 
@@ -160,16 +166,18 @@ public:
     bool isCustomIdent() const { return type() == UnitType::CustomIdentifier; }
     bool isFontRelativeLength() const
     {
-        return type() == UnitType::Ems
+        return type() == UnitType::QuirkyEms
+            || type() == UnitType::Ems
             || type() == UnitType::Exs
             || type() == UnitType::Rems
             || type() == UnitType::Chs;
     }
+    bool isQuirkyEms() const { return type() == UnitType::QuirkyEms; }
     bool isViewportPercentageLength() const { return isViewportPercentageLength(type()); }
     static bool isViewportPercentageLength(UnitType type) { return type >= UnitType::ViewportWidth && type <= UnitType::ViewportMax; }
     static bool isLength(UnitType type)
     {
-        return (type >= UnitType::Ems && type <= UnitType::Picas) || type == UnitType::Rems || type == UnitType::Chs || isViewportPercentageLength(type);
+        return (type >= UnitType::Ems && type <= UnitType::Picas) || type == UnitType::QuirkyEms || type == UnitType::Rems || type == UnitType::Chs || isViewportPercentageLength(type);
     }
     bool isLength() const { return isLength(typeWithCalcResolved()); }
     bool isNumber() const { return typeWithCalcResolved() == UnitType::Number || typeWithCalcResolved() == UnitType::Integer; }
@@ -221,17 +229,6 @@ public:
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value));
     }
 
-    // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
-    // The basic idea is that a stylesheet can use the value __qem (for quirky em) instead of em.
-    // When the quirky value is used, if you're in quirks mode, the margin will collapse away
-    // inside a table cell.
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createAllowingMarginQuirk(double value, UnitType type)
-    {
-        CSSPrimitiveValue* quirkValue = new CSSPrimitiveValue(value, type);
-        quirkValue->m_isQuirkValue = true;
-        return adoptRefWillBeNoop(quirkValue);
-    }
-
     ~CSSPrimitiveValue();
 
     void cleanup();
@@ -265,8 +262,6 @@ public:
 
     static const char* unitTypeToString(UnitType);
     String customCSSText() const;
-
-    bool isQuirkValue() const { return m_isQuirkValue; }
 
     bool equals(const CSSPrimitiveValue&) const;
 

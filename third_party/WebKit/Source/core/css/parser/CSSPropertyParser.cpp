@@ -409,7 +409,7 @@ inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPr
     if (value->unit() >= CSSPrimitiveValue::UnitType::DotsPerPixel && value->unit() <= CSSPrimitiveValue::UnitType::DotsPerCentimeter)
         return createPrimitiveNumericValue(value);
     if (value->unit() == CSSPrimitiveValue::UnitType::QuirkyEms)
-        return CSSPrimitiveValue::createAllowingMarginQuirk(value->fValue, CSSPrimitiveValue::UnitType::Ems);
+        return CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::UnitType::QuirkyEms);
     if (isCalculation(value))
         return CSSPrimitiveValue::create(m_parsedCalculation.release());
 
@@ -7763,7 +7763,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
         else if (value->unit() == CSSPrimitiveValue::UnitType::Rems || value->unit() == CSSPrimitiveValue::UnitType::Chs)
             parsedValue = CSSPrimitiveValue::create(value->fValue, value->unit());
         else if (value->unit() == CSSPrimitiveValue::UnitType::QuirkyEms)
-            parsedValue = CSSPrimitiveValue::createAllowingMarginQuirk(value->fValue, CSSPrimitiveValue::UnitType::Ems);
+            parsedValue = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::UnitType::QuirkyEms);
         if (isCalculation(value)) {
             // FIXME calc() http://webkit.org/b/16662 : actually create a CSSPrimitiveValue here, ie
             // parsedValue = CSSPrimitiveValue::create(m_parsedCalculation.release());

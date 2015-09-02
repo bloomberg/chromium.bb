@@ -729,7 +729,7 @@ Length StyleBuilderConverter::convertQuirkyLength(StyleResolverState& state, CSS
 {
     Length length = convertLengthOrAuto(state, value);
     // This is only for margins which use __qem
-    length.setQuirk(toCSSPrimitiveValue(value)->isQuirkValue());
+    length.setQuirk(toCSSPrimitiveValue(value)->isQuirkyEms());
     return length;
 }
 
