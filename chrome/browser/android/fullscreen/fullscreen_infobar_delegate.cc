@@ -52,11 +52,10 @@ FullscreenInfoBarDelegate::~FullscreenInfoBarDelegate() {
 }
 
 void FullscreenInfoBarDelegate::CloseFullscreenInfoBar(
-    JNIEnv* env, jobject obj, jobject tab) {
+    JNIEnv* env, jobject obj) {
   j_delegate_.Reset();
-  TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
-  InfoBarService::FromWebContents(tab_android->web_contents())->RemoveInfoBar(
-      infobar());
+  if (infobar() && infobar()->owner())
+    infobar()->owner()->RemoveInfoBar(infobar());
 }
 
 int FullscreenInfoBarDelegate::GetIconID() const {
