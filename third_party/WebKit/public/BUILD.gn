@@ -558,7 +558,6 @@ source_set("blink_headers") {
     "web/WebDeviceEmulationParams.h",
     "web/WebTestInterfaceFactory.h",
     "web/WebScriptController.h",
-    "web/WebPluginPlaceholder.h",
     "web/WebSpeechRecognitionResult.h",
     "web/WebCache.h",
     "web/WebSharedWorkerConnector.h",

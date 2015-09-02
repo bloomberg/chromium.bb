@@ -20,8 +20,6 @@
       '<(blink_core_output_dir)/testing/InternalDictionary.h',
       '<(blink_core_output_dir)/testing/InternalDictionaryDerived.cpp',
       '<(blink_core_output_dir)/testing/InternalDictionaryDerived.h',
-      '<(blink_core_output_dir)/testing/PluginPlaceholderOptions.cpp',
-      '<(blink_core_output_dir)/testing/PluginPlaceholderOptions.h',
     ],
 
     'generated_bindings_core_testing_files': [
@@ -55,8 +53,6 @@
       '<(bindings_core_v8_output_dir)/V8InternalDictionary.h',
       '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerived.cpp',
       '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerived.h',
-      '<(bindings_core_v8_output_dir)/V8PluginPlaceholderOptions.cpp',
-      '<(bindings_core_v8_output_dir)/V8PluginPlaceholderOptions.h',
     ],
 
     'generated_core_additional_files': [
