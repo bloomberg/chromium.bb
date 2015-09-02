@@ -37,9 +37,6 @@ public class ContextualSearchFieldTrial {
     static final String TAP_RESOLVE_LIMIT_FOR_UNDECIDED = "tap_resolve_limit_for_undecided";
     static final String TAP_PREFETCH_LIMIT_FOR_UNDECIDED = "tap_prefetch_limit_for_undecided";
 
-    static final String SELECTION_EXPANSION_DISABLED =
-            "contextual_search_selection_expansion_disabled";
-
     private static final String CHINESE_LANGUAGE_CODE = "zh";
     private static final String JAPANESE_LANGUAGE_CODE = "ja";
     private static final String KOREAN_LANGUAGE_CODE = "ko";
@@ -58,7 +55,6 @@ public class ContextualSearchFieldTrial {
 
     // Cached value to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
-    private static Boolean sSelectionExpansionDisabled;
 
     /**
      * Don't instantiate.
@@ -229,20 +225,6 @@ public class ContextualSearchFieldTrial {
     static int getTapPrefetchLimitForUndecided() {
         return getIntParamValueOrDefault(TAP_PREFETCH_LIMIT_FOR_UNDECIDED,
                 DEFAULT_TAP_PREFETCH_LIMIT_FOR_UNDECIDED);
-    }
-
-    // --------------------------------------------------------------------------------------------
-    // Experimental UI Features.
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * @return Whether the base page selection expansion after server response is disabled.
-     */
-    public static boolean isSelectionExpansionDisabled() {
-        if (sSelectionExpansionDisabled == null) {
-            sSelectionExpansionDisabled = getBooleanParam(SELECTION_EXPANSION_DISABLED);
-        }
-        return sSelectionExpansionDisabled.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------
