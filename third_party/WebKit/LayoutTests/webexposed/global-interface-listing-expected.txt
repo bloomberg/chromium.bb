@@ -3577,9 +3577,8 @@ interface PageTransitionEvent
     getter persisted
     method constructor
 interface PasswordCredential
-    getter formData
-    getter password
     method constructor
+    method toFormData
 interface Path2D
     method addPath
     method arc

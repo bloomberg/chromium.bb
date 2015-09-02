@@ -14,6 +14,7 @@
 namespace blink {
 
 class DOMFormData;
+class FormDataOptions;
 class WebPasswordCredential;
 
 class PasswordCredential final : public Credential {
@@ -33,8 +34,7 @@ public:
     static PasswordCredential* create(WebPasswordCredential*);
 
     // PasswordCredential.idl
-    const String& password() const;
-    DOMFormData* formData() const { return m_formData; }
+    DOMFormData* toFormData(ScriptState*, const FormDataOptions&);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -42,7 +42,7 @@ private:
     PasswordCredential(WebPasswordCredential*);
     PasswordCredential(const String& id, const String& password, const String& name, const KURL& icon);
 
-    Member<DOMFormData> m_formData;
+    const String& password() const;
 };
 
 } // namespace blink
