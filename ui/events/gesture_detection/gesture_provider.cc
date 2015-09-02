@@ -24,6 +24,8 @@ const float kDoubleTapDragZoomSpeed = 0.005f;
 
 const char* GetMotionEventActionName(MotionEvent::Action action) {
   switch (action) {
+    case MotionEvent::ACTION_NONE:
+      return "ACTION_NONE";
     case MotionEvent::ACTION_POINTER_DOWN:
       return "ACTION_POINTER_DOWN";
     case MotionEvent::ACTION_POINTER_UP:
@@ -779,6 +781,9 @@ void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
     case MotionEvent::ACTION_CANCEL:
     case MotionEvent::ACTION_MOVE:
       break;
+    case MotionEvent::ACTION_NONE:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -803,6 +808,9 @@ void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
     case MotionEvent::ACTION_DOWN:
     case MotionEvent::ACTION_POINTER_DOWN:
     case MotionEvent::ACTION_MOVE:
+      break;
+    case MotionEvent::ACTION_NONE:
+      NOTREACHED();
       break;
   }
 }

@@ -168,6 +168,10 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
   bool handled = false;
 
   switch (action) {
+    case MotionEvent::ACTION_NONE:
+      NOTREACHED();
+      return handled;
+
     case MotionEvent::ACTION_POINTER_DOWN: {
       down_focus_x_ = last_focus_x_ = focus_x;
       down_focus_y_ = last_focus_y_ = focus_y;

@@ -16,6 +16,7 @@ namespace ui {
 class GESTURE_DETECTION_EXPORT MotionEvent {
  public:
   enum Action {
+    ACTION_NONE,
     ACTION_DOWN,
     ACTION_UP,
     ACTION_MOVE,

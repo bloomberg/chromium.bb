@@ -35,7 +35,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEventGeneric {
   void CleanupRemovedTouchPoints(const TouchEvent& event);
 
  private:
-  void AddTouch(const TouchEvent& touch);
+  bool AddTouch(const TouchEvent& touch);
   void UpdateTouch(const TouchEvent& touch);
   void UpdateCachedAction(const TouchEvent& touch);
   int GetIndexFromId(int id) const;

@@ -84,10 +84,8 @@ GestureConsumer* GestureRecognizerImpl::GetTouchLockedTarget(
 GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
     const GestureEvent& event) {
   int touch_id = event.details().oldest_touch_id();
-  if (!touch_id_target_for_gestures_.count(touch_id)) {
-    NOTREACHED() << "Touch ID does not map to a valid GestureConsumer.";
+  if (!touch_id_target_for_gestures_.count(touch_id))
     return nullptr;
-  }
 
   return touch_id_target_for_gestures_.at(touch_id);
 }
@@ -157,6 +155,8 @@ bool GestureRecognizerImpl::GetLastTouchPointForTarget(
       return false;
     const MotionEvent& pointer_state =
         consumer_gesture_provider_[consumer]->pointer_state();
+    if (!pointer_state.GetPointerCount())
+      return false;
     *point = gfx::PointF(pointer_state.GetX(), pointer_state.GetY());
     return true;
 }

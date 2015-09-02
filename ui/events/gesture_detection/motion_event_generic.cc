@@ -257,9 +257,9 @@ void MotionEventGeneric::PushHistoricalEvent(scoped_ptr<MotionEvent> event) {
 }
 
 MotionEventGeneric::MotionEventGeneric()
-    : action_(ACTION_CANCEL),
+    : action_(ACTION_NONE),
       unique_event_id_(ui::GetNextTouchEventId()),
-      action_index_(0),
+      action_index_(-1),
       button_state_(0) {
 }
 

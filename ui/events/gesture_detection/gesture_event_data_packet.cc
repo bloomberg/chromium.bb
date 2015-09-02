@@ -25,8 +25,11 @@ GestureEventDataPacket::GestureSource ToGestureSource(
       return GestureEventDataPacket::TOUCH_START;
     case ui::MotionEvent::ACTION_POINTER_UP:
       return GestureEventDataPacket::TOUCH_END;
+    case ui::MotionEvent::ACTION_NONE:
+      NOTREACHED();
+      return GestureEventDataPacket::INVALID;
   };
-  NOTREACHED() << "Invalid ui::MotionEvent action: " << event.GetAction();
+  NOTREACHED();
   return GestureEventDataPacket::INVALID;
 }
 

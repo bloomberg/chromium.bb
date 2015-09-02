@@ -39,12 +39,15 @@ WebInputEvent::Type ToWebInputEventType(MotionEvent::Action action) {
       return WebInputEvent::TouchStart;
     case MotionEvent::ACTION_POINTER_UP:
       return WebInputEvent::TouchEnd;
+    case MotionEvent::ACTION_NONE:
+      NOTREACHED();
+      return WebInputEvent::Undefined;
   }
   NOTREACHED() << "Invalid MotionEvent::Action.";
   return WebInputEvent::Undefined;
 }
 
-// Note that |is_action_pointer| is meaningful only in the context of
+// Note that the action index is meaningful only in the context of
 // |ACTION_POINTER_UP| and |ACTION_POINTER_DOWN|; other actions map directly to
 // WebTouchPoint::State.
 WebTouchPoint::State ToWebTouchPointState(const MotionEvent& event,
@@ -66,6 +69,9 @@ WebTouchPoint::State ToWebTouchPointState(const MotionEvent& event,
       return static_cast<int>(pointer_index) == event.GetActionIndex()
                  ? WebTouchPoint::StateReleased
                  : WebTouchPoint::StateStationary;
+    case MotionEvent::ACTION_NONE:
+      NOTREACHED();
+      return WebTouchPoint::StateUndefined;
   }
   NOTREACHED() << "Invalid MotionEvent::Action.";
   return WebTouchPoint::StateUndefined;

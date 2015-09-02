@@ -511,4 +511,29 @@ TEST(MotionEventAuraTest, UniqueEventID) {
   EXPECT_EQ(event.GetUniqueEventId(), press1.unique_event_id());
 }
 
+// If we have too many active touches, start to ignore new ones.
+TEST(MotionEventAuraTest, IgnoresTouchesOverCapacity) {
+  const int kExtraTouches = 5;
+  const int kIdOffset = 5;
+
+  MotionEventAura event;
+  for (int i = 0; i < MotionEvent::MAX_TOUCH_POINT_COUNT + kExtraTouches; ++i) {
+    int id = i + kIdOffset;
+    TouchEvent press = TouchWithType(ET_TOUCH_PRESSED, id);
+    if (i < MotionEvent::MAX_TOUCH_POINT_COUNT)
+      EXPECT_TRUE(event.OnTouch(press));
+    else
+      EXPECT_FALSE(event.OnTouch(press));
+  }
+
+  for (int i = 0; i < MotionEvent::MAX_TOUCH_POINT_COUNT + kExtraTouches; ++i) {
+    int id = i + kIdOffset;
+    TouchEvent release = TouchWithType(ET_TOUCH_RELEASED, id);
+    if (i < MotionEvent::MAX_TOUCH_POINT_COUNT)
+      EXPECT_TRUE(event.OnTouch(release));
+    else
+      EXPECT_FALSE(event.OnTouch(release));
+  }
+}
+
 }  // namespace ui

@@ -88,6 +88,9 @@ bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
     case MotionEvent::ACTION_POINTER_UP:
     case MotionEvent::ACTION_POINTER_DOWN:
       break;
+    case MotionEvent::ACTION_NONE:
+      NOTREACHED();
+      break;
   }
 
   if (!gesture_detector_)
