@@ -115,12 +115,14 @@ struct GCInfo {
 
     bool hasFinalizer() const { return m_nonTrivialFinalizer; }
     bool hasVTable() const { return m_hasVTable; }
-    const String className() const { return m_className(); }
     TraceCallback m_trace;
     FinalizationCallback m_finalize;
     bool m_nonTrivialFinalizer;
     bool m_hasVTable;
+#if ENABLE(GC_PROFILING)
+    const String className() const { return m_className(); }
     GetClassNameCallback m_className;
+#endif
 };
 
 #if ENABLE(ASSERT)
@@ -172,7 +174,9 @@ struct GCInfoAtBase {
             FinalizerTrait<T>::finalize,
             FinalizerTrait<T>::nonTrivialFinalizer,
             WTF::IsPolymorphic<T>::value,
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<T>::get
+#endif
         };
         RETURN_GCINFO_INDEX();
     }

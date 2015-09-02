@@ -34,10 +34,10 @@ namespace WTF {
 class String;
 WTF_EXPORT String dumpRefCountedInstanceCounts();
 
-// Warning: Using extractTypeNameFromFunctionName bloats binary size.
-// This function should be only used for debug and profiling purposes,
-// and should be never enabled on release builds.
-// TODO(kouhei): Move this inside #if when all dependencies are removed.
+#if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_PROFILING)
+WTF_EXPORT void incrementInstanceCount(const char* extractNameFunctionName, void* ptr);
+WTF_EXPORT void decrementInstanceCount(const char* extractNameFunctionName, void* ptr);
+
 WTF_EXPORT String extractTypeNameFromFunctionName(const char* funcName);
 
 template<typename T>
@@ -46,9 +46,6 @@ inline const char* extractNameFunction()
     return WTF_PRETTY_FUNCTION;
 }
 
-#if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_PROFILING)
-WTF_EXPORT void incrementInstanceCount(const char* extractNameFunctionName, void* ptr);
-WTF_EXPORT void decrementInstanceCount(const char* extractNameFunctionName, void* ptr);
 
 template<typename T>
 inline void incrementInstanceCount(T* p)
