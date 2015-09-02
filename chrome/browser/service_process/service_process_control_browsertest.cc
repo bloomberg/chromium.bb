@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 
 // This tests the case when a service process is launched when the browser
 // starts but we try to launch it again while setting up Cloud Print.
-// Flaky on Mac ASan. http://crbug.com/517420
+// Flaky on Mac. http://crbug.com/517420
 #if defined(OS_MACOSX)
 #define MAYBE_LaunchTwice DISABLED_LaunchTwice
 #else
@@ -203,7 +203,7 @@ static void DecrementUntilZero(int* count) {
         FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
-// Flaky on Mac ASan. http://crbug.com/517420
+// Flaky on Mac. http://crbug.com/517420
 #if defined(OS_MACOSX)
 #define MAYBE_MultipleLaunchTasks DISABLED_MultipleLaunchTasks
 #else
@@ -225,8 +225,14 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   EXPECT_EQ(0, launch_count);
 }
 
+// Flaky on Mac. http://crbug.com/517420
+#if defined(OS_MACOSX)
+#define MAYBE_SameLaunchTask DISABLED_SameLaunchTask
+#else
+#define MAYBE_SameLaunchTask SameLaunchTask
+#endif
 // Make sure using the same task for success and failure tasks works.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
   ServiceProcessControl* process = ServiceProcessControl::GetInstance();
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
@@ -241,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
 
 // Tests whether disconnecting from the service IPC causes the service process
 // to die.
-// Flaky on Mac ASan. http://crbug.com/517420
+// Flaky on Mac. http://crbug.com/517420
 #if defined(OS_MACOSX)
 #define MAYBE_DieOnDisconnect DISABLED_DieOnDisconnect
 #else
@@ -256,7 +262,13 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   Disconnect();
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, ForceShutdown) {
+// Flaky on Mac. http://crbug.com/517420
+#if defined(OS_MACOSX)
+#define MAYBE_ForceShutdown DISABLED_ForceShutdown
+#else
+#define MAYBE_ForceShutdown ForceShutdown
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_ForceShutdown) {
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
@@ -267,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, ForceShutdown) {
   ForceServiceProcessShutdown(version_info::GetVersionNumber(), service_pid);
 }
 
-// Flaky on Mac ASan. http://crbug.com/517420
+// Flaky on Mac. http://crbug.com/517420
 #if defined(OS_MACOSX)
 #define MAYBE_CheckPid DISABLED_CheckPid
 #else
