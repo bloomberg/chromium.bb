@@ -1,0 +1,92 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script>
+function sendSyncScriptRequest()
+{
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.contentDocument.write('<html><body><script src="http://localhost:8000/inspector/network/resources/empty-script.js?sync"></s' + 'cript>;</body></html>');
+}
+
+function sendAsyncScriptRequest()
+{
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.contentDocument.write('<html><body><script src="http://localhost:8000/inspector/network/resources/empty-script.js?async" async></s' + 'cript>;</body></html>');
+}
+
+function sendXHRSync()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "resources/empty.html?xhr-sync", false);
+    xhr.send();
+}
+
+function sendXHRAsync()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "resources/empty.html?xhr-async");
+    xhr.send();
+}
+
+function sendImageRequest()
+{
+    var img = document.createElement("img");
+    img.src = "resources/abe.png";
+    document.body.appendChild(img);
+}
+
+function sendStyleRequest()
+{
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "resources/style.css";
+    document.head.appendChild(link);
+}
+
+function createIFrame()
+{
+    var iframe = document.createElement("iframe");
+    iframe.src = "resources/empty.html?iframe";
+    document.head.appendChild(iframe);
+}
+
+function test()
+{
+    var actions = [
+        "sendSyncScriptRequest",
+        "sendAsyncScriptRequest",
+        "sendXHRSync",
+        "sendXHRAsync",
+        "sendImageRequest",
+        "sendStyleRequest",
+        "createIFrame"
+    ];
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, onRequestStarted);
+
+    var nextAction = 0;
+    performNextRequest();
+
+    function performNextRequest()
+    {
+        if (nextAction >= actions.length) {
+            InspectorTest.networkManager.removeEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, onRequestStarted);
+            InspectorTest.completeTest();
+            return;
+        }
+        InspectorTest.evaluateInPage(actions[nextAction++] + "()");
+    }
+    function onRequestStarted(event)
+    {
+        var request = event.data;
+        InspectorTest.addResult("Request: " + request.name() + " priority: " + request.initialPriority());
+        performNextRequest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests resource priorities.</p>
+</body>
+</html>

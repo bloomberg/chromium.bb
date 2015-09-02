@@ -66,6 +66,7 @@
 #include "platform/blob/BlobData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
@@ -193,6 +194,21 @@ TypeBuilder::Network::Request::MixedContentType::Enum mixedContentTypeForContext
     return TypeBuilder::Network::Request::MixedContentType::None;
 }
 
+TypeBuilder::Network::ResourcePriority::Enum resourcePriorityJSON(ResourceLoadPriority priority)
+{
+    switch (priority) {
+    case ResourceLoadPriorityVeryLow: return TypeBuilder::Network::ResourcePriority::VeryLow;
+    case ResourceLoadPriorityLow: return TypeBuilder::Network::ResourcePriority::Low;
+    case ResourceLoadPriorityMedium: return TypeBuilder::Network::ResourcePriority::Medium;
+    case ResourceLoadPriorityHigh: return TypeBuilder::Network::ResourcePriority::High;
+    case ResourceLoadPriorityVeryHigh: return TypeBuilder::Network::ResourcePriority::VeryHigh;
+    case ResourceLoadPriorityUnresolved: break;
+    }
+    ASSERT_NOT_REACHED();
+    return TypeBuilder::Network::ResourcePriority::Medium;
+}
+
+
 } // namespace
 
 void InspectorResourceAgent::restore()
@@ -226,7 +242,8 @@ static PassRefPtr<TypeBuilder::Network::Request> buildObjectForResourceRequest(c
     RefPtr<TypeBuilder::Network::Request> requestObject = TypeBuilder::Network::Request::create()
         .setUrl(urlWithoutFragment(request.url()).string())
         .setMethod(request.httpMethod())
-        .setHeaders(buildObjectForHeaders(request.httpHeaderFields()));
+        .setHeaders(buildObjectForHeaders(request.httpHeaderFields()))
+        .setInitialPriority(resourcePriorityJSON(request.priority()));
     if (request.httpBody() && !request.httpBody()->isEmpty()) {
         Vector<char> bytes;
         request.httpBody()->flatten(bytes);
