@@ -126,8 +126,10 @@ void WebViewImpl::OnViewBoundsChanged(mojo::View* view,
 
 void WebViewImpl::OnViewDestroyed(mojo::View* view) {
   // |FrameTree| cannot outlive the content view.
-  if (view == content_)
+  if (view == content_) {
     frame_tree_.reset();
+    content_ = nullptr;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
