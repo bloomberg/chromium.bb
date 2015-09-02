@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/browser_test_utils.h"
@@ -51,9 +52,6 @@ using ::testing::StrictMock;
 namespace safe_browsing {
 
 namespace {
-
-// The RenderFrame is routing ID 1, and the RenderView is 2.
-const int kRenderViewRoutingId = 2;
 
 class MockPhishingClassifier : public PhishingClassifier {
  public:
@@ -153,8 +151,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     intercepting_filter_ = new InterceptingMessageFilter();
-    content::RenderView* render_view =
-        content::RenderView::FromRoutingID(kRenderViewRoutingId);
+    content::RenderView* render_view = GetRenderView();
 
     GetWebContents()->GetRenderProcessHost()->AddFilter(
         intercepting_filter_.get());
@@ -223,6 +220,11 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
+  content::RenderView* GetRenderView() {
+    return content::RenderView::FromRoutingID(
+        GetWebContents()->GetRenderViewHost()->GetRoutingID());
+  }
+
   // Returns the URL that was loaded.
   GURL LoadHtml(const std::string& host, const std::string& content) {
     GURL::Replacements replace_host;
@@ -241,8 +243,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   }
 
   void NavigateMainFrameInternal(const GURL& url) {
-    content::RenderView* render_view =
-        content::RenderView::FromRoutingID(kRenderViewRoutingId);
+    content::RenderView* render_view = GetRenderView();
     render_view->GetWebView()->mainFrame()->firstChild()->loadRequest(
         blink::WebURLRequest(url));
   }
