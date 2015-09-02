@@ -2162,9 +2162,11 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir, image_dir):
     image_dir: Directory containing test image.
   """
   scripts_dir = os.path.join(buildroot, 'src', 'scripts')
+  ssh_private_key = os.path.join(image_dir, constants.TEST_KEY_PRIVATE)
   cmd = [os.path.join(scripts_dir, 'archive_hwqual'),
          '--from', archive_dir,
          '--image_dir', image_dir,
+         '--ssh_private_key', ssh_private_key,
          '--output_tag', hwqual_name]
   cros_build_lib.RunCommand(cmd, capture_output=True)
   return '%s.tar.bz2' % hwqual_name
