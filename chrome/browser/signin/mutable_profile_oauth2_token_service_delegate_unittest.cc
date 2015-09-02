@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -12,6 +13,7 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -173,6 +175,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceDBUpgrade) {
   AddAuthTokenManually(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                        main_refresh_token);
 
+  switches::EnableAccountConsistencyForTesting(
+      base::CommandLine::ForCurrentProcess());
+
   // Force LoadCredentials.
   oauth2_service_delegate_->LoadCredentials(main_account_id);
   base::RunLoop().RunUntilIdle();
@@ -273,6 +278,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        PersistenceLoadCredentials) {
+  switches::EnableAccountConsistencyForTesting(
+      base::CommandLine::ForCurrentProcess());
+
   // Ensure DB is clean.
   oauth2_service_delegate_->RevokeAllCredentials();
   ResetObserverCounts();
@@ -426,6 +434,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, CanonicalizeAccountId) {
   tokens["AccountId-Foo.Bar@gmail.com"] = "refresh_token";
   tokens["AccountId-12345"] = "refresh_token";
 
+  switches::EnableAccountConsistencyForTesting(
+      base::CommandLine::ForCurrentProcess());
   oauth2_service_delegate_->LoadAllCredentialsIntoMemory(tokens);
 
   EXPECT_TRUE(
@@ -441,6 +451,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   tokens["AccountId-Foo.Bar@gmail.com"] = "bad_token";
   tokens["AccountId-foobar@gmail.com"] = "good_token";
 
+  switches::EnableAccountConsistencyForTesting(
+      base::CommandLine::ForCurrentProcess());
   oauth2_service_delegate_->LoadAllCredentialsIntoMemory(tokens);
 
   EXPECT_EQ(1u, oauth2_service_delegate_->GetAccounts().size());
@@ -452,6 +464,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ShutdownService) {
+  switches::EnableAccountConsistencyForTesting(
+      base::CommandLine::ForCurrentProcess());
   EXPECT_TRUE(oauth2_service_delegate_->GetAccounts().empty());
   oauth2_service_delegate_->UpdateCredentials("account_id1", "refresh_token1");
   oauth2_service_delegate_->UpdateCredentials("account_id2", "refresh_token2");
@@ -473,6 +487,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
     std::string email = "foo@gmail.com";
     std::string gaia_id = "foo's gaia id";
 
+    switches::EnableAccountConsistencyForTesting(
+        base::CommandLine::ForCurrentProcess());
     pref_service_.SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
 
@@ -530,6 +546,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     std::string email2 = "bar@gmail.com";
     std::string gaia_id2 = "bar's gaia id";
 
+    switches::EnableAccountConsistencyForTesting(
+        base::CommandLine::ForCurrentProcess());
     pref_service_.SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
 
@@ -587,4 +605,46 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     accounts = oauth2_service_delegate_->GetAccounts();
     EXPECT_EQ(2u, accounts.size());
   }
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       LoadPrimaryAccountOnlyWhenAccountConsistencyDisabled) {
+  std::string primary_account = "primaryaccount";
+  std::string secondary_account = "secondaryaccount";
+
+  oauth2_service_delegate_->RevokeAllCredentials();
+  ResetObserverCounts();
+  AddAuthTokenManually("AccountId-" + primary_account, "refresh_token");
+  AddAuthTokenManually("AccountId-" + secondary_account, "refresh_token");
+  oauth2_service_delegate_->LoadCredentials(primary_account);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, tokens_loaded_count_);
+  EXPECT_EQ(1, token_available_count_);
+  EXPECT_EQ(1, token_revoked_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
+  EXPECT_TRUE(
+      oauth2_service_delegate_->RefreshTokenIsAvailable(primary_account));
+  EXPECT_FALSE(
+      oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
+
+  oauth2_service_delegate_->RevokeAllCredentials();
+  ResetObserverCounts();
+  AddAuthTokenManually("AccountId-" + primary_account, "refresh_token");
+  AddAuthTokenManually("AccountId-" + secondary_account, "refresh_token");
+  switches::EnableAccountConsistencyForTesting(
+      base::CommandLine::ForCurrentProcess());
+  oauth2_service_delegate_->LoadCredentials(primary_account);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, tokens_loaded_count_);
+  EXPECT_EQ(2, token_available_count_);
+  EXPECT_EQ(0, token_revoked_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
+  EXPECT_TRUE(
+      oauth2_service_delegate_->RefreshTokenIsAvailable(primary_account));
+  EXPECT_TRUE(
+      oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
 }

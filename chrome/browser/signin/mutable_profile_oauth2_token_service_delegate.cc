@@ -8,6 +8,7 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -366,9 +367,17 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
           account_id = canon_account_id;
         }
 
+        // Only load secondary accounts when account consistency is enabled.
+        if (switches::IsEnableAccountConsistency() ||
+            account_id == loading_primary_account_id_) {
         refresh_tokens_[account_id].reset(new AccountStatus(
             signin_error_controller_, account_id, refresh_token));
         FireRefreshTokenAvailable(account_id);
+        } else {
+          RevokeCredentialsOnServer(refresh_token);
+          ClearPersistedCredentials(account_id);
+          FireRefreshTokenRevoked(account_id);
+        }
       }
     }
 
