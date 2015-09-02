@@ -52,7 +52,7 @@ class ElementAnimation {
 public:
     static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, double duration, ExceptionState& exceptionState)
     {
-        RefPtrWillBeRawPtr<EffectModel> effect = EffectInput::convert(&element, effectInput, exceptionState);
+        EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())
             return 0;
         return animateInternal(element, effect, TimingInput::convert(duration));
@@ -60,7 +60,7 @@ public:
 
     static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
     {
-        RefPtrWillBeRawPtr<EffectModel> effect = EffectInput::convert(&element, effectInput, exceptionState);
+        EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())
             return 0;
         return animateInternal(element, effect, TimingInput::convert(timingInput));
@@ -68,15 +68,15 @@ public:
 
     static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, ExceptionState& exceptionState)
     {
-        RefPtrWillBeRawPtr<EffectModel> effect = EffectInput::convert(&element, effectInput, exceptionState);
+        EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())
             return 0;
         return animateInternal(element, effect, Timing());
     }
 
-    static WillBeHeapVector<RefPtrWillBeMember<Animation>> getAnimations(Element& element)
+    static HeapVector<Member<Animation>> getAnimations(Element& element)
     {
-        WillBeHeapVector<RefPtrWillBeMember<Animation>> animationss;
+        HeapVector<Member<Animation>> animationss;
 
         if (!element.hasAnimations())
             return animationss;
@@ -90,10 +90,10 @@ public:
     }
 
 private:
-    static Animation* animateInternal(Element& element, PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing)
+    static Animation* animateInternal(Element& element, EffectModel* effect, const Timing& timing)
     {
-        RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect = KeyframeEffect::create(&element, effect, timing);
-        return element.document().timeline().play(keyframeEffect.get());
+        KeyframeEffect* keyframeEffect = KeyframeEffect::create(&element, effect, timing);
+        return element.document().timeline().play(keyframeEffect);
     }
 };
 

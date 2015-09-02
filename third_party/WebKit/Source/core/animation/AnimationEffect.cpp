@@ -51,7 +51,7 @@ Timing::FillMode resolvedFillMode(Timing::FillMode fillMode, bool isAnimation)
 
 } // namespace
 
-AnimationEffect::AnimationEffect(const Timing& timing, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
+AnimationEffect::AnimationEffect(const Timing& timing, EventDelegate* eventDelegate)
     : m_parent(nullptr)
     , m_startTime(0)
     , m_animation(nullptr)
@@ -221,7 +221,7 @@ const AnimationEffect::CalculatedTiming& AnimationEffect::ensureCalculated() con
     return m_calculated;
 }
 
-PassRefPtrWillBeRawPtr<AnimationEffectTiming> AnimationEffect::timing()
+AnimationEffectTiming* AnimationEffect::timing()
 {
     return AnimationEffectTiming::create(this);
 }

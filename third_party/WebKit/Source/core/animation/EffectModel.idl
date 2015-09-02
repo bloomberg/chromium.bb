@@ -10,6 +10,6 @@
 [
     RuntimeEnabled=WebAnimationsAPI,
     NoInterfaceObject,
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface EffectModel {
 };

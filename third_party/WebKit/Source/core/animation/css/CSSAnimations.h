@@ -79,9 +79,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    class RunningAnimation final : public RefCountedWillBeGarbageCollectedFinalized<RunningAnimation> {
+    class RunningAnimation final : public GarbageCollectedFinalized<RunningAnimation> {
     public:
-        RunningAnimation(PassRefPtrWillBeRawPtr<Animation> animation, CSSAnimationUpdate::NewAnimation newAnimation)
+        RunningAnimation(Animation* animation, CSSAnimationUpdate::NewAnimation newAnimation)
             : animation(animation)
             , specifiedTiming(newAnimation.timing)
             , styleRule(newAnimation.styleRule)
@@ -102,7 +102,7 @@ private:
             visitor->trace(styleRule);
         }
 
-        RefPtrWillBeMember<Animation> animation;
+        Member<Animation> animation;
         Timing specifiedTiming;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -118,15 +118,15 @@ private:
             visitor->trace(to);
         }
 
-        RefPtrWillBeMember<Animation> animation;
+        Member<Animation> animation;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
     };
 
-    using AnimationMap = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<RunningAnimation>>;
+    using AnimationMap = HeapHashMap<AtomicString, Member<RunningAnimation>>;
     AnimationMap m_animations;
 
-    using TransitionMap = WillBeHeapHashMap<CSSPropertyID, RunningTransition>;
+    using TransitionMap = HeapHashMap<CSSPropertyID, RunningTransition>;
     TransitionMap m_transitions;
 
     CSSAnimationUpdate m_pendingUpdate;

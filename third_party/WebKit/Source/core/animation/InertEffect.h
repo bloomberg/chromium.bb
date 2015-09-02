@@ -40,7 +40,7 @@ namespace blink {
 
 class CORE_EXPORT InertEffect final : public AnimationEffect {
 public:
-    static PassRefPtrWillBeRawPtr<InertEffect> create(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);
+    static InertEffect* create(EffectModel*, const Timing&, bool paused, double inheritedTime);
     void sample(OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&);
     EffectModel* model() const { return m_model.get(); }
     bool paused() const { return m_paused; }
@@ -52,8 +52,8 @@ protected:
     double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
 
 private:
-    InertEffect(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);
-    RefPtrWillBeMember<EffectModel> m_model;
+    InertEffect(EffectModel*, const Timing&, bool paused, double inheritedTime);
+    Member<EffectModel> m_model;
     bool m_paused;
     double m_inheritedTime;
 };

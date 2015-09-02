@@ -193,7 +193,7 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
+EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {
     if (!element)
         return nullptr;
@@ -276,7 +276,7 @@ PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const
         }
     }
 
-    RefPtrWillBeRawPtr<StringKeyframeEffectModel> keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
+    StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
     if (keyframeEffectModel->hasSyntheticKeyframes()) {
         exceptionState.throwDOMException(NotSupportedError, "Partial keyframes are not supported.");
         return nullptr;
@@ -290,7 +290,7 @@ PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const
     return keyframeEffectModel;
 }
 
-PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const EffectModelOrDictionarySequence& effectInput, ExceptionState& exceptionState)
+EffectModel* EffectInput::convert(Element* element, const EffectModelOrDictionarySequence& effectInput, ExceptionState& exceptionState)
 {
     if (effectInput.isEffectModel())
         return effectInput.getAsEffectModel();

@@ -66,7 +66,7 @@ private:
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    WillBeHeapHashMap<String, RefPtrWillBeMember<Animation>> m_idToAnimation;
+    PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;
     double m_latestStartTime;
 };

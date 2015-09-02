@@ -36,7 +36,7 @@ public:
         {
         }
 
-        NewAnimation(AtomicString name, PassRefPtrWillBeRawPtr<InertEffect> effect, Timing timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+        NewAnimation(AtomicString name, InertEffect* effect, Timing timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
             : name(name)
             , effect(effect)
             , timing(timing)
@@ -52,7 +52,7 @@ public:
         }
 
         AtomicString name;
-        RefPtrWillBeMember<InertEffect> effect;
+        Member<InertEffect> effect;
         Timing timing;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -66,7 +66,7 @@ public:
         {
         }
 
-        UpdatedAnimation(AtomicString name, Animation* animation, PassRefPtrWillBeRawPtr<InertEffect> effect, Timing specifiedTiming, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+        UpdatedAnimation(AtomicString name, Animation* animation, InertEffect* effect, Timing specifiedTiming, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
             : name(name)
             , animation(animation)
             , effect(effect)
@@ -84,8 +84,8 @@ public:
         }
 
         AtomicString name;
-        RawPtrWillBeMember<Animation> animation;
-        RefPtrWillBeMember<InertEffect> effect;
+        Member<Animation> animation;
+        Member<InertEffect> effect;
         Timing specifiedTiming;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -130,8 +130,8 @@ public:
             visitor->trace(snapshot);
         }
 
-        RawPtrWillBeMember<Animation> animation;
-        RawPtrWillBeMember<KeyframeEffectModelBase> model;
+        Member<Animation> animation;
+        Member<KeyframeEffectModelBase> model;
         CompositableStyleSnapshot snapshot;
     };
 
@@ -141,11 +141,9 @@ public:
 
     ~CSSAnimationUpdate()
     {
-#if ENABLE(OILPAN)
         // For performance reasons, explicitly clear HeapVectors and
         // HeapHashMaps to avoid giving a pressure on Oilpan's GC.
         clear();
-#endif
     }
 
     void copy(const CSSAnimationUpdate& update)
@@ -177,7 +175,7 @@ public:
         m_finishedTransitions.clear();
     }
 
-    void startAnimation(const AtomicString& animationName, PassRefPtrWillBeRawPtr<InertEffect> effect, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+    void startAnimation(const AtomicString& animationName, InertEffect* effect, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
         effect->setName(animationName);
         m_newAnimations.append(NewAnimation(animationName, effect, timing, styleRule));
@@ -193,7 +191,7 @@ public:
     {
         m_animationsWithPauseToggled.append(name);
     }
-    void updateAnimation(const AtomicString& name, Animation* animation, PassRefPtrWillBeRawPtr<InertEffect> effect, const Timing& specifiedTiming,
+    void updateAnimation(const AtomicString& name, Animation* animation, InertEffect* effect, const Timing& specifiedTiming,
         PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
         m_animationsWithUpdates.append(UpdatedAnimation(name, animation, effect, specifiedTiming, styleRule));
@@ -217,7 +215,7 @@ public:
         m_animationsWithStyleUpdates.append(UpdatedAnimationStyle(animation, model, snapshot));
     }
 
-    void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertEffect> effect)
+    void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, InertEffect* effect)
     {
         effect->setName(getPropertyName(id));
         NewTransition newTransition;
@@ -231,12 +229,12 @@ public:
     void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.add(id); }
     void finishTransition(CSSPropertyID id) { m_finishedTransitions.add(id); }
 
-    const WillBeHeapVector<NewAnimation>& newAnimations() const { return m_newAnimations; }
+    const HeapVector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
-    const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>& suppressedAnimations() const { return m_suppressedAnimations; }
+    const HeapHashSet<Member<const Animation>>& suppressedAnimations() const { return m_suppressedAnimations; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
-    const WillBeHeapVector<UpdatedAnimation>& animationsWithUpdates() const { return m_animationsWithUpdates; }
-    const WillBeHeapVector<UpdatedAnimationStyle>& animationsWithStyleUpdates() const { return m_animationsWithStyleUpdates; }
+    const HeapVector<UpdatedAnimation>& animationsWithUpdates() const { return m_animationsWithUpdates; }
+    const HeapVector<UpdatedAnimationStyle>& animationsWithStyleUpdates() const { return m_animationsWithStyleUpdates; }
 
     struct NewTransition {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -251,9 +249,9 @@ public:
         CSSPropertyID id;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
-        RefPtrWillBeMember<InertEffect> effect;
+        Member<InertEffect> effect;
     };
-    using NewTransitionMap = WillBeHeapHashMap<CSSPropertyID, NewTransition>;
+    using NewTransitionMap = HeapHashMap<CSSPropertyID, NewTransition>;
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
     const HashSet<CSSPropertyID>& finishedTransitions() const { return m_finishedTransitions; }
@@ -281,15 +279,15 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE(OILPAN)
         visitor->trace(m_newTransitions);
+#if ENABLE(OILPAN)
         visitor->trace(m_activeInterpolationsForAnimations);
         visitor->trace(m_activeInterpolationsForTransitions);
+#endif
         visitor->trace(m_newAnimations);
         visitor->trace(m_suppressedAnimations);
         visitor->trace(m_animationsWithUpdates);
         visitor->trace(m_animationsWithStyleUpdates);
-#endif
     }
 
 private:
@@ -297,12 +295,12 @@ private:
     // will be started. Note that there may be multiple animations present
     // with the same name, due to the way in which we split up animations with
     // incomplete keyframes.
-    WillBeHeapVector<NewAnimation> m_newAnimations;
+    HeapVector<NewAnimation> m_newAnimations;
     Vector<AtomicString> m_cancelledAnimationNames;
-    WillBeHeapHashSet<RawPtrWillBeMember<const Animation>> m_suppressedAnimations;
+    HeapHashSet<Member<const Animation>> m_suppressedAnimations;
     Vector<AtomicString> m_animationsWithPauseToggled;
-    WillBeHeapVector<UpdatedAnimation> m_animationsWithUpdates;
-    WillBeHeapVector<UpdatedAnimationStyle> m_animationsWithStyleUpdates;
+    HeapVector<UpdatedAnimation> m_animationsWithUpdates;
+    HeapVector<UpdatedAnimationStyle> m_animationsWithStyleUpdates;
 
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;

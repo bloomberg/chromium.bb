@@ -21,8 +21,8 @@ class ExceptionState;
 class CORE_EXPORT EffectInput {
     STATIC_ONLY(EffectInput);
 public:
-    static PassRefPtrWillBeRawPtr<EffectModel> convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<EffectModel> convert(Element*, const EffectModelOrDictionarySequence&, ExceptionState&);
+    static EffectModel* convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
+    static EffectModel* convert(Element*, const EffectModelOrDictionarySequence&, ExceptionState&);
 };
 
 } // namespace blink

@@ -222,12 +222,12 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
         newFrames[1]->setOffset(delay / (delay + duration));
         model->setFrames(newFrames);
 
-        RefPtrWillBeRawPtr<AnimationEffectTiming> timing = animation->effect()->timing();
+        AnimationEffectTiming* timing = animation->effect()->timing();
         UnrestrictedDoubleOrString unrestrictedDuration;
         unrestrictedDuration.setUnrestrictedDouble(duration + delay);
         timing->setDuration(unrestrictedDuration);
     } else if (type == AnimationType::WebAnimation) {
-        RefPtrWillBeRawPtr<AnimationEffectTiming> timing = animation->effect()->timing();
+        AnimationEffectTiming* timing = animation->effect()->timing();
         UnrestrictedDoubleOrString unrestrictedDuration;
         unrestrictedDuration.setUnrestrictedDouble(duration);
         timing->setDuration(unrestrictedDuration);

@@ -61,7 +61,7 @@ static inline double nullValue()
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-class CORE_EXPORT AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect>, public ScriptWrappable {
+class CORE_EXPORT AnimationEffect : public GarbageCollectedFinalized<AnimationEffect>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     friend class Animation; // Calls attach/detach, updateInheritedTime.
 public:
@@ -73,8 +73,7 @@ public:
         PhaseNone,
     };
 
-    class EventDelegate : public NoBaseWillBeGarbageCollectedFinalized<EventDelegate> {
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(EventDelegate);
+    class EventDelegate : public GarbageCollectedFinalized<EventDelegate> {
     public:
         virtual ~EventDelegate() { }
         virtual bool requiresIterationEvents(const AnimationEffect&) = 0;
@@ -103,7 +102,7 @@ public:
     const Animation* animation() const { return m_animation; }
     Animation* animation() { return m_animation; }
     const Timing& specifiedTiming() const { return m_timing; }
-    PassRefPtrWillBeRawPtr<AnimationEffectTiming> timing();
+    AnimationEffectTiming* timing();
     void updateSpecifiedTiming(const Timing&);
 
     void computedTiming(ComputedTimingProperties&);
@@ -115,7 +114,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    explicit AnimationEffect(const Timing&, PassOwnPtrWillBeRawPtr<EventDelegate> = nullptr);
+    explicit AnimationEffect(const Timing&, EventDelegate* = nullptr);
 
     // When AnimationEffect receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
@@ -144,11 +143,11 @@ protected:
     virtual void specifiedTimingChanged() { }
 
     // FIXME: m_parent and m_startTime are placeholders, they depend on timing groups.
-    RawPtrWillBeMember<AnimationEffect> m_parent;
+    Member<AnimationEffect> m_parent;
     const double m_startTime;
-    RawPtrWillBeMember<Animation> m_animation;
+    Member<Animation> m_animation;
     Timing m_timing;
-    OwnPtrWillBeMember<EventDelegate> m_eventDelegate;
+    Member<EventDelegate> m_eventDelegate;
 
     mutable struct CalculatedTiming {
         DISALLOW_ALLOCATION();

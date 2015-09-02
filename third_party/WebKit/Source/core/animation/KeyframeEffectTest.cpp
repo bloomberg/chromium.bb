@@ -50,11 +50,11 @@ protected:
     }
 
     template<typename T>
-    static PassRefPtrWillBeRawPtr<KeyframeEffect> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, T timingInput, ExceptionState& exceptionState)
+    static KeyframeEffect* createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, T timingInput, ExceptionState& exceptionState)
     {
         return KeyframeEffect::create(element, keyframeDictionaryVector, timingInput, exceptionState);
     }
-    static PassRefPtrWillBeRawPtr<KeyframeEffect> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, ExceptionState& exceptionState)
+    static KeyframeEffect* createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, ExceptionState& exceptionState)
     {
         return KeyframeEffect::create(element, keyframeDictionaryVector, exceptionState);
     }
@@ -89,7 +89,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation)
     ASSERT_TRUE(DictionaryHelper::get(jsKeyframes[1], "width", value2));
     ASSERT_EQ("0px", value2);
 
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
 
     Element* target = animation->target();
     EXPECT_EQ(*element.get(), *target);
@@ -116,7 +116,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration)
     Vector<Dictionary, 0> jsKeyframes;
     double duration = 2000;
 
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = createAnimation(element.get(), jsKeyframes, duration, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, duration, exceptionState);
 
     EXPECT_EQ(duration / 1000, animation->specifiedTiming().iterationDuration);
 }
@@ -124,14 +124,14 @@ TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration)
 TEST_F(AnimationKeyframeEffectV8Test, CanOmitSpecifiedDuration)
 {
     Vector<Dictionary, 0> jsKeyframes;
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = createAnimation(element.get(), jsKeyframes, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, exceptionState);
     EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, NegativeDurationIsAuto)
 {
     Vector<Dictionary, 0> jsKeyframes;
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = createAnimation(element.get(), jsKeyframes, -2, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, -2, exceptionState);
     EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
 }
 
@@ -234,9 +234,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters)
     KeyframeEffectOptions timingInputDictionary;
     V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
 
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationEffectTiming> specified = animation->timing();
+    AnimationEffectTiming* specified = animation->timing();
     EXPECT_EQ(2, specified->delay());
     EXPECT_EQ(0.5, specified->endDelay());
     EXPECT_EQ("backwards", specified->fill());
@@ -256,9 +256,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter)
     KeyframeEffectOptions timingInputDictionaryWithDuration;
     V8KeyframeEffectOptions::toImpl(m_isolate, timingInputWithDuration, timingInputDictionaryWithDuration, exceptionState);
 
-    RefPtrWillBeRawPtr<KeyframeEffect> animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration, exceptionState);
+    KeyframeEffect* animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationEffectTiming> specifiedWithDuration = animationWithDuration->timing();
+    AnimationEffectTiming* specifiedWithDuration = animationWithDuration->timing();
     UnrestrictedDoubleOrString duration;
     specifiedWithDuration->duration(duration);
     EXPECT_TRUE(duration.isUnrestrictedDouble());
@@ -270,9 +270,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter)
     KeyframeEffectOptions timingInputDictionaryNoDuration;
     V8KeyframeEffectOptions::toImpl(m_isolate, timingInputNoDuration, timingInputDictionaryNoDuration, exceptionState);
 
-    RefPtrWillBeRawPtr<KeyframeEffect> animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration, exceptionState);
+    KeyframeEffect* animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationEffectTiming> specifiedNoDuration = animationNoDuration->timing();
+    AnimationEffectTiming* specifiedNoDuration = animationNoDuration->timing();
     UnrestrictedDoubleOrString duration2;
     specifiedNoDuration->duration(duration2);
     EXPECT_FALSE(duration2.isUnrestrictedDouble());
@@ -286,9 +286,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedSetters)
     v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
     KeyframeEffectOptions timingInputDictionary;
     V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationEffectTiming> specified = animation->timing();
+    AnimationEffectTiming* specified = animation->timing();
 
     EXPECT_EQ(0, specified->delay());
     specified->setDelay(2);
@@ -329,9 +329,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SetSpecifiedDuration)
     v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
     KeyframeEffectOptions timingInputDictionary;
     V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationEffectTiming> specified = animation->timing();
+    AnimationEffectTiming* specified = animation->timing();
 
     UnrestrictedDoubleOrString duration;
     specified->duration(duration);
@@ -356,8 +356,8 @@ TEST_F(KeyframeEffectTest, TimeToEffectChange)
     timing.startDelay = 100;
     timing.endDelay = 100;
     timing.fillMode = Timing::FillModeNone;
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = KeyframeEffect::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<Animation> player = document.timeline().play(animation.get());
+    KeyframeEffect* animation = KeyframeEffect::create(0, nullptr, timing);
+    Animation* player = document.timeline().play(animation);
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -389,8 +389,8 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithPlaybackRate)
     timing.endDelay = 100;
     timing.playbackRate = 2;
     timing.fillMode = Timing::FillModeNone;
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = KeyframeEffect::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<Animation> player = document.timeline().play(animation.get());
+    KeyframeEffect* animation = KeyframeEffect::create(0, nullptr, timing);
+    Animation* player = document.timeline().play(animation);
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -422,8 +422,8 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithNegativePlaybackRate)
     timing.endDelay = 100;
     timing.playbackRate = -2;
     timing.fillMode = Timing::FillModeNone;
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = KeyframeEffect::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<Animation> player = document.timeline().play(animation.get());
+    KeyframeEffect* animation = KeyframeEffect::create(0, nullptr, timing);
+    Animation* player = document.timeline().play(animation);
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -452,14 +452,11 @@ TEST_F(KeyframeEffectTest, ElementDestructorClearsAnimationTarget)
     // and KeyframeEffect are moved to Oilpan. See crbug.com/362404 for context.
     Timing timing;
     timing.iterationDuration = 5;
-    RefPtrWillBeRawPtr<KeyframeEffect> animation = KeyframeEffect::create(element.get(), nullptr, timing);
+    KeyframeEffect* animation = KeyframeEffect::create(element.get(), nullptr, timing);
     EXPECT_EQ(element.get(), animation->target());
-    document.timeline().play(animation.get());
+    document.timeline().play(animation);
     pageHolder.clear();
     element.clear();
-#if !ENABLE(OILPAN)
-    EXPECT_EQ(0, animation->target());
-#endif
 }
 
 } // namespace blink

@@ -8,17 +8,16 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class UnrestrictedDoubleOrString;
 
-class CORE_EXPORT AnimationEffectTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffectTiming>, public ScriptWrappable {
+class CORE_EXPORT AnimationEffectTiming : public GarbageCollected<AnimationEffectTiming>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<AnimationEffectTiming> create(AnimationEffect* parent);
+    static AnimationEffectTiming* create(AnimationEffect* parent);
     double delay();
     double endDelay();
     String fill();
@@ -42,7 +41,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    RefPtrWillBeMember<AnimationEffect> m_parent;
+    Member<AnimationEffect> m_parent;
     explicit AnimationEffectTiming(AnimationEffect*);
 };
 

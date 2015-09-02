@@ -58,14 +58,14 @@ static unsigned nextSequenceNumber()
 
 }
 
-PassRefPtrWillBeRawPtr<Animation> Animation::create(AnimationEffect* effect, AnimationTimeline* timeline)
+Animation* Animation::create(AnimationEffect* effect, AnimationTimeline* timeline)
 {
     if (!timeline) {
         // FIXME: Support creating animations without a timeline.
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<Animation> animation = adoptRefWillBeNoop(new Animation(timeline->document()->contextDocument().get(), *timeline, effect));
+    Animation* animation = new Animation(timeline->document()->contextDocument().get(), *timeline, effect);
     animation->suspendIfNeeded();
 
     if (timeline) {
@@ -73,7 +73,7 @@ PassRefPtrWillBeRawPtr<Animation> Animation::create(AnimationEffect* effect, Ani
         animation->attachCompositorTimeline();
     }
 
-    return animation.release();
+    return animation;
 }
 
 Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationEffect* content)
@@ -110,23 +110,8 @@ Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& time
 
 Animation::~Animation()
 {
-#if !ENABLE(OILPAN)
-    if (m_content)
-        m_content->detach();
-    if (m_timeline)
-        m_timeline->animationDestroyed(this);
-#endif
-
     destroyCompositorPlayer();
 }
-
-#if !ENABLE(OILPAN)
-void Animation::detachFromTimeline()
-{
-    m_timeline = nullptr;
-    ActiveDOMObject::clearContext();
-}
-#endif
 
 double Animation::effectEnd() const
 {
@@ -1101,7 +1086,7 @@ DEFINE_TRACE(Animation)
     visitor->trace(m_pendingFinishedEvent);
     visitor->trace(m_finishedPromise);
     visitor->trace(m_readyPromise);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<Animation>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

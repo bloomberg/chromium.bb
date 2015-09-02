@@ -38,13 +38,12 @@
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class Interpolation;
 
-class CORE_EXPORT EffectModel : public RefCountedWillBeGarbageCollectedFinalized<EffectModel>, public ScriptWrappable {
+class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum CompositeOperation {

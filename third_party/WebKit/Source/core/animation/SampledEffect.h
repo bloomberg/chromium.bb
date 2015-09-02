@@ -16,13 +16,14 @@ namespace blink {
 
 class SVGElement;
 
-class SampledEffect : public NoBaseWillBeGarbageCollected<SampledEffect> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SampledEffect);
+// TODO(haraken): Drop Finalized once we ship Oilpan and the OwnPtrWillBeMember
+// is gone.
+class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
     WTF_MAKE_NONCOPYABLE(SampledEffect);
 public:
-    static PassOwnPtrWillBeRawPtr<SampledEffect> create(KeyframeEffect* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
+    static SampledEffect* create(KeyframeEffect* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
     {
-        return adoptPtrWillBeNoop(new SampledEffect(animation, interpolations));
+        return new SampledEffect(animation, interpolations);
     }
 
     void clear();
@@ -47,8 +48,8 @@ public:
 private:
     SampledEffect(KeyframeEffect*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>);
 
-    RawPtrWillBeWeakMember<KeyframeEffect> m_effect;
-    RefPtrWillBeMember<Animation> m_animation;
+    WeakMember<KeyframeEffect> m_effect;
+    Member<Animation> m_animation;
     OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> m_interpolations;
     const unsigned m_sequenceNumber;
     KeyframeEffect::Priority m_priority;

@@ -42,11 +42,6 @@ ElementAnimations::ElementAnimations()
 
 ElementAnimations::~ElementAnimations()
 {
-#if !ENABLE(OILPAN)
-    for (KeyframeEffect* effect : m_effects)
-        effect->notifyElementDestroyed();
-    m_effects.clear();
-#endif
 }
 
 void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
@@ -90,11 +85,9 @@ void ElementAnimations::restartAnimationOnCompositor()
 
 DEFINE_TRACE(ElementAnimations)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_cssAnimations);
     visitor->trace(m_defaultStack);
     visitor->trace(m_animations);
-#endif
 }
 
 const ComputedStyle* ElementAnimations::baseComputedStyle() const

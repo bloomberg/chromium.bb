@@ -53,11 +53,11 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 public:
     enum Priority { DefaultPriority, TransitionPriority };
 
-    static PassRefPtrWillBeRawPtr<KeyframeEffect> create(Element*, PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, Priority = DefaultPriority, PassOwnPtrWillBeRawPtr<EventDelegate> = nullptr);
+    static KeyframeEffect* create(Element*, EffectModel*, const Timing&, Priority = DefaultPriority, EventDelegate* = nullptr);
     // Web Animations API Bindings constructors.
-    static PassRefPtrWillBeRawPtr<KeyframeEffect> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<KeyframeEffect> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, const KeyframeEffectOptions& timingInput, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<KeyframeEffect> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
+    static KeyframeEffect* create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState&);
+    static KeyframeEffect* create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, const KeyframeEffectOptions& timingInput, ExceptionState&);
+    static KeyframeEffect* create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
 
     ~KeyframeEffect() override;
 
@@ -66,7 +66,7 @@ public:
     bool affects(PropertyHandle) const;
     const EffectModel* model() const { return m_model.get(); }
     EffectModel* model() { return m_model.get(); }
-    void setModel(PassRefPtrWillBeRawPtr<EffectModel> model) { m_model = model; }
+    void setModel(EffectModel* model) { m_model = model; }
     Priority priority() const { return m_priority; }
     Element* target() const { return m_target; }
 
@@ -105,11 +105,11 @@ protected:
     bool hasMultipleTransformProperties() const;
 
 private:
-    KeyframeEffect(Element*, PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, Priority, PassOwnPtrWillBeRawPtr<EventDelegate>);
+    KeyframeEffect(Element*, EffectModel*, const Timing&, Priority, EventDelegate*);
 
     RawPtrWillBeMember<Element> m_target;
-    RefPtrWillBeMember<EffectModel> m_model;
-    RawPtrWillBeMember<SampledEffect> m_sampledEffect;
+    Member<EffectModel> m_model;
+    Member<SampledEffect> m_sampledEffect;
 
     Priority m_priority;
 

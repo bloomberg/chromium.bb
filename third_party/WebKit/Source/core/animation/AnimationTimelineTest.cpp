@@ -92,7 +92,7 @@ protected:
         document->animationClock().resetTimeForTesting();
         element = Element::create(QualifiedName::null() , document.get());
         platformTiming = new MockPlatformTiming;
-        timeline = AnimationTimeline::create(document.get(), adoptPtrWillBeNoop(platformTiming.get()));
+        timeline = AnimationTimeline::create(document.get(), platformTiming);
         ASSERT_EQ(0, timeline->currentTimeInternal());
     }
 
@@ -116,9 +116,9 @@ protected:
 
     RefPtrWillBePersistent<Document> document;
     RefPtrWillBePersistent<Element> element;
-    RefPtrWillBePersistent<AnimationTimeline> timeline;
+    Persistent<AnimationTimeline> timeline;
     Timing timing;
-    RawPtrWillBePersistent<MockPlatformTiming> platformTiming;
+    Persistent<MockPlatformTiming> platformTiming;
 
     void wake()
     {
@@ -138,10 +138,10 @@ TEST_F(AnimationAnimationTimelineTest, HasStarted)
 
 TEST_F(AnimationAnimationTimelineTest, EmptyKeyframeAnimation)
 {
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
-    RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect = KeyframeEffect::create(element.get(), effect, timing);
+    AnimatableValueKeyframeEffectModel* effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
+    KeyframeEffect* keyframeEffect = KeyframeEffect::create(element.get(), effect, timing);
 
-    timeline->play(keyframeEffect.get());
+    timeline->play(keyframeEffect);
 
     platformTiming->expectNoMoreActions();
     updateClockAndService(0);
@@ -155,11 +155,11 @@ TEST_F(AnimationAnimationTimelineTest, EmptyKeyframeAnimation)
 
 TEST_F(AnimationAnimationTimelineTest, EmptyForwardsKeyframeAnimation)
 {
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
+    AnimatableValueKeyframeEffectModel* effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
     timing.fillMode = Timing::FillModeForwards;
-    RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect = KeyframeEffect::create(element.get(), effect, timing);
+    KeyframeEffect* keyframeEffect = KeyframeEffect::create(element.get(), effect, timing);
 
-    timeline->play(keyframeEffect.get());
+    timeline->play(keyframeEffect);
 
     platformTiming->expectNoMoreActions();
     updateClockAndService(0);
@@ -346,10 +346,10 @@ TEST_F(AnimationAnimationTimelineTest, PauseForTesting)
 {
     float seekTime = 1;
     timing.fillMode = Timing::FillModeForwards;
-    RefPtrWillBeRawPtr<KeyframeEffect> anim1 = KeyframeEffect::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
-    RefPtrWillBeRawPtr<KeyframeEffect> anim2  = KeyframeEffect::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
-    Animation* animation1 = timeline->play(anim1.get());
-    Animation* animation2 = timeline->play(anim2.get());
+    KeyframeEffect* anim1 = KeyframeEffect::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
+    KeyframeEffect* anim2  = KeyframeEffect::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
+    Animation* animation1 = timeline->play(anim1);
+    Animation* animation2 = timeline->play(anim2);
     timeline->pauseAnimationsForTesting(seekTime);
 
     EXPECT_FLOAT_EQ(seekTime, animation1->currentTime() / 1000.0);
@@ -361,9 +361,9 @@ TEST_F(AnimationAnimationTimelineTest, DelayBeforeAnimationStart)
     timing.iterationDuration = 2;
     timing.startDelay = 5;
 
-    RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect = KeyframeEffect::create(element.get(), nullptr, timing);
+    KeyframeEffect* keyframeEffect = KeyframeEffect::create(element.get(), nullptr, timing);
 
-    timeline->play(keyframeEffect.get());
+    timeline->play(keyframeEffect);
 
     // TODO: Put the animation startTime in the future when we add the capability to change animation startTime
     platformTiming->expectDelayedAction(timing.startDelay - minimumDelay());
@@ -388,14 +388,14 @@ TEST_F(AnimationAnimationTimelineTest, PlayAfterDocumentDeref)
     element = nullptr;
     document = nullptr;
 
-    RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
+    KeyframeEffect* keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
     // Test passes if this does not crash.
-    timeline->play(keyframeEffect.get());
+    timeline->play(keyframeEffect);
 }
 
 TEST_F(AnimationAnimationTimelineTest, UseAnimationAfterTimelineDeref)
 {
-    RefPtrWillBeRawPtr<Animation> animation = timeline->play(0);
+    Animation* animation = timeline->play(0);
     timeline.clear();
     // Test passes if this does not crash.
     animation->setStartTime(0);

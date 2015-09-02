@@ -1359,7 +1359,7 @@ private:
     LocaleIdentifierToLocaleMap m_localeCache;
 
     AnimationClock m_animationClock;
-    RefPtrWillBeMember<AnimationTimeline> m_timeline;
+    PersistentWillBeMember<AnimationTimeline> m_timeline;
     CompositorPendingAnimations m_compositorPendingAnimations;
 
     RefPtrWillBeMember<Document> m_templateDocument;

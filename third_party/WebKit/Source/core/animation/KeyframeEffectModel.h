@@ -44,7 +44,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -140,7 +139,7 @@ protected:
     // property-specific lists.
     using KeyframeGroupMap = WillBeHeapHashMap<PropertyHandle, OwnPtrWillBeMember<PropertySpecificKeyframeGroup>>;
     mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
-    mutable RefPtrWillBeMember<InterpolationEffect> m_interpolationEffect;
+    mutable Member<InterpolationEffect> m_interpolationEffect;
     RefPtr<TimingFunction> m_neutralKeyframeEasing;
 
     mutable bool m_hasSyntheticKeyframes;
@@ -152,9 +151,9 @@ template <class Keyframe>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
 public:
     using KeyframeVector = WillBeHeapVector<RefPtrWillBeMember<Keyframe>>;
-    static PassRefPtrWillBeRawPtr<KeyframeEffectModel<Keyframe>> create(const KeyframeVector& keyframes, PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing = nullptr)
+    static KeyframeEffectModel<Keyframe>* create(const KeyframeVector& keyframes, PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing = nullptr)
     {
-        return adoptRefWillBeNoop(new KeyframeEffectModel(keyframes, neutralKeyframeEasing));
+        return new KeyframeEffectModel(keyframes, neutralKeyframeEasing);
     }
 
 private:

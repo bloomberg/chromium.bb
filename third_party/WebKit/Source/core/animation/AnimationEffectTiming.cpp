@@ -12,9 +12,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<AnimationEffectTiming> AnimationEffectTiming::create(AnimationEffect* parent)
+AnimationEffectTiming* AnimationEffectTiming::create(AnimationEffect* parent)
 {
-    return adoptRefWillBeNoop(new AnimationEffectTiming(parent));
+    return new AnimationEffectTiming(parent);
 }
 
 AnimationEffectTiming::AnimationEffectTiming(AnimationEffect* parent)

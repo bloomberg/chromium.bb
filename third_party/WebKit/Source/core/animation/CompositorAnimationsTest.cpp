@@ -76,13 +76,13 @@ protected:
     Timing m_timing;
     CompositorAnimationsImpl::CompositorTiming m_compositorTiming;
     OwnPtrWillBePersistent<AnimatableValueKeyframeVector> m_keyframeVector2;
-    RefPtrWillBePersistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect2;
+    Persistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect2;
     OwnPtrWillBePersistent<AnimatableValueKeyframeVector> m_keyframeVector5;
-    RefPtrWillBePersistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect5;
+    Persistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect5;
 
     RefPtrWillBePersistent<Document> m_document;
     RefPtrWillBePersistent<Element> m_element;
-    RefPtrWillBePersistent<AnimationTimeline> m_timeline;
+    Persistent<AnimationTimeline> m_timeline;
 
     virtual void SetUp()
     {
@@ -142,7 +142,7 @@ public:
 
         frames.append(frame);
         frames.append(toAnimatableValueKeyframe(second.get()));
-        return isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(frames).get());
+        return isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(frames));
     }
 
     // -------------------------------------------------------------------
@@ -216,7 +216,7 @@ public:
         return frames.release();
     }
 
-    PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframeEffectModel(PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpFrom, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpTo, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpC = nullptr, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpD = nullptr)
+    AnimatableValueKeyframeEffectModel* createKeyframeEffectModel(PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpFrom, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpTo, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpC = nullptr, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpD = nullptr)
     {
         RefPtrWillBeRawPtr<AnimatableValueKeyframe> from = prpFrom;
         RefPtrWillBeRawPtr<AnimatableValueKeyframe> to = prpTo;
@@ -312,12 +312,12 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
     AnimatableValueKeyframeVector framesSame;
     framesSame.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 0.0).get());
     framesSame.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 1.0).get());
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesSame).get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesSame)));
 
     AnimatableValueKeyframeVector framesMixed;
     framesMixed.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 0.0).get());
     framesMixed.append(createDefaultKeyframe(CSSPropertyTransform, EffectModel::CompositeReplace, 1.0).get());
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixed).get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixed)));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeEffectModel)
@@ -325,12 +325,12 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
     AnimatableValueKeyframeVector framesSame;
     framesSame.append(createDefaultKeyframe(CSSPropertyColor, EffectModel::CompositeReplace, 0.0).get());
     framesSame.append(createDefaultKeyframe(CSSPropertyColor, EffectModel::CompositeReplace, 1.0).get());
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesSame).get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesSame)));
 
     AnimatableValueKeyframeVector framesMixedProperties;
     framesMixedProperties.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 0.0).get());
     framesMixedProperties.append(createDefaultKeyframe(CSSPropertyColor, EffectModel::CompositeReplace, 1.0).get());
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixedProperties).get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixedProperties)));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
@@ -342,19 +342,19 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
     transformVector.last().operations().append(TranslateTransformOperation::create(Length(200, Fixed), Length(200, Fixed), 0.0, TransformOperation::Translate3D));
     OwnPtrWillBePersistent<AnimatableValueKeyframeVector> frames = createCompositableTransformKeyframeVector(transformVector);
     FloatBox bounds;
-    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), 0, 1));
+    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames), 0, 1));
     EXPECT_EQ(FloatBox(0.0f, 0.f, 0.0f, 200.0f, 200.0f, 0.0f), bounds);
     bounds = FloatBox();
-    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), -1, 1));
+    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames), -1, 1));
     EXPECT_EQ(FloatBox(-200.0f, -200.0, 0.0, 400.0f, 400.0f, 0.0f), bounds);
     transformVector.append(TransformOperations());
     transformVector.last().operations().append(TranslateTransformOperation::create(Length(-300, Fixed), Length(-400, Fixed), 1.0f, TransformOperation::Translate3D));
     bounds = FloatBox();
     frames = createCompositableTransformKeyframeVector(transformVector);
-    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), 0, 1));
+    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames), 0, 1));
     EXPECT_EQ(FloatBox(-300.0f, -400.f, 0.0f, 500.0f, 600.0f, 1.0f), bounds);
     bounds = FloatBox();
-    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), -1, 2));
+    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames), -1, 2));
     EXPECT_EQ(FloatBox(-1300.0f, -1600.f, 0.0f, 1500.0f, 1800.0f, 3.0f), bounds);
 }
 
@@ -500,32 +500,32 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIte
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionLinear)
 {
     m_timing.timingFunction = m_linearTimingFunction;
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionCubic)
 {
     m_timing.timingFunction = m_cubicEaseTimingFunction;
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 
     m_timing.timingFunction = m_cubicCustomTimingFunction;
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionSteps)
 {
     m_timing.timingFunction = m_stepTimingFunction;
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedLinear)
 {
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorNonLinearTimingFunctionOnFirstOrLastFrame)
@@ -537,30 +537,30 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorNon
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
 
     m_timing.timingFunction = m_cubicEaseTimingFunction;
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 
     m_timing.timingFunction = m_cubicCustomTimingFunction;
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedCubicMatchingOffsets)
 {
     (*m_keyframeVector2)[0]->setEasing(m_cubicEaseTimingFunction.get());
     m_keyframeAnimationEffect2 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector2);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
 
     (*m_keyframeVector2)[0]->setEasing(m_cubicCustomTimingFunction.get());
     m_keyframeAnimationEffect2 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector2);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
 
     (*m_keyframeVector5)[0]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[1]->setEasing(m_cubicCustomTimingFunction.get());
     (*m_keyframeVector5)[2]->setEasing(m_cubicCustomTimingFunction.get());
     (*m_keyframeVector5)[3]->setEasing(m_cubicCustomTimingFunction.get());
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionMixedGood)
@@ -570,35 +570,35 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTim
     (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[3]->setEasing(m_linearTimingFunction.get());
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionWithStepOkay)
 {
     (*m_keyframeVector2)[0]->setEasing(m_stepTimingFunction.get());
     m_keyframeAnimationEffect2 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector2);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2));
 
     (*m_keyframeVector5)[0]->setEasing(m_stepTimingFunction.get());
     (*m_keyframeVector5)[1]->setEasing(m_linearTimingFunction.get());
     (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[3]->setEasing(m_linearTimingFunction.get());
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 
     (*m_keyframeVector5)[0]->setEasing(m_linearTimingFunction.get());
     (*m_keyframeVector5)[1]->setEasing(m_stepTimingFunction.get());
     (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[3]->setEasing(m_linearTimingFunction.get());
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 
     (*m_keyframeVector5)[0]->setEasing(m_linearTimingFunction.get());
     (*m_keyframeVector5)[1]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[3]->setEasing(m_stepTimingFunction.get());
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
@@ -615,17 +615,17 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 1.0).get());
 
     basicFramesVector[0]->setEasing(m_linearTimingFunction.get());
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> basicFrames = AnimatableValueKeyframeEffectModel::create(basicFramesVector).get();
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
+    AnimatableValueKeyframeEffectModel* basicFrames = AnimatableValueKeyframeEffectModel::create(basicFramesVector);
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames));
 
     basicFramesVector[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
-    basicFrames = AnimatableValueKeyframeEffectModel::create(basicFramesVector).get();
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
+    basicFrames = AnimatableValueKeyframeEffectModel::create(basicFramesVector);
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames));
 
     nonBasicFramesVector[0]->setEasing(m_linearTimingFunction.get());
     nonBasicFramesVector[1]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> nonBasicFrames = AnimatableValueKeyframeEffectModel::create(nonBasicFramesVector).get();
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *nonBasicFrames.get()));
+    AnimatableValueKeyframeEffectModel* nonBasicFrames = AnimatableValueKeyframeEffectModel::create(nonBasicFramesVector);
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *nonBasicFrames));
 }
 
 // -----------------------------------------------------------------------
@@ -634,7 +634,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
     // --
@@ -672,7 +672,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -680,7 +680,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -720,7 +720,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -728,7 +728,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationLinear)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5),
@@ -775,7 +775,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -783,7 +783,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -825,7 +825,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -841,7 +841,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     frames[0]->setEasing(m_cubicEaseTimingFunction.get());
     frames[1]->setEasing(m_linearTimingFunction.get());
     frames[2]->setEasing(m_cubicCustomTimingFunction.get());
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(frames);
+    AnimatableValueKeyframeEffectModel* effect = AnimatableValueKeyframeEffectModel::create(frames);
 
     m_timing.timingFunction = m_linearTimingFunction.get();
     m_timing.iterationDuration = 2.0;
@@ -885,7 +885,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -903,7 +903,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     frames[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
     frames[1]->setEasing(m_linearTimingFunction.get());
     frames[2]->setEasing(cubicEasyFlipTimingFunction.get());
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(frames);
+    AnimatableValueKeyframeEffectModel* effect = AnimatableValueKeyframeEffectModel::create(frames);
 
     m_timing.timingFunction = m_linearTimingFunction.get();
     m_timing.iterationCount = 10;
@@ -946,7 +946,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -954,7 +954,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegativeStartDelay)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -997,7 +997,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -1005,7 +1005,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRates)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -1046,7 +1046,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
     // Set player plaback rate also
-    getAnimationOnCompositor(m_timing, *effect.get(), result, -1.5);
+    getAnimationOnCompositor(m_timing, *effect, result, -1.5);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -1054,7 +1054,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNone)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -1094,7 +1094,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -1102,7 +1102,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAuto)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -1142,7 +1142,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -1150,7 +1150,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTimingFunction)
 {
     // KeyframeEffect to convert
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = createKeyframeEffectModel(
+    AnimatableValueKeyframeEffectModel* effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -1190,7 +1190,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<WebCompositorAnimation>> result;
-    getAnimationOnCompositor(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -1208,16 +1208,16 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     AnimatableValueKeyframeVector keyFrames;
     keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 0.0).get());
     keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 1.0).get());
-    RefPtrWillBeRawPtr<EffectModel> animationEffect1 = AnimatableValueKeyframeEffectModel::create(keyFrames);
-    RefPtrWillBeRawPtr<EffectModel> animationEffect2 = AnimatableValueKeyframeEffectModel::create(keyFrames);
+    EffectModel* animationEffect1 = AnimatableValueKeyframeEffectModel::create(keyFrames);
+    EffectModel* animationEffect2 = AnimatableValueKeyframeEffectModel::create(keyFrames);
 
     Timing timing;
     timing.iterationDuration = 1.f;
 
     // The first animation for opacity is ok to run on compositor.
-    RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect1 = KeyframeEffect::create(element.get(), animationEffect1, timing);
-    RefPtrWillBePersistent<Animation> animation1 = m_timeline->play(keyframeEffect1.get());
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), animation1.get(), *animationEffect1.get(), 1));
+    KeyframeEffect* keyframeEffect1 = KeyframeEffect::create(element.get(), animationEffect1, timing);
+    Animation* animation1 = m_timeline->play(keyframeEffect1);
+    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), animation1, *animationEffect1, 1));
 
     // simulate KeyframeEffect::maybeStartAnimationOnCompositor
     Vector<int> compositorAnimationIds;
@@ -1226,9 +1226,9 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     EXPECT_TRUE(animation1->hasActiveAnimationsOnCompositor());
 
     // The second animation for opacity is not ok to run on compositor.
-    RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect2 = KeyframeEffect::create(element.get(), animationEffect2, timing);
-    RefPtrWillBePersistent<Animation> animation2 = m_timeline->play(keyframeEffect2.get());
-    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), animation2.get(), *animationEffect2.get(), 1));
+    KeyframeEffect* keyframeEffect2 = KeyframeEffect::create(element.get(), animationEffect2, timing);
+    Animation* animation2 = m_timeline->play(keyframeEffect2);
+    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), animation2, *animationEffect2, 1));
     EXPECT_FALSE(animation2->hasActiveAnimationsOnCompositor());
 
     // A fallback to blink implementation needed, so cancel all compositor-side opacity animations for this element.
@@ -1244,8 +1244,6 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     element->setLayoutObject(nullptr);
     LayoutObjectProxy::dispose(layoutObject);
 
-    animation1.release();
-    animation2.release();
     Heap::collectAllGarbage();
     EXPECT_TRUE(element->elementAnimations()->animations().isEmpty());
 }

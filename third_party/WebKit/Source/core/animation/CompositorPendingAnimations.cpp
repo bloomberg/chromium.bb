@@ -58,10 +58,10 @@ void CompositorPendingAnimations::add(Animation* animation)
 
 bool CompositorPendingAnimations::update(bool startOnCompositor)
 {
-    WillBeHeapVector<RawPtrWillBeMember<Animation>> waitingForStartTime;
+    HeapVector<Member<Animation>> waitingForStartTime;
     bool startedSynchronizedOnCompositor = false;
 
-    WillBeHeapVector<RefPtrWillBeMember<Animation>> animations;
+    HeapVector<Member<Animation>> animations;
     animations.swap(m_pending);
     int compositorGroup = ++m_compositorGroup;
     if (compositorGroup == 0) {
@@ -126,7 +126,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
 void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime, int compositorGroup)
 {
     TRACE_EVENT0("blink", "CompositorPendingAnimations::notifyCompositorAnimationStarted");
-    WillBeHeapVector<RefPtrWillBeMember<Animation>> animations;
+    HeapVector<Member<Animation>> animations;
     animations.swap(m_waitingForCompositorAnimationStart);
 
     for (auto animation : animations) {

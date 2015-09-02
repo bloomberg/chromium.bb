@@ -35,12 +35,12 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InertEffect> InertEffect::create(PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing, bool paused, double inheritedTime)
+InertEffect* InertEffect::create(EffectModel* effect, const Timing& timing, bool paused, double inheritedTime)
 {
-    return adoptRefWillBeNoop(new InertEffect(effect, timing, paused, inheritedTime));
+    return new InertEffect(effect, timing, paused, inheritedTime);
 }
 
-InertEffect::InertEffect(PassRefPtrWillBeRawPtr<EffectModel> model, const Timing& timing, bool paused, double inheritedTime)
+InertEffect::InertEffect(EffectModel* model, const Timing& timing, bool paused, double inheritedTime)
     : AnimationEffect(timing)
     , m_model(model)
     , m_paused(paused)

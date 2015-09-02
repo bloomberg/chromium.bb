@@ -49,26 +49,26 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* target, PassRefPtrWillBeRawPtr<EffectModel> model, const Timing& timing, Priority priority, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
+KeyframeEffect* KeyframeEffect::create(Element* target, EffectModel* model, const Timing& timing, Priority priority, EventDelegate* eventDelegate)
 {
-    return adoptRefWillBeNoop(new KeyframeEffect(target, model, timing, priority, eventDelegate));
+    return new KeyframeEffect(target, model, timing, priority, eventDelegate);
 }
 
-PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState& exceptionState)
+KeyframeEffect* KeyframeEffect::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
     return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), TimingInput::convert(duration));
 }
-PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
+KeyframeEffect* KeyframeEffect::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
     return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), TimingInput::convert(timingInput));
 }
-PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
+KeyframeEffect* KeyframeEffect::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
@@ -76,25 +76,17 @@ PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* element, 
     return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), Timing());
 }
 
-KeyframeEffect::KeyframeEffect(Element* target, PassRefPtrWillBeRawPtr<EffectModel> model, const Timing& timing, Priority priority, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
+KeyframeEffect::KeyframeEffect(Element* target, EffectModel* model, const Timing& timing, Priority priority, EventDelegate* eventDelegate)
     : AnimationEffect(timing, eventDelegate)
     , m_target(target)
     , m_model(model)
     , m_sampledEffect(nullptr)
     , m_priority(priority)
 {
-#if !ENABLE(OILPAN)
-    if (m_target)
-        m_target->ensureElementAnimations().addEffect(this);
-#endif
 }
 
 KeyframeEffect::~KeyframeEffect()
 {
-#if !ENABLE(OILPAN)
-    if (m_target)
-        m_target->elementAnimations()->notifyEffectDestroyed(this);
-#endif
 }
 
 void KeyframeEffect::attach(Animation* animation)
@@ -186,9 +178,9 @@ void KeyframeEffect::applyEffects()
     if (m_sampledEffect) {
         m_sampledEffect->setInterpolations(interpolations.release());
     } else if (interpolations && !interpolations->isEmpty()) {
-        OwnPtrWillBeRawPtr<SampledEffect> sampledEffect = SampledEffect::create(this, interpolations.release());
-        m_sampledEffect = sampledEffect.get();
-        ensureAnimationStack(m_target).add(sampledEffect.release());
+        SampledEffect* sampledEffect = SampledEffect::create(this, interpolations.release());
+        m_sampledEffect = sampledEffect;
+        ensureAnimationStack(m_target).add(sampledEffect);
     } else {
         return;
     }

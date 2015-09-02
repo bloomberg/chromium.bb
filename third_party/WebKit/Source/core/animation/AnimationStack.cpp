@@ -49,13 +49,13 @@ void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<Inte
     }
 }
 
-bool compareEffects(const OwnPtrWillBeMember<SampledEffect>& effect1, const OwnPtrWillBeMember<SampledEffect>& effect2)
+bool compareEffects(const Member<SampledEffect>& effect1, const Member<SampledEffect>& effect2)
 {
     ASSERT(effect1 && effect2);
     return effect1->sequenceNumber() < effect2->sequenceNumber();
 }
 
-void copyNewAnimationsToActiveInterpolationMap(const WillBeHeapVector<RawPtrWillBeMember<InertEffect>>& newAnimations, ActiveInterpolationMap& result)
+void copyNewAnimationsToActiveInterpolationMap(const HeapVector<Member<InertEffect>>& newAnimations, ActiveInterpolationMap& result)
 {
     for (const auto& newAnimation : newAnimations) {
         OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
@@ -81,14 +81,14 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const WillBeHeapVector<RawPtrWillBeMember<InertEffect>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>* suppressedAnimations, KeyframeEffect::Priority priority, double timelineCurrentTime)
+ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority priority, double timelineCurrentTime)
 {
     // We don't exactly know when new animations will start, but timelineCurrentTime is a good estimate.
 
     ActiveInterpolationMap result;
 
     if (animationStack) {
-        WillBeHeapVector<OwnPtrWillBeMember<SampledEffect>>& effects = animationStack->m_effects;
+        HeapVector<Member<SampledEffect>>& effects = animationStack->m_effects;
         // std::sort doesn't work with OwnPtrs
         nonCopyingSort(effects.begin(), effects.end(), compareEffects);
         animationStack->removeClearedEffects();

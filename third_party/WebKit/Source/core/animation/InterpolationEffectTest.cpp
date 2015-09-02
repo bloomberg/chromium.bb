@@ -48,7 +48,7 @@ protected:
 
 TEST_F(AnimationInterpolationEffectTest, SingleInterpolation)
 {
-    RefPtrWillBeRawPtr<InterpolationEffect> interpolationEffect = InterpolationEffect::create();
+    InterpolationEffect* interpolationEffect = InterpolationEffect::create();
     interpolationEffect->addInterpolation(SampleInterpolation::create(InterpolableNumber::create(0), InterpolableNumber::create(10)),
         RefPtr<TimingFunction>(), 0, 1, -1, 2);
 
@@ -74,7 +74,7 @@ TEST_F(AnimationInterpolationEffectTest, SingleInterpolation)
 
 TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations)
 {
-    RefPtrWillBeRawPtr<InterpolationEffect> interpolationEffect = InterpolationEffect::create();
+    InterpolationEffect* interpolationEffect = InterpolationEffect::create();
     interpolationEffect->addInterpolation(SampleInterpolation::create(InterpolableNumber::create(10), InterpolableNumber::create(15)),
         RefPtr<TimingFunction>(), 1, 2, 1, 3);
     interpolationEffect->addInterpolation(SampleInterpolation::create(InterpolableNumber::create(0), InterpolableNumber::create(1)),

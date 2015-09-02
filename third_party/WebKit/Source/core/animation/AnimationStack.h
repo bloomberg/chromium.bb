@@ -53,10 +53,10 @@ class CORE_EXPORT AnimationStack {
 public:
     AnimationStack();
 
-    void add(PassOwnPtrWillBeRawPtr<SampledEffect> effect) { m_effects.append(effect); }
+    void add(SampledEffect* effect) { m_effects.append(effect); }
     bool isEmpty() const { return m_effects.isEmpty(); }
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
-    static ActiveInterpolationMap activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertEffect>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, double timelineCurrentTime);
+    static ActiveInterpolationMap activeInterpolations(AnimationStack*, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, double timelineCurrentTime);
 
     bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
     DECLARE_TRACE();
@@ -65,7 +65,7 @@ private:
     void removeClearedEffects();
 
     // Effects sorted by priority. Lower priority at the start of the list.
-    WillBeHeapVector<OwnPtrWillBeMember<SampledEffect>> m_effects;
+    HeapVector<Member<SampledEffect>> m_effects;
 
     friend class AnimationAnimationStackTest;
 };

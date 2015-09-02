@@ -102,7 +102,7 @@ public:
     void setSavedLayerScrollOffset(IntSize size) { m_savedLayerScrollOffset = size; }
 
     ElementAnimations* elementAnimations() { return m_elementAnimations.get(); }
-    void setElementAnimations(PassOwnPtrWillBeRawPtr<ElementAnimations> elementAnimations)
+    void setElementAnimations(ElementAnimations* elementAnimations)
     {
         m_elementAnimations = elementAnimations;
     }
@@ -141,7 +141,7 @@ private:
     OwnPtrWillBeMember<ElementShadow> m_shadow;
     OwnPtrWillBeMember<NamedNodeMap> m_attributeMap;
     OwnPtrWillBeMember<AttrNodeList> m_attrNodeList;
-    OwnPtrWillBeMember<ElementAnimations> m_elementAnimations;
+    PersistentWillBeMember<ElementAnimations> m_elementAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
 
     RefPtr<ComputedStyle> m_computedStyle;

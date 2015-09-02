@@ -47,7 +47,7 @@ namespace blink {
 
 namespace {
 
-bool compareAnimations(const RefPtrWillBeMember<Animation>& left, const RefPtrWillBeMember<Animation>& right)
+bool compareAnimations(const Member<Animation>& left, const Member<Animation>& right)
 {
     return Animation::hasLowerPriority(left.get(), right.get());
 }
@@ -59,12 +59,12 @@ bool compareAnimations(const RefPtrWillBeMember<Animation>& left, const RefPtrWi
 const double AnimationTimeline::s_minimumDelay = 0.04;
 
 
-PassRefPtrWillBeRawPtr<AnimationTimeline> AnimationTimeline::create(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
+AnimationTimeline* AnimationTimeline::create(Document* document, PlatformTiming* timing)
 {
-    return adoptRefWillBeNoop(new AnimationTimeline(document, timing));
+    return new AnimationTimeline(document, timing);
 }
 
-AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
+AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
     : m_document(document)
     , m_zeroTime(0) // 0 is used by unit tests which cannot initialize from the loader
     , m_zeroTimeInitialized(false)
@@ -73,7 +73,7 @@ AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<
     , m_lastCurrentTimeInternal(0)
 {
     if (!timing)
-        m_timing = adoptPtrWillBeNoop(new AnimationTimelineTiming(this));
+        m_timing = new AnimationTimelineTiming(this);
     else
         m_timing = timing;
 
@@ -87,10 +87,6 @@ AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<
 
 AnimationTimeline::~AnimationTimeline()
 {
-#if !ENABLE(OILPAN)
-    for (const auto& animation : m_animations)
-        animation->detachFromTimeline();
-#endif
 }
 
 void AnimationTimeline::animationAttached(Animation& animation)
@@ -105,18 +101,18 @@ Animation* AnimationTimeline::play(AnimationEffect* child)
     if (!m_document)
         return nullptr;
 
-    RefPtrWillBeRawPtr<Animation> animation = Animation::create(child, this);
-    ASSERT(m_animations.contains(animation.get()));
+    Animation* animation = Animation::create(child, this);
+    ASSERT(m_animations.contains(animation));
 
     animation->play();
     ASSERT(m_animationsNeedingUpdate.contains(animation));
 
-    return animation.get();
+    return animation;
 }
 
-WillBeHeapVector<RefPtrWillBeMember<Animation>> AnimationTimeline::getAnimations()
+HeapVector<Member<Animation>> AnimationTimeline::getAnimations()
 {
-    WillBeHeapVector<RefPtrWillBeMember<Animation>> animations;
+    HeapVector<Member<Animation>> animations;
     for (const auto& animation : m_animations) {
         if (animation->effect() && (animation->effect()->isCurrent() || animation->effect()->isInEffect()))
             animations.append(animation);
@@ -138,10 +134,10 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 
     m_timing->cancelWake();
 
-    WillBeHeapVector<RawPtrWillBeMember<Animation>> animations;
+    HeapVector<Member<Animation>> animations;
     animations.reserveInitialCapacity(m_animationsNeedingUpdate.size());
-    for (RefPtrWillBeMember<Animation> animation : m_animationsNeedingUpdate)
-        animations.append(animation.get());
+    for (Animation* animation : m_animationsNeedingUpdate)
+        animations.append(animation);
 
     std::sort(animations.begin(), animations.end(), Animation::hasLowerPriority);
 
@@ -325,12 +321,10 @@ void AnimationTimeline::detachFromDocument()
 
 DEFINE_TRACE(AnimationTimeline)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_timing);
     visitor->trace(m_animationsNeedingUpdate);
     visitor->trace(m_animations);
-#endif
 }
 
 } // namespace

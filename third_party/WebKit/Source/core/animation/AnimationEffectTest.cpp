@@ -59,9 +59,9 @@ private:
 
 class TestAnimationEffect : public AnimationEffect {
 public:
-    static PassRefPtrWillBeRawPtr<TestAnimationEffect> create(const Timing& specified)
+    static TestAnimationEffect* create(const Timing& specified)
     {
-        return adoptRefWillBeNoop(new TestAnimationEffect(specified, new TestAnimationEffectEventDelegate()));
+        return new TestAnimationEffect(specified, new TestAnimationEffectEventDelegate());
     }
 
     void updateInheritedTime(double time)
@@ -106,12 +106,12 @@ public:
 
 private:
     TestAnimationEffect(const Timing& specified, TestAnimationEffectEventDelegate* eventDelegate)
-        : AnimationEffect(specified, adoptPtrWillBeNoop(eventDelegate))
+        : AnimationEffect(specified, eventDelegate)
         , m_eventDelegate(eventDelegate)
     {
     }
 
-    RawPtrWillBeMember<TestAnimationEffectEventDelegate> m_eventDelegate;
+    Member<TestAnimationEffectEventDelegate> m_eventDelegate;
     mutable double m_localTime;
     mutable double m_timeToNextIteration;
 };
@@ -120,7 +120,7 @@ TEST(AnimationAnimationEffectTest, Sanity)
 {
     Timing timing;
     timing.iterationDuration = 2;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
@@ -173,7 +173,7 @@ TEST(AnimationAnimationEffectTest, FillAuto)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(0, animationNode->timeFraction());
@@ -187,7 +187,7 @@ TEST(AnimationAnimationEffectTest, FillForwards)
     Timing timing;
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeForwards;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_TRUE(isNull(animationNode->timeFraction()));
@@ -201,7 +201,7 @@ TEST(AnimationAnimationEffectTest, FillBackwards)
     Timing timing;
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeBackwards;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(0, animationNode->timeFraction());
@@ -215,7 +215,7 @@ TEST(AnimationAnimationEffectTest, FillBoth)
     Timing timing;
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeBoth;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(0, animationNode->timeFraction());
@@ -230,7 +230,7 @@ TEST(AnimationAnimationEffectTest, StartDelay)
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeForwards;
     timing.startDelay = 0.5;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0);
     EXPECT_TRUE(isNull(animationNode->timeFraction()));
@@ -248,7 +248,7 @@ TEST(AnimationAnimationEffectTest, ZeroIteration)
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 0;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(0, animationNode->activeDurationInternal());
@@ -267,7 +267,7 @@ TEST(AnimationAnimationEffectTest, InfiniteIteration)
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = std::numeric_limits<double>::infinity();
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_TRUE(isNull(animationNode->currentIteration()));
@@ -285,7 +285,7 @@ TEST(AnimationAnimationEffectTest, Iteration)
     Timing timing;
     timing.iterationCount = 2;
     timing.iterationDuration = 2;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0);
     EXPECT_EQ(0, animationNode->currentIteration());
@@ -315,7 +315,7 @@ TEST(AnimationAnimationEffectTest, IterationStart)
     timing.iterationCount = 2.2;
     timing.iterationDuration = 1;
     timing.fillMode = Timing::FillModeBoth;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(1, animationNode->currentIteration());
@@ -336,7 +336,7 @@ TEST(AnimationAnimationEffectTest, IterationAlternate)
     timing.iterationCount = 10;
     timing.iterationDuration = 1;
     timing.direction = Timing::PlaybackDirectionAlternate;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0.75);
     EXPECT_EQ(0, animationNode->currentIteration());
@@ -357,7 +357,7 @@ TEST(AnimationAnimationEffectTest, IterationAlternateReverse)
     timing.iterationCount = 10;
     timing.iterationDuration = 1;
     timing.direction = Timing::PlaybackDirectionAlternateReverse;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0.75);
     EXPECT_EQ(0, animationNode->currentIteration());
@@ -375,7 +375,7 @@ TEST(AnimationAnimationEffectTest, IterationAlternateReverse)
 TEST(AnimationAnimationEffectTest, ZeroDurationSanity)
 {
     Timing timing;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
@@ -406,7 +406,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationFillForwards)
 {
     Timing timing;
     timing.fillMode = Timing::FillModeForwards;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_TRUE(isNull(animationNode->timeFraction()));
@@ -422,7 +422,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationFillBackwards)
 {
     Timing timing;
     timing.fillMode = Timing::FillModeBackwards;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(0, animationNode->timeFraction());
@@ -438,7 +438,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationFillBoth)
 {
     Timing timing;
     timing.fillMode = Timing::FillModeBoth;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(0, animationNode->timeFraction());
@@ -455,7 +455,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationStartDelay)
     Timing timing;
     timing.fillMode = Timing::FillModeForwards;
     timing.startDelay = 0.5;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0);
     EXPECT_TRUE(isNull(animationNode->timeFraction()));
@@ -474,7 +474,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationStartAndCount)
     timing.iterationCount = 0.2;
     timing.fillMode = Timing::FillModeBoth;
     timing.startDelay = 0.3;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0);
     EXPECT_EQ(0.1, animationNode->timeFraction());
@@ -492,7 +492,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationInfiniteIteration)
     Timing timing;
     timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = std::numeric_limits<double>::infinity();
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(0, animationNode->activeDurationInternal());
@@ -510,7 +510,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIteration)
     Timing timing;
     timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 2;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_TRUE(isNull(animationNode->currentIteration()));
@@ -531,7 +531,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationStart)
     timing.iterationStart = 1.2;
     timing.iterationCount = 2.2;
     timing.fillMode = Timing::FillModeBoth;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_EQ(1, animationNode->currentIteration());
@@ -552,7 +552,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternate)
     timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 2;
     timing.direction = Timing::PlaybackDirectionAlternate;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_TRUE(isNull(animationNode->currentIteration()));
@@ -573,7 +573,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternateReverse)
     timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 2;
     timing.direction = Timing::PlaybackDirectionAlternateReverse;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
     EXPECT_TRUE(isNull(animationNode->currentIteration()));
@@ -593,7 +593,7 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationSanity)
     Timing timing;
     timing.iterationDuration = std::numeric_limits<double>::infinity();
     timing.iterationCount = 1;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
@@ -624,7 +624,7 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationZeroIterations)
     Timing timing;
     timing.iterationDuration = std::numeric_limits<double>::infinity();
     timing.iterationCount = 0;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
@@ -654,7 +654,7 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationInfiniteIterations)
     Timing timing;
     timing.iterationDuration = std::numeric_limits<double>::infinity();
     timing.iterationCount = std::numeric_limits<double>::infinity();
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
@@ -684,7 +684,7 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationZeroPlaybackRate)
     Timing timing;
     timing.iterationDuration = std::numeric_limits<double>::infinity();
     timing.playbackRate = 0;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     EXPECT_EQ(0, animationNode->computedTiming().startTime());
 
@@ -716,7 +716,7 @@ TEST(AnimationAnimationEffectTest, EndTime)
     timing.endDelay = 2;
     timing.iterationDuration = 4;
     timing.iterationCount = 2;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
     EXPECT_EQ(11, animationNode->endTimeInternal());
 }
 
@@ -727,7 +727,7 @@ TEST(AnimationAnimationEffectTest, Events)
     timing.fillMode = Timing::FillModeForwards;
     timing.iterationCount = 2;
     timing.startDelay = 1;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0.0, TimingUpdateOnDemand);
     EXPECT_FALSE(animationNode->eventDelegate()->eventTriggered());
@@ -752,7 +752,7 @@ TEST(AnimationAnimationEffectTest, TimeToEffectChange)
     timing.iterationCount = 2.5;
     timing.startDelay = 1;
     timing.direction = Timing::PlaybackDirectionAlternate;
-    RefPtrWillBeRawPtr<TestAnimationEffect> animationNode = TestAnimationEffect::create(timing);
+    TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0);
     EXPECT_EQ(0, animationNode->takeLocalTime());

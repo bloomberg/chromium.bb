@@ -11,15 +11,14 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class CORE_EXPORT InterpolationEffect : public RefCountedWillBeGarbageCollected<InterpolationEffect> {
+class CORE_EXPORT InterpolationEffect : public GarbageCollected<InterpolationEffect> {
 public:
-    static PassRefPtrWillBeRawPtr<InterpolationEffect> create()
+    static InterpolationEffect* create()
     {
-        return adoptRefWillBeNoop(new InterpolationEffect());
+        return new InterpolationEffect();
     }
 
     void getActiveInterpolations(double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const;
@@ -45,7 +44,7 @@ private:
     {
     }
 
-    class InterpolationRecord : public NoBaseWillBeGarbageCollectedFinalized<InterpolationRecord> {
+    class InterpolationRecord : public GarbageCollectedFinalized<InterpolationRecord> {
     public:
         RefPtrWillBeMember<Interpolation> m_interpolation;
         RefPtr<TimingFunction> m_easing;
@@ -54,9 +53,9 @@ private:
         double m_applyFrom;
         double m_applyTo;
 
-        static PassOwnPtrWillBeRawPtr<InterpolationRecord> create(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
+        static InterpolationRecord* create(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
         {
-            return adoptPtrWillBeNoop(new InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
+            return new InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo);
         }
 
         DECLARE_TRACE();
@@ -73,7 +72,7 @@ private:
         }
     };
 
-    WillBeHeapVector<OwnPtrWillBeMember<InterpolationRecord>> m_interpolations;
+    HeapVector<Member<InterpolationRecord>> m_interpolations;
 };
 
 } // namespace blink
