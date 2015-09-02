@@ -29,12 +29,16 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/webdata/common/web_data_results.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
+using base::Bucket;
 using base::TimeTicks;
+using rappor::TestRapporService;
+using ::testing::ElementsAre;
 
 namespace autofill {
 namespace {
@@ -3034,6 +3038,145 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
 
     autofill_manager_->Reset();
   }
+}
+
+// Test class that shares setup code for testing ParseQueryResponse.
+class AutofillMetricsParseQueryResponseTest : public testing::Test {
+ public:
+  void SetUp() override {
+    FormData form;
+    form.origin = GURL("http://foo.com");
+    FormFieldData field;
+    field.form_control_type = "text";
+
+    field.label = ASCIIToUTF16("fullname");
+    field.name = ASCIIToUTF16("fullname");
+    form.fields.push_back(field);
+
+    field.label = ASCIIToUTF16("address");
+    field.name = ASCIIToUTF16("address");
+    form.fields.push_back(field);
+
+    // Checkable fields should be ignored in parsing
+    FormFieldData checkable_field;
+    checkable_field.label = ASCIIToUTF16("radio_button");
+    checkable_field.form_control_type = "radio";
+    checkable_field.is_checkable = true;
+    form.fields.push_back(checkable_field);
+
+    forms_.push_back(new FormStructure(form));
+
+    field.label = ASCIIToUTF16("email");
+    field.name = ASCIIToUTF16("email");
+    form.fields.push_back(field);
+
+    field.label = ASCIIToUTF16("password");
+    field.name = ASCIIToUTF16("password");
+    field.form_control_type = "password";
+    form.fields.push_back(field);
+
+    forms_.push_back(new FormStructure(form));
+  }
+
+ protected:
+  TestRapporService rappor_service_;
+  ScopedVector<FormStructure> forms_;
+};
+
+TEST_F(AutofillMetricsParseQueryResponseTest, ServerHasData) {
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"7\" />"
+      "<field autofilltype=\"30\" />"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"0\" />"
+      "</autofillqueryresponse>";
+
+  base::HistogramTester histogram_tester;
+  FormStructure::ParseQueryResponse(response, forms_.get(), &rappor_service_);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
+      ElementsAre(Bucket(true, 2)));
+
+  // No RAPPOR metrics are logged in the case there is server data available for
+  // all forms.
+  EXPECT_EQ(0, rappor_service_.GetReportsCount());
+}
+
+// If the server returns NO_SERVER_DATA for one of the forms, expect RAPPOR
+// logging.
+TEST_F(AutofillMetricsParseQueryResponseTest, OneFormNoServerData) {
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"0\" />"
+      "</autofillqueryresponse>";
+
+  base::HistogramTester histogram_tester;
+  FormStructure::ParseQueryResponse(response, forms_.get(), &rappor_service_);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
+      ElementsAre(Bucket(false, 1), Bucket(true, 1)));
+
+  EXPECT_EQ(1, rappor_service_.GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service_.GetRecordedSampleForMetric(
+      "Autofill.QueryResponseHasNoServerDataForForm", &sample, &type));
+  EXPECT_EQ("foo.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
+}
+
+// If the server returns NO_SERVER_DATA for both of the forms, expect RAPPOR
+// logging.
+TEST_F(AutofillMetricsParseQueryResponseTest, AllFormsNoServerData) {
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"0\" />"
+      "</autofillqueryresponse>";
+
+  base::HistogramTester histogram_tester;
+  FormStructure::ParseQueryResponse(response, forms_.get(), &rappor_service_);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
+      ElementsAre(Bucket(false, 2)));
+
+  // Even though both forms are logging to RAPPOR, there is only one sample for
+  // a given eTLD+1.
+  EXPECT_EQ(1, rappor_service_.GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service_.GetRecordedSampleForMetric(
+      "Autofill.QueryResponseHasNoServerDataForForm", &sample, &type));
+  EXPECT_EQ("foo.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
+}
+
+// If the server returns NO_SERVER_DATA for only some of the fields, expect no
+// RAPPOR logging, and expect the UMA metric to say there is data.
+TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"10\" />"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"11\" />"
+      "</autofillqueryresponse>";
+
+  base::HistogramTester histogram_tester;
+  FormStructure::ParseQueryResponse(response, forms_.get(), &rappor_service_);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
+      ElementsAre(Bucket(true, 2)));
+
+  // No RAPPOR metrics are logged in the case there is at least some server data
+  // available for all forms.
+  EXPECT_EQ(0, rappor_service_.GetReportsCount());
 }
 
 }  // namespace autofill

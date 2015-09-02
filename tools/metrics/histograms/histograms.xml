@@ -2434,6 +2434,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The usefulness of Autofill server information.</summary>
 </histogram>
 
+<histogram name="Autofill.ServerResponseHasDataForForm"
+    enum="BooleanHadPredictions">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    Tracks whether Autofill server had at least some prediction data for a given
+    form at query response time.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.StoredProfileCount">
   <owner>isherman@chromium.org</owner>
   <summary>
@@ -53590,6 +53599,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanHadPhoneNumber" type="int">
   <int value="0" label="Did not have phone number."/>
   <int value="1" label="Had phone number."/>
+</enum>
+
+<enum name="BooleanHadPredictions" type="int">
+  <int value="0" label="No predictions"/>
+  <int value="1" label="Has predictions"/>
 </enum>
 
 <enum name="BooleanHandshakeConfirmed" type="int">

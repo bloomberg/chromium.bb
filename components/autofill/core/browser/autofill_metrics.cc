@@ -626,6 +626,11 @@ void AutofillMetrics::LogNumberOfEditedAutofilledFieldsAtSubmission(
       num_edited_autofilled_fields);
 }
 
+// static
+void AutofillMetrics::LogServerResponseHasDataForForm(bool has_data) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.ServerResponseHasDataForForm", has_data);
+}
+
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),

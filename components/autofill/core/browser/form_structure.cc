@@ -647,6 +647,8 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
       ++current_info;
     }
 
+    AutofillMetrics::LogServerResponseHasDataForForm(
+        !query_response_has_no_server_data);
     if (query_response_has_no_server_data && form->source_url().is_valid()) {
       rappor::SampleDomainAndRegistryFromGURL(
           rappor_service, "Autofill.QueryResponseHasNoServerDataForForm",
