@@ -54,4 +54,9 @@ AccountConsistencyServiceFactory::BuildServiceInstanceFor(
       ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state)));
 }
 
+bool AccountConsistencyServiceFactory::ServiceIsCreatedWithBrowserState()
+    const {
+  return true;
+}
+
 }  // namespace ios
