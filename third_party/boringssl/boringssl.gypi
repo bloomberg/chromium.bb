@@ -15,6 +15,7 @@
       'src/ssl/d1_pkt.c',
       'src/ssl/d1_srtp.c',
       'src/ssl/d1_srvr.c',
+      'src/ssl/dtls_record.c',
       'src/ssl/pqueue/pqueue.c',
       'src/ssl/s3_both.c',
       'src/ssl/s3_clnt.c',
@@ -26,6 +27,7 @@
       'src/ssl/ssl_aead_ctx.c',
       'src/ssl/ssl_algs.c',
       'src/ssl/ssl_asn1.c',
+      'src/ssl/ssl_buffer.c',
       'src/ssl/ssl_cert.c',
       'src/ssl/ssl_cipher.c',
       'src/ssl/ssl_lib.c',
@@ -35,6 +37,7 @@
       'src/ssl/ssl_txt.c',
       'src/ssl/t1_enc.c',
       'src/ssl/t1_lib.c',
+      'src/ssl/tls_record.c',
     ],
     'boringssl_crypto_sources': [
       'err_data.c',

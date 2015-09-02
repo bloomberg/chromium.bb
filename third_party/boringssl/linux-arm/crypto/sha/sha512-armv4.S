@@ -47,7 +47,7 @@
 @ was reflected in below two parameters as 0 and 4. Now caller is
 @ expected to maintain native byte order for whole 64-bit values.
 #ifndef __KERNEL__
-# include "arm_arch.h"
+# include <openssl/arm_arch.h>
 # define VFP_ABI_PUSH	vstmdb	sp!,{d8-d15}
 # define VFP_ABI_POP	vldmia	sp!,{d8-d15}
 #else

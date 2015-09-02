@@ -176,9 +176,10 @@ bool ECPrivateKey::ExportEncryptedPrivateKey(
   // equivalent.
   ScopedX509_SIG encrypted(PKCS8_encrypt_pbe(
       NID_pbe_WithSHA1And3_Key_TripleDES_CBC,
+      nullptr,
       reinterpret_cast<const uint8_t*>(password.data()),
       password.size(),
-      NULL,
+      nullptr,
       0,
       iterations,
       pkcs8.get()));

@@ -271,6 +271,10 @@ TEST(BoringSSL, PKCS7) {
   TestSimple("pkcs7_test");
 }
 
+TEST(BoringSSL, PKCS8) {
+  TestSimple("pkcs8_test");
+}
+
 TEST(BoringSSL, PKCS12) {
   TestSimple("pkcs12_test");
 }

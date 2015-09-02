@@ -38,7 +38,7 @@
 @ Add ARMv8 code path performing at 2.0 cpb on Apple A7.
 
 #ifndef __KERNEL__
-# include "arm_arch.h"
+# include <openssl/arm_arch.h>
 #else
 # define __ARM_ARCH__ __LINUX_ARM_ARCH__
 # define __ARM_MAX_ARCH__ 7

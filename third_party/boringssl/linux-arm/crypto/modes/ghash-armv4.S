@@ -1,6 +1,6 @@
 #if defined(__arm__)
 #if defined(__arm__)
-#include "arm_arch.h"
+#include <openssl/arm_arch.h>
 
 .syntax	unified
 

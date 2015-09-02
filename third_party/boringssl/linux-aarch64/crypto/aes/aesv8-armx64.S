@@ -1,5 +1,5 @@
 #if defined(__aarch64__)
-#include "arm_arch.h"
+#include <openssl/arm_arch.h>
 
 #if __ARM_MAX_ARCH__>=7
 .text

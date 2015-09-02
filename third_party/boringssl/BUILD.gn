@@ -62,14 +62,7 @@ component("boringssl") {
   ]
 
   # Also gets the include dirs from :openssl_config
-  include_dirs = [
-    "src/include",
-
-    # This is for arm_arch.h, which is needed by some asm files. Since the
-    # asm files are generated and kept in a different directory, they
-    # cannot use relative paths to find this file.
-    "src/crypto",
-  ]
+  include_dirs = [ "src/include" ]
 
   if (is_msan) {
     defines += [ "OPENSSL_NO_ASM" ]
