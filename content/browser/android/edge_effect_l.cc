@@ -9,6 +9,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/system_ui_resource_type.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 namespace content {
 
@@ -216,18 +217,20 @@ float EdgeEffectL::GetAlpha() const {
   return IsFinished() ? 0.f : glow_alpha_;
 }
 
-void EdgeEffectL::ApplyToLayers(const gfx::SizeF& size,
-                                const gfx::Transform& transform) {
+void EdgeEffectL::ApplyToLayers(Edge edge,
+                                const gfx::SizeF& viewport_size,
+                                float offset) {
   if (IsFinished())
     return;
 
-  // An empty window size, while meaningless, is also relatively harmless, and
-  // will simply prevent any drawing of the layers.
-  if (size.IsEmpty()) {
+  // An empty viewport, while meaningless, is also relatively harmless, and will
+  // simply prevent any drawing of the layers.
+  if (viewport_size.IsEmpty()) {
     glow_->SetIsDrawable(false);
     return;
   }
 
+  gfx::SizeF size = ComputeOrientedSize(edge, viewport_size);
   const float r = size.width() * 0.75f / kSin;
   const float y = kCos * r;
   const float h = r - y;
@@ -239,21 +242,47 @@ void EdgeEffectL::ApplyToLayers(const gfx::SizeF& size,
   gfx::Size image_bounds(
       r, std::min(1.f, glow_scale_y_) * base_glow_scale * bounds_.height());
 
+  // Compute the displaced image rect. This includes both the horizontal
+  // offset from the |displacement_| factor, as well as the vertical edge offset
+  // provided by the method call.
+  const float displacement = Clamp(displacement_, 0.f, 1.f) - 0.5f;
+  const float displacement_offset_x = bounds_.width() * displacement * 0.5f;
+  const float image_offset_x = (bounds_.width() - image_bounds.width()) * 0.5f;
+  gfx::RectF image_rect(image_bounds);
+  image_rect.Offset(image_offset_x - displacement_offset_x, -std::abs(offset));
+
+  // Clip the image rect against the viewport. If either rect is empty there's
+  // no need to draw anything further.
+  gfx::RectF clipped_rect(size.width(), size.height());
+  clipped_rect.Intersect(image_rect);
+  if (clipped_rect.IsEmpty() || image_rect.IsEmpty()) {
+    glow_->SetIsDrawable(false);
+    return;
+  }
+
+  // Compute the logical UV coordinates of the clipped rect relative to the
+  // displaced image rect.
+  gfx::PointF clipped_top_left = clipped_rect.origin();
+  gfx::PointF clipped_bottom_right = clipped_rect.bottom_right();
+  gfx::PointF uv_top_left(
+      (clipped_top_left.x() - image_rect.x()) / image_rect.width(),
+      (clipped_top_left.y() - image_rect.y()) / image_rect.height());
+  gfx::PointF uv_bottom_right(
+      (clipped_bottom_right.x() - image_rect.x()) / image_rect.width(),
+      (clipped_bottom_right.y() - image_rect.y()) / image_rect.height());
+  glow_->SetUV(uv_top_left, uv_bottom_right);
+
+  // There's no need to use the provided |offset| when computing the transform;
+  // the offset is built in to the computed UV coordinates.
+  glow_->SetTransform(ComputeTransform(edge, viewport_size, 0));
+
   glow_->SetIsDrawable(true);
   glow_->SetUIResourceId(resource_manager_->GetUIResourceId(
       ui::ANDROID_RESOURCE_TYPE_SYSTEM, kResourceId));
   glow_->SetTransformOrigin(gfx::Point3F(bounds_.width() * 0.5f, 0, 0));
-  glow_->SetBounds(image_bounds);
+  glow_->SetBounds(gfx::ToRoundedSize(clipped_rect.size()));
   glow_->SetContentsOpaque(false);
   glow_->SetOpacity(Clamp(glow_alpha_, 0.f, 1.f));
-
-  const float displacement = Clamp(displacement_, 0.f, 1.f) - 0.5f;
-  const float displacement_offset_x = bounds_.width() * displacement * 0.5f;
-  const float image_offset_x = (bounds_.width() - image_bounds.width()) * 0.5f;
-  gfx::Transform offset_transform;
-  offset_transform.Translate(image_offset_x - displacement_offset_x, 0);
-  offset_transform.ConcatTransform(transform);
-  glow_->SetTransform(offset_transform);
 }
 
 void EdgeEffectL::SetParent(cc::Layer* parent) {

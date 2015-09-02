@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/android/edge_effect_base.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -16,8 +17,6 @@ class Layer;
 }
 
 namespace content {
-
-class EdgeEffectBase;
 
 // Provides lazy, customized EdgeEffect creation.
 class OverscrollGlowClient {
@@ -34,8 +33,6 @@ class OverscrollGlowClient {
  */
 class OverscrollGlow {
  public:
-  enum Edge { EDGE_TOP = 0, EDGE_LEFT, EDGE_BOTTOM, EDGE_RIGHT, EDGE_COUNT };
-
   // |client| must be valid for the duration of the effect's lifetime.
   // The effect is enabled by default, but will remain dormant until the first
   // overscroll event.
@@ -76,6 +73,7 @@ class OverscrollGlow {
 
  private:
   enum Axis { AXIS_X, AXIS_Y };
+  enum { EDGE_COUNT = EdgeEffectBase::EDGE_COUNT };
 
   // Returns whether the effect has been properly initialized.
   bool InitializeIfNecessary();

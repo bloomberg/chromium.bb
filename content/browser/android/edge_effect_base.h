@@ -27,6 +27,8 @@ class EdgeEffectBase {
     STATE_PULL_DECAY
   };
 
+  enum Edge { EDGE_TOP, EDGE_LEFT, EDGE_BOTTOM, EDGE_RIGHT, EDGE_COUNT };
+
   virtual ~EdgeEffectBase() {}
 
   virtual void Pull(base::TimeTicks current_time,
@@ -40,9 +42,24 @@ class EdgeEffectBase {
   virtual bool IsFinished() const = 0;
   virtual float GetAlpha() const = 0;
 
-  virtual void ApplyToLayers(const gfx::SizeF& size,
-                             const gfx::Transform& transform) = 0;
+  virtual void ApplyToLayers(Edge edge,
+                             const gfx::SizeF& viewport_size,
+                             float offset) = 0;
   virtual void SetParent(cc::Layer* parent) = 0;
+
+ protected:
+  // Computes the transform for an edge effect given the |edge|, |viewport_size|
+  // and edge |offset|. This assumes the the effect transform anchor is at the
+  // centered edge of the effect.
+  static gfx::Transform ComputeTransform(Edge edge,
+                                         const gfx::SizeF& viewport_size,
+                                         float offset);
+
+  // Computes the maximum effect size relative to the screen |edge|. For
+  // top/bottom edges, thsi is simply |viewport_size|, while for left/right
+  // edges this is |viewport_size| with coordinates swapped.
+  static gfx::SizeF ComputeOrientedSize(Edge edge,
+                                        const gfx::SizeF& viewport_size);
 };
 
 }  // namespace content

@@ -376,6 +376,8 @@
       'browser/android/download_controller_android_impl.h',
       'browser/android/edge_effect.cc',
       'browser/android/edge_effect.h',
+      'browser/android/edge_effect_base.cc',
+      'browser/android/edge_effect_base.h',
       'browser/android/edge_effect_l.cc',
       'browser/android/edge_effect_l.h',
       'browser/android/in_process/context_provider_in_process.cc',

@@ -42,8 +42,9 @@ class EdgeEffectL : public EdgeEffectBase {
   bool IsFinished() const override;
   float GetAlpha() const override;
 
-  void ApplyToLayers(const gfx::SizeF& size,
-                     const gfx::Transform& transform) override;
+  void ApplyToLayers(Edge edge,
+                     const gfx::SizeF& viewport_size,
+                     float offset) override;
   void SetParent(cc::Layer* parent) override;
 
   // Thread-safe trigger to load resources.

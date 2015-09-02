@@ -311,18 +311,22 @@ float EdgeEffect::GetAlpha() const {
   return IsFinished() ? 0.f : std::max(glow_alpha_, edge_alpha_);
 }
 
-void EdgeEffect::ApplyToLayers(const gfx::SizeF& size,
-                               const gfx::Transform& transform) {
+void EdgeEffect::ApplyToLayers(Edge edge,
+                               const gfx::SizeF& viewport_size,
+                               float offset) {
   if (IsFinished())
     return;
 
   // An empty window size, while meaningless, is also relatively harmless, and
   // will simply prevent any drawing of the layers.
-  if (size.IsEmpty()) {
+  if (viewport_size.IsEmpty()) {
     edge_->Disable();
     glow_->Disable();
     return;
   }
+
+  gfx::SizeF size = ComputeOrientedSize(edge, viewport_size);
+  gfx::Transform transform = ComputeTransform(edge, viewport_size, offset);
 
   // Glow
   const int scaled_glow_height = static_cast<int>(
