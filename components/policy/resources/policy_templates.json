@@ -7426,7 +7426,7 @@
       'caption': 'Key Permissions',
       'desc': '''Grants access to corporate keys to extensions.
 
-      Keys are designated for corporate usage if they're generated using the chrome.platformKeys API on a managed account. Keys imported or generated in another way are not designated for corporate usage.
+      Keys are designated for corporate usage if they're generated using the chrome.enterprise.platformKeys API on a managed account. Keys imported or generated in another way are not designated for corporate usage.
 
       Access to keys designated for corporate usage is solely controlled by this policy. The user can neither grant nor withdraw access to corporate keys to or from extensions.
 
