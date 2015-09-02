@@ -14,10 +14,12 @@
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "platform/NotImplemented.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/heap/Heap.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include <gtest/gtest.h>
+#include <v8.h>
 
 namespace blink {
 namespace {
@@ -48,6 +50,12 @@ private:
         CompositorWorkerThread::terminateV8Execution();
         if (m_v8TerminationCallback)
             (*m_v8TerminationCallback)();
+    }
+    void willDestroyIsolate() override
+    {
+        v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
+        Heap::collectAllGarbage();
+        CompositorWorkerThread::willDestroyIsolate();
     }
 
     WebWaitableEvent* m_startEvent;

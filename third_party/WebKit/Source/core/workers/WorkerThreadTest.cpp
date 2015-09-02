@@ -9,10 +9,12 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/NotImplemented.h"
+#include "platform/heap/Heap.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebWaitableEvent.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <v8.h>
 
 using testing::_;
 using testing::AtMost;
@@ -108,6 +110,12 @@ public:
     WebThreadSupportingGC& backingThread() override
     {
         return *m_thread;
+    }
+    void willDestroyIsolate() override
+    {
+        v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
+        Heap::collectAllGarbage();
+        WorkerThread::willDestroyIsolate();
     }
 
     MOCK_METHOD1(doIdleGc, bool(double deadlineSeconds));
