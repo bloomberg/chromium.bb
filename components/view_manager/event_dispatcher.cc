@@ -61,6 +61,7 @@ void EventDispatcher::OnEvent(ServerView* root, mojo::EventPtr event) {
   } else {
     uint32_t accelerator_id = 0;
     if (event->action == mojo::EVENT_TYPE_KEY_PRESSED &&
+        !event->key_data->is_char &&
         HandleAccelerator(event->key_data->windows_key_code, event->flags,
                           &accelerator_id)) {
       // For accelerators, normal event dispatch is bypassed.
