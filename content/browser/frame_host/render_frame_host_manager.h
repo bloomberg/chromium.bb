@@ -450,12 +450,16 @@ class CONTENT_EXPORT RenderFrameHostManager {
   void EnsureRenderViewInitialized(RenderViewHostImpl* render_view_host,
                                    SiteInstance* instance);
 
-  // Recursively creates swapped out RenderViews and RenderFrameProxies for
-  // this frame's FrameTree and for its opener chain in the given SiteInstance.
-  // This allows other tabs to send cross-process JavaScript calls to their
-  // opener(s) and to any other frames in the opener's FrameTree (e.g.,
-  // supporting calls like window.opener.opener.frames[x][y]).
-  void CreateOpenerProxies(SiteInstance* instance);
+  // Creates swapped out RenderViews and RenderFrameProxies for this frame's
+  // FrameTree and for its opener chain in the given SiteInstance. This allows
+  // other tabs to send cross-process JavaScript calls to their opener(s) and
+  // to any other frames in the opener's FrameTree (e.g., supporting calls like
+  // window.opener.opener.frames[x][y]).  Does not create proxies for the
+  // subtree rooted at |skip_this_node| (e.g., if a node is being navigated, it
+  // can be passed here to prevent proxies from being created for it, in
+  // case it is in the same FrameTree as another node on its opener chain).
+  void CreateOpenerProxies(SiteInstance* instance,
+                           FrameTreeNode* skip_this_node);
 
   // Ensure that this frame has proxies in all SiteInstances that can discover
   // this frame by name (e.g., via window.open("", "frame_name")).  See
@@ -617,12 +621,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
   void CreateProxiesForNewRenderFrameHost(SiteInstance* old_instance,
                                           SiteInstance* new_instance);
 
-  // Create swapped out RenderViews and RenderFrameProxies in the given
-  // SiteInstance for all frames on the opener chain of this frame.  Same as
-  // CreateOpenerProxies, but starts from this frame's opener, calling
-  // CreateOpenerProxies on it if it exists and returning otherwise.
-  void CreateOpenerProxiesIfNeeded(SiteInstance* instance);
-
   // Traverse the opener chain and populate |opener_frame_trees| with
   // all FrameTrees accessible by following frame openers of nodes in the
   // given node's FrameTree. |opener_frame_trees| is ordered so that openers
@@ -638,8 +636,10 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // Create swapped out RenderViews and RenderFrameProxies in the given
   // SiteInstance for the current node's FrameTree.  Used as a helper function
   // in CreateOpenerProxies for creating proxies in each FrameTree on the
-  // opener chain.
-  void CreateOpenerProxiesForFrameTree(SiteInstance* instance);
+  // opener chain.  Don't create proxies for the subtree rooted at
+  // |skip_this_node|.
+  void CreateOpenerProxiesForFrameTree(SiteInstance* instance,
+                                       FrameTreeNode* skip_this_node);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,

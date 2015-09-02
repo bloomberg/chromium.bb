@@ -14,6 +14,12 @@
     return true;
   }
 
+  // Send a message to our parent's opener.
+  function postToOpenerOfParent(msg, origin) {
+    parent.opener.postMessage(msg, origin);
+    return true;
+  }
+
   // Send a message to a window named "foo".
   function postToFoo(msg) {
     var w = window.open("", "foo");

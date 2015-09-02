@@ -418,7 +418,8 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     dest_render_frame_host->SetUpMojoIfNeeded();
 
     // Recreate the opener chain.
-    CreateOpenerProxiesIfNeeded(dest_render_frame_host->GetSiteInstance());
+    CreateOpenerProxies(dest_render_frame_host->GetSiteInstance(),
+                        frame_tree_node_);
     if (!InitRenderView(dest_render_frame_host->render_view_host(),
                         MSG_ROUTING_NONE,
                         frame_tree_node_->IsMainFrame()))
@@ -1043,7 +1044,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // created or has crashed), initialize it.
   if (!navigation_rfh->IsRenderFrameLive()) {
     // Recreate the opener chain.
-    CreateOpenerProxiesIfNeeded(navigation_rfh->GetSiteInstance());
+    CreateOpenerProxies(navigation_rfh->GetSiteInstance(), frame_tree_node_);
     if (!InitRenderView(navigation_rfh->render_view_host(), MSG_ROUTING_NONE,
                         frame_tree_node_->IsMainFrame())) {
       return nullptr;
@@ -1578,14 +1579,17 @@ void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
     SiteInstance* old_instance,
     SiteInstance* new_instance) {
   // Only create opener proxies if they are in the same BrowsingInstance.
-  if (new_instance->IsRelatedSiteInstance(old_instance))
-    CreateOpenerProxiesIfNeeded(new_instance);
-  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
-    // Ensure that the frame tree has RenderFrameProxyHosts for the new
-    // SiteInstance in all nodes except the current one.  We do this for all
-    // frames in the tree, whether they are in the same BrowsingInstance or not.
-    // We will still check whether two frames are in the same BrowsingInstance
-    // before we allow them to interact (e.g., postMessage).
+  if (new_instance->IsRelatedSiteInstance(old_instance)) {
+    CreateOpenerProxies(new_instance, frame_tree_node_);
+  } else if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+    // Ensure that the frame tree has RenderFrameProxyHosts for the
+    // new SiteInstance in all nodes except the current one.  We do this for
+    // all frames in the tree, whether they are in the same BrowsingInstance or
+    // not.  If |new_instance| is in the same BrowsingInstance as
+    // |old_instance|, this will be done as part of CreateOpenerProxies above;
+    // otherwise, we do this here.  We will still check whether two frames are
+    // in the same BrowsingInstance before we allow them to interact (e.g.,
+    // postMessage).
     frame_tree_node_->frame_tree()->CreateProxiesForSiteInstance(
         frame_tree_node_, new_instance);
   }
@@ -1882,9 +1886,6 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
 
   if (render_view_host->IsRenderViewLive())
     return;
-
-  // Recreate the opener chain.
-  CreateOpenerProxiesIfNeeded(instance);
 
   // If the proxy in |instance| doesn't exist, this RenderView is not swapped
   // out and shouldn't be reinitialized here.
@@ -2460,19 +2461,6 @@ RenderFrameHostManager::GetAllProxyHostsForTesting() {
   return result;
 }
 
-void RenderFrameHostManager::CreateOpenerProxiesIfNeeded(
-    SiteInstance* instance) {
-  FrameTreeNode* opener = frame_tree_node_->opener();
-  if (!opener)
-    return;
-
-  // TODO(alexmos): This should process all openers in the current frame tree,
-  // not just current node's opener.
-
-  // Create proxies for the opener chain.
-  opener->render_manager()->CreateOpenerProxies(instance);
-}
-
 void RenderFrameHostManager::CollectOpenerFrameTrees(
     std::vector<FrameTree*>* opener_frame_trees,
     base::hash_set<FrameTreeNode*>* nodes_with_back_links) {
@@ -2488,7 +2476,9 @@ void RenderFrameHostManager::CollectOpenerFrameTrees(
   }
 }
 
-void RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
+void RenderFrameHostManager::CreateOpenerProxies(
+    SiteInstance* instance,
+    FrameTreeNode* skip_this_node) {
   std::vector<FrameTree*> opener_frame_trees;
   base::hash_set<FrameTreeNode*> nodes_with_back_links;
 
@@ -2502,7 +2492,7 @@ void RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
     opener_frame_trees[i]
         ->root()
         ->render_manager()
-        ->CreateOpenerProxiesForFrameTree(instance);
+        ->CreateOpenerProxiesForFrameTree(instance, skip_this_node);
   }
 
   // Set openers for nodes in |nodes_with_back_links| in a second pass.
@@ -2529,39 +2519,50 @@ void RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
 }
 
 void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
-    SiteInstance* instance) {
-  // If any of the RenderViewHosts (current, pending, or swapped out) for this
-  // FrameTree has the same SiteInstance, then we can return early, since
-  // proxies for other nodes in the tree should also exist (when in
-  // site-per-process mode).  An exception is if we are in
-  // IsSwappedOutStateForbidden mode and find a pending RenderViewHost: in this
-  // case, we should still create a proxy, which will allow communicating with
-  // the opener until the pending RenderView commits, or if the pending
-  // navigation is canceled.
-  FrameTree* frame_tree = frame_tree_node_->frame_tree();
-  RenderViewHostImpl* rvh = frame_tree->GetRenderViewHost(instance);
-  bool need_proxy_for_pending_rvh =
-      SiteIsolationPolicy::IsSwappedOutStateForbidden() &&
-      (rvh == pending_render_view_host());
-  if (rvh && rvh->IsRenderViewLive() && !need_proxy_for_pending_rvh)
+    SiteInstance* instance,
+    FrameTreeNode* skip_this_node) {
+  // Currently, this function is only called on main frames.  It should
+  // actually work correctly for subframes as well, so if that need ever
+  // arises, it should be sufficient to remove this DCHECK.
+  DCHECK(frame_tree_node_->IsMainFrame());
+
+  if (frame_tree_node_ == skip_this_node)
     return;
 
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    // Ensure that all the nodes in the opener's frame tree have
-    // RenderFrameProxyHosts for the new SiteInstance.
-    frame_tree->CreateProxiesForSiteInstance(nullptr, instance);
-  } else if (rvh && !rvh->IsRenderViewLive()) {
-    EnsureRenderViewInitialized(rvh, instance);
+  FrameTree* frame_tree = frame_tree_node_->frame_tree();
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+    // Ensure that all the nodes in the opener's FrameTree have
+    // RenderFrameProxyHosts for the new SiteInstance.  Only pass the node to
+    // be skipped if it's in the same FrameTree.
+    if (skip_this_node && skip_this_node->frame_tree() != frame_tree)
+      skip_this_node = nullptr;
+    frame_tree->CreateProxiesForSiteInstance(skip_this_node, instance);
   } else {
-    // Create a swapped out RenderView in the given SiteInstance if none exists,
-    // setting its opener to the given route_id.  Since the opener can point to
-    // a subframe, do this on the root frame of the opener's frame tree.
-    // Return the new view's route_id.
-    frame_tree->root()->render_manager()->
-        CreateRenderFrame(instance, nullptr,
-                          CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
-                          CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
-                          nullptr);
+    // If any of the RenderViewHosts (current, pending, or swapped out) for this
+    // FrameTree has the same SiteInstance, then we can return early and reuse
+    // them.  An exception is if we are in IsSwappedOutStateForbidden mode and
+    // find a pending RenderViewHost: in this case, we should still create a
+    // proxy, which will allow communicating with the opener until the pending
+    // RenderView commits, or if the pending navigation is canceled.
+    RenderViewHostImpl* rvh = frame_tree->GetRenderViewHost(instance);
+    bool need_proxy_for_pending_rvh =
+        SiteIsolationPolicy::IsSwappedOutStateForbidden() &&
+        (rvh == pending_render_view_host());
+    if (rvh && rvh->IsRenderViewLive() && !need_proxy_for_pending_rvh)
+      return;
+
+    if (rvh && !rvh->IsRenderViewLive()) {
+      EnsureRenderViewInitialized(rvh, instance);
+    } else {
+      // Create a swapped out RenderView in the given SiteInstance if none
+      // exists. Since an opener can point to a subframe, do this on the root
+      // frame of the current opener's frame tree.
+      frame_tree->root()->render_manager()->
+          CreateRenderFrame(instance, nullptr,
+                            CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
+                            CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
+                            nullptr);
+    }
   }
 }
 

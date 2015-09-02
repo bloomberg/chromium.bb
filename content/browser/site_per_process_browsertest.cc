@@ -3038,4 +3038,55 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UpdateSubframeOpener) {
   EXPECT_TRUE(success);
 }
 
+// Check that when a subframe navigates to a new SiteInstance, the new
+// SiteInstance will get a proxy for the opener of subframe's parent.  I.e.,
+// accessing parent.opener from the subframe should still work after a
+// cross-process navigation.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigatingSubframePreservesOpenerInParent) {
+  GURL main_url = embedded_test_server()->GetURL("a.com", "/post_message.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Open a popup with a cross-site page that has a subframe.
+  GURL popup_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(b)"));
+  Shell* popup_shell = OpenPopup(shell()->web_contents(), popup_url, "popup");
+  EXPECT_TRUE(popup_shell);
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(popup_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(1U, popup_root->child_count());
+
+  // Check that the popup's opener is correct in the browser process.
+  EXPECT_EQ(root, popup_root->opener());
+
+  // Navigate popup's subframe to another site.
+  GURL frame_url(embedded_test_server()->GetURL("c.com", "/post_message.html"));
+  NavigateFrameToURL(popup_root->child_at(0), frame_url);
+  EXPECT_TRUE(
+      WaitForRenderFrameReady(popup_root->child_at(0)->current_frame_host()));
+
+  // Check that the new subframe process still sees correct opener for its
+  // parent by sending a postMessage to subframe's parent.opener.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup_root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(!!parent.opener);", &success));
+  EXPECT_TRUE(success);
+
+  base::string16 expected_title = base::ASCIIToUTF16("msg");
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup_root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(postToOpenerOfParent('msg','*'));",
+      &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
 }  // namespace content

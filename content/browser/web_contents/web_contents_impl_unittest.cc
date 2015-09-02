@@ -924,7 +924,7 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
   scoped_ptr<TestWebContents> popup(
       TestWebContents::Create(browser_context(), instance));
   popup->SetOpener(contents());
-  contents()->GetRenderManager()->CreateOpenerProxies(instance);
+  contents()->GetRenderManager()->CreateOpenerProxies(instance, nullptr);
 
   // If swapped out is forbidden, a new proxy should be created for the opener
   // in |instance|, and we should ensure that its routing ID is returned here.

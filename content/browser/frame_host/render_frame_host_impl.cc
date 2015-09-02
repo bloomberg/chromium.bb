@@ -1783,7 +1783,7 @@ void RenderFrameHostImpl::UpdateOpener() {
   // exist.
   if (frame_tree_node_->opener()) {
     frame_tree_node_->opener()->render_manager()->CreateOpenerProxies(
-        GetSiteInstance());
+        GetSiteInstance(), frame_tree_node_);
   }
 
   int opener_routing_id =

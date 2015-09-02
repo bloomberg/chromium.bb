@@ -4139,7 +4139,7 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
       RenderFrameHostImpl* source_rfhi =
           static_cast<RenderFrameHostImpl*>(source_rfh);
       source_rfhi->frame_tree_node()->render_manager()->CreateOpenerProxies(
-          GetSiteInstance());
+          GetSiteInstance(), nullptr);
     }
   }
 }
