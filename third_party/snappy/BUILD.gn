@@ -16,6 +16,14 @@ config("snappy_config") {
   }
 }
 
+config("snappy_warnings") {
+  if (is_clang) {
+    # ComputeTable is unused,
+    # https://code.google.com/p/snappy/issues/detail?id=96
+    cflags = [ "-Wno-unused-function" ]
+  }
+}
+
 static_library("snappy") {
   sources = [
     "src/snappy-internal.h",
@@ -27,16 +35,13 @@ static_library("snappy") {
     "src/snappy.h",
   ]
 
-  config("snappy_warnings") {
-    if (is_clang) {
-      # ComputeTable is unused,
-      # https://code.google.com/p/snappy/issues/detail?id=96
-      cflags = [ "-Wno-unused-function" ]
-    }
-  }
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":snappy_warnings" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+
+    # Must be after no_chromium_code for warning flags to be ordered correctly.
+    ":snappy_warnings",
+  ]
   public_configs = [ ":snappy_config" ]
 
   if (is_win) {

@@ -6,6 +6,15 @@ config("lzma_sdk_config") {
   include_dirs = [ "." ]
 }
 
+# Must be in a config because of how GN orders flags (otherwise -Wall will
+# appear after this, and turn it back on).
+config("clang_warnings") {
+  if (is_clang) {
+    # Upstream uses self-assignment to avoid warnings.
+    cflags = [ "-Wno-self-assign" ]
+  }
+}
+
 static_library("lzma_sdk") {
   sources = [
     "7z.h",
@@ -50,17 +59,11 @@ static_library("lzma_sdk") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
 
+    # Must be after no_chromium_code for warning flags to be ordered correctly.
+    ":clang_warnings",
+  ]
   public_configs = [ ":lzma_sdk_config" ]
-
-  # Must be in a config because of how GN orders flags (otherwise -Wall will
-  # appear after this, and turn it back on).
-  config("clang_warnings") {
-    if (is_clang) {
-      # Upstream uses self-assignment to avoid warnings.
-      cflags = [ "-Wno-self-assign" ]
-    }
-  }
-  configs += [ ":clang_warnings" ]
 }

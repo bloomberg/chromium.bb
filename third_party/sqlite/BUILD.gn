@@ -16,6 +16,27 @@ if (!use_system_sqlite) {
     include_dirs = [ "." ]
   }
 
+  config("sqlite_warnings") {
+    cflags = []
+    if (is_clang) {
+      # sqlite contains a few functions that are unused, at least on
+      # Windows with Chromium's sqlite patches applied
+      # (interiorCursorEOF fts3EvalDeferredPhrase
+      # fts3EvalSelectDeferred sqlite3Fts3InitHashTable
+      # sqlite3Fts3InitTok).
+      cflags += [ "-Wno-unused-function" ]
+    }
+    if (is_linux) {
+      cflags += [
+        # SQLite doesn"t believe in compiler warnings,
+        # preferring testing.
+        #   http://www.sqlite.org/faq.html#q17
+        "-Wno-int-to-pointer-cast",
+        "-Wno-pointer-to-int-cast",
+      ]
+    }
+  }
+
   # "sqlite3" can cause conflicts with the system library.
   component("chromium_sqlite3") {
     visibility = [ ":*" ]
@@ -69,29 +90,14 @@ if (!use_system_sqlite) {
 
     include_dirs = [ "amalgamation" ]
 
-    config("sqlite_warnings") {
-      cflags = []
-      if (is_clang) {
-        # sqlite contains a few functions that are unused, at least on
-        # Windows with Chromium's sqlite patches applied
-        # (interiorCursorEOF fts3EvalDeferredPhrase
-        # fts3EvalSelectDeferred sqlite3Fts3InitHashTable
-        # sqlite3Fts3InitTok).
-        cflags += [ "-Wno-unused-function" ]
-      }
-      if (is_linux) {
-        cflags += [
-          # SQLite doesn"t believe in compiler warnings,
-          # preferring testing.
-          #   http://www.sqlite.org/faq.html#q17
-          "-Wno-int-to-pointer-cast",
-          "-Wno-pointer-to-int-cast",
-        ]
-      }
-    }
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
-    configs += [ ":sqlite_warnings" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+
+      # Must be after no_chromium_code for warning flags to be ordered
+      # correctly.
+      ":sqlite_warnings",
+    ]
 
     if (is_linux) {
       libs = [ "dl" ]

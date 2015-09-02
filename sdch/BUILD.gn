@@ -6,6 +6,17 @@ config("sdch_config") {
   include_dirs = [ "open-vcdiff/src" ]
 }
 
+# gn orders flags on a target before flags from configs. The default config
+# adds -Wall, and these flags have to be after -Wall -- so they need to come
+# from a config and can't be on the target directly.
+config("sdch_warnings") {
+  cflags = []
+  if (is_linux) {
+    # TODO(mostynb): remove this if open-vcdiff is ever updated for c++11:
+    cflags += [ "-Wno-deprecated-declarations" ]
+  }
+}
+
 static_library("sdch") {
   sources = [
     "logging_forward.h",
@@ -42,24 +53,13 @@ static_library("sdch") {
     "open-vcdiff/vsprojects/stdint.h",
   ]
 
+  configs += [ ":sdch_warnings" ]
   public_configs = [ ":sdch_config" ]
 
   deps = [
     "//base",
     "//third_party/zlib",
   ]
-
-  # gn orders flags on a target before flags from configs. The default config
-  # adds -Wall, and these flags have to be after -Wall -- so they need to come
-  # from a config and can't be on the target directly.
-  config("sdch_warnings") {
-    cflags = []
-    if (is_linux) {
-      # TODO(mostynb): remove this if open-vcdiff is ever updated for c++11:
-      cflags += [ "-Wno-deprecated-declarations" ]
-    }
-  }
-  configs += [ ":sdch_warnings" ]
 
   if (is_linux || is_android) {
     include_dirs = [ "linux" ]
