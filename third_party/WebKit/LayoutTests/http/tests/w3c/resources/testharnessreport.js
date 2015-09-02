@@ -126,6 +126,6 @@ add_completion_callback(function (tests, harness_status) {
     if (document.readyState === 'loading') {
         window.addEventListener('load', done);
     } else {
-        done();
+        setTimeout(done, 0);
     }
 });
