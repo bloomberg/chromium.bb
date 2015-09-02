@@ -167,9 +167,6 @@ void SettingsFlagsAndId::ConvertFlagsAndIdForSpdy2(uint32* val) {
     std::swap(wire_array[1], wire_array[2]);
 }
 
-SpdyAltSvcScratch::SpdyAltSvcScratch() { Reset(); }
-SpdyAltSvcScratch::~SpdyAltSvcScratch() {}
-
 bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
                                                    size_t len) {
   return true;
@@ -182,7 +179,7 @@ bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
 }
 
 SpdyFramer::SpdyFramer(SpdyMajorVersion version)
-    : current_frame_buffer_(new char[kControlFrameBufferSize]),
+    : current_frame_buffer_(kControlFrameBufferSize),
       expect_continuation_(0),
       visitor_(NULL),
       debug_visitor_(NULL),
@@ -216,13 +213,13 @@ void SpdyFramer::Reset() {
   error_code_ = SPDY_NO_ERROR;
   remaining_data_length_ = 0;
   remaining_control_header_ = 0;
-  current_frame_buffer_length_ = 0;
+  current_frame_buffer_.Rewind();
   current_frame_type_ = DATA;
   current_frame_flags_ = 0;
   current_frame_length_ = 0;
   current_frame_stream_id_ = kInvalidStream;
   settings_scratch_.Reset();
-  altsvc_scratch_.Reset();
+  altsvc_scratch_.reset();
   remaining_padding_payload_length_ = 0;
 }
 
@@ -688,13 +685,35 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
   } while (state_ != previous_state_);
  bottom:
   DCHECK(len == 0 || state_ == SPDY_ERROR || process_single_input_frame_);
-  if (current_frame_buffer_length_ == 0 && remaining_data_length_ == 0 &&
+  if (current_frame_buffer_.len() == 0 && remaining_data_length_ == 0 &&
       remaining_control_header_ == 0) {
     DCHECK(state_ == SPDY_READY_FOR_FRAME || state_ == SPDY_ERROR)
         << "State: " << StateToString(state_);
   }
 
   return original_len - len;
+}
+
+SpdyFramer::CharBuffer::CharBuffer(size_t capacity)
+    : buffer_(new char[capacity]), capacity_(capacity), len_(0) {}
+SpdyFramer::CharBuffer::~CharBuffer() {}
+
+void SpdyFramer::CharBuffer::CopyFrom(const char* data, size_t size) {
+  DCHECK_GE(capacity_, len_ + size);
+  memcpy(buffer_.get() + len_, data, size);
+  len_ += size;
+}
+
+void SpdyFramer::CharBuffer::Rewind() {
+  len_ = 0;
+}
+
+SpdyFramer::SpdySettingsScratch::SpdySettingsScratch()
+    : buffer(8), last_setting_id(-1) {}
+
+void SpdyFramer::SpdySettingsScratch::Reset() {
+  buffer.Rewind();
+  last_setting_id = -1;
 }
 
 size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
@@ -705,19 +724,19 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   size_t original_len = len;
 
   // Update current frame buffer as needed.
-  if (current_frame_buffer_length_ < GetControlFrameHeaderSize()) {
+  if (current_frame_buffer_.len() < GetControlFrameHeaderSize()) {
     size_t bytes_desired =
-        GetControlFrameHeaderSize() - current_frame_buffer_length_;
+        GetControlFrameHeaderSize() - current_frame_buffer_.len();
     UpdateCurrentFrameBuffer(&data, &len, bytes_desired);
   }
 
-  if (current_frame_buffer_length_ < GetControlFrameHeaderSize()) {
+  if (current_frame_buffer_.len() < GetControlFrameHeaderSize()) {
     // Not enough information to do anything meaningful.
     return original_len - len;
   }
 
-  SpdyFrameReader reader(current_frame_buffer_.get(),
-                         current_frame_buffer_length_);
+  SpdyFrameReader reader(current_frame_buffer_.data(),
+                         current_frame_buffer_.len());
   bool is_control_frame = false;
 
   int control_frame_type_field =
@@ -818,7 +837,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     // The strncmp for 5 is safe because we only hit this point if we
     // have kMinCommonHeader (8) bytes
     if (!syn_frame_processed_ &&
-        strncmp(current_frame_buffer_.get(), "HTTP/", 5) == 0) {
+        strncmp(current_frame_buffer_.data(), "HTTP/", 5) == 0) {
       LOG(WARNING) << "Unexpected HTTP response to " << display_protocol_
                    << " request";
       probable_http_response_ = true;
@@ -870,7 +889,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
 
 void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
   DCHECK_EQ(SPDY_NO_ERROR, error_code_);
-  DCHECK_LE(GetControlFrameHeaderSize(), current_frame_buffer_length_);
+  DCHECK_LE(GetControlFrameHeaderSize(), current_frame_buffer_.len());
 
   // TODO(mlavan): Either remove credential frames from the code entirely,
   // or add them to parsing + serialization methods for SPDY3.
@@ -1171,9 +1190,9 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
     // remainder of the control frame's header before we can parse the header
     // block. The start of the header block varies with the control type.
     DCHECK_GE(frame_size_without_variable_data,
-              static_cast<int32>(current_frame_buffer_length_));
-    remaining_control_header_ = frame_size_without_variable_data -
-        current_frame_buffer_length_;
+              static_cast<int32>(current_frame_buffer_.len()));
+    remaining_control_header_ =
+        frame_size_without_variable_data - current_frame_buffer_.len();
 
     CHANGE_STATE(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK);
     return;
@@ -1186,12 +1205,7 @@ size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data, size_t* len,
                                             size_t max_bytes) {
   size_t bytes_to_read = std::min(*len, max_bytes);
   if (bytes_to_read > 0) {
-    DCHECK_GE(kControlFrameBufferSize,
-              current_frame_buffer_length_ + bytes_to_read);
-    memcpy(current_frame_buffer_.get() + current_frame_buffer_length_,
-           *data,
-           bytes_to_read);
-    current_frame_buffer_length_ += bytes_to_read;
+    current_frame_buffer_.CopyFrom(*data, bytes_to_read);
     *data += bytes_to_read;
     *len -= bytes_to_read;
   }
@@ -1423,8 +1437,8 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
   }
 
   if (remaining_control_header_ == 0) {
-    SpdyFrameReader reader(current_frame_buffer_.get(),
-                           current_frame_buffer_length_);
+    SpdyFrameReader reader(current_frame_buffer_.data(),
+                           current_frame_buffer_.len());
     reader.Seek(GetControlFrameHeaderSize());  // Seek past frame header.
 
     switch (current_frame_type_) {
@@ -1717,9 +1731,8 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
   // Loop over our incoming data.
   while (unprocessed_bytes > 0) {
     // Process up to one setting at a time.
-    size_t processing = std::min(
-        unprocessed_bytes,
-        static_cast<size_t>(setting_size - settings_scratch_.setting_buf_len));
+    size_t processing = std::min(unprocessed_bytes,
+                                 setting_size - settings_scratch_.buffer.len());
 
     // Check if we have a complete setting in our input.
     if (processing == setting_size) {
@@ -1730,19 +1743,16 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
       }
     } else {
       // Continue updating settings_scratch_.setting_buf.
-      memcpy(settings_scratch_.setting_buf + settings_scratch_.setting_buf_len,
-             data + processed_bytes,
-             processing);
-      settings_scratch_.setting_buf_len += processing;
+      settings_scratch_.buffer.CopyFrom(data + processed_bytes, processing);
 
       // Check if we have a complete setting buffered.
-      if (settings_scratch_.setting_buf_len == setting_size) {
-        if (!ProcessSetting(settings_scratch_.setting_buf)) {
+      if (settings_scratch_.buffer.len() == setting_size) {
+        if (!ProcessSetting(settings_scratch_.buffer.data())) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
           return processed_bytes;
         }
-        // Reset settings_scratch_.setting_buf for our next setting.
-        settings_scratch_.setting_buf_len = 0;
+        // Rewind settings buffer for our next setting.
+        settings_scratch_.buffer.Rewind();
       }
     }
 
@@ -1859,8 +1869,8 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
                                                remaining_data_length_);
   remaining_data_length_ -= bytes_read;
   if (remaining_data_length_ == 0) {
-    SpdyFrameReader reader(current_frame_buffer_.get(),
-                           current_frame_buffer_length_);
+    SpdyFrameReader reader(current_frame_buffer_.data(),
+                           current_frame_buffer_.len());
     reader.Seek(GetControlFrameHeaderSize());  // Skip frame header.
 
     // Use frame-specific handlers.
@@ -1942,17 +1952,17 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
 
   // Check if we had already read enough bytes to parse the GOAWAY header.
   const size_t header_size = GetGoAwayMinimumSize();
-  size_t unread_header_bytes = header_size - current_frame_buffer_length_;
+  size_t unread_header_bytes = header_size - current_frame_buffer_.len();
   bool already_parsed_header = (unread_header_bytes == 0);
   if (!already_parsed_header) {
     // Buffer the new GOAWAY header bytes we got.
     UpdateCurrentFrameBuffer(&data, &len, unread_header_bytes);
 
     // Do we have enough to parse the constant size GOAWAY header?
-    if (current_frame_buffer_length_ == header_size) {
+    if (current_frame_buffer_.len() == header_size) {
       // Parse out the last good stream id.
-      SpdyFrameReader reader(current_frame_buffer_.get(),
-                             current_frame_buffer_length_);
+      SpdyFrameReader reader(current_frame_buffer_.data(),
+                             current_frame_buffer_.len());
       reader.Seek(GetControlFrameHeaderSize());  // Seek past frame header.
       bool successful_read = reader.ReadUInt31(&current_frame_stream_id_);
       DCHECK(successful_read);
@@ -2009,17 +2019,17 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
   // Check if we had already read enough bytes to parse the fixed-length portion
   // of the RST_STREAM frame.
   const size_t header_size = GetRstStreamMinimumSize();
-  size_t unread_header_bytes = header_size - current_frame_buffer_length_;
+  size_t unread_header_bytes = header_size - current_frame_buffer_.len();
   bool already_parsed_header = (unread_header_bytes == 0);
   if (!already_parsed_header) {
     // Buffer the new RST_STREAM header bytes we got.
     UpdateCurrentFrameBuffer(&data, &len, unread_header_bytes);
 
     // Do we have enough to parse the constant size RST_STREAM header?
-    if (current_frame_buffer_length_ == header_size) {
+    if (current_frame_buffer_.len() == header_size) {
       // Parse out the last good stream id.
-      SpdyFrameReader reader(current_frame_buffer_.get(),
-                             current_frame_buffer_length_);
+      SpdyFrameReader reader(current_frame_buffer_.data(),
+                             current_frame_buffer_.len());
       reader.Seek(GetControlFrameHeaderSize());  // Seek past frame header.
       if (protocol_version() <= SPDY3) {
         bool successful_read = reader.ReadUInt31(&current_frame_stream_id_);
@@ -2070,29 +2080,25 @@ size_t SpdyFramer::ProcessAltSvcFramePayload(const char* data, size_t len) {
   // Clamp to the actual remaining payload.
   len = std::min(len, remaining_data_length_);
 
-  if (altsvc_scratch_.buffer.get() == nullptr) {
-    altsvc_scratch_.buffer.reset(
-        new char[current_frame_length_ - GetControlFrameHeaderSize()]);
-    altsvc_scratch_.buffer_length = 0;
+  if (altsvc_scratch_ == nullptr) {
+    size_t capacity = current_frame_length_ - GetControlFrameHeaderSize();
+    altsvc_scratch_.reset(new CharBuffer(capacity));
   }
-  memcpy(altsvc_scratch_.buffer.get() + altsvc_scratch_.buffer_length, data,
-         len);
-  altsvc_scratch_.buffer_length += len;
+  altsvc_scratch_->CopyFrom(data, len);
   remaining_data_length_ -= len;
   if (remaining_data_length_ > 0) {
     return len;
   }
 
-  SpdyFrameReader reader(altsvc_scratch_.buffer.get(),
-                         altsvc_scratch_.buffer_length);
+  SpdyFrameReader reader(altsvc_scratch_->data(), altsvc_scratch_->len());
   StringPiece origin;
   bool successful_read = reader.ReadStringPiece16(&origin);
   if (!successful_read) {
     set_error(SPDY_INVALID_CONTROL_FRAME);
     return 0;
   }
-  StringPiece value(altsvc_scratch_.buffer.get() + reader.GetBytesConsumed(),
-                    altsvc_scratch_.buffer_length - reader.GetBytesConsumed());
+  StringPiece value(altsvc_scratch_->data() + reader.GetBytesConsumed(),
+                    altsvc_scratch_->len() - reader.GetBytesConsumed());
 
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   bool success =

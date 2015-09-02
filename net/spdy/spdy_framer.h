@@ -74,41 +74,6 @@ class NET_EXPORT_PRIVATE SettingsFlagsAndId {
 typedef std::pair<SpdySettingsFlags, uint32> SettingsFlagsAndValue;
 typedef std::map<SpdySettingsIds, SettingsFlagsAndValue> SettingsMap;
 
-// Scratch space necessary for processing SETTINGS frames.
-struct NET_EXPORT_PRIVATE SpdySettingsScratch {
-  SpdySettingsScratch() { Reset(); }
-
-  void Reset() {
-    setting_buf_len = 0;
-    last_setting_id = -1;
-  }
-
-  // Buffer contains up to one complete key/value pair.
-  char setting_buf[8];
-
-  // The amount of the buffer that is filled with valid data.
-  size_t setting_buf_len;
-
-  // The ID of the last setting that was processed in the current SETTINGS
-  // frame. Used for detecting out-of-order or duplicate keys within a settings
-  // frame. Set to -1 before first key/value pair is processed.
-  int last_setting_id;
-};
-
-// Scratch space necessary for processing ALTSVC frames.
-struct NET_EXPORT_PRIVATE SpdyAltSvcScratch {
-  SpdyAltSvcScratch();
-  ~SpdyAltSvcScratch();
-
-  void Reset() {
-    buffer.reset();
-    buffer_length = 0;
-  }
-
-  scoped_ptr<char[]> buffer;
-  size_t buffer_length = 0;
-};
-
 // SpdyFramerVisitorInterface is a set of callbacks for the SpdyFramer.
 // Implement this interface to receive event callbacks as frames are
 // decoded from the framer.
@@ -607,6 +572,37 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   friend class test::SpdyFramerPeer;
 
  private:
+  class CharBuffer {
+   public:
+    explicit CharBuffer(size_t capacity);
+    ~CharBuffer();
+
+    void CopyFrom(const char* data, size_t size);
+    void Rewind();
+
+    const char* data() const { return buffer_.get(); }
+    size_t len() const { return len_; }
+
+   private:
+    scoped_ptr<char[]> buffer_;
+    size_t capacity_;
+    size_t len_;
+  };
+
+  // Scratch space necessary for processing SETTINGS frames.
+  struct SpdySettingsScratch {
+    SpdySettingsScratch();
+    void Reset();
+
+    // Buffer contains up to one complete key/value pair.
+    CharBuffer buffer;
+
+    // The ID of the last setting that was processed in the current SETTINGS
+    // frame. Used for detecting out-of-order or duplicate keys within a
+    // settings frame. Set to -1 before first key/value pair is processed.
+    int last_setting_id;
+  };
+
   // Internal breakouts from ProcessInput. Each returns the number of bytes
   // consumed from the data.
   size_t ProcessCommonHeader(const char* data, size_t len);
@@ -719,9 +715,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // are part of the frame's payload, and not the frame's headers.
   size_t remaining_control_header_;
 
-  scoped_ptr<char[]> current_frame_buffer_;
-  // Number of bytes read into the current_frame_buffer_.
-  size_t current_frame_buffer_length_;
+  CharBuffer current_frame_buffer_;
 
   // The type of the frame currently being read.
   SpdyFrameType current_frame_type_;
@@ -743,7 +737,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // current_frame_buffer_.
   SpdySettingsScratch settings_scratch_;
 
-  SpdyAltSvcScratch altsvc_scratch_;
+  scoped_ptr<CharBuffer> altsvc_scratch_;
 
   // SPDY header compressors.
   scoped_ptr<z_stream> header_compressor_;
