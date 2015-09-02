@@ -21,14 +21,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace cryptauth {
-class ExternalDeviceInfo;
-}
-
-namespace proximity_auth {
-class SecureMessageDelegate;
-}
-
 namespace extensions {
 
 class EasyUnlockPrivateCryptoDelegate;
@@ -230,21 +222,11 @@ class EasyUnlockPrivateGetPermitAccessFunction : public SyncExtensionFunction {
                              EASYUNLOCKPRIVATE_GETPERMITACCESS)
   EasyUnlockPrivateGetPermitAccessFunction();
 
- protected:
+ private:
   ~EasyUnlockPrivateGetPermitAccessFunction() override;
 
-  // Writes the user's public and private key in base64 form to the
-  // |user_public_key| and |user_private_key| fields. Exposed for testing.
-  virtual void GetKeyPairForExperiment(std::string* user_public_key,
-                                       std::string* user_private_key);
-
- private:
   // SyncExtensionFunction:
   bool RunSync() override;
-
-  // Instead of returning the value set by easyUnlockPrivate.setPermitAccess,
-  // return the permit access used by the native CryptAuthEnrollmentManager.
-  void ReturnPermitAccessForExperiment();
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetPermitAccessFunction);
 };
@@ -280,47 +262,17 @@ class EasyUnlockPrivateSetRemoteDevicesFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetRemoteDevicesFunction);
 };
 
-class EasyUnlockPrivateGetRemoteDevicesFunction
-    : public AsyncExtensionFunction {
+class EasyUnlockPrivateGetRemoteDevicesFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getRemoteDevices",
                              EASYUNLOCKPRIVATE_GETREMOTEDEVICES)
   EasyUnlockPrivateGetRemoteDevicesFunction();
 
- protected:
+ private:
   ~EasyUnlockPrivateGetRemoteDevicesFunction() override;
 
-  // Returns the user's private key used for the native experiment.
-  // Exposed for testing.
-  virtual std::string GetUserPrivateKey();
-
-  // Returns the user's unlock keys used for the native experiment.
-  // Exposed for testing.
-  virtual std::vector<cryptauth::ExternalDeviceInfo> GetUnlockKeys();
-
- private:
-  // AsyncExtensionFunction:
-  bool RunAsync() override;
-
-  // Returns devices managed by the native Chrome component if the
-  // kEnableBluetoothLowEnergyDiscovery flag is set.
-  void ReturnDevicesForExperiment();
-
-  // Callback when the PSK of a device is derived.
-  void OnPSKDerivedForDevice(const cryptauth::ExternalDeviceInfo& device,
-                             const std::string& persistent_symmetric_key);
-
-  // The permit id of the user. Used for the native experiment.
-  std::string permit_id_;
-
-  // The expected number of devices to return. Used for the native experiment.
-  size_t expected_devices_count_;
-
-  // Working list of the devices to return. Used for the native experiment.
-  scoped_ptr<base::ListValue> remote_devices_;
-
-  // Used to derive devices' PSK. Used for the native experiment.
-  scoped_ptr<proximity_auth::SecureMessageDelegate> secure_message_delegate_;
+  // SyncExtensionFunction:
+  bool RunSync() override;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetRemoteDevicesFunction);
 };

@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -24,9 +23,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
-#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/proximity_auth/switches.h"
-#include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
@@ -42,57 +38,6 @@ using extensions::EasyUnlockPrivatePerformECDHKeyAgreementFunction;
 using extensions::EasyUnlockPrivateCreateSecureMessageFunction;
 using extensions::EasyUnlockPrivateUnwrapSecureMessageFunction;
 using extensions::EasyUnlockPrivateSetAutoPairingResultFunction;
-
-class TestableGetRemoteDevicesFunction
-    : public extensions::EasyUnlockPrivateGetRemoteDevicesFunction {
- public:
-  TestableGetRemoteDevicesFunction() {}
-
-  // EasyUnlockPrivateGetRemoteDevicesFunction:
-  std::string GetUserPrivateKey() override { return "user private key"; }
-
-  std::vector<cryptauth::ExternalDeviceInfo> GetUnlockKeys() override {
-    cryptauth::ExternalDeviceInfo unlock_key1;
-    unlock_key1.set_friendly_device_name("test phone 1");
-    unlock_key1.set_public_key("public key 1");
-    unlock_key1.set_bluetooth_address("AA:BB:CC:DD:EE:FF");
-    unlock_key1.set_unlock_key(true);
-
-    cryptauth::ExternalDeviceInfo unlock_key2;
-    unlock_key2.set_friendly_device_name("test phone 2");
-    unlock_key2.set_public_key("public key 2");
-    unlock_key2.set_bluetooth_address("FF:EE:DD:CC:BB:AA");
-    unlock_key2.set_unlock_key(true);
-
-    std::vector<cryptauth::ExternalDeviceInfo> unlock_keys;
-    unlock_keys.push_back(unlock_key1);
-    unlock_keys.push_back(unlock_key2);
-    return unlock_keys;
-  }
-
- private:
-  ~TestableGetRemoteDevicesFunction() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestableGetRemoteDevicesFunction);
-};
-
-class TestableGetPermitAccessFunction
-    : public extensions::EasyUnlockPrivateGetPermitAccessFunction {
- public:
-  TestableGetPermitAccessFunction() {}
-
-  // EasyUnlockPrivateGetPermitAccessFunction:
-  void GetKeyPairForExperiment(std::string* user_public_key,
-                               std::string* user_private_key) override {
-    *user_public_key = "user public key";
-    *user_private_key = "user private key";
-  }
-
- private:
-  ~TestableGetPermitAccessFunction() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestableGetPermitAccessFunction);
-};
 
 // Converts a string to a base::BinaryValue value whose buffer contains the
 // string data without the trailing '\0'.
@@ -565,101 +510,6 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
       extension_function_test_utils::NONE));
   EXPECT_TRUE(result.success);
   EXPECT_TRUE(result.error.empty());
-}
-
-// Checks that the chrome.easyUnlockPrivate.getRemoteDevices API returns the
-// natively synced devices if the kEnableBluetoothLowEnergyDiscovery switch is
-// set.
-TEST_F(EasyUnlockPrivateApiTest, GetRemoteDevicesExperimental) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery);
-  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &BuildTestEasyUnlockService);
-
-  scoped_refptr<TestableGetRemoteDevicesFunction> function(
-      new TestableGetRemoteDevicesFunction());
-  base::Value* value =
-      extensions::api_test_utils::RunFunctionAndReturnSingleResult(
-          function.get(), "[]", profile());
-  ASSERT_TRUE(value);
-  ASSERT_EQ(base::Value::TYPE_LIST, value->GetType());
-
-  base::ListValue* list_value = static_cast<base::ListValue*>(value);
-  EXPECT_EQ(2u, list_value->GetSize());
-
-  base::Value* remote_device1;
-  base::Value* remote_device2;
-  ASSERT_TRUE(list_value->Get(0, &remote_device1));
-  ASSERT_TRUE(list_value->Get(1, &remote_device2));
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, remote_device1->GetType());
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, remote_device2->GetType());
-
-  std::string name1, name2;
-  EXPECT_TRUE(static_cast<base::DictionaryValue*>(remote_device1)
-                  ->GetString("name", &name1));
-  EXPECT_TRUE(static_cast<base::DictionaryValue*>(remote_device2)
-                  ->GetString("name", &name2));
-
-  EXPECT_EQ("test phone 1", name1);
-  EXPECT_EQ("test phone 2", name2);
-}
-
-// Checks that the chrome.easyUnlockPrivate.getRemoteDevices API returns the
-// stored value if the kEnableBluetoothLowEnergyDiscovery switch is not set.
-TEST_F(EasyUnlockPrivateApiTest, GetRemoteDevicesNonExperimental) {
-  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &BuildTestEasyUnlockService);
-
-  scoped_refptr<TestableGetRemoteDevicesFunction> function(
-      new TestableGetRemoteDevicesFunction());
-  base::Value* value =
-      extensions::api_test_utils::RunFunctionAndReturnSingleResult(
-          function.get(), "[]", profile());
-  ASSERT_TRUE(value);
-  ASSERT_EQ(base::Value::TYPE_LIST, value->GetType());
-
-  base::ListValue* list_value = static_cast<base::ListValue*>(value);
-  EXPECT_EQ(0u, list_value->GetSize());
-}
-
-// Checks that the chrome.easyUnlockPrivate.getPermitAccess API returns the
-// native permit access if the kEnableBluetoothLowEnergyDiscovery switch is
-// set.
-TEST_F(EasyUnlockPrivateApiTest, GetPermitAccessExperimental) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery);
-  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &BuildTestEasyUnlockService);
-
-  scoped_refptr<TestableGetPermitAccessFunction> function(
-      new TestableGetPermitAccessFunction());
-  base::Value* value =
-      extensions::api_test_utils::RunFunctionAndReturnSingleResult(
-          function.get(), "[]", profile());
-  ASSERT_TRUE(value);
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
-  base::DictionaryValue* permit_access =
-      static_cast<base::DictionaryValue*>(value);
-
-  std::string user_public_key, user_private_key;
-  EXPECT_TRUE(permit_access->GetString("id", &user_public_key));
-  EXPECT_TRUE(permit_access->GetString("data", &user_private_key));
-  EXPECT_EQ("user public key", user_public_key);
-  EXPECT_EQ("user private key", user_private_key);
-}
-
-// Checks that the chrome.easyUnlockPrivate.getPermitAccess API returns the
-// stored value if the kEnableBluetoothLowEnergyDiscovery switch is not set.
-TEST_F(EasyUnlockPrivateApiTest, GetPermitAccessNonExperimental) {
-  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &BuildTestEasyUnlockService);
-
-  scoped_refptr<TestableGetPermitAccessFunction> function(
-      new TestableGetPermitAccessFunction());
-  base::Value* value =
-      extensions::api_test_utils::RunFunctionAndReturnSingleResult(
-          function.get(), "[]", profile());
-  EXPECT_FALSE(value);
 }
 
 }  // namespace
