@@ -5,36 +5,15 @@
 # found in the LICENSE file.
 
 import optparse
+import os
 import sys
 
 from util import build_utils
+from util import md5_check
 from util import proguard_util
 
-def DoProguard(options):
-  proguard = proguard_util.ProguardCmdBuilder(options.proguard_path)
-  proguard.injars(build_utils.ParseGypList(options.input_paths))
-  proguard.configs(build_utils.ParseGypList(options.proguard_configs))
-  proguard.outjar(options.output_path)
 
-  if options.mapping:
-    proguard.mapping(options.mapping)
-
-  if options.is_test:
-    proguard.is_test(True)
-
-  classpath = []
-  for arg in options.classpath:
-    classpath += build_utils.ParseGypList(arg)
-  classpath = list(set(classpath))
-  proguard.libraryjars(classpath)
-
-  proguard.CheckOutput()
-
-  return proguard.GetInputs()
-
-
-def main(args):
-  args = build_utils.ExpandFileArgs(args)
+def _ParseOptions(args):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
   parser.add_option('--proguard-path',
@@ -54,15 +33,49 @@ def main(args):
 
   options, _ = parser.parse_args(args)
 
-  inputs = DoProguard(options)
+  classpath = []
+  for arg in options.classpath:
+    classpath += build_utils.ParseGypList(arg)
+  options.classpath = classpath
 
-  if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        inputs + build_utils.GetPythonDependencies())
+  return options
 
-  if options.stamp:
-    build_utils.Touch(options.stamp)
+
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
+  options = _ParseOptions(args)
+
+  proguard = proguard_util.ProguardCmdBuilder(options.proguard_path)
+  proguard.injars(build_utils.ParseGypList(options.input_paths))
+  proguard.configs(build_utils.ParseGypList(options.proguard_configs))
+  proguard.outjar(options.output_path)
+
+  if options.mapping:
+    proguard.mapping(options.mapping)
+
+  if options.is_test:
+    proguard.is_test(True)
+
+  classpath = list(set(options.classpath))
+  proguard.libraryjars(classpath)
+
+  input_paths = proguard.GetInputs()
+  python_deps = build_utils.GetPythonDependencies()
+
+  def OnStaleMd5():
+    proguard.CheckOutput()
+
+    if options.depfile:
+      build_utils.WriteDepfile(options.depfile, python_deps + input_paths)
+    if options.stamp:
+      build_utils.Touch(options.stamp)
+
+  md5_check.CallAndRecordIfStale(
+      OnStaleMd5,
+      record_path=options.output_path + '.proguard.md5.stamp',
+      input_paths=input_paths,
+      input_strings=proguard.build() + python_deps,
+      force=not os.path.exists(options.output_path))
 
 
 if __name__ == '__main__':
