@@ -438,10 +438,11 @@ void AndroidUsbDevice::ProcessOutgoing() {
   outgoing_queue_.pop();
   DumpMessage(true, message->data(), message->size());
 
-  usb_handle_->BulkTransfer(device::USB_DIRECTION_OUTBOUND, outbound_address_,
-                            message, message->size(), kUsbTimeout,
-                            base::Bind(&AndroidUsbDevice::OutgoingMessageSent,
-                                       weak_factory_.GetWeakPtr()));
+  usb_handle_->GenericTransfer(
+      device::USB_DIRECTION_OUTBOUND, outbound_address_, message,
+      message->size(), kUsbTimeout,
+      base::Bind(&AndroidUsbDevice::OutgoingMessageSent,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void AndroidUsbDevice::OutgoingMessageSent(UsbTransferStatus status,
@@ -463,7 +464,7 @@ void AndroidUsbDevice::ReadHeader() {
   }
 
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kHeaderSize);
-  usb_handle_->BulkTransfer(
+  usb_handle_->GenericTransfer(
       device::USB_DIRECTION_INBOUND, inbound_address_, buffer, kHeaderSize,
       kUsbTimeout,
       base::Bind(&AndroidUsbDevice::ParseHeader, weak_factory_.GetWeakPtr()));
@@ -520,7 +521,7 @@ void AndroidUsbDevice::ReadBody(scoped_ptr<AdbMessage> message,
 
   scoped_refptr<net::IOBuffer> buffer =
       new net::IOBuffer(static_cast<size_t>(data_length));
-  usb_handle_->BulkTransfer(
+  usb_handle_->GenericTransfer(
       device::USB_DIRECTION_INBOUND, inbound_address_, buffer, data_length,
       kUsbTimeout,
       base::Bind(&AndroidUsbDevice::ParseBody, weak_factory_.GetWeakPtr(),
