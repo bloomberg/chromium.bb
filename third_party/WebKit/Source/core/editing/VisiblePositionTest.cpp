@@ -27,9 +27,9 @@ TEST_F(VisiblePositionTest, ShadowDistributedNodes)
     RefPtrWillBeRawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
 
     EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one, 0)));
-    EXPECT_EQ(Position(one->firstChild(), 0), VisiblePosition(Position(one, 0)).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 0), createVisiblePosition(Position(one, 0)).deepEquivalent());
     EXPECT_EQ(Position(one->firstChild(), 2), canonicalPositionOf(Position(two.get(), 0)));
-    EXPECT_EQ(Position(one->firstChild(), 2), VisiblePosition(Position(two.get(), 0)).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 2), createVisiblePosition(Position(two.get(), 0)).deepEquivalent());
 
     EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2), canonicalPositionOf(PositionInComposedTree(one.get(), 0)));
     EXPECT_EQ(Position(five->firstChild(), 2), createVisiblePosition(PositionInComposedTree(one.get(), 0)).deepEquivalent());

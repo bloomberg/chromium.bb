@@ -69,7 +69,7 @@ void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection
 
 void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockElement)
 {
-    Element* refElement = enclosingBlockFlowElement(VisiblePosition(end));
+    Element* refElement = enclosingBlockFlowElement(createVisiblePosition(end));
     Element* root = editableRootForPosition(start);
     // Root is null for elements with contenteditable=false.
     if (!root || !refElement)
@@ -80,8 +80,8 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
     RefPtrWillBeRawPtr<Node> nodeAfterInsertionPosition = outerBlock;
     RefPtrWillBeRawPtr<Range> range = Range::create(document(), start, endOfSelection);
 
-    if (isElementForFormatBlock(refElement->tagQName()) && VisiblePosition(start).deepEquivalent() == startOfBlock(VisiblePosition(start)).deepEquivalent()
-        && (VisiblePosition(end).deepEquivalent() == endOfBlock(VisiblePosition(end)).deepEquivalent() || isNodeVisiblyContainedWithin(*refElement, *range))
+    if (isElementForFormatBlock(refElement->tagQName()) && createVisiblePosition(start).deepEquivalent() == startOfBlock(createVisiblePosition(start)).deepEquivalent()
+        && (createVisiblePosition(end).deepEquivalent() == endOfBlock(createVisiblePosition(end)).deepEquivalent() || isNodeVisiblyContainedWithin(*refElement, *range))
         && refElement != root && !root->isDescendantOf(refElement)) {
         // Already in a block element that only contains the current paragraph
         if (refElement->hasTagName(tagName()))
@@ -97,15 +97,15 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
     }
 
     Position lastParagraphInBlockNode = blockElement->lastChild() ? positionAfterNode(blockElement->lastChild()) : Position();
-    bool wasEndOfParagraph = isEndOfParagraph(VisiblePosition(lastParagraphInBlockNode));
+    bool wasEndOfParagraph = isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode));
 
-    moveParagraphWithClones(VisiblePosition(start), VisiblePosition(end), blockElement.get(), outerBlock.get());
+    moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), blockElement.get(), outerBlock.get());
 
     // Copy the inline style of the original block element to the newly created block-style element.
     if (outerBlock.get() != nodeAfterInsertionPosition.get() && toHTMLElement(nodeAfterInsertionPosition.get())->hasAttribute(styleAttr))
         blockElement->setAttribute(styleAttr, toHTMLElement(nodeAfterInsertionPosition.get())->getAttribute(styleAttr));
 
-    if (wasEndOfParagraph && !isEndOfParagraph(VisiblePosition(lastParagraphInBlockNode)) && !isStartOfParagraph(VisiblePosition(lastParagraphInBlockNode)))
+    if (wasEndOfParagraph && !isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode)) && !isStartOfParagraph(createVisiblePosition(lastParagraphInBlockNode)))
         insertBlockPlaceholder(lastParagraphInBlockNode);
 }
 

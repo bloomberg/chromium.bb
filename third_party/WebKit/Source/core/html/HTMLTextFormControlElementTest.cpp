@@ -136,9 +136,9 @@ typedef VisiblePosition(*VisblePositionFunction)(const VisiblePosition&);
 
 void testFunctionEquivalence(const Position& position, PositionFunction positionFunction, VisblePositionFunction visibleFunction)
 {
-    VisiblePosition visiblePosition(position);
+    VisiblePosition visiblePosition = createVisiblePosition(position);
     VisiblePosition expected = visibleFunction(visiblePosition);
-    VisiblePosition actual = VisiblePosition(positionFunction(position));
+    VisiblePosition actual = createVisiblePosition(positionFunction(position));
     EXPECT_EQ(expected.deepEquivalent(), actual.deepEquivalent());
 }
 

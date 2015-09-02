@@ -302,7 +302,7 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
     // Since the word containing the current selection is never marked, this does a check to
     // see if typing made a new word that is not in the current selection. Basically, you
     // get this by being at the end of a word and typing a space.
-    VisiblePosition start(endingSelection().start(), endingSelection().affinity());
+    VisiblePosition start = createVisiblePosition(endingSelection().start(), endingSelection().affinity());
     VisiblePosition previous = previousPositionOf(start);
 
     VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
@@ -453,7 +453,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
 
         // If we have a caret selection at the beginning of a cell, we have nothing to do.
         Node* enclosingTableCell = enclosingNodeOfType(visibleStart.deepEquivalent(), &isTableCell);
-        if (enclosingTableCell && visibleStart.deepEquivalent() == VisiblePosition(firstPositionInNode(enclosingTableCell)).deepEquivalent())
+        if (enclosingTableCell && visibleStart.deepEquivalent() == createVisiblePosition(firstPositionInNode(enclosingTableCell)).deepEquivalent())
             return;
 
         // If the caret is at the start of a paragraph after a table, move content into the last table cell.
@@ -543,7 +543,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         Position downstreamEnd = mostForwardCaretPosition(endingSelection().end());
         VisiblePosition visibleEnd = endingSelection().visibleEnd();
         Node* enclosingTableCell = enclosingNodeOfType(visibleEnd.deepEquivalent(), &isTableCell);
-        if (enclosingTableCell && visibleEnd.deepEquivalent() == VisiblePosition(lastPositionInNode(enclosingTableCell)).deepEquivalent())
+        if (enclosingTableCell && visibleEnd.deepEquivalent() == createVisiblePosition(lastPositionInNode(enclosingTableCell)).deepEquivalent())
             return;
         if (visibleEnd.deepEquivalent() == endOfParagraph(visibleEnd).deepEquivalent())
             downstreamEnd = mostForwardCaretPosition(nextPositionOf(visibleEnd, CannotCrossEditingBoundary).deepEquivalent());

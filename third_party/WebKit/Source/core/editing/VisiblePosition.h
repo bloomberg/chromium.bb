@@ -72,11 +72,6 @@ class CORE_EXPORT VisiblePosition final {
 public:
     VisiblePosition() : m_affinity(VP_DEFAULT_AFFINITY) { }
 
-    // TODO(yosin) We should use |createVisiblePosition()| instead of
-    // constructor, and make constructors to have private accessibility, since
-    // constructors aren't simple, e.g. they update layout tree.
-    explicit VisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
-
     // Node: Other than |createVisiblePosition()|, we should not use
     // |createWithoutCanonicalization()|.
     static VisiblePosition createWithoutCanonicalization(const PositionWithAffinity& canonicalized);
@@ -106,6 +101,8 @@ public:
 #endif
 
 private:
+    explicit VisiblePosition(const Position&, TextAffinity);
+
     // TODO(yosin) We should use |PositionWithAffinity| to make
     // |toPositionWithAffinity()| simpler.
     Position m_deepPosition;

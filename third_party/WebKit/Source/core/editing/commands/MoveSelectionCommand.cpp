@@ -65,7 +65,7 @@ void MoveSelectionCommand::doApply()
     if (!pos.inDocument())
         pos = endingSelection().start();
 
-    cleanupAfterDeletion(VisiblePosition(pos));
+    cleanupAfterDeletion(createVisiblePosition(pos));
 
     setEndingSelection(VisibleSelection(pos, endingSelection().affinity(), endingSelection().isDirectional()));
     if (!pos.inDocument()) {

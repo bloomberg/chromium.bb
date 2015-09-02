@@ -2185,7 +2185,7 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
         return VisiblePosition();
 
     if (index <= 0)
-        return VisiblePosition(firstPositionInOrBeforeNode(node));
+        return createVisiblePosition(firstPositionInOrBeforeNode(node));
 
     Position start, end;
     bool selected = Range::selectNodeContents(node, start, end);
@@ -2194,7 +2194,7 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
 
     CharacterIterator it(start, end);
     it.advance(index - 1);
-    return VisiblePosition(Position(it.currentContainer(), it.endOffset()), TextAffinity::Upstream);
+    return createVisiblePosition(Position(it.currentContainer(), it.endOffset()), TextAffinity::Upstream);
 }
 
 void AXLayoutObject::addInlineTextBoxChildren(bool force)

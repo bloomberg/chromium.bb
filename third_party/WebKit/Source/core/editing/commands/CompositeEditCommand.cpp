@@ -670,8 +670,8 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(PassRefPtrWillBeRa
     if (!length)
         return;
 
-    VisiblePosition visibleUpstreamPos(Position(textNode, upstream));
-    VisiblePosition visibleDownstreamPos(Position(textNode, downstream));
+    VisiblePosition visibleUpstreamPos = createVisiblePosition(Position(textNode, upstream));
+    VisiblePosition visibleDownstreamPos = createVisiblePosition(Position(textNode, downstream));
 
     String string = text.substring(upstream, length);
     String rebalancedString = stringWithRebalancedWhitespace(string,
@@ -704,8 +704,8 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
     deleteInsignificantText(upstreamPos, mostForwardCaretPosition(position));
     position = mostForwardCaretPosition(upstreamPos);
 
-    VisiblePosition visiblePos(position);
-    VisiblePosition previousVisiblePos(previousPositionOf(visiblePos));
+    VisiblePosition visiblePos = createVisiblePosition(position);
+    VisiblePosition previousVisiblePos = previousPositionOf(visiblePos);
     replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(previousVisiblePos);
     replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(visiblePos);
 }
@@ -838,7 +838,7 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
 
 void CompositeEditCommand::deleteInsignificantTextDownstream(const Position& pos)
 {
-    Position end = mostForwardCaretPosition(nextPositionOf(VisiblePosition(pos, VP_DEFAULT_AFFINITY)).deepEquivalent());
+    Position end = mostForwardCaretPosition(nextPositionOf(createVisiblePosition(pos, VP_DEFAULT_AFFINITY)).deepEquivalent());
     deleteInsignificantText(pos, end);
 }
 
@@ -920,8 +920,8 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
 
     // It's strange that this function is responsible for verifying that pos has not been invalidated
     // by an earlier call to this function.  The caller, applyBlockStyle, should do this.
-    VisiblePosition visiblePos(pos, VP_DEFAULT_AFFINITY);
-    VisiblePosition visibleParagraphStart(startOfParagraph(visiblePos));
+    VisiblePosition visiblePos = createVisiblePosition(pos, VP_DEFAULT_AFFINITY);
+    VisiblePosition visibleParagraphStart = startOfParagraph(visiblePos);
     VisiblePosition visibleParagraphEnd = endOfParagraph(visiblePos);
     VisiblePosition next = nextPositionOf(visibleParagraphEnd);
     VisiblePosition visibleEnd = next.isNotNull() ? next : visibleParagraphEnd;
@@ -968,10 +968,10 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
 
     // Inserting default paragraph element can change visible position. We
     // should update visible positions before use them.
-    visiblePos = VisiblePosition(pos, VP_DEFAULT_AFFINITY);
-    visibleParagraphStart = VisiblePosition(startOfParagraph(visiblePos));
-    visibleParagraphEnd = VisiblePosition(endOfParagraph(visiblePos));
-    moveParagraphs(visibleParagraphStart, visibleParagraphEnd, VisiblePosition(firstPositionInNode(newBlock.get())));
+    visiblePos = createVisiblePosition(pos, VP_DEFAULT_AFFINITY);
+    visibleParagraphStart = startOfParagraph(visiblePos);
+    visibleParagraphEnd = endOfParagraph(visiblePos);
+    moveParagraphs(visibleParagraphStart, visibleParagraphEnd, createVisiblePosition(firstPositionInNode(newBlock.get())));
 
     if (newBlock->lastChild() && isHTMLBRElement(*newBlock->lastChild()) && !endWasBr)
         removeNode(newBlock->lastChild());
@@ -1131,7 +1131,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     ASSERT(blockElement);
 
     VisiblePosition beforeParagraph = previousPositionOf(startOfParagraphToMove);
-    VisiblePosition afterParagraph(nextPositionOf(endOfParagraphToMove));
+    VisiblePosition afterParagraph = nextPositionOf(endOfParagraphToMove);
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.
@@ -1158,8 +1158,8 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     // Imagine moving 'bar' to ^.  'bar' will be deleted and its div pruned.  That would
     // cause 'baz' to collapse onto the line with 'foobar' unless we insert a br.
     // Must recononicalize these two VisiblePositions after the pruning above.
-    beforeParagraph = VisiblePosition(beforeParagraph.deepEquivalent());
-    afterParagraph = VisiblePosition(afterParagraph.deepEquivalent());
+    beforeParagraph = createVisiblePosition(beforeParagraph.deepEquivalent());
+    afterParagraph = createVisiblePosition(afterParagraph.deepEquivalent());
 
     if (beforeParagraph.isNotNull() && !isRenderedTableElement(beforeParagraph.deepEquivalent().anchorNode())
         && ((!isEndOfParagraph(beforeParagraph) && !isStartOfParagraph(beforeParagraph)) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
@@ -1206,7 +1206,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     }
 
     VisiblePosition beforeParagraph = previousPositionOf(startOfParagraphToMove, CannotCrossEditingBoundary);
-    VisiblePosition afterParagraph(nextPositionOf(endOfParagraphToMove, CannotCrossEditingBoundary));
+    VisiblePosition afterParagraph = nextPositionOf(endOfParagraphToMove, CannotCrossEditingBoundary);
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.
@@ -1246,8 +1246,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // Imagine moving 'bar' to ^. 'bar' will be deleted and its div pruned. That would
     // cause 'baz' to collapse onto the line with 'foobar' unless we insert a br.
     // Must recononicalize these two VisiblePositions after the pruning above.
-    beforeParagraph = VisiblePosition(beforeParagraph.deepEquivalent());
-    afterParagraph = VisiblePosition(afterParagraph.deepEquivalent());
+    beforeParagraph = createVisiblePosition(beforeParagraph.deepEquivalent());
+    afterParagraph = createVisiblePosition(afterParagraph.deepEquivalent());
     if (beforeParagraph.isNotNull() && (!isEndOfParagraph(beforeParagraph) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
         insertNodeAt(createBreakElement(document()), beforeParagraph.deepEquivalent());
@@ -1364,7 +1364,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
     if (!endingSelection().isCaret())
         return false;
 
-    VisiblePosition caret(endingSelection().visibleStart());
+    VisiblePosition caret = endingSelection().visibleStart();
     HTMLQuoteElement* highestBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(caret.deepEquivalent(), &isMailHTMLBlockquoteElement));
     if (!highestBlockquote)
         return false;
@@ -1372,7 +1372,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
     if (!isStartOfParagraph(caret) || !isEndOfParagraph(caret))
         return false;
 
-    VisiblePosition previous(previousPositionOf(caret, CannotCrossEditingBoundary));
+    VisiblePosition previous = previousPositionOf(caret, CannotCrossEditingBoundary);
     // Only move forward if there's nothing before the caret, or if there's unquoted content before it.
     if (enclosingNodeOfType(previous.deepEquivalent(), &isMailHTMLBlockquoteElement))
         return false;
@@ -1381,7 +1381,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
     // We want to replace this quoted paragraph with an unquoted one, so insert a br
     // to hold the caret before the highest blockquote.
     insertNodeBefore(br, highestBlockquote);
-    VisiblePosition atBR(positionBeforeNode(br.get()));
+    VisiblePosition atBR = createVisiblePosition(positionBeforeNode(br.get()));
     // If the br we inserted collapsed, for example foo<br><blockquote>...</blockquote>, insert
     // a second one.
     if (!isStartOfParagraph(atBR))
@@ -1420,7 +1420,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
     if (original.isNull())
         return original;
 
-    VisiblePosition visiblePos(original);
+    VisiblePosition visiblePos = createVisiblePosition(original);
     Element* enclosingAnchor = enclosingAnchorElement(original);
     Position result = original;
 
@@ -1429,8 +1429,8 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
 
     // Don't avoid block level anchors, because that would insert content into the wrong paragraph.
     if (enclosingAnchor && !isEnclosingBlock(enclosingAnchor)) {
-        VisiblePosition firstInAnchor(firstPositionInNode(enclosingAnchor));
-        VisiblePosition lastInAnchor(lastPositionInNode(enclosingAnchor));
+        VisiblePosition firstInAnchor = createVisiblePosition(firstPositionInNode(enclosingAnchor));
+        VisiblePosition lastInAnchor = createVisiblePosition(lastPositionInNode(enclosingAnchor));
         // If visually just after the anchor, insert *inside* the anchor unless it's the last
         // VisiblePosition in the document, to match NSTextView.
         if (visiblePos.deepEquivalent() == lastInAnchor.deepEquivalent()) {
@@ -1492,8 +1492,8 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::splitTreeToNode(Node* start, 
         if (!parentElement)
             break;
         // Do not split a node when doing so introduces an empty node.
-        VisiblePosition positionInParent(firstPositionInNode(parentElement));
-        VisiblePosition positionInNode(firstPositionInOrBeforeNode(node.get()));
+        VisiblePosition positionInParent = createVisiblePosition(firstPositionInNode(parentElement));
+        VisiblePosition positionInNode = createVisiblePosition(firstPositionInOrBeforeNode(node.get()));
         if (positionInParent.deepEquivalent() != positionInNode.deepEquivalent())
             splitElement(parentElement, node);
     }

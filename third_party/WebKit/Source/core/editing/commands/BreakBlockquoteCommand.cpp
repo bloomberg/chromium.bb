@@ -133,7 +133,7 @@ void BreakBlockquoteCommand::doApply()
     }
 
     // Adjust the position so we don't split at the beginning of a quote.
-    while (isFirstVisiblePositionInNode(VisiblePosition(pos), toHTMLQuoteElement(enclosingNodeOfType(pos, isMailHTMLBlockquoteElement)))) {
+    while (isFirstVisiblePositionInNode(createVisiblePosition(pos), toHTMLQuoteElement(enclosingNodeOfType(pos, isMailHTMLBlockquoteElement)))) {
         // TODO(yosin) We should use |PositionMoveType::Character| for
         // |previousPositionOf()| to avoid editing middle character.
         pos = previousPositionOf(pos, PositionMoveType::CodePoint);
@@ -161,7 +161,7 @@ void BreakBlockquoteCommand::doApply()
 
     // If there's nothing inside topBlockquote to move, we're finished.
     if (!startNode->isDescendantOf(topBlockquote)) {
-        setEndingSelection(VisibleSelection(VisiblePosition(firstPositionInOrBeforeNode(startNode)), endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(createVisiblePosition(firstPositionInOrBeforeNode(startNode)), endingSelection().isDirectional()));
         return;
     }
 

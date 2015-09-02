@@ -50,7 +50,7 @@ using namespace HTMLNames;
 static bool isTableCellEmpty(Node* cell)
 {
     ASSERT(isTableCell(cell));
-    return VisiblePosition(firstPositionInNode(cell)).deepEquivalent() == VisiblePosition(lastPositionInNode(cell)).deepEquivalent();
+    return createVisiblePosition(firstPositionInNode(cell)).deepEquivalent() == createVisiblePosition(lastPositionInNode(cell)).deepEquivalent();
 }
 
 static bool isTableRowEmpty(Node* row)
@@ -129,7 +129,7 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
         if (!startSpecialContainer && !endSpecialContainer)
             break;
 
-        if (VisiblePosition(start).deepEquivalent() != m_selectionToDelete.visibleStart().deepEquivalent() || VisiblePosition(end).deepEquivalent() != m_selectionToDelete.visibleEnd().deepEquivalent())
+        if (createVisiblePosition(start).deepEquivalent() != m_selectionToDelete.visibleStart().deepEquivalent() || createVisiblePosition(end).deepEquivalent() != m_selectionToDelete.visibleEnd().deepEquivalent())
             break;
 
         // If we're going to expand to include the startSpecialContainer, it must be fully selected.
@@ -158,8 +158,8 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
 void DeleteSelectionCommand::setStartingSelectionOnSmartDelete(const Position& start, const Position& end)
 {
     bool isBaseFirst = startingSelection().isBaseFirst();
-    VisiblePosition newBase(isBaseFirst ? start : end);
-    VisiblePosition newExtent(isBaseFirst ? end : start);
+    VisiblePosition newBase = createVisiblePosition(isBaseFirst ? start : end);
+    VisiblePosition newExtent = createVisiblePosition(isBaseFirst ? end : start);
     setStartingSelection(VisibleSelection(newBase, newExtent, startingSelection().isDirectional()));
 }
 
@@ -195,7 +195,7 @@ void DeleteSelectionCommand::initializePositionData()
     // Usually the start and the end of the selection to delete are pulled together as a result of the deletion.
     // Sometimes they aren't (like when no merge is requested), so we must choose one position to hold the caret
     // and receive the placeholder after deletion.
-    VisiblePosition visibleEnd(m_downstreamEnd);
+    VisiblePosition visibleEnd = createVisiblePosition(m_downstreamEnd);
     if (m_mergeBlocksAfterDelete && !isEndOfParagraph(visibleEnd))
         m_endingPosition = m_downstreamEnd;
     else
@@ -208,7 +208,7 @@ void DeleteSelectionCommand::initializePositionData()
     // Only apply this rule if the endingSelection is a range selection.  If it is a caret, then other operations have created
     // the selection we're deleting (like the process of creating a selection to delete during a backspace), and the user isn't in the situation described above.
     if (numEnclosingMailBlockquotes(start) != numEnclosingMailBlockquotes(end)
-        && isStartOfParagraph(visibleEnd) && isStartOfParagraph(VisiblePosition(start))
+        && isStartOfParagraph(visibleEnd) && isStartOfParagraph(createVisiblePosition(start))
         && endingSelection().isRange()) {
         m_mergeBlocksAfterDelete = false;
         m_pruneStartBlockIfNecessary = true;
@@ -221,7 +221,7 @@ void DeleteSelectionCommand::initializePositionData()
     if (m_smartDelete) {
 
         // skip smart delete if the selection to delete already starts or ends with whitespace
-        Position pos = VisiblePosition(m_upstreamStart, m_selectionToDelete.affinity()).deepEquivalent();
+        Position pos = createVisiblePosition(m_upstreamStart, m_selectionToDelete.affinity()).deepEquivalent();
         bool skipSmartDelete = trailingWhitespacePosition(pos, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull();
         if (!skipSmartDelete)
             skipSmartDelete = leadingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull();
@@ -229,7 +229,7 @@ void DeleteSelectionCommand::initializePositionData()
         // extend selection upstream if there is whitespace there
         bool hasLeadingWhitespaceBeforeAdjustment = leadingWhitespacePosition(m_upstreamStart, m_selectionToDelete.affinity(), ConsiderNonCollapsibleWhitespace).isNotNull();
         if (!skipSmartDelete && hasLeadingWhitespaceBeforeAdjustment) {
-            VisiblePosition visiblePos = previousPositionOf(VisiblePosition(m_upstreamStart, VP_DEFAULT_AFFINITY));
+            VisiblePosition visiblePos = previousPositionOf(createVisiblePosition(m_upstreamStart, VP_DEFAULT_AFFINITY));
             pos = visiblePos.deepEquivalent();
             // Expand out one character upstream for smart delete and recalculate
             // positions based on this change.
@@ -245,7 +245,7 @@ void DeleteSelectionCommand::initializePositionData()
         if (!skipSmartDelete && !hasLeadingWhitespaceBeforeAdjustment && trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull()) {
             // Expand out one character downstream for smart delete and recalculate
             // positions based on this change.
-            pos = nextPositionOf(VisiblePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY)).deepEquivalent();
+            pos = nextPositionOf(createVisiblePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY)).deepEquivalent();
             m_upstreamEnd = mostBackwardCaretPosition(pos);
             m_downstreamEnd = mostForwardCaretPosition(pos);
             m_trailingWhitespace = trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY);
@@ -318,7 +318,7 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete()
 
     // FIXME: This code doesn't belong in here.
     // We detect the case where the start is an empty line consisting of BR not wrapped in a block element.
-    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(VisiblePosition(positionBeforeNode(nodeAfterUpstreamStart))) && isEndOfBlock(VisiblePosition(positionAfterNode(nodeAfterUpstreamStart))))) {
+    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(createVisiblePosition(positionBeforeNode(nodeAfterUpstreamStart))) && isEndOfBlock(createVisiblePosition(positionAfterNode(nodeAfterUpstreamStart))))) {
         m_startsAtEmptyLine = true;
         m_endingPosition = m_downstreamEnd;
     }
@@ -384,12 +384,12 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
     }
 
     if (node == m_startBlock) {
-        VisiblePosition previous = previousPositionOf(VisiblePosition(firstPositionInNode(m_startBlock.get())));
+        VisiblePosition previous = previousPositionOf(createVisiblePosition(firstPositionInNode(m_startBlock.get())));
         if (previous.isNotNull() && !isEndOfBlock(previous))
             m_needPlaceholder = true;
     }
     if (node == m_endBlock) {
-        VisiblePosition next = nextPositionOf(VisiblePosition(lastPositionInNode(m_endBlock.get())));
+        VisiblePosition next = nextPositionOf(createVisiblePosition(lastPositionInNode(m_endBlock.get())));
         if (next.isNotNull() && !isStartOfBlock(next))
             m_needPlaceholder = true;
     }
@@ -615,8 +615,8 @@ void DeleteSelectionCommand::mergeParagraphs()
     if (m_upstreamStart == m_downstreamEnd)
         return;
 
-    VisiblePosition startOfParagraphToMove(m_downstreamEnd);
-    VisiblePosition mergeDestination(m_upstreamStart);
+    VisiblePosition startOfParagraphToMove = createVisiblePosition(m_downstreamEnd);
+    VisiblePosition mergeDestination = createVisiblePosition(m_upstreamStart);
 
     // m_downstreamEnd's block has been emptied out by deletion.  There is no content inside of it to
     // move, so just remove it.
@@ -629,7 +629,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
     if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.computeContainerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.computeContainerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination.deepEquivalent() != startOfParagraphToMove.deepEquivalent())) {
         insertNodeAt(createBreakElement(document()).get(), m_upstreamStart);
-        mergeDestination = VisiblePosition(m_upstreamStart);
+        mergeDestination = createVisiblePosition(m_upstreamStart);
     }
 
     if (mergeDestination.deepEquivalent() == startOfParagraphToMove.deepEquivalent())
@@ -816,7 +816,7 @@ void DeleteSelectionCommand::doApply()
     // set up our state
     initializePositionData();
 
-    bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(previousPositionOf(VisiblePosition(m_upstreamStart)));
+    bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(previousPositionOf(createVisiblePosition(m_upstreamStart)));
 
     // Delete any text that may hinder our ability to fixup whitespace after the
     // delete
@@ -843,7 +843,7 @@ void DeleteSelectionCommand::doApply()
     removePreviouslySelectedEmptyTableRows();
 
     if (!m_needPlaceholder && rootWillStayOpenWithoutPlaceholder) {
-        VisiblePosition visualEnding(m_endingPosition);
+        VisiblePosition visualEnding = createVisiblePosition(m_endingPosition);
         bool hasPlaceholder = lineBreakExistsAtVisiblePosition(visualEnding)
             && nextPositionOf(visualEnding, CannotCrossEditingBoundary).isNull();
         m_needPlaceholder = hasPlaceholder && lineBreakBeforeStart && !lineBreakAtEndOfSelectionToDelete;

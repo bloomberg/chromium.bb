@@ -159,7 +159,7 @@ void InsertTextCommand::doApply()
     Position downstream(mostForwardCaretPosition(startPosition));
     if (lineBreakExistsAtPosition(downstream)) {
         // FIXME: This doesn't handle placeholders at the end of anonymous blocks.
-        VisiblePosition caret(startPosition);
+        VisiblePosition caret = createVisiblePosition(startPosition);
         if (isEndOfBlock(caret) && isStartOfParagraph(caret))
             placeholder = downstream;
         // Don't remove the placeholder yet, otherwise the block we're inserting into would collapse before
@@ -233,7 +233,7 @@ void InsertTextCommand::doApply()
 
 Position InsertTextCommand::insertTab(const Position& pos)
 {
-    Position insertPos = VisiblePosition(pos).deepEquivalent();
+    Position insertPos = createVisiblePosition(pos).deepEquivalent();
     if (insertPos.isNull())
         return pos;
 

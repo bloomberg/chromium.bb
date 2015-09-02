@@ -255,7 +255,7 @@ bool Editor::canDeleteRange(const EphemeralRange& range) const
         return false;
 
     if (range.isCollapsed()) {
-        VisiblePosition start(range.startPosition());
+        VisiblePosition start = createVisiblePosition(range.startPosition());
         VisiblePosition previous = previousPositionOf(start);
         // FIXME: We sometimes allow deletions at the start of editable roots, like when the caret is in an empty list item.
         if (previous.isNull() || previous.deepEquivalent().anchorNode()->rootEditableElement() != startContainer->rootEditableElement())
@@ -1085,11 +1085,11 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const
     LayoutUnit extraWidthToEndOfLine = 0;
     ASSERT(range.isNotNull());
 
-    IntRect startCaretRect = RenderedPosition(VisiblePosition(range.startPosition()).deepEquivalent(), TextAffinity::Downstream).absoluteRect(&extraWidthToEndOfLine);
+    IntRect startCaretRect = RenderedPosition(createVisiblePosition(range.startPosition()).deepEquivalent(), TextAffinity::Downstream).absoluteRect(&extraWidthToEndOfLine);
     if (startCaretRect.isEmpty())
         return IntRect();
 
-    IntRect endCaretRect = RenderedPosition(VisiblePosition(range.endPosition()).deepEquivalent(), TextAffinity::Upstream).absoluteRect();
+    IntRect endCaretRect = RenderedPosition(createVisiblePosition(range.endPosition()).deepEquivalent(), TextAffinity::Upstream).absoluteRect();
     if (endCaretRect.isEmpty())
         return IntRect();
 

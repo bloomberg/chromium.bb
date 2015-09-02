@@ -250,8 +250,8 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
         end = swap;
     }
 
-    VisiblePosition visibleStart(start);
-    VisiblePosition visibleEnd(end);
+    VisiblePosition visibleStart = createVisiblePosition(start);
+    VisiblePosition visibleEnd = createVisiblePosition(end);
 
     if (visibleStart.isNull() || visibleStart.isOrphan() || visibleEnd.isNull() || visibleEnd.isOrphan())
         return;

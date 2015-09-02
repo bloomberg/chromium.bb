@@ -233,7 +233,7 @@ void DOMSelection::collapseToEnd(ExceptionState& exceptionState)
         return;
     }
 
-    m_frame->selection().moveTo(VisiblePosition(selection.end()));
+    m_frame->selection().moveTo(createVisiblePosition(selection.end()));
 }
 
 void DOMSelection::collapseToStart(ExceptionState& exceptionState)
@@ -248,7 +248,7 @@ void DOMSelection::collapseToStart(ExceptionState& exceptionState)
         return;
     }
 
-    m_frame->selection().moveTo(VisiblePosition(selection.start()));
+    m_frame->selection().moveTo(createVisiblePosition(selection.start()));
 }
 
 void DOMSelection::empty()
@@ -276,8 +276,8 @@ void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extent
     if (!isValidForPosition(baseNode) || !isValidForPosition(extentNode))
         return;
 
-    VisiblePosition visibleBase = VisiblePosition(Position(baseNode, baseOffset));
-    VisiblePosition visibleExtent = VisiblePosition(Position(extentNode, extentOffset));
+    VisiblePosition visibleBase = createVisiblePosition(Position(baseNode, baseOffset));
+    VisiblePosition visibleExtent = createVisiblePosition(Position(extentNode, extentOffset));
 
     m_frame->selection().moveTo(visibleBase, visibleExtent);
 }
@@ -351,7 +351,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
     if (!isValidForPosition(node))
         return;
 
-    m_frame->selection().setExtent(VisiblePosition(Position(node, offset)));
+    m_frame->selection().setExtent(createVisiblePosition(Position(node, offset)));
 }
 
 PassRefPtrWillBeRawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)

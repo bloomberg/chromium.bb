@@ -130,10 +130,10 @@ public:
     PositionInComposedTree startInComposedTree() const;
     PositionInComposedTree endInComposedTree() const;
 
-    VisiblePosition visibleStart() const { return VisiblePosition(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
-    VisiblePosition visibleEnd() const { return VisiblePosition(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
-    VisiblePosition visibleBase() const { return VisiblePosition(m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream : TextAffinity::Downstream) : affinity()); }
-    VisiblePosition visibleExtent() const { return VisiblePosition(m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream : TextAffinity::Upstream) : affinity()); }
+    VisiblePosition visibleStart() const { return createVisiblePosition(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
+    VisiblePosition visibleEnd() const { return createVisiblePosition(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
+    VisiblePosition visibleBase() const { return createVisiblePosition(m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream : TextAffinity::Downstream) : affinity()); }
+    VisiblePosition visibleExtent() const { return createVisiblePosition(m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream : TextAffinity::Upstream) : affinity()); }
 
     bool isNone() const { return selectionType() == NoSelection; }
     bool isCaret() const { return selectionType() == CaretSelection; }

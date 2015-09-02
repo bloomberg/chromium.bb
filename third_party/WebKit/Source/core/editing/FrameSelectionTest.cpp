@@ -151,15 +151,15 @@ TEST_F(FrameSelectionTest, SelectWordAroundPosition)
     // "Foo Bar  Baz,"
     RefPtrWillBeRawPtr<Text> text = appendTextNode("Foo Bar&nbsp;&nbsp;Baz,");
     // "Fo|o Bar  Baz,"
-    EXPECT_TRUE(selection().selectWordAroundPosition(VisiblePosition(Position(text, 2))));
+    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 2))));
     EXPECT_EQ_SELECTED_TEXT("Foo");
     // "Foo| Bar  Baz,"
-    EXPECT_TRUE(selection().selectWordAroundPosition(VisiblePosition(Position(text, 3))));
+    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 3))));
     EXPECT_EQ_SELECTED_TEXT("Foo");
     // "Foo Bar | Baz,"
-    EXPECT_FALSE(selection().selectWordAroundPosition(VisiblePosition(Position(text, 13))));
+    EXPECT_FALSE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 13))));
     // "Foo Bar  Baz|,"
-    EXPECT_TRUE(selection().selectWordAroundPosition(VisiblePosition(Position(text, 22))));
+    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 22))));
     EXPECT_EQ_SELECTED_TEXT("Baz");
 }
 
@@ -172,16 +172,16 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest)
     EXPECT_EQ_SELECTED_TEXT("a");
 
     // "Foo B|ar B>az," with the Character granularity.
-    selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 9)), CharacterGranularity);
+    selection().moveRangeSelection(createVisiblePosition(Position(text, 5)), createVisiblePosition(Position(text, 9)), CharacterGranularity);
     EXPECT_EQ_SELECTED_TEXT("ar B");
     // "Foo B|ar B>az," with the Word granularity.
-    selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 9)), WordGranularity);
+    selection().moveRangeSelection(createVisiblePosition(Position(text, 5)), createVisiblePosition(Position(text, 9)), WordGranularity);
     EXPECT_EQ_SELECTED_TEXT("Bar Baz");
     // "Fo<o B|ar Baz," with the Character granularity.
-    selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 2)), CharacterGranularity);
+    selection().moveRangeSelection(createVisiblePosition(Position(text, 5)), createVisiblePosition(Position(text, 2)), CharacterGranularity);
     EXPECT_EQ_SELECTED_TEXT("o B");
     // "Fo<o B|ar Baz," with the Word granularity.
-    selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 2)), WordGranularity);
+    selection().moveRangeSelection(createVisiblePosition(Position(text, 5)), createVisiblePosition(Position(text, 2)), WordGranularity);
     EXPECT_EQ_SELECTED_TEXT("Foo Bar");
 }
 

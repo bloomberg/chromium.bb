@@ -78,7 +78,7 @@ void InsertParagraphSeparatorCommand::calculateStyleBeforeInsertion(const Positi
     // It is only important to set a style to apply later if we're at the boundaries of
     // a paragraph. Otherwise, content that is moved as part of the work of the command
     // will lend their styles to the new paragraph without any extra work needed.
-    VisiblePosition visiblePos(pos, VP_DEFAULT_AFFINITY);
+    VisiblePosition visiblePos = createVisiblePosition(pos, VP_DEFAULT_AFFINITY);
     if (!isStartOfParagraph(visiblePos) && !isEndOfParagraph(visiblePos))
         return;
 
@@ -170,7 +170,7 @@ void InsertParagraphSeparatorCommand::doApply()
     RefPtrWillBeRawPtr<Element> startBlock = enclosingBlock(insertionPosition.parentAnchoredEquivalent().computeContainerNode());
     Node* listChildNode = enclosingListChild(insertionPosition.parentAnchoredEquivalent().computeContainerNode());
     RefPtrWillBeRawPtr<HTMLElement> listChild = listChildNode && listChildNode->isHTMLElement() ? toHTMLElement(listChildNode) : 0;
-    Position canonicalPos = VisiblePosition(insertionPosition).deepEquivalent();
+    Position canonicalPos = createVisiblePosition(insertionPosition).deepEquivalent();
     if (!startBlock
         || !startBlock->nonShadowBoundaryParentNode()
         || isTableCell(startBlock.get())
@@ -189,7 +189,7 @@ void InsertParagraphSeparatorCommand::doApply()
 
     // Adjust the insertion position after the delete
     insertionPosition = positionAvoidingSpecialElementBoundary(insertionPosition);
-    VisiblePosition visiblePos(insertionPosition, affinity);
+    VisiblePosition visiblePos = createVisiblePosition(insertionPosition, affinity);
     calculateStyleBeforeInsertion(insertionPosition);
 
     //---------------------------------------------------------------------
@@ -333,7 +333,7 @@ void InsertParagraphSeparatorCommand::doApply()
     // At this point, the insertionPosition's node could be a container, and we want to make sure we include
     // all of the correct nodes when building the ancestor list.  So this needs to be the deepest representation of the position
     // before we walk the DOM tree.
-    insertionPosition = positionOutsideTabSpan(VisiblePosition(insertionPosition).deepEquivalent());
+    insertionPosition = positionOutsideTabSpan(createVisiblePosition(insertionPosition).deepEquivalent());
 
     // If the returned position lies either at the end or at the start of an element that is ignored by editing
     // we should move to its upstream or downstream position.
@@ -365,7 +365,7 @@ void InsertParagraphSeparatorCommand::doApply()
             splitTextNode(textNode, textOffset);
             positionAfterSplit = firstPositionInNode(textNode.get());
             insertionPosition = Position(textNode->previousSibling(), textOffset);
-            visiblePos = VisiblePosition(insertionPosition);
+            visiblePos = createVisiblePosition(insertionPosition);
         }
     }
 
@@ -393,7 +393,7 @@ void InsertParagraphSeparatorCommand::doApply()
         appendNode(createBreakElement(document()).get(), blockToInsert.get());
 
     // Move the start node and the siblings of the start node.
-    if (VisiblePosition(insertionPosition).deepEquivalent() != VisiblePosition(positionBeforeNode(blockToInsert.get())).deepEquivalent()) {
+    if (createVisiblePosition(insertionPosition).deepEquivalent() != createVisiblePosition(positionBeforeNode(blockToInsert.get())).deepEquivalent()) {
         Node* n;
         if (insertionPosition.computeContainerNode() == startBlock) {
             n = insertionPosition.computeNodeAfterPosition();
@@ -405,8 +405,8 @@ void InsertParagraphSeparatorCommand::doApply()
             splitTreeToNode(splitTo, startBlock.get());
 
             for (n = startBlock->firstChild(); n; n = n->nextSibling()) {
-                VisiblePosition beforeNodePosition(positionBeforeNode(n));
-                if (!beforeNodePosition.isNull() && comparePositions(VisiblePosition(insertionPosition), beforeNodePosition) <= 0)
+                VisiblePosition beforeNodePosition = createVisiblePosition(positionBeforeNode(n));
+                if (!beforeNodePosition.isNull() && comparePositions(createVisiblePosition(insertionPosition), beforeNodePosition) <= 0)
                     break;
             }
         }

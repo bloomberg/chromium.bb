@@ -199,7 +199,7 @@ static Position previousRootInlineBoxCandidatePosition(Node* node, const Visible
     ContainerNode* highestRoot = highestEditableRoot(visiblePosition.deepEquivalent(), editableType);
     Node* previousNode = previousLeafWithSameEditability(node, editableType);
 
-    while (previousNode && (!previousNode->layoutObject() || inSameLine(VisiblePosition(firstPositionInOrBeforeNode(previousNode)), visiblePosition)))
+    while (previousNode && (!previousNode->layoutObject() || inSameLine(createVisiblePosition(firstPositionInOrBeforeNode(previousNode)), visiblePosition)))
         previousNode = previousLeafWithSameEditability(previousNode, editableType);
 
     while (previousNode && !previousNode->isShadowRoot()) {
@@ -221,7 +221,7 @@ static Position nextRootInlineBoxCandidatePosition(Node* node, const VisiblePosi
 {
     ContainerNode* highestRoot = highestEditableRoot(visiblePosition.deepEquivalent(), editableType);
     Node* nextNode = nextLeafWithSameEditability(node, editableType);
-    while (nextNode && (!nextNode->layoutObject() || inSameLine(VisiblePosition(firstPositionInOrBeforeNode(nextNode)), visiblePosition)))
+    while (nextNode && (!nextNode->layoutObject() || inSameLine(createVisiblePosition(firstPositionInOrBeforeNode(nextNode)), visiblePosition)))
         nextNode = nextLeafWithSameEditability(nextNode, ContentIsEditable);
 
     while (nextNode && !nextNode->isShadowRoot()) {
@@ -649,19 +649,19 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     }
 
     if (!next)
-        return VisiblePosition(it.atEnd() ? it.startPosition() : pos);
+        return createVisiblePosition(it.atEnd() ? it.startPosition() : pos);
 
     Node* node = it.startContainer();
     if (node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) {
         // The next variable contains a usable index into a text node
-        return VisiblePosition(Position(node, next));
+        return createVisiblePosition(Position(node, next));
     }
 
     // Use the character iterator to translate the next value into a DOM position.
     BackwardsCharacterIterator charIt(start, end);
     charIt.advance(string.size() - suffixLength - next);
     // FIXME: charIt can get out of shadow host.
-    return VisiblePosition(charIt.endPosition());
+    return createVisiblePosition(charIt.endPosition());
 }
 
 static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunction searchFunction)
@@ -734,8 +734,8 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
 
         if (charIt.characterAt(0) == '\n') {
             // FIXME: workaround for collapsed range (where only start position is correct) emitted for some emitted newlines (see rdar://5192593)
-            VisiblePosition visPos = VisiblePosition(pos);
-            if (visPos.deepEquivalent() == VisiblePosition(charIt.startPosition()).deepEquivalent()) {
+            VisiblePosition visPos = createVisiblePosition(pos);
+            if (visPos.deepEquivalent() == createVisiblePosition(charIt.startPosition()).deepEquivalent()) {
                 charIt.advance(1);
                 pos = charIt.startPosition();
             }
@@ -743,7 +743,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     }
 
     // generate VisiblePosition, use TextAffinity::Upstream affinity if possible
-    return VisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
+    return createVisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
 }
 
 // ---------
@@ -972,7 +972,7 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
         pos = positionAfterNode(endNode);
     }
 
-    return VisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
+    return createVisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
 }
 
 static bool inSameLogicalLine(const VisiblePosition& a, const VisiblePosition& b)
@@ -997,7 +997,7 @@ static VisiblePosition endOfLine(const VisiblePosition& c, LineEndpointComputati
 
         if (ContainerNode* editableRoot = highestEditableRoot(c.deepEquivalent())) {
             if (!editableRoot->contains(visPos.deepEquivalent().computeContainerNode()))
-                return VisiblePosition(lastPositionInNode(editableRoot));
+                return createVisiblePosition(lastPositionInNode(editableRoot));
         }
 
         return honorEditingBoundaryAtOrAfter(visPos, c.deepEquivalent());
@@ -1115,10 +1115,10 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
     if (!root) {
         Position position = previousRootInlineBoxCandidatePosition(node, visiblePosition, editableType);
         if (position.isNotNull()) {
-            RenderedPosition renderedPosition((VisiblePosition(position)));
+            RenderedPosition renderedPosition((createVisiblePosition(position)));
             root = renderedPosition.rootBox();
             if (!root)
-                return VisiblePosition(position);
+                return createVisiblePosition(position);
         }
     }
 
@@ -1128,7 +1128,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
         LayoutObject& layoutObject = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->layoutObject();
         Node* node = layoutObject.node();
         if (node && editingIgnoresContent(node))
-            return VisiblePosition(positionInParentBeforeNode(*node));
+            return createVisiblePosition(positionInParentBeforeNode(*node));
         return createVisiblePosition(layoutObject.positionForPoint(pointInLine));
     }
 
@@ -1138,7 +1138,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
     Element* rootElement = node->hasEditableStyle(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
-    return VisiblePosition(firstPositionInNode(rootElement));
+    return createVisiblePosition(firstPositionInNode(rootElement));
 }
 
 VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
@@ -1171,10 +1171,10 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
         node = child ? child : &NodeTraversal::lastWithinOrSelf(*node);
         Position position = nextRootInlineBoxCandidatePosition(node, visiblePosition, editableType);
         if (position.isNotNull()) {
-            RenderedPosition renderedPosition((VisiblePosition(position)));
+            RenderedPosition renderedPosition((createVisiblePosition(position)));
             root = renderedPosition.rootBox();
             if (!root)
-                return VisiblePosition(position);
+                return createVisiblePosition(position);
         }
     }
 
@@ -1184,7 +1184,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
         LayoutObject& layoutObject = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->layoutObject();
         Node* node = layoutObject.node();
         if (node && editingIgnoresContent(node))
-            return VisiblePosition(positionInParentBeforeNode(*node));
+            return createVisiblePosition(positionInParentBeforeNode(*node));
         return createVisiblePosition(layoutObject.positionForPoint(pointInLine));
     }
 
@@ -1194,7 +1194,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
     Element* rootElement = node->hasEditableStyle(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
-    return VisiblePosition(lastPositionInNode(rootElement));
+    return createVisiblePosition(lastPositionInNode(rootElement));
 }
 
 // ---------
@@ -1260,7 +1260,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
         return VisiblePosition();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
-        return VisiblePosition(positionBeforeNode(startNode));
+        return createVisiblePosition(positionBeforeNode(startNode));
 
     Element* startBlock = enclosingBlock(startNode);
 
@@ -1305,7 +1305,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
                     i = max(0, o);
                 while (--i >= 0) {
                     if ((*text)[i] == '\n')
-                        return VisiblePosition(Position(toText(n), i + 1));
+                        return createVisiblePosition(Position(toText(n), i + 1));
                 }
             }
             node = n;
@@ -1321,9 +1321,9 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
     }
 
     if (type == PositionAnchorType::OffsetInAnchor)
-        return VisiblePosition(Position(node, offset));
+        return createVisiblePosition(Position(node, offset));
 
-    return VisiblePosition(Position(node, type));
+    return createVisiblePosition(Position(node, type));
 }
 
 VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
@@ -1335,7 +1335,7 @@ VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossing
     Node* startNode = p.anchorNode();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
-        return VisiblePosition(positionAfterNode(startNode));
+        return createVisiblePosition(positionAfterNode(startNode));
 
     Element* startBlock = enclosingBlock(startNode);
     Element* stayInsideBlock = startBlock;
@@ -1381,7 +1381,7 @@ VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossing
                 int o = n == startNode ? offset : 0;
                 for (int i = o; i < length; ++i) {
                     if ((*text)[i] == '\n')
-                        return VisiblePosition(Position(toText(n), i));
+                        return createVisiblePosition(Position(toText(n), i));
                 }
             }
             node = n;
@@ -1397,9 +1397,9 @@ VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossing
     }
 
     if (type == PositionAnchorType::OffsetInAnchor)
-        return VisiblePosition(Position(node, offset));
+        return createVisiblePosition(Position(node, offset));
 
-    return VisiblePosition(Position(node, type));
+    return createVisiblePosition(Position(node, type));
 }
 
 // FIXME: isStartOfParagraph(startOfNextParagraph(pos)) is not always true
@@ -1459,14 +1459,14 @@ VisiblePosition startOfBlock(const VisiblePosition& visiblePosition, EditingBoun
 {
     Position position = visiblePosition.deepEquivalent();
     Element* startBlock = position.computeContainerNode() ? enclosingBlock(position.computeContainerNode(), rule) : 0;
-    return startBlock ? VisiblePosition(firstPositionInNode(startBlock)) : VisiblePosition();
+    return startBlock ? createVisiblePosition(firstPositionInNode(startBlock)) : VisiblePosition();
 }
 
 VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
     Position position = visiblePosition.deepEquivalent();
     Element* endBlock = position.computeContainerNode() ? enclosingBlock(position.computeContainerNode(), rule) : 0;
-    return endBlock ? VisiblePosition(lastPositionInNode(endBlock)) : VisiblePosition();
+    return endBlock ? createVisiblePosition(lastPositionInNode(endBlock)) : VisiblePosition();
 }
 
 bool inSameBlock(const VisiblePosition& a, const VisiblePosition& b)
@@ -1491,7 +1491,7 @@ VisiblePosition startOfDocument(const Node* node)
     if (!node || !node->document().documentElement())
         return VisiblePosition();
 
-    return VisiblePosition(firstPositionInNode(node->document().documentElement()));
+    return createVisiblePosition(firstPositionInNode(node->document().documentElement()));
 }
 
 VisiblePosition startOfDocument(const VisiblePosition& c)
@@ -1505,7 +1505,7 @@ VisiblePosition endOfDocument(const Node* node)
         return VisiblePosition();
 
     Element* doc = node->document().documentElement();
-    return VisiblePosition(lastPositionInNode(doc));
+    return createVisiblePosition(lastPositionInNode(doc));
 }
 
 VisiblePosition endOfDocument(const VisiblePosition& c)
@@ -1531,7 +1531,7 @@ VisiblePosition startOfEditableContent(const VisiblePosition& visiblePosition)
     if (!highestRoot)
         return VisiblePosition();
 
-    return VisiblePosition(firstPositionInNode(highestRoot));
+    return createVisiblePosition(firstPositionInNode(highestRoot));
 }
 
 VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
@@ -1540,7 +1540,7 @@ VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
     if (!highestRoot)
         return VisiblePosition();
 
-    return VisiblePosition(lastPositionInNode(highestRoot));
+    return createVisiblePosition(lastPositionInNode(highestRoot));
 }
 
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition& p)
@@ -1630,7 +1630,8 @@ static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorit
             // Try a visually equivalent position with possibly opposite
             // editability. This helps in case |this| is in an editable block
             // but surrounded by non-editable positions. It acts to negate the
-            // logic at the beginning of LayoutObject::createVisiblePosition().
+            // logic at the beginning of
+            // |LayoutObject::createPositionWithAffinity()|.
             PositionAlgorithm<Strategy> equivalent = downstreamIgnoringEditingBoundaries(position);
             if (equivalent == position) {
                 equivalent = upstreamIgnoringEditingBoundaries(position);
@@ -2462,7 +2463,7 @@ static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition& pos, co
 
     // If this is not editable but |pos| has an editable root, skip to the end
     if (!highestRoot && highestRootOfPos)
-        return VisiblePosition(Position(highestRootOfPos, PositionAnchorType::AfterAnchor).parentAnchoredEquivalent());
+        return createVisiblePosition(Position(highestRootOfPos, PositionAnchorType::AfterAnchor).parentAnchoredEquivalent());
 
     // That must mean that |pos| is not editable. Return the next position after
     // |pos| that is in the same editable region as this position
@@ -2825,7 +2826,7 @@ VisiblePosition rightPositionOf(const VisiblePosition& visiblePosition)
 
 VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
-    VisiblePosition next(nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent()), visiblePosition.affinity());
+    VisiblePosition next = createVisiblePosition(nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent()), visiblePosition.affinity());
 
     switch (rule) {
     case CanCrossEditingBoundary:
@@ -2854,7 +2855,7 @@ static VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition& pos, 
 
     // If this is not editable but |pos| has an editable root, skip to the start
     if (!highestRoot && highestRootOfPos)
-        return VisiblePosition(previousVisuallyDistinctCandidate(Position(highestRootOfPos, PositionAnchorType::BeforeAnchor).parentAnchoredEquivalent()));
+        return createVisiblePosition(previousVisuallyDistinctCandidate(Position(highestRootOfPos, PositionAnchorType::BeforeAnchor).parentAnchoredEquivalent()));
 
     // That must mean that |pos| is not editable. Return the last position
     // before |pos| that is in the same editable region as this position
@@ -2869,7 +2870,7 @@ VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, Editi
     if (pos.atStartOfTree())
         return VisiblePosition();
 
-    VisiblePosition prev = VisiblePosition(pos);
+    VisiblePosition prev = createVisiblePosition(pos);
     ASSERT(prev.deepEquivalent() != visiblePosition.deepEquivalent());
 
 #if ENABLE(ASSERT)

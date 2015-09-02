@@ -89,9 +89,9 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     // selection does not encompass all its children, we need to explicitally handle the same. The original
     // list item too would require proper deletion in that case.
     if (end.anchorNode() == selectedListItem.get() || end.anchorNode()->isDescendantOf(selectedListItem->lastChild())) {
-        moveParagraphWithClones(VisiblePosition(start), VisiblePosition(end), newList.get(), selectedListItem.get());
+        moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), newList.get(), selectedListItem.get());
     } else {
-        moveParagraphWithClones(VisiblePosition(start), VisiblePosition(positionAfterNode(selectedListItem->lastChild())), newList.get(), selectedListItem.get());
+        moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(positionAfterNode(selectedListItem->lastChild())), newList.get(), selectedListItem.get());
         removeNode(selectedListItem.get());
     }
 
@@ -119,7 +119,7 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
 
     RefPtrWillBeRawPtr<Node> outerBlock = (start.computeContainerNode() == elementToSplitTo) ? start.computeContainerNode() : splitTreeToNode(start.computeContainerNode(), elementToSplitTo).get();
 
-    VisiblePosition startOfContents(start);
+    VisiblePosition startOfContents = createVisiblePosition(start);
     if (!targetBlockquote) {
         // Create a new blockquote and insert it as a child of the root editable element. We accomplish
         // this by splitting all parents of the current paragraph up to that point.
@@ -128,10 +128,10 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
             insertNodeAt(targetBlockquote, start);
         else
             insertNodeBefore(targetBlockquote, outerBlock);
-        startOfContents = VisiblePosition(positionInParentAfterNode(*targetBlockquote));
+        startOfContents = createVisiblePosition(positionInParentAfterNode(*targetBlockquote));
     }
 
-    VisiblePosition endOfContents(end);
+    VisiblePosition endOfContents = createVisiblePosition(end);
     if (startOfContents.isNull() || endOfContents.isNull())
         return;
     moveParagraphWithClones(startOfContents, endOfContents, targetBlockquote.get(), outerBlock.get());
@@ -157,11 +157,11 @@ void IndentOutdentCommand::outdentParagraph()
     }
 
     // The selection is inside a blockquote i.e. enclosingNode is a blockquote
-    VisiblePosition positionInEnclosingBlock = VisiblePosition(firstPositionInNode(enclosingElement));
+    VisiblePosition positionInEnclosingBlock = createVisiblePosition(firstPositionInNode(enclosingElement));
     // If the blockquote is inline, the start of the enclosing block coincides with
     // positionInEnclosingBlock.
     VisiblePosition startOfEnclosingBlock = (enclosingElement->layoutObject() && enclosingElement->layoutObject()->isInline()) ? positionInEnclosingBlock : startOfBlock(positionInEnclosingBlock);
-    VisiblePosition lastPositionInEnclosingBlock = VisiblePosition(lastPositionInNode(enclosingElement));
+    VisiblePosition lastPositionInEnclosingBlock = createVisiblePosition(lastPositionInNode(enclosingElement));
     VisiblePosition endOfEnclosingBlock = endOfBlock(lastPositionInEnclosingBlock);
     if (visibleStartOfParagraph.deepEquivalent() == startOfEnclosingBlock.deepEquivalent()
         && visibleEndOfParagraph.deepEquivalent() == endOfEnclosingBlock.deepEquivalent()) {
@@ -180,8 +180,8 @@ void IndentOutdentCommand::outdentParagraph()
         }
 
         document().updateLayoutIgnorePendingStylesheets();
-        visibleStartOfParagraph = VisiblePosition(visibleStartOfParagraph.deepEquivalent());
-        visibleEndOfParagraph = VisiblePosition(visibleEndOfParagraph.deepEquivalent());
+        visibleStartOfParagraph = createVisiblePosition(visibleStartOfParagraph.deepEquivalent());
+        visibleEndOfParagraph = createVisiblePosition(visibleEndOfParagraph.deepEquivalent());
         if (visibleStartOfParagraph.isNotNull() && !isStartOfParagraph(visibleStartOfParagraph))
             insertNodeAt(createBreakElement(document()), visibleStartOfParagraph.deepEquivalent());
         if (visibleEndOfParagraph.isNotNull() && !isEndOfParagraph(visibleEndOfParagraph))
@@ -199,13 +199,13 @@ void IndentOutdentCommand::outdentParagraph()
             splitElement(enclosingElement, highestInlineNode ? highestInlineNode : visibleStartOfParagraph.deepEquivalent().anchorNode());
         }
     }
-    VisiblePosition startOfParagraphToMove(startOfParagraph(visibleStartOfParagraph));
-    VisiblePosition endOfParagraphToMove(endOfParagraph(visibleEndOfParagraph));
+    VisiblePosition startOfParagraphToMove = startOfParagraph(visibleStartOfParagraph);
+    VisiblePosition endOfParagraphToMove = endOfParagraph(visibleEndOfParagraph);
     if (startOfParagraphToMove.isNull() || endOfParagraphToMove.isNull())
         return;
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
     insertNodeBefore(placeholder, splitBlockquoteNode);
-    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, VisiblePosition(positionBeforeNode(placeholder.get())), true);
+    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, createVisiblePosition(positionBeforeNode(placeholder.get())), true);
 }
 
 // FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection
@@ -238,7 +238,7 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
             break;
 
         if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.deepEquivalent().inDocument()) {
-            endOfCurrentParagraph = VisiblePosition(endingSelection().end());
+            endOfCurrentParagraph = createVisiblePosition(endingSelection().end());
             endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph));
         }
         endOfCurrentParagraph = endOfNextParagraph;

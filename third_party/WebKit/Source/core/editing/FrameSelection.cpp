@@ -169,7 +169,7 @@ static void adjustEndpointsAtBidiBoundary(VisiblePosition& visibleBase, VisibleP
     if (base.atLeftBoundaryOfBidiRun()) {
         if (!extent.atRightBoundaryOfBidiRun(base.bidiLevelOnRight())
             && base.isEquivalent(extent.leftBoundaryOfBidiRun(base.bidiLevelOnRight()))) {
-            visibleBase = VisiblePosition(base.positionAtLeftBoundaryOfBiDiRun());
+            visibleBase = createVisiblePosition(base.positionAtLeftBoundaryOfBiDiRun());
             return;
         }
         return;
@@ -178,19 +178,19 @@ static void adjustEndpointsAtBidiBoundary(VisiblePosition& visibleBase, VisibleP
     if (base.atRightBoundaryOfBidiRun()) {
         if (!extent.atLeftBoundaryOfBidiRun(base.bidiLevelOnLeft())
             && base.isEquivalent(extent.rightBoundaryOfBidiRun(base.bidiLevelOnLeft()))) {
-            visibleBase = VisiblePosition(base.positionAtRightBoundaryOfBiDiRun());
+            visibleBase = createVisiblePosition(base.positionAtRightBoundaryOfBiDiRun());
             return;
         }
         return;
     }
 
     if (extent.atLeftBoundaryOfBidiRun() && extent.isEquivalent(base.leftBoundaryOfBidiRun(extent.bidiLevelOnRight()))) {
-        visibleExtent = VisiblePosition(extent.positionAtLeftBoundaryOfBiDiRun());
+        visibleExtent = createVisiblePosition(extent.positionAtLeftBoundaryOfBiDiRun());
         return;
     }
 
     if (extent.atRightBoundaryOfBidiRun() && extent.isEquivalent(base.rightBoundaryOfBidiRun(extent.bidiLevelOnLeft()))) {
-        visibleExtent = VisiblePosition(extent.positionAtRightBoundaryOfBiDiRun());
+        visibleExtent = createVisiblePosition(extent.positionAtRightBoundaryOfBiDiRun());
         return;
     }
 }
@@ -651,12 +651,12 @@ VisiblePosition FrameSelection::nextWordPositionForPlatform(const VisiblePositio
 static void adjustPositionForUserSelectAll(VisiblePosition& pos, bool isForward)
 {
     if (Node* rootUserSelectAll = EditingStrategy::rootUserSelectAllForNode(pos.deepEquivalent().anchorNode()))
-        pos = VisiblePosition(isForward ? mostForwardCaretPosition(positionAfterNode(rootUserSelectAll), CanCrossEditingBoundary) : mostBackwardCaretPosition(positionBeforeNode(rootUserSelectAll), CanCrossEditingBoundary));
+        pos = createVisiblePosition(isForward ? mostForwardCaretPosition(positionAfterNode(rootUserSelectAll), CanCrossEditingBoundary) : mostBackwardCaretPosition(positionBeforeNode(rootUserSelectAll), CanCrossEditingBoundary));
 }
 
 VisiblePosition FrameSelection::modifyExtendingRight(TextGranularity granularity)
 {
-    VisiblePosition pos(m_selection.extent(), m_selection.affinity());
+    VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
     // The difference between modifyExtendingRight and modifyExtendingForward is:
     // modifyExtendingForward always extends forward logically.
@@ -698,7 +698,7 @@ VisiblePosition FrameSelection::modifyExtendingRight(TextGranularity granularity
 
 VisiblePosition FrameSelection::modifyExtendingForward(TextGranularity granularity)
 {
-    VisiblePosition pos(m_selection.extent(), m_selection.affinity());
+    VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
     switch (granularity) {
     case CharacterGranularity:
         pos = nextPositionOf(pos, CanSkipOverEditingBoundary);
@@ -743,16 +743,16 @@ VisiblePosition FrameSelection::modifyMovingRight(TextGranularity granularity)
     case CharacterGranularity:
         if (isRange()) {
             if (directionOfSelection() == LTR)
-                pos = VisiblePosition(m_selection.end(), m_selection.affinity());
+                pos = createVisiblePosition(m_selection.end(), m_selection.affinity());
             else
-                pos = VisiblePosition(m_selection.start(), m_selection.affinity());
+                pos = createVisiblePosition(m_selection.start(), m_selection.affinity());
         } else {
-            pos = rightPositionOf(VisiblePosition(m_selection.extent(), m_selection.affinity()));
+            pos = rightPositionOf(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         }
         break;
     case WordGranularity: {
         bool skipsSpaceWhenMovingRight = m_frame && m_frame->editor().behavior().shouldSkipSpaceWhenMovingRight();
-        pos = rightWordPosition(VisiblePosition(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
+        pos = rightWordPosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
         break;
     }
     case SentenceGranularity:
@@ -778,15 +778,15 @@ VisiblePosition FrameSelection::modifyMovingForward(TextGranularity granularity)
     switch (granularity) {
     case CharacterGranularity:
         if (isRange())
-            pos = VisiblePosition(m_selection.end(), m_selection.affinity());
+            pos = createVisiblePosition(m_selection.end(), m_selection.affinity());
         else
-            pos = nextPositionOf(VisiblePosition(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
+            pos = nextPositionOf(createVisiblePosition(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
         break;
     case WordGranularity:
-        pos = nextWordPositionForPlatform(VisiblePosition(m_selection.extent(), m_selection.affinity()));
+        pos = nextWordPositionForPlatform(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case SentenceGranularity:
-        pos = nextSentencePosition(VisiblePosition(m_selection.extent(), m_selection.affinity()));
+        pos = nextSentencePosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case LineGranularity: {
         // down-arrowing from a range selection that ends at the start of a line needs
@@ -821,7 +821,7 @@ VisiblePosition FrameSelection::modifyMovingForward(TextGranularity granularity)
 
 VisiblePosition FrameSelection::modifyExtendingLeft(TextGranularity granularity)
 {
-    VisiblePosition pos(m_selection.extent(), m_selection.affinity());
+    VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
     // The difference between modifyExtendingLeft and modifyExtendingBackward is:
     // modifyExtendingBackward always extends backward logically.
@@ -862,7 +862,7 @@ VisiblePosition FrameSelection::modifyExtendingLeft(TextGranularity granularity)
 
 VisiblePosition FrameSelection::modifyExtendingBackward(TextGranularity granularity)
 {
-    VisiblePosition pos(m_selection.extent(), m_selection.affinity());
+    VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
     // Extending a selection backward by word or character from just after a table selects
     // the table.  This "makes sense" from the user perspective, esp. when deleting.
@@ -912,16 +912,16 @@ VisiblePosition FrameSelection::modifyMovingLeft(TextGranularity granularity)
     case CharacterGranularity:
         if (isRange()) {
             if (directionOfSelection() == LTR)
-                pos = VisiblePosition(m_selection.start(), m_selection.affinity());
+                pos = createVisiblePosition(m_selection.start(), m_selection.affinity());
             else
-                pos = VisiblePosition(m_selection.end(), m_selection.affinity());
+                pos = createVisiblePosition(m_selection.end(), m_selection.affinity());
         } else {
-            pos = leftPositionOf(VisiblePosition(m_selection.extent(), m_selection.affinity()));
+            pos = leftPositionOf(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         }
         break;
     case WordGranularity: {
         bool skipsSpaceWhenMovingRight = m_frame && m_frame->editor().behavior().shouldSkipSpaceWhenMovingRight();
-        pos = leftWordPosition(VisiblePosition(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
+        pos = leftWordPosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
         break;
     }
     case SentenceGranularity:
@@ -946,15 +946,15 @@ VisiblePosition FrameSelection::modifyMovingBackward(TextGranularity granularity
     switch (granularity) {
     case CharacterGranularity:
         if (isRange())
-            pos = VisiblePosition(m_selection.start(), m_selection.affinity());
+            pos = createVisiblePosition(m_selection.start(), m_selection.affinity());
         else
-            pos = previousPositionOf(VisiblePosition(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
+            pos = previousPositionOf(createVisiblePosition(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
         break;
     case WordGranularity:
-        pos = previousWordPosition(VisiblePosition(m_selection.extent(), m_selection.affinity()));
+        pos = previousWordPosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case SentenceGranularity:
-        pos = previousSentencePosition(VisiblePosition(m_selection.extent(), m_selection.affinity()));
+        pos = previousSentencePosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case LineGranularity:
         pos = previousLinePosition(startForPlatform(), lineDirectionPointForBlockDirectionNavigation(START));
@@ -1119,12 +1119,12 @@ bool FrameSelection::modify(EAlteration alter, unsigned verticalDistance, Vertic
     LayoutUnit xPos = 0;
     switch (alter) {
     case AlterationMove:
-        pos = VisiblePosition(direction == DirectionUp ? m_selection.start() : m_selection.end(), m_selection.affinity());
+        pos = createVisiblePosition(direction == DirectionUp ? m_selection.start() : m_selection.end(), m_selection.affinity());
         xPos = lineDirectionPointForBlockDirectionNavigation(direction == DirectionUp ? START : END);
         m_selection.setAffinity(direction == DirectionUp ? TextAffinity::Upstream : TextAffinity::Downstream);
         break;
     case AlterationExtend:
-        pos = VisiblePosition(m_selection.extent(), m_selection.affinity());
+        pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
         xPos = lineDirectionPointForBlockDirectionNavigation(EXTENT);
         m_selection.setAffinity(TextAffinity::Downstream);
         break;
@@ -1230,7 +1230,7 @@ LayoutUnit FrameSelection::lineDirectionPointForBlockDirectionNavigation(EPositi
         return x;
 
     if (m_xPosForVerticalArrowNavigation == NoXPosForVerticalArrowNavigation()) {
-        VisiblePosition visiblePosition(pos, m_selection.affinity());
+        VisiblePosition visiblePosition = createVisiblePosition(pos, m_selection.affinity());
         // VisiblePosition creation can fail here if a node containing the selection becomes visibility:hidden
         // after the selection is created and before this function is called.
         x = lineDirectionPointForBlockDirectionNavigationOf(visiblePosition);
@@ -1317,7 +1317,7 @@ IntRect FrameSelection::absoluteCaretBounds()
         if (isTextFormControl(m_selection))
             updateCaretRect(PositionWithAffinity(isVisuallyEquivalentCandidate(m_selection.start()) ? m_selection.start() : Position(), m_selection.affinity()));
         else
-            updateCaretRect(VisiblePosition(m_selection.start(), m_selection.affinity()));
+            updateCaretRect(createVisiblePosition(m_selection.start(), m_selection.affinity()));
     }
     return absoluteBoundsForLocalRect(m_selection.start().anchorNode(), localCaretRectWithoutUpdate());
 }
@@ -1450,8 +1450,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
 
     // Create compute positions before and after the element.
     unsigned ownerElementNodeIndex = ownerElement->nodeIndex();
-    VisiblePosition beforeOwnerElement(VisiblePosition(Position(ownerElementParent, ownerElementNodeIndex)));
-    VisiblePosition afterOwnerElement(VisiblePosition(Position(ownerElementParent, ownerElementNodeIndex + 1), VP_UPSTREAM_IF_POSSIBLE));
+    VisiblePosition beforeOwnerElement = createVisiblePosition(Position(ownerElementParent, ownerElementNodeIndex));
+    VisiblePosition afterOwnerElement = createVisiblePosition(Position(ownerElementParent, ownerElementNodeIndex + 1), VP_UPSTREAM_IF_POSSIBLE);
 
     // Focus on the parent frame, and then select from before this element to after.
     VisibleSelection newSelection(beforeOwnerElement, afterOwnerElement);
@@ -1883,7 +1883,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
         rect = LayoutRect(absoluteCaretBounds());
         break;
     case RangeSelection:
-        rect = LayoutRect(revealExtentOption == RevealExtent ? absoluteCaretBoundsOf(VisiblePosition(extent())) : enclosingIntRect(unclippedBounds()));
+        rect = LayoutRect(revealExtentOption == RevealExtent ? absoluteCaretBoundsOf(createVisiblePosition(extent())) : enclosingIntRect(unclippedBounds()));
         break;
     }
 

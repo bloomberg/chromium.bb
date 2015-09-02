@@ -395,14 +395,14 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
 VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) const
 {
     if (index <= 0)
-        return VisiblePosition(firstPositionInNode(innerEditorElement()));
+        return createVisiblePosition(firstPositionInNode(innerEditorElement()));
     Position start, end;
     bool selected = Range::selectNodeContents(innerEditorElement(), start, end);
     if (!selected)
         return VisiblePosition();
     CharacterIterator it(start, end);
     it.advance(index - 1);
-    return VisiblePosition(it.endPosition(), TextAffinity::Upstream);
+    return createVisiblePosition(it.endPosition(), TextAffinity::Upstream);
 }
 
 int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& pos) const

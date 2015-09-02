@@ -342,12 +342,12 @@ void VisibleSelection::setBaseAndExtentToDeepEquivalents()
     // Move the selection to rendered positions, if possible.
     bool baseAndExtentEqual = m_base == m_extent;
     if (m_base.isNotNull()) {
-        m_base = VisiblePosition(m_base, m_affinity).deepEquivalent();
+        m_base = createVisiblePosition(m_base, m_affinity).deepEquivalent();
         if (baseAndExtentEqual)
             m_extent = m_base;
     }
     if (m_extent.isNotNull() && !baseAndExtentEqual)
-        m_extent = VisiblePosition(m_extent, m_affinity).deepEquivalent();
+        m_extent = createVisiblePosition(m_extent, m_affinity).deepEquivalent();
 
     // Make sure we do not have a dangling base or extent.
     if (m_base.isNull() && m_extent.isNull()) {
@@ -381,7 +381,7 @@ void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity
         // the document, select that last word (LeftWordIfOnBoundary).
         // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
         // last word to the line break (also RightWordIfOnBoundary);
-        VisiblePosition visibleStart = VisiblePosition(m_start, m_affinity);
+        VisiblePosition visibleStart = createVisiblePosition(m_start, m_affinity);
         EWordSide side = wordSide;
         if (isEndOfEditableOrNonEditableContent(visibleStart) || (isEndOfLine(visibleStart) && !isStartOfLine(visibleStart) && !isEndOfParagraph(visibleStart)))
             side = LeftWordIfOnBoundary;
@@ -389,31 +389,31 @@ void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity
         break;
     }
     case SentenceGranularity: {
-        m_start = startOfSentence(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfSentence(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     }
     case LineGranularity: {
-        m_start = startOfLine(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfLine(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     }
     case LineBoundary:
-        m_start = startOfLine(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfLine(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     case ParagraphGranularity: {
-        VisiblePosition pos(m_start, m_affinity);
+        VisiblePosition pos = createVisiblePosition(m_start, m_affinity);
         if (isStartOfLine(pos) && isEndOfEditableOrNonEditableContent(pos))
             pos = previousPositionOf(pos);
         m_start = startOfParagraph(pos).deepEquivalent();
         break;
     }
     case DocumentBoundary:
-        m_start = startOfDocument(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfDocument(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     case ParagraphBoundary:
-        m_start = startOfParagraph(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfParagraph(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     case SentenceBoundary:
-        m_start = startOfSentence(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfSentence(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     }
 
@@ -441,13 +441,13 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
         // the document, select that last word (LeftWordIfOnBoundary).
         // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
         // last word to the line break (also RightWordIfOnBoundary);
-        VisiblePosition originalEnd(m_end, m_affinity);
+        VisiblePosition originalEnd = createVisiblePosition(m_end, m_affinity);
         EWordSide side = wordSide;
         if (isEndOfEditableOrNonEditableContent(originalEnd) || (isEndOfLine(originalEnd) && !isStartOfLine(originalEnd) && !isEndOfParagraph(originalEnd)))
             side = LeftWordIfOnBoundary;
 
-        VisiblePosition wordEnd(endOfWord(originalEnd, side));
-        VisiblePosition end(wordEnd);
+        VisiblePosition wordEnd = endOfWord(originalEnd, side);
+        VisiblePosition end = wordEnd;
 
         if (isEndOfParagraph(originalEnd) && !isEmptyTableCell(m_start.anchorNode())) {
             // Select the paragraph break (the space from the end of a paragraph to the start of
@@ -472,11 +472,11 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
         break;
     }
     case SentenceGranularity: {
-        m_end = endOfSentence(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfSentence(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     }
     case LineGranularity: {
-        VisiblePosition end = endOfLine(VisiblePosition(m_end, m_affinity));
+        VisiblePosition end = endOfLine(createVisiblePosition(m_end, m_affinity));
         // If the end of this line is at the end of a paragraph, include the space
         // after the end of the line in the selection.
         if (isEndOfParagraph(end)) {
@@ -488,14 +488,14 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
         break;
     }
     case LineBoundary:
-        m_end = endOfLine(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfLine(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     case ParagraphGranularity: {
-        VisiblePosition visibleParagraphEnd = endOfParagraph(VisiblePosition(m_end, m_affinity));
+        VisiblePosition visibleParagraphEnd = endOfParagraph(createVisiblePosition(m_end, m_affinity));
 
         // Include the "paragraph break" (the space from the end of this paragraph to the start
         // of the next one) in the selection.
-        VisiblePosition end(nextPositionOf(visibleParagraphEnd));
+        VisiblePosition end = nextPositionOf(visibleParagraphEnd);
 
         if (Element* table = isFirstPositionAfterTable(end)) {
             // The paragraph break after the last paragraph in the last cell of a block table ends
@@ -514,13 +514,13 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
         break;
     }
     case DocumentBoundary:
-        m_end = endOfDocument(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfDocument(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     case ParagraphBoundary:
-        m_end = endOfParagraph(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfParagraph(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     case SentenceBoundary:
-        m_end = endOfSentence(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfSentence(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     }
 
@@ -653,7 +653,7 @@ void VisibleSelection::validate(TextGranularity granularity)
         // to do this operation, since all selection changes that result in a RANGE
         // come through here before anyone uses it.
         // FIXME: Canonicalizing is good, but haven't we already done it (when we
-        // set these two positions to VisiblePosition deepEquivalent()s above)?
+        // set these two positions to VisiblePosition deepEquivalent = createVisiblePosition()s above)?
         m_start = mostForwardCaretPosition(m_start);
         m_end = mostBackwardCaretPosition(m_end);
 
@@ -939,7 +939,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
                 if (p.isNull() && shadowAncestor)
                     p = positionAfterNode(shadowAncestor);
             }
-            VisiblePosition previous(p);
+            VisiblePosition previous = createVisiblePosition(p);
 
             if (previous.isNull()) {
                 // The selection crosses an Editing boundary.  This is a
@@ -968,7 +968,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
                 if (p.isNull() && shadowAncestor)
                     p = positionBeforeNode(shadowAncestor);
             }
-            VisiblePosition next(p);
+            VisiblePosition next = createVisiblePosition(p);
 
             if (next.isNull()) {
                 // The selection crosses an Editing boundary.  This is a

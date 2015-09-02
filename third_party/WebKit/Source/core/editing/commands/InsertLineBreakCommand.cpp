@@ -99,13 +99,13 @@ void InsertLineBreakCommand::doApply()
         if (needExtraLineBreak)
             insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert);
 
-        VisiblePosition endingPosition(positionBeforeNode(nodeToInsert.get()));
+        VisiblePosition endingPosition = createVisiblePosition(positionBeforeNode(nodeToInsert.get()));
         setEndingSelection(VisibleSelection(endingPosition, endingSelection().isDirectional()));
     } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
         insertNodeAt(nodeToInsert.get(), pos);
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
-        if (!isStartOfParagraph(VisiblePosition(positionBeforeNode(nodeToInsert.get()))))
+        if (!isStartOfParagraph(createVisiblePosition(positionBeforeNode(nodeToInsert.get()))))
             insertNodeBefore(nodeToInsert->cloneNode(false).get(), nodeToInsert.get());
 
         setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
