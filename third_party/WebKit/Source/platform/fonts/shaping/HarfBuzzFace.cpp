@@ -146,9 +146,19 @@ static void SkiaGetGlyphWidthAndExtents(SkPaint* paint, hb_codepoint_t codepoint
     uint16_t glyph = codepoint;
 
     paint->getTextWidths(&glyph, sizeof(glyph), &skWidth, &skBounds);
-    if (width)
+    if (width) {
+        if (!paint->isSubpixelText())
+            skWidth = SkScalarRoundToInt(skWidth);
         *width = SkiaScalarToHarfBuzzPosition(skWidth);
+    }
     if (extents) {
+        if (!paint->isSubpixelText()) {
+            // Use roundOut() rather than round() to avoid rendering glyphs
+            // outside the visual overflow rect. crbug.com/452914.
+            SkIRect ir;
+            skBounds.roundOut(&ir);
+            skBounds.set(ir);
+        }
         // Invert y-axis because Skia is y-grows-down but we set up HarfBuzz to be y-grows-up.
         extents->x_bearing = SkiaScalarToHarfBuzzPosition(skBounds.fLeft);
         extents->y_bearing = SkiaScalarToHarfBuzzPosition(-skBounds.fTop);
