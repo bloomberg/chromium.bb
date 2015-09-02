@@ -37,7 +37,9 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/client/gl_helper.h"
@@ -484,6 +486,14 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
   aura::client::SetFocusChangeObserver(window_, this);
   window_->set_layer_owner_delegate(delegated_frame_host_.get());
   gfx::Screen::GetScreenFor(window_)->AddObserver(this);
+
+  // Let the page-level input event router know about our surface ID
+  // namespace for surface-based hit testing.
+  if (UseSurfacesEnabled() && host_->delegate() &&
+      host_->delegate()->GetInputEventRouter()) {
+    host_->delegate()->GetInputEventRouter()->AddSurfaceIdNamespaceOwner(
+        GetSurfaceIdNamespace(), this);
+  }
 
   bool overscroll_enabled = base::CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
@@ -2090,21 +2100,32 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
     blink::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent&>(*event));
-    if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
-      host_->ForwardWheelEvent(mouse_wheel_event);
+    if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0) {
+      if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+        host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
+            this, &mouse_wheel_event);
+      } else {
+        ProcessMouseWheelEvent(mouse_wheel_event);
+      }
+    }
   } else {
-      bool is_selection_popup = popup_child_host_view_ &&
-          popup_child_host_view_->NeedsInputGrab();
-      if (CanRendererHandleEvent(event, mouse_locked_, is_selection_popup) &&
-          !(event->flags() & ui::EF_FROM_TOUCH)) {
+    bool is_selection_popup =
+        popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab();
+    if (CanRendererHandleEvent(event, mouse_locked_, is_selection_popup) &&
+        !(event->flags() & ui::EF_FROM_TOUCH)) {
       // Confirm existing composition text on mouse press, to make sure
       // the input caret won't be moved with an ongoing composition text.
       if (event->type() == ui::ET_MOUSE_PRESSED)
         FinishImeCompositionSession();
 
       blink::WebMouseEvent mouse_event = MakeWebMouseEvent(*event);
-      ModifyEventMovementAndCoords(&mouse_event);
-      host_->ForwardMouseEvent(mouse_event);
+      if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+        host_->delegate()->GetInputEventRouter()->RouteMouseEvent(this,
+                                                                  &mouse_event);
+      } else {
+        ProcessMouseEvent(mouse_event);
+      }
+
       // Ensure that we get keyboard focus on mouse down as a plugin window may
       // have grabbed keyboard focus.
       if (event->type() == ui::ET_MOUSE_PRESSED)
@@ -2143,8 +2164,23 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 uint32_t RenderWidgetHostViewAura::SurfaceIdNamespaceAtPoint(
     const gfx::Point& point,
     gfx::Point* transformed_point) {
-  return cc::SurfaceIdAllocator::NamespaceForId(
-      delegated_frame_host_->SurfaceIdAtPoint(point, transformed_point));
+  cc::SurfaceId id =
+      delegated_frame_host_->SurfaceIdAtPoint(point, transformed_point);
+  // It is possible that the renderer has not yet produced a surface, in which
+  // case we return our current namespace.
+  if (id.is_null())
+    return GetSurfaceIdNamespace();
+  return cc::SurfaceIdAllocator::NamespaceForId(id);
+}
+
+void RenderWidgetHostViewAura::ProcessMouseEvent(
+    const blink::WebMouseEvent& event) {
+  host_->ForwardMouseEvent(event);
+}
+
+void RenderWidgetHostViewAura::ProcessMouseWheelEvent(
+    const blink::WebMouseWheelEvent& event) {
+  host_->ForwardWheelEvent(event);
 }
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
@@ -2379,6 +2415,12 @@ void RenderWidgetHostViewAura::OnHostMoved(const aura::WindowTreeHost* host,
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   selection_controller_.reset();
   selection_controller_client_.reset();
+
+  if (UseSurfacesEnabled() && host_->delegate() &&
+      host_->delegate()->GetInputEventRouter()) {
+    host_->delegate()->GetInputEventRouter()->RemoveSurfaceIdNamespaceOwner(
+        GetSurfaceIdNamespace());
+  }
   delegated_frame_host_.reset();
   window_observer_.reset();
   if (window_->GetHost())

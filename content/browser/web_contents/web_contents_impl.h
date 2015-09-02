@@ -61,6 +61,7 @@ class PowerSaveBlocker;
 class RenderViewHost;
 class RenderViewHostDelegateView;
 class RenderWidgetHostImpl;
+class RenderWidgetHostInputEventRouter;
 class SavePackage;
 class ScreenOrientationDispatcherHost;
 class SiteInstance;
@@ -584,6 +585,7 @@ class CONTENT_EXPORT WebContentsImpl
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
   void AdjustSelectionByCharacterOffset(int start_adjust, int end_adjust)
       override;
+  RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 
@@ -1299,6 +1301,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Manages all the media player and CDM managers and forwards IPCs to them.
   scoped_ptr<MediaWebContentsObserver> media_web_contents_observer_;
 #endif
+
+  scoped_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
 

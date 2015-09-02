@@ -1299,6 +1299,8 @@
       'browser/renderer_host/render_widget_host_delegate.h',
       'browser/renderer_host/render_widget_host_impl.cc',
       'browser/renderer_host/render_widget_host_impl.h',
+      'browser/renderer_host/render_widget_host_input_event_router.cc',
+      'browser/renderer_host/render_widget_host_input_event_router.h',
       'browser/renderer_host/render_widget_host_view_android.cc',
       'browser/renderer_host/render_widget_host_view_android.h',
       'browser/renderer_host/render_widget_host_view_aura.cc',

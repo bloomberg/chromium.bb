@@ -14,7 +14,9 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
@@ -32,8 +34,13 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       ack_pending_count_(0),
       frame_connector_(nullptr),
       weak_factory_(this) {
-  if (use_surfaces_)
+  if (use_surfaces_) {
     id_allocator_ = CreateSurfaceIdAllocator();
+    if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+      host_->delegate()->GetInputEventRouter()->AddSurfaceIdNamespaceOwner(
+          GetSurfaceIdNamespace(), this);
+    }
+  }
 
   host_->SetView(this);
 }
@@ -187,6 +194,12 @@ void RenderWidgetHostViewChildFrame::Destroy() {
     frame_connector_ = NULL;
   }
 
+  if (use_surfaces_ && host_->delegate() &&
+      host_->delegate()->GetInputEventRouter()) {
+    host_->delegate()->GetInputEventRouter()->RemoveSurfaceIdNamespaceOwner(
+        GetSurfaceIdNamespace());
+  }
+
   host_->SetView(NULL);
   host_ = NULL;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -336,6 +349,22 @@ uint32_t RenderWidgetHostViewChildFrame::GetSurfaceIdNamespace() {
     return 0;
 
   return id_allocator_->id_namespace();
+}
+
+void RenderWidgetHostViewChildFrame::ProcessKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  host_->ForwardKeyboardEvent(event);
+}
+
+void RenderWidgetHostViewChildFrame::ProcessMouseEvent(
+    const blink::WebMouseEvent& event) {
+  host_->ForwardMouseEvent(event);
+}
+
+void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
+    const blink::WebMouseWheelEvent& event) {
+  if (event.deltaX != 0 || event.deltaY != 0)
+    host_->ForwardWheelEvent(event);
 }
 
 #if defined(OS_MACOSX)

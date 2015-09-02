@@ -116,6 +116,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   bool LockMouse() override;
   void UnlockMouse() override;
   uint32_t GetSurfaceIdNamespace() override;
+  void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) override;
+  void ProcessMouseEvent(const blink::WebMouseEvent& event) override;
+  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
 
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.

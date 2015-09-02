@@ -19,7 +19,9 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/notification_observer.h"
@@ -36,6 +38,7 @@
 #include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
@@ -423,6 +426,137 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
       "Where A = http://a.com/\n"
       "      C = http://bar.com/",
       DepictFrameTree(root));
+}
+
+class RenderWidgetHostMouseEventMonitor {
+ public:
+  RenderWidgetHostMouseEventMonitor(RenderWidgetHost* host)
+      : host_(host), event_received(false) {
+    host_->AddMouseEventCallback(
+        base::Bind(&RenderWidgetHostMouseEventMonitor::MouseEventCallback,
+                   base::Unretained(this)));
+  }
+  ~RenderWidgetHostMouseEventMonitor() {
+    host_->RemoveMouseEventCallback(
+        base::Bind(&RenderWidgetHostMouseEventMonitor::MouseEventCallback,
+                   base::Unretained(this)));
+  }
+  bool EventWasReceived() { return event_received; }
+  void ResetEventReceived() { event_received = false; }
+
+ private:
+  bool MouseEventCallback(const blink::WebMouseEvent& /* event */) {
+    event_received = true;
+    return false;
+  }
+  RenderWidgetHost* host_;
+  bool event_received;
+};
+
+// Test that mouse events are being routed to the correct RenderWidgetHostView
+// based on coordinates.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
+#else
+#define MAYBE_SurfaceHitTestTest SurfaceHitTestTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_SurfaceHitTestTest) {
+  if (!UseSurfacesEnabled())
+    return;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, child_node->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  // Create listeners for mouse events.
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // We need to wait for a compositor frame from the child frame, at which
+  // point its surface will be created.
+  while (rwhv_child->RendererFrameNumber() <= 0) {
+    // TODO(lazyboy): Find a better way to avoid sleeping like this. See
+    // http://crbug.com/405282 for details.
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(10));
+    run_loop.Run();
+  }
+
+  uint32_t cur_render_frame_number = root_view->RendererFrameNumber();
+
+  // Target input event to child frame.
+  blink::WebMouseEvent child_event;
+  child_event.type = blink::WebInputEvent::MouseDown;
+  child_event.button = blink::WebPointerProperties::ButtonLeft;
+  child_event.x = 75;
+  child_event.y = 75;
+  child_event.clickCount = 1;
+  router->RouteMouseEvent(root_view, &child_event);
+
+  if (!child_frame_monitor.EventWasReceived()) {
+    main_frame_monitor.ResetEventReceived();
+    // This is working around a big synchronization problem. It is very
+    // difficult to know if we have received a compositor frame from the
+    // main frame renderer *after* it received the child frame's surface
+    // ID. Hit testing won't work until this happens. So if the hit test
+    // fails then we wait for another frame to arrive and try again.
+    // TODO(kenrb): We need a better way to do all of this, possibly coming
+    // from http://crbug.com/405282.
+    while (root_view->RendererFrameNumber() <= cur_render_frame_number) {
+      base::RunLoop run_loop;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(),
+          base::TimeDelta::FromMilliseconds(10));
+      run_loop.Run();
+    }
+    router->RouteMouseEvent(root_view, &child_event);
+  }
+
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+
+  child_frame_monitor.ResetEventReceived();
+  main_frame_monitor.ResetEventReceived();
+
+  // Target input event to main frame.
+  blink::WebMouseEvent main_event;
+  main_event.type = blink::WebInputEvent::MouseDown;
+  main_event.button = blink::WebPointerProperties::ButtonLeft;
+  main_event.x = 1;
+  main_event.y = 1;
+  main_event.clickCount = 1;
+  // Ladies and gentlemen, THIS is the main_event!
+  router->RouteMouseEvent(root_view, &main_event);
+
+  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
 }
 
 // Tests OOPIF rendering by checking that the RWH of the iframe generates

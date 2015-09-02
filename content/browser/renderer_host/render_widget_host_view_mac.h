@@ -341,6 +341,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                      InputEventAckState ack_result) override;
 
   uint32_t GetSurfaceIdNamespace() override;
+  uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
+                                     gfx::Point* transformed_point) override;
+  void ProcessMouseEvent(const blink::WebMouseEvent& event) override;
+  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;

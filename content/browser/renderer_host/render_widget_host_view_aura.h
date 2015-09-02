@@ -188,6 +188,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   uint32_t GetSurfaceIdNamespace() override;
   uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
                                      gfx::Point* transformed_point) override;
+  void ProcessMouseEvent(const blink::WebMouseEvent& event) override;
+  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
 
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(

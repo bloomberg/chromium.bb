@@ -168,8 +168,6 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
   if (!view_)
     return;
 
-  RenderWidgetHostImpl* child_widget =
-      RenderWidgetHostImpl::From(view_->GetRenderWidgetHost());
   RenderFrameHostManager* manager =
       frame_proxy_in_parent_renderer_->frame_tree_node()->render_manager();
   RenderWidgetHostImpl* parent_widget =
@@ -182,18 +180,17 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
       return;
     NativeWebKeyboardEvent keyboard_event(
         *parent_widget->GetLastKeyboardEvent());
-    child_widget->ForwardKeyboardEvent(keyboard_event);
+    view_->ProcessKeyboardEvent(keyboard_event);
     return;
   }
 
   if (blink::WebInputEvent::isMouseEventType(event->type)) {
-    child_widget->ForwardMouseEvent(
-        *static_cast<const blink::WebMouseEvent*>(event));
+    view_->ProcessMouseEvent(*static_cast<const blink::WebMouseEvent*>(event));
     return;
   }
 
   if (event->type == blink::WebInputEvent::MouseWheel) {
-    child_widget->ForwardWheelEvent(
+    view_->ProcessMouseWheelEvent(
         *static_cast<const blink::WebMouseWheelEvent*>(event));
     return;
   }

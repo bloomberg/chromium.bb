@@ -39,6 +39,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #include "content/browser/renderer_host/render_widget_resize_helper.h"
@@ -598,6 +599,15 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 
   if (!is_guest_view_hack_)
     render_widget_host_->SetView(this);
+
+  // Let the page-level input event router know about our surface ID
+  // namespace for surface-based hit testing.
+  if (UseSurfacesEnabled() && render_widget_host_->delegate() &&
+      render_widget_host_->delegate()->GetInputEventRouter()) {
+    render_widget_host_->delegate()
+        ->GetInputEventRouter()
+        ->AddSurfaceIdNamespaceOwner(GetSurfaceIdNamespace(), this);
+  }
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -608,6 +618,14 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   cocoa_view_ = nil;
 
   UnlockMouse();
+
+  if (UseSurfacesEnabled() && render_widget_host_ &&
+      render_widget_host_->delegate() &&
+      render_widget_host_->delegate()->GetInputEventRouter()) {
+    render_widget_host_->delegate()
+        ->GetInputEventRouter()
+        ->RemoveSurfaceIdNamespaceOwner(GetSurfaceIdNamespace());
+  }
 
   // Ensure that the browser compositor is destroyed in a safe order.
   ShutdownBrowserCompositor();
@@ -1097,6 +1115,16 @@ void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewMac::RenderWidgetHostGone() {
+  // Clear SurfaceID namespace ownership before we shutdown the
+  // compositor.
+  if (UseSurfacesEnabled() && render_widget_host_ &&
+      render_widget_host_->delegate() &&
+      render_widget_host_->delegate()->GetInputEventRouter()) {
+    render_widget_host_->delegate()
+        ->GetInputEventRouter()
+        ->RemoveSurfaceIdNamespaceOwner(GetSurfaceIdNamespace());
+  }
+
   // Destroy the DelegatedFrameHost, to prevent crashes when Destroy is never
   // called on the view.
   // http://crbug.com/404828
@@ -1125,6 +1153,16 @@ void RenderWidgetHostViewMac::Destroy() {
   // chain, for instance |-performKeyEquivalent:|.  In that case the
   // object needs to survive until the stack unwinds.
   pepper_fullscreen_window_.autorelease();
+
+  // Clear SurfaceID namespace ownership before we shutdown the
+  // compositor.
+  if (UseSurfacesEnabled() && render_widget_host_ &&
+      render_widget_host_->delegate() &&
+      render_widget_host_->delegate()->GetInputEventRouter()) {
+    render_widget_host_->delegate()
+        ->GetInputEventRouter()
+        ->RemoveSurfaceIdNamespaceOwner(GetSurfaceIdNamespace());
+  }
 
   // Delete the delegated frame state, which will reach back into
   // render_widget_host_.
@@ -1601,6 +1639,27 @@ uint32_t RenderWidgetHostViewMac::GetSurfaceIdNamespace() {
   return 0;
 }
 
+uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
+    const gfx::Point& point,
+    gfx::Point* transformed_point) {
+  cc::SurfaceId id =
+      delegated_frame_host_->SurfaceIdAtPoint(point, transformed_point);
+  // It is possible that the renderer has not yet produced a surface, in which
+  // case we return our current namespace.
+  if (id.is_null())
+    return GetSurfaceIdNamespace();
+  return cc::SurfaceIdAllocator::NamespaceForId(id);
+}
+
+void RenderWidgetHostViewMac::ProcessMouseEvent(
+    const blink::WebMouseEvent& event) {
+  render_widget_host_->ForwardMouseEvent(event);
+}
+void RenderWidgetHostViewMac::ProcessMouseWheelEvent(
+    const blink::WebMouseWheelEvent& event) {
+  render_widget_host_->ForwardWheelEvent(event);
+}
+
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
   if (render_widget_host_)
     return render_widget_host_->Send(message);
@@ -1936,7 +1995,15 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
           WebInputEventFactory::mouseEvent(theEvent, self);
       enterEvent.type = WebInputEvent::MouseMove;
       enterEvent.button = WebMouseEvent::ButtonNone;
-      renderWidgetHostView_->ForwardMouseEvent(enterEvent);
+      if (renderWidgetHostView_->render_widget_host_->delegate() &&
+          renderWidgetHostView_->render_widget_host_->delegate()
+              ->GetInputEventRouter()) {
+        renderWidgetHostView_->render_widget_host_->delegate()
+            ->GetInputEventRouter()
+            ->RouteMouseEvent(renderWidgetHostView_.get(), &enterEvent);
+      } else {
+        renderWidgetHostView_->ForwardMouseEvent(enterEvent);
+      }
     }
   }
   mouseEventWasIgnored_ = NO;
@@ -1964,9 +2031,16 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     [self confirmComposition];
   }
 
-  const WebMouseEvent event =
-      WebInputEventFactory::mouseEvent(theEvent, self);
-  renderWidgetHostView_->ForwardMouseEvent(event);
+  WebMouseEvent event = WebInputEventFactory::mouseEvent(theEvent, self);
+  if (renderWidgetHostView_->render_widget_host_->delegate() &&
+      renderWidgetHostView_->render_widget_host_->delegate()
+          ->GetInputEventRouter()) {
+    renderWidgetHostView_->render_widget_host_->delegate()
+        ->GetInputEventRouter()
+        ->RouteMouseEvent(renderWidgetHostView_.get(), &event);
+  } else {
+    renderWidgetHostView_->ForwardMouseEvent(event);
+  }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
@@ -2424,7 +2498,15 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     WebMouseWheelEvent webEvent = WebInputEventFactory::mouseWheelEvent(
         event, self, canRubberbandLeft, canRubberbandRight);
     webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
-    renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
+    if (renderWidgetHostView_->render_widget_host_->delegate() &&
+        renderWidgetHostView_->render_widget_host_->delegate()
+            ->GetInputEventRouter()) {
+      renderWidgetHostView_->render_widget_host_->delegate()
+          ->GetInputEventRouter()
+          ->RouteMouseWheelEvent(renderWidgetHostView_.get(), &webEvent);
+    } else {
+      renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
+    }
   }
 }
 

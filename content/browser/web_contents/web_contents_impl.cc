@@ -54,6 +54,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -415,6 +416,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
 WebContentsImpl::~WebContentsImpl() {
   is_being_destroyed_ = true;
+
+  rwh_input_event_router_.reset();
 
   // Delete all RFH pending shutdown, which will lead the corresponding RVH to
   // shutdown and be deleted as well.
@@ -1559,6 +1562,14 @@ bool WebContentsImpl::HandleWheelEvent(
 bool WebContentsImpl::PreHandleGestureEvent(
     const blink::WebGestureEvent& event) {
   return delegate_ && delegate_->PreHandleGestureEvent(this, event);
+}
+
+RenderWidgetHostInputEventRouter* WebContentsImpl::GetInputEventRouter() {
+  // Currently only supported in site per process mode (--site-per-process).
+  if (!rwh_input_event_router_.get() && !is_being_destroyed_ &&
+      SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    rwh_input_event_router_.reset(new RenderWidgetHostInputEventRouter);
+  return rwh_input_event_router_.get();
 }
 
 void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {

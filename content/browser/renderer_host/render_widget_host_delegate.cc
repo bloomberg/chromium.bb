@@ -40,4 +40,11 @@ gfx::NativeViewAccessible
 }
 #endif
 
+// If a delegate does not override this, the RenderWidgetHostView will
+// assume it is the sole platform event consumer.
+RenderWidgetHostInputEventRouter*
+RenderWidgetHostDelegate::GetInputEventRouter() {
+  return nullptr;
+}
+
 }  // namespace content

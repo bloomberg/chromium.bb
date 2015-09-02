@@ -42,6 +42,8 @@ class VideoFrame;
 
 namespace blink {
 struct WebScreenInfo;
+class WebMouseEvent;
+class WebMouseWheelEvent;
 }
 
 namespace content {
@@ -185,6 +187,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // been identified by hit testing mouse, touch or gesture events).
   virtual uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
                                              gfx::Point* transformed_point);
+  virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+  virtual void ProcessMouseEvent(const blink::WebMouseEvent& event) {}
+  virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) {}
 
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.

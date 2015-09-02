@@ -208,6 +208,8 @@ uint32_t DelegatedFrameHost::GetSurfaceIdNamespace() {
 cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
     const gfx::Point& point,
     gfx::Point* transformed_point) {
+  if (surface_id_.is_null())
+    return surface_id_;
   cc::SurfaceHittest hittest(GetSurfaceManager());
   return hittest.Hittest(surface_id_, point, transformed_point);
 }
