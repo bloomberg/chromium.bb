@@ -30,7 +30,7 @@ const int kBytesPerPixel = 4;
 
 namespace remoting {
 
-bool RegisterJni(JNIEnv* env) {
+bool RegisterChromotingJniRuntime(JNIEnv* env) {
   return remoting::RegisterNativesImpl(env);
 }
 

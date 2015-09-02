@@ -10,6 +10,7 @@
           'target_name': 'remoting_jni_headers',
           'type': 'none',
           'sources': [
+            'android/java/src/org/chromium/chromoting/jni/Client.java',
             'android/java/src/org/chromium/chromoting/jni/JniInterface.java',
           ],
           'variables': {
@@ -33,11 +34,15 @@
             'client/jni/android_keymap.h',
             'client/jni/chromoting_jni_instance.cc',
             'client/jni/chromoting_jni_instance.h',
-            'client/jni/chromoting_jni_onload.cc',
             'client/jni/chromoting_jni_runtime.cc',
             'client/jni/chromoting_jni_runtime.h',
+            'client/jni/jni_client.cc',
+            'client/jni/jni_client.h',
             'client/jni/jni_frame_consumer.cc',
             'client/jni/jni_frame_consumer.h',
+            'client/jni/remoting_jni_onload.cc',
+            'client/jni/remoting_jni_registrar.cc',
+            'client/jni/remoting_jni_registrar.h',
           ],
         },  # end of target 'remoting_client_jni'
         {

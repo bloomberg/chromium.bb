@@ -7,8 +7,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_utils.h"
+#include "base/bind.h"
 #include "net/android/net_jni_registrar.h"
-#include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/jni/remoting_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 
 namespace {

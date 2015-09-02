@@ -18,7 +18,7 @@ template<typename T> struct DefaultSingletonTraits;
 
 namespace remoting {
 
-bool RegisterJni(JNIEnv* env);
+bool RegisterChromotingJniRuntime(JNIEnv* env);
 
 // Houses the global resources on which the Chromoting components run
 // (e.g. message loops and task runners). Proxies outgoing JNI calls from its
