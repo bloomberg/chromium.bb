@@ -389,16 +389,15 @@ void ServiceWorkerContextClient::didEvaluateWorkerScript(bool success) {
 void ServiceWorkerContextClient::didInitializeWorkerContext(
     v8::Local<v8::Context> context,
     const blink::WebURL& url) {
-  // TODO(annekao): Remove WebURL parameter from Blink, it's at best redundant
-  // given |script_url_|, and may be empty in the future.
-  // Also remove m_documentURL from ServiceWorkerGlobalScopeProxy.
+  // TODO(annekao): Remove WebURL parameter from Blink (since url and script_url
+  // are equal). Also remove m_documentURL from ServiceWorkerGlobalScopeProxy.
+  DCHECK_EQ(script_url_, GURL(url));
   GetContentClient()
       ->renderer()
       ->DidInitializeServiceWorkerContextOnWorkerThread(context, script_url_);
 }
 
-void ServiceWorkerContextClient::willDestroyWorkerContext(
-    v8::Local<v8::Context> context) {
+void ServiceWorkerContextClient::willDestroyWorkerContext() {
   // At this point OnWorkerRunLoopStopped is already called, so
   // worker_task_runner_->RunsTasksOnCurrentThread() returns false
   // (while we're still on the worker thread).
@@ -413,7 +412,7 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
   g_worker_client_tls.Pointer()->Set(NULL);
 
   GetContentClient()->renderer()->WillDestroyServiceWorkerContextOnWorkerThread(
-      context, script_url_);
+      script_url_);
 }
 
 void ServiceWorkerContextClient::workerContextDestroyed() {
