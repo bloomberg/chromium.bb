@@ -498,23 +498,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (NULL == thread_pool_)
     thread_pool_ = new Win2kThreadPool();
 
-  // We need to temporarily mark all inherited handles as closeable. The handle
-  // tracker may have marked the handles we're passing to the child as
-  // non-closeable, but the child is getting new copies that it's allowed to
-  // close. We're about to mark these handles as closeable for this process
-  // (when we close them below in ClearSharedHandles()) but that will be too
-  // late -- there will already another copy in the child that's non-closeable.
-  // After launching we restore the non-closability of these handles. We don't
-  // have any way here to affect *only* the child's copy, as the process
-  // launching mechanism takes care of doing the duplication-with-the-same-value
-  // into the child.
-  std::vector<DWORD> inherited_handle_information(inherited_handle_list.size());
-  for (size_t i = 0; i < inherited_handle_list.size(); ++i) {
-    const HANDLE& inherited_handle = inherited_handle_list[i];
-    ::GetHandleInformation(inherited_handle, &inherited_handle_information[i]);
-    ::SetHandleInformation(inherited_handle, HANDLE_FLAG_PROTECT_FROM_CLOSE, 0);
-  }
-
   // Create the TargetProces object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
   base::win::ScopedProcessInformation process_info;
@@ -526,13 +509,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   DWORD win_result = target->Create(exe_path, command_line, inherit_handles,
                                     policy_base->GetLowBoxSid() ? true : false,
                                     startup_info, &process_info);
-
-  // Restore the previous handle protection values.
-  for (size_t i = 0; i < inherited_handle_list.size(); ++i) {
-    ::SetHandleInformation(inherited_handle_list[i],
-                           HANDLE_FLAG_PROTECT_FROM_CLOSE,
-                           inherited_handle_information[i]);
-  }
 
   policy_base->ClearSharedHandles();
 
