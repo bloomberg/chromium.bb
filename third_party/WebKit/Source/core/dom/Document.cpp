@@ -212,7 +212,6 @@
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
-#include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
@@ -382,7 +381,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_paginatedForScreen(false)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
-    , m_executeScriptsWaitingForResourcesTask(WTF::bind(&Document::executeScriptsWaitingForResources, this))
+    , m_executeScriptsWaitingForResourcesTimer(this, &Document::executeScriptsWaitingForResourcesTimerFired)
     , m_hasAutofocused(false)
     , m_clearFocusedElementTimer(this, &Document::clearFocusedElementTimerFired)
     , m_domTreeVersion(++s_globalTreeVersion)
@@ -2962,8 +2961,7 @@ void Document::didRemoveAllPendingStylesheet()
 
 void Document::didLoadAllScriptBlockingResources()
 {
-    Platform::current()->currentThread()->scheduler()->postLoadingTask(
-        FROM_HERE, m_executeScriptsWaitingForResourcesTask.cancelAndCreate());
+    m_executeScriptsWaitingForResourcesTimer.startOneShot(0, FROM_HERE);
 
     if (frame())
         frame()->loader().client()->didRemoveAllPendingStylesheet();
@@ -2972,7 +2970,7 @@ void Document::didLoadAllScriptBlockingResources()
         view()->processUrlFragment(m_url);
 }
 
-void Document::executeScriptsWaitingForResources()
+void Document::executeScriptsWaitingForResourcesTimerFired(Timer<Document>*)
 {
     if (!isRenderingReady())
         return;
