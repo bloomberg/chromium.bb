@@ -34,6 +34,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/html/ValidityState.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutTheme.h"
@@ -83,6 +84,19 @@ DEFINE_TRACE(HTMLFormControlElement)
 {
     FormAssociatedElement::trace(visitor);
     LabelableElement::trace(visitor);
+}
+
+String HTMLFormControlElement::formAction() const
+{
+    const AtomicString& action = fastGetAttribute(formactionAttr);
+    if (action.isEmpty())
+        return document().url();
+    return document().completeURL(stripLeadingAndTrailingHTMLSpaces(action));
+}
+
+void HTMLFormControlElement::setFormAction(const AtomicString& value)
+{
+    setAttribute(formactionAttr, value);
 }
 
 String HTMLFormControlElement::formEnctype() const

@@ -13,7 +13,6 @@ var input = document.createElement('input');
 
 debug('Ordinary values for input:');
 input.type = "submit";
-shouldBeEqualToString('input.formAction', '');
 shouldBeEqualToString('input.formEnctype', '');
 shouldBeEqualToString('input.formMethod', '');
 shouldBeEqualToString('input.formTarget', '');
@@ -110,7 +109,6 @@ var button = document.createElement('button');
 debug('');
 debug('Ordinary values for button:');
 button.type = "submit";
-shouldBeEqualToString('button.formAction', '');
 shouldBeEqualToString('button.formEnctype', '');
 shouldBeEqualToString('button.formMethod', '');
 shouldBeEqualToString('button.formTarget', '');

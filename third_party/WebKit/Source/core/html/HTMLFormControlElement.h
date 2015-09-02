@@ -46,6 +46,8 @@ public:
     ~HTMLFormControlElement() override;
     DECLARE_VIRTUAL_TRACE();
 
+    String formAction() const;
+    void setFormAction(const AtomicString&);
     String formEnctype() const;
     void setFormEnctype(const AtomicString&);
     String formMethod() const;

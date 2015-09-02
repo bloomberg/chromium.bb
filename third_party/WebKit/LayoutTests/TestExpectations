@@ -396,8 +396,6 @@ crbug.com/508725 imported/web-platform-tests/html/semantics/forms/textfieldselec
 crbug.com/490511 imported/web-platform-tests/html/semantics/text-level-semantics/the-wbr-element/wbr-element.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
 crbug.com/526920 imported/web-platform-tests/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure ]
-crbug.com/520835 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/formAction_document_address.html [ Failure ]
-crbug.com/520835 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/formaction.html [ Failure ]
 # script-for-event.html: We can't check in failure results because we also have
 # script-for-event.xhtml.
 crbug.com/520844 imported/web-platform-tests/html/semantics/scripting-1/the-script-element/script-for-event.html [ Failure ]
