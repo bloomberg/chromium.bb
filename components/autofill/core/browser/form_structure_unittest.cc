@@ -55,13 +55,13 @@ class FormStructureTest : public testing::Test {
 
  protected:
   void DisableAutofillMetadataFieldTrial() {
-    field_trial_list_.reset(NULL);
+    field_trial_list_.reset(nullptr);
   }
 
  private:
   void EnableAutofillMetadataFieldTrial() {
     // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
-    field_trial_list_.reset(NULL);
+    field_trial_list_.reset(nullptr);
     field_trial_list_.reset(
         new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
@@ -2927,7 +2927,7 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
       "<field autofilltype=\"0\" />"
       "</autofillqueryresponse>";
 
-  FormStructure::ParseQueryResponse(response, forms.get(), NULL);
+  FormStructure::ParseQueryResponse(response, forms.get(), nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   ASSERT_GE(forms[1]->field_count(), 2U);
@@ -2965,7 +2965,7 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
       "<field autofilltype=\"76\" />"
       "</autofillqueryresponse>";
 
-  FormStructure::ParseQueryResponse(response, forms.get(), NULL);
+  FormStructure::ParseQueryResponse(response, forms.get(), nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(0)->server_type());
