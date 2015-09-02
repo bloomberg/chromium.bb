@@ -291,7 +291,6 @@
             '../build/android/rezip.gyp:rezip_apk_jar',
             '../chrome/chrome.gyp:chrome_public_apk',
             '../chrome/chrome.gyp:chrome_public_test_apk',
-            '../chrome/chrome.gyp:chrome_shell_apk',
             '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
             #"//clank" TODO(GYP) - conditional somehow?
             '../tools/imagediff/image_diff.gyp:image_diff#host',

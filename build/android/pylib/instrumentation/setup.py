@@ -19,7 +19,6 @@ DEVICE_DATA_DIR = 'chrome/test/data'
 
 ISOLATE_FILE_PATHS = {
     'AndroidWebViewTest': 'android_webview/android_webview_test_apk.isolate',
-    'ChromeShellTest': 'chrome/chrome_shell_test_apk.isolate',
     'ContentShellTest': 'content/content_shell_test_apk.isolate',
 }
 

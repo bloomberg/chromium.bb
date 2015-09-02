@@ -93,12 +93,6 @@ PACKAGE_INFO = {
         '/data/local/tmp/content-shell-command-line',
         None,
         'org.chromium.content_shell_apk.tests'),
-    'chrome_shell': PackageInfo(
-        'org.chromium.chrome.shell',
-        'org.chromium.chrome.shell.ChromeShellActivity',
-        '/data/local/tmp/chrome-shell-command-line',
-        'chrome_shell_devtools_remote',
-        'org.chromium.chrome.shell.tests'),
     'android_webview_shell': PackageInfo(
         'org.chromium.android_webview.shell',
         'org.chromium.android_webview.shell.AwShellActivity',
