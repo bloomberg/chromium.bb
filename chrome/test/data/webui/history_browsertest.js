@@ -943,7 +943,9 @@ TEST_F('HistoryWebUIRealBackendTest',
   testDone();
 });
 
-TEST_F('HistoryWebUIRealBackendTest', 'shiftClickActivatesOneRow', function() {
+// Flaky: http://crbug.com/527434
+TEST_F('HistoryWebUIRealBackendTest',
+    'DISABLED_shiftClickActivatesOneRow', function () {
   var entries = document.querySelectorAll('.entry');
   assertEquals(3, entries.length);
   assertTrue(entries[0].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
