@@ -6978,7 +6978,7 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, 0);
   scoped_ptr<SwapPromise> swap_promise(
       new LatencyInfoSwapPromise(latency_info));
-  host_impl_->active_tree()->QueueSwapPromise(swap_promise.Pass());
+  host_impl_->active_tree()->QueuePinnedSwapPromise(swap_promise.Pass());
   host_impl_->SetNeedsRedraw();
 
   gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());

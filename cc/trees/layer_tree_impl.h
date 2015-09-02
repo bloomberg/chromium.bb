@@ -285,7 +285,25 @@ class CC_EXPORT LayerTreeImpl {
 
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.
+  //
+  // A swap promise queued by QueueSwapPromise travels with the layer
+  // information currently associated with the tree. For example, when
+  // a pending tree is activated, the swap promise is passed to the
+  // active tree along with the layer information. Similarly, when a
+  // new activation overwrites layer information on the active tree,
+  // queued swap promises are broken.
   void QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise);
+
+  // Queue a swap promise, pinned to this tree. Pinned swap promises
+  // may only be queued on the active tree.
+  //
+  // An active tree pinned swap promise will see only DidSwap() or
+  // DidNotSwap(SWAP_FAILS). No DidActivate() will be seen because
+  // that has already happened prior to queueing of the swap promise.
+  //
+  // Pinned active tree swap promises will not be broken prematurely
+  // on the active tree if a new tree is activated.
+  void QueuePinnedSwapPromise(scoped_ptr<SwapPromise> swap_promise);
 
   // Take the |new_swap_promise| and append it to |swap_promise_list_|.
   void PassSwapPromises(ScopedPtrVector<SwapPromise>* new_swap_promise);
@@ -445,6 +463,7 @@ class CC_EXPORT LayerTreeImpl {
   bool has_ever_been_drawn_;
 
   ScopedPtrVector<SwapPromise> swap_promise_list_;
+  ScopedPtrVector<SwapPromise> pinned_swap_promise_list_;
 
   UIResourceRequestQueue ui_resource_request_queue_;
 

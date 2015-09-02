@@ -59,7 +59,12 @@ void LatencyInfoSwapPromiseMonitor::OnSetNeedsCommitOnMain() {
 void LatencyInfoSwapPromiseMonitor::OnSetNeedsRedrawOnImpl() {
   if (AddRenderingScheduledComponent(latency_, false /* on_main */)) {
     scoped_ptr<SwapPromise> swap_promise(new LatencyInfoSwapPromise(*latency_));
-    layer_tree_host_impl_->active_tree()->QueueSwapPromise(swap_promise.Pass());
+    // Queue a pinned swap promise on the active tree. This will allow
+    // measurement of the time to the next SwapBuffers(). The swap
+    // promise is pinned so that it is not interrupted by new incoming
+    // activations (which would otherwise break the swap promise).
+    layer_tree_host_impl_->active_tree()->QueuePinnedSwapPromise(
+        swap_promise.Pass());
   }
 }
 

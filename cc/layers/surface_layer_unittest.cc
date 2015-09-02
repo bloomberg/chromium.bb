@@ -143,8 +143,15 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
 
     gfx::Size bounds(100, 100);
     layer_tree_host()->SetViewportSize(bounds);
+
+    blank_layer_ = SolidColorLayer::Create(layer_settings());
+    blank_layer_->SetIsDrawable(true);
+    blank_layer_->SetBounds(gfx::Size(10, 10));
+
     PostSetNeedsCommitToMainThread();
   }
+
+  virtual void ChangeTree() = 0;
 
   void DidCommitAndDrawFrame() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -152,14 +159,27 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
                               base::Unretained(this)));
   }
 
-  void ChangeTree() {
+ protected:
+  int commit_count_;
+  bool sequence_was_satisfied_;
+  scoped_refptr<SurfaceLayer> layer_;
+  scoped_refptr<Layer> blank_layer_;
+  SurfaceSequence satisfied_sequence_;
+
+  SurfaceId required_id_;
+  std::set<SurfaceSequence> required_set_;
+};
+
+// Check that SurfaceSequence is sent through swap promise.
+class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
+ public:
+  SurfaceLayerSwapPromiseWithDraw() : SurfaceLayerSwapPromise() {}
+
+  void ChangeTree() override {
     ++commit_count_;
     switch (commit_count_) {
       case 1:
         // Remove SurfaceLayer from tree to cause SwapPromise to be created.
-        blank_layer_ = SolidColorLayer::Create(layer_settings());
-        blank_layer_->SetIsDrawable(true);
-        blank_layer_->SetBounds(gfx::Size(10, 10));
         layer_tree_host()->SetRootLayer(blank_layer_);
         break;
       case 2:
@@ -193,21 +213,49 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     // callback.
     EXPECT_TRUE(satisfied_sequence_.is_null());
   }
-
- private:
-  int commit_count_;
-  bool sequence_was_satisfied_;
-  scoped_refptr<SurfaceLayer> layer_;
-  scoped_refptr<Layer> blank_layer_;
-  SurfaceSequence satisfied_sequence_;
-
-  SurfaceId required_id_;
-  std::set<SurfaceSequence> required_set_;
 };
 
 // TODO(jbauman): Reenable on single thread once http://crbug.com/421923 is
 // fixed.
-MULTI_THREAD_TEST_F(SurfaceLayerSwapPromise);
+MULTI_THREAD_TEST_F(SurfaceLayerSwapPromiseWithDraw);
+
+// Check that SurfaceSequence is sent through swap promise and resolved when
+// swap fails.
+class SurfaceLayerSwapPromiseWithoutDraw : public SurfaceLayerSwapPromise {
+ public:
+  SurfaceLayerSwapPromiseWithoutDraw() : SurfaceLayerSwapPromise() {}
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame,
+                                   DrawResult draw_result) override {
+    return DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
+  }
+
+  void ChangeTree() override {
+    ++commit_count_;
+    switch (commit_count_) {
+      case 1:
+        // Remove SurfaceLayer from tree to cause SwapPromise to be created.
+        layer_tree_host()->SetRootLayer(blank_layer_);
+        break;
+      case 2:
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      default:
+        EndTest();
+        break;
+    }
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(required_id_ == SurfaceId(1));
+    EXPECT_EQ(1u, required_set_.size());
+    // Sequence should have been satisfied with the callback.
+    EXPECT_TRUE(satisfied_sequence_ == SurfaceSequence(1u, 1u));
+  }
+};
+
+MULTI_THREAD_TEST_F(SurfaceLayerSwapPromiseWithoutDraw);
 
 }  // namespace
 }  // namespace cc

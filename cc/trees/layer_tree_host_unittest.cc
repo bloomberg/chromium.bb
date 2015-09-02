@@ -3879,7 +3879,6 @@ class TestSwapPromise : public SwapPromise {
 
   void DidSwap(CompositorFrameMetadata* metadata) override {
     base::AutoLock lock(result_->lock);
-    EXPECT_TRUE(result_->did_activate_called);
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
     result_->did_swap_called = true;
@@ -3901,6 +3900,53 @@ class TestSwapPromise : public SwapPromise {
   // Not owned.
   TestSwapPromiseResult* result_;
 };
+
+class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override {
+    PostSetNextCommitForcesRedrawToMainThread();
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    int frame = host_impl->active_tree()->source_frame_number();
+    if (frame == -1) {
+      host_impl->active_tree()->QueuePinnedSwapPromise(make_scoped_ptr(
+          new TestSwapPromise(&pinned_active_swap_promise_result_)));
+      host_impl->pending_tree()->QueueSwapPromise(
+          make_scoped_ptr(new TestSwapPromise(&pending_swap_promise_result_)));
+      host_impl->active_tree()->QueueSwapPromise(
+          make_scoped_ptr(new TestSwapPromise(&active_swap_promise_result_)));
+    }
+  }
+
+  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
+    EndTest();
+  }
+
+  void AfterTest() override {
+    // The pending swap promise should activate and swap.
+    EXPECT_TRUE(pending_swap_promise_result_.did_activate_called);
+    EXPECT_TRUE(pending_swap_promise_result_.did_swap_called);
+
+    // The active swap promise should fail to swap (it is cancelled by
+    // the activation of a new frame).
+    EXPECT_FALSE(active_swap_promise_result_.did_activate_called);
+    EXPECT_FALSE(active_swap_promise_result_.did_swap_called);
+    EXPECT_TRUE(active_swap_promise_result_.did_not_swap_called);
+    EXPECT_EQ(active_swap_promise_result_.reason, SwapPromise::SWAP_FAILS);
+
+    // The pinned active swap promise should not activate, but should swap.
+    EXPECT_FALSE(pinned_active_swap_promise_result_.did_activate_called);
+    EXPECT_TRUE(pinned_active_swap_promise_result_.did_swap_called);
+  }
+
+  TestSwapPromiseResult pending_swap_promise_result_;
+  TestSwapPromiseResult active_swap_promise_result_;
+  TestSwapPromiseResult pinned_active_swap_promise_result_;
+};
+
+MULTI_THREAD_TEST_F(PinnedLayerTreeSwapPromise);
 
 class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
  protected:

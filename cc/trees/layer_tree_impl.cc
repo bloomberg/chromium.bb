@@ -1026,6 +1026,11 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   for (auto* swap_promise : swap_promise_list_)
     state->AppendDouble(swap_promise->TraceId());
   state->EndArray();
+
+  state->BeginArray("pinned_swap_promise_trace_ids");
+  for (auto* swap_promise : pinned_swap_promise_list_)
+    state->AppendDouble(swap_promise->TraceId());
+  state->EndArray();
 }
 
 void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
@@ -1103,23 +1108,37 @@ void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
   swap_promise_list_.push_back(swap_promise.Pass());
 }
 
+void LayerTreeImpl::QueuePinnedSwapPromise(
+    scoped_ptr<SwapPromise> swap_promise) {
+  DCHECK(IsActiveTree());
+  DCHECK(swap_promise);
+  pinned_swap_promise_list_.push_back(swap_promise.Pass());
+}
+
 void LayerTreeImpl::PassSwapPromises(
     ScopedPtrVector<SwapPromise>* new_swap_promise) {
-  swap_promise_list_.insert_and_take(swap_promise_list_.end(),
-                                     new_swap_promise);
-  new_swap_promise->clear();
+  for (auto* swap_promise : swap_promise_list_)
+    swap_promise->DidNotSwap(SwapPromise::SWAP_FAILS);
+  swap_promise_list_.clear();
+  swap_promise_list_.swap(*new_swap_promise);
 }
 
 void LayerTreeImpl::FinishSwapPromises(CompositorFrameMetadata* metadata) {
   for (auto* swap_promise : swap_promise_list_)
     swap_promise->DidSwap(metadata);
   swap_promise_list_.clear();
+  for (auto* swap_promise : pinned_swap_promise_list_)
+    swap_promise->DidSwap(metadata);
+  pinned_swap_promise_list_.clear();
 }
 
 void LayerTreeImpl::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
   for (auto* swap_promise : swap_promise_list_)
     swap_promise->DidNotSwap(reason);
   swap_promise_list_.clear();
+  for (auto* swap_promise : pinned_swap_promise_list_)
+    swap_promise->DidNotSwap(reason);
+  pinned_swap_promise_list_.clear();
 }
 
 void LayerTreeImpl::DidModifyTilePriorities() {
