@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.7'
+__version__ = '0.7.1'
 
 import collections
 import datetime
@@ -674,6 +674,8 @@ def collect(
 
       # Default to failure if there was no process that even started.
       shard_exit_code = metadata.get('exit_code')
+      if shard_exit_code:
+        shard_exit_code = int(shard_exit_code)
       if shard_exit_code:
         exit_code = shard_exit_code
       total_duration += metadata.get('duration', 0)
