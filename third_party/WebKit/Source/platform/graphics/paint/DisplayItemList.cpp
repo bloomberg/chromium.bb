@@ -149,6 +149,66 @@ bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
     return m_validlyCachedClients.contains(client);
 }
 
+void DisplayItemList::invalidatePaintOffset(DisplayItemClient client)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
+    updateValidlyCachedClientsIfNeeded();
+    m_validlyCachedClients.remove(client);
+
+#if ENABLE(ASSERT)
+    m_clientsWithPaintOffsetInvalidations.add(client);
+
+    // Ensure no phases slipped in using the old paint offset which would indicate
+    // different phases used different paint offsets, which should not happen.
+    for (const auto& item : m_newDisplayItems)
+        ASSERT(!item.isCached() || item.client() != client);
+#endif
+}
+
+#if ENABLE(ASSERT)
+bool DisplayItemList::paintOffsetWasInvalidated(DisplayItemClient client) const
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    return m_clientsWithPaintOffsetInvalidations.contains(client);
+}
+#endif
+
+void DisplayItemList::recordPaintOffset(DisplayItemClient client, const LayoutPoint& paintOffset)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    m_previousPaintOffsets.set(client, paintOffset);
+}
+
+bool DisplayItemList::paintOffsetIsUnchanged(DisplayItemClient client, const LayoutPoint& paintOffset) const
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    PreviousPaintOffsets::const_iterator it = m_previousPaintOffsets.find(client);
+    if (it == m_previousPaintOffsets.end())
+        return false;
+    return paintOffset == it->value;
+}
+
+void DisplayItemList::removeUnneededPaintOffsetEntries()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
+    // This function is only needed temporarily while paint offsets are stored
+    // in a map on the list itself. Because we don't always get notified when
+    // a display item client is removed, we need to infer it to prevent the
+    // paint offset map from growing indefinitely. This is achieved by just
+    // removing any paint offset clients that are no longer in the full list.
+
+    HashSet<DisplayItemClient> paintOffsetClientsToRemove;
+    for (auto& client : m_previousPaintOffsets.keys())
+        paintOffsetClientsToRemove.add(client);
+    for (auto& item : m_currentDisplayItems)
+        paintOffsetClientsToRemove.remove(item.client());
+
+    for (auto& client : paintOffsetClientsToRemove)
+        m_previousPaintOffsets.remove(client);
+}
+
 size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItems& list)
 {
     DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(id.client);
@@ -264,6 +324,8 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
         m_currentDisplayItems.swap(m_newDisplayItems);
         m_validlyCachedClientsDirty = true;
         m_numCachedItems = 0;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            removeUnneededPaintOffsetEntries();
         return;
     }
 
@@ -303,7 +365,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
         if (newDisplayItemHasCachedType) {
             ASSERT(!RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
             ASSERT(newDisplayItem.isCached());
-            ASSERT(clientCacheIsValid(newDisplayItem.client()));
+            ASSERT(clientCacheIsValid(newDisplayItem.client()) || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !paintOffsetWasInvalidated(newDisplayItem.client())));
             if (!isSynchronized) {
                 currentIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, outOfOrderIndexContext);
 
@@ -330,11 +392,15 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
             }
         } else {
 #if ENABLE(ASSERT)
-            if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+            if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
                 checkCachedDisplayItemIsUnchanged(newDisplayItem, outOfOrderIndexContext.displayItemIndicesByClient);
-            else
-                ASSERT(!newDisplayItem.isDrawing() || newDisplayItem.skippedCache() || !clientCacheIsValid(newDisplayItem.client()));
-#endif // ENABLE(ASSERT)
+            } else {
+                ASSERT(!newDisplayItem.isDrawing()
+                    || newDisplayItem.skippedCache()
+                    || !clientCacheIsValid(newDisplayItem.client())
+                    || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && paintOffsetWasInvalidated(newDisplayItem.client())));
+            }
+#endif
             updatedList.appendByMoving(*newIt, newIt->derivedSize());
 
             if (isSynchronized)
@@ -351,6 +417,13 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
     m_validlyCachedClientsDirty = true;
     m_currentDisplayItems.swap(updatedList);
     m_numCachedItems = 0;
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        removeUnneededPaintOffsetEntries();
+
+#if ENABLE(ASSERT)
+    m_clientsWithPaintOffsetInvalidations.clear();
+#endif
 }
 
 size_t DisplayItemList::approximateUnsharedMemoryUsage() const

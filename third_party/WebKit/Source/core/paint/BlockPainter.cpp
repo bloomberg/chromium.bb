@@ -203,10 +203,10 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
-    if (paintPhase == PaintPhaseForeground && hasCaret() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBlock, DisplayItem::Caret)) {
+    if (paintPhase == PaintPhaseForeground && hasCaret() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, paintOffset)) {
         LayoutRect bounds = m_layoutBlock.visualOverflowRect();
         bounds.moveBy(paintOffset);
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds, paintOffset);
         paintCarets(paintInfo, paintOffset);
     }
 }

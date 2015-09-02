@@ -39,10 +39,10 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         clipRecorder.emplace(*context, m_layoutVideo, paintInfo.phase, FloatRect(contentRect));
     }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutVideo, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutVideo, paintInfo.phase, paintOffset))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutVideo, paintInfo.phase, contentRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutVideo, paintInfo.phase, contentRect, paintOffset);
 
     if (displayingPoster) {
         ImagePainter(m_layoutVideo).paintIntoRect(context, rect);

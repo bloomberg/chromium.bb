@@ -44,12 +44,12 @@ void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo, const Layo
         return;
 
     GraphicsContext* context = paintInfo.context;
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutEmbeddedObject, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutEmbeddedObject, paintInfo.phase, paintOffset))
         return;
 
     FloatRect contentRect(m_layoutEmbeddedObject.contentBoxRect());
     contentRect.moveBy(roundedIntPoint(paintOffset));
-    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutEmbeddedObject, paintInfo.phase, contentRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutEmbeddedObject, paintInfo.phase, contentRect, paintOffset);
     GraphicsContextStateSaver stateSaver(*context);
     // TODO(chrishtr): this should be pixel-snapped.
     context->clip(contentRect);

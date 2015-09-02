@@ -80,9 +80,9 @@ void FramePainter::paintContents(GraphicsContext* context, const GlobalPaintFlag
     else
         fillWithRed = true;
 
-    if (fillWithRed && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *frameView().layoutView(), DisplayItem::DebugRedFill)) {
+    if (fillWithRed && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *frameView().layoutView(), DisplayItem::DebugRedFill, LayoutPoint())) {
         IntRect contentRect(IntPoint(), frameView().contentsSize());
-        LayoutObjectDrawingRecorder drawingRecorder(*context, *frameView().layoutView(), DisplayItem::DebugRedFill, contentRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*context, *frameView().layoutView(), DisplayItem::DebugRedFill, contentRect, LayoutPoint());
     }
 #endif
 
@@ -165,8 +165,8 @@ void FramePainter::paintScrollCorner(GraphicsContext* context, const IntRect& co
 {
     if (frameView().scrollCorner()) {
         bool needsBackground = frameView().frame().isMainFrame();
-        if (needsBackground && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *frameView().layoutView(), DisplayItem::ScrollbarCorner)) {
-            LayoutObjectDrawingRecorder drawingRecorder(*context, *frameView().layoutView(), DisplayItem::ScrollbarCorner, FloatRect(cornerRect));
+        if (needsBackground && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *frameView().layoutView(), DisplayItem::ScrollbarCorner, LayoutPoint())) {
+            LayoutObjectDrawingRecorder drawingRecorder(*context, *frameView().layoutView(), DisplayItem::ScrollbarCorner, FloatRect(cornerRect), LayoutPoint());
             context->fillRect(cornerRect, frameView().baseBackgroundColor());
 
         }

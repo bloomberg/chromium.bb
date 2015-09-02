@@ -199,7 +199,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     if (paintFocusRing && !LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject))
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, paintInfo.phase, paintOffset))
         return;
 
     Vector<LayoutRect> outlineRects;
@@ -221,7 +221,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
 
     IntRect bounds = unitedOutlineRect;
     bounds.inflate(m_layoutObject.styleRef().outlineOutsetExtent());
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, paintInfo.phase, bounds);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, paintInfo.phase, bounds, paintOffset);
 
     Color color = m_layoutObject.resolveColor(styleToUse, CSSPropertyOutlineColor);
     if (styleToUse.outlineStyleIsAuto()) {
@@ -265,10 +265,10 @@ void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const Layo
     if (rect.isEmpty())
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, paintOffset))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, rect);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, rect, paintOffset);
     if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, m_layoutObject.document().baseURL())) {
         String fragmentName = url.fragmentIdentifier();
         if (m_layoutObject.document().findAnchor(fragmentName))

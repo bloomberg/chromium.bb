@@ -29,10 +29,10 @@ void ImagePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
     m_layoutImage.LayoutReplaced::paint(paintInfo, paintOffset);
 
     if (paintInfo.phase == PaintPhaseOutline)
-        paintAreaElementFocusRing(paintInfo);
+        paintAreaElementFocusRing(paintInfo, paintOffset);
 }
 
-void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
+void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // TODO(wangxianzhu): In other places, we just paint focus ring if outline style is auto.
     // We should also do that here to keep consistency.
@@ -61,11 +61,11 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
     if (!outlineWidth)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutImage, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutImage, paintInfo.phase, paintOffset))
         return;
 
     IntRect focusRect = m_layoutImage.absoluteContentBox();
-    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutImage, paintInfo.phase, focusRect, paintOffset);
 
     // FIXME: Clip path instead of context when Skia pathops is ready.
     // https://crbug.com/251206
@@ -89,11 +89,11 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         if (paintInfo.phase == PaintPhaseSelection)
             return;
         if (cWidth > 2 && cHeight > 2) {
-            if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase))
+            if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase, paintOffset))
                 return;
             // Draw an outline rect where the image should be.
             IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + m_layoutImage.borderLeft() + m_layoutImage.paddingLeft(), paintOffset.y() + m_layoutImage.borderTop() + m_layoutImage.paddingTop(), cWidth, cHeight));
-            LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, paintRect);
+            LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, paintRect, paintOffset);
             context->setStrokeStyle(SolidStroke);
             context->setStrokeColor(Color::lightGray);
             context->setFillColor(Color::transparent);
@@ -112,10 +112,10 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
             clipRecorder.emplace(*context, m_layoutImage, paintInfo.phase, FloatRect(contentRect));
         }
 
-        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase))
+        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase, paintOffset))
             return;
 
-        LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, contentRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, contentRect, paintOffset);
         paintIntoRect(context, paintRect);
     }
 }

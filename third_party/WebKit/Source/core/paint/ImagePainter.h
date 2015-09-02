@@ -25,7 +25,7 @@ public:
     void paintIntoRect(GraphicsContext*, const LayoutRect&);
 
 private:
-    void paintAreaElementFocusRing(const PaintInfo&);
+    void paintAreaElementFocusRing(const PaintInfo&, const LayoutPoint& paintOffset);
 
     LayoutImage& m_layoutImage;
 };

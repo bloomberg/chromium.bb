@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
@@ -47,6 +48,17 @@ public:
     void invalidate(const DisplayItemClientWrapper&);
     void invalidateUntracked(DisplayItemClient);
     void invalidateAll();
+
+    // Record when paint offsets change during paint.
+    void invalidatePaintOffset(DisplayItemClient);
+#if ENABLE(ASSERT)
+    bool paintOffsetWasInvalidated(DisplayItemClient) const;
+#endif
+
+    // Record a new paint offset.
+    // TODO(pdr): Remove these once the paint offset cache is on LayoutObject.
+    void recordPaintOffset(DisplayItemClient, const LayoutPoint&);
+    bool paintOffsetIsUnchanged(DisplayItemClient, const LayoutPoint&) const;
 
     // These methods are called during painting.
     template <typename DisplayItemClass, typename... Args>
@@ -142,12 +154,18 @@ private:
     friend class DisplayItemListPaintTest;
     friend class DisplayItemListPaintTestForSlimmingPaintV2;
     friend class LayoutObjectDrawingRecorderTest;
+    friend class LayoutObjectDrawingRecorderTestForSlimmingPaintV2;
 
     // Set new item state (scopes, cache skipping, etc) for a new item.
     // TODO(pdr): This only passes a pointer to make the patch easier to review. Change to a reference.
     void processNewItem(DisplayItem*);
 
     void updateValidlyCachedClientsIfNeeded() const;
+
+    // Update the recorded paint offsets to remove any items that no longer have
+    // corresponding cached display items.
+    // TODO(pdr): Remove this once the paint offset cache is on LayoutObject.
+    void removeUnneededPaintOffsetEntries();
 
 #ifndef NDEBUG
     WTF::String displayItemsAsDebugString(const DisplayItems&) const;
@@ -184,6 +202,12 @@ private:
     mutable HashSet<DisplayItemClient> m_validlyCachedClients;
     mutable bool m_validlyCachedClientsDirty;
 
+#if ENABLE(ASSERT)
+    // Set of clients which had paint offset changes since the last commit. This is used for
+    // ensuring paint offsets are only updated once and are the same in all phases.
+    HashSet<DisplayItemClient> m_clientsWithPaintOffsetInvalidations;
+#endif
+
     // Allow display item construction to be disabled to isolate the costs of construction
     // in performance metrics.
     bool m_constructionDisabled;
@@ -194,6 +218,13 @@ private:
 
     unsigned m_nextScope;
     Vector<unsigned> m_scopeStack;
+
+    // Cache of LayoutObject paint offsets.
+    // TODO(pdr): This should be on LayoutObject itself and is only on the display
+    // item list temporarily until paint invalidation for v2 frees up space on
+    // LayoutObject.
+    using PreviousPaintOffsets = HashMap<DisplayItemClient, LayoutPoint>;
+    PreviousPaintOffsets m_previousPaintOffsets;
 
 #if ENABLE(ASSERT)
     // This is used to check duplicated ids during add(). We could also check during

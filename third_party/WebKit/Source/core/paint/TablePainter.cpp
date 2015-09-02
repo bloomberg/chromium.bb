@@ -84,13 +84,14 @@ void TablePainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& pain
     if (m_layoutTable.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutTable, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutTable, paintInfo.phase, paintOffset))
         return;
 
     LayoutRect rect(paintOffset, m_layoutTable.size());
     m_layoutTable.subtractCaptionRect(rect);
+
     // TODO(chrishtr): the pixel-snapping here is likely wrong.
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTable, paintInfo.phase, rect);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTable, paintInfo.phase, rect, paintOffset);
     BoxPainter(m_layoutTable).paintMaskImages(paintInfo, rect);
 }
 

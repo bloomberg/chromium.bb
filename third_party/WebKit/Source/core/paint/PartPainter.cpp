@@ -60,11 +60,11 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     // Paint a partially transparent wash over selected widgets.
-    if (m_layoutPart.isSelected() && !paintInfo.isPrinting() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutPart, paintInfo.phase)) {
+    if (m_layoutPart.isSelected() && !paintInfo.isPrinting() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutPart, paintInfo.phase, adjustedPaintOffset)) {
         LayoutRect rect = m_layoutPart.localSelectionRect();
         rect.moveBy(adjustedPaintOffset);
         IntRect selectionRect = pixelSnappedIntRect(rect);
-        LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutPart, paintInfo.phase, selectionRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutPart, paintInfo.phase, selectionRect, adjustedPaintOffset);
         paintInfo.context->fillRect(selectionRect, m_layoutPart.selectionBackgroundColor());
     }
 

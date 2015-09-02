@@ -86,10 +86,10 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     if (style.appearance() == MediaSliderPart)
         cacheSkipper.emplace(*paintInfo.context);
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, paintOffset))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset));
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset), paintOffset);
 
     BoxDecorationData boxDecorationData(m_layoutBox);
 
@@ -511,13 +511,13 @@ void BoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintO
     if (!paintInfo.shouldPaintWithinRoot(&m_layoutBox) || m_layoutBox.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBox, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBox, paintInfo.phase, paintOffset))
         return;
 
     LayoutRect visualOverflowRect(m_layoutBox.visualOverflowRect());
     visualOverflowRect.moveBy(paintOffset);
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBox, paintInfo.phase, visualOverflowRect);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBox, paintInfo.phase, visualOverflowRect, paintOffset);
     LayoutRect paintRect = LayoutRect(paintOffset, m_layoutBox.size());
     paintMaskImages(paintInfo, paintRect);
 }
@@ -564,11 +564,11 @@ void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint
     if (!m_layoutBox.layer() || m_layoutBox.layer()->compositingState() != PaintsIntoOwnBacking)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBox, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBox, paintInfo.phase, paintOffset))
         return;
 
     IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset, m_layoutBox.size()));
-    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutBox, paintInfo.phase, paintRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutBox, paintInfo.phase, paintRect, paintOffset);
     paintInfo.context->fillRect(paintRect, Color::black);
 }
 

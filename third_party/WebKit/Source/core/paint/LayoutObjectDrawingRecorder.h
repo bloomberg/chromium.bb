@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/paint/PaintPhase.h"
+#include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -21,36 +22,50 @@ class GraphicsContext;
 class LayoutObjectDrawingRecorder final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType)
+    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutPoint& paintOffset)
     {
+        // TODO(pdr): The paint offset cache should be stored on LayoutObject but is temporarily on the DisplayItemList.
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !context.displayItemList()->paintOffsetIsUnchanged(layoutObject.displayItemClient(), paintOffset))
+            return false;
         if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
             return false;
         return DrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, displayItemType);
     }
 
-    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase)
+    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const LayoutPoint& paintOffset)
     {
-        return useCachedDrawingIfPossible(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase));
+        return useCachedDrawingIfPossible(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), paintOffset);
     }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const FloatRect& clip)
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const FloatRect& clip, const LayoutPoint& paintOffset)
     {
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            // TODO(pdr): The paint offset cache should be stored on LayoutObject but is temporarily on the DisplayItemList.
+            if (!context.displayItemList()->paintOffsetIsUnchanged(layoutObject.displayItemClient(), paintOffset)) {
+                context.displayItemList()->recordPaintOffset(layoutObject.displayItemClient(), paintOffset);
+                context.displayItemList()->invalidatePaintOffset(layoutObject.displayItemClient());
+            } else {
+                ASSERT(!context.displayItemList()->paintOffsetWasInvalidated(layoutObject.displayItemClient()) || !context.displayItemList()->clientCacheIsValid(layoutObject.displayItemClient()));
+            }
+        }
+
         // We may paint a delayed-invalidation object before it's actually invalidated.
         if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
             m_cacheSkipper.emplace(context);
         m_drawingRecorder.emplace(context, layoutObject, displayItemType, clip);
     }
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
-        : LayoutObjectDrawingRecorder(context, layoutObject, displayItemType, FloatRect(clip)) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip)
-        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip) { }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip, const LayoutPoint& paintOffset)
+        : LayoutObjectDrawingRecorder(context, layoutObject, displayItemType, FloatRect(clip), paintOffset) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const LayoutRect& clip)
-        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip)) { }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip, const LayoutPoint& paintOffset)
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip, paintOffset) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const IntRect& clip)
-        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip)) { }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const LayoutRect& clip, const LayoutPoint& paintOffset)
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip), paintOffset) { }
+
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const IntRect& clip, const LayoutPoint& paintOffset)
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip), paintOffset) { }
 
 #if ENABLE(ASSERT)
     void setUnderInvalidationCheckingMode(DrawingDisplayItem::UnderInvalidationCheckingMode mode) { m_drawingRecorder->setUnderInvalidationCheckingMode(mode); }

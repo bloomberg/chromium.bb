@@ -17,7 +17,7 @@ namespace blink {
 void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     GraphicsContext* context = paintInfo.context;
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutHTMLCanvas, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutHTMLCanvas, paintInfo.phase, paintOffset))
         return;
 
     LayoutRect contentRect = m_layoutHTMLCanvas.contentBoxRect();
@@ -25,7 +25,7 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     LayoutRect paintRect = m_layoutHTMLCanvas.replacedContentRect();
     paintRect.moveBy(paintOffset);
 
-    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutHTMLCanvas, paintInfo.phase, contentRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutHTMLCanvas, paintInfo.phase, contentRect, paintOffset);
 #if ENABLE(ASSERT)
     // The drawing may be in display list mode or image mode, producing different pictures for the same result.
     drawingRecorder.setUnderInvalidationCheckingMode(DrawingDisplayItem::CheckBitmap);

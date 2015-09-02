@@ -37,10 +37,10 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !absRect.intersects(damageRect))
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, scrollableArea().box(), DisplayItem::Resizer))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, scrollableArea().box(), DisplayItem::Resizer, paintOffset))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*context, scrollableArea().box(), DisplayItem::Resizer, absRect);
+    LayoutObjectDrawingRecorder recorder(*context, scrollableArea().box(), DisplayItem::Resizer, absRect, paintOffset);
 
     drawPlatformResizerImage(context, absRect);
 
@@ -192,10 +192,10 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
     if (scrollableArea().hasOverlayScrollbars())
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, scrollableArea().box(), DisplayItem::ScrollbarCorner))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, scrollableArea().box(), DisplayItem::ScrollbarCorner, paintOffset))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*context, scrollableArea().box(), DisplayItem::ScrollbarCorner, absRect);
+    LayoutObjectDrawingRecorder recorder(*context, scrollableArea().box(), DisplayItem::ScrollbarCorner, absRect, paintOffset);
     context->fillRect(absRect, Color::white);
 }
 
