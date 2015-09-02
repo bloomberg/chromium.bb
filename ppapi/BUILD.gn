@@ -163,40 +163,44 @@ source_set("ppapi_gles2_lib") {
   ]
 }
 
-if (is_nacl) {
-  executable("ppapi_nacl_tests_newlib") {
-    include_dirs = [
-      "lib/gl/include",
-      "..",
-    ]
+# TODO(phosek): The NaCl toolchain definition is incorrect on Windows. Fix
+# and enable. http://crbug.com/527453
+if (host_os != "win") {
+  if (is_nacl) {
+    executable("ppapi_nacl_tests_newlib") {
+      include_dirs = [
+        "lib/gl/include",
+        "..",
+      ]
 
-    sources = ppapi_sources.test_common_source_files +
-              ppapi_sources.test_nacl_source_files
+      sources = ppapi_sources.test_common_source_files +
+                ppapi_sources.test_nacl_source_files
 
-    defines = [ "GL_GLEXT_PROTOTYPES" ]
+      defines = [ "GL_GLEXT_PROTOTYPES" ]
 
-    deps = [
-      ":ppapi_cpp_lib",
-      "//ppapi/native_client:ppapi_lib",
-    ]
+      deps = [
+        ":ppapi_cpp_lib",
+        "//ppapi/native_client:ppapi_lib",
+      ]
+    }
+
+    copy("nacl_tests_copy") {
+      sources = [
+        "${root_out_dir}/ppapi_nacl_tests_newlib.nexe",
+      ]
+      outputs = [
+        "${root_build_dir}/{{source_name_part}}_${target_cpu}.nexe",
+      ]
+      deps = [
+        ":ppapi_nacl_tests_newlib",
+      ]
+    }
   }
 
-  copy("nacl_tests_copy") {
-    sources = [
-      "${root_out_dir}/ppapi_nacl_tests_newlib.nexe",
-    ]
-    outputs = [
-      "${root_build_dir}/{{source_name_part}}_${target_cpu}.nexe",
-    ]
-    deps = [
-      ":ppapi_nacl_tests_newlib",
-    ]
-  }
-}
-
-group("ppapi_nacl_tests") {
-  deps = []
-  if (target_cpu == "x86" || target_cpu == "x64") {
-    deps += [ ":nacl_tests_copy(//native_client/build/toolchain/nacl:clang_newlib_${target_cpu})" ]
+  group("ppapi_nacl_tests") {
+    deps = []
+    if (target_cpu == "x86" || target_cpu == "x64") {
+      deps += [ ":nacl_tests_copy(//native_client/build/toolchain/nacl:clang_newlib_${target_cpu})" ]
+    }
   }
 }
