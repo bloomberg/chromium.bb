@@ -203,25 +203,6 @@ public:
         PseudoListBox
     };
 
-    enum MarginBoxType {
-        TopLeftCornerMarginBox,
-        TopLeftMarginBox,
-        TopCenterMarginBox,
-        TopRightMarginBox,
-        TopRightCornerMarginBox,
-        BottomLeftCornerMarginBox,
-        BottomLeftMarginBox,
-        BottomCenterMarginBox,
-        BottomRightMarginBox,
-        BottomRightCornerMarginBox,
-        LeftTopMarginBox,
-        LeftMiddleMarginBox,
-        LeftBottomMarginBox,
-        RightTopMarginBox,
-        RightMiddleMarginBox,
-        RightBottomMarginBox,
-    };
-
     enum AttributeMatchType {
         CaseSensitive,
         CaseInsensitive,
