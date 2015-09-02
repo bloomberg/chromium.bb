@@ -37,4 +37,5 @@
     void startPropertyChange(DOMString propertyName);
     void changeProperty(float cssDelta);
     void endPropertyChange();
+    void clearSelection(boolean commitChanges);
 };

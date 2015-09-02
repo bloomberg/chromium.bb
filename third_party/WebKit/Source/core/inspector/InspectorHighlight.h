@@ -34,7 +34,6 @@ public:
     bool showInfo;
     bool showRulers;
     bool showExtensionLines;
-    bool showLayoutEditor;
     bool displayAsMaterial;
 };
 

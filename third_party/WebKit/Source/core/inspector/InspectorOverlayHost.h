@@ -51,6 +51,7 @@ public:
     void startPropertyChange(const String&);
     void changeProperty(float delta);
     void endPropertyChange();
+    void clearSelection(bool commitChanges);
 
     class Listener : public WillBeGarbageCollectedMixin {
     public:
@@ -60,6 +61,7 @@ public:
         virtual void overlayStartedPropertyChange(const String&) = 0;
         virtual void overlayPropertyChanged(float cssDelta) = 0;
         virtual void overlayEndedPropertyChange() = 0;
+        virtual void overlayClearSelection(bool commitChanges) = 0;
     };
     void setListener(Listener* listener) { m_listener = listener; }
 

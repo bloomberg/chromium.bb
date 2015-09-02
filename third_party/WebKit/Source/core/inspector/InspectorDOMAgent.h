@@ -86,7 +86,7 @@ public:
         virtual void didModifyDOMAttr(Element*) = 0;
     };
 
-    enum SearchMode { NotSearching, SearchingForNormal, SearchingForUAShadow };
+    enum SearchMode { NotSearching, SearchingForNormal, SearchingForUAShadow, ShowLayoutEditor };
 
     class Client {
     public:

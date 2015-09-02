@@ -97,6 +97,7 @@ private:
     void overlayStartedPropertyChange(const String&) override;
     void overlayPropertyChanged(float) override;
     void overlayEndedPropertyChange() override;
+    void overlayClearSelection(bool) override;
 
     // InspectorProfilerAgent::Client implementation.
     void profilingStarted() override;
@@ -133,6 +134,8 @@ private:
     bool handleGestureEvent(const PlatformGestureEvent&);
     bool handleTouchEvent(const PlatformTouchEvent&);
     bool handleMouseMove(const PlatformMouseEvent&);
+    bool shouldSearchForNode();
+    void inspect(Node*);
 
     WebViewImpl* m_webViewImpl;
     String m_pausedInDebuggerMessage;
@@ -159,6 +162,7 @@ private:
     RefPtrWillBeMember<Node> m_hoveredNodeForInspectMode;
     InspectorDOMAgent::SearchMode m_inspectMode;
     OwnPtr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
+    bool m_searchingInLayoutEditor;
 };
 
 } // namespace blink

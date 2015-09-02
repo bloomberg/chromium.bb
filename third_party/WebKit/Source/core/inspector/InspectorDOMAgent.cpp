@@ -1091,7 +1091,6 @@ void InspectorDOMAgent::discardSearchResults(ErrorString*, const String& searchI
     m_searchResults.remove(searchId);
 }
 
-
 void InspectorDOMAgent::inspect(Node* inspectedNode)
 {
     if (!inspectedNode)
@@ -1111,7 +1110,6 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
 
     frontend()->inspectNodeRequested(backendNodeId);
 }
-
 
 void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)
 {
@@ -1136,9 +1134,6 @@ PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspe
     bool showExtensionLines = false; // Default: false (do not show extension lines).
     highlightInspectorObject->getBoolean("showExtensionLines", &showExtensionLines);
     highlightConfig->showExtensionLines = showExtensionLines;
-    bool showLayoutEditor = false;
-    highlightInspectorObject->getBoolean("showLayoutEditor", &showLayoutEditor);
-    highlightConfig->showLayoutEditor = showLayoutEditor;
     bool displayAsMaterial = false;
     highlightInspectorObject->getBoolean("displayAsMaterial", &displayAsMaterial);
     highlightConfig->displayAsMaterial = displayAsMaterial;
@@ -1163,6 +1158,8 @@ void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& m
         searchMode = SearchingForUAShadow;
     } else if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::None)) {
         searchMode = NotSearching;
+    } else if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::ShowLayoutEditor)) {
+        searchMode = ShowLayoutEditor;
     } else {
         *errorString = "Unknown mode \"" + mode + "\" was provided.";
         return;

@@ -447,7 +447,12 @@ function reset(resetData)
     editor.style.visibility = "hidden";
     editor.textContent = "";
     document.body.classList.remove("dimmed");
-    document.removeEventListener("mousemove", onGlobalMouseMove);
+    document.removeEventListener("mousedown", consumeEvent);
+    document.removeEventListener("mousemove", onLayoutEditorMouseMove);
+    document.removeEventListener("mouseup", consumeEvent);
+    document.removeEventListener("click", onLayoutEditorClick);
+    document.removeEventListener("keydown", onLayoutEditorKeyDown);
+
     delete window.hoverableAreas;
     delete window.anchorsByType;
     window._gridPainted = false;
@@ -810,7 +815,11 @@ function showLayoutEditor(info)
     if (selectedAnchorInfo)
         showLabels(selectedAnchorInfo.type, selectedAnchorInfo.propertyName);
 
-    document.addEventListener("mousemove", onGlobalMouseMove);
+    document.addEventListener("mousedown", consumeEvent);
+    document.addEventListener("mousemove", onLayoutEditorMouseMove);
+    document.addEventListener("mouseup", consumeEvent);
+    document.addEventListener("click", onLayoutEditorClick);
+    document.addEventListener("keydown", onLayoutEditorKeyDown);
 }
 
 function createAnchor(anchorInfo)
@@ -1020,8 +1029,9 @@ function anchorColorForProperty(anchorInfo)
     return "rgb(107, 213, 0)";
 }
 
-function onGlobalMouseMove(event)
+function onLayoutEditorMouseMove(event)
 {
+    event.preventDefault();
     if (!window.hoverableAreas)
         return;
     var types = ["padding", "margin"];
@@ -1029,9 +1039,33 @@ function onGlobalMouseMove(event)
         var path = hoverableAreas.get(type);
         if (path && context.isPointInPath(path, deviceScaleFactor * event.x, deviceScaleFactor * event.y)) {
             showLabels(type);
-            break;
+            return;
         }
     }
+    resetLabelCanvas();
+}
+
+function onLayoutEditorClick(event)
+{
+    event.preventDefault();
+    InspectorOverlayHost.clearSelection(true);
+}
+
+function onLayoutEditorKeyDown(event)
+{
+    if (window.draggedPropertyName)
+        return;
+
+    // Clear selection on Esc.
+    if (event.keyIdentifier === "U+001B") {
+        event.preventDefault();
+        InspectorOverlayHost.clearSelection(false);
+    }
+}
+
+function consumeEvent(event)
+{
+    event.preventDefault();
 }
 
 function resetLabelCanvas()

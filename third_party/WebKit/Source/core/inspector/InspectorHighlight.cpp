@@ -225,7 +225,6 @@ InspectorHighlightConfig::InspectorHighlightConfig()
     : showInfo(false)
     , showRulers(false)
     , showExtensionLines(false)
-    , showLayoutEditor(false)
     , displayAsMaterial(false)
 {
 }
@@ -447,7 +446,6 @@ InspectorHighlightConfig InspectorHighlight::defaultConfig()
     config.showInfo = true;
     config.showRulers = true;
     config.showExtensionLines = true;
-    config.showLayoutEditor = false;
     config.displayAsMaterial = false;
     return config;
 }

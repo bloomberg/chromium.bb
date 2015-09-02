@@ -182,6 +182,7 @@ InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
     , m_inLayout(false)
     , m_needsUpdate(false)
     , m_inspectMode(InspectorDOMAgent::NotSearching)
+    , m_searchingInLayoutEditor(true)
 {
 }
 
@@ -205,7 +206,7 @@ DEFINE_TRACE(InspectorOverlayImpl)
 
 void InspectorOverlayImpl::init(InspectorCSSAgent* cssAgent, InspectorDebuggerAgent* debuggerAgent, InspectorDOMAgent* domAgent)
 {
-    m_layoutEditor = LayoutEditor::create(cssAgent);
+    m_layoutEditor = LayoutEditor::create(cssAgent, domAgent);
     m_debuggerAgent = debuggerAgent;
     m_domAgent = domAgent;
     m_overlayHost->setListener(this);
@@ -291,12 +292,14 @@ void InspectorOverlayImpl::setPausedInDebuggerMessage(const String* message)
 
 void InspectorOverlayImpl::hideHighlight()
 {
-    if (m_layoutEditor)
-        m_layoutEditor->setNode(nullptr);
     m_highlightNode.clear();
     m_eventTargetNode.clear();
     m_highlightQuad.clear();
-    update();
+
+    if (m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && !m_searchingInLayoutEditor && m_layoutEditor->node() && m_inspectModeHighlightConfig)
+        highlightNode(m_layoutEditor->node(), *m_inspectModeHighlightConfig, false);
+    else
+        update();
 }
 
 void InspectorOverlayImpl::highlightNode(Node* node, const InspectorHighlightConfig& highlightConfig, bool omitTooltip)
@@ -308,8 +311,6 @@ void InspectorOverlayImpl::highlightNode(Node* node, Node* eventTarget, const In
 {
     m_nodeHighlightConfig = highlightConfig;
     m_highlightNode = node;
-    if (m_layoutEditor && highlightConfig.showLayoutEditor)
-        m_layoutEditor->setNode(node);
     m_eventTargetNode = eventTarget;
     m_omitTooltip = omitTooltip;
     update();
@@ -323,6 +324,7 @@ void InspectorOverlayImpl::setInspectMode(InspectorDOMAgent::SearchMode searchMo
     if (searchMode != InspectorDOMAgent::NotSearching) {
         m_inspectModeHighlightConfig = highlightConfig;
     } else {
+        m_searchingInLayoutEditor = true;
         m_hoveredNodeForInspectMode.clear();
         hideHighlight();
     }
@@ -392,7 +394,8 @@ void InspectorOverlayImpl::drawNodeHighlight()
 
     RefPtr<JSONObject> highlightJSON = highlight.asJSONObject();
     evaluateInOverlay("drawHighlight", highlightJSON.release());
-    if (m_layoutEditor && m_nodeHighlightConfig.showLayoutEditor) {
+    if (m_highlightNode == m_layoutEditor->node() && m_inspectMode == InspectorDOMAgent::ShowLayoutEditor) {
+        ASSERT(!m_searchingInLayoutEditor);
         RefPtr<JSONObject> layoutEditorInfo = m_layoutEditor->buildJSONInfo();
         if (layoutEditorInfo)
             evaluateInOverlay("showLayoutEditor", layoutEditorInfo.release());
@@ -570,6 +573,20 @@ void InspectorOverlayImpl::overlayEndedPropertyChange()
     m_layoutEditor->overlayEndedPropertyChange();
 }
 
+void InspectorOverlayImpl::overlayClearSelection(bool commitChanges)
+{
+    if (m_inspectMode != InspectorDOMAgent::ShowLayoutEditor)
+        return;
+
+    m_searchingInLayoutEditor = true;
+    if (m_layoutEditor->node() && m_inspectModeHighlightConfig) {
+        m_hoveredNodeForInspectMode = m_layoutEditor->node();
+        highlightNode(m_layoutEditor->node(), *m_inspectModeHighlightConfig, false);
+    }
+
+    m_layoutEditor->clearSelection(commitChanges);
+}
+
 void InspectorOverlayImpl::profilingStarted()
 {
     if (!m_suspendCount++)
@@ -598,7 +615,7 @@ void InspectorOverlayImpl::setShowViewportSizeOnResize(bool show, bool showGrid)
 
 bool InspectorOverlayImpl::handleMouseMove(const PlatformMouseEvent& event)
 {
-    if (m_inspectMode == InspectorDOMAgent::NotSearching)
+    if (!shouldSearchForNode())
         return false;
 
     LocalFrame* frame = m_webViewImpl->mainFrameImpl()->frame();
@@ -633,12 +650,11 @@ bool InspectorOverlayImpl::handleMouseMove(const PlatformMouseEvent& event)
 
 bool InspectorOverlayImpl::handleMousePress()
 {
-    if (m_inspectMode == InspectorDOMAgent::NotSearching)
+    if (!shouldSearchForNode())
         return false;
 
     if (m_hoveredNodeForInspectMode) {
-        if (m_domAgent)
-            m_domAgent->inspect(m_hoveredNodeForInspectMode.get());
+        inspect(m_hoveredNodeForInspectMode.get());
         m_hoveredNodeForInspectMode.clear();
         return true;
     }
@@ -647,13 +663,12 @@ bool InspectorOverlayImpl::handleMousePress()
 
 bool InspectorOverlayImpl::handleGestureEvent(const PlatformGestureEvent& event)
 {
-    if (m_inspectMode == InspectorDOMAgent::NotSearching || event.type() != PlatformEvent::GestureTap)
+    if (!shouldSearchForNode() || event.type() != PlatformEvent::GestureTap)
         return false;
     Node* node = hoveredNodeForEvent(m_webViewImpl->mainFrameImpl()->frame(), event, false);
     if (node && m_inspectModeHighlightConfig) {
         highlightNode(node, *m_inspectModeHighlightConfig, false);
-        if (m_domAgent)
-            m_domAgent->inspect(node);
+        inspect(node);
         return true;
     }
     return false;
@@ -661,16 +676,33 @@ bool InspectorOverlayImpl::handleGestureEvent(const PlatformGestureEvent& event)
 
 bool InspectorOverlayImpl::handleTouchEvent(const PlatformTouchEvent& event)
 {
-    if (m_inspectMode == InspectorDOMAgent::NotSearching)
+    if (!shouldSearchForNode())
         return false;
     Node* node = hoveredNodeForEvent(m_webViewImpl->mainFrameImpl()->frame(), event, false);
     if (node && m_inspectModeHighlightConfig) {
         highlightNode(node, *m_inspectModeHighlightConfig, false);
-        if (m_domAgent)
-            m_domAgent->inspect(node);
+        inspect(node);
         return true;
     }
     return false;
+}
+
+
+bool InspectorOverlayImpl::shouldSearchForNode()
+{
+    return !(m_inspectMode == InspectorDOMAgent::NotSearching || (m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && !m_searchingInLayoutEditor));
+}
+
+void InspectorOverlayImpl::inspect(Node* node)
+{
+    if (m_domAgent)
+        m_domAgent->inspect(node);
+
+    if (m_layoutEditor && m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && m_searchingInLayoutEditor) {
+        m_searchingInLayoutEditor = false;
+        m_layoutEditor->selectNode(node);
+        highlightNode(node, *m_inspectModeHighlightConfig, false);
+    }
 }
 
 } // namespace blink

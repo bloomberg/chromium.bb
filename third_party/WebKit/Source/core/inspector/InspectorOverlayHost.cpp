@@ -71,6 +71,12 @@ void InspectorOverlayHost::endPropertyChange()
         m_listener->overlayEndedPropertyChange();
 }
 
+void InspectorOverlayHost::clearSelection(bool commitChanges)
+{
+    if (m_listener)
+        m_listener->overlayClearSelection(commitChanges);
+}
+
 DEFINE_TRACE(InspectorOverlayHost)
 {
     visitor->trace(m_listener);

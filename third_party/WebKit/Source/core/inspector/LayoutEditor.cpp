@@ -9,6 +9,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorCSSAgent.h"
+#include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutInline.h"
@@ -140,11 +141,13 @@ float toValidValue(CSSPropertyID propertyId, float newValue)
 }
 } // namespace
 
-LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent)
+LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
     : m_element(nullptr)
     , m_cssAgent(cssAgent)
+    , m_domAgent(domAgent)
     , m_changingProperty(CSSPropertyInvalid)
     , m_propertyInitialValue(0)
+    , m_isDirty(false)
 {
 }
 
@@ -152,13 +155,20 @@ DEFINE_TRACE(LayoutEditor)
 {
     visitor->trace(m_element);
     visitor->trace(m_cssAgent);
+    visitor->trace(m_domAgent);
 }
 
-void LayoutEditor::setNode(Node* node)
+void LayoutEditor::selectNode(Node* node)
 {
-    m_element = node && node->isElementNode() ? toElement(node) : nullptr;
+    Element* element = node && node->isElementNode() ? toElement(node) : nullptr;
+    if (element == m_element)
+        return;
+
+    ASSERT(!m_isDirty);
+    m_element = element;
     m_changingProperty = CSSPropertyInvalid;
     m_propertyInitialValue = 0;
+
 }
 
 PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
@@ -263,6 +273,8 @@ void LayoutEditor::overlayPropertyChanged(float cssDelta)
         String errorString;
         float newValue = toValidValue(m_changingProperty, cssDelta / m_factor + m_propertyInitialValue);
         m_cssAgent->setCSSPropertyValue(&errorString, m_element.get(), m_changingProperty, truncateZeroes(String::format("%.2f", newValue)) + CSSPrimitiveValue::unitTypeToString(m_valueUnitType));
+        if (!errorString)
+            m_isDirty = true;
     }
 }
 
@@ -273,5 +285,19 @@ void LayoutEditor::overlayEndedPropertyChange()
     m_factor = 0;
     m_valueUnitType = CSSPrimitiveValue::UnitType::Unknown;
 }
+
+void LayoutEditor::clearSelection(bool commitChanges)
+{
+    ErrorString errorString;
+    if (commitChanges)
+        m_domAgent->markUndoableState(&errorString);
+    else if (m_isDirty)
+        m_domAgent->undo(&errorString);
+
+    m_element.clear();
+    m_isDirty = false;
+}
+
+
 
 } // namespace blink
