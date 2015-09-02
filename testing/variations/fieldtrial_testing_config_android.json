@@ -310,5 +310,16 @@
                 "Optimize": "true"
             }
         }
+    ],
+    "SafeBrowsingReportPhishingErrorLink": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Control"
+        },
+        {
+            "group_name": "Disabled"
+        }
     ]
 }

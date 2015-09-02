@@ -96,5 +96,16 @@
                 "fetch_period_min": "30"
             }
         }
+    ],
+    "SafeBrowsingReportPhishingErrorLink": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Control"
+        },
+        {
+            "group_name": "Disabled"
+        }
     ]
 }
