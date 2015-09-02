@@ -48,6 +48,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -203,10 +204,10 @@ void SSLBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("errorCode", net::ErrorToString(cert_error_));
   load_time_data->SetString(
       "openDetails",
-      l10n_util::GetStringUTF16(IDS_SSL_V2_OPEN_DETAILS_BUTTON));
+      l10n_util::GetStringUTF16(IDS_SSL_OPEN_DETAILS_BUTTON));
   load_time_data->SetString(
       "closeDetails",
-      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
+      l10n_util::GetStringUTF16(IDS_SSL_CLOSE_DETAILS_BUTTON));
 
   load_time_data->SetString("tabTitle",
                             l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));

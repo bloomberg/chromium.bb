@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <!-- Shared strings for SSL-related interstitials -->
+  <message name="IDS_SSL_OPEN_DETAILS_BUTTON" desc="The text for the button that expands the details on an error page. Paired with IDS_SSL_CLOSE_DETAILS_BUTTON.">
+    Advanced
+  </message>
+  <message name="IDS_SSL_CLOSE_DETAILS_BUTTON" desc="The text for the button that hides the details on an error page. Paired with IDS_SSL_CLOSE_DETAILS_BUTTON.">
+    Hide advanced
+  </message>
+
+  <!-- Clock errors -->
+  <message name="IDS_CLOCK_ERROR_TITLE" desc="Tab title. Context: the browser can't load a page because the device's clock is wrong.">
+    Clock error
+  </message>
+  <message name="IDS_CLOCK_ERROR_AHEAD_HEADING" desc="Large heading. Context: the error page that's shown when the device clock is too far in the past.">
+    Your clock is ahead
+  </message>
+  <message name="IDS_CLOCK_ERROR_BEHIND_HEADING" desc="Large heading. Context: the error page that's shown when the device clock is too far in the past.">
+    Your clock is behind
+  </message>
+  <message name="IDS_CLOCK_ERROR_UPDATE_DATE_AND_TIME" desc="Button text. Context: error shown when the device clock is wrong. The button takes the user to the operating system date and time settings.">
+    Update date and time
+  </message>
+  <if expr="not is_android and not is_ios">
+    <message name="IDS_CLOCK_ERROR_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: error shown when the browser can't load a page because the computer's clock is wrong.">
+      A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your computer's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.
+    </message>
+  </if>
+  <if expr="is_android">
+    <message name="IDS_CLOCK_ERROR_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: error shown when the browser can't load a page because the Android device's clock is wrong.">
+      A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.
+    </message>
+  </if>
+  <if expr="is_ios">
+    <message name="IDS_CLOCK_ERROR_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: error shown when the browser can't load a page because the device's clock is wrong. This paragraph explains the situation and gives instructions to fix it on iOS.">
+      &lt;p&gt;A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.&lt;/p&gt;
+
+      &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt;
+    </message>
+  </if>
+  <if expr="_google_chrome">
+    <message name="IDS_CLOCK_ERROR_EXPLANATION" desc="Body text under an 'Advanced' button. Context: error shown when the browser can't load a page because the device's clock is wrong. This paragraph explains why a correct clock is necessary.">
+      To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Google Chrome cannot verify these certificates.
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_CLOCK_ERROR_EXPLANATION" desc="Body text under an 'Advanced' button. Context: error shown when the browser can't load a page because the device's clock is wrong. This paragraph explains why a correct clock is necessary.">
+      To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.
+    </message>
+  </if>
+
+</grit-part>

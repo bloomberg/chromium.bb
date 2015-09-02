@@ -1227,9 +1227,6 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
       <message name="IDS_SSL_NONOVERRIDABLE_INVALID" desc="A sentence to explain why the user can't proceed.">
       You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website sent scrambled credentials that Chromium cannot process. Network errors and attacks are usually temporary, so this page will probably work later.
       </message>
-      <message name="IDS_SSL_V2_CLOCK_EXPLANATION" desc="Body text for the explanation shown if user clicks on the Advanced button for an SSL clock error.">
-        To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.
-      </message>
 
       <!-- Offline interstitial  -->
       <if expr="not is_android and not is_ios">

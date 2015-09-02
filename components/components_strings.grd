@@ -142,6 +142,7 @@
       <part file="password_manager_strings.grdp" />
       <part file="pdf_strings.grdp" />
       <part file="policy_strings.grdp" />
+      <part file="security_interstitials_strings.grdp" />
       <part file="translate_strings.grdp" />
       <part file="undo_strings.grdp" />
       <part file="version_info.grdp" />

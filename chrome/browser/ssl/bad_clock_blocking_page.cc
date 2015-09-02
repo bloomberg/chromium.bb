@@ -26,7 +26,6 @@
 #include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,6 +40,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -220,10 +220,10 @@ void BadClockBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("type", "SSL");
   load_time_data->SetString("errorCode", net::ErrorToString(cert_error_));
   load_time_data->SetString(
-      "openDetails", l10n_util::GetStringUTF16(IDS_SSL_V2_OPEN_DETAILS_BUTTON));
+      "openDetails", l10n_util::GetStringUTF16(IDS_SSL_OPEN_DETAILS_BUTTON));
   load_time_data->SetString(
       "closeDetails",
-      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
+      l10n_util::GetStringUTF16(IDS_SSL_CLOSE_DETAILS_BUTTON));
 
   // Strings for the bad clock warning specifically.
   load_time_data->SetBoolean("bad_clock", true);
@@ -236,25 +236,25 @@ void BadClockBlockingPage::PopulateInterstitialStrings(
 
   int heading_string =
       SSLErrorClassification::IsUserClockInTheFuture(time_triggered_)
-          ? IDS_SSL_V2_CLOCK_AHEAD_HEADING
-          : IDS_SSL_V2_CLOCK_BEHIND_HEADING;
+          ? IDS_CLOCK_ERROR_AHEAD_HEADING
+          : IDS_CLOCK_ERROR_BEHIND_HEADING;
 
   load_time_data->SetString("tabTitle",
-                            l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_TITLE));
+                            l10n_util::GetStringUTF16(IDS_CLOCK_ERROR_TITLE));
   load_time_data->SetString("heading",
                             l10n_util::GetStringUTF16(heading_string));
   load_time_data->SetString(
       "primaryParagraph",
       l10n_util::GetStringFUTF16(
-          IDS_SSL_V2_CLOCK_PRIMARY_PARAGRAPH, url,
+          IDS_CLOCK_ERROR_PRIMARY_PARAGRAPH, url,
           base::TimeFormatFriendlyDateAndTime(time_triggered_)));
 
   load_time_data->SetString(
       "primaryButtonText",
-      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_UPDATE_DATE_AND_TIME));
+      l10n_util::GetStringUTF16(IDS_CLOCK_ERROR_UPDATE_DATE_AND_TIME));
   load_time_data->SetString(
       "explanationParagraph",
-      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_EXPLANATION));
+      l10n_util::GetStringUTF16(IDS_CLOCK_ERROR_EXPLANATION));
 
   // The interstitial template expects this string, but we're not using it.
   load_time_data->SetString("finalParagraph", std::string());
