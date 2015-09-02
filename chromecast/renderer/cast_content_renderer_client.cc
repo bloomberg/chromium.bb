@@ -96,7 +96,10 @@ void CastRenderViewObserver::DidClearWindowObject(blink::WebLocalFrame* frame) {
 
 }  // namespace
 
-CastContentRendererClient::CastContentRendererClient() {
+CastContentRendererClient::CastContentRendererClient()
+    : allow_hidden_media_playback_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAllowHiddenMediaPlayback)) {
 }
 
 CastContentRendererClient::~CastContentRendererClient() {
@@ -205,7 +208,7 @@ void CastContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
     bool render_frame_has_played_media_before,
     const base::Closure& closure) {
-  if (!render_frame->IsHidden()) {
+  if (!render_frame->IsHidden() || allow_hidden_media_playback_) {
     closure.Run();
     return;
   }

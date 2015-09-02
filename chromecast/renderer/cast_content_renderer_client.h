@@ -56,6 +56,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
   scoped_ptr<CastRenderProcessObserver> cast_observer_;
+  const bool allow_hidden_media_playback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentRendererClient);
 };
