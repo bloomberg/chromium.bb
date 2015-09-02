@@ -10,8 +10,6 @@
 namespace translate {
 
 // Browser-side utilities for dealing with CLD data source configuration.
-// This class exists primarily to avoid duplicating code in high-level targets
-// such as the Chrome browser, Chrome shell, and so on.
 class BrowserCldUtils {
  public:
   // Perform conditional configuration of the CLD data provider.
