@@ -1989,7 +1989,7 @@ resolveEmphasisWords(
 			
 			/*   if whole word is one symbol,
 				 turn it into a symbol   */
-			if(word_start >= 0)
+			if(bit_symbol && word_start >= 0)
 			{
 				if(word_start + 1 == i)
 					buffer[word_start] |= bit_symbol;
@@ -2036,7 +2036,7 @@ resolveEmphasisWords(
 						
 				/*   if whole word is one symbol,
 					 turn it into a symbol   */
-				if(word_start + 1 == i)
+				if(bit_symbol && word_start + 1 == i)
 					buffer[word_start] |= bit_symbol;
 				else
 				{
@@ -2068,7 +2068,7 @@ resolveEmphasisWords(
 			{			
 				/*   if word is one symbol,
 				     turn it into a symbol   */
-				if(word_start + 1 == i)
+				if(bit_symbol && word_start + 1 == i)
 						buffer[word_start] |= bit_symbol;
 				else
 					buffer[word_start] |= bit_word;
@@ -2091,7 +2091,7 @@ resolveEmphasisWords(
 		{		
 			/*   if word is one symbol,
 				 turn it into a symbol   */
-			if(word_start + 1 == i)
+			if(bit_symbol && word_start + 1 == i)
 					buffer[word_start] |= bit_symbol;
 			else
 				buffer[word_start] |= bit_word;
