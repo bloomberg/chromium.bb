@@ -1157,7 +1157,6 @@ crbug.com/521730 [ Win10 ] fast/repaint/japanese-rl-selection-clear.html [ Failu
 crbug.com/521730 [ Win10 ] fast/repaint/japanese-rl-selection-repaint.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/international/vertical-text-metrics-test.html [ Failure ]
 crbug.com/521730 [ Win10 ] http/tests/inspector/search/sources-search-scope-in-files.html [ Failure ]
-crbug.com/521730 [ Win10 ] imported/web-platform-tests/html/semantics/forms/constraints/form-validation-reportValidity.html [ NeedsRebaseline ]
 crbug.com/521730 [ Win10 ] imported/web-platform-tests/screen-orientation/lock-basic.html [ Failure ]
 crbug.com/521730 [ Win10 ] imported/web-platform-tests/screen-orientation/orientation-api.html [ Failure ]
 crbug.com/521730 [ Win10 ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ Failure ]
