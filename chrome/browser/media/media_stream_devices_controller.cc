@@ -72,6 +72,10 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     : web_contents_(web_contents),
       request_(request),
       callback_(callback) {
+  if (request_.request_type == content::MEDIA_OPEN_DEVICE) {
+    UMA_HISTOGRAM_BOOLEAN("Pepper.SecureOrigin.MediaStreamRequest",
+                          content::IsOriginSecure(request_.security_origin));
+  }
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   content_settings_ = TabSpecificContentSettings::FromWebContents(web_contents);
 

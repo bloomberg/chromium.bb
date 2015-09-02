@@ -29849,6 +29849,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Pepper.SecureOrigin.MediaStreamRequest" enum="BooleanSecure">
+  <owner>raymes@chromium.org</owner>
+  <summary>
+    Whether a Pepper media stream request (mic/cam access) comes from a plugin
+    in a secure or an insecure origin.
+  </summary>
+</histogram>
+
 <histogram name="PerformanceMonitor.AverageCPU" units="PercentCPUUsage">
   <owner>oysteine@chromium.org</owner>
   <summary>
