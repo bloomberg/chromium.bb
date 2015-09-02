@@ -574,11 +574,7 @@ void Heap::globalWeakProcessing(Visitor* visitor)
 
 void Heap::collectAllGarbage()
 {
-    // FIXME: Oilpan: we should perform a single GC and everything
-    // should die. Unfortunately it is not the case for all objects
-    // because the hierarchy was not completely moved to the heap and
-    // some heap allocated objects own objects that contain persistents
-    // pointing to other heap allocated objects.
+    // We need to run multiple GCs to collect a chain of persistent handles.
     size_t previousLiveObjects = 0;
     for (int i = 0; i < 5; ++i) {
         collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, ForcedGC);

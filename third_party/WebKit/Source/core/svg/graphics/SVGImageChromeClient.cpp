@@ -102,8 +102,7 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     // below, including this object and its timer. For code simplicity, the
     // object protection isn't made the conditional on Oilpan.
     //
-    // FIXME: Oilpan: move this and other ChromeClients to the Oilpan heap
-    // to render this protection redundant.
+    // TODO(oilpan): move SVGImage to the Oilpan heap and remove this protection.
     RefPtr<SVGImage> protect(m_image);
     m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
     m_image->frameView()->updateAllLifecyclePhases();

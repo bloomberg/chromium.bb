@@ -48,10 +48,6 @@ public:
 
 private:
 #if ENABLE(OILPAN)
-    // FIXME: Oilpan: the LayoutObject hierarchy isn't on the heap, but
-    // the SVG property hierarchy is. And the two meet here, so keep a
-    // persistent reference to the SVG part object by way of a heap-allocated
-    // wrapper object.
     Persistent<LinearGradientAttributesWrapper> m_attributesWrapper;
 
     LinearGradientAttributes& mutableAttributes() { return m_attributesWrapper->attributes(); }
