@@ -815,12 +815,6 @@ bool RootInlineBox::fitsToGlyphs() const
     return isHorizontal() && (lineBoxContain & LineBoxContainGlyphs);
 }
 
-bool RootInlineBox::includesRootLineBoxFontOrLeading() const
-{
-    LineBoxContain lineBoxContain = lineLayoutItem().style()->lineBoxContain();
-    return (lineBoxContain & LineBoxContainBlock) || (lineBoxContain & LineBoxContainInline) || (lineBoxContain & LineBoxContainFont);
-}
-
 Node* RootInlineBox::getLogicalStartBoxWithNode(InlineBox*& startBox) const
 {
     Vector<InlineBox*> leafBoxesInLogicalOrder;

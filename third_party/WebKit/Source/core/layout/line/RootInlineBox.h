@@ -152,7 +152,6 @@ public:
     bool includeGlyphsForBox(InlineBox*) const;
     bool includeMarginForBox(InlineBox*) const;
     bool fitsToGlyphs() const;
-    bool includesRootLineBoxFontOrLeading() const;
 
     LayoutUnit logicalTopVisualOverflow() const
     {
