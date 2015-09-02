@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import fnmatch
 import optparse
 import os
 import shutil
@@ -61,73 +60,17 @@ ERRORPRONE_OPTIONS = [
   '-Xep:OverridesJavaxInjectableMethod:OFF',
 ]
 
-def DoJavac(
-    bootclasspath, classpath, classes_dir, chromium_code,
-    use_errorprone_path, java_files):
-  """Runs javac.
 
-  Builds |java_files| with the provided |classpath| and puts the generated
-  .class files into |classes_dir|. If |chromium_code| is true, extra lint
-  checking will be enabled.
-  """
-
-  jar_inputs = []
-  for path in classpath:
-    if os.path.exists(path + '.TOC'):
-      jar_inputs.append(path + '.TOC')
-    else:
-      jar_inputs.append(path)
-
-  javac_args = [
-      '-g',
-      # Chromium only allows UTF8 source files.  Being explicit avoids
-      # javac pulling a default encoding from the user's environment.
-      '-encoding', 'UTF-8',
-      '-classpath', ':'.join(classpath),
-      '-d', classes_dir]
-
-  if bootclasspath:
-    javac_args.extend([
-        '-bootclasspath', ':'.join(bootclasspath),
-        '-source', '1.7',
-        '-target', '1.7',
-        ])
-
-  if chromium_code:
-    # TODO(aurimas): re-enable '-Xlint:deprecation' checks once they are fixed.
-    javac_args.extend(['-Xlint:unchecked'])
-  else:
-    # XDignore.symbol.file makes javac compile against rt.jar instead of
-    # ct.sym. This means that using a java internal package/class will not
-    # trigger a compile warning or error.
-    javac_args.extend(['-XDignore.symbol.file'])
-
-  if use_errorprone_path:
-    javac_cmd = [use_errorprone_path] + ERRORPRONE_OPTIONS
-  else:
-    javac_cmd = ['javac']
-
-  javac_cmd = javac_cmd + javac_args + java_files
-
-  def Compile():
-    build_utils.CheckOutput(
-        javac_cmd,
-        print_stdout=chromium_code,
-        stderr_filter=ColorJavacOutput)
-
-  record_path = os.path.join(classes_dir, 'javac.md5.stamp')
-  md5_check.CallAndRecordIfStale(
-      Compile,
-      record_path=record_path,
-      input_paths=java_files + jar_inputs,
-      input_strings=javac_cmd)
+def _FilterJavaFiles(paths, filters):
+  return [f for f in paths
+          if not filters or build_utils.MatchesGlob(f, filters)]
 
 
 _MAX_MANIFEST_LINE_LEN = 72
 
 
-def CreateManifest(manifest_path, classpath, main_class=None,
-                   manifest_entries=None):
+def _CreateManifest(manifest_path, classpath, main_class=None,
+                    manifest_entries=None):
   """Creates a manifest file with the given parameters.
 
   This generates a manifest file that compiles with the spec found at
@@ -166,11 +109,7 @@ def CreateManifest(manifest_path, classpath, main_class=None,
     f.write(output)
 
 
-def main(argv):
-  colorama.init()
-
-  argv = build_utils.ExpandFileArgs(argv)
-
+def _ParseOptions(argv):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
 
@@ -195,6 +134,7 @@ def main(argv):
       'will all be appended to construct the classpath.')
   parser.add_option(
       '--javac-includes',
+      default='',
       help='A list of file patterns. If provided, only java files that match'
       'one of the patterns will be compiled.')
   parser.add_option(
@@ -212,9 +152,6 @@ def main(argv):
       '--use-errorprone-path',
       help='Use the Errorprone compiler at this path.')
 
-  parser.add_option(
-      '--classes-dir',
-      help='Directory for compiled .class files.')
   parser.add_option('--jar-path', help='Jar output path.')
   parser.add_option(
       '--main-class',
@@ -227,88 +164,134 @@ def main(argv):
   parser.add_option('--stamp', help='Path to touch on success.')
 
   options, args = parser.parse_args(argv)
-
-  if options.main_class and not options.jar_path:
-    parser.error('--main-class requires --jar-path')
+  build_utils.CheckOptions(options, parser, required=('jar_path',))
 
   bootclasspath = []
   for arg in options.bootclasspath:
     bootclasspath += build_utils.ParseGypList(arg)
+  options.bootclasspath = bootclasspath
 
   classpath = []
   for arg in options.classpath:
     classpath += build_utils.ParseGypList(arg)
+  options.classpath = classpath
 
   java_srcjars = []
   for arg in options.java_srcjars:
     java_srcjars += build_utils.ParseGypList(arg)
+  options.java_srcjars = java_srcjars
 
-  java_files = args
   if options.src_gendirs:
-    src_gendirs = build_utils.ParseGypList(options.src_gendirs)
-    java_files += build_utils.FindInDirectories(src_gendirs, '*.java')
+    options.src_gendirs = build_utils.ParseGypList(options.src_gendirs)
 
-  input_files = bootclasspath + classpath + java_srcjars + java_files
-  with build_utils.TempDir() as temp_dir:
-    classes_dir = os.path.join(temp_dir, 'classes')
-    os.makedirs(classes_dir)
-    if java_srcjars:
-      java_dir = os.path.join(temp_dir, 'java')
-      os.makedirs(java_dir)
-      for srcjar in java_srcjars:
-        build_utils.ExtractAll(srcjar, path=java_dir, pattern='*.java')
-      java_files += build_utils.FindInDirectory(java_dir, '*.java')
+  options.javac_includes = build_utils.ParseGypList(options.javac_includes)
+  options.jar_excluded_classes = (
+      build_utils.ParseGypList(options.jar_excluded_classes))
+  return options, args
 
-    if options.javac_includes:
-      javac_includes = build_utils.ParseGypList(options.javac_includes)
-      filtered_java_files = []
-      for f in java_files:
-        for include in javac_includes:
-          if fnmatch.fnmatch(f, include):
-            filtered_java_files.append(f)
-            break
-      java_files = filtered_java_files
 
-    if len(java_files) != 0:
-      DoJavac(
-          bootclasspath,
-          classpath,
-          classes_dir,
-          options.chromium_code,
-          options.use_errorprone_path,
-          java_files)
+def main(argv):
+  colorama.init()
 
-    if options.jar_path:
+  argv = build_utils.ExpandFileArgs(argv)
+  options, java_files = _ParseOptions(argv)
+
+  if options.src_gendirs:
+    java_files += build_utils.FindInDirectories(options.src_gendirs, '*.java')
+
+  java_files = _FilterJavaFiles(java_files, options.javac_includes)
+
+  javac_args = [
+      '-g',
+      # Chromium only allows UTF8 source files.  Being explicit avoids
+      # javac pulling a default encoding from the user's environment.
+      '-encoding', 'UTF-8',
+      '-classpath', ':'.join(options.classpath),
+      ]
+
+  if options.bootclasspath:
+    javac_args.extend([
+        '-bootclasspath', ':'.join(options.bootclasspath),
+        '-source', '1.7',
+        '-target', '1.7',
+        ])
+
+  if options.chromium_code:
+    # TODO(aurimas): re-enable '-Xlint:deprecation' checks once they are fixed.
+    javac_args.extend(['-Xlint:unchecked'])
+  else:
+    # XDignore.symbol.file makes javac compile against rt.jar instead of
+    # ct.sym. This means that using a java internal package/class will not
+    # trigger a compile warning or error.
+    javac_args.extend(['-XDignore.symbol.file'])
+
+  javac_cmd = ['javac']
+  if options.use_errorprone_path:
+    javac_cmd = [options.use_errorprone_path] + ERRORPRONE_OPTIONS
+
+  # Compute the list of paths that when changed, we need to rebuild.
+  input_paths = options.bootclasspath + options.java_srcjars + java_files
+  for path in options.classpath:
+    if os.path.exists(path + '.TOC'):
+      input_paths.append(path + '.TOC')
+    else:
+      input_paths.append(path)
+  python_deps = build_utils.GetPythonDependencies()
+
+  def OnStaleMd5():
+    with build_utils.TempDir() as temp_dir:
+      if options.java_srcjars:
+        java_dir = os.path.join(temp_dir, 'java')
+        os.makedirs(java_dir)
+        for srcjar in options.java_srcjars:
+          build_utils.ExtractAll(srcjar, path=java_dir, pattern='*.java')
+        jar_srcs = build_utils.FindInDirectory(java_dir, '*.java')
+        java_files.extend(_FilterJavaFiles(jar_srcs, options.javac_includes))
+
+      if not java_files:
+        return
+
+      classes_dir = os.path.join(temp_dir, 'classes')
+      os.makedirs(classes_dir)
+      # Don't include the output directory in the initial set of args since it
+      # being in a temp dir makes it unstable (breaks md5 stamping).
+      cmd = javac_cmd + javac_args + ['-d', classes_dir] + java_files
+
+      build_utils.CheckOutput(
+          cmd,
+          print_stdout=options.chromium_code,
+          stderr_filter=ColorJavacOutput)
+
       if options.main_class or options.manifest_entry:
+        entries = []
         if options.manifest_entry:
-          entries = map(lambda e: e.split(":"), options.manifest_entry)
-        else:
-          entries = []
+          entries = [e.split(':') for e in options.manifest_entry]
         manifest_file = os.path.join(temp_dir, 'manifest')
-        CreateManifest(manifest_file, classpath, options.main_class, entries)
+        _CreateManifest(manifest_file, options.classpath, options.main_class,
+                        entries)
       else:
         manifest_file = None
       jar.JarDirectory(classes_dir,
-                       build_utils.ParseGypList(options.jar_excluded_classes),
+                       options.jar_excluded_classes,
                        options.jar_path,
                        manifest_file=manifest_file)
 
-    if options.classes_dir:
-      # Delete the old classes directory. This ensures that all .class files in
-      # the output are actually from the input .java files. For example, if a
-      # .java file is deleted or an inner class is removed, the classes
-      # directory should not contain the corresponding old .class file after
-      # running this action.
-      build_utils.DeleteDirectory(options.classes_dir)
-      shutil.copytree(classes_dir, options.classes_dir)
+    if options.stamp:
+      build_utils.Touch(options.stamp)
 
-  if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        input_files + build_utils.GetPythonDependencies())
+    if options.depfile:
+      build_utils.WriteDepfile(options.depfile, input_paths + python_deps)
 
-  if options.stamp:
-    build_utils.Touch(options.stamp)
+
+  # List python deps in input_strings rather than input_paths since the contents
+  # of them does not change what gets written to the depsfile.
+  md5_check.CallAndRecordIfStale(
+      OnStaleMd5,
+      record_path=options.jar_path + '.javac.md5.stamp',
+      input_paths=input_paths,
+      input_strings=javac_cmd + javac_args + python_deps,
+      force=not os.path.exists(options.jar_path))
+
 
 
 if __name__ == '__main__':
