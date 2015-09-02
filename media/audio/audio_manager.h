@@ -61,6 +61,15 @@ class MEDIA_EXPORT AudioManager {
   // called previously to start the hang monitor.  Does nothing on OSX.
   static void EnableHangMonitor();
 
+#if defined(OS_LINUX)
+  // Sets the name of the audio source as seen by external apps. Only actually
+  // used with PulseAudio as of this writing.
+  static void SetGlobalAppName(const std::string& app_name);
+
+  // Returns the app name or an empty string if it is not set.
+  static const std::string& GetGlobalAppName();
+#endif
+
   // Should only be used for testing. Resets a previously-set
   // AudioManagerFactory. The instance of AudioManager is not affected.
   static void ResetFactoryForTesting();

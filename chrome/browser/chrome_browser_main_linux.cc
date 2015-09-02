@@ -7,8 +7,11 @@
 #include <fontconfig/fontconfig.h>
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/metrics/metrics_service.h"
+#include "media/audio/audio_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_CHROMEOS)
 #include "base/linux_util.h"
@@ -46,6 +49,9 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
       FROM_HERE,
       base::Bind(&sxs_linux::AddChannelMarkToUserDataDir));
 #endif
+
+  media::AudioManager::SetGlobalAppName(
+      l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }

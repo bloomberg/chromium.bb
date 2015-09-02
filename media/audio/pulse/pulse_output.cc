@@ -62,9 +62,10 @@ PulseAudioOutputStream::~PulseAudioOutputStream() {
 
 bool PulseAudioOutputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return pulse::CreateOutputStream(&pa_mainloop_, &pa_context_, &pa_stream_,
-                                   params_, device_id_, &StreamNotifyCallback,
-                                   &StreamRequestCallback, this);
+  return pulse::CreateOutputStream(
+      &pa_mainloop_, &pa_context_, &pa_stream_, params_, device_id_,
+      AudioManager::GetGlobalAppName(), &StreamNotifyCallback,
+      &StreamRequestCallback, this);
 }
 
 void PulseAudioOutputStream::Reset() {

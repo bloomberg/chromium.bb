@@ -156,7 +156,7 @@ int GetHardwareLatencyInBytes(pa_stream* stream,
     DLOG(ERROR) << message; \
     return false; \
   } \
-} while(0)
+} while (0)
 
 bool CreateInputStream(pa_threaded_mainloop* mainloop,
                        pa_context* context,
@@ -234,6 +234,7 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
                         pa_stream** stream,
                         const AudioParameters& params,
                         const std::string& device_id,
+                        const std::string& app_name,
                         pa_stream_notify_cb_t stream_callback,
                         pa_stream_request_cb_t write_callback,
                         void* user_data) {
@@ -244,7 +245,8 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
   RETURN_ON_FAILURE(*mainloop, "Failed to create PulseAudio main loop.");
 
   pa_mainloop_api* pa_mainloop_api = pa_threaded_mainloop_get_api(*mainloop);
-  *context = pa_context_new(pa_mainloop_api, "Chromium");
+  *context = pa_context_new(pa_mainloop_api,
+                            app_name.empty() ? "Chromium" : app_name.c_str());
   RETURN_ON_FAILURE(*context, "Failed to create PulseAudio context.");
 
   // A state callback must be set before calling pa_threaded_mainloop_lock() or
