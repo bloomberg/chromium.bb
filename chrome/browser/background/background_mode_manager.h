@@ -257,7 +257,7 @@ class BackgroundModeManager
                const content::NotificationDetails& details) override;
 
   // Called when ExtensionSystem is ready.
-  void OnExtensionsReady();
+  void OnExtensionsReady(Profile* profile);
 
   // Called when the kBackgroundModeEnabled preference changes.
   void OnBackgroundModeEnabledPrefChanged();

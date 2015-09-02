@@ -2528,6 +2528,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BackgroundMode.BackgroundApplicationsCount">
+  <owner>atwilson@chromium.org</owner>
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    The number of background applications (extensions) for a profile that were
+    loaded after the profile was registered with the BackgroundModeManager.
+  </summary>
+</histogram>
+
 <histogram name="BackgroundMode.BackgroundModeEnabledPrefChanged"
     enum="BooleanEnabled">
   <owner>mvanouwerkerk@chromium.org</owner>

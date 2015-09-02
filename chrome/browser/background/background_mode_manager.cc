@@ -418,7 +418,7 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   extensions::ExtensionSystem::Get(profile)->ready().Post(
       FROM_HERE,
       base::Bind(&BackgroundModeManager::OnExtensionsReady,
-        weak_factory_.GetWeakPtr()));
+        weak_factory_.GetWeakPtr(), profile));
 
   bmd->applications_->AddObserver(this);
 
@@ -528,7 +528,13 @@ void BackgroundModeManager::Observe(
   }
 }
 
-void BackgroundModeManager::OnExtensionsReady() {
+void BackgroundModeManager::OnExtensionsReady(Profile* profile) {
+  BackgroundModeManager::BackgroundModeData* bmd =
+      GetBackgroundModeData(profile);
+  if (bmd) {
+    UMA_HISTOGRAM_COUNTS_100("BackgroundMode.BackgroundApplicationsCount",
+        bmd->applications_->size());
+  }
   // Extensions are loaded, so we don't need to manually keep the browser
   // process alive any more when running in no-startup-window mode.
   DecrementKeepAliveCountForStartup();
