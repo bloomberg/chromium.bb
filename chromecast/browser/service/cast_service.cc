@@ -12,11 +12,9 @@ namespace chromecast {
 
 CastService::CastService(
     content::BrowserContext* browser_context,
-    PrefService* pref_service,
-    metrics::CastMetricsServiceClient* metrics_service_client)
+    PrefService* pref_service)
     : browser_context_(browser_context),
       pref_service_(pref_service),
-      metrics_service_client_(metrics_service_client),
       stopped_(true),
       thread_checker_(new base::ThreadChecker()) {
 }

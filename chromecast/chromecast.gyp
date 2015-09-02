@@ -376,6 +376,8 @@
         'browser/pref_service_helper.h',
         'browser/service/cast_service.cc',
         'browser/service/cast_service.h',
+        'browser/service/cast_service_simple.cc',
+        'browser/service/cast_service_simple.h',
         'browser/url_request_context_factory.cc',
         'browser/url_request_context_factory.h',
         'common/cast_content_client.cc',
@@ -408,8 +410,6 @@
             'browser/cast_network_delegate_simple.cc',
             'browser/devtools/remote_debugging_server_simple.cc',
             'browser/pref_service_helper_simple.cc',
-            'browser/service/cast_service_android.cc',
-            'browser/service/cast_service_android.h',
             'common/platform_client_auth_simple.cc',
             'renderer/cast_content_renderer_client_simple.cc',
           ],
@@ -417,8 +417,6 @@
             ['OS!="android"', {
               'sources': [
                 'browser/media/cast_browser_cdm_factory_simple.cc',
-                'browser/service/cast_service_simple.cc',
-                'browser/service/cast_service_simple.h',
               ],
             }],
           ],

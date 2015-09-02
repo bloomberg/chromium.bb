@@ -25,24 +25,8 @@ class URLRequestContextGetter;
 
 namespace chromecast {
 
-namespace metrics {
-class CastMetricsServiceClient;
-}
-
 class CastService {
  public:
-  // Create() takes a separate url request context getter because the request
-  // context getter obtained through the browser context might not be
-  // appropriate for the url requests made by the cast service/reciever.
-  // For example, on Chromecast, it is needed to pass in a system url request
-  // context getter that would set the request context for NSS, which the main
-  // getter doesn't do.
-  static scoped_ptr<CastService> Create(
-      content::BrowserContext* browser_context,
-      PrefService* pref_service,
-      metrics::CastMetricsServiceClient* metrics_service_client,
-      net::URLRequestContextGetter* request_context_getter);
-
   virtual ~CastService();
 
   // Initializes/finalizes the cast service.
@@ -55,8 +39,7 @@ class CastService {
 
  protected:
   CastService(content::BrowserContext* browser_context,
-              PrefService* pref_service,
-              metrics::CastMetricsServiceClient* metrics_service_client);
+              PrefService* pref_service);
 
   // Implementation-specific initialization. Initialization of cast service's
   // sub-components, and anything that requires IO operations should go here.
@@ -79,14 +62,10 @@ class CastService {
 
   content::BrowserContext* browser_context() const { return browser_context_; }
   PrefService* pref_service() const { return pref_service_; }
-  metrics::CastMetricsServiceClient* metrics_service_client() const {
-    return metrics_service_client_;
-  }
 
  private:
   content::BrowserContext* const browser_context_;
   PrefService* const pref_service_;
-  metrics::CastMetricsServiceClient* const metrics_service_client_;
   bool stopped_;
   const scoped_ptr<base::ThreadChecker> thread_checker_;
 

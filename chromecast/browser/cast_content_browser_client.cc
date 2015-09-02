@@ -22,6 +22,7 @@
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/browser/media/cma_message_filter_host.h"
+#include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/base/media_message_loop.h"
@@ -68,9 +69,11 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line) {
 }
 
-std::vector<scoped_refptr<content::BrowserMessageFilter>>
-CastContentBrowserClient::GetBrowserMessageFilters() {
-  return std::vector<scoped_refptr<content::BrowserMessageFilter>>();
+scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
+    content::BrowserContext* browser_context,
+    PrefService* pref_service,
+    net::URLRequestContextGetter* request_context_getter) {
+  return make_scoped_ptr(new CastServiceSimple(browser_context, pref_service));
 }
 
 scoped_ptr<::media::AudioManagerFactory>
@@ -133,11 +136,6 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
                     url_request_context_factory_->GetSystemGetter())),
       base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
                  base::Unretained(this), host->GetID()));
-
-  auto extra_filters = GetBrowserMessageFilters();
-  for (auto const& filter : extra_filters) {
-    host->AddFilter(filter.get());
-  }
 }
 
 void CastContentBrowserClient::AddNetworkHintsMessageFilter(

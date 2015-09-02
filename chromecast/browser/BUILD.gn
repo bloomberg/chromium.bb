@@ -47,8 +47,8 @@ source_set("browser") {
     "pref_service_helper.h",
     "service/cast_service.cc",
     "service/cast_service.h",
-    "service/cast_service_android.cc",
-    "service/cast_service_android.h",
+    "service/cast_service_simple.cc",
+    "service/cast_service_simple.h",
     "url_request_context_factory.cc",
     "url_request_context_factory.h",
   ]
@@ -60,13 +60,6 @@ source_set("browser") {
       "devtools/remote_debugging_server_simple.cc",
       "pref_service_helper_simple.cc",
     ]
-
-    if (!is_android) {
-      sources += [
-        "service/cast_service_simple.cc",
-        "service/cast_service_simple.h",
-      ]
-    }
   }
 
   deps = [

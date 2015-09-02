@@ -13,12 +13,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 
+class PrefService;
+
 namespace breakpad {
 class CrashHandlerHostLinux;
-}
-
-namespace content {
-class BrowserMessageFilter;
 }
 
 namespace media {
@@ -30,6 +28,8 @@ class MetricsService;
 }
 
 namespace chromecast {
+class CastService;
+
 namespace media {
 class MediaPipelineBackend;
 struct MediaPipelineDeviceParams;
@@ -51,10 +51,13 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // Appends extra command line arguments before launching a new process.
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line);
 
-  // Returns any BrowserMessageFilters that should be added when launching a
-  // new render process.
-  virtual std::vector<scoped_refptr<content::BrowserMessageFilter>>
-  GetBrowserMessageFilters();
+  // Creates and returns the CastService instance for the current process.
+  // Note: |request_context_getter| might be different than the main request
+  // getter accessible via CastBrowserProcess.
+  virtual scoped_ptr<CastService> CreateCastService(
+      content::BrowserContext* browser_context,
+      PrefService* pref_service,
+      net::URLRequestContextGetter* request_context_getter);
 
   // Provide an AudioManagerFactory instance for WebAudio playback.
   virtual scoped_ptr<::media::AudioManagerFactory> CreateAudioManagerFactory();

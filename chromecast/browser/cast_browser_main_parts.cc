@@ -25,6 +25,7 @@
 #include "chromecast/base/metrics/grouped_histogram.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/cast_net_log.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
@@ -334,11 +335,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       base::Bind(&media::CastMediaShlib::Initialize, cmd_line->argv()));
   ::media::InitializeMediaLibrary();
 
-  cast_browser_process_->SetCastService(CastService::Create(
-      cast_browser_process_->browser_context(),
-      cast_browser_process_->pref_service(),
-      cast_browser_process_->metrics_service_client(),
-      url_request_context_factory_->GetSystemGetter()));
+  cast_browser_process_->SetCastService(
+      cast_browser_process_->browser_client()->CreateCastService(
+          cast_browser_process_->browser_context(),
+          cast_browser_process_->pref_service(),
+          url_request_context_factory_->GetSystemGetter()));
   cast_browser_process_->cast_service()->Initialize();
 
   // Initializing metrics service and network delegates must happen after cast

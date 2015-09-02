@@ -33,22 +33,10 @@ GURL GetStartupURL() {
 
 }  // namespace
 
-// static
-scoped_ptr<CastService> CastService::Create(
-    content::BrowserContext* browser_context,
-    PrefService* pref_service,
-    metrics::CastMetricsServiceClient* metrics_service_client,
-    net::URLRequestContextGetter* request_context_getter) {
-  return scoped_ptr<CastService>(new CastServiceSimple(browser_context,
-                                                       pref_service,
-                                                       metrics_service_client));
-}
-
 CastServiceSimple::CastServiceSimple(
     content::BrowserContext* browser_context,
-    PrefService* pref_service,
-    metrics::CastMetricsServiceClient* metrics_service_client)
-    : CastService(browser_context, pref_service, metrics_service_client) {
+    PrefService* pref_service)
+    : CastService(browser_context, pref_service) {
 }
 
 CastServiceSimple::~CastServiceSimple() {

@@ -19,8 +19,7 @@ class CastContentWindow;
 class CastServiceSimple : public CastService {
  public:
   CastServiceSimple(content::BrowserContext* browser_context,
-                    PrefService* pref_service,
-                    metrics::CastMetricsServiceClient* metrics_service_client);
+                    PrefService* pref_service);
   ~CastServiceSimple() override;
 
  protected:

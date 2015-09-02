@@ -33,11 +33,6 @@ class CastContentRendererClient : public content::ContentRendererClient {
   // Adds any platform-specific bindings to the current frame.
   virtual void AddRendererNativeBindings(blink::WebLocalFrame* frame);
 
-  // Returns any MessageFilters from the platform implementation that should
-  // be added to the render process.
-  virtual std::vector<scoped_refptr<IPC::MessageFilter>>
-  GetRendererMessageFilters();
-
   // ContentRendererClient implementation:
   void RenderThreadStarted() override;
   void RenderViewCreated(content::RenderView* render_view) override;

@@ -24,7 +24,6 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "crypto/nss_util.h"
-#include "ipc/message_filter.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -107,11 +106,6 @@ void CastContentRendererClient::AddRendererNativeBindings(
     blink::WebLocalFrame* frame) {
 }
 
-std::vector<scoped_refptr<IPC::MessageFilter>>
-CastContentRendererClient::GetRendererMessageFilters() {
-  return std::vector<scoped_refptr<IPC::MessageFilter>>();
-}
-
 void CastContentRendererClient::RenderThreadStarted() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 #if !defined(USE_OPENSSL)
@@ -138,8 +132,7 @@ void CastContentRendererClient::RenderThreadStarted() {
     }
   }
 
-  cast_observer_.reset(
-      new CastRenderProcessObserver(GetRendererMessageFilters()));
+  cast_observer_.reset(new CastRenderProcessObserver());
 
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());
