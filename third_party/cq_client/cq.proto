@@ -98,11 +98,12 @@ message Verifiers {
   optional SignCLAVerifier sign_cla = 4;
 
   message ReviewerLgtmVerifier {
-    // Required. Name of the project, whose committer list to use. This allows
-    // to reuse committer lists. Note that if you are adding a new list, then
-    // currently you will need to make changes to the CQ code to add support for
-    // retrieving such a list. We are working on removing the need to modify CQ
-    // code.
+    // Required. Name of the chrome-infra-auth group, which contains the
+    // list of identities authorized to approve (lgtm) a CL. This list is also
+    // known as a committer list and often corresponds to the list of accounts
+    // that have direct commit/push access to the repository. Some older lists
+    // are still stored in the CQ source code, but are being moved to the new
+    // location (https://crbug.com/511311).
     optional string committer_list = 1;
 
     // Number of seconds to wait for LGTM on CQ. Default value is 0.
@@ -148,6 +149,27 @@ message Verifiers {
 
     // Buckets on which tryjobs are triggered/watched.
     repeated Bucket buckets = 1;
+
+    message TryJobRetryConfig {
+      // Retry quota for a single tryjob.
+      optional int32 try_job_retry_quota = 1;
+
+      // Retry quota for all tryjobs in a CL.
+      optional int32 global_retry_quota = 2;
+
+      // The weight assigned to each tryjob failure.
+      optional int32 failure_retry_weight = 3;
+
+      // The weight assigned to each transient failure.
+      optional int32 transient_failure_retry_weight = 4;
+
+      // The weight assigned to tryjob timeouts.
+      optional int32 timeout_retry_weight = 5;
+    }
+
+    // Provides project specific trybot retry configuration. This overrides the
+    // defaults used in the CQ.
+    optional TryJobRetryConfig try_job_retry_config = 2;
   }
 
   message SignCLAVerifier {}

@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='cq.proto',
   package='',
-  serialized_pb=_b('\n\x08\x63q.proto\"\xf5\x02\n\x06\x43onfig\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x63q_name\x18\x02 \x01(\t\x12\x1d\n\tverifiers\x18\x03 \x01(\x0b\x32\n.Verifiers\x12\x15\n\rcq_status_url\x18\x04 \x01(\t\x12!\n\x19hide_ref_in_committed_msg\x18\x05 \x01(\x08\x12\x1a\n\x12\x63ommit_burst_delay\x18\x06 \x01(\x05\x12\x18\n\x10max_commit_burst\x18\x07 \x01(\x05\x12\x15\n\rin_production\x18\x08 \x01(\x08\x12\x1b\n\x08rietveld\x18\t \x01(\x0b\x32\t.Rietveld\x12\x14\n\x0cgit_repo_url\x18\n \x01(\t\x12\x12\n\ntarget_ref\x18\x0b \x01(\t\x12\x14\n\x0csvn_repo_url\x18\x0c \x01(\t\x12\x1c\n\x14server_hooks_missing\x18\r \x01(\x08\x12(\n\x14verifiers_with_patch\x18\x0e \x01(\x0b\x32\n.Verifiers\".\n\x08Rietveld\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x15\n\rproject_bases\x18\x02 \x03(\t\"\xd5\x04\n\tVerifiers\x12\x36\n\rreviewer_lgtm\x18\x01 \x01(\x0b\x32\x1f.Verifiers.ReviewerLgtmVerifier\x12\x36\n\x0btree_status\x18\x02 \x01(\x0b\x32!.Verifiers.TreeStatusLgtmVerifier\x12*\n\x07try_job\x18\x03 \x01(\x0b\x32\x19.Verifiers.TryJobVerifier\x12,\n\x08sign_cla\x18\x04 \x01(\x0b\x32\x1a.Verifiers.SignCLAVerifier\x1aZ\n\x14ReviewerLgtmVerifier\x12\x16\n\x0e\x63ommitter_list\x18\x01 \x01(\t\x12\x15\n\rmax_wait_secs\x18\x02 \x01(\x05\x12\x13\n\x0bno_lgtm_msg\x18\x03 \x01(\t\x1a\x31\n\x16TreeStatusLgtmVerifier\x12\x17\n\x0ftree_status_url\x18\x01 \x01(\t\x1a\xdb\x01\n\x0eTryJobVerifier\x12\x31\n\x07\x62uckets\x18\x01 \x03(\x0b\x32 .Verifiers.TryJobVerifier.Bucket\x1aI\n\x07\x42uilder\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\ttriggered\x18\x02 \x01(\x08\x12\x1d\n\x15\x65xperiment_percentage\x18\x04 \x01(\x02\x1aK\n\x06\x42ucket\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08\x62uilders\x18\x02 \x03(\x0b\x32!.Verifiers.TryJobVerifier.Builder\x1a\x11\n\x0fSignCLAVerifier')
+  serialized_pb=_b('\n\x08\x63q.proto\"\xf5\x02\n\x06\x43onfig\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x63q_name\x18\x02 \x01(\t\x12\x1d\n\tverifiers\x18\x03 \x01(\x0b\x32\n.Verifiers\x12\x15\n\rcq_status_url\x18\x04 \x01(\t\x12!\n\x19hide_ref_in_committed_msg\x18\x05 \x01(\x08\x12\x1a\n\x12\x63ommit_burst_delay\x18\x06 \x01(\x05\x12\x18\n\x10max_commit_burst\x18\x07 \x01(\x05\x12\x15\n\rin_production\x18\x08 \x01(\x08\x12\x1b\n\x08rietveld\x18\t \x01(\x0b\x32\t.Rietveld\x12\x14\n\x0cgit_repo_url\x18\n \x01(\t\x12\x12\n\ntarget_ref\x18\x0b \x01(\t\x12\x14\n\x0csvn_repo_url\x18\x0c \x01(\t\x12\x1c\n\x14server_hooks_missing\x18\r \x01(\x08\x12(\n\x14verifiers_with_patch\x18\x0e \x01(\x0b\x32\n.Verifiers\".\n\x08Rietveld\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x15\n\rproject_bases\x18\x02 \x03(\t\"\xd3\x06\n\tVerifiers\x12\x36\n\rreviewer_lgtm\x18\x01 \x01(\x0b\x32\x1f.Verifiers.ReviewerLgtmVerifier\x12\x36\n\x0btree_status\x18\x02 \x01(\x0b\x32!.Verifiers.TreeStatusLgtmVerifier\x12*\n\x07try_job\x18\x03 \x01(\x0b\x32\x19.Verifiers.TryJobVerifier\x12,\n\x08sign_cla\x18\x04 \x01(\x0b\x32\x1a.Verifiers.SignCLAVerifier\x1aZ\n\x14ReviewerLgtmVerifier\x12\x16\n\x0e\x63ommitter_list\x18\x01 \x01(\t\x12\x15\n\rmax_wait_secs\x18\x02 \x01(\x05\x12\x13\n\x0bno_lgtm_msg\x18\x03 \x01(\t\x1a\x31\n\x16TreeStatusLgtmVerifier\x12\x17\n\x0ftree_status_url\x18\x01 \x01(\t\x1a\xd9\x03\n\x0eTryJobVerifier\x12\x31\n\x07\x62uckets\x18\x01 \x03(\x0b\x32 .Verifiers.TryJobVerifier.Bucket\x12I\n\x14try_job_retry_config\x18\x02 \x01(\x0b\x32+.Verifiers.TryJobVerifier.TryJobRetryConfig\x1aI\n\x07\x42uilder\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\ttriggered\x18\x02 \x01(\x08\x12\x1d\n\x15\x65xperiment_percentage\x18\x04 \x01(\x02\x1aK\n\x06\x42ucket\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08\x62uilders\x18\x02 \x03(\x0b\x32!.Verifiers.TryJobVerifier.Builder\x1a\xb0\x01\n\x11TryJobRetryConfig\x12\x1b\n\x13try_job_retry_quota\x18\x01 \x01(\x05\x12\x1a\n\x12global_retry_quota\x18\x02 \x01(\x05\x12\x1c\n\x14\x66\x61ilure_retry_weight\x18\x03 \x01(\x05\x12&\n\x1etransient_failure_retry_weight\x18\x04 \x01(\x05\x12\x1c\n\x14timeout_retry_weight\x18\x05 \x01(\x05\x1a\x11\n\x0fSignCLAVerifier')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -294,8 +294,8 @@ _VERIFIERS_TRYJOBVERIFIER_BUILDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=865,
-  serialized_end=938,
+  serialized_start=940,
+  serialized_end=1013,
 )
 
 _VERIFIERS_TRYJOBVERIFIER_BUCKET = _descriptor.Descriptor(
@@ -330,8 +330,65 @@ _VERIFIERS_TRYJOBVERIFIER_BUCKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=940,
-  serialized_end=1015,
+  serialized_start=1015,
+  serialized_end=1090,
+)
+
+_VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG = _descriptor.Descriptor(
+  name='TryJobRetryConfig',
+  full_name='Verifiers.TryJobVerifier.TryJobRetryConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='try_job_retry_quota', full_name='Verifiers.TryJobVerifier.TryJobRetryConfig.try_job_retry_quota', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='global_retry_quota', full_name='Verifiers.TryJobVerifier.TryJobRetryConfig.global_retry_quota', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='failure_retry_weight', full_name='Verifiers.TryJobVerifier.TryJobRetryConfig.failure_retry_weight', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='transient_failure_retry_weight', full_name='Verifiers.TryJobVerifier.TryJobRetryConfig.transient_failure_retry_weight', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='timeout_retry_weight', full_name='Verifiers.TryJobVerifier.TryJobRetryConfig.timeout_retry_weight', index=4,
+      number=5, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1093,
+  serialized_end=1269,
 )
 
 _VERIFIERS_TRYJOBVERIFIER = _descriptor.Descriptor(
@@ -348,10 +405,17 @@ _VERIFIERS_TRYJOBVERIFIER = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='try_job_retry_config', full_name='Verifiers.TryJobVerifier.try_job_retry_config', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
-  nested_types=[_VERIFIERS_TRYJOBVERIFIER_BUILDER, _VERIFIERS_TRYJOBVERIFIER_BUCKET, ],
+  nested_types=[_VERIFIERS_TRYJOBVERIFIER_BUILDER, _VERIFIERS_TRYJOBVERIFIER_BUCKET, _VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG, ],
   enum_types=[
   ],
   options=None,
@@ -360,7 +424,7 @@ _VERIFIERS_TRYJOBVERIFIER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=796,
-  serialized_end=1015,
+  serialized_end=1269,
 )
 
 _VERIFIERS_SIGNCLAVERIFIER = _descriptor.Descriptor(
@@ -381,8 +445,8 @@ _VERIFIERS_SIGNCLAVERIFIER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1017,
-  serialized_end=1034,
+  serialized_start=1271,
+  serialized_end=1288,
 )
 
 _VERIFIERS = _descriptor.Descriptor(
@@ -432,7 +496,7 @@ _VERIFIERS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=437,
-  serialized_end=1034,
+  serialized_end=1288,
 )
 
 _CONFIG.fields_by_name['verifiers'].message_type = _VERIFIERS
@@ -443,7 +507,9 @@ _VERIFIERS_TREESTATUSLGTMVERIFIER.containing_type = _VERIFIERS
 _VERIFIERS_TRYJOBVERIFIER_BUILDER.containing_type = _VERIFIERS_TRYJOBVERIFIER
 _VERIFIERS_TRYJOBVERIFIER_BUCKET.fields_by_name['builders'].message_type = _VERIFIERS_TRYJOBVERIFIER_BUILDER
 _VERIFIERS_TRYJOBVERIFIER_BUCKET.containing_type = _VERIFIERS_TRYJOBVERIFIER
+_VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG.containing_type = _VERIFIERS_TRYJOBVERIFIER
 _VERIFIERS_TRYJOBVERIFIER.fields_by_name['buckets'].message_type = _VERIFIERS_TRYJOBVERIFIER_BUCKET
+_VERIFIERS_TRYJOBVERIFIER.fields_by_name['try_job_retry_config'].message_type = _VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG
 _VERIFIERS_TRYJOBVERIFIER.containing_type = _VERIFIERS
 _VERIFIERS_SIGNCLAVERIFIER.containing_type = _VERIFIERS
 _VERIFIERS.fields_by_name['reviewer_lgtm'].message_type = _VERIFIERS_REVIEWERLGTMVERIFIER
@@ -499,6 +565,13 @@ Verifiers = _reflection.GeneratedProtocolMessageType('Verifiers', (_message.Mess
       # @@protoc_insertion_point(class_scope:Verifiers.TryJobVerifier.Bucket)
       ))
     ,
+
+    TryJobRetryConfig = _reflection.GeneratedProtocolMessageType('TryJobRetryConfig', (_message.Message,), dict(
+      DESCRIPTOR = _VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG,
+      __module__ = 'cq_pb2'
+      # @@protoc_insertion_point(class_scope:Verifiers.TryJobVerifier.TryJobRetryConfig)
+      ))
+    ,
     DESCRIPTOR = _VERIFIERS_TRYJOBVERIFIER,
     __module__ = 'cq_pb2'
     # @@protoc_insertion_point(class_scope:Verifiers.TryJobVerifier)
@@ -521,6 +594,7 @@ _sym_db.RegisterMessage(Verifiers.TreeStatusLgtmVerifier)
 _sym_db.RegisterMessage(Verifiers.TryJobVerifier)
 _sym_db.RegisterMessage(Verifiers.TryJobVerifier.Builder)
 _sym_db.RegisterMessage(Verifiers.TryJobVerifier.Bucket)
+_sym_db.RegisterMessage(Verifiers.TryJobVerifier.TryJobRetryConfig)
 _sym_db.RegisterMessage(Verifiers.SignCLAVerifier)
 
 
