@@ -362,9 +362,6 @@ void H264Decoder::ConstructReferencePicListsP(
   dpb_.GetLongTermRefPicsAppending(&ref_pic_list_p0_);
   std::sort(ref_pic_list_p0_.begin() + num_short_refs, ref_pic_list_p0_.end(),
             LongTermPicNumAscCompare());
-
-  // Cut off if we have more than requested in slice header.
-  ref_pic_list_p0_.resize(slice_hdr->num_ref_idx_l0_active_minus1 + 1);
 }
 
 struct POCAscCompare {
@@ -436,12 +433,6 @@ void H264Decoder::ConstructReferencePicListsB(
       std::equal(ref_pic_list_b0_.begin(), ref_pic_list_b0_.end(),
                  ref_pic_list_b1_.begin()))
     std::swap(ref_pic_list_b1_[0], ref_pic_list_b1_[1]);
-
-  // Per 8.2.4.2 it's possible for num_ref_idx_lX_active_minus1 to indicate
-  // there should be more ref pics on list than we constructed.
-  // Those superfluous ones should be treated as non-reference.
-  ref_pic_list_b0_.resize(slice_hdr->num_ref_idx_l0_active_minus1 + 1);
-  ref_pic_list_b1_.resize(slice_hdr->num_ref_idx_l1_active_minus1 + 1);
 }
 
 // See 8.2.4
@@ -489,25 +480,36 @@ static void ShiftRightAndInsert(H264Picture::Vector* v,
 bool H264Decoder::ModifyReferencePicList(media::H264SliceHeader* slice_hdr,
                                          int list,
                                          H264Picture::Vector* ref_pic_listx) {
+  bool ref_pic_list_modification_flag_lX;
   int num_ref_idx_lX_active_minus1;
   media::H264ModificationOfPicNum* list_mod;
 
   // This can process either ref_pic_list0 or ref_pic_list1, depending on
   // the list argument. Set up pointers to proper list to be processed here.
   if (list == 0) {
-    if (!slice_hdr->ref_pic_list_modification_flag_l0)
-      return true;
-
+    ref_pic_list_modification_flag_lX =
+        slice_hdr->ref_pic_list_modification_flag_l0;
+    num_ref_idx_lX_active_minus1 =
+        slice_hdr->num_ref_idx_l0_active_minus1;
     list_mod = slice_hdr->ref_list_l0_modifications;
   } else {
-    if (!slice_hdr->ref_pic_list_modification_flag_l1)
-      return true;
-
+    ref_pic_list_modification_flag_lX =
+        slice_hdr->ref_pic_list_modification_flag_l1;
+    num_ref_idx_lX_active_minus1 =
+        slice_hdr->num_ref_idx_l1_active_minus1;
     list_mod = slice_hdr->ref_list_l1_modifications;
   }
 
-  num_ref_idx_lX_active_minus1 = ref_pic_listx->size() - 1;
+  // Resize the list to the size requested in the slice header.
+  // Note that per 8.2.4.2 it's possible for num_ref_idx_lX_active_minus1 to
+  // indicate there should be more ref pics on list than we constructed.
+  // Those superfluous ones should be treated as non-reference and will be
+  // initialized to nullptr, which must be handled by clients.
   DCHECK_GE(num_ref_idx_lX_active_minus1, 0);
+  ref_pic_listx->resize(num_ref_idx_lX_active_minus1 + 1);
+
+  if (!ref_pic_list_modification_flag_lX)
+    return true;
 
   // Spec 8.2.4.3:
   // Reorder pictures on the list in a way specified in the stream.
