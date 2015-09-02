@@ -74,7 +74,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 
   void set_stream(scoped_ptr<QuicHttpStream> stream);
 
-  const std::string origin_host() const { return origin_host_; }
+  const std::string& origin_host() const { return origin_host_; }
 
   PrivacyMode privacy_mode() const { return privacy_mode_; }
 
