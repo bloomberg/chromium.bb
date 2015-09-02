@@ -6,12 +6,14 @@
 #define TouchHitRegion_h
 
 #include "modules/canvas2d/EventHitRegion.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class Touch;
 
 class TouchHitRegion : public EventHitRegion {
+    STATIC_ONLY(TouchHitRegion);
 public:
     static String region(Touch&);
 };

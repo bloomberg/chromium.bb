@@ -5,11 +5,14 @@
 #ifndef InternalsAccessibility_h
 #define InternalsAccessibility_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class Internals;
 
 class InternalsAccessibility {
+    STATIC_ONLY(InternalsAccessibility);
 public:
     static unsigned numberOfLiveAXObjects(Internals&);
 };

@@ -6,6 +6,7 @@
 #define CacheStorageError_h
 
 #include "public/platform/WebServiceWorkerCacheError.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -14,7 +15,7 @@ class DOMException;
 class ScriptPromiseResolver;
 
 class CacheStorageError {
-    WTF_MAKE_NONCOPYABLE(CacheStorageError);
+    STATIC_ONLY(CacheStorageError);
 public:
     // For CallbackPromiseAdapter. Ownership of a given error is not
     // transferred.

@@ -216,6 +216,7 @@ enum AccessibilityState {
 };
 
 class AccessibilityText final : public NoBaseWillBeGarbageCollectedFinalized<AccessibilityText> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(AccessibilityText);
 public:
     static PassOwnPtrWillBeRawPtr<AccessibilityText> create(const String& text, const AccessibilityTextSource& source)
     {
@@ -422,6 +423,7 @@ public:
     typedef WillBeHeapVector<RefPtrWillBeMember<AXObject>> AccessibilityChildrenVector;
 
     struct AXRange {
+        ALLOW_ONLY_INLINE_ALLOCATION();
         // The deepest descendant in which the range starts.
         // (nullptr means the current object.)
         RefPtrWillBePersistent<AXObject> anchorObject;

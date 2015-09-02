@@ -6,6 +6,7 @@
 #define ClipList_h
 
 #include "platform/graphics/GraphicsTypes.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 class SkCanvas;
@@ -16,6 +17,7 @@ namespace blink {
 class AffineTransform;
 
 class ClipList {
+    DISALLOW_ALLOCATION();
 public:
     ClipList() { }
     ClipList(const ClipList&);

@@ -6,20 +6,19 @@
 #define EncryptedMediaUtils_h
 
 #include "public/platform/WebEncryptedMediaTypes.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class EncryptedMediaUtils {
+    STATIC_ONLY(EncryptedMediaUtils);
 public:
     static WebEncryptedMediaInitDataType convertToInitDataType(const String& initDataType);
     static String convertFromInitDataType(WebEncryptedMediaInitDataType);
 
     static WebEncryptedMediaSessionType convertToSessionType(const String& sessionType);
     static String convertFromSessionType(WebEncryptedMediaSessionType);
-
-private:
-    EncryptedMediaUtils();
 };
 
 } // namespace blink

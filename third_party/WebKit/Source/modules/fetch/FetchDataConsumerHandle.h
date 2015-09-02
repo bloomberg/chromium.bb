@@ -21,8 +21,10 @@ namespace blink {
 // to create a reference cycle. When an client is garbage collected, making
 // the client own the handle is the right way.
 class MODULES_EXPORT FetchDataConsumerHandle : public WebDataConsumerHandle {
+    WTF_MAKE_FAST_ALLOCATED(FetchDataConsumerHandle);
 public:
     class Reader : public WebDataConsumerHandle::Reader {
+        WTF_MAKE_FAST_ALLOCATED(Reader);
     public:
         enum BlobSizePolicy {
             // The returned blob must have a valid size (i.e. != kuint64max).

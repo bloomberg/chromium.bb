@@ -16,6 +16,7 @@ class FetchRequestData;
 class ScriptState;
 
 class FetchManager final : public NoBaseWillBeGarbageCollectedFinalized<FetchManager> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FetchManager);
 public:
     static PassOwnPtrWillBeRawPtr<FetchManager> create(ExecutionContext* executionContext)
     {

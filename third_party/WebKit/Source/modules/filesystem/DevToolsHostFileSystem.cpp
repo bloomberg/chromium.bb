@@ -31,9 +31,4 @@ void DevToolsHostFileSystem::upgradeDraggedFileSystemPermissions(DevToolsHost& h
     host.sendMessageToEmbedder(message->toJSONString());
 }
 
-DevToolsHostFileSystem::DevToolsHostFileSystem() { }
-
-DevToolsHostFileSystem::~DevToolsHostFileSystem() { }
-
-
 } // namespace blink

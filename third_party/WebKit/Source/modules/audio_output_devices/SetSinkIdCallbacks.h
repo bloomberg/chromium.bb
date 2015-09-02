@@ -18,6 +18,9 @@ class ScriptPromiseResolver;
 struct WebSetSinkIdError;
 
 class SetSinkIdCallbacks final : public WebCallbacks<void, WebSetSinkIdError*> {
+    // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
+    // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
+    WTF_MAKE_FAST_ALLOCATED(SetSinkIdCallbacks);
     WTF_MAKE_NONCOPYABLE(SetSinkIdCallbacks);
 public:
     SetSinkIdCallbacks(ScriptPromiseResolver*, HTMLMediaElement&, const String& sinkId);

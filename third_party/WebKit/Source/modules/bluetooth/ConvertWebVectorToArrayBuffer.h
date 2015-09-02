@@ -16,14 +16,11 @@ class ScriptPromiseResolver;
 // ConvertWebVectorToArrayBuffer is used with CallbackPromiseAdapter to receive
 // WebVector responses. See CallbackPromiseAdapter class comments.
 class ConvertWebVectorToArrayBuffer {
-    WTF_MAKE_NONCOPYABLE(ConvertWebVectorToArrayBuffer);
+    STATIC_ONLY(ConvertWebVectorToArrayBuffer);
 public:
     // Interface required by CallbackPromiseAdapter:
     using WebType = const WebVector<uint8_t>&;
     static PassRefPtr<DOMArrayBuffer> take(ScriptPromiseResolver*, const WebVector<uint8_t>&);
-
-private:
-    ConvertWebVectorToArrayBuffer() = delete;
 };
 
 } // namespace blink

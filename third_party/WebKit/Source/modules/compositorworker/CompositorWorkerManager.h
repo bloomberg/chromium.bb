@@ -18,6 +18,7 @@ class WebThread;
 class WebThreadSupportingGC;
 
 class MODULES_EXPORT CompositorWorkerManager final {
+    WTF_MAKE_FAST_ALLOCATED(CompositorWorkerManager);
 public:
     static void initialize();
     static void shutdown();

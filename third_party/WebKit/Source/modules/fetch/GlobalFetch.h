@@ -19,6 +19,7 @@ class ScriptState;
 class WorkerGlobalScope;
 
 class GlobalFetch {
+    STATIC_ONLY(GlobalFetch);
 public:
     class MODULES_EXPORT ScopedFetcher : public WillBeGarbageCollectedMixin {
     public:

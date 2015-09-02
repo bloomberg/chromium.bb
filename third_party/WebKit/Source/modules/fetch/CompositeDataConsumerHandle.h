@@ -8,6 +8,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -21,6 +22,7 @@ class WebThread;
 // the handle by using |update| method.
 class MODULES_EXPORT CompositeDataConsumerHandle final : public WebDataConsumerHandle {
     WTF_MAKE_NONCOPYABLE(CompositeDataConsumerHandle);
+    WTF_MAKE_FAST_ALLOCATED(CompositeDataConsumerHandle);
     class Context;
 public:
     // An Updater is bound to the creator thread.

@@ -6,6 +6,7 @@
 #define AppBannerController_h
 
 #include "modules/ModulesExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -19,13 +20,9 @@ template <typename T> class WebVector;
 // FIXME: unless userChoice ends up implemented, this class should not exist and
 // a regular static method could be used instead.
 class MODULES_EXPORT AppBannerController final {
-    WTF_MAKE_NONCOPYABLE(AppBannerController);
+    STATIC_ONLY(AppBannerController);
 public:
     static void willShowInstallBannerPrompt(int requestId, WebAppBannerClient*, LocalFrame*, const WebVector<WebString>& platforms, WebAppBannerPromptReply*);
-
-private:
-    AppBannerController() = delete;
-    ~AppBannerController() = delete;
 };
 
 } // namespace blink

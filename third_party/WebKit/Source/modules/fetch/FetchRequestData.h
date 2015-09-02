@@ -29,6 +29,7 @@ public:
     enum Tainting { BasicTainting, CORSTainting, OpaqueTainting };
 
     class Referrer final {
+        DISALLOW_ALLOCATION();
     public:
         Referrer() : m_type(ClientReferrer) { }
         bool isNoReferrer() const { return m_type == NoReferrer; }

@@ -15,15 +15,13 @@
 namespace blink {
 
 class NavigatorRequestMediaKeySystemAccess {
+    STATIC_ONLY(NavigatorRequestMediaKeySystemAccess);
 public:
     static ScriptPromise requestMediaKeySystemAccess(
         ScriptState*,
         Navigator&,
         const String& keySystem,
         const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations);
-
-private:
-    NavigatorRequestMediaKeySystemAccess();
 };
 
 } // namespace blink

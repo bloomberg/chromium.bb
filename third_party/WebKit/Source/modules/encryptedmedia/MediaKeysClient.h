@@ -5,12 +5,15 @@
 #ifndef MediaKeysClient_h
 #define MediaKeysClient_h
 
+#include "wtf/FastAllocBase.h"
+
 namespace blink {
 
 class ExecutionContext;
 class WebEncryptedMediaClient;
 
 class MediaKeysClient {
+    WTF_MAKE_FAST_ALLOCATED(MediaKeysClient);
 public:
     virtual WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) = 0;
 

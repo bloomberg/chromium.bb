@@ -19,6 +19,7 @@ class ScriptState;
 
 class HTMLMediaElementAudioOutputDevice final : public NoBaseWillBeGarbageCollectedFinalized<HTMLMediaElementAudioOutputDevice>, public WillBeHeapSupplement<HTMLMediaElement> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementAudioOutputDevice);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLMediaElementAudioOutputDevice);
 public:
     DECLARE_VIRTUAL_TRACE();
     static String sinkId(HTMLMediaElement&);

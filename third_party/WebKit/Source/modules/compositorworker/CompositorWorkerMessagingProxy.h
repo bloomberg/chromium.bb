@@ -6,10 +6,12 @@
 #define CompositorWorkerMessagingProxy_h
 
 #include "core/workers/WorkerMessagingProxy.h"
+#include "wtf/FastAllocBase.h"
 
 namespace blink {
 
 class CompositorWorkerMessagingProxy final : public WorkerMessagingProxy {
+    WTF_MAKE_FAST_ALLOCATED(CompositorWorkerMessagingProxy);
 public:
     explicit CompositorWorkerMessagingProxy(InProcessWorkerBase*);
 

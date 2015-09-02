@@ -16,6 +16,7 @@ class WebEncryptedMediaClient;
 
 class MODULES_EXPORT MediaKeysController final : public NoBaseWillBeGarbageCollected<MediaKeysController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeysController);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MediaKeysController);
 public:
     WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*);
 

@@ -36,12 +36,14 @@
 #include "platform/blob/BlobData.h"
 #include "public/platform/WebFileWriter.h"
 #include "wtf/Assertions.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT AsyncFileSystemCallbacks {
+    WTF_MAKE_FAST_ALLOCATED(AsyncFileSystemCallbacks);
     WTF_MAKE_NONCOPYABLE(AsyncFileSystemCallbacks);
 public:
     AsyncFileSystemCallbacks() : m_blockUntilCompletion(false) { }
