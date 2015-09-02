@@ -10,7 +10,6 @@ import os
 import sys
 
 from util import build_utils
-from util import md5_check
 
 
 def Jar(class_files, classes_dir, jar_path, manifest_file=None):
@@ -31,15 +30,7 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None):
     empty_file = os.path.join(temp_dir, '.empty')
     build_utils.Touch(empty_file)
     jar_cmd.append(os.path.relpath(empty_file, jar_cwd))
-    record_path = '%s.md5.stamp' % jar_path
-    md5_check.CallAndRecordIfStale(
-        lambda: build_utils.CheckOutput(jar_cmd, cwd=jar_cwd),
-        record_path=record_path,
-        input_paths=class_files,
-        input_strings=jar_cmd,
-        force=not os.path.exists(jar_path),
-        )
-
+    build_utils.CheckOutput(jar_cmd, cwd=jar_cwd)
     build_utils.Touch(jar_path, fail_if_missing=True)
 
 
