@@ -166,6 +166,84 @@ PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& positio
     return canonicalPosition(position);
 }
 
+template <typename Strategy>
+static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBeforeAlgorithm(const PositionWithAffinityTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
+{
+    if (pos.isNull())
+        return pos;
+
+    ContainerNode* highestRoot = highestEditableRoot(anchor);
+
+    // Return empty position if |pos| is not somewhere inside the editable
+    // region containing this position
+    if (highestRoot && !pos.position().anchorNode()->isDescendantOf(highestRoot))
+        return PositionWithAffinityTemplate<Strategy>();
+
+    // Return |pos| itself if the two are from the very same editable region, or
+    // both are non-editable
+    // TODO(yosin) In the non-editable case, just because the new position is
+    // non-editable doesn't mean movement to it is allowed.
+    // |VisibleSelection::adjustForEditableContent()| has this problem too.
+    if (highestEditableRoot(pos.position()) == highestRoot)
+        return pos;
+
+    // Return empty position if this position is non-editable, but |pos| is
+    // editable.
+    // TODO(yosin) Move to the previous non-editable region.
+    if (!highestRoot)
+        return PositionWithAffinityTemplate<Strategy>();
+
+    // Return the last position before |pos| that is in the same editable region
+    // as this position
+    return lastEditablePositionBeforePositionInRoot(pos.position(), highestRoot);
+}
+
+static PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity& pos, const Position& anchor)
+{
+    return honorEditingBoundaryAtOrBeforeAlgorithm(pos, anchor);
+}
+
+static PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity& pos, const PositionInComposedTree& anchor)
+{
+    return honorEditingBoundaryAtOrBeforeAlgorithm(pos, anchor);
+}
+
+static VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition& pos, const Position& anchor)
+{
+    return createVisiblePosition(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), anchor));
+}
+
+static VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos, const Position& anchor)
+{
+    if (pos.isNull())
+        return pos;
+
+    ContainerNode* highestRoot = highestEditableRoot(anchor);
+
+    // Return empty position if |pos| is not somewhere inside the editable
+    // region // containing this position
+    if (highestRoot && !pos.deepEquivalent().anchorNode()->isDescendantOf(highestRoot))
+        return VisiblePosition();
+
+    // Return |pos| itself if the two are from the very same editable region, or
+    // both are non-editable
+    // TODO(yosin) In the non-editable case, just because the new position is
+    // non-editable doesn't mean movement to it is allowed.
+    // |VisibleSelection::adjustForEditableContent()| has this problem too.
+    if (highestEditableRoot(pos.deepEquivalent()) == highestRoot)
+        return pos;
+
+    // Return empty position if this position is non-editable, but |pos| is
+    // editable
+    // TODO(yosin) Move to the next non-editable region.
+    if (!highestRoot)
+        return VisiblePosition();
+
+    // Return the next position after |pos| that is in the same editable region
+    // as this position
+    return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
+}
+
 static Node* previousLeafWithSameEditability(Node* node, EditableType editableType)
 {
     bool editable = node->hasEditableStyle(editableType);

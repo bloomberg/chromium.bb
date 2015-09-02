@@ -106,14 +106,6 @@ private:
     PositionWithAffinity m_positionWithAffinity;
 };
 
-// TODO(yosin) We should move |honorEditingBoundaryAtOr{Before,After} to
-// "VisibleUnits.cpp" as static function.
-// next() and previous() will increment/decrement by a character cluster.
-VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition&, const Position& anchor);
-PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
-PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
-VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&, const Position& anchor);
-
 CORE_EXPORT VisiblePosition createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
