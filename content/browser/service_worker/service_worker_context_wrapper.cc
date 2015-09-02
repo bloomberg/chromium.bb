@@ -150,7 +150,6 @@ void ServiceWorkerContextWrapper::DeleteAndStartOver() {
     // The context could be null due to system shutdown or restart failure. In
     // either case, we should not have to recover the system, so just return
     // here.
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
     return;
   }
   context_core_->DeleteAndStartOver(
@@ -195,8 +194,7 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
                    continuation));
     return;
   }
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -232,8 +230,7 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
                    continuation));
     return;
   }
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -254,10 +251,8 @@ void ServiceWorkerContextWrapper::UpdateRegistration(const GURL& pattern) {
                    pattern));
     return;
   }
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_)
     return;
-  }
   context_core_->storage()->FindRegistrationForPattern(
       net::SimplifyUrlForRequest(pattern),
       base::Bind(&ServiceWorkerContextWrapper::DidFindRegistrationForUpdate,
@@ -274,8 +269,7 @@ void ServiceWorkerContextWrapper::StartServiceWorker(
                    pattern, callback));
     return;
   }
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
@@ -293,10 +287,8 @@ void ServiceWorkerContextWrapper::SimulateSkipWaiting(int64_t version_id) {
                    version_id));
     return;
   }
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_)
     return;
-  }
   ServiceWorkerVersion* version = GetLiveVersion(version_id);
   if (!version || version->skip_waiting())
     return;
@@ -331,8 +323,7 @@ void ServiceWorkerContextWrapper::CanHandleMainResourceOffline(
 void ServiceWorkerContextWrapper::GetAllOriginsInfo(
     const GetUsageInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -395,10 +386,8 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForUpdate(
 
   if (status != SERVICE_WORKER_OK)
     return;
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_)
     return;
-  }
   DCHECK(registration);
   context_core_->UpdateServiceWorker(registration.get(),
                                      true /* force_bypass_cache */);
@@ -419,8 +408,7 @@ void ServiceWorkerContextWrapper::DeleteForOrigin(
     const GURL& origin,
     const ResultCallback& result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -446,8 +434,7 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
                    url, other_url, callback));
     return;
   }
-  if (!context_core_.get()) {
-    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+  if (!context_core_) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(callback, false));
     return;
