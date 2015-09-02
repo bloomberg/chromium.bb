@@ -8,7 +8,9 @@ namespace mojo {
 
 // Create native viewport in headless mode.
 const char kUseHeadlessConfig[] = "use-headless-config";
-// Force gl to be initialized in test mode.
-const char kUseTestConfig[] = "use-test-config";
+
+// Initializes X11 in threaded mode, and sets the |override_redirect| flag when
+// creating X11 windows.
+const char kUseX11TestConfig[] = "use-x11-test-config";
 
 }  // namespace mojo

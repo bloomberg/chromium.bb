@@ -41,7 +41,8 @@ tests = [
   #},
   {
     'test': 'mojo:view_manager_apptests',
-    'args': ['--use-test-config']
+    'args': ['--use-x11-test-config',
+             '--override-use-gl-with-osmesa-for-tests']
   },
 ]
 
@@ -57,6 +58,7 @@ if config.target_os != config.OS_ANDROID:
       'name': 'mojo:html_viewer_apptests',
       'type': 'gtest_isolated',
       'args': ['--enable-html-viewer-test-interface',
+               '--use-x11-test-config',
                '--override-use-gl-with-osmesa-for-tests']
     },
     {
@@ -65,6 +67,7 @@ if config.target_os != config.OS_ANDROID:
       'type': 'gtest_isolated',
       'args': ['--oopif-always-create-new-frame-tree',
                '--enable-html-viewer-test-interface',
+               '--use-x11-test-config',
                '--override-use-gl-with-osmesa-for-tests']
     },
     # TODO(ben): These tests are disabled pending mandoline:browser refactoring.

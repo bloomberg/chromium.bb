@@ -10,7 +10,7 @@ namespace mojo {
 // All args in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kUseHeadlessConfig[];
-extern const char kUseTestConfig[];
+extern const char kUseX11TestConfig[];
 
 }  // namespace mojo
 

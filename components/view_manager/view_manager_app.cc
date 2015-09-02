@@ -24,6 +24,11 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#include "ui/platform_window/x11/x11_window.h"
+#endif
+
 using mojo::ApplicationConnection;
 using mojo::ApplicationImpl;
 using mojo::Gpu;
@@ -53,11 +58,14 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   is_headless_ = command_line->HasSwitch(mojo::kUseHeadlessConfig);
   if (!is_headless_) {
+#if defined(USE_X11)
+    if (command_line->HasSwitch(mojo::kUseX11TestConfig)) {
+      XInitThreads();
+      ui::test::SetUseOverrideRedirectWindowByDefault(true);
+    }
+#endif
+    gfx::GLSurface::InitializeOneOff();
     event_source_ = ui::PlatformEventSource::CreateDefault();
-    if (command_line->HasSwitch(mojo::kUseTestConfig))
-      gfx::GLSurfaceTestSupport::InitializeOneOff();
-    else
-      gfx::GLSurface::InitializeOneOff();
   }
 #endif
 
