@@ -13,7 +13,7 @@
           "drawsContent": true,
           "backgroundColor": "#FF0000",
           "repaintRects": [
-            [0, 0, 14, 14]
+            [-1, 0, 15, 14]
           ],
           "paintInvalidationClients": [
             "LayoutBlockFlow (positioned) DIV id='target' class='green'"

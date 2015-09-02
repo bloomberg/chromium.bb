@@ -21,7 +21,7 @@
               "bounds": [251, 251],
               "drawsContent": true,
               "repaintRects": [
-                [50, 50, 200, 200]
+                [50, 50, 201, 201]
               ],
               "paintInvalidationClients": [
                 "LayoutBlockFlow (positioned) DIV id='target'"

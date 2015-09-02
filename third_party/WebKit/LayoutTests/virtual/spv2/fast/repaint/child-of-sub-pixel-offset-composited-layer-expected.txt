@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [101, 100, 14, 14]
+        [100, 100, 15, 14]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) DIV id='target' class='green'"

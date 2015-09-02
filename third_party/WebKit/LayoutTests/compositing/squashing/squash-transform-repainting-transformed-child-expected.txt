@@ -52,7 +52,7 @@ CASE 2, hovering over the outer div
               "bounds": [276, 276],
               "drawsContent": true,
               "repaintRects": [
-                [1, 1, 130, 130]
+                [0, 0, 132, 132]
               ]
             }
           ]
@@ -85,8 +85,8 @@ CASE 3, hovering over the inner div
               "bounds": [276, 276],
               "drawsContent": true,
               "repaintRects": [
-                [18, 21, 86, 86],
-                [1, 1, 130, 130]
+                [18, 21, 87, 87],
+                [0, 0, 132, 132]
               ]
             }
           ]

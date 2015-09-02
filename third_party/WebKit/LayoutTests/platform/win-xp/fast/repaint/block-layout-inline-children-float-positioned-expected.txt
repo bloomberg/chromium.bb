@@ -8,8 +8,8 @@
       "repaintRects": [
         [324, 37, 278, 20],
         [324, 37, 278, 19],
-        [163, 37, 278, 20],
-        [163, 37, 278, 19]
+        [162, 37, 279, 20],
+        [162, 37, 279, 19]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (floating) SPAN",

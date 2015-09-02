@@ -6,11 +6,11 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [385, 1011, 45, 21],
-        [24, 1012, 737, 20],
-        [24, 1012, 737, 20],
+        [384, 1010, 47, 22],
         [24, 1011, 737, 21],
-        [24, 1011, 737, 21]
+        [24, 1011, 737, 21],
+        [24, 1010, 737, 22],
+        [24, 1010, 737, 22]
       ],
       "paintInvalidationClients": [
         "InlineTextBox 'pservers-pattern-01-b \u2190'",
