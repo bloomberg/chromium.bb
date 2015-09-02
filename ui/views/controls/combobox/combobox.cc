@@ -778,8 +778,6 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   lb.set_width(lb.width() - (kMenuBorderWidthLeft + kMenuBorderWidthRight));
 
   View::ConvertPointToScreen(this, &menu_position);
-  if (menu_position.x() < 0)
-    menu_position.set_x(0);
 
   gfx::Rect bounds(menu_position, lb.size());
 
