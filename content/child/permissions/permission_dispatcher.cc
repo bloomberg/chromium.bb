@@ -79,30 +79,6 @@ bool PermissionDispatcher::IsObservable(blink::WebPermissionType type) {
          type == blink::WebPermissionTypeMidiSysEx;
 }
 
-PermissionDispatcher::CallbackInformation::CallbackInformation(
-    blink::WebPermissionCallback* callback,
-    int worker_thread_id)
-  : callback_(callback),
-    worker_thread_id_(worker_thread_id) {
-}
-
-blink::WebPermissionCallback*
-PermissionDispatcher::CallbackInformation::callback() const {
-  return callback_.get();
-}
-
-int PermissionDispatcher::CallbackInformation::worker_thread_id() const {
-  return worker_thread_id_;
-}
-
-blink::WebPermissionCallback*
-PermissionDispatcher::CallbackInformation::ReleaseCallback() {
-  return callback_.release();
-}
-
-PermissionDispatcher::CallbackInformation::~CallbackInformation() {
-}
-
 PermissionDispatcher::PermissionDispatcher(ServiceRegistry* service_registry)
     : service_registry_(service_registry) {
 }
@@ -220,10 +196,9 @@ void PermissionDispatcher::GetNextPermissionChangeForWorker(
 
 // static
 void PermissionDispatcher::RunCallbackOnWorkerThread(
-    blink::WebPermissionCallback* callback,
+    scoped_ptr<blink::WebPermissionCallback> callback,
     blink::WebPermissionStatus status) {
   callback->onSuccess(status);
-  delete callback;
 }
 
 PermissionServicePtr& PermissionDispatcher::GetPermissionServicePtr() {
@@ -239,18 +214,21 @@ void PermissionDispatcher::QueryPermissionInternal(
     const std::string& origin,
     blink::WebPermissionCallback* callback,
     int worker_thread_id) {
-  // We need to save the |callback| in an IDMap so if |this| gets deleted, the
-  // callback will not leak. In the case of |this| gets deleted, the
-  // |permission_service_| pipe will be destroyed too so OnQueryPermission will
-  // not be called.
-  int request_id = pending_callbacks_.Add(
-      new CallbackInformation(callback, worker_thread_id));
+  // We need to save the |callback| in an ScopedPtrHashMap so if |this| gets
+  // deleted, the callback will not leak. In the case of |this| gets deleted,
+  // the |permission_service_| pipe will be destroyed too so OnQueryPermission
+  // will not be called.
+  uintptr_t callback_key = reinterpret_cast<uintptr_t>(callback);
+  pending_callbacks_.add(callback_key,
+      scoped_ptr<blink::WebPermissionCallback>(callback));
+
   GetPermissionServicePtr()->HasPermission(
       GetPermissionName(type),
       origin,
       base::Bind(&PermissionDispatcher::OnPermissionResponse,
                  base::Unretained(this),
-                 request_id));
+                 worker_thread_id,
+                 callback_key));
 }
 
 void PermissionDispatcher::RequestPermissionInternal(
@@ -258,19 +236,22 @@ void PermissionDispatcher::RequestPermissionInternal(
     const std::string& origin,
     blink::WebPermissionCallback* callback,
     int worker_thread_id) {
-  // We need to save the |callback| in an IDMap so if |this| gets deleted, the
-  // callback will not leak. In the case of |this| gets deleted, the
-  // |permission_service_| pipe will be destroyed too so OnQueryPermission will
-  // not be called.
-  int request_id = pending_callbacks_.Add(
-      new CallbackInformation(callback, worker_thread_id));
+  // We need to save the |callback| in an ScopedPtrHashMap so if |this| gets
+  // deleted, the callback will not leak. In the case of |this| gets deleted,
+  // the |permission_service_| pipe will be destroyed too so OnQueryPermission
+  // will not be called.
+  uintptr_t callback_key = reinterpret_cast<uintptr_t>(callback);
+  pending_callbacks_.add(callback_key,
+      scoped_ptr<blink::WebPermissionCallback>(callback));
+
   GetPermissionServicePtr()->RequestPermission(
       GetPermissionName(type),
       origin,
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&PermissionDispatcher::OnPermissionResponse,
                  base::Unretained(this),
-                 request_id));
+                 worker_thread_id,
+                 callback_key));
 }
 
 void PermissionDispatcher::RevokePermissionInternal(
@@ -278,44 +259,42 @@ void PermissionDispatcher::RevokePermissionInternal(
     const std::string& origin,
     blink::WebPermissionCallback* callback,
     int worker_thread_id) {
-  // We need to save the |callback| in an IDMap so if |this| gets deleted, the
-  // callback will not leak. In the case of |this| gets deleted, the
-  // |permission_service_| pipe will be destroyed too so OnQueryPermission will
-  // not be called.
-  int request_id = pending_callbacks_.Add(
-      new CallbackInformation(callback, worker_thread_id));
+  // We need to save the |callback| in an ScopedPtrHashMap so if |this| gets
+  // deleted, the callback will not leak. In the case of |this| gets deleted,
+  // the |permission_service_| pipe will be destroyed too so OnQueryPermission
+  // will not be called.
+  uintptr_t callback_key = reinterpret_cast<uintptr_t>(callback);
+  pending_callbacks_.add(callback_key,
+      scoped_ptr<blink::WebPermissionCallback>(callback));
+
   GetPermissionServicePtr()->RevokePermission(
       GetPermissionName(type),
       origin,
       base::Bind(&PermissionDispatcher::OnPermissionResponse,
                  base::Unretained(this),
-                 request_id));
+                 worker_thread_id,
+                 callback_key));
 }
 
-void PermissionDispatcher::OnPermissionResponse(int request_id,
-                                                PermissionStatus result) {
-  CallbackInformation* callback_information =
-      pending_callbacks_.Lookup(request_id);
-  DCHECK(callback_information && callback_information->callback());
+void PermissionDispatcher::OnPermissionResponse(
+    int worker_thread_id,
+    uintptr_t callback_key,
+    PermissionStatus result) {
+  scoped_ptr<blink::WebPermissionCallback> callback =
+      pending_callbacks_.take_and_erase(callback_key);
   blink::WebPermissionStatus status = GetWebPermissionStatus(result);
 
-  if (callback_information->worker_thread_id() != kNoWorkerThread) {
-    blink::WebPermissionCallback* callback =
-        callback_information->ReleaseCallback();
-    int worker_thread_id = callback_information->worker_thread_id();
-    pending_callbacks_.Remove(request_id);
-
+  if (worker_thread_id != kNoWorkerThread) {
     // If the worker is no longer running, ::PostTask() will return false and
     // gracefully fail, destroying the callback too.
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id,
         base::Bind(&PermissionDispatcher::RunCallbackOnWorkerThread,
-                   base::Unretained(callback), status));
+                   base::Passed(&callback), status));
     return;
   }
 
-  callback_information->callback()->onSuccess(status);
-  pending_callbacks_.Remove(request_id);
+  callback->onSuccess(status);
 }
 
 void PermissionDispatcher::OnPermissionChanged(
