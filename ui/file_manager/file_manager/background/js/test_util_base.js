@@ -139,8 +139,7 @@ test.util.sync.getDocument_ = function(contentWindow, opt_iframeQuery) {
  * @param {Window} contentWindow Window to be used.
  * @param {string} targetQuery Query to specify the element.
  * @param {string=} opt_iframeQuery Query for the iframe.
- * @return {HTMLElement} If the specified element is not found, null is
- *     returned.
+ * @return {Element} If the specified element is not found, null is returned.
  * @private
  */
 test.util.sync.getElement_ = function(
