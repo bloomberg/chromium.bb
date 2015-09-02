@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
+#include "chromecast/browser/media/cma_media_pipeline_client.h"
 #include "chromecast/browser/media/media_pipeline_host.h"
 #include "chromecast/common/media/cma_messages.h"
 #include "chromecast/media/base/media_message_loop.h"
@@ -299,10 +300,10 @@ void UpdateVideoSurfaceHost(int surface_id, const gfx::QuadF& quad) {
 
 CmaMessageFilterHost::CmaMessageFilterHost(
     int render_process_id,
-    const CreateDeviceComponentsCB& create_device_components_cb)
+    scoped_refptr<CmaMediaPipelineClient> client)
     : content::BrowserMessageFilter(CastMediaMsgStart),
       process_id_(render_process_id),
-      create_device_components_cb_(create_device_components_cb),
+      client_(client),
       task_runner_(MediaMessageLoop::GetTaskRunner()),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -380,14 +381,21 @@ void CmaMessageFilterHost::CreateMedia(int media_id, LoadType load_type) {
   client.error_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaMessageFilterHost::OnPlaybackError,
                  weak_this_, media_id, media::kNoTrackId));
+  client.pipeline_backend_created_cb = base::Bind(
+      &CmaMediaPipelineClient::OnMediaPipelineBackendCreated, client_);
+  client.pipeline_backend_destroyed_cb = base::Bind(
+      &CmaMediaPipelineClient::OnMediaPipelineBackendDestroyed, client_);
+
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SetMediaPipeline,
                  process_id_, media_id, media_pipeline_host.get()));
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MediaPipelineHost::Initialize,
-                            base::Unretained(media_pipeline_host.get()),
-                            load_type, client, create_device_components_cb_));
+      FROM_HERE,
+      base::Bind(&MediaPipelineHost::Initialize,
+                 base::Unretained(media_pipeline_host.get()), load_type, client,
+                 base::Bind(&CmaMediaPipelineClient::CreateMediaPipelineBackend,
+                            client_)));
   std::pair<MediaPipelineMap::iterator, bool> ret =
     media_pipelines_.insert(
         std::make_pair(media_id, media_pipeline_host.release()));

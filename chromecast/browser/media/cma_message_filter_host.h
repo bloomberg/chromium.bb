@@ -40,6 +40,7 @@ namespace media {
 class MediaPipelineBackend;
 struct MediaPipelineDeviceParams;
 class MediaPipelineHost;
+class CmaMediaPipelineClient;
 
 class CmaMessageFilterHost
     : public content::BrowserMessageFilter {
@@ -48,9 +49,8 @@ class CmaMessageFilterHost
   typedef base::Callback<scoped_ptr<MediaPipelineBackend>(
       const MediaPipelineDeviceParams&)> CreateDeviceComponentsCB;
 
-  CmaMessageFilterHost(
-      int render_process_id,
-      const CreateDeviceComponentsCB& create_device_components_cb);
+  CmaMessageFilterHost(int render_process_id,
+                       scoped_refptr<CmaMediaPipelineClient> client);
 
   // content::BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -120,6 +120,7 @@ class CmaMessageFilterHost
 
   // Factory function for device-specific part of media pipeline creation
   CreateDeviceComponentsCB create_device_components_cb_;
+  scoped_refptr<CmaMediaPipelineClient> client_;
 
   // List of media pipeline and message loop media pipelines are running on.
   MediaPipelineMap media_pipelines_;

@@ -66,6 +66,16 @@ MediaPipelineImpl::MediaPipelineImpl()
 MediaPipelineImpl::~MediaPipelineImpl() {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  weak_factory_.InvalidateWeakPtrs();
+
+  // Since av pipeline still need to access device components in their
+  // destructor, it's important to delete them first.
+  video_pipeline_.reset();
+  audio_pipeline_.reset();
+  media_pipeline_backend_.reset();
+  if (!client_.pipeline_backend_destroyed_cb.is_null())
+    client_.pipeline_backend_destroyed_cb.Run();
 }
 
 void MediaPipelineImpl::Initialize(
@@ -75,6 +85,8 @@ void MediaPipelineImpl::Initialize(
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_backend_.reset(media_pipeline_backend.release());
   clock_device_ = media_pipeline_backend_->GetClock();
+  if (!client_.pipeline_backend_created_cb.is_null())
+    client_.pipeline_backend_created_cb.Run();
 
   if (load_type == kLoadTypeURL || load_type == kLoadTypeMediaSource) {
     base::TimeDelta low_threshold(kLowBufferThresholdURL);
@@ -102,6 +114,8 @@ void MediaPipelineImpl::SetClient(const MediaPipelineClient& client) {
   DCHECK(!client.error_cb.is_null());
   DCHECK(!client.time_update_cb.is_null());
   DCHECK(!client.buffering_state_cb.is_null());
+  DCHECK(!client.pipeline_backend_created_cb.is_null());
+  DCHECK(!client.pipeline_backend_destroyed_cb.is_null());
   client_ = client;
 }
 

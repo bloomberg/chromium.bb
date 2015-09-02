@@ -37,6 +37,8 @@ namespace {
 const base::TimeDelta kMaxDeltaFetcher(
     base::TimeDelta::FromMilliseconds(2000));
 
+void MediaPipelineClientDummyCallback() {}
+
 }  // namespace
 
 CmaRenderer::CmaRenderer(
@@ -118,6 +120,10 @@ void CmaRenderer::Initialize(
       base::Bind(&CmaRenderer::OnBufferingNotification, weak_this_));
   media_pipeline_client.time_update_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnPlaybackTimeUpdated, weak_this_));
+  media_pipeline_client.pipeline_backend_created_cb =
+      base::Bind(&MediaPipelineClientDummyCallback);
+  media_pipeline_client.pipeline_backend_destroyed_cb
+      = base::Bind(&MediaPipelineClientDummyCallback);
   media_pipeline_->SetClient(media_pipeline_client);
 
   init_cb_ = init_cb;

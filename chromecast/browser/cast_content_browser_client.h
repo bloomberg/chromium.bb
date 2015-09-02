@@ -33,6 +33,7 @@ class CastService;
 namespace media {
 class MediaPipelineBackend;
 struct MediaPipelineDeviceParams;
+class CmaMediaPipelineClient;
 }
 
 namespace shell {
@@ -63,10 +64,13 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   virtual scoped_ptr<::media::AudioManagerFactory> CreateAudioManagerFactory();
 
 #if !defined(OS_ANDROID)
-  // Creates a MediaPipelineDevice (CMA backend) for media playback, called
-  // once per media player instance.
-  virtual scoped_ptr<media::MediaPipelineBackend> CreateMediaPipelineBackend(
-      const media::MediaPipelineDeviceParams& params);
+  // Creates a CmaMediaPipelineClient which is responsible to create (CMA
+  // backend)
+  // for media playback and watch media pipeline status, called once per media
+  // player
+  // instance.
+  virtual scoped_refptr<media::CmaMediaPipelineClient>
+  CreateCmaMediaPipelineClient();
 #endif
 
   // Performs cleanup for process exit (but before AtExitManager cleanup).

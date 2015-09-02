@@ -21,6 +21,7 @@
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/geolocation/cast_access_token_store.h"
+#include "chromecast/browser/media/cma_media_pipeline_client.h"
 #include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
@@ -84,11 +85,9 @@ CastContentBrowserClient::CreateAudioManagerFactory() {
 }
 
 #if !defined(OS_ANDROID)
-scoped_ptr<media::MediaPipelineBackend>
-CastContentBrowserClient::CreateMediaPipelineBackend(
-    const media::MediaPipelineDeviceParams& params) {
-  return make_scoped_ptr(
-      media::CastMediaShlib::CreateMediaPipelineBackend(params));
+scoped_refptr<media::CmaMediaPipelineClient>
+CastContentBrowserClient::CreateCmaMediaPipelineClient() {
+  return make_scoped_refptr(new media::CmaMediaPipelineClient());
 }
 #endif
 
@@ -120,10 +119,8 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
 #if !defined(OS_ANDROID)
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
-      new media::CmaMessageFilterHost(
-          host->GetID(),
-          base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
-                     base::Unretained(this))));
+      new media::CmaMessageFilterHost(host->GetID(),
+                                      CreateCmaMediaPipelineClient()));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
 

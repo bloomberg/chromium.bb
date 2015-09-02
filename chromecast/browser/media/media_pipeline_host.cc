@@ -66,9 +66,9 @@ void MediaPipelineHost::Initialize(
           : MediaPipelineDeviceParams::kModeSyncPts;
   MediaPipelineDeviceParams default_parameters(sync_type, task_runner_.get());
 
+  media_pipeline_->SetClient(client);
   media_pipeline_->Initialize(
       load_type, create_device_components_cb.Run(default_parameters).Pass());
-  media_pipeline_->SetClient(client);
 }
 
 void MediaPipelineHost::SetAvPipe(
