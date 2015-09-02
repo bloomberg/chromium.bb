@@ -82,7 +82,7 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
 
     PositionType start = Strategy::selectionStart(m_selection);
     PositionType end = Strategy::selectionEnd(m_selection);
-    SelectionType selectionType = VisibleSelection::selectionType(start, end);
+    SelectionType selectionType = Strategy::selectionType(m_selection);
     TextAffinity affinity = m_selection.affinity();
 
     bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePosition(end, affinity));
