@@ -21,7 +21,7 @@ enum MediaStreamDevicePolicy {
 // Returns true if the given media content setting should be persisted.
 bool ShouldPersistContentSetting(ContentSetting setting,
                                  const GURL& origin,
-                                 content::MediaStreamRequestType type);
+                                 bool is_pepper_request);
 
 // Get the device policy for |security_origin| and |profile|.
 MediaStreamDevicePolicy GetDevicePolicy(const Profile* profile,

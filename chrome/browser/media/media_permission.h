@@ -19,7 +19,8 @@ class MediaPermission {
  public:
   MediaPermission(ContentSettingsType content_type,
                   content::MediaStreamRequestType request_type,
-                  const GURL& origin,
+                  const GURL& requesting_origin,
+                  const GURL& embedding_origin,
                   Profile* profile);
 
   // Returns the status of the permission. If the setting is
@@ -40,7 +41,8 @@ class MediaPermission {
 
   const ContentSettingsType content_type_;
   const content::MediaStreamRequestType request_type_;
-  const GURL origin_;
+  const GURL requesting_origin_;
+  const GURL embedding_origin_;
   const std::string device_id_;
   Profile* const profile_;
 

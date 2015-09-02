@@ -5,28 +5,47 @@
 #include "chrome/browser/media/media_permission.h"
 
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_stream_device_permission_context.h"
 #include "chrome/browser/media/media_stream_device_permissions.h"
+#include "chrome/browser/permissions/permission_context.h"
+#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 
+namespace {
+
+content::PermissionType ContentSettingsTypeToPermission(
+    ContentSettingsType content_setting) {
+  if (content_setting == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+    return content::PermissionType::AUDIO_CAPTURE;
+  } else {
+    DCHECK_EQ(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, content_setting);
+    return content::PermissionType::VIDEO_CAPTURE;
+  }
+}
+
+}  // namespace
+
 MediaPermission::MediaPermission(ContentSettingsType content_type,
                                  content::MediaStreamRequestType request_type,
-                                 const GURL& origin,
+                                 const GURL& requesting_origin,
+                                 const GURL& embedding_origin,
                                  Profile* profile)
     : content_type_(content_type),
       request_type_(request_type),
-      origin_(origin),
-      profile_(profile) {
-}
+      requesting_origin_(requesting_origin),
+      embedding_origin_(embedding_origin),
+      profile_(profile) {}
 
 ContentSetting MediaPermission::GetPermissionStatus(
     content::MediaStreamRequestResult* denial_reason) const {
   // Deny the request if the security origin is empty, this happens with
   // file access without |--allow-file-access-from-files| flag.
-  if (origin_.is_empty()) {
+  if (requesting_origin_.is_empty()) {
     *denial_reason = content::MEDIA_DEVICE_INVALID_SECURITY_ORIGIN;
     return CONTENT_SETTING_BLOCK;
   }
@@ -53,53 +72,24 @@ ContentSetting MediaPermission::GetPermissionStatusWithDeviceRequired(
 }
 
 ContentSetting MediaPermission::GetStoredContentSetting() const {
-  // TODO(raymes): Merge this policy check into content settings
-  // crbug.com/244389.
-  const char* policy_name = nullptr;
-  const char* urls_policy_name = nullptr;
-  if (content_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
-    policy_name = prefs::kAudioCaptureAllowed;
-    urls_policy_name = prefs::kAudioCaptureAllowedUrls;
-  } else if (content_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-    policy_name = prefs::kVideoCaptureAllowed;
-    urls_policy_name = prefs::kVideoCaptureAllowedUrls;
-  } else {
-    NOTREACHED();
-  }
+  content::PermissionType permission_type =
+      ContentSettingsTypeToPermission(content_type_);
+  PermissionContextBase* permission_context =
+      PermissionContext::Get(profile_, permission_type);
 
-  MediaStreamDevicePolicy policy =
-      GetDevicePolicy(profile_, origin_, policy_name, urls_policy_name);
-
-  if (policy == ALWAYS_DENY)
+  if (!permission_context)
     return CONTENT_SETTING_BLOCK;
 
-  if (policy == ALWAYS_ALLOW)
-    return CONTENT_SETTING_ALLOW;
+  MediaStreamDevicePermissionContext* media_device_permission_context =
+      static_cast<MediaStreamDevicePermissionContext*>(permission_context);
 
-  DCHECK(policy == POLICY_NOT_SET);
-  // Check the content setting.
-  ContentSetting setting =
-      profile_->GetHostContentSettingsMap()->GetContentSetting(
-          origin_, origin_, content_type_,
-          content_settings::ResourceIdentifier());
-
-  if (setting == CONTENT_SETTING_DEFAULT)
-    return CONTENT_SETTING_ASK;
-
-  // TODO(raymes): This is here for safety to ensure that we always ask the user
-  // even if a content setting is set to "allow" if the origin is insecure. In
-  // reality we shouldn't really need to check this here as we should respect
-  // the user's content setting. The problem is that pepper requests allow
-  // insecure origins to be persisted. We should stop allowing this, do some
-  // sort of migration and remove this check. See crbug.com/512301.
-  if (!ShouldPersistContentSetting(setting, origin_, request_type_) &&
-      !origin_.SchemeIs(extensions::kExtensionScheme) &&
-      !origin_.SchemeIs(content::kChromeUIScheme) &&
-      !origin_.SchemeIs(content::kChromeDevToolsScheme)) {
-    return CONTENT_SETTING_ASK;
+  if (request_type_ == content::MEDIA_OPEN_DEVICE) {
+    return media_device_permission_context->GetPermissionStatusForPepper(
+        requesting_origin_, embedding_origin_);
+  } else {
+    return media_device_permission_context->GetPermissionStatus(
+        requesting_origin_, embedding_origin_);
   }
-
-  return setting;
 }
 
 bool MediaPermission::HasAvailableDevices(const std::string& device_id) const {

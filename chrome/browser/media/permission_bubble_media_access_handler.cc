@@ -63,9 +63,9 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
       type == content::MEDIA_DEVICE_AUDIO_CAPTURE
           ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
           : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
-  MediaPermission permission(content_settings_type,
-                             content::MEDIA_DEVICE_ACCESS, security_origin,
-                             profile);
+  MediaPermission permission(
+      content_settings_type, content::MEDIA_DEVICE_ACCESS, security_origin,
+      web_contents->GetLastCommittedURL().GetOrigin(), profile);
   content::MediaStreamRequestResult unused;
   if (permission.GetPermissionStatus(&unused) == CONTENT_SETTING_ALLOW)
     return true;

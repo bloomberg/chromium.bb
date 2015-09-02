@@ -8,6 +8,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 
 MediaStreamDevicePermissionContext::MediaStreamDevicePermissionContext(
     Profile* profile,
@@ -33,6 +35,32 @@ void MediaStreamDevicePermissionContext::RequestPermission(
 ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
+  return GetPermissionStatusInternal(requesting_origin, embedding_origin,
+                                     false);
+}
+
+ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusForPepper(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  return GetPermissionStatusInternal(requesting_origin, embedding_origin, true);
+}
+
+void MediaStreamDevicePermissionContext::ResetPermission(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  NOTREACHED() << "ResetPermission is not implemented";
+}
+
+void MediaStreamDevicePermissionContext::CancelPermissionRequest(
+    content::WebContents* web_contents,
+    const PermissionRequestID& id) {
+  NOTREACHED() << "CancelPermissionRequest is not implemented";
+}
+
+ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusInternal(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    bool is_pepper_request) const {
   // TODO(raymes): Merge this policy check into content settings
   // crbug.com/244389.
   const char* policy_name = nullptr;
@@ -58,23 +86,29 @@ ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatus(
       DCHECK_EQ(POLICY_NOT_SET, policy);
   }
 
-  // Check the content setting.
+  // Check the content setting. TODO(raymes): currently mic/camera permission
+  // doesn't consider the embedder.
   ContentSetting setting = PermissionContextBase::GetPermissionStatus(
-      requesting_origin, embedding_origin);
+      requesting_origin, requesting_origin);
 
-  return setting == CONTENT_SETTING_DEFAULT ? CONTENT_SETTING_ASK : setting;
-}
+  if (setting == CONTENT_SETTING_DEFAULT)
+    setting = CONTENT_SETTING_ASK;
 
-void MediaStreamDevicePermissionContext::ResetPermission(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  NOTREACHED() << "ResetPermission is not implemented";
-}
+  // TODO(raymes): This is here for safety to ensure that we always ask the user
+  // even if a content setting is set to "allow" if the origin is insecure. In
+  // reality we shouldn't really need to check this here as we should respect
+  // the user's content setting. The problem is that pepper requests allow
+  // insecure origins to be persisted. We should stop allowing this, do some
+  // sort of migration and remove this check. See crbug.com/512301.
+  if (!ShouldPersistContentSetting(setting, requesting_origin,
+                                   is_pepper_request) &&
+      !requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
+      !requesting_origin.SchemeIs(content::kChromeUIScheme) &&
+      !requesting_origin.SchemeIs(content::kChromeDevToolsScheme)) {
+    return CONTENT_SETTING_ASK;
+  }
 
-void MediaStreamDevicePermissionContext::CancelPermissionRequest(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id) {
-  NOTREACHED() << "CancelPermissionRequest is not implemented";
+  return setting;
 }
 
 bool MediaStreamDevicePermissionContext::IsRestrictedToSecureOrigins() const {

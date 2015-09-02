@@ -16,7 +16,7 @@
 
 bool ShouldPersistContentSetting(ContentSetting setting,
                                  const GURL& origin,
-                                 content::MediaStreamRequestType type) {
+                                 bool is_pepper_request) {
   // When the request is from an invalid scheme we don't persist it.
   if (!ContentSettingsPattern::FromURLNoWildcard(origin).IsValid())
     return false;
@@ -27,7 +27,7 @@ bool ShouldPersistContentSetting(ContentSetting setting,
 
   // Pepper requests should always be persisted to prevent annoying users of
   // plugins.
-  if (type == content::MEDIA_OPEN_DEVICE)
+  if (is_pepper_request)
     return true;
 
   // We persist requests from secure origins.

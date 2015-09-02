@@ -124,24 +124,25 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
 
   // Creates a MediaStreamRequest, asking for those media types, which have a
   // non-empty id string.
-  content::MediaStreamRequest CreateRequest(const std::string& audio_id,
-                                            const std::string& video_id) {
+  content::MediaStreamRequest CreateRequestWithType(
+      const std::string& audio_id,
+      const std::string& video_id,
+      content::MediaStreamRequestType request_type) {
     content::MediaStreamType audio_type =
         audio_id.empty() ? content::MEDIA_NO_SERVICE
                          : content::MEDIA_DEVICE_AUDIO_CAPTURE;
     content::MediaStreamType video_type =
         video_id.empty() ? content::MEDIA_NO_SERVICE
                          : content::MEDIA_DEVICE_VIDEO_CAPTURE;
-    return content::MediaStreamRequest(0,
-                                       0,
-                                       0,
-                                       example_url(),
-                                       false,
-                                       content::MEDIA_DEVICE_ACCESS,
-                                       audio_id,
-                                       video_id,
-                                       audio_type,
-                                       video_type);
+    return content::MediaStreamRequest(0, 0, 0, example_url(), false,
+                                       request_type, audio_id, video_id,
+                                       audio_type, video_type);
+  }
+
+  content::MediaStreamRequest CreateRequest(const std::string& audio_id,
+                                            const std::string& video_id) {
+    return CreateRequestWithType(audio_id, video_id,
+                                 content::MEDIA_DEVICE_ACCESS);
   }
 
   void InitWithUrl(const GURL& url) {
@@ -679,4 +680,35 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   ASSERT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
   ASSERT_TRUE(DevicesContains(true, true));
+}
+
+// For Pepper request from insecure origin, even if it's ALLOW, it won't be
+// changed to ASK.
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       PepperRequestInsecure) {
+  InitWithUrl(GURL("http://www.example.com"));
+  SetContentSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ALLOW);
+
+  MediaStreamDevicesController controller(
+      GetWebContents(), CreateRequestWithType(example_audio_id(), std::string(),
+                                              content::MEDIA_OPEN_DEVICE),
+      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                 this));
+  ASSERT_FALSE(controller.IsAskingForAudio());
+  ASSERT_FALSE(controller.IsAskingForVideo());
+}
+
+// For non-Pepper request from insecure origin, if it's ALLOW, it will be
+// changed to ASK.
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       NonPepperRequestInsecure) {
+  InitWithUrl(GURL("http://www.example.com"));
+  SetContentSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ALLOW);
+
+  MediaStreamDevicesController controller(
+      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
+      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                 this));
+  ASSERT_TRUE(controller.IsAskingForAudio());
+  ASSERT_TRUE(controller.IsAskingForVideo());
 }
