@@ -70,7 +70,7 @@ public:
             "DisplayItem subclass is larger than kMaximumDisplayItemSize.");
 
         DisplayItemClass& displayItem = m_newDisplayItems.allocateAndConstruct<DisplayItemClass>(WTF::forward<Args>(args)...);
-        processNewItem(&displayItem);
+        processNewItem(displayItem);
         return displayItem;
     }
 
@@ -157,8 +157,7 @@ private:
     friend class LayoutObjectDrawingRecorderTestForSlimmingPaintV2;
 
     // Set new item state (scopes, cache skipping, etc) for a new item.
-    // TODO(pdr): This only passes a pointer to make the patch easier to review. Change to a reference.
-    void processNewItem(DisplayItem*);
+    void processNewItem(DisplayItem&);
 
     void updateValidlyCachedClientsIfNeeded() const;
 

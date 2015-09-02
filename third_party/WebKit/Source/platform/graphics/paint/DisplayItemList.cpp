@@ -59,43 +59,43 @@ void DisplayItemList::removeLastDisplayItem()
     m_newDisplayItems.removeLast();
 }
 
-void DisplayItemList::processNewItem(DisplayItem* displayItem)
+void DisplayItemList::processNewItem(DisplayItem& displayItem)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     ASSERT(!m_constructionDisabled);
-    ASSERT(!skippingCache() || !displayItem->isCached());
+    ASSERT(!skippingCache() || !displayItem.isCached());
 
-    if (displayItem->isCached())
+    if (displayItem.isCached())
         ++m_numCachedItems;
 
 #if ENABLE(ASSERT)
     // Verify noop begin/end pairs have been removed.
-    if (m_newDisplayItems.size() >= 2 && displayItem->isEnd()) {
+    if (m_newDisplayItems.size() >= 2 && displayItem.isEnd()) {
         const auto& beginDisplayItem = m_newDisplayItems[m_newDisplayItems.size() - 2];
         if (beginDisplayItem.isBegin() && beginDisplayItem.type() != DisplayItem::BeginSubsequence && !beginDisplayItem.drawsContent())
-            ASSERT(!displayItem->isEndAndPairedWith(beginDisplayItem.type()));
+            ASSERT(!displayItem.isEndAndPairedWith(beginDisplayItem.type()));
     }
 #endif
 
     if (!m_scopeStack.isEmpty())
-        displayItem->setScope(m_scopeStack.last());
+        displayItem.setScope(m_scopeStack.last());
 
 #if ENABLE(ASSERT)
-    size_t index = findMatchingItemFromIndex(displayItem->nonCachedId(), m_newDisplayItemIndicesByClient, m_newDisplayItems);
+    size_t index = findMatchingItemFromIndex(displayItem.nonCachedId(), m_newDisplayItemIndicesByClient, m_newDisplayItems);
     if (index != kNotFound) {
 #ifndef NDEBUG
         showDebugData();
         WTFLogAlways("DisplayItem %s has duplicated id with previous %s (index=%d)\n",
-            displayItem->asDebugString().utf8().data(), m_newDisplayItems[index].asDebugString().utf8().data(), static_cast<int>(index));
+            displayItem.asDebugString().utf8().data(), m_newDisplayItems[index].asDebugString().utf8().data(), static_cast<int>(index));
 #endif
         ASSERT_NOT_REACHED();
     }
-    addItemToIndexIfNeeded(*displayItem, m_newDisplayItems.size() - 1, m_newDisplayItemIndicesByClient);
+    addItemToIndexIfNeeded(displayItem, m_newDisplayItems.size() - 1, m_newDisplayItemIndicesByClient);
 #endif // ENABLE(ASSERT)
 
-    ASSERT(!displayItem->skippedCache()); // Only DisplayItemList can set the flag.
+    ASSERT(!displayItem.skippedCache()); // Only DisplayItemList can set the flag.
     if (skippingCache())
-        displayItem->setSkippedCache();
+        displayItem.setSkippedCache();
 }
 
 void DisplayItemList::beginScope()
