@@ -91,7 +91,7 @@ public:
         }
 
     private:
-        ContentSecurityPolicy* m_contentSecurityPolicy;
+        RawPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
     };
 
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
