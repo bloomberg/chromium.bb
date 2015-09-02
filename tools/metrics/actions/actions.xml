@@ -1851,8 +1851,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BrowserPlugin.Guest.AbnormalDeath">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>wfh@chromium.org</owner>
+  <description>A renderer process died abnormally.</description>
 </action>
 
 <action name="BrowserPlugin.Guest.Attached">
@@ -1861,8 +1861,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BrowserPlugin.Guest.Crashed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>wfh@chromium.org</owner>
+  <description>A renderer process died because it crashed.</description>
 </action>
 
 <action name="BrowserPlugin.Guest.Create">
@@ -1886,8 +1886,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BrowserPlugin.Guest.Killed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>wfh@chromium.org</owner>
+  <description>A renderer process died because it was killed.</description>
+</action>
+
+<action name="BrowserPlugin.Guest.LaunchFailed">
+  <owner>wfh@chromium.org</owner>
+  <description>A renderer process failed to launch.</description>
 </action>
 
 <action name="BrowserPlugin.Guest.Navigate">

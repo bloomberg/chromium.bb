@@ -516,6 +516,9 @@ GpuProcessHost::~GpuProcessHost() {
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
         message = "The GPU process crashed!";
         break;
+      case base::TERMINATION_STATUS_LAUNCH_FAILED:
+        message = "The GPU process failed to start!";
+        break;
       default:
         break;
     }

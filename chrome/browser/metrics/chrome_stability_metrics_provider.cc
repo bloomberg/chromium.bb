@@ -41,6 +41,15 @@
 
 namespace {
 
+enum RendererType {
+  RENDERER_TYPE_RENDERER,
+  RENDERER_TYPE_EXTENSION,
+  // NOTE: Add new action types only immediately above this line. Also,
+  // make sure the enum list in tools/metrics/histograms/histograms.xml is
+  // updated with any change in here.
+  RENDERER_TYPE_COUNT
+};
+
 // Converts an exit code into something that can be inserted into our
 // histograms (which expect non-negative numbers less than MAX_INT).
 int MapCrashExitCodeForHistogram(int exit_code) {
@@ -98,9 +107,9 @@ void CountBrowserCrashDumpAttempts() {
 }
 #endif  // defined(OS_WIN)
 
-void RecordChildKills(bool was_extension_process) {
-  UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
-                           was_extension_process ? 2 : 1);
+void RecordChildKills(int histogram_type) {
+  UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildKills",
+                            histogram_type, RENDERER_TYPE_COUNT);
 }
 
 }  // namespace
@@ -258,11 +267,14 @@ void ChromeStabilityMetricsProvider::LogRendererCrash(
     content::RenderProcessHost* host,
     base::TerminationStatus status,
     int exit_code) {
+  int histogram_type = RENDERER_TYPE_RENDERER;
   bool was_extension_process = false;
 #if defined(ENABLE_EXTENSIONS)
-  was_extension_process =
-      extensions::ProcessMap::Get(host->GetBrowserContext())->Contains(
-          host->GetID());
+  if (extensions::ProcessMap::Get(host->GetBrowserContext())
+          ->Contains(host->GetID())) {
+    histogram_type = RENDERER_TYPE_EXTENSION;
+    was_extension_process = true;
+  }
 #endif
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
@@ -278,13 +290,13 @@ void ChromeStabilityMetricsProvider::LogRendererCrash(
                                   MapCrashExitCodeForHistogram(exit_code));
     }
 
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
-                             was_extension_process ? 2 : 1);
+    UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildCrashes",
+                              histogram_type, RENDERER_TYPE_COUNT);
   } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
-    RecordChildKills(was_extension_process);
+    RecordChildKills(histogram_type);
 #if defined(OS_CHROMEOS)
   } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM) {
-    RecordChildKills(was_extension_process);
+    RecordChildKills(histogram_type);
     UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildKills.OOM",
                               was_extension_process ? 2 : 1,
                               3);
@@ -294,8 +306,16 @@ void ChromeStabilityMetricsProvider::LogRendererCrash(
             : memory::RECORD_MEMORY_STATS_CONTENTS_OOM_KILLED);
 #endif
   } else if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.DisconnectedAlive",
-                             was_extension_process ? 2 : 1);
+    UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.DisconnectedAlive",
+                              histogram_type, RENDERER_TYPE_COUNT);
+  } else if (status == base::TERMINATION_STATUS_LAUNCH_FAILED) {
+    UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildLaunchFailures",
+                              histogram_type, RENDERER_TYPE_COUNT);
+    // Treat child process launch as a crash for now.
+    if (was_extension_process)
+      IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
+    else
+      IncrementPrefValue(prefs::kStabilityRendererCrashCount);
   }
 }
 

@@ -3119,6 +3119,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BrowserRenderProcessHost.ChildLaunchFailures"
+    enum="RendererType">
+  <owner>wfh@chromium.org</owner>
+  <summary>Count of renderer process launch failures grouped by type.</summary>
+</histogram>
+
 <histogram name="BrowserRenderProcessHost.DisconnectedAlive"
     enum="RendererType">
   <owner>wfh@chromium.org</owner>

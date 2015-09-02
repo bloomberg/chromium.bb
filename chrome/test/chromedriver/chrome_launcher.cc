@@ -386,6 +386,9 @@ Status LaunchDesktopChrome(
         case base::TERMINATION_STATUS_PROCESS_CRASHED:
           termination_reason = "crashed";
           break;
+        case base::TERMINATION_STATUS_LAUNCH_FAILED:
+          termination_reason = "failed to launch";
+          break;
         default:
           termination_reason = "unknown";
           break;

@@ -617,6 +617,9 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
       RecordAction(
           base::UserMetricsAction("BrowserPlugin.Guest.AbnormalDeath"));
       break;
+    case base::TERMINATION_STATUS_LAUNCH_FAILED:
+      RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.LaunchFailed"));
+      break;
     default:
       break;
   }

@@ -500,6 +500,7 @@ void ChildProcessLauncher::Notify(
     tracked_objects::ScopedTracker tracking_profile3(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "465841 ChildProcessLauncher::Context::Notify::ProcessFailed"));
+    termination_status_ = base::TERMINATION_STATUS_LAUNCH_FAILED;
     client_->OnProcessLaunchFailed();
   }
 }

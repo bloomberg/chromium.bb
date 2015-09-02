@@ -112,13 +112,22 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
       content::Details<content::RenderProcessHost::RendererClosedDetails>(
           &kill_details));
 
+  // Failed launch increments crash count.
+  content::RenderProcessHost::RendererClosedDetails failed_launch_details(
+      base::TERMINATION_STATUS_LAUNCH_FAILED, 1);
+  provider.Observe(
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      content::Source<content::RenderProcessHost>(host),
+      content::Details<content::RenderProcessHost::RendererClosedDetails>(
+          &failed_launch_details));
+
   metrics::SystemProfileProto system_profile;
 
   // Call ProvideStabilityMetrics to check that it will force pending tasks to
   // be executed immediately.
   provider.ProvideStabilityMetrics(&system_profile);
 
-  EXPECT_EQ(2, system_profile.stability().renderer_crash_count());
+  EXPECT_EQ(3, system_profile.stability().renderer_crash_count());
   EXPECT_EQ(0, system_profile.stability().extension_renderer_crash_count());
 
 #if defined(ENABLE_EXTENSIONS)

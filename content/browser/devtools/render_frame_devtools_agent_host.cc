@@ -534,6 +534,7 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
 #if defined(OS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
 #endif
+    case base::TERMINATION_STATUS_LAUNCH_FAILED:
       inspector_handler_->TargetCrashed();
       current_frame_crashed_ = true;
       break;

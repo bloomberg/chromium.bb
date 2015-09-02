@@ -128,6 +128,8 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
       return "killed";
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
       return "crashed";
+    case base::TERMINATION_STATUS_LAUNCH_FAILED:
+      return "failed to launch";
     case base::TERMINATION_STATUS_MAX_ENUM:
       break;
   }

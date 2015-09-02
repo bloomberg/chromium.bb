@@ -2391,7 +2391,8 @@ void RenderProcessHostImpl::OnProcessLaunchFailed() {
   if (deleting_soon_)
     return;
 
-  RendererClosedDetails details { base::TERMINATION_STATUS_PROCESS_WAS_KILLED,
+  // TODO(wfh): Fill in the real error code here see crbug.com/526198.
+  RendererClosedDetails details { base::TERMINATION_STATUS_LAUNCH_FAILED,
                                   -1 };
   ProcessDied(true, &details);
 }
