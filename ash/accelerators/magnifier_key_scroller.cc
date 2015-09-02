@@ -52,6 +52,10 @@ bool MagnifierKeyScroller::IsStartEvent(const ui::KeyEvent* event) const {
       event->flags() & ui::EF_SHIFT_DOWN;
 }
 
+bool MagnifierKeyScroller::ShouldStopEventPropagation() const {
+  return true;
+}
+
 void MagnifierKeyScroller::OnKeyHold(const ui::KeyEvent* event) {
   MagnificationController* controller =
       Shell::GetInstance()->magnification_controller();

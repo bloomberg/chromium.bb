@@ -40,6 +40,11 @@ bool SpokenFeedbackToggler::IsStartEvent(const ui::KeyEvent* event) const {
       event->flags() & ui::EF_SHIFT_DOWN;
 }
 
+bool SpokenFeedbackToggler::ShouldStopEventPropagation() const {
+  // Let hotkey events pass through. See http://crbug.com/526729
+  return false;
+}
+
 void SpokenFeedbackToggler::OnKeyHold(const ui::KeyEvent* event) {
   if (!toggled_) {
     toggled_ = true;
