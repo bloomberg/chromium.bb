@@ -674,20 +674,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-0
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-009.xht [ ImageOnlyFailure ]
 
-crbug.com/452914 [ XP Win7 ] fast/text/atsui-multiple-renderers.html [ NeedsRebaseline ]
-crbug.com/452914 [ Win ] fast/text/atsui-small-caps-punctuation-size.html [ NeedsRebaseline ]
-crbug.com/452914 fast/text/complex-path-with-no-subpixel-fonts.html [ NeedsRebaseline ]
-crbug.com/452914 [ Win ] fast/text/international/bidi-listbox-atsui.html [ NeedsRebaseline ]
-crbug.com/452914 [ XP Win7 ] fast/text/international/hindi-spacing.html [ NeedsRebaseline ]
-crbug.com/452914 [ XP Win7 ] fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-crbug.com/452914 [ XP Win7 ] fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
-crbug.com/452914 [ Win ] fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
-crbug.com/452914 [ XP Win7 ] fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/452914 [ XP Win7 ] fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/452914 [ Win ] fast/text/sub-pixel/text-scaling-rtl.html [ NeedsRebaseline ]
-crbug.com/452914 [ Win ] fast/text/sub-pixel/text-scaling-vertical.html [ NeedsRebaseline ]
-crbug.com/452914 [ XP Win7 ] fast/writing-mode/english-lr-text.html [ NeedsRebaseline ]
-
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ ImageOnlyFailure ]
