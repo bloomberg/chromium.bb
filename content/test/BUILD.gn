@@ -404,6 +404,7 @@ if (!is_mac) {
               "//content")
       sources -=
           [ "../browser/battery_status/battery_monitor_impl_browsertest.cc" ]
+      deps -= [ "//device/battery" ]
       deps += [
         "//content/shell/android:content_shell_jni_headers",
         "//content/shell:content_shell_lib",
@@ -651,9 +652,11 @@ test("content_unittests") {
     sources -= [
       "../browser/geolocation/network_location_provider_unittest.cc",
       "../browser/geolocation/wifi_data_provider_common_unittest.cc",
+      "../browser/power_usage_monitor_impl_unittest.cc",
       "../browser/renderer_host/begin_frame_observer_proxy_unittest.cc",
       "../browser/webui/url_data_manager_backend_unittest.cc",
     ]
+    deps -= [ "//device/battery" ]
     deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
   if (!is_android && !is_ios) {

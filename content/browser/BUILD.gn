@@ -343,6 +343,8 @@ source_set("browser") {
       "geolocation/network_location_provider.h",
       "geolocation/network_location_request.cc",
       "geolocation/network_location_request.h",
+      "power_usage_monitor_impl.cc",
+      "power_usage_monitor_impl.h",
       "renderer_host/begin_frame_observer_proxy.cc",
       "tracing/tracing_ui.cc",
       "tracing/tracing_ui.h",
@@ -369,6 +371,7 @@ source_set("browser") {
       "speech/speech_recognizer_impl.cc",
       "speech/speech_recognizer_impl.h",
     ]
+    deps -= [ "//device/battery" ]
     deps += [
       "//content/public/android:jni",
       "//media",

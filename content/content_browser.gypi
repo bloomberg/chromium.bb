@@ -2009,6 +2009,9 @@
         '../ui/android/ui_android.gyp:ui_android',
         'content.gyp:content_jni_headers',
       ],
+      'dependencies!': [
+        '../device/battery/battery.gyp:device_battery',
+      ],
       'defines': ['APPCACHE_USE_SIMPLE_CACHE'],
       'direct_dependent_settings': {
         'defines': ['APPCACHE_USE_SIMPLE_CACHE'],
@@ -2033,6 +2036,8 @@
         'browser/geolocation/device_data_provider.cc',
         'browser/geolocation/empty_device_data_provider.cc',
         'browser/geolocation/wifi_data_provider_common.cc',
+        'browser/power_usage_monitor_impl.cc',
+        'browser/power_usage_monitor_impl.h',
         'browser/renderer_host/begin_frame_observer_proxy.cc',
         'browser/renderer_host/native_web_keyboard_event.cc',
       ]

@@ -102,6 +102,7 @@
         ['OS=="android"', {
           'dependencies!': [
             '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',
+            'battery/battery.gyp:device_battery',
             'devices_app/devices_app.gyp:devices_app_lib',
             'usb/usb.gyp:device_usb',
             'usb/usb.gyp:device_usb_mocks',
@@ -118,6 +119,9 @@
             ['exclude', '(^|/)hid'],
             ['exclude', '(^|/)serial'],
             ['exclude', '(^|/)usb'],
+          ],
+          'sources!': [
+            'battery/battery_status_service_unittest.cc',
           ],
         }],
         ['OS=="mac"', {

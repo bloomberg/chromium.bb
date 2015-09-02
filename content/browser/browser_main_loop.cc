@@ -1085,10 +1085,12 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:SensorService");
     DeviceInertialSensorService::GetInstance()->Shutdown();
   }
+#if !defined(OS_ANDROID)
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:BatteryStatusService");
     device::BatteryStatusService::GetInstance()->Shutdown();
   }
+#endif
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DeleteDataSources");
     URLDataManager::DeleteDataSources();

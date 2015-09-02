@@ -1166,11 +1166,15 @@
             'browser/geolocation/network_location_provider_unittest.cc',
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
             'browser/media/audio_stream_monitor_unittest.cc',
+            'browser/power_usage_monitor_impl_unittest.cc',
             'browser/renderer_host/begin_frame_observer_proxy_unittest.cc',
             'browser/webui/url_data_manager_backend_unittest.cc',
           ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+          'dependencies!': [
+            '../device/battery/battery.gyp:device_battery',
           ],
         }],
         ['OS != "android" and OS != "ios"', {
@@ -1504,6 +1508,9 @@
                 'content_shell_jni_headers',
                 'content_shell_lib',
                 '../testing/android/native_test.gyp:native_test_support',
+              ],
+              'dependencies!': [
+                '../device/battery/battery.gyp:device_battery',
               ],
             }],
             ['OS=="mac"', {

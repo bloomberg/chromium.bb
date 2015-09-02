@@ -953,10 +953,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::RegisterMojoServices() {
+#if !defined(OS_ANDROID)
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&device::BatteryMonitorImpl::Create));
 
-#if !defined(OS_ANDROID)
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&device::VibrationManagerImpl::Create));
 #endif

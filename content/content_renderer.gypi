@@ -770,6 +770,9 @@
         '../build/android/ndk.gyp:cpu_features',
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
       ],
+      'dependencies!': [
+        '../device/battery/battery.gyp:device_battery',
+      ],
     }, {
       'sources!': [
         'renderer/java/gin_java_bridge_dispatcher.cc',

@@ -8,7 +8,7 @@
   },
   'targets': [
     {
-      # GN version: //device/battery:battery_mojo
+      # GN version: //device/battery:mojo_bindings
       'target_name': 'device_battery_mojo_bindings',
       'type': 'static_library',
       'includes': [
@@ -48,77 +48,6 @@
       ],
       'hard_dependency': 1,
     },
-    {
-      # GN version: //device/battery
-      'target_name': 'device_battery',
-      'type': '<(component)',
-      'dependencies': [
-        '../../base/base.gyp:base',
-        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
-        'device_battery_mojo_bindings',
-      ],
-      'defines': [
-        'DEVICE_BATTERY_IMPLEMENTATION',
-      ],
-      'sources': [
-        'battery_monitor_impl.cc',
-        'battery_monitor_impl.h',
-        'battery_status_manager_chromeos.cc',
-        'battery_status_manager_default.cc',
-        'battery_status_manager_linux.cc',
-        'battery_status_manager_linux.h',
-        'battery_status_manager_mac.cc',
-        'battery_status_manager_win.cc',
-        'battery_status_manager_win.h',
-        'battery_status_manager.h',
-        'battery_status_service.cc',
-        'battery_status_service.h',
-      ],
-      'conditions': [
-        ['chromeos==1', {
-          'dependencies': [
-            '../../build/linux/system.gyp:dbus',
-            '../../chromeos/chromeos.gyp:chromeos',
-            '../../chromeos/chromeos.gyp:power_manager_proto',
-          ],
-          'sources!': [
-            'battery_status_manager_default.cc',
-            'battery_status_manager_linux.cc',
-          ],
-        }],
-        ['OS == "android"', {
-          'dependencies': [
-            'device_battery_java',
-          ],
-        }],
-        ['OS == "linux" and use_dbus==1', {
-          'sources!': [
-            'battery_status_manager_default.cc',
-          ],
-          'dependencies': [
-            '../../build/linux/system.gyp:dbus',
-            '../../dbus/dbus.gyp:dbus',
-          ],
-        }, {  # OS != "linux" or use_dbus==0
-          'sources!': [
-            'battery_status_manager_linux.cc',
-          ],
-        }],
-        ['OS == "mac"', {
-          'sources!': [
-            'battery_status_manager_default.cc',
-          ],
-        }],
-        ['OS == "win"', {
-          'sources!': [
-            'battery_status_manager_default.cc',
-          ],
-        }],
-      ],
-    },
   ],
   'conditions': [
     ['OS == "android"', {
@@ -148,6 +77,76 @@
             'device_battery_java',
           ],
           'includes': [ '../../build/java.gypi' ],
+        },
+      ],
+    }, {  # OS != "android"
+      # On android, BatteryManager mojo service is implemented directly in Java.
+      'targets': [
+        {
+          # GN version: //device/battery
+          'target_name': 'device_battery',
+          'type': '<(component)',
+          'dependencies': [
+            '../../base/base.gyp:base',
+            '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../../mojo/mojo_base.gyp:mojo_environment_chromium',
+            '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+            '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+            'device_battery_mojo_bindings',
+          ],
+          'defines': [
+            'DEVICE_BATTERY_IMPLEMENTATION',
+          ],
+          'sources': [
+            'battery_monitor_impl.cc',
+            'battery_monitor_impl.h',
+            'battery_status_manager_chromeos.cc',
+            'battery_status_manager_default.cc',
+            'battery_status_manager_linux.cc',
+            'battery_status_manager_linux.h',
+            'battery_status_manager_mac.cc',
+            'battery_status_manager_win.cc',
+            'battery_status_manager_win.h',
+            'battery_status_manager.h',
+            'battery_status_service.cc',
+            'battery_status_service.h',
+          ],
+          'conditions': [
+            ['chromeos==1', {
+              'dependencies': [
+                '../../build/linux/system.gyp:dbus',
+                '../../chromeos/chromeos.gyp:chromeos',
+                '../../chromeos/chromeos.gyp:power_manager_proto',
+              ],
+              'sources!': [
+                'battery_status_manager_default.cc',
+                'battery_status_manager_linux.cc',
+              ],
+            }],
+            ['OS == "linux" and use_dbus==1', {
+              'sources!': [
+                'battery_status_manager_default.cc',
+              ],
+              'dependencies': [
+                '../../build/linux/system.gyp:dbus',
+                '../../dbus/dbus.gyp:dbus',
+              ],
+            }, {  # OS != "linux" or use_dbus==0
+              'sources!': [
+                'battery_status_manager_linux.cc',
+              ],
+            }],
+            ['OS == "mac"', {
+              'sources!': [
+                'battery_status_manager_default.cc',
+              ],
+            }],
+            ['OS == "win"', {
+              'sources!': [
+                'battery_status_manager_default.cc',
+              ],
+            }],
+          ],
         },
       ],
     }],
