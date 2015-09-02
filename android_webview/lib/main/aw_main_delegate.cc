@@ -136,6 +136,11 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
         kV8SnapshotDataDescriptor, kSnapshotFileName));
   }
 
+  if (cl->HasSwitch(switches::kWebViewSanboxedRenderer)) {
+    cl->AppendSwitch(switches::kInProcessGPU);
+    cl->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
+  }
+
   return false;
 }
 

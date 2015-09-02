@@ -19,12 +19,12 @@
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_stub.h"
@@ -149,7 +149,11 @@ SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
     : record_full_layer_(true),
       use_ipc_command_buffer_(false),
       num_hardware_compositors_(0) {
-  SynchronousCompositorFactory::SetInstance(this);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    // TODO(boliu): Figure out how to deal with this more nicely.
+    SynchronousCompositorFactory::SetInstance(this);
+  }
 }
 
 SynchronousCompositorFactoryImpl::~SynchronousCompositorFactoryImpl() {}

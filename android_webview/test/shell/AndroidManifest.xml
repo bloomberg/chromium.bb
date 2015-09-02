@@ -37,5 +37,13 @@
     </activity>
     <provider android:name="org.chromium.android_webview.test.TestContentProvider"
         android:authorities="org.chromium.android_webview.test.TestContentProvider" />
+    <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
+               android:value="1"/>
+    <service android:name="org.chromium.content.app.SandboxedProcessService0"
+             android:process=":sandboxed_process0"
+             android:isolatedProcess="true"
+             android:exported="false" />
+    <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
+               android:value="0"/>
   </application>
 </manifest>

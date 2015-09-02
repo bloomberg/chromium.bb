@@ -22,6 +22,7 @@
 #include "android_webview/common/url_constants.h"
 #include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "content/public/browser/access_token_store.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "net/android/network_library.h"
@@ -244,7 +246,13 @@ std::string AwContentBrowserClient::GetCanonicalEncodingNameByAliasName(
 void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-  NOTREACHED() << "Android WebView does not support multi-process yet";
+  if (command_line->HasSwitch(switches::kSingleProcess)) {
+    NOTREACHED() << "Android WebView does not support multi-process yet";
+  } else {
+    // The only kind of a child process WebView can have is renderer.
+    DCHECK_EQ(switches::kRendererProcess,
+              command_line->GetSwitchValueASCII(switches::kProcessType));
+  }
 }
 
 std::string AwContentBrowserClient::GetApplicationLocale() {

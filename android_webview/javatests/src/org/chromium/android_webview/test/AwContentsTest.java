@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -23,12 +24,18 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.AwWebViewLifecycleObserver;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.content.browser.BindingManager;
+import org.chromium.content.browser.ChildProcessConnection;
+import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
@@ -545,6 +552,70 @@ public class AwContentsTest extends AwTestBase {
         loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
         assertEquals("null", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
                 script));
+    }
+
+    private static class MockBindingManager implements BindingManager {
+        private boolean mIsChildProcessCreated;
+
+        boolean isChildProcessCreated() {
+            return mIsChildProcessCreated;
+        }
+
+        @Override
+        public void addNewConnection(int pid, ChildProcessConnection connection) {
+            mIsChildProcessCreated = true;
+        }
+
+        @Override
+        public void setInForeground(int pid, boolean inForeground) {}
+
+        @Override
+        public void determinedVisibility(int pid) {}
+
+        @Override
+        public void onSentToBackground() {}
+
+        @Override
+        public void onBroughtToForeground() {}
+
+        @Override
+        public boolean isOomProtected(int pid) {
+            return false;
+        }
+
+        @Override
+        public void clearConnection(int pid) {}
+
+        @Override
+        public void startModerateBindingManagement(
+                Context context, int maxSize, float lowReduceRatio, float highReduceRatio) {}
+
+        @Override
+        public void releaseAllModerateBindings() {}
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    public void testSandboxedRendererWorks() throws Throwable {
+        MockBindingManager bindingManager = new MockBindingManager();
+        ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
+        assertFalse(bindingManager.isChildProcessCreated());
+
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+        final String pageTitle = "I am sandboxed";
+        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                "<html><head><title>" + pageTitle + "</title></head></html>", "text/html", false);
+        assertEquals(pageTitle, getTitleOnUiThread(awContents));
+
+        assertTrue(bindingManager.isChildProcessCreated());
+
+        // Test end-to-end interaction with the renderer.
+        AwSettings awSettings = getAwSettingsOnUiThread(awContents);
+        awSettings.setJavaScriptEnabled(true);
+        assertEquals("42", JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+                        mContentsClient.getOnEvaluateJavaScriptResultHelper(), "21 + 21"));
     }
 
     private static class AccessibilityCallbackHelper extends CallbackHelper {

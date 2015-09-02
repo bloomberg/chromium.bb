@@ -746,7 +746,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     ChromeTabbedActivity.INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT, -1);
             if (value != -1) {
                 String[] args = new String[1];
-                args[0] = "--" + ChromeSwitches.RENDER_PROCESS_LIMIT
+                args[0] = "--" + ContentSwitches.RENDER_PROCESS_LIMIT
                         + "=" + Integer.toString(value);
                 commandLine.appendSwitchesAndArguments(args);
             }

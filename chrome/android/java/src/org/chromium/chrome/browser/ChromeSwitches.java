@@ -91,12 +91,6 @@ public abstract class ChromeSwitches {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Sets the max number of render processes to use.
-     * Native switch - content_switches::kRendererProcessLimit.
-     */
-    public static final String RENDER_PROCESS_LIMIT = "renderer-process-limit";
-
-    /**
      * Enable enhanced bookmarks feature.
      * Native switch - switches::kEnhancedBookmarksExperiment
      */

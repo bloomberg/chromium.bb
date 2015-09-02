@@ -73,6 +73,12 @@ public abstract class ContentSwitches {
     public static final String DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK =
             "disable-gesture-requirement-for-media-playback";
 
+    // Native switch kRendererProcessLimit
+    public static final String RENDER_PROCESS_LIMIT = "renderer-process-limit";
+
+    // Native switch kInProcessGPU
+    public static final String IN_PROCESS_GPU = "in-process-gpu";
+
     // Prevent instantiation.
     private ContentSwitches() {}
 }

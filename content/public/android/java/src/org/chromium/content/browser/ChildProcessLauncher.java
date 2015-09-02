@@ -232,7 +232,7 @@ public class ChildProcessLauncher {
             ApplicationInfo appInfo = packageManager.getApplicationInfo(context.getPackageName(),
                     PackageManager.GET_META_DATA);
             int numServices = appInfo.metaData.getInt(inSandbox ? NUM_SANDBOXED_SERVICES_KEY
-                    : NUM_PRIVILEGED_SERVICES_KEY);
+                    : NUM_PRIVILEGED_SERVICES_KEY, -1);
             if (inSandbox
                     && CommandLine.getInstance().hasSwitch(
                                SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING)) {
@@ -247,7 +247,7 @@ public class ChildProcessLauncher {
                     }
                 }
             }
-            if (numServices <= 0) {
+            if (numServices < 0) {
                 throw new RuntimeException("Illegal meta data value for number of child services");
             }
             return numServices;

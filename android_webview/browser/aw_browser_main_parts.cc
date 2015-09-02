@@ -98,8 +98,12 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 
   // This is needed for WebView Classic backwards compatibility
-  // See crbug.com/298495
-  content::SetMaxURLChars(20 * 1024 * 1024);
+  // See crbug.com/298495. Also see crbug.com/525697 on why it is currently
+  // for single process mode only.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    content::SetMaxURLChars(20 * 1024 * 1024);
+  }
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {

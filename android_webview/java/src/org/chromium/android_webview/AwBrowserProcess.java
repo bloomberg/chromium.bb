@@ -6,6 +6,7 @@ package org.chromium.android_webview;
 
 import android.content.Context;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -55,7 +56,8 @@ public abstract class AwBrowserProcess {
             public void run() {
                 try {
                     BrowserStartupController.get(context, LibraryProcessType.PROCESS_WEBVIEW)
-                            .startBrowserProcessesSync(true);
+                            .startBrowserProcessesSync(!CommandLine.getInstance().hasSwitch(
+                                            AwSwitches.WEBVIEW_SANDBOXED_RENDERER));
                 } catch (ProcessInitException e) {
                     throw new RuntimeException("Cannot initialize WebView", e);
                 }
