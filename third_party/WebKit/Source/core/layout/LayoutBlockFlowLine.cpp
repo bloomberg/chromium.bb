@@ -900,6 +900,10 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                 }
                 for (; it != end; ++it) {
                     FloatingObject& floatingObject = *it->get();
+                    // If we've reached the start of clean lines any remaining floating children belong to them.
+                    // We don't care about the 'last float' mechanism once we're in clean lines so it's ok to let it get set below.
+                    if (floatingObject.layoutObject() == cleanLineStart.object())
+                        break;
                     appendFloatingObjectToLastLine(floatingObject);
                     ASSERT(floatingObject.layoutObject() == layoutState.floats()[layoutState.floatIndex()].object);
                     // If a float's geometry has changed, give up on syncing with clean lines.
