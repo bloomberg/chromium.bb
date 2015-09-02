@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.7.1'
+__version__ = '0.7.2'
 
 import collections
 import datetime
@@ -619,7 +619,7 @@ def yield_results(
 def decorate_shard_output(swarming, shard_index, metadata):
   """Returns wrapped output for swarming task shard."""
   def t(d):
-    return datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
+    return datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S.%f')
   if metadata.get('started_ts'):
     pending = '%.1fs' % (
       t(metadata['started_ts']) - t(metadata['created_ts'])).total_seconds()
