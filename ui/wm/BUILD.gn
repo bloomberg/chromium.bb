@@ -151,8 +151,6 @@ test("wm_unittests") {
     "test/run_all_unittests.cc",
   ]
 
-  data_deps = [ "//ui/resources:ui_test_pak" ]
-
   deps = [
     ":test_support",
     ":wm",
@@ -170,4 +168,6 @@ test("wm_unittests") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
+
+  data_deps = [ "//ui/resources:ui_test_pak_data" ]
 }

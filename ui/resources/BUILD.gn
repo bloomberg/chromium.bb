@@ -85,10 +85,19 @@ if (is_ios || is_mac) {
   }
 }
 
+# This group exists just for targets that need the data file
+# to exist in the build directory so it can be loaded for test purposes.
+group("ui_test_pak_data") {
+  data_deps = [ ":repack_ui_test_pak" ]
+}
+
 # GYP version: ui/resources/ui_resources.gyp:ui_test_pak
 repack("repack_ui_test_pak") {
-  # Depend on ui_test_pak instead of this one.
-  visibility = [ ":ui_test_pak" ]
+  # Depend on ui_test_pak or ui_test_pak_data instead of this one.
+  visibility = [
+    ":ui_test_pak",
+    ":ui_test_pak_data",
+  ]
 
   sources = [
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
