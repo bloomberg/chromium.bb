@@ -27,8 +27,6 @@
         'init_status.h',
         'meta_table.cc',
         'meta_table.h',
-        'proxy.cc',
-        'proxy.h',
         'recovery.cc',
         'recovery.h',
         'statement.cc',
