@@ -27,6 +27,7 @@ copy("copy_test_files2") {
   ]
 }
 
+import("//build/config/features.gni")
 import("//ppapi/ppapi_sources.gni")
 import("//testing/test.gni")
 
@@ -163,9 +164,7 @@ source_set("ppapi_gles2_lib") {
   ]
 }
 
-# TODO(phosek): The NaCl toolchain definition is incorrect on Windows. Fix
-# and enable. http://crbug.com/527453
-if (host_os != "win") {
+if (enable_nacl) {
   if (is_nacl) {
     executable("ppapi_nacl_tests_newlib") {
       include_dirs = [
