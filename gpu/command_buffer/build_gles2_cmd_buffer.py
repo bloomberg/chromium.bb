@@ -84,10 +84,6 @@ _CAPABILITY_FLAGS = [
    'state_flag': 'framebuffer_state_.clear_state_dirty'},
   {'name': 'rasterizer_discard', 'es3': True},
   {'name': 'primitive_restart_fixed_index', 'es3': True},
-  {'name': 'multisample_ext', 'default': True,
-   'extension_flag': 'ext_multisample_compatibility'},
-  {'name': 'sample_alpha_to_one_ext',
-   'extension_flag': 'ext_multisample_compatibility'},
 ]
 
 _STATES = {
@@ -1091,11 +1087,9 @@ _NAMED_TYPE_INFO = {
   'Capability': {
     'type': 'GLenum',
     'valid': ["GL_%s" % cap['name'].upper() for cap in _CAPABILITY_FLAGS
-        if ('es3' not in cap or cap['es3'] != True)
-              and 'extension_flag' not in cap],
+        if 'es3' not in cap or cap['es3'] != True],
     'valid_es3': ["GL_%s" % cap['name'].upper() for cap in _CAPABILITY_FLAGS
-        if ('es3' in cap and cap['es3'] == True)
-              and 'extension_flag' not in cap],
+        if 'es3' in cap and cap['es3'] == True],
     'invalid': [
       'GL_CLIP_PLANE0',
       'GL_POINT_SPRITE',
@@ -9898,8 +9892,6 @@ class GLGenerator(object):
       f.write("struct EnableFlags {\n")
       f.write("  EnableFlags();\n")
       for capability in _CAPABILITY_FLAGS:
-        if 'extension_flag' in capability:
-          continue
         f.write("  bool %s;\n" % capability['name'])
       f.write("};\n\n")
     self.generated_cpp_filenames.append(filename)
@@ -10005,9 +9997,6 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
           capability_es3 = 'es3' in capability and capability['es3'] == True
           if capability_es3 and not es3_caps or not capability_es3 and es3_caps:
             continue
-          if 'extension_flag' in capability:
-            f.write("  if (feature_info_->feature_flags().%s) {\n  " %
-                       capability['extension_flag'])
           if test_prev:
             f.write("""  if (prev_state->enable_flags.cached_%s !=
                                 enable_flags.cached_%s) {\n""" %
@@ -10015,8 +10004,6 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
           f.write("    EnableDisable(GL_%s, enable_flags.cached_%s);\n" %
                      (capability_name.upper(), capability_name))
           if test_prev:
-            f.write("  }")
-          if 'extension_flag' in capability:
             f.write("  }")
 
       f.write("  if (prev_state) {")
@@ -10143,8 +10130,6 @@ void ContextState::InitState(const ContextState *prev_state) const {
     with CHeaderWriter(filename, comment) as f:
       code = []
       for capability in _CAPABILITY_FLAGS:
-        if 'extension_flag' in capability:
-          continue
         code.append("%s(%s)" %
                     (capability['name'],
                      ('false', 'true')['default' in capability]))
@@ -10160,8 +10145,6 @@ bool ClientContextState::SetCapabilityState(
   switch (cap) {
 """)
       for capability in _CAPABILITY_FLAGS:
-        if 'extension_flag' in capability:
-          continue
         f.write("    case GL_%s:\n" % capability['name'].upper())
         f.write("""      if (enable_flags.%(name)s != enabled) {
          *changed = true;
@@ -10179,8 +10162,6 @@ bool ClientContextState::SetCapabilityState(
   switch (cap) {
 """)
       for capability in _CAPABILITY_FLAGS:
-        if 'extension_flag' in capability:
-          continue
         f.write("    case GL_%s:\n" % capability['name'].upper())
         f.write("      *enabled = enable_flags.%s;\n" % capability['name'])
         f.write("      return true;\n")
@@ -10278,17 +10259,11 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
       bool es3_capable) {""")
       for capability in _CAPABILITY_FLAGS:
         capability_es3 = 'es3' in capability and capability['es3'] == True
-        if capability_es3:
-          continue
-        if 'extension_flag' in capability:
-          f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
-                   capability['extension_flag'])
-          f.write("  ")
-        f.write("  ExpectEnableDisable(GL_%s, %s);\n" %
-                (capability['name'].upper(),
-                 ('false', 'true')['default' in capability]))
-        if 'extension_flag' in capability:
-          f.write("  }")
+        if not capability_es3:
+          f.write("  ExpectEnableDisable(GL_%s, %s);\n" %
+                     (capability['name'].upper(),
+                      ('false', 'true')['default' in capability]))
+
       f.write("  if (es3_capable) {")
       for capability in _CAPABILITY_FLAGS:
         capability_es3 = 'es3' in capability and capability['es3'] == True
@@ -10934,8 +10909,6 @@ def main(argv):
         if not item['enum'] in gl_state_valid:
           gl_state_valid.append(item['enum'])
   for capability in _CAPABILITY_FLAGS:
-    if 'extension_flag' in capability:
-      continue
     valid_value = "GL_%s" % capability['name'].upper()
     if not valid_value in gl_state_valid:
       gl_state_valid.append(valid_value)

@@ -247,9 +247,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x8A53, "GL_SYNC_OBJECT_APPLE",
     },
     {
-        0x78FB, "GL_RGB_YCBCR_422_CHROMIUM",
-    },
-    {
         0x8DF8, "GL_SHADER_BINARY_FORMATS",
     },
     {
@@ -406,7 +403,7 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x821A, "GL_DEPTH_STENCIL_ATTACHMENT",
     },
     {
-        0x809D, "GL_MULTISAMPLE_EXT",
+        0x8A40, "GL_UNIFORM_BLOCK_DATA_SIZE",
     },
     {
         0x821D, "GL_NUM_EXTENSIONS",
@@ -1828,9 +1825,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x8C1D, "GL_TEXTURE_BINDING_2D_ARRAY",
     },
     {
-        0x809F, "GL_SAMPLE_ALPHA_TO_ONE_EXT",
-    },
-    {
         0x8DDF, "GL_MAX_GEOMETRY_UNIFORM_COMPONENTS_EXT",
     },
     {
@@ -2810,9 +2804,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x8051, "GL_RGB8_OES",
-    },
-    {
-        0x8A40, "GL_UNIFORM_BLOCK_DATA_SIZE",
     },
     {
         0x8CAD, "GL_DEPTH32F_STENCIL8",
