@@ -1668,6 +1668,7 @@ def GetConfig():
 
   _paladin_moblab_hwtest_boards = frozenset([
       'stumpy_moblab',
+      'guado_moblab',
   ])
 
   _paladin_chroot_replace_boards = frozenset([
@@ -2227,6 +2228,25 @@ def GetConfig():
       # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
       paygen_skip_testing=True,
       important=True,
+      afdo_use=False,
+      signer_tests=False,
+      hw_tests=[
+          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE, blocking=True,
+                                  num=1, timeout=120*60),
+          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
+                                  warn_only=True, num=1),
+          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+                                  warn_only=True, num=1)],
+  )
+
+  site_config.AddConfig(
+      _release, 'guado_moblab-release',
+      _base_configs['guado_moblab'],
+      images=['base', 'recovery', 'test'],
+      paygen_skip_delta_payloads=True,
+      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
+      paygen_skip_testing=True,
+      important=False,
       afdo_use=False,
       signer_tests=False,
       hw_tests=[
