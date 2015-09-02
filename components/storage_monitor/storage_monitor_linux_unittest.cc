@@ -314,7 +314,8 @@ class StorageMonitorLinuxTest : public testing::Test {
 };
 
 // Simple test case where we attach and detach a media device.
-TEST_F(StorageMonitorLinuxTest, BasicAttachDetach) {
+// http://crbug.com/526252 flaky
+TEST_F(StorageMonitorLinuxTest, DISABLED_BasicAttachDetach) {
   base::FilePath test_path = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path.empty());
   MtabTestData test_data[] = {
@@ -338,7 +339,8 @@ TEST_F(StorageMonitorLinuxTest, BasicAttachDetach) {
 }
 
 // Only removable devices are recognized.
-TEST_F(StorageMonitorLinuxTest, Removable) {
+// http://crbug.com/526252 flaky
+TEST_F(StorageMonitorLinuxTest, DISABLED_Removable) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path_a.empty());
   MtabTestData test_data1[] = {
@@ -386,7 +388,8 @@ TEST_F(StorageMonitorLinuxTest, Removable) {
 }
 
 // More complicated test case with multiple devices on multiple mount points.
-TEST_F(StorageMonitorLinuxTest, SwapMountPoints) {
+// http://crbug.com/526252 flaky
+TEST_F(StorageMonitorLinuxTest, DISABLED_SwapMountPoints) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
@@ -423,7 +426,8 @@ TEST_F(StorageMonitorLinuxTest, SwapMountPoints) {
 }
 
 // More complicated test case with multiple devices on multiple mount points.
-TEST_F(StorageMonitorLinuxTest, MultiDevicesMultiMountPoints) {
+// http://crbug.com/526252 flaky
+TEST_F(StorageMonitorLinuxTest, DISABLED_MultiDevicesMultiMountPoints) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
@@ -490,7 +494,9 @@ TEST_F(StorageMonitorLinuxTest, MultiDevicesMultiMountPoints) {
   EXPECT_EQ(5, observer().detach_calls());
 }
 
-TEST_F(StorageMonitorLinuxTest, MultipleMountPointsWithNonDCIMDevices) {
+// http://crbug.com/526252 flaky
+TEST_F(StorageMonitorLinuxTest,
+       DISABLED_MultipleMountPointsWithNonDCIMDevices) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
@@ -576,7 +582,8 @@ TEST_F(StorageMonitorLinuxTest, MultipleMountPointsWithNonDCIMDevices) {
   EXPECT_EQ(4, observer().detach_calls());
 }
 
-TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
+// http://crbug.com/526252 flaky
+TEST_F(StorageMonitorLinuxTest, DISABLED_DeviceLookUp) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
   base::FilePath test_path_c = CreateMountPointWithoutDCIMDir(kMountPointC);
@@ -650,7 +657,8 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   EXPECT_EQ(1, observer().detach_calls());
 }
 
-TEST_F(StorageMonitorLinuxTest, DevicePartitionSize) {
+// http://crbug.com/526252 flaky
+TEST_F(StorageMonitorLinuxTest, DISABLED_DevicePartitionSize) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
