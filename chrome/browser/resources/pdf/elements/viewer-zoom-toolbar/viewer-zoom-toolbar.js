@@ -17,6 +17,10 @@
       }
     },
 
+    hostAttributes: {
+      hidden: true  // Toolbars are explicitly shown once the plugin is ready.
+    },
+
     fitToggle: function() {
       if (this.$['fit-button'].activeIndex == FIT_TO_WIDTH)
         this.fire('fit-to-width');

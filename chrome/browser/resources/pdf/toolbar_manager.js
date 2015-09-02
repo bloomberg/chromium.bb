@@ -67,6 +67,15 @@ function ToolbarManager(window, toolbar, zoomToolbar) {
 
 ToolbarManager.prototype = {
 
+  /**
+   * Allow the toolbars to be shown. Should be called after the plugin has
+   * loaded and we are ready to show a document.
+   */
+  enableToolbars: function() {
+    this.toolbar_.hidden = false;
+    this.zoomToolbar_.hidden = false;
+  },
+
   showToolbarsForMouseMove: function(e) {
     this.isMouseNearTopToolbar_ = isMouseNearTopToolbar(e);
     this.isMouseNearSideToolbar_ = isMouseNearSideToolbar(e);
