@@ -1,5 +1,4 @@
 Test that tracing model correctly processes trace events.
 
-error: TracingStartedInPage event not found.
 DONE
 

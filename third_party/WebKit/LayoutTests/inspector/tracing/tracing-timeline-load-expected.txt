@@ -7,10 +7,8 @@ Running: testJSONObjectFormat
 
 Running: testBroken
 error: TracingStartedInPage event not found.
-error: TracingStartedInPage event not found.
 
 Running: testMalformedJSON
-error: TracingStartedInPage event not found.
 error: TracingStartedInPage event not found.
 error: TracingStartedInPage event not found.
 error: TracingStartedInPage event not found.

@@ -1,6 +1,5 @@
 Test that tracing model correctly processes trace events.
 
-error: TracingStartedInPage event not found.
 X Outer 10 - 11
 X Inner 10 - 11
 X Outer 20 - 21

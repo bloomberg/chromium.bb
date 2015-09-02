@@ -55,11 +55,11 @@ function test()
 
     function processEvent(event)
     {
-        if (!event.hasCategory(WebInspector.TracingModel.DevToolsMetadataEventCategory) || event.name !== WebInspector.TracingModel.DevToolsMetadataEvent.TracingSessionIdForWorker)
+        if (!event.hasCategory(WebInspector.TracingModel.DevToolsMetadataEventCategory) || event.name !== WebInspector.TimelineModel.DevToolsMetadataEvent.TracingSessionIdForWorker)
             return;
 
         ++workerMetadataEventCount;
-        InspectorTest.assertEquals(InspectorTest.tracingModel().sessionId(), event.args["data"]["sessionId"]);
+        InspectorTest.assertEquals(InspectorTest.tracingTimelineModel().sessionId(), event.args["data"]["sessionId"]);
         InspectorTest.addResult("Got DevTools worker metadata event(" + workerMetadataEventCount +  "): " + event.name);
     }
 

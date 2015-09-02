@@ -1,6 +1,5 @@
 Test that tracing model correctly processes trace events.
 
-error: TracingStartedInPage event not found.
 simple1 100-101: S 100, F 101
 simple2 110-111: S 110, F 111
 nested 120-126.999: S 120, F 126.999

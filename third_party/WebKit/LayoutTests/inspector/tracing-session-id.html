@@ -28,7 +28,7 @@ function test()
         if (!event.hasCategory(WebInspector.TracingModel.DevToolsMetadataEventCategory) || metadataEvents.indexOf(event.name) < 0)
             return;
 
-        InspectorTest.assertEquals(InspectorTest.tracingModel().sessionId(), event.args["data"]["sessionId"]);
+        InspectorTest.assertEquals(InspectorTest.tracingTimelineModel().sessionId(), event.args["data"]["sessionId"]);
         InspectorTest.addResult("Got DevTools metadata event: " + event.name);
     }
 }
