@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class DragCaretController final : public NoBaseWillBeGarbageCollected<DragCaretController>, private CaretBase {
+class DragCaretController final : public NoBaseWillBeGarbageCollectedFinalized<DragCaretController>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(DragCaretController);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DragCaretController);
 public:
