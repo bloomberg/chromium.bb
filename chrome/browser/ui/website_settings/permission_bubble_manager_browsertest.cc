@@ -50,7 +50,14 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
 };
 
 // Requests before the load event should be bundled into one bubble.
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, RequestsBeforeLoad) {
+// http://crbug.com/512849 flaky
+#if defined(OS_WIN)
+#define MAYBE_RequestsBeforeLoad DISABLED_RequestsBeforeLoad
+#else
+#define MAYBE_RequestsBeforeLoad RequestsBeforeLoad
+#endif
+IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
+                       MAYBE_RequestsBeforeLoad) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -81,7 +88,13 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
 
 // Navigating twice to the same URL should be equivalent to refresh. This means
 // showing the bubbles twice.
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, NavTwice) {
+// http://crbug.com/512849 flaky
+#if defined(OS_WIN)
+#define MAYBE_NavTwice DISABLED_NavTwice
+#else
+#define MAYBE_NavTwice NavTwice
+#endif
+IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, MAYBE_NavTwice) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -102,7 +115,14 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, NavTwice) {
 
 // Navigating twice to the same URL with a hash should be navigation within the
 // page. This means the bubble is only shown once.
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, NavTwiceWithHash) {
+// http://crbug.com/512849 flaky
+#if defined(OS_WIN)
+#define MAYBE_NavTwiceWithHash DISABLED_NavTwiceWithHash
+#else
+#define MAYBE_NavTwiceWithHash NavTwiceWithHash
+#endif
+IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
+                       MAYBE_NavTwiceWithHash) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
