@@ -210,7 +210,7 @@ std::string GetHeaderValue(const net::HttpResponseHeaders* headers,
 
 VariationsService::VariationsService(
     scoped_ptr<VariationsServiceClient> client,
-    web_resource::ResourceRequestAllowedNotifier* notifier,
+    scoped_ptr<web_resource::ResourceRequestAllowedNotifier> notifier,
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager)
     : client_(client.Pass()),
@@ -221,7 +221,7 @@ VariationsService::VariationsService(
       create_trials_from_seed_called_(false),
       initial_request_completed_(false),
       disable_deltas_for_next_request_(false),
-      resource_request_allowed_notifier_(notifier),
+      resource_request_allowed_notifier_(notifier.Pass()),
       request_count_(0),
       weak_ptr_factory_(this) {
   resource_request_allowed_notifier_->Init(this);
@@ -365,7 +365,6 @@ void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
   create_trials_from_seed_called_ = called;
 }
 
-// static
 GURL VariationsService::GetVariationsServerURL(
     PrefService* policy_pref_service,
     const std::string& restrict_mode_override) {
@@ -436,10 +435,22 @@ scoped_ptr<VariationsService> VariationsService::Create(
   }
 #endif
   result.reset(new VariationsService(
-      client.Pass(), new web_resource::ResourceRequestAllowedNotifier(
-                         local_state, disable_network_switch),
+      client.Pass(),
+      make_scoped_ptr(new web_resource::ResourceRequestAllowedNotifier(
+          local_state, disable_network_switch)),
       local_state, state_manager));
   return result.Pass();
+}
+
+// static
+scoped_ptr<VariationsService> VariationsService::CreateForTesting(
+    scoped_ptr<VariationsServiceClient> client,
+    PrefService* local_state) {
+  return make_scoped_ptr(new VariationsService(
+      client.Pass(),
+      make_scoped_ptr(new web_resource::ResourceRequestAllowedNotifier(
+          local_state, nullptr)),
+      local_state, nullptr));
 }
 
 void VariationsService::DoActualFetch() {
