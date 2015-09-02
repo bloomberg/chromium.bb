@@ -98,9 +98,6 @@ class RasterTaskImpl : public RasterTask {
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
-  }
-  void RunReplyOnOriginThread() override {
-    DCHECK(!raster_buffer_);
     reply_.Run(analysis_, !HasFinishedRunning());
   }
 

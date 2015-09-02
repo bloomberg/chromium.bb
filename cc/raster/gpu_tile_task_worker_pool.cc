@@ -217,8 +217,6 @@ void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
     tile_task->WillComplete();
     tile_task->CompleteOnOriginThread(this);
     tile_task->DidComplete();
-
-    tile_task->RunReplyOnOriginThread();
   }
   completed_tasks_.clear();
 }

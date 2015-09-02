@@ -35,8 +35,7 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
 
   // Overridden from TileTask:
   void ScheduleOnOriginThread(TileTaskClient* client) override {}
-  void CompleteOnOriginThread(TileTaskClient* client) override {}
-  void RunReplyOnOriginThread() override {
+  void CompleteOnOriginThread(TileTaskClient* client) override {
     controller_->OnImageDecodeTaskCompleted(layer_id_, pixel_ref_.get(),
                                             !HasFinishedRunning());
   }

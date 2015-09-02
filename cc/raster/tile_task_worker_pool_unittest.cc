@@ -77,8 +77,6 @@ class TestRasterTaskImpl : public RasterTask {
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
-  }
-  void RunReplyOnOriginThread() override {
     reply_.Run(RasterSource::SolidColorAnalysis(), !HasFinishedRunning());
   }
 
@@ -107,9 +105,6 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
     base::AutoLock lock(*lock_);
     TestRasterTaskImpl::RunOnWorkerThread();
   }
-
-  // Overridden from TileTask:
-  void RunReplyOnOriginThread() override {}
 
  protected:
   ~BlockingTestRasterTaskImpl() override {}

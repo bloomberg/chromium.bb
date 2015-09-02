@@ -175,8 +175,6 @@ void BitmapTileTaskWorkerPool::CheckForCompletedTasks() {
     task->WillComplete();
     task->CompleteOnOriginThread(this);
     task->DidComplete();
-
-    task->RunReplyOnOriginThread();
   }
   completed_tasks_.clear();
 }

@@ -33,7 +33,6 @@ class TaskSetFinishedTaskImpl : public TileTask {
   // Overridden from TileTask:
   void ScheduleOnOriginThread(TileTaskClient* client) override {}
   void CompleteOnOriginThread(TileTaskClient* client) override {}
-  void RunReplyOnOriginThread() override {}
 
  protected:
   ~TaskSetFinishedTaskImpl() override {}

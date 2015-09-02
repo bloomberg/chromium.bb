@@ -132,8 +132,7 @@ class PerfImageDecodeTaskImpl : public ImageDecodeTask {
 
   // Overridden from TileTask:
   void ScheduleOnOriginThread(TileTaskClient* client) override {}
-  void CompleteOnOriginThread(TileTaskClient* client) override {}
-  void RunReplyOnOriginThread() override { Reset(); }
+  void CompleteOnOriginThread(TileTaskClient* client) override { Reset(); }
 
   void Reset() {
     did_run_ = false;
@@ -163,8 +162,8 @@ class PerfRasterTaskImpl : public RasterTask {
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
+    Reset();
   }
-  void RunReplyOnOriginThread() override { Reset(); }
 
   void Reset() {
     did_run_ = false;

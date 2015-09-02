@@ -36,7 +36,6 @@ class CC_EXPORT TileTask : public Task {
 
   virtual void ScheduleOnOriginThread(TileTaskClient* client) = 0;
   virtual void CompleteOnOriginThread(TileTaskClient* client) = 0;
-  virtual void RunReplyOnOriginThread() = 0;
 
   void WillSchedule();
   void DidSchedule();

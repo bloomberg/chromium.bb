@@ -59,8 +59,6 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
       task->WillComplete();
       task->CompleteOnOriginThread(this);
       task->DidComplete();
-
-      task->RunReplyOnOriginThread();
     }
     completed_tasks_.clear();
   }
