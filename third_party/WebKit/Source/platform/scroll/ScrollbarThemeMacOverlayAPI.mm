@@ -37,6 +37,7 @@
 #include "platform/mac/LocalCurrentGraphicsContext.h"
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
+#include "wtf/RetainPtr.h"
 
 @interface WebCoreScrollbarObserver : NSObject {
     blink::ScrollbarThemeClient* _scrollbar;

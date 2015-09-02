@@ -39,10 +39,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringHash.h"
 
-#if OS(MACOSX)
-#include "wtf/RetainPtr.h"
-#endif
-
 namespace blink {
 
 class FontDescription;
