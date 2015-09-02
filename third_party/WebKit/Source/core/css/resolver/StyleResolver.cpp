@@ -379,12 +379,21 @@ void StyleResolver::matchHostRules(const Element& element, ElementRuleCollector&
     }
 }
 
-void StyleResolver::matchElementScopeRules(ScopedStyleResolver& elementScopeResolver, ElementRuleCollector& collector, bool includeEmptyRules)
+void StyleResolver::matchElementScopeRules(const Element& element, ScopedStyleResolver* elementScopeResolver, ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    collector.clearMatchedRules();
-    elementScopeResolver.collectMatchingAuthorRules(collector, includeEmptyRules);
-    elementScopeResolver.collectMatchingTreeBoundaryCrossingRules(collector, includeEmptyRules);
-    collector.sortAndTransferMatchedRules();
+    if (elementScopeResolver) {
+        collector.clearMatchedRules();
+        elementScopeResolver->collectMatchingAuthorRules(collector, includeEmptyRules);
+        elementScopeResolver->collectMatchingTreeBoundaryCrossingRules(collector, includeEmptyRules);
+        collector.sortAndTransferMatchedRules();
+    }
+
+    if (element.isStyledElement() && element.inlineStyle() && !collector.isCollectingForPseudoElement()) {
+        // Inline style is immutable as long as there is no CSSOM wrapper.
+        bool isInlineStyleCacheable = !element.inlineStyle()->isMutable();
+        collector.addElementStyleProperties(element.inlineStyle(), isInlineStyleCacheable);
+    }
+
     collector.finishAddingAuthorRulesForTreeScope();
 }
 
@@ -397,7 +406,7 @@ void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollecto
     // scope, only tree-boundary-crossing rules may match.
 
     ScopedStyleResolver* elementScopeResolver = scopedResolverFor(element);
-    bool matchElementScopeDone = !elementScopeResolver;
+    bool matchElementScopeDone = !elementScopeResolver && !element.inlineStyle();
 
     for (auto it = m_treeBoundaryCrossingScopes.rbegin(); it != m_treeBoundaryCrossingScopes.rend(); ++it) {
         const TreeScope& scope = (*it)->treeScope();
@@ -413,7 +422,7 @@ void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollecto
             // to a scope which appears before the element's scope in the tree-of-trees order.
             // Try to match all rules from the element's scope.
 
-            matchElementScopeRules(*elementScopeResolver, collector, includeEmptyRules);
+            matchElementScopeRules(element, elementScopeResolver, collector, includeEmptyRules);
             if (resolver == elementScopeResolver) {
                 // Boundary-crossing rules already collected in matchElementScopeRules.
                 continue;
@@ -427,7 +436,7 @@ void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollecto
     }
 
     if (!matchElementScopeDone)
-        matchElementScopeRules(*elementScopeResolver, collector, includeEmptyRules);
+        matchElementScopeRules(element, elementScopeResolver, collector, includeEmptyRules);
 }
 
 void StyleResolver::matchAuthorRules(const Element& element, ElementRuleCollector& collector, bool includeEmptyRules)
@@ -489,18 +498,6 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
     matchAuthorRules(*state.element(), collector, false);
 
     if (state.element()->isStyledElement()) {
-        // TODO(rune@opera.com): Adding style attribute rules here is probably too late
-        // when you have shadow piercing combinators. When we don't have piercing combinators,
-        // the style attribute always belong to the outermost scope whose rules apply to
-        // the element. Thus, applying inline style here is correct. Fixing this for piercing
-        // combinators means moving the code below into matchElementScopeRules and _not_
-        // invoking it for pseudo style requests.
-        if (state.element()->inlineStyle()) {
-            // Inline style is immutable as long as there is no CSSOM wrapper.
-            bool isInlineStyleCacheable = !state.element()->inlineStyle()->isMutable();
-            collector.addElementStyleProperties(state.element()->inlineStyle(), isInlineStyleCacheable);
-        }
-
         // Now check SMIL animation override style.
         if (includeSMILProperties && state.element()->isSVGElement())
             collector.addElementStyleProperties(toSVGElement(state.element())->animatedSMILStyleProperties(), false /* isCacheable */);

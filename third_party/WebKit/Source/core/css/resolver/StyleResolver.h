@@ -200,7 +200,7 @@ private:
     void matchUARules(ElementRuleCollector&);
     void matchAuthorRules(const Element&, ElementRuleCollector&, bool includeEmptyRules);
     void matchHostRules(const Element&, ElementRuleCollector&, bool includeEmptyRules);
-    void matchElementScopeRules(ScopedStyleResolver&, ElementRuleCollector&, bool includeEmptyRules);
+    void matchElementScopeRules(const Element&, ScopedStyleResolver*, ElementRuleCollector&, bool includeEmptyRules);
     void matchScopedRules(const Element&, ElementRuleCollector&, bool includeEmptyRules);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void collectFeatures();

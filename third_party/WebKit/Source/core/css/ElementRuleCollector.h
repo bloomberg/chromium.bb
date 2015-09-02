@@ -124,6 +124,7 @@ public:
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
     void finishAddingUARules() { m_result.finishAddingUARules(); }
     void finishAddingAuthorRulesForTreeScope() { m_result.finishAddingAuthorRulesForTreeScope(); }
+    bool isCollectingForPseudoElement() const { return m_pseudoStyleRequest.pseudoId != NOPSEUDO; }
 
 private:
     template<typename RuleDataListType>
