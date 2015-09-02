@@ -98,8 +98,8 @@ public class FindToolbarTablet extends FindToolbar {
     }
 
     @Override
-    public void deactivate() {
-        super.deactivate();
+    public void deactivate(boolean clearSelection) {
+        super.deactivate(clearSelection);
 
         if (mCurrentAnimation == mAnimationLeave) return;
 

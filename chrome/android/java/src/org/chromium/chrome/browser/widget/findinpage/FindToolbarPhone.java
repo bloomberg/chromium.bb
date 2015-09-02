@@ -33,8 +33,8 @@ public class FindToolbarPhone extends FindToolbar {
     }
 
     @Override
-    public void deactivate() {
-        super.deactivate();
+    public void deactivate(boolean clearSelection) {
+        super.deactivate(clearSelection);
         setVisibility(View.GONE);
     }
 

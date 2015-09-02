@@ -34,9 +34,12 @@ void FindInPageBridge::StartFinding(JNIEnv* env,
           case_sensitive);
 }
 
-void FindInPageBridge::StopFinding(JNIEnv* env, jobject obj) {
+void FindInPageBridge::StopFinding(JNIEnv* env,
+                                   jobject obj,
+                                   jboolean clearSelection) {
   FindTabHelper::FromWebContents(web_contents_)->
-      StopFinding(FindBarController::kClearSelectionOnPage);
+      StopFinding(clearSelection ? FindBarController::kClearSelectionOnPage
+          : FindBarController::kKeepSelectionOnPage);
 }
 
 ScopedJavaLocalRef<jstring> FindInPageBridge::GetPreviousFindText(JNIEnv* env,

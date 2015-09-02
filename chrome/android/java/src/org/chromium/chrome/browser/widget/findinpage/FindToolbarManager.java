@@ -47,12 +47,20 @@ public class FindToolbarManager {
     }
 
     /**
-     * Hides the toolbar.
+     * Hides the toolbar and clears the selection on the screen.
      */
     public void hideToolbar() {
+        hideToolbar(true);
+    }
+
+    /**
+     * Hides the toolbar.
+     * @param clearSelection Whether the selection on the page should be cleared.
+     */
+    public void hideToolbar(boolean clearSelection) {
         if (mFindToolbar == null) return;
 
-        mFindToolbar.deactivate();
+        mFindToolbar.deactivate(clearSelection);
     }
 
     /**

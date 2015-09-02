@@ -21,7 +21,7 @@ class FindInPageBridge {
                     jboolean forward_direction,
                     jboolean case_sensitive);
 
-  void StopFinding(JNIEnv* env, jobject obj);
+  void StopFinding(JNIEnv* env, jobject obj, jboolean clearSelection);
 
   base::android::ScopedJavaLocalRef<jstring> GetPreviousFindText(JNIEnv* env,
                                                                  jobject obj);
