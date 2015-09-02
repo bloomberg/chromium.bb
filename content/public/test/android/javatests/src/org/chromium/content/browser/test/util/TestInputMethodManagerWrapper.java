@@ -64,8 +64,9 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
 
     private final ContentViewCore mContentViewCore;
     private InputConnection mInputConnection;
-    private int mShowSoftInputCounter = 0;
-    private int mUpdateSelectionCounter = 0;
+    private int mShowSoftInputCounter;
+    private int mHideSoftInputCounter;
+    private int mUpdateSelectionCounter;
     private EditorInfo mEditorInfo;
     private final Range mSelection = new Range(0, 0);
     private final Range mComposition = new Range(-1, -1);
@@ -98,6 +99,7 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
     @Override
     public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
             ResultReceiver resultReceiver) {
+        mHideSoftInputCounter++;
         boolean retVal = mInputConnection == null;
         mInputConnection = null;
         return retVal;
@@ -111,10 +113,23 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         mComposition.set(candidatesStart, candidatesEnd);
     }
 
+    /**
+     * @return The number of showSoftInput() function calls.
+     */
     public int getShowSoftInputCounter() {
         return mShowSoftInputCounter;
     }
 
+    /**
+     * @return The number of hideSoftInputFromWindow() function calls.
+     */
+    public int getHideSoftInputCounter() {
+        return mHideSoftInputCounter;
+    }
+
+    /**
+     * @return The number of updateSelection() function calls.
+     */
     public int getUpdateSelectionCounter() {
         return mUpdateSelectionCounter;
     }
