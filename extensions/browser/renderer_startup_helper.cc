@@ -46,11 +46,6 @@ void RendererStartupHelper::Observe(
   process->Send(new ExtensionMsg_SetSystemFont(webui::GetFontFamily(),
                                                webui::GetFontSize()));
 
-  // Valid extension function names, used to setup bindings in renderer.
-  std::vector<std::string> function_names;
-  ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
-  process->Send(new ExtensionMsg_SetFunctionNames(function_names));
-
   // Scripting whitelist. This is modified by tests and must be communicated
   // to renderers.
   process->Send(new ExtensionMsg_SetScriptingWhitelist(

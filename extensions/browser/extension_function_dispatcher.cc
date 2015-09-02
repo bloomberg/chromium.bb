@@ -220,11 +220,6 @@ ExtensionFunctionDispatcher::Delegate::GetVisibleWebContents() const {
   return GetAssociatedWebContents();
 }
 
-void ExtensionFunctionDispatcher::GetAllFunctionNames(
-    std::vector<std::string>* names) {
-  ExtensionFunctionRegistry::GetInstance()->GetAllNames(names);
-}
-
 bool ExtensionFunctionDispatcher::OverrideFunction(
     const std::string& name, ExtensionFunctionFactory factory) {
   return ExtensionFunctionRegistry::GetInstance()->OverrideFunction(name,

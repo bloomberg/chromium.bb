@@ -30,9 +30,6 @@ class ExtensionFunctionRegistry {
   explicit ExtensionFunctionRegistry();
   virtual ~ExtensionFunctionRegistry();
 
-  // Adds all function names to 'names'.
-  void GetAllNames(std::vector<std::string>* names);
-
   // Allows overriding of specific functions (e.g. for testing).  Functions
   // must be previously registered.  Returns true if successful.
   bool OverrideFunction(const std::string& name,

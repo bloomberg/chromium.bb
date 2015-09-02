@@ -84,14 +84,6 @@ void RequestSender::StartRequest(Source* source,
   if (!render_frame)
     return;
 
-  const std::set<std::string>& function_names = dispatcher_->function_names();
-  if (function_names.find(name) == function_names.end()) {
-    NOTREACHED()
-        << "Unexpected function " << name
-        << ". Did you remember to register it with ExtensionFunctionRegistry?";
-    return;
-  }
-
   // TODO(koz): See if we can make this a CHECK.
   if (!context->HasAccessOrThrowError(name))
     return;

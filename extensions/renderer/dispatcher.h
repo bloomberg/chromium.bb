@@ -69,10 +69,6 @@ class Dispatcher : public content::RenderProcessObserver,
   explicit Dispatcher(DispatcherDelegate* delegate);
   ~Dispatcher() override;
 
-  const std::set<std::string>& function_names() const {
-    return function_names_;
-  }
-
   const ScriptContextSet& script_context_set() const {
     return *script_context_set_;
   }
@@ -166,7 +162,6 @@ class Dispatcher : public content::RenderProcessObserver,
                        const base::ListValue& args,
                        bool user_gesture);
   void OnSetChannel(int channel);
-  void OnSetFunctionNames(const std::vector<std::string>& names);
   void OnSetScriptingWhitelist(
       const ExtensionsClient::ScriptingWhitelist& extension_ids);
   void OnSetSystemFont(const std::string& font_family,

@@ -836,7 +836,6 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnLoaded)
   IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetChannel, OnSetChannel)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_SetFunctionNames, OnSetFunctionNames)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                       OnSetScriptingWhitelist)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetSystemFont, OnSetSystemFont)
@@ -1035,12 +1034,6 @@ void Dispatcher::OnMessageInvoke(const std::string& extension_id,
 void Dispatcher::OnSetChannel(int channel) {
   delegate_->SetChannel(channel);
   AddChannelSpecificFeatures();
-}
-
-void Dispatcher::OnSetFunctionNames(const std::vector<std::string>& names) {
-  function_names_.clear();
-  for (size_t i = 0; i < names.size(); ++i)
-    function_names_.insert(names[i]);
 }
 
 void Dispatcher::OnSetScriptingWhitelist(

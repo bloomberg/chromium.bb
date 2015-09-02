@@ -413,10 +413,6 @@ IPC_MESSAGE_ROUTED5(ExtensionMsg_MessageInvoke,
                     base::ListValue /* args */,
                     bool /* delivered as part of a user gesture */)
 
-// Tell the renderer process all known extension function names.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_SetFunctionNames,
-                     std::vector<std::string>)
-
 // Set the top-level frame to the provided name.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_SetFrameName,
                     std::string /* frame_name */)

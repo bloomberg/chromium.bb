@@ -70,9 +70,6 @@ class ExtensionFunctionDispatcher
     virtual ~Delegate() {}
   };
 
-  // Gets a list of all known extension function names.
-  static void GetAllFunctionNames(std::vector<std::string>* names);
-
   // Override a previously registered function. Returns true if successful,
   // false if no such function was registered.
   static bool OverrideFunction(const std::string& name,
