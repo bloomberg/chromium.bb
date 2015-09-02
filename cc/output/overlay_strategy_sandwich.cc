@@ -94,10 +94,12 @@ bool OverlayStrategySandwich::TryOverlay(
 
   // Add an overlay of the primary surface for any part of the candidate's
   // quad that was covered.
-  // TODO(ccameron): Create an OverlayCandidate for each rect in the region.
-  gfx::Rect pixel_covered_rect = pixel_covered_region.bounds();
-  DCHECK(IsPixelRectAlignedToDIP(device_scale_factor, pixel_covered_rect));
-  if (!pixel_covered_rect.IsEmpty()) {
+  std::vector<gfx::Rect> pixel_covered_rects;
+  for (Region::Iterator it(pixel_covered_region); it.has_rect(); it.next()) {
+    DCHECK(IsPixelRectAlignedToDIP(device_scale_factor, it.rect()));
+    pixel_covered_rects.push_back(it.rect());
+  }
+  for (const gfx::Rect& pixel_covered_rect : pixel_covered_rects) {
     OverlayCandidate main_image_on_top;
     main_image_on_top.display_rect = pixel_covered_rect;
     main_image_on_top.uv_rect = pixel_covered_rect;
@@ -118,24 +120,38 @@ bool OverlayStrategySandwich::TryOverlay(
 
   // Remove the quad for the overlay quad. Replace it with a transparent quad
   // if we're putting a new overlay on top.
-  if (pixel_covered_rect.IsEmpty()) {
+  if (pixel_covered_rects.empty()) {
     quad_list.EraseAndInvalidateAllPointers(candidate_iter_in_quad_list);
   } else {
-    gfx::RectF quad_space_covered_rect_float = pixel_covered_rect;
-    candidate_inverse_transform.TransformRect(&quad_space_covered_rect_float);
-    gfx::Rect quad_space_covered_rect =
-        gfx::ToEnclosingRect(quad_space_covered_rect_float);
-    quad_space_covered_rect.Intersect(candidate_quad->rect);
-
-    const SharedQuadState* shared_quad_state =
+    // Cache the information from the candidate quad that we'll need to
+    // construct the solid color quads.
+    const SharedQuadState* candidate_shared_quad_state =
         candidate_quad->shared_quad_state;
+    const gfx::Rect candidate_rect = candidate_quad->rect;
 
-    SolidColorDrawQuad* replacement =
-        quad_list.ReplaceExistingElement<SolidColorDrawQuad>(
-            candidate_iter_in_quad_list);
-    replacement->SetAll(shared_quad_state, quad_space_covered_rect,
-                        quad_space_covered_rect, quad_space_covered_rect, false,
-                        SK_ColorTRANSPARENT, true);
+    // Reserve space in the quad list for the transparent quads.
+    quad_list.ReplaceExistingElement<SolidColorDrawQuad>(
+        candidate_iter_in_quad_list);
+    candidate_iter_in_quad_list =
+        quad_list.InsertBeforeAndInvalidateAllPointers<SolidColorDrawQuad>(
+            candidate_iter_in_quad_list, pixel_covered_rects.size() - 1);
+
+    // Cover the region with transparent quads.
+    for (const gfx::Rect& pixel_covered_rect : pixel_covered_rects) {
+      gfx::RectF quad_space_covered_rect_float = pixel_covered_rect;
+      candidate_inverse_transform.TransformRect(&quad_space_covered_rect_float);
+      gfx::Rect quad_space_covered_rect =
+          gfx::ToEnclosingRect(quad_space_covered_rect_float);
+      quad_space_covered_rect.Intersect(candidate_rect);
+
+      SolidColorDrawQuad* transparent_quad =
+          static_cast<SolidColorDrawQuad*>(*candidate_iter_in_quad_list);
+      transparent_quad->SetAll(candidate_shared_quad_state,
+                               quad_space_covered_rect, quad_space_covered_rect,
+                               quad_space_covered_rect, false,
+                               SK_ColorTRANSPARENT, true);
+      ++candidate_iter_in_quad_list;
+    }
   }
 
   output_candidate_list->swap(new_candidate_list);

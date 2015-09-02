@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
@@ -25,6 +26,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 using testing::_;
 using testing::Mock;
@@ -540,6 +542,72 @@ TEST_F(SandwichTest, MisalignedOverlay) {
 
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(0U, candidate_list.size());
+}
+
+TEST_F(SandwichTest, MultiQuadOverlay) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+
+  // Put two non-intersecting quads on top.
+  const gfx::Rect rect1(gfx::Rect(0, 0, 32, 32));
+  const gfx::Rect rect2(gfx::Rect(32, 32, 32, 32));
+  Region covered_region;
+  covered_region.Union(rect1);
+  covered_region.Union(rect2);
+  CreateOpaqueQuadAt(resource_provider_.get(),
+                     pass->shared_quad_state_list.back(), pass.get(), rect1);
+  CreateOpaqueQuadAt(resource_provider_.get(),
+                     pass->shared_quad_state_list.back(), pass.get(), rect2);
+
+  // Then a candidate that we'll turn into an overlay.
+  unsigned candidate_id =
+      CreateCandidateQuadAt(resource_provider_.get(),
+                            pass->shared_quad_state_list.back(), pass.get(),
+                            gfx::Rect(0, 0, 64, 64))
+          ->resource_id();
+
+  // Then some opaque background.
+  CreateOpaqueQuadAt(resource_provider_.get(),
+                     pass->shared_quad_state_list.back(), pass.get(),
+                     gfx::Rect(kDisplaySize));
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  // Run the overlay strategy on that input.
+  RenderPass* main_pass = pass_list.back();
+  OverlayCandidateList candidate_list;
+  EXPECT_EQ(4U, main_pass->quad_list.size());
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  ASSERT_EQ(1U, pass_list.size());
+  ASSERT_EQ(4U, candidate_list.size());
+
+  // Check that the candidate quad is gone and that we now have two transparent
+  // quads for the same region that was covered on the overlay.
+  EXPECT_EQ(5U, main_pass->quad_list.size());
+  const QuadList& quad_list = main_pass->quad_list;
+  Region transparent_quad_region;
+  for (QuadList::ConstBackToFrontIterator it = quad_list.BackToFrontBegin();
+       it != quad_list.BackToFrontEnd(); ++it) {
+    EXPECT_NE(DrawQuad::TEXTURE_CONTENT, it->material);
+    if (it->material == DrawQuad::SOLID_COLOR) {
+      const SolidColorDrawQuad* solid_color_quad =
+          SolidColorDrawQuad::MaterialCast(*it);
+      if (solid_color_quad->color == SK_ColorTRANSPARENT)
+        transparent_quad_region.Union(solid_color_quad->rect);
+    }
+  }
+  DCHECK(covered_region == transparent_quad_region);
+
+  // Check that overlays cover the same region that the quads covered.
+  EXPECT_FALSE(candidate_list[0].use_output_surface_for_resource);
+  EXPECT_EQ(candidate_id, candidate_list[1].resource_id);
+  EXPECT_EQ(gfx::Rect(0, 0, 64, 64), candidate_list[1].display_rect);
+  EXPECT_TRUE(candidate_list[2].use_output_surface_for_resource);
+  EXPECT_TRUE(candidate_list[3].use_output_surface_for_resource);
+  Region overlay_region;
+  overlay_region.Union(gfx::ToEnclosingRect(candidate_list[2].display_rect));
+  overlay_region.Union(gfx::ToEnclosingRect(candidate_list[3].display_rect));
+  DCHECK(covered_region == overlay_region);
 }
 
 TEST_F(SingleOverlayOnTopTest, SuccessfullOverlay) {
