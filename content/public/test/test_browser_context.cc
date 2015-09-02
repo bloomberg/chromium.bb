@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/test/null_task_runner.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/test/mock_ssl_host_state_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -81,7 +82,10 @@ net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
 
 net::URLRequestContextGetter*
 TestBrowserContext::GetRequestContextForRenderProcess(int renderer_child_id) {
-  return NULL;
+  // TODO(creis): This should return a request context based on
+  // |render_child_id|'s StoragePartition. For now, it returns the single
+  // context for simplicity.
+  return GetRequestContext();
 }
 
 net::URLRequestContextGetter* TestBrowserContext::GetMediaRequestContext() {
@@ -121,7 +125,9 @@ PushMessagingService* TestBrowserContext::GetPushMessagingService() {
 }
 
 SSLHostStateDelegate* TestBrowserContext::GetSSLHostStateDelegate() {
-  return NULL;
+  if (!ssl_host_state_delegate_)
+    ssl_host_state_delegate_.reset(new MockSSLHostStateDelegate());
+  return ssl_host_state_delegate_.get();
 }
 
 PermissionManager* TestBrowserContext::GetPermissionManager() {

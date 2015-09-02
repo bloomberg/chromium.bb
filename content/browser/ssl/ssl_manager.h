@@ -40,7 +40,7 @@ struct ResourceRequestDetails;
 // The security state (secure/insecure) is stored in the navigation entry.
 // Along with it are stored any SSL error code and the associated cert.
 
-class SSLManager {
+class CONTENT_EXPORT SSLManager {
  public:
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager

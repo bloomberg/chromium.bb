@@ -15,6 +15,7 @@
 
 namespace content {
 class MockResourceContext;
+class MockSSLHostStateDelegate;
 class ZoomLevelDelegate;
 
 class TestBrowserContext : public BrowserContext {
@@ -57,6 +58,7 @@ class TestBrowserContext : public BrowserContext {
   scoped_ptr<MockResourceContext> resource_context_;
   base::ScopedTempDir browser_context_dir_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+  scoped_ptr<MockSSLHostStateDelegate> ssl_host_state_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };

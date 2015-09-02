@@ -40,6 +40,8 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "net/base/test_data_directory.h"
+#include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -3324,6 +3326,24 @@ TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithBadSecurityInfo) {
       GURL("http://example.test"), "not valid security info", "GET",
       "mime type", RESOURCE_TYPE_MAIN_FRAME);
   EXPECT_EQ(1, rph->bad_msg_count());
+}
+
+// Test that if a resource is loaded with empty security info, the SSLManager
+// does not mistakenly think it has seen a good certificate and thus forget any
+// user exceptions for that host. See https://crbug.com/516808.
+TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithEmptySecurityInfo) {
+  scoped_refptr<net::X509Certificate> cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  SSLPolicyBackend* backend = contents()->controller_.ssl_manager()->backend();
+  const GURL test_url("https://example.test");
+
+  backend->AllowCertForHost(*cert, test_url.host(), 1);
+  EXPECT_TRUE(backend->HasAllowException(test_url.host()));
+
+  contents()->OnDidLoadResourceFromMemoryCache(test_url, "", "GET", "mime type",
+                                               RESOURCE_TYPE_MAIN_FRAME);
+
+  EXPECT_TRUE(backend->HasAllowException(test_url.host()));
 }
 
 }  // namespace content

@@ -124,7 +124,12 @@ void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
 
   if (net::IsCertStatusError(info->ssl_cert_status())) {
     backend_->HostRanInsecureContent(info->url().host(), info->child_id());
-  } else if (info->url().SchemeIsCryptographic()) {
+  } else if (info->ssl_cert_id() && info->url().SchemeIsCryptographic()) {
+    // If the scheme is https: or wss: *and* the security info for the cert has
+    // been set (i.e. the cert id is not 0), revoke any previous decisions that
+    // have occurred. If the cert info has not been set, do nothing since it
+    // isn't known if the connection was actually a valid connection or if it
+    // had a cert error.
     SSLGoodCertSeenEvent event = NO_PREVIOUS_EXCEPTION;
     if (backend_->HasAllowException(info->url().host())) {
       // If there's no certificate error, a good certificate has been seen, so

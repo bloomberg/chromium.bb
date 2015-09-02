@@ -17,7 +17,7 @@
 namespace content {
 class NavigationControllerImpl;
 
-class SSLPolicyBackend {
+class CONTENT_EXPORT SSLPolicyBackend {
  public:
   explicit SSLPolicyBackend(NavigationControllerImpl* controller);
 

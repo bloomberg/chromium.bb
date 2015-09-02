@@ -43,6 +43,7 @@ struct CONTENT_EXPORT SSLStatus {
   }
 
   content::SecurityStyle security_style;
+  // A cert_id value of 0 indicates that it is unset or invalid.
   int cert_id;
   net::CertStatus cert_status;
   int security_bits;
