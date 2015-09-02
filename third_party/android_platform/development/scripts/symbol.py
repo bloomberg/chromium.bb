@@ -26,6 +26,7 @@ import os
 import re
 import struct
 import subprocess
+import sys
 import zipfile
 
 CHROME_SRC = os.path.join(os.path.realpath(os.path.dirname(__file__)),
@@ -37,6 +38,9 @@ CHROME_SYMBOLS_DIR = CHROME_SRC
 ARCH = "arm"
 
 TOOLCHAIN_INFO = None
+
+sys.path.insert(0, os.path.join(CHROME_SRC, 'build', 'android'))
+from pylib.symbols import elf_symbolizer
 
 # See:
 # http://bugs.python.org/issue14315
@@ -450,7 +454,6 @@ def CallAddr2LineForSet(lib, unique_addrs):
   if not lib:
     return None
 
-
   symbols = SYMBOLS_DIR + lib
   if not os.path.splitext(symbols)[1] in ['', '.so', '.apk']:
     return None
@@ -458,37 +461,30 @@ def CallAddr2LineForSet(lib, unique_addrs):
   if not os.path.isfile(symbols):
     return None
 
-  (label, platform, target) = FindToolchain()
-  cmd = [ToolPath("addr2line"), "--functions", "--inlines",
-      "--demangle", "--exe=" + symbols]
-  child = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-
-  result = {}
   addrs = sorted(unique_addrs)
-  for addr in addrs:
-    child.stdin.write("0x%s\n" % addr)
-    child.stdin.flush()
+  result = {}
+
+  def _Callback(sym, addr):
     records = []
-    first = True
-    while True:
-      symbol = child.stdout.readline().strip()
-      if symbol == "??":
-        symbol = None
-      location = child.stdout.readline().strip()
-      if location == "??:0":
+    while sym:  # Traverse all the inlines following the |inlined_by| chain.
+      if sym.source_path and sym.source_line:
+        location = '%s:%d' % (sym.source_path, sym.source_line)
+      else:
         location = None
-      if symbol is None and location is None:
-        break
-      records.append((symbol, location))
-      if first:
-        # Write a blank line as a sentinel so we know when to stop
-        # reading inlines from the output.
-        # The blank line will cause addr2line to emit "??\n??:0\n".
-        child.stdin.write("\n")
-        first = False
+      records += [(sym.name, location)]
+      sym = sym.inlined_by
     result[addr] = records
-  child.stdin.close()
-  child.stdout.close()
+
+  (label, platform, target) = FindToolchain()
+  symbolizer = elf_symbolizer.ELFSymbolizer(
+      elf_file_path=symbols,
+      addr2line_path=ToolPath("addr2line"),
+      callback=_Callback,
+      inlines=True)
+
+  for addr in addrs:
+    symbolizer.SymbolizeAsync(int(addr, 16), addr)
+  symbolizer.Join()
   return result
 
 

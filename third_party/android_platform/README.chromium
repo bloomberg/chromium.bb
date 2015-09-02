@@ -34,6 +34,7 @@ Added support for finding symbols when library is loaded directly from the APK.
 Changed the toolchain to remove references to 4.6 toolchains.
 Added support for arch=x64 as an alias to arch=x86_64
 Added debug logging and --verbose parameter.
+Used fast ELF symbolizer for symbols.py and tombstones
 
 Android relocation packing tool details:
     Copy sources from AOSP bionic/tools/relocation_packer
