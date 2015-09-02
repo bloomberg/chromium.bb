@@ -106,6 +106,7 @@ bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       return true;
     case gfx::BufferFormat::BGRX_8888:
@@ -148,7 +149,8 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
       return true;
-    case gfx::BufferFormat::YUV_420: {
+    case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR: {
       size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
       for (size_t i = 0; i < num_planes; ++i) {
         size_t factor = gfx::SubsamplingFactorForBufferFormat(format, i);

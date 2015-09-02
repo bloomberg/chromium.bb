@@ -21,6 +21,7 @@ enum class BufferFormat {
   BGRX_8888,
   BGRA_8888,
   YUV_420,
+  YUV_420_BIPLANAR,
   UYVY_422,
 
   LAST = UYVY_422

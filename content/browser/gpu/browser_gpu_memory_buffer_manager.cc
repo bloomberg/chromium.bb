@@ -119,6 +119,8 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
         {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP},
         {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::MAP},
         {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::PERSISTENT_MAP},
+        {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::MAP},
+        {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::PERSISTENT_MAP},
     };
     for (auto& configuration : kNativeConfigurations) {
       if (IsGpuMemoryBufferFactoryConfigurationSupported(type, configuration))
@@ -131,6 +133,7 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
       {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
       {gfx::BufferFormat::BGRX_8888, gfx::BufferUsage::SCANOUT},
       {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::SCANOUT},
+      {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::SCANOUT},
   };
   for (auto& configuration : kScanoutConfigurations) {
     if (IsGpuMemoryBufferFactoryConfigurationSupported(type, configuration))

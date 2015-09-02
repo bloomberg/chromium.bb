@@ -38,6 +38,7 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::R_8:
     case BufferFormat::BGRA_8888:
     case BufferFormat::UYVY_422:
+    case BufferFormat::YUV_420_BIPLANAR:
       return true;
     case BufferFormat::ATC:
     case BufferFormat::ATCIA:
@@ -58,6 +59,7 @@ bool ValidFormat(BufferFormat format) {
 GLenum TextureFormat(BufferFormat format) {
   switch (format) {
     case BufferFormat::R_8:
+    case BufferFormat::YUV_420_BIPLANAR:
       return GL_RED;
     case BufferFormat::BGRA_8888:
       return GL_RGBA;
@@ -83,6 +85,7 @@ GLenum TextureFormat(BufferFormat format) {
 GLenum DataFormat(BufferFormat format) {
   switch (format) {
     case BufferFormat::R_8:
+    case BufferFormat::YUV_420_BIPLANAR:
       return GL_RED;
     case BufferFormat::BGRA_8888:
       return GL_BGRA;
@@ -109,6 +112,7 @@ GLenum DataFormat(BufferFormat format) {
 GLenum DataType(BufferFormat format) {
   switch (format) {
     case BufferFormat::R_8:
+    case BufferFormat::YUV_420_BIPLANAR:
       return GL_UNSIGNED_BYTE;
     case BufferFormat::BGRA_8888:
       return GL_UNSIGNED_INT_8_8_8_8_REV;

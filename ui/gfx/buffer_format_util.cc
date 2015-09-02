@@ -23,6 +23,8 @@ size_t NumberOfPlanesForBufferFormat(BufferFormat format) {
     case BufferFormat::BGRA_8888:
     case BufferFormat::UYVY_422:
       return 1;
+    case BufferFormat::YUV_420_BIPLANAR:
+      return 2;
     case BufferFormat::YUV_420:
       return 3;
   }
@@ -46,6 +48,11 @@ size_t SubsamplingFactorForBufferFormat(BufferFormat format, int plane) {
       return 1;
     case BufferFormat::YUV_420: {
       static size_t factor[] = {1, 2, 2};
+      DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
+      return factor[plane];
+    }
+    case gfx::BufferFormat::YUV_420_BIPLANAR: {
+      static size_t factor[] = {1, 2};
       DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
       return factor[plane];
     }
@@ -101,6 +108,10 @@ bool RowSizeForBufferFormatChecked(
     case BufferFormat::YUV_420:
       DCHECK_EQ(0u, width % 2);
       *size_in_bytes = width / SubsamplingFactorForBufferFormat(format, plane);
+      return true;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      DCHECK_EQ(width % 2, 0u);
+      *size_in_bytes = width;
       return true;
   }
   NOTREACHED();
