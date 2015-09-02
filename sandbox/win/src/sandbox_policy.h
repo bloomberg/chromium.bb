@@ -75,7 +75,7 @@ class TargetPolicy {
   // initial: the security level for the initial token. This is the token that
   //   is used by the process from the creation of the process until the moment
   //   the process calls TargetServices::LowerToken() or the process calls
-  //   win32's ReverToSelf(). Once this happens the initial token is no longer
+  //   win32's RevertToSelf(). Once this happens the initial token is no longer
   //   available and the lockdown token is in effect. Using an initial token is
   //   not compatible with AppContainer, see SetAppContainer.
   // lockdown: the security level for the token that comes into force after the
