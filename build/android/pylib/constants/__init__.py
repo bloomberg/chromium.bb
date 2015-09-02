@@ -13,6 +13,9 @@ import logging
 import os
 import subprocess
 
+import devil.android.sdk.keyevent
+keyevent = devil.android.sdk.keyevent
+
 
 DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
     os.path.abspath(os.path.join(os.path.dirname(__file__),

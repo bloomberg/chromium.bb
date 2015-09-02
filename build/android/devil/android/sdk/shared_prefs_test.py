@@ -12,9 +12,9 @@ import os
 import sys
 import unittest
 
+from devil.android import device_utils
+from devil.android.sdk import shared_prefs
 from pylib import constants
-from pylib.device import device_utils
-from pylib.device import shared_prefs
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))

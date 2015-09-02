@@ -14,10 +14,10 @@ import time
 import traceback
 import unittest
 
+from devil.android import decorators
+from devil.android import device_errors
+from devil.utils import reraiser_thread
 from pylib import constants
-from pylib.device import decorators
-from pylib.device import device_errors
-from pylib.utils import reraiser_thread
 
 _DEFAULT_TIMEOUT = 30
 _DEFAULT_RETRIES = 3

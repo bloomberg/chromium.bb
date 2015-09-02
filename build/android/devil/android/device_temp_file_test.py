@@ -12,11 +12,11 @@ import os
 import sys
 import unittest
 
+from devil.android import device_errors
+from devil.android.sdk import adb_wrapper
+from devil.utils import device_temp_file
+from devil.utils import mock_calls
 from pylib import constants
-from pylib.device import adb_wrapper
-from pylib.device import device_errors
-from pylib.utils import device_temp_file
-from pylib.utils import mock_calls
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))

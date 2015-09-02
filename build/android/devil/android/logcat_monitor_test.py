@@ -8,10 +8,10 @@ import os
 import sys
 import unittest
 
+from devil.android import decorators
+from devil.android import logcat_monitor
+from devil.android.sdk import adb_wrapper
 from pylib import constants
-from pylib.device import adb_wrapper
-from pylib.device import decorators
-from pylib.device import logcat_monitor
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))

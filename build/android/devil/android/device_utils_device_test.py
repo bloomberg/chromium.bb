@@ -12,11 +12,11 @@ import os
 import tempfile
 import unittest
 
-from pylib import cmd_helper
 from pylib import constants
-from pylib.device import adb_wrapper
-from pylib.device import device_utils
-from pylib.utils import md5sum
+from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
+from devil.utils import md5sum
+from devil.utils import cmd_helper
 
 _OLD_CONTENTS = "foo"
 _NEW_CONTENTS = "bar"

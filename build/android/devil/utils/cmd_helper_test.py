@@ -7,7 +7,7 @@
 import unittest
 import subprocess
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 
 
 class CmdHelperSingleQuoteTest(unittest.TestCase):

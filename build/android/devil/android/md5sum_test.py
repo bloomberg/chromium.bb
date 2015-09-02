@@ -7,10 +7,10 @@ import os
 import sys
 import unittest
 
-from pylib import cmd_helper
+from devil.android import device_errors
+from devil.android import md5sum
+from devil.utils import cmd_helper
 from pylib import constants
-from pylib.device import device_errors
-from pylib.utils import md5sum
 
 sys.path.append(
     os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
@@ -39,7 +39,8 @@ class Md5SumTest(unittest.TestCase):
     test_path = '/test/host/file.dat'
     mock_get_cmd_output = mock.Mock(
         return_value='0123456789abcdeffedcba9876543210 /test/host/file.dat')
-    with mock.patch('pylib.cmd_helper.GetCmdOutput', new=mock_get_cmd_output):
+    with mock.patch('devil.utils.cmd_helper.GetCmdOutput',
+                    new=mock_get_cmd_output):
       out = md5sum.CalculateHostMd5Sums(test_path)
       self.assertEquals(1, len(out))
       self.assertTrue('/test/host/file.dat' in out)
@@ -53,7 +54,8 @@ class Md5SumTest(unittest.TestCase):
     mock_get_cmd_output = mock.Mock(
         return_value='0123456789abcdeffedcba9876543210 /test/host/file0.dat\n'
                      '123456789abcdef00fedcba987654321 /test/host/file1.dat\n')
-    with mock.patch('pylib.cmd_helper.GetCmdOutput', new=mock_get_cmd_output):
+    with mock.patch('devil.utils.cmd_helper.GetCmdOutput',
+                    new=mock_get_cmd_output):
       out = md5sum.CalculateHostMd5Sums(test_paths)
       self.assertEquals(2, len(out))
       self.assertTrue('/test/host/file0.dat' in out)
@@ -71,7 +73,8 @@ class Md5SumTest(unittest.TestCase):
     mock_get_cmd_output = mock.Mock(
         return_value='0123456789abcdeffedcba9876543210 /test/host/file0.dat\n'
                      '123456789abcdef00fedcba987654321 /test/host/file1.dat\n')
-    with mock.patch('pylib.cmd_helper.GetCmdOutput', new=mock_get_cmd_output):
+    with mock.patch('devil.utils.cmd_helper.GetCmdOutput',
+                    new=mock_get_cmd_output):
       out = md5sum.CalculateHostMd5Sums(test_paths)
       self.assertEquals(2, len(out))
       self.assertTrue('/test/host/file0.dat' in out)

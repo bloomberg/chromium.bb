@@ -12,7 +12,7 @@ import tempfile
 import time
 import unittest
 
-from pylib.utils import parallelizer
+from devil.utils import parallelizer
 
 
 class ParallelizerTestObject(object):

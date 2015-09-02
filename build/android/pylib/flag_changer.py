@@ -4,8 +4,6 @@
 
 import logging
 
-import pylib.device.device_utils
-
 from pylib.device import device_errors
 
 

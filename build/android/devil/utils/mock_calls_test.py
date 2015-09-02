@@ -12,8 +12,8 @@ import os
 import sys
 import unittest
 
+from devil.utils import mock_calls
 from pylib import constants
-from pylib.utils import mock_calls
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))

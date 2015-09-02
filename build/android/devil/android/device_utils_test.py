@@ -19,16 +19,16 @@ import re
 import sys
 import unittest
 
-from pylib import cmd_helper
+from devil.android import device_signal
+from devil.android import device_blacklist
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
+from devil.android.sdk import intent
+from devil.android.sdk import split_select
+from devil.utils import cmd_helper
+from devil.utils import mock_calls
 from pylib import constants
-from pylib import device_signal
-from pylib.device import adb_wrapper
-from pylib.device import device_blacklist
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.device import intent
-from pylib.sdk import split_select
-from pylib.utils import mock_calls
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
@@ -64,7 +64,8 @@ class DeviceUtilsGetAVDsTest(mock_calls.TestCase):
 
   def testGetAVDs(self):
     with self.assertCall(
-        mock.call.pylib.cmd_helper.GetCmdOutput([mock.ANY, 'list', 'avd']),
+        mock.call.devil.utils.cmd_helper.GetCmdOutput(
+            [mock.ANY, 'list', 'avd']),
         'Available Android Virtual Devices:\n'
         '    Name: my_android5.0\n'
         '    Path: /some/path/to/.android/avd/my_android5.0.avd\n'
@@ -80,13 +81,16 @@ class DeviceUtilsRestartServerTest(mock_calls.TestCase):
   @mock.patch('time.sleep', mock.Mock())
   def testRestartServer_succeeds(self):
     with self.assertCalls(
-        mock.call.pylib.device.adb_wrapper.AdbWrapper.KillServer(),
-        (mock.call.pylib.cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb']),
+        mock.call.devil.android.sdk.adb_wrapper.AdbWrapper.KillServer(),
+        (mock.call.devil.utils.cmd_helper.GetCmdStatusAndOutput(
+            ['pgrep', 'adb']),
          (1, '')),
-        mock.call.pylib.device.adb_wrapper.AdbWrapper.StartServer(),
-        (mock.call.pylib.cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb']),
+        mock.call.devil.android.sdk.adb_wrapper.AdbWrapper.StartServer(),
+        (mock.call.devil.utils.cmd_helper.GetCmdStatusAndOutput(
+            ['pgrep', 'adb']),
          (1, '')),
-        (mock.call.pylib.cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb']),
+        (mock.call.devil.utils.cmd_helper.GetCmdStatusAndOutput(
+            ['pgrep', 'adb']),
          (0, '123\n'))):
       device_utils.RestartServer()
 
@@ -548,7 +552,8 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
 
   def testInstall_noPriorInstall(self):
     with self.assertCalls(
-        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+        (mock.call.devil.android.apk_helper.GetPackageName(
+            '/fake/test/app.apk'),
          'test.package'),
         (self.call.device._GetApplicationPathsInternal('test.package'), []),
         self.call.adb.Install('/fake/test/app.apk', reinstall=False)):
@@ -556,7 +561,8 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
 
   def testInstall_differentPriorInstall(self):
     with self.assertCalls(
-        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+        (mock.call.devil.android.apk_helper.GetPackageName(
+            '/fake/test/app.apk'),
          'test.package'),
         (self.call.device._GetApplicationPathsInternal('test.package'),
          ['/fake/data/app/test.package.apk']),
@@ -569,7 +575,8 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
 
   def testInstall_differentPriorInstall_reinstall(self):
     with self.assertCalls(
-        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+        (mock.call.devil.android.apk_helper.GetPackageName(
+            '/fake/test/app.apk'),
          'test.package'),
         (self.call.device._GetApplicationPathsInternal('test.package'),
          ['/fake/data/app/test.package.apk']),
@@ -581,7 +588,8 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
 
   def testInstall_identicalPriorInstall(self):
     with self.assertCalls(
-        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+        (mock.call.devil.android.apk_helper.GetPackageName(
+            '/fake/test/app.apk'),
          'test.package'),
         (self.call.device._GetApplicationPathsInternal('test.package'),
          ['/fake/data/app/test.package.apk']),
@@ -592,7 +600,8 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
 
   def testInstall_fails(self):
     with self.assertCalls(
-        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+        (mock.call.devil.android.apk_helper.GetPackageName(
+            '/fake/test/app.apk'),
          'test.package'),
         (self.call.device._GetApplicationPathsInternal('test.package'), []),
         (self.call.adb.Install('/fake/test/app.apk', reinstall=False),
@@ -605,11 +614,11 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
   def testInstallSplitApk_noPriorInstall(self):
     with self.assertCalls(
         (self.call.device._CheckSdkLevel(21)),
-        (mock.call.pylib.sdk.split_select.SelectSplits(
+        (mock.call.devil.android.sdk.split_select.SelectSplits(
             self.device, 'base.apk',
             ['split1.apk', 'split2.apk', 'split3.apk']),
          ['split2.apk']),
-        (mock.call.pylib.utils.apk_helper.GetPackageName('base.apk'),
+        (mock.call.devil.android.apk_helper.GetPackageName('base.apk'),
          'test.package'),
         (self.call.device._GetApplicationPathsInternal('test.package'), []),
         (self.call.adb.InstallMultiple(
@@ -620,11 +629,11 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
   def testInstallSplitApk_partialInstall(self):
     with self.assertCalls(
         (self.call.device._CheckSdkLevel(21)),
-        (mock.call.pylib.sdk.split_select.SelectSplits(
+        (mock.call.devil.android.sdk.split_select.SelectSplits(
             self.device, 'base.apk',
             ['split1.apk', 'split2.apk', 'split3.apk']),
          ['split2.apk']),
-        (mock.call.pylib.utils.apk_helper.GetPackageName('base.apk'),
+        (mock.call.devil.android.apk_helper.GetPackageName('base.apk'),
          'test.package'),
         (self.call.device._GetApplicationPathsInternal('test.package'),
          ['base-on-device.apk', 'split2-on-device.apk']),
@@ -704,7 +713,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
     payload = 'hi! ' * 1024
     expected_cmd = "echo '%s'" % payload
     with self.assertCalls(
-      (mock.call.pylib.utils.device_temp_file.DeviceTempFile(
+      (mock.call.devil.android.device_temp_file.DeviceTempFile(
           self.adb, suffix='.sh'), MockTempFile('/sdcard/temp-123.sh')),
       self.call.device._WriteFileWithPush('/sdcard/temp-123.sh', expected_cmd),
       (self.call.adb.Shell('sh /sdcard/temp-123.sh'), payload + '\n')):
@@ -718,7 +727,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
     with self.assertCalls(
       (self.call.device.NeedsSU(), True),
       (self.call.device._Su(expected_cmd_without_su), expected_cmd),
-      (mock.call.pylib.utils.device_temp_file.DeviceTempFile(
+      (mock.call.devil.android.device_temp_file.DeviceTempFile(
           self.adb, suffix='.sh'), MockTempFile('/sdcard/temp-123.sh')),
       self.call.device._WriteFileWithPush('/sdcard/temp-123.sh', expected_cmd),
       (self.call.adb.Shell('sh /sdcard/temp-123.sh'), payload + '\n')):
@@ -798,7 +807,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
     temp_file = MockTempFile('/sdcard/temp-123')
     cmd_redirect = '%s > %s' % (cmd, temp_file.name)
     with self.assertCalls(
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
+        (mock.call.devil.android.device_temp_file.DeviceTempFile(self.adb),
             temp_file),
         (self.call.adb.Shell(cmd_redirect)),
         (self.call.device.ReadFile(temp_file.name, force_pull=True),
@@ -820,7 +829,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
     cmd_redirect = '%s > %s' % (cmd, temp_file.name)
     with self.assertCalls(
         (self.call.adb.Shell(cmd), self.ShellError('', None)),
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
+        (mock.call.devil.android.device_temp_file.DeviceTempFile(self.adb),
             temp_file),
         (self.call.adb.Shell(cmd_redirect)),
         (self.call.device.ReadFile(mock.ANY, force_pull=True),
@@ -1518,7 +1527,7 @@ class DeviceUtilsReadFileTest(DeviceUtilsTest):
             as_root=True, check_return=True),
          ['-rw------- root root 123456 1970-01-01 00:00 can.be.read.with.su']),
         (self.call.device.NeedsSU(), True),
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
+        (mock.call.devil.android.device_temp_file.DeviceTempFile(self.adb),
          MockTempFile('/sdcard/tmp/on.device')),
         self.call.device.RunShellCommand(
             ['cp', '/this/big/file/can.be.read.with.su',
@@ -1578,7 +1587,7 @@ class DeviceUtilsWriteFileTest(DeviceUtilsTest):
     contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
     with self.assertCalls(
         (self.call.device.NeedsSU(), True),
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
+        (mock.call.devil.android.device_temp_file.DeviceTempFile(self.adb),
          MockTempFile('/sdcard/tmp/on.device')),
         self.call.device._WriteFileWithPush('/sdcard/tmp/on.device', contents),
         self.call.device.RunShellCommand(
@@ -1808,7 +1817,7 @@ class DeviceUtilsTakeScreenshotTest(DeviceUtilsTest):
 
   def testTakeScreenshot_fileNameProvided(self):
     with self.assertCalls(
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(
+        (mock.call.devil.android.device_temp_file.DeviceTempFile(
             self.adb, suffix='.png'),
          MockTempFile('/tmp/path/temp-123.png')),
         (self.call.adb.Shell('/system/bin/screencap -p /tmp/path/temp-123.png'),
@@ -1958,7 +1967,7 @@ class DeviceUtilsHealthyDevicesTest(mock_calls.TestCase):
   def testHealthyDevices_emptyBlacklist(self):
     test_serials = ['0123456789abcdef', 'fedcba9876543210']
     with self.assertCalls(
-        (mock.call.pylib.device.adb_wrapper.AdbWrapper.Devices(),
+        (mock.call.devil.android.sdk.adb_wrapper.AdbWrapper.Devices(),
          [self._createAdbWrapperMock(s) for s in test_serials])):
       blacklist = mock.NonCallableMock(**{'Read.return_value': []})
       devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
@@ -1969,7 +1978,7 @@ class DeviceUtilsHealthyDevicesTest(mock_calls.TestCase):
   def testHealthyDevices_blacklist(self):
     test_serials = ['0123456789abcdef', 'fedcba9876543210']
     with self.assertCalls(
-        (mock.call.pylib.device.adb_wrapper.AdbWrapper.Devices(),
+        (mock.call.devil.android.sdk.adb_wrapper.AdbWrapper.Devices(),
          [self._createAdbWrapperMock(s) for s in test_serials])):
       blacklist = mock.NonCallableMock(
           **{'Read.return_value': ['fedcba9876543210']})
@@ -1984,7 +1993,7 @@ class DeviceUtilsRestartAdbdTest(DeviceUtilsTest):
   def testAdbdRestart(self):
     mock_temp_file = '/sdcard/temp-123.sh'
     with self.assertCalls(
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(
+        (mock.call.devil.android.device_temp_file.DeviceTempFile(
             self.adb, suffix='.sh'), MockTempFile(mock_temp_file)),
         self.call.device.WriteFile(mock.ANY, mock.ANY),
         (self.call.device.RunShellCommand(

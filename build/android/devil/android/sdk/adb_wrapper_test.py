@@ -9,8 +9,8 @@ import tempfile
 import time
 import unittest
 
-from pylib.device import adb_wrapper
-from pylib.device import device_errors
+from devil.android import device_errors
+from devil.android.sdk import adb_wrapper
 
 
 class TestAdbWrapper(unittest.TestCase):

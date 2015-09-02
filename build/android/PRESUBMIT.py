@@ -41,15 +41,15 @@ def CommonChecks(input_api, output_api):
       output_api,
       unit_tests=[
           J('.', 'emma_coverage_stats_test.py'),
+          J('devil', 'android', 'battery_utils_test.py'),
+          J('devil', 'android', 'device_utils_test.py'),
+          J('devil', 'android', 'md5sum_test.py'),
+          J('devil', 'android', 'logcat_monitor_test.py'),
           J('pylib', 'base', 'test_dispatcher_unittest.py'),
-          J('pylib', 'device', 'battery_utils_test.py'),
-          J('pylib', 'device', 'device_utils_test.py'),
-          J('pylib', 'device', 'logcat_monitor_test.py'),
           J('pylib', 'gtest', 'gtest_test_instance_test.py'),
           J('pylib', 'instrumentation',
             'instrumentation_test_instance_test.py'),
           J('pylib', 'results', 'json_results_test.py'),
-          J('pylib', 'utils', 'md5sum_test.py'),
       ],
       env=pylib_test_env))
   return output

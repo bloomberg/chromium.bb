@@ -14,12 +14,12 @@ import os
 import sys
 import unittest
 
+from devil.android import battery_utils
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android import device_utils_test
+from devil.utils import mock_calls
 from pylib import constants
-from pylib.device import battery_utils
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.device import device_utils_test
-from pylib.utils import mock_calls
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
