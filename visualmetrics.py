@@ -561,7 +561,7 @@ def convert_to_jpeg(directory, quality):
             dest = os.path.join(directory, m.groupdict().get('base') + 'jpg')
             if os.path.isfile(dest):
                 os.remove(dest)
-            command = 'convert "{0}" -quality {1:d} "{2}"'.format(file, quality, dest)
+            command = 'convert "{0}" -set colorspace sRGB -quality {1:d} "{2}"'.format(file, quality, dest)
             subprocess.call(command, shell=True)
             if os.path.isfile(dest):
                 os.remove(file)
