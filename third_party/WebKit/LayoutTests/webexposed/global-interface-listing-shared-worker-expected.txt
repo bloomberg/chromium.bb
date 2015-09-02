@@ -420,6 +420,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method query
 [Worker]     method request
 [Worker]     method revoke
+[Worker] interface ProgressEvent
+[Worker]     getter lengthComputable
+[Worker]     getter loaded
+[Worker]     getter total
+[Worker]     method constructor
 [Worker] interface PromiseRejectionEvent
 [Worker]     getter promise
 [Worker]     getter reason
@@ -679,6 +684,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onloadstart
 [Worker]     setter onprogress
 [Worker]     setter ontimeout
+[Worker] interface XMLHttpRequestUpload
+[Worker]     method constructor
 [Worker] interface webkitIDBCursor
 [Worker]     getter direction
 [Worker]     getter key

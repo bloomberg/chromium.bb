@@ -44,8 +44,6 @@ enum XMLHttpRequestResponseType {
     ActiveDOMObject,
     Constructor,
     ConstructorCallWith=ScriptState,
-    // TODO(philipj): The spec has Exposed=(Window,Worker)
-    // https://github.com/whatwg/xhr/issues/19
     Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
     // event handler

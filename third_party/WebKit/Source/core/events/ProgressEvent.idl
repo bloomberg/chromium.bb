@@ -25,10 +25,9 @@
 
 // https://xhr.spec.whatwg.org/#interface-progressevent
 
-// TODO(philipj): The spec has Exposed=(Window,Worker)
-// https://github.com/whatwg/xhr/issues/19
 [
     Constructor(DOMString type, optional ProgressEventInit eventInitDict),
+    Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface ProgressEvent : Event {
     readonly attribute boolean lengthComputable;
     readonly attribute unsigned long long loaded;
