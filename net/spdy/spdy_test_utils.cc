@@ -48,8 +48,9 @@ std::string HexDumpWithMarks(const unsigned char* data, int length,
     }
     hex = hex + "  ";
 
-    for (const unsigned char *p = row; p < row + 4 && p < row + length; ++p)
+    for (const unsigned char* p = row; p < row + 4 && p < row + length; ++p) {
       hex += (*p >= 0x20 && *p <= 0x7f) ? (*p) : '.';
+    }
 
     hex = hex + '\n';
   }

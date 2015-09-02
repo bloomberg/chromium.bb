@@ -2986,8 +2986,9 @@ static const int kCompressorWindowSizeInBits = 11;
 static const int kCompressorMemLevel = 1;
 
 z_stream* SpdyFramer::GetHeaderCompressor() {
-  if (header_compressor_.get())
+  if (header_compressor_.get()) {
     return header_compressor_.get();  // Already initialized.
+  }
 
   header_compressor_.reset(new z_stream);
   memset(header_compressor_.get(), 0, sizeof(z_stream));
@@ -3016,8 +3017,9 @@ z_stream* SpdyFramer::GetHeaderCompressor() {
 }
 
 z_stream* SpdyFramer::GetHeaderDecompressor() {
-  if (header_decompressor_.get())
+  if (header_decompressor_.get()) {
     return header_decompressor_.get();  // Already initialized.
+  }
 
   header_decompressor_.reset(new z_stream);
   memset(header_decompressor_.get(), 0, sizeof(z_stream));
@@ -3100,8 +3102,9 @@ bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
         rv = inflateSetDictionary(decomp,
                                   reinterpret_cast<const Bytef*>(dictionary),
                                   dictionary_size);
-        if (rv == Z_OK)
+        if (rv == Z_OK) {
           rv = inflate(decomp, Z_SYNC_FLUSH);
+        }
       }
     }
 

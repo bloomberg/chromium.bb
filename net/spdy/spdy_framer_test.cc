@@ -298,8 +298,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                          size_t len,
                          bool fin) override {
     EXPECT_EQ(header_stream_id_, stream_id);
-    if (len == 0)
+    if (len == 0) {
       ++zero_length_data_frame_count_;
+    }
 
     data_bytes_ += len;
     LOG(INFO) << "OnStreamFrameData(" << stream_id << ", \"";

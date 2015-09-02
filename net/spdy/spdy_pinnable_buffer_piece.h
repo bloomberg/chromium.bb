@@ -39,9 +39,7 @@ struct NET_EXPORT_PRIVATE SpdyPinnableBufferPiece {
   // Allocates and copies the buffer to internal storage.
   void Pin();
 
-  bool IsPinned() const {
-    return storage_.get() != NULL;
-  }
+  bool IsPinned() const { return storage_ != nullptr; }
 
   // Swaps buffers, including internal storage, with |other|.
   void Swap(SpdyPinnableBufferPiece* other);

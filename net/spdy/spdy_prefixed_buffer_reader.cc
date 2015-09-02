@@ -23,8 +23,9 @@ size_t SpdyPrefixedBufferReader::Available() {
 }
 
 bool SpdyPrefixedBufferReader::ReadN(size_t count, char* out) {
-  if (Available() < count)
+  if (Available() < count) {
     return false;
+  }
 
   if (prefix_length_ >= count) {
     // Read is fully satisfied by the prefix.
@@ -49,8 +50,9 @@ bool SpdyPrefixedBufferReader::ReadN(size_t count, char* out) {
 
 bool SpdyPrefixedBufferReader::ReadN(size_t count,
                                      SpdyPinnableBufferPiece* out) {
-  if (Available() < count)
+  if (Available() < count) {
     return false;
+  }
 
   out->storage_.reset();
   out->length_ = count;
