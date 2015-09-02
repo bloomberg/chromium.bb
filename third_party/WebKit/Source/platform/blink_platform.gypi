@@ -134,6 +134,7 @@
       'UserGestureIndicator.cpp',
       'UserGestureIndicator.h',
       'WebScheduler.cpp',
+      'WebTaskRunner.cpp',
       'WebThreadSupportingGC.cpp',
       'WebThreadSupportingGC.h',
       'WebThread.cpp',

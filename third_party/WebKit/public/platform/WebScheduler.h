@@ -6,6 +6,7 @@
 #define WebScheduler_h
 
 #include "WebCommon.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {
@@ -60,12 +61,14 @@ public:
     // tasks usually have the default priority, but may be deprioritised
     // when the user is interacting with the device.
     // Takes ownership of |WebThread::Task|. Can be called from any thread.
+    // TODO(alexclarke): Remove this in favour of loadingTaskRunner().
     virtual void postLoadingTask(const WebTraceLocation&, WebThread::Task*) { }
 
     // Schedule a timer task to be run on the the associated WebThread. Timer Tasks
     // tasks usually have the default priority, but may be delayed
     // when the user is interacting with the device.
     // Takes ownership of |WebThread::Task|. Can be called from any thread.
+    // TODO(alexclarke): Remove this in favour of timerTaskRunner().
     virtual void postTimerTask(const WebTraceLocation&, WebThread::Task*, long long delayMs) {}
 
     // Schedule a timer task to be run on the the associated WebThread. Timer Tasks
@@ -74,6 +77,12 @@ public:
     // |monotonicTime| is in the timebase of WTF::monotonicallyIncreasingTime().
     // Takes ownership of |WebThread::Task|. Can be called from any thread.
     virtual void postTimerTaskAt(const WebTraceLocation&, WebThread::Task*, double monotonicTime) {}
+
+    // Returns a WebTaskRunner for loading tasks. Can be called from any thread.
+    virtual WebTaskRunner* loadingTaskRunner() { return nullptr; }
+
+    // Returns a WebTaskRunner for timer tasks. Can be called from any thread.
+    virtual WebTaskRunner* timerTaskRunner() { return nullptr; }
 
     // Suspends the timer queue and increments the timer queue suspension count.
     // May only be called from the main thread.

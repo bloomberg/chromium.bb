@@ -34,6 +34,7 @@
 
 namespace blink {
 class WebScheduler;
+class WebTaskRunner;
 class WebTraceLocation;
 
 // Always an integer value.
@@ -69,8 +70,12 @@ public:
     // postTask() and postDelayedTask() take ownership of the passed Task
     // object. It is safe to invoke postTask() and postDelayedTask() from any
     // thread.
+    // TODO(alexclarke): Remove postTask & postDelayedTask.
     virtual void postTask(const WebTraceLocation&, Task*) = 0;
     virtual void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) = 0;
+
+    // Returns a WebTaskRunner bound to the underlying scheduler's default task queue.
+    virtual WebTaskRunner* taskRunner() { return nullptr; }
 
     virtual bool isCurrentThread() const = 0;
     virtual PlatformThreadId threadId() const { return 0; }
