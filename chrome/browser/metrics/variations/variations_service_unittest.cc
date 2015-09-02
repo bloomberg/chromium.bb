@@ -43,11 +43,10 @@ namespace {
 // A test class used to validate expected functionality in VariationsService.
 class TestVariationsService : public VariationsService {
  public:
-  TestVariationsService(
-      scoped_ptr<web_resource::TestRequestAllowedNotifier> test_notifier,
-      PrefService* local_state)
+  TestVariationsService(web_resource::TestRequestAllowedNotifier* test_notifier,
+                        PrefService* local_state)
       : VariationsService(make_scoped_ptr(new ChromeVariationsServiceClient()),
-                          test_notifier.Pass(),
+                          test_notifier,
                           local_state,
                           NULL),
         intercepts_fetch_(true),
@@ -265,23 +264,20 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
       VariationsService::GetDefaultVariationsServerURLForTesting();
 
   std::string value;
-  TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(prefs)),
-      prefs);
-  GURL url = service.GetVariationsServerURL(prefs, std::string());
+  GURL url = VariationsService::GetVariationsServerURL(prefs, std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
 
   prefs_store.SetVariationsRestrictParameterPolicyValue("restricted");
-  url = service.GetVariationsServerURL(prefs, std::string());
+  url = VariationsService::GetVariationsServerURL(prefs, std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);
 
   // The override value should take precedence over what's in prefs.
-  url = service.GetVariationsServerURL(prefs, "override");
+  url = VariationsService::GetVariationsServerURL(prefs, "override");
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
@@ -291,10 +287,8 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
 TEST_F(VariationsServiceTest, VariationsURLHasOSNameParam) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
-  TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs);
-  const GURL url = service.GetVariationsServerURL(&prefs, std::string());
+  const GURL url =
+      VariationsService::GetVariationsServerURL(&prefs, std::string());
 
   std::string value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "osname", &value));
@@ -307,17 +301,16 @@ TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
 
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
-  scoped_ptr<web_resource::TestRequestAllowedNotifier> test_notifier =
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs));
-  web_resource::TestRequestAllowedNotifier* raw_notifier = test_notifier.get();
-  TestVariationsService test_service(test_notifier.Pass(), &prefs);
+  web_resource::TestRequestAllowedNotifier* test_notifier =
+      new web_resource::TestRequestAllowedNotifier(&prefs);
+  TestVariationsService test_service(test_notifier, &prefs);
 
   // Force the notifier to initially disallow requests.
-  raw_notifier->SetRequestsAllowedOverride(false);
+  test_notifier->SetRequestsAllowedOverride(false);
   test_service.StartRepeatedVariationsSeedFetch();
   EXPECT_FALSE(test_service.fetch_attempted());
 
-  raw_notifier->NotifyObserver();
+  test_notifier->NotifyObserver();
   EXPECT_TRUE(test_service.fetch_attempted());
 }
 
@@ -327,12 +320,11 @@ TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
 
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
-  scoped_ptr<web_resource::TestRequestAllowedNotifier> test_notifier =
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs));
-  web_resource::TestRequestAllowedNotifier* raw_notifier = test_notifier.get();
-  TestVariationsService test_service(test_notifier.Pass(), &prefs);
+  web_resource::TestRequestAllowedNotifier* test_notifier =
+      new web_resource::TestRequestAllowedNotifier(&prefs);
+  TestVariationsService test_service(test_notifier, &prefs);
 
-  raw_notifier->SetRequestsAllowedOverride(true);
+  test_notifier->SetRequestsAllowedOverride(true);
   test_service.StartRepeatedVariationsSeedFetch();
   EXPECT_TRUE(test_service.fetch_attempted());
 }
@@ -342,10 +334,9 @@ TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs);
+      new web_resource::TestRequestAllowedNotifier(&prefs), &prefs);
   service.variations_server_url_ =
-      service.GetVariationsServerURL(&prefs, std::string());
+      VariationsService::GetVariationsServerURL(&prefs, std::string());
   service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;
@@ -374,10 +365,9 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
 
   VariationsService service(
       make_scoped_ptr(new ChromeVariationsServiceClient()),
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs, NULL);
+      new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
   service.variations_server_url_ =
-      service.GetVariationsServerURL(&prefs, std::string());
+      VariationsService::GetVariationsServerURL(&prefs, std::string());
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
     net::TestURLFetcherFactory factory;
     service.DoActualFetch();
@@ -396,10 +386,9 @@ TEST_F(VariationsServiceTest, CountryHeader) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs);
+      new web_resource::TestRequestAllowedNotifier(&prefs), &prefs);
   service.variations_server_url_ =
-      service.GetVariationsServerURL(&prefs, std::string());
+      VariationsService::GetVariationsServerURL(&prefs, std::string());
   service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;
@@ -422,8 +411,7 @@ TEST_F(VariationsServiceTest, Observer) {
   VariationsService::RegisterPrefs(prefs.registry());
   VariationsService service(
       make_scoped_ptr(new ChromeVariationsServiceClient()),
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs, NULL);
+      new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
 
   struct {
     int normal_count;
@@ -522,8 +510,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
     VariationsService::RegisterPrefs(prefs.registry());
     VariationsService service(
         make_scoped_ptr(new ChromeVariationsServiceClient()),
-        make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-        &prefs, NULL);
+        new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
 
     if (test.pref_value_before) {
       base::ListValue list_value;

@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -49,7 +48,6 @@
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
-#include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -3776,15 +3774,9 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
       chrome_variations::VariationsService::
           GetDefaultVariationsServerURLForTesting();
 
-  // g_browser_process->variations_service() is null by default in Chromium
-  // builds, so construct a VariationsService locally instead.
-  scoped_ptr<chrome_variations::VariationsService> service =
-      chrome_variations::VariationsService::CreateForTesting(
-          make_scoped_ptr(new ChromeVariationsServiceClient()),
-          g_browser_process->local_state());
-
-  const GURL url = service->GetVariationsServerURL(
-      g_browser_process->local_state(), std::string());
+  const GURL url =
+      chrome_variations::VariationsService::GetVariationsServerURL(
+          g_browser_process->local_state(), std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   std::string value;
