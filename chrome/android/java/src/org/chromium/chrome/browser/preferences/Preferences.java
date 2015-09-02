@@ -135,7 +135,7 @@ public class Preferences extends AppCompatActivity implements
         Resources res = getResources();
         ApiCompatibilityUtils.setTaskDescription(this, res.getString(R.string.app_name),
                 BitmapFactory.decodeResource(res, R.mipmap.app_icon),
-                res.getColor(R.color.default_primary_color));
+                ApiCompatibilityUtils.getColor(res, R.color.default_primary_color));
     }
 
     // OnPreferenceStartFragmentCallback:

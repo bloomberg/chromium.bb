@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.findinpage.FindInPageBridge;
@@ -92,17 +93,17 @@ class FindResultBar extends View {
         super(context);
 
         Resources res = context.getResources();
-        mBackgroundColor = res.getColor(
+        mBackgroundColor = ApiCompatibilityUtils.getColor(res,
                 R.color.find_result_bar_background_color);
-        mBackgroundBorderColor = res.getColor(
+        mBackgroundBorderColor = ApiCompatibilityUtils.getColor(res,
                 R.color.find_result_bar_background_border_color);
-        mResultColor = res.getColor(
+        mResultColor = ApiCompatibilityUtils.getColor(res,
                 R.color.find_result_bar_result_color);
-        mResultBorderColor = res.getColor(
+        mResultBorderColor = ApiCompatibilityUtils.getColor(res,
                 R.color.find_result_bar_result_border_color);
-        mActiveColor = res.getColor(
+        mActiveColor = ApiCompatibilityUtils.getColor(res,
                 R.color.find_result_bar_active_color);
-        mActiveBorderColor = res.getColor(
+        mActiveBorderColor = ApiCompatibilityUtils.getColor(res,
                 R.color.find_result_bar_active_border_color);
         mBarTouchWidth = res.getDimensionPixelSize(
                 R.dimen.find_result_bar_touch_width);

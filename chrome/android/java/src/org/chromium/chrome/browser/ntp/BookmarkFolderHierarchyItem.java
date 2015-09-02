@@ -13,6 +13,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.BookmarksPageView.BookmarksPageManager;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -45,7 +46,7 @@ public class BookmarkFolderHierarchyItem extends AppCompatTextView implements On
                 getResources().getDimension(R.dimen.bookmark_folder_text_size));
         int textColorId = isCurrentFolder ? R.color.light_active_color
                 : R.color.ntp_list_header_subtext;
-        setTextColor(getResources().getColor(textColorId));
+        setTextColor(ApiCompatibilityUtils.getColor(getResources(), textColorId));
         setGravity(Gravity.CENTER_VERTICAL);
 
         TypedArray a = context.getTheme().obtainStyledAttributes(new int[] {

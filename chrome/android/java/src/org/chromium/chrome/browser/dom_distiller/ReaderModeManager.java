@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
@@ -103,7 +104,9 @@ public class ReaderModeManager extends EmptyTabObserver
         mObservers = new ObserverList<ReaderModeManagerObserver>();
         mReaderModePanel = isEnabled(context) ? new ReaderModePanel(this) : null;
         mHeaderBackgroundColor = context != null
-                ? context.getResources().getColor(R.color.reader_mode_header_bg) : 0;
+                ? ApiCompatibilityUtils.getColor(
+                        context.getResources(), R.color.reader_mode_header_bg)
+                : 0;
     }
 
     /**

@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge;
@@ -277,7 +278,7 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
         mProfile = profile;
         mFaviconHelper = new FaviconHelper();
         mTitle = context.getResources().getString(R.string.ntp_bookmarks);
-        mBackgroundColor = context.getResources().getColor(R.color.ntp_bg);
+        mBackgroundColor = ApiCompatibilityUtils.getColor(context.getResources(), R.color.ntp_bg);
         mCurrentFolderId = new BookmarkId(BookmarkId.INVALID_FOLDER_ID, BookmarkType.NORMAL);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 

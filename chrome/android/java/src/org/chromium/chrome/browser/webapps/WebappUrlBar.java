@@ -72,9 +72,10 @@ public class WebappUrlBar extends FrameLayout implements View.OnLayoutChangeList
                         ViewGroup.LayoutParams.MATCH_PARENT, 1, Gravity.BOTTOM));
 
         // Set the colors.
-        mSeparator.setBackgroundColor(
-                context.getResources().getColor(R.color.webapp_url_bar_separator));
-        setBackgroundColor(context.getResources().getColor(R.color.webapp_url_bar_bg));
+        mSeparator.setBackgroundColor(ApiCompatibilityUtils.getColor(context.getResources(),
+                R.color.webapp_url_bar_separator));
+        setBackgroundColor(ApiCompatibilityUtils.getColor(context.getResources(),
+                R.color.webapp_url_bar_bg));
 
         // Listen for changes in the URL bar's size.
         mUrlBar.addOnLayoutChangeListener(this);

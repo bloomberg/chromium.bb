@@ -184,7 +184,8 @@ public class UrlContainer extends ViewGroup {
         if (!mUseDarkColors) {
             trailingTextColorId = R.color.url_emphasis_light_non_emphasized_text;
         }
-        mTrailingTextView.setTextColor(getResources().getColor(trailingTextColorId));
+        mTrailingTextView.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
+                trailingTextColorId));
     }
 
     /**

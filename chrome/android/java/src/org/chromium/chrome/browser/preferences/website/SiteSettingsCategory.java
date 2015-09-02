@@ -308,7 +308,7 @@ public class SiteSettingsCategory {
         String globalMessage = getMessageForEnablingOsGlobalPermission(activity);
 
         Resources resources = activity.getResources();
-        int color = resources.getColor(R.color.pref_accent_color);
+        int color = ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color);
         ForegroundColorSpan linkSpan = new ForegroundColorSpan(color);
 
         if (perAppIntent != null) {
@@ -346,7 +346,8 @@ public class SiteSettingsCategory {
         Drawable icon = ApiCompatibilityUtils.getDrawable(activity.getResources(),
                 R.drawable.exclamation_triangle);
         icon.mutate();
-        int disabledColor = activity.getResources().getColor(R.color.pref_accent_color);
+        int disabledColor = ApiCompatibilityUtils.getColor(activity.getResources(),
+                R.color.pref_accent_color);
         icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
         return icon;
     }

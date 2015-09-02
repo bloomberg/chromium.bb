@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
@@ -47,7 +48,8 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
                 R.dimen.enhanced_bookmark_item_icon_size);
         int textSize = getResources().getDimensionPixelSize(
                 R.dimen.enhanced_bookmark_item_icon_text_size);
-        int iconColor = getResources().getColor(R.color.enhanced_bookmark_icon_background_color);
+        int iconColor = ApiCompatibilityUtils.getColor(getResources(),
+                R.color.enhanced_bookmark_icon_background_color);
         mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize , mDisplayedIconSize,
                 mCornerRadius, iconColor, textSize);
     }

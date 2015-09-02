@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
@@ -47,7 +48,8 @@ public class EnhancedBookmarkContentView extends RelativeLayout implements
         if (DeviceFormFactor.isLargeTablet(getContext())) {
             shadow.setVisibility(View.GONE);
         } else {
-            shadow.init(getResources().getColor(R.color.enhanced_bookmark_app_bar_shadow_color),
+            shadow.init(ApiCompatibilityUtils.getColor(getResources(),
+                    R.color.enhanced_bookmark_app_bar_shadow_color),
                     FadingShadow.POSITION_TOP);
             shadow.setStrength(1.0f);
         }

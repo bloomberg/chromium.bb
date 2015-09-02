@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -142,8 +143,8 @@ public class ConnectionInfoPopup implements OnClickListener {
         assert mCertificateViewer == null;
         mCertificateViewer = new TextView(mContext);
         mCertificateViewer.setText(label);
-        mCertificateViewer.setTextColor(
-                mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+        mCertificateViewer.setTextColor(ApiCompatibilityUtils.getColor(
+                mContext.getResources(), R.color.website_settings_popup_text_link));
         mCertificateViewer.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
         mCertificateViewer.setOnClickListener(this);
         mCertificateViewer.setPadding(0, mPaddingThin, 0, mPaddingThin);
@@ -159,8 +160,8 @@ public class ConnectionInfoPopup implements OnClickListener {
         mResetCertDecisionsButton.setText(label);
         mResetCertDecisionsButton.setBackgroundResource(
                 R.drawable.connection_info_reset_cert_decisions);
-        mResetCertDecisionsButton.setTextColor(
-                mContext.getResources().getColor(
+        mResetCertDecisionsButton.setTextColor(ApiCompatibilityUtils.getColor(
+                mContext.getResources(),
                 R.color.connection_info_popup_reset_cert_decisions_button));
         mResetCertDecisionsButton.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
         mResetCertDecisionsButton.setOnClickListener(this);
@@ -177,8 +178,8 @@ public class ConnectionInfoPopup implements OnClickListener {
         mMoreInfoLink = new TextView(mContext);
         mLinkUrl = HELP_URL;
         mMoreInfoLink.setText(linkText);
-        mMoreInfoLink.setTextColor(
-                mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+        mMoreInfoLink.setTextColor(ApiCompatibilityUtils.getColor(
+                mContext.getResources(), R.color.website_settings_popup_text_link));
         mMoreInfoLink.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
         mMoreInfoLink.setPadding(0, mPaddingThin, 0, mPaddingThin);
         mMoreInfoLink.setOnClickListener(this);

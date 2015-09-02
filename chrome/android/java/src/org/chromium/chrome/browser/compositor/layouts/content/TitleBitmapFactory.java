@@ -50,16 +50,18 @@ public class TitleBitmapFactory {
         mNullFaviconResourceId = nullFaviconResourceId;
 
         Resources res = context.getResources();
-        int textColor = res.getColor(incognito ? R.color.compositor_tab_title_bar_text_incognito
-                        : R.color.compositor_tab_title_bar_text);
-        int shadowColor = res.getColor(incognito ? R.color.compositor_tab_title_bar_shadow_incognito
-                        : R.color.compositor_tab_title_bar_shadow);
+        int textColor = ApiCompatibilityUtils.getColor(res, incognito
+                ? R.color.compositor_tab_title_bar_text_incognito
+                : R.color.compositor_tab_title_bar_text);
+        int shadowColor = ApiCompatibilityUtils.getColor(res, incognito
+                ? R.color.compositor_tab_title_bar_shadow_incognito
+                : R.color.compositor_tab_title_bar_shadow);
         int shadowXOffset = res.getDimensionPixelOffset(incognito
-                        ? R.dimen.compositor_tab_title_bar_shadow_x_offset_incognito
-                        : R.dimen.compositor_tab_title_bar_shadow_x_offset);
+                ? R.dimen.compositor_tab_title_bar_shadow_x_offset_incognito
+                : R.dimen.compositor_tab_title_bar_shadow_x_offset);
         int shadowYOffset = res.getDimensionPixelOffset(incognito
-                        ? R.dimen.compositor_tab_title_bar_shadow_y_offset_incognito
-                        : R.dimen.compositor_tab_title_bar_shadow_y_offset);
+                ? R.dimen.compositor_tab_title_bar_shadow_y_offset_incognito
+                : R.dimen.compositor_tab_title_bar_shadow_y_offset);
         float textSize = res.getDimensionPixelSize(R.dimen.compositor_tab_title_text_size);
         float adjustedTextSize = textSize * res.getConfiguration().fontScale;
 

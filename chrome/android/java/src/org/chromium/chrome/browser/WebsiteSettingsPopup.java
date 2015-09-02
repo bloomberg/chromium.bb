@@ -44,6 +44,7 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -553,7 +554,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             SpannableString detailsText = new SpannableString(
                     mContext.getResources().getString(R.string.page_info_details_link));
             final ForegroundColorSpan blueSpan = new ForegroundColorSpan(
-                    mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+                    ApiCompatibilityUtils.getColor(mContext.getResources(),
+                            R.color.website_settings_popup_text_link));
             detailsText.setSpan(
                     blueSpan, 0, detailsText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             messageBuilder.append(detailsText);
@@ -682,8 +684,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 permissionUnavailable.setText(warningTextResource);
 
                 permissionIcon.setImageResource(R.drawable.exclamation_triangle);
-                permissionIcon.setColorFilter(
-                        mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+                permissionIcon.setColorFilter(ApiCompatibilityUtils.getColor(
+                        mContext.getResources(), R.color.website_settings_popup_text_link));
 
                 permissionRow.setOnClickListener(this);
             }

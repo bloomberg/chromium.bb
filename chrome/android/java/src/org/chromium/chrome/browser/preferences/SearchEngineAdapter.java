@@ -24,6 +24,7 @@ import android.widget.BaseAdapter;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
@@ -214,7 +215,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         link.setVisibility(selected ? View.VISIBLE : View.GONE);
         if (selected) {
             ForegroundColorSpan linkSpan = new ForegroundColorSpan(
-                    resources.getColor(R.color.pref_accent_color));
+                    ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color));
             if (LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
                 String message = mContext.getString(
                         locationEnabled(position, true)

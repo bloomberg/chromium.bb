@@ -21,6 +21,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
@@ -805,8 +806,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mContext != null) {
             mNumPixel16DP = (int) (DeviceDisplayInfo.create(mContext).getDIPScale() * 16);
             Resources resources = mContext.getResources();
-            mDefaultThemeColor = mIncognito ? resources.getColor(R.color.incognito_primary_color)
-                    : resources.getColor(R.color.default_primary_color);
+            mDefaultThemeColor = mIncognito
+                    ? ApiCompatibilityUtils.getColor(resources, R.color.incognito_primary_color)
+                    : ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
             mThemeColor = mDefaultThemeColor;
         } else {
             mDefaultThemeColor = 0;

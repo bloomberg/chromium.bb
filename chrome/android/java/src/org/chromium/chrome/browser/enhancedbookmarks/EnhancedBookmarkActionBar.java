@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
@@ -264,7 +265,8 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
                 }
             }
 
-            setBackgroundColor(getResources().getColor(R.color.light_active_color));
+            setBackgroundColor(
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color));
 
             numberRollView.setVisibility(View.VISIBLE);
             if (!wasSelectionEnabled) numberRollView.setNumber(0, false);
@@ -272,8 +274,8 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         } else {
             getMenu().setGroupVisible(R.id.normal_menu_group, true);
             getMenu().setGroupVisible(R.id.selection_mode_menu_group, false);
-            setBackgroundColor(
-                    getResources().getColor(R.color.enhanced_bookmark_appbar_background));
+            setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
+                    R.color.enhanced_bookmark_appbar_background));
 
             numberRollView.setVisibility(View.GONE);
             numberRollView.setNumber(0, false);

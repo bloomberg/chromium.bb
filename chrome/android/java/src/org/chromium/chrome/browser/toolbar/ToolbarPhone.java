@@ -576,17 +576,17 @@ public class ToolbarPhone extends ToolbarLayout
             case NEW_TAB_NORMAL:
                 return Color.TRANSPARENT;
             case NORMAL :
-                return res.getColor(R.color.default_primary_color);
+                return ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
             case INCOGNITO:
-                return res.getColor(R.color.incognito_primary_color);
+                return ApiCompatibilityUtils.getColor(res, R.color.incognito_primary_color);
             case BRAND_COLOR:
                 return getToolbarDataProvider().getPrimaryColor();
             case TAB_SWITCHER_NORMAL:
             case TAB_SWITCHER_INCOGNITO:
-                return res.getColor(R.color.tab_switcher_background);
+                return ApiCompatibilityUtils.getColor(res, R.color.tab_switcher_background);
             default:
                 assert false;
-                return res.getColor(R.color.default_primary_color);
+                return ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
         }
     }
 
@@ -935,8 +935,9 @@ public class ToolbarPhone extends ToolbarLayout
                     mMenuButton.getHeight() - mMenuButton.getPaddingBottom());
             translateCanvasToView(mToolbarButtonsContainer, mMenuButton, canvas);
             mTabSwitcherAnimationMenuDrawable.setAlpha(rgbAlpha);
-            int color = mUseLightToolbarDrawables ? getResources().getColor(R.color.light_mode_tint)
-                    : getResources().getColor(R.color.dark_mode_tint);
+            int color = mUseLightToolbarDrawables
+                    ? ApiCompatibilityUtils.getColor(getResources(), R.color.light_mode_tint)
+                    : ApiCompatibilityUtils.getColor(getResources(), R.color.dark_mode_tint);
             mTabSwitcherAnimationMenuDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
             mTabSwitcherAnimationMenuDrawable.draw(canvas);
         }
@@ -1366,7 +1367,7 @@ public class ToolbarPhone extends ToolbarLayout
             mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(
                     res, R.drawable.btn_menu).mutate();
             mTabSwitcherAnimationMenuDrawable.setColorFilter(isIncognito() ? Color.WHITE
-                    : getResources().getColor(R.color.light_normal_color),
+                    : ApiCompatibilityUtils.getColor(res, R.color.light_normal_color),
                     PorterDuff.Mode.SRC_IN);
             ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
         }
@@ -1858,7 +1859,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         getProgressBar().setBackgroundColor(
-                getResources().getColor(progressBarBackgroundColorResource));
+                ApiCompatibilityUtils.getColor(getResources(), progressBarBackgroundColorResource));
         ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
         ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
 

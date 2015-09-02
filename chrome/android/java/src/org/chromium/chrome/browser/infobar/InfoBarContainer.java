@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -427,8 +428,8 @@ public class InfoBarContainer extends SwipableOverlayView {
         if (getScrollY() != 0) {
             if (mTopBorderPaint == null) {
                 mTopBorderPaint = new Paint();
-                mTopBorderPaint.setColor(
-                        getResources().getColor(R.color.infobar_background_separator));
+                mTopBorderPaint.setColor(ApiCompatibilityUtils.getColor(getResources(),
+                        R.color.infobar_background_separator));
             }
             int height = ContentWrapperView.getBoundaryHeight(getContext());
             canvas.drawRect(0, getScrollY(), getWidth(), getScrollY() + height, mTopBorderPaint);

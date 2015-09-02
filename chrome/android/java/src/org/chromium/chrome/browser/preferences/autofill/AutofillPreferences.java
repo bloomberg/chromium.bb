@@ -75,13 +75,15 @@ public class AutofillPreferences extends PreferenceFragment
     private void setPreferenceCategoryIcons() {
         Drawable plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
         plusIcon.mutate();
-        plusIcon.setColorFilter(getResources().getColor(R.color.pref_accent_color),
+        plusIcon.setColorFilter(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.pref_accent_color),
                 PorterDuff.Mode.SRC_IN);
         findPreference(PREF_AUTOFILL_PROFILES).setIcon(plusIcon);
 
         plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
         plusIcon.mutate();
-        plusIcon.setColorFilter(getResources().getColor(R.color.pref_accent_color),
+        plusIcon.setColorFilter(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.pref_accent_color),
                 PorterDuff.Mode.SRC_IN);
         findPreference(PREF_AUTOFILL_CREDIT_CARDS).setIcon(plusIcon);
     }

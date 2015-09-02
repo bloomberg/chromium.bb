@@ -15,6 +15,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
@@ -217,9 +218,9 @@ public class CompositorView
         mLayerTitleCache = layerTitleCache;
         mTabContentManager = tabContentManager;
 
-        mNativeCompositorView =
-                nativeInit(lowMemDevice, getResources().getColor(R.color.tab_switcher_background),
-                        windowAndroid.getNativePointer(), layerTitleCache, tabContentManager);
+        mNativeCompositorView = nativeInit(lowMemDevice,
+                ApiCompatibilityUtils.getColor(getResources(), R.color.tab_switcher_background),
+                windowAndroid.getNativePointer(), layerTitleCache, tabContentManager);
 
         assert !getHolder().getSurface().isValid()
             : "Surface created before native library loaded.";

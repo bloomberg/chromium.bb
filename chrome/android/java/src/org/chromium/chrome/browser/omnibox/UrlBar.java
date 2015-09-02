@@ -31,6 +31,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputConnectionWrapper;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
@@ -164,13 +165,17 @@ public class UrlBar extends VerticallyFixedEditText {
 
         Resources resources = getResources();
 
-        mDarkDefaultTextColor = resources.getColor(R.color.url_emphasis_default_text);
+        mDarkDefaultTextColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
         mDarkHintColor = getHintTextColors();
         mDarkHighlightColor = getHighlightColor();
 
-        mLightDefaultTextColor = resources.getColor(R.color.url_emphasis_light_default_text);
-        mLightHintColor = resources.getColor(R.color.locationbar_light_hint_text);
-        mLightHighlightColor = resources.getColor(R.color.locationbar_light_selection_color);
+        mLightDefaultTextColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_light_default_text);
+        mLightHintColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text);
+        mLightHighlightColor = ApiCompatibilityUtils.getColor(resources,
+                R.color.locationbar_light_selection_color);
 
         setUseDarkTextColors(true);
 

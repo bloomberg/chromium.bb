@@ -266,8 +266,8 @@ public class NotificationMediaPlaybackControls {
         // The MediaSession icon is a plain color.
         int size = context.getResources().getDimensionPixelSize(R.dimen.media_session_icon_size);
         mMediaSessionIcon = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-        mMediaSessionIcon.eraseColor(
-                context.getResources().getColor(R.color.media_session_icon_color));
+        mMediaSessionIcon.eraseColor(ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.media_session_icon_color));
     }
 
     private void showNotification(MediaNotificationInfo mediaNotificationInfo) {

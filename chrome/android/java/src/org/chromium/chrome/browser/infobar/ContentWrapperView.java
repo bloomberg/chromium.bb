@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
@@ -51,11 +52,12 @@ public class ContentWrapperView extends FrameLayout {
         LayoutParams wrapParams = new LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT);
         setLayoutParams(wrapParams);
-        setBackgroundColor(resources.getColor(R.color.infobar_background));
+        setBackgroundColor(ApiCompatibilityUtils.getColor(resources, R.color.infobar_background));
 
         // Add a separator line that delineates different InfoBars.
         View separator = new View(context);
-        separator.setBackgroundColor(resources.getColor(R.color.infobar_background_separator));
+        separator.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(resources, R.color.infobar_background_separator));
         addView(separator, new LayoutParams(LayoutParams.MATCH_PARENT, getBoundaryHeight(context),
                 mGravity));
 

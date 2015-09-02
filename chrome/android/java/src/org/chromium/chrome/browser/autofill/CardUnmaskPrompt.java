@@ -389,7 +389,8 @@ public class CardUnmaskPrompt
 
         ColorFilter filter = null;
         if (message != null) {
-            filter = new PorterDuffColorFilter(mDialog.getContext().getResources().getColor(
+            filter = new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(
+                    mDialog.getContext().getResources(),
                     R.color.input_underline_error_color), PorterDuff.Mode.SRC_IN);
         }
 

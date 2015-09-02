@@ -19,6 +19,7 @@ import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
@@ -222,8 +223,8 @@ public class TranslateLanguagePanel
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
             View result = super.getDropDownView(position, convertView, parent);
-            result.setBackgroundColor(
-                    getContext().getResources().getColor(R.color.infobar_background));
+            result.setBackgroundColor(ApiCompatibilityUtils.getColor(
+                    getContext().getResources(), R.color.infobar_background));
             if (result instanceof TextView) {
                 ((TextView) result).setText(getItem(position).toString());
             }

@@ -136,7 +136,8 @@ public class CustomTabActivity extends ChromeActivity {
                 == CustomTabIntentDataProvider.SHOW_PAGE_TITLE);
         int toolbarColor = mIntentDataProvider.getToolbarColor();
         getToolbarManager().updatePrimaryColor(toolbarColor);
-        if (toolbarColor != getResources().getColor(R.color.default_primary_color)) {
+        if (toolbarColor != ApiCompatibilityUtils.getColor(
+                getResources(), R.color.default_primary_color)) {
             ApiCompatibilityUtils.setStatusBarColor(getWindow(),
                     ColorUtils.getDarkenedColorForStatusBar(toolbarColor));
         }

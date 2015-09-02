@@ -737,6 +737,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // @TargetApi(Build.VERSION_CODES.M) TODO(sgurun) add method document once API is public
     // crbug/512264
     // @Override
+    @Override
     public void onProvideAssistContent(AssistContent outContent) {
         if (getAssistStatusHandler() == null || !getAssistStatusHandler().isAssistSupported()) {
             // No information is provided in incognito mode.
@@ -848,7 +849,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     protected Drawable getBackgroundDrawable() {
-        return new ColorDrawable(getResources().getColor(R.color.light_background_color));
+        return new ColorDrawable(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.light_background_color));
     }
 
     /**

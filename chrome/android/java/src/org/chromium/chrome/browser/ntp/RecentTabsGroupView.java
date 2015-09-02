@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -50,10 +51,13 @@ public class RecentTabsGroupView extends RelativeLayout {
     public RecentTabsGroupView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Resources res = getResources();
-        mDeviceLabelExpandedColor = res.getColor(R.color.light_active_color);
-        mDeviceLabelCollapsedColor = res.getColor(R.color.ntp_list_header_text);
-        mTimeLabelExpandedColor = res.getColor(R.color.ntp_list_header_subtext_active);
-        mTimeLabelCollapsedColor = res.getColor(R.color.ntp_list_header_subtext);
+        mDeviceLabelExpandedColor = ApiCompatibilityUtils.getColor(res, R.color.light_active_color);
+        mDeviceLabelCollapsedColor =
+                ApiCompatibilityUtils.getColor(res, R.color.ntp_list_header_text);
+        mTimeLabelExpandedColor =
+                ApiCompatibilityUtils.getColor(res, R.color.ntp_list_header_subtext_active);
+        mTimeLabelCollapsedColor =
+                ApiCompatibilityUtils.getColor(res, R.color.ntp_list_header_subtext);
     }
 
     @Override

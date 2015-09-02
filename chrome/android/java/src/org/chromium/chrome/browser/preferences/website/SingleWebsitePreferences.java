@@ -491,7 +491,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(),
                 ContentSettingsResources.getIcon(contentType));
         icon.mutate();
-        int disabledColor = getResources().getColor(
+        int disabledColor = ApiCompatibilityUtils.getColor(getResources(),
                 R.color.primary_text_disabled_material_light);
         icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
         return icon;

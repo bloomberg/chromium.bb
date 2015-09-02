@@ -8,6 +8,7 @@ import android.support.v7.widget.AppCompatCheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -26,7 +27,8 @@ public class TranslateCheckBox extends AppCompatCheckBox implements OnCheckedCha
 
         setId(R.id.infobar_extra_check);
         setText(context.getString(R.string.translate_always_text, mOptions.sourceLanguage()));
-        setTextColor(context.getResources().getColor(R.color.default_text_color));
+        setTextColor(
+                ApiCompatibilityUtils.getColor(context.getResources(), R.color.default_text_color));
         setTextSize(TEXT_SIZE_SP);
         setChecked(mOptions.alwaysTranslateLanguageState());
         setOnCheckedChangeListener(this);

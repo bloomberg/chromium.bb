@@ -21,6 +21,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.util.SparseArray;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.Log;
@@ -499,7 +500,8 @@ public class DocumentMigrationHelper {
             canvas.drawBitmap(bitmap, 0, 0, null);
         }
         TaskDescription taskDescription = new TaskDescription(title, favicon,
-                activity.getResources().getColor(R.color.default_primary_color));
+                ApiCompatibilityUtils.getColor(activity.getResources(),
+                        R.color.default_primary_color));
         am.addAppTask(activity, intent, taskDescription, thumbnail);
         Entry entry = new Entry(tabId, tabState);
         DocumentTabModelImpl tabModel = (DocumentTabModelImpl) ChromeApplication

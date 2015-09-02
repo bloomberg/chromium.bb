@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
@@ -53,7 +54,8 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
         mActivity = activity;
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor = activity.getResources().getColor(R.color.ntp_bg_incognito);
+        mBackgroundColor =
+                ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg_incognito);
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mIncognitoNewTabPageView =

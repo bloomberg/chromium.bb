@@ -948,7 +948,7 @@ class SuggestionView extends ViewGroup {
             }
             mSuggestionIcon = ApiCompatibilityUtils.getDrawable(getResources(), drawableId);
             mSuggestionIcon.setColorFilter(mUseDarkColors
-                    ? getResources().getColor(R.color.light_normal_color)
+                    ? ApiCompatibilityUtils.getColor(getResources(), R.color.light_normal_color)
                     : Color.WHITE, PorterDuff.Mode.SRC_IN);
             mSuggestionIcon.setBounds(
                     0, 0,

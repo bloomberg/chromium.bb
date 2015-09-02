@@ -173,7 +173,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         mMargin = res.getDimensionPixelOffset(R.dimen.infobar_margin);
         mIconSize = res.getDimensionPixelSize(R.dimen.infobar_icon_size);
         mMinWidth = res.getDimensionPixelSize(R.dimen.infobar_min_width);
-        mAccentColor = res.getColor(R.color.infobar_accent_blue);
+        mAccentColor = ApiCompatibilityUtils.getColor(res, R.color.infobar_accent_blue);
 
         // Set up the close button. Apply padding so it has a big touch target.
         mCloseButton = new ImageButton(context);
@@ -290,8 +290,8 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         mTertiaryButton.setText(tertiaryText);
         mTertiaryButton.setPadding(mMargin / 2, mTertiaryButton.getPaddingTop(), mMargin / 2,
                 mTertiaryButton.getPaddingBottom());
-        mTertiaryButton.setTextColor(
-                getContext().getResources().getColor(R.color.infobar_tertiary_button_text));
+        mTertiaryButton.setTextColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
+                R.color.infobar_tertiary_button_text));
     }
 
     /**

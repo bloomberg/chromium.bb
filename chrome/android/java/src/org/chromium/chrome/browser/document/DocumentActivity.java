@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
@@ -448,8 +449,8 @@ public class DocumentActivity extends ChromeActivity {
 
     private void initializeUI() {
         mDefaultThemeColor = isIncognito()
-                ? getResources().getColor(R.color.incognito_primary_color)
-                : getResources().getColor(R.color.default_primary_color);
+                ? ApiCompatibilityUtils.getColor(getResources(), R.color.incognito_primary_color)
+                : ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
         AsyncTabCreationParams asyncParams = AsyncTabCreationParamsManager.remove(
                 ActivityDelegate.getTabIdFromIntent(getIntent()));
         int tabId = determineTabId();

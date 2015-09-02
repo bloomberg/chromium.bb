@@ -245,7 +245,7 @@ public class AccountFirstRunView extends FrameLayout
                 R.dimen.sign_in_promo_padding_bottom));
 
         ButtonCompat positiveButton = new ButtonCompat(getContext(),
-                getResources().getColor(R.color.light_active_color));
+                ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color));
         positiveButton.setTextColor(Color.WHITE);
         positiveButton.setLayoutParams(new LinearLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
@@ -276,7 +276,7 @@ public class AccountFirstRunView extends FrameLayout
 
             ImageView illustrationView = new ImageView(getContext());
             illustrationView.setImageResource(R.drawable.signin_promo_illustration);
-            illustrationView.setBackgroundColor(getResources().getColor(
+            illustrationView.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
                     R.color.illustration_background_color));
 
             LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fre_account_linear_layout);

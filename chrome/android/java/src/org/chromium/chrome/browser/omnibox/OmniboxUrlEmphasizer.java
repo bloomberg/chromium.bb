@@ -9,6 +9,7 @@ import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -182,7 +183,7 @@ public class OmniboxUrlEmphasizer {
                             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
-            span = new UrlEmphasisColorSpan(resources.getColor(colorId));
+            span = new UrlEmphasisColorSpan(ApiCompatibilityUtils.getColor(resources, colorId));
             url.setSpan(
                     span, startSchemeIndex, endSchemeIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
@@ -190,7 +191,8 @@ public class OmniboxUrlEmphasizer {
             // https, this will be ://. For normal pages, this will be empty as we trim off
             // http://.
             if (emphasizeResponse.hasHost()) {
-                span = new UrlEmphasisColorSpan(resources.getColor(nonEmphasizedColorId));
+                span = new UrlEmphasisColorSpan(
+                        ApiCompatibilityUtils.getColor(resources, nonEmphasizedColorId));
                 url.setSpan(span, endSchemeIndex, startHostIndex,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
@@ -202,12 +204,13 @@ public class OmniboxUrlEmphasizer {
             if (!useDarkColors) {
                 hostColorId = R.color.url_emphasis_light_domain_and_registry;
             }
-            span = new UrlEmphasisColorSpan(resources.getColor(hostColorId));
+            span = new UrlEmphasisColorSpan(ApiCompatibilityUtils.getColor(resources, hostColorId));
             url.setSpan(span, startHostIndex, endHostIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
             // Highlight the remainder of the URL.
             if (endHostIndex < urlString.length()) {
-                span = new UrlEmphasisColorSpan(resources.getColor(nonEmphasizedColorId));
+                span = new UrlEmphasisColorSpan(
+                        ApiCompatibilityUtils.getColor(resources, nonEmphasizedColorId));
                 url.setSpan(span, endHostIndex, urlString.length(),
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }

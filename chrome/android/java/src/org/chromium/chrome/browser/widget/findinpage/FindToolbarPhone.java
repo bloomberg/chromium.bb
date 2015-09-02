@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -56,13 +57,14 @@ public class FindToolbarPhone extends FindToolbar {
             mCloseFindButton.setTint(dark);
             queryTextColorId = R.color.find_in_page_query_color;
         }
-        mFindQuery.setTextColor(getContext().getResources().getColor(queryTextColorId));
+        mFindQuery.setTextColor(
+                ApiCompatibilityUtils.getColor(getContext().getResources(), queryTextColorId));
     }
 
     @Override
     protected int getStatusColor(boolean failed, boolean incognito) {
         if (!failed && incognito) {
-            return getContext().getResources().getColor(
+            return ApiCompatibilityUtils.getColor(getContext().getResources(),
                     R.color.find_in_page_results_status_white_color);
         }
 

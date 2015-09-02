@@ -17,6 +17,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -952,8 +953,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 if (tab != null) tab.addObserver(mTabObserver);
             }
             int defaultPrimaryColor = isIncognito
-                    ? mToolbar.getResources().getColor(R.color.incognito_primary_color)
-                    : mToolbar.getResources().getColor(R.color.default_primary_color);
+                    ? ApiCompatibilityUtils.getColor(mToolbar.getResources(),
+                            R.color.incognito_primary_color)
+                    : ApiCompatibilityUtils.getColor(mToolbar.getResources(),
+                            R.color.default_primary_color);
             int primaryColor = tab != null ? tab.getThemeColor() : defaultPrimaryColor;
             updatePrimaryColor(primaryColor);
 

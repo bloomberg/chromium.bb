@@ -19,6 +19,7 @@ import android.view.View.OnLayoutChangeListener;
 import android.view.Window;
 import android.view.WindowManager;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.FullscreenInfo;
@@ -356,7 +357,8 @@ public class FullscreenHtmlApiHandler {
             mNotificationBubble = new TextBubble(mWindow.getContext(), b);
             mNotificationBubble.getBubbleTextView().setGravity(Gravity.CENTER_HORIZONTAL);
             mNotificationBubble.getBubbleTextView().setTextColor(
-                    mWindow.getContext().getResources().getColor(R.color.default_text_color));
+                    ApiCompatibilityUtils.getColor(mWindow.getContext().getResources(),
+                            R.color.default_text_color));
             mNotificationBubble.getBackground().setAlpha(NOTIFICATION_BUBBLE_ALPHA);
             mNotificationBubble.setTouchable(false);
         }

@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
@@ -43,7 +44,8 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
         mActivity = activity;
         mTab = tab;
         mTitle = activity.getString(R.string.bookmarks);
-        mBackgroundColor = activity.getResources().getColor(R.color.default_primary_color);
+        mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(),
+                R.color.default_primary_color);
 
         mManager = new EnhancedBookmarkManager(mActivity);
         Resources res = mActivity.getResources();

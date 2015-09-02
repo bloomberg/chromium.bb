@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
+
 import java.util.List;
 import java.util.Set;
 
@@ -72,10 +74,10 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             height += dividerHeight;
             divider.setHeight(dividerHeight);
             if (mSeparators != null && mSeparators.contains(position)) {
-                divider.setColor(mContext.getResources().getColor(
+                divider.setColor(ApiCompatibilityUtils.getColor(mContext.getResources(),
                         R.color.dropdown_dark_divider_color));
             } else {
-                divider.setColor(mContext.getResources().getColor(
+                divider.setColor(ApiCompatibilityUtils.getColor(mContext.getResources(),
                         R.color.dropdown_divider_color));
             }
         }

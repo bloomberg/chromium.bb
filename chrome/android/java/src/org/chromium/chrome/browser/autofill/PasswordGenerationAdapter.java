@@ -18,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 import java.util.Arrays;
@@ -152,7 +153,8 @@ public class PasswordGenerationAdapter extends BaseAdapter {
                             @Override
                             public void updateDrawState(TextPaint textPaint) {
                                 textPaint.setUnderlineText(false);
-                                textPaint.setColor(mContext.getResources().getColor(
+                                textPaint.setColor(ApiCompatibilityUtils.getColor(
+                                        mContext.getResources(),
                                         R.color.password_generation_link_text_color));
                             }
                         }, mExplanationTextLinkRangeStart, mExplanationTextLinkRangeEnd,

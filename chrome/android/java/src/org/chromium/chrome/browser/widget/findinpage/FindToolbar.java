@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
@@ -618,7 +619,7 @@ public class FindToolbar extends LinearLayout
     protected int getStatusColor(boolean failed, boolean incognito) {
         int colorResourceId = failed ? R.color.find_in_page_failed_results_status_color
                 : R.color.find_in_page_results_status_color;
-        return getContext().getResources().getColor(colorResourceId);
+        return ApiCompatibilityUtils.getColor(getContext().getResources(), colorResourceId);
     }
 
     protected void setPrevNextEnabled(boolean enable) {

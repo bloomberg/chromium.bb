@@ -26,6 +26,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
@@ -110,9 +111,9 @@ public class ItemChooserDialog {
 
             mInflater = LayoutInflater.from(context);
 
-            mBackgroundHighlightColor = getContext().getResources().getColor(
+            mBackgroundHighlightColor = ApiCompatibilityUtils.getColor(getContext().getResources(),
                     R.color.light_active_color);
-            mDefaultTextColor = getContext().getResources().getColor(
+            mDefaultTextColor = ApiCompatibilityUtils.getColor(getContext().getResources(),
                     R.color.default_text_color);
         }
 

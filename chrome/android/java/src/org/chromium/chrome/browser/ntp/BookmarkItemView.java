@@ -66,7 +66,7 @@ class BookmarkItemView extends AppCompatTextView implements OnCreateContextMenuL
             mFaviconContainerSize = res.getDimensionPixelSize(
                     R.dimen.ntp_list_item_favicon_container_size);
             mTextSize = res.getDimensionPixelSize(R.dimen.ntp_list_item_text_size);
-            mTextColor = res.getColor(R.color.ntp_list_item_text);
+            mTextColor = ApiCompatibilityUtils.getColor(res, R.color.ntp_list_item_text);
         }
     }
 

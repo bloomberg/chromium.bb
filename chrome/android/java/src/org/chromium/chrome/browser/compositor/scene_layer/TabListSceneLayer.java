@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -75,8 +76,8 @@ public class TabListSceneLayer extends SceneLayer {
                     R.drawable.tabswitcher_border_frame_decoration, R.drawable.logo_card_back,
                     borderResource, t.canUseLiveTexture(),
                     (t.getFallbackThumbnailId() == ChromeTab.NTP_TAB_ID), t.getBackgroundColor(),
-                    context.getResources().getColor(R.color.tab_switcher_background),
-                    res.getColor(borderColorResource), t.isIncognito(),
+                    ApiCompatibilityUtils.getColor(res, R.color.tab_switcher_background),
+                    ApiCompatibilityUtils.getColor(res, borderColorResource), t.isIncognito(),
                     layout.getOrientation() == Orientation.PORTRAIT, t.getRenderX() * dpToPx,
                     t.getRenderY() * dpToPx, t.getScaledContentWidth() * dpToPx,
                     t.getScaledContentHeight() * dpToPx, t.getOriginalContentWidth() * dpToPx,

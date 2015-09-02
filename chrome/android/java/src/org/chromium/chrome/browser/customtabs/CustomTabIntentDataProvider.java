@@ -20,6 +20,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -161,8 +162,10 @@ public class CustomTabIntentDataProvider {
      */
     private void retrieveToolbarColor(Intent intent, Context context) {
         int color = IntentUtils.safeGetIntExtra(intent, CustomTabsIntent.EXTRA_TOOLBAR_COLOR,
-                context.getResources().getColor(R.color.default_primary_color));
-        int defaultColor = context.getResources().getColor(R.color.default_primary_color);
+                ApiCompatibilityUtils.getColor(context.getResources(),
+                        R.color.default_primary_color));
+        int defaultColor = ApiCompatibilityUtils.getColor(context.getResources(),
+                R.color.default_primary_color);
 
         if (color == Color.TRANSPARENT) color = defaultColor;
 

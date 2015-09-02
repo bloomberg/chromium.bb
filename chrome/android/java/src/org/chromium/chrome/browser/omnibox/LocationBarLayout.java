@@ -1261,7 +1261,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 Drawable page = ApiCompatibilityUtils.getDrawable(
                         getResources(), R.drawable.ic_omnibox_page);
                 page.setColorFilter(mUseDarkColors
-                        ? getResources().getColor(R.color.light_normal_color)
+                        ? ApiCompatibilityUtils.getColor(getResources(), R.color.light_normal_color)
                         : Color.WHITE, PorterDuff.Mode.SRC_IN);
                 mNavigationButton.setImageDrawable(page);
                 break;
