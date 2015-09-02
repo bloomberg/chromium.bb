@@ -1912,6 +1912,8 @@
       'browser/ui/webui/settings/md_settings_localized_strings_provider.h',
       'browser/ui/webui/settings/md_settings_ui.cc',
       'browser/ui/webui/settings/md_settings_ui.h',
+      'browser/ui/webui/settings/settings_startup_pages_handler.cc',
+      'browser/ui/webui/settings/settings_startup_pages_handler.h',
       'browser/ui/webui/signin/inline_login_handler.cc',
       'browser/ui/webui/signin/inline_login_handler.h',
       'browser/ui/webui/signin/inline_login_ui.cc',
