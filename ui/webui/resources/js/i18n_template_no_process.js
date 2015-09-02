@@ -170,11 +170,13 @@ var i18nTemplate = (function() {
     var templates = root.querySelectorAll('template');
     for (var i = 0; i < templates.length; ++i) {
       var template = /** @type {HTMLTemplateElement} */(templates[i]);
+      if (!template.content)
+        continue;
       processWithoutCycles(template.content, data, visited, mark);
     }
 
     var isElement = root instanceof Element;
-    if (isElement && root.matches(selector))
+    if (isElement && root.webkitMatchesSelector(selector))
       processElement(/** @type {!Element} */(root), data, visited);
 
     var elements = root.querySelectorAll(selector);
