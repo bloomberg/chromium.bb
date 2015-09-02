@@ -188,21 +188,13 @@ function test_login(test, origin, username, password, cookie) {
     });
 }
 
-function login(test) {
-  return test_login(test, 'http://127.0.0.1:8000',
-                    'username1', 'password1', 'cookie1')
+function login(test, local, remote) {
+  var suffix = (local.indexOf("https") != -1) ? "s": "";
+  return test_login(test, local, 'username1' + suffix, 'password1' + suffix,
+                    'cookie1')
     .then(function() {
-        return test_login(test, 'http://localhost:8000',
-                          'username2', 'password2', 'cookie2');
-      });
-}
-
-function login_https(test) {
-  return test_login(test, 'https://127.0.0.1:8443',
-                    'username1s', 'password1s', 'cookie1')
-    .then(function() {
-        return test_login(test, 'https://localhost:8443',
-                          'username2s', 'password2s', 'cookie2');
+        return test_login(test, remote, 'username2' + suffix,
+                          'password2' + suffix, 'cookie2');
       });
 }
 

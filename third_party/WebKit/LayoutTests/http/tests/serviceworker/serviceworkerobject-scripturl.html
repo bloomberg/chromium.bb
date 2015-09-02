@@ -22,7 +22,7 @@ function url_test(name, url) {
 
 url_test('relative', 'resources/empty-worker.js');
 url_test('with-fragment', 'resources/empty-worker.js#ref');
-url_test('absolute',
-         'http://127.0.0.1:8000/serviceworker/resources/empty-worker.js');
+url_test('absolute', window.location.origin +
+                     '/serviceworker/resources/empty-worker.js');
 
 </script>

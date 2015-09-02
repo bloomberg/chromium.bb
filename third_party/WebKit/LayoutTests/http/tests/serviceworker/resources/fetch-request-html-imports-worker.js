@@ -1,3 +1,6 @@
+importScripts('../../resources/get-host-info.js');
+var host_info = get_host_info();
+
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
     if (url.indexOf('dummy-dir') == -1) {
@@ -5,20 +8,22 @@ self.addEventListener('fetch', function(event) {
     }
     var result = 'mode=' + event.request.mode +
       ' credentials=' + event.request.credentials;
-    if (url == 'http://127.0.0.1:8000/dummy-dir/same.html') {
+    if (url == host_info.HTTP_ORIGIN + '/dummy-dir/same.html') {
       event.respondWith(new Response(
         result +
         '<link id="same-same" rel="import" ' +
-        'href="http://127.0.0.1:8000/dummy-dir/same-same.html">' +
+        'href="' + host_info.HTTP_ORIGIN + '/dummy-dir/same-same.html">' +
         '<link id="same-other" rel="import" ' +
-        ' href="http://localhost:8000/dummy-dir/same-other.html">'));
-    } else if (url == 'http://localhost:8000/dummy-dir/other.html') {
+        ' href="' + host_info.HTTP_REMOTE_ORIGIN +
+        '/dummy-dir/same-other.html">'));
+    } else if (url == host_info.HTTP_REMOTE_ORIGIN + '/dummy-dir/other.html') {
       event.respondWith(new Response(
         result +
         '<link id="other-same" rel="import" ' +
-        ' href="http://127.0.0.1:8000/dummy-dir/other-same.html">' +
+        ' href="' + host_info.HTTP_ORIGIN + '/dummy-dir/other-same.html">' +
         '<link id="other-other" rel="import" ' +
-        ' href="http://localhost:8000/dummy-dir/other-other.html">'));
+        ' href="' + host_info.HTTP_REMOTE_ORIGIN +
+        '/dummy-dir/other-other.html">'));
     } else {
       event.respondWith(new Response(result));
     }

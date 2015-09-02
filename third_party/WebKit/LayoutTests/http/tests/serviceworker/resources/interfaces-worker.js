@@ -92,11 +92,9 @@ test(function() {
     assert_equals(
       new FetchEvent('FetchEvent', {isReload : true}).isReload, true,
       'FetchEvent.isReload with option {isReload : true} should be true');
-    var req = new Request('http://localhost/',
-                          {method: 'POST',
-                           headers: [['Content-Type', 'Text/Html']]});
+    var req = new Request('https://www.example.com/', {method: 'POST'});
     assert_equals(
-      new FetchEvent('FetchEvent', {request : req, isReload : true}).request.url,
-      'http://localhost/',
+      new FetchEvent('FetchEvent', {request: req, isReload: true}).request.url,
+      'https://www.example.com/',
       'FetchEvent.request.url should return the value it was initialized to');
   }, 'Event constructors');

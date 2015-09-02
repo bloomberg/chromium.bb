@@ -11,7 +11,7 @@ async_test(function(t) {
     var SCRIPT = 'resources/fetch-rewrite-worker.js';
     var host_info = get_host_info();
 
-    login(t)
+    login(t, host_info.HTTP_ORIGIN, host_info.HTTP_REMOTE_ORIGIN)
       .then(function() {
           return service_worker_unregister_and_register(t, SCRIPT, SCOPE);
         })

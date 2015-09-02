@@ -20,7 +20,7 @@ self.onmessage = function(e) {
   }
 
   // Frame registers a registration scoped
-  // http://localhost:8000/serviceworker/resources/scope-for-getregistrations
+  // (origin)/serviceworker/resources/scope-for-getregistrations
   navigator.serviceWorker.register(script, { scope: scope })
     .then(function(r) {
         registration = r;

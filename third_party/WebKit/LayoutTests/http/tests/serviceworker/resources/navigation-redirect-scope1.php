@@ -12,6 +12,5 @@ if (isset($_GET['url'])) {
       {
         id: 'last_url',
         result: location.href
-      },
-      'http://127.0.0.1:8000');
+      }, '*');
 </script>
