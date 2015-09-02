@@ -2038,4 +2038,18 @@ const char kSOCKS5OkResponse[] =
     { 0x05, 0x00, 0x00, 0x01, 127, 0, 0, 1, 0x00, 0x50 };
 const int kSOCKS5OkResponseLength = arraysize(kSOCKS5OkResponse);
 
+int64_t CountReadBytes(const MockRead reads[], size_t reads_size) {
+  int64_t total = 0;
+  for (const MockRead* read = reads; read != reads + reads_size; ++read)
+    total += read->data_len;
+  return total;
+}
+
+int64_t CountWriteBytes(const MockWrite writes[], size_t writes_size) {
+  int64_t total = 0;
+  for (const MockWrite* write = writes; write != writes + writes_size; ++write)
+    total += write->data_len;
+  return total;
+}
+
 }  // namespace net

@@ -6,6 +6,8 @@
 
 #include <math.h>  // ceil
 #include <stdarg.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -13363,6 +13365,11 @@ class FakeStream : public HttpStream,
     return 0;
   }
 
+  int64_t GetTotalSentBytes() const override {
+    ADD_FAILURE();
+    return 0;
+  }
+
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     ADD_FAILURE();
     return false;
@@ -13570,6 +13577,11 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
   bool CanReuseConnection() const override { return false; }
 
   int64 GetTotalReceivedBytes() const override {
+    NOTREACHED();
+    return 0;
+  }
+
+  int64_t GetTotalSentBytes() const override {
     NOTREACHED();
     return 0;
   }

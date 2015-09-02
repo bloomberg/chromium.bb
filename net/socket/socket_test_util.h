@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_SOCKET_TEST_UTIL_H_
 #define NET_SOCKET_SOCKET_TEST_UTIL_H_
 
+#include <stdint.h>
+
 #include <cstring>
 #include <deque>
 #include <string>
@@ -1236,6 +1238,12 @@ extern const int kSOCKS5OkRequestLength;
 
 extern const char kSOCKS5OkResponse[];
 extern const int kSOCKS5OkResponseLength;
+
+// Helper function to get the total data size of the MockReads in |reads|.
+int64_t CountReadBytes(const MockRead reads[], size_t reads_size);
+
+// Helper function to get the total data size of the MockWrites in |writes|.
+int64_t CountWriteBytes(const MockWrite writes[], size_t writes_size);
 
 }  // namespace net
 

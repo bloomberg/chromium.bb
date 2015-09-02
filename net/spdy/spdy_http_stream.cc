@@ -183,6 +183,11 @@ int64 SpdyHttpStream::GetTotalReceivedBytes() const {
   return stream_->raw_received_bytes();
 }
 
+int64_t SpdyHttpStream::GetTotalSentBytes() const {
+  // TODO(sclittle): Implement this for real. http://crbug.com/518897.
+  return 0;
+}
+
 bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   if (stream_closed_) {
     if (!closed_stream_has_load_timing_info_)

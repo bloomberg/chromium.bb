@@ -5,6 +5,8 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_BASIC_HANDSHAKE_STREAM_H_
 #define NET_WEBSOCKETS_WEBSOCKET_BASIC_HANDSHAKE_STREAM_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -56,6 +58,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   void SetConnectionReused() override;
   bool CanReuseConnection() const override;
   int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   void GetSSLInfo(SSLInfo* ssl_info) override;
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;

@@ -83,6 +83,12 @@ int64 HttpBasicStream::GetTotalReceivedBytes() const {
   return 0;
 }
 
+int64_t HttpBasicStream::GetTotalSentBytes() const {
+  if (parser())
+    return parser()->sent_bytes();
+  return 0;
+}
+
 bool HttpBasicStream::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
   return state_.connection()->GetLoadTimingInfo(IsConnectionReused(),

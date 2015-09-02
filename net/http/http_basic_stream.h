@@ -9,6 +9,8 @@
 #ifndef NET_HTTP_HTTP_BASIC_STREAM_H_
 #define NET_HTTP_HTTP_BASIC_STREAM_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -63,6 +65,8 @@ class HttpBasicStream : public HttpStream {
   bool CanReuseConnection() const override;
 
   int64 GetTotalReceivedBytes() const override;
+
+  int64_t GetTotalSentBytes() const override;
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
 

@@ -4,6 +4,8 @@
 
 #include "net/http/http_stream_factory_impl.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -85,6 +87,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   void SetConnectionReused() override {}
   bool CanReuseConnection() const override { return false; }
   int64 GetTotalReceivedBytes() const override { return 0; }
+  int64_t GetTotalSentBytes() const override { return 0; }
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     return false;
   }

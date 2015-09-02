@@ -208,6 +208,7 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
       read_buf_unused_offset_(0),
       response_header_start_offset_(-1),
       received_bytes_(0),
+      sent_bytes_(0),
       response_(nullptr),
       response_body_length_(-1),
       response_body_read_(0),
@@ -475,6 +476,7 @@ int HttpStreamParser::DoSendHeadersComplete(int result) {
     return result;
   }
 
+  sent_bytes_ += result;
   request_headers_->DidConsume(result);
   if (request_headers_->BytesRemaining() > 0) {
     io_state_ = STATE_SEND_HEADERS;
@@ -532,6 +534,7 @@ int HttpStreamParser::DoSendBodyComplete(int result) {
     return result;
   }
 
+  sent_bytes_ += result;
   request_body_send_buf_->DidConsume(result);
 
   io_state_ = STATE_SEND_BODY;

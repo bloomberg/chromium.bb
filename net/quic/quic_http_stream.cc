@@ -260,6 +260,11 @@ int64 QuicHttpStream::GetTotalReceivedBytes() const {
   return closed_stream_received_bytes_;
 }
 
+int64_t QuicHttpStream::GetTotalSentBytes() const {
+  // TODO(sclittle): Implement this for real. http://crbug.com/518897.
+  return 0;
+}
+
 bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   // TODO(mmenke):  Figure out what to do here.
   return true;

@@ -5,6 +5,8 @@
 #ifndef NET_SPDY_SPDY_HTTP_STREAM_H_
 #define NET_SPDY_SPDY_HTTP_STREAM_H_
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/basictypes.h"
@@ -65,6 +67,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   void SetConnectionReused() override;
   bool CanReuseConnection() const override;
   int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   void GetSSLInfo(SSLInfo* ssl_info) override;
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;

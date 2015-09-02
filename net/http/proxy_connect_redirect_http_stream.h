@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_PROXY_CONNECT_REDIRECT_HTTP_STREAM_H_
 #define NET_HTTP_PROXY_CONNECT_REDIRECT_HTTP_STREAM_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/load_timing_info.h"
@@ -47,6 +49,7 @@ class ProxyConnectRedirectHttpStream : public HttpStream {
   bool CanReuseConnection() const override;
 
   int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
 
   // This function may be called.
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;

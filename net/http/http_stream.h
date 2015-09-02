@@ -11,6 +11,8 @@
 #ifndef NET_HTTP_HTTP_STREAM_H_
 #define NET_HTTP_HTTP_STREAM_H_
 
+#include <stdint.h>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
@@ -117,6 +119,9 @@ class NET_EXPORT_PRIVATE HttpStream {
 
   // Get the total number of bytes received from network for this stream.
   virtual int64 GetTotalReceivedBytes() const = 0;
+
+  // Get the total number of bytes sent over the network for this stream.
+  virtual int64_t GetTotalSentBytes() const = 0;
 
   // Populates the connection establishment part of |load_timing_info|, and
   // socket ID.  |load_timing_info| must have all null times when called.

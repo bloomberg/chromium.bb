@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_STREAM_PARSER_H_
 #define NET_HTTP_HTTP_STREAM_PARSER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -84,6 +86,8 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   bool CanReuseConnection() const;
 
   int64 received_bytes() const { return received_bytes_; }
+
+  int64_t sent_bytes() const { return sent_bytes_; }
 
   void GetSSLInfo(SSLInfo* ssl_info);
 
@@ -208,6 +212,9 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // The amount of received data.  If connection is reused then intermediate
   // value may be bigger than final.
   int64 received_bytes_;
+
+  // The amount of sent data.
+  int64_t sent_bytes_;
 
   // The parsed response headers.  Owned by the caller of SendRequest.  This
   // cannot be safely accessed after reading the final set of headers, as the

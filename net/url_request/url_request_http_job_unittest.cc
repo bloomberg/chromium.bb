@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_request_http_job.h"
 
+#include <stdint.h>
+
 #include <cstddef>
 
 #include "base/compiler_specific.h"
@@ -609,6 +611,7 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   bool CanReuseConnection() const override { return false; }
 
   int64 GetTotalReceivedBytes() const override { return 0; }
+  int64_t GetTotalSentBytes() const override { return 0; }
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     return false;

@@ -4,6 +4,8 @@
 
 #include "net/http/http_stream_parser.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -199,6 +201,208 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_LargeBodyInMemory) {
       "some header", body.get()));
 }
 
+TEST(HttpStreamParser, SentBytesNoHeaders) {
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n\r\n"),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  scoped_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://localhost");
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, parser.SendRequest("GET / HTTP/1.1\r\n", HttpRequestHeaders(),
+                                   &response, callback.callback()));
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
+TEST(HttpStreamParser, SentBytesWithHeaders) {
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0,
+                "GET / HTTP/1.1\r\n"
+                "Host: localhost\r\n"
+                "Connection: Keep-Alive\r\n\r\n"),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  scoped_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://localhost");
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  headers.SetHeader("Host", "localhost");
+  headers.SetHeader("Connection", "Keep-Alive");
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, parser.SendRequest("GET / HTTP/1.1\r\n", headers, &response,
+                                   callback.callback()));
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
+TEST(HttpStreamParser, SentBytesWithHeadersMultiWrite) {
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: localhost\r\n"),
+      MockWrite(SYNCHRONOUS, 2, "Connection: Keep-Alive\r\n\r\n"),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  scoped_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://localhost");
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  headers.SetHeader("Host", "localhost");
+  headers.SetHeader("Connection", "Keep-Alive");
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+
+  EXPECT_EQ(OK, parser.SendRequest("GET / HTTP/1.1\r\n", headers, &response,
+                                   callback.callback()));
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
+TEST(HttpStreamParser, SentBytesWithErrorWritingHeaders) {
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: localhost\r\n"),
+      MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET, 2),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  scoped_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://localhost");
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  headers.SetHeader("Host", "localhost");
+  headers.SetHeader("Connection", "Keep-Alive");
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_CONNECTION_RESET,
+            parser.SendRequest("GET / HTTP/1.1\r\n", headers, &response,
+                               callback.callback()));
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
+TEST(HttpStreamParser, SentBytesPost) {
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "POST / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Content-Length: 12\r\n\r\n"),
+      MockWrite(SYNCHRONOUS, 2, "hello world!"),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  scoped_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("hello world!", 12));
+  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://localhost");
+  request.upload_data_stream = &upload_data_stream;
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  headers.SetHeader("Content-Length", "12");
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, parser.SendRequest("POST / HTTP/1.1\r\n", headers, &response,
+                                   callback.callback()));
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
+TEST(HttpStreamParser, SentBytesChunkedPostError) {
+  static const char kChunk[] = "Chunk 1";
+
+  MockWrite writes[] = {
+      MockWrite(ASYNC, 0, "POST / HTTP/1.1\r\n"),
+      MockWrite(ASYNC, 1, "Transfer-Encoding: chunked\r\n\r\n"),
+      MockWrite(ASYNC, 2, "7\r\nChunk 1\r\n"),
+      MockWrite(SYNCHRONOUS, ERR_FAILED, 3),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  scoped_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  ChunkedUploadDataStream upload_data_stream(0);
+  ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://localhost");
+  request.upload_data_stream = &upload_data_stream;
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  headers.SetHeader("Transfer-Encoding", "chunked");
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING, parser.SendRequest("POST / HTTP/1.1\r\n", headers,
+                                               &response, callback.callback()));
+
+  base::RunLoop().RunUntilIdle();
+  upload_data_stream.AppendData(kChunk, arraysize(kChunk) - 1, false);
+
+  base::RunLoop().RunUntilIdle();
+  // This write should fail.
+  upload_data_stream.AppendData(kChunk, arraysize(kChunk) - 1, false);
+  EXPECT_EQ(ERR_FAILED, callback.WaitForResult());
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
 // Test to ensure the HttpStreamParser state machine does not get confused
 // when sending a request with a chunked body with only one chunk that becomes
 // available asynchronously.
@@ -269,6 +473,9 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
             parser.ReadResponseBody(body_buffer.get(), kBodySize,
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
@@ -336,6 +543,9 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
             parser.ReadResponseBody(body_buffer.get(), kBodySize,
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
@@ -426,6 +636,9 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
             parser.ReadResponseBody(body_buffer.get(), kBodySize,
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
@@ -493,6 +706,9 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
             parser.ReadResponseBody(body_buffer.get(), kBodySize,
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
@@ -559,6 +775,9 @@ TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
             parser.ReadResponseBody(body_buffer.get(), kBodySize,
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
 }
 
 TEST(HttpStreamParser, TruncatedHeaders) {
@@ -640,16 +859,21 @@ TEST(HttpStreamParser, TruncatedHeaders) {
                                        &response_info, callback.callback()));
 
       int rv = parser.ReadResponseHeaders(callback.callback());
+      EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+                parser.sent_bytes());
       if (i == arraysize(reads) - 1) {
         EXPECT_EQ(OK, rv);
         EXPECT_TRUE(response_info.headers.get());
+        EXPECT_EQ(CountReadBytes(reads[i], 2), parser.received_bytes());
       } else {
         if (protocol == HTTP) {
           EXPECT_EQ(ERR_CONNECTION_CLOSED, rv);
           EXPECT_TRUE(response_info.headers.get());
+          EXPECT_EQ(CountReadBytes(reads[i], 2), parser.received_bytes());
         } else {
           EXPECT_EQ(ERR_RESPONSE_HEADERS_TRUNCATED, rv);
           EXPECT_FALSE(response_info.headers.get());
+          EXPECT_EQ(0, parser.received_bytes());
         }
       }
     }
@@ -700,6 +924,11 @@ TEST(HttpStreamParser, Websocket101Response) {
   EXPECT_EQ("a fake websocket frame",
             base::StringPiece(read_buffer->StartOfBuffer(),
                               read_buffer->capacity()));
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)) -
+                static_cast<int64_t>(strlen("a fake websocket frame")),
+            parser.received_bytes());
 }
 
 // Helper class for constructing HttpStreamParser and running GET requests.
@@ -1017,7 +1246,7 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
   const int kBodySize = 1;
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 OK\r\n"),
-      MockRead(SYNCHRONOUS, 2, "Content-Length: 1\r\n\r\n"),
+      MockRead(SYNCHRONOUS, 2, "Content-Length: 1\r\n"),
       MockRead(SYNCHRONOUS, 3, "Connection: Keep-Alive\r\n\r\n"),
       MockRead(SYNCHRONOUS, 4, "1"),
       MockRead(SYNCHRONOUS, 0, 5),  // EOF
@@ -1051,6 +1280,9 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
   scoped_refptr<IOBuffer> body_buffer(new IOBuffer(kBodySize));
   ASSERT_EQ(kBodySize, parser.ReadResponseBody(
       body_buffer.get(), kBodySize, callback.callback()));
+
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
 }
 
 }  // namespace

@@ -4,6 +4,8 @@
 
 #include "net/http/http_response_body_drainer.h"
 
+#include <stdint.h>
+
 #include <cstring>
 
 #include "base/bind.h"
@@ -100,6 +102,7 @@ class MockHttpStream : public HttpStream {
   void SetConnectionReused() override {}
   bool CanReuseConnection() const override { return false; }
   int64 GetTotalReceivedBytes() const override { return 0; }
+  int64_t GetTotalSentBytes() const override { return 0; }
   void GetSSLInfo(SSLInfo* ssl_info) override {}
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
 
