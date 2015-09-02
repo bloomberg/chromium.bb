@@ -14,6 +14,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
+#include "mojo/logging/init_logging.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/services/tracing/tracing_app.h"
 #include "url/gurl.h"
@@ -73,6 +74,7 @@ class ApplicationThread : public base::SimpleThread {
 
 CoreServicesApplicationDelegate::CoreServicesApplicationDelegate()
     : weak_factory_(this) {
+  mojo::logging::InitLogging();
 }
 
 CoreServicesApplicationDelegate::~CoreServicesApplicationDelegate() {

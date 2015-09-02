@@ -15,6 +15,7 @@
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "gin/v8_initializer.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/logging/init_logging.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -122,13 +123,9 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
 
   ui::RegisterPathProvider();
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  mojo::logging::InitLogging();
 
-  logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  logging::InitLogging(settings);
-  // Display process ID, thread ID and timestamp in logs.
-  logging::SetLogItems(true, true, true, false);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(kDisableEncryptedMedia))
     blink::WebRuntimeFeatures::enableEncryptedMedia(false);

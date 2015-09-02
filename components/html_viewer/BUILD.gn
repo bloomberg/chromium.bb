@@ -162,6 +162,7 @@ source_set("lib") {
     "//mojo/cc",
     "//mojo/common",
     "//mojo/converters/surfaces",
+    "//mojo/logging",
     "//mojo/message_pump",
     "//mojo/platform_handle",
     "//mojo/services/network/public/cpp",

@@ -49,6 +49,7 @@ source_set("sources") {
     "//mandoline/tab:lib",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
+    "//mojo/logging",
     "//mojo/message_pump",
     "//mojo/services/tracing:lib",
     "//third_party/icu",
