@@ -30,13 +30,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
-#if defined(OS_WIN)
-#include "content/public/renderer/render_font_warmup_win.h"
-#include "third_party/WebKit/public/web/win/WebFontRendering.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
-#include "ui/gfx/win/direct_write.h"
-#endif
-
 using blink::WebAudioDevice;
 using blink::WebClipboard;
 using blink::WebLocalFrame;
@@ -52,34 +45,10 @@ using blink::WebThemeEngine;
 
 namespace content {
 
-#if defined(OS_WIN)
-namespace {
-
-// DirectWrite only has access to %WINDIR%\Fonts by default. For developer
-// side-loading, support kRegisterFontFiles to allow access to additional fonts.
-void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
-  std::vector<std::string> files = GetSideloadFontFiles();
-  for (std::vector<std::string>::const_iterator i(files.begin());
-       i != files.end();
-       ++i) {
-    SkTypeface* typeface = fontmgr->createFromFile(i->c_str());
-    DoPreSandboxWarmupForTypeface(typeface);
-    blink::WebFontRendering::addSideloadedFontForTesting(typeface);
-  }
-}
-
-}  // namespace
-#endif  // OS_WIN
-
 LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
   EnableWebTestProxyCreation(
       base::Bind(&LayoutTestContentRendererClient::WebTestProxyCreated,
                  base::Unretained(this)));
-
-#if defined(OS_WIN)
-  if (gfx::win::ShouldUseDirectWrite())
-    RegisterSideloadedTypefaces(GetPreSandboxWarmupFontMgr());
-#endif
 }
 
 LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {

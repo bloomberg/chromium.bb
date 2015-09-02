@@ -7,6 +7,9 @@
 #ifndef CONTENT_SHELL_COMMON_SHELL_SWITCHES_H_
 #define CONTENT_SHELL_COMMON_SHELL_SWITCHES_H_
 
+#include <string>
+#include <vector>
+
 namespace switches {
 
 extern const char kAllowExternalPages[];
@@ -27,6 +30,9 @@ extern const char kRegisterFontFiles[];
 extern const char kRunLayoutTest[];
 extern const char kStableReleaseMode[];
 extern const char kContentShellHostWindowSize[];
+
+// Returns list of extra font files to be made accessible to the renderer.
+std::vector<std::string> GetSideloadFontFiles();
 
 }  // namespace switches
 

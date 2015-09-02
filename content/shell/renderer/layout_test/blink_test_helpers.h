@@ -5,9 +5,6 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
 
-#include <string>
-#include <vector>
-
 namespace base {
 class FilePath;
 }
@@ -31,9 +28,6 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs);
 
 // Returns the root of the Blink checkout.
 base::FilePath GetWebKitRootDirFilePath();
-
-// Returns list of extra font files to be made accessible to the renderer.
-std::vector<std::string> GetSideloadFontFiles();
 
 }  // namespace content
 

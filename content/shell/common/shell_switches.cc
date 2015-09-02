@@ -4,6 +4,9 @@
 
 #include "content/shell/common/shell_switches.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_split.h"
+
 namespace switches {
 
 // Allow access to external pages during layout tests.
@@ -71,5 +74,17 @@ const char kStableReleaseMode[] = "stable-release-mode";
 
 // Size for the content_shell's host window (i.e. "800x600").
 const char kContentShellHostWindowSize[] = "content-shell-host-window-size";
+
+std::vector<std::string> GetSideloadFontFiles() {
+  std::vector<std::string> files;
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRegisterFontFiles)) {
+    files = base::SplitString(
+        command_line.GetSwitchValueASCII(switches::kRegisterFontFiles),
+        ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  return files;
+}
 
 }  // namespace switches

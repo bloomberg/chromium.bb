@@ -24,6 +24,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/shell/common/shell_switches.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
@@ -34,6 +35,11 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
+#elif defined(OS_WIN)
+#include "content/renderer/render_font_warmup_win.h"
+#include "third_party/WebKit/public/web/win/WebFontRendering.h"
+#include "third_party/skia/include/ports/SkFontMgr.h"
+#include "ui/gfx/win/direct_write.h"
 #endif
 
 using blink::WebBatteryStatus;
@@ -82,6 +88,21 @@ RenderFrameImpl* CreateWebFrameTestProxy(
 
   return render_frame_proxy;
 }
+
+#if defined(OS_WIN)
+// DirectWrite only has access to %WINDIR%\Fonts by default. For developer
+// side-loading, support kRegisterFontFiles to allow access to additional fonts.
+void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
+  std::vector<std::string> files = switches::GetSideloadFontFiles();
+  for (std::vector<std::string>::const_iterator i(files.begin());
+       i != files.end();
+       ++i) {
+    SkTypeface* typeface = fontmgr->createFromFile(i->c_str());
+    DoPreSandboxWarmupForTypeface(typeface);
+    blink::WebFontRendering::addSideloadedFontForTesting(typeface);
+  }
+}
+#endif  // OS_WIN
 
 }  // namespace
 
@@ -146,6 +167,11 @@ void MockBatteryStatusChanged(const WebBatteryStatus& status) {
 
 void EnableRendererLayoutTestMode() {
   RenderThreadImpl::current()->set_layout_test_mode(true);
+
+#if defined(OS_WIN)
+  if (gfx::win::ShouldUseDirectWrite())
+    RegisterSideloadedTypefaces(GetPreSandboxWarmupFontMgr());
+#endif
 }
 
 void EnableBrowserLayoutTestMode() {
