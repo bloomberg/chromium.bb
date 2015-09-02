@@ -24,9 +24,15 @@ public:
     bool valid() const { return m_isValid; }
 
     enum LinkParameterName {
-        LinkParameterUnknown,
         LinkParameterRel,
         LinkParameterAnchor,
+        LinkParameterTitle,
+        LinkParameterMedia,
+        LinkParameterType,
+        LinkParameterRev,
+        LinkParameterHreflang,
+        // Beyond this point, only link-extension parameters
+        LinkParameterUnknown,
         LinkParameterCrossOrigin,
     };
 

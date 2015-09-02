@@ -25,7 +25,20 @@ static bool isValidURLChar(CharType chr)
 template <typename CharType>
 static bool isValidParameterNameChar(CharType chr)
 {
-    return !isWhitespace(chr) && chr != '=';
+    // TODO(yoav): We need to move this function to a central location and possibly rewrite as a lookup table. https://crbug.com/527324
+
+    // Alpha-numeric is a valid char.
+    // This is likely the common case - bailing early.
+    if (isASCIIAlphanumeric(chr))
+        return true;
+    // A separator or CTL or '%', '*' or '\'' means the char is not valid.
+    // So any of: |{}[]/\:;<=>?@,()*'"%
+    if (chr <= ' ' || chr > '|' || chr == '{' || chr == ']' || chr == '['
+        || chr == '/' || chr == '\\' || (chr <= '@' && chr >= ':') || chr == ','
+        || (chr >= '(' && chr <= '*') || chr == '\'' || chr == '"' || chr == '%') {
+        return false;
+    }
+    return true;
 }
 
 template <typename CharType>
@@ -40,9 +53,10 @@ static bool isValidParameterValueChar(CharType chr)
     return !isWhitespace(chr) && !isValidParameterValueEnd(chr);
 }
 
+// Verify that the parameter is a link-extension which according to spec doesn't have to have a value.
 static bool isExtensionParameter(LinkHeader::LinkParameterName name)
 {
-    return name > LinkHeader::LinkParameterAnchor;
+    return name >= LinkHeader::LinkParameterUnknown;
 }
 
 // Before:
@@ -116,13 +130,22 @@ static bool parseParameterDelimiter(CharType*& position, CharType* end, bool& is
 
 static LinkHeader::LinkParameterName paramterNameFromString(String name)
 {
-    // FIXME: Add support for more header parameters as neccessary.
     if (equalIgnoringCase(name, "rel"))
         return LinkHeader::LinkParameterRel;
     if (equalIgnoringCase(name, "anchor"))
         return LinkHeader::LinkParameterAnchor;
     if (equalIgnoringCase(name, "crossorigin"))
         return LinkHeader::LinkParameterCrossOrigin;
+    if (equalIgnoringCase(name, "title"))
+        return LinkHeader::LinkParameterTitle;
+    if (equalIgnoringCase(name, "media"))
+        return LinkHeader::LinkParameterMedia;
+    if (equalIgnoringCase(name, "type"))
+        return LinkHeader::LinkParameterType;
+    if (equalIgnoringCase(name, "rev"))
+        return LinkHeader::LinkParameterRev;
+    if (equalIgnoringCase(name, "hreflang"))
+        return LinkHeader::LinkParameterHreflang;
     return LinkHeader::LinkParameterUnknown;
 }
 
@@ -147,7 +170,10 @@ static bool parseParameterName(CharType*& position, CharType* end, LinkHeader::L
     bool hasEqual = skipExactly<CharType>(position, end, '=');
     skipWhile<CharType, isWhitespace>(position, end);
     name = paramterNameFromString(String(nameStart, nameEnd - nameStart));
-    return hasEqual || isExtensionParameter(name);
+    if (hasEqual)
+        return true;
+    bool validParameterValueEnd = (position == end) || isValidParameterValueEnd(*position);
+    return validParameterValueEnd && isExtensionParameter(name);
 }
 
 // Before:

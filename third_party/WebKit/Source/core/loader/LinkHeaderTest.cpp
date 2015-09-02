@@ -57,7 +57,7 @@ TEST(LinkHeaderTest, Single)
         {"<   http://wut.com/  sdfsdf ?sd>; rel=dns-prefetch", "http://wut.com/", "dns-prefetch", true},
         {"<   http://wut.com/%20%20%3dsdfsdf?sd>; rel=dns-prefetch", "http://wut.com/%20%20%3dsdfsdf?sd", "dns-prefetch", true},
         {"<   http://wut.com/dfsdf?sdf=ghj&wer=rty>; rel=prefetch", "http://wut.com/dfsdf?sdf=ghj&wer=rty", "prefetch", true},
-        {"<   http://wut.com/dfsdf?sdf=ghj&wer=rty>;;;;; rel=prefetch", "http://wut.com/dfsdf?sdf=ghj&wer=rty", "", false},
+        {"<   http://wut.com/dfsdf?sdf=ghj&wer=rty>;;;;; rel=prefetch", "http://wut.com/dfsdf?sdf=ghj&wer=rty", "prefetch", true},
         {"</images/cat.jpg>; anchor=foo; rel=prefetch;", "/images/cat.jpg", "", false},
         {"</images/cat.jpg>; rel=prefetch;anchor=foo ", "/images/cat.jpg", "prefetch", false},
         {"</images/cat.jpg>; anchor='foo'; rel=prefetch;", "/images/cat.jpg", "", false},
@@ -81,6 +81,13 @@ TEST(LinkHeaderTest, Single)
         {"<simple.css>; rel=\"bla'sdf\"; title=\"", "simple.css", "bla'sdf", false},
         {"<simple.css>; rel=\"\"; title=\"\"", "simple.css", "", true},
         {"<simple.css>; rel=''; title=\"\"", "simple.css", "", true},
+        {"<simple.css>; rel=''; title=", "simple.css", "", false},
+        {"<simple.css>; rel=''; title", "simple.css", "", false},
+        {"<simple.css>; rel=''; media", "simple.css", "", false},
+        {"<simple.css>; rel=''; hreflang", "simple.css", "", false},
+        {"<simple.css>; rel=''; type", "simple.css", "", false},
+        {"<simple.css>; rel=''; rev", "simple.css", "", false},
+        {"<simple.css>; rel=''; bla", "simple.css", "", true},
         {"<simple.css>; rel='prefetch", "simple.css", "", false},
         {"<simple.css>; rel=\"prefetch", "simple.css", "", false},
         {"<simple.css>; rel=\"", "simple.css", "", false},
@@ -109,6 +116,8 @@ TEST(LinkHeaderTest, Double)
         bool valid2;
     } cases[] = {
         {"<ybg.css>; rel=stylesheet, <simple.css>; rel=stylesheet", "ybg.css", "stylesheet", true, "simple.css", "stylesheet", true},
+        {"<ybg.css>; rel=stylesheet,<simple.css>; rel=stylesheet", "ybg.css", "stylesheet", true, "simple.css", "stylesheet", true},
+        {"<ybg.css>; rel=stylesheet;crossorigin,<simple.css>; rel=stylesheet", "ybg.css", "stylesheet", true, "simple.css", "stylesheet", true},
     };
 
     for (auto& testCase : cases) {
@@ -136,9 +145,18 @@ TEST(LinkHeaderTest, CrossOrigin)
         {"<http://whatever.com>; rel=preconnect", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet, true},
         {"<http://whatever.com>; rel=preconnect; crossorigin=", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
         {"<http://whatever.com>; rel=preconnect; crossorigin", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin;", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin, <http://whatever2.com>; rel=preconnect", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin,<http://whatever2.com>; rel=preconnect", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
         {"<http://whatever.com>; rel=preconnect; crossorigin=anonymous", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
         {"<http://whatever.com>; rel=preconnect; crossorigin=use-credentials", "http://whatever.com", "preconnect", CrossOriginAttributeUseCredentials, true},
         {"<http://whatever.com>; rel=preconnect; crossorigin=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous,  true},
+        {"<http://whatever.com>; rel=preconnect; crossorig|in=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin|=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  true},
+        {"<http://whatever.com>; rel=preconnect; valid!", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  true},
+        {"<http://whatever.com>; rel=preconnect; valid$", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  true},
+        {"<http://whatever.com>; rel=preconnect; invalid@", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  false},
+        {"<http://whatever.com>; rel=preconnect; invalid*", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  false},
     };
 
 
