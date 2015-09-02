@@ -9,7 +9,7 @@
 
 var startSessionPromise = null;
 var startedSession = null;
-var joinedSession = null;
+var reconnectedSession = null;
 var presentationUrl = "http://www.google.com/#__testprovider__=true";
 var startSessionRequest = new PresentationRequest(presentationUrl);
 var defaultRequestSessionId = null;
@@ -81,32 +81,32 @@ function stopSession() {
 
 
 /**
- * Joins the started session and verify that it succeeds.
- * @param {!string} sessionId ID of session to join.
+ * Reconnects to |sessionId| and verifies that it succeeds.
+ * @param {!string} sessionId ID of session to reconnect.
  */
-function joinSession(sessionId) {
-  var joinSessionRequest = new PresentationRequest(presentationUrl);
-  joinSessionRequest.join(sessionId).then(function(session) {
+function reconnectSession(sessionId) {
+  var reconnectSessionRequest = new PresentationRequest(presentationUrl);
+  reconnectSessionRequest.reconnect(sessionId).then(function(session) {
     if (!session) {
-      sendResult(false, 'joinSession returned null session');
+      sendResult(false, 'reconnectSession returned null session');
     } else {
-      joinedSession = session;
+      reconnectedSession = session;
       sendResult(true, '');
     }
   }).catch(function(error) {
-    sendResult(false, 'joinSession failed: ' + error.message);
+    sendResult(false, 'reconnectSession failed: ' + error.message);
   });
 }
 
 /**
- * Calls join() and verify that it fails.
- * @param {!string} sessionId ID of session to join.
+ * Calls reconnect(sessionId) and verifies that it fails.
+ * @param {!string} sessionId ID of session to reconnect.
  * @param {!string} expectedErrorMessage
  */
-function joinSessionAndExpectFailure(sessionId, expectedErrorMessage) {
-  var joinSessionRequest = new PresentationRequest(presentationUrl);
-  joinSessionRequest.join(sessionId).then(function(session) {
-    sendResult(false, 'join() unexpectedly succeeded.');
+function reconnectSessionAndExpectFailure(sessionId, expectedErrorMessage) {
+  var reconnectSessionRequest = new PresentationRequest(presentationUrl);
+  reconnectSessionRequest.reconnect(sessionId).then(function(session) {
+    sendResult(false, 'reconnect() unexpectedly succeeded.');
   }).catch(function(error) {
     if (error.message.indexOf(expectedErrorMessage) > -1) {
       sendResult(true, '');

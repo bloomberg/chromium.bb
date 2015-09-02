@@ -272,7 +272,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ExecuteJavaScriptAPI(web_contents, kCheckSessionFailedScript);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_JoinSession) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_ReconnectSession) {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -290,16 +291,17 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_JoinSession) {
   ASSERT_NE(web_contents, new_web_contents);
   ExecuteJavaScriptAPI(
       new_web_contents,
-      base::StringPrintf("joinSession('%s');", session_id.c_str()));
-  std::string joined_session_id;
+      base::StringPrintf("reconnectSession('%s');", session_id.c_str()));
+  std::string reconnected_session_id;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      new_web_contents, "window.domAutomationController.send(joinedSession.id)",
-      &joined_session_id));
-  ASSERT_EQ(session_id, joined_session_id);
+      new_web_contents,
+      "window.domAutomationController.send(reconnectedSession.id)",
+      &reconnected_session_id));
+  ASSERT_EQ(session_id, reconnected_session_id);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       MANUAL_Fail_JoinSession) {
+                       MANUAL_Fail_ReconnectSession) {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -311,14 +313,15 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
   std::string session_id(GetStartedSessionId(web_contents));
 
-  SetTestData(FILE_PATH_LITERAL("fail_join_session.json"));
-  OpenTestPage(FILE_PATH_LITERAL("fail_join_session.html"));
+  SetTestData(FILE_PATH_LITERAL("fail_reconnect_session.json"));
+  OpenTestPage(FILE_PATH_LITERAL("fail_reconnect_session.html"));
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(new_web_contents);
   ExecuteJavaScriptAPI(
       new_web_contents,
-      base::StringPrintf("checkJoinSessionFails('%s');", session_id.c_str()));
+      base::StringPrintf("checkReconnectSessionFails('%s');",
+                         session_id.c_str()));
 }
 
 }  // namespace media_router
