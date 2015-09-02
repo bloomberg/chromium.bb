@@ -46,6 +46,12 @@ def calc_inputs(options, locale):
   inputs.append(os.path.join(options.share_int_dir, 'components', 'strings',
                 'components_strings_%s.pak' % locale))
 
+  #e.g. 'out/Debug/gen/components/strings/components_chromium_strings_da.pak'
+  # or  'out/Debug/gen/components/strings/
+  # components_google_chrome_strings_da.pak'
+  inputs.append(os.path.join(options.share_int_dir, 'components', 'strings',
+                'components_%s_strings_%s.pak' % (options.branding, locale)))
+
   #e.g. 'out/Debug/gen/ui/strings/ui_strings_da.pak'
   inputs.append(os.path.join(options.share_int_dir, 'ui', 'strings',
                 'ui_strings_%s.pak' % locale))

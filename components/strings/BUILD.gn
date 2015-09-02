@@ -4,8 +4,17 @@
 
 import("//tools/grit/grit_rule.gni")
 
+group("strings") {
+  deps = [
+    ":components_chromium_strings",
+    ":components_google_chrome_strings",
+    ":components_strings",
+  ]
+}
+
 # GYP version: components/components_strings.gyp:components_strings
-grit("strings") {
+#              (generate_components_strings action)
+grit("components_strings") {
   source = "../components_strings.grd"
   outputs = [
     "grit/components_strings.h",
@@ -64,4 +73,166 @@ grit("strings") {
     "components_strings_zh-CN.pak",
     "components_strings_zh-TW.pak",
   ]
+
+  if (is_ios) {
+    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
+    outputs -= [
+      "components_strings_pt-BR.pak",
+      "components_strings_es-419.pak",
+    ]
+    outputs += [
+      "components_strings_pt.pak",
+      "components_strings_es-MX.pak",
+    ]
+  }
+}
+
+# GYP version: components/components_strings.gyp:components_strings
+#              (generate_components_chromium_strings action)
+grit("components_chromium_strings") {
+  source = "../components_chromium_strings.grd"
+  outputs = [
+    "grit/components_chromium_strings.h",
+    "components_chromium_strings_am.pak",
+    "components_chromium_strings_ar.pak",
+    "components_chromium_strings_bg.pak",
+    "components_chromium_strings_bn.pak",
+    "components_chromium_strings_ca.pak",
+    "components_chromium_strings_cs.pak",
+    "components_chromium_strings_da.pak",
+    "components_chromium_strings_de.pak",
+    "components_chromium_strings_el.pak",
+    "components_chromium_strings_en-GB.pak",
+    "components_chromium_strings_en-US.pak",
+    "components_chromium_strings_es.pak",
+    "components_chromium_strings_es-419.pak",
+    "components_chromium_strings_et.pak",
+    "components_chromium_strings_fa.pak",
+    "components_chromium_strings_fake-bidi.pak",
+    "components_chromium_strings_fi.pak",
+    "components_chromium_strings_fil.pak",
+    "components_chromium_strings_fr.pak",
+    "components_chromium_strings_gu.pak",
+    "components_chromium_strings_he.pak",
+    "components_chromium_strings_hi.pak",
+    "components_chromium_strings_hr.pak",
+    "components_chromium_strings_hu.pak",
+    "components_chromium_strings_id.pak",
+    "components_chromium_strings_it.pak",
+    "components_chromium_strings_ja.pak",
+    "components_chromium_strings_kn.pak",
+    "components_chromium_strings_ko.pak",
+    "components_chromium_strings_lt.pak",
+    "components_chromium_strings_lv.pak",
+    "components_chromium_strings_ml.pak",
+    "components_chromium_strings_mr.pak",
+    "components_chromium_strings_ms.pak",
+    "components_chromium_strings_nl.pak",
+    "components_chromium_strings_nb.pak",
+    "components_chromium_strings_pl.pak",
+    "components_chromium_strings_pt-BR.pak",
+    "components_chromium_strings_pt-PT.pak",
+    "components_chromium_strings_ro.pak",
+    "components_chromium_strings_ru.pak",
+    "components_chromium_strings_sk.pak",
+    "components_chromium_strings_sl.pak",
+    "components_chromium_strings_sr.pak",
+    "components_chromium_strings_sv.pak",
+    "components_chromium_strings_sw.pak",
+    "components_chromium_strings_ta.pak",
+    "components_chromium_strings_te.pak",
+    "components_chromium_strings_th.pak",
+    "components_chromium_strings_tr.pak",
+    "components_chromium_strings_uk.pak",
+    "components_chromium_strings_vi.pak",
+    "components_chromium_strings_zh-CN.pak",
+    "components_chromium_strings_zh-TW.pak",
+  ]
+
+  if (is_ios) {
+    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
+    outputs -= [
+      "components_chromium_strings_pt-BR.pak",
+      "components_chromium_strings_es-419.pak",
+    ]
+    outputs += [
+      "components_chromium_strings_pt.pak",
+      "components_chromium_strings_es-MX.pak",
+    ]
+  }
+}
+
+# GYP version: components/components_strings.gyp:components_strings
+#              (generate_components_google_chrome_strings action)
+grit("components_google_chrome_strings") {
+  source = "../components_google_chrome_strings.grd"
+  outputs = [
+    "grit/components_google_chrome_strings.h",
+    "components_google_chrome_strings_am.pak",
+    "components_google_chrome_strings_ar.pak",
+    "components_google_chrome_strings_bg.pak",
+    "components_google_chrome_strings_bn.pak",
+    "components_google_chrome_strings_ca.pak",
+    "components_google_chrome_strings_cs.pak",
+    "components_google_chrome_strings_da.pak",
+    "components_google_chrome_strings_de.pak",
+    "components_google_chrome_strings_el.pak",
+    "components_google_chrome_strings_en-GB.pak",
+    "components_google_chrome_strings_en-US.pak",
+    "components_google_chrome_strings_es.pak",
+    "components_google_chrome_strings_es-419.pak",
+    "components_google_chrome_strings_et.pak",
+    "components_google_chrome_strings_fa.pak",
+    "components_google_chrome_strings_fake-bidi.pak",
+    "components_google_chrome_strings_fi.pak",
+    "components_google_chrome_strings_fil.pak",
+    "components_google_chrome_strings_fr.pak",
+    "components_google_chrome_strings_gu.pak",
+    "components_google_chrome_strings_he.pak",
+    "components_google_chrome_strings_hi.pak",
+    "components_google_chrome_strings_hr.pak",
+    "components_google_chrome_strings_hu.pak",
+    "components_google_chrome_strings_id.pak",
+    "components_google_chrome_strings_it.pak",
+    "components_google_chrome_strings_ja.pak",
+    "components_google_chrome_strings_kn.pak",
+    "components_google_chrome_strings_ko.pak",
+    "components_google_chrome_strings_lt.pak",
+    "components_google_chrome_strings_lv.pak",
+    "components_google_chrome_strings_ml.pak",
+    "components_google_chrome_strings_mr.pak",
+    "components_google_chrome_strings_ms.pak",
+    "components_google_chrome_strings_nl.pak",
+    "components_google_chrome_strings_nb.pak",
+    "components_google_chrome_strings_pl.pak",
+    "components_google_chrome_strings_pt-BR.pak",
+    "components_google_chrome_strings_pt-PT.pak",
+    "components_google_chrome_strings_ro.pak",
+    "components_google_chrome_strings_ru.pak",
+    "components_google_chrome_strings_sk.pak",
+    "components_google_chrome_strings_sl.pak",
+    "components_google_chrome_strings_sr.pak",
+    "components_google_chrome_strings_sv.pak",
+    "components_google_chrome_strings_sw.pak",
+    "components_google_chrome_strings_ta.pak",
+    "components_google_chrome_strings_te.pak",
+    "components_google_chrome_strings_th.pak",
+    "components_google_chrome_strings_tr.pak",
+    "components_google_chrome_strings_uk.pak",
+    "components_google_chrome_strings_vi.pak",
+    "components_google_chrome_strings_zh-CN.pak",
+    "components_google_chrome_strings_zh-TW.pak",
+  ]
+
+  if (is_ios) {
+    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
+    outputs -= [
+      "components_google_chrome_strings_pt-BR.pak",
+      "components_google_chrome_strings_es-419.pak",
+    ]
+    outputs += [
+      "components_google_chrome_strings_pt.pak",
+      "components_google_chrome_strings_es-MX.pak",
+    ]
+  }
 }

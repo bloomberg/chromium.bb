@@ -34,7 +34,7 @@ template("_repack_one_locale") {
       "//chrome/app/resources:platform_locale_settings",
       "//chrome/app:generated_resources",
       "//chrome/app/resources:locale_settings",
-      "//components/strings",
+      "//components/strings:components_strings",
     ]
 
     if (use_ash) {
@@ -79,12 +79,23 @@ template("_repack_one_locale") {
     }
 
     if (is_chrome_branded) {
-      sources +=
-          [ "${root_gen_dir}/chrome/google_chrome_strings_${locale}.pak" ]
-      deps += [ "//chrome/app:google_chrome_strings" ]
+      sources += [
+        "${root_gen_dir}/chrome/google_chrome_strings_${locale}.pak",
+        "${root_gen_dir}/components/strings/components_google_chrome_strings_${locale}.pak",
+      ]
+      deps += [
+        "//chrome/app:google_chrome_strings",
+        "//components/strings:components_google_chrome_strings",
+      ]
     } else {
-      sources += [ "${root_gen_dir}/chrome/chromium_strings_${locale}.pak" ]
-      deps += [ "//chrome/app:chromium_strings" ]
+      sources += [
+        "${root_gen_dir}/chrome/chromium_strings_${locale}.pak",
+        "${root_gen_dir}/components/strings/components_chromium_strings_${locale}.pak",
+      ]
+      deps += [
+        "//chrome/app:chromium_strings",
+        "//components/strings:components_chromium_strings",
+      ]
     }
 
     output = invoker.output

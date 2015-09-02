@@ -70,6 +70,7 @@ static_library("common") {
     "//components/metrics",
     "//components/omnibox/common",
     "//components/policy:policy_component_common",
+    "//components/strings",
     "//components/translate/core/common",
     "//components/url_formatter",
     "//components/variations",

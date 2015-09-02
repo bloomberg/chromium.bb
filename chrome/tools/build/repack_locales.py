@@ -83,6 +83,14 @@ def calc_inputs(locale):
   inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
                 'components_strings_%s.pak' % locale))
 
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # components_chromium_strings_da.pak'
+  #     or
+  #     '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # components_google_chrome_strings_da.pak',
+  inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
+                'components_%s_strings_%s.pak' % (BRANDING, locale)))
+
   if USE_ASH:
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash/strings/ash_strings_da.pak',
     inputs.append(os.path.join(SHARE_INT_DIR, 'ash', 'strings',

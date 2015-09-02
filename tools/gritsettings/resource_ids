@@ -258,8 +258,17 @@
   "components/components_strings.grd": {
     "messages": [30010],
   },
+  # Chromium strings and Google Chrome strings must start at the same id.
+  # We only use one file depending on whether we're building Chromium or
+  # Google Chrome.
+  "components/components_chromium_strings.grd": {
+    "messages": [30270],
+  },
+  "components/components_google_chrome_strings.grd": {
+    "messages": [30270],
+  },
   "components/resources/components_resources.grd": {
-    "includes": [30270],
+    "includes": [30275],
   },
   "components/resources/components_scaled_resources.grd": {
     "structures": [30310],

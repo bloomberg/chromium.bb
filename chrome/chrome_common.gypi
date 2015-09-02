@@ -341,6 +341,7 @@
         '<(DEPTH)/components/components.gyp:translate_core_common',
         '<(DEPTH)/components/components.gyp:variations',
         '<(DEPTH)/components/components.gyp:version_info',
+        '<(DEPTH)/components/components_strings.gyp:components_strings',
         '<(DEPTH)/components/url_formatter/url_formatter.gyp:url_formatter',
         '<(DEPTH)/content/content.gyp:content_common',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
