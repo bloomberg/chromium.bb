@@ -48,6 +48,18 @@ ImageEncoder.registerMetadataEncoder(ExifEncoder, 'image/jpeg');
 ExifEncoder.SOFTWARE = 'Chrome OS Gallery App\0';
 
 /**
+ * Maximum size of exif data.
+ * @const {number}
+ */
+ExifEncoder.MAXIMUM_EXIF_DATA_SIZE = 0x10000;
+
+/**
+ * Size of metadata for thumbnail.
+ * @const {number}
+ */
+ExifEncoder.THUMBNAIL_METADATA_SIZE = 76;
+
+/**
  * @param {!HTMLCanvasElement} canvas
  * @override
  */
@@ -205,7 +217,7 @@ ExifEncoder.prototype.encode = function() {
   var HEADER_SIZE = 10;
 
   // Allocate the largest theoretically possible size.
-  var bytes = new Uint8Array(0x10000);
+  var bytes = new Uint8Array(ExifEncoder.MAXIMUM_EXIF_DATA_SIZE);
 
   // Serialize header
   var hw = new ByteWriter(bytes.buffer, 0, HEADER_SIZE);
@@ -250,14 +262,19 @@ ExifEncoder.prototype.encode = function() {
       throw new Error('Missing gps dictionary reference');
   }
 
-  if (this.ifd_.thumbnail) {
+  // Since thumbnail data can be large, check enough space has left for
+  // thumbnail data.
+  var thumbnailDecoded = this.ifd_.thumbnail ?
+      ImageEncoder.decodeDataURL(this.thumbnailDataUrl) : '';
+  if (this.ifd_.thumbnail &&
+      (ExifEncoder.MAXIMUM_EXIF_DATA_SIZE - bw.tell() >=
+       thumbnailDecoded.length + ExifEncoder.THUMBNAIL_METADATA_SIZE)) {
     bw.resolveOffset('thumb-dir');
     ExifEncoder.encodeDirectory(
         bw,
         this.ifd_.thumbnail,
         [Exif.Tag.JPG_THUMB_OFFSET, Exif.Tag.JPG_THUMB_LENGTH]);
 
-    var thumbnailDecoded = ImageEncoder.decodeDataURL(this.thumbnailDataUrl);
     bw.resolveOffset(Exif.Tag.JPG_THUMB_OFFSET);
     bw.resolve(Exif.Tag.JPG_THUMB_LENGTH, thumbnailDecoded.length);
     bw.writeString(thumbnailDecoded);

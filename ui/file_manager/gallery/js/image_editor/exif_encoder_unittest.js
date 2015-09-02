@@ -108,3 +108,80 @@ function testExifEncodeAndDecode() {
   assertTrue(!!parsedMetadata.thumbnailTransform);
   assertTrue(!!parsedMetadata.thumbnailURL);
 }
+
+/**
+ * Helper function for testing that exif encoder drops thumbnail data if there
+ * isn't enough space.
+ *
+ * @param {number} largeFieldValueSize Size of the large value.
+ * @param {boolean} expectThumbnail True if thumbnail is expected to be written.
+ */
+function largeExifDataTestHelper_(largeFieldValueSize, expectThumbnail) {
+  var canvas = getSampleCanvas();
+
+  // Generate a long string.
+  var longString = '0'.repeat(largeFieldValueSize - 1);
+  longString += '\0';
+
+  var metadata = {
+    mediaMimeType: 'image/jpeg',
+    modificationTime: new Date(2015, 0, 7, 15, 30, 6),
+    ifd: {
+      image: {
+        // Manufacture
+        271: {
+          id: 0x10f,
+          format: 2,
+          componentCount: longString.length,
+          value: longString
+        }
+      }
+    }
+  };
+
+  var encoder = ImageEncoder.encodeMetadata(metadata, canvas, 1);
+
+  // For failure case, an error is thrown.
+  var encodedResult = encoder.encode();
+
+  // Decode encoded exif data and check thumbnail is written or not.
+  var exifParser = new ExifParser({verbose: false});
+  var parsedMetadata = {};
+  var byteReader = new ByteReader(encodedResult);
+  byteReader.readString(2 + 2); // Skip marker and size.
+  exifParser.parseExifSection(parsedMetadata, encodedResult, byteReader);
+
+  assertEquals(expectThumbnail, !!parsedMetadata.thumbnailURL);
+}
+
+/**
+ * Test case when other exif data is small as the thumbnail can fit in.
+ */
+function testLargeExifDataSmallCase() {
+  // 2676 bytes: decoded thumbnail size.
+  // 158 bytes: other exif data except value of the large field.
+  largeExifDataTestHelper_(
+      ExifEncoder.MAXIMUM_EXIF_DATA_SIZE - 2676 -
+      ExifEncoder.THUMBNAIL_METADATA_SIZE - 158 - 1,
+      true);
+}
+
+/**
+ * Test case when other exif data is large as the thumbnail can just fit in.
+ */
+function testLargeExifDataBoundaryCase() {
+  largeExifDataTestHelper_(
+      ExifEncoder.MAXIMUM_EXIF_DATA_SIZE - 2676 -
+      ExifEncoder.THUMBNAIL_METADATA_SIZE - 158,
+      true);
+}
+
+/**
+ * Test case when other exif data is large as the thumbnail cannot fit in.
+ */
+function testLargeExifDataExceedsCase() {
+  largeExifDataTestHelper_(
+      ExifEncoder.MAXIMUM_EXIF_DATA_SIZE - 2676 -
+      ExifEncoder.THUMBNAIL_METADATA_SIZE - 158 + 1,
+      false);
+}
