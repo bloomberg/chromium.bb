@@ -79,6 +79,8 @@ bool HandleExtraBrowserKeyboardShortcut(NSEvent* event, NSWindow* window) {
   // redispatched event, [event window] gives the correct window.
   if ([event window]) {
     BrowserWindowController* controller = [[event window] windowController];
+    // |controller| is only set in Cocoa. In toolkit-views extension commands
+    // are handled by BrowserView.
     if ([controller respondsToSelector:@selector(handledByExtensionCommand:
                                                                   priority:)]) {
       ui::AcceleratorManager::HandlerPriority priority =

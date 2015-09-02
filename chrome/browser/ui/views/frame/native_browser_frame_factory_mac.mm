@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 
-#include "chrome/browser/ui/views/frame/browser_frame_mac.h"
+#import "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,

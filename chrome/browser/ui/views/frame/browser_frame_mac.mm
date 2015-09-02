@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
+#import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_shutdown.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -14,8 +15,9 @@
 BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetMac(browser_frame),
-      browser_view_(browser_view) {
-}
+      browser_view_(browser_view),
+      command_dispatcher_delegate_(
+          [[ChromeCommandDispatcherDelegate alloc] init]) {}
 
 BrowserFrameMac::~BrowserFrameMac() {
 }
@@ -56,16 +58,19 @@ void BrowserFrameMac::InitNativeWidget(
   [root_view addSubview:content_view positioned:NSWindowBelow relativeTo:nil];
 }
 
-gfx::NativeWindow BrowserFrameMac::CreateNSWindow(
+NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
     const views::Widget::InitParams& params) {
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
                           NSMiniaturizableWindowMask | NSResizableWindowMask |
                           NSTexturedBackgroundWindowMask;
-  return [[[NativeWidgetMacFramelessNSWindow alloc]
-      initWithContentRect:ui::kWindowSizeDeterminedLater
-                styleMask:style_mask
-                  backing:NSBackingStoreBuffered
-                    defer:NO] autorelease];
+  base::scoped_nsobject<NativeWidgetMacFramelessNSWindow> ns_window(
+      [[NativeWidgetMacFramelessNSWindow alloc]
+          initWithContentRect:ui::kWindowSizeDeterminedLater
+                    styleMask:style_mask
+                      backing:NSBackingStoreBuffered
+                        defer:NO]);
+  [ns_window setCommandDispatcherDelegate:command_dispatcher_delegate_];
+  return ns_window.autorelease();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

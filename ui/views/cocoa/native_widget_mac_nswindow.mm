@@ -38,6 +38,14 @@
   return self;
 }
 
+// Public methods.
+
+- (void)setCommandDispatcherDelegate:(id<CommandDispatcherDelegate>)delegate {
+  [commandDispatcher_ setDelegate:delegate];
+}
+
+// Private methods.
+
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate {
   return base::mac::ObjCCastStrict<ViewsNSWindowDelegate>([self delegate]);
 }
@@ -51,6 +59,8 @@
       views::MenuController::GetActiveInstance();
   return menuController && menuController->owner() == [self viewsWidget];
 }
+
+// NSWindow overrides.
 
 - (BOOL)_isTitleHidden {
   if (![self delegate])

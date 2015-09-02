@@ -8,6 +8,12 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/native_widget_private.h"
 
+#if defined(__OBJC__)
+@class NativeWidgetMacNSWindow;
+#else
+class NativeWidgetMacNSWindow;
+#endif
+
 namespace views {
 namespace test {
 class HitTestNativeWidgetMac;
@@ -129,7 +135,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
  protected:
   // Creates the NSWindow that will be passed to the BridgedNativeWidget.
   // Called by InitNativeWidget. The return value will be autoreleased.
-  virtual gfx::NativeWindow CreateNSWindow(const Widget::InitParams& params);
+  virtual NativeWidgetMacNSWindow* CreateNSWindow(
+      const Widget::InitParams& params);
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 

@@ -14,6 +14,10 @@
 // can only be accomplished by overriding methods.
 VIEWS_EXPORT
 @interface NativeWidgetMacNSWindow : NSWindow<CommandDispatchingWindow>
+
+// Set a CommandDispatcherDelegate, i.e. to implement key event handling.
+- (void)setCommandDispatcherDelegate:(id<CommandDispatcherDelegate>)delegate;
+
 @end
 
 #endif  // UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NSWINDOW_H_

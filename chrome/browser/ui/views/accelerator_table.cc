@@ -16,6 +16,16 @@
 namespace chrome {
 namespace {
 
+// For many commands, the Mac equivalent uses Cmd instead of Ctrl. We only need
+// to list the ones that do not have a key equivalent in the main menu, i.e.
+// only the ones in global_keyboard_shortcuts_mac.mm.
+// TODO(jackhou): If-def out the accelerators that should not be on Mac.
+#if defined(OS_MACOSX)
+const ui::EventFlags kPlatformModifier = ui::EF_COMMAND_DOWN;
+#else
+const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
+#endif
+
 // NOTE: Keep this list in the same (mostly-alphabetical) order as
 // the Windows accelerators in ../../app/chrome_dll.rc.
 // Do not use Ctrl-Alt as a shortcut modifier, as it is used by i18n keyboards:
@@ -56,8 +66,8 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_RELOAD_IGNORING_CACHE },
   { ui::VKEY_HOME, ui::EF_ALT_DOWN, IDC_HOME },
   { ui::VKEY_S, ui::EF_CONTROL_DOWN, IDC_SAVE_PAGE },
-  { ui::VKEY_9, ui::EF_CONTROL_DOWN, IDC_SELECT_LAST_TAB },
-  { ui::VKEY_NUMPAD9, ui::EF_CONTROL_DOWN, IDC_SELECT_LAST_TAB },
+  { ui::VKEY_9, kPlatformModifier, IDC_SELECT_LAST_TAB },
+  { ui::VKEY_NUMPAD9, kPlatformModifier, IDC_SELECT_LAST_TAB },
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   { ui::VKEY_9, ui::EF_ALT_DOWN, IDC_SELECT_LAST_TAB },
   { ui::VKEY_NUMPAD9, ui::EF_ALT_DOWN, IDC_SELECT_LAST_TAB },
@@ -70,22 +80,22 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_SELECT_PREVIOUS_TAB },
   { ui::VKEY_PRIOR, ui::EF_CONTROL_DOWN, IDC_SELECT_PREVIOUS_TAB },
-  { ui::VKEY_1, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_0 },
-  { ui::VKEY_NUMPAD1, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_0 },
-  { ui::VKEY_2, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_1 },
-  { ui::VKEY_NUMPAD2, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_1 },
-  { ui::VKEY_3, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_2 },
-  { ui::VKEY_NUMPAD3, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_2 },
-  { ui::VKEY_4, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_3 },
-  { ui::VKEY_NUMPAD4, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_3 },
-  { ui::VKEY_5, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_4 },
-  { ui::VKEY_NUMPAD5, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_4 },
-  { ui::VKEY_6, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_5 },
-  { ui::VKEY_NUMPAD6, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_5 },
-  { ui::VKEY_7, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_6 },
-  { ui::VKEY_NUMPAD7, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_6 },
-  { ui::VKEY_8, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_7 },
-  { ui::VKEY_NUMPAD8, ui::EF_CONTROL_DOWN, IDC_SELECT_TAB_7 },
+  { ui::VKEY_1, kPlatformModifier, IDC_SELECT_TAB_0 },
+  { ui::VKEY_NUMPAD1, kPlatformModifier, IDC_SELECT_TAB_0 },
+  { ui::VKEY_2, kPlatformModifier, IDC_SELECT_TAB_1 },
+  { ui::VKEY_NUMPAD2, kPlatformModifier, IDC_SELECT_TAB_1 },
+  { ui::VKEY_3, kPlatformModifier, IDC_SELECT_TAB_2 },
+  { ui::VKEY_NUMPAD3, kPlatformModifier, IDC_SELECT_TAB_2 },
+  { ui::VKEY_4, kPlatformModifier, IDC_SELECT_TAB_3 },
+  { ui::VKEY_NUMPAD4, kPlatformModifier, IDC_SELECT_TAB_3 },
+  { ui::VKEY_5, kPlatformModifier, IDC_SELECT_TAB_4 },
+  { ui::VKEY_NUMPAD5, kPlatformModifier, IDC_SELECT_TAB_4 },
+  { ui::VKEY_6, kPlatformModifier, IDC_SELECT_TAB_5 },
+  { ui::VKEY_NUMPAD6, kPlatformModifier, IDC_SELECT_TAB_5 },
+  { ui::VKEY_7, kPlatformModifier, IDC_SELECT_TAB_6 },
+  { ui::VKEY_NUMPAD7, kPlatformModifier, IDC_SELECT_TAB_6 },
+  { ui::VKEY_8, kPlatformModifier, IDC_SELECT_TAB_7 },
+  { ui::VKEY_NUMPAD8, kPlatformModifier, IDC_SELECT_TAB_7 },
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   { ui::VKEY_1, ui::EF_ALT_DOWN, IDC_SELECT_TAB_0 },
   { ui::VKEY_NUMPAD1, ui::EF_ALT_DOWN, IDC_SELECT_TAB_0 },
@@ -167,7 +177,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   // On Windows, all VKEY_BROWSER_* keys except VKEY_BROWSER_SEARCH are handled
   // via WM_APPCOMMAND.
   { ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH },
-  { ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_SHOW_AVATAR_MENU},
+  { ui::VKEY_M, ui::EF_SHIFT_DOWN | kPlatformModifier, IDC_SHOW_AVATAR_MENU},
   // On ChromeOS, these keys are assigned to change UI scale.
   { ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_OEM_MINUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,

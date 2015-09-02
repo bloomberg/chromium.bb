@@ -45,7 +45,7 @@
 @end
 
 // Test NSWindow that provides hooks via method overrides to verify behavior.
-@interface NativeWidetMacTestWindow : NativeWidgetMacNSWindow {
+@interface NativeWidgetMacTestWindow : NativeWidgetMacNSWindow {
  @private
   int invalidateShadowCount_;
 }
@@ -87,14 +87,15 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
 
  protected:
   // NativeWidgetMac:
-  gfx::NativeWindow CreateNSWindow(const Widget::InitParams& params) override {
+  NativeWidgetMacNSWindow* CreateNSWindow(
+      const Widget::InitParams& params) override {
     NSUInteger style_mask = NSBorderlessWindowMask;
     if (params.type == Widget::InitParams::TYPE_WINDOW) {
       style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
                    NSClosableWindowMask | NSMiniaturizableWindowMask |
                    NSResizableWindowMask;
     }
-    return [[[NativeWidetMacTestWindow alloc]
+    return [[[NativeWidgetMacTestWindow alloc]
         initWithContentRect:ui::kWindowSizeDeterminedLater
                   styleMask:style_mask
                     backing:NSBackingStoreBuffered
@@ -126,14 +127,14 @@ class NativeWidgetMacTest : public WidgetTest {
     return native_parent_;
   }
 
-  // Create a Widget backed by the NativeWidetMacTestWindow NSWindow subclass.
+  // Create a Widget backed by the NativeWidgetMacTestWindow NSWindow subclass.
   Widget* CreateWidgetWithTestWindow(Widget::InitParams params,
-                                     NativeWidetMacTestWindow** window) {
+                                     NativeWidgetMacTestWindow** window) {
     Widget* widget = new Widget;
     params.native_widget = new TestWindowNativeWidgetMac(widget);
     widget->Init(params);
     widget->Show();
-    *window = base::mac::ObjCCastStrict<NativeWidetMacTestWindow>(
+    *window = base::mac::ObjCCastStrict<NativeWidgetMacTestWindow>(
         widget->GetNativeWindow());
     EXPECT_TRUE(*window);
     return widget;
@@ -923,7 +924,7 @@ TEST_F(NativeWidgetMacTest, DoesHideTitle) {
 
 // Test calls to invalidate the shadow when composited frames arrive.
 TEST_F(NativeWidgetMacTest, InvalidateShadow) {
-  NativeWidetMacTestWindow* window;
+  NativeWidgetMacTestWindow* window;
   const gfx::Rect rect(0, 0, 100, 200);
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -992,7 +993,7 @@ TEST_F(NativeWidgetMacTest, GetWorkAreaBoundsInScreen) {
 }
 @end
 
-@implementation NativeWidetMacTestWindow
+@implementation NativeWidgetMacTestWindow
 
 @synthesize invalidateShadowCount = invalidateShadowCount_;
 

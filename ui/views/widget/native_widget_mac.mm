@@ -575,7 +575,8 @@ void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, protected:
 
-NSWindow* NativeWidgetMac::CreateNSWindow(const Widget::InitParams& params) {
+NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
+    const Widget::InitParams& params) {
   return [[[NativeWidgetMacNSWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:StyleMaskForParams(params)

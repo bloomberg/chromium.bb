@@ -21,7 +21,7 @@ class AppWindowNativeWidgetMac : public views::NativeWidgetMac {
 
  protected:
   // NativeWidgetMac:
-  gfx::NativeWindow CreateNSWindow(
+  NativeWidgetMacNSWindow* CreateNSWindow(
       const views::Widget::InitParams& params) override;
 
  private:
