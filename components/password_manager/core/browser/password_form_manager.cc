@@ -630,30 +630,6 @@ void PasswordFormManager::UpdateLogin() {
     pending_credentials_.username_value = selected_username_;
     password_store->UpdateLoginWithPrimaryKey(pending_credentials_,
                                               old_primary_key);
-  } else if ((observed_form_.scheme == PasswordForm::SCHEME_HTML) &&
-             (observed_form_.origin.spec().length() >
-              observed_form_.signon_realm.length()) &&
-             (observed_form_.signon_realm ==
-              pending_credentials_.origin.spec())) {
-    // Note origin.spec().length > signon_realm.length implies the origin has a
-    // path, since signon_realm is a prefix of origin for HTML password forms.
-    //
-    // The user logged in successfully with one of our autofilled logins on a
-    // page with non-empty path, but the autofilled entry was initially saved/
-    // imported with an empty path. Rather than just mark this entry preferred,
-    // we create a more specific copy for this exact page and leave the "master"
-    // unchanged. This is to prevent the case where that master login is used
-    // on several sites (e.g site.com/a and site.com/b) but the user actually
-    // has a different preference on each site. For example, on /a, he wants the
-    // general empty-path login so it is flagged as preferred, but on /b he logs
-    // in with a different saved entry - we don't want to remove the preferred
-    // status of the former because upon return to /a it won't be the default-
-    // fill match.
-    // TODO(timsteele): Bug 1188626 - expire the master copies.
-    PasswordForm copy(pending_credentials_);
-    copy.origin = observed_form_.origin;
-    copy.action = observed_form_.action;
-    password_store->AddLogin(copy);
   } else if (observed_form_.new_password_element.empty() &&
              (pending_credentials_.password_element.empty() ||
               pending_credentials_.username_element.empty() ||
