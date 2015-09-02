@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import fnmatch
 import optparse
 import os
 import sys
@@ -36,9 +35,8 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None):
 
 def JarDirectory(classes_dir, excluded_classes, jar_path, manifest_file=None):
   class_files = build_utils.FindInDirectory(classes_dir, '*.class')
-  for exclude in excluded_classes:
-    class_files = filter(
-        lambda f: not fnmatch.fnmatch(f, exclude), class_files)
+  class_files = [f for f in class_files
+                 if not build_utils.MatchesGlob(f, excluded_classes)]
 
   Jar(class_files, classes_dir, jar_path, manifest_file=manifest_file)
 

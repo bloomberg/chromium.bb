@@ -235,20 +235,19 @@ def ZipDir(output, base_dir):
         outfile.write(path, archive_path)
 
 
+def MatchesGlob(path, filters):
+  """Returns whether the given path matches any of the given glob patterns."""
+  return filters and any(fnmatch.fnmatch(path, f) for f in filters)
+
+
 def MergeZips(output, inputs, exclude_patterns=None):
   added_names = set()
-  def Allow(name):
-    if exclude_patterns is not None:
-      for p in exclude_patterns:
-        if fnmatch.fnmatch(name, p):
-          return False
-    return True
 
   with zipfile.ZipFile(output, 'w') as out_zip:
     for in_file in inputs:
       with zipfile.ZipFile(in_file, 'r') as in_zip:
         for name in in_zip.namelist():
-          if name not in added_names and Allow(name):
+          if not (name in added_names or MatchesGlob(name, exclude_patterns)):
             out_zip.writestr(name, in_zip.read(name))
             added_names.add(name)
 
