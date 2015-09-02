@@ -302,9 +302,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int32 route_id, int32 surface_id);
 
-  int main_frame_routing_id() const {
-    return main_frame_routing_id_;
-  }
   void set_main_frame_routing_id(int routing_id) {
     main_frame_routing_id_ = routing_id;
   }
