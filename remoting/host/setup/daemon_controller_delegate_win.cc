@@ -72,8 +72,8 @@ bool ReadConfig(const base::FilePath& filename,
   }
 
   // Parse the JSON configuration, expecting it to contain a dictionary.
-  scoped_ptr<base::Value> value(base::JSONReader::DeprecatedRead(
-      file_content, base::JSON_ALLOW_TRAILING_COMMAS));
+  scoped_ptr<base::Value> value =
+      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS);
 
   base::DictionaryValue* dictionary;
   if (!value || !value->GetAsDictionary(&dictionary)) {
