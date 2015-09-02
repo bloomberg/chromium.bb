@@ -92,7 +92,7 @@ base::string16 RegisterProtocolHandlerInfoBarDelegate::GetButtonLabel(
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::OKButtonTriggersUACPrompt() const {
-  return true;
+  return ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient();
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::Accept() {

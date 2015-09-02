@@ -29,6 +29,7 @@
 
 using content::BrowserThread;
 
+// static
 ShellIntegration::DefaultWebClientSetPermission
     ShellIntegration::CanSetAsDefaultProtocolClient() {
   // Allowed as long as the browser can become the operating system default
@@ -128,7 +129,13 @@ bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
     const std::string& protocol) {
   return false;
 }
-#endif
+
+// static
+bool ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient() {
+  return false;
+}
+
+#endif  // !defined(OS_WIN)
 
 bool ShellIntegration::DefaultWebClientObserver::IsOwnedByWorker() {
   return false;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 
+#include <string>
+
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
@@ -154,8 +156,11 @@ base::string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
       IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
 }
 
+// Setting an app as the default browser doesn't require elevation directly, but
+// it does require registering it as the protocol handler for "http", so if
+// protocol registration in general requires elevation, this does as well.
 bool DefaultBrowserInfoBarDelegate::OKButtonTriggersUACPrompt() const {
-  return true;
+  return ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient();
 }
 
 bool DefaultBrowserInfoBarDelegate::Accept() {

@@ -334,6 +334,10 @@ bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
   return true;
 }
 
+bool ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient() {
+  return base::win::GetVersion() < base::win::VERSION_WIN8;
+}
+
 ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
   return GetDefaultWebClientStateFromShellUtilDefaultState(
       ShellUtil::GetChromeDefaultState());
