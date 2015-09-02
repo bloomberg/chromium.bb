@@ -6,6 +6,6 @@
   GarbageCollected,
   RuntimeEnabled=RequestIdleCallback,
 ] interface IdleCallbackDeadline {
-    readonly attribute double timeRemaining;
+    double timeRemaining();
     readonly attribute boolean didTimeout;
 };

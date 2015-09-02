@@ -44,7 +44,7 @@ async_test(function() {
   var idle_callback = this.step_func(function(deadline) {
     var time_delta = performance.now() - idle_callback_scheduled;
     assert_true(time_delta >= timeout, "Should only have been run after timeout");
-    assert_true(deadline.timeRemaining == 0, "IdleDeadline.timeRemaining MUST be equal to zero if requestIdleCallback was scheduled due to a timeout");
+    assert_true(deadline.timeRemaining() == 0, "IdleDeadline.timeRemaining MUST be equal to zero if requestIdleCallback was scheduled due to a timeout");
     assert_true(deadline.didTimeout, "IdleDeadline.didTimeout MUST be true if requestIdleCallback was scheduled due to a timeout");
     assert_true(busy_raf_loop_iterations_remaining > 0, "Busy rAF loop should still be going");
     this.done();

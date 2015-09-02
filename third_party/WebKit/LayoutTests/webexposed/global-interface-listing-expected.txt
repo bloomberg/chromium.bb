@@ -3057,8 +3057,8 @@ interface IDBVersionChangeEvent
     method constructor
 interface IdleCallbackDeadline
     getter didTimeout
-    getter timeRemaining
     method constructor
+    method timeRemaining
 interface Image
     method constructor
 interface ImageBitmap

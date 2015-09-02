@@ -27,8 +27,9 @@ async_test(function() {
   // and the deadline argument is passed correctly.
   requestIdleCallback(this.step_func(function(deadline) {
     assert_equals(typeof deadline, "object", "IdleDeadline MUST be passed to callback.");
-    assert_equals(typeof deadline.timeRemaining, "number", "IdleDeadline.timeRemaining MUST be a double time remaining in milliseconds");
-    assert_true(deadline.timeRemaining <= 50, "IdleDeadline.timeRemaining() MUST be less than or equal to 50ms in the future.");
+    assert_equals(typeof deadline.timeRemaining, "function", "IdleDeadline.timeRemaining MUST be a function which returns the time remaining in milliseconds");
+    assert_equals(typeof deadline.timeRemaining(), "number", "IdleDeadline.timeRemaining MUST return a double of the time remaining in milliseconds");
+    assert_true(deadline.timeRemaining() <= 50, "IdleDeadline.timeRemaining() MUST be less than or equal to 50ms in the future.");
     assert_equals(typeof deadline.didTimeout, "boolean", "IdleDeadline.didTimeout MUST be a boolean");
     assert_false(deadline.didTimeout, "IdleDeadline.didTimeout MUST be false if requestIdleCallback wasn't scheduled due to a timeout");
     this.done();
