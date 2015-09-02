@@ -1196,8 +1196,8 @@ const char kWebRTCMultipleRoutesEnabled[] = "webrtc.multiple_routes_enabled";
 // unless it goes through a proxy (i.e RETURN when it's available).  If no UDP
 // proxy is configured, it will not send UDP.  If true, WebRTC will send UDP
 // regardless of whether or not a proxy is configured.
-const char kWebRTCNonProxiedUdpTransportEnabled[] =
-    "webrtc.nonproxied_udp_transport_enabled";
+const char kWebRTCNonProxiedUdpEnabled[] =
+    "webrtc.nonproxied_udp_enabled";
 #endif
 
 // *************** LOCAL STATE ***************

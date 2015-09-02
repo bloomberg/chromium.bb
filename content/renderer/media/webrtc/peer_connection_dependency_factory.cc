@@ -411,9 +411,9 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       pref_config.enable_multiple_routes =
           renderer_view_impl->renderer_preferences()
               .enable_webrtc_multiple_routes;
-      pref_config.enable_nonproxied_udp_transport =
+      pref_config.enable_nonproxied_udp =
           renderer_view_impl->renderer_preferences()
-              .enable_webrtc_nonproxied_udp_transport;
+              .enable_webrtc_nonproxied_udp;
     }
   }
 

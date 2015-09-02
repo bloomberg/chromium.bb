@@ -103,8 +103,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(ENABLE_WEBRTC)
   registry->RegisterBooleanPref(prefs::kWebRTCMultipleRoutesEnabled, true);
-  registry->RegisterBooleanPref(prefs::kWebRTCNonProxiedUdpTransportEnabled,
-                                true);
+  registry->RegisterBooleanPref(prefs::kWebRTCNonProxiedUdpEnabled, true);
 #endif
 
   // Dictionaries to keep track of default tasks in the file browser.

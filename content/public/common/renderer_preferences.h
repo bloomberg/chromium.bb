@@ -103,7 +103,7 @@ struct CONTENT_EXPORT RendererPreferences {
   // connect to peers and TURN servers, which effectively disables all WebRTC's
   // UDP traffic for now, until UDP-based proxy support is available in
   // Chromium. Default is true.
-  bool enable_webrtc_nonproxied_udp_transport;
+  bool enable_webrtc_nonproxied_udp;
 
   // Default page zoom level.
   double default_zoom_level;

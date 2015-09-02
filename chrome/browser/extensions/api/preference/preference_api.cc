@@ -115,8 +115,7 @@ PrefMappingEntry kPrefMapping[] = {
 #if defined(ENABLE_WEBRTC)
     {"webRTCMultipleRoutesEnabled", prefs::kWebRTCMultipleRoutesEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
-    {"webRTCNonProxiedUdpEnabled",
-     prefs::kWebRTCNonProxiedUdpTransportEnabled,
+    {"webRTCNonProxiedUdpEnabled", prefs::kWebRTCNonProxiedUdpEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
 #endif
     // accessibilityFeatures.animationPolicy is available for

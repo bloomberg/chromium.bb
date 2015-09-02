@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   prefs->SetBoolean(prefs::kSearchSuggestEnabled, false);
 #if defined(ENABLE_WEBRTC)
   prefs->SetBoolean(prefs::kWebRTCMultipleRoutesEnabled, false);
-  prefs->SetBoolean(prefs::kWebRTCNonProxiedUdpTransportEnabled, false);
+  prefs->SetBoolean(prefs::kWebRTCNonProxiedUdpEnabled, false);
 #endif
 
   const char kExtensionPath[] = "preference/standard";
