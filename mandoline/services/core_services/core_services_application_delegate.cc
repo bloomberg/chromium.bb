@@ -74,7 +74,6 @@ class ApplicationThread : public base::SimpleThread {
 
 CoreServicesApplicationDelegate::CoreServicesApplicationDelegate()
     : weak_factory_(this) {
-  mojo::logging::InitLogging();
 }
 
 CoreServicesApplicationDelegate::~CoreServicesApplicationDelegate() {
@@ -89,6 +88,10 @@ void CoreServicesApplicationDelegate::ApplicationThreadDestroyed(
                 thread);
   DCHECK(iter != application_threads_.end());
   application_threads_.erase(iter);
+}
+
+void CoreServicesApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+  mojo::logging::InitLogging();
 }
 
 bool CoreServicesApplicationDelegate::ConfigureIncomingConnection(

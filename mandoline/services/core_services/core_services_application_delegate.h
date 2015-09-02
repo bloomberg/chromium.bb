@@ -32,6 +32,7 @@ class CoreServicesApplicationDelegate
 
  private:
   // Overridden from mojo::ApplicationDelegate:
+  void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
   void Quit() override;
