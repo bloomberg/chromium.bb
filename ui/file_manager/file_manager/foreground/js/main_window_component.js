@@ -225,6 +225,7 @@ MainWindowComponent.prototype.onKeyDown_ = function(event) {
 
   switch (util.getKeyModifiers(event) + event.keyIdentifier) {
     case 'U+001B':  // Escape => Cancel dialog.
+    case 'Ctrl-U+0057': // Ctrl+W => Cancel dialog.
       if (this.dialogType_ != DialogType.FULL_PAGE) {
         // If there is nothing else for ESC to do, then cancel the dialog.
         event.preventDefault();
