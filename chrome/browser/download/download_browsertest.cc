@@ -2753,15 +2753,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveImageAsReferrerPolicyDefault) {
   EXPECT_TRUE(VerifyFile(file, "", 0));
 }
 
-// Verify the multiple downloads infobar.
+// On mobile, the multiple downloads UI is an infobar. On desktop, it's a
+// bubble. Test each as appropriate.
+#if defined(OS_ANDROID) || defined(OS_IOS)
 IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // Ensure that infobars are being used instead of bubbles.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePermissionsBubbles);
@@ -2805,18 +2800,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
   EXPECT_EQ(2u, downloads_observer->NumDownloadsSeenInState(
       DownloadItem::COMPLETE));
 }
-
+#else
 IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshBrowserTests))
     return;
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // Permission bubbles are not supported on mobile.
-  return;
 #endif
 
   // Enable permision bubbles.
@@ -2846,6 +2836,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
 
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
   GURL url = net::URLRequestMockHTTPJob::GetMockUrl("downloads/a_zip_file.zip");

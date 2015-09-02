@@ -442,8 +442,6 @@
       'browser/download/download_prefs.h',
       'browser/download/download_query.cc',
       'browser/download/download_query.h',
-      'browser/download/download_request_infobar_delegate.cc',
-      'browser/download/download_request_infobar_delegate.h',
       'browser/download/download_request_limiter.cc',
       'browser/download/download_request_limiter.h',
       'browser/download/download_resource_throttle.cc',
@@ -867,6 +865,8 @@
       'browser/web_data_service_factory.h',
     ],
     'chrome_browser_android_sources': [
+      'browser/download/download_request_infobar_delegate.cc',
+      'browser/download/download_request_infobar_delegate.h',
       'browser/media/protected_media_identifier_infobar_delegate.cc',
       'browser/media/protected_media_identifier_infobar_delegate.h',
       'browser/media/protected_media_identifier_permission_context.cc',

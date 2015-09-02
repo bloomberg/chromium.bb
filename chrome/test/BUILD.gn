@@ -1485,6 +1485,7 @@ if (!is_android) {
               chrome_tests_unit_gypi_values.chrome_unit_tests_non_android_sources,
               ".",
               "//chrome")
+      sources -= [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
     }
     if (is_ios || is_chromeos) {
       sources -=

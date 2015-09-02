@@ -2642,6 +2642,9 @@
           ],
         }, {  # Not Android.
           'sources': [ '<@(chrome_unit_tests_non_android_sources)' ],
+          'sources!': [
+            'browser/download/download_request_infobar_delegate_unittest.cc',
+          ],
         }],
         ['enable_themes == 1', {
           'sources': [ '<@(chrome_unit_tests_themes_sources)' ],

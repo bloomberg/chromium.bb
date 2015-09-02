@@ -8,7 +8,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_permission_request.h"
-#include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -25,6 +24,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/download/download_request_infobar_delegate.h"
+#endif
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -127,20 +130,19 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (is_showing_prompt())
     return;
 
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleManager* bubble_manager =
-        PermissionBubbleManager::FromWebContents(web_contents_);
-    if (bubble_manager) {
-      bubble_manager->AddRequest(new DownloadPermissionRequest(
-          factory_.GetWeakPtr()));
-    } else {
-      Cancel();
-    }
-    return;
-  }
-
+#if defined(OS_ANDROID)
   DownloadRequestInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents_), factory_.GetWeakPtr());
+#else
+  PermissionBubbleManager* bubble_manager =
+      PermissionBubbleManager::FromWebContents(web_contents_);
+  if (bubble_manager) {
+    bubble_manager->AddRequest(new DownloadPermissionRequest(
+        factory_.GetWeakPtr()));
+  } else {
+    Cancel();
+  }
+#endif
 }
 
 void DownloadRequestLimiter::TabDownloadState::SetContentSetting(
