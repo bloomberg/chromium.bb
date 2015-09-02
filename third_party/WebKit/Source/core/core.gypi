@@ -3783,6 +3783,7 @@
             'fetch/ClientHintsPreferencesTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',
+            'fetch/MockImageResourceClient.cpp',
             'fetch/RawResourceTest.cpp',
             'fetch/ResourceFetcherTest.cpp',
             'fetch/ResourceLoaderOptionsTest.cpp',

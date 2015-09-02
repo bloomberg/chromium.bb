@@ -33,38 +33,35 @@
 
 #include "core/fetch/ImageResourceClient.h"
 
-#include <gtest/gtest.h>
-
 namespace blink {
+
+template<typename T> class ResourcePtr;
+
+class Resource;
 
 class MockImageResourceClient final : public ImageResourceClient {
 public:
-    MockImageResourceClient()
-        : m_imageChangedCount(0)
-        , m_notifyFinishedCalled(false)
-    {
-    }
+    explicit MockImageResourceClient(const ResourcePtr<Resource>&);
+    ~MockImageResourceClient() override;
 
-    ~MockImageResourceClient() override {}
     void imageChanged(ImageResource*, const IntRect*) override
     {
         m_imageChangedCount++;
     }
 
-    void notifyFinished(Resource*) override
-    {
-        ASSERT_FALSE(m_notifyFinishedCalled);
-        m_notifyFinishedCalled = true;
-    }
+    void notifyFinished(Resource*) override;
 
     int imageChangedCount() const { return m_imageChangedCount; }
     bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
 
+    void removeAsClient();
+
 private:
+    Resource* m_resource;
     int m_imageChangedCount;
     bool m_notifyFinishedCalled;
 };
 
 } // namespace blink
 
-#endif // ImageResourceTest_h
+#endif // MockImageResourceClient_h

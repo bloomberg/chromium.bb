@@ -34,6 +34,7 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourcePtr.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/heap/Handle.h"
@@ -117,11 +118,8 @@ TEST_F(ResourceFetcherTest, UseExistingResource)
     memoryCache()->remove(resource.get());
 }
 
-
 TEST_F(ResourceFetcherTest, Vary)
 {
-    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
-
     KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
     ResourcePtr<Resource> resource = new Resource(url, Resource::Raw);
     memoryCache()->add(resource.get());
@@ -134,13 +132,16 @@ TEST_F(ResourceFetcherTest, Vary)
     resource->finish();
     ASSERT_TRUE(resource->hasVaryHeader());
 
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
     FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
     Platform::current()->unitTestSupport()->registerMockedURL(url, WebURLResponse(), "");
     ResourcePtr<Resource> newResource = fetcher->requestResource(fetchRequest, TestResourceFactory());
     EXPECT_NE(resource, newResource);
-
+    newResource->loader()->cancel();
     memoryCache()->remove(newResource.get());
     Platform::current()->unitTestSupport()->unregisterMockedURL(url);
+
+    memoryCache()->remove(resource.get());
 }
 
 TEST_F(ResourceFetcherTest, VaryOnBack)
@@ -218,6 +219,10 @@ TEST_F(ResourceFetcherTest, RevalidateWhileLoading)
     FetchRequest fetchRequest2(url, FetchInitiatorInfo());
     ResourcePtr<Resource> resource2 = fetcher2->requestResource(fetchRequest2, TestResourceFactory(Resource::Image));
     EXPECT_EQ(resource1, resource2);
+
+    // Tidily(?) shut down the ResourceLoader.
+    resource1->loader()->cancel();
+    Platform::current()->unitTestSupport()->unregisterMockedURL(url);
 }
 
 } // namespace blink

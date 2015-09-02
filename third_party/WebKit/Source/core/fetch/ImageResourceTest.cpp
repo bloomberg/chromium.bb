@@ -48,6 +48,8 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 
+#include <gtest/gtest.h>
+
 namespace blink {
 
 static Vector<unsigned char> jpegImage()
@@ -94,8 +96,7 @@ TEST(ImageResourceTest, MultipartImage)
     cachedImage->load(fetcher, ResourceLoaderOptions());
     Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 
-    MockImageResourceClient client;
-    cachedImage->addClient(&client);
+    MockImageResourceClient client(cachedImage);
     EXPECT_EQ(Resource::Pending, cachedImage->status());
 
     // Send the multipart response. No image or data buffer is created.
@@ -152,12 +153,11 @@ TEST(ImageResourceTest, CancelOnDetach)
     cachedImage->load(fetcher, ResourceLoaderOptions());
     memoryCache()->add(cachedImage.get());
 
-    MockImageResourceClient client;
-    cachedImage->addClient(&client);
+    MockImageResourceClient client(cachedImage);
     EXPECT_EQ(Resource::Pending, cachedImage->status());
 
     // The load should still be alive, but a timer should be started to cancel the load inside removeClient().
-    cachedImage->removeClient(&client);
+    client.removeAsClient();
     EXPECT_EQ(Resource::Pending, cachedImage->status());
     EXPECT_NE(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
@@ -174,8 +174,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(), nullptr);
     cachedImage->setLoading(true);
 
-    MockImageResourceClient client;
-    cachedImage->addClient(&client);
+    MockImageResourceClient client(cachedImage);
 
     // Send the image response.
     cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()), nullptr);
@@ -196,7 +195,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     ASSERT_FALSE(cachedImage->image()->isNull());
 
     // The ImageResource no longer has clients. The image should be deleted by prune.
-    cachedImage->removeClient(&client);
+    client.removeAsClient();
     cachedImage->prune();
     ASSERT_FALSE(cachedImage->hasClients());
     ASSERT_FALSE(cachedImage->hasImage());
@@ -208,8 +207,7 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(), nullptr);
     cachedImage->setLoading(true);
 
-    MockImageResourceClient client;
-    cachedImage->addClient(&client);
+    MockImageResourceClient client(cachedImage);
 
     // Send the image response.
     Vector<unsigned char> jpeg = jpegImage();

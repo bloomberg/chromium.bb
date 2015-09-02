@@ -125,16 +125,13 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
     ASSERT_EQ(cachedResource->size(), memoryCache()->deadSize());
     ASSERT_EQ(0u, memoryCache()->liveSize());
 
-    MockImageResourceClient client;
-    cachedResource->addClient(&client);
+    MockImageResourceClient client(cachedResource);
     ASSERT_EQ(0u, memoryCache()->deadSize());
     ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
 
     cachedResource->fakeEncodedSize(resourceSize2);
     ASSERT_EQ(0u, memoryCache()->deadSize());
     ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
-
-    cachedResource->removeClient(&client);
 }
 
 // Verifies that dead resources that exceed dead resource capacity are evicted
@@ -201,8 +198,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
     const char data[6] = "abcde";
     cachedDeadResource->appendData(data, 3u);
-    MockImageResourceClient client;
-    cachedLiveResource->addClient(&client);
+    MockImageResourceClient client(cachedLiveResource);
     cachedLiveResource->appendData(data, 4u);
 
     class Task1 : public WebThread::Task {
@@ -260,7 +256,6 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
     Platform::current()->currentThread()->postTask(FROM_HERE, new Task1(cachedLiveResource, cachedDeadResource));
     Platform::current()->currentThread()->postTask(FROM_HERE, new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     testing::runPendingTasks();
-    cachedLiveResource->removeClient(&client);
 }
 
 // Verified that when ordering a prune in a runLoop task, the prune
@@ -311,11 +306,9 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_MultipleResourceMaps)
 static void TestClientRemoval(const ResourcePtr<Resource>& resource1, const ResourcePtr<Resource>& resource2)
 {
     const char data[6] = "abcde";
-    MockImageResourceClient client1;
-    resource1->addClient(&client1);
+    MockImageResourceClient client1(resource1);
     resource1->appendData(data, 4u);
-    MockImageResourceClient client2;
-    resource2->addClient(&client2);
+    MockImageResourceClient client2(resource2);
     resource2->appendData(data, 4u);
 
     const unsigned minDeadCapacity = 0;
@@ -334,7 +327,7 @@ static void TestClientRemoval(const ResourcePtr<Resource>& resource1, const Reso
 
     // Removing the client from resource1 should result in all resources
     // remaining in cache since the prune is deferred.
-    resource1->removeClient(&client1);
+    client1.removeAsClient();
     ASSERT_GT(resource1->decodedSize(), 0u);
     ASSERT_GT(resource2->decodedSize(), 0u);
     ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
@@ -344,7 +337,7 @@ static void TestClientRemoval(const ResourcePtr<Resource>& resource1, const Reso
 
     // Removing the client from resource2 should result in immediate
     // eviction of resource2 because we are over the prune deferral limit.
-    resource2->removeClient(&client2);
+    client2.removeAsClient();
     ASSERT_GT(resource1->decodedSize(), 0u);
     ASSERT_GT(resource2->decodedSize(), 0u);
     ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
@@ -401,10 +394,8 @@ static void TestDecodeCacheOrder(const ResourcePtr<Resource>& cachedImageLowPrio
     memoryCache()->setDelayBeforeLiveDecodedPrune(0);
     memoryCache()->setMaxPruneDeferralDelay(0);
 
-    MockImageResourceClient clientLowPriority;
-    MockImageResourceClient clientHighPriority;
-    cachedImageLowPriority->addClient(&clientLowPriority);
-    cachedImageHighPriority->addClient(&clientHighPriority);
+    MockImageResourceClient clientLowPriority(cachedImageLowPriority);
+    MockImageResourceClient clientHighPriority(cachedImageHighPriority);
 
     const char data[5] = "abcd";
     cachedImageLowPriority->appendData(data, 1u);
@@ -454,9 +445,6 @@ static void TestDecodeCacheOrder(const ResourcePtr<Resource>& cachedImageLowPrio
     memoryCache()->prune();
     ASSERT_EQ(memoryCache()->deadSize(), 0u);
     ASSERT_EQ(memoryCache()->liveSize(), totalSize - lowPriorityMockDecodeSize - highPriorityMockDecodeSize);
-
-    cachedImageLowPriority->removeClient(&clientLowPriority);
-    cachedImageHighPriority->removeClient(&clientHighPriority);
 }
 
 TEST_F(MemoryCacheTest, DecodeCacheOrder_Basic)

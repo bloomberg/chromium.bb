@@ -43,6 +43,8 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 
+#include <gtest/gtest.h>
+
 namespace blink {
 
 TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
@@ -80,6 +82,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
     EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), oldResource.get());
     EXPECT_EQ(oldResource.get(), newResource.get());
     EXPECT_NE(newResource.get(), newResourcePointer);
+    memoryCache()->remove(newResource.get());
 }
 
 class DummyClient : public RawResourceClient {
