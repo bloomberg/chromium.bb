@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
+#include "public/web/WebCache.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/Forward.h"
 #include "wtf/text/Base64.h"
@@ -67,6 +68,11 @@ protected:
         m_webViewHelper.initialize(true);
         m_scriptController = &m_webViewHelper.webViewImpl()->mainFrameImpl()->frame()->script();
         FrameTestHelpers::loadFrame(m_webViewHelper.webViewImpl()->mainFrame(), "about:blank");
+    }
+
+    ~ActivityLoggerTest()
+    {
+        WebCache::clear();
     }
 
     void executeScriptInMainWorld(const String& script) const
