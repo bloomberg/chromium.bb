@@ -82,7 +82,6 @@ private:
     bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);
     bool checkForXMLCharset(const char*, size_t, bool& movedDataToBuffer);
     void checkForMetaCharset(const char*, size_t);
-    void detectJapaneseEncoding(const char*, size_t);
     bool shouldAutoDetect() const;
 
     ContentType m_contentType;
