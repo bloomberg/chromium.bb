@@ -117,7 +117,7 @@ public:
     // sites are extremely verbose.
     PassRefPtrWillBeRawPtr<StyleImage> styleImage(CSSPropertyID propertyId, CSSValue* value)
     {
-        return m_elementStyleResources.styleImage(document(), document().textLinkColors(), style()->color(), propertyId, value);
+        return m_elementStyleResources.styleImage(document(), propertyId, value);
     }
 
     FontBuilder& fontBuilder() { return m_fontBuilder; }

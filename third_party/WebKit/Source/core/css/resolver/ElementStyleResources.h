@@ -52,7 +52,7 @@ class ElementStyleResources {
 public:
     ElementStyleResources();
 
-    PassRefPtrWillBeRawPtr<StyleImage> styleImage(Document&, const TextLinkColors&, Color currentColor, CSSPropertyID, CSSValue*);
+    PassRefPtrWillBeRawPtr<StyleImage> styleImage(Document&, CSSPropertyID, CSSValue*);
 
     PassRefPtrWillBeRawPtr<StyleImage> generatedOrPendingFromValue(CSSPropertyID, CSSImageGeneratorValue*);
     PassRefPtrWillBeRawPtr<StyleImage> cachedOrPendingFromValue(Document&, CSSPropertyID, CSSImageValue*);

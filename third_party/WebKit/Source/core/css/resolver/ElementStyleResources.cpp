@@ -37,7 +37,7 @@ ElementStyleResources::ElementStyleResources()
 {
 }
 
-PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::styleImage(Document& document, const TextLinkColors& textLinkColors, Color currentColor, CSSPropertyID property, CSSValue* value)
+PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::styleImage(Document& document, CSSPropertyID property, CSSValue* value)
 {
     if (value->isImageValue())
         return cachedOrPendingFromValue(document, property, toCSSImageValue(value));
