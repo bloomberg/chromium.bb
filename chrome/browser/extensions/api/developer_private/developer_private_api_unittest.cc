@@ -277,7 +277,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateReload) {
 }
 
 // Test developerPrivate.packDirectory.
-TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
+// http://crbug.com/527228 flaky
+TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivatePackFunction) {
   ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
 
   base::FilePath root_path = data_dir().AppendASCII("good_unpacked");
@@ -321,7 +322,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
 }
 
 // Test developerPrivate.choosePath.
-TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
+// http://crbug.com/527228 flaky
+TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivateChoosePath) {
   ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
   content::TestWebContentsFactory web_contents_factory;
   content::WebContents* web_contents =
@@ -366,7 +368,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
 }
 
 // Test developerPrivate.loadUnpacked.
-TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
+// http://crbug.com/527228 flaky
+TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivateLoadUnpacked) {
   ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
   content::TestWebContentsFactory web_contents_factory;
   content::WebContents* web_contents =
@@ -411,7 +414,9 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
 }
 
 // Test developerPrivate.requestFileSource.
-TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
+// http://crbug.com/527228 flaky
+TEST_F(DeveloperPrivateApiUnitTest,
+       DISABLED_DeveloperPrivateRequestFileSource) {
   ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
   // Testing of this function seems light, but that's because it basically just
   // forwards to reading a file to a string, and highlighting it - both of which
@@ -443,7 +448,9 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
 }
 
 // Test developerPrivate.getExtensionsInfo.
-TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
+// http://crbug.com/527228 flaky
+TEST_F(DeveloperPrivateApiUnitTest,
+       DISABLED_DeveloperPrivateGetExtensionsInfo) {
   ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
   LoadSimpleExtension();
 

@@ -146,7 +146,8 @@ TEST_F(ManagementApiUnitTest, ManagementSetEnabled) {
 }
 
 // Tests management.uninstall.
-TEST_F(ManagementApiUnitTest, ManagementUninstall) {
+// http://crbug.com/527228 flaky
+TEST_F(ManagementApiUnitTest, DISABLED_ManagementUninstall) {
   // We need to be on the UI thread for this.
   ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
   scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
