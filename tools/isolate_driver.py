@@ -280,20 +280,16 @@ def main():
   mode = args[0] if args else None
   isolate = None
   isolated = None
-  is_component = False
   for i, arg in enumerate(args):
     if arg == '--isolate':
       isolate = i + 1
     if arg == '--isolated':
       isolated = i + 1
-    if arg == 'component=shared_library':
-      is_component = True
   if isolate is None or isolated is None or not mode:
     print >> sys.stderr, 'Internal failure'
     return 1
 
-  if is_component:
-    create_wrapper(args, isolate, isolated)
+  create_wrapper(args, isolate, isolated)
 
   # In 'prepare' mode just collect all required information for postponed
   # isolated.py invocation later, store it in *.isolated.gen.json file.
