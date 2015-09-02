@@ -77,8 +77,10 @@ AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<
     else
         m_timing = timing;
 
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->compositorSupport())
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled()) {
+        ASSERT(Platform::current()->compositorSupport());
         m_compositorTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
+    }
 
     ASSERT(document);
 }

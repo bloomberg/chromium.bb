@@ -94,7 +94,7 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
     , m_wasFrameScrollable(false)
     , m_lastMainThreadScrollingReasons(0)
 {
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled()) {
         ASSERT(m_page);
         ASSERT(m_page->mainFrame()->isLocalFrame());
         ASSERT(Platform::current()->compositorSupport());
