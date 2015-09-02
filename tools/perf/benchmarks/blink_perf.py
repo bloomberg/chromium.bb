@@ -251,7 +251,8 @@ class BlinkPerfMutation(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Disabled('win')  # crbug.com/488493
+@benchmark.Disabled('win',     # crbug.com/488493
+                    'android') # crbug.com/527156
 class BlinkPerfParser(perf_benchmark.PerfBenchmark):
   tag = 'parser'
   test = _BlinkPerfMeasurement
