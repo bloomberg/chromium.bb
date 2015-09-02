@@ -158,6 +158,9 @@ public:
     GLboolean isVertexArray(WebGLVertexArrayObject*);
     void bindVertexArray(WebGLVertexArrayObject*);
 
+    /* Reading */
+    void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, long long offset);
+
     /* WebGLRenderingContextBase overrides */
     void initializeNewContext() override;
     void bindFramebuffer(GLenum target, WebGLFramebuffer*) override;
@@ -165,6 +168,7 @@ public:
     ScriptValue getParameter(ScriptState*, GLenum pname) override;
     ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname) override;
     ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname) override;
+    void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels) override;
     void restoreCurrentFramebuffer() override;
 
     EAGERLY_FINALIZE();

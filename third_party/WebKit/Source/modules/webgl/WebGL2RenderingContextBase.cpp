@@ -244,6 +244,55 @@ void WebGL2RenderingContextBase::readBuffer(GLenum mode)
     webContext()->readBuffer(mode);
 }
 
+void WebGL2RenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels)
+{
+    if (isContextLost())
+        return;
+    if (m_boundPixelPackBuffer.get()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "PIXEL_PACK buffer should not be bound");
+        return;
+    }
+
+    WebGLRenderingContextBase::readPixels(x, y, width, height, format, type, pixels);
+}
+
+void WebGL2RenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, long long offset)
+{
+    if (isContextLost())
+        return;
+
+    // Due to WebGL's same-origin restrictions, it is not possible to
+    // taint the origin using the WebGL API.
+    ASSERT(canvas()->originClean());
+
+    if (!validateValueFitNonNegInt32("readPixels", "offset", offset))
+        return;
+
+    WebGLBuffer* buffer = m_boundPixelPackBuffer.get();
+    if (!buffer) {
+        synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "no PIXEL_PACK buffer bound");
+        return;
+    }
+
+    // Need to validate whether the pixel pack buffer is mapped,
+    // if we decide to expose mapBufferRange() to web developers.
+
+    long long size = buffer->getSize() - offset;
+
+    // If size is negative, or size is not large enough to store pixels, those cases
+    // are handled by validateReadPixelsFuncParameters to generate INVALID_OPERATION.
+    if (!validateReadPixelsFuncParameters(width, height, format, type, size))
+        return;
+
+    clearIfComposited();
+
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(GL_READ_FRAMEBUFFER);
+    {
+        ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
+        webContext()->readPixels(x, y, width, height, format, type, reinterpret_cast<void*>(offset));
+    }
+}
+
 void WebGL2RenderingContextBase::renderbufferStorageImpl(
     GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height,
     const char* functionName)

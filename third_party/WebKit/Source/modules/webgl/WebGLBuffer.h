@@ -42,6 +42,9 @@ public:
 
     bool hasEverBeenBound() const { return object() && m_initialTarget; }
 
+    void setSize(long long size) { m_size = size; }
+    long long getSize() const { return m_size; }
+
 protected:
     explicit WebGLBuffer(WebGLRenderingContextBase*);
 
@@ -51,6 +54,7 @@ private:
     bool isBuffer() const override { return true; }
 
     GLenum m_initialTarget;
+    long long m_size;
 };
 
 } // namespace blink

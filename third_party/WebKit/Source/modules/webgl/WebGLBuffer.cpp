@@ -39,6 +39,7 @@ WebGLBuffer* WebGLBuffer::create(WebGLRenderingContextBase* ctx)
 WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
     , m_initialTarget(0)
+    , m_size(0)
 {
     setObject(ctx->webContext()->createBuffer());
 }

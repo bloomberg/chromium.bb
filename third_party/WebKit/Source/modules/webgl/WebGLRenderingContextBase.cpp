@@ -1575,6 +1575,8 @@ void WebGLRenderingContextBase::bufferDataImpl(GLenum target, long long size, co
     if (!validateValueFitNonNegInt32("bufferData", "size", size))
         return;
 
+    buffer->setSize(size);
+
     webContext()->bufferData(target, static_cast<GLsizeiptr>(size), data, usage);
 }
 
@@ -3671,6 +3673,32 @@ DOMArrayBufferView::ViewType WebGLRenderingContextBase::readPixelsExpectedArrayB
     }
 }
 
+bool WebGLRenderingContextBase::validateReadPixelsFuncParameters(GLsizei width, GLsizei height, GLenum format, GLenum type, long long bufferSize)
+{
+    if (!validateReadPixelsFormatAndType(format, type))
+        return false;
+    WebGLFramebuffer* readFramebufferBinding = nullptr;
+    GLenum readBufferInternalFormat = 0, readBufferType = 0;
+    if (!validateReadBufferAndGetInfo("readPixels", readFramebufferBinding, &readBufferInternalFormat, &readBufferType))
+        return false;
+    if (!validateReadPixelsFormatTypeCombination(format, type, readBufferInternalFormat, readBufferType))
+        return false;
+
+    // Calculate array size, taking into consideration of PACK_ALIGNMENT.
+    unsigned totalBytesRequired = 0;
+    unsigned padding = 0;
+    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, m_packAlignment, &totalBytesRequired, &padding);
+    if (error != GL_NO_ERROR) {
+        synthesizeGLError(error, "readPixels", "invalid dimensions");
+        return false;
+    }
+    if (bufferSize < static_cast<long long>(totalBytesRequired)) {
+        synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "buffer is not large enough for dimensions");
+        return false;
+    }
+    return true;
+}
+
 void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost())
@@ -3683,13 +3711,8 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         synthesizeGLError(GL_INVALID_VALUE, "readPixels", "no destination ArrayBufferView");
         return;
     }
-    if (!validateReadPixelsFormatAndType(format, type))
-        return;
-    GLenum readBufferInternalFormat = 0, readBufferType = 0;
-    WebGLFramebuffer* readFramebufferBinding = nullptr;
-    if (!validateReadBufferAndGetInfo("readPixels", readFramebufferBinding, &readBufferInternalFormat, &readBufferType))
-        return;
-    if (!validateReadPixelsFormatTypeCombination(format, type, readBufferInternalFormat, readBufferType))
+
+    if (!validateReadPixelsFuncParameters(width, height, format, type, static_cast<long long>(pixels->byteLength())))
         return;
 
     DOMArrayBufferView::ViewType expectedViewType = readPixelsExpectedArrayBufferViewType(type);
@@ -3699,22 +3722,11 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         return;
     }
 
-    // Calculate array size, taking into consideration of PACK_ALIGNMENT.
-    unsigned totalBytesRequired = 0;
-    unsigned padding = 0;
-    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, m_packAlignment, &totalBytesRequired, &padding);
-    if (error != GL_NO_ERROR) {
-        synthesizeGLError(error, "readPixels", "invalid dimensions");
-        return;
-    }
-    if (pixels->byteLength() < totalBytesRequired) {
-        synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "ArrayBufferView not large enough for dimensions");
-        return;
-    }
-
     clearIfComposited();
     void* data = pixels->baseAddress();
 
+    GLenum target = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(target);
     {
         ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
         webContext()->readPixels(x, y, width, height, format, type, data);

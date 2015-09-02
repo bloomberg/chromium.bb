@@ -432,5 +432,8 @@ typedef long long      GLint64;
     void deleteVertexArray(WebGLVertexArrayObject? vertexArray);
     GLboolean isVertexArray(WebGLVertexArrayObject? vertexArray);
     void bindVertexArray(WebGLVertexArrayObject? vertexArray);
+
+    /* Reading */
+    void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr offset);
 };
 WebGL2RenderingContextBase implements WebGLRenderingContextBase;
