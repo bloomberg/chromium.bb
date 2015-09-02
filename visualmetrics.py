@@ -50,7 +50,7 @@ def video_to_frames(video, directory, force, orange_file, find_viewport, full_re
             video = os.path.realpath(video)
             logging.info("Processing frames from video " + video + " to " + directory)
             if not os.path.isdir(directory):
-                os.mkdir(directory, 0644)
+                os.mkdir(directory, 0755)
             if os.path.isdir(directory):
                 directory = os.path.realpath(directory)
                 clean_directory(directory)
