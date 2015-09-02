@@ -573,21 +573,16 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
-        '<(DEPTH)/components/components.gyp:network_hints_common',
-        '<(DEPTH)/components/components.gyp:error_page_common',
+        '<(DEPTH)/components/url_formatter/url_formatter.gyp:url_formatter',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
-        '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
       ],
       'conditions': [
-        ['OS != "ios"', {
-          'dependencies': [
-            '<(DEPTH)/gpu/gpu.gyp:gpu_ipc',
-          ],
-        }, {  # OS == ios
+        ['OS == "ios"', {
           'sources!': [
             'common/net/net_resource_provider.cc',
           ],
@@ -598,30 +593,27 @@
           ],
         }],
         ['use_openssl_certs == 1 and OS != "android"', {
-            'dependencies': [
-              '<(DEPTH)/third_party/boringssl/boringssl.gyp:boringssl',
-            ],
+          'dependencies': [
+            '<(DEPTH)/third_party/boringssl/boringssl.gyp:boringssl',
+          ],
         }, {
-            'sources!': [
-              'common/net/x509_certificate_model_openssl.cc',
-            ],
-          },
-        ],
+          'sources!': [
+            'common/net/x509_certificate_model_openssl.cc',
+          ],
+        }],
         ['use_nss_certs == 1', {
-            'dependencies': [
-              '../build/linux/system.gyp:ssl',
-            ],
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
+          ],
         }, {
-            'sources!': [
-              'common/net/x509_certificate_model_nss.cc',
-            ],
-          },
-        ],
+          'sources!': [
+            'common/net/x509_certificate_model_nss.cc',
+          ],
+        }],
         ['OS=="win"', {
-            # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-            'msvs_disabled_warnings': [4267, ],
-          },
-        ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
+        }],
       ],
     },
     {

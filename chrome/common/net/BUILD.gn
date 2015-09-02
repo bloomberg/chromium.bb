@@ -15,23 +15,22 @@ static_library("net") {
     "x509_certificate_model_openssl.cc",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//base",
     "//chrome:resources",
     "//chrome:strings",
-    "//components/error_page/common",
-    "//components/network_hints/common",
+    "//components/url_formatter",
     "//crypto",
     "//net",
     "//net:net_resources",
     "//third_party/icu",
-    "//ui/base/",
+    "//ui/base",
   ]
 
   if (is_ios) {
     sources -= [ "net_resource_provider.cc" ]
-  } else {
-    deps += [ "//gpu/ipc" ]
   }
 
   if (is_android || is_ios) {
@@ -49,6 +48,4 @@ static_library("net") {
   } else {
     sources -= [ "x509_certificate_model_nss.cc" ]
   }
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
