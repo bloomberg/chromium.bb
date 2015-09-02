@@ -11,6 +11,25 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 
+namespace {
+
+using Type = media::MediaPermission::Type;
+
+content::PermissionName MediaPermissionTypeToPermissionName(Type type) {
+  switch (type) {
+    case Type::PROTECTED_MEDIA_IDENTIFIER:
+      return content::PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER;
+    case Type::AUDIO_CAPTURE:
+      return content::PERMISSION_NAME_AUDIO_CAPTURE;
+    case Type::VIDEO_CAPTURE:
+      return content::PERMISSION_NAME_VIDEO_CAPTURE;
+  }
+  NOTREACHED();
+  return content::PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER;
+}
+
+}  // namespace
+
 namespace content {
 
 MediaPermissionDispatcher::MediaPermissionDispatcher(RenderFrame* render_frame)
@@ -32,7 +51,6 @@ void MediaPermissionDispatcher::HasPermission(
     const GURL& security_origin,
     const PermissionStatusCB& permission_status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK_EQ(PROTECTED_MEDIA_IDENTIFIER, type);
 
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
@@ -46,7 +64,7 @@ void MediaPermissionDispatcher::HasPermission(
   DVLOG(2) << __FUNCTION__ << ": request ID " << request_id;
 
   permission_service_->HasPermission(
-      PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER, security_origin.spec(),
+      MediaPermissionTypeToPermissionName(type), security_origin.spec(),
       base::Bind(&MediaPermissionDispatcher::OnPermissionStatus,
                  base::Unretained(this), request_id));
 }
@@ -56,7 +74,6 @@ void MediaPermissionDispatcher::RequestPermission(
     const GURL& security_origin,
     const PermissionStatusCB& permission_status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK_EQ(PROTECTED_MEDIA_IDENTIFIER, type);
 
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
@@ -70,7 +87,7 @@ void MediaPermissionDispatcher::RequestPermission(
   DVLOG(2) << __FUNCTION__ << ": request ID " << request_id;
 
   permission_service_->RequestPermission(
-      PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER, security_origin.spec(),
+      MediaPermissionTypeToPermissionName(type), security_origin.spec(),
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&MediaPermissionDispatcher::OnPermissionStatus,
                  base::Unretained(this), request_id));

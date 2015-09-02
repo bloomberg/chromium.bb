@@ -20,6 +20,8 @@ class MEDIA_EXPORT MediaPermission {
 
   enum Type {
     PROTECTED_MEDIA_IDENTIFIER,
+    AUDIO_CAPTURE,
+    VIDEO_CAPTURE,
   };
 
   MediaPermission();
