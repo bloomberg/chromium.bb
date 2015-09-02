@@ -74,6 +74,11 @@ private:
 class StubFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<StubFrameOwner>, public FrameOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StubFrameOwner);
 public:
+    static PassOwnPtrWillBeRawPtr<StubFrameOwner> create()
+    {
+        return adoptPtrWillBeNoop(new StubFrameOwner);
+    }
+
     DEFINE_INLINE_VIRTUAL_TRACE() { FrameOwner::trace(visitor); }
 
     bool isLocal() const override { return false; }
@@ -91,6 +96,7 @@ protected:
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
         document = toHTMLDocument(&dummyPageHolder->document());
         fetchContext = static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
+        owner = StubFrameOwner::create();
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 
@@ -109,7 +115,7 @@ protected:
     FrameFetchContext* createChildFrame()
     {
         childClient = StubFrameLoaderClientWithParent::create(document->frame());
-        childFrame = LocalFrame::create(childClient.get(), document->frame()->host(), &owner);
+        childFrame = LocalFrame::create(childClient.get(), document->frame()->host(), owner.get());
         childFrame->setView(FrameView::create(childFrame.get(), IntSize(500, 500)));
         childFrame->init();
         childDocumentLoader = DocumentLoader::create(childFrame.get(), ResourceRequest("http://www.example.com"), SubstituteData());
@@ -126,12 +132,11 @@ protected:
     RefPtrWillBePersistent<Document> document;
     Persistent<FrameFetchContext> fetchContext;
 
-    OwnPtrWillBeRawPtr<StubFrameLoaderClientWithParent> childClient;
-    RefPtrWillBeRawPtr<LocalFrame> childFrame;
+    OwnPtrWillBePersistent<StubFrameLoaderClientWithParent> childClient;
+    RefPtrWillBePersistent<LocalFrame> childFrame;
     RefPtrWillBePersistent<DocumentLoader> childDocumentLoader;
     RefPtrWillBePersistent<Document> childDocument;
-    StubFrameOwner owner;
-
+    OwnPtrWillBePersistent<StubFrameOwner> owner;
 };
 
 class FrameFetchContextUpgradeTest : public FrameFetchContextTest {
