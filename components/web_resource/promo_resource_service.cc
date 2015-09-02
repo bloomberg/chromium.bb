@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_resource/promo_resource_service.h"
+#include "components/web_resource/promo_resource_service.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,11 +13,13 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
-#include "chrome/browser/web_resource/notification_promo.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/web_resource/notification_promo.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "components/web_resource/web_resource_switches.h"
 #include "url/gurl.h"
+
+namespace web_resource {
 
 namespace {
 
@@ -89,22 +91,20 @@ PromoResourceService::PromoResourceService(
     net::URLRequestContextGetter* request_context,
     const char* disable_network_switch,
     const ParseJSONCallback& parse_json_callback)
-    : web_resource::WebResourceService(
-          local_state,
-          GetPromoResourceURL(channel),
-          application_locale,  // append locale to URL
-          prefs::kNtpPromoResourceCacheUpdate,
-          kStartResourceFetchDelay,
-          GetCacheUpdateDelay(),
-          request_context,
-          disable_network_switch,
-          parse_json_callback),
+    : WebResourceService(local_state,
+                         GetPromoResourceURL(channel),
+                         application_locale,  // append locale to URL
+                         prefs::kNtpPromoResourceCacheUpdate,
+                         kStartResourceFetchDelay,
+                         GetCacheUpdateDelay(),
+                         request_context,
+                         disable_network_switch,
+                         parse_json_callback),
       weak_ptr_factory_(this) {
   ScheduleNotificationOnInit();
 }
 
-PromoResourceService::~PromoResourceService() {
-}
+PromoResourceService::~PromoResourceService() {}
 
 scoped_ptr<PromoResourceService::StateChangedSubscription>
 PromoResourceService::RegisterStateChangedCallback(
@@ -118,12 +118,12 @@ void PromoResourceService::ScheduleNotification(
   const double promo_end = notification_promo.EndTime();
 
   if (promo_start > 0 && promo_end > 0) {
-    const int64 ms_until_start =
-        static_cast<int64>((base::Time::FromDoubleT(
-            promo_start) - base::Time::Now()).InMilliseconds());
-    const int64 ms_until_end =
-        static_cast<int64>((base::Time::FromDoubleT(
-            promo_end) - base::Time::Now()).InMilliseconds());
+    const int64 ms_until_start = static_cast<int64>(
+        (base::Time::FromDoubleT(promo_start) - base::Time::Now())
+            .InMilliseconds());
+    const int64 ms_until_end = static_cast<int64>(
+        (base::Time::FromDoubleT(promo_end) - base::Time::Now())
+            .InMilliseconds());
     if (ms_until_start > 0) {
       // Schedule the next notification to happen at the start of promotion.
       PostNotification(ms_until_start);
@@ -139,8 +139,8 @@ void PromoResourceService::ScheduleNotification(
       PostNotification(0);
     }
   } else {
-      // The promo (if any) was apparently cancelled.  Notify immediately.
-      PostNotification(0);
+    // The promo (if any) was apparently cancelled.  Notify immediately.
+    PostNotification(0);
   }
 }
 
@@ -183,3 +183,5 @@ void PromoResourceService::Unpack(const base::DictionaryValue& parsed_json) {
       ScheduleNotification(notification_promo);
   }
 }
+
+}  // namespace web_resource

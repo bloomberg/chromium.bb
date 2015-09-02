@@ -11,15 +11,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/web_resource/notification_promo.h"
-#include "chrome/browser/web_resource/notification_promo_mobile_ntp.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "components/version_info/version_info.h"
+#include "components/web_resource/notification_promo.h"
+#include "components/web_resource/notification_promo_mobile_ntp.h"
+#include "components/web_resource/promo_resource_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 version_info::Channel kChannel = version_info::Channel::UNKNOWN;
 }
+
+namespace web_resource {
 
 class PromoResourceServiceMobileNtpTest : public testing::Test {
  public:
@@ -101,24 +103,18 @@ class NotificationPromoMobileNtpTest {
     EXPECT_TRUE(prefs_mobile_promo.valid());
     EXPECT_TRUE(mobile_promo_.valid());
 
-    EXPECT_EQ(prefs_mobile_promo.text(),
-              mobile_promo_.text());
-    EXPECT_EQ(prefs_mobile_promo.text_long(),
-              mobile_promo_.text_long());
-    EXPECT_EQ(prefs_mobile_promo.action_type(),
-              mobile_promo_.action_type());
+    EXPECT_EQ(prefs_mobile_promo.text(), mobile_promo_.text());
+    EXPECT_EQ(prefs_mobile_promo.text_long(), mobile_promo_.text_long());
+    EXPECT_EQ(prefs_mobile_promo.action_type(), mobile_promo_.action_type());
     EXPECT_TRUE(mobile_promo_.action_args() != NULL);
     EXPECT_EQ(prefs_mobile_promo.action_args()->GetSize(),
               mobile_promo_.action_args()->GetSize());
-    for (std::size_t i = 0;
-         i < prefs_mobile_promo.action_args()->GetSize();
+    for (std::size_t i = 0; i < prefs_mobile_promo.action_args()->GetSize();
          ++i) {
       std::string promo_value;
       std::string prefs_value;
-      EXPECT_TRUE(
-          prefs_mobile_promo.action_args()->GetString(i, &prefs_value));
-      EXPECT_TRUE(
-          mobile_promo_.action_args()->GetString(i, &promo_value));
+      EXPECT_TRUE(prefs_mobile_promo.action_args()->GetString(i, &prefs_value));
+      EXPECT_TRUE(mobile_promo_.action_args()->GetString(i, &promo_value));
       EXPECT_EQ(promo_value, prefs_value);
     }
   }
@@ -175,8 +171,8 @@ TEST_F(PromoResourceServiceMobileNtpTest, NotificationPromoMobileNtpTest) {
       "  ]"
       "}",
       "Like Chrome? Go http://www.google.com/chrome/",
-      "It\'s simple. Go http://www.google.com/chrome/",
-      "ACTION_EMAIL", "This is the body.", "XXX value");
+      "It\'s simple. Go http://www.google.com/chrome/", "ACTION_EMAIL",
+      "This is the body.", "XXX value");
 
   promo_test.InitPromoFromJson(true);
 
@@ -185,3 +181,5 @@ TEST_F(PromoResourceServiceMobileNtpTest, NotificationPromoMobileNtpTest) {
 
   promo_test.TestInitFromPrefs();
 }
+
+}  // namespace web_resource

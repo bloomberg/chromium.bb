@@ -76,7 +76,7 @@ void NewTabPageHandler::HandleNotificationPromoClosed(
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Notification",
                             PROMO_CLOSED, PROMO_ACTION_MAX);
   web_resource::HandleNotificationPromoClosed(
-      NotificationPromo::NTP_NOTIFICATION_PROMO);
+      web_resource::NotificationPromo::NTP_NOTIFICATION_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
@@ -85,7 +85,7 @@ void NewTabPageHandler::HandleNotificationPromoViewed(
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Notification",
                             PROMO_VIEWED, PROMO_ACTION_MAX);
   if (web_resource::HandleNotificationPromoViewed(
-          NotificationPromo::NTP_NOTIFICATION_PROMO)) {
+          web_resource::NotificationPromo::NTP_NOTIFICATION_PROMO)) {
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
   }
 }
@@ -101,7 +101,7 @@ void NewTabPageHandler::HandleBubblePromoClosed(const base::ListValue* args) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Bubble",
                             PROMO_CLOSED, PROMO_ACTION_MAX);
   web_resource::HandleNotificationPromoClosed(
-      NotificationPromo::NTP_BUBBLE_PROMO);
+      web_resource::NotificationPromo::NTP_BUBBLE_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
@@ -109,7 +109,7 @@ void NewTabPageHandler::HandleBubblePromoViewed(const base::ListValue* args) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Bubble",
                             PROMO_VIEWED, PROMO_ACTION_MAX);
   if (web_resource::HandleNotificationPromoViewed(
-          NotificationPromo::NTP_BUBBLE_PROMO))
+          web_resource::NotificationPromo::NTP_BUBBLE_PROMO))
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 

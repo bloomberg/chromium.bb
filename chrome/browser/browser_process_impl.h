@@ -27,7 +27,6 @@ class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
-class PromoResourceService;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginsResourceService;
@@ -50,6 +49,10 @@ namespace policy {
 class BrowserPolicyConnector;
 class PolicyService;
 };
+
+namespace web_resource {
+class PromoResourceService;
+}
 
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
@@ -87,7 +90,7 @@ class BrowserProcessImpl : public BrowserProcess,
   PrefService* local_state() override;
   net::URLRequestContextGetter* system_request_context() override;
   chrome_variations::VariationsService* variations_service() override;
-  PromoResourceService* promo_resource_service() override;
+  web_resource::PromoResourceService* promo_resource_service() override;
   BrowserProcessPlatformPart* platform_part() override;
   extensions::EventRouterForwarder* extension_event_router_forwarder() override;
   NotificationUIManager* notification_ui_manager() override;
@@ -262,7 +265,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
-  scoped_ptr<PromoResourceService> promo_resource_service_;
+  scoped_ptr<web_resource::PromoResourceService> promo_resource_service_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;

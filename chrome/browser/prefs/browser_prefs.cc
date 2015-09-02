@@ -73,7 +73,6 @@
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -89,6 +88,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/web_resource/promo_resource_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_server_properties_manager.h"
 
@@ -258,12 +258,12 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);
-  PromoResourceService::RegisterPrefs(registry);
   rappor::RapporService::RegisterPrefs(registry);
   RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
+  web_resource::PromoResourceService::RegisterPrefs(registry);
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
   autofill::AutofillDialogController::RegisterPrefs(registry);
@@ -396,12 +396,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   PrefsTabHelper::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);
-  PromoResourceService::RegisterProfilePrefs(registry);
   ProtocolHandlerRegistry::RegisterProfilePrefs(registry);
   RegisterBrowserUserPrefs(registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
+  web_resource::PromoResourceService::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
 
 #if defined(ENABLE_APP_LIST)

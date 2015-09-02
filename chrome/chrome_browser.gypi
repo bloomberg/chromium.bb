@@ -888,8 +888,6 @@
       'browser/signin/oauth2_token_service_delegate_android.cc',
       'browser/signin/oauth2_token_service_delegate_android.h',
       'browser/ssl/ssl_add_certificate_android.cc',
-      'browser/web_resource/notification_promo_mobile_ntp.cc',
-      'browser/web_resource/notification_promo_mobile_ntp.h',
     ],
     # Cross-platform Ash sources.
     'chrome_browser_ash_sources': [
@@ -3060,12 +3058,8 @@
       'browser/undo/bookmark_undo_service_factory.h',
     ],
     'chrome_browser_web_resource_sources': [
-      'browser/web_resource/notification_promo.cc',
-      'browser/web_resource/notification_promo.h',
       'browser/web_resource/notification_promo_helper.cc',
       'browser/web_resource/notification_promo_helper.h',
-      'browser/web_resource/promo_resource_service.cc',
-      'browser/web_resource/promo_resource_service.h',
     ],
     'chrome_browser_webrtc_sources': [
       # TODO(brettw) should webrtc_log_list.cc go here?

@@ -64,7 +64,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -84,6 +83,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/update_client/update_query_params.h"
+#include "components/web_resource/promo_resource_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -574,7 +574,8 @@ chrome_variations::VariationsService* BrowserProcessImpl::variations_service() {
   return GetMetricsServicesManager()->GetVariationsService();
 }
 
-PromoResourceService* BrowserProcessImpl::promo_resource_service() {
+web_resource::PromoResourceService*
+BrowserProcessImpl::promo_resource_service() {
   DCHECK(CalledOnValidThread());
   return promo_resource_service_.get();
 }
@@ -1069,7 +1070,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableWebResources)) {
     DCHECK(!promo_resource_service_.get());
-    promo_resource_service_.reset(new PromoResourceService(
+    promo_resource_service_.reset(new web_resource::PromoResourceService(
         local_state(), chrome::GetChannel(), GetApplicationLocale(),
         system_request_context(), switches::kDisableBackgroundNetworking,
         base::Bind(safe_json::SafeJsonParser::Parse)));

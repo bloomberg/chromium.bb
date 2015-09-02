@@ -13,11 +13,20 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/base/ui_base.gyp:ui_base',
         '../net/net.gyp:net',
+        'pref_registry',
+        'version_info',
       ],
       'sources': [
         'web_resource/eula_accepted_notifier.cc',
         'web_resource/eula_accepted_notifier.h',
+        'web_resource/notification_promo.cc',
+        'web_resource/notification_promo.h',
+        'web_resource/notification_promo_mobile_ntp.cc',
+        'web_resource/notification_promo_mobile_ntp.h',
+        'web_resource/promo_resource_service.cc',
+        'web_resource/promo_resource_service.h',
         'web_resource/resource_request_allowed_notifier.cc',
         'web_resource/resource_request_allowed_notifier.h',
         'web_resource/web_resource_pref_names.cc',
@@ -26,6 +35,14 @@
         'web_resource/web_resource_service.h',
         'web_resource/web_resource_switches.cc',
         'web_resource/web_resource_switches.h',
+      ],
+      'conditions': [
+        ['OS!="ios" and OS!="android"', {
+          'sources!': [
+            'web_resource/notification_promo_mobile_ntp.cc',
+            'web_resource/notification_promo_mobile_ntp.h',
+          ],
+        }],
       ],
     },
     {

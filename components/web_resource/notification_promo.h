@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_RESOURCE_NOTIFICATION_PROMO_H_
-#define CHROME_BROWSER_WEB_RESOURCE_NOTIFICATION_PROMO_H_
+#ifndef COMPONENTS_WEB_RESOURCE_NOTIFICATION_PROMO_H_
+#define COMPONENTS_WEB_RESOURCE_NOTIFICATION_PROMO_H_
 
 #include <string>
 
@@ -28,6 +28,8 @@ class PrefRegistrySyncable;
 namespace version_info {
 enum class Channel;
 }
+
+namespace web_resource {
 
 // Helper class for PromoResourceService that parses promo notification info
 // from json or prefs.
@@ -139,4 +141,6 @@ class NotificationPromo {
   DISALLOW_COPY_AND_ASSIGN(NotificationPromo);
 };
 
-#endif  // CHROME_BROWSER_WEB_RESOURCE_NOTIFICATION_PROMO_H_
+}  // namespace web_resource
+
+#endif  // COMPONENTS_WEB_RESOURCE_NOTIFICATION_PROMO_H_

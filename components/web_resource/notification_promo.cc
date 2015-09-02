@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_resource/notification_promo.h"
+#include "components/web_resource/notification_promo.h"
 
 #include <cmath>
 #include <vector>
@@ -17,12 +17,14 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/version_info/version_info.h"
+#include "components/web_resource/promo_resource_service.h"
 #include "net/base/url_util.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
+
+namespace web_resource {
 
 namespace {
 
@@ -57,11 +59,11 @@ std::string PlatformString() {
 #elif defined(OS_ANDROID)
   ui::DeviceFormFactor form_factor = ui::GetDeviceFormFactor();
   return std::string("android-") +
-      (form_factor == ui::DEVICE_FORM_FACTOR_TABLET ? "tablet" : "phone");
+         (form_factor == ui::DEVICE_FORM_FACTOR_TABLET ? "tablet" : "phone");
 #elif defined(OS_IOS)
   ui::DeviceFormFactor form_factor = ui::GetDeviceFormFactor();
   return std::string("ios-") +
-      (form_factor == ui::DEVICE_FORM_FACTOR_TABLET ? "tablet" : "phone");
+         (form_factor == ui::DEVICE_FORM_FACTOR_TABLET ? "tablet" : "phone");
 #elif defined(OS_MACOSX)
   return "mac";
 #elif defined(OS_CHROMEOS)
@@ -75,7 +77,7 @@ std::string PlatformString() {
 
 // Returns a string suitable for the Promo Server URL 'dist' value.
 const char* ChannelString(version_info::Channel channel) {
-#if defined (OS_WIN)
+#if defined(OS_WIN)
   // GetChannel hits the registry on Windows. See http://crbug.com/70898.
   // TODO(achuith): Move NotificationPromo::PromoServerURL to the blocking pool.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -100,12 +102,12 @@ struct PromoMapEntry {
 };
 
 const PromoMapEntry kPromoMap[] = {
-    { NotificationPromo::NO_PROMO, "" },
-    { NotificationPromo::NTP_NOTIFICATION_PROMO, "ntp_notification_promo" },
-    { NotificationPromo::NTP_BUBBLE_PROMO, "ntp_bubble_promo" },
-    { NotificationPromo::MOBILE_NTP_SYNC_PROMO, "mobile_ntp_sync_promo" },
-    { NotificationPromo::MOBILE_NTP_WHATS_NEW_PROMO,
-        "mobile_ntp_whats_new_promo" },
+    {NotificationPromo::NO_PROMO, ""},
+    {NotificationPromo::NTP_NOTIFICATION_PROMO, "ntp_notification_promo"},
+    {NotificationPromo::NTP_BUBBLE_PROMO, "ntp_bubble_promo"},
+    {NotificationPromo::MOBILE_NTP_SYNC_PROMO, "mobile_ntp_sync_promo"},
+    {NotificationPromo::MOBILE_NTP_WHATS_NEW_PROMO,
+     "mobile_ntp_whats_new_promo"},
 };
 
 // Convert PromoType to appropriate string.
@@ -128,16 +130,14 @@ const char* PromoTypeToString(NotificationPromo::PromoType promo_type) {
 // |strings| - a dictionary of strings to be used for resolution.
 // Returns a _new_ object that is a deep copy with replacements.
 // TODO(aruslan): http://crbug.com/144320 Consider moving it to values.cc/h.
-base::Value* DeepCopyAndResolveStrings(
-    const base::Value* node,
-    const base::DictionaryValue* strings) {
+base::Value* DeepCopyAndResolveStrings(const base::Value* node,
+                                       const base::DictionaryValue* strings) {
   switch (node->GetType()) {
     case base::Value::TYPE_LIST: {
       const base::ListValue* list = static_cast<const base::ListValue*>(node);
       base::ListValue* copy = new base::ListValue;
       for (base::ListValue::const_iterator it = list->begin();
-           it != list->end();
-           ++it) {
+           it != list->end(); ++it) {
         base::Value* child_copy = DeepCopyAndResolveStrings(*it, strings);
         copy->Append(child_copy);
       }
@@ -148,11 +148,10 @@ base::Value* DeepCopyAndResolveStrings(
       const base::DictionaryValue* dict =
           static_cast<const base::DictionaryValue*>(node);
       base::DictionaryValue* copy = new base::DictionaryValue;
-      for (base::DictionaryValue::Iterator it(*dict);
-           !it.IsAtEnd();
+      for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
            it.Advance()) {
-        base::Value* child_copy = DeepCopyAndResolveStrings(&it.value(),
-                                                            strings);
+        base::Value* child_copy =
+            DeepCopyAndResolveStrings(&it.value(), strings);
         copy->SetWithoutPathExpansion(it.key(), child_copy);
       }
       return copy;
@@ -229,7 +228,7 @@ void NotificationPromo::InitFromJson(const base::DictionaryValue& json,
           base::Time::FromString(time_str.c_str(), &time)) {
         start_ = time.ToDoubleT();
         DVLOG(1) << "start str=" << time_str
-                 << ", start_="<< base::DoubleToString(start_);
+                 << ", start_=" << base::DoubleToString(start_);
       }
       if (date->GetString("end", &time_str) &&
           base::Time::FromString(time_str.c_str(), &time)) {
@@ -398,11 +397,8 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
 }
 
 bool NotificationPromo::CanShow() const {
-  return !closed_ &&
-         !promo_text_.empty() &&
-         !ExceedsMaxGroup() &&
-         !ExceedsMaxViews() &&
-         !ExceedsMaxSeconds() &&
+  return !closed_ && !promo_text_.empty() && !ExceedsMaxGroup() &&
+         !ExceedsMaxViews() && !ExceedsMaxSeconds() &&
          base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
          base::Time::FromDoubleT(EndTime()) > base::Time::Now();
 }
@@ -464,10 +460,13 @@ double NotificationPromo::StartTimeForGroup() const {
   if (group_ < initial_segment_)
     return start_;
   return start_ +
-      std::ceil(static_cast<float>(group_ - initial_segment_ + 1) / increment_)
-      * time_slice_;
+         std::ceil(static_cast<float>(group_ - initial_segment_ + 1) /
+                   increment_) *
+             time_slice_;
 }
 
 double NotificationPromo::EndTime() const {
   return end_;
 }
+
+}  // namespace web_resource

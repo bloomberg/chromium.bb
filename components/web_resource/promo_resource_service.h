@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_RESOURCE_PROMO_RESOURCE_SERVICE_H_
-#define CHROME_BROWSER_WEB_RESOURCE_PROMO_RESOURCE_SERVICE_H_
+#ifndef COMPONENTS_WEB_RESOURCE_PROMO_RESOURCE_SERVICE_H_
+#define COMPONENTS_WEB_RESOURCE_PROMO_RESOURCE_SERVICE_H_
 
 #include <string>
 
@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/web_resource/web_resource_service.h"
 
-class NotificationPromo;
 class PrefRegistrySimple;
 class PrefService;
 
@@ -28,11 +27,15 @@ namespace version_info {
 enum class Channel;
 }
 
+namespace web_resource {
+
+class NotificationPromo;
+
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
 // been used to fetch "tips" to be displayed on the NTP, or to display
 // promotional messages to certain groups of Chrome users.
-class PromoResourceService : public web_resource::WebResourceService {
+class PromoResourceService : public WebResourceService {
  public:
   using StateChangedCallbackList = base::CallbackList<void()>;
   using StateChangedSubscription = StateChangedCallbackList::Subscription;
@@ -87,4 +90,6 @@ class PromoResourceService : public web_resource::WebResourceService {
   DISALLOW_COPY_AND_ASSIGN(PromoResourceService);
 };
 
-#endif  // CHROME_BROWSER_WEB_RESOURCE_PROMO_RESOURCE_SERVICE_H_
+}  // namespace web_resource
+
+#endif  // COMPONENTS_WEB_RESOURCE_PROMO_RESOURCE_SERVICE_H_

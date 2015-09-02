@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_RESOURCE_NOTIFICATION_PROMO_MOBILE_NTP_H_
-#define CHROME_BROWSER_WEB_RESOURCE_NOTIFICATION_PROMO_MOBILE_NTP_H_
+#ifndef COMPONENTS_WEB_RESOURCE_NOTIFICATION_PROMO_MOBILE_NTP_H_
+#define COMPONENTS_WEB_RESOURCE_NOTIFICATION_PROMO_MOBILE_NTP_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/web_resource/notification_promo.h"
+#include "components/web_resource/notification_promo.h"
 
 namespace base {
 class DictionaryValue;
@@ -16,6 +16,8 @@ class ListValue;
 }
 
 class PrefService;
+
+namespace web_resource {
 
 // Helper class for NotificationPromo that deals with mobile_ntp promos.
 class NotificationPromoMobileNtp {
@@ -88,4 +90,6 @@ class NotificationPromoMobileNtp {
   DISALLOW_COPY_AND_ASSIGN(NotificationPromoMobileNtp);
 };
 
-#endif  // CHROME_BROWSER_WEB_RESOURCE_NOTIFICATION_PROMO_MOBILE_NTP_H_
+}  // namespace web_resource
+
+#endif  // COMPONENTS_WEB_RESOURCE_NOTIFICATION_PROMO_MOBILE_NTP_H_

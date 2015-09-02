@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_resource/notification_promo_mobile_ntp.h"
+#include "components/web_resource/notification_promo_mobile_ntp.h"
 
 #include "base/values.h"
-#include "chrome/browser/web_resource/notification_promo.h"
+#include "components/web_resource/notification_promo.h"
+
+namespace web_resource {
 
 NotificationPromoMobileNtp::NotificationPromoMobileNtp(PrefService* local_state)
     : valid_(false),
@@ -13,8 +15,7 @@ NotificationPromoMobileNtp::NotificationPromoMobileNtp(PrefService* local_state)
       payload_(NULL),
       notification_promo_(local_state) {}
 
-NotificationPromoMobileNtp::~NotificationPromoMobileNtp() {
-}
+NotificationPromoMobileNtp::~NotificationPromoMobileNtp() {}
 
 bool NotificationPromoMobileNtp::InitFromPrefs() {
   notification_promo_.InitFromPrefs(NotificationPromo::MOBILE_NTP_SYNC_PROMO);
@@ -23,8 +24,8 @@ bool NotificationPromoMobileNtp::InitFromPrefs() {
 
 bool NotificationPromoMobileNtp::InitFromJson(
     const base::DictionaryValue& json) {
-  notification_promo_.InitFromJson(
-      json, NotificationPromo::MOBILE_NTP_SYNC_PROMO);
+  notification_promo_.InitFromJson(json,
+                                   NotificationPromo::MOBILE_NTP_SYNC_PROMO);
   return InitFromNotificationPromo();
 }
 
@@ -43,12 +44,10 @@ bool NotificationPromoMobileNtp::InitFromNotificationPromo() {
 
   // These fields are mandatory and must be specified in the promo.
   payload_ = notification_promo_.promo_payload();
-  if (!payload_ ||
-      !payload_->GetString("promo_message_short", &text_) ||
+  if (!payload_ || !payload_->GetString("promo_message_short", &text_) ||
       !payload_->GetString("promo_message_long", &text_long_) ||
       !payload_->GetString("promo_action_type", &action_type_) ||
-      !payload_->GetList("promo_action_args", &action_args_) ||
-      !action_args_) {
+      !payload_->GetList("promo_action_args", &action_args_) || !action_args_) {
     return false;
   }
 
@@ -67,3 +66,5 @@ bool NotificationPromoMobileNtp::InitFromNotificationPromo() {
 
   return valid_;
 }
+
+}  // namespace web_resource

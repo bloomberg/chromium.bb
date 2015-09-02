@@ -502,8 +502,6 @@
       'browser/ui/webui/fileicon_source_unittest.cc',
       'browser/ui/webui/history_ui_unittest.cc',
       'browser/update_client/chrome_update_query_params_delegate_unittest.cc',
-      'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
-      'browser/web_resource/promo_resource_service_unittest.cc',
       'common/chrome_content_client_unittest.cc',
       'common/chrome_paths_unittest.cc',
       'common/cloud_print/cloud_print_helpers_unittest.cc',
@@ -2620,9 +2618,6 @@
         }, { # 'OS!="android" and OS!="ios"'
           'dependencies': [
             'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
-          ],
-          'sources!': [
-            'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
           ],
         }],
         ['OS != "android" and chromeos == 0', {

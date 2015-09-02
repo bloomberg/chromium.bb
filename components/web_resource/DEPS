@@ -1,6 +1,9 @@
 include_rules = [
   "+components/google/core",
+  "+components/pref_registry",
+  "+components/version_info",
   "+net",
+  "+ui/base",
 
   # web_resource is used on iOS.
   "-content",

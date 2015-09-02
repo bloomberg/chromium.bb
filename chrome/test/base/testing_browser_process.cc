@@ -153,7 +153,8 @@ chrome_variations::VariationsService*
   return nullptr;
 }
 
-PromoResourceService* TestingBrowserProcess::promo_resource_service() {
+web_resource::PromoResourceService*
+TestingBrowserProcess::promo_resource_service() {
   return nullptr;
 }
 

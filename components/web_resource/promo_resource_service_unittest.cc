@@ -14,11 +14,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/web_resource/notification_promo.h"
 #include "components/version_info/version_info.h"
+#include "components/web_resource/notification_promo.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
+
+namespace web_resource {
 
 namespace {
 
@@ -31,15 +33,13 @@ bool YearFromNow(double* date_epoch, std::string* date_string) {
 
   UErrorCode status = U_ZERO_ERROR;
   icu::SimpleDateFormat simple_formatter(icu::UnicodeString(kDateFormat),
-                                         icu::Locale("en_US"),
-                                         status);
+                                         icu::Locale("en_US"), status);
   if (!U_SUCCESS(status))
     return false;
 
   icu::UnicodeString date_unicode_string;
   simple_formatter.format(static_cast<UDate>(*date_epoch * 1000),
-                          date_unicode_string,
-                          status);
+                          date_unicode_string, status);
   if (!U_SUCCESS(status))
     return false;
 
@@ -70,8 +70,12 @@ class NotificationPromoTest : public testing::Test {
   void Init(const std::string& json,
             const std::string& promo_text,
             double start,
-            int num_groups, int initial_segment, int increment,
-            int time_slice, int max_group, int max_views) {
+            int num_groups,
+            int initial_segment,
+            int increment,
+            int time_slice,
+            int max_group,
+            int max_views) {
     double year_from_now_epoch;
     std::string year_from_now_string;
     ASSERT_TRUE(YearFromNow(&year_from_now_epoch, &year_from_now_string));
@@ -150,10 +154,8 @@ class NotificationPromoTest : public testing::Test {
               prefs_notification_promo.local_state_);
     EXPECT_EQ(notification_promo_.promo_text_,
               prefs_notification_promo.promo_text_);
-    EXPECT_EQ(notification_promo_.start_,
-              prefs_notification_promo.start_);
-    EXPECT_EQ(notification_promo_.end_,
-              prefs_notification_promo.end_);
+    EXPECT_EQ(notification_promo_.start_, prefs_notification_promo.start_);
+    EXPECT_EQ(notification_promo_.end_, prefs_notification_promo.end_);
     EXPECT_EQ(notification_promo_.num_groups_,
               prefs_notification_promo.num_groups_);
     EXPECT_EQ(notification_promo_.initial_segment_,
@@ -166,12 +168,9 @@ class NotificationPromoTest : public testing::Test {
               prefs_notification_promo.max_group_);
     EXPECT_EQ(notification_promo_.max_views_,
               prefs_notification_promo.max_views_);
-    EXPECT_EQ(notification_promo_.group_,
-              prefs_notification_promo.group_);
-    EXPECT_EQ(notification_promo_.views_,
-              prefs_notification_promo.views_);
-    EXPECT_EQ(notification_promo_.closed_,
-              prefs_notification_promo.closed_);
+    EXPECT_EQ(notification_promo_.group_, prefs_notification_promo.group_);
+    EXPECT_EQ(notification_promo_.views_, prefs_notification_promo.views_);
+    EXPECT_EQ(notification_promo_.closed_, prefs_notification_promo.closed_);
   }
 
   void TestGroup() {
@@ -514,3 +513,5 @@ TEST_F(NotificationPromoTest, PromoServerURLTest) {
   EXPECT_TRUE(promo_server_url.SchemeIs(url::kHttpsScheme));
   // TODO(achuith): Test this better.
 }
+
+}  // namespace web_resource

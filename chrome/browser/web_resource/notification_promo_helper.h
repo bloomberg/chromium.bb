@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_RESOURCE_NOTIFICATION_PROMO_HELPER_H_
 #define CHROME_BROWSER_WEB_RESOURCE_NOTIFICATION_PROMO_HELPER_H_
 
-#include "chrome/browser/web_resource/notification_promo.h"
+#include "components/web_resource/notification_promo.h"
 
 // Helpers for NewTabPageHandler.
 namespace web_resource {

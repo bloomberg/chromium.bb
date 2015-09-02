@@ -703,6 +703,8 @@
     ],
     'web_resource_unittest_sources': [
       'web_resource/eula_accepted_notifier_unittest.cc',
+      'web_resource/promo_resource_service_mobile_ntp_unittest.cc',
+      'web_resource/promo_resource_service_unittest.cc',
       'web_resource/resource_request_allowed_notifier_unittest.cc',
     ],
     'webcrypto_unittest_sources': [
@@ -840,6 +842,7 @@
         '../sync/sync.gyp:test_support_sync_api',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/icu/icu.gyp:icui18n',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',
         '../third_party/libjingle/libjingle.gyp:libjingle',
@@ -1195,6 +1198,7 @@
           ],
           'sources!': [
             'variations/variations_request_scheduler_mobile_unittest.cc',
+            'web_resource/promo_resource_service_mobile_ntp_unittest.cc',
           ],
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
