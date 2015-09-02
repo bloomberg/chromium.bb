@@ -269,7 +269,7 @@ private:
 #endif
 };
 
-// Persistent is a way to create a strong pointer from an on-heap object
+// Persistent is a way to create a strong pointer from an off-heap object
 // to another on-heap object. As long as the Persistent handle is alive
 // the GC will keep the object pointed to alive. The Persistent handle is
 // always a GC root from the point of view of the GC.
