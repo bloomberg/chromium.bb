@@ -3405,7 +3405,7 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
-  if (GetParam().protocol < kProtoHTTP2MinimumVersion) {
+  if (GetParam().protocol < kProtoHTTP2) {
     // Decompression failures are a stream error in SPDY3 and above.
     return;
   }
@@ -5917,8 +5917,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
       spdy_util_.ConstructSpdyWindowUpdate(1, stream_window_update_delta));
 
   std::vector<MockWrite> writes;
-  if ((GetParam().protocol >= kProtoHTTP2MinimumVersion) &&
-      (GetParam().protocol <= kProtoHTTP2MaximumVersion)) {
+  if (GetParam().protocol == kProtoHTTP2) {
     writes.push_back(MockWrite(ASYNC, kHttp2ConnectionHeaderPrefix,
                                kHttp2ConnectionHeaderPrefixSize, 0));
   }

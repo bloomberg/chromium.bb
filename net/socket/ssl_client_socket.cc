@@ -193,8 +193,7 @@ std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
     bool can_advertise_http2) {
   std::vector<uint8_t> wire_protos;
   for (const NextProto next_proto : next_protos) {
-    if (!can_advertise_http2 && kProtoHTTP2MinimumVersion <= next_proto &&
-        next_proto <= kProtoHTTP2MaximumVersion) {
+    if (!can_advertise_http2 && next_proto == kProtoHTTP2) {
       continue;
     }
     const std::string proto = NextProtoToString(next_proto);

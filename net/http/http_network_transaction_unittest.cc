@@ -3946,7 +3946,7 @@ TEST_P(HttpNetworkTransactionTest,
   // CONNECT to mail.example.org:443 via SPDY.
   SpdyHeaderBlock connect2_block;
   connect2_block[spdy_util_.GetMethodKey()] = "CONNECT";
-  if (GetParam() >= kProtoHTTP2MinimumVersion) {
+  if (GetParam() == kProtoHTTP2) {
     connect2_block[spdy_util_.GetHostKey()] = "mail.example.org:443";
   } else {
     connect2_block[spdy_util_.GetPathKey()] = "mail.example.org:443";

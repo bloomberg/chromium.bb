@@ -1117,7 +1117,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySyn(int stream_id,
                                           RequestPriority priority,
                                           bool compressed,
                                           bool fin) const {
-  if (protocol_ < kProtoHTTP2MinimumVersion) {
+  if (protocol_ < kProtoHTTP2) {
     SpdySynStreamIR syn_stream(stream_id);
     syn_stream.set_header_block(block);
     syn_stream.set_priority(
@@ -1137,7 +1137,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySyn(int stream_id,
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyReply(int stream_id,
                                             const SpdyHeaderBlock& headers) {
-  if (protocol_ < kProtoHTTP2MinimumVersion) {
+  if (protocol_ < kProtoHTTP2) {
     SpdySynReplyIR syn_reply(stream_id);
     syn_reply.set_header_block(headers);
     return CreateFramer(false)->SerializeFrame(syn_reply);
@@ -1286,7 +1286,7 @@ const char* SpdyTestUtil::GetStatusKey() const {
 }
 
 const char* SpdyTestUtil::GetHostKey() const {
-  if (protocol_ < kProtoHTTP2MinimumVersion)
+  if (protocol_ < kProtoHTTP2)
     return ":host";
   else
     return ":authority";

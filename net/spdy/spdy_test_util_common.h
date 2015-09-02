@@ -562,9 +562,7 @@ class SpdyTestUtil {
 
   NextProto protocol() const { return protocol_; }
   SpdyMajorVersion spdy_version() const { return spdy_version_; }
-  bool include_version_header() const {
-    return protocol_ < kProtoHTTP2MinimumVersion;
-  }
+  bool include_version_header() const { return protocol_ < kProtoHTTP2; }
   scoped_ptr<SpdyFramer> CreateFramer(bool compressed) const;
 
   const GURL& default_url() const { return default_url_; }
