@@ -12,7 +12,8 @@ from telemetry import benchmark
 
 # Disabled on Win due to crbug.com/416502.
 # Disabled on reference due to crbug.com/507836.
-@benchmark.Disabled('win', 'reference')
+# Disabled on linux due to crbug.com/527425.
+@benchmark.Disabled('win', 'reference', 'linux')
 class V8Top25(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
 
