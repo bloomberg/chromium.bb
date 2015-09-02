@@ -2579,7 +2579,7 @@ static int wordsep(int ch)
 {
 	const char extra[] = "-,./?%&#:_=+@~";
 
-	if (ch > 127)
+	if (ch > 127 || ch < 0)
 		return 1;
 
 	return ch == 0 || !(isalpha(ch) || isdigit(ch) || strchr(extra, ch));
