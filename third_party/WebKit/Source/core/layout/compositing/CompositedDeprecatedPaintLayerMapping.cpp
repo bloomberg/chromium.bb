@@ -2039,7 +2039,7 @@ void CompositedDeprecatedPaintLayerMapping::setContentsNeedDisplayInRect(const L
     // FIXME: need to split out paint invalidations for the background.
     // FIXME: need to distinguish invalidations for different layers (e.g. the main layer and scrolling layer). crbug.com/416535.
     SetContentsNeedsDisplayInRectFunctor functor = {
-        pixelSnappedIntRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size()),
+        enclosingIntRect(LayoutRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size())),
         invalidationReason
     };
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);

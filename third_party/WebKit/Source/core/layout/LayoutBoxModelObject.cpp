@@ -359,7 +359,7 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
         LayoutRect paintInvalidationRect = r;
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer()) {
             // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
-            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), invalidationReason);
+            squashingLayer->setNeedsDisplayInRect(enclosingIntRect(paintInvalidationRect), invalidationReason);
         }
     } else {
         layer()->compositedDeprecatedPaintLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason);
