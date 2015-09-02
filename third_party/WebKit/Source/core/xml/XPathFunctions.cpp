@@ -707,7 +707,8 @@ struct FunctionMapping {
 
 static void createFunctionMap()
 {
-    static const FunctionMapping functions[] = {
+    ASSERT(!functionMap);
+    const FunctionMapping functions[] = {
         { "boolean", { &createFunBoolean, 1 } },
         { "ceiling", { &createFunCeiling, 1 } },
         { "concat", { &createFunConcat, Interval(2, Interval::Inf) } },
