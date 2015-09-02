@@ -508,7 +508,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('deqp/functional/gles3/fragmentoutput.html', bug=483282)
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
     self.Skip('deqp/functional/gles3/instancedrendering.html', bug=483282)
-    self.Fail('deqp/functional/gles3/lifetime.html', bug=483282)
+    self.Skip('deqp/functional/gles3/lifetime.html', bug=483282)
     self.Skip('deqp/functional/gles3/multisample.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativebufferapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativefragmentapi.html', bug=483282)
