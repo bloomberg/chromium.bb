@@ -49,19 +49,18 @@ namespace blink {
 
 using namespace HTMLNames;
 
-VisiblePosition::VisiblePosition(const Position& position, TextAffinity affinity)
+VisiblePosition::VisiblePosition()
 {
-    // TODO(yosin) We should make |VisiblePosition| private and make this
-    // constructor to populate member variables by using |createVisiblePosition()|.
-    *this = createVisiblePosition(position, affinity);
+}
+
+VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinity)
+    : m_positionWithAffinity(positionWithAffinity)
+{
 }
 
 VisiblePosition VisiblePosition::createWithoutCanonicalization(const PositionWithAffinity& canonicalized)
 {
-    VisiblePosition visiblePosition;
-    visiblePosition.m_deepPosition = canonicalized.position();
-    visiblePosition.m_affinity = canonicalized.affinity();
-    return visiblePosition;
+    return VisiblePosition(canonicalized);
 }
 
 template <typename Strategy>
@@ -172,24 +171,24 @@ void VisiblePosition::debugPosition(const char* msg) const
         fprintf(stderr, "Position [%s]: null\n", msg);
         return;
     }
-    m_deepPosition.debugPosition(msg);
+    deepEquivalent().debugPosition(msg);
 }
 
 void VisiblePosition::formatForDebugger(char* buffer, unsigned length) const
 {
-    m_deepPosition.formatForDebugger(buffer, length);
+    deepEquivalent().formatForDebugger(buffer, length);
 }
 
 void VisiblePosition::showTreeForThis() const
 {
-    m_deepPosition.showTreeForThis();
+    deepEquivalent().showTreeForThis();
 }
 
 #endif
 
 DEFINE_TRACE(VisiblePosition)
 {
-    visitor->trace(m_deepPosition);
+    visitor->trace(m_positionWithAffinity);
 }
 
 } // namespace blink

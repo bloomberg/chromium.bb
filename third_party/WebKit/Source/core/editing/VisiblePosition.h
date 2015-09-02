@@ -70,7 +70,7 @@ class Range;
 class CORE_EXPORT VisiblePosition final {
     DISALLOW_ALLOCATION();
 public:
-    VisiblePosition() : m_affinity(VP_DEFAULT_AFFINITY) { }
+    VisiblePosition();
 
     // Node: Other than |createVisiblePosition()|, we should not use
     // |createWithoutCanonicalization()|.
@@ -83,14 +83,14 @@ public:
     bool operator==(const VisiblePosition&) const = delete;
     bool operator!=(const VisiblePosition&) const = delete;
 
-    bool isNull() const { return m_deepPosition.isNull(); }
-    bool isNotNull() const { return m_deepPosition.isNotNull(); }
-    bool isOrphan() const { return m_deepPosition.isOrphan(); }
+    bool isNull() const { return m_positionWithAffinity.isNull(); }
+    bool isNotNull() const { return m_positionWithAffinity.isNotNull(); }
+    bool isOrphan() const { return deepEquivalent().isOrphan(); }
 
-    Position deepEquivalent() const { return m_deepPosition; }
+    Position deepEquivalent() const { return m_positionWithAffinity.position(); }
     Position toParentAnchoredPosition() const { return deepEquivalent().parentAnchoredEquivalent(); }
-    PositionWithAffinity toPositionWithAffinity() const { return PositionWithAffinity(m_deepPosition, m_affinity); }
-    TextAffinity affinity() const { return m_affinity; }
+    PositionWithAffinity toPositionWithAffinity() const { return m_positionWithAffinity; }
+    TextAffinity affinity() const { return m_positionWithAffinity.affinity(); }
 
     DECLARE_TRACE();
 
@@ -101,12 +101,9 @@ public:
 #endif
 
 private:
-    explicit VisiblePosition(const Position&, TextAffinity);
+    explicit VisiblePosition(const PositionWithAffinity&);
 
-    // TODO(yosin) We should use |PositionWithAffinity| to make
-    // |toPositionWithAffinity()| simpler.
-    Position m_deepPosition;
-    TextAffinity m_affinity;
+    PositionWithAffinity m_positionWithAffinity;
 };
 
 // TODO(yosin) We should move |honorEditingBoundaryAtOr{Before,After} to
