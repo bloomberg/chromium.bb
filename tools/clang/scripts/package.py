@@ -118,6 +118,7 @@ def main():
   exe_ext = '.exe' if sys.platform == 'win32' else ''
   want = ['bin/llvm-symbolizer' + exe_ext,
           'lib/clang/*/asan_blacklist.txt',
+          'lib/clang/*/cfi_blacklist.txt',
           # Copy built-in headers (lib/clang/3.x.y/include).
           'lib/clang/*/include/*',
           ]
