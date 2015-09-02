@@ -207,7 +207,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         Matrix.multiplyMM(mDesktopCombinedMatrix, 0, mProjectionMatrix,
                 0, mDesktopCombinedMatrix, 0);
 
-        mDesktop.draw(mDesktopCombinedMatrix);
+        mDesktop.draw(mDesktopCombinedMatrix, mMenuBarVisible);
     }
 
     private void drawEyePoint() {

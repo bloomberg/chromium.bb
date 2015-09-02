@@ -24,7 +24,10 @@ public class Desktop {
             + "attribute vec4 a_Position;"
             + "attribute vec2 a_TexCoordinate;"
             + "varying vec2 v_TexCoordinate;"
+            + "attribute float a_transparency;"
+            + "varying float v_transparency;"
             + "void main() {"
+            + "  v_transparency = a_transparency;"
             + "  v_TexCoordinate = a_TexCoordinate;"
             + "  gl_Position = u_CombinedMatrix * a_Position;"
             + "}";
@@ -34,13 +37,15 @@ public class Desktop {
             + "uniform sampler2D u_Texture;"
             + "varying vec2 v_TexCoordinate;"
             + "const float borderWidth = 0.002;"
+            + "varying float v_transparency;"
             + "void main() {"
             + "  if (v_TexCoordinate.x > (1.0 - borderWidth) || v_TexCoordinate.x < borderWidth"
             + "      || v_TexCoordinate.y > (1.0 - borderWidth)"
             + "      || v_TexCoordinate.y < borderWidth) {"
-            + "    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+            + "    gl_FragColor = vec4(1.0, 1.0, 1.0, v_transparency);"
             + "  } else {"
-            + "    gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"
+            + "    vec4 texture = texture2D(u_Texture, v_TexCoordinate);"
+            + "    gl_FragColor = vec4(texture.r, texture.g, texture.b, v_transparency);"
             + "  }"
             + "}";
 
@@ -62,6 +67,7 @@ public class Desktop {
     private int mCombinedMatrixHandle;
     private int mTextureUniformHandle;
     private int mPositionHandle;
+    private int mTransparentHandle;
     private int mTextureDataHandle;
     private int mTextureCoordinateHandle;
     private FloatBuffer mPosition;
@@ -93,6 +99,7 @@ public class Desktop {
                 GLES20.glGetUniformLocation(mProgramHandle, "u_CombinedMatrix");
         mTextureUniformHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Texture");
         mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
+        mTransparentHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_transparency");
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
         mTextureDataHandle = TextureHelper.createTextureHandle();
     }
@@ -100,7 +107,7 @@ public class Desktop {
     /**
      * Draw the desktop. Make sure {@link hasVideoFrame} returns true.
      */
-    public void draw(float[] combinedMatrix) {
+    public void draw(float[] combinedMatrix, boolean isTransparent) {
         GLES20.glUseProgram(mProgramHandle);
 
         // Pass in model view project matrix.
@@ -114,6 +121,13 @@ public class Desktop {
         GLES20.glVertexAttribPointer(mPositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false,
                 0, mPosition);
         GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+        // Enable transparency.
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+        // Pass in transparency.
+        GLES20.glVertexAttrib1f(mTransparentHandle, isTransparent ? 0.5f : 1.0f);
 
         // Link texture data with texture unit.
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
