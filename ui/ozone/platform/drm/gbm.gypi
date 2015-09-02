@@ -15,6 +15,8 @@
     # TODO(dshwang): remove this flag when all gbm hardware supports vgem map.
     # crbug.com/519587
     'use_vgem_map%': 0,
+
+    'use_drm_atomic%': 0,
   },
   'targets': [
     {
@@ -64,7 +66,10 @@
             'gpu/client_native_pixmap_vgem.cc',
             'gpu/client_native_pixmap_vgem.h',
           ],
-        }],
+	}],
+	['use_drm_atomic==1', {
+	  'defines': ['USE_DRM_ATOMIC'],
+	}],
       ],
     },
   ],
