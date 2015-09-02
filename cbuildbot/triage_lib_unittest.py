@@ -8,10 +8,8 @@ from __future__ import print_function
 
 import ConfigParser
 import os
-import unittest
 
 from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import triage_lib
@@ -23,14 +21,10 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+from chromite.lib import portage_util
 
 
 site_config = config_lib.GetConfig()
-
-
-# Some tests require the kernel, and fail with buildtools only repo.
-KERNEL_AVAILABLE = os.path.exists(os.path.join(
-    constants.SOURCE_ROOT, 'src', 'third_party', 'kernel'))
 
 
 def GetFailedMessage(exceptions, stage='Build', internal=False,
@@ -56,8 +50,8 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self.power_manager = 'chromiumos/platform2/power_manager'
     self.power_manager_pkg = 'chromeos-base/power_manager'
     self.power_manager_patch = self.GetPatches(project=self.power_manager)
-    self.kernel = 'chromiumos/third_party/kernel'
-    self.kernel_pkg = 'sys-kernel/chromeos-kernel'
+    self.kernel = 'chromiumos/third_party/kernel/foo'
+    self.kernel_pkg = 'sys-kernel/chromeos-kernel-foo'
     self.kernel_patch = self.GetPatches(project=self.kernel)
     self.secret = 'chromeos/secret'
     self.secret_patch = self.GetPatches(
@@ -100,22 +94,24 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
         sanity=sanity)
     self.assertEquals(set(suspects), results)
 
-  @unittest.skipIf(not KERNEL_AVAILABLE, 'Full checkout is required.')
   def testFailSameProject(self):
     """Patches to the package that failed should be marked as failing."""
     suspects = [self.kernel_patch]
     patches = suspects + [self.power_manager_patch, self.secret_patch]
-    self._AssertSuspects(patches, suspects, [self.kernel_pkg])
-    self._AssertSuspects(patches, suspects, [self.kernel_pkg], sanity=False)
+    with self.PatchObject(portage_util, 'FindWorkonProjects',
+                          return_value=self.kernel):
+      self._AssertSuspects(patches, suspects, [self.kernel_pkg])
+      self._AssertSuspects(patches, suspects, [self.kernel_pkg], sanity=False)
 
-  @unittest.skipIf(not KERNEL_AVAILABLE, 'Full checkout is required.')
   def testFailSameProjectPlusOverlay(self):
     """Patches to the overlay should be marked as failing."""
     suspects = [self.overlay_patch, self.kernel_patch]
     patches = suspects + [self.power_manager_patch, self.secret_patch]
-    self._AssertSuspects(patches, suspects, [self.kernel_pkg])
-    self._AssertSuspects(patches, [self.kernel_patch], [self.kernel_pkg],
-                         sanity=False)
+    with self.PatchObject(portage_util, 'FindWorkonProjects',
+                          return_value=self.kernel):
+      self._AssertSuspects(patches, suspects, [self.kernel_pkg])
+      self._AssertSuspects(patches, [self.kernel_patch], [self.kernel_pkg],
+                           sanity=False)
 
   def testFailUnknownPackage(self):
     """If no patches changed the package, all patches should fail."""
@@ -144,10 +140,12 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     Even if there are also build failures that we can explain.
     """
     suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
-    self._AssertSuspects(suspects, suspects, [self.kernel_pkg],
-                         [Exception('foo bar')])
-    self._AssertSuspects(suspects, [self.kernel_patch], [self.kernel_pkg],
-                         [Exception('foo bar')], sanity=False)
+    with self.PatchObject(portage_util, 'FindWorkonProjects',
+                          return_value=self.kernel):
+      self._AssertSuspects(suspects, suspects, [self.kernel_pkg],
+                           [Exception('foo bar')])
+      self._AssertSuspects(suspects, [self.kernel_patch], [self.kernel_pkg],
+                           [Exception('foo bar')], sanity=False)
 
   def testFailNone(self):
     """If a message is just 'None', it should cause all patches to fail."""

@@ -406,6 +406,7 @@ class BuildFailureMessage(object):
       Set of changes that likely caused the failure.
     """
     # Import portage_util here to avoid circular imports.
+    # portage_util -> parallel -> failures_lib
     from chromite.lib import portage_util
     blame_everything = False
     suspects = set()
