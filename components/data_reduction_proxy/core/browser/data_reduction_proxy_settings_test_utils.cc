@@ -88,9 +88,7 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   settings->config_ = test_context_->config();
   settings->prefs_ = test_context_->pref_service();
   settings->data_reduction_proxy_service_ =
-      test_context_->CreateDataReductionProxyService();
-  settings->data_reduction_proxy_service_->SetIOData(
-      test_context_->io_data()->GetWeakPtr());
+      test_context_->CreateDataReductionProxyService(settings);
   test_context_->config()->ResetParamFlagsForTest(flags);
   settings->UpdateConfigValues();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
@@ -140,7 +138,7 @@ void DataReductionProxySettingsTestBase::InitDataReductionProxy(
     bool enabled_at_startup) {
   settings_->InitDataReductionProxySettings(
       test_context_->pref_service(), test_context_->io_data(),
-      test_context_->CreateDataReductionProxyService());
+      test_context_->CreateDataReductionProxyService(settings_.get()));
   settings_->data_reduction_proxy_service()->SetIOData(
       test_context_->io_data()->GetWeakPtr());
   settings_->SetCallbackToRegisterSyntheticFieldTrial(

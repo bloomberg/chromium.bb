@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_samples.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -334,6 +335,9 @@ TEST_F(DataReductionProxySettingsTest, TestEnableLoFiSyntheticTrial) {
 }
 
 TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
+  settings_->InitPrefMembers();
+  settings_->data_reduction_proxy_service_->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
   test_context_->config()->ResetLoFiStatusForTest();
   EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
                    prefs::kLoFiLoadImagesPerSession));
@@ -425,6 +429,9 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
 
 TEST_F(DataReductionProxySettingsTest,
        TestLoFiImplicitOptOutConsecutiveSessions) {
+  settings_->InitPrefMembers();
+  settings_->data_reduction_proxy_service_->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
   test_context_->config()->ResetLoFiStatusForTest();
   EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
                    prefs::kLoFiLoadImagesPerSession));
@@ -489,6 +496,9 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutHistograms) {
   const char kUMALoFiImplicitOptOutAction[] =
       "DataReductionProxy.LoFi.ImplicitOptOutAction.Unknown";
   base::HistogramTester histogram_tester;
+  settings_->InitPrefMembers();
+  settings_->data_reduction_proxy_service_->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
 
   // Disable Lo-Fi for |lo_fi_consecutive_session_disables_|.
   for (int i = 1; i <= settings_->lo_fi_consecutive_session_disables_; ++i) {
@@ -528,8 +538,22 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutHistograms) {
 TEST_F(DataReductionProxySettingsTest, TestLoFiSessionStateHistograms) {
   const char kUMALoFiSessionState[] = "DataReductionProxy.LoFi.SessionState";
   base::HistogramTester histogram_tester;
+  settings_->InitPrefMembers();
+  settings_->data_reduction_proxy_service_->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
 
+  // No session state histograms should be recorded when the Data Reduction
+  // Proxy is disabled.
+  settings_->SetDataReductionProxyEnabled(false);
   settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+  test_context_->RunUntilIdle();
+  scoped_ptr<base::HistogramSamples> samples(
+      histogram_tester.GetHistogramSamplesSinceCreation(kUMALoFiSessionState));
+  EXPECT_EQ(0, samples->TotalCount());
+
+  settings_->SetDataReductionProxyEnabled(true);
+  settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+  test_context_->RunUntilIdle();
   histogram_tester.ExpectBucketCount(
       kUMALoFiSessionState,
       DataReductionProxyService::LO_FI_SESSION_STATE_NOT_USED, 1);
@@ -631,7 +655,7 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
 
   settings_->InitDataReductionProxySettings(
       test_context_->pref_service(), test_context_->io_data(),
-      test_context_->CreateDataReductionProxyService());
+      test_context_->CreateDataReductionProxyService(settings_.get()));
   settings_->SetCallbackToRegisterSyntheticFieldTrial(
       base::Bind(&DataReductionProxySettingsTestBase::
                  SyntheticFieldTrialRegistrationCallback,
@@ -654,8 +678,8 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
     EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
 
     settings_->InitDataReductionProxySettings(
-         test_context_->pref_service(), test_context_->io_data(),
-         test_context_->CreateDataReductionProxyService());
+        test_context_->pref_service(), test_context_->io_data(),
+        test_context_->CreateDataReductionProxyService(settings_.get()));
 
     base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
     if (enable_quic) {

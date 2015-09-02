@@ -69,8 +69,6 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
   MockDataReductionProxySettings<C>* settings =
       new MockDataReductionProxySettings<C>();
   settings->config_ = test_context_->config();
-  settings->data_reduction_proxy_service_ =
-      test_context_->CreateDataReductionProxyService();
   test_context_->config()->ResetParamFlagsForTest(flags);
   settings->UpdateConfigValues();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
@@ -80,6 +78,8 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
       .Times(AnyNumber())
       .WillRepeatedly(Return(test_context_->pref_service()));
   settings_.reset(settings);
+  settings_->data_reduction_proxy_service_ =
+      test_context_->CreateDataReductionProxyService(settings_.get());
 }
 
 template void

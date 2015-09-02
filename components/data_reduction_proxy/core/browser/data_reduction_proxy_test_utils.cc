@@ -489,7 +489,7 @@ void DataReductionProxyTestContext::DestroySettings() {
 void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
   settings_->InitDataReductionProxySettings(
       simple_pref_service_.get(), io_data_.get(),
-      CreateDataReductionProxyServiceInternal());
+      CreateDataReductionProxyServiceInternal(settings_.get()));
   storage_delegate_->SetStorageDelegate(
       settings_->data_reduction_proxy_service()->event_store());
   io_data_->SetDataReductionProxyService(
@@ -501,23 +501,25 @@ void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
 }
 
 scoped_ptr<DataReductionProxyService>
-DataReductionProxyTestContext::CreateDataReductionProxyService() {
+DataReductionProxyTestContext::CreateDataReductionProxyService(
+    DataReductionProxySettings* settings) {
   DCHECK(test_context_flags_ &
          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION);
-  return CreateDataReductionProxyServiceInternal();
+  return CreateDataReductionProxyServiceInternal(settings);
 }
 
 scoped_ptr<DataReductionProxyService>
-DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal() {
+DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
+    DataReductionProxySettings* settings) {
   if (test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE) {
     return make_scoped_ptr(new MockDataReductionProxyService(
-        settings_.get(), simple_pref_service_.get(),
-        request_context_getter_.get(), task_runner_));
+        settings, simple_pref_service_.get(), request_context_getter_.get(),
+        task_runner_));
   } else {
     return make_scoped_ptr(new DataReductionProxyService(
-        settings_.get(), simple_pref_service_.get(),
-        request_context_getter_.get(), make_scoped_ptr(new DataStore()),
-        task_runner_, task_runner_, task_runner_, base::TimeDelta()));
+        settings, simple_pref_service_.get(), request_context_getter_.get(),
+        make_scoped_ptr(new DataStore()), task_runner_, task_runner_,
+        task_runner_, base::TimeDelta()));
   }
 }
 

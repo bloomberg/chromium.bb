@@ -293,7 +293,8 @@ class DataReductionProxyTestContext {
   // |MockDataReductionProxyService| if built with
   // WithMockDataReductionProxyService. Can only be called if built with
   // SkipSettingsInitialization.
-  scoped_ptr<DataReductionProxyService> CreateDataReductionProxyService();
+  scoped_ptr<DataReductionProxyService> CreateDataReductionProxyService(
+      DataReductionProxySettings* settings);
 
   // This creates a |DataReductionProxyNetworkDelegate| and
   // |DataReductionProxyInterceptor|, using them in the |net::URLRequestContext|
@@ -427,8 +428,8 @@ class DataReductionProxyTestContext {
 
   void InitSettingsWithoutCheck();
 
-  scoped_ptr<DataReductionProxyService>
-      CreateDataReductionProxyServiceInternal();
+  scoped_ptr<DataReductionProxyService> CreateDataReductionProxyServiceInternal(
+      DataReductionProxySettings* settings);
 
   unsigned int test_context_flags_;
 
