@@ -6,14 +6,7 @@ var completedUpload = false;
 
 var asyncXHR;
 var lastSeenProgress = 0;
-// Build a long string, fast.
-// data.length = 2 * 3^15 = 28697814
-
-var data = 'yo';
-var iterations = 15;
-for (var i = 0; i < iterations; i++) {
-  data = data + data + data;
-}
+var data;
 
 function sendResults(failures) {
   var resultString = failures.length ? failures.join('\n') : "success";
@@ -63,7 +56,13 @@ function onError(e) {
   sendResults(['Received an XHR error event.']);
 }
 
-function WaitForAsyncXHR(url) {
+function WaitForAsyncXHR(url, payloadSize) {
+  // Build a long string, fast.
+  // Note: payloadSize will be of the form 2*3^x.
+  data = 'yo';
+  while(data.length !== payloadSize) {
+    data = data + data + data;
+  }
   asyncXHR = new XMLHttpRequest();
   asyncXHR.addEventListener('load', onFinished);
   asyncXHR.addEventListener('error', onError);

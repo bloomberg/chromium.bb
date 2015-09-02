@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/format_macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -23,7 +25,15 @@ namespace {
 
 const char kPostPath[] = "/post";
 const char kRedirectPostPath[] = "/redirect";
+
+// ThreadSanitizer is too slow to perform the full upload, so tests
+// using that build get an easier test which might not show two distinct
+// progress events. See crbug.com/526985.
+#if defined(THREAD_SANITIZER)
+const size_t kPayloadSize = 1062882;  // 2*3^12
+#else
 const size_t kPayloadSize = 28697814;  // 2*3^15
+#endif
 
 scoped_ptr<net::test_server::HttpResponse> HandlePostAndRedirectURLs(
   const std::string& request_path,
@@ -64,7 +74,9 @@ IN_PROC_BROWSER_TEST_F(AsyncResourceHandlerBrowserTest, UploadProgress) {
   std::string js_result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       shell()->web_contents(),
-      "WaitForAsyncXHR('/post')",
+      base::StringPrintf("WaitForAsyncXHR('%s', %" PRIuS ")",
+                         kPostPath,
+                         kPayloadSize),
       &js_result));
   EXPECT_EQ(js_result, "success");
 }
@@ -82,7 +94,9 @@ IN_PROC_BROWSER_TEST_F(AsyncResourceHandlerBrowserTest,
   std::string js_result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       shell()->web_contents(),
-      "WaitForAsyncXHR('/redirect')",
+      base::StringPrintf("WaitForAsyncXHR('%s', %" PRIuS ")",
+                         kRedirectPostPath,
+                         kPayloadSize),
       &js_result));
   EXPECT_EQ(js_result, "success");
 }
