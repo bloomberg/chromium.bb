@@ -28,7 +28,7 @@
 using mojo::View;
 using mojo::ViewTreeConnection;
 
-namespace mandoline {
+namespace web_view {
 
 namespace {
 
@@ -214,4 +214,4 @@ TEST_F(FrameTest, SingleChild) {
   EXPECT_EQ(1u, root_client.adds().size());
 }
 
-}  // namespace mandoline
+}  // namespace web_view

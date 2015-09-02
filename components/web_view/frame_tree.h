@@ -12,7 +12,7 @@ namespace mojo {
 class String;
 }
 
-namespace mandoline {
+namespace web_view {
 
 class FrameTreeClient;
 class FrameTreeDelegate;
@@ -95,6 +95,6 @@ class FrameTree {
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };
 
-}  // namespace mandoline
+}  // namespace web_view
 
 #endif  // COMPONENTS_WEB_VIEW_FRAME_TREE_H_

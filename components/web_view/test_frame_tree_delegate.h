@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "components/web_view/frame_tree_delegate.h"
 
-namespace mandoline {
+namespace web_view {
 
 class TestFrameTreeDelegate : public FrameTreeDelegate {
  public:
@@ -31,6 +31,6 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeDelegate);
 };
 
-}  // namespace mandoline
+}  // namespace web_view
 
 #endif  // COMPONENTS_WEB_VIEW_TEST_FRAME_TREE_DELEGATE_H_

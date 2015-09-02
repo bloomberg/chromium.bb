@@ -58,13 +58,13 @@ class HTMLFrameTreeManager {
 
   void Init(HTMLFrameDelegate* delegate,
             mojo::View* local_view,
-            const mojo::Array<mandoline::FrameDataPtr>& frame_data,
+            const mojo::Array<web_view::FrameDataPtr>& frame_data,
             uint32_t change_id);
 
   // Creates a Frame per FrameData element in |frame_data|. Returns the root.
   HTMLFrame* BuildFrameTree(
       HTMLFrameDelegate* delegate,
-      const mojo::Array<mandoline::FrameDataPtr>& frame_data,
+      const mojo::Array<web_view::FrameDataPtr>& frame_data,
       uint32_t local_frame_id,
       mojo::View* local_view);
 
@@ -85,7 +85,7 @@ class HTMLFrameTreeManager {
   // sees the same change, and a change only need be processed once).
   void ProcessOnFrameAdded(HTMLFrame* source,
                            uint32_t change_id,
-                           mandoline::FrameDataPtr frame_data);
+                           web_view::FrameDataPtr frame_data);
   void ProcessOnFrameRemoved(HTMLFrame* source,
                              uint32_t change_id,
                              uint32_t frame_id);

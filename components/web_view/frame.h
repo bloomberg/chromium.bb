@@ -14,7 +14,7 @@
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
-namespace mandoline {
+namespace web_view {
 
 class FrameTree;
 class FrameTreeClient;
@@ -240,6 +240,6 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   DISALLOW_COPY_AND_ASSIGN(Frame);
 };
 
-}  // namespace mandoline
+}  // namespace web_view
 
 #endif  // COMPONENTS_WEB_VIEW_FRAME_H_

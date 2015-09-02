@@ -18,9 +18,9 @@
 
 using mojo::View;
 
-DECLARE_VIEW_PROPERTY_TYPE(mandoline::Frame*);
+DECLARE_VIEW_PROPERTY_TYPE(web_view::Frame*);
 
-namespace mandoline {
+namespace web_view {
 
 // Used to find the Frame associated with a View.
 DEFINE_LOCAL_VIEW_PROPERTY_KEY(Frame*, kFrame, nullptr);
@@ -469,7 +469,7 @@ void Frame::OnCreatedFrame(
                            client_properties.To<ClientPropertyMap>());
 }
 
-void Frame::RequestNavigate(mandoline::NavigationTargetType target_type,
+void Frame::RequestNavigate(NavigationTargetType target_type,
                             uint32_t target_frame_id,
                             mojo::URLRequestPtr request) {
   if (target_type == NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
@@ -491,4 +491,4 @@ void Frame::DidNavigateLocally(uint32_t frame_id, const mojo::String& url) {
   NOTIMPLEMENTED();
 }
 
-}  // namespace mandoline
+}  // namespace web_view

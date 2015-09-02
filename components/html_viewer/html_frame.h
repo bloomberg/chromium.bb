@@ -64,7 +64,7 @@ class WebLayerTreeViewImpl;
 // process. See HTMLFrameTreeManager for details.
 class HTMLFrame : public blink::WebFrameClient,
                   public blink::WebRemoteFrameClient,
-                  public mandoline::FrameTreeClient,
+                  public web_view::FrameTreeClient,
                   public mojo::ViewObserver {
  public:
   struct CreateParams {
@@ -191,8 +191,8 @@ class HTMLFrame : public blink::WebFrameClient,
 
   // Binds this frame to the specified server. |this| serves as the
   // FrameTreeClient for the server.
-  void Bind(mandoline::FrameTreeServerPtr frame_tree_server,
-            mojo::InterfaceRequest<mandoline::FrameTreeClient>
+  void Bind(web_view::FrameTreeServerPtr frame_tree_server,
+            mojo::InterfaceRequest<web_view::FrameTreeClient>
                 frame_tree_client_request);
 
   // Sets the appropriate value from the client property. |name| identifies
@@ -205,7 +205,7 @@ class HTMLFrame : public blink::WebFrameClient,
   HTMLFrame* GetLocalRoot();
 
   // Gets the FrameTreeServer to use for this frame.
-  mandoline::FrameTreeServer* GetFrameTreeServer();
+  web_view::FrameTreeServer* GetFrameTreeServer();
 
   // Returns the ApplicationImpl from the local root's delegate.
   mojo::ApplicationImpl* GetLocalRootApp();
@@ -250,15 +250,15 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnViewFocusChanged(mojo::View* gained_focus,
                           mojo::View* lost_focus) override;
 
-  // mandoline::FrameTreeClient:
-  void OnConnect(mandoline::FrameTreeServerPtr server,
+  // web_view::FrameTreeClient:
+  void OnConnect(web_view::FrameTreeServerPtr server,
                  uint32_t change_id,
                  uint32_t view_id,
-                 mandoline::ViewConnectType view_connect_type,
-                 mojo::Array<mandoline::FrameDataPtr> frame_data,
+                 web_view::ViewConnectType view_connect_type,
+                 mojo::Array<web_view::FrameDataPtr> frame_data,
                  const OnConnectCallback& callback) override;
   void OnFrameAdded(uint32_t change_id,
-                    mandoline::FrameDataPtr frame_data) override;
+                    web_view::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t change_id, uint32_t frame_id) override;
   void OnFrameClientPropertyChanged(uint32_t frame_id,
                                     const mojo::String& name,
@@ -266,7 +266,7 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnPostMessageEvent(
       uint32_t source_frame_id,
       uint32_t target_frame_id,
-      mandoline::HTMLMessageEventPtr serialized_event) override;
+      web_view::HTMLMessageEventPtr serialized_event) override;
   void OnWillNavigate(uint32_t target_frame_id) override;
 
   // blink::WebRemoteFrameClient:
@@ -299,9 +299,9 @@ class HTMLFrame : public blink::WebFrameClient,
   scoped_ptr<cc_blink::WebLayerImpl> web_layer_;
 
   HTMLFrameDelegate* delegate_;
-  scoped_ptr<mojo::Binding<mandoline::FrameTreeClient>>
+  scoped_ptr<mojo::Binding<web_view::FrameTreeClient>>
       frame_tree_client_binding_;
-  mandoline::FrameTreeServerPtr server_;
+  web_view::FrameTreeServerPtr server_;
 
   ReplicatedFrameState state_;
 

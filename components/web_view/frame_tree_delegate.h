@@ -13,7 +13,7 @@
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
-namespace mandoline {
+namespace web_view {
 
 class Frame;
 class FrameUserData;
@@ -62,6 +62,6 @@ class FrameTreeDelegate {
   virtual ~FrameTreeDelegate() {}
 };
 
-}  // namespace mandoline
+}  // namespace web_view
 
 #endif  // COMPONENTS_WEB_VIEW_FRAME_TREE_DELEGATE_H_

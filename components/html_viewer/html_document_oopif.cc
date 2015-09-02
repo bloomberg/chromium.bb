@@ -108,7 +108,7 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
   // TODO(sky): nuke headless. We're not going to care about it anymore.
   DCHECK(!global_state_->is_headless());
 
-  connection->AddService<mandoline::FrameTreeClient>(this);
+  connection->AddService<web_view::FrameTreeClient>(this);
   connection->AddService<AxProvider>(this);
   connection->AddService<mojo::ViewTreeClient>(this);
   connection->AddService<devtools_service::DevToolsAgent>(this);
@@ -326,7 +326,7 @@ void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
 
 void HTMLDocumentOOPIF::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mandoline::FrameTreeClient> request) {
+    mojo::InterfaceRequest<web_view::FrameTreeClient> request) {
   if (frame_) {
     DVLOG(1) << "Request for FrameTreeClient after one already vended.";
     return;

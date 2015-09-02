@@ -19,7 +19,7 @@ class ApplicationConnection;
 class ApplicationImpl;
 }
 
-namespace mandoline {
+namespace web_view {
 
 class Frame;
 
@@ -69,6 +69,6 @@ class FrameConnection : public FrameUserData {
   DISALLOW_COPY_AND_ASSIGN(FrameConnection);
 };
 
-}  // namespace mandoline
+}  // namespace web_view
 
 #endif  // COMPONENTS_WEB_VIEW_FRAME_CONNECTION_H_

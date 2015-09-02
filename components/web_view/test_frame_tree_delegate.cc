@@ -4,7 +4,7 @@
 
 #include "components/web_view/test_frame_tree_delegate.h"
 
-namespace mandoline {
+namespace web_view {
 
 TestFrameTreeDelegate::TestFrameTreeDelegate() {}
 
@@ -31,4 +31,4 @@ void TestFrameTreeDelegate::CanNavigateFrame(
 
 void TestFrameTreeDelegate::DidStartNavigation(Frame* frame) {}
 
-}  // namespace mandoline
+}  // namespace web_view

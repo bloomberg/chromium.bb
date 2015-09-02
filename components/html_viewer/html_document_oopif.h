@@ -55,7 +55,7 @@ class HTMLDocumentOOPIF
       public mojo::ViewObserver,
       public HTMLFrameDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
-      public mojo::InterfaceFactory<mandoline::FrameTreeClient>,
+      public mojo::InterfaceFactory<web_view::FrameTreeClient>,
       public mojo::InterfaceFactory<TestHTMLViewer>,
       public mojo::InterfaceFactory<devtools_service::DevToolsAgent>,
       public mojo::InterfaceFactory<mojo::ViewTreeClient> {
@@ -133,10 +133,10 @@ class HTMLDocumentOOPIF
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::AxProvider> request) override;
 
-  // mojo::InterfaceFactory<mandoline::FrameTreeClient>:
+  // mojo::InterfaceFactory<web_view::FrameTreeClient>:
   void Create(
       mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mandoline::FrameTreeClient> request) override;
+      mojo::InterfaceRequest<web_view::FrameTreeClient> request) override;
 
   // mojo::InterfaceFactory<TestHTMLViewer>:
   void Create(mojo::ApplicationConnection* connection,

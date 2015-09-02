@@ -9,8 +9,6 @@
 #include "components/web_view/frame_connection.h"
 #include "components/web_view/web_view_impl.h"
 
-using mandoline::FrameConnection;
-
 namespace web_view {
 
 PendingWebViewLoad::PendingWebViewLoad(WebViewImpl* web_view)

@@ -9,7 +9,7 @@
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/web_view_switches.h"
 
-namespace mandoline {
+namespace web_view {
 
 FrameTree::FrameTree(uint32_t root_app_id,
                      mojo::View* view,
@@ -103,4 +103,4 @@ void FrameTree::ClientPropertyChanged(const Frame* source,
   root_.NotifyClientPropertyChanged(source, name, value);
 }
 
-}  // namespace mandoline
+}  // namespace web_view

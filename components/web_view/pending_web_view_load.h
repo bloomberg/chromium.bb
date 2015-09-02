@@ -8,12 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
-namespace mandoline {
-class FrameConnection;
-}
-
 namespace web_view {
 
+class FrameConnection;
 class WebViewImpl;
 
 // PendingWebViewLoad holds the state necessary to service a load of the main
@@ -25,7 +22,7 @@ class PendingWebViewLoad {
 
   void Init(mojo::URLRequestPtr request);
 
-  scoped_ptr<mandoline::FrameConnection> frame_connection() {
+  scoped_ptr<FrameConnection> frame_connection() {
     return frame_connection_.Pass();
   }
 
@@ -40,7 +37,7 @@ class PendingWebViewLoad {
 
   bool is_content_handler_id_valid_;
 
-  scoped_ptr<mandoline::FrameConnection> frame_connection_;
+  scoped_ptr<FrameConnection> frame_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingWebViewLoad);
 };

@@ -99,7 +99,7 @@ FrameDevToolsAgent::~FrameDevToolsAgent() {}
 
 void FrameDevToolsAgent::AttachFrame(
     DevToolsAgentPtr forward_agent,
-    mandoline::Frame::ClientPropertyMap* devtools_properties) {
+    Frame::ClientPropertyMap* devtools_properties) {
   RegisterAgentIfNecessary();
   forward_agent_ = forward_agent.Pass();
 

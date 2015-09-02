@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_USER_DATA_H_
 #define COMPONENTS_WEB_VIEW_FRAME_USER_DATA_H_
 
-namespace mandoline {
+namespace web_view {
 
 // Arbitrary data that may be associated with each frame.
 class FrameUserData {
@@ -13,6 +13,6 @@ class FrameUserData {
   virtual ~FrameUserData() {}
 };
 
-}  // namespace mandoline
+}  // namespace web_view
 
 #endif  // COMPONENTS_WEB_VIEW_FRAME_USER_DATA_H_

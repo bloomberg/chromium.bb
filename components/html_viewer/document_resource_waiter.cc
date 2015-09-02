@@ -9,7 +9,7 @@
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/view_manager/public/cpp/view.h"
 
-using mandoline::ViewConnectType;
+using web_view::ViewConnectType;
 
 namespace html_viewer {
 
@@ -22,17 +22,17 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
       root_(nullptr),
       change_id_(0u),
       view_id_(0u),
-      view_connect_type_(mandoline::VIEW_CONNECT_TYPE_USE_NEW),
+      view_connect_type_(web_view::VIEW_CONNECT_TYPE_USE_NEW),
       frame_tree_client_binding_(this) {}
 
 DocumentResourceWaiter::~DocumentResourceWaiter() {
 }
 
 void DocumentResourceWaiter::Release(
-    mojo::InterfaceRequest<mandoline::FrameTreeClient>*
+    mojo::InterfaceRequest<web_view::FrameTreeClient>*
         frame_tree_client_request,
-    mandoline::FrameTreeServerPtr* frame_tree_server,
-    mojo::Array<mandoline::FrameDataPtr>* frame_data,
+    web_view::FrameTreeServerPtr* frame_tree_server,
+    mojo::Array<web_view::FrameDataPtr>* frame_data,
     uint32_t* change_id,
     uint32_t* view_id,
     ViewConnectType* view_connect_type,
@@ -53,12 +53,12 @@ mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
 
 bool DocumentResourceWaiter::IsReady() const {
   return (!frame_data_.is_null() &&
-          ((view_connect_type_ == mandoline::VIEW_CONNECT_TYPE_USE_EXISTING) ||
+          ((view_connect_type_ == web_view::VIEW_CONNECT_TYPE_USE_EXISTING) ||
            (root_ && root_->viewport_metrics().device_pixel_ratio != 0.0f)));
 }
 
 void DocumentResourceWaiter::Bind(
-    mojo::InterfaceRequest<mandoline::FrameTreeClient> request) {
+    mojo::InterfaceRequest<web_view::FrameTreeClient> request) {
   if (frame_tree_client_binding_.is_bound() || !frame_data_.is_null()) {
     DVLOG(1) << "Request for FrameTreeClient after already supplied one";
     return;
@@ -67,11 +67,11 @@ void DocumentResourceWaiter::Bind(
 }
 
 void DocumentResourceWaiter::OnConnect(
-    mandoline::FrameTreeServerPtr server,
+    web_view::FrameTreeServerPtr server,
     uint32_t change_id,
     uint32_t view_id,
     ViewConnectType view_connect_type,
-    mojo::Array<mandoline::FrameDataPtr> frame_data,
+    mojo::Array<web_view::FrameDataPtr> frame_data,
     const OnConnectCallback& callback) {
   DCHECK(frame_data_.is_null());
   change_id_ = change_id;
@@ -87,7 +87,7 @@ void DocumentResourceWaiter::OnConnect(
 }
 
 void DocumentResourceWaiter::OnFrameAdded(uint32_t change_id,
-                                          mandoline::FrameDataPtr frame_data) {
+                                          web_view::FrameDataPtr frame_data) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }
@@ -109,7 +109,7 @@ void DocumentResourceWaiter::OnFrameClientPropertyChanged(
 void DocumentResourceWaiter::OnPostMessageEvent(
     uint32_t source_frame_id,
     uint32_t target_frame_id,
-    mandoline::HTMLMessageEventPtr event) {
+    web_view::HTMLMessageEventPtr event) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }

@@ -65,29 +65,29 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
-using mandoline::HTMLMessageEvent;
-using mandoline::HTMLMessageEventPtr;
 using mojo::AxProvider;
 using mojo::Rect;
 using mojo::ServiceProviderPtr;
 using mojo::URLResponsePtr;
 using mojo::View;
+using web_view::HTMLMessageEvent;
+using web_view::HTMLMessageEventPtr;
 
 namespace html_viewer {
 namespace {
 
-mandoline::NavigationTargetType WebNavigationPolicyToNavigationTarget(
+web_view::NavigationTargetType WebNavigationPolicyToNavigationTarget(
     blink::WebNavigationPolicy policy) {
   switch (policy) {
     case blink::WebNavigationPolicyCurrentTab:
-      return mandoline::NAVIGATION_TARGET_TYPE_EXISTING_FRAME;
+      return web_view::NAVIGATION_TARGET_TYPE_EXISTING_FRAME;
     case blink::WebNavigationPolicyNewBackgroundTab:
     case blink::WebNavigationPolicyNewForegroundTab:
     case blink::WebNavigationPolicyNewWindow:
     case blink::WebNavigationPolicyNewPopup:
-      return mandoline::NAVIGATION_TARGET_TYPE_NEW_FRAME;
+      return web_view::NAVIGATION_TARGET_TYPE_NEW_FRAME;
     default:
-      return mandoline::NAVIGATION_TARGET_TYPE_NO_PREFERENCE;
+      return web_view::NAVIGATION_TARGET_TYPE_NO_PREFERENCE;
   }
 }
 
@@ -275,15 +275,14 @@ HTMLFrame::~HTMLFrame() {
   }
 }
 
-void HTMLFrame::Bind(mandoline::FrameTreeServerPtr frame_tree_server,
-                     mojo::InterfaceRequest<mandoline::FrameTreeClient>
+void HTMLFrame::Bind(web_view::FrameTreeServerPtr frame_tree_server,
+                     mojo::InterfaceRequest<web_view::FrameTreeClient>
                          frame_tree_client_request) {
   DCHECK(IsLocal());
   // TODO(sky): error handling.
   server_ = frame_tree_server.Pass();
-  frame_tree_client_binding_.reset(
-      new mojo::Binding<mandoline::FrameTreeClient>(
-          this, frame_tree_client_request.Pass()));
+  frame_tree_client_binding_.reset(new mojo::Binding<web_view::FrameTreeClient>(
+      this, frame_tree_client_request.Pass()));
 }
 
 void HTMLFrame::SetValueFromClientProperty(const std::string& name,
@@ -312,7 +311,7 @@ mojo::ApplicationImpl* HTMLFrame::GetLocalRootApp() {
   return GetLocalRoot()->delegate_->GetApp();
 }
 
-mandoline::FrameTreeServer* HTMLFrame::GetFrameTreeServer() {
+web_view::FrameTreeServer* HTMLFrame::GetFrameTreeServer() {
   // Prefer the local root.
   HTMLFrame* local_root = GetLocalRoot();
   if (local_root)
@@ -494,11 +493,11 @@ void HTMLFrame::OnViewFocusChanged(mojo::View* gained_focus,
   UpdateFocus();
 }
 
-void HTMLFrame::OnConnect(mandoline::FrameTreeServerPtr server,
+void HTMLFrame::OnConnect(web_view::FrameTreeServerPtr server,
                           uint32_t change_id,
                           uint32_t view_id,
-                          mandoline::ViewConnectType view_connect_type,
-                          mojo::Array<mandoline::FrameDataPtr> frame_data,
+                          web_view::ViewConnectType view_connect_type,
+                          mojo::Array<web_view::FrameDataPtr> frame_data,
                           const OnConnectCallback& callback) {
   // OnConnect() is only sent once, and has been received (by
   // DocumentResourceWaiter) by the time we get here.
@@ -506,7 +505,7 @@ void HTMLFrame::OnConnect(mandoline::FrameTreeServerPtr server,
 }
 
 void HTMLFrame::OnFrameAdded(uint32_t change_id,
-                             mandoline::FrameDataPtr frame_data) {
+                             web_view::FrameDataPtr frame_data) {
   frame_tree_manager_->ProcessOnFrameAdded(this, change_id, frame_data.Pass());
 }
 
@@ -785,8 +784,7 @@ void HTMLFrame::navigate(const blink::WebURLRequest& request,
   NOTIMPLEMENTED();  // for |should_replace_current_entry
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
   GetFrameTreeServer()->RequestNavigate(
-      mandoline::NAVIGATION_TARGET_TYPE_EXISTING_FRAME, id_,
-      url_request.Pass());
+      web_view::NAVIGATION_TARGET_TYPE_EXISTING_FRAME, id_, url_request.Pass());
 }
 
 void HTMLFrame::reload(bool ignore_cache, bool is_client_redirect) {

@@ -24,11 +24,11 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
-using mandoline::Frame;
-using mandoline::FrameConnection;
-using mandoline::FrameTree;
-using mandoline::FrameTreeClient;
-using mandoline::FrameTreeDelegate;
+using web_view::Frame;
+using web_view::FrameConnection;
+using web_view::FrameTree;
+using web_view::FrameTreeClient;
+using web_view::FrameTreeDelegate;
 
 namespace mojo {
 
@@ -78,7 +78,7 @@ scoped_ptr<base::Value> ExecuteScript(ApplicationConnection* connection,
 }
 
 // FrameTreeDelegate that can block waiting for navigation to start.
-class TestFrameTreeDelegateImpl : public mandoline::TestFrameTreeDelegate {
+class TestFrameTreeDelegateImpl : public web_view::TestFrameTreeDelegate {
  public:
   explicit TestFrameTreeDelegateImpl(mojo::ApplicationImpl* app)
       : app_(app),

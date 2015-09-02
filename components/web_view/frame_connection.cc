@@ -22,7 +22,7 @@
 #include "components/font_service/public/interfaces/font_service.mojom.h"
 #endif
 
-namespace mandoline {
+namespace web_view {
 namespace {
 
 // Callback from when the content handler id is obtained.
@@ -125,4 +125,4 @@ uint32_t FrameConnection::GetContentHandlerID() const {
   return content_handler_id;
 }
 
-}  // namespace mandoline
+}  // namespace web_view

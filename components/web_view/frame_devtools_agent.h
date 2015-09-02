@@ -41,7 +41,7 @@ class FrameDevToolsAgent : public devtools_service::DevToolsAgent {
   // |devtools_properties|, which should be passed to the frame to initialize
   // its DevTools agent.
   void AttachFrame(devtools_service::DevToolsAgentPtr forward_agent,
-                   mandoline::Frame::ClientPropertyMap* devtools_properties);
+                   Frame::ClientPropertyMap* devtools_properties);
 
  private:
   class FrameDevToolsAgentClient;

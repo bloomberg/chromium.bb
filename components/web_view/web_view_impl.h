@@ -14,30 +14,22 @@
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
-namespace mandoline {
-class Frame;
-class FrameTree;
-class HTMLMessageEvent;
-}
-
 namespace mojo {
 class ApplicationImpl;
 }
 
-// TODO(beng): remove once these classes are in the web_view namespace.
-using mandoline::Frame;
-using mandoline::FrameTree;
-using mandoline::HTMLMessageEvent;
-
 namespace web_view {
 
+class Frame;
+class FrameTree;
 class FrameDevToolsAgent;
+class HTMLMessageEvent;
 class PendingWebViewLoad;
 
 class WebViewImpl : public mojom::WebView,
                     public mojo::ViewTreeDelegate,
                     public mojo::ViewObserver,
-                    public mandoline::FrameTreeDelegate,
+                    public FrameTreeDelegate,
                     public FrameDevToolsAgentDelegate {
  public:
   WebViewImpl(mojo::ApplicationImpl* app,
@@ -67,7 +59,7 @@ class WebViewImpl : public mojom::WebView,
                            const mojo::Rect& new_bounds) override;
   void OnViewDestroyed(mojo::View* view) override;
 
-  // Overridden from mandoline::FrameTreeDelegate:
+  // Overridden from FrameTreeDelegate:
   bool CanPostMessageEventToFrame(const Frame* source,
                                   const Frame* target,
                                   HTMLMessageEvent* event) override;

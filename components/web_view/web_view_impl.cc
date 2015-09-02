@@ -18,12 +18,6 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "url/gurl.h"
 
-// TODO(beng): remove once these classes are in the web_view namespace.
-using mandoline::FrameConnection;
-using mandoline::FrameTreeClient;
-using mandoline::FrameTreeDelegate;
-using mandoline::FrameUserData;
-
 namespace web_view {
 namespace {
 
@@ -137,7 +131,7 @@ void WebViewImpl::OnViewDestroyed(mojo::View* view) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebViewImpl, mandoline::FrameTreeDelegate implementation:
+// WebViewImpl, FrameTreeDelegate implementation:
 
 bool WebViewImpl::CanPostMessageEventToFrame(const Frame* source,
                                              const Frame* target,
