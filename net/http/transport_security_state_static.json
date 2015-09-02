@@ -3553,7 +3553,8 @@
     { "name": "xn--lgb3a8bcpn.ml", "include_subdomains": true, "mode": "force-https" },
     { "name": "xn--ls8hi7a.tk", "include_subdomains": true, "mode": "force-https" },
     { "name": "yyyy.xyz", "include_subdomains": true, "mode": "force-https" },
-    { "name": "zhaojin97.cn", "include_subdomains": true, "mode": "force-https" }
+    { "name": "zhaojin97.cn", "include_subdomains": true, "mode": "force-https" },
+    { "name": "www.icann.org", "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
