@@ -196,7 +196,6 @@ def _Main(options, args, extra_env):
 
   build_dir = os.path.normpath(os.path.abspath(options.build_dir))
   bin_dir = os.path.join(build_dir, options.target)
-  slave_name = options.slave_name or slave_utils.SlaveBuildName(build_dir)
 
   test_exe = args[0]
   if options.run_python_script:
@@ -257,7 +256,7 @@ def _Main(options, args, extra_env):
             'devtools_perf_test_wrapper' in test_exe))
     if start_xvfb:
       xvfb.StartVirtualX(
-          slave_name, bin_dir,
+          None, bin_dir,
           with_wm=(options.factory_properties.get('window_manager', 'True') ==
                    'True'))
 
@@ -302,7 +301,7 @@ def _Main(options, args, extra_env):
       result = subprocess.call(command, env=env)
   finally:
     if start_xvfb:
-      xvfb.StopVirtualX(slave_name)
+      xvfb.StopVirtualX(None)
     if _UsingGtestJson(options):
       if options.use_symbolization_script:
         _SymbolizeSnippetsInJSON(options, json_file_name)

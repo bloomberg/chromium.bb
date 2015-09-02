@@ -46,45 +46,6 @@ def IsMac():
   return sys.platform.startswith('darwin')
 
 
-def FindUpwardParent(start_dir, *desired_list):
-  """Finds the desired object's parent, searching upward from the start_dir.
-
-  Searches within start_dir and within all its parents looking for the desired
-  directory or file, which may be given in one or more path components. Returns
-  the first directory in which the top desired path component was found, or
-  raises PathNotFound if it wasn't.
-  """
-  desired_path = os.path.join(*desired_list)
-  last_dir = ''
-  cur_dir = start_dir
-  found_path = os.path.join(cur_dir, desired_path)
-  while not os.path.exists(found_path):
-    last_dir = cur_dir
-    cur_dir = os.path.dirname(cur_dir)
-    if last_dir == cur_dir:
-      raise PathNotFound('Unable to find %s above %s' %
-                         (desired_path, start_dir))
-    found_path = os.path.join(cur_dir, desired_path)
-  # Strip the entire original desired path from the end of the one found
-  # and remove a trailing path separator, if present.
-  found_path = found_path[:len(found_path) - len(desired_path)]
-  if found_path.endswith(os.sep):
-    found_path = found_path[:len(found_path) - 1]
-  return found_path
-
-
-def FindUpward(start_dir, *desired_list):
-  """Returns a path to the desired directory or file, searching upward.
-
-  Searches within start_dir and within all its parents looking for the desired
-  directory or file, which may be given in one or more path components. Returns
-  the full path to the desired object, or raises PathNotFound if it wasn't
-  found.
-  """
-  parent = FindUpwardParent(start_dir, *desired_list)
-  return os.path.join(parent, *desired_list)
-
-
 def convert_json(option, _, value, parser):
   """Provide an OptionParser callback to unmarshal a JSON string."""
   setattr(parser.values, option.dest, json.loads(value))
