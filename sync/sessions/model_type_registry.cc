@@ -21,12 +21,12 @@ namespace syncer {
 
 namespace {
 
-class ModelTypeSyncProxyWrapper : public syncer_v2::ModelTypeProcessor {
+class ModelTypeProcessorProxy : public syncer_v2::ModelTypeProcessor {
  public:
-  ModelTypeSyncProxyWrapper(
+  ModelTypeProcessorProxy(
       const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& processor,
       const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
-  ~ModelTypeSyncProxyWrapper() override;
+  ~ModelTypeProcessorProxy() override;
 
   void OnCommitCompleted(
       const syncer_v2::DataTypeState& type_state,
@@ -41,15 +41,15 @@ class ModelTypeSyncProxyWrapper : public syncer_v2::ModelTypeProcessor {
   scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
 };
 
-ModelTypeSyncProxyWrapper::ModelTypeSyncProxyWrapper(
+ModelTypeProcessorProxy::ModelTypeProcessorProxy(
     const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& processor,
     const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner)
     : processor_(processor), processor_task_runner_(processor_task_runner) {}
 
-ModelTypeSyncProxyWrapper::~ModelTypeSyncProxyWrapper() {
+ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {
 }
 
-void ModelTypeSyncProxyWrapper::OnCommitCompleted(
+void ModelTypeProcessorProxy::OnCommitCompleted(
     const syncer_v2::DataTypeState& type_state,
     const syncer_v2::CommitResponseDataList& response_list) {
   processor_task_runner_->PostTask(
@@ -58,7 +58,7 @@ void ModelTypeSyncProxyWrapper::OnCommitCompleted(
                  processor_, type_state, response_list));
 }
 
-void ModelTypeSyncProxyWrapper::OnUpdateReceived(
+void ModelTypeProcessorProxy::OnUpdateReceived(
     const syncer_v2::DataTypeState& type_state,
     const syncer_v2::UpdateResponseDataList& response_list,
     const syncer_v2::UpdateResponseDataList& pending_updates) {
@@ -191,7 +191,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
 
   // Initialize Worker -> Processor communication channel.
   scoped_ptr<syncer_v2::ModelTypeProcessor> processor(
-      new ModelTypeSyncProxyWrapper(processor_impl, type_task_runner));
+      new ModelTypeProcessorProxy(processor_impl, type_task_runner));
   scoped_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
