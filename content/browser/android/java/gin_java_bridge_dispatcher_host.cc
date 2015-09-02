@@ -44,12 +44,12 @@ GinJavaBridgeDispatcherHost::~GinJavaBridgeDispatcherHost() {
 // postponed until the first named object is created.
 void GinJavaBridgeDispatcherHost::InstallFilterAndRegisterAllRoutingIds() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!named_objects_.empty());
-  if (!web_contents()->GetRenderProcessHost()->GetChannel()) return;
+  if (named_objects_.empty() ||
+      !web_contents()->GetRenderProcessHost()->GetChannel()) {
+    return;
+  }
 
-  DCHECK(!GinJavaBridgeMessageFilter::FromHost(this, false));
-  scoped_refptr<GinJavaBridgeMessageFilter> filter =
-      GinJavaBridgeMessageFilter::FromHost(this, true);
+  auto filter = GinJavaBridgeMessageFilter::FromHost(this, true);
   // ForEachFrame is synchronous.
   web_contents()->ForEachFrame(
       base::Bind(&GinJavaBridgeMessageFilter::AddRoutingIdForHost, filter,
@@ -59,11 +59,9 @@ void GinJavaBridgeDispatcherHost::InstallFilterAndRegisterAllRoutingIds() {
 void GinJavaBridgeDispatcherHost::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_refptr<GinJavaBridgeMessageFilter> filter =
-      GinJavaBridgeMessageFilter::FromHost(this, false);
-  if (filter) {
+  if (auto filter = GinJavaBridgeMessageFilter::FromHost(this, false)) {
     filter->AddRoutingIdForHost(this, render_frame_host);
-  } else if (!named_objects_.empty()) {
+  } else {
     InstallFilterAndRegisterAllRoutingIds();
   }
   for (NamedObjectMap::const_iterator iter = named_objects_.begin();
@@ -200,10 +198,10 @@ void GinJavaBridgeDispatcherHost::AddNamedObject(
   }
   named_objects_[name] = object_id;
 
-  scoped_refptr<GinJavaBridgeMessageFilter> filter =
-      GinJavaBridgeMessageFilter::FromHost(this, false);
-  if (!filter)
-    InstallFilterAndRegisterAllRoutingIds();
+  // As GinJavaBridgeDispatcherHost can be created later than WebContents has
+  // notified the observers about new RenderFrame, it is necessary to ensure
+  // here that all render frame IDs are registered with the filter.
+  InstallFilterAndRegisterAllRoutingIds();
   web_contents()->SendToAllFrames(
       new GinJavaBridgeMsg_AddNamedObject(MSG_ROUTING_NONE, name, object_id));
 }

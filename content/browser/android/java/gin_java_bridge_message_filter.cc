@@ -112,8 +112,11 @@ void GinJavaBridgeMessageFilter::OnGetMethods(
     std::set<std::string>* returned_method_names) {
   DCHECK(JavaBridgeThread::CurrentlyOn());
   GinJavaBridgeDispatcherHost* host = FindHost();
-  if (host)
+  if (host) {
     host->OnGetMethods(object_id, returned_method_names);
+  } else {
+    *returned_method_names = std::set<std::string>();
+  }
 }
 
 void GinJavaBridgeMessageFilter::OnHasMethod(
@@ -122,8 +125,11 @@ void GinJavaBridgeMessageFilter::OnHasMethod(
     bool* result) {
   DCHECK(JavaBridgeThread::CurrentlyOn());
   GinJavaBridgeDispatcherHost* host = FindHost();
-  if (host)
+  if (host) {
     host->OnHasMethod(object_id, method_name, result);
+  } else {
+    *result = false;
+  }
 }
 
 void GinJavaBridgeMessageFilter::OnInvokeMethod(
@@ -137,6 +143,9 @@ void GinJavaBridgeMessageFilter::OnInvokeMethod(
   if (host) {
     host->OnInvokeMethod(current_routing_id_, object_id, method_name, arguments,
                          wrapped_result, error_code);
+  } else {
+    wrapped_result->Append(base::Value::CreateNullValue());
+    *error_code = kGinJavaBridgeRenderFrameDeleted;
   }
 }
 
