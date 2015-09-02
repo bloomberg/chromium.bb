@@ -17,8 +17,6 @@ namespace media_router {
 class IssueAction {
  public:
   enum Type {
-    TYPE_OK,
-    TYPE_CANCEL,
     TYPE_DISMISS,
     TYPE_LEARN_MORE,
     TYPE_MAX /* Denotes enum value boundary. */

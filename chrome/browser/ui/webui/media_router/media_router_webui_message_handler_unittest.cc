@@ -200,7 +200,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateIssue) {
   std::string issue_title("An issue");
   std::string issue_message("This is an issue");
-  IssueAction default_action(IssueAction::TYPE_OK);
+  IssueAction default_action(IssueAction::TYPE_LEARN_MORE);
   std::vector<IssueAction> secondary_actions;
   secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
   MediaRoute::Id route_id("routeId123");

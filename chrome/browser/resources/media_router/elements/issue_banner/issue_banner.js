@@ -27,8 +27,7 @@ Polymer({
     issueActionTypeToButtonTextResource_: {
       type: Array,
       value: function() {
-        return ['okButton', 'cancelButton', 'dismissButton',
-            'learnMoreButton'];
+        return ['dismissButton', 'learnMoreButton'];
       },
     },
 

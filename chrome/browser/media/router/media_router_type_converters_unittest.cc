@@ -100,21 +100,20 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssue) {
   mojoIssue->title = "title";
   mojoIssue->message = "msg";
   mojoIssue->route_id = "routeId";
-  mojoIssue->default_action = interfaces::Issue::ActionType::ACTION_TYPE_OK;
+  mojoIssue->default_action =
+      interfaces::Issue::ActionType::ACTION_TYPE_LEARN_MORE;
   mojoIssue->secondary_actions =
-      mojo::Array<interfaces::Issue::ActionType>::New(2);
+      mojo::Array<interfaces::Issue::ActionType>::New(1);
   mojoIssue->secondary_actions[0] =
-      interfaces::Issue::ActionType::ACTION_TYPE_CANCEL;
-  mojoIssue->secondary_actions[1] =
       interfaces::Issue::ActionType::ACTION_TYPE_DISMISS;
   mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;
   mojoIssue->is_blocking = true;
   mojoIssue->help_url = "help_url";
 
   std::vector<IssueAction> secondary_actions;
-  secondary_actions.push_back(IssueAction(IssueAction::TYPE_CANCEL));
   secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
-  Issue expected_issue("title", "msg", IssueAction(IssueAction::TYPE_OK),
+  Issue expected_issue("title", "msg",
+                       IssueAction(IssueAction::TYPE_LEARN_MORE),
                        secondary_actions, "routeId", Issue::WARNING, true,
                        "help_url");
   Issue converted_issue = mojo::TypeConverter<
@@ -145,11 +144,12 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssueWithoutOptionalFields) {
   interfaces::IssuePtr mojoIssue;
   mojoIssue = interfaces::Issue::New();
   mojoIssue->title = "title";
-  mojoIssue->default_action = interfaces::Issue::ActionType::ACTION_TYPE_OK;
+  mojoIssue->default_action =
+      interfaces::Issue::ActionType::ACTION_TYPE_DISMISS;
   mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;
   mojoIssue->is_blocking = true;
 
-  Issue expected_issue("title", "", IssueAction(IssueAction::TYPE_OK),
+  Issue expected_issue("title", "", IssueAction(IssueAction::TYPE_DISMISS),
                        std::vector<IssueAction>(), "", Issue::WARNING, true,
                        "");
 

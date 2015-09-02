@@ -29,18 +29,14 @@ cr.define('media_router', function() {
 
   /**
    * @param {media_router.CastModeType} type The type of cast mode.
-   * @param {string} title The title of the cast mode.
    * @param {string} description The description of the cast mode.
    * @param {string} host The hostname of the site to cast.
    * @constructor
    * @struct
    */
-  var CastMode = function(type, title, description, host) {
+  var CastMode = function(type, description, host) {
     /** @type {number} */
     this.type = type;
-
-    /** @type {string} */
-    this.title = title;
 
     /** @type {string} */
     this.description = description;

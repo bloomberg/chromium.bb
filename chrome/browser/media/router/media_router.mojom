@@ -55,8 +55,6 @@ struct Issue {
   };
 
   enum ActionType {
-    OK,
-    CANCEL,
     DISMISS,
     LEARN_MORE
   };

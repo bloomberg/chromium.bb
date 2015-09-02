@@ -101,11 +101,9 @@ scoped_ptr<base::ListValue> CastModesToValue(const CastModeSet& cast_modes,
   for (const MediaCastMode& cast_mode : cast_modes) {
     scoped_ptr<base::DictionaryValue> cast_mode_val(new base::DictionaryValue);
     cast_mode_val->SetInteger("type", cast_mode);
-    cast_mode_val->SetString("title",
-                             MediaCastModeToTitle(cast_mode, source_host));
-    cast_mode_val->SetString("host", source_host);
     cast_mode_val->SetString(
         "description", MediaCastModeToDescription(cast_mode, source_host));
+    cast_mode_val->SetString("host", source_host);
     value->Append(cast_mode_val.release());
   }
 

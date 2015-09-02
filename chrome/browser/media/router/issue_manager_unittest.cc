@@ -14,7 +14,7 @@ namespace {
 const char kTestRouteId[] = "routeId";
 
 Issue CreateTestIssue(const std::string& route_id) {
-  return Issue("title", "message", IssueAction(IssueAction::TYPE_OK),
+  return Issue("title", "message", IssueAction(IssueAction::TYPE_DISMISS),
                std::vector<IssueAction>(), route_id, Issue::WARNING, false,
                "http://www.example.com/help");
 }

@@ -70,7 +70,8 @@ interfaces::IssuePtr CreateMojoIssue(const std::string& title) {
   mojoIssue->title = title;
   mojoIssue->message = "msg";
   mojoIssue->route_id = "";
-  mojoIssue->default_action = interfaces::Issue::ActionType::ACTION_TYPE_OK;
+  mojoIssue->default_action =
+      interfaces::Issue::ActionType::ACTION_TYPE_DISMISS;
   mojoIssue->secondary_actions =
       mojo::Array<interfaces::Issue::ActionType>::New(0);
   mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;

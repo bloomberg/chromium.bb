@@ -17,7 +17,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
       : fake_issue_notification_(media_router::Issue(
             "title notification",
             "message notification",
-            media_router::IssueAction(media_router::IssueAction::TYPE_OK),
+            media_router::IssueAction(media_router::IssueAction::TYPE_DISMISS),
             std::vector<media_router::IssueAction>(),
             "route_id",
             media_router::Issue::NOTIFICATION,
@@ -35,7 +35,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
         fake_issue_fatal_(media_router::Issue(
             "title fatal",
             "message fatal",
-            media_router::IssueAction(media_router::IssueAction::TYPE_OK),
+            media_router::IssueAction(media_router::IssueAction::TYPE_DISMISS),
             std::vector<media_router::IssueAction>(),
             "route_id",
             media_router::Issue::FATAL,

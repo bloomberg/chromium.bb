@@ -29,13 +29,10 @@ void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddIssuesActionsStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("cancelButton",
-                                  IDS_MEDIA_ROUTER_CANCEL_BUTTON);
   html_source->AddLocalizedString("dismissButton",
                                   IDS_MEDIA_ROUTER_DISMISS_BUTTON);
   html_source->AddLocalizedString("learnMoreButton",
                                   IDS_MEDIA_ROUTER_LEARN_MORE_BUTTON);
-  html_source->AddLocalizedString("okButton", IDS_MEDIA_ROUTER_OK_BUTTON);
 }
 
 void AddSinkListStrings(content::WebUIDataSource* html_source) {

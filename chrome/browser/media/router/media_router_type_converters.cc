@@ -82,10 +82,6 @@ media_router::Issue::Severity IssueSeverityFromMojo(
 media_router::IssueAction::Type IssueActionTypeFromMojo(
     media_router::interfaces::Issue::ActionType action_type) {
   switch (action_type) {
-    case media_router::interfaces::Issue::ActionType::ACTION_TYPE_OK:
-      return media_router::IssueAction::TYPE_OK;
-    case media_router::interfaces::Issue::ActionType::ACTION_TYPE_CANCEL:
-      return media_router::IssueAction::TYPE_CANCEL;
     case media_router::interfaces::Issue::ActionType::ACTION_TYPE_DISMISS:
       return media_router::IssueAction::TYPE_DISMISS;
     case media_router::interfaces::Issue::ActionType::ACTION_TYPE_LEARN_MORE:

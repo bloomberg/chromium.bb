@@ -2,79 +2,64 @@
 <!-- Media Router-specific strings (included from generated_resources.grd). -->
 <grit-part>
   <!-- General -->
-  <message name="IDS_MEDIA_ROUTER_TITLE" desc="Title for media router">
+  <message name="IDS_MEDIA_ROUTER_TITLE" desc="Title of a dialog offering possible actions for Media Router, which enables users to mirror individual tabs or desktop as well as cast content to a device.">
     Media Router
   </message>
-  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_TEXT" desc="Text for Media Router Action tooltip, which appears on mouseover of the action icon in the toolbar.">
+  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_TEXT" desc="Tooltip for the Media Router Action icon, which appears in the toolbar. The tooltip appears on mouseover of the icon.">
    Share your screen
   </message>
 
   <!-- Cast Modes -->
-  <message name="IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE" desc="Message for default cast mode.">
+  <message name="IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE" desc="Title for the default cast mode, which is used when the host is cast enabled. This is shown as a dropdown option, and if selected, also appears as the header of a list of devices.">
     Cast <ph name="HOST_NAME">$1<ex>google.com</ex></ph>
   </message>
-  <message name="IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE_TITLE" desc="Title for default cast mode.">
-    Cast <ph name="HOST_NAME">$1<ex>google.com</ex></ph> to...
-  </message>
-  <message name="IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE" desc="Message for desktop mirror cast mode.">
+  <message name="IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE" desc="Title for the desktop mirror cast mode. This is shown as a dropdown option, and if selected, also appears as the header of a list of devices.">
     Cast desktop
   </message>
-  <message name="IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE_TITLE" desc="Title for desktop mirror cast mode.">
-    Cast desktop to...
-  </message>
-  <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE" desc="Message for tab mirror cast mode.">
+  <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE" desc="Title for the tab mirror cast mode. This is shown as a dropdown option, and if selected, also appears as the header of a list of devices.">
     Cast tab
-  </message>
-  <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE_TITLE" desc="Title for tab mirror cast mode.">
-    Cast tab to...
   </message>
 
   <!-- Cast Mode Picker -->
-  <message name="IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER" desc="Header for select cast mode view.">
+  <message name="IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER" desc="Header for the select cast mode view, which shows a list of cast modes that the user can select.">
    Select source
   </message>
-  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING" desc="Text for share your screen subheading, which appears above a list of non-default cast modes.">
+  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING" desc="Subheading for non-default cast modes, which allow screen sharing. The subheading appears above a list of non-default cast modes.">
    Share your screen
   </message>
 
   <!-- Contextual Menu -->
-  <message name="IDS_MEDIA_ROUTER_ABOUT" desc="Title of menu item which, on selection, opens a page with product information about Chromecast.">
+  <message name="IDS_MEDIA_ROUTER_ABOUT" desc="Title of a menu item which, on click, opens a page with product information about Chromecast.">
    About
   </message>
-  <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of help item which, on selection, opens a page to the Chromecast help center.">
+  <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of a menu item which, on click, opens a page to the Chromecast help center.">
    Help
   </message>
-  <message name="IDS_MEDIA_ROUTER_LEARN_MORE" desc="Title of learn more item which, on selection, opens a page with instructions on how to cast to a Chromecast.">
+  <message name="IDS_MEDIA_ROUTER_LEARN_MORE" desc="Title of a menu item which, on click, opens a page with instructions on how to cast to a Chromecast.">
    Learn more
   </message>
-  <message name="IDS_MEDIA_ROUTER_REPORT_ISSUE" desc="Title of report issue item which, on selection, opens a page to give feedback or report an issue with Chromecast integration.">
+  <message name="IDS_MEDIA_ROUTER_REPORT_ISSUE" desc="Title of a menu item which, on click, opens a page to give feedback or report an issue with Chromecast integration.">
    Report an issue
   </message>
 
   <!-- Issue Actions -->
-  <message name="IDS_MEDIA_ROUTER_CANCEL_BUTTON" desc="Text of Cancel button.">
-    Cancel
-  </message>
-  <message name="IDS_MEDIA_ROUTER_DISMISS_BUTTON" desc="Text of Dismiss button.">
+  <message name="IDS_MEDIA_ROUTER_DISMISS_BUTTON" desc="Dismiss button, which, on click, will dismiss the current issue.">
     Dismiss
   </message>
-  <message name="IDS_MEDIA_ROUTER_LEARN_MORE_BUTTON" desc="Text of Learn More button.">
+  <message name="IDS_MEDIA_ROUTER_LEARN_MORE_BUTTON" desc="Learn more button, which, on click, will open a page with more details about the current issue.">
     Learn More
-  </message>
-  <message name="IDS_MEDIA_ROUTER_OK_BUTTON" desc="Text of Ok button.">
-    Ok
   </message>
 
   <!-- Route Details -->
-  <message name="IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS" desc="Label of activity status.">
+  <message name="IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS" desc="Label of activity status, which describes the media that is currently being casted.">
     Casting: <ph name="routeTitle">$1<ex>Video</ex></ph>
   </message>
-  <message name="IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON" desc="Text of Stop casting button.">
+  <message name="IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON" desc="Stop casting button, which, on click, will stop the current route.">
     Stop casting
   </message>
 
   <!-- Sink List -->
-  <message name="IDS_MEDIA_ROUTER_DEVICE_MISSING" desc="Text to display when no devices are found.">
+  <message name="IDS_MEDIA_ROUTER_DEVICE_MISSING" desc="Link to display when no devices are found which, on click, opens a page to the Chromecast help center explaining possible reasons why no devices are detected.">
     Device missing?
   </message>
 </grit-part>

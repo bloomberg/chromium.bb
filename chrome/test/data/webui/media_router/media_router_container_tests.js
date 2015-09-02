@@ -119,16 +119,15 @@ cr.define('media_router_container', function() {
 
         // Initialize local variables.
         fakeCastModeList = [
-          new media_router.CastMode(0, 'Cast Mode 0', 'Description 0',
-              'google.com'),
-          new media_router.CastMode(1, 'Cast Mode 1', 'Description 1', null),
-          new media_router.CastMode(2, 'Cast Mode 2', 'Description 2', null),
+          new media_router.CastMode(0, 'Description 0', 'google.com'),
+          new media_router.CastMode(1, 'Description 1', null),
+          new media_router.CastMode(2, 'Description 2', null),
         ];
 
         fakeCastModeListWithNonDefaultModesOnly = [
-          new media_router.CastMode(1, 'Cast Mode 1', 'Description 1', null),
-          new media_router.CastMode(2, 'Cast Mode 2', 'Description 2', null),
-          new media_router.CastMode(3, 'Cast Mode 3', 'Description 3', null),
+          new media_router.CastMode(1, 'Description 1', null),
+          new media_router.CastMode(2, 'Description 2', null),
+          new media_router.CastMode(3, 'Description 3', null),
         ];
 
         fakeRouteList = [

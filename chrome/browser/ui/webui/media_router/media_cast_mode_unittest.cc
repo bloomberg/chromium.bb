@@ -38,11 +38,9 @@ TEST(MediaCastModeTest, PreferredCastMode) {
             GetPreferredCastMode(cast_modes));
 }
 
-TEST(MediaCastModeTest, MediaCastModeToTitleAndDescription) {
+TEST(MediaCastModeTest, MediaCastModeToDescription) {
   for (int cast_mode = MediaCastMode::DEFAULT;
        cast_mode < MediaCastMode::NUM_CAST_MODES; cast_mode++) {
-    EXPECT_TRUE(!MediaCastModeToTitle(
-        static_cast<MediaCastMode>(cast_mode), "youtube.com").empty());
     EXPECT_TRUE(!MediaCastModeToDescription(
         static_cast<MediaCastMode>(cast_mode), "youtube.com").empty());
   }
@@ -59,34 +57,38 @@ TEST(MediaCastModeTest, IsValidCastModeNum) {
 
 TEST(MediaCastModeTest, ProperlyTruncatesHostnames) {
   EXPECT_THAT(
-      MediaCastModeToTitle(MediaCastMode::DEFAULT, "www.kurtisawesome.com"),
+      MediaCastModeToDescription(MediaCastMode::DEFAULT,
+                                 "www.kurtisawesome.com"),
       Not(HasSubstr("www")));
   EXPECT_THAT(
-      MediaCastModeToTitle(MediaCastMode::DEFAULT, "www.kurtisawesome.com"),
+      MediaCastModeToDescription(MediaCastMode::DEFAULT,
+                                 "www.kurtisawesome.com"),
       HasSubstr("kurtisawesome.com"));
 
   EXPECT_THAT(
-      MediaCastModeToTitle(MediaCastMode::DEFAULT, "www.kurtisawesome.co.uk"),
+      MediaCastModeToDescription(MediaCastMode::DEFAULT,
+                                 "www.kurtisawesome.co.uk"),
       Not(HasSubstr("www")));
   EXPECT_THAT(
-      MediaCastModeToTitle(MediaCastMode::DEFAULT, "www.kurtisawesome.co.uk"),
+      MediaCastModeToDescription(MediaCastMode::DEFAULT,
+                                 "www.kurtisawesome.co.uk"),
       HasSubstr("kurtisawesome.co.uk"));
 
   EXPECT_THAT(
-      MediaCastModeToTitle(MediaCastMode::DEFAULT,
-          "www.my.kurtisawesome.qld.edu.au"),
+      MediaCastModeToDescription(MediaCastMode::DEFAULT,
+                                 "www.my.kurtisawesome.qld.edu.au"),
       Not(HasSubstr("www")));
   EXPECT_THAT(
-      MediaCastModeToTitle(MediaCastMode::DEFAULT,
-          "www.my.kurtisawesome.qld.edu.au"),
+      MediaCastModeToDescription(MediaCastMode::DEFAULT,
+                                 "www.my.kurtisawesome.qld.edu.au"),
       Not(HasSubstr("www")));
   EXPECT_THAT(
-      MediaCastModeToTitle(MediaCastMode::DEFAULT,
-          "www.my.kurtisawesome.qld.edu.au"),
+      MediaCastModeToDescription(MediaCastMode::DEFAULT,
+                                 "www.my.kurtisawesome.qld.edu.au"),
       HasSubstr("kurtisawesome.qld.edu.au"));
 
   EXPECT_THAT(
-      MediaCastModeToTitle(MediaCastMode::DEFAULT, "192.168.0.1"),
+      MediaCastModeToDescription(MediaCastMode::DEFAULT, "192.168.0.1"),
       HasSubstr("192.168.0.1"));
 }
 
