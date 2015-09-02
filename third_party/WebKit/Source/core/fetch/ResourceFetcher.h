@@ -173,6 +173,8 @@ private:
 
     void willTerminateResourceLoader(ResourceLoader*);
 
+    ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority, Resource::Type, const FetchRequest&);
+
     Member<FetchContext> m_context;
 
     HashSet<String> m_validatedURLs;
@@ -219,7 +221,6 @@ private:
     bool m_autoLoadImages : 1;
     bool m_imagesEnabled : 1;
     bool m_allowStaleResources : 1;
-    bool m_imageFetched : 1;
 };
 
 class ResourceCacheValidationSuppressor {

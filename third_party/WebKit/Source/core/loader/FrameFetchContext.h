@@ -101,12 +101,9 @@ public:
     void upgradeInsecureRequest(FetchRequest&) override;
     void addClientHintsIfNecessary(FetchRequest&) override;
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
-    bool isLowPriorityIframe() const override;
 
-    bool fetchDeferLateScripts() const override;
-    bool fetchIncreaseFontPriority() const override;
-    bool fetchIncreaseAsyncScriptPriority() const override;
     bool fetchIncreasePriorities() const override;
+    ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority, Resource::Type, const FetchRequest&) override;
 
     void countClientHintsDPR() override;
     void countClientHintsResourceWidth() override;
@@ -126,6 +123,8 @@ private:
     // See crbug.com/383860 for details.
     RawPtrWillBeWeakMember<Document> m_document;
     RawPtrWillBeMember<DocumentLoader> m_documentLoader;
+
+    bool m_imageFetched : 1;
 };
 
 }

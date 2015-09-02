@@ -65,11 +65,14 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
+#include <algorithm>
+
 namespace blink {
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader)
     : m_document(nullptr)
     , m_documentLoader(loader)
+    , m_imageFetched(false)
 {
 }
 
@@ -658,31 +661,60 @@ void FrameFetchContext::countClientHintsViewportWidth()
     UseCounter::count(frame(), UseCounter::ClientHintsViewportWidth);
 }
 
-bool FrameFetchContext::isLowPriorityIframe() const
-{
-    return !frame()->isMainFrame() && frame()->settings() && frame()->settings()->lowPriorityIframes();
-}
-
-bool FrameFetchContext::fetchDeferLateScripts() const
-{
-    return frame()->settings() && frame()->settings()->fetchDeferLateScripts();
-}
-
-bool FrameFetchContext::fetchIncreaseFontPriority() const
-{
-    return frame()->settings() && frame()->settings()->fetchIncreaseFontPriority();
-}
-
-bool FrameFetchContext::fetchIncreaseAsyncScriptPriority() const
-{
-    return frame()->settings() && frame()->settings()->fetchIncreaseAsyncScriptPriority();
-}
-
 bool FrameFetchContext::fetchIncreasePriorities() const
 {
     return frame()->settings() && frame()->settings()->fetchIncreasePriorities();
 }
 
+ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type type, const FetchRequest& request)
+{
+    // An image fetch is used to distinguish between "early" and "late" scripts in a document
+    if (type == Resource::Image)
+        m_imageFetched = true;
+
+    // If Settings is null, we can't verify any experiments are in force.
+    if (!frame()->settings())
+        return priority;
+
+    if (!frame()->isMainFrame() && frame()->settings()->lowPriorityIframes() && type == Resource::MainResource)
+        return ResourceLoadPriorityVeryLow;
+
+    // Async/Defer scripts.
+    if (type == Resource::Script && FetchRequest::LazyLoad == request.defer())
+        return frame()->settings()->fetchIncreaseAsyncScriptPriority() ? ResourceLoadPriorityMedium : ResourceLoadPriorityLow;
+
+    // Runtime experiment that change how we prioritize resources.
+    // The toggles do not depend on each other and can be flipped individually
+    // though the cumulative result will depend on the interaction between them.
+    // Background doc: https://docs.google.com/document/d/1bCDuq9H1ih9iNjgzyAL0gpwNFiEP4TZS-YLRp_RuMlc/edit?usp=sharing
+
+    // Increases the priorities for CSS, Scripts, Fonts and Images all by one level
+    // and parser-blocking scripts and visible images by 2.
+    // This is used in conjunction with logic on the Chrome side to raise the threshold
+    // of "layout-blocking" resources and provide a boost to resources that are needed
+    // as soon as possible for something currently on the screen.
+    int modifiedPriority = static_cast<int>(priority);
+    if (fetchIncreasePriorities()) {
+        if (type == Resource::CSSStyleSheet || type == Resource::Script || type == Resource::Font || type == Resource::Image)
+            modifiedPriority++;
+    }
+
+    if (frame()->settings()->fetchIncreaseFontPriority() && type == Resource::Font)
+        modifiedPriority++;
+
+    if (type == Resource::Script) {
+        // Reduce the priority of late-body scripts.
+        if (frame()->settings()->fetchDeferLateScripts() && request.forPreload() && m_imageFetched)
+            modifiedPriority--;
+        // Parser-blocking scripts.
+        if (fetchIncreasePriorities() && !request.forPreload())
+            modifiedPriority++;
+    }
+
+    // Clamp priority
+    modifiedPriority = std::min(static_cast<int>(ResourceLoadPriorityHighest), std::max(static_cast<int>(ResourceLoadPriorityLowest), modifiedPriority));
+    return static_cast<ResourceLoadPriority>(modifiedPriority);
+}
 
 DEFINE_TRACE(FrameFetchContext)
 {
