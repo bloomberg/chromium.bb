@@ -193,8 +193,8 @@ namespace google_apis {
 scoped_ptr<base::Value> ParseJson(const std::string& json) {
   int error_code = -1;
   std::string error_message;
-  scoped_ptr<base::Value> value(base::JSONReader::DeprecatedReadAndReturnError(
-      json, base::JSON_PARSE_RFC, &error_code, &error_message));
+  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+      json, base::JSON_PARSE_RFC, &error_code, &error_message);
 
   if (!value.get()) {
     std::string trimmed_json;

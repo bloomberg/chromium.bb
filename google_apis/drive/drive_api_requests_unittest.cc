@@ -1945,9 +1945,9 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
-  scoped_ptr<base::Value> expected(base::JSONReader::DeprecatedRead(
+  scoped_ptr<base::Value> expected = base::JSONReader::Read(
       "{\"additionalRoles\":[\"commenter\"], \"role\":\"reader\", "
-      "\"type\":\"user\",\"value\":\"user@example.com\"}"));
+      "\"type\":\"user\",\"value\":\"user@example.com\"}");
   ASSERT_TRUE(expected);
 
   scoped_ptr<base::Value> result =
@@ -1980,11 +1980,11 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
-  expected.reset(base::JSONReader::DeprecatedRead(
-      "{\"role\":\"writer\", \"type\":\"domain\",\"value\":\"example.com\"}"));
+  expected = base::JSONReader::Read(
+      "{\"role\":\"writer\", \"type\":\"domain\",\"value\":\"example.com\"}");
   ASSERT_TRUE(expected);
 
-  result.reset(base::JSONReader::DeprecatedRead(http_request_.content));
+  result = base::JSONReader::Read(http_request_.content);
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_TRUE(base::Value::Equals(expected.get(), result.get()));
 }
