@@ -101,8 +101,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=282
-    'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=373
     'RenderedWebElementTest.testHoverPersists',
     'RenderedWebElementTest.canClickOnASuckerFishStyleMenu',
