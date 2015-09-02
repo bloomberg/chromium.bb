@@ -36,6 +36,10 @@ struct EnableFlags {
   bool cached_rasterizer_discard;
   bool primitive_restart_fixed_index;
   bool cached_primitive_restart_fixed_index;
+  bool multisample_ext;
+  bool cached_multisample_ext;
+  bool sample_alpha_to_one_ext;
+  bool cached_sample_alpha_to_one_ext;
 };
 
 GLfloat blend_color_red;
@@ -168,6 +172,17 @@ inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
           !ignore_cached_state)
         return;
       enable_flags.cached_primitive_restart_fixed_index = enable;
+      break;
+    case GL_MULTISAMPLE_EXT:
+      if (enable_flags.cached_multisample_ext == enable && !ignore_cached_state)
+        return;
+      enable_flags.cached_multisample_ext = enable;
+      break;
+    case GL_SAMPLE_ALPHA_TO_ONE_EXT:
+      if (enable_flags.cached_sample_alpha_to_one_ext == enable &&
+          !ignore_cached_state)
+        return;
+      enable_flags.cached_sample_alpha_to_one_ext = enable;
       break;
     default:
       NOTREACHED();

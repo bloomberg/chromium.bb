@@ -22,6 +22,12 @@ void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(bool es3_capable) {
   ExpectEnableDisable(GL_SAMPLE_COVERAGE, false);
   ExpectEnableDisable(GL_SCISSOR_TEST, false);
   ExpectEnableDisable(GL_STENCIL_TEST, false);
+  if (group_->feature_info()->feature_flags().ext_multisample_compatibility) {
+    ExpectEnableDisable(GL_MULTISAMPLE_EXT, true);
+  }
+  if (group_->feature_info()->feature_flags().ext_multisample_compatibility) {
+    ExpectEnableDisable(GL_SAMPLE_ALPHA_TO_ONE_EXT, false);
+  }
   if (es3_capable) {
     ExpectEnableDisable(GL_RASTERIZER_DISCARD, false);
     ExpectEnableDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX, false);
