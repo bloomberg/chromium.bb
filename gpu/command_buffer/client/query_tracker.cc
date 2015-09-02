@@ -168,7 +168,7 @@ void QueryTracker::Query::End(GLES2Implementation* gl) {
 void QueryTracker::Query::QueryCounter(GLES2Implementation* gl) {
   MarkAsActive();
   flush_count_ = gl->helper()->flush_generation();
-  gl->helper()->QueryCounterEXT(target(), id(), shm_id(), shm_offset(),
+  gl->helper()->QueryCounterEXT(id(), target(), shm_id(), shm_offset(),
                                 submit_count());
   MarkAsPending(gl->helper()->InsertToken());
 }

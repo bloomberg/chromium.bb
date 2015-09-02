@@ -3356,7 +3356,7 @@ TEST_F(GLES2ImplementationTest, QueryCounterEXT) {
   QueryTracker::Query* query = GetQuery(id1);
   ASSERT_TRUE(query != NULL);
   expected_query_counter_cmds.query_counter.Init(
-      GL_TIMESTAMP_EXT, id1, query->shm_id(), query->shm_offset(),
+      id1, GL_TIMESTAMP_EXT, query->shm_id(), query->shm_offset(),
       query->submit_count());
   EXPECT_EQ(0, memcmp(&expected_query_counter_cmds, commands,
                       sizeof(expected_query_counter_cmds)));
@@ -3369,7 +3369,7 @@ TEST_F(GLES2ImplementationTest, QueryCounterEXT) {
   QueryTracker::Query* query2 = GetQuery(id2);
   ASSERT_TRUE(query2 != NULL);
   expected_query_counter_cmds.query_counter.Init(
-      GL_TIMESTAMP_EXT, id2, query2->shm_id(), query2->shm_offset(),
+      id2, GL_TIMESTAMP_EXT, query2->shm_id(), query2->shm_offset(),
       query2->submit_count());
   EXPECT_EQ(0, memcmp(&expected_query_counter_cmds, commands,
                       sizeof(expected_query_counter_cmds)));
@@ -3382,7 +3382,7 @@ TEST_F(GLES2ImplementationTest, QueryCounterEXT) {
   EXPECT_EQ(GL_NO_ERROR, CheckError());
   EXPECT_NE(old_submit_count, query->submit_count());
   expected_query_counter_cmds.query_counter.Init(
-      GL_TIMESTAMP_EXT, id1, query->shm_id(), query->shm_offset(),
+      id1, GL_TIMESTAMP_EXT, query->shm_id(), query->shm_offset(),
       query->submit_count());
   EXPECT_EQ(0, memcmp(&expected_query_counter_cmds, commands,
                       sizeof(expected_query_counter_cmds)));
