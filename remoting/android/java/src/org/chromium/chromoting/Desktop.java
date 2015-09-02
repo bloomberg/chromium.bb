@@ -11,7 +11,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -28,7 +28,7 @@ import java.util.TreeSet;
 /**
  * A simple screen that does nothing except display a DesktopView and notify it of rotations.
  */
-public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibilityChangeListener {
+public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener {
     /** Web page to be displayed in the Help screen when launched from this activity. */
     private static final String HELP_URL =
             "https://support.google.com/chrome/?p=mobile_crd_connecthost";

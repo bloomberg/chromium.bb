@@ -429,4 +429,16 @@ public class ApiCompatibilityUtils {
         }
         return drawable;
     }
+
+    /**
+     * @see android.content.res.Resources#getColor(int id).
+     */
+    @SuppressWarnings("deprecation")
+    public static int getColor(Resources res, int id) throws NotFoundException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return res.getColor(id, null);
+        } else {
+            return res.getColor(id);
+        }
+    }
 }

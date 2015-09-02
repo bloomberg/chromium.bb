@@ -11,7 +11,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -216,7 +215,7 @@ public class ThirdPartyTokenFetcher {
      * together with its intent filter, by default. |OAuthRedirectActivity| is only enabled when
      * there is a pending token fetch request.
      */
-    public static class OAuthRedirectActivity extends ActionBarActivity {
+    public static class OAuthRedirectActivity extends Activity {
         @Override
         public void onStart() {
             super.onStart();

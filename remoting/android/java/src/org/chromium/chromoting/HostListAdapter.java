@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
+
 /** Describes the appearance and behavior of each host list entry. */
 class HostListAdapter extends ArrayAdapter<HostInfo> {
     public HostListAdapter(Context context, int textViewResourceId, HostInfo[] hosts) {
@@ -28,7 +30,8 @@ class HostListAdapter extends ArrayAdapter<HostInfo> {
                 host.isOnline ? R.drawable.ic_host_online : R.drawable.ic_host_offline, 0, 0, 0);
 
         if (!host.isOnline) {
-            target.setTextColor(getContext().getResources().getColor(R.color.host_offline_text));
+            target.setTextColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
+                    R.color.host_offline_text));
         }
 
         return target;

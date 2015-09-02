@@ -17,8 +17,8 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -40,7 +40,7 @@ import java.util.Locale;
  * The user interface for querying and displaying a user's host list from the directory server. It
  * also requests and renews authentication tokens using the system account manager.
  */
-public class Chromoting extends ActionBarActivity implements JniInterface.ConnectionListener,
+public class Chromoting extends AppCompatActivity implements JniInterface.ConnectionListener,
         AdapterView.OnItemSelectedListener, HostListLoader.Callback, View.OnClickListener {
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
