@@ -846,7 +846,7 @@ function createAnchor(anchorInfo)
 
 function calculateDelta(deltaVector, moveDelta)
 {
-    return (deltaVector.x * moveDelta.x + deltaVector.y * moveDelta.y) / Math.sqrt(deltaVector.x * deltaVector.x + deltaVector.y * deltaVector.y);
+    return scalarProduct(deltaVector, moveDelta) / Math.sqrt(scalarProduct(deltaVector, deltaVector));
 }
 
 function onAnchorMouseDown(anchorInfo, event)
@@ -872,6 +872,17 @@ function onDragMove(mouseDownPoint, deltaVector, event)
     }
     event.preventDefault();
     InspectorOverlayHost.changeProperty(calculateDelta(deltaVector, new Point(event.screenX - mouseDownPoint.x, event.screenY - mouseDownPoint.y)));
+}
+
+function onDragEnd(event)
+{
+    document.removeEventListener("mousemove", boundDragMove);
+    delete window.boundDragMove;
+    delete window.draggedPropertyName;
+    document.removeEventListener("mouseup", onDragEnd);
+    event.preventDefault();
+    InspectorOverlayHost.endPropertyChange();
+    resetLabelCanvas();
 }
 
 function showLabel(anchorInfo, showLongDescription)
@@ -908,19 +919,11 @@ function showLabels(type, fullLabelName)
             selectedAnchorInfo = anchorInfo;
     }
 
-    if (selectedAnchorInfo)
-        showLabel(selectedAnchorInfo, true);
-}
+    if (!selectedAnchorInfo)
+        return;
 
-function onDragEnd(event)
-{
-    document.removeEventListener("mousemove", boundDragMove);
-    delete window.boundDragMove;
-    delete window.draggedPropertyName;
-    document.removeEventListener("mouseup", onDragEnd);
-    event.preventDefault();
-    InspectorOverlayHost.endPropertyChange();
-    resetLabelCanvas();
+    showLabel(selectedAnchorInfo, true);
+    document.body.style.cursor = chooseAnchorPointer(selectedAnchorInfo.deltaVector);
 }
 
 function onAnchorMouseMove(anchorInfo)
@@ -1072,6 +1075,30 @@ function resetLabelCanvas()
 {
     delete window.labelCanvasState;
     resetCanvas(labelsCanvas);
+    if (!window.draggedPropertyName && document.body.style.cursor)
+        document.body.style.cursor = "";
+}
+
+function scalarProduct(v1, v2)
+{
+    return v1.x * v2.x + v1.y * v2.y;
+}
+
+var pointers = [ {name: "ns-resize", vector: new Point(0, -1)}, {name: "ew-resize", vector: new Point(-1, 0)},
+    {name: "ns-resize", vector: new Point(0, 1)}, {name: "ew-resize", vector: new Point(1, 0)}];
+
+function chooseAnchorPointer(direction)
+{
+    var maxValue = scalarProduct(direction, pointers[0].vector);
+    var maxIndex = 0;
+    for (var i = 1; i < pointers.length; ++i) {
+        var currentValue = scalarProduct(direction, pointers[i].vector);
+        if (currentValue > maxValue) {
+            maxValue = currentValue;
+            maxIndex = i;
+        }
+    }
+    return pointers[maxIndex].name;
 }
 
 window.addEventListener("DOMContentLoaded", onLoaded);

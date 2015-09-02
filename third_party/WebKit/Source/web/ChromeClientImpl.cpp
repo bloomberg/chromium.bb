@@ -118,6 +118,7 @@ static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
 
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
     : m_webView(webView)
+    , m_cursorOverridden(false)
 {
 }
 
@@ -663,6 +664,9 @@ void ChromeClientImpl::setCursor(const Cursor& cursor)
 
 void ChromeClientImpl::setCursor(const WebCursorInfo& cursor)
 {
+    if (m_cursorOverridden)
+        return;
+
 #if OS(MACOSX)
     // On Mac the mousemove event propagates to both the popup and main window.
     // If a popup is open we don't want the main window to change the cursor.
@@ -676,6 +680,11 @@ void ChromeClientImpl::setCursor(const WebCursorInfo& cursor)
 void ChromeClientImpl::setCursorForPlugin(const WebCursorInfo& cursor)
 {
     setCursor(cursor);
+}
+
+void ChromeClientImpl::setCursorOverridden(bool overridden)
+{
+    m_cursorOverridden = overridden;
 }
 
 void ChromeClientImpl::postAccessibilityNotification(AXObject* obj, AXObjectCache::AXNotification notification)

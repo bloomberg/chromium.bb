@@ -138,7 +138,10 @@ public:
 
     void setCursor(const Cursor& cursor) override
     {
-        m_client->setCursor(cursor);
+        toChromeClientImpl(m_client)->setCursorOverridden(false);
+        toChromeClientImpl(m_client)->setCursor(cursor);
+        bool overrideCursor = m_overlay->m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && !m_overlay->m_searchingInLayoutEditor;
+        toChromeClientImpl(m_client)->setCursorOverridden(overrideCursor);
     }
 
     void setToolTip(const String& tooltip, TextDirection direction) override
@@ -318,6 +321,9 @@ void InspectorOverlayImpl::highlightNode(Node* node, Node* eventTarget, const In
 
 void InspectorOverlayImpl::setInspectMode(InspectorDOMAgent::SearchMode searchMode, PassOwnPtr<InspectorHighlightConfig> highlightConfig)
 {
+    if (m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && !m_searchingInLayoutEditor)
+        overlayClearSelection(true);
+
     m_inspectMode = searchMode;
     update();
 
@@ -585,6 +591,8 @@ void InspectorOverlayImpl::overlayClearSelection(bool commitChanges)
     }
 
     m_layoutEditor->clearSelection(commitChanges);
+    toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursorOverridden(false);
+    toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursor(pointerCursor());
 }
 
 void InspectorOverlayImpl::profilingStarted()
@@ -687,7 +695,6 @@ bool InspectorOverlayImpl::handleTouchEvent(const PlatformTouchEvent& event)
     return false;
 }
 
-
 bool InspectorOverlayImpl::shouldSearchForNode()
 {
     return !(m_inspectMode == InspectorDOMAgent::NotSearching || (m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && !m_searchingInLayoutEditor));
@@ -701,6 +708,7 @@ void InspectorOverlayImpl::inspect(Node* node)
     if (m_layoutEditor && m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && m_searchingInLayoutEditor) {
         m_searchingInLayoutEditor = false;
         m_layoutEditor->selectNode(node);
+        toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursorOverridden(true);
         highlightNode(node, *m_inspectModeHighlightConfig, false);
     }
 }
