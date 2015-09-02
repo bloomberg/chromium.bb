@@ -81,17 +81,15 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   }
   void Close(bool not_reusable) override {}
   bool IsResponseBodyComplete() const override { return false; }
-  bool CanFindEndOfResponse() const override { return false; }
   bool IsConnectionReused() const override { return false; }
   void SetConnectionReused() override {}
-  bool IsConnectionReusable() const override { return false; }
+  bool CanReuseConnection() const override { return false; }
   int64 GetTotalReceivedBytes() const override { return 0; }
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     return false;
   }
   void GetSSLInfo(SSLInfo* ssl_info) override {}
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
-  bool IsSpdyHttpStream() const override { return false; }
   void Drain(HttpNetworkSession* session) override {}
   void SetPriority(RequestPriority priority) override {}
   UploadProgress GetUploadProgress() const override { return UploadProgress(); }
@@ -778,6 +776,7 @@ TEST_P(HttpStreamFactoryTest, PrivacyModeDisablesChannelId) {
 }
 
 namespace {
+
 // Return count of distinct groups in given socket pool.
 int GetSocketPoolGroupCount(ClientSocketPool* pool) {
   int count = 0;
@@ -789,6 +788,17 @@ int GetSocketPoolGroupCount(ClientSocketPool* pool) {
   }
   return count;
 }
+
+// Return count of distinct spdy sessions.
+int GetSpdySessionCount(HttpNetworkSession* session) {
+  scoped_ptr<base::Value> value(
+      session->spdy_session_pool()->SpdySessionPoolInfoToValue());
+  base::ListValue* session_list;
+  if (!value || !value->GetAsList(&session_list))
+    return -1;
+  return session_list->GetSize();
+}
+
 }  // namespace
 
 TEST_P(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
@@ -903,8 +913,8 @@ TEST_P(HttpStreamFactoryTest, RequestHttpStream) {
   EXPECT_TRUE(waiter.stream_done());
   ASSERT_TRUE(nullptr != waiter.stream());
   EXPECT_TRUE(nullptr == waiter.websocket_stream());
-  EXPECT_FALSE(waiter.stream()->IsSpdyHttpStream());
 
+  EXPECT_EQ(0, GetSpdySessionCount(session.get()));
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
@@ -952,7 +962,8 @@ TEST_P(HttpStreamFactoryTest, RequestHttpStreamOverSSL) {
   EXPECT_TRUE(waiter.stream_done());
   ASSERT_TRUE(nullptr != waiter.stream());
   EXPECT_TRUE(nullptr == waiter.websocket_stream());
-  EXPECT_FALSE(waiter.stream()->IsSpdyHttpStream());
+
+  EXPECT_EQ(0, GetSpdySessionCount(session.get()));
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(
@@ -997,7 +1008,8 @@ TEST_P(HttpStreamFactoryTest, RequestHttpStreamOverProxy) {
   EXPECT_TRUE(waiter.stream_done());
   ASSERT_TRUE(nullptr != waiter.stream());
   EXPECT_TRUE(nullptr == waiter.websocket_stream());
-  EXPECT_FALSE(waiter.stream()->IsSpdyHttpStream());
+
+  EXPECT_EQ(0, GetSpdySessionCount(session.get()));
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(
@@ -1169,7 +1181,7 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
 
-  MockRead mock_read(ASYNC, OK);
+  MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
   SequencedSocketData socket_data(&mock_read, 1, nullptr, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
@@ -1202,7 +1214,8 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.websocket_stream());
   ASSERT_TRUE(nullptr != waiter.stream());
-  EXPECT_TRUE(waiter.stream()->IsSpdyHttpStream());
+
+  EXPECT_EQ(1, GetSpdySessionCount(session.get()));
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(

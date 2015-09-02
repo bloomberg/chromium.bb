@@ -340,14 +340,9 @@ TEST_P(QuicHttpStreamTest, RenewStreamForAuth) {
   EXPECT_EQ(nullptr, stream_->RenewStreamForAuth());
 }
 
-TEST_P(QuicHttpStreamTest, CanFindEndOfResponse) {
+TEST_P(QuicHttpStreamTest, CanReuseConnection) {
   Initialize();
-  EXPECT_TRUE(stream_->CanFindEndOfResponse());
-}
-
-TEST_P(QuicHttpStreamTest, IsConnectionReusable) {
-  Initialize();
-  EXPECT_FALSE(stream_->IsConnectionReusable());
+  EXPECT_FALSE(stream_->CanReuseConnection());
 }
 
 TEST_P(QuicHttpStreamTest, GetRequest) {

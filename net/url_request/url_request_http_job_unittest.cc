@@ -603,12 +603,10 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 
   bool IsResponseBodyComplete() const override { return false; }
 
-  bool CanFindEndOfResponse() const override { return false; }
-
   bool IsConnectionReused() const override { return false; }
   void SetConnectionReused() override {}
 
-  bool IsConnectionReusable() const override { return false; }
+  bool CanReuseConnection() const override { return false; }
 
   int64 GetTotalReceivedBytes() const override { return 0; }
 
@@ -619,8 +617,6 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   void GetSSLInfo(SSLInfo* ssl_info) override {}
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
-
-  bool IsSpdyHttpStream() const override { return false; }
 
   void Drain(HttpNetworkSession* session) override {}
 

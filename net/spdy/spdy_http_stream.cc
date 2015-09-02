@@ -160,10 +160,6 @@ bool SpdyHttpStream::IsResponseBodyComplete() const {
   return stream_closed_;
 }
 
-bool SpdyHttpStream::CanFindEndOfResponse() const {
-  return true;
-}
-
 bool SpdyHttpStream::IsConnectionReused() const {
   return is_reused_;
 }
@@ -172,7 +168,7 @@ void SpdyHttpStream::SetConnectionReused() {
   // SPDY doesn't need an indicator here.
 }
 
-bool SpdyHttpStream::IsConnectionReusable() const {
+bool SpdyHttpStream::CanReuseConnection() const {
   // SPDY streams aren't considered reusable.
   return false;
 }
@@ -533,11 +529,8 @@ void SpdyHttpStream::GetSSLCertRequestInfo(
   NOTREACHED();
 }
 
-bool SpdyHttpStream::IsSpdyHttpStream() const {
-  return true;
-}
-
 void SpdyHttpStream::Drain(HttpNetworkSession* session) {
+  NOTREACHED();
   Close(false);
   delete this;
 }

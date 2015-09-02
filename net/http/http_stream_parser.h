@@ -73,7 +73,15 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
 
   void SetConnectionReused();
 
-  bool IsConnectionReusable() const;
+  // Returns true if the underlying connection can be reused.
+  // The connection can be reused if:
+  // * It's still connected.
+  // * The response headers indicate the connection can be kept alive.
+  // * The end of the response can be found.
+  //
+  // Note that if response headers have yet to be received, this will return
+  // false.
+  bool CanReuseConnection() const;
 
   int64 received_bytes() const { return received_bytes_; }
 

@@ -58,10 +58,6 @@ bool ProxyConnectRedirectHttpStream::IsResponseBodyComplete() const {
   return true;
 }
 
-bool ProxyConnectRedirectHttpStream::CanFindEndOfResponse() const {
-  return true;
-}
-
 bool ProxyConnectRedirectHttpStream::IsConnectionReused() const {
   NOTREACHED();
   return false;
@@ -71,8 +67,7 @@ void ProxyConnectRedirectHttpStream::SetConnectionReused() {
   NOTREACHED();
 }
 
-bool ProxyConnectRedirectHttpStream::IsConnectionReusable() const {
-  NOTREACHED();
+bool ProxyConnectRedirectHttpStream::CanReuseConnection() const {
   return false;
 }
 
@@ -96,11 +91,6 @@ void ProxyConnectRedirectHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
 void ProxyConnectRedirectHttpStream::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   NOTREACHED();
-}
-
-bool ProxyConnectRedirectHttpStream::IsSpdyHttpStream() const {
-  NOTREACHED();
-  return false;
 }
 
 void ProxyConnectRedirectHttpStream::Drain(HttpNetworkSession* session) {

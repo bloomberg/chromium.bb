@@ -238,10 +238,6 @@ bool QuicHttpStream::IsResponseBodyComplete() const {
   return next_state_ == STATE_OPEN && !stream_;
 }
 
-bool QuicHttpStream::CanFindEndOfResponse() const {
-  return true;
-}
-
 bool QuicHttpStream::IsConnectionReused() const {
   // TODO(rch): do something smarter here.
   return stream_ && stream_->id() > 1;
@@ -251,7 +247,7 @@ void QuicHttpStream::SetConnectionReused() {
   // QUIC doesn't need an indicator here.
 }
 
-bool QuicHttpStream::IsConnectionReusable() const {
+bool QuicHttpStream::CanReuseConnection() const {
   // QUIC streams aren't considered reusable.
   return false;
 }
@@ -280,11 +276,8 @@ void QuicHttpStream::GetSSLCertRequestInfo(
   NOTIMPLEMENTED();
 }
 
-bool QuicHttpStream::IsSpdyHttpStream() const {
-  return false;
-}
-
 void QuicHttpStream::Drain(HttpNetworkSession* session) {
+  NOTREACHED();
   Close(false);
   delete this;
 }

@@ -89,34 +89,31 @@ class NET_EXPORT_PRIVATE HttpStream {
   // In the case of HTTP, where we re-use the byte-stream (e.g. the connection)
   // this means we need to close the connection; in the case of SPDY, where the
   // underlying stream is never reused, it has no effect.
-  // TODO(mbelshe): We should figure out how to fold the not_reusable flag
-  //                into the stream implementation itself so that the caller
-  //                does not need to pass it at all.  We might also be able to
-  //                eliminate the SetConnectionReused() below.
+  // TODO(mmenke): We should fold the |not_reusable| flag into the stream
+  //               implementation itself so that the caller does not need to
+  //               pass it at all.  Ideally we'd be able to remove
+  //               CanReuseConnection() and IsResponseBodyComplete().
+  // TODO(mmenke): We should try and merge Drain() into this method as well.
   virtual void Close(bool not_reusable) = 0;
 
   // Indicates if the response body has been completely read.
   virtual bool IsResponseBodyComplete() const = 0;
-
-  // Indicates that the end of the response is detectable. This means that
-  // the response headers indicate either chunked encoding or content length.
-  // If neither is sent, the server must close the connection for us to detect
-  // the end of the response.
-  // TODO(rch): Rename this method, so that it is clear why it exists
-  // particularly as it applies to QUIC and SPDY for which the end of the
-  // response is always findable.
-  virtual bool CanFindEndOfResponse() const = 0;
 
   // A stream exists on top of a connection.  If the connection has been used
   // to successfully exchange data in the past, error handling for the
   // stream is done differently.  This method returns true if the underlying
   // connection is reused or has been connected and idle for some time.
   virtual bool IsConnectionReused() const = 0;
+  // TODO(mmenke): We should fold this into RenewStreamForAuth(), and make that
+  //    method drain the stream as well, if needed (And return asynchronously).
   virtual void SetConnectionReused() = 0;
 
-  // Checks whether the current state of the underlying connection
-  // allows it to be reused.
-  virtual bool IsConnectionReusable() const = 0;
+  // Checks whether the underlying connection can be reused.  The stream's
+  // connection can be reused if the response headers allow for it, the socket
+  // is still connected, and the stream exclusively owns the underlying
+  // connection.  SPDY and QUIC streams don't own their own connections, so
+  // always return false.
+  virtual bool CanReuseConnection() const = 0;
 
   // Get the total number of bytes received from network for this stream.
   virtual int64 GetTotalReceivedBytes() const = 0;
@@ -141,10 +138,6 @@ class NET_EXPORT_PRIVATE HttpStream {
   // This should only be called for streams over SSL sockets, otherwise the
   // behavior is undefined.
   virtual void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) = 0;
-
-  // HACK(willchan): Really, we should move the HttpResponseDrainer logic into
-  // the HttpStream implementation. This is just a quick hack.
-  virtual bool IsSpdyHttpStream() const = 0;
 
   // In the case of an HTTP error or redirect, flush the response body (usually
   // a simple error or "this page has moved") so that we can re-use the

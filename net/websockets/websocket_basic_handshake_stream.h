@@ -52,15 +52,13 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
                        const CompletionCallback& callback) override;
   void Close(bool not_reusable) override;
   bool IsResponseBodyComplete() const override;
-  bool CanFindEndOfResponse() const override;
   bool IsConnectionReused() const override;
   void SetConnectionReused() override;
-  bool IsConnectionReusable() const override;
+  bool CanReuseConnection() const override;
   int64 GetTotalReceivedBytes() const override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   void GetSSLInfo(SSLInfo* ssl_info) override;
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
-  bool IsSpdyHttpStream() const override;
   void Drain(HttpNetworkSession* session) override;
   void SetPriority(RequestPriority priority) override;
   UploadProgress GetUploadProgress() const override;

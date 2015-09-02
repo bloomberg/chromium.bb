@@ -202,15 +202,16 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
                                    const BoundNetLog& net_log)
     : io_state_(STATE_NONE),
       request_(request),
-      request_headers_(NULL),
+      request_headers_(nullptr),
       request_headers_length_(0),
       read_buf_(read_buffer),
       read_buf_unused_offset_(0),
       response_header_start_offset_(-1),
       received_bytes_(0),
+      response_(nullptr),
       response_body_length_(-1),
       response_body_read_(0),
-      user_read_buf_(NULL),
+      user_read_buf_(nullptr),
       user_read_buf_len_(0),
       connection_(connection),
       net_log_(net_log),
@@ -1069,7 +1070,11 @@ void HttpStreamParser::SetConnectionReused() {
   connection_->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
 }
 
-bool HttpStreamParser::IsConnectionReusable() const {
+bool HttpStreamParser::CanReuseConnection() const {
+  if (!CanFindEndOfResponse())
+    return false;
+  if (!response_->headers || !response_->headers->IsKeepAlive())
+    return false;
   return connection_->socket() && connection_->socket()->IsConnectedAndIdle();
 }
 

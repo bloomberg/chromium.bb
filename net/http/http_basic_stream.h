@@ -56,13 +56,11 @@ class HttpBasicStream : public HttpStream {
 
   bool IsResponseBodyComplete() const override;
 
-  bool CanFindEndOfResponse() const override;
-
   bool IsConnectionReused() const override;
 
   void SetConnectionReused() override;
 
-  bool IsConnectionReusable() const override;
+  bool CanReuseConnection() const override;
 
   int64 GetTotalReceivedBytes() const override;
 
@@ -71,8 +69,6 @@ class HttpBasicStream : public HttpStream {
   void GetSSLInfo(SSLInfo* ssl_info) override;
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
-
-  bool IsSpdyHttpStream() const override;
 
   void Drain(HttpNetworkSession* session) override;
 

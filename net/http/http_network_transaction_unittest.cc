@@ -13349,8 +13349,6 @@ class FakeStream : public HttpStream,
     return false;
   }
 
-  bool CanFindEndOfResponse() const override { return false; }
-
   bool IsConnectionReused() const override {
     ADD_FAILURE();
     return false;
@@ -13358,10 +13356,7 @@ class FakeStream : public HttpStream,
 
   void SetConnectionReused() override { ADD_FAILURE(); }
 
-  bool IsConnectionReusable() const override {
-    ADD_FAILURE();
-    return false;
-  }
+  bool CanReuseConnection() const override { return false; }
 
   int64 GetTotalReceivedBytes() const override {
     ADD_FAILURE();
@@ -13377,11 +13372,6 @@ class FakeStream : public HttpStream,
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {
     ADD_FAILURE();
-  }
-
-  bool IsSpdyHttpStream() const override {
-    ADD_FAILURE();
-    return false;
   }
 
   void Drain(HttpNetworkSession* session) override { ADD_FAILURE(); }
@@ -13571,20 +13561,13 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
     return false;
   }
 
-  bool CanFindEndOfResponse() const override {
-    return parser()->CanFindEndOfResponse();
-  }
-
   bool IsConnectionReused() const override {
     NOTREACHED();
     return false;
   }
   void SetConnectionReused() override { NOTREACHED(); }
 
-  bool IsConnectionReusable() const override {
-    NOTREACHED();
-    return false;
-  }
+  bool CanReuseConnection() const override { return false; }
 
   int64 GetTotalReceivedBytes() const override {
     NOTREACHED();
@@ -13600,11 +13583,6 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {
     NOTREACHED();
-  }
-
-  bool IsSpdyHttpStream() const override {
-    NOTREACHED();
-    return false;
   }
 
   void Drain(HttpNetworkSession* session) override { NOTREACHED(); }

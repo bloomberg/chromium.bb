@@ -462,10 +462,6 @@ bool WebSocketBasicHandshakeStream::IsResponseBodyComplete() const {
   return parser()->IsResponseBodyComplete();
 }
 
-bool WebSocketBasicHandshakeStream::CanFindEndOfResponse() const {
-  return parser() && parser()->CanFindEndOfResponse();
-}
-
 bool WebSocketBasicHandshakeStream::IsConnectionReused() const {
   return parser()->IsConnectionReused();
 }
@@ -474,7 +470,7 @@ void WebSocketBasicHandshakeStream::SetConnectionReused() {
   parser()->SetConnectionReused();
 }
 
-bool WebSocketBasicHandshakeStream::IsConnectionReusable() const {
+bool WebSocketBasicHandshakeStream::CanReuseConnection() const {
   return false;
 }
 
@@ -496,8 +492,6 @@ void WebSocketBasicHandshakeStream::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   parser()->GetSSLCertRequestInfo(cert_request_info);
 }
-
-bool WebSocketBasicHandshakeStream::IsSpdyHttpStream() const { return false; }
 
 void WebSocketBasicHandshakeStream::Drain(HttpNetworkSession* session) {
   HttpResponseBodyDrainer* drainer = new HttpResponseBodyDrainer(this);
