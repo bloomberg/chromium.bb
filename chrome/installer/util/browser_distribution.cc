@@ -257,11 +257,8 @@ bool BrowserDistribution::GetChromeChannel(base::string16* channel) {
   return false;
 }
 
-bool BrowserDistribution::GetCommandExecuteImplClsid(
-    base::string16* handler_class_uuid) {
-  if (handler_class_uuid)
-    *handler_class_uuid = kCommandExecuteImplUuid;
-  return true;
+base::string16 BrowserDistribution::GetCommandExecuteImplClsid() {
+  return kCommandExecuteImplUuid;
 }
 
 void BrowserDistribution::UpdateInstallStatus(bool system_install,

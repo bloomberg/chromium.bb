@@ -108,9 +108,8 @@ bool ChromeFrameDistribution::CanCreateDesktopShortcuts() {
   return false;
 }
 
-bool ChromeFrameDistribution::GetCommandExecuteImplClsid(
-    base::string16* handler_class_uuid) {
-  return false;
+base::string16 ChromeFrameDistribution::GetCommandExecuteImplClsid() {
+  return base::string16();
 }
 
 void ChromeFrameDistribution::UpdateInstallStatus(bool system_install,

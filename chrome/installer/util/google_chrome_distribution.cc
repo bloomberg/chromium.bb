@@ -236,11 +236,8 @@ base::string16 GoogleChromeDistribution::GetIconFilename() {
   return installer::kChromeExe;
 }
 
-bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
-    base::string16* handler_class_uuid) {
-  if (handler_class_uuid)
-    *handler_class_uuid = kCommandExecuteImplUuid;
-  return true;
+base::string16 GoogleChromeDistribution::GetCommandExecuteImplClsid() {
+  return kCommandExecuteImplUuid;
 }
 
 // This method checks if we need to change "ap" key in Google Update to try

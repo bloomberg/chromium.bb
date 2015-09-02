@@ -44,7 +44,7 @@ class ChromiumBinariesDistribution : public BrowserDistribution {
 
   bool GetChromeChannel(base::string16* channel) override;
 
-  bool GetCommandExecuteImplClsid(base::string16* handler_class_uuid) override;
+  base::string16 GetCommandExecuteImplClsid() override;
 
  protected:
   friend class BrowserDistribution;

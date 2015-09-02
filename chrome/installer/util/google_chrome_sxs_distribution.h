@@ -31,7 +31,7 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   base::string16 GetUninstallRegPath() override;
   DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
   bool GetChromeChannel(base::string16* channel) override;
-  bool GetCommandExecuteImplClsid(base::string16* handler_class_uuid) override;
+  base::string16 GetCommandExecuteImplClsid() override;
   bool ShouldSetExperimentLabels() override;
   bool HasUserExperiments() override;
   // returns the channel name for GoogleChromeSxSDistribution

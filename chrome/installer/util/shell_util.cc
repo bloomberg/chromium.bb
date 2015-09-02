@@ -336,7 +336,7 @@ class RegistryEntry {
     app_info.application_description = dist->GetAppDescription();
     app_info.publisher_name = dist->GetPublisherName();
 
-    dist->GetCommandExecuteImplClsid(&app_info.delegate_clsid);
+    app_info.delegate_clsid = dist->GetCommandExecuteImplClsid();
 
     GetProgIdEntries(app_info, entries);
 

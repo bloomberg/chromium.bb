@@ -106,7 +106,6 @@ bool ChromiumBinariesDistribution::GetChromeChannel(base::string16* channel) {
   return false;
 }
 
-bool ChromiumBinariesDistribution::GetCommandExecuteImplClsid(
-    base::string16* handler_class_uuid) {
-  return false;
+base::string16 ChromiumBinariesDistribution::GetCommandExecuteImplClsid() {
+  return base::string16();
 }

@@ -65,7 +65,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   base::string16 GetUninstallRegPath() override;
 
-  bool GetCommandExecuteImplClsid(base::string16* handler_class_uuid) override;
+  base::string16 GetCommandExecuteImplClsid() override;
 
   void UpdateInstallStatus(
       bool system_install,

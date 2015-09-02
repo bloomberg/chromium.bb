@@ -1255,9 +1255,9 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                  const Version& new_version,
                                  const Product& product,
                                  WorkItemList* list) {
-  base::string16 handler_class_uuid;
   BrowserDistribution* dist = product.distribution();
-  if (!dist->GetCommandExecuteImplClsid(&handler_class_uuid)) {
+  const base::string16 handler_class_uuid = dist->GetCommandExecuteImplClsid();
+  if (handler_class_uuid.empty()) {
     if (InstallUtil::IsChromeSxSProcess()) {
       CleanupBadCanaryDelegateExecuteRegistration(target_path, list);
     } else {

@@ -46,10 +46,10 @@ class DelegateExecuteModule
 
   HRESULT PreMessageLoop(int nShowCmd) {
     HRESULT hr = S_OK;
-    base::string16 clsid_string;
     GUID clsid;
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    if (!dist->GetCommandExecuteImplClsid(&clsid_string))
+    const base::string16 clsid_string = dist->GetCommandExecuteImplClsid();
+    if (clsid_string.empty())
       return E_FAIL;
     hr = ::CLSIDFromString(clsid_string.c_str(), &clsid);
     if (FAILED(hr))

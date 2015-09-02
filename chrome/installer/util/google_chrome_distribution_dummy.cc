@@ -93,9 +93,8 @@ base::string16 GoogleChromeDistribution::GetIconFilename() {
   return base::string16();
 }
 
-bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
-    base::string16* handler_class_uuid) {
-  return false;
+base::string16 GoogleChromeDistribution::GetCommandExecuteImplClsid() {
+  return base::string16();
 }
 
 void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,

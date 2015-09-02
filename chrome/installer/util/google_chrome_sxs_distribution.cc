@@ -102,11 +102,8 @@ bool GoogleChromeSxSDistribution::GetChromeChannel(base::string16* channel) {
   return true;
 }
 
-bool GoogleChromeSxSDistribution::GetCommandExecuteImplClsid(
-    base::string16* handler_class_uuid) {
-  if (handler_class_uuid)
-    *handler_class_uuid = kCommandExecuteImplUuid;
-  return true;
+base::string16 GoogleChromeSxSDistribution::GetCommandExecuteImplClsid() {
+  return kCommandExecuteImplUuid;
 }
 
 bool GoogleChromeSxSDistribution::ShouldSetExperimentLabels() {
