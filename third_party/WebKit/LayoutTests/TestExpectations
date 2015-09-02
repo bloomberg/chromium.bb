@@ -394,9 +394,6 @@ crbug.com/508725 imported/web-platform-tests/html/semantics/forms/textfieldselec
 crbug.com/490511 imported/web-platform-tests/html/semantics/text-level-semantics/the-wbr-element/wbr-element.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
 crbug.com/526920 imported/web-platform-tests/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure ]
-# script-for-event.html: We can't check in failure results because we also have
-# script-for-event.xhtml.
-crbug.com/520844 imported/web-platform-tests/html/semantics/scripting-1/the-script-element/script-for-event.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html [ Failure ]
