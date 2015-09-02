@@ -166,6 +166,7 @@ void RawResource::setSerializedCachedMetadata(const char* data, size_t size)
 
 void RawResource::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
+    ResourcePtr<RawResource> protect(this);
     ResourceClientWalker<RawResourceClient> w(m_clients);
     while (RawResourceClient* c = w.next())
         c->dataSent(this, bytesSent, totalBytesToBeSent);
@@ -173,6 +174,7 @@ void RawResource::didSendData(unsigned long long bytesSent, unsigned long long t
 
 void RawResource::didDownloadData(int dataLength)
 {
+    ResourcePtr<RawResource> protect(this);
     ResourceClientWalker<RawResourceClient> w(m_clients);
     while (RawResourceClient* c = w.next())
         c->dataDownloaded(this, dataLength);
