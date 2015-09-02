@@ -77,6 +77,7 @@ public:
     };
 
     class InlineStyleOverrideScope {
+        STACK_ALLOCATED();
     public:
         InlineStyleOverrideScope(SecurityContext* context)
             : m_contentSecurityPolicy(context->contentSecurityPolicy())

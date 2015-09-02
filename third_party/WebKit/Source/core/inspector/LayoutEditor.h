@@ -23,6 +23,7 @@ class JSONArray;
 class JSONObject;
 
 class CORE_EXPORT LayoutEditor final : public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(LayoutEditor);
 public:
     static PassOwnPtrWillBeRawPtr<LayoutEditor> create(InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
     {

@@ -49,6 +49,7 @@ class CORE_EXPORT MainThreadDebugger final : public ScriptDebuggerBase {
     WTF_MAKE_NONCOPYABLE(MainThreadDebugger);
 public:
     class ClientMessageLoop {
+        WTF_MAKE_FAST_ALLOCATED(ClientMessageLoop);
     public:
         virtual ~ClientMessageLoop() { }
         virtual void run(LocalFrame*) = 0;

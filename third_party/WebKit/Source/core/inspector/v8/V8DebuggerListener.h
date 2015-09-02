@@ -31,6 +31,7 @@
 #define V8DebuggerListener_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -43,6 +44,7 @@ enum CompileResult { CompileSuccess, CompileError };
 class CORE_EXPORT V8DebuggerListener {
 public:
     class Script {
+        DISALLOW_ALLOCATION();
     public:
         Script();
 
@@ -97,6 +99,7 @@ public:
     };
 
     struct ParsedScript {
+        ALLOW_ONLY_INLINE_ALLOCATION();
         String scriptId;
         Script script;
         CompileResult compileResult;

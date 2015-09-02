@@ -35,6 +35,7 @@
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InjectedScriptNative.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include <v8.h>
 
@@ -49,6 +50,7 @@ PassRefPtr<JSONValue> toJSONValue(const ScriptValue&);
 
 
 class InjectedScript final {
+    DISALLOW_ALLOCATION();
 public:
     InjectedScript();
     ~InjectedScript();

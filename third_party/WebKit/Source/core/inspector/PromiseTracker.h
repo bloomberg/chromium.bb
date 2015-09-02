@@ -23,6 +23,7 @@ class ScriptValue;
 
 class PromiseTracker final : public NoBaseWillBeGarbageCollectedFinalized<PromiseTracker> {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PromiseTracker);
 public:
     class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
     public:

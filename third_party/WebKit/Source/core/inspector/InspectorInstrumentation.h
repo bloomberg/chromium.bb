@@ -81,6 +81,7 @@ private:
 namespace InspectorInstrumentation {
 
 class CORE_EXPORT FrontendCounter {
+    STATIC_ONLY(FrontendCounter);
 private:
     friend void frontendCreated();
     friend void frontendDeleted();

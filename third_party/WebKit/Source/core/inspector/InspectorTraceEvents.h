@@ -45,12 +45,14 @@ class WorkerThread;
 class XMLHttpRequest;
 
 class InspectorLayoutEvent {
+    STATIC_ONLY(InspectorLayoutEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(FrameView*);
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(LayoutObject* rootForThisLayout);
 };
 
 class InspectorScheduleStyleInvalidationTrackingEvent {
+    STATIC_ONLY(InspectorScheduleStyleInvalidationTrackingEvent);
 public:
     static const char Attribute[];
     static const char Class[];
@@ -75,6 +77,7 @@ private:
         InspectorScheduleStyleInvalidationTrackingEvent::changeType((element), (invalidationSet), __VA_ARGS__))
 
 class InspectorStyleRecalcInvalidationTrackingEvent {
+    STATIC_ONLY(InspectorStyleRecalcInvalidationTrackingEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Node*, const StyleChangeReasonForTracing&);
 };
@@ -82,6 +85,7 @@ public:
 String descendantInvalidationSetToIdString(const DescendantInvalidationSet&);
 
 class InspectorStyleInvalidatorInvalidateEvent {
+    STATIC_ONLY(InspectorStyleInvalidatorInvalidateEvent);
 public:
     static const char ElementHasPendingInvalidationList[];
     static const char InvalidateCustomPseudo[];
@@ -159,82 +163,98 @@ extern const char ScrollbarChanged[];
 typedef const char LayoutInvalidationReasonForTracing[];
 
 class CORE_EXPORT InspectorLayoutInvalidationTrackingEvent {
+    STATIC_ONLY(InspectorLayoutInvalidationTrackingEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, LayoutInvalidationReasonForTracing);
 };
 
 class InspectorPaintInvalidationTrackingEvent {
+    STATIC_ONLY(InspectorPaintInvalidationTrackingEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const LayoutObject& paintContainer);
 };
 
 class InspectorScrollInvalidationTrackingEvent {
+    STATIC_ONLY(InspectorScrollInvalidationTrackingEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&);
 };
 
 class InspectorSendRequestEvent {
+    STATIC_ONLY(InspectorSendRequestEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
 };
 
 class InspectorReceiveResponseEvent {
+    STATIC_ONLY(InspectorReceiveResponseEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceResponse&);
 };
 
 class InspectorReceiveDataEvent {
+    STATIC_ONLY(InspectorReceiveDataEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, int encodedDataLength);
 };
 
 class InspectorResourceFinishEvent {
+    STATIC_ONLY(InspectorResourceFinishEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, double finishTime, bool didFail);
 };
 
 class InspectorTimerInstallEvent {
+    STATIC_ONLY(InspectorTimerInstallEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId, int timeout, bool singleShot);
 };
 
 class InspectorTimerRemoveEvent {
+    STATIC_ONLY(InspectorTimerRemoveEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
 };
 
 class InspectorTimerFireEvent {
+    STATIC_ONLY(InspectorTimerFireEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
 };
 
 class InspectorAnimationFrameEvent {
+    STATIC_ONLY(InspectorAnimationFrameEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int callbackId);
 };
 
 class InspectorParseHtmlEvent {
+    STATIC_ONLY(InspectorParseHtmlEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(Document*, unsigned startLine);
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(unsigned endLine);
 };
 
 class InspectorParseAuthorStyleSheetEvent {
+    STATIC_ONLY(InspectorParseAuthorStyleSheetEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const CSSStyleSheetResource*);
 };
 
 class InspectorXhrReadyStateChangeEvent {
+    STATIC_ONLY(InspectorXhrReadyStateChangeEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
 };
 
 class InspectorXhrLoadEvent {
+    STATIC_ONLY(InspectorXhrLoadEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
 };
 
 class InspectorLayerInvalidationTrackingEvent {
+    STATIC_ONLY(InspectorLayerInvalidationTrackingEvent);
 public:
     static const char SquashingLayerGeometryWasUpdated[];
     static const char AddedToSquashingLayer[];
@@ -253,11 +273,13 @@ public:
         InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)))
 
 class InspectorPaintEvent {
+    STATIC_ONLY(InspectorPaintEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LayoutObject*, const LayoutRect& clipRect, const GraphicsLayer*);
 };
 
 class InspectorPaintImageEvent {
+    STATIC_ONLY(InspectorPaintImageEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutImage&);
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&, const StyleImage&);
@@ -265,86 +287,103 @@ public:
 };
 
 class InspectorCommitLoadEvent {
+    STATIC_ONLY(InspectorCommitLoadEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 };
 
 class InspectorMarkLoadEvent {
+    STATIC_ONLY(InspectorMarkLoadEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 };
 
 class InspectorScrollLayerEvent {
+    STATIC_ONLY(InspectorScrollLayerEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LayoutObject*);
 };
 
 class InspectorUpdateLayerTreeEvent {
+    STATIC_ONLY(InspectorUpdateLayerTreeEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 };
 
 class InspectorEvaluateScriptEvent {
+    STATIC_ONLY(InspectorEvaluateScriptEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*, const String& url, int lineNumber);
 };
 
 class InspectorFunctionCallEvent {
+    STATIC_ONLY(InspectorFunctionCallEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
 };
 
 class InspectorUpdateCountersEvent {
+    STATIC_ONLY(InspectorUpdateCountersEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
 };
 
 class InspectorInvalidateLayoutEvent {
+    STATIC_ONLY(InspectorInvalidateLayoutEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 };
 
 class InspectorRecalculateStylesEvent {
+    STATIC_ONLY(InspectorRecalculateStylesEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 };
 
 class InspectorEventDispatchEvent {
+    STATIC_ONLY(InspectorEventDispatchEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Event&);
 };
 
 class InspectorTimeStampEvent {
+    STATIC_ONLY(InspectorTimeStampEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, const String& message);
 };
 
 class InspectorTracingSessionIdForWorkerEvent {
+    STATIC_ONLY(InspectorTracingSessionIdForWorkerEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, const String& workerId, WorkerThread*);
 };
 
 class InspectorTracingStartedInFrame {
+    STATIC_ONLY(InspectorTracingStartedInFrame);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, LocalFrame*);
 };
 
 class InspectorSetLayerTreeId {
+    STATIC_ONLY(InspectorSetLayerTreeId);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, int layerTreeId);
 };
 
 class InspectorAnimationEvent {
+    STATIC_ONLY(InspectorAnimationEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
 };
 
 class InspectorAnimationStateEvent {
+    STATIC_ONLY(InspectorAnimationStateEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
 };
 
 class InspectorHitTestEvent {
+    STATIC_ONLY(InspectorHitTestEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(const HitTestRequest&, const HitTestLocation&, const HitTestResult&);
 };

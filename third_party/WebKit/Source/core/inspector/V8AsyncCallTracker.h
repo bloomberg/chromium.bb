@@ -19,6 +19,7 @@ class ScriptState;
 class V8AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<V8AsyncCallTracker>, public ScriptState::Observer, public V8DebuggerAgent::AsyncCallTrackingListener {
     WTF_MAKE_NONCOPYABLE(V8AsyncCallTracker);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8AsyncCallTracker);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(V8AsyncCallTracker);
 public:
     static PassOwnPtrWillBeRawPtr<V8AsyncCallTracker> create(V8DebuggerAgent* debuggerAgent)
     {

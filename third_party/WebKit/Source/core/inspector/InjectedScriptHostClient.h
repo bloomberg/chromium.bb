@@ -5,9 +5,12 @@
 #ifndef InjectedScriptHostClient_h
 #define InjectedScriptHostClient_h
 
+#include "wtf/FastAllocBase.h"
+
 namespace blink {
 
 class InjectedScriptHostClient  {
+    WTF_MAKE_FAST_ALLOCATED(InjectedScriptHostClient);
 public:
     virtual void muteWarningsAndDeprecations() { }
     virtual void unmuteWarningsAndDeprecations() { }

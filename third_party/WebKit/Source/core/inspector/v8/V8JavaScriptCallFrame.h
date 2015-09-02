@@ -5,6 +5,7 @@
 #ifndef V8JavaScriptCallFrame_h
 #define V8JavaScriptCallFrame_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include <v8.h>
 
@@ -13,6 +14,7 @@ namespace blink {
 class JavaScriptCallFrame;
 
 class V8JavaScriptCallFrame {
+    STATIC_ONLY(V8JavaScriptCallFrame);
 public:
     static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*);
     static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context>, PassRefPtr<JavaScriptCallFrame>);

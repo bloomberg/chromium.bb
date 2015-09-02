@@ -6,6 +6,7 @@
 #define V8DebuggerClient_h
 
 #include "core/CoreExport.h"
+#include "wtf/FastAllocBase.h"
 
 #include <v8.h>
 
@@ -14,6 +15,7 @@ namespace blink {
 class V8DebuggerListener;
 
 class CORE_EXPORT V8DebuggerClient {
+    WTF_MAKE_FAST_ALLOCATED(V8DebuggerClient);
 public:
     virtual ~V8DebuggerClient() { }
     virtual v8::Local<v8::Object> compileDebuggerScript() = 0;

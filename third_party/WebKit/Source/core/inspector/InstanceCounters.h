@@ -32,7 +32,7 @@
 #define InstanceCounters_h
 
 #include "core/CoreExport.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 #if ENABLE(ASSERT)
 #include "wtf/MainThread.h"
@@ -41,6 +41,7 @@
 namespace blink {
 
 class InstanceCounters {
+    STATIC_ONLY(InstanceCounters);
 public:
     enum CounterType {
         ActiveDOMObjectCounter,
@@ -73,8 +74,6 @@ public:
     CORE_EXPORT static int counterValue(CounterType);
 
 private:
-    InstanceCounters();
-
     CORE_EXPORT static int s_counters[CounterTypeLength];
 };
 
