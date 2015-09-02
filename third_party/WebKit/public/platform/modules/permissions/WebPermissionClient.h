@@ -13,15 +13,7 @@
 
 namespace blink {
 
-class WebPermissionCallback : public WebCallbacks<WebPermissionStatus, void> {
-public:
-    virtual void onSuccess(WebPermissionStatus) = 0;
-    void onSuccess(WebPermissionStatus* r)
-    {
-        onSuccess(*r);
-        delete r;
-    }
-};
+using WebPermissionCallback = WebCallbacks<WebPermissionStatus, void>;
 using WebPermissionsCallback = WebCallbacks<WebPassOwnPtr<WebVector<WebPermissionStatus>>, void>;
 
 class WebPermissionObserver;
