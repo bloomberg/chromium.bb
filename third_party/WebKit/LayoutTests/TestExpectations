@@ -1658,10 +1658,6 @@ crbug.com/527009 fast/dom/plugin-attributes-enumeration.html [ NeedsManualRebase
 
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
 
-crbug.com/524134 [ XP ] virtual/spv2/fast/repaint/caret-invalidation-in-overflow-scroll.html [ NeedsRebaseline ]
-crbug.com/524134 [ XP ] virtual/spv2/fast/repaint/positioned-document-element.html [ NeedsRebaseline ]
-crbug.com/524134 [ XP ] virtual/spv2/fast/repaint/remove-inline-after-layout.html [ NeedsRebaseline ]
-
 crbug.com/522797 [ Mavericks ] compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ NeedsRebaseline ]
 crbug.com/522797 [ Mavericks ] css3/flexbox/repaint-rtl-column.html [ NeedsRebaseline ]
 crbug.com/522797 [ Mavericks ] media/video-paint-invalidation.html [ NeedsRebaseline ]

@@ -6,10 +6,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [294, 108, 100, 100],
-        [112, 194, 182, 18],
+        [283, 108, 100, 100],
+        [112, 193, 171, 19],
         [112, 108, 100, 100],
-        [8, 108, 784, 207]
+        [8, 108, 784, 104]
       ],
       "paintInvalidationClients": [
         "InlineBox",
@@ -17,13 +17,12 @@
         "InlineTextBox 'This span should disappear.\n'",
         "InlineBox",
         "RootInlineBox",
-        "InlineTextBox 'This span should disappear.'",
+        "InlineTextBox 'This span should disappear.\n'",
         "LayoutText #text",
         "InlineFlowBox",
         "LayoutInline SPAN id='target'",
         "InlineBox",
         "InlineTextBox '\n'",
-        "RootInlineBox",
         "InlineBox",
         "RootInlineBox",
         "LayoutBlockFlow (anonymous)",
