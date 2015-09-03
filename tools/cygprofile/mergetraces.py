@@ -16,6 +16,7 @@ import optparse
 import string
 import sys
 
+
 def ParseLogLines(lines):
   """Parse log file lines.
 
@@ -46,11 +47,11 @@ def ParseLogLines(lines):
   vm_end = int (lines[0][dash_index+1:space_index], 16)
   for line in lines[2:]:
     line = line.strip()
-    # print hex (vm_start)
     fields = line.split()
     call_lines.append (fields)
 
   return (call_lines, vm_start, vm_end)
+
 
 def HasDuplicates(calls):
   """Makes sure that calls are only logged once.
@@ -90,7 +91,8 @@ def CheckTimestamps(calls):
     last_timestamp_us = timestamp_us
     index = index + 1
 
-def Convert (call_lines, startAddr, endAddr):
+
+def Convert(call_lines, start_address, end_address):
   """Converts the call addresses to static offsets and removes invalid calls.
 
   Removes profiled calls not in shared library using start and end virtual
@@ -106,16 +108,27 @@ def Convert (call_lines, startAddr, endAddr):
     secs = int (fields[0])
     usecs = int (fields[1])
     callee = int (fields[3], 16)
-    # print ("callee: " + hex (callee) + " start: " + hex (startAddr) + " end: "
-    #        + hex (endAddr))
-    if (callee >= startAddr and callee < endAddr
-        and (not callee in call_addresses)):
-      converted_calls.append((secs, usecs, fields[2], (callee - startAddr)))
+    # Eliminate repetitions of the same function.
+    if callee in call_addresses:
+      continue
+    # Eliminate small addresses. It should be safe to do so because these point
+    # before the .text section (it is in .plt or earlier).
+    # TODO(pasko): understand why __cyg_profile_func_enter may output a small
+    # offset sometimes.
+    if callee < start_address + 4096:
+      sys.stderr.write('WARNING: ignoring small address: %s' %
+          hex(callee - start_address))
+      call_addresses.add(callee)
+      continue
+    if start_address <= callee < end_address:
+      converted_calls.append((secs, usecs, fields[2], (callee - start_address)))
       call_addresses.add(callee)
   return converted_calls
 
+
 def Timestamp(trace_entry):
   return int (trace_entry[0]) * 1000000 + int(trace_entry[1])
+
 
 def AddTrace (tracemap, trace):
   """Adds a trace to the tracemap.
@@ -134,6 +147,7 @@ def AddTrace (tracemap, trace):
     if (not call in tracemap) or (
         Timestamp(tracemap[call]) > Timestamp(trace_entry)):
       tracemap[call] = trace_entry
+
 
 def GroupByProcessAndThreadId(input_trace):
   """Returns an array of traces grouped by pid and tid.
@@ -184,7 +198,8 @@ def GroupByProcessAndThreadId(input_trace):
 
   return sorted(input_trace, cmp=CompareEvents)
 
-def main():
+
+def Main():
   """Merge two traces for code in specified library and write to stdout.
 
   Merges the two traces and coverts the virtual addresses to the offsets in the
@@ -234,5 +249,6 @@ def main():
     print (str(call[0]) + "\t" + str(call[1]) + "\t" + call[2] + "\t" +
            hex(call[3]))
 
+
 if __name__ == '__main__':
-  main()
+  Main()
