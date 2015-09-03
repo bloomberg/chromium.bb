@@ -73,6 +73,7 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_TINT_ACTION_BUTTON =
             "android.support.customtabs.extra.TINT_ACTION_BUTTON";
 
+    private static final int MAX_CUSTOM_MENU_ITEMS = 5;
     private static final String BUNDLE_PACKAGE_NAME = "android:packageName";
     private static final String BUNDLE_ENTER_ANIMATION_RESOURCE = "android:animEnterRes";
     private static final String BUNDLE_EXIT_ANIMATION_RESOURCE = "android:animExitRes";
@@ -141,7 +142,8 @@ public class CustomTabIntentDataProvider {
         List<Bundle> menuItems =
                 IntentUtils.getParcelableArrayListExtra(intent, CustomTabsIntent.EXTRA_MENU_ITEMS);
         if (menuItems != null) {
-            for (Bundle bundle : menuItems) {
+            for (int i = 0; i < Math.min(MAX_CUSTOM_MENU_ITEMS, menuItems.size()); i++) {
+                Bundle bundle = menuItems.get(i);
                 String title =
                         IntentUtils.safeGetString(bundle, CustomTabsIntent.KEY_MENU_ITEM_TITLE);
                 PendingIntent pendingIntent =

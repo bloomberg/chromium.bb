@@ -77,6 +77,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         }
     }
 
+    private static final int MAX_MENU_CUSTOM_ITEMS = 5;
+    private static final int NUM_CHROME_MENU_ITEMS = 3;
     private static final String
             TEST_ACTION = "org.chromium.chrome.browser.customtabs.TEST_PENDING_INTENT_SENT";
     private static final String TEST_PAGE = TestHttpServerClient.getUrl(
@@ -106,17 +108,19 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * @param intent The intent to modify.
      * @return The pending intent associated with the menu entry.
      */
-    private PendingIntent addMenuEntryToIntent(Intent intent) {
+    private PendingIntent addMenuEntriesToIntent(Intent intent, int numEntries) {
         Intent menuIntent = new Intent();
         menuIntent.setClass(getInstrumentation().getContext(), DummyBroadcastReceiver.class);
         menuIntent.setAction(TEST_ACTION);
         PendingIntent pi = PendingIntent.getBroadcast(getInstrumentation().getTargetContext(), 0,
                 menuIntent, 0);
-        Bundle bundle = new Bundle();
-        bundle.putString(CustomTabsIntent.KEY_MENU_ITEM_TITLE, TEST_MENU_TITLE);
-        bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
         ArrayList<Bundle> menuItems = new ArrayList<Bundle>();
-        menuItems.add(bundle);
+        for (int i = 0; i < numEntries; i++) {
+            Bundle bundle = new Bundle();
+            bundle.putString(CustomTabsIntent.KEY_MENU_ITEM_TITLE, TEST_MENU_TITLE);
+            bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
+            menuItems.add(bundle);
+        }
         intent.putParcelableArrayListExtra(CustomTabsIntent.EXTRA_MENU_ITEMS, menuItems);
         return pi;
     }
@@ -199,11 +203,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     public void testCustomTabAppMenu() throws InterruptedException {
         Intent intent = createMinimalCustomTabIntent();
-        addMenuEntryToIntent(intent);
+        int numMenuEntries = 1;
+        addMenuEntriesToIntent(intent, numMenuEntries);
         startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        final int expectedMenuSize = 4;
+        final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS;
         Menu menu = getActivity().getAppMenuHandler().getAppMenuForTest().getMenuForTest();
         assertNotNull("App menu is not initialized: ", menu);
         assertEquals(expectedMenuSize, menu.size());
@@ -215,13 +220,30 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
+     * Test that only up to 5 entries are added to the custom menu.
+     */
+    @SmallTest
+    public void testCustomTabMaxMenuItems() throws InterruptedException {
+        Intent intent = createMinimalCustomTabIntent();
+        int numMenuEntries = 7;
+        addMenuEntriesToIntent(intent, numMenuEntries);
+        startCustomTabActivityWithIntent(intent);
+
+        openAppMenuAndAssertMenuShown();
+        int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS;
+        Menu menu = getActivity().getAppMenuHandler().getAppMenuForTest().getMenuForTest();
+        assertNotNull("App menu is not initialized: ", menu);
+        assertEquals(expectedMenuSize, menu.size());
+    }
+
+    /**
      * Test whether the custom menu is correctly shown and clicking it sends the right
      * {@link PendingIntent}.
      */
     @SmallTest
     public void testCustomMenuEntry() throws InterruptedException {
         Intent intent = createMinimalCustomTabIntent();
-        final PendingIntent pi = addMenuEntryToIntent(intent);
+        final PendingIntent pi = addMenuEntriesToIntent(intent, 1);
         startCustomTabActivityWithIntent(intent);
 
         final OnFinishedForTest onFinished = new OnFinishedForTest(pi);
