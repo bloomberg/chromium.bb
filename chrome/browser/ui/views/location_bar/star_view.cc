@@ -15,12 +15,21 @@
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 
 StarView::StarView(CommandUpdater* command_updater, Browser* browser)
     : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE), browser_(browser) {
   set_id(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
+  // Compensate for the difference between the material icon grid and the
+  // Chrome icon grid.
+  if (ui::MaterialDesignController::IsModeMaterial())
+    SetBorder(views::Border::CreateEmptyBorder(0, -1, 0, -1));
 }
 
 StarView::~StarView() {}
@@ -28,8 +37,19 @@ StarView::~StarView() {}
 void StarView::SetToggled(bool on) {
   SetTooltipText(l10n_util::GetStringUTF16(
       on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      on ? IDR_STAR_LIT : IDR_STAR));
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SkColor icon_color;
+    ui::CommonThemeGetSystemColor(on ? ui::NativeTheme::kColorId_GoogleBlue
+                                     : ui::NativeTheme::kColorId_ChromeIconGrey,
+                                  &icon_color);
+    SetImage(gfx::CreateVectorIcon(
+        on ? gfx::VectorIconId::STAR : gfx::VectorIconId::STAR_BORDER, 18,
+        icon_color));
+  } else {
+    SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        on ? IDR_STAR_LIT : IDR_STAR));
+  }
 }
 
 void StarView::OnExecuting(
