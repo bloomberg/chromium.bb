@@ -97,8 +97,9 @@ WTF_EXPORT WARN_UNUSED_RETURN bool setSystemPagesAccessible(void* addr, size_t l
 // Clients should not make any assumptions about the contents of decommitted
 // system pages, before or after they write to the page. The only guarantee
 // provided is that the contents of the system page will be deterministic again
-// after recommitting and writing to it. In particlar note that system pages are// not guaranteed to be zero-filled upon re-commit.
-// len must be a multiple of kSystemPageSize bytes.
+// after recommitting and writing to it. In particlar note that system pages are
+// not guaranteed to be zero-filled upon re-commit. len must be a multiple of
+// kSystemPageSize bytes.
 WTF_EXPORT void decommitSystemPages(void* addr, size_t len);
 
 // Recommit one or more system pages. Decommitted system pages must be
@@ -118,7 +119,8 @@ WTF_EXPORT void recommitSystemPages(void* addr, size_t len);
 // Reading from a discarded page may return the original page content, or a
 // page full of zeroes.
 // Writing to a discarded page is the only guaranteed way to tell the system
-// that the page is required again. Once written to, the content of the page is // guaranteed stable once more. After being written to, the page content may be
+// that the page is required again. Once written to, the content of the page is
+// guaranteed stable once more. After being written to, the page content may be
 // based on the original page content, or a page of zeroes.
 // len must be a multiple of kSystemPageSize bytes.
 WTF_EXPORT void discardSystemPages(void* addr, size_t len);

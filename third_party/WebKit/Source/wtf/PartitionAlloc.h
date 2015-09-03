@@ -141,10 +141,10 @@ static const size_t kMaxPartitionPagesPerSlotSpan = 4;
 
 // To avoid fragmentation via never-used freelist entries, we hand out partition
 // freelist sections gradually, in units of the dominant system page size.
-// What we're actually doing is avoiding filling the full partition page
-// (typically 16KB) will freelist pointers right away. Writing freelist
-// pointers will fault and dirty a private page, which is very wasteful if we
-// never actually store objects there.
+// What we're actually doing is avoiding filling the full partition page (16 KB)
+// with freelist pointers right away. Writing freelist pointers will fault and
+// dirty a private page, which is very wasteful if we never actually store
+// objects there.
 static const size_t kNumSystemPagesPerPartitionPage = kPartitionPageSize / kSystemPageSize;
 static const size_t kMaxSystemPagesPerSlotSpan = kNumSystemPagesPerPartitionPage * kMaxPartitionPagesPerSlotSpan;
 
