@@ -42,7 +42,6 @@
     <item type="id" name="menu_id_help_general" />
     <item type="id" name="menu_id_translate_help" />
     <item type="id" name="menu_id_help_privacy" />
-    <item type="id" name="menu_id_import_bookmarks" />
 
     <!-- Menu item IDs for FullscreenActivities -->
     <item type="id" name="menu_id_open_in_chrome" />

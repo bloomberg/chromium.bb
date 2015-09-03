@@ -1969,32 +1969,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Choose a bookmark
       </message>
 
-      <!-- Bookmark importing -->
-      <message name="IDS_IMPORT_BOOKMARKS" desc="Menu item for importing bookmarks. [CHAR-LIMIT=32]">
-        Import bookmarks
-      </message>
-      <message name="IDS_IMPORT_BOOKMARKS_PROMPT" desc="Message asking user if they want to import bookmarks from Android Browser.">
-        Import all local bookmarks from Android Browser?
-      </message>
-      <message name="IDS_IMPORT_BOOKMARKS_OK" desc="Button to import bookmarks from Android Browser. [CHAR-LIMIT=20]">
-        Import
-      </message>
-      <message name="IDS_IMPORT_BOOKMARKS_PROGRESS_HEADER" desc="Title for the progress message shown while importing bookmarks. [CHAR-LIMIT=32]">
-        Importing bookmarks
-      </message>
-      <message name="IDS_IMPORT_BOOKMARKS_PROGRESS_MESSAGE" desc="Progress message shown while importing bookmarks. [CHAR-LIMIT=32]">
-        Please wait…
-      </message>
-      <message name="IDS_IMPORT_BOOKMARKS_FAILED_HEADER" desc="Error title shown when importing bookmarks failed. [CHAR-LIMIT=32]">
-        Import failed
-      </message>
-      <message name="IDS_IMPORT_BOOKMARKS_FAILED_MESSAGE" desc="Error message shown when importing bookmarks failed.">
-        There was a problem importing bookmarks from Android Browser.
-      </message>
-      <message name="IDS_IMPORT_BOOKMARKS_RETRY" desc="Button to retry importing bookmarks after a failed attempt. [CHAR-LIMIT=20]">
-        Retry
-      </message>
-
       <!-- Voice search -->
       <message name="IDS_VOICE_SEARCH_ERROR" desc="Toast when the voice search activity couldn't be started. [CHAR-LIMIT=40]">
         No enabled voice search available

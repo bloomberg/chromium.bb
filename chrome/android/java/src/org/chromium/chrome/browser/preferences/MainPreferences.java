@@ -11,16 +11,11 @@ import android.os.Handler;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.bookmarkimport.AndroidBrowserImporter;
-import org.chromium.chrome.browser.bookmarkimport.ImportBookmarksAlertDialog;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
@@ -68,28 +63,6 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
                 && getArguments().getBoolean(EXTRA_SHOW_SEARCH_ENGINE_PICKER, false)) {
             mShowSearchEnginePicker = true;
         }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        if (getActivity() == null) return;
-
-        AndroidBrowserImporter androidBrowserImporter = new AndroidBrowserImporter(getActivity());
-        if (androidBrowserImporter.areBookmarksAccessible()) {
-            menu.add(Menu.NONE, R.id.menu_id_import_bookmarks, Menu.NONE,
-                    R.string.import_bookmarks);
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_id_import_bookmarks) {
-            ImportBookmarksAlertDialog importBookmarksFragment =
-                    new ImportBookmarksAlertDialog();
-            importBookmarksFragment.show(getFragmentManager(), null);
-            return true;
-        }
-        return false;
     }
 
     @Override
