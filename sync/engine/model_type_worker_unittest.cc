@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_type_sync_worker_impl.h"
+#include "sync/engine/model_type_worker.h"
 
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
@@ -32,7 +32,7 @@ using syncer::KeyParams;
 using syncer::Nigori;
 using syncer::sessions::StatusController;
 
-// Tests the ModelTypeSyncWorkerImpl.
+// Tests the ModelTypeWorker.
 //
 // This class passes messages between the model thread and sync server.
 // As such, its code is subject to lots of different race conditions.  This
@@ -58,11 +58,11 @@ using syncer::sessions::StatusController;
 //
 // The interface with the server is built around "pulling" data from this
 // class, so we don't have to mock out any of it.  We wrap it with some
-// convenience functions to we can emulate server behavior.
-class ModelTypeSyncWorkerImplTest : public ::testing::Test {
+// convenience functions so we can emulate server behavior.
+class ModelTypeWorkerTest : public ::testing::Test {
  public:
-  ModelTypeSyncWorkerImplTest();
-  ~ModelTypeSyncWorkerImplTest() override;
+  ModelTypeWorkerTest();
+  ~ModelTypeWorkerTest() override;
 
   // One of these Initialize functions should be called at the beginning of
   // each test.
@@ -213,12 +213,12 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   // value implies no encryption.
   int update_encryption_filter_index_;
 
-  // The ModelTypeSyncWorkerImpl being tested.
-  scoped_ptr<ModelTypeSyncWorkerImpl> worker_;
+  // The ModelTypeWorker being tested.
+  scoped_ptr<ModelTypeWorker> worker_;
 
   // Non-owned, possibly NULL pointer.  This object belongs to the
-  // ModelTypeSyncWorkerImpl under test.
-  MockModelTypeProcessor* mock_type_sync_proxy_;
+  // ModelTypeWorker under test.
+  MockModelTypeProcessor* mock_type_processor_;
 
   // A mock that emulates enough of the sync server that it can be used
   // a single UpdateHandler and CommitContributor pair.  In this test
@@ -230,17 +230,15 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   syncer::MockNudgeHandler mock_nudge_handler_;
 };
 
-ModelTypeSyncWorkerImplTest::ModelTypeSyncWorkerImplTest()
+ModelTypeWorkerTest::ModelTypeWorkerTest()
     : foreign_encryption_key_index_(0),
       update_encryption_filter_index_(0),
-      mock_type_sync_proxy_(NULL),
-      mock_server_(kModelType) {
-}
+      mock_type_processor_(NULL),
+      mock_server_(kModelType) {}
 
-ModelTypeSyncWorkerImplTest::~ModelTypeSyncWorkerImplTest() {
-}
+ModelTypeWorkerTest::~ModelTypeWorkerTest() {}
 
-void ModelTypeSyncWorkerImplTest::FirstInitialize() {
+void ModelTypeWorkerTest::FirstInitialize() {
   DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
@@ -248,11 +246,11 @@ void ModelTypeSyncWorkerImplTest::FirstInitialize() {
   InitializeWithState(initial_state, UpdateResponseDataList());
 }
 
-void ModelTypeSyncWorkerImplTest::NormalInitialize() {
+void ModelTypeWorkerTest::NormalInitialize() {
   InitializeWithPendingUpdates(UpdateResponseDataList());
 }
 
-void ModelTypeSyncWorkerImplTest::InitializeWithPendingUpdates(
+void ModelTypeWorkerTest::InitializeWithPendingUpdates(
     const UpdateResponseDataList& initial_pending_updates) {
   DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
@@ -266,29 +264,26 @@ void ModelTypeSyncWorkerImplTest::InitializeWithPendingUpdates(
   mock_nudge_handler_.ClearCounters();
 }
 
-void ModelTypeSyncWorkerImplTest::InitializeWithState(
+void ModelTypeWorkerTest::InitializeWithState(
     const DataTypeState& state,
     const UpdateResponseDataList& initial_pending_updates) {
   DCHECK(!worker_);
 
   // We don't get to own this object.  The |worker_| keeps a scoped_ptr to it.
-  mock_type_sync_proxy_ = new MockModelTypeProcessor();
-  scoped_ptr<ModelTypeProcessor> proxy(mock_type_sync_proxy_);
+  mock_type_processor_ = new MockModelTypeProcessor();
+  scoped_ptr<ModelTypeProcessor> proxy(mock_type_processor_);
 
   scoped_ptr<Cryptographer> cryptographer_copy;
   if (cryptographer_) {
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
   }
 
-  worker_.reset(new ModelTypeSyncWorkerImpl(kModelType,
-                                            state,
-                                            initial_pending_updates,
-                                            cryptographer_copy.Pass(),
-                                            &mock_nudge_handler_,
-                                            proxy.Pass()));
+  worker_.reset(new ModelTypeWorker(kModelType, state, initial_pending_updates,
+                                    cryptographer_copy.Pass(),
+                                    &mock_nudge_handler_, proxy.Pass()));
 }
 
-void ModelTypeSyncWorkerImplTest::NewForeignEncryptionKey() {
+void ModelTypeWorkerTest::NewForeignEncryptionKey() {
   if (!cryptographer_) {
     cryptographer_.reset(new Cryptographer(&fake_encryptor_));
   }
@@ -305,16 +300,15 @@ void ModelTypeSyncWorkerImplTest::NewForeignEncryptionKey() {
     sync_pb::NigoriKey* key = bag.add_key();
 
     key->set_name(GetNigoriName(nigori));
-    nigori.ExportKeys(key->mutable_user_key(),
-                      key->mutable_encryption_key(),
+    nigori.ExportKeys(key->mutable_user_key(), key->mutable_encryption_key(),
                       key->mutable_mac_key());
   }
 
   // Re-create the last nigori from that loop.
   Nigori last_nigori;
   KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
-  last_nigori.InitByDerivation(
-      params.hostname, params.username, params.password);
+  last_nigori.InitByDerivation(params.hostname, params.username,
+                               params.password);
 
   // Serialize and encrypt the bag with the last nigori.
   std::string serialized_bag;
@@ -334,7 +328,7 @@ void ModelTypeSyncWorkerImplTest::NewForeignEncryptionKey() {
   }
 }
 
-void ModelTypeSyncWorkerImplTest::UpdateLocalCryptographer() {
+void ModelTypeWorkerTest::UpdateLocalCryptographer() {
   if (!cryptographer_) {
     cryptographer_.reset(new Cryptographer(&fake_encryptor_));
   }
@@ -350,29 +344,29 @@ void ModelTypeSyncWorkerImplTest::UpdateLocalCryptographer() {
   }
 }
 
-void ModelTypeSyncWorkerImplTest::SetUpdateEncryptionFilter(int n) {
+void ModelTypeWorkerTest::SetUpdateEncryptionFilter(int n) {
   update_encryption_filter_index_ = n;
 }
 
-void ModelTypeSyncWorkerImplTest::CommitRequest(const std::string& name,
-                                                const std::string& value) {
+void ModelTypeWorkerTest::CommitRequest(const std::string& name,
+                                        const std::string& value) {
   const std::string tag_hash = GenerateTagHash(name);
-  CommitRequestData data = mock_type_sync_proxy_->CommitRequest(
+  CommitRequestData data = mock_type_processor_->CommitRequest(
       tag_hash, GenerateSpecifics(name, value));
   CommitRequestDataList list;
   list.push_back(data);
   worker_->EnqueueForCommit(list);
 }
 
-void ModelTypeSyncWorkerImplTest::DeleteRequest(const std::string& tag) {
+void ModelTypeWorkerTest::DeleteRequest(const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
-  CommitRequestData data = mock_type_sync_proxy_->DeleteRequest(tag_hash);
+  CommitRequestData data = mock_type_processor_->DeleteRequest(tag_hash);
   CommitRequestDataList list;
   list.push_back(data);
   worker_->EnqueueForCommit(list);
 }
 
-void ModelTypeSyncWorkerImplTest::TriggerTypeRootUpdateFromServer() {
+void ModelTypeWorkerTest::TriggerTypeRootUpdateFromServer() {
   sync_pb::SyncEntity entity = mock_server_.TypeRootUpdate();
   SyncEntityList entity_list;
   entity_list.push_back(&entity);
@@ -380,16 +374,14 @@ void ModelTypeSyncWorkerImplTest::TriggerTypeRootUpdateFromServer() {
   StatusController dummy_status;
 
   worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                     mock_server_.GetContext(),
-                                     entity_list,
+                                     mock_server_.GetContext(), entity_list,
                                      &dummy_status);
   worker_->ApplyUpdates(&dummy_status);
 }
 
-void ModelTypeSyncWorkerImplTest::TriggerUpdateFromServer(
-    int64 version_offset,
-    const std::string& tag,
-    const std::string& value) {
+void ModelTypeWorkerTest::TriggerUpdateFromServer(int64 version_offset,
+                                                  const std::string& tag,
+                                                  const std::string& value) {
   sync_pb::SyncEntity entity = mock_server_.UpdateFromServer(
       version_offset, GenerateTagHash(tag), GenerateSpecifics(tag, value));
 
@@ -404,25 +396,21 @@ void ModelTypeSyncWorkerImplTest::TriggerUpdateFromServer(
   StatusController dummy_status;
 
   worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                     mock_server_.GetContext(),
-                                     entity_list,
+                                     mock_server_.GetContext(), entity_list,
                                      &dummy_status);
   worker_->ApplyUpdates(&dummy_status);
 }
 
-void ModelTypeSyncWorkerImplTest::DeliverRawUpdates(
-    const SyncEntityList& list) {
+void ModelTypeWorkerTest::DeliverRawUpdates(const SyncEntityList& list) {
   StatusController dummy_status;
   worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                     mock_server_.GetContext(),
-                                     list,
+                                     mock_server_.GetContext(), list,
                                      &dummy_status);
   worker_->ApplyUpdates(&dummy_status);
 }
 
-void ModelTypeSyncWorkerImplTest::TriggerTombstoneFromServer(
-    int64 version_offset,
-    const std::string& tag) {
+void ModelTypeWorkerTest::TriggerTombstoneFromServer(int64 version_offset,
+                                                     const std::string& tag) {
   sync_pb::SyncEntity entity =
       mock_server_.TombstoneFromServer(version_offset, GenerateTagHash(tag));
 
@@ -437,22 +425,20 @@ void ModelTypeSyncWorkerImplTest::TriggerTombstoneFromServer(
   StatusController dummy_status;
 
   worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                     mock_server_.GetContext(),
-                                     entity_list,
+                                     mock_server_.GetContext(), entity_list,
                                      &dummy_status);
   worker_->ApplyUpdates(&dummy_status);
 }
 
-void ModelTypeSyncWorkerImplTest::SetModelThreadIsSynchronous(
-    bool is_synchronous) {
-  mock_type_sync_proxy_->SetSynchronousExecution(is_synchronous);
+void ModelTypeWorkerTest::SetModelThreadIsSynchronous(bool is_synchronous) {
+  mock_type_processor_->SetSynchronousExecution(is_synchronous);
 }
 
-void ModelTypeSyncWorkerImplTest::PumpModelThread() {
-  mock_type_sync_proxy_->RunQueuedTasks();
+void ModelTypeWorkerTest::PumpModelThread() {
+  mock_type_processor_->RunQueuedTasks();
 }
 
-bool ModelTypeSyncWorkerImplTest::WillCommit() {
+bool ModelTypeWorkerTest::WillCommit() {
   scoped_ptr<CommitContribution> contribution(
       worker_->GetContribution(INT_MAX));
 
@@ -468,7 +454,7 @@ bool ModelTypeSyncWorkerImplTest::WillCommit() {
 // remains blocked while the commit is in progress, so we don't need to worry
 // about other tasks being run between the time when the commit request is
 // issued and the time when the commit response is received.
-void ModelTypeSyncWorkerImplTest::DoSuccessfulCommit() {
+void ModelTypeWorkerTest::DoSuccessfulCommit() {
   DCHECK(WillCommit());
   scoped_ptr<CommitContribution> contribution(
       worker_->GetContribution(INT_MAX));
@@ -484,101 +470,101 @@ void ModelTypeSyncWorkerImplTest::DoSuccessfulCommit() {
   contribution->CleanUp();
 }
 
-size_t ModelTypeSyncWorkerImplTest::GetNumCommitMessagesOnServer() const {
+size_t ModelTypeWorkerTest::GetNumCommitMessagesOnServer() const {
   return mock_server_.GetNumCommitMessages();
 }
 
-sync_pb::ClientToServerMessage
-ModelTypeSyncWorkerImplTest::GetNthCommitMessageOnServer(size_t n) const {
+sync_pb::ClientToServerMessage ModelTypeWorkerTest::GetNthCommitMessageOnServer(
+    size_t n) const {
   DCHECK_LT(n, GetNumCommitMessagesOnServer());
   return mock_server_.GetNthCommitMessage(n);
 }
 
-bool ModelTypeSyncWorkerImplTest::HasCommitEntityOnServer(
+bool ModelTypeWorkerTest::HasCommitEntityOnServer(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_server_.HasCommitEntity(tag_hash);
 }
 
-sync_pb::SyncEntity ModelTypeSyncWorkerImplTest::GetLatestCommitEntityOnServer(
+sync_pb::SyncEntity ModelTypeWorkerTest::GetLatestCommitEntityOnServer(
     const std::string& tag) const {
   DCHECK(HasCommitEntityOnServer(tag));
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_server_.GetLastCommittedEntity(tag_hash);
 }
 
-size_t ModelTypeSyncWorkerImplTest::GetNumModelThreadUpdateResponses() const {
-  return mock_type_sync_proxy_->GetNumUpdateResponses();
+size_t ModelTypeWorkerTest::GetNumModelThreadUpdateResponses() const {
+  return mock_type_processor_->GetNumUpdateResponses();
 }
 
-UpdateResponseDataList
-ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateResponse(size_t n) const {
-  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
-  return mock_type_sync_proxy_->GetNthUpdateResponse(n);
-}
-
-UpdateResponseDataList
-ModelTypeSyncWorkerImplTest::GetNthModelThreadPendingUpdates(size_t n) const {
-  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
-  return mock_type_sync_proxy_->GetNthPendingUpdates(n);
-}
-
-DataTypeState ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateState(
+UpdateResponseDataList ModelTypeWorkerTest::GetNthModelThreadUpdateResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumModelThreadUpdateResponses());
-  return mock_type_sync_proxy_->GetNthTypeStateReceivedInUpdateResponse(n);
+  return mock_type_processor_->GetNthUpdateResponse(n);
 }
 
-bool ModelTypeSyncWorkerImplTest::HasUpdateResponseOnModelThread(
+UpdateResponseDataList ModelTypeWorkerTest::GetNthModelThreadPendingUpdates(
+    size_t n) const {
+  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
+  return mock_type_processor_->GetNthPendingUpdates(n);
+}
+
+DataTypeState ModelTypeWorkerTest::GetNthModelThreadUpdateState(
+    size_t n) const {
+  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
+  return mock_type_processor_->GetNthTypeStateReceivedInUpdateResponse(n);
+}
+
+bool ModelTypeWorkerTest::HasUpdateResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_type_sync_proxy_->HasUpdateResponse(tag_hash);
+  return mock_type_processor_->HasUpdateResponse(tag_hash);
 }
 
-UpdateResponseData ModelTypeSyncWorkerImplTest::GetUpdateResponseOnModelThread(
+UpdateResponseData ModelTypeWorkerTest::GetUpdateResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_type_sync_proxy_->GetUpdateResponse(tag_hash);
+  return mock_type_processor_->GetUpdateResponse(tag_hash);
 }
 
-size_t ModelTypeSyncWorkerImplTest::GetNumModelThreadCommitResponses() const {
-  return mock_type_sync_proxy_->GetNumCommitResponses();
+size_t ModelTypeWorkerTest::GetNumModelThreadCommitResponses() const {
+  return mock_type_processor_->GetNumCommitResponses();
 }
 
-CommitResponseDataList
-ModelTypeSyncWorkerImplTest::GetNthModelThreadCommitResponse(size_t n) const {
-  DCHECK_LT(n, GetNumModelThreadCommitResponses());
-  return mock_type_sync_proxy_->GetNthCommitResponse(n);
-}
-
-DataTypeState ModelTypeSyncWorkerImplTest::GetNthModelThreadCommitState(
+CommitResponseDataList ModelTypeWorkerTest::GetNthModelThreadCommitResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumModelThreadCommitResponses());
-  return mock_type_sync_proxy_->GetNthTypeStateReceivedInCommitResponse(n);
+  return mock_type_processor_->GetNthCommitResponse(n);
 }
 
-bool ModelTypeSyncWorkerImplTest::HasCommitResponseOnModelThread(
+DataTypeState ModelTypeWorkerTest::GetNthModelThreadCommitState(
+    size_t n) const {
+  DCHECK_LT(n, GetNumModelThreadCommitResponses());
+  return mock_type_processor_->GetNthTypeStateReceivedInCommitResponse(n);
+}
+
+bool ModelTypeWorkerTest::HasCommitResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_type_sync_proxy_->HasCommitResponse(tag_hash);
+  return mock_type_processor_->HasCommitResponse(tag_hash);
 }
 
-CommitResponseData ModelTypeSyncWorkerImplTest::GetCommitResponseOnModelThread(
+CommitResponseData ModelTypeWorkerTest::GetCommitResponseOnModelThread(
     const std::string& tag) const {
   DCHECK(HasCommitResponseOnModelThread(tag));
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_type_sync_proxy_->GetCommitResponse(tag_hash);
+  return mock_type_processor_->GetCommitResponse(tag_hash);
 }
 
-int ModelTypeSyncWorkerImplTest::GetNumCommitNudges() const {
+int ModelTypeWorkerTest::GetNumCommitNudges() const {
   return mock_nudge_handler_.GetNumCommitNudges();
 }
 
-int ModelTypeSyncWorkerImplTest::GetNumInitialDownloadNudges() const {
+int ModelTypeWorkerTest::GetNumInitialDownloadNudges() const {
   return mock_nudge_handler_.GetNumInitialDownloadNudges();
 }
 
-std::string ModelTypeSyncWorkerImplTest::GetLocalCryptographerKeyName() const {
+std::string ModelTypeWorkerTest::GetLocalCryptographerKeyName() const {
   if (!cryptographer_) {
     return std::string();
   }
@@ -587,15 +573,14 @@ std::string ModelTypeSyncWorkerImplTest::GetLocalCryptographerKeyName() const {
 }
 
 // static.
-std::string ModelTypeSyncWorkerImplTest::GenerateTagHash(
-    const std::string& tag) {
+std::string ModelTypeWorkerTest::GenerateTagHash(const std::string& tag) {
   const std::string& client_tag_hash =
       syncer::syncable::GenerateSyncableHash(kModelType, tag);
   return client_tag_hash;
 }
 
 // static.
-sync_pb::EntitySpecifics ModelTypeSyncWorkerImplTest::GenerateSpecifics(
+sync_pb::EntitySpecifics ModelTypeWorkerTest::GenerateSpecifics(
     const std::string& tag,
     const std::string& value) {
   sync_pb::EntitySpecifics specifics;
@@ -605,7 +590,7 @@ sync_pb::EntitySpecifics ModelTypeSyncWorkerImplTest::GenerateSpecifics(
 }
 
 // static.
-std::string ModelTypeSyncWorkerImplTest::GetNigoriName(const Nigori& nigori) {
+std::string ModelTypeWorkerTest::GetNigoriName(const Nigori& nigori) {
   std::string name;
   if (!nigori.Permute(Nigori::Password, kNigoriKeyName, &name)) {
     NOTREACHED();
@@ -616,7 +601,7 @@ std::string ModelTypeSyncWorkerImplTest::GetNigoriName(const Nigori& nigori) {
 }
 
 // static.
-KeyParams ModelTypeSyncWorkerImplTest::GetNthKeyParams(int n) {
+KeyParams ModelTypeWorkerTest::GetNthKeyParams(int n) {
   KeyParams params;
   params.hostname = std::string("localhost");
   params.username = std::string("userX");
@@ -625,9 +610,8 @@ KeyParams ModelTypeSyncWorkerImplTest::GetNthKeyParams(int n) {
 }
 
 // static.
-void ModelTypeSyncWorkerImplTest::EncryptUpdate(
-    const KeyParams& params,
-    sync_pb::EntitySpecifics* specifics) {
+void ModelTypeWorkerTest::EncryptUpdate(const KeyParams& params,
+                                        sync_pb::EntitySpecifics* specifics) {
   Nigori nigori;
   nigori.InitByDerivation(params.hostname, params.username, params.password);
 
@@ -652,7 +636,7 @@ void ModelTypeSyncWorkerImplTest::EncryptUpdate(
 // and the |worker_| doesn't mess up its simple task of moving around these
 // values.  It makes sense to have one or two tests that are this thorough, but
 // we shouldn't be this verbose in all tests.
-TEST_F(ModelTypeSyncWorkerImplTest, SimpleCommit) {
+TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   NormalInitialize();
 
   EXPECT_FALSE(WillCommit());
@@ -698,7 +682,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleCommit) {
   EXPECT_LT(0, commit_response.response_version);
 }
 
-TEST_F(ModelTypeSyncWorkerImplTest, SimpleDelete) {
+TEST_F(ModelTypeWorkerTest, SimpleDelete) {
   NormalInitialize();
 
   // We can't delete an entity that was never committed.
@@ -747,7 +731,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleDelete) {
 
 // The server doesn't like it when we try to delete an entity it's never heard
 // of before.  This test helps ensure we avoid that scenario.
-TEST_F(ModelTypeSyncWorkerImplTest, NoDeleteUncommitted) {
+TEST_F(ModelTypeWorkerTest, NoDeleteUncommitted) {
   NormalInitialize();
 
   // Request the commit of a new, never-before-seen item.
@@ -762,7 +746,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, NoDeleteUncommitted) {
 }
 
 // Verifies the sending of an "initial sync done" signal.
-TEST_F(ModelTypeSyncWorkerImplTest, SendInitialSyncDone) {
+TEST_F(ModelTypeWorkerTest, SendInitialSyncDone) {
   FirstInitialize();  // Initialize with no saved sync state.
   EXPECT_EQ(0U, GetNumModelThreadUpdateResponses());
   EXPECT_EQ(1, GetNumInitialDownloadNudges());
@@ -786,7 +770,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SendInitialSyncDone) {
 }
 
 // Commit two new entities in two separate commit messages.
-TEST_F(ModelTypeSyncWorkerImplTest, TwoNewItemsCommittedSeparately) {
+TEST_F(ModelTypeWorkerTest, TwoNewItemsCommittedSeparately) {
   NormalInitialize();
 
   // Commit the first of two entities.
@@ -826,7 +810,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, TwoNewItemsCommittedSeparately) {
 }
 
 // Test normal update receipt code path.
-TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUpdates) {
+TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   NormalInitialize();
 
   const std::string& tag_hash = GenerateTagHash("tag1");
@@ -852,7 +836,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUpdates) {
 }
 
 // Test commit of encrypted updates.
-TEST_F(ModelTypeSyncWorkerImplTest, EncryptedCommit) {
+TEST_F(ModelTypeWorkerTest, EncryptedCommit) {
   NormalInitialize();
 
   ASSERT_EQ(0U, GetNumModelThreadUpdateResponses());
@@ -885,7 +869,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, EncryptedCommit) {
 }
 
 // Test items are not committed when encryption is required but unavailable.
-TEST_F(ModelTypeSyncWorkerImplTest, EncryptionBlocksCommits) {
+TEST_F(ModelTypeWorkerTest, EncryptionBlocksCommits) {
   NormalInitialize();
 
   CommitRequest("tag1", "value1");
@@ -918,7 +902,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, EncryptionBlocksCommits) {
 }
 
 // Test the receipt of decryptable entities.
-TEST_F(ModelTypeSyncWorkerImplTest, ReceiveDecryptableEntities) {
+TEST_F(ModelTypeWorkerTest, ReceiveDecryptableEntities) {
   NormalInitialize();
 
   // Create a new Nigori and allow the cryptographer to decrypt it.
@@ -950,7 +934,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveDecryptableEntities) {
 }
 
 // Test initializing a CommitQueue with a cryptographer at startup.
-TEST_F(ModelTypeSyncWorkerImplTest, InitializeWithCryptographer) {
+TEST_F(ModelTypeWorkerTest, InitializeWithCryptographer) {
   // Set up some encryption state.
   NewForeignEncryptionKey();
   UpdateLocalCryptographer();
@@ -968,7 +952,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, InitializeWithCryptographer) {
 
 // Receive updates that are initially undecryptable, then ensure they get
 // delivered to the model thread when decryption becomes possible.
-TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUndecryptableEntries) {
+TEST_F(ModelTypeWorkerTest, ReceiveUndecryptableEntries) {
   NormalInitialize();
 
   // Receive a new foreign encryption key that we can't decrypt.
@@ -997,7 +981,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUndecryptableEntries) {
 }
 
 // Ensure that even encrypted updates can cause conflicts.
-TEST_F(ModelTypeSyncWorkerImplTest, EncryptedUpdateOverridesPendingCommit) {
+TEST_F(ModelTypeWorkerTest, EncryptedUpdateOverridesPendingCommit) {
   NormalInitialize();
 
   // Prepeare to commit an item.
@@ -1020,7 +1004,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, EncryptedUpdateOverridesPendingCommit) {
 }
 
 // Test decryption of pending updates saved across a restart.
-TEST_F(ModelTypeSyncWorkerImplTest, RestorePendingEntries) {
+TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
   // Create a fake pending update.
   UpdateResponseData update;
 
@@ -1055,7 +1039,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, RestorePendingEntries) {
 // Test decryption of pending updates saved across a restart.  This test
 // differs from the previous one in that the restored updates can be decrypted
 // immediately after the CommitQueue is constructed.
-TEST_F(ModelTypeSyncWorkerImplTest, RestoreApplicableEntries) {
+TEST_F(ModelTypeWorkerTest, RestoreApplicableEntries) {
   // Update the cryptographer so it can decrypt that update.
   NewForeignEncryptionKey();
   UpdateLocalCryptographer();
@@ -1087,7 +1071,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, RestoreApplicableEntries) {
 // This should be rare in practice.  Usually the cryptographer will be in an
 // unusable state when we receive undecryptable updates, and that alone will be
 // enough to prevent all commits.
-TEST_F(ModelTypeSyncWorkerImplTest, CommitBlockedByPending) {
+TEST_F(ModelTypeWorkerTest, CommitBlockedByPending) {
   NormalInitialize();
 
   // Prepeare to commit an item.
@@ -1111,7 +1095,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, CommitBlockedByPending) {
 }
 
 // Verify that corrupted encrypted updates don't cause crashes.
-TEST_F(ModelTypeSyncWorkerImplTest, ReceiveCorruptEncryption) {
+TEST_F(ModelTypeWorkerTest, ReceiveCorruptEncryption) {
   // Initialize the worker with basic encryption state.
   NormalInitialize();
   NewForeignEncryptionKey();

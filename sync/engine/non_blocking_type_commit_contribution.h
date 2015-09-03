@@ -13,19 +13,19 @@
 
 namespace syncer_v2 {
 
-class ModelTypeSyncWorkerImpl;
+class ModelTypeWorker;
 
 // A non-blocking sync type's contribution to an outgoing commit message.
 //
 // Helps build a commit message and process its response.  It collaborates
-// closely with the ModelTypeSyncWorkerImpl.
+// closely with the ModelTypeWorker.
 class NonBlockingTypeCommitContribution : public syncer::CommitContribution {
  public:
   NonBlockingTypeCommitContribution(
       const sync_pb::DataTypeContext& context,
       const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
       const std::vector<int64>& sequence_numbers,
-      ModelTypeSyncWorkerImpl* worker);
+      ModelTypeWorker* worker);
   ~NonBlockingTypeCommitContribution() override;
 
   // Implementation of CommitContribution
@@ -38,7 +38,7 @@ class NonBlockingTypeCommitContribution : public syncer::CommitContribution {
 
  private:
   // A non-owned pointer back to the object that created this contribution.
-  ModelTypeSyncWorkerImpl* const worker_;
+  ModelTypeWorker* const worker_;
 
   // The type-global context information.
   const sync_pb::DataTypeContext context_;

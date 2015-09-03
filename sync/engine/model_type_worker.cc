@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_type_sync_worker_impl.h"
+#include "sync/engine/model_type_worker.h"
 
 #include "base/bind.h"
 #include "base/format_macros.h"
@@ -25,16 +25,16 @@ using syncer::ModelType;
 using syncer::NudgeHandler;
 using syncer::SyncerError;
 
-ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
+ModelTypeWorker::ModelTypeWorker(
     ModelType type,
     const DataTypeState& initial_state,
     const UpdateResponseDataList& saved_pending_updates,
     scoped_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
-    scoped_ptr<ModelTypeProcessor> type_sync_proxy)
+    scoped_ptr<ModelTypeProcessor> model_type_processor)
     : type_(type),
       data_type_state_(initial_state),
-      type_sync_proxy_(type_sync_proxy.Pass()),
+      model_type_processor_(model_type_processor.Pass()),
       cryptographer_(cryptographer.Pass()),
       nudge_handler_(nudge_handler),
       weak_ptr_factory_(this) {
@@ -59,19 +59,18 @@ ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
   }
 }
 
-ModelTypeSyncWorkerImpl::~ModelTypeSyncWorkerImpl() {
-}
+ModelTypeWorker::~ModelTypeWorker() {}
 
-ModelType ModelTypeSyncWorkerImpl::GetModelType() const {
+ModelType ModelTypeWorker::GetModelType() const {
   DCHECK(CalledOnValidThread());
   return type_;
 }
 
-bool ModelTypeSyncWorkerImpl::IsEncryptionRequired() const {
+bool ModelTypeWorker::IsEncryptionRequired() const {
   return !!cryptographer_;
 }
 
-void ModelTypeSyncWorkerImpl::UpdateCryptographer(
+void ModelTypeWorker::UpdateCryptographer(
     scoped_ptr<Cryptographer> cryptographer) {
   DCHECK(cryptographer);
   cryptographer_ = cryptographer.Pass();
@@ -85,19 +84,19 @@ void ModelTypeSyncWorkerImpl::UpdateCryptographer(
 }
 
 // UpdateHandler implementation.
-void ModelTypeSyncWorkerImpl::GetDownloadProgress(
+void ModelTypeWorker::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
   DCHECK(CalledOnValidThread());
   progress_marker->CopyFrom(data_type_state_.progress_marker);
 }
 
-void ModelTypeSyncWorkerImpl::GetDataTypeContext(
+void ModelTypeWorker::GetDataTypeContext(
     sync_pb::DataTypeContext* context) const {
   DCHECK(CalledOnValidThread());
   context->CopyFrom(data_type_state_.type_context);
 }
 
-SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
+SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
@@ -112,8 +111,7 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
   UpdateResponseDataList pending_updates;
 
   for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
-       update_it != applicable_updates.end();
-       ++update_it) {
+       update_it != applicable_updates.end(); ++update_it) {
     const sync_pb::SyncEntity* update_entity = *update_it;
 
     // Skip updates for permanent folders.
@@ -162,8 +160,8 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
     } else if (specifics.has_encrypted() && cryptographer_ &&
                cryptographer_->CanDecrypt(specifics.encrypted())) {
       // Encrypted, but we know the key.
-      if (DecryptSpecifics(
-              cryptographer_.get(), specifics, &response_data.specifics)) {
+      if (DecryptSpecifics(cryptographer_.get(), specifics,
+                           &response_data.specifics)) {
         entity_tracker->ReceiveUpdate(update_entity->version());
         response_data.encryption_key_name = specifics.encrypted().key_name();
         response_datas.push_back(response_data);
@@ -184,18 +182,16 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
   DVLOG(1) << ModelTypeToString(type_) << ": "
            << base::StringPrintf(
                   "Delivering %zd applicable and %zd pending updates.",
-                  response_datas.size(),
-                  pending_updates.size());
+                  response_datas.size(), pending_updates.size());
 
   // Forward these updates to the model thread so it can do the rest.
-  type_sync_proxy_->OnUpdateReceived(
-      data_type_state_, response_datas, pending_updates);
+  model_type_processor_->OnUpdateReceived(data_type_state_, response_datas,
+                                          pending_updates);
 
   return syncer::SYNCER_OK;
 }
 
-void ModelTypeSyncWorkerImpl::ApplyUpdates(
-    syncer::sessions::StatusController* status) {
+void ModelTypeWorker::ApplyUpdates(syncer::sessions::StatusController* status) {
   DCHECK(CalledOnValidThread());
   // This function is called only when we've finished a download cycle, ie. we
   // got a response with changes_remaining == 0.  If this is our first download
@@ -206,20 +202,19 @@ void ModelTypeSyncWorkerImpl::ApplyUpdates(
 
     data_type_state_.initial_sync_done = true;
 
-    type_sync_proxy_->OnUpdateReceived(
+    model_type_processor_->OnUpdateReceived(
         data_type_state_, UpdateResponseDataList(), UpdateResponseDataList());
   }
 }
 
-void ModelTypeSyncWorkerImpl::PassiveApplyUpdates(
+void ModelTypeWorker::PassiveApplyUpdates(
     syncer::sessions::StatusController* status) {
   NOTREACHED()
       << "Non-blocking types should never apply updates on sync thread.  "
       << "ModelType is: " << ModelTypeToString(type_);
 }
 
-void ModelTypeSyncWorkerImpl::EnqueueForCommit(
-    const CommitRequestDataList& list) {
+void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(IsTypeInitialized())
@@ -236,7 +231,7 @@ void ModelTypeSyncWorkerImpl::EnqueueForCommit(
 }
 
 // CommitContributor implementation.
-scoped_ptr<CommitContribution> ModelTypeSyncWorkerImpl::GetContribution(
+scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     size_t max_entries) {
   DCHECK(CalledOnValidThread());
 
@@ -249,8 +244,7 @@ scoped_ptr<CommitContribution> ModelTypeSyncWorkerImpl::GetContribution(
 
   // TODO(rlarocque): Avoid iterating here.
   for (EntityMap::const_iterator it = entities_.begin();
-       it != entities_.end() && space_remaining > 0;
-       ++it) {
+       it != entities_.end() && space_remaining > 0; ++it) {
     EntityTracker* entity = it->second;
     if (entity->IsCommitPending()) {
       sync_pb::SyncEntity* commit_entity = commit_entities.Add();
@@ -271,8 +265,7 @@ scoped_ptr<CommitContribution> ModelTypeSyncWorkerImpl::GetContribution(
       data_type_state_.type_context, commit_entities, sequence_numbers, this));
 }
 
-void ModelTypeSyncWorkerImpl::StorePendingCommit(
-    const CommitRequestData& request) {
+void ModelTypeWorker::StorePendingCommit(const CommitRequestData& request) {
   if (!request.deleted) {
     DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(request.specifics));
   }
@@ -286,19 +279,14 @@ void ModelTypeSyncWorkerImpl::StorePendingCommit(
     entities_.insert(request.client_tag_hash, entity.Pass());
   } else {
     EntityTracker* entity = map_it->second;
-    entity->RequestCommit(request.id,
-                          request.client_tag_hash,
-                          request.sequence_number,
-                          request.base_version,
-                          request.ctime,
-                          request.mtime,
-                          request.non_unique_name,
-                          request.deleted,
-                          request.specifics);
+    entity->RequestCommit(request.id, request.client_tag_hash,
+                          request.sequence_number, request.base_version,
+                          request.ctime, request.mtime, request.non_unique_name,
+                          request.deleted, request.specifics);
   }
 }
 
-void ModelTypeSyncWorkerImpl::OnCommitResponse(
+void ModelTypeWorker::OnCommitResponse(
     const CommitResponseDataList& response_list) {
   for (CommitResponseDataList::const_iterator response_it =
            response_list.begin();
@@ -323,19 +311,19 @@ void ModelTypeSyncWorkerImpl::OnCommitResponse(
   // Send the responses back to the model thread.  It needs to know which
   // items have been successfully committed so it can save that information in
   // permanent storage.
-  type_sync_proxy_->OnCommitCompleted(data_type_state_, response_list);
+  model_type_processor_->OnCommitCompleted(data_type_state_, response_list);
 }
 
-base::WeakPtr<ModelTypeSyncWorkerImpl> ModelTypeSyncWorkerImpl::AsWeakPtr() {
+base::WeakPtr<ModelTypeWorker> ModelTypeWorker::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool ModelTypeSyncWorkerImpl::IsTypeInitialized() const {
+bool ModelTypeWorker::IsTypeInitialized() const {
   return data_type_state_.initial_sync_done &&
          !data_type_state_.progress_marker.token().empty();
 }
 
-bool ModelTypeSyncWorkerImpl::CanCommitItems() const {
+bool ModelTypeWorker::CanCommitItems() const {
   // We can't commit anything until we know the type's parent node.
   // We'll get it in the first update response.
   if (!IsTypeInitialized())
@@ -350,7 +338,7 @@ bool ModelTypeSyncWorkerImpl::CanCommitItems() const {
   return true;
 }
 
-void ModelTypeSyncWorkerImpl::HelpInitializeCommitEntity(
+void ModelTypeWorker::HelpInitializeCommitEntity(
     sync_pb::SyncEntity* sync_entity) {
   DCHECK(CanCommitItems());
 
@@ -387,7 +375,7 @@ void ModelTypeSyncWorkerImpl::HelpInitializeCommitEntity(
   // Call sync_entity->set_parent_id_string(...) for hierarchical entities here.
 }
 
-void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
+void ModelTypeWorker::OnCryptographerUpdated() {
   DCHECK(cryptographer_);
 
   bool new_encryption_key = false;
@@ -414,8 +402,7 @@ void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
 
       if (cryptographer_->CanDecrypt(saved_pending.specifics.encrypted())) {
         UpdateResponseData decrypted_response = saved_pending;
-        if (DecryptSpecifics(cryptographer_.get(),
-                             saved_pending.specifics,
+        if (DecryptSpecifics(cryptographer_.get(), saved_pending.specifics,
                              &decrypted_response.specifics)) {
           decrypted_response.encryption_key_name =
               saved_pending.specifics.encrypted().key_name();
@@ -432,15 +419,14 @@ void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
              << base::StringPrintf(
                     "Delivering encryption key and %zd decrypted updates.",
                     response_datas.size());
-    type_sync_proxy_->OnUpdateReceived(data_type_state_, response_datas,
-                                       UpdateResponseDataList());
+    model_type_processor_->OnUpdateReceived(data_type_state_, response_datas,
+                                            UpdateResponseDataList());
   }
 }
 
-bool ModelTypeSyncWorkerImpl::DecryptSpecifics(
-    Cryptographer* cryptographer,
-    const sync_pb::EntitySpecifics& in,
-    sync_pb::EntitySpecifics* out) {
+bool ModelTypeWorker::DecryptSpecifics(Cryptographer* cryptographer,
+                                       const sync_pb::EntitySpecifics& in,
+                                       sync_pb::EntitySpecifics* out) {
   DCHECK(in.has_encrypted());
   DCHECK(cryptographer->CanDecrypt(in.encrypted()));
 

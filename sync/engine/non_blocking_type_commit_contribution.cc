@@ -5,7 +5,7 @@
 #include "sync/engine/non_blocking_type_commit_contribution.h"
 
 #include "base/values.h"
-#include "sync/engine/model_type_sync_worker_impl.h"
+#include "sync/engine/model_type_worker.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/proto_value_conversions.h"
 
@@ -15,13 +15,12 @@ NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
     const sync_pb::DataTypeContext& context,
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
     const std::vector<int64>& sequence_numbers,
-    ModelTypeSyncWorkerImpl* worker)
+    ModelTypeWorker* worker)
     : worker_(worker),
       context_(context),
       entities_(entities),
       sequence_numbers_(sequence_numbers),
-      cleaned_up_(false) {
-}
+      cleaned_up_(false) {}
 
 NonBlockingTypeCommitContribution::~NonBlockingTypeCommitContribution() {
   DCHECK(cleaned_up_);

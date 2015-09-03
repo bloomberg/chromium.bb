@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_MODEL_TYPE_SYNC_WORKER_IMPL_H_
-#define SYNC_ENGINE_MODEL_TYPE_SYNC_WORKER_IMPL_H_
+#ifndef SYNC_ENGINE_MODEL_TYPE_WORKER_H_
+#define SYNC_ENGINE_MODEL_TYPE_WORKER_H_
 
 #include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -49,18 +49,18 @@ class EntityTracker;
 // example, if the sync server sends down an update for a sync entity that is
 // currently pending for commit, this object will detect this condition and
 // cancel the pending commit.
-class SYNC_EXPORT ModelTypeSyncWorkerImpl : public syncer::UpdateHandler,
-                                            public syncer::CommitContributor,
-                                            public CommitQueue,
-                                            public base::NonThreadSafe {
+class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
+                                    public syncer::CommitContributor,
+                                    public CommitQueue,
+                                    public base::NonThreadSafe {
  public:
-  ModelTypeSyncWorkerImpl(syncer::ModelType type,
-                          const DataTypeState& initial_state,
-                          const UpdateResponseDataList& saved_pending_updates,
-                          scoped_ptr<syncer::Cryptographer> cryptographer,
-                          syncer::NudgeHandler* nudge_handler,
-                          scoped_ptr<ModelTypeProcessor> type_sync_proxy);
-  ~ModelTypeSyncWorkerImpl() override;
+  ModelTypeWorker(syncer::ModelType type,
+                  const DataTypeState& initial_state,
+                  const UpdateResponseDataList& saved_pending_updates,
+                  scoped_ptr<syncer::Cryptographer> cryptographer,
+                  syncer::NudgeHandler* nudge_handler,
+                  scoped_ptr<ModelTypeProcessor> model_type_processor);
+  ~ModelTypeWorker() override;
 
   syncer::ModelType GetModelType() const;
 
@@ -89,7 +89,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public syncer::UpdateHandler,
   // Callback for when our contribution gets a response.
   void OnCommitResponse(const CommitResponseDataList& response_list);
 
-  base::WeakPtr<ModelTypeSyncWorkerImpl> AsWeakPtr();
+  base::WeakPtr<ModelTypeWorker> AsWeakPtr();
 
  private:
   typedef base::ScopedPtrMap<std::string, scoped_ptr<EntityTracker>> EntityMap;
@@ -139,7 +139,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public syncer::UpdateHandler,
 
   // Pointer to the ModelTypeProcessor associated with this worker.
   // This is NULL when no proxy is connected..
-  scoped_ptr<ModelTypeProcessor> type_sync_proxy_;
+  scoped_ptr<ModelTypeProcessor> model_type_processor_;
 
   // A private copy of the most recent cryptographer known to sync.
   // Initialized at construction time and updated with UpdateCryptographer().
@@ -162,9 +162,9 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public syncer::UpdateHandler,
   // the steady state.
   EntityMap entities_;
 
-  base::WeakPtrFactory<ModelTypeSyncWorkerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_;
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_MODEL_TYPE_SYNC_WORKER_IMPL_H_
+#endif  // SYNC_ENGINE_MODEL_TYPE_WORKER_H_

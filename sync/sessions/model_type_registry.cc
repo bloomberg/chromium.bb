@@ -12,7 +12,7 @@
 #include "sync/engine/directory_update_handler.h"
 #include "sync/engine/model_type_processor.h"
 #include "sync/engine/model_type_processor_impl.h"
-#include "sync/engine/model_type_sync_worker_impl.h"
+#include "sync/engine/model_type_worker.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 #include "sync/util/cryptographer.h"
@@ -76,34 +76,31 @@ void ModelTypeProcessorProxy::OnUpdateReceived(
                  processor_, type_state, response_list, pending_updates));
 }
 
-class ModelTypeSyncWorkerWrapper : public syncer_v2::CommitQueue {
+class CommitQueueProxy : public syncer_v2::CommitQueue {
  public:
-  ModelTypeSyncWorkerWrapper(
-      const base::WeakPtr<syncer_v2::ModelTypeSyncWorkerImpl>& worker,
-      const scoped_refptr<base::SequencedTaskRunner>& sync_thread);
-  ~ModelTypeSyncWorkerWrapper() override;
+  CommitQueueProxy(const base::WeakPtr<syncer_v2::ModelTypeWorker>& worker,
+                   const scoped_refptr<base::SequencedTaskRunner>& sync_thread);
+  ~CommitQueueProxy() override;
 
   void EnqueueForCommit(const syncer_v2::CommitRequestDataList& list) override;
 
  private:
-  base::WeakPtr<syncer_v2::ModelTypeSyncWorkerImpl> worker_;
+  base::WeakPtr<syncer_v2::ModelTypeWorker> worker_;
   scoped_refptr<base::SequencedTaskRunner> sync_thread_;
 };
 
-ModelTypeSyncWorkerWrapper::ModelTypeSyncWorkerWrapper(
-    const base::WeakPtr<syncer_v2::ModelTypeSyncWorkerImpl>& worker,
+CommitQueueProxy::CommitQueueProxy(
+    const base::WeakPtr<syncer_v2::ModelTypeWorker>& worker,
     const scoped_refptr<base::SequencedTaskRunner>& sync_thread)
     : worker_(worker), sync_thread_(sync_thread) {}
 
-ModelTypeSyncWorkerWrapper::~ModelTypeSyncWorkerWrapper() {
-}
+CommitQueueProxy::~CommitQueueProxy() {}
 
-void ModelTypeSyncWorkerWrapper::EnqueueForCommit(
+void CommitQueueProxy::EnqueueForCommit(
     const syncer_v2::CommitRequestDataList& list) {
   sync_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeSyncWorkerImpl::EnqueueForCommit, worker_,
-                 list));
+      base::Bind(&syncer_v2::ModelTypeWorker::EnqueueForCommit, worker_, list));
 }
 
 }  // namespace
@@ -204,19 +201,17 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   if (encrypted_types_.Has(type))
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
 
-  scoped_ptr<syncer_v2::ModelTypeSyncWorkerImpl> worker(
-      new syncer_v2::ModelTypeSyncWorkerImpl(
-          type, data_type_state, saved_pending_updates,
-          cryptographer_copy.Pass(), nudge_handler_, processor.Pass()));
+  scoped_ptr<syncer_v2::ModelTypeWorker> worker(new syncer_v2::ModelTypeWorker(
+      type, data_type_state, saved_pending_updates, cryptographer_copy.Pass(),
+      nudge_handler_, processor.Pass()));
 
   // Initialize Processor -> Worker communication channel.
-  scoped_ptr<syncer_v2::CommitQueue> wrapped_worker(
-      new ModelTypeSyncWorkerWrapper(worker->AsWeakPtr(),
-                                     scoped_refptr<base::SequencedTaskRunner>(
-                                         base::ThreadTaskRunnerHandle::Get())));
+  scoped_ptr<syncer_v2::CommitQueue> commit_queue_proxy(new CommitQueueProxy(
+      worker->AsWeakPtr(), scoped_refptr<base::SequencedTaskRunner>(
+                               base::ThreadTaskRunnerHandle::Get())));
   type_task_runner->PostTask(
       FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessorImpl::OnConnect,
-                            processor_impl, base::Passed(&wrapped_worker)));
+                            processor_impl, base::Passed(&commit_queue_proxy)));
 
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
@@ -225,7 +220,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   commit_contributor_map_.insert(std::make_pair(type, worker.get()));
 
   // The container takes ownership.
-  model_type_sync_workers_.push_back(worker.Pass());
+  model_type_workers_.push_back(worker.Pass());
 
   DCHECK(Intersection(GetEnabledDirectoryTypes(),
                       GetEnabledNonBlockingTypes()).Empty());
@@ -243,11 +238,11 @@ void ModelTypeRegistry::DisconnectSyncWorker(ModelType type) {
   DCHECK_EQ(1U, committers_erased);
 
   // Remove from the ScopedVector, deleting the worker in the process.
-  for (ScopedVector<syncer_v2::ModelTypeSyncWorkerImpl>::iterator it =
-           model_type_sync_workers_.begin();
-       it != model_type_sync_workers_.end(); ++it) {
+  for (ScopedVector<syncer_v2::ModelTypeWorker>::iterator it =
+           model_type_workers_.begin();
+       it != model_type_workers_.end(); ++it) {
     if ((*it)->GetModelType() == type) {
-      model_type_sync_workers_.erase(it);
+      model_type_workers_.erase(it);
       break;
     }
   }
@@ -341,9 +336,9 @@ ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
 }
 
 void ModelTypeRegistry::OnEncryptionStateChanged() {
-  for (ScopedVector<syncer_v2::ModelTypeSyncWorkerImpl>::iterator it =
-           model_type_sync_workers_.begin();
-       it != model_type_sync_workers_.end(); ++it) {
+  for (ScopedVector<syncer_v2::ModelTypeWorker>::iterator it =
+           model_type_workers_.begin();
+       it != model_type_workers_.end(); ++it) {
     if (encrypted_types_.Has((*it)->GetModelType())) {
       (*it)->UpdateCryptographer(
           make_scoped_ptr(new Cryptographer(*cryptographer_)));
@@ -353,9 +348,9 @@ void ModelTypeRegistry::OnEncryptionStateChanged() {
 
 ModelTypeSet ModelTypeRegistry::GetEnabledNonBlockingTypes() const {
   ModelTypeSet enabled_off_thread_types;
-  for (ScopedVector<syncer_v2::ModelTypeSyncWorkerImpl>::const_iterator it =
-           model_type_sync_workers_.begin();
-       it != model_type_sync_workers_.end(); ++it) {
+  for (ScopedVector<syncer_v2::ModelTypeWorker>::const_iterator it =
+           model_type_workers_.begin();
+       it != model_type_workers_.end(); ++it) {
     enabled_off_thread_types.Put((*it)->GetModelType());
   }
   return enabled_off_thread_types;

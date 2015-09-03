@@ -22,8 +22,8 @@
 
 namespace syncer_v2 {
 struct DataTypeState;
-class ModelTypeSyncWorkerImpl;
 class ModelTypeProcessorImpl;
+class ModelTypeWorker;
 }
 
 namespace syncer {
@@ -120,7 +120,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   ScopedVector<DirectoryTypeDebugInfoEmitter>
       directory_type_debug_info_emitters_;
 
-  ScopedVector<syncer_v2::ModelTypeSyncWorkerImpl> model_type_sync_workers_;
+  ScopedVector<syncer_v2::ModelTypeWorker> model_type_workers_;
 
   // Maps of UpdateHandlers and CommitContributors.
   // They do not own any of the objects they point to.
