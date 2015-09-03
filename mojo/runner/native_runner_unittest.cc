@@ -104,7 +104,7 @@ TEST_F(NativeApplicationLoaderTest, DoesNotExist) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url.spec());
   application_manager_.ConnectToApplication(
-      nullptr, request.Pass(), std::string(), GURL(), services.Pass(),
+      nullptr, request.Pass(), std::string(), services.Pass(),
       service_provider.Pass(), shell::GetPermissiveCapabilityFilter(),
       base::Closure(), shell::EmptyConnectCallback());
   EXPECT_FALSE(state_.runner_was_created);

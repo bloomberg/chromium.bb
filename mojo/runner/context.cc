@@ -315,8 +315,8 @@ bool Context::Init() {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:tracing");
   application_manager_.ConnectToApplication(
-      nullptr, request.Pass(), std::string(), GURL(),
-      GetProxy(&service_provider_ptr), tracing_service_provider_ptr.Pass(),
+      nullptr, request.Pass(), std::string(), GetProxy(&service_provider_ptr),
+      tracing_service_provider_ptr.Pass(),
       shell::GetPermissiveCapabilityFilter(), base::Closure(),
       shell::EmptyConnectCallback());
 
@@ -383,7 +383,7 @@ void Context::Run(const GURL& url) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url.spec());
   application_manager_.ConnectToApplication(
-      nullptr, request.Pass(), std::string(), GURL(), GetProxy(&services),
+      nullptr, request.Pass(), std::string(), GetProxy(&services),
       exposed_services.Pass(), shell::GetPermissiveCapabilityFilter(),
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url),
       shell::EmptyConnectCallback());

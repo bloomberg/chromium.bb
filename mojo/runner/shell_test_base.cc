@@ -52,9 +52,9 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(application_url.spec());
   shell_context_.application_manager()->ConnectToApplication(
-      nullptr, request.Pass(), std::string(), GURL(), GetProxy(&services),
-      nullptr, shell::GetPermissiveCapabilityFilter(),
-      base::Bind(&QuitIfRunning), shell::EmptyConnectCallback());
+      nullptr, request.Pass(), std::string(), GetProxy(&services), nullptr,
+      shell::GetPermissiveCapabilityFilter(), base::Bind(&QuitIfRunning),
+      shell::EmptyConnectCallback());
   MessagePipe pipe;
   services->ConnectToService(service_name, pipe.handle1.Pass());
   return pipe.handle0.Pass();

@@ -350,7 +350,7 @@ class CapabilityFilterTest : public testing::Test {
     URLRequestPtr request(URLRequest::New());
     request->url = String::From(url);
     application_manager_->ConnectToApplication(
-        nullptr, request.Pass(), std::string(), GURL(), GetProxy(&services),
+        nullptr, request.Pass(), std::string(), GetProxy(&services),
         exposed_services.Pass(), filter,
         base::MessageLoop::QuitWhenIdleClosure(), EmptyConnectCallback());
   }

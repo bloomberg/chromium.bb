@@ -73,22 +73,20 @@ void ApplicationManager::TerminateShellConnections() {
 
 void ApplicationManager::ConnectToApplication(
     ApplicationInstance* originator,
-    URLRequestPtr requested_url,
+    URLRequestPtr app_url_request,
     const std::string& qualifier,
-    const GURL& requestor_url,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
-    const CapabilityFilter& capability_filter,
+    const CapabilityFilter& filter,
     const base::Closure& on_application_end,
     const Shell::ConnectToApplicationCallback& connect_callback) {
-  DCHECK(requestor_url.is_empty());
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->SetOriginatorInfo(originator);
-  params->SetURLInfo(requested_url.Pass());
+  params->SetURLInfo(app_url_request.Pass());
   params->set_qualifier(qualifier);
   params->set_services(services.Pass());
   params->set_exposed_services(exposed_services.Pass());
-  params->set_filter(capability_filter);
+  params->set_filter(filter);
   params->set_on_application_end(on_application_end);
   params->set_connect_callback(connect_callback);
 

@@ -95,7 +95,7 @@ void ApplicationInstance::ConnectToApplication(
     if (!filter.is_null())
       capability_filter = filter->filter.To<CapabilityFilter>();
     manager_->ConnectToApplication(
-        this, app_request.Pass(), std::string(), GURL(), services.Pass(),
+        this, app_request.Pass(), std::string(), services.Pass(),
         exposed_services.Pass(), capability_filter, base::Closure(), callback);
   } else {
     LOG(WARNING) << "CapabilityFilter prevented connection from: " <<

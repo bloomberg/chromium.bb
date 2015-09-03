@@ -134,9 +134,9 @@ class AboutFetcherTest : public testing::Test {
     URLRequestPtr request(URLRequest::New());
     request->url = url;
     application_manager_->ConnectToApplication(
-        nullptr, request.Pass(), std::string(), GURL(),
-        service_provider_request.Pass(), nullptr, shell::CapabilityFilter(),
-        base::Closure(), shell::EmptyConnectCallback());
+        nullptr, request.Pass(), std::string(), service_provider_request.Pass(),
+        nullptr, shell::CapabilityFilter(), base::Closure(),
+        shell::EmptyConnectCallback());
 
     run_loop.Run();
   }

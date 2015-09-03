@@ -84,15 +84,15 @@ class ApplicationManager {
   // |originator| can be NULL (e.g. for the first application or in tests), but
   // typically is non-NULL and identifies the instance initiating the
   // connection.
-  // TODO(yzshen): Remove |requestor_url|.
+  // Please see the comments in connect_to_application_params.h for more details
+  // about the parameters.
   void ConnectToApplication(
       ApplicationInstance* originator,
-      URLRequestPtr requested_url,
+      URLRequestPtr app_url_request,
       const std::string& qualifier,
-      const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,
       ServiceProviderPtr exposed_services,
-      const CapabilityFilter& capability_filter,
+      const CapabilityFilter& filter,
       const base::Closure& on_application_end,
       const Shell::ConnectToApplicationCallback& connect_callback);
 
