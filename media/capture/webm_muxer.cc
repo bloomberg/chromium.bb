@@ -53,7 +53,8 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
   segment_.AddFrame(reinterpret_cast<const uint8_t*>(encoded_data.data()),
                     encoded_data.size(),
                     track_index_,
-                    (timestamp - first_frame_timestamp_).InMilliseconds(),
+                    (timestamp - first_frame_timestamp_).InMicroseconds() *
+                        base::Time::kNanosecondsPerMicrosecond,
                     is_key_frame);
 }
 
@@ -75,7 +76,7 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
   DCHECK_EQ(video_track->crop_bottom(), 0ull);
 
   video_track->set_frame_rate(frame_rate);
-  video_track->set_default_duration(base::Time::kMicrosecondsPerSecond /
+  video_track->set_default_duration(base::Time::kNanosecondsPerSecond /
                                     frame_rate);
   // Segment's timestamps should be in milliseconds, DCHECK it. See
   // http://www.webmproject.org/docs/container/#muxer-guidelines
