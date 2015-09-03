@@ -440,6 +440,62 @@ TEST(TransformOperationTest, LargeRotationsWithDifferentAxes) {
       expected, operations_to.Blend(operations_from, progress));
 }
 
+TEST(TransformOperationTest, RotationFromZeroDegDifferentAxes) {
+  TransformOperations operations_from;
+  operations_from.AppendRotate(0, 0, 1, 0);
+
+  TransformOperations operations_to;
+  operations_to.AppendRotate(0, 1, 0, 450);
+
+  SkMScalar progress = 0.5f;
+  gfx::Transform expected;
+  expected.RotateAbout(gfx::Vector3dF(0, 1, 0), 225);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected, operations_to.Blend(operations_from, progress));
+}
+
+TEST(TransformOperationTest, RotationFromZeroDegSameAxes) {
+  TransformOperations operations_from;
+  operations_from.AppendRotate(0, 0, 1, 0);
+
+  TransformOperations operations_to;
+  operations_to.AppendRotate(0, 0, 1, 450);
+
+  SkMScalar progress = 0.5f;
+  gfx::Transform expected;
+  expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 225);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected, operations_to.Blend(operations_from, progress));
+}
+
+TEST(TransformOperationTest, RotationToZeroDegDifferentAxes) {
+  TransformOperations operations_from;
+  operations_from.AppendRotate(0, 1, 0, 450);
+
+  TransformOperations operations_to;
+  operations_to.AppendRotate(0, 0, 1, 0);
+
+  SkMScalar progress = 0.5f;
+  gfx::Transform expected;
+  expected.RotateAbout(gfx::Vector3dF(0, 1, 0), 225);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected, operations_to.Blend(operations_from, progress));
+}
+
+TEST(TransformOperationTest, RotationToZeroDegSameAxes) {
+  TransformOperations operations_from;
+  operations_from.AppendRotate(0, 0, 1, 450);
+
+  TransformOperations operations_to;
+  operations_to.AppendRotate(0, 0, 1, 0);
+
+  SkMScalar progress = 0.5f;
+  gfx::Transform expected;
+  expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 225);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected, operations_to.Blend(operations_from, progress));
+}
+
 TEST(TransformOperationTest, BlendRotationFromIdentity) {
   ScopedVector<TransformOperations> identity_operations;
   GetIdentityOperations(&identity_operations);
