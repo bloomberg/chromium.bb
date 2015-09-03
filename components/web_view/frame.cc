@@ -252,7 +252,6 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
 
   // We need a View to navigate. When we get the View we'll complete the
   // navigation.
-  // TODO(sky): consider state and what is not legal while waiting.
   if (!view_) {
     pending_navigate_ = request.Pass();
     return;
