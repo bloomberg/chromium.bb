@@ -19,6 +19,7 @@ namespace autofill {
 
 // Stores information about a field in a form.
 struct FormFieldData {
+  // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
   enum RoleAttribute {
     // "presentation"
     ROLE_ATTRIBUTE_PRESENTATION,

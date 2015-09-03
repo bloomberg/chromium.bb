@@ -17,13 +17,17 @@ var FormControlElement;
 /**
   * @typedef {{
   *   name: string,
+  *   value: string,
   *   form_control_type: string,
   *   autocomplete_attributes: string,
-  *   is_autofilled: boolean,
-  *   should_autocomplete: boolean,
   *   max_length: number,
+  *   is_autofilled: boolean,
   *   is_checkable: boolean,
-  *   value: string
+  *   is_focusable: boolean,
+  *   should_autocomplete: boolean,
+  *   role: number,
+  *   option_contents: Array<string>,
+  *   option_values: Array<string>
   * }}
   */
 var AutofillFormFieldData;
@@ -114,6 +118,16 @@ __gCrWeb.autofill.EXTRACT_MASK_OPTION_TEXT = 1 << 1;
  * @const {number}
  */
 __gCrWeb.autofill.EXTRACT_MASK_OPTIONS = 1 << 2;
+
+/**
+ * A value for the "presentation" role.
+ *
+ * This variable is from enum RoleAttribute in
+ * chromium/src/components/autofill/core/common/form_field_data.h
+ *
+ * @const {number}
+ */
+__gCrWeb.autofill.ROLE_ATTRIBUTE_PRESENTATION = 0;
 
 /**
  * The last element that was autofilled.
@@ -1736,9 +1750,9 @@ __gCrWeb.autofill.webFormControlElementToFormField = function(
   // form data.
   field['name'] = __gCrWeb['common'].nameForAutofill(element);
   field['form_control_type'] = element.type;
-  var attribute = element.getAttribute('autocomplete');
-  if (attribute) {
-    field['autocomplete_attribute'] = attribute;
+  var autocomplete_attribute = element.getAttribute('autocomplete');
+  if (autocomplete_attribute) {
+    field['autocomplete_attribute'] = autocomplete_attribute;
   }
   if (field['autocomplete_attribute'] != null &&
       field['autocomplete_attribute'].length >
@@ -1747,6 +1761,11 @@ __gCrWeb.autofill.webFormControlElementToFormField = function(
     // process. However, send over a default string to indicate that the
     // attribute was present.
     field['autocomplete_attribute'] = 'x-max-data-length-exceeded';
+  }
+
+  var role_attribute = element.getAttribute('role');
+  if (role_attribute && role_attribute.toLowerCase() == 'presentation') {
+    field['role'] = __gCrWeb.autofill.ROLE_ATTRIBUTE_PRESENTATION;
   }
 
   if (!__gCrWeb.autofill.isAutofillableElement(element)) {
