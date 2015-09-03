@@ -416,6 +416,43 @@
         'command_buffer/service/gles2_cmd_decoder_mock.cc',
       ],
     },
+    {
+      # GN version: //gpu:command_buffer_gles2
+      'target_name': 'command_buffer_gles2',
+      'type': 'shared_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../gpu/gpu.gyp:command_buffer_service',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gl/gl.gyp:gl',
+        'gles2_c_lib',
+        'gles2_implementation',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        # TODO(hendrikw): Move egl out of gles2_conform_support.
+        'gles2_conform_support/egl/config.cc',
+        'gles2_conform_support/egl/config.h',
+        'gles2_conform_support/egl/display.cc',
+        'gles2_conform_support/egl/display.h',
+        'gles2_conform_support/egl/egl.cc',
+        'gles2_conform_support/egl/surface.cc',
+        'gles2_conform_support/egl/surface.h',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'defines': [
+            'EGLAPIENTRY=',
+            'EGLAPI=__declspec(dllexport)',
+          ],
+        }, { # OS!="win"
+          'defines': [
+            'EGLAPIENTRY=',
+            'EGLAPI=__attribute__((visibility(\"default\")))'
+          ],
+        }, ],
+      ],
+    }
   ],
   'conditions': [
     ['component=="static_library"', {
