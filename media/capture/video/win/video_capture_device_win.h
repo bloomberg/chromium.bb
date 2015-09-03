@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Windows specific implementation of VideoCaptureDevice.
-// DirectShow is used for capturing. DirectShow provide its own threads
-// for capturing.
+// Windows specific implementation of VideoCaptureDevice. DirectShow is used for
+// capturing. DirectShow provide its own threads for capturing.
 
 #ifndef MEDIA_VIDEO_CAPTURE_WIN_VIDEO_CAPTURE_DEVICE_WIN_H_
 #define MEDIA_VIDEO_CAPTURE_WIN_VIDEO_CAPTURE_DEVICE_WIN_H_
@@ -16,8 +15,7 @@
 #include <map>
 #include <string>
 
-#include "base/threading/non_thread_safe.h"
-#include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "base/win/scoped_comptr.h"
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
@@ -28,8 +26,7 @@
 namespace media {
 
 // All the methods in the class can only be run on a COM initialized thread.
-class VideoCaptureDeviceWin : public base::NonThreadSafe,
-                              public VideoCaptureDevice,
+class VideoCaptureDeviceWin : public VideoCaptureDevice,
                               public SinkFilterObserver {
  public:
   // A utility class that wraps the AM_MEDIA_TYPE type and guarantees that
@@ -53,7 +50,6 @@ class VideoCaptureDeviceWin : public base::NonThreadSafe,
   };
 
   static HRESULT GetDeviceFilter(const std::string& device_id,
-                                 const CLSID device_class_id,
                                  IBaseFilter** filter);
   static base::win::ScopedComPtr<IPin> GetPin(IBaseFilter* filter,
                                               PIN_DIRECTION pin_dir,
@@ -87,7 +83,7 @@ class VideoCaptureDeviceWin : public base::NonThreadSafe,
   void SetAntiFlickerInCaptureFilter(const VideoCaptureParams& params);
   void SetErrorState(const std::string& reason);
 
-  Name device_name_;
+  const Name device_name_;
   InternalState state_;
   scoped_ptr<VideoCaptureDevice::Client> client_;
 
@@ -105,6 +101,8 @@ class VideoCaptureDeviceWin : public base::NonThreadSafe,
   // Map of all capabilities this device support.
   CapabilityList capabilities_;
   VideoCaptureFormat capture_format_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceWin);
 };

@@ -13,7 +13,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
-#include "media/capture/video/win/video_capture_device_mf_win.h"
 
 using base::win::ScopedCoMem;
 using base::win::ScopedComPtr;
@@ -43,17 +42,13 @@ bool PinMatchesCategory(IPin* pin, REFGUID category) {
 bool PinMatchesMajorType(IPin* pin, REFGUID major_type) {
   DCHECK(pin);
   AM_MEDIA_TYPE connection_media_type;
-  HRESULT hr = pin->ConnectionMediaType(&connection_media_type);
+  const HRESULT hr = pin->ConnectionMediaType(&connection_media_type);
   return SUCCEEDED(hr) && connection_media_type.majortype == major_type;
 }
 
 // Finds and creates a DirectShow Video Capture filter matching the |device_id|.
-// |class_id| is usually CLSID_VideoInputDeviceCategory for standard DirectShow
-// devices but might also be AM_KSCATEGORY_CAPTURE or AM_KSCATEGORY_CROSSBAR, to
-// enumerate WDM capture devices or WDM crossbars, respectively.
 // static
 HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
-                                               const CLSID device_class_id,
                                                IBaseFilter** filter) {
   DCHECK(filter);
 
@@ -64,37 +59,37 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
     return hr;
 
   ScopedComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(device_class_id, enum_moniker.Receive(),
-                                       0);
+  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
+                                       enum_moniker.Receive(), 0);
   // CreateClassEnumerator returns S_FALSE on some Windows OS
   // when no camera exist. Therefore the FAILED macro can't be used.
   if (hr != S_OK)
-    return NULL;
+    return hr;
 
   ScopedComPtr<IMoniker> moniker;
   ScopedComPtr<IBaseFilter> capture_filter;
-  DWORD fetched = 0;
-  while (enum_moniker->Next(1, moniker.Receive(), &fetched) == S_OK) {
+  for (ScopedComPtr<IMoniker> moniker;
+       enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK;
+       moniker.Release()) {
     ScopedComPtr<IPropertyBag> prop_bag;
     hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
-    if (FAILED(hr)) {
-      moniker.Release();
+    if (FAILED(hr))
       continue;
-    }
 
-    // Find the device via DevicePath, Description or FriendlyName, whichever is
-    // available first.
+    // Find |device_id| via DevicePath, Description or FriendlyName, whichever
+    // is available first and is a VT_BSTR (i.e. String) type.
     static const wchar_t* kPropertyNames[] = {
         L"DevicePath", L"Description", L"FriendlyName"};
 
     ScopedVariant name;
     for (const auto* property_name : kPropertyNames) {
-      if (name.type() != VT_BSTR)
-        prop_bag->Read(property_name, name.Receive(), 0);
+      prop_bag->Read(property_name, name.Receive(), 0);
+      if (name.type() == VT_BSTR)
+        break;
     }
 
     if (name.type() == VT_BSTR) {
-      std::string device_path(base::SysWideToUTF8(V_BSTR(name.ptr())));
+      const std::string device_path(base::SysWideToUTF8(V_BSTR(name.ptr())));
       if (device_path.compare(device_id) == 0) {
         // We have found the requested device
         hr = moniker->BindToObject(0, 0, IID_IBaseFilter,
@@ -104,7 +99,6 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
         break;
       }
     }
-    moniker.Release();
   }
 
   *filter = capture_filter.Detach();
@@ -153,7 +147,7 @@ VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
   static struct {
     const GUID& sub_type;
     VideoPixelFormat format;
-  } pixel_formats[] = {
+  } const kMediaSubtypeToPixelFormatCorrespondence[] = {
       {kMediaSubTypeI420, PIXEL_FORMAT_I420},
       {MEDIASUBTYPE_IYUV, PIXEL_FORMAT_I420},
       {MEDIASUBTYPE_RGB24, PIXEL_FORMAT_RGB24},
@@ -163,9 +157,9 @@ VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
       {MEDIASUBTYPE_ARGB32, PIXEL_FORMAT_ARGB},
       {kMediaSubTypeHDYC, PIXEL_FORMAT_UYVY},
   };
-  for (size_t i = 0; i < arraysize(pixel_formats); ++i) {
-    if (sub_type == pixel_formats[i].sub_type)
-      return pixel_formats[i].format;
+  for (const auto& pixel_format : kMediaSubtypeToPixelFormatCorrespondence) {
+    if (sub_type == pixel_format.sub_type)
+      return pixel_format.format;
   }
 #ifndef NDEBUG
   WCHAR guid_str[128];
@@ -216,11 +210,12 @@ void VideoCaptureDeviceWin::ScopedMediaType::DeleteMediaType(
 
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(const Name& device_name)
     : device_name_(device_name), state_(kIdle) {
-  DetachFromThread();
+  // TODO(mcasas): Check that CoInitializeEx() has been called with the
+  // appropriate Apartment model, i.e., Single Threaded.
 }
 
 VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (media_control_.get())
     media_control_->Stop();
 
@@ -239,11 +234,10 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
 }
 
 bool VideoCaptureDeviceWin::Init() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   HRESULT hr;
 
-  hr = GetDeviceFilter(device_name_.id(), CLSID_VideoInputDeviceCategory,
-                       capture_filter_.Receive());
+  hr = GetDeviceFilter(device_name_.id(), capture_filter_.Receive());
 
   if (!capture_filter_.get()) {
     DLOG(ERROR) << "Failed to create capture filter: "
@@ -261,7 +255,7 @@ bool VideoCaptureDeviceWin::Init() {
   // Create the sink filter used for receiving Captured frames.
   sink_filter_ = new SinkFilter(this);
   if (sink_filter_.get() == NULL) {
-    DLOG(ERROR) << "Failed to create send filter";
+    DLOG(ERROR) << "Failed to create sink filter";
     return false;
   }
 
@@ -306,7 +300,7 @@ bool VideoCaptureDeviceWin::Init() {
 
   hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to add the send filter to the graph: "
+    DLOG(ERROR) << "Failed to add the sink filter to the graph: "
                 << logging::SystemErrorCodeToString(hr);
     return false;
   }
@@ -336,7 +330,7 @@ bool VideoCaptureDeviceWin::Init() {
 void VideoCaptureDeviceWin::AllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ != kIdle)
     return;
 
@@ -348,8 +342,9 @@ void VideoCaptureDeviceWin::AllocateAndStart(
 
   // Reduce the frame rate if the requested frame rate is lower
   // than the capability.
-  float frame_rate = std::min(found_capability.supported_format.frame_rate,
-                              params.requested_format.frame_rate);
+  const float frame_rate =
+      std::min(params.requested_format.frame_rate,
+               found_capability.supported_format.frame_rate);
 
   ScopedComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
@@ -415,8 +410,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   hr = media_control_->Pause();
   if (FAILED(hr)) {
     SetErrorState(
-        "Failed to Pause the Capture device. "
-        "Is it already occupied?");
+        "Failed to pause the Capture device, is it already occupied?");
     return;
   }
 
@@ -435,7 +429,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
 }
 
 void VideoCaptureDeviceWin::StopAndDeAllocate() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ != kCapturing)
     return;
 
@@ -459,7 +453,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8* buffer, int length) {
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   ScopedComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
   if (FAILED(hr)) {
@@ -580,7 +574,7 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter(
 }
 
 void VideoCaptureDeviceWin::SetErrorState(const std::string& reason) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   state_ = kError;
   client_->OnError(reason);
 }

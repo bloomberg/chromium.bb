@@ -228,7 +228,6 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
   // VFW devices are already skipped previously in GetDeviceNames() enumeration.
   base::win::ScopedComPtr<IBaseFilter> capture_filter;
   hr = VideoCaptureDeviceWin::GetDeviceFilter(device.capabilities_id(),
-                                              CLSID_VideoInputDeviceCategory,
                                               capture_filter.Receive());
   if (!capture_filter.get()) {
     DLOG(ERROR) << "Failed to create capture filter: "
@@ -411,11 +410,10 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
 
 void VideoCaptureDeviceFactoryWin::GetDeviceNames(Names* device_names) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (use_media_foundation_) {
+  if (use_media_foundation_)
     GetDeviceNamesMediaFoundation(device_names);
-  } else {
+  else
     GetDeviceNamesDirectShow(device_names);
-  }
 }
 
 void VideoCaptureDeviceFactoryWin::GetDeviceSupportedFormats(
