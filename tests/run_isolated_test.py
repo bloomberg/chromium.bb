@@ -449,7 +449,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     self.assertEqual([(sub_cmd, {'detached': True})], self.popen_calls)
     expected = {
       u'isolated': u'e0a0fffa0910dd09e7ef4c89496116f60317e6c4',
-      u'isolateserver': u'http://localhost:1',
+      u'isolatedserver': u'http://localhost:1',
       u'namespace': u'default-gzip',
     }
     self.assertEqual(expected, tools.read_json(out))

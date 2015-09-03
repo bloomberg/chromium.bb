@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 import logging
 import optparse
@@ -264,7 +264,7 @@ def run_tha_test(
           if result_json:
             output_data = {
               'isolated': results[0][0],
-              'isolateserver': storage.location,
+              'isolatedserver': storage.location,
               'namespace': storage.namespace,
             }
             tools.write_json(result_json, output_data, dense=True)
