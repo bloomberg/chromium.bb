@@ -19,13 +19,6 @@
 
 namespace cc {
 
-namespace {
-// This is a fudge factor we subtract from the deadline to account
-// for message latency and kernel scheduling variability.
-static const base::TimeDelta kDeadlineFudgeFactor =
-    base::TimeDelta::FromMilliseconds(1);
-}
-
 scoped_ptr<Scheduler> Scheduler::Create(
     SchedulerClient* client,
     const SchedulerSettings& settings,
@@ -463,7 +456,6 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
 
   BeginFrameArgs adjusted_args = args;
   adjusted_args.deadline -= compositor_timing_history_->DrawDurationEstimate();
-  adjusted_args.deadline -= kDeadlineFudgeFactor;
 
   if (ShouldRecoverMainLatency(adjusted_args)) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginMainFrameToReduceLatency",

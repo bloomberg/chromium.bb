@@ -33,20 +33,21 @@ class CompositorTimingHistory::UMAReporter {
 
 namespace {
 
-// Using the 90th percentile will disable latency recovery
-// if we are missing the deadline approximately ~6 times per
-// second.
+// The estimates that affect the compositors deadline use the 100th percentile
+// to avoid missing the Browser's deadline.
+// The estimates related to main-thread responsiveness affect whether
+// we attempt to recovery latency or not and use the 50th percentile.
 // TODO(brianderson): Fine tune the percentiles below.
 const size_t kDurationHistorySize = 60;
 const size_t kDrawsBeforeEstimatesAffected = 2;
-const double kBeginMainFrameToCommitEstimationPercentile = 90.0;
-const double kCommitToReadyToActivateEstimationPercentile = 90.0;
-const double kPrepareTilesEstimationPercentile = 90.0;
-const double kActivateEstimationPercentile = 90.0;
-const double kDrawEstimationPercentile = 90.0;
+const double kBeginMainFrameToCommitEstimationPercentile = 50.0;
+const double kCommitToReadyToActivateEstimationPercentile = 50.0;
+const double kPrepareTilesEstimationPercentile = 100.0;
+const double kActivateEstimationPercentile = 100.0;
+const double kDrawEstimationPercentile = 100.0;
 
-const int kUmaDurationMinMicros = 1;
-const int64 kUmaDurationMaxMicros = 1 * base::Time::kMicrosecondsPerSecond;
+const int kUmaDurationMin_uS = 1;
+const int64 kUmaDurationMax_uS = 1 * base::Time::kMicrosecondsPerSecond;
 const size_t kUmaDurationBucketCount = 100;
 
 // Deprecated because they combine Browser and Renderer stats and have low
@@ -73,10 +74,10 @@ void DeprecatedDrawDurationUMA(base::TimeDelta duration,
                              base::TimeDelta::FromMilliseconds(100), 50);
 }
 
-#define UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample)                     \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample.InMicroseconds(),                \
-                              kUmaDurationMinMicros, kUmaDurationMaxMicros, \
-                              kUmaDurationBucketCount);
+#define UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample)  \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(                           \
+      name, sample.InMicroseconds(), kUmaDurationMin_uS, \
+      kUmaDurationMax_uS, kUmaDurationBucketCount);
 
 #define REPORT_COMPOSITOR_TIMING_HISTORY_UMA(category, subcategory)            \
   do {                                                                         \
