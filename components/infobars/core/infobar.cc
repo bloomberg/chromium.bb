@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_container.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace infobars {
@@ -35,6 +36,15 @@ InfoBar::~InfoBar() {
 
 // static
 SkColor InfoBar::GetTopColor(InfoBarDelegate::Type infobar_type) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    static const SkColor kWarningBackgroundColorMd =
+        SkColorSetRGB(0xFF, 0xEC, 0xB3);  // Yellow
+    static const SkColor kPageActionBackgroundColorMd = SK_ColorWHITE;
+
+    return infobar_type == InfoBarDelegate::WARNING_TYPE ?
+        kWarningBackgroundColorMd : kPageActionBackgroundColorMd;
+  }
+
   static const SkColor kWarningBackgroundColorTop =
       SkColorSetRGB(255, 242, 183);  // Yellow
   static const SkColor kPageActionBackgroundColorTop =
@@ -45,6 +55,10 @@ SkColor InfoBar::GetTopColor(InfoBarDelegate::Type infobar_type) {
 
 // static
 SkColor InfoBar::GetBottomColor(InfoBarDelegate::Type infobar_type) {
+  // No gradient in MD.
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return GetTopColor(infobar_type);
+
   static const SkColor kWarningBackgroundColorBottom =
       SkColorSetRGB(250, 230, 145);  // Yellow
   static const SkColor kPageActionBackgroundColorBottom =
