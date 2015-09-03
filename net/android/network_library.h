@@ -73,6 +73,14 @@ NET_EXPORT std::string GetTelephonyNetworkCountryIso();
 // the numeric name of the current registered operator.
 NET_EXPORT std::string GetTelephonyNetworkOperator();
 
+// Returns MCC+MNC (mobile country code + mobile network code) as
+// the numeric name of the current SIM operator.
+NET_EXPORT std::string GetTelephonySimOperator();
+
+// Returns true if the device is roaming on the currently active network. When
+// true, it suggests that use of data may incur extra costs.
+NET_EXPORT bool GetIsRoaming();
+
 // Register JNI methods
 NET_EXPORT bool RegisterNetworkLibrary(JNIEnv* env);
 

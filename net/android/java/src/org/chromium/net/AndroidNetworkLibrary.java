@@ -7,6 +7,8 @@ package org.chromium.net;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.security.KeyChain;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -203,4 +205,27 @@ class AndroidNetworkLibrary {
         return telephonyManager.getNetworkOperator();
     }
 
+    /**
+     * Returns the MCC+MNC (mobile country code + mobile network code) as
+     * the numeric name of the current SIM operator.
+     */
+    @CalledByNative
+    private static String getSimOperator(Context context) {
+        TelephonyManager telephonyManager =
+                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (telephonyManager == null) return "";
+        return telephonyManager.getSimOperator();
+    }
+
+    /**
+     * Indicates whether the device is roaming on the currently active network. When true, it
+     * suggests that use of data may incur extra costs.
+     */
+    @CalledByNative
+    private static boolean getIsRoaming(Context context) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo.isRoaming();
+    }
 }

@@ -129,6 +129,19 @@ std::string GetTelephonyNetworkOperator() {
           base::android::GetApplicationContext()));
 }
 
+std::string GetTelephonySimOperator() {
+  return base::android::ConvertJavaStringToUTF8(
+      Java_AndroidNetworkLibrary_getSimOperator(
+          base::android::AttachCurrentThread(),
+          base::android::GetApplicationContext()));
+}
+
+bool GetIsRoaming() {
+  return Java_AndroidNetworkLibrary_getIsRoaming(
+      base::android::AttachCurrentThread(),
+      base::android::GetApplicationContext());
+}
+
 bool RegisterNetworkLibrary(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
