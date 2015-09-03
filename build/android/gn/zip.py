@@ -11,15 +11,9 @@ import ast
 import optparse
 import os
 import sys
-import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'gyp'))
 from util import build_utils
-
-def DoZip(inputs, output, base_dir):
-  with zipfile.ZipFile(output, 'w') as outfile:
-    for f in inputs:
-      outfile.write(f, os.path.relpath(f, base_dir))
 
 def main():
   parser = optparse.OptionParser()
@@ -37,7 +31,7 @@ def main():
   output = options.output
   base_dir = options.base_dir
 
-  DoZip(inputs, output, base_dir)
+  build_utils.DoZip(inputs, output, base_dir)
 
   if options.depfile:
     build_utils.WriteDepfile(

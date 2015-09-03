@@ -16,7 +16,6 @@ import os
 import re
 import shutil
 import sys
-import zipfile
 
 import generate_v14_compatible_resources
 
@@ -276,12 +275,13 @@ def ZipResources(resource_dirs, zip_path):
   for d in resource_dirs:
     for root, _, files in os.walk(d):
       for f in files:
-        archive_path = os.path.join(os.path.relpath(root, d), f)
+        archive_path = f
+        parent_dir = os.path.relpath(root, d)
+        if parent_dir != '.':
+          archive_path = os.path.join(parent_dir, f)
         path = os.path.join(root, f)
         files_to_zip[archive_path] = path
-  with zipfile.ZipFile(zip_path, 'w') as outzip:
-    for archive_path, path in files_to_zip.iteritems():
-      outzip.write(path, archive_path)
+  build_utils.DoZip(files_to_zip.iteritems(), zip_path)
 
 
 def CombineZips(zip_files, output_path):
@@ -290,12 +290,10 @@ def CombineZips(zip_files, output_path):
   # resources directory. While some resources just clobber others (image files,
   # etc), other resources (particularly .xml files) need to be more
   # intelligently merged. That merging is left up to aapt.
-  with zipfile.ZipFile(output_path, 'w') as outzip:
-    for i, z in enumerate(zip_files):
-      with zipfile.ZipFile(z, 'r') as inzip:
-        for name in inzip.namelist():
-          new_name = '%d/%s' % (i, name)
-          outzip.writestr(new_name, inzip.read(name))
+  def path_transform(name, src_zip):
+    return '%d/%s' % (zip_files.index(src_zip), name)
+
+  build_utils.MergeZips(output_path, zip_files, path_transform=path_transform)
 
 
 def main():
