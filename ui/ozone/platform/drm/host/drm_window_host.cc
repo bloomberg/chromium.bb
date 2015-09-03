@@ -83,6 +83,9 @@ gfx::Rect DrmWindowHost::GetBounds() {
   return bounds_;
 }
 
+void DrmWindowHost::SetTitle(const base::string16& title) {
+}
+
 void DrmWindowHost::SetCapture() {
   window_manager_->GrabEvents(widget_);
 }

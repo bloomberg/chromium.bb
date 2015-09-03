@@ -65,6 +65,7 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
   void TopLevelNavigate(mojo::URLRequestPtr request) override;
   void LoadingStateChanged(bool is_loading) override;
   void ProgressChanged(double progress) override;
+  void TitleChanged(const mojo::String& title) override;
 
   // Overridden from ViewEmbedder:
   void Embed(mojo::URLRequestPtr request) override;

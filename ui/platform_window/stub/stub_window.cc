@@ -36,6 +36,8 @@ gfx::Rect StubWindow::GetBounds() {
   return bounds_;
 }
 
+void StubWindow::SetTitle(const base::string16& title) {}
+
 void StubWindow::SetCapture() {
 }
 

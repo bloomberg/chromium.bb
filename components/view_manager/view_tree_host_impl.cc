@@ -4,12 +4,14 @@
 
 #include "components/view_manager/view_tree_host_impl.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/display_manager.h"
 #include "components/view_manager/focus_controller.h"
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/view_tree_host_delegate.h"
 #include "components/view_manager/view_tree_impl.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace view_manager {
@@ -103,6 +105,10 @@ void ViewTreeHostImpl::SetImeVisibility(ServerView* view, bool visible) {
 
 void ViewTreeHostImpl::SetSize(mojo::SizePtr size) {
   display_manager_->SetViewportSize(size.To<gfx::Size>());
+}
+
+void ViewTreeHostImpl::SetTitle(const mojo::String& title) {
+  display_manager_->SetTitle(title.To<base::string16>());
 }
 
 void ViewTreeHostImpl::AddAccelerator(uint32_t id,

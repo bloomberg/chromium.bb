@@ -76,6 +76,8 @@ using web_view::HTMLMessageEventPtr;
 namespace html_viewer {
 namespace {
 
+const size_t kMaxTitleChars = 4 * 1024;
+
 web_view::NavigationTargetType WebNavigationPolicyToNavigationTarget(
     blink::WebNavigationPolicy policy) {
   switch (policy) {
@@ -732,6 +734,18 @@ void HTMLFrame::didCommitProvisionalLoad(
   state_.origin = FrameOrigin(frame);
   GetLocalRoot()->server_->SetClientProperty(
       id_, kPropertyFrameOrigin, FrameOriginToClientProperty(frame));
+}
+
+void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,
+                                const blink::WebString& title,
+                                blink::WebTextDirection direction) {
+  // TODO(beng): handle |direction|.
+  mojo::String formatted;
+  if (!title.isNull()) {
+    formatted =
+        mojo::String::From(base::string16(title).substr(0, kMaxTitleChars));
+  }
+  GetLocalRoot()->server_->TitleChanged(id_, formatted);
 }
 
 void HTMLFrame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {

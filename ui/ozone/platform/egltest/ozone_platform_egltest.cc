@@ -85,6 +85,7 @@ class EgltestWindow : public PlatformWindow, public PlatformEventDispatcher {
   // PlatformWindow:
   gfx::Rect GetBounds() override;
   void SetBounds(const gfx::Rect& bounds) override;
+  void SetTitle(const base::string16& title) override;
   void Show() override;
   void Hide() override;
   void Close() override;
@@ -140,6 +141,9 @@ gfx::Rect EgltestWindow::GetBounds() {
 void EgltestWindow::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   delegate_->OnBoundsChanged(bounds);
+}
+
+void EgltestWindow::SetTitle(const base::string16& title) {
 }
 
 void EgltestWindow::Show() {

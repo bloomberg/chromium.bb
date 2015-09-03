@@ -84,6 +84,9 @@ interface FrameTreeServer {
   // a load is in progress.
   ProgressChanged(uint32 frame_id, double progress);
 
+  // Called when the title becomes available or changes.
+  TitleChanged(uint32 frame_id, string? title);
+
   // Sets the value of the specified client property, notifying clients if the
   // value changed. If |value| is null the property is removed.
   SetClientProperty(uint32 frame_id,

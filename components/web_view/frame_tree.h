@@ -78,6 +78,7 @@ class FrameTree {
 
   void LoadingStateChanged();
   void ProgressChanged();
+  void TitleChanged(const mojo::String& title);
   void ClientPropertyChanged(const Frame* source,
                              const mojo::String& name,
                              const mojo::Array<uint8_t>& value);

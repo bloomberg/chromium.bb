@@ -97,6 +97,11 @@ void FrameTree::ProgressChanged() {
     delegate_->ProgressChanged(progress_);
 }
 
+void FrameTree::TitleChanged(const mojo::String& title) {
+  if (delegate_)
+    delegate_->TitleChanged(title);
+}
+
 void FrameTree::ClientPropertyChanged(const Frame* source,
                                       const mojo::String& name,
                                       const mojo::Array<uint8_t>& value) {

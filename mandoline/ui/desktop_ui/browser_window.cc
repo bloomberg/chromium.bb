@@ -132,6 +132,8 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
 
   root_ = root;
 
+  host_->SetTitle("Mandoline");
+
   content_ = root_->connection()->CreateView();
   Init(root_);
 
@@ -210,6 +212,14 @@ void BrowserWindow::LoadingStateChanged(bool is_loading) {
 
 void BrowserWindow::ProgressChanged(double progress) {
   progress_bar_->SetProgress(progress);
+}
+
+void BrowserWindow::TitleChanged(const mojo::String& title) {
+  base::string16 formatted =
+      title.is_null() ? base::ASCIIToUTF16("Untitled")
+                      : title.To<base::string16>() +
+          base::ASCIIToUTF16(" - Mandoline");
+  host_->SetTitle(mojo::String::From(formatted));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

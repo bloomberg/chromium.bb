@@ -185,6 +185,9 @@ class HTMLFrame : public blink::WebFrameClient,
       blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type);
+  virtual void didReceiveTitle(blink::WebLocalFrame* frame,
+                               const blink::WebString& title,
+                               blink::WebTextDirection direction);
 
  private:
   friend class HTMLFrameTreeManager;

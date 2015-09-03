@@ -21,6 +21,8 @@ void TestFrameTreeDelegate::LoadingStateChanged(bool loading) {}
 
 void TestFrameTreeDelegate::ProgressChanged(double progress) {}
 
+void TestFrameTreeDelegate::TitleChanged(const mojo::String& title) {}
+
 void TestFrameTreeDelegate::NavigateTopLevel(Frame* source,
                                              mojo::URLRequestPtr request) {}
 

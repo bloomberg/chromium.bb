@@ -38,6 +38,8 @@ class FrameTreeDelegate {
   virtual void LoadingStateChanged(bool loading) = 0;
   virtual void ProgressChanged(double progress) = 0;
 
+  virtual void TitleChanged(const mojo::String& title) = 0;
+
   // |source| is requesting a navigation. If |target_type| is
   // |EXISTING_FRAME| then |target_frame| identifies the frame to perform the
   // navigation in, otherwise |target_frame| is not used. |target_frame| may

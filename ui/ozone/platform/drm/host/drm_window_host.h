@@ -57,6 +57,7 @@ class DrmWindowHost : public PlatformWindow,
   void Close() override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;
+  void SetTitle(const base::string16& title) override;
   void SetCapture() override;
   void ReleaseCapture() override;
   void ToggleFullscreen() override;

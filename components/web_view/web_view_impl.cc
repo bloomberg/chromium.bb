@@ -149,6 +149,10 @@ void WebViewImpl::ProgressChanged(double progress) {
   client_->ProgressChanged(progress);
 }
 
+void WebViewImpl::TitleChanged(const mojo::String& title) {
+  client_->TitleChanged(title);
+}
+
 void WebViewImpl::NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) {
   client_->TopLevelNavigate(request.Pass());
 }

@@ -19,6 +19,7 @@ class PlatformWindowCast : public PlatformWindow {
   // PlatformWindow implementation:
   gfx::Rect GetBounds() override;
   void SetBounds(const gfx::Rect& bounds) override;
+  void SetTitle(const base::string16& title) override;
   void Show() override {}
   void Hide() override {}
   void Close() override {}

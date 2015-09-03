@@ -42,6 +42,7 @@ class TestFrameTreeServer : public web_view::FrameTreeServer {
   void LoadingStarted(uint32_t frame_id) override {}
   void LoadingStopped(uint32_t frame_id) override {}
   void ProgressChanged(uint32_t frame_id, double progress) override {}
+  void TitleChanged(uint32_t frame_id, const mojo::String& title) override {}
   void SetClientProperty(uint32_t frame_id,
                          const mojo::String& name,
                          mojo::Array<uint8_t> value) override {}

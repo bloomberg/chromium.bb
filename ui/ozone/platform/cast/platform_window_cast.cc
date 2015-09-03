@@ -24,6 +24,9 @@ void PlatformWindowCast::SetBounds(const gfx::Rect& bounds) {
   delegate_->OnBoundsChanged(bounds);
 }
 
+void PlatformWindowCast::SetTitle(const base::string16& title) {
+}
+
 PlatformImeController* PlatformWindowCast::GetPlatformImeController() {
   return nullptr;
 }

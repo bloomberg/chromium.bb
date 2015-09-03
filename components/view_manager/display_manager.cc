@@ -179,6 +179,10 @@ void DefaultDisplayManager::SetViewportSize(const gfx::Size& size) {
   platform_window_->SetBounds(gfx::Rect(size));
 }
 
+void DefaultDisplayManager::SetTitle(const base::string16& title) {
+  platform_window_->SetTitle(title);
+}
+
 const mojo::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
   return metrics_;
 }

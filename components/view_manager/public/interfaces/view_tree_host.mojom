@@ -16,6 +16,9 @@ interface ViewTreeHost {
   // Sets the size of the platform window.
   SetSize(mojo.Size size);
 
+  // Sets a title string to be displayed on the platform window.
+  SetTitle(string title);
+
   // Add and remove accelerators. When accelerators are registered the
   // ViewTreeHostClient receives the key event via OnAccelerator() rather than
   // the focused view. The id is defined by the client and can be used to more

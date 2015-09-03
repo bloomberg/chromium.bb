@@ -82,6 +82,7 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
 
   // ViewTreeHost:
   void SetSize(mojo::SizePtr size) override;
+  void SetTitle(const mojo::String& title) override;
   void AddAccelerator(uint32_t id,
                       mojo::KeyboardCode keyboard_code,
                       mojo::EventFlags flags) override;

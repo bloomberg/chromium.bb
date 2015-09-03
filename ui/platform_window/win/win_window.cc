@@ -5,6 +5,7 @@
 #include "ui/platform_window/win/win_window.h"
 
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/string16.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/win/msg_util.h"
@@ -82,6 +83,10 @@ gfx::Rect WinWindow::GetBounds() {
   RECT cr;
   GetClientRect(hwnd(), &cr);
   return gfx::Rect(cr);
+}
+
+void WinWindow::SetTitle(const base::string16& title) {
+  SetWindowText(hwnd(), title.c_str());
 }
 
 void WinWindow::SetCapture() {

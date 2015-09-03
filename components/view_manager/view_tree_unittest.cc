@@ -214,6 +214,7 @@ class TestDisplayManager : public DisplayManager {
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override {
   }
   void SetViewportSize(const gfx::Size& size) override {}
+  void SetTitle(const base::string16& title) override {}
   const mojo::ViewportMetrics& GetViewportMetrics() override {
     return display_metrices_;
   }

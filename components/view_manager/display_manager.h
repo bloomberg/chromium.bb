@@ -66,6 +66,8 @@ class DisplayManager {
 
   virtual void SetViewportSize(const gfx::Size& size) = 0;
 
+  virtual void SetTitle(const base::string16& title) = 0;
+
   virtual const mojo::ViewportMetrics& GetViewportMetrics() = 0;
 
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
@@ -99,6 +101,7 @@ class DefaultDisplayManager :
   void Init(DisplayManagerDelegate* delegate) override;
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
+  void SetTitle(const base::string16& title) override;
   const mojo::ViewportMetrics& GetViewportMetrics() override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;

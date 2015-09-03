@@ -44,6 +44,9 @@ void TestWindow::SetBounds(const gfx::Rect& bounds) {
   delegate_->OnBoundsChanged(bounds);
 }
 
+void TestWindow::SetTitle(const base::string16& title) {
+}
+
 void TestWindow::Show() {
 }
 

@@ -178,6 +178,10 @@ gfx::Rect PlatformWindowAndroid::GetBounds() {
   return gfx::Rect(size_);
 }
 
+void PlatformWindowAndroid::SetTitle(const base::string16& title) {
+  NOTIMPLEMENTED();
+}
+
 void PlatformWindowAndroid::SetCapture() {
   NOTIMPLEMENTED();
 }

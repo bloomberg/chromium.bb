@@ -306,6 +306,12 @@ void Frame::ProgressChangedImpl(double progress) {
   tree_->ProgressChanged();
 }
 
+void Frame::TitleChangedImpl(const mojo::String& title) {
+  // Only care about title changes on the root frame.
+  if (!parent_)
+    tree_->TitleChanged(title);
+}
+
 void Frame::SetClientPropertyImpl(const mojo::String& name,
                                   mojo::Array<uint8_t> value) {
   auto iter = client_properties_.find(name);
@@ -430,6 +436,12 @@ void Frame::ProgressChanged(uint32_t frame_id, double progress) {
   Frame* target_frame = FindTargetFrame(frame_id);
   if (target_frame)
     target_frame->ProgressChangedImpl(progress);
+}
+
+void Frame::TitleChanged(uint32_t frame_id, const mojo::String& title) {
+  Frame* target_frame = FindTargetFrame(frame_id);
+  if (target_frame)
+    target_frame->TitleChangedImpl(title);
 }
 
 void Frame::SetClientProperty(uint32_t frame_id,

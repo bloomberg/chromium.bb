@@ -21,6 +21,7 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
                                   HTMLMessageEvent* event) override;
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
+  void TitleChanged(const mojo::String& title) override;
   void NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) override;
   void CanNavigateFrame(Frame* target,
                         mojo::URLRequestPtr request,

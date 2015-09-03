@@ -109,6 +109,10 @@ void PhoneBrowserApplicationDelegate::ProgressChanged(double progress) {
   // ...
 }
 
+void PhoneBrowserApplicationDelegate::TitleChanged(const mojo::String& title) {
+  // ...
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PhoneBrowserApplicationDelegate,
 //       mojo::InterfaceFactory<LaunchHandler> implementation:

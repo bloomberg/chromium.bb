@@ -6,6 +6,7 @@
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
 
 namespace gfx {
@@ -33,6 +34,8 @@ class PlatformWindow {
   // physical pixel coordinates.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetBounds() = 0;
+
+  virtual void SetTitle(const base::string16& title) = 0;
 
   virtual void SetCapture() = 0;
   virtual void ReleaseCapture() = 0;

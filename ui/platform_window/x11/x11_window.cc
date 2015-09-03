@@ -242,6 +242,8 @@ gfx::Rect X11Window::GetBounds() {
   return confirmed_bounds_;
 }
 
+void X11Window::SetTitle(const base::string16& title) {}
+
 void X11Window::SetCapture() {}
 
 void X11Window::ReleaseCapture() {}

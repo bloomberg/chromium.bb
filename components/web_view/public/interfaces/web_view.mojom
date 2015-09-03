@@ -14,6 +14,9 @@ interface WebViewClient {
   // Loading and progress notifications.
   LoadingStateChanged(bool is_loading);
   ProgressChanged(double progress);
+
+  // TODO(beng): also forward text direction.
+  TitleChanged(string? title);
 };
 
 interface WebView {
