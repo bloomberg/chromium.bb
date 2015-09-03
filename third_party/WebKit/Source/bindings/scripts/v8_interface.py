@@ -254,15 +254,18 @@ def interface_context(interface):
     constants = [constant_context(constant, interface) for constant in interface.constants]
 
     special_getter_constants = []
-    runtime_enabled_constants = []
+    runtime_enabled_constants = dict()
     constant_configuration_constants = []
 
     for constant in constants:
         if constant['measure_as'] or constant['deprecate_as']:
             special_getter_constants.append(constant)
             continue
-        if constant['runtime_enabled_function']:
-            runtime_enabled_constants.append(constant)
+        runtime_enabled_function = constant['runtime_enabled_function']
+        if runtime_enabled_function:
+            if runtime_enabled_function not in runtime_enabled_constants:
+                runtime_enabled_constants[runtime_enabled_function] = []
+            runtime_enabled_constants[runtime_enabled_function].append(constant)
             continue
         constant_configuration_constants.append(constant)
 
@@ -274,7 +277,7 @@ def interface_context(interface):
         'has_constant_configuration': any(
             not constant['runtime_enabled_function']
             for constant in constants),
-        'runtime_enabled_constants': runtime_enabled_constants,
+        'runtime_enabled_constants': sorted(runtime_enabled_constants.iteritems()),
         'special_getter_constants': special_getter_constants,
     })
 

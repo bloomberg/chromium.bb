@@ -12952,9 +12952,21 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
         {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
     };
     V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants));
-    if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", 1, 0, V8DOMConfiguration::ConstantTypeShort};
-        V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantConfiguration);
+    if (RuntimeEnabledFeatures::featureName1Enabled()) {
+        static const V8DOMConfiguration::ConstantConfiguration constantFeature1EnabledConst1Configuration = {"FEATURE1_ENABLED_CONST1", 1, 0, V8DOMConfiguration::ConstantTypeShort};
+        V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantFeature1EnabledConst1Configuration);
+        static const V8DOMConfiguration::ConstantConfiguration constantFeature1EnabledConst2Configuration = {"FEATURE1_ENABLED_CONST2", 2, 0, V8DOMConfiguration::ConstantTypeShort};
+        V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantFeature1EnabledConst2Configuration);
+    }
+    if (RuntimeEnabledFeatures::featureName2Enabled()) {
+        static const V8DOMConfiguration::ConstantConfiguration constantFeature2EnabledConst1Configuration = {"FEATURE2_ENABLED_CONST1", 3, 0, V8DOMConfiguration::ConstantTypeShort};
+        V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantFeature2EnabledConst1Configuration);
+        static const V8DOMConfiguration::ConstantConfiguration constantFeature2EnabledConst2Configuration = {"FEATURE2_ENABLED_CONST2", 4, 0, V8DOMConfiguration::ConstantTypeShort};
+        V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantFeature2EnabledConst2Configuration);
+    }
+    if (RuntimeEnabledFeatures::featureName3Enabled()) {
+        static const V8DOMConfiguration::ConstantConfiguration constantFeature3EnabledConst1Configuration = {"FEATURE3_ENABLED_CONST1", 5, 0, V8DOMConfiguration::ConstantTypeShort};
+        V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantFeature3EnabledConst1Configuration);
     }
     V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestObjectV8Internal::DEPRECATED_CONSTANTConstantGetterCallback);
     V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "MEASURED_CONSTANT", TestObjectV8Internal::MEASURED_CONSTANTConstantGetterCallback);
@@ -12974,7 +12986,11 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     static_assert(-0X1a == TestObject::CONST_VALUE_17, "the value of TestObject_CONST_VALUE_17 does not match with implementation");
     static_assert(1 == TestObject::DEPRECATED_CONSTANT, "the value of TestObject_DEPRECATED_CONSTANT does not match with implementation");
     static_assert(1 == TestObject::MEASURED_CONSTANT, "the value of TestObject_MEASURED_CONSTANT does not match with implementation");
-    static_assert(1 == TestObject::FEATURE_ENABLED_CONST, "the value of TestObject_FEATURE_ENABLED_CONST does not match with implementation");
+    static_assert(1 == TestObject::FEATURE1_ENABLED_CONST1, "the value of TestObject_FEATURE1_ENABLED_CONST1 does not match with implementation");
+    static_assert(2 == TestObject::FEATURE1_ENABLED_CONST2, "the value of TestObject_FEATURE1_ENABLED_CONST2 does not match with implementation");
+    static_assert(3 == TestObject::FEATURE2_ENABLED_CONST1, "the value of TestObject_FEATURE2_ENABLED_CONST1 does not match with implementation");
+    static_assert(4 == TestObject::FEATURE2_ENABLED_CONST2, "the value of TestObject_FEATURE2_ENABLED_CONST2 does not match with implementation");
+    static_assert(5 == TestObject::FEATURE3_ENABLED_CONST1, "the value of TestObject_FEATURE3_ENABLED_CONST1 does not match with implementation");
     static_assert(1 == TestObject::CONST_IMPL, "the value of TestObject_CONST_IMPL does not match with implementation");
     {
         v8::IndexedPropertyHandlerConfiguration config(TestObjectV8Internal::indexedPropertyGetterCallback, TestObjectV8Internal::indexedPropertySetterCallback, 0, TestObjectV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestObject>);

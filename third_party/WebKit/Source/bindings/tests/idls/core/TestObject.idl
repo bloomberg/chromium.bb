@@ -62,7 +62,11 @@ interface TestObject {
     // Extended attributes
     [DeprecateAs=Constant] const short DEPRECATED_CONSTANT = 1;
     [MeasureAs=Constant] const short MEASURED_CONSTANT = 1;
-    [RuntimeEnabled=FeatureName] const short FEATURE_ENABLED_CONST = 1;
+    [RuntimeEnabled=FeatureName1] const short FEATURE1_ENABLED_CONST1 = 1;
+    [RuntimeEnabled=FeatureName1] const short FEATURE1_ENABLED_CONST2 = 2;
+    [RuntimeEnabled=FeatureName2] const short FEATURE2_ENABLED_CONST1 = 3;
+    [RuntimeEnabled=FeatureName2] const short FEATURE2_ENABLED_CONST2 = 4;
+    [RuntimeEnabled=FeatureName3] const short FEATURE3_ENABLED_CONST1 = 5;
     [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
 
     stringifier attribute DOMString stringifierAttribute;

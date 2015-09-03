@@ -35,10 +35,13 @@ static const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] =
 V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, {{v8_class}}Constants, WTF_ARRAY_LENGTH({{v8_class}}Constants));
 {% endif %}
 {# Runtime-enabled constants #}
-{% for constant in runtime_enabled_constants %}
-{% filter runtime_enabled(constant.runtime_enabled_function) %}
-static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {{constant_configuration(constant)}};
-V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantConfiguration);
+{% for constant_tuple in runtime_enabled_constants %}
+{% filter runtime_enabled(constant_tuple[0]) %}
+{% for constant in constant_tuple[1] %}
+{% set constant_name = constant.name.title().replace('_', '') %}
+static const V8DOMConfiguration::ConstantConfiguration constant{{constant_name}}Configuration = {{constant_configuration(constant)}};
+V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constant{{constant_name}}Configuration);
+{% endfor %}
 {% endfilter %}
 {% endfor %}
 {# Constants with [DeprecateAs] or [MeasureAs] #}
