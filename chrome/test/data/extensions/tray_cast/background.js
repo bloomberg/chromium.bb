@@ -12,47 +12,36 @@ tryCreateActivity_ = function(id, title, tabId) {
     return null;
 
   return {
-    "id": id,
-    "title": title,
-    "tabId": tabId
+    'id': id,
+    'title': title,
+    'tabId': tabId
   };
 }
 
 var receiversActivities = [];
+var sendDevices = function() {
+  chrome.cast.devicesPrivate.updateDevices(receiversActivities);
+}
+chrome.cast.devicesPrivate.updateDevicesRequested.addListener(sendDevices);
+
 // Add a new receiver. |activityTitle| and |activityTabId| are optional
 // parameters.
-addReceiver = function(id, receiverName, activityTitle, activityTabId) {
+var addReceiver = function(id, receiverName, activityTitle, activityTabId) {
   receiversActivities.push({
-    "activity": tryCreateActivity_(id, activityTitle, activityTabId),
-    "receiver": {
-      "id": id,
-      "name": receiverName
-    }
+    'receiver': {
+      'id': id,
+      'name': receiverName
+    },
+    'activity': tryCreateActivity_(id, activityTitle, activityTabId)
   });
-}
-// Required API method.
-getMirrorCapableReceiversAndActivities = function() {
-  // For all of the API methods, we verify that |this| points to
-  // backgroundSetup. In the actual extension, the API methods are
-  // also free-standing but they are really class methods on backgroundSetup.
-  if (this !== backgroundSetup)
-    throw 'this !== backgroundSetup';
 
-  return receiversActivities;
+  sendDevices();
 }
 
-var stopMirroringReason = "";
 var stopMirroringCalled = false;
-wasStopMirroringCalledWithUserStop = function() {
-  return stopMirroringCalled && stopMirroringReason == 'user-stop';
-}
-// Required API method.
-stopMirroring = function(reason) {
-  if (this !== backgroundSetup)
-    throw 'this !== backgroundSetup';
-
-  stopMirroringReason = reason;
-  stopMirroringCalled = true;
+chrome.cast.devicesPrivate.stopCast.addListener(function(reason) {
+  if (reason !== 'user-stop')
+    throw 'expected reason to be "user-stop"';
 
   var foundActivity = false;
   for (item of receiversActivities) {
@@ -63,26 +52,25 @@ stopMirroring = function(reason) {
   }
   if (foundActivity === false)
     throw 'stopMirroring called when there was nothing being mirrored'
-}
 
-var launchTabId = 1;
-var launchTabTitle = "Fake Cast";
-var launchDesktopMirroringReceiverId = "";
-getLaunchDesktopMirroringReceiverId = function() {
-  return launchDesktopMirroringReceiverId;
-}
-// Required API method.
-launchDesktopMirroring = function(receiverId) {
-  if (this !== backgroundSetup)
-    throw 'this !== backgroundSetup';
+  stopMirroringCalled = true;
+  sendDevices();
+});
 
+
+var launchDesktopMirroringReceiverId = '';
+chrome.cast.devicesPrivate.startCast.addListener(function(receiverId) {
   launchDesktopMirroringReceiverId = receiverId;
+
+  var tabTitle = 'Tab Title';
+  var tabId = 1;
 
   for (item of receiversActivities) {
     if (item.receiver.id == receiverId) {
-      item.activity =
-        tryCreateActivity_(receiverId, launchTabId, launchTabTitle);
+      item.activity = tryCreateActivity_(receiverId, tabTitle, tabId);
       break;
     }
   }
-}
+
+  sendDevices();
+});
