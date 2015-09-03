@@ -458,13 +458,14 @@ void DisplayItemList::updateValidlyCachedClientsIfNeeded() const
     m_validlyCachedClients.clear();
     m_validlyCachedClientsDirty = false;
 
-    DisplayItemClient lastClient = nullptr;
+    DisplayItemClient lastAddedClient = nullptr;
     for (const DisplayItem& displayItem : m_currentDisplayItems) {
-        if (displayItem.client() == lastClient)
+        if (displayItem.client() == lastAddedClient)
             continue;
-        lastClient = displayItem.client();
-        if (!displayItem.skippedCache())
-            m_validlyCachedClients.add(lastClient);
+        if (displayItem.isCacheable()) {
+            lastAddedClient = displayItem.client();
+            m_validlyCachedClients.add(lastAddedClient);
+        }
     }
 }
 
