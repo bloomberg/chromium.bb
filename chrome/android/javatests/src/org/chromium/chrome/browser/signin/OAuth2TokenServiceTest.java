@@ -9,6 +9,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.test.util.AccountHolder;
@@ -39,8 +40,10 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
         assertEquals("There should be no accounts registered", 0, accounts.length);
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    /*@SmallTest
+    @Feature({"Sync"})*/
+    // http://crbug.com/527852
+    @DisabledTest
     public void testGetAccountsOneAccountRegistered() {
         Account account1 = AccountManagerHelper.createAccountFromName("foo@gmail.com");
         AccountHolder accountHolder1 = AccountHolder.create().account(account1).build();
@@ -54,8 +57,10 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
         assertEquals("There should be zero registered account", 0, accounts.length);
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    /*@SmallTest
+    @Feature({"Sync"})*/
+    // http://crbug.com/527852
+    @DisabledTest
     public void testGetAccountsTwoAccountsRegistered() {
         Account account1 = AccountManagerHelper.createAccountFromName("foo@gmail.com");
         AccountHolder accountHolder1 = AccountHolder.create().account(account1).build();
@@ -83,8 +88,10 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
         runTestOfGetOAuth2AccessTokenWithTimeout(authToken);
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    /*@SmallTest
+    @Feature({"Sync"})*/
+    // http://crbug.com/527852
+    @DisabledTest
     public void testGetOAuth2AccessTokenWithTimeoutOnError() {
         String authToken = null;
         // Should not crash when auth token is null.
