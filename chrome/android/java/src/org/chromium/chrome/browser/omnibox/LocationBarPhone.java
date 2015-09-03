@@ -343,8 +343,10 @@ public class LocationBarPhone extends LocationBarLayout {
                 useLightDrawables |=
                         ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
             }
-            ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
-            ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
+            ColorStateList dark = ApiCompatibilityUtils.getColorStateList(getResources(),
+                    R.color.dark_mode_tint);
+            ColorStateList white = ApiCompatibilityUtils.getColorStateList(getResources(),
+                    R.color.light_mode_tint);
             mMenuButton.setTint(useLightDrawables ? white : dark);
         }
     }

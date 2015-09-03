@@ -12,6 +12,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
@@ -439,6 +440,18 @@ public class ApiCompatibilityUtils {
             return res.getColor(id, null);
         } else {
             return res.getColor(id);
+        }
+    }
+
+    /**
+     * @see android.content.res.Resources#getColorStateList(int id).
+     */
+    @SuppressWarnings("deprecation")
+    public static ColorStateList getColorStateList(Resources res, int id) throws NotFoundException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return res.getColorStateList(id, null);
+        } else {
+            return res.getColorStateList(id);
         }
     }
 }

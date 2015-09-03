@@ -394,9 +394,8 @@ class SuggestionView extends ViewGroup {
 
         mRefineIcon = TintedDrawable.constructTintedDrawable(
                 getResources(), R.drawable.btn_suggestion_refine);
-        mRefineIcon.setTint(getResources().getColorStateList(mUseDarkColors
-                ? R.color.dark_mode_tint
-                : R.color.light_mode_tint));
+        mRefineIcon.setTint(ApiCompatibilityUtils.getColorStateList(getResources(),
+                mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint));
         mRefineIcon.setBounds(
                 0, 0,
                 mRefineIcon.getIntrinsicWidth(),

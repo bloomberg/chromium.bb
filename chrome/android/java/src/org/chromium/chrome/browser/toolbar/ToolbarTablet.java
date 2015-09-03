@@ -292,8 +292,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             setBackgroundResource(incognito
                     ? R.color.incognito_primary_color : R.color.default_primary_color);
 
-            ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
-            ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
+            ColorStateList dark =
+                    ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+            ColorStateList white = ApiCompatibilityUtils.getColorStateList(getResources(),
+                    R.color.light_mode_tint);
             mMenuButton.setTint(incognito ? white : dark);
             mHomeButton.setTint(incognito ? white : dark);
             mBackButton.setTint(incognito ? white : dark);
@@ -337,8 +339,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             mReloadButton.setContentDescription(getContext().getString(
                     R.string.accessibility_btn_refresh));
         }
-        ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
-        ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
+        ColorStateList dark = ApiCompatibilityUtils.getColorStateList(getResources(),
+                R.color.dark_mode_tint);
+        ColorStateList white = ApiCompatibilityUtils.getColorStateList(getResources(),
+                R.color.light_mode_tint);
         mReloadButton.setTint(isIncognito() ? white : dark);
         mReloadButton.setEnabled(!mInTabSwitcherwMode);
     }
@@ -353,7 +357,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);
         }
-        ColorStateList tint = getResources().getColorStateList(tintColor);
+        ColorStateList tint = ApiCompatibilityUtils.getColorStateList(getResources(), tintColor);
         mBookmarkButton.setTint(tint);
         mBookmarkButton.setEnabled(editingAllowed);
     }

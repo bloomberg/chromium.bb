@@ -74,7 +74,8 @@ public class RecentTabsGroupView extends RelativeLayout {
                 TintedDrawable.constructTintedDrawable(getResources(), R.drawable.ic_expand));
         TintedDrawable collapse =
                 TintedDrawable.constructTintedDrawable(getResources(), R.drawable.ic_collapse);
-        collapse.setTint(getResources().getColorStateList(R.color.blue_mode_tint));
+        collapse.setTint(
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.blue_mode_tint));
         collapseIcon.addLevel(DRAWABLE_LEVEL_EXPANDED, DRAWABLE_LEVEL_EXPANDED, collapse);
         mExpandCollapseIcon.setImageDrawable(collapseIcon);
     }

@@ -271,8 +271,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void updateVisualsForState() {
         Resources resources = getResources();
         updateSecurityIcon(getSecurityLevel());
-        ColorStateList colorStateList = resources.getColorStateList(mUseDarkColors
-                ? R.color.dark_mode_tint : R.color.light_mode_tint);
+        ColorStateList colorStateList = ApiCompatibilityUtils.getColorStateList(resources,
+                mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
         mMenuButton.setTint(colorStateList);
         if (mCloseButton.getDrawable() instanceof TintedDrawable) {
             ((TintedDrawable) mCloseButton.getDrawable()).setTint(colorStateList);

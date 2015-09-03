@@ -44,14 +44,16 @@ public class FindToolbarPhone extends FindToolbar {
         int queryTextColorId;
         if (isIncognito) {
             setBackgroundResource(R.color.incognito_primary_color);
-            ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
+            ColorStateList white = ApiCompatibilityUtils.getColorStateList(getResources(),
+                    R.color.light_mode_tint);
             mFindNextButton.setTint(white);
             mFindPrevButton.setTint(white);
             mCloseFindButton.setTint(white);
             queryTextColorId = R.color.find_in_page_query_white_color;
         } else {
             setBackgroundColor(Color.WHITE);
-            ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
+            ColorStateList dark = ApiCompatibilityUtils.getColorStateList(getResources(),
+                    R.color.dark_mode_tint);
             mFindNextButton.setTint(dark);
             mFindPrevButton.setTint(dark);
             mCloseFindButton.setTint(dark);

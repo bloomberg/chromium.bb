@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.base.LocalizationUtils;
@@ -253,7 +254,8 @@ class AppMenuAdapter extends BaseAdapter {
         button.setImageDrawable(item.getIcon());
         item.getIcon().setLevel(currentLevel);
         if (item.isChecked()) {
-            button.setTint(button.getResources().getColorStateList(R.color.blue_mode_tint));
+            button.setTint(ApiCompatibilityUtils.getColorStateList(
+                    button.getResources(), R.color.blue_mode_tint));
         }
         button.setEnabled(item.isEnabled());
         button.setFocusable(item.isEnabled());

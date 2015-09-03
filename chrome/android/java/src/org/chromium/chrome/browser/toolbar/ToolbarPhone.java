@@ -1860,8 +1860,10 @@ public class ToolbarPhone extends ToolbarLayout
 
         getProgressBar().setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), progressBarBackgroundColorResource));
-        ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
-        ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
+        ColorStateList dark =
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+        ColorStateList white =
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
 
         if (mToggleTabStackButton != null) {
             mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables

@@ -2287,8 +2287,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (updateUseDarkColors() || getToolbarDataProvider().isUsingBrandColor()) {
             updateSecurityIcon(getSecurityLevel());
         }
-        ColorStateList colorStateList = getResources().getColorStateList(mUseDarkColors
-                ? R.color.dark_mode_tint : R.color.light_mode_tint);
+        ColorStateList colorStateList = ApiCompatibilityUtils.getColorStateList(getResources(),
+                mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
         mMicButton.setTint(colorStateList);
         mDeleteButton.setTint(colorStateList);
 

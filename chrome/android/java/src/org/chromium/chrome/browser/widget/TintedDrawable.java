@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -25,7 +26,7 @@ public class TintedDrawable extends BitmapDrawable {
 
     public TintedDrawable(Resources res, Bitmap bitmap) {
         super(res, bitmap);
-        mTint = res.getColorStateList(R.color.dark_mode_tint);
+        mTint = ApiCompatibilityUtils.getColorStateList(res, R.color.dark_mode_tint);
     }
 
     @Override
