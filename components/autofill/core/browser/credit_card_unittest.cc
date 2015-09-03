@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/guid.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -383,8 +384,13 @@ TEST(CreditCardTest, IsComplete) {
 TEST(CreditCardTest, IsValid) {
   CreditCard card;
   // Invalid because expired
-  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
-  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2010"));
+  const base::Time now(base::Time::Now());
+  base::Time::Exploded now_exploded;
+  now.LocalExplode(&now_exploded);
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH,
+                  base::IntToString16(now_exploded.month));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                  base::IntToString16(now_exploded.year - 1));
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   EXPECT_FALSE(card.IsValid());
 
