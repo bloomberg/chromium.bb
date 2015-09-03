@@ -38630,21 +38630,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.BLAHashTime" units="milliseconds">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The elapsed time to compute the hash of a blacklisted module.
   </summary>
 </histogram>
 
 <histogram name="SBIRS.BLASignatureTime" units="milliseconds">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The elapsed time to validate the signature of a blacklisted module.
   </summary>
 </histogram>
 
 <histogram name="SBIRS.DiscardedIncident" enum="IncidentType">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The type of incident discarded by the safe browsing incident reporting
     service as a result of profile or service destruction.
@@ -38652,22 +38652,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.DownloadMetadata.DeleteSuccess" enum="BooleanSuccess">
-  <owner>grt@chromium.org</owner>
+  <owner>caitkp@chromium.org</owner>
   <summary>The result of deleting a profile's download metadata file.</summary>
 </histogram>
 
 <histogram name="SBIRS.DownloadMetadata.ReadResult" enum="MetadataReadResult">
-  <owner>grt@chromium.org</owner>
+  <owner>caitkp@chromium.org</owner>
   <summary>The result of reading a profile's download metadata file.</summary>
 </histogram>
 
 <histogram name="SBIRS.DownloadMetadata.WriteResult" enum="MetadataWriteResult">
-  <owner>grt@chromium.org</owner>
+  <owner>caitkp@chromium.org</owner>
   <summary>The result of writing a profile's download metadata file.</summary>
 </histogram>
 
 <histogram name="SBIRS.DroppedIncident" enum="IncidentType">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The type of incident given to the safe browsing incident reporting service
     but dropped as a result of not participating in safe browsing.
@@ -38675,7 +38675,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.EnvCollectionTime" units="milliseconds">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The elapsed time to collect environmental data for a safe browsing incident
     report.
@@ -38683,7 +38683,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.FindDownloadedBinaryTime" units="milliseconds">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The elapsed time to find the most recent binary download from all loaded
     profiles when creating a safe browsing incident report.
@@ -38691,7 +38691,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.Incident" enum="IncidentType">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The type of incident included in an incident report by the safe browsing
     incident reporting service.
@@ -38699,7 +38699,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.IncidentCount">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The number of incidents collated into a single safe browsing incident
     report.
@@ -38707,7 +38707,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.InterIncidentTime" units="milliseconds">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The elapsed time between two successive incidents collated into the same
     incident report by the safe browsing incident reporting service.
@@ -38715,7 +38715,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.NoDownloadIncident" enum="IncidentType">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The type of incident pruned by the safe browsing incident reporting service
     as a result of not having a matching binary download.
@@ -38723,7 +38723,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.PrunedIncident" enum="IncidentType">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The type of incident pruned from a report in the safe browsing incident
     reporting service as a result of having previously been reported.
@@ -38731,7 +38731,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.PruneRatio" units="percentage">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <obsolete>
     Deprecated 08/2015.
   </obsolete>
@@ -38742,7 +38742,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.ReceivedIncident" enum="IncidentType">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The type of incident received by the safe browsing incident reporting
     service.
@@ -38750,20 +38750,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.ReportPayloadSize" units="bytes">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>The size, in bytes, of a safe browsing incident report.</summary>
 </histogram>
 
 <histogram name="SBIRS.ReportUploadTime" units="milliseconds">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>The elapsed time to upload a safe browsing incident report.</summary>
 </histogram>
 
 <histogram name="SBIRS.UploadResult" enum="ReportProcessingResult">
-  <owner>grt@google.com</owner>
+  <owner>caitkp@google.com</owner>
   <summary>
     The result of an attempted report upload by the safe browsing incident
     reporting service.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.VerifyBinaryIntegrity.0" units="milliseconds">
+  <owner>caitkp@google.com</owner>
+  <summary>
+    The elapsed time to verify the binary integrity of chrome.exe.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.VerifyBinaryIntegrity.1" units="milliseconds">
+  <owner>caitkp@google.com</owner>
+  <summary>
+    The elapsed time to verify the binary integrity of chrome.dll.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.VerifyBinaryIntegrity.2" units="milliseconds">
+  <owner>caitkp@google.com</owner>
+  <summary>
+    The elapsed time to verify the binary integrity of chrome_child.dll.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.VerifyBinaryIntegrity.3" units="milliseconds">
+  <owner>caitkp@google.com</owner>
+  <summary>
+    The elapsed time to verify the binary integrity of chrome_elf.dll.
   </summary>
 </histogram>
 
