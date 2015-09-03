@@ -739,12 +739,6 @@ WebView* WebLocalFrameImpl::view() const
 
 void WebLocalFrameImpl::setOpener(WebFrame* opener)
 {
-    // TODO(alexmos): Remove this once didChangeOpener is implemented in
-    // content, as all opener updates will go through it, including disowned
-    // openers.
-    if (WebFrame::opener() && !opener && m_client)
-        m_client->didDisownOpener(this);
-
     WebFrame::setOpener(opener);
 
     // TODO(alexmos,dcheng): This should ASSERT(m_frame) once we no longer have

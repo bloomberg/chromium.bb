@@ -151,11 +151,6 @@ public:
     // frameDetached().
     virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags sandboxFlags) { return nullptr; }
 
-    // This frame set its opener to null, disowning it.
-    // See http://html.spec.whatwg.org/#dom-opener.
-    // TODO(alexmos): Remove this once didChangeOpener is implemented in content.
-    virtual void didDisownOpener(WebLocalFrame*) { }
-
     // This frame has set its opener to another frame, or disowned the opener
     // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
     virtual void didChangeOpener(WebFrame*) { }
