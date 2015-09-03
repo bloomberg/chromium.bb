@@ -238,19 +238,6 @@ class BlinkPerfLayoutFullLayout(BlinkPerfLayout):
     return 'blink_perf.layout_full_frame'
 
 
-class BlinkPerfMutation(perf_benchmark.PerfBenchmark):
-  tag = 'mutation'
-  test = _BlinkPerfMeasurement
-
-  @classmethod
-  def Name(cls):
-    return 'blink_perf.mutation'
-
-  def CreateStorySet(self, options):
-    path = os.path.join(BLINK_PERF_BASE_DIR, 'Mutation')
-    return CreateStorySetFromPath(path, SKIPPED_FILE)
-
-
 @benchmark.Disabled('win',     # crbug.com/488493
                     'android') # crbug.com/527156
 class BlinkPerfParser(perf_benchmark.PerfBenchmark):
