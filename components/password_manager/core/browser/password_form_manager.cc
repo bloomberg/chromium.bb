@@ -755,8 +755,8 @@ void PasswordFormManager::CreatePendingCredentials() {
       // the current origin and signon realm. This ensures that on the next
       // visit, a precise match is found.
       is_new_login_ = true;
-      user_action_ = password_overridden_ ? kUserActionChoosePslMatch
-                                          : kUserActionOverridePassword;
+      user_action_ = password_overridden_ ? kUserActionOverridePassword
+                                          : kUserActionChoosePslMatch;
 
       // Since this credential will not overwrite a previously saved credential,
       // username_value can be updated now.
