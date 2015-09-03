@@ -1708,7 +1708,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Create the cross-site URL to navigate to.
   GURL cross_site_url =
-      embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html");
+      embedded_test_server()->GetURL("foo.com", "/frame_tree/title2.html");
 
   // Load cross-site page into the second iframe without waiting for the
   // navigation to complete. Once LoadURLWithParams returns, we would expect
@@ -1768,7 +1768,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 
   // Load another cross-site page into the same iframe.
-  cross_site_url = embedded_test_server()->GetURL("bar.com", "/title2.html");
+  cross_site_url = embedded_test_server()->GetURL("bar.com", "/title3.html");
   {
     // Perform the same checks as the first cross-site navigation, since
     // there have been issues in subsequent cross-site navigations. Also ensure
