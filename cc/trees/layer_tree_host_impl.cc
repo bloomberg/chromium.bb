@@ -1081,28 +1081,20 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
     RenderPass* pass = frame->render_passes[i];
 
     // Remove orphan RenderPassDrawQuads.
-    bool removed = true;
-    while (removed) {
-      removed = false;
-      for (auto it = pass->quad_list.begin(); it != pass->quad_list.end();
-           ++it) {
-        if (it->material != DrawQuad::RENDER_PASS)
-          continue;
-        const RenderPassDrawQuad* quad = RenderPassDrawQuad::MaterialCast(*it);
-        // If the RenderPass doesn't exist, we can remove the quad.
-        if (pass_exists.count(quad->render_pass_id)) {
-          // Otherwise, save a reference to the RenderPass so we know there's a
-          // quad using it.
-          pass_references[quad->render_pass_id]++;
-          continue;
-        }
-        // This invalidates the iterator. So break out of the loop and look
-        // again. Luckily there's not a lot of render passes cuz this is
-        // terrible.
-        // TODO(danakj): We could make erase not invalidate the iterator.
-        pass->quad_list.EraseAndInvalidateAllPointers(it);
-        removed = true;
-        break;
+    for (auto it = pass->quad_list.begin(); it != pass->quad_list.end();) {
+      if (it->material != DrawQuad::RENDER_PASS) {
+        ++it;
+        continue;
+      }
+      const RenderPassDrawQuad* quad = RenderPassDrawQuad::MaterialCast(*it);
+      // If the RenderPass doesn't exist, we can remove the quad.
+      if (pass_exists.count(quad->render_pass_id)) {
+        // Otherwise, save a reference to the RenderPass so we know there's a
+        // quad using it.
+        pass_references[quad->render_pass_id]++;
+        ++it;
+      } else {
+        it = pass->quad_list.EraseAndInvalidateAllPointers(it);
       }
     }
 

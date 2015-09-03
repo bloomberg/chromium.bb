@@ -171,9 +171,16 @@ class ListContainerBase::ListContainerCharAllocator {
     --size_;
   }
 
-  void Erase(PositionInListContainerCharAllocator position) {
-    DCHECK_EQ(this, position.ptr_to_container);
-    storage_[position.vector_index]->Erase(position.item_iterator);
+  void Erase(PositionInListContainerCharAllocator* position) {
+    DCHECK_EQ(this, position->ptr_to_container);
+
+    // Update |position| to point to the element after the erased element.
+    InnerList* list = storage_[position->vector_index];
+    char* item_iterator = position->item_iterator;
+    if (item_iterator == list->LastElement())
+      position->Increment();
+
+    list->Erase(item_iterator);
     // TODO(weiliangc): Free the InnerList if it is empty.
     --size_;
   }
@@ -355,7 +362,7 @@ void ListContainerBase::RemoveLast() {
 }
 
 void ListContainerBase::EraseAndInvalidateAllPointers(
-    ListContainerBase::Iterator position) {
+    ListContainerBase::Iterator* position) {
   data_->Erase(position);
 }
 

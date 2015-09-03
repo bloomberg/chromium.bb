@@ -657,6 +657,30 @@ TEST(ListContainerTest, DeletionAllInAllocationReversed) {
   }
 }
 
+TEST(ListContainerTest, DeletionWhileIterating) {
+  ListContainer<SimpleDerivedElement> list(kCurrentLargestDerivedElementSize);
+  for (int i = 0; i < 4; ++i)
+    list.AllocateAndConstruct<SimpleDerivedElement>()->set_value(i);
+
+  // Delete odd elements.
+  for (auto it = list.begin(); it != list.end();) {
+    if ((*it)->get_value() % 2)
+      it = list.EraseAndInvalidateAllPointers(it);
+    else
+      ++it;
+  }
+
+  EXPECT_EQ(2u, list.size());
+  EXPECT_EQ(0, list.front()->get_value());
+  EXPECT_EQ(2, list.back()->get_value());
+
+  // Erase all elements.
+  for (auto it = list.begin(); it != list.end();)
+    it = list.EraseAndInvalidateAllPointers(it);
+
+  EXPECT_TRUE(list.empty());
+}
+
 TEST(ListContainerTest, InsertBeforeBegin) {
   ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
   std::vector<SimpleDerivedElement*> sde_list;
