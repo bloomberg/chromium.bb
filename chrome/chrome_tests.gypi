@@ -648,7 +648,6 @@
       'browser/ui/views/media_router/media_router_ui_browsertest.cc',
       'browser/ui/views/new_task_manager_view_browsertest.cc',
       'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
-      'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
       'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
       'browser/ui/views/toolbar/toolbar_view_browsertest.cc',
       'browser/ui/views/translate/translate_bubble_view_browsertest.cc',
@@ -805,6 +804,10 @@
       'browser/ui/webui/options/chromeos/accounts_options_browsertest.cc',
       'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
       'browser/ui/webui/options/chromeos/shared_options_browsertest.cc',
+    ],
+    'chrome_browser_tests_views_non_cros_or_mac_sources': [
+      # This should be brought up on OSX Views but not CrOS.
+      'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
     ],
     'chrome_browser_tests_policy_sources': [
       'browser/policy/cloud/cloud_policy_browsertest.cc',
@@ -2452,6 +2455,12 @@
         }],
         ['toolkit_views==1 and OS!="mac"', {
           'sources': [ '<@(chrome_browser_tests_views_non_mac_sources)' ],
+        }],
+        ['toolkit_views==1 and OS!="mac" and chromeos == 0', {
+          # A temporary define to make it easier to remove CrOS dependencies on
+          # avatar button code. TODO(estade): remove.
+          'defines': [ 'FRAME_AVATAR_BUTTON=1', ],
+          'sources': [ '<@(chrome_browser_tests_views_non_cros_or_mac_sources)' ],
         }],
         ['OS!="android" and OS!="ios"', {
           'sources': [

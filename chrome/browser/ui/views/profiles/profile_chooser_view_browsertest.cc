@@ -30,9 +30,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/webview/webview.h"
 
-// ChromeOS and mobile platforms don't have a ProfileChooserView.
-#if defined(FRAME_AVATAR_BUTTON)
-
 namespace {
 
 Profile* CreateTestingProfile(const std::string& profile_name) {
@@ -298,5 +295,3 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   // We need to hide the User Manager or else the process can't die.
   UserManager::Hide();
 }
-
-#endif
