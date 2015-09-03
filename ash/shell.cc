@@ -181,7 +181,7 @@ AshWindowTreeHostInitParams ShellInitParamsToAshWindowTreeHostInitParams(
 }  // namespace
 
 // static
-Shell* Shell::instance_ = NULL;
+Shell* Shell::instance_ = nullptr;
 // static
 bool Shell::initially_hide_cursor_ = false;
 
@@ -210,7 +210,7 @@ bool Shell::HasInstance() {
 // static
 void Shell::DeleteInstance() {
   delete instance_;
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 // static
@@ -329,18 +329,19 @@ bool Shell::GetAppListTargetVisibility() const {
 }
 
 aura::Window* Shell::GetAppListWindow() {
-  return app_list_controller_.get() ? app_list_controller_->GetWindow() : NULL;
+  return app_list_controller_.get() ? app_list_controller_->GetWindow()
+                                    : nullptr;
 }
 
 app_list::AppListView* Shell::GetAppListView() {
-  return app_list_controller_.get() ? app_list_controller_->GetView() : NULL;
+  return app_list_controller_.get() ? app_list_controller_->GetView() : nullptr;
 }
 
 bool Shell::IsSystemModalWindowOpen() const {
   if (simulate_modal_window_open_for_testing_)
     return true;
   const std::vector<aura::Window*> containers = GetContainersFromAllRootWindows(
-      kShellWindowId_SystemModalContainer, NULL);
+      kShellWindowId_SystemModalContainer, nullptr);
   for (std::vector<aura::Window*>::const_iterator cit = containers.begin();
        cit != containers.end(); ++cit) {
     for (aura::Window::Windows::const_iterator wit = (*cit)->children().begin();
@@ -466,7 +467,7 @@ void Shell::DeactivateKeyboard() {
       (*iter)->DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
     }
   }
-  keyboard::KeyboardController::ResetInstance(NULL);
+  keyboard::KeyboardController::ResetInstance(nullptr);
 }
 
 void Shell::ShowShelf() {
@@ -633,11 +634,11 @@ void Shell::DoInitialWorkspaceAnimation() {
 // Shell, private:
 
 Shell::Shell(ShellDelegate* delegate)
-    : target_root_window_(NULL),
-      scoped_target_root_window_(NULL),
+    : target_root_window_(nullptr),
+      scoped_target_root_window_(nullptr),
       delegate_(delegate),
       window_positioner_(new WindowPositioner),
-      activation_client_(NULL),
+      activation_client_(nullptr),
 #if defined(OS_CHROMEOS)
       display_configurator_(new ui::DisplayConfigurator()),
 #endif  // defined(OS_CHROMEOS)
@@ -665,12 +666,12 @@ Shell::~Shell() {
 
   delegate_->PreShutdown();
 
-  views::FocusManagerFactory::Install(NULL);
+  views::FocusManagerFactory::Install(nullptr);
 
   // Remove the focus from any window. This will prevent overhead and side
   // effects (e.g. crashes) from changing focus during shutdown.
   // See bug crbug.com/134502.
-  aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(NULL);
+  aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(nullptr);
 
   // Please keep in same order as in Init() because it's easy to miss one.
   if (window_modality_controller_)
@@ -838,7 +839,7 @@ Shell::~Shell() {
 #endif
 
   DCHECK(instance_ == this);
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 void Shell::Init(const ShellInitParams& init_params) {
@@ -1172,7 +1173,7 @@ scoped_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {
 
 ui::EventTargeter* Shell::GetEventTargeter() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void Shell::OnEvent(ui::Event* event) {
