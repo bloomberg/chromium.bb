@@ -116,14 +116,7 @@ void MemoryDumpManager::Initialize() {
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  // The memory maps dump provider is currently disabled for security reasons
-  // and will be enabled once tracing is more secure (crbug.com/517906).
-  // It is still enabled for running benchmarks.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          "enable-memory-benchmarking")) {
-    RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
-  }
-
+  RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
   RegisterDumpProvider(MallocDumpProvider::GetInstance());
   system_allocator_pool_name_ = MallocDumpProvider::kAllocatedObjects;
 #endif
