@@ -128,11 +128,11 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
 }
 
 TEST_F(QueryResultManagerTest, MultipleQueries) {
-  MediaSink sink1("sinkId1", "Sink 1");
-  MediaSink sink2("sinkId2", "Sink 2");
-  MediaSink sink3("sinkId3", "Sink 3");
-  MediaSink sink4("sinkId4", "Sink 4");
-  MediaSink sink5("sinkId5", "Sink 5");
+  MediaSink sink1("sinkId1", "Sink 1", MediaSink::IconType::CAST);
+  MediaSink sink2("sinkId2", "Sink 2", MediaSink::IconType::CAST);
+  MediaSink sink3("sinkId3", "Sink 3", MediaSink::IconType::CAST);
+  MediaSink sink4("sinkId4", "Sink 4", MediaSink::IconType::CAST);
+  MediaSink sink5("sinkId5", "Sink 5", MediaSink::IconType::CAST);
 
   query_result_manager_.AddObserver(&mock_observer_);
   DiscoverSinks(MediaCastMode::DEFAULT,

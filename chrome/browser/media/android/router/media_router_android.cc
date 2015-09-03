@@ -71,7 +71,7 @@ void MediaRouterAndroid::CreateRoute(
 
   CreateMediaRouteRequest* request = new CreateMediaRouteRequest(
       MediaSource(source_id),
-      MediaSink(sink_id, std::string()),
+      MediaSink(sink_id, std::string(), MediaSink::GENERIC),
       presentation_id,
       callbacks);
   int create_route_request_id = create_route_requests_.Add(request);
@@ -288,7 +288,8 @@ void MediaRouterAndroid::OnSinksReceived(
             env, java_media_router_.obj(), jsource_urn, i);
     sinks_converted.push_back(
         MediaSink(ConvertJavaStringToUTF8(env, jsink_urn.obj()),
-        ConvertJavaStringToUTF8(env, jsink_name.obj())));
+        ConvertJavaStringToUTF8(env, jsink_name.obj()),
+        MediaSink::GENERIC));
   }
 
   std::string source_urn = ConvertJavaStringToUTF8(env, jsource_urn);

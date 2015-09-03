@@ -30,8 +30,31 @@ define('media_router_bindings', [
     return new mediaRouterMojom.MediaSink({
       'name': sink.friendlyName,
       'sink_id': sink.id,
+      'icon_type': sinkIconTypeToMojo(sink.iconType),
       'is_launching': sink.isLaunching_,
     });
+  }
+
+  /**
+   * Converts a media sink's icon type to a MediaSink.IconType Mojo object.
+   * @param {!MediaSink.IconType} type A media sink's icon type.
+   * @return {!mediaRouterMojom.MediaSink.IconType} A Mojo MediaSink.IconType
+   *     object.
+   */
+  function sinkIconTypeToMojo(type) {
+    switch (type) {
+      case 'cast':
+        return mediaRouterMojom.MediaSink.IconType.CAST;
+      case 'cast_audio':
+        return mediaRouterMojom.MediaSink.IconType.CAST_AUDIO;
+      case 'generic':
+        return mediaRouterMojom.MediaSink.IconType.GENERIC;
+      case 'hangout':
+        return mediaRouterMojom.MediaSink.IconType.HANGOUT;
+      default:
+        console.error('Unknown sink icon type : ' + type);
+        return mediaRouterMojom.MediaSink.IconType.GENERIC;
+    }
   }
 
   /**

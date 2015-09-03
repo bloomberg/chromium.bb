@@ -46,7 +46,7 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
 
 TEST_F(PresentationMediaSinksObserverTest, AvailableScreens) {
   std::vector<MediaSink> result;
-  result.push_back(MediaSink("sinkId", "Sink"));
+  result.push_back(MediaSink("sinkId", "Sink", MediaSink::IconType::CAST));
 
   EXPECT_CALL(listener_, OnScreenAvailabilityChanged(true)).Times(1);
   observer_->OnSinksReceived(result);
@@ -68,14 +68,14 @@ TEST_F(PresentationMediaSinksObserverTest, ConsecutiveResults) {
 
   // |listener_| should get result since it changed to true.
   std::vector<MediaSink> result;
-  result.push_back(MediaSink("sinkId", "Sink"));
+  result.push_back(MediaSink("sinkId", "Sink", MediaSink::IconType::CAST));
 
   EXPECT_CALL(listener_, OnScreenAvailabilityChanged(true)).Times(1);
   observer_->OnSinksReceived(result);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&listener_));
 
   // Does not propagate result to |listener_| since result is same.
-  result.push_back(MediaSink("sinkId2", "Sink 2"));
+  result.push_back(MediaSink("sinkId2", "Sink 2", MediaSink::IconType::CAST));
   observer_->OnSinksReceived(result);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&listener_));
 

@@ -80,8 +80,10 @@ cr.define('route_details', function() {
         fakeRouteTwo = new media_router.Route('route id 2', 'sink id 2',
             'Video 2', 2, false);
         fakeSinkOne = new media_router.Sink('sink id 1', 'Living Room',
+            media_router.SinkIconType.CAST,
             media_router.SinkStatus.ACTIVE, [0, 1, 2]);
         fakeSinkTwo = new media_router.Sink('sink id 2', 'my device',
+            media_router.SinkIconType.CAST,
             media_router.SinkStatus.ACTIVE, [0, 1, 2]);
 
         // Allow for the route details to be created and attached.

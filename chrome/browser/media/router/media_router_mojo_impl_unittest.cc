@@ -165,12 +165,16 @@ class RegisterMediaRouteProviderHandler {
 
 TEST_F(MediaRouterMojoImplTest, CreateRoute) {
   MediaRoute expected_route(kRouteId, MediaSource(std::string(kSource)),
-                            MediaSink(kSink, kSinkName), "", false, "");
+                            MediaSink(kSink, kSinkName,
+                                      MediaSink::IconType::CAST),
+                            "", false, "");
   interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
   route->media_source = kSource;
   route->media_sink = interfaces::MediaSink::New();
   route->media_sink->sink_id = kSink;
   route->media_sink->name = kSinkName;
+  route->media_sink->icon_type =
+      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
   route->media_route_id = kRouteId;
   route->description = kDescription;
 
@@ -222,12 +226,16 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
 
 TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   MediaRoute expected_route(kRouteId, MediaSource(std::string(kSource)),
-                            MediaSink(kSink, kSinkName), "", false, "");
+                            MediaSink(kSink, kSinkName,
+                                      MediaSink::IconType::CAST),
+                            "", false, "");
   interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
   route->media_source = kSource;
   route->media_sink = interfaces::MediaSink::New();
   route->media_sink->sink_id = kSink;
   route->media_sink->name = kSinkName;
+  route->media_sink->icon_type =
+      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
   route->media_route_id = kRouteId;
   route->description = kDescription;
 
@@ -336,16 +344,22 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   router()->RegisterMediaSinksObserver(&unrelated_sinks_observer);
 
   std::vector<MediaSink> expected_sinks;
-  expected_sinks.push_back(MediaSink(kSink, kSinkName));
-  expected_sinks.push_back(MediaSink(kSink2, kSinkName));
+  expected_sinks.push_back(MediaSink(kSink, kSinkName,
+                                     MediaSink::IconType::CAST));
+  expected_sinks.push_back(MediaSink(kSink2, kSinkName,
+                                     MediaSink::IconType::CAST));
 
   mojo::Array<interfaces::MediaSinkPtr> mojo_sinks(2);
   mojo_sinks[0] = interfaces::MediaSink::New();
   mojo_sinks[0]->sink_id = kSink;
   mojo_sinks[0]->name = kSink;
+  mojo_sinks[0]->icon_type =
+      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
   mojo_sinks[1] = interfaces::MediaSink::New();
   mojo_sinks[1]->sink_id = kSink2;
   mojo_sinks[1]->name = kSink2;
+  mojo_sinks[1]->icon_type =
+      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
 
   EXPECT_CALL(sinks_observer, OnSinksReceived(SequenceEquals(expected_sinks)));
   EXPECT_CALL(extra_sinks_observer,
@@ -384,11 +398,13 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
 
   std::vector<MediaRoute> expected_routes;
   expected_routes.push_back(MediaRoute(kRouteId, MediaSource(kSource),
-                                       MediaSink(kSink, kSink), kDescription,
-                                       false, ""));
+                                       MediaSink(kSink, kSink,
+                                                 MediaSink::IconType::CAST),
+                                       kDescription, false, ""));
   expected_routes.push_back(MediaRoute(kRouteId2, MediaSource(kSource),
-                                       MediaSink(kSink, kSink), kDescription,
-                                       false, ""));
+                                       MediaSink(kSink, kSink,
+                                                 MediaSink::IconType::CAST),
+                                       kDescription, false, ""));
 
   mojo::Array<interfaces::MediaRoutePtr> mojo_routes(2);
   mojo_routes[0] = interfaces::MediaRoute::New();

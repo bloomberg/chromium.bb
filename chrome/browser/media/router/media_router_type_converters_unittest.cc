@@ -11,10 +11,13 @@
 namespace media_router {
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
-  MediaSink expected_media_sink("sinkId1", "Sink 1", true);
+  MediaSink expected_media_sink("sinkId1", "Sink 1", MediaSink::IconType::CAST,
+                                true);
   interfaces::MediaSinkPtr expected_mojo_sink(interfaces::MediaSink::New());
   expected_mojo_sink->sink_id = "sinkId1";
   expected_mojo_sink->name = "Sink 1";
+  expected_mojo_sink->icon_type =
+      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
   expected_mojo_sink->is_launching = true;
 
   interfaces::MediaSinkPtr mojo_sink =
@@ -30,14 +33,43 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
   // Convert MediaSink and back should result in identical object.
   EXPECT_EQ(expected_media_sink.name(), media_sink.name());
   EXPECT_EQ(expected_media_sink.id(), media_sink.id());
+  EXPECT_EQ(expected_media_sink.icon_type(), media_sink.icon_type());
+  EXPECT_EQ(expected_media_sink.icon_type(), media_sink.icon_type());
   EXPECT_EQ(expected_media_sink.is_launching(), media_sink.is_launching());
   EXPECT_TRUE(expected_media_sink.Equals(media_sink));
+}
+
+TEST(MediaRouterTypeConvertersTest, ConvertMediaSinkIconType) {
+  // Convert from Mojo to Media Router.
+  EXPECT_EQ(media_router::MediaSink::CAST,
+      mojo::SinkIconTypeFromMojo(
+          media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST));
+  EXPECT_EQ(media_router::MediaSink::CAST_AUDIO,
+      mojo::SinkIconTypeFromMojo(
+          media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO));
+  EXPECT_EQ(media_router::MediaSink::GENERIC,
+      mojo::SinkIconTypeFromMojo(
+          media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC));
+  EXPECT_EQ(media_router::MediaSink::HANGOUT,
+      mojo::SinkIconTypeFromMojo(
+          media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT));
+
+  // Convert from Media Router to Mojo.
+  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST,
+      mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST));
+  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO,
+      mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST_AUDIO));
+  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC,
+      mojo::SinkIconTypeToMojo(media_router::MediaSink::GENERIC));
+  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT,
+      mojo::SinkIconTypeToMojo(media_router::MediaSink::HANGOUT));
 }
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   MediaSource expected_source(MediaSourceForTab(123));
   MediaRoute expected_media_route("routeId1", expected_source,
-                                  MediaSink("sinkId", "sinkName"),
+                                  MediaSink("sinkId", "sinkName",
+                                      MediaSink::IconType::CAST),
                                   "Description", false, "cast_view.html");
   interfaces::MediaRoutePtr expected_mojo_route(interfaces::MediaRoute::New());
   expected_mojo_route->media_route_id = "routeId1";
@@ -45,6 +77,8 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   expected_mojo_route->media_sink = interfaces::MediaSink::New();
   expected_mojo_route->media_sink->sink_id = "sinkId";
   expected_mojo_route->media_sink->name = "sinkName";
+  expected_mojo_route->media_sink->icon_type =
+      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
   expected_mojo_route->description = "Description";
   expected_mojo_route->is_local = false;
   expected_mojo_route->custom_controller_path = "cast_view.html";
@@ -72,7 +106,8 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
   MediaRoute expected_media_route("routeId1", MediaSource(),
-                                  MediaSink("sinkId", "sinkName", false),
+                                  MediaSink("sinkId", "sinkName",
+                                      MediaSink::IconType::CAST, false),
                                   "Description", false, "");
   interfaces::MediaRoutePtr expected_mojo_route(interfaces::MediaRoute::New());
   // MediaRoute::media_source is omitted.
@@ -80,6 +115,8 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
   expected_mojo_route->media_sink = interfaces::MediaSink::New();
   expected_mojo_route->media_sink->sink_id = "sinkId";
   expected_mojo_route->media_sink->name = "sinkName";
+  expected_mojo_route->media_sink->icon_type =
+      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
   expected_mojo_route->media_sink->is_launching = false;
   expected_mojo_route->description = "Description";
   expected_mojo_route->is_local = false;

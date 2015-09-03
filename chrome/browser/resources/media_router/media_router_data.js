@@ -18,6 +18,17 @@ cr.define('media_router', function() {
   };
 
   /**
+   * This corresponds to the C++ MediaSink IconType.
+   * @enum {mumber}
+   */
+  var SinkIconType = {
+    CAST: 0,
+    CAST_AUDIO: 1,
+    GENERIC: 2,
+    HANGOUT: 3,
+  };
+
+  /**
    * @enum {string}
    */
   var SinkStatus = {
@@ -125,6 +136,7 @@ cr.define('media_router', function() {
   /**
    * @param {string} id The ID of the media sink.
    * @param {string} name The name of the sink.
+   * @param {media_router.SinkIconType} iconType the type of icon for the sink.
    * @param {media_router.SinkStatus} status The readiness state of the sink.
    * @param {!Array<number>} castModes Cast modes compatible with the sink.
    * @param {boolean} isLaunching True if the Media Router is creating a route
@@ -132,12 +144,15 @@ cr.define('media_router', function() {
    * @constructor
    * @struct
    */
-  var Sink = function(id, name, status, castModes, isLaunching) {
+  var Sink = function(id, name, iconType, status, castModes, isLaunching) {
     /** @type {string} */
     this.id = id;
 
     /** @type {string} */
     this.name = name;
+
+    /** @type {SinkIconType} */
+    this.iconType = iconType;
 
     /** @type {media_router.SinkStatus} */
     this.status = status;
@@ -166,6 +181,7 @@ cr.define('media_router', function() {
 
   return {
     CastModeType: CastModeType,
+    SinkIconType: SinkIconType,
     SinkStatus: SinkStatus,
     CastMode: CastMode,
     Issue: Issue,

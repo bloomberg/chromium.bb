@@ -45,6 +45,7 @@ scoped_ptr<base::ListValue> SinksToValue(
     const MediaSink& sink = sink_with_cast_modes.sink;
     sink_val->SetString("id", sink.id());
     sink_val->SetString("name", sink.name());
+    sink_val->SetInteger("iconType", sink.icon_type());
     sink_val->SetBoolean("isLaunching", sink.is_launching());
 
     scoped_ptr<base::ListValue> cast_modes_val(new base::ListValue);

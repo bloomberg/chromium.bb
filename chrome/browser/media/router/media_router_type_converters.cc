@@ -10,11 +10,47 @@ using media_router::interfaces::MediaRoutePtr;
 
 namespace mojo {
 
+media_router::MediaSink::IconType SinkIconTypeFromMojo(
+    media_router::interfaces::MediaSink::IconType type) {
+  switch (type) {
+    case media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST:
+      return media_router::MediaSink::CAST;
+    case media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO:
+      return media_router::MediaSink::CAST_AUDIO;
+    case media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT:
+      return media_router::MediaSink::HANGOUT;
+    case media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC:
+      return media_router::MediaSink::GENERIC;
+    default:
+      NOTREACHED() << "Unknown sink icon type " << type;
+      return media_router::MediaSink::GENERIC;
+  }
+}
+
+media_router::interfaces::MediaSink::IconType SinkIconTypeToMojo(
+    media_router::MediaSink::IconType type) {
+  switch (type) {
+    case media_router::MediaSink::CAST:
+      return media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
+    case media_router::MediaSink::CAST_AUDIO:
+      return
+          media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO;
+    case media_router::MediaSink::HANGOUT:
+      return media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT;
+    case media_router::MediaSink::GENERIC:
+      return media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC;
+    default:
+      NOTREACHED() << "Unknown sink icon type " << type;
+      return media_router::interfaces::MediaSink::ICON_TYPE_GENERIC;
+  }
+}
+
 // static
 media_router::MediaSink
 TypeConverter<media_router::MediaSink, MediaSinkPtr>::Convert(
     const MediaSinkPtr& input) {
   return media_router::MediaSink(input->sink_id, input->name,
+                                 SinkIconTypeFromMojo(input->icon_type),
                                  input->is_launching);
 }
 
@@ -24,6 +60,7 @@ MediaSinkPtr TypeConverter<MediaSinkPtr, media_router::MediaSink>::Convert(
   MediaSinkPtr output(media_router::interfaces::MediaSink::New());
   output->sink_id = input.id();
   output->name = input.name();
+  output->icon_type = SinkIconTypeToMojo(input.icon_type());
   output->is_launching = input.is_launching();
   return output.Pass();
 }

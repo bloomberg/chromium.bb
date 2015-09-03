@@ -21,6 +21,12 @@ namespace mojo {
 // and vice versa.
 
 // MediaSink conversion.
+media_router::MediaSink::IconType SinkIconTypeFromMojo(
+    media_router::interfaces::MediaSink::IconType type);
+
+media_router::interfaces::MediaSink::IconType SinkIconTypeToMojo(
+    media_router::MediaSink::IconType type);
+
 template <>
 struct TypeConverter<media_router::MediaSink,
                      media_router::interfaces::MediaSinkPtr> {
