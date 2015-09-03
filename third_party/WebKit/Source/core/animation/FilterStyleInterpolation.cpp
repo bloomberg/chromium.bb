@@ -60,7 +60,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> extendFilterList(const CSSValueList& shortF
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<FilterStyleInterpolation::FilterListStyleInterpolation> maybeCreateFromList(const CSSValueList& startList, const CSSValueList& endList, CSSPropertyID property)
+PassRefPtr<FilterStyleInterpolation::FilterListStyleInterpolation> maybeCreateFromList(const CSSValueList& startList, const CSSValueList& endList, CSSPropertyID property)
 {
     if (startList.length() < endList.length())
         return ListStyleInterpolation<FilterStyleInterpolation>::maybeCreateFromList(*extendFilterList(startList, endList), endList, property);
@@ -69,7 +69,7 @@ PassRefPtrWillBeRawPtr<FilterStyleInterpolation::FilterListStyleInterpolation> m
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<FilterStyleInterpolation::FilterListStyleInterpolation> FilterStyleInterpolation::maybeCreateList(const CSSValue& start, const CSSValue& end, CSSPropertyID property)
+PassRefPtr<FilterStyleInterpolation::FilterListStyleInterpolation> FilterStyleInterpolation::maybeCreateList(const CSSValue& start, const CSSValue& end, CSSPropertyID property)
 {
     if (start.isCSSWideKeyword() || end.isCSSWideKeyword())
         return nullptr;
@@ -97,13 +97,13 @@ bool FilterStyleInterpolation::canCreateFrom(const CSSValue& start, const CSSVal
         && startFunctionType != CSSValueDropShadow;
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> FilterStyleInterpolation::toInterpolableValue(const CSSValue& value, CSSValueID& functionType)
+PassOwnPtr<InterpolableValue> FilterStyleInterpolation::toInterpolableValue(const CSSValue& value, CSSValueID& functionType)
 {
     const CSSFunctionValue& filterValue = toCSSFunctionValue(value);
     functionType = filterValue.functionType();
     size_t length = filterValue.length();
 
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(length);
+    OwnPtr<InterpolableList> result = InterpolableList::create(length);
     for (size_t i = 0; i < length; ++i) {
         switch (functionType) {
         case CSSValueHueRotate:

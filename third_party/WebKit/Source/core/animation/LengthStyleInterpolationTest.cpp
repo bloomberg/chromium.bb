@@ -14,7 +14,7 @@ namespace blink {
 
 class AnimationLengthStyleInterpolationTest : public ::testing::Test {
 protected:
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue& value)
+    static PassOwnPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue& value)
     {
         return LengthStyleInterpolation::toInterpolableValue(value);
     }
@@ -29,9 +29,9 @@ protected:
         return interpolableValueToLength(lengthToInterpolableValue(*value).get(), RangeAll);
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableList> createInterpolableLength(double a, double b, double c, double d, double e, double f, double g, double h, double i, double j)
+    static PassOwnPtr<InterpolableList> createInterpolableLength(double a, double b, double c, double d, double e, double f, double g, double h, double i, double j)
     {
-        OwnPtrWillBeRawPtr<InterpolableList> list = InterpolableList::create(10);
+        OwnPtr<InterpolableList> list = InterpolableList::create(10);
         list->set(0, InterpolableNumber::create(a));
         list->set(1, InterpolableNumber::create(b));
         list->set(2, InterpolableNumber::create(c));
@@ -113,7 +113,7 @@ TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnits)
 {
     CSSLengthArray expectation, actual;
     initLengthArray(expectation);
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, createInterpolableLength(0, 10, 0, 10, 0, 10, 0, 10, 0, 10));
     result->set(1, createInterpolableLength(0, 1, 0, 1, 0, 1, 0, 1, 0, 1));
     toCSSPrimitiveValue(interpolableValueToLength(result.get(), RangeAll).get())->accumulateLengthArray(expectation);
@@ -125,7 +125,7 @@ TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnitsWithSingleValues)
 {
     CSSLengthArray expectation, actual;
     initLengthArray(expectation);
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, createInterpolableLength(0, 10, 0, 10, 0, 10, 0, 10, 0, 10));
     result->set(1, createInterpolableLength(0, 1, 0, 1, 0, 1, 0, 1, 0, 1));
     toCSSPrimitiveValue(interpolableValueToLength(result.get(), RangeAll).get())->accumulateLengthArray(expectation);
@@ -137,7 +137,7 @@ TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnitsWithMultipleValues)
 {
     CSSLengthArray expectation, actual;
     initLengthArray(expectation);
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, createInterpolableLength(0, 20, 0, 30, 0, 8, 0, 10, 0, 7));
     result->set(1, createInterpolableLength(0, 1, 0, 1, 0, 1, 0, 1, 0, 1));
     toCSSPrimitiveValue(interpolableValueToLength(result.get(), RangeAll).get())->accumulateLengthArray(expectation);
@@ -149,7 +149,7 @@ TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnitsWithZeroValue)
 {
     CSSLengthArray expectation, actual;
     initLengthArray(expectation);
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, createInterpolableLength(0, 10, 0, 10, 0, 10, 0, 10, 0, 10));
     result->set(1, createInterpolableLength(1, 1, 0, 1, 0, 1, 0, 1, 0, 1));
     toCSSPrimitiveValue(interpolableValueToLength(result.get(), RangeAll).get())->accumulateLengthArray(expectation);
@@ -161,7 +161,7 @@ TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnitsWithZeroValues)
 {
     CSSLengthArray expectation, actual;
     initLengthArray(expectation);
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, createInterpolableLength(0, 10, 0, 10, 0, 10, 0, 10, 0, 10));
     result->set(1, createInterpolableLength(1, 1, 1, 1, 0, 1, 0, 1, 1, 1));
     toCSSPrimitiveValue(interpolableValueToLength(result.get(), RangeAll).get())->accumulateLengthArray(expectation);

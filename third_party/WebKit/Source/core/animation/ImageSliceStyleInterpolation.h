@@ -14,10 +14,9 @@ class CSSBorderImageSliceValue;
 class ImageSliceStyleInterpolation : public StyleInterpolation {
 public:
     static bool usesDefaultInterpolation(const CSSValue&, const CSSValue&);
-    static PassRefPtrWillBeRawPtr<ImageSliceStyleInterpolation> maybeCreate(const CSSValue&, const CSSValue&, CSSPropertyID);
+    static PassRefPtr<ImageSliceStyleInterpolation> maybeCreate(const CSSValue&, const CSSValue&, CSSPropertyID);
 
     void apply(StyleResolverState&) const override;
-    DECLARE_VIRTUAL_TRACE();
 
     // Image slices can have either percentages or numbers: http://dev.w3.org/csswg/css-backgrounds-3/#the-border-image-slice
     struct Metadata {
@@ -27,7 +26,7 @@ public:
     };
 
 private:
-    ImageSliceStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID property, Metadata metadata)
+    ImageSliceStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID property, Metadata metadata)
         : StyleInterpolation(start, end, property)
         , m_metadata(metadata)
     { }

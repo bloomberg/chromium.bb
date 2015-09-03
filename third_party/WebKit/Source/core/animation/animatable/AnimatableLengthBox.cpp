@@ -33,7 +33,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthBox::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableLengthBox::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLengthBox* lengthBox = toAnimatableLengthBox(value);
     return AnimatableLengthBox::create(
@@ -50,15 +50,6 @@ bool AnimatableLengthBox::equalTo(const AnimatableValue* value) const
         && right()->equals(lengthBox->right())
         && top()->equals(lengthBox->top())
         && bottom()->equals(lengthBox->bottom());
-}
-
-DEFINE_TRACE(AnimatableLengthBox)
-{
-    visitor->trace(m_left);
-    visitor->trace(m_right);
-    visitor->trace(m_top);
-    visitor->trace(m_bottom);
-    AnimatableValue::trace(visitor);
 }
 
 }

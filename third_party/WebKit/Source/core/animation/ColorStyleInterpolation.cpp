@@ -22,7 +22,7 @@ bool ColorStyleInterpolation::canCreateFrom(const CSSValue& value)
     return value.isPrimitiveValue() && (toCSSPrimitiveValue(value).isValueID() || toCSSPrimitiveValue(value).isRGBColor());
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> ColorStyleInterpolation::colorToInterpolableValue(const CSSValue& value)
+PassOwnPtr<InterpolableValue> ColorStyleInterpolation::colorToInterpolableValue(const CSSValue& value)
 {
     ASSERT(value.isPrimitiveValue());
     const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
@@ -41,7 +41,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> ColorStyleInterpolation::colorToInterp
 
     int alpha = alphaChannel(color);
 
-    OwnPtrWillBeRawPtr<InterpolableList> list = InterpolableList::create(4);
+    OwnPtr<InterpolableList> list = InterpolableList::create(4);
     list->set(0, InterpolableNumber::create(redChannel(color) * alpha));
     list->set(1, InterpolableNumber::create(greenChannel(color) * alpha));
     list->set(2, InterpolableNumber::create(blueChannel(color) * alpha));
@@ -74,15 +74,10 @@ void ColorStyleInterpolation::apply(StyleResolverState& state) const
     StyleBuilder::applyProperty(m_id, state, interpolableValueToColor(*m_cachedValue).get());
 }
 
-DEFINE_TRACE(ColorStyleInterpolation)
-{
-    StyleInterpolation::trace(visitor);
-}
-
-PassRefPtrWillBeRawPtr<ColorStyleInterpolation> ColorStyleInterpolation::maybeCreateFromColor(const CSSValue& start, const CSSValue& end, CSSPropertyID id)
+PassRefPtr<ColorStyleInterpolation> ColorStyleInterpolation::maybeCreateFromColor(const CSSValue& start, const CSSValue& end, CSSPropertyID id)
 {
     if (canCreateFrom(start) && !toCSSPrimitiveValue(start).colorIsDerivedFromElement() && canCreateFrom(end) && !toCSSPrimitiveValue(end).colorIsDerivedFromElement())
-        return adoptRefWillBeNoop(new ColorStyleInterpolation(colorToInterpolableValue(start), colorToInterpolableValue(end), id));
+        return adoptRef(new ColorStyleInterpolation(colorToInterpolableValue(start), colorToInterpolableValue(end), id));
     return nullptr;
 }
 

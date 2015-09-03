@@ -23,14 +23,12 @@ class CSSValuePair;
 
 class CORE_EXPORT DeferredLegacyStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<DeferredLegacyStyleInterpolation> create(PassRefPtrWillBeRawPtr<CSSValue> start, PassRefPtrWillBeRawPtr<CSSValue> end, CSSPropertyID id)
+    static PassRefPtr<DeferredLegacyStyleInterpolation> create(PassRefPtrWillBeRawPtr<CSSValue> start, PassRefPtrWillBeRawPtr<CSSValue> end, CSSPropertyID id)
     {
-        return adoptRefWillBeNoop(new DeferredLegacyStyleInterpolation(start, end, id));
+        return adoptRef(new DeferredLegacyStyleInterpolation(start, end, id));
     }
 
     void apply(StyleResolverState&) const override;
-
-    DECLARE_VIRTUAL_TRACE();
 
     static bool interpolationRequiresStyleResolve(const CSSValue&);
     static bool interpolationRequiresStyleResolve(const CSSPrimitiveValue&);
@@ -55,9 +53,9 @@ private:
     {
     }
 
-    RefPtrWillBeMember<CSSValue> m_startCSSValue;
-    RefPtrWillBeMember<CSSValue> m_endCSSValue;
-    mutable RefPtrWillBeMember<LegacyStyleInterpolation> m_innerInterpolation;
+    RefPtrWillBePersistent<CSSValue> m_startCSSValue;
+    RefPtrWillBePersistent<CSSValue> m_endCSSValue;
+    mutable RefPtr<LegacyStyleInterpolation> m_innerInterpolation;
     mutable bool m_outdated;
 };
 

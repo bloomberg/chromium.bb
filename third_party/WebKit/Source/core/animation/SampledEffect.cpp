@@ -11,7 +11,7 @@
 
 namespace blink {
 
-SampledEffect::SampledEffect(KeyframeEffect* effect, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
+SampledEffect::SampledEffect(KeyframeEffect* effect, PassOwnPtr<Vector<RefPtr<Interpolation>>> interpolations)
     : m_effect(effect)
     , m_animation(effect->animation())
     , m_interpolations(interpolations)
@@ -32,9 +32,6 @@ DEFINE_TRACE(SampledEffect)
 {
     visitor->trace(m_effect);
     visitor->trace(m_animation);
-#if ENABLE(OILPAN)
-    visitor->trace(m_interpolations);
-#endif
 }
 
 void SampledEffect::applySVGUpdate(SVGElement& targetElement)

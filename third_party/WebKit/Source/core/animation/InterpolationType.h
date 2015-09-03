@@ -26,8 +26,8 @@ public:
     CSSPropertyID property() const { return m_property; }
 
     // Represents logic for determining whether a conversion decision is no longer valid given the current environment.
-    class ConversionChecker : public NoBaseWillBeGarbageCollectedFinalized<ConversionChecker> {
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ConversionChecker);
+    class ConversionChecker {
+        WTF_MAKE_FAST_ALLOCATED(ConversionChecker);
         WTF_MAKE_NONCOPYABLE(ConversionChecker);
     public:
         virtual ~ConversionChecker() { }
@@ -36,20 +36,20 @@ public:
     protected:
         ConversionChecker() { }
     };
-    using ConversionCheckers = WillBeHeapVector<OwnPtrWillBeMember<ConversionChecker>>;
+    using ConversionCheckers = Vector<OwnPtr<ConversionChecker>>;
 
-    virtual PassOwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const CSSPropertySpecificKeyframe& startKeyframe, const CSSPropertySpecificKeyframe& endKeyframe, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+    virtual PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const CSSPropertySpecificKeyframe& startKeyframe, const CSSPropertySpecificKeyframe& endKeyframe, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
     {
-        OwnPtrWillBeRawPtr<InterpolationValue> startValue = maybeConvertSingle(startKeyframe, state, conversionCheckers);
+        OwnPtr<InterpolationValue> startValue = maybeConvertSingle(startKeyframe, state, conversionCheckers);
         if (!startValue)
             return nullptr;
-        OwnPtrWillBeRawPtr<InterpolationValue> endValue = maybeConvertSingle(endKeyframe, state, conversionCheckers);
+        OwnPtr<InterpolationValue> endValue = maybeConvertSingle(endKeyframe, state, conversionCheckers);
         if (!endValue)
             return nullptr;
         return PairwisePrimitiveInterpolation::create(*this, startValue->m_interpolableValue.release(), endValue->m_interpolableValue.release(), startValue->m_nonInterpolableValue.release());
     }
 
-    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+    virtual PassOwnPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
     {
         const CSSValue* value = keyframe.value();
         if (!value)
@@ -61,7 +61,7 @@ public:
         return maybeConvertValue(*value, state, conversionCheckers);
     }
 
-    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const = 0;
+    virtual PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const = 0;
 
     virtual void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const = 0;
 
@@ -74,10 +74,10 @@ protected:
         : m_property(property)
     { }
 
-    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertNeutral() const { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertInitial() const { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual PassOwnPtr<InterpolationValue> maybeConvertNeutral() const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual PassOwnPtr<InterpolationValue> maybeConvertInitial() const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const { ASSERT_NOT_REACHED(); return nullptr; }
 
     const CSSPropertyID m_property;
 };

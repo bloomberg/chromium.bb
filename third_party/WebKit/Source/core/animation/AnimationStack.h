@@ -43,7 +43,7 @@
 
 namespace blink {
 
-using ActiveInterpolationMap = WillBeHeapHashMap<PropertyHandle, RefPtrWillBeMember<Interpolation>>;
+using ActiveInterpolationMap = HashMap<PropertyHandle, RefPtr<Interpolation>>;
 
 class InertEffect;
 

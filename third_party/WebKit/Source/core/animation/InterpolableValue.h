@@ -14,18 +14,17 @@
 
 namespace blink {
 
-class CORE_EXPORT InterpolableValue : public NoBaseWillBeGarbageCollected<InterpolableValue> {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(InterpolableValue);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InterpolableValue);
+class CORE_EXPORT InterpolableValue {
+    WTF_MAKE_FAST_ALLOCATED(InterpolableValue);
 public:
+    virtual ~InterpolableValue() { }
+
     virtual bool isNumber() const { return false; }
     virtual bool isBool() const { return false; }
     virtual bool isList() const { return false; }
     virtual bool isAnimatableValue() const { return false; }
 
-    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const = 0;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    virtual PassOwnPtr<InterpolableValue> clone() const = 0;
 
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const = 0;
@@ -47,14 +46,14 @@ private:
 
 class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
 public:
-    static PassOwnPtrWillBeRawPtr<InterpolableNumber> create(double value)
+    static PassOwnPtr<InterpolableNumber> create(double value)
     {
-        return adoptPtrWillBeNoop(new InterpolableNumber(value));
+        return adoptPtr(new InterpolableNumber(value));
     }
 
     bool isNumber() const final { return true; }
     double value() const { return m_value; }
-    PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const final { return create(m_value); }
+    PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
 
 private:
     void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const final;
@@ -70,14 +69,14 @@ private:
 
 class CORE_EXPORT InterpolableBool final : public InterpolableValue {
 public:
-    static PassOwnPtrWillBeRawPtr<InterpolableBool> create(bool value)
+    static PassOwnPtr<InterpolableBool> create(bool value)
     {
-        return adoptPtrWillBeNoop(new InterpolableBool(value));
+        return adoptPtr(new InterpolableBool(value));
     }
 
     bool isBool() const final { return true; }
     bool value() const { return m_value; }
-    PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const final { return create(m_value); }
+    PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
 
 private:
     void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const final;
@@ -101,18 +100,18 @@ public:
     // has its own copy constructor. So just delete operator= here.
     InterpolableList& operator=(const InterpolableList&) = delete;
 
-    static PassOwnPtrWillBeRawPtr<InterpolableList> create(const InterpolableList &other)
+    static PassOwnPtr<InterpolableList> create(const InterpolableList &other)
     {
-        return adoptPtrWillBeNoop(new InterpolableList(other));
+        return adoptPtr(new InterpolableList(other));
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableList> create(size_t size)
+    static PassOwnPtr<InterpolableList> create(size_t size)
     {
-        return adoptPtrWillBeNoop(new InterpolableList(size));
+        return adoptPtr(new InterpolableList(size));
     }
 
     bool isList() const final { return true; }
-    void set(size_t position, PassOwnPtrWillBeRawPtr<InterpolableValue> value)
+    void set(size_t position, PassOwnPtr<InterpolableValue> value)
     {
         ASSERT(position < m_size);
         m_values[position] = value;
@@ -128,9 +127,7 @@ public:
         return m_values[position].get();
     }
     size_t length() const { return m_size; }
-    PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const final { return create(*this); }
-
-    DECLARE_VIRTUAL_TRACE();
+    PassOwnPtr<InterpolableValue> clone() const final { return create(*this); }
 
 private:
     void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const final;
@@ -150,29 +147,27 @@ private:
     }
 
     size_t m_size;
-    WillBeHeapVector<OwnPtrWillBeMember<InterpolableValue>> m_values;
+    Vector<OwnPtr<InterpolableValue>> m_values;
 };
 
 // FIXME: Remove this when we can.
 class InterpolableAnimatableValue : public InterpolableValue {
 public:
-    static PassOwnPtrWillBeRawPtr<InterpolableAnimatableValue> create(PassRefPtrWillBeRawPtr<AnimatableValue> value)
+    static PassOwnPtr<InterpolableAnimatableValue> create(PassRefPtr<AnimatableValue> value)
     {
-        return adoptPtrWillBeNoop(new InterpolableAnimatableValue(value));
+        return adoptPtr(new InterpolableAnimatableValue(value));
     }
 
     bool isAnimatableValue() const final { return true; }
     AnimatableValue* value() const { return m_value.get(); }
-    PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const final { return create(m_value); }
-
-    DECLARE_VIRTUAL_TRACE();
+    PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
 
 private:
     void interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const final;
     void scaleAndAdd(double scale, const InterpolableValue& other) final { ASSERT_NOT_REACHED(); }
-    RefPtrWillBeMember<AnimatableValue> m_value;
+    RefPtr<AnimatableValue> m_value;
 
-    InterpolableAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value)
+    InterpolableAnimatableValue(PassRefPtr<AnimatableValue> value)
         : m_value(value)
     {
     }

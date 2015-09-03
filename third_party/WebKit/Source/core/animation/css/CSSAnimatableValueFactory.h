@@ -43,9 +43,9 @@ class ComputedStyle;
 class CSSAnimatableValueFactory {
     STATIC_ONLY(CSSAnimatableValueFactory);
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const ComputedStyle&);
+    static PassRefPtr<AnimatableValue> create(CSSPropertyID, const ComputedStyle&);
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const ComputedStyle&);
+    static PassRefPtr<AnimatableValue> createFromColor(CSSPropertyID, const ComputedStyle&);
 };
 
 } // namespace blink

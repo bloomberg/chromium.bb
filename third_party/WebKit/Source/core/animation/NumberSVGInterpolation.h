@@ -21,9 +21,9 @@ public:
     typedef SVGNumberList ListType;
     typedef void NonInterpolableType;
 
-    static PassRefPtrWillBeRawPtr<NumberSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, SVGNumberNegativeValuesMode negativeValuesMode)
+    static PassRefPtr<NumberSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, SVGNumberNegativeValuesMode negativeValuesMode)
     {
-        return adoptRefWillBeNoop(new NumberSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute, negativeValuesMode));
+        return adoptRef(new NumberSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute, negativeValuesMode));
     }
 
     static bool canCreateFrom(SVGPropertyBase* value)
@@ -36,12 +36,7 @@ public:
         return fromInterpolableValue(*m_cachedValue, m_negativeValuesMode);
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        SVGInterpolation::trace(visitor);
-    }
-
-    static PassOwnPtrWillBeRawPtr<InterpolableNumber> toInterpolableValue(SVGPropertyBase* value)
+    static PassOwnPtr<InterpolableNumber> toInterpolableValue(SVGPropertyBase* value)
     {
         return InterpolableNumber::create(toSVGNumber(value)->value());
     }
@@ -49,7 +44,7 @@ public:
     static PassRefPtrWillBeRawPtr<SVGNumber> fromInterpolableValue(const InterpolableValue&, SVGNumberNegativeValuesMode = AllowNegativeNumbers);
 
 private:
-    NumberSVGInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, SVGNumberNegativeValuesMode negativeValuesMode)
+    NumberSVGInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, SVGNumberNegativeValuesMode negativeValuesMode)
         : SVGInterpolation(start, end, attribute)
         , m_negativeValuesMode(negativeValuesMode)
     {

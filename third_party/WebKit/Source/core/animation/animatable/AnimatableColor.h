@@ -60,14 +60,12 @@ private:
 // but inefficient.
 class CORE_EXPORT AnimatableColor final : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableColor> create(const AnimatableColorImpl&, const AnimatableColorImpl& visitedLinkColor);
+    static PassRefPtr<AnimatableColor> create(const AnimatableColorImpl&, const AnimatableColorImpl& visitedLinkColor);
     Color color() const { return m_color.toColor(); }
     Color visitedLinkColor() const { return m_visitedLinkColor.toColor(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
-
 protected:
-    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
     AnimatableColor(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)

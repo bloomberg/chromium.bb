@@ -17,7 +17,7 @@ protected:
     {
         CSSValueID functionType;
         ASSERT_TRUE(FilterStyleInterpolation::canCreateFrom(value, value));
-        OwnPtrWillBeRawPtr<InterpolableValue> interpolableValue = FilterStyleInterpolation::toInterpolableValue(value, functionType);
+        OwnPtr<InterpolableValue> interpolableValue = FilterStyleInterpolation::toInterpolableValue(value, functionType);
         RefPtrWillBeRawPtr<CSSFunctionValue> result = FilterStyleInterpolation::fromInterpolableValue(*interpolableValue, functionType);
         ASSERT_TRUE(value.equals(*result));
     }

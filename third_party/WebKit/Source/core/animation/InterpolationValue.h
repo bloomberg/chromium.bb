@@ -13,14 +13,14 @@ namespace blink {
 
 class InterpolationType;
 
-class InterpolationValue : public NoBaseWillBeGarbageCollectedFinalized<InterpolationValue> {
+class InterpolationValue {
 public:
-    static PassOwnPtrWillBeRawPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
-        return adoptPtrWillBeNoop(new InterpolationValue(type, interpolableValue, nonInterpolableValue));
+        return adoptPtr(new InterpolationValue(type, interpolableValue, nonInterpolableValue));
     }
 
-    PassOwnPtrWillBeRawPtr<InterpolationValue> clone() const
+    PassOwnPtr<InterpolationValue> clone() const
     {
         return create(m_type, m_interpolableValue->clone(), m_nonInterpolableValue);
     }
@@ -30,14 +30,8 @@ public:
     InterpolableValue& interpolableValue() { return *m_interpolableValue; }
     const NonInterpolableValue* nonInterpolableValue() const { return m_nonInterpolableValue.get(); }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_interpolableValue);
-        visitor->trace(m_nonInterpolableValue);
-    }
-
 private:
-    InterpolationValue(const InterpolationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    InterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : m_type(type)
         , m_interpolableValue(interpolableValue)
         , m_nonInterpolableValue(nonInterpolableValue)
@@ -46,8 +40,8 @@ private:
     }
 
     const InterpolationType& m_type;
-    OwnPtrWillBeMember<InterpolableValue> m_interpolableValue;
-    RefPtrWillBeMember<NonInterpolableValue> m_nonInterpolableValue;
+    OwnPtr<InterpolableValue> m_interpolableValue;
+    RefPtrWillBePersistent<NonInterpolableValue> m_nonInterpolableValue;
 
     friend class InterpolationType;
 };

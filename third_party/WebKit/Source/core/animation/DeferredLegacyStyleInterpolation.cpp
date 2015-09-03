@@ -23,8 +23,8 @@ namespace blink {
 void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
 {
     if (m_outdated || !state.element()->elementAnimations() || !state.element()->elementAnimations()->isAnimationStyleChange()) {
-        RefPtrWillBeRawPtr<AnimatableValue> startAnimatableValue;
-        RefPtrWillBeRawPtr<AnimatableValue> endAnimatableValue;
+        RefPtr<AnimatableValue> startAnimatableValue;
+        RefPtr<AnimatableValue> endAnimatableValue;
 
         // Snapshot underlying values for neutral keyframes first because non-neutral keyframes will mutate the StyleResolverState.
         if (!m_endCSSValue) {
@@ -146,14 +146,6 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
         || interpolationRequiresStyleResolve(*quad.right())
         || interpolationRequiresStyleResolve(*quad.bottom())
         || interpolationRequiresStyleResolve(*quad.left());
-}
-
-DEFINE_TRACE(DeferredLegacyStyleInterpolation)
-{
-    visitor->trace(m_startCSSValue);
-    visitor->trace(m_endCSSValue);
-    visitor->trace(m_innerInterpolation);
-    StyleInterpolation::trace(visitor);
 }
 
 }

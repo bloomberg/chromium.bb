@@ -22,20 +22,20 @@ bool onlyInterpolateBetweenLengthAndCSSValueAuto(const CSSQuadValue& startRect, 
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> LengthBoxStyleInterpolation::maybeCreateFrom(CSSValue& start, CSSValue& end, CSSPropertyID id)
+PassRefPtr<LengthBoxStyleInterpolation> LengthBoxStyleInterpolation::maybeCreateFrom(CSSValue& start, CSSValue& end, CSSPropertyID id)
 {
     bool startRect = start.isQuadValue() && toCSSQuadValue(start).serializationType() == CSSQuadValue::SerializationType::SerializeAsRect;
     bool endRect = end.isQuadValue() && toCSSQuadValue(end).serializationType() == CSSQuadValue::SerializationType::SerializeAsRect;
 
     if (startRect && endRect)
-        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(lengthBoxtoInterpolableValue(start, end, false), lengthBoxtoInterpolableValue(end, start, true), id, &start, &end));
+        return adoptRef(new LengthBoxStyleInterpolation(lengthBoxtoInterpolableValue(start, end, false), lengthBoxtoInterpolableValue(end, start, true), id, &start, &end));
     return nullptr;
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBoxtoInterpolableValue(const CSSValue& lengthBox, const CSSValue& matchingValue, bool isEndInterpolation)
+PassOwnPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBoxtoInterpolableValue(const CSSValue& lengthBox, const CSSValue& matchingValue, bool isEndInterpolation)
 {
     const int numberOfSides = 4;
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(numberOfSides);
+    OwnPtr<InterpolableList> result = InterpolableList::create(numberOfSides);
     const CSSQuadValue& rect = toCSSQuadValue(lengthBox);
     const CSSQuadValue& matchingRect = toCSSQuadValue(matchingValue);
     CSSPrimitiveValue* side[numberOfSides] = { rect.left(), rect.right(), rect.top(), rect.bottom() };
@@ -105,13 +105,6 @@ void LengthBoxStyleInterpolation::apply(StyleResolverState& state) const
         StyleBuilder::applyProperty(m_id, state, toInterpolableBool(m_cachedValue.get())->value() ? m_endCSSValue.get() : m_startCSSValue.get());
     else
         StyleBuilder::applyProperty(m_id, state, interpolableValueToLengthBox(m_cachedValue.get(), *m_startCSSValue, *m_endCSSValue).get());
-}
-
-DEFINE_TRACE(LengthBoxStyleInterpolation)
-{
-    StyleInterpolation::trace(visitor);
-    visitor->trace(m_startCSSValue);
-    visitor->trace(m_endCSSValue);
 }
 
 }

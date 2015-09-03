@@ -16,15 +16,15 @@ public:
     typedef CSSValueID NonInterpolableType;
     typedef ListStyleInterpolationImpl<FilterStyleInterpolation, NonInterpolableType> FilterListStyleInterpolation;
 
-    static PassRefPtrWillBeRawPtr<FilterListStyleInterpolation> maybeCreateList(const CSSValue& start, const CSSValue& end, CSSPropertyID);
+    static PassRefPtr<FilterListStyleInterpolation> maybeCreateList(const CSSValue& start, const CSSValue& end, CSSPropertyID);
 
     // The following are called by ListStyleInterpolation.
     static bool canCreateFrom(const CSSValue& start, const CSSValue& end);
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(const CSSValue&, CSSValueID&);
+    static PassOwnPtr<InterpolableValue> toInterpolableValue(const CSSValue&, CSSValueID&);
     static PassRefPtrWillBeRawPtr<CSSFunctionValue> fromInterpolableValue(const InterpolableValue&, CSSValueID, InterpolationRange = RangeAll);
 
 private:
-    FilterStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
+    FilterStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
         : StyleInterpolation(start, end, id)
     {
     }

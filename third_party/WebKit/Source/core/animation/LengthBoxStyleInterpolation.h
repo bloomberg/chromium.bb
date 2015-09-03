@@ -13,25 +13,24 @@ namespace blink {
 
 class CORE_EXPORT LengthBoxStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> maybeCreateFrom(CSSValue&, CSSValue&, CSSPropertyID);
+    static PassRefPtr<LengthBoxStyleInterpolation> maybeCreateFrom(CSSValue&, CSSValue&, CSSPropertyID);
 
     static bool usesDefaultInterpolation(const CSSValue&, const CSSValue&);
 
     void apply(StyleResolverState&) const override;
-    DECLARE_VIRTUAL_TRACE();
 
 private:
-    LengthBoxStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> startInterpolation, PassOwnPtrWillBeRawPtr<InterpolableValue> endInterpolation, CSSPropertyID id, CSSValue* startCSS, CSSValue* endCSS)
+    LengthBoxStyleInterpolation(PassOwnPtr<InterpolableValue> startInterpolation, PassOwnPtr<InterpolableValue> endInterpolation, CSSPropertyID id, CSSValue* startCSS, CSSValue* endCSS)
         : StyleInterpolation(startInterpolation, endInterpolation, id)
         , m_startCSSValue(startCSS)
         , m_endCSSValue(endCSS)
     { }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthBoxtoInterpolableValue(const CSSValue&, const CSSValue&, bool);
+    static PassOwnPtr<InterpolableValue> lengthBoxtoInterpolableValue(const CSSValue&, const CSSValue&, bool);
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthBox(InterpolableValue*, const CSSValue&, const CSSValue&);
 
-    RefPtrWillBeMember<CSSValue> m_startCSSValue;
-    RefPtrWillBeMember<CSSValue> m_endCSSValue;
+    RefPtrWillBePersistent<CSSValue> m_startCSSValue;
+    RefPtrWillBePersistent<CSSValue> m_endCSSValue;
 
     friend class AnimationLengthBoxStyleInterpolationTest;
 };

@@ -49,9 +49,9 @@ protected:
     }
 
     RefPtrWillBePersistent<CSSValue> cssValue;
-    RefPtrWillBePersistent<AnimatableValue> animatableUnknown;
+    RefPtr<AnimatableValue> animatableUnknown;
     RefPtrWillBePersistent<CSSValue> otherCSSValue;
-    RefPtrWillBePersistent<AnimatableValue> otherAnimatableUnknown;
+    RefPtr<AnimatableValue> otherAnimatableUnknown;
 };
 
 TEST_F(AnimationAnimatableUnknownTest, Create)

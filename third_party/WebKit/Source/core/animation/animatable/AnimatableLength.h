@@ -39,9 +39,9 @@ namespace blink {
 
 class CORE_EXPORT AnimatableLength final : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableLength> create(const Length& length, float zoom)
+    static PassRefPtr<AnimatableLength> create(const Length& length, float zoom)
     {
-        return adoptRefWillBeNoop(new AnimatableLength(length, zoom));
+        return adoptRef(new AnimatableLength(length, zoom));
     }
     Length length(float zoom, ValueRange) const;
 
@@ -50,15 +50,13 @@ public:
         return m_hasPixels == other->m_hasPixels && m_hasPercent == other->m_hasPercent;
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
-
 protected:
-    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableLength> create(double pixels, double percent, bool hasPixels, bool hasPercent)
+    static PassRefPtr<AnimatableLength> create(double pixels, double percent, bool hasPixels, bool hasPercent)
     {
-        return adoptRefWillBeNoop(new AnimatableLength(pixels, percent, hasPixels, hasPercent));
+        return adoptRef(new AnimatableLength(pixels, percent, hasPixels, hasPercent));
     }
     AnimatableLength(const Length&, float zoom);
     AnimatableLength(double pixels, double percent, bool hasPixels, bool hasPercent)

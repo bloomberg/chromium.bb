@@ -16,9 +16,9 @@ namespace {
 
 class SampleInterpolation : public Interpolation {
 public:
-    static PassRefPtrWillBeRawPtr<Interpolation> create(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
+    static PassRefPtr<Interpolation> create(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
     {
-        return adoptRefWillBeNoop(new SampleInterpolation(start, end));
+        return adoptRef(new SampleInterpolation(start, end));
     }
 
     PropertyHandle property() const override
@@ -26,7 +26,7 @@ public:
         return PropertyHandle(CSSPropertyBackgroundColor);
     }
 private:
-    SampleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
+    SampleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
         : Interpolation(start, end)
     {
     }
@@ -43,14 +43,14 @@ protected:
 
     double interpolateNumbers(double a, double b, double progress)
     {
-        RefPtrWillBeRawPtr<Interpolation> i = SampleInterpolation::create(InterpolableNumber::create(a), InterpolableNumber::create(b));
+        RefPtr<Interpolation> i = SampleInterpolation::create(InterpolableNumber::create(a), InterpolableNumber::create(b));
         i->interpolate(0, progress);
         return toInterpolableNumber(interpolationValue(*i.get()))->value();
     }
 
     bool interpolateBools(bool a, bool b, double progress)
     {
-        RefPtrWillBeRawPtr<Interpolation> i = SampleInterpolation::create(InterpolableBool::create(a), InterpolableBool::create(b));
+        RefPtr<Interpolation> i = SampleInterpolation::create(InterpolableBool::create(a), InterpolableBool::create(b));
         i->interpolate(0, progress);
         return toInterpolableBool(interpolationValue(*i.get()))->value();
     }
@@ -60,9 +60,9 @@ protected:
         base.scaleAndAdd(scale, add);
     }
 
-    PassRefPtrWillBeRawPtr<Interpolation> interpolateLists(PassOwnPtrWillBeRawPtr<InterpolableList> listA, PassOwnPtrWillBeRawPtr<InterpolableList> listB, double progress)
+    PassRefPtr<Interpolation> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
     {
-        RefPtrWillBeRawPtr<Interpolation> i = SampleInterpolation::create(listA, listB);
+        RefPtr<Interpolation> i = SampleInterpolation::create(listA, listB);
         i->interpolate(0, progress);
         return i;
     }
@@ -90,17 +90,17 @@ TEST_F(AnimationInterpolableValueTest, InterpolateBools)
 
 TEST_F(AnimationInterpolableValueTest, SimpleList)
 {
-    OwnPtrWillBeRawPtr<InterpolableList> listA = InterpolableList::create(3);
+    OwnPtr<InterpolableList> listA = InterpolableList::create(3);
     listA->set(0, InterpolableNumber::create(0));
     listA->set(1, InterpolableNumber::create(42));
     listA->set(2, InterpolableNumber::create(20.5));
 
-    OwnPtrWillBeRawPtr<InterpolableList> listB = InterpolableList::create(3);
+    OwnPtr<InterpolableList> listB = InterpolableList::create(3);
     listB->set(0, InterpolableNumber::create(100));
     listB->set(1, InterpolableNumber::create(-200));
     listB->set(2, InterpolableNumber::create(300));
 
-    RefPtrWillBeRawPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.3);
+    RefPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.3);
     InterpolableList* outList = toInterpolableList(interpolationValue(*i.get()));
     EXPECT_FLOAT_EQ(30, toInterpolableNumber(outList->get(0))->value());
     EXPECT_FLOAT_EQ(-30.6f, toInterpolableNumber(outList->get(1))->value());
@@ -109,21 +109,21 @@ TEST_F(AnimationInterpolableValueTest, SimpleList)
 
 TEST_F(AnimationInterpolableValueTest, NestedList)
 {
-    OwnPtrWillBeRawPtr<InterpolableList> listA = InterpolableList::create(3);
+    OwnPtr<InterpolableList> listA = InterpolableList::create(3);
     listA->set(0, InterpolableNumber::create(0));
-    OwnPtrWillBeRawPtr<InterpolableList> subListA = InterpolableList::create(1);
+    OwnPtr<InterpolableList> subListA = InterpolableList::create(1);
     subListA->set(0, InterpolableNumber::create(100));
     listA->set(1, subListA.release());
     listA->set(2, InterpolableBool::create(false));
 
-    OwnPtrWillBeRawPtr<InterpolableList> listB = InterpolableList::create(3);
+    OwnPtr<InterpolableList> listB = InterpolableList::create(3);
     listB->set(0, InterpolableNumber::create(100));
-    OwnPtrWillBeRawPtr<InterpolableList> subListB = InterpolableList::create(1);
+    OwnPtr<InterpolableList> subListB = InterpolableList::create(1);
     subListB->set(0, InterpolableNumber::create(50));
     listB->set(1, subListB.release());
     listB->set(2, InterpolableBool::create(true));
 
-    RefPtrWillBeRawPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.5);
+    RefPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.5);
     InterpolableList* outList = toInterpolableList(interpolationValue(*i.get()));
     EXPECT_FLOAT_EQ(50, toInterpolableNumber(outList->get(0))->value());
     EXPECT_FLOAT_EQ(75, toInterpolableNumber(toInterpolableList(outList->get(1))->get(0))->value());
@@ -132,7 +132,7 @@ TEST_F(AnimationInterpolableValueTest, NestedList)
 
 TEST_F(AnimationInterpolableValueTest, ScaleAndAddNumbers)
 {
-    OwnPtrWillBeRawPtr<InterpolableNumber> base = InterpolableNumber::create(10);
+    OwnPtr<InterpolableNumber> base = InterpolableNumber::create(10);
     scaleAndAdd(*base, 2, *InterpolableNumber::create(1));
     EXPECT_FLOAT_EQ(21, base->value());
 
@@ -147,11 +147,11 @@ TEST_F(AnimationInterpolableValueTest, ScaleAndAddNumbers)
 
 TEST_F(AnimationInterpolableValueTest, ScaleAndAddLists)
 {
-    OwnPtrWillBeRawPtr<InterpolableList> baseList = InterpolableList::create(3);
+    OwnPtr<InterpolableList> baseList = InterpolableList::create(3);
     baseList->set(0, InterpolableNumber::create(5));
     baseList->set(1, InterpolableNumber::create(10));
     baseList->set(2, InterpolableNumber::create(15));
-    OwnPtrWillBeRawPtr<InterpolableList> addList = InterpolableList::create(3);
+    OwnPtr<InterpolableList> addList = InterpolableList::create(3);
     addList->set(0, InterpolableNumber::create(1));
     addList->set(1, InterpolableNumber::create(2));
     addList->set(2, InterpolableNumber::create(3));

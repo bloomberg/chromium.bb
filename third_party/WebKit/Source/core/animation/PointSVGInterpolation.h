@@ -17,9 +17,9 @@ public:
     typedef SVGPointList ListType;
     typedef void NonInterpolableType;
 
-    static PassOwnPtrWillBeRawPtr<InterpolableList> toInterpolableValue(SVGPropertyBase* item)
+    static PassOwnPtr<InterpolableList> toInterpolableValue(SVGPropertyBase* item)
     {
-        OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+        OwnPtr<InterpolableList> result = InterpolableList::create(2);
         result->set(0, InterpolableNumber::create(toSVGPoint(item)->x()));
         result->set(1, InterpolableNumber::create(toSVGPoint(item)->y()));
         return result.release();

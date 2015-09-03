@@ -41,26 +41,20 @@ class AnimatableUnknown final : public AnimatableValue {
 public:
     ~AnimatableUnknown() override { }
 
-    static PassRefPtrWillBeRawPtr<AnimatableUnknown> create(PassRefPtrWillBeRawPtr<CSSValue> value)
+    static PassRefPtr<AnimatableUnknown> create(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return adoptRefWillBeNoop(new AnimatableUnknown(value));
+        return adoptRef(new AnimatableUnknown(value));
     }
-    static PassRefPtrWillBeRawPtr<AnimatableUnknown> create(CSSValueID value)
+    static PassRefPtr<AnimatableUnknown> create(CSSValueID value)
     {
-        return adoptRefWillBeNoop(new AnimatableUnknown(cssValuePool().createIdentifierValue(value)));
+        return adoptRef(new AnimatableUnknown(cssValuePool().createIdentifierValue(value)));
     }
 
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const { return m_value; }
     CSSValueID toCSSValueID() const { return toCSSPrimitiveValue(m_value.get())->getValueID(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_value);
-        AnimatableValue::trace(visitor);
-    }
-
 protected:
-    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const override
+    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const override
     {
         return defaultInterpolateTo(this, value, fraction);
     }
@@ -76,7 +70,7 @@ private:
     AnimatableType type() const override { return TypeUnknown; }
     bool equalTo(const AnimatableValue*) const override;
 
-    const RefPtrWillBeMember<CSSValue> m_value;
+    const RefPtrWillBePersistent<CSSValue> m_value;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableUnknown, isUnknown());

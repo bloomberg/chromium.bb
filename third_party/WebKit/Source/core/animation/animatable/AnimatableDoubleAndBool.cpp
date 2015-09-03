@@ -15,7 +15,7 @@ bool AnimatableDoubleAndBool::usesDefaultInterpolationWith(const AnimatableValue
     return flag() != other->flag();
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableDoubleAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableDoubleAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableDoubleAndBool* other = toAnimatableDoubleAndBool(value);
     if (flag() == other->flag())

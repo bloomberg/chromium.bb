@@ -48,7 +48,7 @@ bool AnimatableShapeValue::usesDefaultInterpolationWith(const AnimatableValue* v
     return !fromShape->canBlend(toShape);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
@@ -63,12 +63,6 @@ bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const
 {
     const ShapeValue* shape = toAnimatableShapeValue(value)->m_shape.get();
     return m_shape == shape || (m_shape && shape && *m_shape == *shape);
-}
-
-DEFINE_TRACE(AnimatableShapeValue)
-{
-    visitor->trace(m_shape);
-    AnimatableValue::trace(visitor);
 }
 
 }

@@ -10,9 +10,9 @@ namespace blink {
 
 class CORE_EXPORT VisibilityStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<VisibilityStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id)
+    static PassRefPtr<VisibilityStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id)
     {
-        RefPtrWillBeRawPtr<VisibilityStyleInterpolation> interpolation = adoptRefWillBeNoop(new VisibilityStyleInterpolation(
+        RefPtr<VisibilityStyleInterpolation> interpolation = adoptRef(new VisibilityStyleInterpolation(
             visibilityToInterpolableValue(start), visibilityToInterpolableValue(end), id));
         if (!isVisible(start)) {
             interpolation->m_notVisible = toCSSPrimitiveValue(start).getValueID();
@@ -27,16 +27,15 @@ public:
     static bool isVisible(const CSSValue&);
 
     void apply(StyleResolverState&) const override;
-    DECLARE_VIRTUAL_TRACE();
 
 private:
-    VisibilityStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
+    VisibilityStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
         : StyleInterpolation(start, end, id)
         , m_notVisible(CSSValueVisible)
     {
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> visibilityToInterpolableValue(const CSSValue&);
+    static PassOwnPtr<InterpolableValue> visibilityToInterpolableValue(const CSSValue&);
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToVisibility(InterpolableValue*, CSSValueID);
 
     CSSValueID m_notVisible;

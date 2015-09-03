@@ -38,30 +38,44 @@ namespace blink {
 
 class AnimatableFilterOperations final : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableFilterOperations> create(const FilterOperations& operations)
+    static PassRefPtr<AnimatableFilterOperations> create(const FilterOperations& operations)
     {
-        return adoptRefWillBeNoop(new AnimatableFilterOperations(operations));
+        return adoptRef(new AnimatableFilterOperations(operations));
     }
 
     ~AnimatableFilterOperations() override { }
-    DECLARE_VIRTUAL_TRACE();
 
-    const FilterOperations& operations() const { return m_operations; }
+    const FilterOperations& operations() const
+    {
+#if ENABLE(OILPAN)
+        return m_operationWrapper->operations();
+#else
+        return m_operations;
+#endif
+    }
 
 protected:
-    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
     bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableFilterOperations(const FilterOperations& operations)
+#if ENABLE(OILPAN)
+        : m_operationWrapper(FilterOperationsWrapper::create(operations))
+#else
         : m_operations(operations)
+#endif
     {
     }
 
     bool equalTo(const AnimatableValue*) const override;
     AnimatableType type() const override { return TypeFilterOperations; }
 
+#if ENABLE(OILPAN)
+    Persistent<FilterOperationsWrapper> m_operationWrapper;
+#else
     FilterOperations m_operations;
+#endif
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableFilterOperations, isFilterOperations());

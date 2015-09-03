@@ -114,13 +114,11 @@ private:
         DEFINE_INLINE_TRACE()
         {
             visitor->trace(animation);
-            visitor->trace(from);
-            visitor->trace(to);
         }
 
         Member<Animation> animation;
-        RawPtrWillBeMember<const AnimatableValue> from;
-        RawPtrWillBeMember<const AnimatableValue> to;
+        const AnimatableValue* from;
+        const AnimatableValue* to;
     };
 
     using AnimationMap = HeapHashMap<AtomicString, Member<RunningAnimation>>;

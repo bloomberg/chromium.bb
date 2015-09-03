@@ -32,11 +32,4 @@ void ImageStyleInterpolation::apply(StyleResolverState& state) const
     StyleBuilder::applyProperty(m_id, state, crossfadeValue.get());
 }
 
-DEFINE_TRACE(ImageStyleInterpolation)
-{
-    visitor->trace(m_initialImage);
-    visitor->trace(m_finalImage);
-    StyleInterpolation::trace(visitor);
-}
-
 } // namespace blink

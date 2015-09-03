@@ -11,12 +11,10 @@
 namespace blink {
 class ImageStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<ImageStyleInterpolation> create(CSSValue& start, CSSValue& end, CSSPropertyID id)
+    static PassRefPtr<ImageStyleInterpolation> create(CSSValue& start, CSSValue& end, CSSPropertyID id)
     {
-        return adoptRefWillBeNoop(new ImageStyleInterpolation(&start, &end, id));
+        return adoptRef(new ImageStyleInterpolation(&start, &end, id));
     }
-
-    DECLARE_VIRTUAL_TRACE();
 
     static bool canCreateFrom(const CSSValue&);
     void apply(StyleResolverState&) const override;
@@ -29,8 +27,8 @@ private:
     {
     }
 
-    RefPtrWillBeMember<CSSValue> m_initialImage;
-    RefPtrWillBeMember<CSSValue> m_finalImage;
+    RefPtrWillBePersistent<CSSValue> m_initialImage;
+    RefPtrWillBePersistent<CSSValue> m_finalImage;
 };
 }
 

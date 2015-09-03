@@ -40,20 +40,14 @@ namespace blink {
 class AnimatableImage final : public AnimatableValue {
 public:
     ~AnimatableImage() override { }
-    static PassRefPtrWillBeRawPtr<AnimatableImage> create(PassRefPtrWillBeRawPtr<CSSValue> value)
+    static PassRefPtr<AnimatableImage> create(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return adoptRefWillBeNoop(new AnimatableImage(value));
+        return adoptRef(new AnimatableImage(value));
     }
     CSSValue* toCSSValue() const { return m_value.get(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_value);
-        AnimatableValue::trace(visitor);
-    }
-
 protected:
-    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
     bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
@@ -65,7 +59,7 @@ private:
     AnimatableType type() const override { return TypeImage; }
     bool equalTo(const AnimatableValue*) const override;
 
-    const RefPtrWillBeMember<CSSValue> m_value;
+    const RefPtrWillBePersistent<CSSValue> m_value;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableImage, isImage());

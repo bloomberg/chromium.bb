@@ -74,12 +74,12 @@ bool AnimatableColorImpl::operator==(const AnimatableColorImpl& other) const
         && m_alpha == other.m_alpha;
 }
 
-PassRefPtrWillBeRawPtr<AnimatableColor> AnimatableColor::create(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)
+PassRefPtr<AnimatableColor> AnimatableColor::create(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)
 {
-    return adoptRefWillBeNoop(new AnimatableColor(color, visitedLinkColor));
+    return adoptRef(new AnimatableColor(color, visitedLinkColor));
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableColor::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableColor::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableColor* color = toAnimatableColor(value);
     return create(m_color.interpolateTo(color->m_color, fraction),

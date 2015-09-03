@@ -52,18 +52,18 @@ PassRefPtr<SVGDashArray> AnimatableStrokeDasharrayList::toSVGDashArray(float zoo
 
 bool AnimatableStrokeDasharrayList::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> from = m_values;
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> to = toAnimatableStrokeDasharrayList(value)->m_values;
+    Vector<RefPtr<AnimatableValue>> from = m_values;
+    Vector<RefPtr<AnimatableValue>> to = toAnimatableStrokeDasharrayList(value)->m_values;
     return !from.isEmpty() && !to.isEmpty() && AnimatableRepeatable::usesDefaultInterpolationWith(value);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
 
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> from = m_values;
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> to = toAnimatableStrokeDasharrayList(value)->m_values;
+    Vector<RefPtr<AnimatableValue>> from = m_values;
+    Vector<RefPtr<AnimatableValue>> to = toAnimatableStrokeDasharrayList(value)->m_values;
 
     // The spec states that if the sum of all values is zero, this should be
     // treated like a value of 'none', which means that a solid line is drawn.
@@ -73,7 +73,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpola
     if (from.isEmpty() && to.isEmpty())
         return takeConstRef(this);
     if (from.isEmpty() || to.isEmpty()) {
-        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(AnimatableLength, zeroPixels, (AnimatableLength::create(Length(Fixed), 1)));
+        DEFINE_STATIC_REF(AnimatableLength, zeroPixels, (AnimatableLength::create(Length(Fixed), 1)));
         if (from.isEmpty()) {
             from.append(zeroPixels);
             from.append(zeroPixels);
@@ -84,15 +84,10 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpola
         }
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> interpolatedValues;
+    Vector<RefPtr<AnimatableValue>> interpolatedValues;
     bool success = interpolateLists(from, to, fraction, interpolatedValues);
     ASSERT_UNUSED(success, success);
-    return adoptRefWillBeNoop(new AnimatableStrokeDasharrayList(interpolatedValues));
-}
-
-DEFINE_TRACE(AnimatableStrokeDasharrayList)
-{
-    AnimatableRepeatable::trace(visitor);
+    return adoptRef(new AnimatableStrokeDasharrayList(interpolatedValues));
 }
 
 } // namespace blink

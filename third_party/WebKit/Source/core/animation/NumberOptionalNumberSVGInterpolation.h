@@ -15,9 +15,9 @@ class SVGNumberOptionalNumber;
 
 class NumberOptionalNumberSVGInterpolation : public SVGInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<NumberOptionalNumberSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    static PassRefPtr<NumberOptionalNumberSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
     {
-        return adoptRefWillBeNoop(new NumberOptionalNumberSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute));
+        return adoptRef(new NumberOptionalNumberSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute));
     }
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final
@@ -25,21 +25,16 @@ public:
         return fromInterpolableValue(*m_cachedValue);
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        SVGInterpolation::trace(visitor);
-    }
-
 private:
-    NumberOptionalNumberSVGInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    NumberOptionalNumberSVGInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
         : SVGInterpolation(start, end, attribute)
     {
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase* value)
+    static PassOwnPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase* value)
     {
         RefPtrWillBeRawPtr<SVGNumberOptionalNumber> numberOptionalNumber = toSVGNumberOptionalNumber(value);
-        OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+        OwnPtr<InterpolableList> result = InterpolableList::create(2);
         result->set(0, InterpolableNumber::create(numberOptionalNumber->firstNumber()->value()));
         result->set(1, InterpolableNumber::create(numberOptionalNumber->secondNumber()->value()));
         return result.release();

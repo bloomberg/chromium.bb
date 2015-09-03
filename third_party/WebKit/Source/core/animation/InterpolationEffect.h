@@ -14,16 +14,16 @@
 
 namespace blink {
 
-class CORE_EXPORT InterpolationEffect : public GarbageCollected<InterpolationEffect> {
+class CORE_EXPORT InterpolationEffect : public RefCounted<InterpolationEffect> {
 public:
-    static InterpolationEffect* create()
+    static PassRefPtr<InterpolationEffect> create()
     {
-        return new InterpolationEffect();
+        return adoptRef(new InterpolationEffect());
     }
 
-    void getActiveInterpolations(double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const;
+    void getActiveInterpolations(double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>&) const;
 
-    void addInterpolation(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
+    void addInterpolation(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
     {
         m_interpolations.append(InterpolationRecord::create(interpolation, easing, start, end, applyFrom, applyTo));
     }
@@ -37,31 +37,27 @@ public:
             callback(*record->m_interpolation);
     }
 
-    DECLARE_TRACE();
-
 private:
     InterpolationEffect()
     {
     }
 
-    class InterpolationRecord : public GarbageCollectedFinalized<InterpolationRecord> {
+    class InterpolationRecord : public RefCounted<InterpolationRecord> {
     public:
-        RefPtrWillBeMember<Interpolation> m_interpolation;
+        RefPtr<Interpolation> m_interpolation;
         RefPtr<TimingFunction> m_easing;
         double m_start;
         double m_end;
         double m_applyFrom;
         double m_applyTo;
 
-        static InterpolationRecord* create(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
+        static PassRefPtr<InterpolationRecord> create(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
         {
-            return new InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo);
+            return adoptRef(new InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
         }
 
-        DECLARE_TRACE();
-
     private:
-        InterpolationRecord(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
+        InterpolationRecord(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
             : m_interpolation(interpolation)
             , m_easing(easing)
             , m_start(start)
@@ -72,7 +68,7 @@ private:
         }
     };
 
-    HeapVector<Member<InterpolationRecord>> m_interpolations;
+    Vector<RefPtr<InterpolationRecord>> m_interpolations;
 };
 
 } // namespace blink

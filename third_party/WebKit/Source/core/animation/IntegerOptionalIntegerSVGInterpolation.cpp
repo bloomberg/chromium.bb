@@ -20,10 +20,10 @@ PassRefPtrWillBeRawPtr<SVGInteger> toPositiveInteger(const InterpolableValue* nu
 
 } // namespace
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> IntegerOptionalIntegerSVGInterpolation::toInterpolableValue(SVGPropertyBase* value)
+PassOwnPtr<InterpolableValue> IntegerOptionalIntegerSVGInterpolation::toInterpolableValue(SVGPropertyBase* value)
 {
     RefPtrWillBeRawPtr<SVGIntegerOptionalInteger> integerOptionalInteger = toSVGIntegerOptionalInteger(value);
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(integerOptionalInteger->firstInteger()->value()));
     result->set(1, InterpolableNumber::create(integerOptionalInteger->secondInteger()->value()));
     return result.release();

@@ -24,7 +24,7 @@ public:
         return SVGTransformList::create();
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(SVGTransform*, const SVGAnimatedPropertyBase*, SVGTransformType*);
+    static PassOwnPtr<InterpolableValue> toInterpolableValue(SVGTransform*, const SVGAnimatedPropertyBase*, SVGTransformType*);
 
     static PassRefPtrWillBeRawPtr<SVGTransform> fromInterpolableValue(const InterpolableValue&, SVGTransformType, const SVGElement*);
 };

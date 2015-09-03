@@ -14,9 +14,9 @@ class SVGInteger;
 
 class AngleSVGInterpolation : public SVGInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<AngleSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    static PassRefPtr<AngleSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
     {
-        return adoptRefWillBeNoop(new AngleSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute));
+        return adoptRef(new AngleSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute));
     }
 
     static bool canCreateFrom(SVGPropertyBase* value)
@@ -29,18 +29,13 @@ public:
         return fromInterpolableValue(m_cachedValue.get());
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        SVGInterpolation::trace(visitor);
-    }
-
 private:
-    AngleSVGInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    AngleSVGInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
         : SVGInterpolation(start, end, attribute)
     {
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase* value)
+    static PassOwnPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase* value)
     {
         return InterpolableNumber::create(toSVGAngle(value)->value());
     }

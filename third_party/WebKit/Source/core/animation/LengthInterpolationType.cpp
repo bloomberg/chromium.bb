@@ -16,13 +16,13 @@ LengthInterpolationType::LengthInterpolationType(CSSPropertyID property)
     , m_valueRange(LengthPropertyFunctions::valueRange(property))
 { }
 
-static PassOwnPtrWillBeRawPtr<InterpolableList> createNeutralValue()
+static PassOwnPtr<InterpolableList> createNeutralValue()
 {
-    OwnPtrWillBeRawPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
+    OwnPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
     const size_t length = CSSPrimitiveValue::LengthUnitTypeCount;
-    OwnPtrWillBeRawPtr<InterpolableList> listOfValues = InterpolableList::create(length);
+    OwnPtr<InterpolableList> listOfValues = InterpolableList::create(length);
     // TODO(alancutter): Use a NonInterpolableValue to represent the list of types.
-    OwnPtrWillBeRawPtr<InterpolableList> listOfTypes = InterpolableList::create(length);
+    OwnPtr<InterpolableList> listOfTypes = InterpolableList::create(length);
     for (size_t i = 0; i < length; i++) {
         listOfValues->set(i, InterpolableNumber::create(0));
         listOfTypes->set(i, InterpolableNumber::create(0));
@@ -32,13 +32,13 @@ static PassOwnPtrWillBeRawPtr<InterpolableList> createNeutralValue()
     return listOfValuesAndTypes.release();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const Length& length, float zoom) const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const Length& length, float zoom) const
 {
     if (!length.isSpecified())
         return nullptr;
 
     PixelsAndPercent pixelsAndPercent = length.pixelsAndPercent();
-    OwnPtrWillBeRawPtr<InterpolableList> valuesAndTypes = createNeutralValue();
+    OwnPtr<InterpolableList> valuesAndTypes = createNeutralValue();
 
     InterpolableList& values = toInterpolableList(*valuesAndTypes->get(0));
     values.set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixelsAndPercent.pixels / zoom));
@@ -53,9 +53,9 @@ PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvert
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtrWillBeRawPtr<ParentLengthChecker> create(CSSPropertyID property, const Length& length)
+    static PassOwnPtr<ParentLengthChecker> create(CSSPropertyID property, const Length& length)
     {
-        return adoptPtrWillBeNoop(new ParentLengthChecker(property, length));
+        return adoptPtr(new ParentLengthChecker(property, length));
     }
 
 private:
@@ -72,21 +72,16 @@ private:
         return parentLength == m_length;
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        ConversionChecker::trace(visitor);
-    }
-
     const CSSPropertyID m_property;
     const Length m_length;
 };
 
-PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvertNeutral() const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertNeutral() const
 {
     return InterpolationValue::create(*this, createNeutralValue());
 }
 
-PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvertInitial() const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInitial() const
 {
     Length initialLength;
     if (!LengthPropertyFunctions::getInitialLength(m_property, initialLength))
@@ -94,7 +89,7 @@ PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvert
     return maybeConvertLength(initialLength, 1);
 }
 
-PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
     if (!state || !state->parentStyle())
         return nullptr;
@@ -105,16 +100,16 @@ PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvert
     return maybeConvertLength(inheritedLength, state->parentStyle()->effectiveZoom());
 }
 
-PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
     if (!value.isPrimitiveValue())
         return nullptr;
 
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
 
-    OwnPtrWillBeRawPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
-    OwnPtrWillBeRawPtr<InterpolableList> listOfValues = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
-    OwnPtrWillBeRawPtr<InterpolableList> listOfTypes = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    OwnPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
+    OwnPtr<InterpolableList> listOfValues = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    OwnPtr<InterpolableList> listOfTypes = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
 
     CSSLengthArray arrayOfValues;
     CSSLengthTypeArray arrayOfTypes;
@@ -146,7 +141,7 @@ PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvert
     return InterpolationValue::create(*this, listOfValuesAndTypes.release());
 }
 
-PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvertUnderlyingValue(const StyleResolverState& state) const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertUnderlyingValue(const StyleResolverState& state) const
 {
     Length underlyingLength;
     if (!LengthPropertyFunctions::getLength(m_property, *state.style(), underlyingLength))

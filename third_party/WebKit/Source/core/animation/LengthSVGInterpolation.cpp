@@ -21,12 +21,12 @@ PassRefPtrWillBeRawPtr<SVGLengthList> LengthSVGInterpolation::createList(const S
     return SVGLengthList::create(animatedLengthList.currentValue()->unitMode());
 }
 
-PassRefPtrWillBeRawPtr<LengthSVGInterpolation> LengthSVGInterpolation::create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+PassRefPtr<LengthSVGInterpolation> LengthSVGInterpolation::create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
 {
     NonInterpolableType modeData;
-    OwnPtrWillBeRawPtr<InterpolableValue> startValue = toInterpolableValue(toSVGLength(start).get(), attribute.get(), &modeData);
-    OwnPtrWillBeRawPtr<InterpolableValue> endValue = toInterpolableValue(toSVGLength(end).get(), attribute.get(), nullptr);
-    return adoptRefWillBeNoop(new LengthSVGInterpolation(startValue.release(), endValue.release(), attribute, modeData));
+    OwnPtr<InterpolableValue> startValue = toInterpolableValue(toSVGLength(start).get(), attribute.get(), &modeData);
+    OwnPtr<InterpolableValue> endValue = toInterpolableValue(toSVGLength(end).get(), attribute.get(), nullptr);
+    return adoptRef(new LengthSVGInterpolation(startValue.release(), endValue.release(), attribute, modeData));
 }
 
 namespace {
@@ -103,7 +103,7 @@ LengthInterpolatedUnit convertToInterpolatedUnit(SVGLengthType lengthType, doubl
 
 } // namespace
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> LengthSVGInterpolation::toInterpolableValue(SVGLength* length, const SVGAnimatedPropertyBase* attribute, NonInterpolableType* ptrModeData)
+PassOwnPtr<InterpolableValue> LengthSVGInterpolation::toInterpolableValue(SVGLength* length, const SVGAnimatedPropertyBase* attribute, NonInterpolableType* ptrModeData)
 {
     if (ptrModeData)
         populateModeData(attribute, ptrModeData);
@@ -114,7 +114,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthSVGInterpolation::toInterpolable
     double values[numLengthInterpolatedUnits] = { };
     values[unitType] = value;
 
-    OwnPtrWillBeRawPtr<InterpolableList> listOfValues = InterpolableList::create(numLengthInterpolatedUnits);
+    OwnPtr<InterpolableList> listOfValues = InterpolableList::create(numLengthInterpolatedUnits);
     for (size_t i = 0; i < numLengthInterpolatedUnits; ++i)
         listOfValues->set(i, InterpolableNumber::create(values[i]));
     return listOfValues.release();

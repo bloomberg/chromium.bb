@@ -16,12 +16,12 @@ namespace blink {
 
 class AnimationDoubleStyleInterpolationTest : public ::testing::Test {
 protected:
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> doubleToInterpolableValue(const CSSValue& value)
+    static PassOwnPtr<InterpolableValue> doubleToInterpolableValue(const CSSValue& value)
     {
         return DoubleStyleInterpolation::doubleToInterpolableValue(value);
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> motionRotationToInterpolableValue(const CSSValue& value)
+    static PassOwnPtr<InterpolableValue> motionRotationToInterpolableValue(const CSSValue& value)
     {
         return DoubleStyleInterpolation::motionRotationToInterpolableValue(value);
     }
@@ -99,7 +99,7 @@ TEST_F(AnimationDoubleStyleInterpolationTest, AngleValue)
 
 TEST_F(AnimationDoubleStyleInterpolationTest, Clamping)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolableDouble = DoubleStyleInterpolation::create(
+    RefPtr<Interpolation> interpolableDouble = DoubleStyleInterpolation::create(
         *CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Number),
         *CSSPrimitiveValue::create(0.6, CSSPrimitiveValue::UnitType::Number),
         CSSPropertyLineHeight,

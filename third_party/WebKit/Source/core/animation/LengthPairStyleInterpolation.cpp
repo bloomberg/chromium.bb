@@ -16,9 +16,9 @@ bool LengthPairStyleInterpolation::canCreateFrom(const CSSValue& value)
     return value.isValuePair();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPairStyleInterpolation::lengthPairToInterpolableValue(const CSSValue& value)
+PassOwnPtr<InterpolableValue> LengthPairStyleInterpolation::lengthPairToInterpolableValue(const CSSValue& value)
 {
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     const CSSValuePair& pair = toCSSValuePair(value);
 
     result->set(0, LengthStyleInterpolation::toInterpolableValue(pair.first()));

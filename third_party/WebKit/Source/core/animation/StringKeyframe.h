@@ -16,9 +16,9 @@ class StyleSheetContents;
 
 class StringKeyframe : public Keyframe {
 public:
-    static PassRefPtrWillBeRawPtr<StringKeyframe> create()
+    static PassRefPtr<StringKeyframe> create()
     {
-        return adoptRefWillBeNoop(new StringKeyframe);
+        return adoptRef(new StringKeyframe);
     }
 
     void setPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
@@ -37,8 +37,6 @@ public:
 
     PropertyHandleSet properties() const override;
 
-    DECLARE_VIRTUAL_TRACE();
-
     class CSSPropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
         CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*, EffectModel::CompositeOperation);
@@ -46,28 +44,26 @@ public:
         CSSValue* value() const { return m_value.get(); }
 
         virtual void populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle* baseStyle) const;
-        const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const final { return m_animatableValueCache.get(); }
-        void setAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value) { m_animatableValueCache = value; }
+        const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_animatableValueCache.get(); }
+        void setAnimatableValue(PassRefPtr<AnimatableValue> value) { m_animatableValueCache = value; }
 
         bool isNeutral() const final { return !m_value; }
-        PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
-        PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const final;
-
-        DECLARE_VIRTUAL_TRACE();
+        PassOwnPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
+        PassRefPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const final;
 
     private:
         CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*);
 
-        virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const;
+        virtual PassOwnPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const;
         bool isCSSPropertySpecificKeyframe() const override { return true; }
 
-        PassRefPtrWillBeRawPtr<Interpolation> createLegacyStyleInterpolation(CSSPropertyID, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const;
-        static bool createInterpolationsFromCSSValues(CSSPropertyID, CSSValue* fromCSSValue, CSSValue* toCSSValue, Element*, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& interpolations);
+        PassRefPtr<Interpolation> createLegacyStyleInterpolation(CSSPropertyID, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const;
+        static bool createInterpolationsFromCSSValues(CSSPropertyID, CSSValue* fromCSSValue, CSSValue* toCSSValue, Element*, OwnPtr<Vector<RefPtr<Interpolation>>>& interpolations);
 
         void populateAnimatableValueCaches(CSSPropertyID, Keyframe::PropertySpecificKeyframe&, Element*, CSSValue& fromCSSValue, CSSValue& toCSSValue) const;
 
-        RefPtrWillBeMember<CSSValue> m_value;
-        mutable RefPtrWillBeMember<AnimatableValue> m_animatableValueCache;
+        RefPtrWillBePersistent<CSSValue> m_value;
+        mutable RefPtr<AnimatableValue> m_animatableValueCache;
     };
 
     class SVGPropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
@@ -76,14 +72,12 @@ public:
 
         const String& value() const { return m_value; }
 
-        PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const final;
+        PassOwnPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const final;
 
-        const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const final { return nullptr; }
+        const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return nullptr; }
 
-        PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
-        PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const final;
-
-        DECLARE_VIRTUAL_TRACE();
+        PassOwnPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
+        PassRefPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const final;
 
     private:
         SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String&);
@@ -100,12 +94,12 @@ private:
 
     StringKeyframe(const StringKeyframe& copyFrom);
 
-    PassRefPtrWillBeRawPtr<Keyframe> clone() const override;
-    PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
+    PassRefPtr<Keyframe> clone() const override;
+    PassOwnPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
 
     bool isStringKeyframe() const override { return true; }
 
-    RefPtrWillBeMember<MutableStylePropertySet> m_propertySet;
+    RefPtrWillBePersistent<MutableStylePropertySet> m_propertySet;
     HashMap<const QualifiedName*, String> m_svgPropertyMap;
 };
 

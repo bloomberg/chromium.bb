@@ -45,7 +45,7 @@ namespace blink {
 
 class AnimationAnimatableValueTestHelperTest : public ::testing::Test {
 protected:
-    ::std::string PrintToString(PassRefPtrWillBeRawPtr<AnimatableValue> animValue)
+    ::std::string PrintToString(PassRefPtr<AnimatableValue> animValue)
     {
         return ::testing::PrintToString(*animValue.get());
     }

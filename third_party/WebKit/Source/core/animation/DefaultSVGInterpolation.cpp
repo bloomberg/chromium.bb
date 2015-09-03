@@ -24,11 +24,4 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> DefaultSVGInterpolation::interpolatedVal
     return m_start;
 }
 
-DEFINE_TRACE(DefaultSVGInterpolation)
-{
-    visitor->trace(m_start);
-    visitor->trace(m_end);
-    SVGInterpolation::trace(visitor);
-}
-
 }

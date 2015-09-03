@@ -40,17 +40,15 @@ namespace blink {
 class CORE_EXPORT AnimatableVisibility final : public AnimatableValue {
 public:
     ~AnimatableVisibility() override { }
-    static PassRefPtrWillBeRawPtr<AnimatableVisibility> create(EVisibility visibility)
+    static PassRefPtr<AnimatableVisibility> create(EVisibility visibility)
     {
-        return adoptRefWillBeNoop(new AnimatableVisibility(visibility));
+        return adoptRef(new AnimatableVisibility(visibility));
     }
 
     EVisibility visibility() const { return m_visibility; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
-
 protected:
-    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
     bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:

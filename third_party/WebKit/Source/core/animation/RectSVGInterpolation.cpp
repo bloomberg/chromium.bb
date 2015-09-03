@@ -9,11 +9,11 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> RectSVGInterpolation::toInterpolableValue(SVGPropertyBase* value)
+PassOwnPtr<InterpolableValue> RectSVGInterpolation::toInterpolableValue(SVGPropertyBase* value)
 {
     RefPtrWillBeRawPtr<SVGRect> rect = toSVGRect(value);
     float element[] = { rect->x(), rect->y(), rect->width(), rect->height() };
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(WTF_ARRAY_LENGTH(element));
+    OwnPtr<InterpolableList> result = InterpolableList::create(WTF_ARRAY_LENGTH(element));
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(element); i++) {
         result->set(i, InterpolableNumber::create(element[i]));
     }

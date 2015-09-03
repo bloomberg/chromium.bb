@@ -41,7 +41,7 @@ bool AnimatableFilterOperations::usesDefaultInterpolationWith(const AnimatableVa
     return !operations().canInterpolateWith(target->operations());
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
@@ -52,8 +52,13 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableFilterOperations::interpolateT
     size_t toSize = target->operations().size();
     size_t size = std::max(fromSize, toSize);
     for (size_t i = 0; i < size; i++) {
+#if ENABLE(OILPAN)
+        FilterOperation* from = (i < fromSize) ? m_operationWrapper->operations().operations()[i].get() : 0;
+        FilterOperation* to = (i < toSize) ? target->m_operationWrapper->operations().operations()[i].get() : 0;
+#else
         FilterOperation* from = (i < fromSize) ? m_operations.operations()[i].get() : 0;
         FilterOperation* to = (i < toSize) ? target->m_operations.operations()[i].get() : 0;
+#endif
         RefPtrWillBeRawPtr<FilterOperation> blendedOp = FilterOperation::blend(from, to, fraction);
         if (blendedOp)
             result.operations().append(blendedOp);
@@ -66,12 +71,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableFilterOperations::interpolateT
 bool AnimatableFilterOperations::equalTo(const AnimatableValue* value) const
 {
     return operations() == toAnimatableFilterOperations(value)->operations();
-}
-
-DEFINE_TRACE(AnimatableFilterOperations)
-{
-    visitor->trace(m_operations);
-    AnimatableValue::trace(visitor);
 }
 
 } // namespace blink

@@ -28,7 +28,7 @@ bool InvalidatableStyleInterpolation::maybeCachePairwiseConversion(const StyleRe
     for (const auto& interpolationType : m_interpolationTypes) {
         if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) && (!underlyingValue || underlyingValue->type() != *interpolationType))
             continue;
-        OwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> pairwiseConversion = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, state, m_conversionCheckers);
+        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, state, m_conversionCheckers);
         if (pairwiseConversion) {
             m_cachedValue = pairwiseConversion->initialValue();
             m_cachedConversion = pairwiseConversion.release();
@@ -46,14 +46,14 @@ void InvalidatableStyleInterpolation::interpolate(int, double fraction)
     // We defer the interpolation to ensureValidInterpolation() if m_cachedConversion is null.
 }
 
-PassOwnPtrWillBeRawPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state, const InterpolationValue* underlyingValue) const
+PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state, const InterpolationValue* underlyingValue) const
 {
     if (keyframe.isNeutral() && !underlyingValue)
         return nullptr;
     for (const auto& interpolationType : m_interpolationTypes) {
         if (keyframe.isNeutral() && underlyingValue->type() != *interpolationType)
             continue;
-        OwnPtrWillBeRawPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &state, m_conversionCheckers);
+        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &state, m_conversionCheckers);
         if (result)
             return result.release();
     }
@@ -61,10 +61,10 @@ PassOwnPtrWillBeRawPtr<InterpolationValue> InvalidatableStyleInterpolation::conv
     return nullptr;
 }
 
-PassOwnPtrWillBeRawPtr<InterpolationValue> InvalidatableStyleInterpolation::maybeConvertUnderlyingValue(const StyleResolverState& state) const
+PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::maybeConvertUnderlyingValue(const StyleResolverState& state) const
 {
     for (const auto& interpolationType : m_interpolationTypes) {
-        OwnPtrWillBeRawPtr<InterpolationValue> result = interpolationType->maybeConvertUnderlyingValue(state);
+        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertUnderlyingValue(state);
         if (result)
             return result.release();
     }
@@ -122,7 +122,7 @@ void InvalidatableStyleInterpolation::setFlagIfInheritUsed(StyleResolverState& s
 
 void InvalidatableStyleInterpolation::apply(StyleResolverState& state) const
 {
-    OwnPtrWillBeRawPtr<InterpolationValue> underlyingValue = dependsOnUnderlyingValue() ? maybeConvertUnderlyingValue(state) : nullptr;
+    OwnPtr<InterpolationValue> underlyingValue = dependsOnUnderlyingValue() ? maybeConvertUnderlyingValue(state) : nullptr;
     ensureValidInterpolation(state, underlyingValue.get());
     if (!m_cachedValue)
         return;

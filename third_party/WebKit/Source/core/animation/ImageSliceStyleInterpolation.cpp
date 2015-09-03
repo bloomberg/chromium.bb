@@ -32,14 +32,14 @@ public:
         decompose(value);
     }
 
-    OwnPtrWillBeMember<InterpolableValue> interpolableValue;
+    OwnPtr<InterpolableValue> interpolableValue;
     ImageSliceStyleInterpolation::Metadata metadata;
 
 private:
     void decompose(const CSSBorderImageSliceValue& value)
     {
         const size_t kQuadSides = 4;
-        OwnPtrWillBeRawPtr<InterpolableList> interpolableList = InterpolableList::create(kQuadSides);
+        OwnPtr<InterpolableList> interpolableList = InterpolableList::create(kQuadSides);
         const CSSQuadValue& quad = *value.slices();
         interpolableList->set(0, InterpolableNumber::create(quad.top()->getDoubleValue()));
         interpolableList->set(1, InterpolableNumber::create(quad.right()->getDoubleValue()));
@@ -68,7 +68,7 @@ PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> compose(const InterpolableValue
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<ImageSliceStyleInterpolation> ImageSliceStyleInterpolation::maybeCreate(const CSSValue& start, const CSSValue& end, CSSPropertyID property)
+PassRefPtr<ImageSliceStyleInterpolation> ImageSliceStyleInterpolation::maybeCreate(const CSSValue& start, const CSSValue& end, CSSPropertyID property)
 {
     if (!start.isBorderImageSliceValue() || !end.isBorderImageSliceValue())
         return nullptr;
@@ -78,7 +78,7 @@ PassRefPtrWillBeRawPtr<ImageSliceStyleInterpolation> ImageSliceStyleInterpolatio
     if (!(startDecompose.metadata == endDecompose.metadata))
         return nullptr;
 
-    return adoptRefWillBeNoop(new ImageSliceStyleInterpolation(
+    return adoptRef(new ImageSliceStyleInterpolation(
         startDecompose.interpolableValue.release(),
         endDecompose.interpolableValue.release(),
         property,
@@ -89,11 +89,6 @@ PassRefPtrWillBeRawPtr<ImageSliceStyleInterpolation> ImageSliceStyleInterpolatio
 void ImageSliceStyleInterpolation::apply(StyleResolverState& state) const
 {
     StyleBuilder::applyProperty(m_id, state, compose(*m_cachedValue, m_metadata).get());
-}
-
-DEFINE_TRACE(ImageSliceStyleInterpolation)
-{
-    StyleInterpolation::trace(visitor);
 }
 
 } // namespace blink

@@ -34,7 +34,7 @@ bool typesMatch(const InterpolableValue* start, const InterpolableValue* end)
 
 }
 
-Interpolation::Interpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
+Interpolation::Interpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
     : m_start(start)
     , m_end(end)
     , m_cachedFraction(0)
@@ -55,13 +55,6 @@ void Interpolation::interpolate(int iteration, double fraction)
         m_cachedIteration = iteration;
         m_cachedFraction = fraction;
     }
-}
-
-DEFINE_TRACE(Interpolation)
-{
-    visitor->trace(m_start);
-    visitor->trace(m_end);
-    visitor->trace(m_cachedValue);
 }
 
 }

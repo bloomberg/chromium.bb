@@ -16,7 +16,7 @@ bool VisibilityStyleInterpolation::isVisible(const CSSValue& value)
     return toCSSPrimitiveValue(value).getValueID() == CSSValueVisible;
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> VisibilityStyleInterpolation::visibilityToInterpolableValue(const CSSValue& value)
+PassOwnPtr<InterpolableValue> VisibilityStyleInterpolation::visibilityToInterpolableValue(const CSSValue& value)
 {
     ASSERT(value.isPrimitiveValue());
     const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
@@ -44,8 +44,4 @@ void VisibilityStyleInterpolation::apply(StyleResolverState& state) const
     StyleBuilder::applyProperty(m_id, state, interpolableValueToVisibility(m_cachedValue.get(), m_notVisible).get());
 }
 
-DEFINE_TRACE(VisibilityStyleInterpolation)
-{
-    StyleInterpolation::trace(visitor);
-}
 }

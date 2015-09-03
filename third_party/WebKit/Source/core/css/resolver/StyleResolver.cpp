@@ -674,14 +674,14 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
 
 // This function is used by the WebAnimations JavaScript API method animate().
 // FIXME: Remove this when animate() switches away from resolution-dependent parsing.
-PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, const ComputedStyle* baseStyle, CSSPropertyID property, CSSValue* value)
+PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, const ComputedStyle* baseStyle, CSSPropertyID property, CSSValue* value)
 {
     StyleResolverState state(element.document(), &element);
     state.setStyle(baseStyle ? ComputedStyle::clone(*baseStyle) : ComputedStyle::create());
     return createAnimatableValueSnapshot(state, property, value);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, CSSValue* value)
+PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, CSSValue* value)
 {
     if (value) {
         StyleBuilder::applyProperty(property, state, value);
@@ -1009,7 +1009,7 @@ StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, con
 }
 
 template <CSSPropertyPriority priority>
-void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const WillBeHeapHashMap<PropertyHandle, RefPtrWillBeMember<Interpolation>>& activeInterpolations)
+void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const HashMap<PropertyHandle, RefPtr<Interpolation>>& activeInterpolations)
 {
     for (const auto& interpolationEntry : activeInterpolations) {
         if (!interpolationEntry.key.isCSSProperty())

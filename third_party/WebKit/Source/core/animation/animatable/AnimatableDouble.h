@@ -40,17 +40,15 @@ class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
 public:
     ~AnimatableDouble() override { }
 
-    static PassRefPtrWillBeRawPtr<AnimatableDouble> create(double number)
+    static PassRefPtr<AnimatableDouble> create(double number)
     {
-        return adoptRefWillBeNoop(new AnimatableDouble(number));
+        return adoptRef(new AnimatableDouble(number));
     }
 
     double toDouble() const { return m_number; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
-
 protected:
-    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
     AnimatableDouble(double number)

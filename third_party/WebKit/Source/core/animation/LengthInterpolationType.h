@@ -14,15 +14,15 @@ class LengthInterpolationType : public InterpolationType {
 public:
     LengthInterpolationType(CSSPropertyID);
 
-    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 
 private:
-    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertLength(const Length&, float zoom) const;
-    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertNeutral() const final;
-    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertInitial() const final;
-    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState*, ConversionCheckers&) const final;
-    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState*, ConversionCheckers&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertLength(const Length&, float zoom) const;
+    PassOwnPtr<InterpolationValue> maybeConvertNeutral() const final;
+    PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
+    PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState*, ConversionCheckers&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState*, ConversionCheckers&) const final;
 
     const ValueRange m_valueRange;
 };

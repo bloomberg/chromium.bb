@@ -12,9 +12,9 @@ namespace blink {
 
 class IntegerSVGInterpolation : public SVGInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<IntegerSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    static PassRefPtr<IntegerSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
     {
-        return adoptRefWillBeNoop(new IntegerSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute));
+        return adoptRef(new IntegerSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute));
     }
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final
@@ -22,18 +22,13 @@ public:
         return fromInterpolableValue(*m_cachedValue);
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        SVGInterpolation::trace(visitor);
-    }
-
 private:
-    IntegerSVGInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    IntegerSVGInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
         : SVGInterpolation(start, end, attribute)
     {
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase* value)
+    static PassOwnPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase* value)
     {
         return InterpolableNumber::create(toSVGInteger(value)->value());
     }

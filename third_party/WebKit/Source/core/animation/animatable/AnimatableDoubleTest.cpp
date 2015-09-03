@@ -56,8 +56,8 @@ TEST(AnimationAnimatableDoubleTest, ToDouble)
 
 TEST(AnimationAnimatableDoubleTest, Interpolate)
 {
-    RefPtrWillBeRawPtr<AnimatableDouble> from10 = AnimatableDouble::create(10);
-    RefPtrWillBeRawPtr<AnimatableDouble> to20 = AnimatableDouble::create(20);
+    RefPtr<AnimatableDouble> from10 = AnimatableDouble::create(10);
+    RefPtr<AnimatableDouble> to20 = AnimatableDouble::create(20);
     EXPECT_EQ(5, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())->toDouble());
     EXPECT_EQ(10, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 0).get())->toDouble());
     EXPECT_EQ(14, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 0.4).get())->toDouble());

@@ -93,12 +93,22 @@ public:
         return new FilterOperationsWrapper();
     }
 
+    static FilterOperationsWrapper* create(const FilterOperations& operations)
+    {
+        return new FilterOperationsWrapper(operations);
+    }
+
     const FilterOperations& operations() const { return m_operations; }
 
     DEFINE_INLINE_TRACE() { visitor->trace(m_operations); }
 
 private:
     FilterOperationsWrapper()
+    {
+    }
+
+    explicit FilterOperationsWrapper(const FilterOperations& operations)
+        : m_operations(operations)
     {
     }
 

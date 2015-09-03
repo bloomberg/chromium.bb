@@ -7,17 +7,17 @@
 
 namespace blink {
 
-void InterpolationEffect::getActiveInterpolations(double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& result) const
+void InterpolationEffect::getActiveInterpolations(double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>& result) const
 {
     if (!result)
-        result = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<Interpolation>>());
+        result = adoptPtr(new Vector<RefPtr<Interpolation>>());
 
     size_t existingSize = result->size();
     size_t resultIndex = 0;
 
     for (const auto& record : m_interpolations) {
         if (fraction >= record->m_applyFrom && fraction < record->m_applyTo) {
-            RefPtrWillBeRawPtr<Interpolation> interpolation = record->m_interpolation;
+            RefPtr<Interpolation> interpolation = record->m_interpolation;
             double localFraction = (fraction - record->m_start) / (record->m_end - record->m_start);
             if (record->m_easing)
                 localFraction = record->m_easing->evaluate(localFraction, accuracyForDuration(iterationDuration));
@@ -34,13 +34,13 @@ void InterpolationEffect::getActiveInterpolations(double fraction, double iterat
 
 void InterpolationEffect::addInterpolationsFromKeyframes(PropertyHandle property, Element* element, const ComputedStyle* baseStyle, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolation = keyframeA.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
+    RefPtr<Interpolation> interpolation = keyframeA.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
 
     if (interpolation) {
         addInterpolation(interpolation, &keyframeA.easing(), keyframeA.offset(), keyframeB.offset(), applyFrom, applyTo);
     } else {
-        RefPtrWillBeRawPtr<Interpolation> interpolationA = keyframeA.maybeCreateInterpolation(property, keyframeA, element, baseStyle);
-        RefPtrWillBeRawPtr<Interpolation> interpolationB = keyframeB.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
+        RefPtr<Interpolation> interpolationA = keyframeA.maybeCreateInterpolation(property, keyframeA, element, baseStyle);
+        RefPtr<Interpolation> interpolationB = keyframeB.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
 
         Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
         keyframeA.easing().partition(regions);
@@ -70,16 +70,6 @@ void InterpolationEffect::addInterpolationsFromKeyframes(PropertyHandle property
             regionIndex++;
         }
     }
-}
-
-DEFINE_TRACE(InterpolationEffect::InterpolationRecord)
-{
-    visitor->trace(m_interpolation);
-}
-
-DEFINE_TRACE(InterpolationEffect)
-{
-    visitor->trace(m_interpolations);
 }
 
 } // namespace blink

@@ -15,7 +15,7 @@ namespace blink {
 
 class AnimationColorStyleInterpolationTest : public ::testing::Test {
 protected:
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> colorToInterpolableValue(const CSSValue& value)
+    static PassOwnPtr<InterpolableValue> colorToInterpolableValue(const CSSValue& value)
     {
         return ColorStyleInterpolation::colorToInterpolableValue(value);
     }
@@ -71,7 +71,7 @@ TEST_F(AnimationColorStyleInterpolationTest, ValueIDColor)
 
 TEST_F(AnimationColorStyleInterpolationTest, Interpolation)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolation = ColorStyleInterpolation::create(
+    RefPtr<Interpolation> interpolation = ColorStyleInterpolation::create(
         *CSSPrimitiveValue::createColor(makeRGBA(0, 0, 0, 255)),
         *CSSPrimitiveValue::createColor(makeRGBA(255, 255, 255, 255)),
         CSSPropertyColor

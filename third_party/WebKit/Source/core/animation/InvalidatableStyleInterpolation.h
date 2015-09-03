@@ -17,12 +17,12 @@ namespace blink {
 // TODO(alancutter): Make this class generic for any animation environment so it can be reused for SVG animations.
 class CORE_EXPORT InvalidatableStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<InvalidatableStyleInterpolation> create(
+    static PassRefPtr<InvalidatableStyleInterpolation> create(
         const Vector<const InterpolationType*>& InterpolationTypes,
         const CSSPropertySpecificKeyframe& startKeyframe,
         const CSSPropertySpecificKeyframe& endKeyframe)
     {
-        return adoptRefWillBeNoop(new InvalidatableStyleInterpolation(InterpolationTypes, startKeyframe, endKeyframe));
+        return adoptRef(new InvalidatableStyleInterpolation(InterpolationTypes, startKeyframe, endKeyframe));
     }
 
     virtual void interpolate(int iteration, double fraction);
@@ -30,38 +30,28 @@ public:
 
     virtual bool isInvalidatableStyleInterpolation() const { return true; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_startKeyframe);
-        visitor->trace(m_endKeyframe);
-        visitor->trace(m_cachedConversion);
-        visitor->trace(m_conversionCheckers);
-        visitor->trace(m_cachedValue);
-        StyleInterpolation::trace(visitor);
-    }
-
 private:
     InvalidatableStyleInterpolation(
         const Vector<const InterpolationType*>& InterpolationTypes,
         const CSSPropertySpecificKeyframe& startKeyframe,
         const CSSPropertySpecificKeyframe& endKeyframe);
 
-    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const;
     void ensureValidInterpolation(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
     bool dependsOnUnderlyingValue() const;
     bool isCacheValid(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
     bool isNeutralKeyframeActive() const;
     bool maybeCachePairwiseConversion(const StyleResolverState*, const InterpolationValue* underlyingValue) const;
-    PassOwnPtrWillBeRawPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&, const InterpolationValue* underlyingValue) const;
+    PassOwnPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&, const InterpolationValue* underlyingValue) const;
     void setFlagIfInheritUsed(StyleResolverState&) const;
 
     const Vector<const InterpolationType*>& m_interpolationTypes;
-    RawPtrWillBeMember<const CSSPropertySpecificKeyframe> m_startKeyframe;
-    RawPtrWillBeMember<const CSSPropertySpecificKeyframe> m_endKeyframe;
+    const CSSPropertySpecificKeyframe* m_startKeyframe;
+    const CSSPropertySpecificKeyframe* m_endKeyframe;
     double m_currentFraction;
-    mutable OwnPtrWillBeMember<PrimitiveInterpolation> m_cachedConversion;
+    mutable OwnPtr<PrimitiveInterpolation> m_cachedConversion;
     mutable InterpolationType::ConversionCheckers m_conversionCheckers;
-    mutable OwnPtrWillBeMember<InterpolationValue> m_cachedValue;
+    mutable OwnPtr<InterpolationValue> m_cachedValue;
 };
 
 DEFINE_TYPE_CASTS(InvalidatableStyleInterpolation, Interpolation, value, value->isInvalidatableStyleInterpolation(), value.isInvalidatableStyleInterpolation());

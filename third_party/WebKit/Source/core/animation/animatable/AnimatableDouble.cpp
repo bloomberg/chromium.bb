@@ -36,7 +36,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableDouble::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableDouble::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableDouble* other = toAnimatableDouble(value);
     return AnimatableDouble::create(blend(m_number, other->m_number, fraction));

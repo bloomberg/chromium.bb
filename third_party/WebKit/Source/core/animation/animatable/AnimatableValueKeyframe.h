@@ -13,11 +13,11 @@ namespace blink {
 
 class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> create()
+    static PassRefPtr<AnimatableValueKeyframe> create()
     {
-        return adoptRefWillBeNoop(new AnimatableValueKeyframe);
+        return adoptRef(new AnimatableValueKeyframe);
     }
-    void setPropertyValue(CSSPropertyID property, PassRefPtrWillBeRawPtr<AnimatableValue> value)
+    void setPropertyValue(CSSPropertyID property, PassRefPtr<AnimatableValue> value)
     {
         m_propertyValues.set(property, value);
     }
@@ -29,27 +29,23 @@ public:
     }
     PropertyHandleSet properties() const override;
 
-    DECLARE_VIRTUAL_TRACE();
-
     class PropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, EffectModel::CompositeOperation);
 
         AnimatableValue* value() const { return m_value.get(); }
-        const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const final { return m_value; }
+        const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_value; }
 
-        PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
-        PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const final;
-
-        DECLARE_VIRTUAL_TRACE();
+        PassOwnPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
+        PassRefPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const final;
 
     private:
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtrWillBeRawPtr<AnimatableValue>);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue>);
 
-        PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const override;
+        PassOwnPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const override;
         bool isAnimatableValuePropertySpecificKeyframe() const override { return true; }
 
-        RefPtrWillBeMember<AnimatableValue> m_value;
+        RefPtr<AnimatableValue> m_value;
     };
 
 private:
@@ -57,12 +53,12 @@ private:
 
     AnimatableValueKeyframe(const AnimatableValueKeyframe& copyFrom);
 
-    PassRefPtrWillBeRawPtr<Keyframe> clone() const override;
-    PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
+    PassRefPtr<Keyframe> clone() const override;
+    PassOwnPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
 
     bool isAnimatableValueKeyframe() const override { return true; }
 
-    using PropertyValueMap = WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<AnimatableValue>>;
+    using PropertyValueMap = HashMap<CSSPropertyID, RefPtr<AnimatableValue>>;
     PropertyValueMap m_propertyValues;
 };
 

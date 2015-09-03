@@ -16,7 +16,7 @@ namespace blink {
 
 class AnimationLengthBoxStyleInterpolationTest : public ::testing::Test {
 protected:
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthBoxToInterpolableValue(const CSSValue& value)
+    static PassOwnPtr<InterpolableValue> lengthBoxToInterpolableValue(const CSSValue& value)
     {
         return LengthBoxStyleInterpolation::lengthBoxtoInterpolableValue(value, value, false);
     }

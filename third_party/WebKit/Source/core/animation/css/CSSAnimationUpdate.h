@@ -96,20 +96,11 @@ public:
     public:
         struct CompositableStyleSnapshot {
             DISALLOW_ALLOCATION();
-
         public:
-            RefPtrWillBeMember<AnimatableValue> opacity;
-            RefPtrWillBeMember<AnimatableValue> transform;
-            RefPtrWillBeMember<AnimatableValue> webkitFilter;
-            RefPtrWillBeMember<AnimatableValue> backdropFilter;
-
-            DEFINE_INLINE_TRACE()
-            {
-                visitor->trace(opacity);
-                visitor->trace(transform);
-                visitor->trace(webkitFilter);
-                visitor->trace(backdropFilter);
-            }
+            RefPtr<AnimatableValue> opacity;
+            RefPtr<AnimatableValue> transform;
+            RefPtr<AnimatableValue> webkitFilter;
+            RefPtr<AnimatableValue> backdropFilter;
         };
 
         UpdatedAnimationStyle()
@@ -127,7 +118,6 @@ public:
         {
             visitor->trace(animation);
             visitor->trace(model);
-            visitor->trace(snapshot);
         }
 
         Member<Animation> animation;
@@ -241,14 +231,12 @@ public:
     public:
         DEFINE_INLINE_TRACE()
         {
-            visitor->trace(from);
-            visitor->trace(to);
             visitor->trace(effect);
         }
 
         CSSPropertyID id;
-        RawPtrWillBeMember<const AnimatableValue> from;
-        RawPtrWillBeMember<const AnimatableValue> to;
+        const AnimatableValue* from;
+        const AnimatableValue* to;
         Member<InertEffect> effect;
     };
     using NewTransitionMap = HeapHashMap<CSSPropertyID, NewTransition>;
@@ -280,10 +268,6 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_newTransitions);
-#if ENABLE(OILPAN)
-        visitor->trace(m_activeInterpolationsForAnimations);
-        visitor->trace(m_activeInterpolationsForTransitions);
-#endif
         visitor->trace(m_newAnimations);
         visitor->trace(m_suppressedAnimations);
         visitor->trace(m_animationsWithUpdates);
@@ -308,6 +292,8 @@ private:
 
     ActiveInterpolationMap m_activeInterpolationsForAnimations;
     ActiveInterpolationMap m_activeInterpolationsForTransitions;
+
+    friend class PendingAnimationUpdate;
 };
 
 } // namespace blink

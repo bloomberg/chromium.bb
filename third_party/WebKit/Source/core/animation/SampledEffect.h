@@ -21,21 +21,17 @@ class SVGElement;
 class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
     WTF_MAKE_NONCOPYABLE(SampledEffect);
 public:
-    static SampledEffect* create(KeyframeEffect* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
+    static SampledEffect* create(KeyframeEffect* animation, PassOwnPtr<Vector<RefPtr<Interpolation>>> interpolations)
     {
         return new SampledEffect(animation, interpolations);
     }
 
     void clear();
 
-    const WillBeHeapVector<RefPtrWillBeMember<Interpolation>>& interpolations() const { return *m_interpolations; }
-#if ENABLE(OILPAN)
-    RawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> mutableInterpolations() { return m_interpolations.get(); }
-#else
-    PassOwnPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> mutableInterpolations() { return m_interpolations.release(); }
-#endif
+    const Vector<RefPtr<Interpolation>>& interpolations() const { return *m_interpolations; }
+    PassOwnPtr<Vector<RefPtr<Interpolation>>> mutableInterpolations() { return m_interpolations.release(); }
 
-    void setInterpolations(PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations) { m_interpolations = interpolations; }
+    void setInterpolations(PassOwnPtr<Vector<RefPtr<Interpolation>>> interpolations) { m_interpolations = interpolations; }
 
     KeyframeEffect* effect() const { return m_effect; }
     unsigned sequenceNumber() const { return m_sequenceNumber; }
@@ -46,11 +42,11 @@ public:
     void applySVGUpdate(SVGElement&);
 
 private:
-    SampledEffect(KeyframeEffect*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>);
+    SampledEffect(KeyframeEffect*, PassOwnPtr<Vector<RefPtr<Interpolation>>>);
 
     WeakMember<KeyframeEffect> m_effect;
     Member<Animation> m_animation;
-    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> m_interpolations;
+    OwnPtr<Vector<RefPtr<Interpolation>>> m_interpolations;
     const unsigned m_sequenceNumber;
     KeyframeEffect::Priority m_priority;
 };

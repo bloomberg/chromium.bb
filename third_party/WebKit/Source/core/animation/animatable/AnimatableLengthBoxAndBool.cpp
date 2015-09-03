@@ -60,7 +60,7 @@ bool AnimatableLengthBoxAndBool::usesDefaultInterpolationWith(const AnimatableVa
         || !sidesHaveSameUnits(boxA->bottom(), boxB->bottom());
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthBoxAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableLengthBoxAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLengthBoxAndBool* lengthBoxAndBool = toAnimatableLengthBoxAndBool(value);
     if (usesDefaultInterpolationWith(lengthBoxAndBool))
@@ -74,12 +74,6 @@ bool AnimatableLengthBoxAndBool::equalTo(const AnimatableValue* value) const
 {
     const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);
     return box()->equals(lengthBox->box()) && flag() == lengthBox->flag();
-}
-
-DEFINE_TRACE(AnimatableLengthBoxAndBool)
-{
-    visitor->trace(m_box);
-    AnimatableValue::trace(visitor);
 }
 
 }

@@ -11,20 +11,18 @@ namespace blink {
 
 class DefaultSVGInterpolation : public SVGInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<DefaultSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    static PassRefPtr<DefaultSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
     {
-        return adoptRefWillBeNoop(new DefaultSVGInterpolation(start, end, attribute));
+        return adoptRef(new DefaultSVGInterpolation(start, end, attribute));
     }
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final;
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     DefaultSVGInterpolation(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute);
 
-    RefPtrWillBeMember<SVGPropertyBase> m_start;
-    RefPtrWillBeMember<SVGPropertyBase> m_end;
+    RefPtrWillBePersistent<SVGPropertyBase> m_start;
+    RefPtrWillBePersistent<SVGPropertyBase> m_end;
 };
 
 }

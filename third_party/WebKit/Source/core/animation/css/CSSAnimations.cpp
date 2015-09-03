@@ -79,7 +79,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
     PropertySet specifiedPropertiesForUseCounter;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleRuleKeyframe* styleKeyframe = styleKeyframes[i].get();
-        RefPtrWillBeRawPtr<StringKeyframe> keyframe = StringKeyframe::create();
+        RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
         ASSERT(!offsets.isEmpty());
         keyframe->setOffset(offsets[0]);
@@ -137,14 +137,14 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
         keyframes.shrink(targetIndex + 1);
 
     // Add 0% and 100% keyframes if absent.
-    RefPtrWillBeRawPtr<StringKeyframe> startKeyframe = keyframes.isEmpty() ? nullptr : keyframes[0];
+    RefPtr<StringKeyframe> startKeyframe = keyframes.isEmpty() ? nullptr : keyframes[0];
     if (!startKeyframe || keyframes[0]->offset() != 0) {
         startKeyframe = StringKeyframe::create();
         startKeyframe->setOffset(0);
         startKeyframe->setEasing(defaultTimingFunction);
         keyframes.prepend(startKeyframe);
     }
-    RefPtrWillBeRawPtr<StringKeyframe> endKeyframe = keyframes[keyframes.size() - 1];
+    RefPtr<StringKeyframe> endKeyframe = keyframes[keyframes.size() - 1];
     if (endKeyframe->offset() != 1) {
         endKeyframe = StringKeyframe::create();
         endKeyframe->setOffset(1);
@@ -434,7 +434,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             newFrames[1]->clearPropertyValue(id);
 
             InertEffect* inertAnimationForSampling = InertEffect::create(oldAnimation->model(), oldAnimation->specifiedTiming(), false, inheritedTime);
-            OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
+            OwnPtr<Vector<RefPtr<Interpolation>>> sample = nullptr;
             inertAnimationForSampling->sample(sample);
             if (sample && sample->size() == 1) {
                 newFrames[0]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
@@ -455,13 +455,12 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         ASSERT(id != CSSPropertyInvalid);
         Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(id));
     }
-
     clearPendingUpdate();
 }
 
 void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const CSSTransitionData& transitionData, size_t transitionIndex, const ComputedStyle& oldStyle, const ComputedStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate& update, const Element* element)
 {
-    RefPtrWillBeRawPtr<AnimatableValue> to = nullptr;
+    RefPtr<AnimatableValue> to = nullptr;
     if (activeTransitions) {
         TransitionMap::const_iterator activeTransitionIter = activeTransitions->find(id);
         if (activeTransitionIter != activeTransitions->end()) {
@@ -479,7 +478,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     if (!to)
         to = CSSAnimatableValueFactory::create(id, style);
 
-    RefPtrWillBeRawPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
+    RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
     // If we have multiple transitions on the same property, we will use the
     // last one since we iterate over them in order.
     if (AnimatableValue::usesDefaultInterpolation(to.get(), from.get()))
@@ -498,19 +497,19 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
         timing.startDelay = 0;
     }
 
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> delayKeyframe = AnimatableValueKeyframe::create();
+    RefPtr<AnimatableValueKeyframe> delayKeyframe = AnimatableValueKeyframe::create();
     delayKeyframe->setPropertyValue(id, from.get());
     delayKeyframe->setOffset(0);
     keyframes.append(delayKeyframe);
 
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> startKeyframe = AnimatableValueKeyframe::create();
+    RefPtr<AnimatableValueKeyframe> startKeyframe = AnimatableValueKeyframe::create();
     startKeyframe->setPropertyValue(id, from.get());
     startKeyframe->setOffset(startKeyframeOffset);
     startKeyframe->setEasing(timing.timingFunction.release());
     timing.timingFunction = LinearTimingFunction::shared();
     keyframes.append(startKeyframe);
 
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> endKeyframe = AnimatableValueKeyframe::create();
+    RefPtr<AnimatableValueKeyframe> endKeyframe = AnimatableValueKeyframe::create();
     endKeyframe->setPropertyValue(id, to.get());
     endKeyframe->setOffset(1);
     keyframes.append(endKeyframe);
@@ -603,6 +602,7 @@ void CSSAnimations::cancel()
     }
 
     m_animations.clear();
+    m_transitions.clear();
     clearPendingUpdate();
 }
 
@@ -797,9 +797,6 @@ DEFINE_TRACE(CSSAnimations)
     visitor->trace(m_transitions);
     visitor->trace(m_pendingUpdate);
     visitor->trace(m_animations);
-#if ENABLE(OILPAN)
-    visitor->trace(m_previousActiveInterpolationsForAnimations);
-#endif
 }
 
 } // namespace blink

@@ -17,7 +17,7 @@ namespace blink {
 class LengthPairStyleInterpolationTest : public ::testing::Test {
 
 protected:
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthPairToInterpolableValue(const CSSValue& value)
+    static PassOwnPtr<InterpolableValue> lengthPairToInterpolableValue(const CSSValue& value)
     {
         return LengthPairStyleInterpolation::lengthPairToInterpolableValue(value);
     }

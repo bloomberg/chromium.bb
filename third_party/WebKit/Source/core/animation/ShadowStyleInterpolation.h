@@ -21,16 +21,16 @@ public:
 
     static bool usesDefaultStyleInterpolation(const CSSValue& start, const CSSValue& end);
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(const CSSValue&, NonInterpolableType&);
+    static PassOwnPtr<InterpolableValue> toInterpolableValue(const CSSValue&, NonInterpolableType&);
     static PassRefPtrWillBeRawPtr<CSSValue> fromInterpolableValue(const InterpolableValue&, NonInterpolableType, InterpolationRange = RangeAll);
 
 private:
-    ShadowStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
+    ShadowStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
         : StyleInterpolation(start, end, id)
     {
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> shadowToInterpolableValue(const CSSValue& value, NonInterpolableType& type)
+    static PassOwnPtr<InterpolableValue> shadowToInterpolableValue(const CSSValue& value, NonInterpolableType& type)
     {
         return toInterpolableValue(value, type);
     }
@@ -39,7 +39,7 @@ private:
         return fromInterpolableValue(value, type, range);
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue>);
+    static PassOwnPtr<InterpolableValue> lengthToInterpolableValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue>);
 
     friend class AnimationShadowStyleInterpolationTest;
 };

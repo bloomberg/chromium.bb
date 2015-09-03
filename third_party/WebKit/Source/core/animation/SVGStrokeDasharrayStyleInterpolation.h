@@ -15,17 +15,12 @@ class CSSValueList;
 
 class CORE_EXPORT SVGStrokeDasharrayStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<SVGStrokeDasharrayStyleInterpolation> maybeCreate(const CSSValue& start, const CSSValue& end, CSSPropertyID);
+    static PassRefPtr<SVGStrokeDasharrayStyleInterpolation> maybeCreate(const CSSValue& start, const CSSValue& end, CSSPropertyID);
 
     void apply(StyleResolverState&) const override;
 
-    void trace(Visitor* visitor) override
-    {
-        StyleInterpolation::trace(visitor);
-    }
-
 private:
-    SVGStrokeDasharrayStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
+    SVGStrokeDasharrayStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
         : StyleInterpolation(start, end, id)
     { }
 

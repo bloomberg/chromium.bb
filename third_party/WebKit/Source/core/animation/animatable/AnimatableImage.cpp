@@ -47,7 +47,7 @@ bool AnimatableImage::usesDefaultInterpolationWith(const AnimatableValue* value)
     return false;
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     if (fraction <= 0 || fraction >= 1 || usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);

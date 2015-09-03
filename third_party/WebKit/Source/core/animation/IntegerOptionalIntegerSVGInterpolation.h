@@ -15,9 +15,9 @@ class SVGIntegerOptionalInteger;
 
 class IntegerOptionalIntegerSVGInterpolation : public SVGInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<IntegerOptionalIntegerSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, int min)
+    static PassRefPtr<IntegerOptionalIntegerSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, int min)
     {
-        return adoptRefWillBeNoop(new IntegerOptionalIntegerSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute, min));
+        return adoptRef(new IntegerOptionalIntegerSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute, min));
     }
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final
@@ -25,19 +25,14 @@ public:
         return fromInterpolableValue(*m_cachedValue, m_min);
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        SVGInterpolation::trace(visitor);
-    }
-
 private:
-    IntegerOptionalIntegerSVGInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, int min)
+    IntegerOptionalIntegerSVGInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, int min)
         : SVGInterpolation(start, end, attribute)
         , m_min(min)
     {
     }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase*);
+    static PassOwnPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase*);
 
     static PassRefPtrWillBeRawPtr<SVGIntegerOptionalInteger> fromInterpolableValue(const InterpolableValue&, int);
 

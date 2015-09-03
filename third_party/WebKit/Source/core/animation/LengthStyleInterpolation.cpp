@@ -69,12 +69,12 @@ bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value, CSSPropertyI
     return primitiveValue.isLength() || primitiveValue.isPercentage() || primitiveValue.isCalculatedPercentageWithLength();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::toInterpolableValue(const CSSValue& value, CSSPropertyID id)
+PassOwnPtr<InterpolableValue> LengthStyleInterpolation::toInterpolableValue(const CSSValue& value, CSSPropertyID id)
 {
     ASSERT(canCreateFrom(value, id));
-    OwnPtrWillBeRawPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
-    OwnPtrWillBeRawPtr<InterpolableList> listOfValues = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
-    OwnPtrWillBeRawPtr<InterpolableList> listOfTypes = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    OwnPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
+    OwnPtr<InterpolableList> listOfValues = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    OwnPtr<InterpolableList> listOfTypes = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
 
     const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
 
@@ -315,9 +315,9 @@ void LengthStyleInterpolation::applyInterpolableValue(CSSPropertyID property, co
     if (lengthSetter && isPixelsOrPercentOnly(value)) {
         (state.style()->*lengthSetter)(lengthFromInterpolableValue(value, range, state.style()->effectiveZoom()));
 #if ENABLE(ASSERT)
-        RefPtrWillBeRawPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(property, *state.style());
+        RefPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(property, *state.style());
         StyleBuilder::applyProperty(property, state, fromInterpolableValue(value, range).get());
-        RefPtrWillBeRawPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(property, *state.style());
+        RefPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(property, *state.style());
         ASSERT(before->equals(*after));
 #endif
     } else {
@@ -328,11 +328,6 @@ void LengthStyleInterpolation::applyInterpolableValue(CSSPropertyID property, co
 void LengthStyleInterpolation::apply(StyleResolverState& state) const
 {
     applyInterpolableValue(m_id, *m_cachedValue, m_range, state, m_lengthSetter);
-}
-
-DEFINE_TRACE(LengthStyleInterpolation)
-{
-    StyleInterpolation::trace(visitor);
 }
 
 }

@@ -84,7 +84,7 @@ static PassRefPtr<TypeBuilder::Animation::AnimationEffect> buildObjectForAnimati
         // Obtain keyframes and convert keyframes back to delay
         ASSERT(effect->model()->isKeyframeEffectModel());
         const KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
-        WillBeHeapVector<RefPtrWillBeMember<Keyframe> > keyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
+        Vector<RefPtr<Keyframe>> keyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
         if (keyframes.size() == 3) {
             delay = keyframes.at(1)->offset() * duration;
             duration -= delay;
@@ -126,7 +126,7 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimation
     if (!effect || !effect->model() || !effect->model()->isKeyframeEffectModel())
         return nullptr;
     const KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
-    WillBeHeapVector<RefPtrWillBeMember<Keyframe> > normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
+    Vector<RefPtr<Keyframe>> normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
     RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
 
     for (const auto& keyframe : normalizedKeyframes) {

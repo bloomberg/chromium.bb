@@ -7,8 +7,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(InterpolableValue);
-
 void InterpolableNumber::interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const
 {
     const InterpolableNumber& toNumber = toInterpolableNumber(to);
@@ -61,12 +59,6 @@ void InterpolableList::scaleAndAdd(double scale, const InterpolableValue& other)
         m_values[i]->scaleAndAdd(scale, *otherList.m_values[i]);
 }
 
-DEFINE_TRACE(InterpolableList)
-{
-    visitor->trace(m_values);
-    InterpolableValue::trace(visitor);
-}
-
 void InterpolableAnimatableValue::interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const
 {
     const InterpolableAnimatableValue& toValue = toInterpolableAnimatableValue(to);
@@ -76,12 +68,6 @@ void InterpolableAnimatableValue::interpolate(const InterpolableValue& to, const
     if (progress == 1)
         resultValue.m_value = toValue.m_value;
     resultValue.m_value = AnimatableValue::interpolate(m_value.get(), toValue.m_value.get(), progress);
-}
-
-DEFINE_TRACE(InterpolableAnimatableValue)
-{
-    visitor->trace(m_value);
-    InterpolableValue::trace(visitor);
 }
 
 }

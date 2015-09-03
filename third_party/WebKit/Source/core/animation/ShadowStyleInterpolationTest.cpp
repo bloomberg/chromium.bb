@@ -19,7 +19,7 @@ class AnimationShadowStyleInterpolationTest : public ::testing::Test {
 
 protected:
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> shadowToInterpolableValue(const CSSValue& value, bool styleFlag)
+    static PassOwnPtr<InterpolableValue> shadowToInterpolableValue(const CSSValue& value, bool styleFlag)
     {
         return ShadowStyleInterpolation::shadowToInterpolableValue(value, styleFlag);
     }

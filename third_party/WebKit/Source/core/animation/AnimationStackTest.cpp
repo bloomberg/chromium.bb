@@ -44,7 +44,7 @@ protected:
         return element->ensureElementAnimations().defaultStack().m_effects;
     }
 
-    EffectModel* makeEffectModel(CSSPropertyID id, PassRefPtrWillBeRawPtr<AnimatableValue> value)
+    EffectModel* makeEffectModel(CSSPropertyID id, PassRefPtr<AnimatableValue> value)
     {
         AnimatableValueKeyframeVector keyframes(2);
         keyframes[0] = AnimatableValueKeyframe::create();

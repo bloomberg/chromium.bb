@@ -75,9 +75,9 @@ protected:
 
     Timing m_timing;
     CompositorAnimationsImpl::CompositorTiming m_compositorTiming;
-    OwnPtrWillBePersistent<AnimatableValueKeyframeVector> m_keyframeVector2;
+    OwnPtr<AnimatableValueKeyframeVector> m_keyframeVector2;
     Persistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect2;
-    OwnPtrWillBePersistent<AnimatableValueKeyframeVector> m_keyframeVector5;
+    OwnPtr<AnimatableValueKeyframeVector> m_keyframeVector5;
     Persistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect5;
 
     RefPtrWillBePersistent<Document> m_document;
@@ -138,7 +138,7 @@ public:
     {
         EXPECT_EQ(frame->offset(), 0);
         AnimatableValueKeyframeVector frames;
-        RefPtrWillBeRawPtr<Keyframe> second = frame->cloneWithOffset(1);
+        RefPtr<Keyframe> second = frame->cloneWithOffset(1);
 
         frames.append(frame);
         frames.append(toAnimatableValueKeyframe(second.get()));
@@ -162,9 +162,9 @@ public:
         return timing;
     }
 
-    PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> createReplaceOpKeyframe(CSSPropertyID id, AnimatableValue* value, double offset = 0)
+    PassRefPtr<AnimatableValueKeyframe> createReplaceOpKeyframe(CSSPropertyID id, AnimatableValue* value, double offset = 0)
     {
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframe = AnimatableValueKeyframe::create();
+        RefPtr<AnimatableValueKeyframe> keyframe = AnimatableValueKeyframe::create();
         keyframe->setPropertyValue(id, value);
         keyframe->setComposite(EffectModel::CompositeReplace);
         keyframe->setOffset(offset);
@@ -172,20 +172,20 @@ public:
         return keyframe;
     }
 
-    PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> createDefaultKeyframe(CSSPropertyID id, EffectModel::CompositeOperation op, double offset = 0)
+    PassRefPtr<AnimatableValueKeyframe> createDefaultKeyframe(CSSPropertyID id, EffectModel::CompositeOperation op, double offset = 0)
     {
-        RefPtrWillBeRawPtr<AnimatableValue> value = nullptr;
+        RefPtr<AnimatableValue> value = nullptr;
         if (id == CSSPropertyTransform)
             value = AnimatableTransform::create(TransformOperations());
         else
             value = AnimatableDouble::create(10.0);
 
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframe = createReplaceOpKeyframe(id, value.get(), offset);
+        RefPtr<AnimatableValueKeyframe> keyframe = createReplaceOpKeyframe(id, value.get(), offset);
         keyframe->setComposite(op);
         return keyframe;
     }
 
-    PassOwnPtrWillBeRawPtr<AnimatableValueKeyframeVector> createCompositableFloatKeyframeVector(size_t n)
+    PassOwnPtr<AnimatableValueKeyframeVector> createCompositableFloatKeyframeVector(size_t n)
     {
         Vector<double> values;
         for (size_t i = 0; i < n; i++) {
@@ -194,34 +194,34 @@ public:
         return createCompositableFloatKeyframeVector(values);
     }
 
-    PassOwnPtrWillBeRawPtr<AnimatableValueKeyframeVector> createCompositableFloatKeyframeVector(Vector<double>& values)
+    PassOwnPtr<AnimatableValueKeyframeVector> createCompositableFloatKeyframeVector(Vector<double>& values)
     {
-        OwnPtrWillBeRawPtr<AnimatableValueKeyframeVector> frames = adoptPtrWillBeNoop(new AnimatableValueKeyframeVector);
+        OwnPtr<AnimatableValueKeyframeVector> frames = adoptPtr(new AnimatableValueKeyframeVector);
         for (size_t i = 0; i < values.size(); i++) {
             double offset = 1.0 / (values.size() - 1) * i;
-            RefPtrWillBeRawPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
+            RefPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
             frames->append(createReplaceOpKeyframe(CSSPropertyOpacity, value.get(), offset).get());
         }
         return frames.release();
     }
 
-    PassOwnPtrWillBeRawPtr<AnimatableValueKeyframeVector> createCompositableTransformKeyframeVector(const Vector<TransformOperations>& values)
+    PassOwnPtr<AnimatableValueKeyframeVector> createCompositableTransformKeyframeVector(const Vector<TransformOperations>& values)
     {
-        OwnPtrWillBeRawPtr<AnimatableValueKeyframeVector> frames = adoptPtrWillBeNoop(new AnimatableValueKeyframeVector);
+        OwnPtr<AnimatableValueKeyframeVector> frames = adoptPtr(new AnimatableValueKeyframeVector);
         for (size_t i = 0; i < values.size(); ++i) {
             double offset = 1.0f / (values.size() - 1) * i;
-            RefPtrWillBeRawPtr<AnimatableTransform> value = AnimatableTransform::create(values[i]);
+            RefPtr<AnimatableTransform> value = AnimatableTransform::create(values[i]);
             frames->append(createReplaceOpKeyframe(CSSPropertyTransform, value.get(), offset).get());
         }
         return frames.release();
     }
 
-    AnimatableValueKeyframeEffectModel* createKeyframeEffectModel(PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpFrom, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpTo, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpC = nullptr, PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> prpD = nullptr)
+    AnimatableValueKeyframeEffectModel* createKeyframeEffectModel(PassRefPtr<AnimatableValueKeyframe> prpFrom, PassRefPtr<AnimatableValueKeyframe> prpTo, PassRefPtr<AnimatableValueKeyframe> prpC = nullptr, PassRefPtr<AnimatableValueKeyframe> prpD = nullptr)
     {
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> from = prpFrom;
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> to = prpTo;
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> c = prpC;
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> d = prpD;
+        RefPtr<AnimatableValueKeyframe> from = prpFrom;
+        RefPtr<AnimatableValueKeyframe> to = prpTo;
+        RefPtr<AnimatableValueKeyframe> c = prpC;
+        RefPtr<AnimatableValueKeyframe> d = prpD;
 
         EXPECT_EQ(from->offset(), 0);
         AnimatableValueKeyframeVector frames;
@@ -280,11 +280,11 @@ private:
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeMultipleCSSProperties)
 {
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace);
+    RefPtr<AnimatableValueKeyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace);
     keyframeGoodMultiple->setPropertyValue(CSSPropertyTransform, AnimatableTransform::create(TransformOperations()).get());
     EXPECT_TRUE(duplicateSingleKeyframeAndTestIsCandidateOnResult(keyframeGoodMultiple.get()));
 
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframeBadMultipleID = createDefaultKeyframe(CSSPropertyColor, EffectModel::CompositeReplace);
+    RefPtr<AnimatableValueKeyframe> keyframeBadMultipleID = createDefaultKeyframe(CSSPropertyColor, EffectModel::CompositeReplace);
     keyframeBadMultipleID->setPropertyValue(CSSPropertyOpacity, AnimatableDouble::create(10.0).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(keyframeBadMultipleID.get()));
 }
@@ -293,17 +293,17 @@ TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTr
 {
     TransformOperations ops;
     ops.operations().append(TranslateTransformOperation::create(Length(2, Fixed), Length(2, Fixed), TransformOperation::TranslateX));
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
+    RefPtr<AnimatableValueKeyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
     EXPECT_TRUE(duplicateSingleKeyframeAndTestIsCandidateOnResult(goodKeyframe.get()));
 
     ops.operations().append(TranslateTransformOperation::create(Length(50, Percent), Length(2, Fixed), TransformOperation::TranslateX));
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
+    RefPtr<AnimatableValueKeyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe.get()));
 
     TransformOperations ops2;
     Length calcLength = Length(100, Percent).blend(Length(100, Fixed), 0.5, ValueRangeAll);
     ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, Fixed), TransformOperation::TranslateX));
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops2).get());
+    RefPtr<AnimatableValueKeyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops2).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe2.get()));
 }
 
@@ -340,7 +340,7 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
     transformVector.last().operations().append(TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed), 0.0, TransformOperation::Translate3D));
     transformVector.append(TransformOperations());
     transformVector.last().operations().append(TranslateTransformOperation::create(Length(200, Fixed), Length(200, Fixed), 0.0, TransformOperation::Translate3D));
-    OwnPtrWillBePersistent<AnimatableValueKeyframeVector> frames = createCompositableTransformKeyframeVector(transformVector);
+    OwnPtr<AnimatableValueKeyframeVector> frames = createCompositableTransformKeyframeVector(transformVector);
     FloatBox bounds;
     EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames), 0, 1));
     EXPECT_EQ(FloatBox(0.0f, 0.f, 0.0f, 200.0f, 200.0f, 0.0f), bounds);

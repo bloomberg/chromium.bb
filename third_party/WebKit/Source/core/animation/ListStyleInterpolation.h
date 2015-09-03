@@ -15,7 +15,7 @@ namespace blink {
 template<typename InterpolationType, typename NonInterpolableData>
 class ListStyleInterpolationImpl : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<ListStyleInterpolationImpl<InterpolationType, NonInterpolableData>> maybeCreateFromList(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range = RangeAll)
+    static PassRefPtr<ListStyleInterpolationImpl<InterpolationType, NonInterpolableData>> maybeCreateFromList(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range = RangeAll)
     {
         if (start.isValueList() && end.isValueList() && toCSSValueList(start).length() == toCSSValueList(end).length()) {
             const CSSValueList& startList = toCSSValueList(start);
@@ -29,10 +29,10 @@ public:
 
             Vector<typename InterpolationType::NonInterpolableType> startNonInterpolableData;
 
-            OwnPtrWillBeRawPtr<InterpolableValue> startValue = listToInterpolableValue(start, &startNonInterpolableData);
-            OwnPtrWillBeRawPtr<InterpolableValue> endValue = listToInterpolableValue(end);
+            OwnPtr<InterpolableValue> startValue = listToInterpolableValue(start, &startNonInterpolableData);
+            OwnPtr<InterpolableValue> endValue = listToInterpolableValue(end);
 
-            return adoptRefWillBeNoop(new ListStyleInterpolationImpl<InterpolationType, NonInterpolableData>(startValue.release(), endValue.release(), id, startNonInterpolableData, range));
+            return adoptRef(new ListStyleInterpolationImpl<InterpolationType, NonInterpolableData>(startValue.release(), endValue.release(), id, startNonInterpolableData, range));
         }
         return nullptr;
     }
@@ -43,7 +43,7 @@ public:
     }
 
 private:
-    ListStyleInterpolationImpl(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id,
+    ListStyleInterpolationImpl(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id,
         Vector<typename InterpolationType::NonInterpolableType> nonInterpolableData, InterpolationRange range = RangeAll)
         : StyleInterpolation(start, end, id)
         , m_range(range)
@@ -55,12 +55,12 @@ private:
 
     Vector<typename InterpolationType::NonInterpolableType> m_nonInterpolableData;
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> listToInterpolableValue(const CSSValue& value, Vector<typename InterpolationType::NonInterpolableType>* nonInterpolableData = nullptr)
+    static PassOwnPtr<InterpolableValue> listToInterpolableValue(const CSSValue& value, Vector<typename InterpolationType::NonInterpolableType>* nonInterpolableData = nullptr)
     {
         const CSSValueList& listValue = toCSSValueList(value);
         if (nonInterpolableData)
             nonInterpolableData->reserveCapacity(listValue.length());
-        OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(listValue.length());
+        OwnPtr<InterpolableList> result = InterpolableList::create(listValue.length());
         typename InterpolationType::NonInterpolableType elementData = typename InterpolationType::NonInterpolableType();
         for (size_t i = 0; i < listValue.length(); i++) {
             result->set(i, InterpolationType::toInterpolableValue(*listValue.item(i), elementData));
@@ -88,7 +88,7 @@ private:
 template<typename InterpolationType>
 class ListStyleInterpolationImpl<InterpolationType, void> : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<ListStyleInterpolationImpl<InterpolationType, void>> maybeCreateFromList(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range = RangeAll)
+    static PassRefPtr<ListStyleInterpolationImpl<InterpolationType, void>> maybeCreateFromList(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range = RangeAll)
     {
         if (!start.isValueList() || !end.isValueList())
             return nullptr;
@@ -104,21 +104,21 @@ public:
             if (!InterpolationType::canCreateFrom(*value))
                 return nullptr;
         }
-        return adoptRefWillBeNoop(new ListStyleInterpolationImpl<InterpolationType, void>(listToInterpolableValue(start), listToInterpolableValue(end), id, range));
+        return adoptRef(new ListStyleInterpolationImpl<InterpolationType, void>(listToInterpolableValue(start), listToInterpolableValue(end), id, range));
     }
 
 private:
-    ListStyleInterpolationImpl(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, InterpolationRange range = RangeAll)
+    ListStyleInterpolationImpl(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id, InterpolationRange range = RangeAll)
         : StyleInterpolation(start, end, id), m_range(range)
     {
     }
 
     InterpolationRange m_range;
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> listToInterpolableValue(const CSSValue& value)
+    static PassOwnPtr<InterpolableValue> listToInterpolableValue(const CSSValue& value)
     {
         const CSSValueList& listValue = toCSSValueList(value);
-        OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(listValue.length());
+        OwnPtr<InterpolableList> result = InterpolableList::create(listValue.length());
         for (size_t i = 0; i < listValue.length(); i++)
             result->set(i, InterpolationType::toInterpolableValue(*listValue.item(i)));
         return result.release();
@@ -146,7 +146,7 @@ private:
 template<typename InterpolationType>
 class ListStyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<ListStyleInterpolationImpl<InterpolationType, typename InterpolationType::NonInterpolableType>>  maybeCreateFromList(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range = RangeAll)
+    static PassRefPtr<ListStyleInterpolationImpl<InterpolationType, typename InterpolationType::NonInterpolableType>>  maybeCreateFromList(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range = RangeAll)
     {
         return ListStyleInterpolationImpl<InterpolationType, typename InterpolationType::NonInterpolableType>::maybeCreateFromList(start, end, id, range);
     }

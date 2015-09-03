@@ -41,23 +41,21 @@ class CORE_EXPORT AnimatableStrokeDasharrayList final : public AnimatableRepeata
 public:
     ~AnimatableStrokeDasharrayList() override { }
 
-    static PassRefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> create(PassRefPtr<SVGDashArray> lengths, float zoom)
+    static PassRefPtr<AnimatableStrokeDasharrayList> create(PassRefPtr<SVGDashArray> lengths, float zoom)
     {
-        return adoptRefWillBeNoop(new AnimatableStrokeDasharrayList(lengths, zoom));
+        return adoptRef(new AnimatableStrokeDasharrayList(lengths, zoom));
     }
 
     PassRefPtr<SVGDashArray> toSVGDashArray(float zoom) const;
 
-    DECLARE_VIRTUAL_TRACE();
-
 protected:
-    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
     bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray>, float zoom);
     // This will consume the vector passed into it.
-    AnimatableStrokeDasharrayList(WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>>& values)
+    AnimatableStrokeDasharrayList(Vector<RefPtr<AnimatableValue>>& values)
         : AnimatableRepeatable(values)
     {
     }

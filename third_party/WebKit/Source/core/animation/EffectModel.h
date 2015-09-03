@@ -53,7 +53,7 @@ public:
 
     EffectModel() { }
     virtual ~EffectModel() { }
-    virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const = 0;
+    virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>&) const = 0;
 
     virtual bool affects(PropertyHandle) const { return false; }
     virtual bool isTransformRelatedEffect() const { return false; }

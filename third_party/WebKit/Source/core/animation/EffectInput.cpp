@@ -207,7 +207,7 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
     double lastOffset = 0;
 
     for (const auto& keyframeDictionary : keyframeDictionaryVector) {
-        RefPtrWillBeRawPtr<StringKeyframe> keyframe = StringKeyframe::create();
+        RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
 
         ScriptValue scriptValue;
         bool frameHasOffset = DictionaryHelper::get(keyframeDictionary, "offset", scriptValue) && !scriptValue.isNull();

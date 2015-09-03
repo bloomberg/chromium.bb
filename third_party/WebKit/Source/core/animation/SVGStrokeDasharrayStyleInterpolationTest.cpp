@@ -21,7 +21,7 @@ protected:
 
     static PassRefPtrWillBeRawPtr<CSSValueList> roundTrip(const CSSValue& value)
     {
-        RefPtrWillBeRawPtr<SVGStrokeDasharrayStyleInterpolation> interpolation = SVGStrokeDasharrayStyleInterpolation::maybeCreate(value, value, CSSPropertyStrokeDasharray);
+        RefPtr<SVGStrokeDasharrayStyleInterpolation> interpolation = SVGStrokeDasharrayStyleInterpolation::maybeCreate(value, value, CSSPropertyStrokeDasharray);
         ASSERT(interpolation);
         return SVGStrokeDasharrayStyleInterpolation::interpolableValueToStrokeDasharray(*interpolation->m_start);
     }

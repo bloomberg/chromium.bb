@@ -10,7 +10,7 @@ namespace blink {
 
 class AnimationVisibilityStyleInterpolationTest : public ::testing::Test {
 protected:
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> visibilityToInterpolableValue(const CSSValue& value)
+    static PassOwnPtr<InterpolableValue> visibilityToInterpolableValue(const CSSValue& value)
     {
         return VisibilityStyleInterpolation::visibilityToInterpolableValue(value);
     }
@@ -51,7 +51,7 @@ TEST_F(AnimationVisibilityStyleInterpolationTest, ValueIDs)
 
 TEST_F(AnimationVisibilityStyleInterpolationTest, Interpolation)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolation = VisibilityStyleInterpolation::create(
+    RefPtr<Interpolation> interpolation = VisibilityStyleInterpolation::create(
         *CSSPrimitiveValue::createIdentifier(CSSValueHidden),
         *CSSPrimitiveValue::createIdentifier(CSSValueVisible),
         CSSPropertyVisibility);

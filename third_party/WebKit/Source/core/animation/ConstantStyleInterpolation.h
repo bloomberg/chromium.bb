@@ -12,20 +12,14 @@ namespace blink {
 
 class ConstantStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<ConstantStyleInterpolation> create(CSSValue* value, CSSPropertyID id)
+    static PassRefPtr<ConstantStyleInterpolation> create(CSSValue* value, CSSPropertyID id)
     {
-        return adoptRefWillBeNoop(new ConstantStyleInterpolation(value, id));
+        return adoptRef(new ConstantStyleInterpolation(value, id));
     }
 
     void apply(StyleResolverState& state) const override
     {
         StyleBuilder::applyProperty(m_id, state, m_value.get());
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        StyleInterpolation::trace(visitor);
-        visitor->trace(m_value);
     }
 
 private:
@@ -34,7 +28,7 @@ private:
         , m_value(value)
     { }
 
-    RefPtrWillBeMember<CSSValue> m_value;
+    RefPtrWillBePersistent<CSSValue> m_value;
 };
 
 }

@@ -9,10 +9,10 @@ namespace blink {
 
 namespace {
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> translateToInterpolableValue(SVGTransform* transform)
+PassOwnPtr<InterpolableValue> translateToInterpolableValue(SVGTransform* transform)
 {
     FloatPoint translate = transform->translate();
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(translate.x()));
     result->set(1, InterpolableNumber::create(translate.y()));
     return result.release();
@@ -29,10 +29,10 @@ PassRefPtrWillBeRawPtr<SVGTransform> translateFromInterpolableValue(const Interp
     return transform.release();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> scaleToInterpolableValue(SVGTransform* transform)
+PassOwnPtr<InterpolableValue> scaleToInterpolableValue(SVGTransform* transform)
 {
     FloatSize scale = transform->scale();
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
+    OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(scale.width()));
     result->set(1, InterpolableNumber::create(scale.height()));
     return result.release();
@@ -49,10 +49,10 @@ PassRefPtrWillBeRawPtr<SVGTransform> scaleFromInterpolableValue(const Interpolab
     return transform.release();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> rotateToInterpolableValue(SVGTransform* transform)
+PassOwnPtr<InterpolableValue> rotateToInterpolableValue(SVGTransform* transform)
 {
     FloatPoint rotationCenter = transform->rotationCenter();
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(3);
+    OwnPtr<InterpolableList> result = InterpolableList::create(3);
     result->set(0, InterpolableNumber::create(transform->angle()));
     result->set(1, InterpolableNumber::create(rotationCenter.x()));
     result->set(2, InterpolableNumber::create(rotationCenter.y()));
@@ -71,7 +71,7 @@ PassRefPtrWillBeRawPtr<SVGTransform> rotateFromInterpolableValue(const Interpola
     return transform.release();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> skewXToInterpolableValue(SVGTransform* transform)
+PassOwnPtr<InterpolableValue> skewXToInterpolableValue(SVGTransform* transform)
 {
     return InterpolableNumber::create(transform->angle());
 }
@@ -83,7 +83,7 @@ PassRefPtrWillBeRawPtr<SVGTransform> skewXFromInterpolableValue(const Interpolab
     return transform.release();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> skewYToInterpolableValue(SVGTransform* transform)
+PassOwnPtr<InterpolableValue> skewYToInterpolableValue(SVGTransform* transform)
 {
     return InterpolableNumber::create(transform->angle());
 }
@@ -104,7 +104,7 @@ bool TransformSVGInterpolation::canCreateFrom(SVGTransform* start, SVGTransform*
         && start->transformType() != SVG_TRANSFORM_MATRIX;
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> TransformSVGInterpolation::toInterpolableValue(SVGTransform* transform, const SVGAnimatedPropertyBase*, SVGTransformType* transformTypePtr)
+PassOwnPtr<InterpolableValue> TransformSVGInterpolation::toInterpolableValue(SVGTransform* transform, const SVGAnimatedPropertyBase*, SVGTransformType* transformTypePtr)
 {
     SVGTransformType transformType = static_cast<SVGTransformType>(transform->transformType());
     if (transformTypePtr)

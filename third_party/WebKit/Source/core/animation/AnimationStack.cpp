@@ -42,7 +42,7 @@ namespace blink {
 
 namespace {
 
-void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<Interpolation>>& source, ActiveInterpolationMap& target)
+void copyToActiveInterpolationMap(const Vector<RefPtr<Interpolation>>& source, ActiveInterpolationMap& target)
 {
     for (const auto& interpolation : source) {
         target.set(interpolation->property(), interpolation.get());
@@ -58,7 +58,7 @@ bool compareEffects(const Member<SampledEffect>& effect1, const Member<SampledEf
 void copyNewAnimationsToActiveInterpolationMap(const HeapVector<Member<InertEffect>>& newAnimations, ActiveInterpolationMap& result)
 {
     for (const auto& newAnimation : newAnimations) {
-        OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
+        OwnPtr<Vector<RefPtr<Interpolation>>> sample;
         newAnimation->sample(sample);
         if (sample)
             copyToActiveInterpolationMap(*sample, result);

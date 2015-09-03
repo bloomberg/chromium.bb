@@ -38,8 +38,8 @@ TEST(AnimationAnimatableDoubleAndBoolTest, Flag)
 
 TEST(AnimationAnimatableDoubleAndBoolTest, InterpolateFalse)
 {
-    RefPtrWillBeRawPtr<AnimatableDoubleAndBool> from10 = AnimatableDoubleAndBool::create(10, false);
-    RefPtrWillBeRawPtr<AnimatableDoubleAndBool> to20 = AnimatableDoubleAndBool::create(20, false);
+    RefPtr<AnimatableDoubleAndBool> from10 = AnimatableDoubleAndBool::create(10, false);
+    RefPtr<AnimatableDoubleAndBool> to20 = AnimatableDoubleAndBool::create(20, false);
     EXPECT_FALSE(toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())->flag());
     EXPECT_EQ(5, toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())->toDouble());
     EXPECT_EQ(10, toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), 0).get())->toDouble());
@@ -53,8 +53,8 @@ TEST(AnimationAnimatableDoubleAndBoolTest, InterpolateFalse)
 
 TEST(AnimationAnimatableDoubleAndBoolTest, InterpolateTrue)
 {
-    RefPtrWillBeRawPtr<AnimatableDoubleAndBool> from10 = AnimatableDoubleAndBool::create(10, true);
-    RefPtrWillBeRawPtr<AnimatableDoubleAndBool> to20 = AnimatableDoubleAndBool::create(20, true);
+    RefPtr<AnimatableDoubleAndBool> from10 = AnimatableDoubleAndBool::create(10, true);
+    RefPtr<AnimatableDoubleAndBool> to20 = AnimatableDoubleAndBool::create(20, true);
     EXPECT_TRUE(toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())->flag());
     EXPECT_EQ(5, toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())->toDouble());
     EXPECT_EQ(10, toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), 0).get())->toDouble());
@@ -68,8 +68,8 @@ TEST(AnimationAnimatableDoubleAndBoolTest, InterpolateTrue)
 
 TEST(AnimationAnimatableDoubleAndBoolTest, Step)
 {
-    RefPtrWillBeRawPtr<AnimatableDoubleAndBool> from10 = AnimatableDoubleAndBool::create(10, true);
-    RefPtrWillBeRawPtr<AnimatableDoubleAndBool> to20 = AnimatableDoubleAndBool::create(20, false);
+    RefPtr<AnimatableDoubleAndBool> from10 = AnimatableDoubleAndBool::create(10, true);
+    RefPtr<AnimatableDoubleAndBool> to20 = AnimatableDoubleAndBool::create(20, false);
     EXPECT_TRUE(toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())->flag());
     EXPECT_EQ(10, toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())->toDouble());
     EXPECT_EQ(10, toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), 0).get())->toDouble());

@@ -55,13 +55,11 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 public:
     // FIXME: Implement accumulation.
 
-    using PropertySpecificKeyframeVector = WillBeHeapVector<OwnPtrWillBeMember<Keyframe::PropertySpecificKeyframe>>;
-    class PropertySpecificKeyframeGroup : public NoBaseWillBeGarbageCollected<PropertySpecificKeyframeGroup> {
+    using PropertySpecificKeyframeVector = Vector<OwnPtr<Keyframe::PropertySpecificKeyframe>>;
+    class PropertySpecificKeyframeGroup {
     public:
-        void appendKeyframe(PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe>);
+        void appendKeyframe(PassOwnPtr<Keyframe::PropertySpecificKeyframe>);
         const PropertySpecificKeyframeVector& keyframes() const { return m_keyframes; }
-
-        DECLARE_TRACE();
 
     private:
         void removeRedundantKeyframes();
@@ -76,7 +74,7 @@ public:
 
     PropertyHandleSet properties() const;
 
-    using KeyframeVector = WillBeHeapVector<RefPtrWillBeMember<Keyframe>>;
+    using KeyframeVector = Vector<RefPtr<Keyframe>>;
     const KeyframeVector& getFrames() const { return m_keyframes; }
     void setFrames(KeyframeVector& keyframes);
 
@@ -87,7 +85,7 @@ public:
     }
 
     // EffectModel implementation.
-    void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const override;
+    void sample(int iteration, double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>&) const override;
 
     bool isKeyframeEffectModel() const override { return true; }
 
@@ -100,12 +98,10 @@ public:
         return m_hasSyntheticKeyframes;
     }
 
-    DECLARE_VIRTUAL_TRACE();
-
     // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
     // This should be removed once AnimatableValues are obsolete.
     void forceConversionsToAnimatableValues(Element&, const ComputedStyle* baseStyle);
-    bool updateNeutralKeyframeAnimatableValues(CSSPropertyID, PassRefPtrWillBeRawPtr<AnimatableValue>);
+    bool updateNeutralKeyframeAnimatableValues(CSSPropertyID, PassRefPtr<AnimatableValue>);
 
     template<typename T>
     inline void forEachInterpolation(const T& callback) { m_interpolationEffect->forEachInterpolation(callback); }
@@ -137,9 +133,9 @@ protected:
     // The spec describes filtering the normalized keyframes at sampling time
     // to get the 'property-specific keyframes'. For efficiency, we cache the
     // property-specific lists.
-    using KeyframeGroupMap = WillBeHeapHashMap<PropertyHandle, OwnPtrWillBeMember<PropertySpecificKeyframeGroup>>;
-    mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
-    mutable Member<InterpolationEffect> m_interpolationEffect;
+    using KeyframeGroupMap = HashMap<PropertyHandle, OwnPtr<PropertySpecificKeyframeGroup>>;
+    mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
+    mutable RefPtr<InterpolationEffect> m_interpolationEffect;
     RefPtr<TimingFunction> m_neutralKeyframeEasing;
 
     mutable bool m_hasSyntheticKeyframes;
@@ -150,7 +146,7 @@ protected:
 template <class Keyframe>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
 public:
-    using KeyframeVector = WillBeHeapVector<RefPtrWillBeMember<Keyframe>>;
+    using KeyframeVector = Vector<RefPtr<Keyframe>>;
     static KeyframeEffectModel<Keyframe>* create(const KeyframeVector& keyframes, PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing = nullptr)
     {
         return new KeyframeEffectModel(keyframes, neutralKeyframeEasing);

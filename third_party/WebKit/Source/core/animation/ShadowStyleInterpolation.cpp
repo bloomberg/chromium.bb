@@ -25,16 +25,16 @@ bool ShadowStyleInterpolation::canCreateFrom(const CSSValue& start, const CSSVal
     return !ColorStyleInterpolation::shouldUseLegacyStyleInterpolation(*startShadow.color, *endShadow.color);
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> ShadowStyleInterpolation::lengthToInterpolableValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value)
+PassOwnPtr<InterpolableValue> ShadowStyleInterpolation::lengthToInterpolableValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value)
 {
     if (value)
         return LengthStyleInterpolation::toInterpolableValue(*value);
     return LengthStyleInterpolation::toInterpolableValue(*CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> ShadowStyleInterpolation::toInterpolableValue(const CSSValue& value, NonInterpolableType& nonInterpolableData)
+PassOwnPtr<InterpolableValue> ShadowStyleInterpolation::toInterpolableValue(const CSSValue& value, NonInterpolableType& nonInterpolableData)
 {
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(5);
+    OwnPtr<InterpolableList> result = InterpolableList::create(5);
     const CSSShadowValue* shadowValue = toCSSShadowValue(&value);
     ASSERT(shadowValue);
 
