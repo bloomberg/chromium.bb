@@ -81,18 +81,18 @@ template("compiled_action") {
          "compiled_action doesn't take a sources arg. Use inputs instead.")
 
   action(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    deps = []
+    inputs = []
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "inputs",
+                             "outputs",
+                             "testonly",
+                             "visibility",
+                           ])
 
     script = "//build/gn_run_binary.py"
-
-    if (defined(invoker.inputs)) {
-      inputs = invoker.inputs
-    } else {
-      inputs = []
-    }
-    outputs = invoker.outputs
 
     # Constuct the host toolchain version of the tool.
     host_tool = invoker.tool + "($host_toolchain)"
@@ -109,12 +109,7 @@ template("compiled_action") {
     # Add the executable itself as an input.
     inputs += [ host_executable ]
 
-    deps = [
-      host_tool,
-    ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
+    deps += [ host_tool ]
 
     # The script takes as arguments the binary to run, and then the arguments
     # to pass it.
@@ -129,20 +124,19 @@ template("compiled_action_foreach") {
   assert(defined(invoker.args), "args must be defined for $target_name")
 
   action_foreach(target_name) {
-    # Otherwise this is a standalone action, define visibility if requested.
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    deps = []
+    inputs = []
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "inputs",
+                             "outputs",
+                             "sources",
+                             "testonly",
+                             "visibility",
+                           ])
 
     script = "//build/gn_run_binary.py"
-    sources = invoker.sources
-
-    if (defined(invoker.inputs)) {
-      inputs = invoker.inputs
-    } else {
-      inputs = []
-    }
-    outputs = invoker.outputs
 
     # Constuct the host toolchain version of the tool.
     host_tool = invoker.tool + "($host_toolchain)"
@@ -159,12 +153,7 @@ template("compiled_action_foreach") {
     # Add the executable itself as an input.
     inputs += [ host_executable ]
 
-    deps = [
-      host_tool,
-    ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
+    deps += [ host_tool ]
 
     # The script takes as arguments the binary to run, and then the arguments
     # to pass it.
