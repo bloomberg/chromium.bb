@@ -660,6 +660,19 @@ SkScalar TextRunHarfBuzz::GetGlyphWidthForCharRange(
 
   DCHECK(range.Contains(char_range));
   Range glyph_range = CharRangeToGlyphRange(char_range);
+
+  // The |glyph_range| might be empty or invalid on Windows if a multi-character
+  // grapheme is divided into different runs (e.g., there are two font sizes or
+  // colors for a single glyph). In this case it might cause the browser crash,
+  // see crbug.com/526234.
+  if (glyph_range.start() >= glyph_range.end()) {
+    NOTREACHED() << "The glyph range is empty or invalid! Its char range: ["
+        << char_range.start() << ", " << char_range.end()
+        << "], and its glyph range: [" << glyph_range.start() << ", "
+        << glyph_range.end() << "].";
+    return 0;
+  }
+
   return ((glyph_range.end() == glyph_count)
               ? SkFloatToScalar(width)
               : positions[glyph_range.end()].x()) -
