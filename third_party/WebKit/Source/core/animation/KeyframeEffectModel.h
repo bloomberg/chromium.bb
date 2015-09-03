@@ -117,7 +117,7 @@ public:
     bool isTransformRelatedEffect() const override;
 
 protected:
-    KeyframeEffectModelBase(PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing)
+    KeyframeEffectModelBase(PassRefPtr<TimingFunction> neutralKeyframeEasing)
         : m_neutralKeyframeEasing(neutralKeyframeEasing)
     {
     }
@@ -147,13 +147,13 @@ template <class Keyframe>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
 public:
     using KeyframeVector = Vector<RefPtr<Keyframe>>;
-    static KeyframeEffectModel<Keyframe>* create(const KeyframeVector& keyframes, PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing = nullptr)
+    static KeyframeEffectModel<Keyframe>* create(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> neutralKeyframeEasing = nullptr)
     {
         return new KeyframeEffectModel(keyframes, neutralKeyframeEasing);
     }
 
 private:
-    KeyframeEffectModel(const KeyframeVector& keyframes, PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing)
+    KeyframeEffectModel(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> neutralKeyframeEasing)
         : KeyframeEffectModelBase(neutralKeyframeEasing)
     {
         m_keyframes.appendVector(keyframes);
