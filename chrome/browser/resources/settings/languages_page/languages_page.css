@@ -2,7 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.list-label {
-  margin-bottom: 20px;
-  margin-top: 30px;
+.manage {
+  @apply(--layout);
+  @apply(--layout-horizontal-reverse);
+  margin-top: 20px;
 }

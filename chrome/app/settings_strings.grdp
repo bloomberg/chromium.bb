@@ -211,6 +211,29 @@
     Enter URL...
   </message>
 
+  <!-- Languages Page -->
+  <message name="IDS_SETTINGS_LANGUAGES_PAGE_TITLE" desc="Name of the settings page which displays language and input method preferences.">
+    Language &amp; Input
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE" desc="Title for the list of languages that are enabled.">
+    Languages
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_MANAGE" desc="Button under the list of enabled languages which opens a sub-page that lets the user enable or disable languages.">
+    Manage languages
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE" desc="Title for the list of input methods (keyboard layouts and input method editors) that are enabled.">
+    Input methods
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE" desc="Button under the list of input methods which opens a sub-page that lets the user enable or disable input methods.">
+    Manage inputs
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE" desc="Title for the section containing the dropdown used to select the language to use for spell checking. The dropdown contains the enabled languages which support spell checking.">
+    Spell check
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_MANAGE" desc="Button under the dropdown of spell check languages which opens a sub-page that lets the user add or remove words to the custom list of words whitelisted for spell checking.">
+    Custom spelling
+  </message>
+
   <!-- Privacy Page -->
   <message name="IDS_SETTINGS_PRIVACY" desc="Name of the settings page which allows users to modify privacy and security settings.">
     Privacy &amp; Security

@@ -26,6 +26,7 @@
         '../../chrome/browser/resources/md_downloads/compiled_resources.gyp:*',
         '../../chrome/browser/resources/ntp4/compiled_resources.gyp:*',
 	'../../chrome/browser/resources/settings/internet_page/compiled_resources.gyp:*',
+	'../../chrome/browser/resources/settings/languages_page/compiled_resources.gyp:*',
         '../../chrome/browser/resources/uber/compiled_resources.gyp:*',
         '../../remoting/remoting_webapp_compile.gypi:*',
         '../../ui/file_manager/audio_player/elements/compiled_resources.gyp:*',

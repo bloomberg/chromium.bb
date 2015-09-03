@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
+<link rel="import" href="chrome://md-settings/languages_page/languages_page.html">
 <link rel="import" href="chrome://md-settings/location_page/location_page.html">
 <link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
 <link rel="import" href="chrome://md-settings/site_settings_page/site_settings_page.html">
@@ -42,6 +43,12 @@
         i18n-values="page-title:siteSettingsPageTitle">
       <cr-settings-site-settings-page prefs="{{prefs}}">
       </cr-settings-site-settings-page>
+    </cr-settings-section>
+
+    <cr-settings-section route="languages" icon="language"
+        i18n-values="page-title:languagesPageTitle">
+      <cr-settings-languages-page prefs="{{prefs}}">
+      </cr-settings-languages-page>
     </cr-settings-section>
 
     <cr-settings-section route="downloads" icon="file-download"
