@@ -128,7 +128,7 @@ void AccountConsistencyService::ApplyCookieRequests() {
   double expiration_date = 0;
   switch (cookie_requests_.front().request_type) {
     case ADD_COOKIE:
-      cookie_value = signin::BuildMirrorRequestHeaderIfPossible(
+      cookie_value = signin::BuildMirrorRequestCookieIfPossible(
           url, signin_manager_->GetAuthenticatedAccountInfo().gaia,
           cookie_settings_.get(), signin::PROFILE_MODE_DEFAULT);
       // Create expiration date of Now+2y to roughly follow the APISID cookie.
