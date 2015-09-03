@@ -29,7 +29,6 @@
 #include "core/CoreExport.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSTransitionData.h"
-#include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/style/BorderValue.h"
 #include "core/style/CounterDirectives.h"
@@ -935,7 +934,6 @@ public:
     bool isRunningBackdropFilterAnimationOnCompositor() const { return rareNonInheritedData->m_runningBackdropFilterAnimationOnCompositor; }
     bool isRunningAnimationOnCompositor() const { return isRunningOpacityAnimationOnCompositor() || isRunningTransformAnimationOnCompositor() || isRunningFilterAnimationOnCompositor() || isRunningBackdropFilterAnimationOnCompositor(); }
 
-    LineBoxContain lineBoxContain() const { return rareInheritedData->m_lineBoxContain; }
     const LineClampValue& lineClamp() const { return rareNonInheritedData->lineClamp; }
     Color tapHighlightColor() const { return rareInheritedData->tapHighlightColor; }
     ETextSecurity textSecurity() const { return static_cast<ETextSecurity>(rareInheritedData->textSecurity); }
@@ -1423,7 +1421,6 @@ public:
     void setIsRunningFilterAnimationOnCompositor(bool b = true) { SET_VAR(rareNonInheritedData, m_runningFilterAnimationOnCompositor, b); }
     void setIsRunningBackdropFilterAnimationOnCompositor(bool b = true) { SET_VAR(rareNonInheritedData, m_runningBackdropFilterAnimationOnCompositor, b); }
 
-    void setLineBoxContain(LineBoxContain c) { SET_VAR(rareInheritedData, m_lineBoxContain, c); }
     void setLineClamp(LineClampValue c) { SET_VAR(rareNonInheritedData, lineClamp, c); }
     void setTapHighlightColor(const Color& c) { SET_VAR(rareInheritedData, tapHighlightColor, c); }
     void setTextSecurity(ETextSecurity aTextSecurity) { SET_VAR(rareInheritedData, textSecurity, aTextSecurity); }
@@ -1708,7 +1705,6 @@ public:
     static const AtomicString& initialTextEmphasisCustomMark() { return nullAtom; }
     static TextEmphasisPosition initialTextEmphasisPosition() { return TextEmphasisPositionOver; }
     static RubyPosition initialRubyPosition() { return RubyPositionBefore; }
-    static LineBoxContain initialLineBoxContain() { return LineBoxContainBlock | LineBoxContainInline | LineBoxContainReplaced; }
     static ImageOrientationEnum initialImageOrientation() { return OriginTopLeft; }
     static RespectImageOrientationEnum initialRespectImageOrientation() { return DoNotRespectImageOrientation; }
     static EImageRendering initialImageRendering() { return ImageRenderingAuto; }

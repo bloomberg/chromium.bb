@@ -89,7 +89,6 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_textCombine(ComputedStyle::initialTextCombine())
     , m_textIndentLine(ComputedStyle::initialTextIndentLine())
     , m_textIndentType(ComputedStyle::initialTextIndentLine())
-    , m_lineBoxContain(ComputedStyle::initialLineBoxContain())
     , m_imageRendering(ComputedStyle::initialImageRendering())
     , m_textUnderlinePosition(ComputedStyle::initialTextUnderlinePosition())
     , m_rubyPosition(ComputedStyle::initialRubyPosition())
@@ -145,7 +144,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_textCombine(o.m_textCombine)
     , m_textIndentLine(o.m_textIndentLine)
     , m_textIndentType(o.m_textIndentType)
-    , m_lineBoxContain(o.m_lineBoxContain)
     , m_imageRendering(o.m_imageRendering)
     , m_textUnderlinePosition(o.m_textUnderlinePosition)
     , m_rubyPosition(o.m_rubyPosition)
@@ -212,7 +210,6 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_textCombine == o.m_textCombine
         && m_textIndentLine == o.m_textIndentLine
         && m_textIndentType == o.m_textIndentType
-        && m_lineBoxContain == o.m_lineBoxContain
         && m_subtreeWillChangeContents == o.m_subtreeWillChangeContents
         && m_selfOrAncestorHasDirAutoAttribute == o.m_selfOrAncestorHasDirAutoAttribute
         && m_respectImageOrientation == o.m_respectImageOrientation

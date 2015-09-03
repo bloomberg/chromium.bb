@@ -43,7 +43,6 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
-#include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSQuadValue.h"
@@ -147,8 +146,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSValueList>(*this, other);
         case ValuePairClass:
             return compareCSSValues<CSSValuePair>(*this, other);
-        case LineBoxContainClass:
-            return compareCSSValues<CSSLineBoxContainValue>(*this, other);
         case ImageSetClass:
             return compareCSSValues<CSSImageSetValue>(*this, other);
         case CSSSVGDocumentClass:
@@ -217,8 +214,6 @@ String CSSValue::cssText() const
         return toCSSValuePair(this)->customCSSText();
     case ValueListClass:
         return toCSSValueList(this)->customCSSText();
-    case LineBoxContainClass:
-        return toCSSLineBoxContainValue(this)->customCSSText();
     case ImageSetClass:
         return toCSSImageSetValue(this)->customCSSText();
     case CSSSVGDocumentClass:
@@ -310,9 +305,6 @@ void CSSValue::destroy()
         return;
     case ValueListClass:
         delete toCSSValueList(this);
-        return;
-    case LineBoxContainClass:
-        delete toCSSLineBoxContainValue(this);
         return;
     case ImageSetClass:
         delete toCSSImageSetValue(this);
@@ -408,9 +400,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case ValuePairClass:
         toCSSValuePair(this)->~CSSValuePair();
         return;
-    case LineBoxContainClass:
-        toCSSLineBoxContainValue(this)->~CSSLineBoxContainValue();
-        return;
     case ImageSetClass:
         toCSSImageSetValue(this)->~CSSImageSetValue();
         return;
@@ -504,9 +493,6 @@ DEFINE_TRACE(CSSValue)
         return;
     case ValuePairClass:
         toCSSValuePair(this)->traceAfterDispatch(visitor);
-        return;
-    case LineBoxContainClass:
-        toCSSLineBoxContainValue(this)->traceAfterDispatch(visitor);
         return;
     case ImageSetClass:
         toCSSImageSetValue(this)->traceAfterDispatch(visitor);

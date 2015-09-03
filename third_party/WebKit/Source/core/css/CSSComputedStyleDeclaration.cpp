@@ -242,7 +242,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGridRowStart,
     CSSPropertyWebkitHighlight,
     CSSPropertyWebkitHyphenateCharacter,
-    CSSPropertyWebkitLineBoxContain,
     CSSPropertyWebkitLineBreak,
     CSSPropertyWebkitLineClamp,
     CSSPropertyWebkitLocale,

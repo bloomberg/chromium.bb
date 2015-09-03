@@ -76,7 +76,6 @@ public:
     static Length convertLengthSizing(StyleResolverState&, CSSValue*);
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
     static TabSize convertLengthOrTabSpaces(StyleResolverState&, CSSValue*);
-    static LineBoxContain convertLineBoxContain(StyleResolverState&, CSSValue*);
     static Length convertLineHeight(StyleResolverState&, CSSValue*);
     static float convertNumberOrPercentage(StyleResolverState&, CSSValue*);
     static LengthPoint convertPosition(StyleResolverState&, CSSValue*);

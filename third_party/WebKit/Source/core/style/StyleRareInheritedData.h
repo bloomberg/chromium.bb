@@ -131,7 +131,6 @@ public:
     unsigned m_textCombine : 1; // CSS3 text-combine properties
     unsigned m_textIndentLine : 1; // TextIndentEachLine
     unsigned m_textIndentType : 1; // TextIndentHanging
-    unsigned m_lineBoxContain: 7; // LineBoxContain
     // CSS Image Values Level 3
     unsigned m_imageRendering : 3; // EImageRendering
     unsigned m_textUnderlinePosition : 1; // TextUnderlinePosition

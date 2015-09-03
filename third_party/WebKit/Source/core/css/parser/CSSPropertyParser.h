@@ -37,7 +37,6 @@ class CSSBasicShapeInset;
 class CSSFunctionValue;
 class CSSGradientValue;
 class CSSGridLineNamesValue;
-class CSSLineBoxContainValue;
 struct CSSParserString;
 struct CSSParserValue;
 class CSSParserValueList;
@@ -259,7 +258,6 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTextIndent();
 
-    PassRefPtrWillBeRawPtr<CSSLineBoxContainValue> parseLineBoxContain();
     bool parseCalculation(CSSParserValue*, ValueRange);
 
     bool parseFontFeatureTag(CSSValueList*);

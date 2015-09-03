@@ -958,13 +958,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForTransitionProperty(const CSSTran
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> createLineBoxContainValue(unsigned lineBoxContain)
-{
-    if (!lineBoxContain)
-        return cssValuePool().createIdentifierValue(CSSValueNone);
-    return CSSLineBoxContainValue::create(lineBoxContain);
-}
-
 CSSValueID valueForQuoteType(const QuoteType quoteType)
 {
     switch (quoteType) {
@@ -2311,8 +2304,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(style.textCombine());
     case CSSPropertyWebkitTextOrientation:
         return CSSPrimitiveValue::create(style.textOrientation());
-    case CSSPropertyWebkitLineBoxContain:
-        return createLineBoxContainValue(style.lineBoxContain());
     case CSSPropertyContent:
         return valueForContentData(style);
     case CSSPropertyCounterIncrement:

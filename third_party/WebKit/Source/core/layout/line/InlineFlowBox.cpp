@@ -487,8 +487,7 @@ void InlineFlowBox::adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, i
 void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit& maxPositionTop, LayoutUnit& maxPositionBottom, int& maxAscent, int& maxDescent, bool& setMaxAscent, bool& setMaxDescent, bool strictMode, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, FontBaseline baselineType, VerticalPositionCache& verticalPositionCache)
 {
     // The primary purpose of this function is to compute the maximal ascent and descent values for
-    // a line. These values are computed based off the block's line-box-contain property, which indicates
-    // what parts of descendant boxes have to fit within the line.
+    // a line.
     //
     // The maxAscent value represents the distance of the highest point of any box (typically including line-height) from
     // the root box's baseline. The maxDescent value represents the distance of the lowest point of any box

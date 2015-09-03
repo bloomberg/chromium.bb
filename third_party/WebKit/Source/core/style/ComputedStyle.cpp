@@ -540,7 +540,6 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             || rareInheritedData->m_textOrientation != other.rareInheritedData->m_textOrientation
             || rareInheritedData->m_textCombine != other.rareInheritedData->m_textCombine
             || rareInheritedData->m_tabSize != other.rareInheritedData->m_tabSize
-            || rareInheritedData->m_lineBoxContain != other.rareInheritedData->m_lineBoxContain
             || rareInheritedData->listStyleImage != other.rareInheritedData->listStyleImage
             || rareInheritedData->textStrokeWidth != other.rareInheritedData->textStrokeWidth)
             return true;

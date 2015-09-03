@@ -41,7 +41,6 @@
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
-#include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSProperty.h"
@@ -1468,12 +1467,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = true;
         break;
 
-    case CSSPropertyWebkitLineBoxContain:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else
-            parsedValue = parseLineBoxContain();
-        break;
     case CSSPropertyWebkitFontFeatureSettings:
         if (id == CSSValueNormal)
             validPrimitive = true;
@@ -7242,36 +7235,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextIndent()
         return nullptr;
 
     return list.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSLineBoxContainValue> CSSPropertyParser::parseLineBoxContain()
-{
-    LineBoxContain lineBoxContain = LineBoxContainNone;
-
-    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        LineBoxContainFlags flag;
-        if (value->id == CSSValueBlock) {
-            flag = LineBoxContainBlock;
-        } else if (value->id == CSSValueInline) {
-            flag = LineBoxContainInline;
-        } else if (value->id == CSSValueFont) {
-            flag = LineBoxContainFont;
-        } else if (value->id == CSSValueGlyphs) {
-            flag = LineBoxContainGlyphs;
-        } else if (value->id == CSSValueReplaced) {
-            flag = LineBoxContainReplaced;
-        } else if (value->id == CSSValueInlineBox) {
-            flag = LineBoxContainInlineBox;
-        } else {
-            return nullptr;
-        }
-        if (lineBoxContain & flag)
-            return nullptr;
-        lineBoxContain |= flag;
-    }
-
-    ASSERT(lineBoxContain);
-    return CSSLineBoxContainValue::create(lineBoxContain);
 }
 
 bool CSSPropertyParser::parseFontFeatureTag(CSSValueList* settings)

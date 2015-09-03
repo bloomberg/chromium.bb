@@ -1062,7 +1062,6 @@
             'css/CSSKeyframeRule.h',
             'css/CSSKeyframesRule.cpp',
             'css/CSSKeyframesRule.h',
-            'css/CSSLineBoxContainValue.cpp',
             'css/CSSMarkup.cpp',
             'css/CSSMarkup.h',
             'css/CSSMatrix.cpp',

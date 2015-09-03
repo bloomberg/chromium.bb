@@ -2231,9 +2231,6 @@ LayoutUnit LayoutBlock::minLineHeightForReplacedObject(bool isFirstLine, LayoutU
     if (!document().inNoQuirksMode() && replacedHeight)
         return replacedHeight;
 
-    if (!(style(isFirstLine)->lineBoxContain() & LineBoxContainBlock))
-        return LayoutUnit();
-
     return std::max<LayoutUnit>(replacedHeight, lineHeight(isFirstLine, isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes));
 }
 

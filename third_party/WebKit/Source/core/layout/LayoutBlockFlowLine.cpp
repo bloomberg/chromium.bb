@@ -108,7 +108,6 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LayoutObject* obj, const LineInf
     unsigned lineDepth = 1;
     InlineFlowBox* parentBox = nullptr;
     InlineFlowBox* result = nullptr;
-    bool hasDefaultLineBoxContain = style()->lineBoxContain() == ComputedStyle::initialLineBoxContain();
     do {
         ASSERT_WITH_SECURITY_IMPLICATION(obj->isLayoutInline() || obj == this);
 
@@ -123,7 +122,7 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LayoutObject* obj, const LineInf
         // as well.  In this situation our inline has actually been split in two on
         // the same line (this can happen with very fancy language mixtures).
         bool constructedNewBox = false;
-        bool allowedToConstructNewBox = !hasDefaultLineBoxContain || !inlineFlow || inlineFlow->alwaysCreateLineBoxes();
+        bool allowedToConstructNewBox = !inlineFlow || inlineFlow->alwaysCreateLineBoxes();
         bool canUseExistingParentBox = parentBox && !parentIsConstructedOrHaveNext(parentBox);
         if (allowedToConstructNewBox && !canUseExistingParentBox) {
             // We need to make a new box for this layout object.  Once
@@ -133,8 +132,6 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LayoutObject* obj, const LineInf
             parentBox = toInlineFlowBox(newBox);
             parentBox->setFirstLineStyleBit(lineInfo.isFirstLine());
             parentBox->setIsHorizontal(isHorizontalWritingMode());
-            if (!hasDefaultLineBoxContain)
-                parentBox->clearDescendantsHaveSameLineHeightAndBaseline();
             constructedNewBox = true;
         }
 
@@ -374,9 +371,6 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     GlyphOverflow glyphOverflow;
 
     const Font& font = layoutText->style(lineInfo.isFirstLine())->font();
-    // Always compute glyph overflow bounds if the block's line-box-contain value is "glyphs".
-    if (lineBox->fitsToGlyphs())
-        glyphOverflow.computeBounds = true;
 
     LayoutUnit hyphenWidth = 0;
     if (toInlineTextBox(run->m_box)->hasHyphen())

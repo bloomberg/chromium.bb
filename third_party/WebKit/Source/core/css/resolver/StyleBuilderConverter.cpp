@@ -588,16 +588,6 @@ TabSize StyleBuilderConverter::convertLengthOrTabSpaces(StyleResolverState& stat
     return TabSize(primitiveValue->computeLength<float>(state.cssToLengthConversionData()));
 }
 
-LineBoxContain StyleBuilderConverter::convertLineBoxContain(StyleResolverState&, CSSValue* value)
-{
-    if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
-        return LineBoxContainNone;
-    }
-
-    return toCSSLineBoxContainValue(value)->value();
-}
-
 static CSSToLengthConversionData lineHeightToLengthConversionData(StyleResolverState& state)
 {
     float multiplier = state.style()->effectiveZoom();

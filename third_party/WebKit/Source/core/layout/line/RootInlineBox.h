@@ -148,10 +148,6 @@ public:
     void ascentAndDescentForBox(InlineBox*, GlyphOverflowAndFallbackFontsMap&, int& ascent, int& descent, bool& affectsAscent, bool& affectsDescent) const;
     LayoutUnit verticalPositionForBox(InlineBox*, VerticalPositionCache&);
     bool includeLeadingForBox(InlineBox*) const;
-    bool includeFontForBox(InlineBox*) const;
-    bool includeGlyphsForBox(InlineBox*) const;
-    bool includeMarginForBox(InlineBox*) const;
-    bool fitsToGlyphs() const;
 
     LayoutUnit logicalTopVisualOverflow() const
     {

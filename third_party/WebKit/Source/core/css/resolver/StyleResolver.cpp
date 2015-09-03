@@ -1183,7 +1183,6 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     // http://www.w3.org/TR/css3-background/#placement
     case CSSPropertyBoxShadow:
     // Properties that we currently support outside of spec.
-    case CSSPropertyWebkitLineBoxContain:
     case CSSPropertyVisibility:
         return true;
 

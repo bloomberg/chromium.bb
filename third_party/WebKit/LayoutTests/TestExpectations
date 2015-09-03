@@ -1,4 +1,4 @@
-# We tests under paint/invalidation/spv2 as --enable-slimming-paint-v2 physical suite. 
+# We tests under paint/invalidation/spv2 as --enable-slimming-paint-v2 physical suite.
 crbug.com/524134 virtual/spv2/paint/invalidation/spv2 [ Skip ]
 
 # TODO(wangxianzhu): Triage the failures
@@ -1085,7 +1085,6 @@ crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/scrollbars/
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/scrollbars/short-scrollbar.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/threaded/compositing/visibility/visibility-image-layers.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/threaded/printing/return-from-printing-mode.html [ ImageOnlyFailure ]
-crbug.com/509025 [ Yosemite ] fast/block/lineboxcontain/block-with-ideographs.xhtml [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/encoding/denormalised-voiced-japanese-chars.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] fast/overflow/scrollRevealButton.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/ruby/nested-ruby.html [ Failure ]
@@ -1354,7 +1353,6 @@ crbug.com/521764 [ Win10 ] editing/selection/vertical-rl-ltr-extend-line-backwar
 crbug.com/521764 [ Win10 ] editing/selection/vertical-rl-ltr-extend-line-backward-wrap.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] editing/selection/vertical-rl-ltr-extend-line-forward-br.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] editing/selection/vertical-rl-ltr-extend-line-forward-wrap.html [ Failure Timeout ]
-crbug.com/521764 [ Win10 ] fast/block/lineboxcontain/block-with-ideographs.xhtml [ ImageOnlyFailure Timeout ]
 crbug.com/521764 [ Win10 ] fast/block/positioning/047.html [ ImageOnlyFailure Timeout ]
 crbug.com/521764 [ Win10 ] fast/canvas/canvas-lose-restore-googol-size.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/canvas/canvas-lose-restore-max-int-size.html [ Failure Pass ]
