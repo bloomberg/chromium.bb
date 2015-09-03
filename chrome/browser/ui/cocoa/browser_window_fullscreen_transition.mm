@@ -70,13 +70,6 @@ class FrameAndStyleLock {
   // The frame of the |primaryWindow_| before it starts the transition.
   NSRect initialFrame_;
 
-  // The root layer's frame at the beginning of the exit transition. This ivar
-  // holds the value of the expected frame at the end of transition, which is
-  // relative to the current screen's coordinate system. At the beginning of
-  // the exit fullscreen animation, the root layer of the window is immediately
-  // moved and resized to match this frame.
-  NSRect exitLayerFrame_;
-
   // The frame that |primaryWindow_| is expected to have after the transition
   // is finished.
   NSRect finalFrame_;
@@ -111,6 +104,21 @@ class FrameAndStyleLock {
 // Returns the layer of the root view of |window|.
 - (CALayer*)rootLayerOfWindow:(NSWindow*)window;
 
+// Convert the point to be relative to the screen the primary window is on.
+// This is important because if we're using multiple screens, the coordinate
+// system extends to the second screen.
+//
+// For example, if the screen width is 1440, the second screen's frame origin
+// is located at (1440, 0) and any x coordinate on the second screen will be
+// >= 1440. If we move a window on the first screen to the same location on
+// second screen, the window's frame origin will change from (x, y) to
+// (x + 1440, y).
+//
+// When we animate the window, we want to use (x, y), the coordinates that are
+// relative to the second screen. As a result, we use this method to convert a
+// NSPoint so that it's relative to the screen it's on.
+- (NSPoint)pointRelativeToCurrentScreen:(NSPoint)point;
+
 @end
 
 @implementation BrowserWindowFullscreenTransition
@@ -140,14 +148,6 @@ class FrameAndStyleLock {
     isEnteringFullscreen_ = NO;
     finalFrame_ = frame;
     initialFrame_ = [[primaryWindow_ screen] frame];
-
-    // Calculate the coordinates of the finalFrame, relative to the current
-    // screen it's on.
-    CGFloat screenOriginX = finalFrame_.origin.x - initialFrame_.origin.x;
-    CGFloat screenOriginY = finalFrame_.origin.y - initialFrame_.origin.y;
-    exitLayerFrame_ =
-        NSMakeRect(screenOriginX, screenOriginY, finalFrame_.size.width,
-                   finalFrame_.size.height);
 
     lock_.reset(new FrameAndStyleLock(window));
   }
@@ -233,11 +233,16 @@ class FrameAndStyleLock {
         setStyleMask:[primaryWindow_ styleMask] | NSFullScreenWindowMask];
     [self changePrimaryWindowToFinalFrame];
   } else {
+    // Set the size of the root layer to the size of the final frame. The root
+    // layer is placed at position (0, 0) because the animation will take care
+    // of the layer's start and end position.
+    root.frame =
+        NSMakeRect(0, 0, finalFrame_.size.width, finalFrame_.size.height);
+
     // Right before the animation begins, change the contentView size to the
     // expected size at the end of the animation. Afterwards, lock the
     // |primaryWindow_| so that AppKit will not be able to make unwanted
     // changes to it during the animation.
-    root.frame = exitLayerFrame_;
     [primaryWindow_ forceContentViewSize:finalFrame_.size];
     lock_->set_lock(YES);
   }
@@ -310,19 +315,25 @@ class FrameAndStyleLock {
       [CABasicAnimation animationWithKeyPath:@"transform"];
   transformAnimation.fromValue = [NSValue valueWithCATransform3D:initial];
 
-  // Calculate the initial position of the root layer. This calculation is
-  // agnostic of the anchorPoint.
-  CALayer* root = [self rootLayerOfWindow:primaryWindow_];
-  CGFloat layerStartPositionDeltaX = NSMidX(initialFrame) - NSMidX(endFrame);
-  CGFloat layerStartPositionDeltaY = NSMidY(initialFrame) - NSMidY(endFrame);
-  NSPoint layerStartPosition =
-      NSMakePoint(root.position.x + layerStartPositionDeltaX,
-                  root.position.y + layerStartPositionDeltaY);
-
-  // Animate the primary window from its initial position.
+  // Animate the primary window from its initial position, the center of the
+  // initial window.
   CABasicAnimation* positionAnimation =
       [CABasicAnimation animationWithKeyPath:@"position"];
-  positionAnimation.fromValue = [NSValue valueWithPoint:layerStartPosition];
+  NSPoint centerOfInitialFrame =
+      NSMakePoint(NSMidX(initialFrame), NSMidY(initialFrame));
+  NSPoint startingLayerPoint =
+      [self pointRelativeToCurrentScreen:centerOfInitialFrame];
+  positionAnimation.fromValue = [NSValue valueWithPoint:startingLayerPoint];
+
+  // Since the root layer's frame is different from the window, AppKit might
+  // animate it to a different position if we have multiple windows in
+  // fullscreen. This ensures that the animation moves to the correct position.
+  CGFloat anchorPointX = NSWidth(endFrame) / 2;
+  CGFloat anchorPointY = NSHeight(endFrame) / 2;
+  NSPoint endLayerPoint = [self pointRelativeToCurrentScreen:endFrame.origin];
+  positionAnimation.toValue =
+      [NSValue valueWithPoint:NSMakePoint(endLayerPoint.x + anchorPointX,
+                                          endLayerPoint.y + anchorPointY)];
 
   CAAnimationGroup* group = [CAAnimationGroup animation];
   group.removedOnCompletion = NO;
@@ -335,6 +346,7 @@ class FrameAndStyleLock {
   [group setValue:kPrimaryWindowAnimationID forKey:kAnimationIDKey];
   group.delegate = self;
 
+  CALayer* root = [self rootLayerOfWindow:primaryWindow_];
   [root addAnimation:group forKey:kPrimaryWindowAnimationID];
 }
 
@@ -356,9 +368,9 @@ class FrameAndStyleLock {
   }
 
   if ([animationID isEqual:kPrimaryWindowAnimationID]) {
-    // If we're exiting full screen, we want to set the |primaryWindow_|'s frame
-    // to the expected frame at the end of the animation. The window's lock
-    // must also be released.
+    // If we're exiting full screen, we want to set the |primaryWindow_|'s
+    // frame to the expected frame at the end of the animation. The window's
+    // lock must also be released.
     if (!isEnteringFullscreen_) {
       lock_->set_lock(NO);
       [primaryWindow_
@@ -384,6 +396,12 @@ class FrameAndStyleLock {
 
 - (CALayer*)rootLayerOfWindow:(NSWindow*)window {
   return [[[window contentView] superview] layer];
+}
+
+- (NSPoint)pointRelativeToCurrentScreen:(NSPoint)point {
+  NSRect screenFrame = [[primaryWindow_ screen] frame];
+  return NSMakePoint(point.x - screenFrame.origin.x,
+                     point.y - screenFrame.origin.y);
 }
 
 @end
