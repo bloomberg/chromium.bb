@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.preferences.privacy;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.preference.PreferenceManager;
 
 import org.chromium.base.CommandLine;
@@ -82,8 +84,21 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     protected boolean isMobileNetworkCapable() {
-        return ((ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE))
-            .getNetworkInfo(ConnectivityManager.TYPE_MOBILE) != null;
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Network[] networks = connectivityManager.getAllNetworks();
+            for (Network network : networks) {
+                NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+                if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) return true;
+            }
+            return false;
+        } else {
+            @SuppressWarnings("deprecation")
+            NetworkInfo networkInfo =
+                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            return networkInfo != null;
+        }
     }
 
     /**

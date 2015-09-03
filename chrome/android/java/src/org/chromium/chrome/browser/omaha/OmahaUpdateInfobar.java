@@ -109,6 +109,7 @@ public class OmahaUpdateInfobar extends ConfirmInfoBar {
         return (int) statFs.getAvailableBytes() / (1024 * 1024);
     }
 
+    @SuppressWarnings("deprecation")
     private static int getSize(StatFs statFs) {
         int blockSize = statFs.getBlockSize();
         int availableBlocks = statFs.getAvailableBlocks();
