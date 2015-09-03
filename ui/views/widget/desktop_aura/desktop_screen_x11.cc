@@ -184,11 +184,10 @@ gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
 }
 
 gfx::Display DesktopScreenX11::GetDisplayNearestPoint(
-    const gfx::Point& requested_point) const {
-  const gfx::Point point_in_pixel = DIPToPixelPoint(requested_point);
+    const gfx::Point& point) const {
   for (std::vector<gfx::Display>::const_iterator it = displays_.begin();
        it != displays_.end(); ++it) {
-    if (it->bounds().Contains(point_in_pixel))
+    if (it->bounds().Contains(point))
       return *it;
   }
 

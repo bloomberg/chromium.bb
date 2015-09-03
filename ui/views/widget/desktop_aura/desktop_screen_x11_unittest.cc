@@ -205,6 +205,8 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestPoint) {
                                   gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
+  EXPECT_EQ(kFirstDisplay,
+            screen()->GetDisplayNearestPoint(gfx::Point(630, 10)).id());
   EXPECT_EQ(kSecondDisplay,
             screen()->GetDisplayNearestPoint(gfx::Point(650, 10)).id());
   EXPECT_EQ(kFirstDisplay,
