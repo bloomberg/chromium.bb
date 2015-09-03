@@ -76,7 +76,7 @@ def main():
     finally:
       shutil.rmtree(tempdir)
   except subprocess.CalledProcessError as e:
-    return e.returncode
+    print e.returncode or 1
 
 
 if __name__ == '__main__':
