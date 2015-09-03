@@ -857,7 +857,9 @@ LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutU
     if (!pageLogicalHeight)
         return logicalOffset;
     LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, AssociateWithLatterPage);
-    if (remainingLogicalHeight < childLogicalHeight)
+    // Break if there's not enough space left for us, but only as long as we're not already at the
+    // top of a page. No point in leaving a page completely blank.
+    if (remainingLogicalHeight < childLogicalHeight && remainingLogicalHeight < pageLogicalHeight)
         return logicalOffset + remainingLogicalHeight;
     return logicalOffset;
 }
