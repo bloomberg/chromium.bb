@@ -456,12 +456,12 @@ void AuraWindowCaptureMachine::OnWindowBoundsChanged(
       &AuraWindowCaptureMachine::UpdateCaptureSize, AsWeakPtr()));
 }
 
-void AuraWindowCaptureMachine::OnWindowDestroyed(aura::Window* window) {
+void AuraWindowCaptureMachine::OnWindowDestroying(aura::Window* window) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  Stop(base::Bind(&base::DoNothing));
+  InternalStop(base::Bind(&base::DoNothing));
 
-  oracle_proxy_->ReportError("OnWindowDestroyed()");
+  oracle_proxy_->ReportError("OnWindowDestroying()");
 }
 
 void AuraWindowCaptureMachine::OnWindowAddedToRootWindow(
