@@ -30,10 +30,6 @@ class GLES2Implementation;
 }  // namespace gles2
 }  // namespace gpu
 
-namespace base {
-class AtExitManager;
-}  // namespace base
-
 namespace egl {
 
 class Config;
@@ -103,14 +99,6 @@ class Display : private gpu::GpuControl {
   EGLNativeDisplayType display_id_;
 
   bool is_initialized_;
-
-// elg::Display is used for comformance tests and command_buffer_gles.  We can't
-// include the exit manager for the conformance tests.
-// TODO(hendrikw): Find a cleaner solution for this.
-#if !defined(GLES2_CONFORM_SUPPORT_ONLY)
-  scoped_ptr<base::AtExitManager> exit_manager_;
-#endif  // !GLES2_CONFORM_SUPPORT_ONLY
-
   bool create_offscreen_;
   int create_offscreen_width_;
   int create_offscreen_height_;

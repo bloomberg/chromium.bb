@@ -85,18 +85,16 @@ EGLint ValidateDisplayContext(EGLDisplay dpy, EGLContext context) {
 }  // namespace
 
 extern "C" {
-EGLAPI EGLint EGLAPIENTRY eglGetError() {
+EGLint eglGetError() {
   // TODO(alokp): Fix me.
   return EGL_SUCCESS;
 }
 
-EGLAPI EGLDisplay EGLAPIENTRY eglGetDisplay(EGLNativeDisplayType display_id) {
+EGLDisplay eglGetDisplay(EGLNativeDisplayType display_id) {
   return new egl::Display(display_id);
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglInitialize(EGLDisplay dpy,
-                                            EGLint* major,
-                                            EGLint* minor) {
+EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor) {
   if (dpy == EGL_NO_DISPLAY)
     return EglError(EGL_BAD_DISPLAY, EGL_FALSE);
 
@@ -104,21 +102,19 @@ EGLAPI EGLBoolean EGLAPIENTRY eglInitialize(EGLDisplay dpy,
   if (!display->Initialize())
     return EglError(EGL_NOT_INITIALIZED, EGL_FALSE);
 
-  // eglInitialize can be called multiple times, prevent InitializeOneOff from
-  // being called multiple times.
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
-    int argc = 1;
-    const char* const argv[] = {"dummy"};
-    base::CommandLine::Init(argc, argv);
-    gfx::GLSurface::InitializeOneOff();
-  }
+  int argc = 1;
+  const char* const argv[] = {
+    "dummy"
+  };
+  base::CommandLine::Init(argc, argv);
+  gfx::GLSurface::InitializeOneOff();
 
   *major = 1;
   *minor = 4;
   return EglSuccess(EGL_TRUE);
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglTerminate(EGLDisplay dpy) {
+EGLBoolean eglTerminate(EGLDisplay dpy) {
   EGLint error_code = ValidateDisplay(dpy);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_FALSE);
@@ -129,7 +125,7 @@ EGLAPI EGLBoolean EGLAPIENTRY eglTerminate(EGLDisplay dpy) {
   return EglSuccess(EGL_TRUE);
 }
 
-EGLAPI const char* EGLAPIENTRY eglQueryString(EGLDisplay dpy, EGLint name) {
+const char* eglQueryString(EGLDisplay dpy, EGLint name) {
   EGLint error_code = ValidateDisplay(dpy);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, static_cast<const char*>(NULL));
@@ -148,11 +144,11 @@ EGLAPI const char* EGLAPIENTRY eglQueryString(EGLDisplay dpy, EGLint name) {
   }
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglChooseConfig(EGLDisplay dpy,
-                                              const EGLint* attrib_list,
-                                              EGLConfig* configs,
-                                              EGLint config_size,
-                                              EGLint* num_config) {
+EGLBoolean eglChooseConfig(EGLDisplay dpy,
+                           const EGLint* attrib_list,
+                           EGLConfig* configs,
+                           EGLint config_size,
+                           EGLint* num_config) {
   EGLint error_code = ValidateDisplay(dpy);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_FALSE);
@@ -167,10 +163,10 @@ EGLAPI EGLBoolean EGLAPIENTRY eglChooseConfig(EGLDisplay dpy,
   return EglSuccess(EGL_TRUE);
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglGetConfigs(EGLDisplay dpy,
-                                            EGLConfig* configs,
-                                            EGLint config_size,
-                                            EGLint* num_config) {
+EGLBoolean eglGetConfigs(EGLDisplay dpy,
+                         EGLConfig* configs,
+                         EGLint config_size,
+                         EGLint* num_config) {
   EGLint error_code = ValidateDisplay(dpy);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_FALSE);
@@ -185,10 +181,10 @@ EGLAPI EGLBoolean EGLAPIENTRY eglGetConfigs(EGLDisplay dpy,
   return EglSuccess(EGL_TRUE);
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglGetConfigAttrib(EGLDisplay dpy,
-                                                 EGLConfig config,
-                                                 EGLint attribute,
-                                                 EGLint* value) {
+EGLBoolean eglGetConfigAttrib(EGLDisplay dpy,
+                              EGLConfig config,
+                              EGLint attribute,
+                              EGLint* value) {
   EGLint error_code = ValidateDisplayConfig(dpy, config);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_FALSE);
@@ -200,11 +196,10 @@ EGLAPI EGLBoolean EGLAPIENTRY eglGetConfigAttrib(EGLDisplay dpy,
   return EglSuccess(EGL_TRUE);
 }
 
-EGLAPI EGLSurface EGLAPIENTRY
-eglCreateWindowSurface(EGLDisplay dpy,
-                       EGLConfig config,
-                       EGLNativeWindowType win,
-                       const EGLint* attrib_list) {
+EGLSurface eglCreateWindowSurface(EGLDisplay dpy,
+                                  EGLConfig config,
+                                  EGLNativeWindowType win,
+                                  const EGLint* attrib_list) {
   EGLint error_code = ValidateDisplayConfig(dpy, config);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_NO_SURFACE);
@@ -220,10 +215,9 @@ eglCreateWindowSurface(EGLDisplay dpy,
   return EglSuccess(surface);
 }
 
-EGLAPI EGLSurface EGLAPIENTRY
-eglCreatePbufferSurface(EGLDisplay dpy,
-                        EGLConfig config,
-                        const EGLint* attrib_list) {
+EGLSurface eglCreatePbufferSurface(EGLDisplay dpy,
+                                   EGLConfig config,
+                                   const EGLint* attrib_list) {
   EGLint error_code = ValidateDisplayConfig(dpy, config);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_NO_SURFACE);
@@ -252,16 +246,15 @@ eglCreatePbufferSurface(EGLDisplay dpy,
   return EglSuccess(surface);
 }
 
-EGLAPI EGLSurface EGLAPIENTRY
-eglCreatePixmapSurface(EGLDisplay dpy,
-                       EGLConfig config,
-                       EGLNativePixmapType pixmap,
-                       const EGLint* attrib_list) {
+EGLSurface eglCreatePixmapSurface(EGLDisplay dpy,
+                                  EGLConfig config,
+                                  EGLNativePixmapType pixmap,
+                                  const EGLint* attrib_list) {
   return EGL_NO_SURFACE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglDestroySurface(EGLDisplay dpy,
-                                                EGLSurface surface) {
+EGLBoolean eglDestroySurface(EGLDisplay dpy,
+                             EGLSurface surface) {
   EGLint error_code = ValidateDisplaySurface(dpy, surface);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_FALSE);
@@ -271,65 +264,64 @@ EGLAPI EGLBoolean EGLAPIENTRY eglDestroySurface(EGLDisplay dpy,
   return EglSuccess(EGL_TRUE);
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglQuerySurface(EGLDisplay dpy,
-                                              EGLSurface surface,
-                                              EGLint attribute,
-                                              EGLint* value) {
+EGLBoolean eglQuerySurface(EGLDisplay dpy,
+                           EGLSurface surface,
+                           EGLint attribute,
+                           EGLint* value) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglBindAPI(EGLenum api) {
+EGLBoolean eglBindAPI(EGLenum api) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLenum EGLAPIENTRY eglQueryAPI() {
+EGLenum eglQueryAPI() {
   return EGL_OPENGL_ES_API;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglWaitClient(void) {
+EGLBoolean eglWaitClient(void) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglReleaseThread(void) {
+EGLBoolean eglReleaseThread(void) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLSurface EGLAPIENTRY
-eglCreatePbufferFromClientBuffer(EGLDisplay dpy,
-                                 EGLenum buftype,
-                                 EGLClientBuffer buffer,
-                                 EGLConfig config,
-                                 const EGLint* attrib_list) {
+EGLSurface eglCreatePbufferFromClientBuffer(EGLDisplay dpy,
+                                            EGLenum buftype,
+                                            EGLClientBuffer buffer,
+                                            EGLConfig config,
+                                            const EGLint* attrib_list) {
   return EGL_NO_SURFACE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglSurfaceAttrib(EGLDisplay dpy,
-                                               EGLSurface surface,
-                                               EGLint attribute,
-                                               EGLint value) {
+EGLBoolean eglSurfaceAttrib(EGLDisplay dpy,
+                            EGLSurface surface,
+                            EGLint attribute,
+                            EGLint value) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglBindTexImage(EGLDisplay dpy,
-                                              EGLSurface surface,
-                                              EGLint buffer) {
+EGLBoolean eglBindTexImage(EGLDisplay dpy,
+                           EGLSurface surface,
+                           EGLint buffer) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglReleaseTexImage(EGLDisplay dpy,
-                                                 EGLSurface surface,
-                                                 EGLint buffer) {
+EGLBoolean eglReleaseTexImage(EGLDisplay dpy,
+                              EGLSurface surface,
+                              EGLint buffer) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglSwapInterval(EGLDisplay dpy, EGLint interval) {
+EGLBoolean eglSwapInterval(EGLDisplay dpy, EGLint interval) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLContext EGLAPIENTRY eglCreateContext(EGLDisplay dpy,
-                                               EGLConfig config,
-                                               EGLContext share_context,
-                                               const EGLint* attrib_list) {
+EGLContext eglCreateContext(EGLDisplay dpy,
+                            EGLConfig config,
+                            EGLContext share_context,
+                            const EGLint* attrib_list) {
   EGLint error_code = ValidateDisplayConfig(dpy, config);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_NO_CONTEXT);
@@ -349,8 +341,7 @@ EGLAPI EGLContext EGLAPIENTRY eglCreateContext(EGLDisplay dpy,
   return EglSuccess(context);
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglDestroyContext(EGLDisplay dpy,
-                                                EGLContext ctx) {
+EGLBoolean eglDestroyContext(EGLDisplay dpy, EGLContext ctx) {
   EGLint error_code = ValidateDisplayContext(dpy, ctx);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_FALSE);
@@ -360,10 +351,10 @@ EGLAPI EGLBoolean EGLAPIENTRY eglDestroyContext(EGLDisplay dpy,
   return EGL_TRUE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglMakeCurrent(EGLDisplay dpy,
-                                             EGLSurface draw,
-                                             EGLSurface read,
-                                             EGLContext ctx) {
+EGLBoolean eglMakeCurrent(EGLDisplay dpy,
+                          EGLSurface draw,
+                          EGLSurface read,
+                          EGLContext ctx) {
   if (ctx != EGL_NO_CONTEXT) {
     EGLint error_code = ValidateDisplaySurface(dpy, draw);
     if (error_code != EGL_SUCCESS)
@@ -387,35 +378,34 @@ EGLAPI EGLBoolean EGLAPIENTRY eglMakeCurrent(EGLDisplay dpy,
   return EGL_TRUE;
 }
 
-EGLAPI EGLContext EGLAPIENTRY eglGetCurrentContext() {
+EGLContext eglGetCurrentContext() {
   return EGL_NO_CONTEXT;
 }
 
-EGLAPI EGLSurface EGLAPIENTRY eglGetCurrentSurface(EGLint readdraw) {
+EGLSurface eglGetCurrentSurface(EGLint readdraw) {
   return EGL_NO_SURFACE;
 }
 
-EGLAPI EGLDisplay EGLAPIENTRY eglGetCurrentDisplay() {
+EGLDisplay eglGetCurrentDisplay() {
   return EGL_NO_DISPLAY;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglQueryContext(EGLDisplay dpy,
-                                              EGLContext ctx,
-                                              EGLint attribute,
-                                              EGLint* value) {
+EGLBoolean eglQueryContext(EGLDisplay dpy,
+                           EGLContext ctx,
+                           EGLint attribute,
+                           EGLint* value) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglWaitGL() {
+EGLBoolean eglWaitGL() {
   return EGL_FALSE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglWaitNative(EGLint engine) {
+EGLBoolean eglWaitNative(EGLint engine) {
   return EGL_FALSE;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffers(EGLDisplay dpy,
-                                             EGLSurface surface) {
+EGLBoolean eglSwapBuffers(EGLDisplay dpy, EGLSurface surface) {
   EGLint error_code = ValidateDisplaySurface(dpy, surface);
   if (error_code != EGL_SUCCESS)
     return EglError(error_code, EGL_FALSE);
@@ -425,14 +415,14 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffers(EGLDisplay dpy,
   return EglSuccess(EGL_TRUE);
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglCopyBuffers(EGLDisplay dpy,
-                                             EGLSurface surface,
-                                             EGLNativePixmapType target) {
+EGLBoolean eglCopyBuffers(EGLDisplay dpy,
+                          EGLSurface surface,
+                          EGLNativePixmapType target) {
   return EGL_FALSE;
 }
 
 /* Now, define eglGetProcAddress using the generic function ptr. type */
-EGLAPI __eglMustCastToProperFunctionPointerType EGLAPIENTRY
+__eglMustCastToProperFunctionPointerType
 eglGetProcAddress(const char* procname) {
   return reinterpret_cast<__eglMustCastToProperFunctionPointerType>(
       gles2::GetGLFunctionPointer(procname));
