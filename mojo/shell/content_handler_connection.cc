@@ -4,16 +4,19 @@
 
 #include "mojo/shell/content_handler_connection.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/identity.h"
 
 namespace mojo {
 namespace shell {
 
 ContentHandlerConnection::ContentHandlerConnection(
-    ApplicationInstance* originator,
     ApplicationManager* manager,
+    const Identity& originator_identity,
+    const CapabilityFilter& originator_filter,
     const GURL& content_handler_url,
-    const GURL& requestor_url,
     const std::string& qualifier,
     const CapabilityFilter& filter,
     uint32_t id)
@@ -23,11 +26,17 @@ ContentHandlerConnection::ContentHandlerConnection(
       connection_closed_(false),
       id_(id) {
   ServiceProviderPtr services;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From(content_handler_url.spec());
-  manager->ConnectToApplication(
-      originator, request.Pass(), qualifier, requestor_url, GetProxy(&services),
-      nullptr, filter, base::Closure(), EmptyConnectCallback());
+
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->set_originator_identity(originator_identity);
+  params->set_originator_filter(originator_filter);
+  params->SetURLInfo(content_handler_url);
+  params->set_qualifier(qualifier);
+  params->set_services(GetProxy(&services));
+  params->set_filter(filter);
+
+  manager->ConnectToApplication(params.Pass());
+
   MessagePipe pipe;
   content_handler_.Bind(
       InterfacePtrInfo<ContentHandler>(pipe.handle0.Pass(), 0u));

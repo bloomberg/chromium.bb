@@ -9,6 +9,8 @@
 namespace mojo {
 namespace shell {
 
+Identity::Identity() {}
+
 Identity::Identity(const GURL& in_url, const std::string& in_qualifier)
     : url(GetBaseURLAndQuery(in_url, nullptr)),
       qualifier(in_qualifier.empty() ? url.spec() : in_qualifier) {}

@@ -14,8 +14,8 @@
 namespace mojo {
 namespace shell {
 
-class ApplicationInstance;
 class ApplicationManager;
+struct Identity;
 
 // A ContentHandlerConnection is responsible for creating and maintaining a
 // connection to an app which provides the ContentHandler service.
@@ -26,10 +26,10 @@ class ApplicationManager;
 class ContentHandlerConnection {
  public:
   // |id| is a unique identifier for this content handler.
-  ContentHandlerConnection(ApplicationInstance* originator,
-                           ApplicationManager* manager,
+  ContentHandlerConnection(ApplicationManager* manager,
+                           const Identity& originator_identity,
+                           const CapabilityFilter& originator_filter,
                            const GURL& content_handler_url,
-                           const GURL& requestor_url,
                            const std::string& qualifier,
                            const CapabilityFilter& filter,
                            uint32_t id);

@@ -806,13 +806,12 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
       scoped_ptr<ApplicationLoader>(loader), "test");
 
   bool called = false;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("test:test");
-  application_manager_->ConnectToApplication(
-      nullptr, request.Pass(), std::string(), GURL(), nullptr, nullptr,
-      GetPermissiveCapabilityFilter(),
-      base::Bind(&QuitClosure, base::Unretained(&called)),
-      EmptyConnectCallback());
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->SetURLInfo(GURL("test:test"));
+  params->set_filter(GetPermissiveCapabilityFilter());
+  params->set_on_application_end(
+      base::Bind(&QuitClosure, base::Unretained(&called)));
+  application_manager_->ConnectToApplication(params.Pass());
   loop_.Run();
   EXPECT_TRUE(called);
 }
@@ -835,13 +834,14 @@ TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
                                       content_handler_url);
 
   bool called = false;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("test:test");
-  application_manager.ConnectToApplication(
-      nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
-      GetPermissiveCapabilityFilter(),
-      base::Bind(&QuitClosure, base::Unretained(&called)),
-      EmptyConnectCallback());
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->set_originator_identity(Identity(requestor_url));
+  params->set_originator_filter(GetPermissiveCapabilityFilter());
+  params->SetURLInfo(GURL("test:test"));
+  params->set_filter(GetPermissiveCapabilityFilter());
+  params->set_on_application_end(
+      base::Bind(&QuitClosure, base::Unretained(&called)));
+  application_manager.ConnectToApplication(params.Pass());
   loop.Run();
   EXPECT_TRUE(called);
 
@@ -904,15 +904,17 @@ TEST(ApplicationManagerTest2,
   uint32_t content_handler_id;
   {
     base::RunLoop run_loop;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("test:test");
-    application_manager.ConnectToApplication(
-        nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
-        GetPermissiveCapabilityFilter(), base::Closure(),
-        [&content_handler_id, &run_loop](uint32_t t) {
-          content_handler_id = t;
-          run_loop.Quit();
-        });
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->set_originator_identity(Identity(requestor_url));
+    params->set_originator_filter(GetPermissiveCapabilityFilter());
+    params->SetURLInfo(GURL("test:test"));
+    params->set_filter(GetPermissiveCapabilityFilter());
+    params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
+      content_handler_id = t;
+      run_loop.Quit();
+    });
+    application_manager.ConnectToApplication(params.Pass());
     run_loop.Run();
     EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
   }
@@ -920,15 +922,17 @@ TEST(ApplicationManagerTest2,
   uint32_t content_handler_id2;
   {
     base::RunLoop run_loop;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("test:test");
-    application_manager.ConnectToApplication(
-        nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
-        GetPermissiveCapabilityFilter(), base::Closure(),
-        [&content_handler_id2, &run_loop](uint32_t t) {
-          content_handler_id2 = t;
-          run_loop.Quit();
-        });
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->set_originator_identity(Identity(requestor_url));
+    params->set_originator_filter(GetPermissiveCapabilityFilter());
+    params->SetURLInfo(GURL("test:test"));
+    params->set_filter(GetPermissiveCapabilityFilter());
+    params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
+      content_handler_id2 = t;
+      run_loop.Quit();
+    });
+    application_manager.ConnectToApplication(params.Pass());
     run_loop.Run();
     EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
   }
@@ -958,15 +962,17 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
   uint32_t content_handler_id;
   {
     base::RunLoop run_loop;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("test:test");
-    application_manager.ConnectToApplication(
-        nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
-        GetPermissiveCapabilityFilter(), base::Closure(),
-        [&content_handler_id, &run_loop](uint32_t t) {
-          content_handler_id = t;
-          run_loop.Quit();
-        });
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->set_originator_identity(Identity(requestor_url));
+    params->set_originator_filter(GetPermissiveCapabilityFilter());
+    params->SetURLInfo(GURL("test:test"));
+    params->set_filter(GetPermissiveCapabilityFilter());
+    params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
+      content_handler_id = t;
+      run_loop.Quit();
+    });
+    application_manager.ConnectToApplication(params.Pass());
     run_loop.Run();
     EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
   }
@@ -987,15 +993,17 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
   uint32_t content_handler_id2;
   {
     base::RunLoop run_loop;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("test2:test2");
-    application_manager.ConnectToApplication(
-        nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
-        GetPermissiveCapabilityFilter(), base::Closure(),
-        [&content_handler_id2, &run_loop](uint32_t t) {
-          content_handler_id2 = t;
-          run_loop.Quit();
-        });
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->set_originator_identity(Identity(requestor_url));
+    params->set_originator_filter(GetPermissiveCapabilityFilter());
+    params->SetURLInfo(GURL("test2:test2"));
+    params->set_filter(GetPermissiveCapabilityFilter());
+    params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
+      content_handler_id2 = t;
+      run_loop.Quit();
+    });
+    application_manager.ConnectToApplication(params.Pass());
     run_loop.Run();
     EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
   }
@@ -1008,12 +1016,12 @@ TEST_F(ApplicationManagerTest,
       scoped_ptr<ApplicationLoader>(new TestApplicationLoader), "test");
 
   uint32_t content_handler_id = 1u;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("test:test");
-  application_manager_->ConnectToApplication(
-      nullptr, request.Pass(), std::string(), GURL(), nullptr, nullptr,
-      GetPermissiveCapabilityFilter(), base::Closure(),
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->SetURLInfo(GURL("test:test"));
+  params->set_filter(GetPermissiveCapabilityFilter());
+  params->set_connect_callback(
       [&content_handler_id](uint32_t t) { content_handler_id = t; });
+  application_manager_->ConnectToApplication(params.Pass());
   EXPECT_EQ(0u, content_handler_id);
 }
 

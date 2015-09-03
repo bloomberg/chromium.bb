@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SHELL_APPLICATION_MANAGER_APPLICATION_MANAGER_H_
-#define SHELL_APPLICATION_MANAGER_APPLICATION_MANAGER_H_
+#ifndef MOJO_SHELL_APPLICATION_MANAGER_H_
+#define MOJO_SHELL_APPLICATION_MANAGER_H_
 
 #include <map>
 
@@ -21,6 +21,7 @@
 #include "mojo/services/updater/updater.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/capability_filter.h"
+#include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
@@ -83,6 +84,7 @@ class ApplicationManager {
   // |originator| can be NULL (e.g. for the first application or in tests), but
   // typically is non-NULL and identifies the instance initiating the
   // connection.
+  // TODO(yzshen): Remove |requestor_url|.
   void ConnectToApplication(
       ApplicationInstance* originator,
       URLRequestPtr requested_url,
@@ -93,6 +95,8 @@ class ApplicationManager {
       const CapabilityFilter& capability_filter,
       const base::Closure& on_application_end,
       const Shell::ConnectToApplicationCallback& connect_callback);
+
+  void ConnectToApplication(scoped_ptr<ConnectToApplicationParams> params);
 
   // Must only be used by shell internals and test code as it does not forward
   // capability filters.
@@ -170,55 +174,28 @@ class ApplicationManager {
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
   using URLToNativeOptionsMap = std::map<GURL, NativeRunnerFactory::Options>;
 
+  // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
-      ApplicationInstance* originator,
-      const GURL& resolved_url,
-      const std::string& qualifier,
-      const GURL& requestor_url,
-      InterfaceRequest<ServiceProvider>* services,
-      ServiceProviderPtr* exposed_services,
-      const CapabilityFilter& filter,
-      const Shell::ConnectToApplicationCallback& connect_callback);
-
+      scoped_ptr<ConnectToApplicationParams>* params);
+  // |resolved_url| is the URL to load by |loader| (if loader is not null). It
+  // may be different from |(*params)->app_url()| because of mappings and
+  // resolution rules.
+  // Takes the contents of |params| only when it returns true.
   bool ConnectToApplicationWithLoader(
-      ApplicationInstance* originator,
-      const GURL& requested_url,
-      const std::string& qualifier,
+      scoped_ptr<ConnectToApplicationParams>* params,
       const GURL& resolved_url,
-      const GURL& requestor_url,
-      InterfaceRequest<ServiceProvider>* services,
-      ServiceProviderPtr* exposed_services,
-      const CapabilityFilter& filter,
-      const base::Closure& on_application_end,
-      const Shell::ConnectToApplicationCallback& connect_callback,
       ApplicationLoader* loader);
 
   InterfaceRequest<Application> RegisterInstance(
-      ApplicationInstance* originator,
-      const GURL& app_url,
-      const std::string& qualifier,
-      const GURL& requestor_url,
-      InterfaceRequest<ServiceProvider> services,
-      ServiceProviderPtr exposed_services,
-      const CapabilityFilter& filter,
-      const base::Closure& on_application_end,
-      const Shell::ConnectToApplicationCallback& connect_callback,
+      scoped_ptr<ConnectToApplicationParams> params,
       ApplicationInstance** resulting_instance);
 
-  // Called once |fetcher| has found app. |requested_url| is the url of the
-  // requested application before any mappings/resolution have been applied.
-  void HandleFetchCallback(
-      ApplicationInstance* originator,
-      const GURL& requested_url,
-      const std::string& qualifier,
-      const GURL& requestor_url,
-      InterfaceRequest<ServiceProvider> services,
-      ServiceProviderPtr exposed_services,
-      const CapabilityFilter& filter,
-      const base::Closure& on_application_end,
-      const Shell::ConnectToApplicationCallback& connect_callback,
-      NativeApplicationCleanup cleanup,
-      scoped_ptr<Fetcher> fetcher);
+  // Called once |fetcher| has found app. |params->app_url()| is the url of
+  // the requested application before any mappings/resolution have been applied.
+  // The corresponding URLRequest struct in |params| has been taken.
+  void HandleFetchCallback(scoped_ptr<ConnectToApplicationParams> params,
+                           NativeApplicationCleanup cleanup,
+                           scoped_ptr<Fetcher> fetcher);
 
   void RunNativeApplication(InterfaceRequest<Application> application_request,
                             bool start_sandboxed,
@@ -229,9 +206,9 @@ class ApplicationManager {
                             bool path_exists);
 
   void LoadWithContentHandler(
-      ApplicationInstance* originator,
+      const Identity& originator_identity,
+      const CapabilityFilter& originator_filter,
       const GURL& content_handler_url,
-      const GURL& requestor_url,
       const std::string& qualifier,
       const CapabilityFilter& filter,
       const Shell::ConnectToApplicationCallback& connect_callback,
@@ -282,4 +259,4 @@ Shell::ConnectToApplicationCallback EmptyConnectCallback();
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // SHELL_APPLICATION_MANAGER_APPLICATION_MANAGER_H_
+#endif  // MOJO_SHELL_APPLICATION_MANAGER_H_

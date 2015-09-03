@@ -33,12 +33,6 @@ CapabilityFilter CanonicalizeFilter(const CapabilityFilter& filter) {
 
 }  // namespace
 
-ApplicationInstance::QueuedClientRequest::QueuedClientRequest()
-    : originator(nullptr) {}
-
-ApplicationInstance::QueuedClientRequest::~QueuedClientRequest() {
-}
-
 ApplicationInstance::ApplicationInstance(
     ApplicationPtr application,
     ApplicationManager* manager,
@@ -61,6 +55,8 @@ ApplicationInstance::ApplicationInstance(
 }
 
 ApplicationInstance::~ApplicationInstance() {
+  for (auto request : queued_client_requests_)
+    request->connect_callback().Run(kInvalidContentHandlerID);
   STLDeleteElements(&queued_client_requests_);
 }
 
@@ -71,44 +67,13 @@ void ApplicationInstance::InitializeApplication() {
 }
 
 void ApplicationInstance::ConnectToClient(
-    ApplicationInstance* originator,
-    const GURL& requested_url,
-    const GURL& requestor_url,
-    InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services,
-    const CapabilityFilter& filter,
-    const ConnectToApplicationCallback& callback) {
-  callback.Run(requesting_content_handler_id_);
+    scoped_ptr<ConnectToApplicationParams> params) {
   if (queue_requests_) {
-    QueuedClientRequest* queued_request = new QueuedClientRequest();
-    queued_request->originator = originator;
-    queued_request->requested_url = requested_url;
-    queued_request->requestor_url = requestor_url;
-    queued_request->services = services.Pass();
-    queued_request->exposed_services = exposed_services.Pass();
-    queued_request->filter = filter;
-    queued_client_requests_.push_back(queued_request);
+    queued_client_requests_.push_back(params.release());
     return;
   }
 
-  CallAcceptConnection(originator, requestor_url, services.Pass(),
-                       exposed_services.Pass(), requested_url);
-}
-
-AllowedInterfaces ApplicationInstance::GetAllowedInterfaces(
-    const Identity& identity) const {
-  // Start by looking for interfaces specific to the supplied identity.
-  auto it = filter_.find(identity.url.spec());
-  if (it != filter_.end())
-    return it->second;
-
-  // Fall back to looking for a wildcard rule.
-  it = filter_.find("*");
-  if (filter_.size() == 1 && it != filter_.end())
-    return it->second;
-
-  // Finally, nothing is allowed.
-  return AllowedInterfaces();
+  CallAcceptConnection(params.Pass());
 }
 
 // Shell implementation:
@@ -130,7 +95,7 @@ void ApplicationInstance::ConnectToApplication(
     if (!filter.is_null())
       capability_filter = filter->filter.To<CapabilityFilter>();
     manager_->ConnectToApplication(
-        this, app_request.Pass(), std::string(), identity_.url, services.Pass(),
+        this, app_request.Pass(), std::string(), GURL(), services.Pass(),
         exposed_services.Pass(), capability_filter, base::Closure(), callback);
   } else {
     LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
@@ -147,24 +112,21 @@ void ApplicationInstance::QuitApplication() {
 }
 
 void ApplicationInstance::CallAcceptConnection(
-    ApplicationInstance* originator,
-    const GURL& requestor_url,
-    InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services,
-    const GURL& requested_url) {
+    scoped_ptr<ConnectToApplicationParams> params) {
+  params->connect_callback().Run(requesting_content_handler_id_);
   AllowedInterfaces interfaces;
   interfaces.insert("*");
-  if (originator)
-    interfaces = originator->GetAllowedInterfaces(identity_);
-  application_->AcceptConnection(requestor_url.spec(),
-                                 services.Pass(),
-                                 exposed_services.Pass(),
-                                 Array<String>::From(interfaces).Pass(),
-                                 requested_url.spec());
+  if (!params->originator_identity().is_null())
+    interfaces = GetAllowedInterfaces(params->originator_filter(), identity_);
+
+  application_->AcceptConnection(
+      params->originator_identity().url.spec(), params->TakeServices(),
+      params->TakeExposedServices(), Array<String>::From(interfaces).Pass(),
+      params->app_url().spec());
 }
 
 void ApplicationInstance::OnConnectionError() {
-  std::vector<QueuedClientRequest*> queued_client_requests;
+  std::vector<ConnectToApplicationParams*> queued_client_requests;
   queued_client_requests_.swap(queued_client_requests);
   auto manager = manager_;
   manager_->OnApplicationInstanceError(this);
@@ -173,16 +135,31 @@ void ApplicationInstance::OnConnectionError() {
   // If any queued requests came to shell during time it was shutting down,
   // start them now.
   for (auto request : queued_client_requests) {
-    mojo::URLRequestPtr url(mojo::URLRequest::New());
-    url->url = mojo::String::From(request->requested_url.spec());
-    ApplicationInstance* originator =
-        manager->GetApplicationInstance(originator_identity_);
-    manager->ConnectToApplication(
-        originator, url.Pass(), std::string(), request->requestor_url,
-        request->services.Pass(), request->exposed_services.Pass(),
-        request->filter, base::Closure(), EmptyConnectCallback());
+    // Unfortunately, it is possible that |request->app_url_request()| is null
+    // at this point. Consider the following sequence:
+    // 1) connect_request_1 arrives at the application manager; the manager
+    //    decides to fetch the app.
+    // 2) connect_request_2 arrives for the same app; because the app is not
+    //    running yet, the manager decides to fetch the app again.
+    // 3) The fetch for step (1) completes and an application instance app_a is
+    //    registered.
+    // 4) app_a goes into two-phase shutdown.
+    // 5) The fetch for step (2) completes; the manager finds that there is a
+    //    running app already, so it connects to app_a.
+    // 6) connect_request_2 is queued (and eventually gets here), but its
+    //    original_request field was already lost to NetworkFetcher at step (2).
+    //
+    // TODO(yzshen): It seems we should register a pending application instance
+    // before starting the fetch. So at step (2) the application manager knows
+    // that it can wait for the first fetch to complete instead of doing a
+    // second one directly.
+    if (!request->app_url_request()) {
+      URLRequestPtr url_request = mojo::URLRequest::New();
+      url_request->url = request->app_url().spec();
+      request->SetURLInfo(url_request.Pass());
+    }
+    manager->ConnectToApplication(make_scoped_ptr(request));
   }
-  STLDeleteElements(&queued_client_requests);
 }
 
 void ApplicationInstance::OnQuitRequestedResult(bool can_quit) {
@@ -190,12 +167,10 @@ void ApplicationInstance::OnQuitRequestedResult(bool can_quit) {
     return;
 
   queue_requests_ = false;
-  for (auto request : queued_client_requests_) {
-    CallAcceptConnection(
-        request->originator, request->requestor_url, request->services.Pass(),
-        request->exposed_services.Pass(), request->requested_url);
-  }
-  STLDeleteElements(&queued_client_requests_);
+  for (auto request : queued_client_requests_)
+    CallAcceptConnection(make_scoped_ptr(request));
+
+  queued_client_requests_.clear();
 }
 
 }  // namespace shell

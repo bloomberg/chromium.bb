@@ -8,10 +8,12 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/capability_filter.h"
+#include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
 #include "url/gurl.h"
 
@@ -39,20 +41,11 @@ class ApplicationInstance : public Shell {
 
   void InitializeApplication();
 
-  void ConnectToClient(ApplicationInstance* originator,
-                       const GURL& requested_url,
-                       const GURL& requestor_url,
-                       InterfaceRequest<ServiceProvider> services,
-                       ServiceProviderPtr exposed_services,
-                       const CapabilityFilter& filter,
-                       const ConnectToApplicationCallback& callback);
-
-  // Returns the set of interfaces this application instance is allowed to see
-  // from an instance with |identity|.
-  AllowedInterfaces GetAllowedInterfaces(const Identity& identity) const;
+  void ConnectToClient(scoped_ptr<ConnectToApplicationParams> params);
 
   Application* application() { return application_.get(); }
   const Identity& identity() const { return identity_; }
+  const CapabilityFilter& filter() const { return filter_; }
   base::Closure on_application_end() const { return on_application_end_; }
   void set_requesting_content_handler_id(uint32_t id) {
     requesting_content_handler_id_ = id;
@@ -71,27 +64,11 @@ class ApplicationInstance : public Shell {
       const ConnectToApplicationCallback& callback) override;
   void QuitApplication() override;
 
-  void CallAcceptConnection(ApplicationInstance* originator,
-                            const GURL& url,
-                            InterfaceRequest<ServiceProvider> services,
-                            ServiceProviderPtr exposed_services,
-                            const GURL& requested_url);
+  void CallAcceptConnection(scoped_ptr<ConnectToApplicationParams> params);
 
   void OnConnectionError();
 
   void OnQuitRequestedResult(bool can_quit);
-
-  struct QueuedClientRequest {
-    QueuedClientRequest();
-    ~QueuedClientRequest();
-    ApplicationInstance* originator;
-    GURL requested_url;
-    GURL requestor_url;
-    InterfaceRequest<ServiceProvider> services;
-    ServiceProviderPtr exposed_services;
-    CapabilityFilter filter;
-    ConnectToApplicationCallback connect_callback;
-  };
 
   ApplicationManager* const manager_;
   const Identity originator_identity_;
@@ -103,7 +80,7 @@ class ApplicationInstance : public Shell {
   ApplicationPtr application_;
   Binding<Shell> binding_;
   bool queue_requests_;
-  std::vector<QueuedClientRequest*> queued_client_requests_;
+  std::vector<ConnectToApplicationParams*> queued_client_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationInstance);
 };

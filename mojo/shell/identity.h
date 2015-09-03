@@ -10,19 +10,23 @@
 namespace mojo {
 namespace shell {
 
-/**
- * Represents the identity of an application. |url| is the url of the
- * application. |qualifier| is a string that allows to tie a specific instance
- * of an application to another. It is used by content handlers that need to be
- * run in the context of another application.
- */
+// Represents the identity of an application.
+// |url| is the URL of the application.
+// |qualifier| is a string that allows to tie a specific instance of an
+// application to another. A typical use case of qualifier is to control process
+// grouping for a given application URL. For example, the core services are
+// grouped into "Core"/"Files"/"Network"/etc. using qualifier; content handler's
+// qualifier is derived from the origin of the content.
 struct Identity {
+  Identity();
   Identity(const GURL& in_url, const std::string& in_qualifier);
   explicit Identity(const GURL& in_url);
-  bool operator<(const Identity& other) const;
 
-  const GURL url;
-  const std::string qualifier;
+  bool operator<(const Identity& other) const;
+  bool is_null() const { return url.is_empty(); }
+
+  GURL url;
+  std::string qualifier;
 };
 
 }  // namespace shell

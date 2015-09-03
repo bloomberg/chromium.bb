@@ -17,8 +17,9 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/application_loader.h"
+#include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/identity.h"
 #include "mojo/shell/static_application_loader.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
@@ -226,11 +227,17 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     mojo::ServiceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
     const mojo::Shell::ConnectToApplicationCallback& callback) {
-  mojo::URLRequestPtr url_request = mojo::URLRequest::New();
-  url_request->url = mojo::String::From(url);
-  application_manager_->ConnectToApplication(
-      nullptr, url_request.Pass(), std::string(), requestor_url, request.Pass(),
-      exposed_services.Pass(), filter, base::Bind(&base::DoNothing), callback);
+  scoped_ptr<mojo::shell::ConnectToApplicationParams> params(
+      new mojo::shell::ConnectToApplicationParams);
+  params->set_originator_identity(mojo::shell::Identity(requestor_url));
+  params->set_originator_filter(mojo::shell::GetPermissiveCapabilityFilter());
+  params->SetURLInfo(url);
+  params->set_services(request.Pass());
+  params->set_exposed_services(exposed_services.Pass());
+  params->set_filter(filter);
+  params->set_on_application_end(base::Bind(&base::DoNothing));
+  params->set_connect_callback(callback);
+  application_manager_->ConnectToApplication(params.Pass());
 }
 
 GURL MojoShellContext::ResolveMappings(const GURL& url) {
