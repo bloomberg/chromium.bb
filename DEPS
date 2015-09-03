@@ -25,7 +25,6 @@ vars = {
   "gyp_rev": "4d7c139b1820c5fcb993868c61f170a02cda8a40", # from svn revision 2030
   "lss_rev": "952107fa7cea0daaabead28c0e92d579bee517eb",
   "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00", # from svn revision 1416
-  "android_tools_rev": "f6e2370dff438125897bb3b3800de1ad7aa62c27",
 
   # Separately pinned repositories, update with roll-dep individually.
   "third_party_rev": "d4e38e5faf600b39649025e5605d6e7f94518ea7",
@@ -104,10 +103,6 @@ deps_os = {
     "third_party/ragel":
       Var("chromium_git") + "/native_client/deps/third_party/ragel.git@" +
       Var("ragel_rev"),
-  },
-  "android": {
-    "third_party/android_tools":
-      Var("chromium_git") + "/android_tools.git@" + Var("android_tools_rev")
   },
 }
 

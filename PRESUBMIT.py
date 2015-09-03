@@ -187,8 +187,6 @@ DEFAULT_TRYBOTS = [
     'nacl-arm_perf_panda',
     'nacl-precise_64-newlib-x86_32-pnacl-spec',
     'nacl-precise_64-newlib-x86_64-pnacl-spec',
-    # android
-    'nacl-precise64-newlib-opt-android',
     ]
 
 PNACL_TOOLCHAIN_TRYBOTS = [
