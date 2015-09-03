@@ -25,6 +25,9 @@ bool IsBookmarkImageFetchingOnVisitEnabled();
 // Whether the app uses WKWebView instead of UIWebView.
 bool IsWKWebViewEnabled();
 
+// Whether keyboard commands are supported.
+bool AreKeyboardCommandsEnabled();
+
 // Whether viewing and copying passwords is enabled.
 bool IsViewCopyPasswordsEnabled();
 

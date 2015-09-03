@@ -31,4 +31,7 @@ const char kEnableIOSWKWebView[] = "enable-wkwebview";
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
 
+// Disables support for keyboard commands.
+const char kDisableKeyboardCommands[] = "disable-keyboard-commands";
+
 }  // namespace switches

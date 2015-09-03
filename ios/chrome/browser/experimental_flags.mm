@@ -93,6 +93,11 @@ bool IsWKWebViewEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+bool AreKeyboardCommandsEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableKeyboardCommands);
+}
+
 bool IsViewCopyPasswordsEnabled() {
   NSString* viewCopyPasswordFlag = [[NSUserDefaults standardUserDefaults]
       objectForKey:kEnableViewCopyPasswords];

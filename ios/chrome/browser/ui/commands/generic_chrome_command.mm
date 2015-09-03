@@ -13,6 +13,10 @@
 
 @synthesize tag = _tag;
 
++ (instancetype)commandWithTag:(NSInteger)tag {
+  return [[[self alloc] initWithTag:tag] autorelease];
+}
+
 - (instancetype)initWithTag:(NSInteger)tag {
   self = [super init];
   if (self) {

@@ -10,6 +10,12 @@
 // Generic command that can be passed to |chromeExecuteCommand|.
 @interface GenericChromeCommand : NSObject
 
+// Command tag.
+@property(nonatomic, assign) NSInteger tag;
+
+// Returns an autoreleased GenericChromeCommand with given |tag|.
++ (instancetype)commandWithTag:(NSInteger)tag;
+
 // Initializes the GenericChromeCommand with given |tag|.
 - (instancetype)initWithTag:(NSInteger)tag NS_DESIGNATED_INITIALIZER;
 
@@ -18,9 +24,6 @@
 
 // Convenience method to execute this command on the main window.
 - (void)executeOnMainWindow;
-
-// Command tag.
-@property(nonatomic, assign) NSInteger tag;
 
 @end
 

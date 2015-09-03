@@ -53,6 +53,7 @@
         'browser/translate/translate_service_ios_unittest.cc',
         'browser/ui/commands/set_up_for_testing_command_unittest.mm',
         'browser/ui/keyboard/hardware_keyboard_watcher_unittest.mm',
+        'browser/ui/keyboard/UIKeyCommand+ChromeTest.mm',
         'browser/ui/native_content_controller_unittest.mm',
         'browser/ui/ui_util_unittest.mm',
         'browser/ui/uikit_ui_util_unittest.mm',
