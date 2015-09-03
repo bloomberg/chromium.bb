@@ -59,8 +59,9 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
 
 RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     int routing_id,
-    int parent_routing_id,
     int render_view_routing_id,
+    int opener_routing_id,
+    int parent_routing_id,
     const FrameReplicationState& replicated_state) {
   scoped_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(routing_id, MSG_ROUTING_NONE));
@@ -84,6 +85,10 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         replicated_state.sandbox_flags, proxy.get());
     render_view = parent->render_view();
   }
+
+  blink::WebFrame* opener =
+      RenderFrameImpl::ResolveOpener(opener_routing_id, nullptr);
+  web_frame->setOpener(opener);
 
   proxy->Init(web_frame, render_view);
 

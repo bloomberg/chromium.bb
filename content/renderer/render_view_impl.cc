@@ -705,8 +705,10 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
       main_render_frame_->set_render_frame_proxy(proxy);
     } else {
       DCHECK(SiteIsolationPolicy::IsSwappedOutStateForbidden());
-      RenderFrameProxy::CreateFrameProxy(params.proxy_routing_id,
-                                         MSG_ROUTING_NONE, routing_id_,
+      // Pass MSG_ROUTING_NONE for opener, since actual opener (if any) will be
+      // set separately below.
+      RenderFrameProxy::CreateFrameProxy(params.proxy_routing_id, routing_id_,
+                                         MSG_ROUTING_NONE, MSG_ROUTING_NONE,
                                          params.replicated_frame_state);
     }
   }

@@ -582,9 +582,10 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(RenderViewImpl* render_view,
 // static
 void RenderFrameImpl::CreateFrame(
     int routing_id,
+    int proxy_routing_id,
+    int opener_routing_id,
     int parent_routing_id,
     int previous_sibling_routing_id,
-    int proxy_routing_id,
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
     const FrameMsg_NewFrame_WidgetParams& widget_params) {
@@ -625,6 +626,9 @@ void RenderFrameImpl::CreateFrame(
   }
   render_frame->SetWebFrame(web_frame);
   CHECK_IMPLIES(parent_routing_id == MSG_ROUTING_NONE, !web_frame->parent());
+
+  WebFrame* opener = ResolveOpener(opener_routing_id, nullptr);
+  web_frame->setOpener(opener);
 
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
     CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());

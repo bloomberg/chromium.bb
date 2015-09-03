@@ -602,9 +602,10 @@ gfx::NativeViewAccessible
   return NULL;
 }
 
-bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
-                                            int previous_sibling_routing_id,
-                                            int proxy_routing_id) {
+bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
+                                            int opener_routing_id,
+                                            int parent_routing_id,
+                                            int previous_sibling_routing_id) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::CreateRenderFrame");
   DCHECK(!IsRenderFrameLive()) << "Creating frame twice";
 
@@ -619,8 +620,9 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
 
   FrameMsg_NewFrame_Params params;
   params.routing_id = routing_id_;
-  params.parent_routing_id = parent_routing_id;
   params.proxy_routing_id = proxy_routing_id;
+  params.opener_routing_id = opener_routing_id;
+  params.parent_routing_id = parent_routing_id;
   params.previous_sibling_routing_id = previous_sibling_routing_id;
   params.replication_state = frame_tree_node()->current_replication_state();
 

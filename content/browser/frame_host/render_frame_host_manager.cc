@@ -1974,13 +1974,17 @@ bool RenderFrameHostManager::InitRenderFrame(
   if (render_frame_host->IsRenderFrameLive())
     return true;
 
-  int parent_routing_id = MSG_ROUTING_NONE;
-  int previous_sibling_routing_id = MSG_ROUTING_NONE;
-  int proxy_routing_id = MSG_ROUTING_NONE;
+  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
 
+  int opener_routing_id = MSG_ROUTING_NONE;
+  if (frame_tree_node_->opener())
+    opener_routing_id = GetOpenerRoutingID(site_instance);
+
+  int parent_routing_id = MSG_ROUTING_NONE;
   if (frame_tree_node_->parent()) {
-    parent_routing_id = frame_tree_node_->parent()->render_manager()->
-        GetRoutingIdForSiteInstance(render_frame_host->GetSiteInstance());
+    parent_routing_id = frame_tree_node_->parent()
+                            ->render_manager()
+                            ->GetRoutingIdForSiteInstance(site_instance);
     CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
   }
 
@@ -1989,11 +1993,12 @@ bool RenderFrameHostManager::InitRenderFrame(
   // correct order for indexed window access (e.g., window.frames[1]), pass the
   // previous sibling frame so that this frame is correctly inserted into the
   // frame tree on the renderer side.
+  int previous_sibling_routing_id = MSG_ROUTING_NONE;
   FrameTreeNode* previous_sibling = frame_tree_node_->PreviousSibling();
   if (previous_sibling) {
     previous_sibling_routing_id =
         previous_sibling->render_manager()->GetRoutingIdForSiteInstance(
-            render_frame_host->GetSiteInstance());
+            site_instance);
     CHECK_NE(previous_sibling_routing_id, MSG_ROUTING_NONE);
   }
 
@@ -2004,17 +2009,18 @@ bool RenderFrameHostManager::InitRenderFrame(
   // SiteInstance as its RenderFrameHost. This is only the case until the
   // RenderFrameHost commits, at which point it will replace and delete the
   // RenderFrameProxyHost.
-  RenderFrameProxyHost* existing_proxy =
-      GetRenderFrameProxyHost(render_frame_host->GetSiteInstance());
+  int proxy_routing_id = MSG_ROUTING_NONE;
+  RenderFrameProxyHost* existing_proxy = GetRenderFrameProxyHost(site_instance);
   if (existing_proxy) {
     proxy_routing_id = existing_proxy->GetRoutingID();
     CHECK_NE(proxy_routing_id, MSG_ROUTING_NONE);
     if (!existing_proxy->is_render_frame_proxy_live())
       existing_proxy->InitRenderFrameProxy();
   }
+
   return delegate_->CreateRenderFrameForRenderManager(
-      render_frame_host, parent_routing_id, previous_sibling_routing_id,
-      proxy_routing_id);
+      render_frame_host, proxy_routing_id, opener_routing_id, parent_routing_id,
+      previous_sibling_routing_id);
 }
 
 int RenderFrameHostManager::GetRoutingIdForSiteInstance(

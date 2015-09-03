@@ -133,20 +133,23 @@ class CONTENT_EXPORT RenderFrameImpl
   static RenderFrameImpl* CreateMainFrame(RenderViewImpl* render_view,
                                           int32 routing_id);
 
-  // Creates a new RenderFrame with |routing_id| as a child of the RenderFrame
-  // identified by |parent_routing_id| or as the top-level frame if the latter
-  // is MSG_ROUTING_NONE. If |proxy_routing_id| is MSG_ROUTING_NONE, it creates
-  // the Blink WebLocalFrame and inserts it into the frame tree after the frame
-  // identified by |previous_sibling_routing_id|, or as the first child if
+  // Creates a new RenderFrame with |routing_id|.  If |proxy_routing_id| is
+  // MSG_ROUTING_NONE, it creates the Blink WebLocalFrame and inserts it into
+  // the frame tree after the frame identified by
+  // |previous_sibling_routing_id|, or as the first child if
   // |previous_sibling_routing_id| is MSG_ROUTING_NONE. Otherwise, the frame is
   // semi-orphaned until it commits, at which point it replaces the proxy
-  // identified by |proxy_routing_id|. Note: This is called only when
+  // identified by |proxy_routing_id|.  The frame's opener is set to the frame
+  // identified by |opener_routing_id|.  The frame is created as a child of the
+  // RenderFrame identified by |parent_routing_id| or as the top-level frame if
+  // the latter is MSG_ROUTING_NONE.  Note: This is called only when
   // RenderFrame is being created in response to IPC message from the browser
   // process. All other frame creation is driven through Blink and Create.
   static void CreateFrame(int routing_id,
+                          int proxy_routing_id,
+                          int opener_routing_id,
                           int parent_routing_id,
                           int previous_sibling_routing_id,
-                          int proxy_routing_id,
                           const FrameReplicationState& replicated_state,
                           CompositorDependencies* compositor_deps,
                           const FrameMsg_NewFrame_WidgetParams& params);

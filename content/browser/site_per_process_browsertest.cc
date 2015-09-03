@@ -3223,4 +3223,150 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
+// Check that if a subframe has an opener, that opener is preserved when the
+// subframe navigates cross-site.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateSubframeWithOpener) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "foo.com", "/frame_tree/page_with_two_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://foo.com/\n"
+      "      B = http://bar.com/",
+      DepictFrameTree(root));
+
+  // Update the first (cross-site) subframe's opener to root frame.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->current_frame_host(),
+      "window.domAutomationController.send(!!window.open('','frame1'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Check that updated opener propagated to the browser process and subframe's
+  // process.
+  EXPECT_EQ(root, root->child_at(0)->opener());
+
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(window.opener === window.parent);",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Navigate the subframe with opener to another site.
+  GURL frame_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+
+  // Check that the subframe still sees correct opener in its new process.
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(window.opener === window.parent);",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Navigate second subframe to a new site.  Check that the proxy that's
+  // created for the first subframe in the new SiteInstance has correct opener.
+  GURL frame2_url(embedded_test_server()->GetURL("qux.com", "/title1.html"));
+  NavigateFrameToURL(root->child_at(1), frame2_url);
+
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(1)->current_frame_host(),
+      "window.domAutomationController.send("
+      "    parent.frames['frame1'].opener === parent);",
+      &success));
+  EXPECT_TRUE(success);
+}
+
+// Check that if a subframe has an opener, that opener is preserved when a new
+// RenderFrameProxy is created for that subframe in another renderer process.
+// Similar to NavigateSubframeWithOpener, but this test verifies the subframe
+// opener plumbing for FrameMsg_NewFrameProxy, whereas
+// NavigateSubframeWithOpener targets FrameMsg_NewFrame.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NewRenderFrameProxyPreservesOpener) {
+  GURL main_url(
+      embedded_test_server()->GetURL("foo.com", "/post_message.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Open a popup with a cross-site page that has two subframes.
+  GURL popup_url(embedded_test_server()->GetURL(
+      "bar.com", "/frame_tree/page_with_post_message_frames.html"));
+  Shell* popup_shell = OpenPopup(shell()->web_contents(), popup_url, "popup");
+  EXPECT_TRUE(popup_shell);
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(popup_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site A ------- proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://bar.com/\n"
+      "      B = http://foo.com/",
+      DepictFrameTree(popup_root));
+
+  // Update the popup's second subframe's opener to root frame.  This is
+  // allowed because that subframe is in the same foo.com SiteInstance as the
+  // root frame.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->current_frame_host(),
+      "window.domAutomationController.send(!!window.open('','subframe2'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Check that the opener update propagated to the browser process and bar.com
+  // process.
+  EXPECT_EQ(root, popup_root->child_at(1)->opener());
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup_root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send("
+      "    parent.frames['subframe2'].opener && "
+      "        parent.frames['subframe2'].opener === parent.opener);",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Navigate the popup's first subframe to another site.
+  GURL frame_url(
+      embedded_test_server()->GetURL("baz.com", "/post_message.html"));
+  NavigateFrameToURL(popup_root->child_at(0), frame_url);
+  EXPECT_TRUE(
+      WaitForRenderFrameReady(popup_root->child_at(0)->current_frame_host()));
+
+  // Check that the second subframe's opener is still correct in the first
+  // subframe's new process.  Verify it both in JS and with a postMessage.
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup_root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send("
+      "    parent.frames['subframe2'].opener && "
+      "        parent.frames['subframe2'].opener === parent.opener);",
+      &success));
+  EXPECT_TRUE(success);
+
+  base::string16 expected_title = base::ASCIIToUTF16("msg");
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup_root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send("
+      "    postToOpenerOfSibling('subframe2', 'msg', '*'));",
+      &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
 }  // namespace content

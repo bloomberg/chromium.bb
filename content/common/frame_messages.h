@@ -323,6 +323,14 @@ IPC_STRUCT_BEGIN(FrameMsg_NewFrame_Params)
   // Specifies the routing ID of the new RenderFrame object.
   IPC_STRUCT_MEMBER(int, routing_id)
 
+  // If a valid |proxy_routing_id| is provided, the new frame will be
+  // configured to replace the proxy on commit.
+  IPC_STRUCT_MEMBER(int, proxy_routing_id)
+
+  // Specifies the new frame's opener.  The opener will be null if this is
+  // MSG_ROUTING_NONE.
+  IPC_STRUCT_MEMBER(int, opener_routing_id)
+
   // The new frame should be created as a child of the object
   // identified by |parent_routing_id| or as top level if that is
   // MSG_ROUTING_NONE.
@@ -333,10 +341,6 @@ IPC_STRUCT_BEGIN(FrameMsg_NewFrame_Params)
   // MSG_ROUTING_NONE, the frame will be created as the leftmost child of its
   // parent frame, in front of any other children.
   IPC_STRUCT_MEMBER(int, previous_sibling_routing_id)
-
-  // If a valid |proxy_routing_id| is provided, the new frame will be
-  // configured to replace the proxy on commit.
-  IPC_STRUCT_MEMBER(int, proxy_routing_id)
 
   // When the new frame has a parent, |replication_state| holds the new frame's
   // properties replicated from the process rendering the parent frame, such as
@@ -454,13 +458,17 @@ IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64 /* id */)
 IPC_MESSAGE_CONTROL1(FrameMsg_NewFrame, FrameMsg_NewFrame_Params /* params */)
 
 // Instructs the renderer to create a new RenderFrameProxy object with
-// |routing_id|. The new proxy should be created as a child of the object
-// identified by |parent_routing_id| or as top level if that is
+// |routing_id|.  |render_view_routing_id| identifies the
+// RenderView to be associated with this proxy.  The new proxy's opener should
+// be set to the object identified by |opener_routing_id|, or to null if that
+// is MSG_ROUTING_NONE.  The new proxy should be created as a child of the
+// object identified by |parent_routing_id| or as top level if that is
 // MSG_ROUTING_NONE.
-IPC_MESSAGE_CONTROL4(FrameMsg_NewFrameProxy,
+IPC_MESSAGE_CONTROL5(FrameMsg_NewFrameProxy,
                      int /* routing_id */,
-                     int /* parent_routing_id */,
                      int /* render_view_routing_id */,
+                     int /* opener_routing_id */,
+                     int /* parent_routing_id */,
                      content::FrameReplicationState /* replication_state */)
 
 // Tells the renderer to perform the specified navigation, interrupting any

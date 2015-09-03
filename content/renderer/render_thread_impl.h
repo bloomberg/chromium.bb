@@ -447,8 +447,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void OnCreateNewFrame(FrameMsg_NewFrame_Params params);
   void OnCreateNewFrameProxy(int routing_id,
-                             int parent_routing_id,
                              int render_view_routing_id,
+                             int opener_routing_id,
+                             int parent_routing_id,
                              const FrameReplicationState& replicated_state);
   void OnSetZoomLevelForCurrentURL(const std::string& scheme,
                                    const std::string& host,

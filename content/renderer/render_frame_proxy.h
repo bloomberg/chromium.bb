@@ -74,18 +74,20 @@ class CONTENT_EXPORT RenderFrameProxy
   // representation of a RenderFrame that has been created in another process --
   // for example, after a cross-process navigation or after the addition of a
   // new frame local to some other process. |routing_id| will be the ID of the
-  // newly created RenderFrameProxy. |parent_routing_id| is the routing ID of
-  // the RenderFrameProxy to which the new frame is parented.
-  // |render_view_routing_id| identifies the RenderView to be associated with
-  // this frame.
+  // newly created RenderFrameProxy. |render_view_routing_id| identifies the
+  // RenderView to be associated with this frame.  |opener_routing_id|, if
+  // valid, is the routing ID of the new frame's opener.  |parent_routing_id|
+  // is the routing ID of the RenderFrameProxy to which the new frame is
+  // parented.
   //
   // |parent_routing_id| always identifies a RenderFrameProxy (never a
   // RenderFrame) because a new child of a local frame should always start out
   // as a frame, not a proxy.
   static RenderFrameProxy* CreateFrameProxy(
       int routing_id,
-      int parent_routing_id,
       int render_view_routing_id,
+      int opener_routing_id,
+      int parent_routing_id,
       const FrameReplicationState& replicated_state);
 
   // Returns the RenderFrameProxy for the given routing ID.
