@@ -184,21 +184,13 @@ void Transform::Translate3d(SkMScalar x, SkMScalar y, SkMScalar z) {
   matrix_.preTranslate(x, y, z);
 }
 
-void Transform::SkewX(double angle_x) {
+void Transform::Skew(double angle_x, double angle_y) {
   if (matrix_.isIdentity()) {
     matrix_.set(0, 1, TanDegrees(angle_x));
-  } else {
-    SkMatrix44 skew(SkMatrix44::kIdentity_Constructor);
-    skew.set(0, 1, TanDegrees(angle_x));
-    matrix_.preConcat(skew);
-  }
-}
-
-void Transform::SkewY(double angle_y) {
-  if (matrix_.isIdentity()) {
     matrix_.set(1, 0, TanDegrees(angle_y));
   } else {
     SkMatrix44 skew(SkMatrix44::kIdentity_Constructor);
+    skew.set(0, 1, TanDegrees(angle_x));
     skew.set(1, 0, TanDegrees(angle_y));
     matrix_.preConcat(skew);
   }

@@ -224,8 +224,7 @@ void TransformOperations::AppendScale(SkMScalar x, SkMScalar y, SkMScalar z) {
 
 void TransformOperations::AppendSkew(SkMScalar x, SkMScalar y) {
   TransformOperation to_add;
-  to_add.matrix.SkewX(x);
-  to_add.matrix.SkewY(y);
+  to_add.matrix.Skew(x, y);
   to_add.type = TransformOperation::TRANSFORM_OPERATION_SKEW;
   to_add.skew.x = x;
   to_add.skew.y = y;

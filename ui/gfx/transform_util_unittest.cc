@@ -170,7 +170,7 @@ TEST(TransformUtilTest, NoSnapSkewedCompositeTransform) {
                     SkDoubleToMScalar(2.0));
   transform.Translate3d(SkDoubleToMScalar(30.5), SkDoubleToMScalar(20.0),
                         SkDoubleToMScalar(10.1));
-  transform.SkewX(20.0);
+  transform.Skew(20.0, 0.0);
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
   EXPECT_FALSE(snapped) << "Skewed viewport should not snap.";

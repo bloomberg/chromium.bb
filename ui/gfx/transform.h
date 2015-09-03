@@ -101,8 +101,7 @@ class GFX_EXPORT Transform {
 
   // Applies the current transformation on a skew and assigns the result
   // to |this|.
-  void SkewX(double angle_x);
-  void SkewY(double angle_y);
+  void Skew(double angle_x, double angle_y);
 
   // Applies the current transformation on a perspective transform and assigns
   // the result to |this|.

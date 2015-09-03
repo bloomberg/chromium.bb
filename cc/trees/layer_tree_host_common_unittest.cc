@@ -4280,7 +4280,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
 
   // Case 6: Skew.
   gfx::Transform skew;
-  skew.SkewX(10.0);
+  skew.Skew(10.0, 0.0);
   child_->SetTransform(skew);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,

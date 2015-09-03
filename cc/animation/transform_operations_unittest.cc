@@ -209,8 +209,7 @@ TEST(TransformOperationTest, ApplySkew) {
   TransformOperations operations;
   operations.AppendSkew(x, y);
   gfx::Transform expected;
-  expected.SkewX(x);
-  expected.SkewY(y);
+  expected.Skew(x, y);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected, operations.Apply());
 }
 
@@ -552,8 +551,7 @@ TEST(TransformOperationTest, BlendSkewFromEmpty) {
   SkMScalar progress = 0.5f;
 
   gfx::Transform expected;
-  expected.SkewX(1);
-  expected.SkewY(1);
+  expected.Skew(1, 1);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
                                   operations.Blend(empty_operation, progress));
@@ -561,8 +559,7 @@ TEST(TransformOperationTest, BlendSkewFromEmpty) {
   progress = -0.5f;
 
   expected.MakeIdentity();
-  expected.SkewX(-1);
-  expected.SkewY(-1);
+  expected.Skew(-1, -1);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
                                   operations.Blend(empty_operation, progress));
@@ -570,8 +567,7 @@ TEST(TransformOperationTest, BlendSkewFromEmpty) {
   progress = 1.5f;
 
   expected.MakeIdentity();
-  expected.SkewX(3);
-  expected.SkewY(3);
+  expected.Skew(3, 3);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
                                   operations.Blend(empty_operation, progress));
@@ -658,8 +654,7 @@ TEST(TransformOperationTest, BlendSkewToEmpty) {
   SkMScalar progress = 0.5f;
 
   gfx::Transform expected;
-  expected.SkewX(1);
-  expected.SkewY(1);
+  expected.Skew(1, 1);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
                                   empty_operation.Blend(operations, progress));

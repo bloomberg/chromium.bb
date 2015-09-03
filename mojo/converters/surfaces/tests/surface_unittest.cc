@@ -208,7 +208,7 @@ TEST(SurfaceLibTest, RenderPass) {
   gfx::Rect output_rect(4, 9, 13, 71);
   gfx::Rect damage_rect(9, 17, 41, 45);
   gfx::Transform transform_to_root_target;
-  transform_to_root_target.SkewY(43.0);
+  transform_to_root_target.Skew(0.0, 43.0);
   bool has_transparent_background = false;
   pass->SetAll(pass_id,
                output_rect,

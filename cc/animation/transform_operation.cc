@@ -157,8 +157,8 @@ bool TransformOperation::BlendTransformOperations(
     SkMScalar from_y = IsOperationIdentity(from) ? 0 : from->skew.y;
     SkMScalar to_x = IsOperationIdentity(to) ? 0 : to->skew.x;
     SkMScalar to_y = IsOperationIdentity(to) ? 0 : to->skew.y;
-    result->SkewX(BlendSkMScalars(from_x, to_x, progress));
-    result->SkewY(BlendSkMScalars(from_y, to_y, progress));
+    result->Skew(BlendSkMScalars(from_x, to_x, progress),
+                 BlendSkMScalars(from_y, to_y, progress));
     break;
   }
   case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE: {

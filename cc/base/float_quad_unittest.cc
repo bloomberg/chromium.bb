@@ -18,8 +18,8 @@ TEST(FloatQuadTest, IsRectilinearTest) {
   rectilinear_trans[1].Rotate(90.f);
   rectilinear_trans[2].Rotate(180.f);
   rectilinear_trans[3].Rotate(270.f);
-  rectilinear_trans[4].SkewX(0.00000000001f);
-  rectilinear_trans[5].SkewY(0.00000000001f);
+  rectilinear_trans[4].Skew(0.00000000001f, 0.0f);
+  rectilinear_trans[5].Skew(0.0f, 0.00000000001f);
   rectilinear_trans[6].Scale(0.00001f, 0.00001f);
   rectilinear_trans[6].Rotate(180.f);
   rectilinear_trans[7].Scale(100000.f, 100000.f);
@@ -46,8 +46,8 @@ TEST(FloatQuadTest, IsRectilinearTest) {
   non_rectilinear_trans[5].Rotate(180.00001f);
   non_rectilinear_trans[6].Rotate(269.9999f);
   non_rectilinear_trans[7].Rotate(270.0001f);
-  non_rectilinear_trans[8].SkewX(0.00001f);
-  non_rectilinear_trans[9].SkewY(0.00001f);
+  non_rectilinear_trans[8].Skew(0.00001f, 0.0f);
+  non_rectilinear_trans[9].Skew(0.0f, 0.00001f);
 
   for (int i = 0; i < kNumNonRectilinear; ++i) {
     bool clipped = false;
