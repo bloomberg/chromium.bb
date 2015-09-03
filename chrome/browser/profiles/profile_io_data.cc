@@ -63,6 +63,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "net/base/keygen_handler.h"
+#include "net/base/network_quality_estimator.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_transaction_factory.h"
@@ -1301,6 +1302,8 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
                                                                  &params);
 
   params.ssl_session_cache_shard = GetSSLSessionCacheShard();
+  params.socket_performance_watcher_factory =
+      io_thread->globals()->network_quality_estimator.get();
   if (data_reduction_proxy_io_data_.get())
     params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
 

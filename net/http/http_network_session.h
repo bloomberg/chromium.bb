@@ -48,6 +48,7 @@ class ProxyService;
 class QuicClock;
 class QuicCryptoClientStreamFactory;
 class QuicServerInfoFactory;
+class SocketPerformanceWatcherFactory;
 class SOCKSClientSocketPool;
 class SSLClientSocketPool;
 class SSLConfigService;
@@ -78,6 +79,7 @@ class NET_EXPORT HttpNetworkSession
     base::WeakPtr<HttpServerProperties> http_server_properties;
     NetLog* net_log;
     HostMappingRules* host_mapping_rules;
+    SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
     bool ignore_certificate_errors;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;

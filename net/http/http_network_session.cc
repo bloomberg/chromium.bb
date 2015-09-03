@@ -79,6 +79,7 @@ HttpNetworkSession::Params::Params()
       network_delegate(NULL),
       net_log(NULL),
       host_mapping_rules(NULL),
+      socket_performance_watcher_factory(NULL),
       ignore_certificate_errors(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),

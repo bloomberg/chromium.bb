@@ -28,6 +28,44 @@
 
 namespace {
 
+// Implements SocketPerformanceWatcher for TCP sockets.
+class SocketPerformanceWatcherTCP : public net::SocketPerformanceWatcher {
+ public:
+  SocketPerformanceWatcherTCP() {}
+
+  ~SocketPerformanceWatcherTCP() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+  }
+
+  // net::SocketPerformanceWatcher implementation:
+  void OnUpdatedRTTAvailable(const base::TimeDelta& rtt) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    // TODO(tbansal): Notify any relevant observers.
+  }
+
+ private:
+  base::ThreadChecker thread_checker_;
+};
+
+// Implements SocketPerformanceWatcher for UDP sockets.
+class SocketPerformanceWatcherUDP : public net::SocketPerformanceWatcher {
+ public:
+  SocketPerformanceWatcherUDP() {}
+
+  ~SocketPerformanceWatcherUDP() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+  }
+
+  // net::SocketPerformanceWatcher implementation:
+  void OnUpdatedRTTAvailable(const base::TimeDelta& rtt) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    // TODO(tbansal): Notify any relevant observers.
+  }
+
+ private:
+  base::ThreadChecker thread_checker_;
+};
+
 // Default value of the half life (in seconds) for computing time weighted
 // percentiles. Every half life, the weight of all observations reduces by
 // half. Lowering the half life would reduce the weight of older values faster.
@@ -815,6 +853,20 @@ void NetworkQualityEstimator::CacheNetworkQualityEstimate() {
       current_network_id_, CachedNetworkQuality(network_quality)));
   DCHECK_LE(cached_network_qualities_.size(),
             static_cast<size_t>(kMaximumNetworkQualityCacheSize));
+}
+
+scoped_ptr<SocketPerformanceWatcher>
+NetworkQualityEstimator::CreateTCPSocketPerformanceWatcher() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return scoped_ptr<SocketPerformanceWatcher>(
+      new SocketPerformanceWatcherTCP());
+}
+
+scoped_ptr<SocketPerformanceWatcher>
+NetworkQualityEstimator::CreateUDPSocketPerformanceWatcher() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return scoped_ptr<SocketPerformanceWatcher>(
+      new SocketPerformanceWatcherUDP());
 }
 
 NetworkQualityEstimator::CachedNetworkQuality::CachedNetworkQuality(

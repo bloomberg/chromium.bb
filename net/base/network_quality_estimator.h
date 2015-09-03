@@ -19,6 +19,8 @@
 #include "net/base/external_estimate_provider.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/socket_performance_watcher.h"
+#include "net/base/socket_performance_watcher_factory.h"
 
 namespace net {
 
@@ -34,7 +36,8 @@ class URLRequest;
 // observed traffic characteristics.
 class NET_EXPORT_PRIVATE NetworkQualityEstimator
     : public NetworkChangeNotifier::ConnectionTypeObserver,
-      public ExternalEstimateProvider::UpdatedEstimateDelegate {
+      public ExternalEstimateProvider::UpdatedEstimateDelegate,
+      public SocketPerformanceWatcherFactory {
  public:
   // Creates a new NetworkQualityEstimator.
   // |variation_params| is the map containing all field trial parameters
@@ -75,6 +78,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   virtual bool GetRecentMedianDownlinkThroughputKbps(
       const base::TimeTicks& begin_timestamp,
       int32_t* kbps) const;
+
+  // SocketPerformanceWatcherFactory implementation:
+  scoped_ptr<SocketPerformanceWatcher> CreateTCPSocketPerformanceWatcher()
+      const override;
+  scoped_ptr<SocketPerformanceWatcher> CreateUDPSocketPerformanceWatcher()
+      const override;
 
  protected:
   // NetworkID is used to uniquely identify a network.
@@ -136,7 +145,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Returns true if the cached network quality estimate was successfully read.
   bool ReadCachedNetworkQualityEstimate();
 
-  // NetworkChangeNotifier::ConnectionTypeObserver implementation.
+  // NetworkChangeNotifier::ConnectionTypeObserver implementation:
   void OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType type) override;
 
@@ -347,7 +356,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // should discard RTT if it is set to the value returned by |InvalidRTT()|.
   static const base::TimeDelta InvalidRTT();
 
-  // ExternalEstimateProvider::UpdatedEstimateObserver implementation.
+  // ExternalEstimateProvider::UpdatedEstimateObserver implementation:
   void OnUpdatedEstimateAvailable() override;
 
   // Obtains operating parameters from the field trial parameters.
