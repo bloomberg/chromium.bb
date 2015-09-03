@@ -10,7 +10,13 @@
 
 namespace base {
 class DiscardableMemory;
+
+namespace trace_event {
+class MemoryAllocatorDump;
+class ProcessMemoryDump;
 }
+
+}  // namespace base
 
 // This class implements the SkDiscardableMemory interface using
 // base::DiscardableMemory.
@@ -22,6 +28,10 @@ public:
  bool lock() override;
  void* data() override;
  void unlock() override;
+
+ base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+     const char* name,
+     base::trace_event::ProcessMemoryDump* pmd) const;
 
 private:
   friend class SkDiscardableMemory;

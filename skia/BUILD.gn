@@ -280,6 +280,7 @@ component("skia") {
     # Chrome sources.
     "ext/SkDiscardableMemory_chrome.cc",
     "ext/SkMemory_new_handler.cpp",
+    "ext/SkTraceMemoryDump_chrome.cc",
     "ext/analysis_canvas.cc",
     "ext/benchmarking_canvas.cc",
     "ext/convolver.cc",

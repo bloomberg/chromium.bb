@@ -26,6 +26,13 @@ SkDiscardableMemoryChrome::SkDiscardableMemoryChrome(
     : discardable_(memory.Pass()) {
 }
 
+base::trace_event::MemoryAllocatorDump*
+SkDiscardableMemoryChrome::CreateMemoryAllocatorDump(
+    const char* name,
+    base::trace_event::ProcessMemoryDump* pmd) const {
+  return discardable_->CreateMemoryAllocatorDump(name, pmd);
+}
+
 SkDiscardableMemory* SkDiscardableMemory::Create(size_t bytes) {
   return new SkDiscardableMemoryChrome(
       base::DiscardableMemoryAllocator::GetInstance()

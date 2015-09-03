@@ -49,6 +49,7 @@
     'ext/recursive_gaussian_convolution.cc',
     'ext/SkDiscardableMemory_chrome.cc',
     'ext/SkMemory_new_handler.cpp',
+    'ext/SkTraceMemoryDump_chrome.cc',
     'ext/skia_memory_dump_provider.cc',
     'ext/skia_utils_base.cc',
     'ext/skia_utils_ios.mm',
