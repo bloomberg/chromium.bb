@@ -164,6 +164,7 @@ int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t * name);
 int drm_intel_bo_busy(drm_intel_bo *bo);
 int drm_intel_bo_madvise(drm_intel_bo *bo, int madv);
+int drm_intel_bo_use_48b_address_range(drm_intel_bo *bo, uint32_t enable);
 
 int drm_intel_bo_disable_reuse(drm_intel_bo *bo);
 int drm_intel_bo_is_reusable(drm_intel_bo *bo);

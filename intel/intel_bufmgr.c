@@ -293,6 +293,17 @@ drm_intel_bo_madvise(drm_intel_bo *bo, int madv)
 }
 
 int
+drm_intel_bo_use_48b_address_range(drm_intel_bo *bo, uint32_t enable)
+{
+	if (bo->bufmgr->bo_use_48b_address_range) {
+		bo->bufmgr->bo_use_48b_address_range(bo, enable);
+		return 0;
+	}
+
+	return -ENODEV;
+}
+
+int
 drm_intel_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
 {
 	return bo->bufmgr->bo_references(bo, target_bo);

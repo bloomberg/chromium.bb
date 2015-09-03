@@ -83,6 +83,22 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define MAX2(A, B) ((A) > (B) ? (A) : (B))
 
+/**
+ * upper_32_bits - return bits 32-63 of a number
+ * @n: the number we're accessing
+ *
+ * A basic shift-right of a 64- or 32-bit quantity.  Use this to suppress
+ * the "right shift count >= width of type" warning when that quantity is
+ * 32-bits.
+ */
+#define upper_32_bits(n) ((__u32)(((n) >> 16) >> 16))
+
+/**
+ * lower_32_bits - return bits 0-31 of a number
+ * @n: the number we're accessing
+ */
+#define lower_32_bits(n) ((__u32)(n))
+
 typedef struct _drm_intel_bo_gem drm_intel_bo_gem;
 
 struct drm_intel_gem_bo_bucket {
@@ -235,6 +251,15 @@ struct _drm_intel_bo_gem {
 	 * Boolean of whether this buffer was allocated with userptr
 	 */
 	bool is_userptr;
+
+	/**
+	 * Boolean of whether this buffer can be placed in the full 48-bit
+	 * address range on gen8+.
+	 *
+	 * By default, buffers will be keep in a 32-bit range, unless this
+	 * flag is explicitly set.
+	 */
+	bool use_48b_address_range;
 
 	/**
 	 * Size in bytes of this buffer and its relocation descendents.
@@ -400,14 +425,16 @@ drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 			drm_intel_bo_gem *target_gem =
 			    (drm_intel_bo_gem *) target_bo;
 
-			DBG("%2d: %d (%s)@0x%08llx -> "
-			    "%d (%s)@0x%08lx + 0x%08x\n",
+			DBG("%2d: %d (%s)@0x%08x %08x -> "
+			    "%d (%s)@0x%08x %08x + 0x%08x\n",
 			    i,
 			    bo_gem->gem_handle, bo_gem->name,
-			    (unsigned long long)bo_gem->relocs[j].offset,
+			    upper_32_bits(bo_gem->relocs[j].offset),
+			    lower_32_bits(bo_gem->relocs[j].offset),
 			    target_gem->gem_handle,
 			    target_gem->name,
-			    target_bo->offset64,
+			    upper_32_bits(target_bo->offset64),
+			    lower_32_bits(target_bo->offset64),
 			    bo_gem->relocs[j].delta);
 		}
 	}
@@ -473,11 +500,15 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 	int index;
+	int flags = 0;
+
+	if (need_fence)
+		flags |= EXEC_OBJECT_NEEDS_FENCE;
+	if (bo_gem->use_48b_address_range)
+		flags |= EXEC_OBJECT_SUPPORTS_48B_ADDRESS;
 
 	if (bo_gem->validate_index != -1) {
-		if (need_fence)
-			bufmgr_gem->exec2_objects[bo_gem->validate_index].flags |=
-				EXEC_OBJECT_NEEDS_FENCE;
+		bufmgr_gem->exec2_objects[bo_gem->validate_index].flags |= flags;
 		return;
 	}
 
@@ -506,13 +537,9 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 	bufmgr_gem->exec2_objects[index].alignment = bo->align;
 	bufmgr_gem->exec2_objects[index].offset = 0;
 	bufmgr_gem->exec_bos[index] = bo;
-	bufmgr_gem->exec2_objects[index].flags = 0;
+	bufmgr_gem->exec2_objects[index].flags = flags;
 	bufmgr_gem->exec2_objects[index].rsvd1 = 0;
 	bufmgr_gem->exec2_objects[index].rsvd2 = 0;
-	if (need_fence) {
-		bufmgr_gem->exec2_objects[index].flags |=
-			EXEC_OBJECT_NEEDS_FENCE;
-	}
 	bufmgr_gem->exec_count++;
 }
 
@@ -785,6 +812,7 @@ retry:
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->has_error = false;
 	bo_gem->reusable = true;
+	bo_gem->use_48b_address_range = false;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, alignment);
 
@@ -931,6 +959,7 @@ drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->has_error = false;
 	bo_gem->reusable = false;
+	bo_gem->use_48b_address_range = false;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
 
@@ -1086,6 +1115,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	bo_gem->bo.handle = open_arg.handle;
 	bo_gem->global_name = handle;
 	bo_gem->reusable = false;
+	bo_gem->use_48b_address_range = false;
 
 	memclear(get_tiling);
 	get_tiling.handle = bo_gem->gem_handle;
@@ -1935,6 +1965,13 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	return 0;
 }
 
+static void
+drm_intel_gem_bo_use_48b_address_range(drm_intel_bo *bo, uint32_t enable)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	bo_gem->use_48b_address_range = enable;
+}
+
 static int
 drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 			    drm_intel_bo *target_bo, uint32_t target_offset,
@@ -2078,10 +2115,12 @@ drm_intel_update_buffer_offsets(drm_intel_bufmgr_gem *bufmgr_gem)
 
 		/* Update the buffer offset */
 		if (bufmgr_gem->exec_objects[i].offset != bo->offset64) {
-			DBG("BO %d (%s) migrated: 0x%08lx -> 0x%08llx\n",
-			    bo_gem->gem_handle, bo_gem->name, bo->offset64,
-			    (unsigned long long)bufmgr_gem->exec_objects[i].
-			    offset);
+			DBG("BO %d (%s) migrated: 0x%08x %08x -> 0x%08x %08x\n",
+			    bo_gem->gem_handle, bo_gem->name,
+			    upper_32_bits(bo->offset64),
+			    lower_32_bits(bo->offset64),
+			    upper_32_bits(bufmgr_gem->exec_objects[i].offset),
+			    lower_32_bits(bufmgr_gem->exec_objects[i].offset));
 			bo->offset64 = bufmgr_gem->exec_objects[i].offset;
 			bo->offset = bufmgr_gem->exec_objects[i].offset;
 		}
@@ -2099,9 +2138,12 @@ drm_intel_update_buffer_offsets2 (drm_intel_bufmgr_gem *bufmgr_gem)
 
 		/* Update the buffer offset */
 		if (bufmgr_gem->exec2_objects[i].offset != bo->offset64) {
-			DBG("BO %d (%s) migrated: 0x%08lx -> 0x%08llx\n",
-			    bo_gem->gem_handle, bo_gem->name, bo->offset64,
-			    (unsigned long long)bufmgr_gem->exec2_objects[i].offset);
+			DBG("BO %d (%s) migrated: 0x%08x %08x -> 0x%08x %08x\n",
+			    bo_gem->gem_handle, bo_gem->name,
+			    upper_32_bits(bo->offset64),
+			    lower_32_bits(bo->offset64),
+			    upper_32_bits(bufmgr_gem->exec2_objects[i].offset),
+			    lower_32_bits(bufmgr_gem->exec2_objects[i].offset));
 			bo->offset64 = bufmgr_gem->exec2_objects[i].offset;
 			bo->offset = bufmgr_gem->exec2_objects[i].offset;
 		}
@@ -2486,6 +2528,7 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->has_error = false;
 	bo_gem->reusable = false;
+	bo_gem->use_48b_address_range = false;
 
 	DRMINITLISTHEAD(&bo_gem->vma_list);
 	DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
@@ -3281,6 +3324,13 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 			if (bufmgr_gem->available_fences < 0)
 				bufmgr_gem->available_fences = 0;
 		}
+	}
+
+	if (bufmgr_gem->gen >= 8) {
+		gp.param = I915_PARAM_HAS_ALIASING_PPGTT;
+		ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+		if (ret == 0 && *gp.value == 3)
+			bufmgr_gem->bufmgr.bo_use_48b_address_range = drm_intel_gem_bo_use_48b_address_range;
 	}
 
 	/* Let's go with one relocation per every 2 dwords (but round down a bit

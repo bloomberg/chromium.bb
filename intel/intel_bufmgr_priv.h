@@ -152,6 +152,20 @@ struct _drm_intel_bufmgr {
 	void (*destroy) (drm_intel_bufmgr *bufmgr);
 
 	/**
+	 * Indicate if the buffer can be placed anywhere in the full ppgtt
+	 * address range (2^48).
+	 *
+	 * Any resource used with flat/heapless (0x00000000-0xfffff000)
+	 * General State Heap (GSH) or Intructions State Heap (ISH) must
+	 * be in a 32-bit range. 48-bit range will only be used when explicitly
+	 * requested.
+	 *
+	 * \param bo Buffer to set the use_48b_address_range flag.
+	 * \param enable The flag value.
+	 */
+	void (*bo_use_48b_address_range) (drm_intel_bo *bo, uint32_t enable);
+
+	/**
 	 * Add relocation entry in reloc_buf, which will be updated with the
 	 * target buffer's real offset on on command submission.
 	 *
