@@ -159,6 +159,11 @@ void WebRuntimeFeatures::enableMediaCapture(bool enable)
     RuntimeEnabledFeatures::setMediaCaptureEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableMediaRecorder(bool enable)
+{
+    RuntimeEnabledFeatures::setMediaRecorderEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableMediaSource(bool enable)
 {
     RuntimeEnabledFeatures::setMediaSourceEnabled(enable);

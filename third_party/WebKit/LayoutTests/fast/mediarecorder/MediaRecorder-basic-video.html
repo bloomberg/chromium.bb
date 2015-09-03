@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script>
+
+var test = async_test('checks the video-only MediaRecorder API.');
+
+recorderOnDataAvailable = test.step_func(function(event) {
+    assert_greater_than(event.data.size, 0, 'Recorded data size should be > 0');
+    assert_eq(recorder.state, "recording");
+
+    // TODO(mcasas): Let the test record for a while.
+    // TODO(mcasas): Consider storing the recorded data and playing it back.
+
+    test.done();
+});
+
+recorderOnStop = test.step_func(function() {
+    assert_unreached('Recording stopped.');
+});
+
+gotStream = test.step_func(function(s) {
+    stream = s;
+    assert_equals(stream.getAudioTracks().length, 0);
+    assert_equals(stream.getVideoTracks().length, 1);
+
+    try {
+        recorder = new MediaRecorder(stream);
+    } catch (e) {
+        assert_unreached('Exception while creating MediaRecorder: ' + e);
+    }
+
+    assert_eq(recorder.state, "inactive");
+    recorder.ondataavailable = recorderOnDataAvailable;
+    recorder.onstop = recorderOnStop;
+    recorder.start();
+});
+
+onError = test.step_func(function() {
+    assert_unreached('Error creating MediaRecorder.');
+});
+
+try {
+    navigator.webkitGetUserMedia({video:true}, gotStream, onError);
+} catch(e) {
+    assert_unreached('Exception launching getUserMedia(): ' + e);
+}
+
+</script>

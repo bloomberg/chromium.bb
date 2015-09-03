@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL checks the video-only MediaRecorder API. assert_unreached: Exception while creating MediaRecorder: NotSupportedError: Failed to construct 'MediaRecorder': No MediaRecorder handler can be created. Reached unreachable code
+Harness: the test ran to completion.
+

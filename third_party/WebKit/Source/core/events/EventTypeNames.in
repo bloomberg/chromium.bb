@@ -70,6 +70,7 @@ dischargingtimechange
 disconnect
 display
 downloading
+dataavailable
 drag
 dragend
 dragenter
@@ -203,6 +204,7 @@ speechend
 speechstart
 stalled
 start
+stop
 statechange
 storage
 submit

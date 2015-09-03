@@ -10,6 +10,7 @@ modules/indexeddb/IDBDatabase
 modules/indexeddb/IDBOpenDBRequest
 modules/indexeddb/IDBRequest
 modules/indexeddb/IDBTransaction
+modules/mediarecorder/MediaRecorder
 modules/mediasource/MediaSource
 modules/mediasource/SourceBuffer
 modules/mediasource/SourceBufferList

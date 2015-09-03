@@ -82,6 +82,7 @@ class WebGraphicsContext3DProvider;
 class WebIDBFactory;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
+class WebMediaRecorderHandler;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMemoryDumpProvider;
@@ -627,9 +628,12 @@ public:
     // May return null if WebRTC functionality is not avaliable or out of resources.
     virtual WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*) { return nullptr; }
 
+    // Creates an WebMediaRecorderHandler to record MediaStreams.
+    // May return null if the functionality is not available or out of resources.
+    virtual WebMediaRecorderHandler* createMediaRecorderHandler() { return nullptr; }
+
     // May return null if WebRTC functionality is not avaliable or out of resources.
     virtual WebMediaStreamCenter* createMediaStreamCenter(WebMediaStreamCenterClient*) { return nullptr; }
-
 
     // WebWorker ----------------------------------------------------------
 

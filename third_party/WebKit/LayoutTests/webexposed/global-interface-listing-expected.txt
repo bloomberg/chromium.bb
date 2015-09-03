@@ -3236,6 +3236,30 @@ interface MediaQueryListEvent
     getter matches
     getter media
     method constructor
+interface MediaRecorder
+    getter ignoreMutedMedia
+    getter mimeType
+    getter ondataavailable
+    getter onerror
+    getter onpause
+    getter onresume
+    getter onstart
+    getter onstop
+    getter state
+    getter stream
+    method constructor
+    method pause
+    method requestData
+    method resume
+    method start
+    method stop
+    setter ignoreMutedMedia
+    setter ondataavailable
+    setter onerror
+    setter onpause
+    setter onresume
+    setter onstart
+    setter onstop
 interface MediaSource
     getter activeSourceBuffers
     getter duration

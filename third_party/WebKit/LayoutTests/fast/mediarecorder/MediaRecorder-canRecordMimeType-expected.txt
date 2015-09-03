@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS check MediaRecorder.canRecordMimeType() with video/invalid 
+FAIL check MediaRecorder.canRecordMimeType() with video/webm and vp8 assert_equals: expected "maybe" but got ""
+PASS check MediaRecorder.canRecordMimeType() with audio/invalid 
+FAIL check MediaRecorder.canRecordMimeType() with audio/webm and opus assert_equals: expected "maybe" but got ""
+Harness: the test ran to completion.
+

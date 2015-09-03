@@ -93,6 +93,8 @@ public:
 
     BLINK_EXPORT static void enableMediaCapture(bool);
 
+    BLINK_EXPORT static void enableMediaRecorder(bool);
+
     BLINK_EXPORT static void enableMediaSource(bool);
 
     BLINK_EXPORT static void enableNotificationConstructor(bool);
