@@ -1846,6 +1846,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_OFFLINE_PAGES_ALL_ITEMS" desc="Title button and text for showing the list of web pages that have been saved/bookmarked. [CHAR-LIMIT=32]">
         All saved pages
       </message>
+      <message name="IDS_OFFLINE_PAGES_EDIT_ITEM" desc="The string prompting the user to edit the content of a saved page. [CHAR-LIMIT=32]">
+        Edit saved page
+      </message>
       <message name="IDS_OFFLINE_PAGES_FREE_UP_SPACE_TITLE" desc="Text on a button and title of the dialog offering to remove offline pages to free up storage space. [CHAR-LIMIT=32]">
         Free up space
       </message>

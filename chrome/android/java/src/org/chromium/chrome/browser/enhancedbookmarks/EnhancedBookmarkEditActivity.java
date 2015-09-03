@@ -93,8 +93,12 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this,
-                getString(R.string.edit_bookmark));
+
+        int title = OfflinePageBridge.isEnabled()
+                ? R.string.offline_pages_edit_item
+                : R.string.edit_bookmark;
+        setTitle(title);
+        EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(title));
         mEnhancedBookmarksModel = new EnhancedBookmarksModel();
         mBookmarkId = BookmarkId.getBookmarkIdFromString(
                 getIntent().getStringExtra(INTENT_BOOKMARK_ID));
