@@ -421,10 +421,10 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
       case 1:
         // Test that modifying the position of the content layer (not
         // scrolling) won't damage the scrollbar.
-        scroll_layer->SetPosition(gfx::Point(1, 1));
-        scroll_layer->PushScrollOffsetFromMainThread(
-            scroll_layer->BaseScrollOffset());
-        host_impl->SetNeedsRedraw();
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE, base::Bind(&LayerTreeHostDamageTestScrollbarDoesDamage::
+                                      ModifyContentLayerPosition,
+                                  base::Unretained(this)));
         break;
       case 2:
         scroll_layer->ScrollBy(gfx::Vector2dF(10.f, 10.f));
@@ -439,6 +439,14 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
                 base::Unretained(this)));
         break;
     }
+  }
+
+  void ModifyContentLayerPosition() {
+    EXPECT_EQ(1, did_swaps_);
+    Layer* root = layer_tree_host()->root_layer();
+    Layer* scroll_clip_layer = root->child_at(0);
+    Layer* scroll_layer = scroll_clip_layer->child_at(0);
+    scroll_layer->SetPosition(gfx::Point(10, 10));
   }
 
   void ResizeScrollLayer() {
