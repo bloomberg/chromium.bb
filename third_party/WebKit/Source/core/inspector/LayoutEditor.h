@@ -61,7 +61,6 @@ private:
     bool m_isDirty;
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleRule>> m_matchedRules;
-    HashMap<int, String> m_cachedSelectorsInfo;
     // -1 means "inline style".
     int m_currentRuleIndex;
 };

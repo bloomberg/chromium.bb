@@ -315,7 +315,6 @@ void LayoutEditor::clearSelection(bool commitChanges)
     m_element.clear();
     m_isDirty = false;
     m_matchedRules.clear();
-    m_cachedSelectorsInfo.clear();
     m_currentRuleIndex = -1;
 }
 
@@ -385,9 +384,6 @@ String LayoutEditor::currentSelectorInfo()
     if (!m_element)
         return String();
 
-    if (m_cachedSelectorsInfo.contains(m_currentRuleIndex))
-        return m_cachedSelectorsInfo.get(m_currentRuleIndex);
-
     RefPtr<JSONObject> object = JSONObject::create();
     String currentSelectorText = m_currentRuleIndex == -1 ? "inline style" : m_matchedRules[m_currentRuleIndex]->selectorText();
     object->setString("selector", currentSelectorText);
@@ -414,8 +410,7 @@ String LayoutEditor::currentSelectorInfo()
     }
 
     object->setArray("nodes", highlights.release());
-    m_cachedSelectorsInfo.add(m_currentRuleIndex, object->toJSONString());
-    return m_cachedSelectorsInfo.get(m_currentRuleIndex);
+    return object->toJSONString();
 }
 
 } // namespace blink
