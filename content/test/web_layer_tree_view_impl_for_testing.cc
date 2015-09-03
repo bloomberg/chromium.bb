@@ -115,10 +115,6 @@ void WebLayerTreeViewImplForTesting::setNeedsAnimate() {
 
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}
 
-void WebLayerTreeViewImplForTesting::finishAllRendering() {
-  layer_tree_host_->FinishAllRendering();
-}
-
 void WebLayerTreeViewImplForTesting::setDeferCommits(bool defer_commits) {
   layer_tree_host_->SetDeferCommits(defer_commits);
 }

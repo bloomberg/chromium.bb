@@ -803,10 +803,6 @@ void RenderWidgetCompositor::SynchronouslyComposite() {
   layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
-void RenderWidgetCompositor::finishAllRendering() {
-  layer_tree_host_->FinishAllRendering();
-}
-
 void RenderWidgetCompositor::setDeferCommits(bool defer_commits) {
   layer_tree_host_->SetDeferCommits(defer_commits);
 }

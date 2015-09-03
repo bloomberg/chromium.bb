@@ -49,7 +49,6 @@ class WebLayerTreeViewImplForTesting
                                        double duration_sec);
   virtual void setNeedsAnimate();
   virtual void didStopFlinging();
-  virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits);
   virtual void registerForAnimations(blink::WebLayer* layer);
   virtual void registerViewportLayers(

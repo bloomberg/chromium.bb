@@ -97,7 +97,6 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   virtual void didStopFlinging() {}
   virtual void compositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback) {}
-  virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits) {}
   virtual void registerForAnimations(blink::WebLayer* layer);
   virtual void registerViewportLayers(

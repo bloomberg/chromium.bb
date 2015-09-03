@@ -241,8 +241,4 @@ void WebLayerTreeViewImpl::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void WebLayerTreeViewImpl::finishAllRendering() {
-  layer_tree_host_->FinishAllRendering();
-}
-
 }  // namespace html_viewer
