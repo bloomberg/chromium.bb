@@ -6,6 +6,12 @@
  * @fileoverview This file defines the status codes returned by the device.
  */
 
+/**
+ * Status codes returned by the gnubby device.
+ * @const
+ * @enum {number}
+ * @export
+ */
 var DeviceStatusCodes = {};
 
 /**

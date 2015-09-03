@@ -52,7 +52,7 @@ GnubbyDevice.INVALID_LEN = 3;
 GnubbyDevice.INVALID_SEQ = 4;
 /** Message has timed out */
 GnubbyDevice.TIMEOUT = 5;
-/** CHannel is busy */
+/** Channel is busy */
 GnubbyDevice.BUSY = 6;
 /** Access denied */
 GnubbyDevice.ACCESS_DENIED = 7;
@@ -76,6 +76,8 @@ GnubbyDevice.COULDNOTDIAL = 264;
 // chrome.usb-related errors.
 /** No device */
 GnubbyDevice.NODEVICE = 512;
+/** More than one device */
+GnubbyDevice.TOOMANY = 513;
 /** Permission denied */
 GnubbyDevice.NOPERMISSION = 666;
 

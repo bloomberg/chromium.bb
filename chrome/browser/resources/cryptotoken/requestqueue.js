@@ -60,9 +60,12 @@ RequestToken.prototype.completed = function() {
 };
 
 /**
+ * @param {!SystemTimer} sysTimer A system timer implementation.
  * @constructor
  */
-function RequestQueue() {
+function RequestQueue(sysTimer) {
+  /** @private {!SystemTimer} */
+  this.sysTimer_ = sysTimer;
   /** @private {RequestToken} */
   this.head_ = null;
   /** @private {RequestToken} */
@@ -150,7 +153,7 @@ RequestQueue.prototype.queueRequest = function(beginCb, timer) {
   timer.clone(token.complete.bind(token));
   this.insertToken_(token);
   if (startNow) {
-    window.setTimeout(function() {
+    this.sysTimer_.setTimeout(function() {
       if (!token.completed()) {
         token.beginCb(token);
       }
@@ -160,10 +163,13 @@ RequestQueue.prototype.queueRequest = function(beginCb, timer) {
 };
 
 /**
+ * @param {!SystemTimer} sysTimer A system timer implementation.
  * @constructor
  */
-function OriginKeyedRequestQueue() {
-  /** @private {Object<!RequestQueue>} */
+function OriginKeyedRequestQueue(sysTimer) {
+  /** @private {!SystemTimer} */
+  this.sysTimer_ = sysTimer;
+  /** @private {Object<string, !RequestQueue>} */
   this.requests_ = {};
 }
 
@@ -180,7 +186,7 @@ OriginKeyedRequestQueue.prototype.queueRequest =
     function(appId, origin, beginCb, timer) {
   var key = appId + ' ' + origin;
   if (!this.requests_.hasOwnProperty(key)) {
-    this.requests_[key] = new RequestQueue();
+    this.requests_[key] = new RequestQueue(this.sysTimer_);
   }
   var queue = this.requests_[key];
   return queue.queueRequest(beginCb, timer);

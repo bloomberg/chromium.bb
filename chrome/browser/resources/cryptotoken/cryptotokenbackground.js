@@ -22,18 +22,22 @@ var gnubbies = new Gnubbies();
 HidGnubbyDevice.register(gnubbies);
 UsbGnubbyDevice.register(gnubbies);
 
-var TIMER_FACTORY = new CountdownTimerFactory();
-
-var FACTORY_REGISTRY = new FactoryRegistry(
-    new CryptoTokenApprovedOrigin(),
-    TIMER_FACTORY,
-    new CryptoTokenOriginChecker(),
-    new UsbHelper(),
-    new XhrTextFetcher());
+var FACTORY_REGISTRY = (function() {
+  var windowTimer = new WindowTimer();
+  var xhrTextFetcher = new XhrTextFetcher();
+  return new FactoryRegistry(
+      new XhrAppIdCheckerFactory(xhrTextFetcher),
+      new CryptoTokenApprovedOrigin(),
+      new CountdownTimerFactory(windowTimer),
+      new CryptoTokenOriginChecker(),
+      new UsbHelper(),
+      windowTimer,
+      xhrTextFetcher);
+})();
 
 var DEVICE_FACTORY_REGISTRY = new DeviceFactoryRegistry(
     new UsbGnubbyFactory(gnubbies),
-    TIMER_FACTORY,
+    FACTORY_REGISTRY.getCountdownFactory(),
     new GoogleCorpIndividualAttestation());
 
 /**
@@ -45,9 +49,6 @@ function isRegisterRequest(request) {
     return false;
   }
   switch (request.type) {
-    case GnubbyMsgTypes.ENROLL_WEB_REQUEST:
-      return true;
-
     case MessageTypes.U2F_REGISTER_REQUEST:
       return true;
 
