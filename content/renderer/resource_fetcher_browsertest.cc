@@ -4,12 +4,15 @@
 
 #include "content/public/renderer/resource_fetcher.h"
 
+#include <stdint.h>
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
@@ -24,13 +27,6 @@
 using blink::WebFrame;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
-
-namespace {
-
-// The first RenderFrame is routing ID 1, and the first RenderView is 2.
-const int kRenderViewRoutingId = 2;
-
-}
 
 namespace content {
 
@@ -131,6 +127,8 @@ class EvilFetcherDelegate : public FetcherDelegate {
 
 class ResourceFetcherTests : public ContentBrowserTest {
  public:
+  ResourceFetcherTests() : render_view_routing_id_(MSG_ROUTING_NONE) {}
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN)
@@ -139,10 +137,13 @@ class ResourceFetcherTests : public ContentBrowserTest {
 #endif
   }
 
+  void SetUpOnMainThread() override {
+    render_view_routing_id_ =
+        shell()->web_contents()->GetRenderViewHost()->GetRoutingID();
+  }
+
   RenderView* GetRenderView() {
-    // We could have the test on the UI thread get the WebContent's routing ID,
-    // but we know this will be the first RV so skip that and just hardcode it.
-    return RenderView::FromRoutingID(kRenderViewRoutingId);
+    return RenderView::FromRoutingID(render_view_routing_id_);
   }
 
   void ResourceFetcherDownloadOnRenderer(const GURL& url) {
@@ -284,6 +285,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
     EXPECT_EQ(delegate->response().httpStatusCode(), 200);
     EXPECT_EQ(kHeader, delegate->data());
   }
+
+  int32 render_view_routing_id_;
 };
 
 // Test a fetch from the test server.

@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 
+#include <stdint.h>
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -141,6 +142,9 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   }
 
  protected:
+  PhishingClassifierDelegateTest()
+      : render_view_routing_id_(MSG_ROUTING_NONE) {}
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN)
@@ -151,12 +155,14 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     intercepting_filter_ = new InterceptingMessageFilter();
-    content::RenderView* render_view = GetRenderView();
+    render_view_routing_id_ =
+        GetWebContents()->GetRenderViewHost()->GetRoutingID();
 
     GetWebContents()->GetRenderProcessHost()->AddFilter(
         intercepting_filter_.get());
-    classifier_ = new StrictMock<MockPhishingClassifier>(render_view);
-    delegate_ = PhishingClassifierDelegate::Create(render_view, classifier_);
+    classifier_ = new StrictMock<MockPhishingClassifier>(GetRenderView());
+    delegate_ =
+        PhishingClassifierDelegate::Create(GetRenderView(), classifier_);
 
     ASSERT_TRUE(StartTestServer());
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -221,8 +227,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   }
 
   content::RenderView* GetRenderView() {
-    return content::RenderView::FromRoutingID(
-        GetWebContents()->GetRenderViewHost()->GetRoutingID());
+    return content::RenderView::FromRoutingID(render_view_routing_id_);
   }
 
   // Returns the URL that was loaded.
@@ -243,8 +248,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   }
 
   void NavigateMainFrameInternal(const GURL& url) {
-    content::RenderView* render_view = GetRenderView();
-    render_view->GetWebView()->mainFrame()->firstChild()->loadRequest(
+    GetRenderView()->GetWebView()->mainFrame()->firstChild()->loadRequest(
         blink::WebURLRequest(url));
   }
 
@@ -264,6 +268,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
   scoped_ptr<ClientPhishingRequest> verdict_;
   StrictMock<MockPhishingClassifier>* classifier_;  // Owned by |delegate_|.
+  int32_t render_view_routing_id_;
   PhishingClassifierDelegate* delegate_;  // Owned by the RenderView.
   scoped_refptr<content::MessageLoopRunner> runner_;
 };

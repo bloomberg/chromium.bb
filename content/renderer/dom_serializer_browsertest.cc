@@ -174,6 +174,11 @@ class DomSerializerTests : public ContentBrowserTest,
 #endif
   }
 
+  void SetUpOnMainThread() override {
+    render_view_routing_id_ =
+        shell()->web_contents()->GetRenderViewHost()->GetRoutingID();
+  }
+
   // DomSerializerDelegate.
   virtual void didSerializeDataForFrame(const WebURL& frame_web_url,
                                         const WebCString& data,
@@ -221,9 +226,7 @@ class DomSerializerTests : public ContentBrowserTest,
   }
 
   RenderView* GetRenderView() {
-    content::WebContents* web_contents = shell()->web_contents();
-    return RenderView::FromRoutingID(
-        web_contents->GetRenderViewHost()->GetRoutingID());
+    return RenderView::FromRoutingID(render_view_routing_id_);
   }
 
   WebView* GetWebView() {
@@ -760,6 +763,7 @@ class DomSerializerTests : public ContentBrowserTest,
   }
 
  private:
+  int32 render_view_routing_id_;
   // Map frame_url to corresponding serialized_content.
   typedef base::hash_map<std::string, std::string> SerializedFrameContentMap;
   SerializedFrameContentMap serialized_frame_map_;

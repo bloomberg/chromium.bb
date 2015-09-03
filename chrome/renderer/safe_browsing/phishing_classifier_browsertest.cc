@@ -11,6 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -20,6 +22,8 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/renderer/render_view.h"
 #include "crypto/sha2.h"
 #include "net/dns/mock_host_resolver.h"
@@ -32,13 +36,6 @@ using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::Not;
 using ::testing::Pair;
-
-namespace {
-
-// The first RenderFrame is routing ID 1, and the first RenderView is 2.
-const int kRenderViewRoutingId = 2;
-
-}
 
 namespace safe_browsing {
 
@@ -100,8 +97,11 @@ class PhishingClassifierTest : public InProcessBrowserTest {
     scorer_.reset(Scorer::Create(model.SerializeAsString()));
     ASSERT_TRUE(scorer_.get());
 
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
     classifier_.reset(new PhishingClassifier(
-        content::RenderView::FromRoutingID(kRenderViewRoutingId),
+        content::RenderView::FromRoutingID(
+            web_contents->GetRenderViewHost()->GetRoutingID()),
         clock_));
   }
 

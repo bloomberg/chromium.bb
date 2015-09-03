@@ -9,6 +9,7 @@
 
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
+#include <stdint.h>
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -28,6 +29,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/browser_test_utils.h"
@@ -46,13 +48,6 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 
-namespace {
-
-// The first RenderFrame is routing ID 1, and the first RenderView is 2.
-const int kRenderViewRoutingId = 2;
-
-}
-
 namespace safe_browsing {
 
 class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
@@ -70,7 +65,8 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   }
 
  protected:
-  PhishingDOMFeatureExtractorTest() : weak_factory_(this) {}
+  PhishingDOMFeatureExtractorTest()
+      : render_view_routing_id_(MSG_ROUTING_NONE), weak_factory_(this) {}
 
   ~PhishingDOMFeatureExtractorTest() override {}
 
@@ -83,8 +79,10 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    render_view_routing_id_ =
+        GetWebContents()->GetRenderViewHost()->GetRoutingID();
     extractor_.reset(new PhishingDOMFeatureExtractor(
-        content::RenderView::FromRoutingID(kRenderViewRoutingId), &clock_));
+        content::RenderView::FromRoutingID(render_view_routing_id_), &clock_));
 
     ASSERT_TRUE(StartTestServer());
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -122,7 +120,7 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   // Does the actual work of removing the iframe "frame1" from the document.
   void RemoveIframe() {
     content::RenderView* render_view =
-        content::RenderView::FromRoutingID(kRenderViewRoutingId);
+        content::RenderView::FromRoutingID(render_view_routing_id_);
     blink::WebFrame* main_frame = render_view->GetWebView()->mainFrame();
     ASSERT_TRUE(main_frame);
     main_frame->executeScript(
@@ -175,6 +173,8 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
     return url;
   }
+
+  int32 render_view_routing_id_;
 
   // Map of url -> response body for network requests from the renderer.
   // Any urls not in this map are served a 404 error.
