@@ -12,7 +12,7 @@ This heart beat lets the devices know that they are connected to a host.
 import sys
 import time
 
-from pylib.device import device_utils
+from devil.android import device_utils
 
 PULSE_PERIOD = 20
 

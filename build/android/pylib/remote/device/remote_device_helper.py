@@ -4,7 +4,7 @@
 
 """Common functions and Exceptions for remote_device_*"""
 
-from pylib.utils import base_error
+from devil import base_error
 
 
 class RemoteDeviceError(base_error.BaseError):

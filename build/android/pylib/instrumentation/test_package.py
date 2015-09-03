@@ -6,8 +6,8 @@
 
 import os
 
+from devil.android import apk_helper
 from pylib.instrumentation import test_jar
-from pylib.utils import apk_helper
 
 
 class TestPackage(test_jar.TestJar):

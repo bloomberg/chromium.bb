@@ -7,11 +7,9 @@ import os
 import tempfile
 import time
 
-from pylib import cmd_helper
-from pylib import device_signal
-from pylib.device import device_errors
-
-import pylib.device.device_utils
+from devil.android import device_errors
+from devil.android import device_signal
+from devil.utils import cmd_helper
 
 
 class VideoRecorder(object):

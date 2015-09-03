@@ -9,11 +9,11 @@ import os.path
 import sys
 import traceback
 
+from devil.android import apk_helper
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 from pylib.linker import test_case
-from pylib.utils import apk_helper
 
 
 # Name of the Android package to install for this to work.

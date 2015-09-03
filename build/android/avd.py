@@ -16,7 +16,7 @@ import os
 import re
 import sys
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 from pylib import constants
 from pylib.utils import emulator
 

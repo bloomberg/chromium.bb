@@ -12,7 +12,12 @@ import os
 import socket
 import traceback
 
-from pylib import constants
+# The net test server is started from port 10201.
+_TEST_SERVER_PORT_FIRST = 10201
+_TEST_SERVER_PORT_LAST = 30000
+# A file to record next valid port of test server.
+_TEST_SERVER_PORT_FILE = '/tmp/test_server_port'
+_TEST_SERVER_PORT_LOCKFILE = '/tmp/test_server_port.lock'
 
 
 # The following two methods are used to allocate the port source for various
@@ -27,10 +32,10 @@ def ResetTestServerPortAllocation():
     Returns True if reset successes. Otherwise returns False.
   """
   try:
-    with open(constants.TEST_SERVER_PORT_FILE, 'w') as fp:
-      fp.write('%d' % constants.TEST_SERVER_PORT_FIRST)
-    if os.path.exists(constants.TEST_SERVER_PORT_LOCKFILE):
-      os.unlink(constants.TEST_SERVER_PORT_LOCKFILE)
+    with open(_TEST_SERVER_PORT_FILE, 'w') as fp:
+      fp.write('%d' % _TEST_SERVER_PORT_FIRST)
+    if os.path.exists(_TEST_SERVER_PORT_LOCKFILE):
+      os.unlink(_TEST_SERVER_PORT_LOCKFILE)
     return True
   except Exception as e:
     logging.error(e)
@@ -47,19 +52,19 @@ def AllocateTestServerPort():
   port = 0
   ports_tried = []
   try:
-    fp_lock = open(constants.TEST_SERVER_PORT_LOCKFILE, 'w')
+    fp_lock = open(_TEST_SERVER_PORT_LOCKFILE, 'w')
     fcntl.flock(fp_lock, fcntl.LOCK_EX)
     # Get current valid port and calculate next valid port.
-    if not os.path.exists(constants.TEST_SERVER_PORT_FILE):
+    if not os.path.exists(_TEST_SERVER_PORT_FILE):
       ResetTestServerPortAllocation()
-    with open(constants.TEST_SERVER_PORT_FILE, 'r+') as fp:
+    with open(_TEST_SERVER_PORT_FILE, 'r+') as fp:
       port = int(fp.read())
       ports_tried.append(port)
       while not IsHostPortAvailable(port):
         port += 1
         ports_tried.append(port)
-      if (port > constants.TEST_SERVER_PORT_LAST or
-          port < constants.TEST_SERVER_PORT_FIRST):
+      if (port > _TEST_SERVER_PORT_LAST or
+          port < _TEST_SERVER_PORT_FIRST):
         port = 0
       else:
         fp.seek(0, os.SEEK_SET)

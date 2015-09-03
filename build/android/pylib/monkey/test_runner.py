@@ -7,11 +7,11 @@
 import logging
 import random
 
+from devil.android import device_errors
+from devil.android.sdk import intent
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
-from pylib.device import device_errors
-from pylib.device import intent
 
 _CHROME_PACKAGE = constants.PACKAGE_INFO['chrome'].package
 

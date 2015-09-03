@@ -57,13 +57,13 @@ import tempfile
 import threading
 import time
 
-from pylib import cmd_helper
+from devil.android import battery_utils
+from devil.android import device_errors
+from devil.utils import cmd_helper
 from pylib import constants
 from pylib import forwarder
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
-from pylib.device import battery_utils
-from pylib.device import device_errors
 
 
 def GetPersistedResult(test_name):

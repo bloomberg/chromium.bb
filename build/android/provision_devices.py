@@ -21,16 +21,15 @@ import subprocess
 import sys
 import time
 
+from devil.android import battery_utils
+from devil.android import device_blacklist
+from devil.android import device_errors
+from devil.android import device_utils
 from devil.android.sdk import version_codes
-
+from devil.utils import run_tests_helper
+from devil.utils import timeout_retry
 from pylib import constants
 from pylib import device_settings
-from pylib.device import battery_utils
-from pylib.device import device_blacklist
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.utils import run_tests_helper
-from pylib.utils import timeout_retry
 
 _SYSTEM_WEBVIEW_PATHS = ['/system/app/webview', '/system/app/WebViewGoogle']
 _CHROME_PACKAGE_REGEX = re.compile('.*chrom.*')

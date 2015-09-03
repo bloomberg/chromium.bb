@@ -7,16 +7,15 @@ import logging
 import os
 import posixpath
 
+from devil.android import device_errors
+from devil.android import device_temp_file
+from devil.android import ports
 from pylib import constants
-from pylib import ports
 from pylib.base import test_run
-from pylib.device import device_errors
 from pylib.gtest import gtest_test_instance
-
 from pylib.local import local_test_server_spawner
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
-from pylib.utils import device_temp_file
 
 _COMMAND_LINE_FLAGS_SUPPORTED = True
 

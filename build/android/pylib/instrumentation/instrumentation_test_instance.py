@@ -8,15 +8,15 @@ import pickle
 import re
 import sys
 
-from pylib import cmd_helper
+from devil.android import apk_helper
+from devil.android import md5sum
+from devil.utils import cmd_helper
 from pylib import constants
 from pylib import flag_changer
 from pylib.base import base_test_result
 from pylib.base import test_instance
 from pylib.instrumentation import test_result
 from pylib.instrumentation import instrumentation_parser
-from pylib.utils import apk_helper
-from pylib.utils import md5sum
 from pylib.utils import proguard
 
 sys.path.append(

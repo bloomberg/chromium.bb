@@ -10,10 +10,10 @@ import posixpath
 import sys
 import tempfile
 
-from pylib import cmd_helper
+from devil.android import device_errors
+from devil.utils import cmd_helper
 from pylib import constants
 from pylib import pexpect
-from pylib.device import device_errors
 from pylib.gtest import gtest_test_instance
 from pylib.gtest.test_package import TestPackage
 

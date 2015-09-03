@@ -8,8 +8,8 @@ import os
 import re
 import sys
 
+from devil.android.sdk import dexdump
 from pylib import constants
-from pylib.sdk import dexdump
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
                              'common'))

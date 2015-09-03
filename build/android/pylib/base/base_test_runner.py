@@ -10,8 +10,8 @@
 
 import logging
 
-from pylib import ports
-from pylib.device import device_utils
+from devil.android import device_utils
+from devil.android import ports
 from pylib.forwarder import Forwarder
 from pylib.valgrind_tools import CreateTool
 # TODO(frankf): Move this to pylib/utils

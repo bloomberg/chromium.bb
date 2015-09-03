@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 import logging
-from pylib.device import device_utils
+
+from devil.android import device_utils
 
 
 class OmapThrottlingDetector(object):

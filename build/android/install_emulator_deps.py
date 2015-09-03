@@ -17,10 +17,10 @@ import re
 import shutil
 import sys
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
+from devil.utils import run_tests_helper
 from pylib import constants
 from pylib import pexpect
-from pylib.utils import run_tests_helper
 
 # Android API level
 DEFAULT_ANDROID_API_LEVEL = constants.ANDROID_SDK_VERSION

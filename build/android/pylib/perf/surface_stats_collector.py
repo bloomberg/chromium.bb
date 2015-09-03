@@ -7,7 +7,8 @@ import datetime
 import logging
 import re
 import threading
-from pylib.device import device_utils
+
+from devil.android import device_utils
 
 
 # Log marker containing SurfaceTexture timestamps.

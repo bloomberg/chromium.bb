@@ -27,17 +27,17 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
 import perf_tests_results_helper  # pylint: disable=F0401
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from devil.android import battery_utils
+from devil.android import device_blacklist
+from devil.android import device_errors
+from devil.android import device_list
+from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
 from devil.utils import reset_usb
+from devil.utils import run_tests_helper
+from devil.utils import timeout_retry
 from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
-from pylib.device import adb_wrapper
-from pylib.device import battery_utils
-from pylib.device import device_blacklist
-from pylib.device import device_errors
-from pylib.device import device_list
-from pylib.device import device_utils
-from pylib.utils import run_tests_helper
-from pylib.utils import timeout_retry
 
 _RE_DEVICE_ID = re.compile('Device ID = (\d+)')
 

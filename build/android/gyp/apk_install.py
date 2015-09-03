@@ -20,8 +20,8 @@ from util import md5_check
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
+from devil.android import apk_helper
 from pylib import constants
-from pylib.utils import apk_helper
 
 
 def GetNewMetadata(device, apk_package):

@@ -24,7 +24,7 @@ import re
 import sys
 from xml.etree import ElementTree
 
-from pylib.utils import run_tests_helper
+from devil.utils import run_tests_helper
 
 NOT_EXECUTABLE = -1
 NOT_COVERED = 0

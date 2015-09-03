@@ -8,10 +8,10 @@ import logging
 import os
 import tempfile
 
+from devil.android import apk_helper
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.remote.device import remote_device_test_run
-from pylib.utils import apk_helper
 
 
 class RemoteDeviceInstrumentationTestRun(

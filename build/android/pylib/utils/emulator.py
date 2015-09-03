@@ -14,13 +14,12 @@ import signal
 import subprocess
 import time
 
-# TODO(craigdh): Move these pylib dependencies to pylib/utils/.
-from pylib import cmd_helper
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
+from devil.utils import cmd_helper
 from pylib import constants
 from pylib import pexpect
-from pylib.device import adb_wrapper
-from pylib.device import device_errors
-from pylib.device import device_utils
 from pylib.utils import time_profile
 
 import errors

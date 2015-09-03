@@ -14,13 +14,12 @@ import tempfile
 import time
 import zipfile
 
-
+from devil.utils import zip_utils
 from pylib.base import base_test_result
 from pylib.base import test_run
 from pylib.remote.device import appurify_constants
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
-from pylib.utils import zip_utils
 
 _DEVICE_OFFLINE_RE = re.compile('error: device not found')
 _LONG_MSG_RE = re.compile('longMsg=')

@@ -21,9 +21,9 @@ import threading
 import time
 import urlparse
 
-from pylib import constants
-from pylib import ports
+from devil.android import ports
 
+from pylib import constants
 from pylib.forwarder import Forwarder
 
 

@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from devil.android import device_blacklist
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
+from devil.utils import parallelizer
 from pylib.base import environment
-from pylib.device import adb_wrapper
-from pylib.device import device_blacklist
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.utils import parallelizer
 
 
 class LocalDeviceEnvironment(environment.Environment):

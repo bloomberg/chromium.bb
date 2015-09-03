@@ -6,8 +6,8 @@ import logging
 import psutil
 import signal
 
-from pylib.device import device_errors
-from pylib.device import device_utils
+from devil.android import device_errors
+from devil.android import device_utils
 
 
 def _KillWebServers():

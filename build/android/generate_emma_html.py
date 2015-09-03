@@ -12,7 +12,7 @@ import optparse
 import os
 import sys
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 from pylib import constants
 
 

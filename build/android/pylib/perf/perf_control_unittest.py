@@ -9,7 +9,7 @@ import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
-from pylib.device import device_utils
+from devil.android import device_utils
 from pylib.perf import perf_control
 
 class TestPerfControl(unittest.TestCase):

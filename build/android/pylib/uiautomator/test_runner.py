@@ -4,9 +4,9 @@
 
 """Class for running uiautomator tests on a single device."""
 
+from devil.android.sdk import intent
 from pylib import constants
 from pylib import flag_changer
-from pylib.device import intent
 from pylib.instrumentation import test_options as instr_test_options
 from pylib.instrumentation import test_runner as instr_test_runner
 

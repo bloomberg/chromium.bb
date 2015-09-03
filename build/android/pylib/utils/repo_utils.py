@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 
 
 def GetGitHeadSHA1(in_directory):

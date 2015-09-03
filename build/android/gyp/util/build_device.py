@@ -16,9 +16,9 @@ from util import build_utils
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
-from pylib.device import adb_wrapper
-from pylib.device import device_errors
-from pylib.device import device_utils
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
 
 
 def GetAttachedDevices():

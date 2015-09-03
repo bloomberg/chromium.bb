@@ -73,7 +73,7 @@ import stat
 import sys
 
 from datetime import datetime
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 from pylib import constants
 
 sys.path.append(

@@ -14,10 +14,10 @@ import sys
 import tempfile
 import time
 
+from devil.android import device_errors
+from devil.android.sdk import intent
 from pylib import constants
 from pylib import pexpect
-from pylib.device import device_errors
-from pylib.device import intent
 from pylib.gtest import gtest_test_instance
 from pylib.gtest import local_device_gtest_run
 from pylib.gtest.test_package import TestPackage

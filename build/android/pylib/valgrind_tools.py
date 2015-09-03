@@ -28,8 +28,8 @@ import os.path
 import subprocess
 import sys
 
+from devil.android import device_errors
 from pylib.constants import DIR_SOURCE_ROOT
-from pylib.device import device_errors
 
 
 def SetChromeTimeoutScale(device, scale):

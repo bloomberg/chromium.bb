@@ -7,11 +7,10 @@
 import logging
 import os
 
+from devil.android import device_utils
 from pylib import constants
 from pylib import valgrind_tools
-
 from pylib.base import base_setup
-from pylib.device import device_utils
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_runner
 

@@ -6,8 +6,8 @@ import os
 import re
 import tempfile
 
+from devil.utils import cmd_helper
 from pylib import constants
-from pylib import cmd_helper
 
 
 _PROGUARD_CLASS_RE = re.compile(r'\s*?- Program class:\s*([\S]+)$')

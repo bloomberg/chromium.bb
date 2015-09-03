@@ -11,10 +11,10 @@ import pickle
 import re
 import sys
 
-from pylib import cmd_helper
+from devil.android import device_utils
+from devil.android import md5sum
+from devil.utils import cmd_helper
 from pylib import constants
-from pylib.device import device_utils
-from pylib.utils import md5sum
 from pylib.utils import proguard
 
 sys.path.insert(0,

@@ -20,9 +20,9 @@ import argparse
 import os
 import sys
 
+from devil.utils import run_tests_helper
 from pylib import constants
 from pylib.utils import findbugs
-from pylib.utils import run_tests_helper
 
 _DEFAULT_BASE_DIR = os.path.join(
     constants.DIR_SOURCE_ROOT, 'build', 'android', 'findbugs_filter')

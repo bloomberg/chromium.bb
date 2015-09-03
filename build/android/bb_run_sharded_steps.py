@@ -12,7 +12,7 @@ TODO(bulach): remove me once all other repositories reference
 import optparse
 import sys
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 
 
 def main(argv):

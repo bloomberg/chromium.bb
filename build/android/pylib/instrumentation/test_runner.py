@@ -10,12 +10,12 @@ import re
 import sys
 import time
 
+from devil.android import device_errors
 from pylib import constants
 from pylib import flag_changer
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
-from pylib.device import device_errors
 from pylib.instrumentation import instrumentation_test_instance
 from pylib.instrumentation import json_perf_parser
 from pylib.instrumentation import test_result

@@ -16,17 +16,22 @@ import sys
 import threading
 import unittest
 
+from devil import base_error
+from devil.android import apk_helper
+from devil.android import device_blacklist
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android import ports
+from devil.utils import reraiser_thread
+from devil.utils import run_tests_helper
+
 from pylib import constants
 from pylib import forwarder
-from pylib import ports
 from pylib.base import base_test_result
 from pylib.base import environment_factory
 from pylib.base import test_dispatcher
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
-from pylib.device import device_blacklist
-from pylib.device import device_errors
-from pylib.device import device_utils
 from pylib.gtest import gtest_config
 # TODO(jbudorick): Remove this once we stop selectively enabling platform mode.
 from pylib.gtest import gtest_test_instance
@@ -47,10 +52,6 @@ from pylib.results import json_results
 from pylib.results import report_results
 from pylib.uiautomator import setup as uiautomator_setup
 from pylib.uiautomator import test_options as uiautomator_test_options
-from pylib.utils import apk_helper
-from pylib.utils import base_error
-from pylib.utils import reraiser_thread
-from pylib.utils import run_tests_helper
 
 
 def AddCommonOptions(parser):

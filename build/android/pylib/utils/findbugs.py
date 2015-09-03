@@ -10,7 +10,7 @@ import shlex
 import sys
 import xml.dom.minidom
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 from pylib import constants
 
 

@@ -31,11 +31,11 @@ import sys
 import time
 
 from pylib import constants
-from pylib.device import device_blacklist
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.utils import apk_helper
-from pylib.utils import run_tests_helper
+from devil.android import apk_helper
+from devil.android import device_blacklist
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.utils import run_tests_helper
 
 def CreateAppData(device, old_apk, app_data, package_name):
   device.Install(old_apk)

@@ -12,13 +12,13 @@ import sys
 import unittest
 
 
+from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
+from devil.utils import watchdog_timer
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_collection
 from pylib.base import test_dispatcher
-from pylib.device import adb_wrapper
-from pylib.device import device_utils
-from pylib.utils import watchdog_timer
 
 sys.path.append(
     os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))

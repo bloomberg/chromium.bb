@@ -6,8 +6,8 @@
 
 import unittest
 
-from pylib.utils import reraiser_thread
-from pylib.utils import timeout_retry
+from devil.utils import reraiser_thread
+from devil.utils import timeout_retry
 
 
 class TestException(Exception):

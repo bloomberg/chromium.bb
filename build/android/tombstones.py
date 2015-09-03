@@ -19,11 +19,11 @@ import subprocess
 import sys
 import optparse
 
-from pylib.device import adb_wrapper
-from pylib.device import device_blacklist
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.utils import run_tests_helper
+from devil.android import device_blacklist
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
+from devil.utils import run_tests_helper
 
 
 _TZ_UTC = {'TZ': 'UTC'}

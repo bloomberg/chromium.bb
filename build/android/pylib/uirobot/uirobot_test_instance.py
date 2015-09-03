@@ -6,9 +6,9 @@ import os
 import json
 import logging
 
+from devil.android import apk_helper
 from pylib import constants
 from pylib.base import test_instance
-from pylib.utils import apk_helper
 
 class UirobotTestInstance(test_instance.TestInstance):
 

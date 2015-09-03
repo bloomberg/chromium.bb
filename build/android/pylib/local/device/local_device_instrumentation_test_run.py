@@ -6,11 +6,11 @@ import logging
 import re
 import time
 
+from devil.android import device_errors
+from devil.android.sdk import keyevent
 from pylib import flag_changer
 from pylib.base import base_test_result
 from pylib.base import test_run
-from pylib.constants import keyevent
-from pylib.device import device_errors
 from pylib.local.device import local_device_test_run
 
 

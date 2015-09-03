@@ -8,7 +8,7 @@ import os
 import shutil
 import sys
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 from pylib import constants
 
 

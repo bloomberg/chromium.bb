@@ -9,10 +9,10 @@ import shutil
 import sys
 import tempfile
 
+from devil.android import apk_helper
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_instance
-from pylib.utils import apk_helper
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))

@@ -9,8 +9,8 @@
 import argparse
 import sys
 
-from pylib.device import device_blacklist
-from pylib.device import device_utils
+from devil.android import device_blacklist
+from devil.android import device_utils
 
 
 def main():

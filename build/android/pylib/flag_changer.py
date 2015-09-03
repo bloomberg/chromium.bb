@@ -4,7 +4,7 @@
 
 import logging
 
-from pylib.device import device_errors
+from devil.android import device_errors
 
 
 class FlagChanger(object):

@@ -21,12 +21,12 @@ Performs the following steps:
 import logging
 import threading
 
+from devil.android import device_errors
+from devil.utils import reraiser_thread
+from devil.utils import watchdog_timer
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_collection
-from pylib.device import device_errors
-from pylib.utils import reraiser_thread
-from pylib.utils import watchdog_timer
 
 
 DEFAULT_TIMEOUT = 7 * 60  # seven minutes

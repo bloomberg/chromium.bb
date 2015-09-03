@@ -11,12 +11,12 @@ import os
 import random
 import sys
 
+from devil.utils import reraiser_thread
+from devil.utils import timeout_retry
 from pylib import constants
 from pylib.base import environment
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
-from pylib.utils import timeout_retry
-from pylib.utils import reraiser_thread
 
 class RemoteDeviceEnvironment(environment.Environment):
   """An environment for running on remote devices."""

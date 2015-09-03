@@ -9,11 +9,9 @@ import logging
 import os
 import psutil
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 from pylib import constants
 from pylib import valgrind_tools
-
-import pylib.device.device_utils
 
 
 def _GetProcessStartTime(pid):

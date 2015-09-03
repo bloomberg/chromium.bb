@@ -12,7 +12,7 @@ import tempfile
 import xml
 
 
-from pylib import cmd_helper
+from devil.utils import cmd_helper
 from pylib import constants
 from pylib.results.flakiness_dashboard import json_results_generator
 from pylib.utils import repo_utils
