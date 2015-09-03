@@ -9,11 +9,11 @@ namespace prefs {
 
 // Preferences in ios::prefs:: must have the same value as the corresponding
 // preference on desktop.
-// These preferences must not be registered by //ios code.
 // See chrome/common/pref_names.cc for a detailed description of each
 // preference.
 
 const char kAcceptLanguages[] = "intl.accept_languages";
+const char kHttpServerProperties[] = "net.http_server_properties";
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
