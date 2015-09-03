@@ -1898,17 +1898,13 @@ bool CSSPropertyParser::parseColumnsShorthand(bool important)
 {
     RefPtrWillBeRawPtr<CSSValue> columnWidth = nullptr;
     RefPtrWillBeRawPtr<CSSValue> columnCount = nullptr;
-    bool hasPendingExplicitAuto = false;
 
     for (unsigned propertiesParsed = 0; CSSParserValue* value = m_valueList->current(); propertiesParsed++) {
         if (propertiesParsed >= 2)
             return false; // Too many values for this shorthand. Invalid declaration.
-        if (!propertiesParsed && value->id == CSSValueAuto) {
-            // 'auto' is a valid value for any of the two longhands, and at this point we
-            // don't know which one(s) it is meant for. We need to see if there are other
-            // values first.
+        if (value->id == CSSValueAuto) {
+            // Skip 'auto' as we will use it for initial value if no width/count was parsed.
             m_valueList->next();
-            hasPendingExplicitAuto = true;
         } else {
             if (!columnWidth) {
                 if ((columnWidth = parseColumnWidth()))
@@ -1923,29 +1919,13 @@ bool CSSPropertyParser::parseColumnsShorthand(bool important)
             return false;
         }
     }
-    if (hasPendingExplicitAuto) {
-        // Time to assign the previously skipped 'auto' value to a property. If both properties are
-        // unassigned at this point (i.e. 'columns:auto'), it doesn't matter that much which one we
-        // set (although it does make a slight difference to web-inspector). The one we don't set
-        // here will get an implicit 'auto' value further down.
-        if (!columnWidth) {
-            columnWidth = cssValuePool().createIdentifierValue(CSSValueAuto);
-        } else {
-            ASSERT(!columnCount);
-            columnCount = cssValuePool().createIdentifierValue(CSSValueAuto);
-        }
-    }
-    ASSERT(columnCount || columnWidth);
 
-    // Any unassigned property at this point will become implicit 'auto'.
-    if (columnWidth)
-        addProperty(CSSPropertyWebkitColumnWidth, columnWidth, important);
-    else
-        addProperty(CSSPropertyWebkitColumnWidth, cssValuePool().createIdentifierValue(CSSValueAuto), important, true /* implicit */);
-    if (columnCount)
-        addProperty(CSSPropertyWebkitColumnCount, columnCount, important);
-    else
-        addProperty(CSSPropertyWebkitColumnCount, cssValuePool().createIdentifierValue(CSSValueAuto), important, true /* implicit */);
+    if (!columnWidth)
+        columnWidth = cssValuePool().createIdentifierValue(CSSValueAuto);
+    addProperty(CSSPropertyWebkitColumnWidth, columnWidth, important);
+    if (!columnCount)
+        columnCount = cssValuePool().createIdentifierValue(CSSValueAuto);
+    addProperty(CSSPropertyWebkitColumnCount, columnCount, important);
     return true;
 }
 
