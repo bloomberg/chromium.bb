@@ -80,7 +80,8 @@ SVGUseElement::~SVGUseElement()
 {
     setDocumentResource(0);
 #if !ENABLE(OILPAN)
-    clearResourceReferences();
+    clearShadowTree();
+    cancelShadowTreeRecreation();
 #endif
     svgUseLoadEventSender().cancelEvent(this);
 }
@@ -120,8 +121,10 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(ContainerNode* ro
 void SVGUseElement::removedFrom(ContainerNode* rootParent)
 {
     SVGGraphicsElement::removedFrom(rootParent);
-    if (rootParent->inDocument())
-        clearResourceReferences();
+    if (rootParent->inDocument()) {
+        clearShadowTree();
+        cancelShadowTreeRecreation();
+    }
 }
 
 TreeScope* SVGUseElement::referencedScope() const
@@ -302,17 +305,25 @@ void SVGUseElement::scheduleShadowTreeRecreation()
     document().scheduleUseShadowTreeUpdate(*this);
 }
 
-void SVGUseElement::clearResourceReferences()
+void SVGUseElement::cancelShadowTreeRecreation()
+{
+    m_needsShadowTreeRecreation = false;
+    document().unscheduleUseShadowTreeUpdate(*this);
+}
+
+void SVGUseElement::clearInstanceRoot()
 {
     if (m_targetElementInstance)
         m_targetElementInstance = nullptr;
+}
+
+void SVGUseElement::clearShadowTree()
+{
+    clearInstanceRoot();
 
     // FIXME: We should try to optimize this, to at least allow partial reclones.
     if (ShadowRoot* shadowTreeRootElement = userAgentShadowRoot())
         shadowTreeRootElement->removeChildren(OmitSubtreeModifiedEvent);
-
-    m_needsShadowTreeRecreation = false;
-    document().unscheduleUseShadowTreeUpdate(*this);
 
     removeAllOutgoingReferences();
 }
@@ -321,7 +332,8 @@ void SVGUseElement::buildPendingResource()
 {
     if (inUseShadowTree())
         return;
-    clearResourceReferences();
+    clearShadowTree();
+    cancelShadowTreeRecreation();
     if (!referencedScope() || !inDocument())
         return;
 
@@ -368,6 +380,7 @@ static PassRefPtrWillBeRawPtr<Node> cloneNodeAndAssociate(Node& toClone)
 void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 {
     ASSERT(!m_targetElementInstance);
+    ASSERT(!m_needsShadowTreeRecreation);
 
     // <use> creates a "user agent" shadow root. Do not build the shadow/instance tree for <use>
     // elements living in a user agent shadow tree because they will get expanded in a second
@@ -391,7 +404,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // SVG specification does not say a word about <use> & cycles. My view on this is: just ignore it!
     // Non-appearing <use> content is easier to debug, then half-appearing content.
     if (!buildShadowTree(target, m_targetElementInstance.get(), false)) {
-        clearResourceReferences();
+        clearShadowTree();
         return;
     }
 
@@ -406,7 +419,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // Expand all <use> elements in the shadow tree.
     // Expand means: replace the actual <use> element by what it references.
     if (!expandUseElementsInShadowTree(m_targetElementInstance.get())) {
-        clearResourceReferences();
+        clearShadowTree();
         return;
     }
 
@@ -685,6 +698,7 @@ void SVGUseElement::invalidateShadowTree()
 {
     if (!inActiveDocument() || m_needsShadowTreeRecreation)
         return;
+    clearInstanceRoot();
     scheduleShadowTreeRecreation();
     invalidateDependentShadowTrees();
 }

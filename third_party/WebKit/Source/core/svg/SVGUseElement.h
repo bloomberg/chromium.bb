@@ -76,16 +76,17 @@ private:
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    void clearResourceReferences();
-    void buildShadowAndInstanceTree(SVGElement* target);
-
     void scheduleShadowTreeRecreation();
+    void cancelShadowTreeRecreation();
     bool haveLoadedRequiredResources() override { return !isStructurallyExternal() || m_haveFiredLoadEvent; }
 
     bool selfHasRelativeLengths() const override;
 
     // Instance tree handling
+    void buildShadowAndInstanceTree(SVGElement* target);
+    void clearInstanceRoot();
     bool buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse);
+    void clearShadowTree();
     bool hasCycleUseReferencing(SVGUseElement*, ContainerNode* targetInstance, SVGElement*& newTarget);
     bool expandUseElementsInShadowTree(SVGElement*);
     void expandSymbolElementsInShadowTree(SVGElement*);
