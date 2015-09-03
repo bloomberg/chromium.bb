@@ -894,7 +894,11 @@ template("java_prebuilt_impl") {
 
   assert(defined(invoker.jar_path))
   _base_path = "${target_gen_dir}/$target_name"
-  _jar_path = _base_path + ".jar"
+
+  # Jar files can be needed at runtime (by Robolectric tests or java binaries),
+  # so do not put them under gen/.
+  target_dir_name = get_label_info(":$target_name", "dir")
+  _jar_path = "$root_out_dir/lib.java$target_dir_name/$target_name.jar"
   _build_config = _base_path + ".build_config"
 
   if (_supports_android) {
@@ -1155,7 +1159,11 @@ template("java_library_impl") {
       defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir) ||
       defined(invoker.srcjars) || defined(invoker.srcjar_deps))
   _base_path = "$target_gen_dir/$target_name"
-  _jar_path = _base_path + ".jar"
+
+  # Jar files can be needed at runtime (by Robolectric tests or java binaries),
+  # so do not put them under gen/.
+  target_dir_name = get_label_info(":$target_name", "dir")
+  _jar_path = "$root_out_dir/lib.java$target_dir_name/$target_name.jar"
   if (defined(invoker.jar_path)) {
     _jar_path = invoker.jar_path
   }
