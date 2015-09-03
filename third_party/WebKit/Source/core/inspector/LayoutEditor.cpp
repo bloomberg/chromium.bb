@@ -6,7 +6,10 @@
 #include "core/inspector/LayoutEditor.h"
 
 #include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/css/CSSImportRule.h"
+#include "core/css/CSSMediaRule.h"
 #include "core/css/CSSRuleList.h"
+#include "core/css/MediaList.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/frame/FrameView.h"
@@ -157,6 +160,46 @@ InspectorHighlightConfig affectedNodesHighlightConfig()
     return config;
 }
 
+void collectMediaQueriesFromRule(CSSRule* rule, Vector<String>& mediaArray)
+{
+    MediaList* mediaList;
+    if (rule->type() == CSSRule::MEDIA_RULE) {
+        CSSMediaRule* mediaRule = toCSSMediaRule(rule);
+        mediaList = mediaRule->media();
+    } else if (rule->type() == CSSRule::IMPORT_RULE) {
+        CSSImportRule* importRule = toCSSImportRule(rule);
+        mediaList = importRule->media();
+    } else {
+        mediaList = nullptr;
+    }
+
+    if (mediaList && mediaList->length())
+        mediaArray.append(mediaList->mediaText());
+}
+
+void buildMediaListChain(CSSRule* rule, Vector<String>& mediaArray)
+{
+    while (rule) {
+        collectMediaQueriesFromRule(rule, mediaArray);
+        if (rule->parentRule()) {
+            rule = rule->parentRule();
+        } else {
+            CSSStyleSheet* styleSheet = rule->parentStyleSheet();
+            // TODO: should be able to replace cycle by one iteration of it.
+            while (styleSheet) {
+                MediaList* mediaList = styleSheet->media();
+                if (mediaList && mediaList->length())
+                    mediaArray.append(mediaList->mediaText());
+
+                rule = styleSheet->ownerRule();
+                if (rule)
+                    break;
+                styleSheet = styleSheet->parentStyleSheet();
+            }
+        }
+    }
+}
+
 } // namespace
 
 LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
@@ -166,6 +209,7 @@ LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAg
     , m_changingProperty(CSSPropertyInvalid)
     , m_propertyInitialValue(0)
     , m_isDirty(false)
+    , m_currentRuleIndex(-1)
 {
 }
 
@@ -391,6 +435,26 @@ String LayoutEditor::currentSelectorInfo()
     Document* ownerDocument = m_element->ownerDocument();
     if (!ownerDocument->isActive() || m_currentRuleIndex == -1)
         return object->toJSONString();
+
+    if (m_currentRuleIndex != -1) {
+        bool hasSameSelectors = false;
+        for (size_t i = 0; i < m_matchedRules.size(); i++) {
+            if (i != static_cast<unsigned>(m_currentRuleIndex) && m_matchedRules[i]->selectorText() == currentSelectorText) {
+                hasSameSelectors = true;
+                break;
+            }
+        }
+
+        if (hasSameSelectors) {
+            Vector<String> medias;
+            buildMediaListChain(m_matchedRules[m_currentRuleIndex].get(), medias);
+            RefPtr<JSONArray> mediasJSONArray = JSONArray::create();
+            for (size_t i = 0; i < medias.size(); ++i)
+                mediasJSONArray->pushString(medias[i]);
+
+            object->setArray("medias", mediasJSONArray.release());
+        }
+    }
 
     TrackExceptionState exceptionState;
     RefPtrWillBeRawPtr<StaticElementList> elements = ownerDocument->querySelectorAll(AtomicString(m_matchedRules[m_currentRuleIndex]->selectorText()), exceptionState);

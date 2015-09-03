@@ -835,7 +835,8 @@ function showSelectorTooltip()
     tooltipElement.style.left = "100px";
     tooltipElement.style.top = "100px";
     var selectorInfo = JSON.parse(InspectorOverlayHost.currentSelectorInfo());
-    tooltipElement.textContent = selectorInfo.selector;
+    var medias = selectorInfo.medias ? selectorInfo.medias.map(function(media) {return "@media " + media + ""}) : "";
+    tooltipElement.textContent = (medias ? medias.join(", ") + " { "  : "") + selectorInfo.selector + ( medias ? " } " : "");
     tooltipElement.style.backgroundColor = "#eee";
 
     var matchedNodesCanvas = document.getElementById("layout-editor-matched-nodes-canvas");
