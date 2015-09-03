@@ -277,10 +277,10 @@ bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function,
   AddressRangeVector ranges;
   MapAddressRange(image_map_, AddressRange(rva, static_cast<DWORD>(length)),
                   &ranges);
-  wstring wname(name);
   for (size_t i = 0; i < ranges.size(); ++i) {
     fprintf(output_, "FUNC %x %x %x %ws\n",
-            ranges[i].rva, ranges[i].length, stack_param_size, wname.c_str());
+            ranges[i].rva, ranges[i].length, stack_param_size,
+            name.m_str);
   }
 
   CComPtr<IDiaEnumLineNumbers> lines;
@@ -629,7 +629,6 @@ bool PDBSourceLineWriter::PrintFrameDataUsingPDB() {
         }
       }
 
-      wstring wprogram_string(program_string);
       for (size_t i = 0; i < frame_infos.size(); ++i) {
         const FrameInfo& fi(frame_infos[i]);
         fprintf(output_, "STACK WIN %x %x %x %x %x %x %x %x %x %d ",
@@ -637,7 +636,7 @@ bool PDBSourceLineWriter::PrintFrameDataUsingPDB() {
                 0 /* epilog_size */, parameter_size, saved_register_size,
                 local_size, max_stack_size, program_string_result == S_OK);
         if (program_string_result == S_OK) {
-          fprintf(output_, "%ws\n", wprogram_string.c_str());
+          fprintf(output_, "%ws\n", program_string.m_str);
         } else {
           fprintf(output_, "%d\n", allocates_base_pointer);
         }
@@ -821,9 +820,9 @@ bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol) {
   AddressRangeVector ranges;
   MapAddressRange(image_map_, AddressRange(rva, 1), &ranges);
   for (size_t i = 0; i < ranges.size(); ++i) {
-    wstring wname(name);
     fprintf(output_, "PUBLIC %x %x %ws\n", ranges[i].rva,
-            stack_param_size > 0 ? stack_param_size : 0, wname.c_str());
+            stack_param_size > 0 ? stack_param_size : 0,
+            name.m_str);
   }
   return true;
 }
