@@ -176,9 +176,15 @@ void AddSameCenterYConstraint(UIView* parentView,
                               UIView* subview1,
                               UIView* subview2);
 
+// Whether the |environment| has a compact horizontal size class.
+bool IsCompact(id<UITraitEnvironment> environment);
+
 // Whether the main application window's rootViewController has a compact
 // horizontal size class.
 bool IsCompact();
+
+// Whether the |environment| has a compact iPad horizontal size class.
+bool IsCompactTablet(id<UITraitEnvironment> environment);
 
 // Whether the main application window's rootViewController has a compact
 // iPad horizontal size class.
