@@ -4,13 +4,10 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.util.Log;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.PassphraseType;
 import org.json.JSONArray;
@@ -57,9 +54,6 @@ public class ProfileSyncService {
     }
 
     private static final String TAG = "ProfileSyncService";
-
-    @VisibleForTesting
-    public static final String SESSION_TAG_PREFIX = "session_sync";
 
     private static final int[] ALL_SELECTABLE_TYPES = new int[] {
         ModelType.AUTOFILL,
@@ -134,17 +128,10 @@ public class ProfileSyncService {
     }
 
     /**
-     * Sets the the machine tag used by session sync to a unique value.
+     * Sets the the machine tag used by session sync.
      */
-    public void setSessionsId(UniqueIdentificationGenerator generator) {
+    public void setSessionsId(String sessionTag) {
         ThreadUtils.assertOnUiThread();
-        String uniqueTag = generator.getUniqueId(null);
-        if (uniqueTag.isEmpty()) {
-            Log.e(TAG, "Unable to get unique tag for sync. "
-                    + "This may lead to unexpected tab sync behavior.");
-            return;
-        }
-        String sessionTag = SESSION_TAG_PREFIX + uniqueTag;
         nativeSetSyncSessionsId(mNativeProfileSyncServiceAndroid, sessionTag);
     }
 
@@ -411,10 +398,8 @@ public class ProfileSyncService {
      */
     @CalledByNative
     public void syncStateChanged() {
-        if (!mListeners.isEmpty()) {
-            for (SyncStateChangedListener listener : mListeners) {
-                listener.syncStateChanged();
-            }
+        for (SyncStateChangedListener listener : mListeners) {
+            listener.syncStateChanged();
         }
     }
 

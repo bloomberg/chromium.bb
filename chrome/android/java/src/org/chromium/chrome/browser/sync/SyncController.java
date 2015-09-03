@@ -7,13 +7,14 @@ package org.chromium.chrome.browser.sync;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
@@ -45,7 +46,7 @@ import org.chromium.sync.signin.ChromeSigninController;
  */
 public class SyncController implements ProfileSyncService.SyncStateChangedListener,
                                        AndroidSyncSettings.AndroidSyncSettingsObserver {
-    private static final String TAG = "SyncController";
+    private static final String TAG = "cr.SyncController";
 
     /**
      * An identifier for the generator in UniqueIdentificationGeneratorFactory to be used to
@@ -53,6 +54,9 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      * method.
      */
     public static final String GENERATOR_ID = "SYNC";
+
+    @VisibleForTesting
+    public static final String SESSION_TAG_PREFIX = "session_sync";
 
     private static SyncController sInstance;
 
@@ -68,9 +72,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         mProfileSyncService = ProfileSyncService.get();
         mProfileSyncService.addSyncStateChangedListener(this);
 
-        // Set the sessions ID using the generator that was registered for GENERATOR_ID.
-        mProfileSyncService.setSessionsId(
-                UniqueIdentificationGeneratorFactory.getInstance(GENERATOR_ID));
+        setSessionsId();
 
         // Create the SyncNotificationController.
         mSyncNotificationController = new SyncNotificationController(
@@ -228,5 +230,20 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      */
     public SyncNotificationController getSyncNotificationController() {
         return mSyncNotificationController;
+    }
+
+    /**
+     * Set the sessions ID using the generator that was registered for GENERATOR_ID.
+     */
+    private void setSessionsId() {
+        UniqueIdentificationGenerator generator =
+                UniqueIdentificationGeneratorFactory.getInstance(GENERATOR_ID);
+        String uniqueTag = generator.getUniqueId(null);
+        if (uniqueTag.isEmpty()) {
+            Log.e(TAG, "Unable to get unique tag for sync. "
+                    + "This may lead to unexpected tab sync behavior.");
+            return;
+        }
+        mProfileSyncService.setSessionsId(SESSION_TAG_PREFIX + uniqueTag);
     }
 }
