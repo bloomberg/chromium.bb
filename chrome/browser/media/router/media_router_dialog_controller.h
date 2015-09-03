@@ -51,6 +51,9 @@ class MediaRouterDialogController {
   // It is a no-op to call this function if there is currently no dialog.
   void HideMediaRouterDialog();
 
+  // Indicates if the media router dialog already exists.
+  virtual bool IsShowingMediaRouterDialog() const = 0;
+
  protected:
   // Use MediaRouterDialogController::GetOrCreateForWebContents() to create an
   // instance.
@@ -77,8 +80,6 @@ class MediaRouterDialogController {
   virtual void CreateMediaRouterDialog() = 0;
   // Closes the media router dialog if it exists.
   virtual void CloseMediaRouterDialog() = 0;
-  // Indicates if the media router dialog already exists.
-  virtual bool IsShowingMediaRouterDialog() const = 0;
 
   base::ThreadChecker thread_checker_;
 

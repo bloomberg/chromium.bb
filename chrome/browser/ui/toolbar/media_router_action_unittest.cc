@@ -2,14 +2,66 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_test.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/test/test_utils.h"
 #include "grit/theme_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_unittest_util.h"
+
+using content::WebContents;
+using media_router::MediaRouterDialogControllerImpl;
+
+class MockToolbarActionViewDelegate : public ToolbarActionViewDelegate {
+ public:
+  MockToolbarActionViewDelegate() {}
+  ~MockToolbarActionViewDelegate() {}
+
+  MOCK_CONST_METHOD0(GetCurrentWebContents, content::WebContents*());
+  MOCK_METHOD0(UpdateState, void());
+  MOCK_CONST_METHOD0(IsMenuRunning, bool());
+  MOCK_METHOD1(OnPopupShown, void(bool by_user));
+  MOCK_METHOD0(OnPopupClosed, void());
+};
+
+class TestMediaRouterAction : public MediaRouterAction {
+ public:
+  explicit TestMediaRouterAction(Browser* browser)
+      : MediaRouterAction(browser),
+        web_contents_(WebContents::Create(WebContents::CreateParams(
+            browser->profile()))),
+        controller_(nullptr),
+        platform_delegate_(nullptr) {}
+  ~TestMediaRouterAction() override {}
+
+  void SetMediaRouterDialogController(
+      MediaRouterDialogControllerImpl* controller) {
+    DCHECK(controller);
+    controller_ = controller;
+  }
+
+ private:
+  MediaRouterDialogControllerImpl* GetMediaRouterDialogController()
+      override {
+    return controller_;
+  }
+
+  MediaRouterActionPlatformDelegate* GetPlatformDelegate() override {
+    return platform_delegate_;
+  }
+
+  scoped_ptr<WebContents> web_contents_;
+  MediaRouterDialogControllerImpl* controller_;
+  MediaRouterActionPlatformDelegate* platform_delegate_;
+};
 
 class MediaRouterActionUnitTest : public MediaRouterTest {
  public:
@@ -64,7 +116,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   // BrowserWithTestWindowTest:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    action_.reset(new MediaRouterAction(browser()));
+    action_.reset(new TestMediaRouterAction(browser()));
   }
 
   void TearDown() override {
@@ -72,7 +124,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  MediaRouterAction* action() { return action_.get(); }
+  TestMediaRouterAction* action() { return action_.get(); }
   const media_router::Issue* fake_issue_notification() {
     return &fake_issue_notification_;
   }
@@ -94,7 +146,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   const gfx::Image warning_icon() { return warning_icon_; }
 
  private:
-  scoped_ptr<MediaRouterAction> action_;
+  scoped_ptr<TestMediaRouterAction> action_;
 
   // Fake Issues.
   const media_router::Issue fake_issue_notification_;
@@ -253,4 +305,45 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
   action()->OnRoutesUpdated(*routes.get());
   EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
                                  action()->GetIcon(nullptr, gfx::Size())));
+}
+
+TEST_F(MediaRouterActionUnitTest, IconPressedState) {
+  // Start with one window with one tab.
+  EXPECT_EQ(0, browser()->tab_strip_model()->count());
+  chrome::NewTab(browser());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Create a reference to initiator contents.
+  WebContents* initiator_ =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  MediaRouterDialogControllerImpl::CreateForWebContents(initiator_);
+  MediaRouterDialogControllerImpl* dialog_controller_ =
+      MediaRouterDialogControllerImpl::FromWebContents(initiator_);
+  ASSERT_TRUE(dialog_controller_);
+
+  // Sets the controller to use for TestMediaRouterAction.
+  action()->SetMediaRouterDialogController(dialog_controller_);
+
+  // Create a ToolbarActionViewDelegate to use for MediaRouterAction.
+  scoped_ptr<MockToolbarActionViewDelegate> mock_delegate(
+      new MockToolbarActionViewDelegate());
+
+  EXPECT_CALL(*mock_delegate, GetCurrentWebContents()).WillOnce(
+      testing::Return(initiator_));
+  EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
+  action()->SetDelegate(mock_delegate.get());
+
+  EXPECT_CALL(*mock_delegate, OnPopupShown(true)).WillOnce(testing::Return());
+  action()->ExecuteAction(true);
+
+  EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
+  dialog_controller_->CloseMediaRouterDialog();
+
+  dialog_controller_->Reset();
+  EXPECT_CALL(*mock_delegate, OnPopupShown(true)).WillOnce(testing::Return());
+  dialog_controller_->CreateMediaRouterDialog();
+
+  EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
+  dialog_controller_->CloseMediaRouterDialog();
 }

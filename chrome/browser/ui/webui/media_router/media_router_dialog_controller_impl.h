@@ -6,11 +6,20 @@
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+FORWARD_DECLARE_TEST(MediaRouterActionUnitTest, IconPressedState);
+
+class MediaRouterAction;
+
 namespace media_router {
+
+namespace {
+class MediaRouterDialogDelegate;
+}
 
 // A desktop implementation of MediaRouterDialogController.
 // This class is not thread safe and must be called on the UI thread.
@@ -27,10 +36,16 @@ class MediaRouterDialogControllerImpl :
   // Returns nullptr if there is no dialog.
   content::WebContents* GetMediaRouterDialog() const;
 
+  // |action| must always be non-null.
+  void SetMediaRouterAction(const base::WeakPtr<MediaRouterAction>& action);
+
+  // MediaRouterDialogController:
+  bool IsShowingMediaRouterDialog() const override;
 
  private:
   class DialogWebContentsObserver;
   friend class content::WebContentsUserData<MediaRouterDialogControllerImpl>;
+  FRIEND_TEST_ALL_PREFIXES(::MediaRouterActionUnitTest, IconPressedState);
 
   // Use MediaRouterDialogControllerImpl::CreateForWebContents() to create an
   // instance.
@@ -39,7 +54,6 @@ class MediaRouterDialogControllerImpl :
   // MediaRouterDialogController:
   void CreateMediaRouterDialog() override;
   void CloseMediaRouterDialog() override;
-  bool IsShowingMediaRouterDialog() const override;
   void Reset() override;
 
   // Invoked when the dialog WebContents has navigated.
@@ -52,6 +66,8 @@ class MediaRouterDialogControllerImpl :
   // True if the controller is waiting for a new media router dialog to be
   // created.
   bool media_router_dialog_pending_;
+
+  base::WeakPtr<MediaRouterAction> action_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerImpl);
 };

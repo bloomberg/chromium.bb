@@ -8,21 +8,22 @@
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
-#include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-using media_router::MediaRouterDialogController;
+using media_router::MediaRouterDialogControllerImpl;
 
 MediaRouterAction::MediaRouterAction(Browser* browser)
     : media_router::IssuesObserver(GetMediaRouter(browser)),
@@ -40,8 +41,14 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
       current_icon_(&media_router_idle_icon_),
       has_local_route_(false),
       delegate_(nullptr),
+      browser_(browser),
       platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)),
-      contextual_menu_(browser) {}
+      contextual_menu_(browser),
+      tab_strip_model_observer_(this),
+      weak_ptr_factory_(this) {
+  DCHECK(browser_);
+  tab_strip_model_observer_.Add(browser_->tab_strip_model());
+}
 
 MediaRouterAction::~MediaRouterAction() {
 }
@@ -52,6 +59,14 @@ std::string MediaRouterAction::GetId() const {
 
 void MediaRouterAction::SetDelegate(ToolbarActionViewDelegate* delegate) {
   delegate_ = delegate;
+
+  // Updates the current popup state if |delegate_| is non-null and has
+  // WebContents ready.
+  // In cases such as opening a new browser window, SetDelegate() will be
+  // called before the WebContents is set. In those cases, we update the popup
+  // state when ActiveTabChanged() is called.
+  if (delegate_ && delegate_->GetCurrentWebContents())
+    UpdatePopupState();
 }
 
 gfx::Image MediaRouterAction::GetIcon(content::WebContents* web_contents,
@@ -90,6 +105,7 @@ bool MediaRouterAction::HasPopup(
 
 void MediaRouterAction::HidePopup() {
   GetMediaRouterDialogController()->HideMediaRouterDialog();
+  OnPopupHidden();
 }
 
 gfx::NativeView MediaRouterAction::GetPopupNativeView() {
@@ -102,8 +118,8 @@ ui::MenuModel* MediaRouterAction::GetContextMenu() {
 
 bool MediaRouterAction::ExecuteAction(bool by_user) {
   GetMediaRouterDialogController()->ShowMediaRouterDialog();
-  if (platform_delegate_)
-    platform_delegate_->CloseOverflowMenuIfOpen();
+  if (GetPlatformDelegate())
+    GetPlatformDelegate()->CloseOverflowMenuIfOpen();
   return true;
 }
 
@@ -132,17 +148,60 @@ void MediaRouterAction::OnRoutesUpdated(
   MaybeUpdateIcon();
 }
 
-MediaRouterDialogController*
+void MediaRouterAction::ActiveTabChanged(content::WebContents* old_contents,
+                                         content::WebContents* new_contents,
+                                         int index,
+                                         int reason) {
+  UpdatePopupState();
+}
+
+void MediaRouterAction::OnPopupHidden() {
+  if (delegate_)
+    delegate_->OnPopupClosed();
+}
+
+void MediaRouterAction::OnPopupShown() {
+  // We depress the action regardless of whether ExecuteAction() was user
+  // initiated.
+  if (delegate_)
+    delegate_->OnPopupShown(true);
+}
+
+void MediaRouterAction::UpdatePopupState() {
+  MediaRouterDialogControllerImpl* controller =
+      GetMediaRouterDialogController();
+
+  if (!controller)
+    return;
+
+  // Immediately keep track of MediaRouterAction in the controller. If it was
+  // already set, this should be a no-op.
+  controller->SetMediaRouterAction(weak_ptr_factory_.GetWeakPtr());
+
+  // Update the button in case the pressed state is out of sync with dialog
+  // visibility.
+  if (controller->IsShowingMediaRouterDialog())
+    OnPopupShown();
+  else
+    OnPopupHidden();
+}
+
+MediaRouterDialogControllerImpl*
 MediaRouterAction::GetMediaRouterDialogController() {
   DCHECK(delegate_);
   content::WebContents* web_contents = delegate_->GetCurrentWebContents();
   DCHECK(web_contents);
-  return MediaRouterDialogController::GetOrCreateForWebContents(web_contents);
+  return MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
+      web_contents);
 }
 
 media_router::MediaRouter* MediaRouterAction::GetMediaRouter(Browser* browser) {
   return media_router::MediaRouterFactory::GetApiForBrowserContext(
       static_cast<content::BrowserContext*>(browser->profile()));
+}
+
+MediaRouterActionPlatformDelegate* MediaRouterAction::GetPlatformDelegate() {
+  return platform_delegate_.get();
 }
 
 void MediaRouterAction::MaybeUpdateIcon() {

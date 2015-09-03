@@ -5,23 +5,27 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_H_
 #define CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_H_
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 
 class Browser;
 class MediaRouterActionPlatformDelegate;
+class TabStripModel;
 
 namespace media_router {
-class MediaRouterDialogController;
+class MediaRouterDialogControllerImpl;
 }  // namespace media_router
 
 // The class for the Media Router component action that will be shown in
 // the toolbar.
 class MediaRouterAction : public ToolbarActionViewController,
                           public media_router::IssuesObserver,
-                          public media_router::MediaRoutesObserver {
+                          public media_router::MediaRoutesObserver,
+                          public TabStripModelObserver {
  public:
   explicit MediaRouterAction(Browser* browser);
   ~MediaRouterAction() override;
@@ -53,14 +57,28 @@ class MediaRouterAction : public ToolbarActionViewController,
   void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes)
       override;
 
+  // ToolbarStripModelObserver:
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
+
+  void OnPopupHidden();
+  void OnPopupShown();
+
  private:
-  // Returns a reference to the MediaRouterDialogController associated with
+  void UpdatePopupState();
+
+  // Returns a reference to the MediaRouterDialogControllerImpl associated with
   // |delegate_|'s current WebContents. Guaranteed to be non-null.
   // |delegate_| and its current WebContents must not be null.
-  media_router::MediaRouterDialogController* GetMediaRouterDialogController();
+  // Marked virtual for tests.
+  virtual media_router::MediaRouterDialogControllerImpl*
+      GetMediaRouterDialogController();
 
   // Overridden by tests.
   virtual media_router::MediaRouter* GetMediaRouter(Browser* browser);
+  virtual MediaRouterActionPlatformDelegate* GetPlatformDelegate();
 
   // Checks if the current icon of MediaRouterAction has changed. If so,
   // updates |current_icon_|.
@@ -92,10 +110,17 @@ class MediaRouterAction : public ToolbarActionViewController,
 
   ToolbarActionViewDelegate* delegate_;
 
+  Browser* const browser_;
+
   // The delegate to handle platform-specific implementations.
   scoped_ptr<MediaRouterActionPlatformDelegate> platform_delegate_;
 
   MediaRouterContextualMenu contextual_menu_;
+
+  ScopedObserver<TabStripModel, TabStripModelObserver>
+      tab_strip_model_observer_;
+
+  base::WeakPtrFactory<MediaRouterAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAction);
 };
