@@ -21,7 +21,7 @@ namespace ui {
 // We can't include ui/events/keycodes/dom/dom_code.h here because of
 // conflicts with preprocessor macros in <linux/input.h>, so we use the
 // same underlying data with an additional prefix.
-#define USB_KEYMAP(usb, xkb, win, mac, code, id) DOM_CODE_ ## id = usb
+#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) DOM_CODE_ ## id = usb
 #define USB_KEYMAP_DECLARATION enum class DomCode
 #include "ui/events/keycodes/dom/keycode_converter_data.inc"
 #undef USB_KEYMAP

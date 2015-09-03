@@ -21,6 +21,8 @@ const size_t kExpectedMappedKeyCount = 138;
 const size_t kExpectedMappedKeyCount = 168;
 #elif defined(OS_MACOSX)
 const size_t kExpectedMappedKeyCount = 118;
+#elif defined(OS_ANDROID)
+const size_t kExpectedMappedKeyCount = 168;
 #else
 const size_t kExpectedMappedKeyCount = 0;
 #endif

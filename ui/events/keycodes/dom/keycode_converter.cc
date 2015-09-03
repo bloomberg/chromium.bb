@@ -16,13 +16,15 @@ namespace {
 // Table of USB codes (equivalent to DomCode values), native scan codes,
 // and DOM Level 3 |code| strings.
 #if defined(OS_WIN)
-#define USB_KEYMAP(usb, xkb, win, mac, code, id) {usb, win, code}
+#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) {usb, win, code}
 #elif defined(OS_LINUX)
-#define USB_KEYMAP(usb, xkb, win, mac, code, id) {usb, xkb, code}
+#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) {usb, xkb, code}
 #elif defined(OS_MACOSX)
-#define USB_KEYMAP(usb, xkb, win, mac, code, id) {usb, mac, code}
+#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) {usb, mac, code}
+#elif defined(OS_ANDROID)
+#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) {usb, evdev, code}
 #else
-#define USB_KEYMAP(usb, xkb, win, mac, code, id) {usb, 0, code}
+#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) {usb, 0, code}
 #endif
 #define USB_KEYMAP_DECLARATION const KeycodeMapEntry usb_keycode_map[] =
 #include "ui/events/keycodes/dom/keycode_converter_data.inc"
