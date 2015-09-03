@@ -454,18 +454,21 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
                   : ChromeViewHostMsg_GetPluginInfo_Status::kBlocked;
   }
 
-  if (*status == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed) {
-    // Allow an embedder of <webview> to block a plugin from being loaded inside
-    // the guest. In order to do this, set the status to 'Unauthorized' here,
-    // and update the status as appropriate depending on the response from the
-    // embedder.
 #if defined(ENABLE_EXTENSIONS)
+  // Allow an embedder of <webview> to block a plugin from being loaded inside
+  // the guest. In order to do this, set the status to 'Unauthorized' here,
+  // and update the status as appropriate depending on the response from the
+  // embedder.
+  if (*status == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
+      *status == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked ||
+      *status ==
+          ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent) {
     if (extensions::WebViewRendererState::GetInstance()->IsGuest(
-        render_process_id_))
+            render_process_id_))
       *status = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
 
-#endif
   }
+#endif
 }
 
 bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
