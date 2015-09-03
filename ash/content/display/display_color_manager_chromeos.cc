@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -31,6 +32,8 @@ namespace {
 
 bool ParseFile(const base::FilePath& path,
                DisplayColorManager::ColorCalibrationData* data) {
+  if (!base::PathExists(path))  // No icc file for this display; not an error.
+    return false;
   qcms_profile* display_profile = qcms_profile_from_path(path.value().c_str());
 
   if (!display_profile) {
