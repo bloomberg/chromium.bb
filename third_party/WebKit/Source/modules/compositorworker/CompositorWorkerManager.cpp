@@ -107,7 +107,7 @@ void CompositorWorkerManager::shutdownBackingThread()
     if (m_workerCount == 0) {
         m_thread->shutdown();
         m_thread = nullptr;
-        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(destroyThread, AllowCrossThreadAccess(m_platformThread.leakPtr())));
+        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, threadSafeBind(destroyThread, AllowCrossThreadAccess(m_platformThread.leakPtr())));
     }
 }
 

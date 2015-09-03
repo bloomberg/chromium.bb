@@ -32,25 +32,25 @@
 #define MessageLoopInterruptor_h
 
 #include "platform/heap/ThreadState.h"
-#include "public/platform/WebThread.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
 class MessageLoopInterruptor : public ThreadState::Interruptor {
 public:
-    explicit MessageLoopInterruptor(WebThread* thread) : m_thread(thread) { }
+    explicit MessageLoopInterruptor(WebTaskRunner* taskRunner) : m_taskRunner(taskRunner) { }
 
     void requestInterrupt() override
     {
         // GCTask has an empty run() method. Its only purpose is to guarantee
         // that MessageLoop will have a task to process which will result
         // in PendingGCRunner::didProcessTask being executed.
-        m_thread->postTask(FROM_HERE, new GCTask);
+        m_taskRunner->postTask(FROM_HERE, new GCTask);
     }
 
 private:
-    class GCTask : public WebThread::Task {
+    class GCTask : public WebTaskRunner::Task {
     public:
         virtual ~GCTask() { }
 
@@ -64,7 +64,7 @@ private:
         }
     };
 
-    WebThread* m_thread;
+    WebTaskRunner* m_taskRunner;
 };
 
 } // namespace blink

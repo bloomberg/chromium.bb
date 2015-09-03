@@ -84,6 +84,7 @@ void SpeculationsPumpSession::addedElementTokens(size_t count)
 
 HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser)
     : m_parser(parser)
+    , m_loadingTaskRunner(Platform::current()->currentThread()->scheduler()->loadingTaskRunner())
     , m_cancellableContinueParse(WTF::bind(&HTMLParserScheduler::continueParsing, this))
     , m_isSuspendedWithActiveTimer(false)
 {
@@ -96,8 +97,7 @@ HTMLParserScheduler::~HTMLParserScheduler()
 void HTMLParserScheduler::scheduleForResume()
 {
     ASSERT(!m_isSuspendedWithActiveTimer);
-    Platform::current()->currentThread()->scheduler()->postLoadingTask(
-        FROM_HERE, m_cancellableContinueParse.cancelAndCreate());
+    m_loadingTaskRunner->postTask(FROM_HERE, m_cancellableContinueParse.cancelAndCreate());
 }
 
 void HTMLParserScheduler::suspend()
@@ -116,8 +116,7 @@ void HTMLParserScheduler::resume()
         return;
     m_isSuspendedWithActiveTimer = false;
 
-    Platform::current()->currentThread()->scheduler()->postLoadingTask(
-        FROM_HERE, m_cancellableContinueParse.cancelAndCreate());
+    m_loadingTaskRunner->postTask(FROM_HERE, m_cancellableContinueParse.cancelAndCreate());
 }
 
 void HTMLParserScheduler::detach()

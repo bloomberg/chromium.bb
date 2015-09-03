@@ -57,26 +57,14 @@ public:
     // Takes ownership of |IdleTask|. Can be called from any thread.
     virtual void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) { }
 
-    // Schedule a loading task to be run on the the associated WebThread. Loading
-    // tasks usually have the default priority, but may be deprioritised
-    // when the user is interacting with the device.
-    // Takes ownership of |WebThread::Task|. Can be called from any thread.
-    // TODO(alexclarke): Remove this in favour of loadingTaskRunner().
-    virtual void postLoadingTask(const WebTraceLocation&, WebThread::Task*) { }
-
-    // Schedule a timer task to be run on the the associated WebThread. Timer Tasks
-    // tasks usually have the default priority, but may be delayed
-    // when the user is interacting with the device.
-    // Takes ownership of |WebThread::Task|. Can be called from any thread.
-    // TODO(alexclarke): Remove this in favour of timerTaskRunner().
-    virtual void postTimerTask(const WebTraceLocation&, WebThread::Task*, long long delayMs) {}
-
     // Schedule a timer task to be run on the the associated WebThread. Timer Tasks
     // tasks usually have the default priority, but may be delayed
     // when the user is interacting with the device.
     // |monotonicTime| is in the timebase of WTF::monotonicallyIncreasingTime().
-    // Takes ownership of |WebThread::Task|. Can be called from any thread.
-    virtual void postTimerTaskAt(const WebTraceLocation&, WebThread::Task*, double monotonicTime) {}
+    // Takes ownership of |WebTaskRunner::Task|. Can be called from any thread.
+    // TODO(alexclarke): Move timer throttling for background pages to the
+    // chromium side and remove this.
+    virtual void postTimerTaskAt(const WebTraceLocation&, WebTaskRunner::Task*, double monotonicTime) {}
 
     // Returns a WebTaskRunner for loading tasks. Can be called from any thread.
     virtual WebTaskRunner* loadingTaskRunner() { return nullptr; }
@@ -95,13 +83,10 @@ public:
 #ifdef INSIDE_BLINK
     // Helpers for posting bound functions as tasks.
     typedef Function<void(double deadlineSeconds)> IdleTask;
-    typedef Function<void()> Task;
 
     void postIdleTask(const WebTraceLocation&, PassOwnPtr<IdleTask>);
     void postNonNestableIdleTask(const WebTraceLocation&, PassOwnPtr<IdleTask>);
     void postIdleTaskAfterWakeup(const WebTraceLocation&, PassOwnPtr<IdleTask>);
-    void postLoadingTask(const WebTraceLocation&, PassOwnPtr<Task>);
-    void postTimerTask(const WebTraceLocation&, PassOwnPtr<Task>, long long delayMs);
 #endif
 };
 

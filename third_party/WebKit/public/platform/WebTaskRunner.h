@@ -7,6 +7,10 @@
 
 #include "WebCommon.h"
 
+#ifdef INSIDE_BLINK
+#include "wtf/Functional.h"
+#endif
+
 namespace blink {
 
 class WebTraceLocation;
@@ -35,7 +39,15 @@ public:
     // Takes ownership of |Task|. Can be called from any thread.
     virtual void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) {}
 
-    // TODO(alexclarke): Add helpers for posting bound functions as tasks.
+#ifdef INSIDE_BLINK
+    // Helpers for posting bound functions as tasks.
+    typedef Function<void()> ClosureTask;
+
+    void postTask(const WebTraceLocation&, PassOwnPtr<ClosureTask>);
+    // TODO(alexclarke): Remove this when possible.
+    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ClosureTask>, long long delayMs);
+    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ClosureTask>, double delayMs);
+#endif
 };
 
 } // namespace blink

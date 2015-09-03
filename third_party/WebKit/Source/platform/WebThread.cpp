@@ -5,10 +5,7 @@
 #include "config.h"
 #include "public/platform/WebThread.h"
 
-#include "platform/Task.h"
-#include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
-#include "wtf/OwnPtr.h"
 
 #if OS(WIN)
 #include <windows.h>
@@ -25,15 +22,5 @@ static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t), "size of platfor
 #else
 #error Unexpected platform
 #endif
-
-void WebThread::postTask(const WebTraceLocation& location, PassOwnPtr<Function<void()>> function)
-{
-    postTask(location, new blink::Task(function));
-}
-
-void WebThread::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<Function<void()>> function, long long delayMs)
-{
-    postDelayedTask(location, new blink::Task(function), delayMs);
-}
 
 } // namespace blink

@@ -15,7 +15,7 @@ void CancellableTaskFactory::cancel()
     m_weakPtrFactory.revokeAll();
 }
 
-WebThread::Task* CancellableTaskFactory::cancelAndCreate()
+WebTaskRunner::Task* CancellableTaskFactory::cancelAndCreate()
 {
     cancel();
     return new CancellableTask(m_weakPtrFactory.createWeakPtr());

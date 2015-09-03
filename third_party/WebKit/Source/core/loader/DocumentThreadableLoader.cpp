@@ -67,7 +67,7 @@ private:
     public:
         explicit EmptyDataReader(WebDataConsumerHandle::Client* client) : m_factory(this)
         {
-            Platform::current()->currentThread()->postTask(FROM_HERE, new Task(bind(&EmptyDataReader::notify, m_factory.createWeakPtr(), client)));
+            Platform::current()->currentThread()->taskRunner()->postTask(FROM_HERE, new Task(bind(&EmptyDataReader::notify, m_factory.createWeakPtr(), client)));
         }
     private:
         Result read(void*, size_t, WebDataConsumerHandle::Flags, size_t *readSize) override

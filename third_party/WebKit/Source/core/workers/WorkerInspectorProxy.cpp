@@ -102,7 +102,7 @@ static void runDebuggerTaskForWorker(WorkerThread* workerThread)
     workerThread->runDebuggerTask(WorkerThread::DontWaitForMessage);
 }
 
-void WorkerInspectorProxy::addDebuggerTaskForWorker(const WebTraceLocation& location, PassOwnPtr<WebThread::Task> task)
+void WorkerInspectorProxy::addDebuggerTaskForWorker(const WebTraceLocation& location, PassOwnPtr<WebTaskRunner::Task> task)
 {
     m_workerThread->appendDebuggerTask(task);
     m_workerThread->backingThread().postTask(location, new Task(threadSafeBind(&runDebuggerTaskForWorker, AllowCrossThreadAccess(m_workerThread))));

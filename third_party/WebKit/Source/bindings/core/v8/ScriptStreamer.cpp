@@ -216,7 +216,7 @@ public:
         }
 
         // Inform main thread to re-queue the data.
-        Platform::current()->mainThread()->postTask(
+        Platform::current()->mainThread()->taskRunner()->postTask(
             FROM_HERE, bind(&SourceStream::fetchDataFromResourceBuffer, this, 0));
     }
 
@@ -397,7 +397,7 @@ void ScriptStreamer::streamingCompleteOnBackgroundThread()
 
     // notifyFinished might already be called, or it might be called in the
     // future (if the parsing finishes earlier because of a parse error).
-    Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&ScriptStreamer::streamingComplete, AllowCrossThreadAccess(this)));
+    Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, threadSafeBind(&ScriptStreamer::streamingComplete, AllowCrossThreadAccess(this)));
 
     // The task might delete ScriptStreamer, so it's not safe to do anything
     // after posting it. Note that there's no way to guarantee that this

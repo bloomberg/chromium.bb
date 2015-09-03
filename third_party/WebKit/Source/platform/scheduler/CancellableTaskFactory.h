@@ -40,7 +40,7 @@ public:
 
     // Returns a task that can be disabled by calling cancel().  The user takes
     // ownership of the task.  Creating a new task cancels any previous ones.
-    WebThread::Task* cancelAndCreate();
+    WebTaskRunner::Task* cancelAndCreate();
 
 #if defined(ADDRESS_SANITIZER)
     // The CancellableTaskFactory part object might be within a poisoned heap
@@ -52,7 +52,7 @@ public:
 #endif
 
 private:
-    class CancellableTask : public WebThread::Task {
+    class CancellableTask : public WebTaskRunner::Task {
         WTF_MAKE_NONCOPYABLE(CancellableTask);
 
     public:

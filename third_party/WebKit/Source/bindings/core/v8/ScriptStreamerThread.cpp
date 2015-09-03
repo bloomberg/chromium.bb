@@ -54,13 +54,13 @@ ScriptStreamerThread* ScriptStreamerThread::shared()
     return s_sharedThread;
 }
 
-void ScriptStreamerThread::postTask(WebThread::Task* task)
+void ScriptStreamerThread::postTask(WebTaskRunner::Task* task)
 {
     ASSERT(isMainThread());
     MutexLocker locker(m_mutex);
     ASSERT(!m_runningTask);
     m_runningTask = true;
-    platformThread().postTask(FROM_HERE, task);
+    platformThread().taskRunner()->postTask(FROM_HERE, task);
 }
 
 void ScriptStreamerThread::taskDone()

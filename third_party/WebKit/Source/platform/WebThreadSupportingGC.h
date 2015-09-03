@@ -8,6 +8,7 @@
 #include "platform/heap/glue/MessageLoopInterruptor.h"
 #include "platform/heap/glue/PendingGCRunner.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -31,14 +32,14 @@ public:
     static PassOwnPtr<WebThreadSupportingGC> createForThread(WebThread*);
     ~WebThreadSupportingGC();
 
-    void postTask(const WebTraceLocation& location, WebThread::Task* task)
+    void postTask(const WebTraceLocation& location, WebTaskRunner::Task* task)
     {
-        m_thread->postTask(location, task);
+        m_thread->taskRunner()->postTask(location, task);
     }
 
-    void postDelayedTask(const WebTraceLocation& location, WebThread::Task* task, long long delayMs)
+    void postDelayedTask(const WebTraceLocation& location, WebTaskRunner::Task* task, long long delayMs)
     {
-        m_thread->postDelayedTask(location, task, delayMs);
+        m_thread->taskRunner()->postDelayedTask(location, task, delayMs);
     }
 
     bool isCurrentThread() const

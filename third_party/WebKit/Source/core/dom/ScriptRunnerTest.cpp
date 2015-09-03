@@ -39,9 +39,6 @@ public:
     explicit MockWebThread(WebScheduler* webScheduler) : m_webScheduler(webScheduler) { }
     ~MockWebThread() override { }
 
-    void postTask(const WebTraceLocation&, Task*) override { ASSERT_NOT_REACHED(); }
-    void postDelayedTask(const WebTraceLocation&, Task*, long long) override { ASSERT_NOT_REACHED(); }
-
     bool isCurrentThread() const override
     {
         ASSERT_NOT_REACHED();
@@ -54,6 +51,12 @@ public:
         return 0;
     }
 
+    WebTaskRunner* taskRunner() override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
     void addTaskObserver(TaskObserver*) override { ASSERT_NOT_REACHED(); }
     void removeTaskObserver(TaskObserver*) override { ASSERT_NOT_REACHED(); }
 
@@ -63,18 +66,46 @@ private:
     WebScheduler* m_webScheduler;
 };
 
+class MockWebTaskRunner : public WebTaskRunner {
+public:
+    explicit MockWebTaskRunner(Deque<OwnPtr<WebTaskRunner::Task>>* tasks) : m_tasks(tasks) { }
+    ~MockWebTaskRunner() override { }
+
+    virtual void postTask(const WebTraceLocation&, Task* task)
+    {
+        m_tasks->append(adoptPtr(task));
+    }
+
+    void postDelayedTask(const WebTraceLocation&, Task* task, long long delayMs) override
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    Deque<OwnPtr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
+};
+
 class MockPlatform : public Platform, private WebScheduler {
 public:
-    MockPlatform() : m_mockWebThread(this), m_shouldYield(false), m_shouldYieldEveryOtherTime(false) { }
-
-    void postLoadingTask(const WebTraceLocation&, WebThread::Task* task) override
-    {
-        m_tasks.append(adoptPtr(task));
-    }
+    MockPlatform()
+        : m_mockWebThread(this)
+        , m_mockWebTaskRunner(&m_tasks)
+        , m_shouldYield(false)
+        , m_shouldYieldEveryOtherTime(false) { }
 
     void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override { }
 
     WebThread* currentThread() override { return &m_mockWebThread; }
+
+    WebTaskRunner* loadingTaskRunner() override
+    {
+        return &m_mockWebTaskRunner;
+    }
+
+    WebTaskRunner* timerTaskRunner() override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
 
     void runSingleTask()
     {
@@ -109,7 +140,8 @@ public:
 
 private:
     MockWebThread m_mockWebThread;
-    Deque<OwnPtr<WebThread::Task>> m_tasks;
+    Deque<OwnPtr<WebTaskRunner::Task>> m_tasks;
+    MockWebTaskRunner m_mockWebTaskRunner;
     bool m_shouldYield;
     bool m_shouldYieldEveryOtherTime;
 };

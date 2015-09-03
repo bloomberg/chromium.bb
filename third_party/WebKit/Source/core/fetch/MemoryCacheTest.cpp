@@ -201,7 +201,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
     MockImageResourceClient client(cachedLiveResource);
     cachedLiveResource->appendData(data, 4u);
 
-    class Task1 : public WebThread::Task {
+    class Task1 : public WebTaskRunner::Task {
     public:
         Task1(const ResourcePtr<Resource>& live, Resource* dead)
             : m_live(live)
@@ -236,7 +236,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
         Resource* m_dead;
     };
 
-    class Task2 : public WebThread::Task {
+    class Task2 : public WebTaskRunner::Task {
     public:
         Task2(unsigned liveSizeWithoutDecode)
             : m_liveSizeWithoutDecode(liveSizeWithoutDecode) { }
@@ -253,8 +253,8 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
     };
 
 
-    Platform::current()->currentThread()->postTask(FROM_HERE, new Task1(cachedLiveResource, cachedDeadResource));
-    Platform::current()->currentThread()->postTask(FROM_HERE, new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
+    Platform::current()->currentThread()->taskRunner()->postTask(FROM_HERE, new Task1(cachedLiveResource, cachedDeadResource));
+    Platform::current()->currentThread()->taskRunner()->postTask(FROM_HERE, new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     testing::runPendingTasks();
 }
 

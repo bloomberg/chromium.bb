@@ -26,7 +26,7 @@ double currentTime()
 // This class exists because gcc doesn't know how to move an OwnPtr.
 class RefCountedTaskContainer : public RefCounted<RefCountedTaskContainer> {
 public:
-    explicit RefCountedTaskContainer(WebThread::Task* task) : m_task(adoptPtr(task)) { }
+    explicit RefCountedTaskContainer(WebTaskRunner::Task* task) : m_task(adoptPtr(task)) { }
 
     ~RefCountedTaskContainer() { }
 
@@ -36,12 +36,12 @@ public:
     }
 
 private:
-    OwnPtr<WebThread::Task> m_task;
+    OwnPtr<WebTaskRunner::Task> m_task;
 };
 
 class DelayedTask {
 public:
-    DelayedTask(WebThread::Task* task, long long delayMs)
+    DelayedTask(WebTaskRunner::Task* task, long long delayMs)
         : m_task(adoptRef(new RefCountedTaskContainer(task)))
         , m_runTimeSecs(monotonicallyIncreasingTime() + 0.001 * static_cast<double>(delayMs))
         , m_delayMs(delayMs) { }
@@ -72,9 +72,27 @@ private:
     long long m_delayMs;
 };
 
+class MockWebTaskRunner : public WebTaskRunner {
+public:
+    explicit MockWebTaskRunner(std::priority_queue<DelayedTask>* timerTasks) : m_timerTasks(timerTasks) { }
+    ~MockWebTaskRunner() override { }
+
+    virtual void postTask(const WebTraceLocation&, Task* task)
+    {
+        m_timerTasks->push(DelayedTask(task, 0));
+    }
+
+    void postDelayedTask(const WebTraceLocation&, Task* task, long long delayMs) override
+    {
+        m_timerTasks->push(DelayedTask(task, delayMs));
+    }
+
+    std::priority_queue<DelayedTask>* m_timerTasks; // NOT OWNED
+};
+
 class MockWebScheduler : public WebScheduler {
 public:
-    MockWebScheduler() { }
+    MockWebScheduler() : m_timerWebTaskRunner(&m_timerTasks) { }
     ~MockWebScheduler() override { }
 
     bool shouldYieldForHighPriorityWork() override
@@ -99,16 +117,18 @@ public:
     {
     }
 
-    void postLoadingTask(const WebTraceLocation&, WebThread::Task*) override
+    WebTaskRunner* timerTaskRunner() override
     {
+        return &m_timerWebTaskRunner;
     }
 
-    void postTimerTask(const WebTraceLocation&, WebThread::Task* task, long long delayMs) override
+    WebTaskRunner* loadingTaskRunner() override
     {
-        m_timerTasks.push(DelayedTask(task, delayMs));
+        ASSERT_NOT_REACHED();
+        return nullptr;
     }
 
-    void postTimerTaskAt(const WebTraceLocation&, WebThread::Task* task, double monotonicTime) override
+    void postTimerTaskAt(const WebTraceLocation&, WebTaskRunner::Task* task, double monotonicTime) override
     {
         m_timerTasks.push(DelayedTask(task, (monotonicTime - monotonicallyIncreasingTime()) * 1000));
     }
@@ -148,23 +168,13 @@ public:
 
 private:
     std::priority_queue<DelayedTask> m_timerTasks;
+    MockWebTaskRunner m_timerWebTaskRunner;
 };
 
 class FakeWebThread : public WebThread {
 public:
     FakeWebThread() : m_webScheduler(adoptPtr(new MockWebScheduler())) { }
     ~FakeWebThread() override { }
-
-    // WebThread implementation:
-    void postTask(const WebTraceLocation&, Task*)
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    virtual void postDelayedTask(const WebTraceLocation&, Task*, long long)
-    {
-        ASSERT_NOT_REACHED();
-    }
 
     virtual bool isCurrentThread() const
     {
@@ -176,6 +186,12 @@ public:
     {
         ASSERT_NOT_REACHED();
         return 0;
+    }
+
+    WebTaskRunner* taskRunner() override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
     }
 
     WebScheduler* scheduler() const override

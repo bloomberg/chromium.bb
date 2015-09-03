@@ -51,7 +51,7 @@ void WebThreadSupportingGC::initialize()
     m_pendingGCRunner = adoptPtr(new PendingGCRunner);
     m_thread->addTaskObserver(m_pendingGCRunner.get());
     ThreadState::attach();
-    OwnPtr<MessageLoopInterruptor> interruptor = adoptPtr(new MessageLoopInterruptor(m_thread));
+    OwnPtr<MessageLoopInterruptor> interruptor = adoptPtr(new MessageLoopInterruptor(m_thread->taskRunner()));
     ThreadState::current()->addInterruptor(interruptor.release());
 }
 

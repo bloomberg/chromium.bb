@@ -157,9 +157,9 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData)
         m_lastSeenEncodingData = encodingData;
 
         m_xssAuditor->setEncoding(encodingData.encoding());
-        m_scheduler->postLoadingTask(
+        m_scheduler->loadingTaskRunner()->postTask(
             FROM_HERE,
-            new Task(threadSafeBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, AllowCrossThreadAccess(m_parser), encodingData)));
+            threadSafeBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, AllowCrossThreadAccess(m_parser), encodingData));
     }
 
     if (decodedData.isEmpty())
@@ -291,7 +291,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunk->startingScript = m_startingScript;
     m_startingScript = false;
 
-    m_scheduler->postLoadingTask(
+    m_scheduler->loadingTaskRunner()->postTask(
         FROM_HERE,
         new Task(threadSafeBind(&HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser, AllowCrossThreadAccess(m_parser), chunk.release())));
 

@@ -99,7 +99,8 @@ void HRTFDatabaseLoader::loadAsynchronously()
     if (!m_hrtfDatabase && !m_thread) {
         // Start the asynchronous database loading process.
         m_thread = adoptPtr(Platform::current()->createThread("HRTF database loader"));
-        m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&HRTFDatabaseLoader::loadTask, AllowCrossThreadAccess(this))));
+        // TODO(alexclarke): Should this be posted as a loading task?
+        m_thread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(&HRTFDatabaseLoader::loadTask, AllowCrossThreadAccess(this))));
     }
 }
 
@@ -122,7 +123,8 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
         return;
 
     TaskSynchronizer sync;
-    m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&HRTFDatabaseLoader::cleanupTask, AllowCrossThreadAccess(this), AllowCrossThreadAccess(&sync))));
+    // TODO(alexclarke): Should this be posted as a loading task?
+    m_thread->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(&HRTFDatabaseLoader::cleanupTask, AllowCrossThreadAccess(this), AllowCrossThreadAccess(&sync))));
     sync.waitForTaskCompletion();
     m_thread.clear();
 }

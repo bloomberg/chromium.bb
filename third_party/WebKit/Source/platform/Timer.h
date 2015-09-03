@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/AddressSanitizer.h"
 #include "wtf/Noncopyable.h"
@@ -87,7 +88,7 @@ private:
 
     void runInternal();
 
-    class CancellableTimerTask final : public WebThread::Task {
+    class CancellableTimerTask final : public WebTaskRunner::Task {
         WTF_MAKE_NONCOPYABLE(CancellableTimerTask);
     public:
         explicit CancellableTimerTask(TimerBase* timer) : m_timer(timer) { }

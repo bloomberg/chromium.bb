@@ -83,7 +83,7 @@ ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallb
     RefPtr<internal::IdleRequestCallbackWrapper> callbackWrapper = internal::IdleRequestCallbackWrapper::create(id, this);
     m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&internal::IdleRequestCallbackWrapper::idleTaskFired, callbackWrapper));
     if (timeoutMillis > 0)
-        m_scheduler->postTimerTask(FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::timeoutFired, callbackWrapper), static_cast<long long>(timeoutMillis));
+        m_scheduler->timerTaskRunner()->postDelayedTask(FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::timeoutFired, callbackWrapper), static_cast<long long>(timeoutMillis));
 
     // TODO(rmcilroy): Add devtools tracing.
     return id;

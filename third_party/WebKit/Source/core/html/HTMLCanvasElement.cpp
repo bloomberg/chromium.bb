@@ -574,7 +574,7 @@ void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, c
     ImageDataBuffer(imageData->size(), imageData->data()->data()).encodeImage(encodingMimeType, qualityPtr, &encodedImage);
     resultBlob = File::create(encodedImage.data(), encodedImage.size(), encodingMimeType);
 
-    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, resultBlob));
+    Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, resultBlob));
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const

@@ -110,7 +110,7 @@ unsigned WorkerThread::workerThreadCount()
     return workerThreads().size();
 }
 
-class WorkerThreadTask : public WebThread::Task {
+class WorkerThreadTask : public WebTaskRunner::Task {
     WTF_MAKE_NONCOPYABLE(WorkerThreadTask); WTF_MAKE_FAST_ALLOCATED(WorkerThreadTask);
 public:
     static PassOwnPtr<WorkerThreadTask> create(WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
@@ -475,7 +475,7 @@ void WorkerThread::terminateV8Execution()
     v8::V8::TerminateExecution(m_isolate);
 }
 
-void WorkerThread::appendDebuggerTask(PassOwnPtr<WebThread::Task> task)
+void WorkerThread::appendDebuggerTask(PassOwnPtr<WebTaskRunner::Task> task)
 {
     {
         MutexLocker lock(m_threadStateMutex);
@@ -489,8 +489,8 @@ MessageQueueWaitResult WorkerThread::runDebuggerTask(WaitMode waitMode)
 {
     ASSERT(isCurrentThread());
     MessageQueueWaitResult result;
-    double absoluteTime = MessageQueue<WebThread::Task>::infiniteTime();
-    OwnPtr<WebThread::Task> task;
+    double absoluteTime = MessageQueue<WebTaskRunner::Task>::infiniteTime();
+    OwnPtr<WebTaskRunner::Task> task;
     {
         if (waitMode == DontWaitForMessage)
             absoluteTime = 0.0;

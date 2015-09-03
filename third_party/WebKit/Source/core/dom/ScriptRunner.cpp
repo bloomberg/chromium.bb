@@ -227,8 +227,7 @@ void ScriptRunner::postTaskIfOneIsNotAlreadyInFlight()
     if (m_executeScriptsTaskFactory.isPending())
         return;
 
-    // FIXME: Rename task() so that it's obvious it cancels any pending task.
-    Platform::current()->currentThread()->scheduler()->postLoadingTask(FROM_HERE, m_executeScriptsTaskFactory.cancelAndCreate());
+    Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(FROM_HERE, m_executeScriptsTaskFactory.cancelAndCreate());
 }
 
 DEFINE_TRACE(ScriptRunner)

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/TaskSynchronizer.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "wtf/OwnPtr.h"
 
@@ -25,7 +26,7 @@ public:
     static void shutdown();
     static ScriptStreamerThread* shared();
 
-    void postTask(WebThread::Task*);
+    void postTask(WebTaskRunner::Task*);
 
     bool isRunningTask() const
     {

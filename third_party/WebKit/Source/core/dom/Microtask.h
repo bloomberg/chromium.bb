@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
-#include "public/platform/WebThread.h"
+#include "public/platform/WebTaskRunner.h"
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
@@ -50,7 +50,7 @@ public:
     // TODO(jochen): Make all microtasks pass in the ScriptState they want to be
     // executed in. Until then, all microtasks have to keep track of their
     // ScriptState themselves.
-    static void enqueueMicrotask(PassOwnPtr<WebThread::Task>);
+    static void enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task>);
     static void enqueueMicrotask(PassOwnPtr<Closure>);
 };
 

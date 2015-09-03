@@ -31,14 +31,14 @@
 #ifndef Task_h
 #define Task_h
 
-#include "public/platform/WebThread.h"
+#include "public/platform/WebTaskRunner.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-class Task : public WebThread::Task {
+class Task : public WebTaskRunner::Task {
 public:
     explicit Task(PassOwnPtr<Closure> closure)
         : m_closure(closure)

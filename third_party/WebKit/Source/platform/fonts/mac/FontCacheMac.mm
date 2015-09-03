@@ -39,6 +39,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/mac/FontFamilyMatcherMac.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 #include <wtf/Functional.h>
 #include <wtf/MainThread.h>
@@ -56,7 +57,7 @@ namespace blink {
 static void invalidateFontCache()
 {
     if (!isMainThread()) {
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&invalidateFontCache));
+        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&invalidateFontCache));
         return;
     }
     FontCache::fontCache()->invalidate();

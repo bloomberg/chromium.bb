@@ -145,7 +145,7 @@ void notifyScriptLoadedEventToWorkerThreadForTest(WorkerThread* thread)
     static_cast<WorkerThreadForTest*>(thread)->scriptLoaded();
 }
 
-class WakeupTask : public WebThread::Task {
+class WakeupTask : public WebTaskRunner::Task {
 public:
     WakeupTask() { }
 
@@ -154,7 +154,7 @@ public:
     void run() override { }
 };
 
-class PostDelayedWakeupTask : public WebThread::Task {
+class PostDelayedWakeupTask : public WebTaskRunner::Task {
 public:
     PostDelayedWakeupTask(WebScheduler* scheduler, long long delay) : m_scheduler(scheduler), m_delay(delay) { }
 
@@ -162,14 +162,14 @@ public:
 
     void run() override
     {
-        m_scheduler->postTimerTask(FROM_HERE, new WakeupTask(), m_delay);
+        m_scheduler->timerTaskRunner()->postDelayedTask(FROM_HERE, new WakeupTask(), m_delay);
     }
 
     WebScheduler* m_scheduler; // Not owned.
     long long m_delay;
 };
 
-class SignalTask : public WebThread::Task {
+class SignalTask : public WebTaskRunner::Task {
 public:
     SignalTask(WebWaitableEvent* completionEvent) : m_completionEvent(completionEvent) { }
 
@@ -291,7 +291,7 @@ TEST_F(WorkerThreadTest, StartAndStopOnScriptLoaded)
     m_workerThread->terminateAndWait();
 }
 
-class RepeatingTask : public WebThread::Task {
+class RepeatingTask : public WebTaskRunner::Task {
 public:
     RepeatingTask(WebScheduler* scheduler, WebWaitableEvent* completion)
         : RepeatingTask(scheduler, completion, 0) { }
@@ -304,10 +304,9 @@ public:
         if (m_taskCount == 10)
             m_completion->signal();
 
-        m_scheduler->postTimerTask(
-            FROM_HERE, new RepeatingTask(m_scheduler, m_completion, m_taskCount), 0ul);
-        m_scheduler->postLoadingTask(FROM_HERE, new WakeupTask());
-
+        m_scheduler->timerTaskRunner()->postTask(
+            FROM_HERE, new RepeatingTask(m_scheduler, m_completion, m_taskCount));
+        m_scheduler->timerTaskRunner()->postTask(FROM_HERE, new WakeupTask());
     }
 
 private:
@@ -335,7 +334,7 @@ TEST_F(WorkerThreadTest, GcDoesNotOccurWhenNotIdle)
     WebScheduler* scheduler = m_workerThread->backingThread().platformThread().scheduler();
 
     // Post a repeating task that should prevent any GC from happening.
-    scheduler->postLoadingTask(FROM_HERE, new RepeatingTask(scheduler, completion.get()));
+    scheduler->loadingTaskRunner()->postTask(FROM_HERE, new RepeatingTask(scheduler, completion.get()));
 
     completion->wait();
 

@@ -110,7 +110,7 @@ void TimerBase::setNextFireTime(double now, double delay)
             long long delayMs = static_cast<long long>(ceil((newTime - now) * 1000.0));
             if (delayMs < 0)
                 delayMs = 0;
-            m_webScheduler->postTimerTask(m_location, m_cancellableTimerTask, delayMs);
+            m_webScheduler->timerTaskRunner()->postDelayedTask(m_location, m_cancellableTimerTask, delayMs);
         }
     }
 }

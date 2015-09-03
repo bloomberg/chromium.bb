@@ -2981,7 +2981,7 @@ void Document::didRemoveAllPendingStylesheet()
 
 void Document::didLoadAllScriptBlockingResources()
 {
-    Platform::current()->currentThread()->scheduler()->postLoadingTask(
+    Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(
         FROM_HERE, m_executeScriptsWaitingForResourcesTask.cancelAndCreate());
 
     if (frame())

@@ -104,6 +104,7 @@ private:
     void continueParsing();
 
     HTMLDocumentParser* m_parser;
+    WebTaskRunner* m_loadingTaskRunner; // NOT OWNED
 
     CancellableTaskFactory m_cancellableContinueParse;
     bool m_isSuspendedWithActiveTimer;

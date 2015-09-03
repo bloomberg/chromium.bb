@@ -10,6 +10,7 @@
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -254,14 +255,10 @@ public:
     }
 
 private:
-    class CurrentThreadMock : public WebThread {
+    class MockWebTaskRunner : public WebTaskRunner {
     public:
-        CurrentThreadMock() : m_taskObserver(0), m_task(0) { }
-
-        ~CurrentThreadMock() override
-        {
-            EXPECT_EQ((Task*)0, m_task);
-        }
+        MockWebTaskRunner() : m_task(0) { }
+        ~MockWebTaskRunner() override { }
 
         virtual void postTask(const WebTraceLocation&, Task* task)
         {
@@ -271,7 +268,25 @@ private:
 
         void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
 
+        Task* m_task;
+    };
+
+    class CurrentThreadMock : public WebThread {
+    public:
+        CurrentThreadMock() : m_taskObserver(0) { }
+
+        ~CurrentThreadMock() override
+        {
+            EXPECT_EQ((WebTaskRunner::Task*)0, m_taskRunner.m_task);
+        }
+
+        WebTaskRunner* taskRunner() override
+        {
+            return &m_taskRunner;
+        }
+
         bool isCurrentThread() const override { return true; }
+
         PlatformThreadId threadId() const override
         {
             ASSERT_NOT_REACHED();
@@ -280,7 +295,7 @@ private:
 
         void addTaskObserver(TaskObserver* taskObserver) override
         {
-            EXPECT_EQ((TaskObserver*)0, m_taskObserver);
+            EXPECT_EQ(nullptr, m_taskObserver);
             m_taskObserver = taskObserver;
         }
 
@@ -300,18 +315,18 @@ private:
         {
             if (m_taskObserver)
                 m_taskObserver->willProcessTask();
-            if (m_task) {
-                m_task->run();
-                delete m_task;
-                m_task = 0;
+            if (m_taskRunner.m_task) {
+                m_taskRunner.m_task->run();
+                delete m_taskRunner.m_task;
+                m_taskRunner.m_task = 0;
             }
             if (m_taskObserver)
                 m_taskObserver->didProcessTask();
         }
 
     private:
+        MockWebTaskRunner m_taskRunner;
         TaskObserver* m_taskObserver;
-        Task* m_task;
     };
 
     class CurrentThreadPlatformMock : public Platform {
@@ -332,7 +347,7 @@ private:
 } // anonymous namespace
 
 #define DEFINE_TEST_TASK_WRAPPER_CLASS(TEST_METHOD)                                               \
-class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                           \
+class TestWrapperTask_ ## TEST_METHOD : public WebTaskRunner::Task {                           \
     public:                                                                                       \
         TestWrapperTask_ ## TEST_METHOD(RecordingImageBufferSurfaceTest* test) : m_test(test) { } \
         void run() override { m_test->TEST_METHOD(); }                                    \
@@ -343,7 +358,7 @@ class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
         AutoInstallCurrentThreadPlatformMock ctpm;                                                        \
-        Platform::current()->currentThread()->postTask(FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
+        Platform::current()->currentThread()->taskRunner()->postTask(FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
         ctpm.enterRunLoop();                                      \
     }
 

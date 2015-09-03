@@ -64,14 +64,10 @@ public:
     FakeWebThread() { }
     ~FakeWebThread() override { }
 
-    void postTask(const WebTraceLocation&, Task*) override
+    WebTaskRunner* taskRunner() override
     {
         ASSERT_NOT_REACHED();
-    }
-
-    void postDelayedTask(const WebTraceLocation&, Task*, long long) override
-    {
-        ASSERT_NOT_REACHED();
+        return nullptr;
     }
 
     bool isCurrentThread() const override

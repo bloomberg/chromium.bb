@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/Task.h"
-#include "public/platform/WebThread.h"
+#include "public/platform/WebTaskRunner.h"
 #include <v8.h>
 
 namespace blink {
@@ -62,11 +62,11 @@ bool Microtask::performingCheckpoint(v8::Isolate* isolate)
 
 static void microtaskFunctionCallback(void* data)
 {
-    OwnPtr<WebThread::Task> task = adoptPtr(static_cast<WebThread::Task*>(data));
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(static_cast<WebTaskRunner::Task*>(data));
     task->run();
 }
 
-void Microtask::enqueueMicrotask(PassOwnPtr<WebThread::Task> callback)
+void Microtask::enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task> callback)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     isolate->EnqueueMicrotask(&microtaskFunctionCallback, callback.leakPtr());

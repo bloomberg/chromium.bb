@@ -96,7 +96,7 @@ public:
     WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
 
     void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
-    void appendDebuggerTask(PassOwnPtr<WebThread::Task>);
+    void appendDebuggerTask(PassOwnPtr<WebTaskRunner::Task>);
 
     enum WaitMode { WaitForMessage, DontWaitForMessage };
     MessageQueueWaitResult runDebuggerTask(WaitMode = WaitForMessage);
@@ -156,7 +156,7 @@ private:
     bool m_started;
     bool m_terminated;
     bool m_shutdown;
-    MessageQueue<WebThread::Task> m_debuggerMessageQueue;
+    MessageQueue<WebTaskRunner::Task> m_debuggerMessageQueue;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
