@@ -318,10 +318,8 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         // allowed, as we allow "www.example.com".
         String scheme = url.normalizeScheme().getScheme();
         if (scheme != null && !scheme.equals("http") && !scheme.equals("https")) return false;
-        if (!isCallerForegroundOrSelf()) return false;
-
         // Things below need the browser process to be initialized.
-        if (!warmup(0)) return false;
+        if (!warmup(0)) return false; // Also does the foreground check.
 
         final IBinder session = callback.asBinder();
         final String urlString = url.toString();
