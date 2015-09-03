@@ -54,6 +54,7 @@ check_targets = [
   "//components/web_cache/*",
   "//components/webcrypto/*",
   "//components/web_modal/*",
+  "//components/web_view/*",
   "//components/webdata/*",
   "//components/webdata_services/*",
 
