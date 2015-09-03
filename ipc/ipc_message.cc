@@ -46,6 +46,9 @@ Message::~Message() {
 Message::Message() : base::Pickle(sizeof(Header)) {
   header()->routing = header()->type = 0;
   header()->flags = GetRefNumUpper24();
+#if USE_ATTACHMENT_BROKER
+  header()->num_brokered_attachments = 0;
+#endif
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
@@ -59,6 +62,9 @@ Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
   header()->type = type;
   DCHECK((priority & 0xffffff00) == 0);
   header()->flags = priority | GetRefNumUpper24();
+#if USE_ATTACHMENT_BROKER
+  header()->num_brokered_attachments = 0;
+#endif
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
@@ -131,6 +137,12 @@ bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
   // We write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
   WriteInt(attachment_set()->size());
+
+#if USE_ATTACHMENT_BROKER
+  if (attachment->GetType() == MessageAttachment::TYPE_BROKERABLE_ATTACHMENT)
+    header()->num_brokered_attachments += 1;
+#endif
+
   return attachment_set()->AddAttachment(attachment);
 }
 

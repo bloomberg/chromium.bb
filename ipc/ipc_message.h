@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_export.h"
 
 #if !defined(NDEBUG)
@@ -222,6 +223,12 @@ class IPC_EXPORT Message : public base::Pickle {
     int32 routing;  // ID of the view that this message is destined for
     uint32 type;    // specifies the user-defined message type
     uint32 flags;   // specifies control flags for the message
+#if USE_ATTACHMENT_BROKER
+    // The number of brokered attachments included with this message. The
+    // ids of the brokered attachment ids are sent immediately after the pickled
+    // message, before the next pickled message is sent.
+    uint32 num_brokered_attachments;
+#endif
 #if defined(OS_POSIX)
     uint16 num_fds; // the number of descriptors included with this message
     uint16 pad;     // explicitly initialize this to appease valgrind

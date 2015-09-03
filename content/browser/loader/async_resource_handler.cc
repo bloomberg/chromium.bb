@@ -329,6 +329,11 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   int encoded_data_length = current_transfer_size - reported_transfer_size_;
   reported_transfer_size_ = current_transfer_size;
 
+  // TODO(erikchen): Remove me after finished debugging for
+  // http://crbug.com/527588.
+  // The data offset can't exceed the size of the buffer.
+  CHECK_LE(data_offset, kBufferSize);
+
   filter->Send(new ResourceMsg_DataReceived(
       GetRequestID(), data_offset, bytes_read, encoded_data_length));
   ++pending_data_count_;
