@@ -534,8 +534,9 @@ class HttpService(object):
       return None
     try:
       return json.loads(text)
-    except ValueError:
-      logging.error('Not a JSON response when calling %s: %s', urlpath, text)
+    except ValueError as e:
+      logging.error('Not a JSON response when calling %s: %s; full text: %s',
+                    urlpath, e, text)
       return None
 
   def _format_error(self, exc, verbose=False):
