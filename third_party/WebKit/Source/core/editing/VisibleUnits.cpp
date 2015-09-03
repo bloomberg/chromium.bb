@@ -771,9 +771,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     }
 
     Position searchStart = Position::editingPositionOf(start.anchorNode(), start.offsetInContainerNode());
-    RangeBoundaryPoint searchEndPoint(boundary);
-    searchEndPoint.setToEndOfNode(*boundary);
-    Position searchEnd = searchEndPoint.toPosition();
+    Position searchEnd = Position::lastPositionInNode(boundary);
     TextIterator it(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     const unsigned invalidOffset = static_cast<unsigned>(-1);
     unsigned next = invalidOffset;
