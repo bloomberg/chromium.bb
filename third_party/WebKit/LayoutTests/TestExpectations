@@ -791,13 +791,13 @@ crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported
 crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
 
 # switching to apache-win32: needs triaging.
-crbug.com/30536 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
-crbug.com/30536 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/local/blob/send-hybrid-blob.html [ Failure Timeout ]
-crbug.com/30536 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
+crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
+crbug.com/528062 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure ]
+crbug.com/528062 [ Win ] http/tests/local/blob/send-hybrid-blob.html [ Failure Timeout ]
+crbug.com/528062 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
+crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
+crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
+crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
 # Assertion failures seen only on Slow Leopard.
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-skip-step-in.html [ Crash ]
