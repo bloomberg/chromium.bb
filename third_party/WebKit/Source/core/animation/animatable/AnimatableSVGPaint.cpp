@@ -46,7 +46,7 @@ PassRefPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(const AnimatableVa
         return defaultInterpolateTo(this, value, fraction);
 
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-    RefPtrWillBeRawPtr<AnimatableColor> color = toAnimatableColor(AnimatableValue::interpolate(m_color.get(), svgPaint->m_color.get(), fraction).get());
+    RefPtr<AnimatableColor> color = toAnimatableColor(AnimatableValue::interpolate(m_color.get(), svgPaint->m_color.get(), fraction).get());
     if (fraction < 0.5)
         return create(paintType(), visitedLinkPaintType(), color, uri(), visitedLinkURI());
     return create(svgPaint->paintType(), svgPaint->visitedLinkPaintType(), color, svgPaint->uri(), svgPaint->visitedLinkURI());
