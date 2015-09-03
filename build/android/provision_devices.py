@@ -21,6 +21,8 @@ import subprocess
 import sys
 import time
 
+from devil.android.sdk import version_codes
+
 from pylib import constants
 from pylib import device_settings
 from pylib.device import battery_utils
@@ -80,8 +82,7 @@ def ProvisionDevices(args):
 def ProvisionDevice(device, blacklist, options):
   if options.reboot_timeout:
     reboot_timeout = options.reboot_timeout
-  elif (device.build_version_sdk >=
-        constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
+  elif (device.build_version_sdk >= version_codes.LOLLIPOP):
     reboot_timeout = _DEFAULT_TIMEOUTS.LOLLIPOP
   else:
     reboot_timeout = _DEFAULT_TIMEOUTS.PRE_LOLLIPOP
@@ -273,11 +274,11 @@ def _ConfigureLocalProperties(device, java_debug=True):
     local_props.append('debug.checkjni=1')
   try:
     device.WriteFile(
-        constants.DEVICE_LOCAL_PROPERTIES_PATH,
+        device.LOCAL_PROPERTIES_PATH,
         '\n'.join(local_props), as_root=True)
     # Android will not respect the local props file if it is world writable.
     device.RunShellCommand(
-        ['chmod', '644', constants.DEVICE_LOCAL_PROPERTIES_PATH],
+        ['chmod', '644', device.LOCAL_PROPERTIES_PATH],
         as_root=True, check_return=True)
   except device_errors.CommandFailedError:
     logging.exception('Failed to configure local properties.')
@@ -299,8 +300,7 @@ def FinishProvisioning(device, options):
       logging.exception('Unable to let battery cool to specified temperature.')
 
   def _set_and_verify_date():
-    if (device.build_version_sdk
-        >= constants.ANDROID_SDK_VERSION_CODES.MARSHMALLOW):
+    if (device.build_version_sdk >= version_codes.MARSHMALLOW):
       date_format = '%m%d%H%M%Y.%S'
       set_date_command = ['date']
     else:

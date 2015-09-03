@@ -14,6 +14,8 @@ import os
 import subprocess
 
 import devil.android.sdk.keyevent
+from devil.android.sdk import version_codes
+
 keyevent = devil.android.sdk.keyevent
 
 
@@ -162,22 +164,7 @@ DEVICE_PERF_OUTPUT_DIR = (
 
 SCREENSHOTS_DIR = os.path.join(DIR_SOURCE_ROOT, 'out_screenshots')
 
-class ANDROID_SDK_VERSION_CODES(object):
-  """Android SDK version codes.
-
-  http://developer.android.com/reference/android/os/Build.VERSION_CODES.html
-  """
-
-  JELLY_BEAN = 16
-  JELLY_BEAN_MR1 = 17
-  JELLY_BEAN_MR2 = 18
-  KITKAT = 19
-  KITKAT_WATCH = 20
-  LOLLIPOP = 21
-  LOLLIPOP_MR1 = 22
-  MARSHMALLOW = 23
-
-ANDROID_SDK_VERSION = ANDROID_SDK_VERSION_CODES.MARSHMALLOW
+ANDROID_SDK_VERSION = version_codes.MARSHMALLOW
 ANDROID_SDK_BUILD_TOOLS_VERSION = '23.0.0'
 ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party/android_tools/sdk')
@@ -201,16 +188,18 @@ BAD_DEVICES_JSON = os.path.join(DIR_SOURCE_ROOT,
 
 UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 
+# TODO(jbudorick): Remove once unused.
 DEVICE_LOCAL_PROPERTIES_PATH = '/data/local.prop'
 
+# TODO(jbudorick): Rework this into testing/buildbot/
 PYTHON_UNIT_TEST_SUITES = {
   'pylib_py_unittests': {
     'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android'),
     'test_modules': [
-      'pylib.cmd_helper_test',
-      'pylib.device.device_utils_test',
+      'devil.android.device_utils_test',
+      'devil.utils.cmd_helper_test',
+      'devil.utils.md5sum_test',
       'pylib.results.json_results_test',
-      'pylib.utils.md5sum_test',
     ]
   },
   'gyp_py_unittests': {
