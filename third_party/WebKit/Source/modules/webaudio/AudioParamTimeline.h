@@ -38,6 +38,7 @@
 namespace blink {
 
 class AudioParamTimeline {
+    DISALLOW_ALLOCATION();
 public:
     AudioParamTimeline()
     {

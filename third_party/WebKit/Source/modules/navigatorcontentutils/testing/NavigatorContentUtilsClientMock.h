@@ -14,7 +14,7 @@ namespace blink {
 class KURL;
 
 // Provides a mock object for the navigatorcontentutils client.
-class NavigatorContentUtilsClientMock : public NavigatorContentUtilsClient {
+class NavigatorContentUtilsClientMock final : public NavigatorContentUtilsClient {
 public:
     NavigatorContentUtilsClientMock() { }
     ~NavigatorContentUtilsClientMock() override { }

@@ -31,12 +31,15 @@
 #ifndef InternalsSpeechSynthesis_h
 #define InternalsSpeechSynthesis_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class Document;
 class Internals;
 
 class InternalsSpeechSynthesis {
+    STATIC_ONLY(InternalsSpeechSynthesis);
 public:
     static void enableMockSpeechSynthesizer(Internals&, Document*);
 };

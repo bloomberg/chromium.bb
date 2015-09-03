@@ -18,11 +18,13 @@ class Document;
 class KURL;
 
 class InspectorWebSocketCreateEvent {
+    STATIC_ONLY(InspectorWebSocketCreateEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier, const KURL&, const String& protocol);
 };
 
 class InspectorWebSocketEvent {
+    STATIC_ONLY(InspectorWebSocketEvent);
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier);
 };

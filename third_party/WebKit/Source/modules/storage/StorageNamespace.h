@@ -38,6 +38,7 @@ class SecurityOrigin;
 class StorageArea;
 
 class MODULES_EXPORT StorageNamespace {
+    WTF_MAKE_FAST_ALLOCATED(StorageNamespace);
 public:
     explicit StorageNamespace(PassOwnPtr<WebStorageNamespace>);
     ~StorageNamespace();

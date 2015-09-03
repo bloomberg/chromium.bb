@@ -22,6 +22,7 @@ struct WebPushSubscription;
 // will pass it to the PushSubscription.
 class PushSubscriptionCallbacks final : public WebPushSubscriptionCallbacks {
     WTF_MAKE_NONCOPYABLE(PushSubscriptionCallbacks);
+    WTF_MAKE_FAST_ALLOCATED(PushSubscriptionCallbacks);
 public:
     PushSubscriptionCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~PushSubscriptionCallbacks() override;

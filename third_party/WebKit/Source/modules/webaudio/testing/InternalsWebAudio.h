@@ -5,11 +5,14 @@
 #ifndef InternalsWebAudio_h
 #define InternalsWebAudio_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class Internals;
 
 class InternalsWebAudio {
+    STATIC_ONLY(InternalsWebAudio);
 public:
     static unsigned audioHandlerCount(Internals&);
 };

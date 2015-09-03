@@ -37,6 +37,7 @@
 namespace blink {
 
 class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
+    WTF_MAKE_FAST_ALLOCATED(WebIDBDatabaseCallbacksImpl);
 public:
     static PassOwnPtr<WebIDBDatabaseCallbacksImpl> create(IDBDatabaseCallbacks*);
 

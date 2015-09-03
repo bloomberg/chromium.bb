@@ -31,6 +31,7 @@
 #ifndef URLMediaStream_h
 #define URLMediaStream_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -39,6 +40,7 @@ class MediaStream;
 class ExecutionContext;
 
 class URLMediaStream {
+    STATIC_ONLY(URLMediaStream);
 public:
     static String createObjectURL(ExecutionContext*, MediaStream*);
 };

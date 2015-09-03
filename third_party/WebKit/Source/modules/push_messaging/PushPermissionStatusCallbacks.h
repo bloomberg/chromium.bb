@@ -21,6 +21,7 @@ class ScriptPromiseResolver;
 // Will resolve the underlying promise depending on the permission received.
 class PushPermissionStatusCallbacks final : public WebPushPermissionStatusCallbacks {
     WTF_MAKE_NONCOPYABLE(PushPermissionStatusCallbacks);
+    WTF_MAKE_FAST_ALLOCATED(PushPermissionStatusCallbacks);
 
 public:
     explicit PushPermissionStatusCallbacks(ScriptPromiseResolver*);

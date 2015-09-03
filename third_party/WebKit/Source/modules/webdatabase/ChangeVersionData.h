@@ -26,11 +26,13 @@
 #ifndef ChangeVersionData_h
 #define ChangeVersionData_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class ChangeVersionData {
+    STACK_ALLOCATED();
 public:
     ChangeVersionData(String oldVersion, String newVersion)
         : m_oldVersion(oldVersion), m_newVersion(newVersion) { }

@@ -35,12 +35,14 @@
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
+#include "wtf/FastAllocBase.h"
 
 namespace blink {
 
 class LocalFrame;
 
 class UserMediaClient {
+    WTF_MAKE_FAST_ALLOCATED(UserMediaClient);
 public:
     virtual void requestUserMedia(UserMediaRequest*) = 0;
     virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;

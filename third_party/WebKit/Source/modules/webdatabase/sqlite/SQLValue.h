@@ -29,11 +29,13 @@
 #ifndef SQLValue_h
 #define SQLValue_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class SQLValue {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     enum Type { NullValue, NumberValue, StringValue };
 

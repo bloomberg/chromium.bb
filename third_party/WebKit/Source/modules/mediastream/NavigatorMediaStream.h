@@ -21,6 +21,7 @@
 #define NavigatorMediaStream_h
 
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -35,14 +36,11 @@ class NavigatorUserMediaErrorCallback;
 class NavigatorUserMediaSuccessCallback;
 
 class NavigatorMediaStream {
+    STATIC_ONLY(NavigatorMediaStream);
 public:
     static void webkitGetUserMedia(Navigator&, const MediaStreamConstraints&, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, ExceptionState&);
 
     static void getMediaDevices(Navigator&, MediaDeviceInfoCallback*, ExceptionState&);
-
-private:
-    NavigatorMediaStream();
-    ~NavigatorMediaStream();
 };
 
 } // namespace blink

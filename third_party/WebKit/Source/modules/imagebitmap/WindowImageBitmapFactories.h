@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "platform/geometry/IntRect.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 
@@ -48,6 +49,7 @@ class HTMLImageElement;
 class HTMLVideoElement;
 
 class WindowImageBitmapFactories {
+    STATIC_ONLY(WindowImageBitmapFactories);
 public:
     static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, HTMLImageElement*, ExceptionState&);
     static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionState&);

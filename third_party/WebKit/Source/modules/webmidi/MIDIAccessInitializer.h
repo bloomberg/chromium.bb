@@ -22,6 +22,7 @@ class ScriptState;
 class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver, public MIDIAccessorClient {
 public:
     struct PortDescriptor {
+        ALLOW_ONLY_INLINE_ALLOCATION();
         String id;
         String manufacturer;
         String name;

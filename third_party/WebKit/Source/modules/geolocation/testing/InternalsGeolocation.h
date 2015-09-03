@@ -32,6 +32,7 @@
 #define InternalsGeolocation_h
 
 #include "platform/Timer.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -41,6 +42,7 @@ class GeolocationClientMock;
 class Internals;
 
 class InternalsGeolocation {
+    STATIC_ONLY(InternalsGeolocation);
 public:
     static void setGeolocationClientMock(Internals&, Document*);
     static void setGeolocationPosition(Internals&, Document*, double latitude, double longitude, double accuracy);

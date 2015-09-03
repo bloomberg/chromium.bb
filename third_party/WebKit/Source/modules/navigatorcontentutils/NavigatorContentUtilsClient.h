@@ -28,6 +28,7 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -35,6 +36,7 @@ namespace blink {
 class LocalFrame;
 
 class NavigatorContentUtilsClient {
+    WTF_MAKE_FAST_ALLOCATED(NavigatorContentUtilsClient);
 public:
     virtual ~NavigatorContentUtilsClient() { }
     virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title) = 0;

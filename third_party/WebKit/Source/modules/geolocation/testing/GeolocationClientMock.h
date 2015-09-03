@@ -44,7 +44,7 @@ class GeolocationController;
 class GeolocationPosition;
 
 // Provides a mock object for the geolocation client.
-class GeolocationClientMock : public GeolocationClient {
+class GeolocationClientMock final : public GeolocationClient {
 public:
     GeolocationClientMock();
     ~GeolocationClientMock() override;

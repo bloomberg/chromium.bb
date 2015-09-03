@@ -28,6 +28,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioSummingJunction.h"
 #include "platform/audio/AudioBus.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/HashSet.h"
 
 namespace blink {
@@ -39,6 +40,7 @@ class AudioNodeOutput;
 // The number of channels of the input's bus is the maximum of the number of channels of all its connections.
 
 class AudioNodeInput final : public AudioSummingJunction {
+    WTF_MAKE_FAST_ALLOCATED(AudioNodeInput);
 public:
     static PassOwnPtr<AudioNodeInput> create(AudioHandler&);
 

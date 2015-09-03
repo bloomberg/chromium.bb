@@ -31,6 +31,7 @@
 #ifndef InternalsVibration_h
 #define InternalsVibration_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -39,6 +40,7 @@ class Document;
 class Internals;
 
 class InternalsVibration {
+    STATIC_ONLY(InternalsVibration);
 public:
     static bool isVibrating(Internals&, Document*);
     static Vector<unsigned> pendingVibrationPattern(Internals&, Document*);

@@ -31,9 +31,12 @@
 #ifndef WebSocketFrame_h
 #define WebSocketFrame_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct WebSocketFrame {
+    STACK_ALLOCATED();
     // RFC6455 opcodes.
     enum OpCode {
         OpCodeContinuation = 0x0,

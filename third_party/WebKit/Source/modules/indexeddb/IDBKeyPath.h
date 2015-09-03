@@ -29,6 +29,7 @@
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "modules/ModulesExport.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,6 +43,7 @@ enum IDBKeyPathParseError {
 MODULES_EXPORT void IDBParseKeyPath(const String&, Vector<String>&, IDBKeyPathParseError&);
 
 class MODULES_EXPORT IDBKeyPath {
+    DISALLOW_ALLOCATION();
 public:
     IDBKeyPath() : m_type(NullType) { }
     explicit IDBKeyPath(const String&);

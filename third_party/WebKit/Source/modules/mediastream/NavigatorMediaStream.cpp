@@ -40,14 +40,6 @@
 
 namespace blink {
 
-NavigatorMediaStream::NavigatorMediaStream()
-{
-}
-
-NavigatorMediaStream::~NavigatorMediaStream()
-{
-}
-
 void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const MediaStreamConstraints& options, NavigatorUserMediaSuccessCallback* successCallback, NavigatorUserMediaErrorCallback* errorCallback, ExceptionState& exceptionState)
 {
     if (!successCallback)

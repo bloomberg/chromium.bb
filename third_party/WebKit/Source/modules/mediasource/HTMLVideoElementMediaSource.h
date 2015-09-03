@@ -32,7 +32,7 @@
 #define HTMLVideoElementMediaSource_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -40,12 +40,9 @@ class HTMLVideoElement;
 class VideoPlaybackQuality;
 
 class HTMLVideoElementMediaSource {
+    STATIC_ONLY(HTMLVideoElementMediaSource);
 public:
     static VideoPlaybackQuality* getVideoPlaybackQuality(HTMLVideoElement&);
-
-private:
-    HTMLVideoElementMediaSource();
-    ~HTMLVideoElementMediaSource();
 };
 
 }

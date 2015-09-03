@@ -36,10 +36,6 @@
 
 namespace blink {
 
-HTMLVideoElementMediaSource::HTMLVideoElementMediaSource() { }
-
-HTMLVideoElementMediaSource::~HTMLVideoElementMediaSource() { }
-
 VideoPlaybackQuality* HTMLVideoElementMediaSource::getVideoPlaybackQuality(HTMLVideoElement& videoElement)
 {
     unsigned total = 0;

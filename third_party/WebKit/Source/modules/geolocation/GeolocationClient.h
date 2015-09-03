@@ -37,6 +37,7 @@ class GeolocationPosition;
 class LocalFrame;
 
 class GeolocationClient : public NoBaseWillBeGarbageCollectedFinalized<GeolocationClient> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(GeolocationClient);
 public:
     virtual ~GeolocationClient() { }
 

@@ -16,14 +16,11 @@ class DOMException;
 class ScriptPromiseResolver;
 
 class GeofencingError {
-    WTF_MAKE_NONCOPYABLE(GeofencingError);
+    STATIC_ONLY(GeofencingError);
 public:
     // For CallbackPromiseAdapter.
     using WebType = const WebGeofencingError&;
     static DOMException* take(ScriptPromiseResolver*, const WebGeofencingError& webError);
-
-private:
-    GeofencingError() = delete;
 };
 
 } // namespace blink
