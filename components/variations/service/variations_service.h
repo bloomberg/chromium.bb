@@ -178,6 +178,7 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
                            LoadPermanentConsistencyCountry);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CountryHeader);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, GetVariationsServerURL);
 
   // Set of different possible values to report for the
   // Variations.LoadPermanentConsistencyCountryResult histogram. This enum must

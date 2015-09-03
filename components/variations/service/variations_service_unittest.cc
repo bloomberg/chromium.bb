@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,30 +16,59 @@
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/version.h"
-#include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/web_resource/resource_request_allowed_notifier_test_util.h"
-#include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#endif
-
 namespace chrome_variations {
 
 namespace {
+
+class TestVariationsServiceClient : public VariationsServiceClient {
+ public:
+  TestVariationsServiceClient() {}
+  ~TestVariationsServiceClient() override {}
+
+  // chrome_variations::VariationsServiceClient:
+  std::string GetApplicationLocale() override { return std::string(); }
+  base::SequencedWorkerPool* GetBlockingPool() override { return nullptr; }
+  base::Callback<base::Version(void)> GetVersionForSimulationCallback()
+      override {
+    return base::Callback<base::Version(void)>();
+  }
+  net::URLRequestContextGetter* GetURLRequestContext() override {
+    return nullptr;
+  }
+  network_time::NetworkTimeTracker* GetNetworkTimeTracker() override {
+    return nullptr;
+  }
+  version_info::Channel GetChannel() override {
+    return version_info::Channel::UNKNOWN;
+  }
+  bool OverridesRestrictParameter(std::string* parameter) override {
+    if (restrict_parameter_.empty())
+      return false;
+    *parameter = restrict_parameter_;
+    return true;
+  }
+  void OverrideUIString(uint32_t hash, const base::string16& string) override {}
+  void OnInitialStartup() override {}
+
+  void set_restrict_parameter(std::string value) {
+    restrict_parameter_ = value;
+  }
+
+ private:
+  std::string restrict_parameter_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestVariationsServiceClient);
+};
 
 // A test class used to validate expected functionality in VariationsService.
 class TestVariationsService : public VariationsService {
@@ -46,7 +76,7 @@ class TestVariationsService : public VariationsService {
   TestVariationsService(
       scoped_ptr<web_resource::TestRequestAllowedNotifier> test_notifier,
       PrefService* local_state)
-      : VariationsService(make_scoped_ptr(new ChromeVariationsServiceClient()),
+      : VariationsService(make_scoped_ptr(new TestVariationsServiceClient()),
                           test_notifier.Pass(),
                           local_state,
                           NULL),
@@ -169,69 +199,6 @@ scoped_refptr<net::HttpResponseHeaders> SimulateServerResponse(
   return headers;
 }
 
-// Helper class that abstracts away platform-specific details relating to the
-// pref store used for the "restrict" param policy.
-class TestVariationsPrefsStore {
- public:
-  TestVariationsPrefsStore() {
-#if defined(OS_ANDROID)
-    // Android uses profile prefs as the PrefService to generate the URL.
-    VariationsService::RegisterProfilePrefs(prefs_.registry());
-#else
-    VariationsService::RegisterPrefs(prefs_.registry());
-#endif
-
-#if defined(OS_CHROMEOS)
-    cros_settings_ = chromeos::CrosSettings::Get();
-    DCHECK(cros_settings_ != NULL);
-    // Remove the real DeviceSettingsProvider and replace it with a stub that
-    // allows modifications in a test.
-    // TODO(asvitkine): Make a scoped helper class for this operation.
-    device_settings_provider_ = cros_settings_->GetProvider(
-        chromeos::kReportDeviceVersionInfo);
-    EXPECT_TRUE(device_settings_provider_ != NULL);
-    EXPECT_TRUE(cros_settings_->RemoveSettingsProvider(
-        device_settings_provider_));
-    cros_settings_->AddSettingsProvider(&stub_settings_provider_);
-#endif
-  }
-
-  ~TestVariationsPrefsStore() {
-#if defined(OS_CHROMEOS)
-    // Restore the real DeviceSettingsProvider.
-    EXPECT_TRUE(
-        cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
-    cros_settings_->AddSettingsProvider(device_settings_provider_);
-#endif
-  }
-
-  void SetVariationsRestrictParameterPolicyValue(const std::string& value) {
-#if defined(OS_CHROMEOS)
-    cros_settings_->SetString(chromeos::kVariationsRestrictParameter, value);
-#else
-    prefs_.SetString(prefs::kVariationsRestrictParameter, value);
-#endif
-  }
-
-  PrefService* prefs() { return &prefs_; }
-
- private:
-#if defined(OS_ANDROID)
-  // Android uses profile prefs as the PrefService to generate the URL.
-  TestingPrefServiceSyncable prefs_;
-#else
-  TestingPrefServiceSimple prefs_;
-#endif
-
-#if defined(OS_CHROMEOS)
-  chromeos::CrosSettings* cros_settings_;
-  chromeos::StubCrosSettingsProvider stub_settings_provider_;
-  chromeos::CrosSettingsProvider* device_settings_provider_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(TestVariationsPrefsStore);
-};
-
 // Converts |list_value| to a string, to make it easier for debugging.
 std::string ListValueToString(const base::ListValue& list_value) {
   std::string json;
@@ -248,40 +215,48 @@ class VariationsServiceTest : public ::testing::Test {
   VariationsServiceTest() {}
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-#if defined(OS_CHROMEOS)
-  // Not used directly. Initializes CrosSettings for testing.
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-#endif
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsServiceTest);
 };
 
 TEST_F(VariationsServiceTest, GetVariationsServerURL) {
-  TestVariationsPrefsStore prefs_store;
-  PrefService* prefs = prefs_store.prefs();
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
   const std::string default_variations_url =
       VariationsService::GetDefaultVariationsServerURLForTesting();
 
   std::string value;
-  TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(prefs)),
-      prefs);
-  GURL url = service.GetVariationsServerURL(prefs, std::string());
+  scoped_ptr<TestVariationsServiceClient> client =
+      make_scoped_ptr(new TestVariationsServiceClient());
+  TestVariationsServiceClient* raw_client = client.get();
+  VariationsService service(
+      client.Pass(),
+      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      &prefs, NULL);
+  GURL url = service.GetVariationsServerURL(&prefs, std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
 
-  prefs_store.SetVariationsRestrictParameterPolicyValue("restricted");
-  url = service.GetVariationsServerURL(prefs, std::string());
+  prefs.SetString(prefs::kVariationsRestrictParameter, "restricted");
+  url = service.GetVariationsServerURL(&prefs, std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);
 
-  // The override value should take precedence over what's in prefs.
-  url = service.GetVariationsServerURL(prefs, "override");
+  // A client override should take precedence over what's in prefs.
+  raw_client->set_restrict_parameter("client");
+  url = service.GetVariationsServerURL(&prefs, std::string());
+  EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
+                               base::CompareCase::SENSITIVE));
+  EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
+  EXPECT_EQ("client", value);
+
+  // The override value passed to the method should take precedence over
+  // what's in prefs and a client override.
+  url = service.GetVariationsServerURL(&prefs, "override");
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
@@ -373,7 +348,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   VariationsService service(
-      make_scoped_ptr(new ChromeVariationsServiceClient()),
+      make_scoped_ptr(new TestVariationsServiceClient()),
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs, NULL);
   service.variations_server_url_ =
@@ -421,7 +396,7 @@ TEST_F(VariationsServiceTest, Observer) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
   VariationsService service(
-      make_scoped_ptr(new ChromeVariationsServiceClient()),
+      make_scoped_ptr(new TestVariationsServiceClient()),
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs, NULL);
 
@@ -521,7 +496,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
     TestingPrefServiceSimple prefs;
     VariationsService::RegisterPrefs(prefs.registry());
     VariationsService service(
-        make_scoped_ptr(new ChromeVariationsServiceClient()),
+        make_scoped_ptr(new TestVariationsServiceClient()),
         make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
         &prefs, NULL);
 

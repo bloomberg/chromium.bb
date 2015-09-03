@@ -689,6 +689,7 @@
       'variations/variations_seed_processor_unittest.cc',
       'variations/variations_seed_simulator_unittest.cc',
       'variations/variations_seed_store_unittest.cc',
+      'variations/service/variations_service_unittest.cc',
     ],
     'visitedlink_unittest_sources': [
       'visitedlink/test/visitedlink_unittest.cc',
@@ -944,6 +945,7 @@
         'components.gyp:user_prefs_tracked_test_support',
         'components.gyp:variations',
         'components.gyp:variations_http_provider',
+        'components.gyp:variations_service',
         'components.gyp:version_info',
         'components.gyp:wallpaper',
         'components.gyp:web_resource',

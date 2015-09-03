@@ -23,3 +23,24 @@ source_set("service") {
     "//ui/base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "variations_service_unittest.cc",
+  ]
+
+  deps = [
+    ":service",
+    "//base",
+    "//base:prefs_test_support",
+    "//base/test:test_support",
+    "//components/compression",
+    "//components/variations",
+    "//components/variations/proto",
+    "//components/web_resource:test_support",
+    "//net",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}
