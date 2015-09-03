@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_SERVICE_H_
-#define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_SERVICE_H_
+#ifndef COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_
+#define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_
 
 #include <string>
 
@@ -295,4 +295,4 @@ class VariationsService
 
 }  // namespace chrome_variations
 
-#endif  // CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_SERVICE_H_
+#endif  // COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_

@@ -4,11 +4,22 @@
 
 source_set("service") {
   sources = [
+    "variations_service.cc",
+    "variations_service.h",
     "variations_service_client.h",
   ]
 
   deps = [
     "//base",
+    "//base:prefs",
+    "//components/metrics",
+    "//components/network_time",
+    "//components/pref_registry",
+    "//components/variations",
+    "//components/variations/proto",
     "//components/version_info",
+    "//components/web_resource",
+    "//net",
+    "//ui/base",
   ]
 }

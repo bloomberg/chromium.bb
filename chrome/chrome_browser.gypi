@@ -1883,8 +1883,6 @@
       'browser/metrics/variations/generated_resources_map_lookup.cc',
       'browser/metrics/variations/variations_registry_syncer_win.cc',
       'browser/metrics/variations/variations_registry_syncer_win.h',
-      'browser/metrics/variations/variations_service.cc',
-      'browser/metrics/variations/variations_service.h',
     ],
     'chrome_browser_nacl_sources': [
       'browser/nacl_host/nacl_browser_delegate_impl.cc',

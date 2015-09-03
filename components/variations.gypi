@@ -90,17 +90,25 @@
     {
       # GN version: //components/variations/service
       'target_name': 'variations_service',
-
-      # TODO(blundell): Change to static_library once it has code in it.
-      'type': 'none',
+      'type': 'static_library',
       'include_dirs': [
         '..',
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
+        '../net/net.gyp:net',
+        '../ui/base/ui_base.gyp:ui_base',
+        'metrics',
+        'network_time',
+        'pref_registry',
+        'variations',
         'version_info',
+        'web_resource',
       ],
       'sources': [
+        'variations/service/variations_service.cc',
+        'variations/service/variations_service.h',
         'variations/service/variations_service_client.h',
       ],
     },

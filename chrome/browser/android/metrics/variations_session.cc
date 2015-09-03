@@ -6,7 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/variations/variations_service.h"
+#include "components/variations/service/variations_service.h"
 #include "jni/VariationsSession_jni.h"
 
 namespace {

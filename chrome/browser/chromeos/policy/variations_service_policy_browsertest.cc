@@ -9,8 +9,8 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
-#include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/variations/service/variations_service.h"
 #include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

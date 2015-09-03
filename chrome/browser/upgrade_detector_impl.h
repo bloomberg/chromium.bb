@@ -8,8 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/version.h"
-#include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "components/variations/service/variations_service.h"
 
 template <typename T> struct DefaultSingletonTraits;
 

@@ -1,5 +1,9 @@
-# This component is shared with the Chrome OS build, so it's important to limit
-# dependencies to a minimal set.
 include_rules = [
+  "+components/metrics",
+  "+components/network_time",
+  "+components/pref_registry",
   "+components/version_info",
+  "+components/web_resource",
+  "+net",
+  "+ui/base",
 ]
