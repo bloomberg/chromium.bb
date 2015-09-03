@@ -208,7 +208,7 @@ bool ShouldShowActionOnUI(
 ProfileSyncService::ProfileSyncService(
     scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
     Profile* profile,
-    scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
+    scoped_ptr<SigninManagerWrapper> signin_wrapper,
     ProfileOAuth2TokenService* oauth2_token_service,
     ProfileSyncServiceStartBehavior start_behavior)
     : OAuth2TokenService::Consumer("sync"),

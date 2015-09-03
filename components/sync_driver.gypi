@@ -96,6 +96,8 @@
         'sync_driver/shared_change_processor.h',
         'sync_driver/shared_change_processor_ref.cc',
         'sync_driver/shared_change_processor_ref.h',
+        'sync_driver/signin_manager_wrapper.cc',
+        'sync_driver/signin_manager_wrapper.h',
         'sync_driver/sync_api_component_factory.h',
         'sync_driver/sync_client.cc',
         'sync_driver/sync_client.h',

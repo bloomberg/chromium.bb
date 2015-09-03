@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 
-class SupervisedUserSigninManagerWrapper;
+class SigninManagerWrapper;
 
 namespace sync_driver {
 class SyncPrefs;
@@ -23,7 +23,7 @@ namespace browser_sync {
 class BackupRollbackController {
  public:
   BackupRollbackController(sync_driver::SyncPrefs* sync_prefs,
-                           const SupervisedUserSigninManagerWrapper* signin,
+                           const SigninManagerWrapper* signin,
                            base::Closure start_backup,
                            base::Closure start_rollback);
   ~BackupRollbackController();
@@ -48,9 +48,9 @@ class BackupRollbackController {
  private:
   sync_driver::SyncPrefs* sync_prefs_;
 
-  // Use SupervisedUserSigninManagerWrapper instead of SigninManagerBase so that
+  // Use SigninManagerWrapper instead of SigninManagerBase so that
   // supervised users are treated like regular signed-in users.
-  const SupervisedUserSigninManagerWrapper* signin_;
+  const SigninManagerWrapper* signin_;
 
   base::Closure start_backup_;
   base::Closure start_rollback_;

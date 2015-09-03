@@ -9,8 +9,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 
@@ -27,7 +27,7 @@ static char kSyncBackupFinchDisabled[] = "disabled";
 
 BackupRollbackController::BackupRollbackController(
     sync_driver::SyncPrefs* sync_prefs,
-    const SupervisedUserSigninManagerWrapper* signin,
+    const SigninManagerWrapper* signin,
     base::Closure start_backup,
     base::Closure start_rollback)
     : sync_prefs_(sync_prefs),

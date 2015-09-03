@@ -33,6 +33,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "url/gurl.h"
@@ -129,7 +130,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   const GURL sync_service_url = GetSyncServiceURL(
       *base::CommandLine::ForCurrentProcess(), chrome::GetChannel());
 
-  scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper(
+  scoped_ptr<SigninManagerWrapper> signin_wrapper(
       new SupervisedUserSigninManagerWrapper(profile, signin));
   std::string account_id = signin_wrapper->GetAccountIdToUse();
   OAuth2TokenService::ScopeSet scope_set;

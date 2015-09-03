@@ -32,11 +32,9 @@ static const char kStateStringStarted[] = "Started";
 static const char kStateStringDeferred[] = "Deferred";
 static const char kStateStringNotStarted[] = "Not started";
 
-class FakeSupervisedUserSigninManagerWrapper
-    : public SupervisedUserSigninManagerWrapper {
+class FakeSigninManagerWrapper : public SigninManagerWrapper {
  public:
-  FakeSupervisedUserSigninManagerWrapper()
-      : SupervisedUserSigninManagerWrapper(NULL, NULL) {}
+  FakeSigninManagerWrapper() : SigninManagerWrapper(NULL) {}
   std::string GetEffectiveUsername() const override { return account_; }
 
   std::string GetAccountIdToUse() const override { return account_; }
@@ -56,7 +54,7 @@ class StartupControllerTest : public testing::Test {
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
     token_service_.reset(static_cast<FakeProfileOAuth2TokenService*>(
         BuildFakeProfileOAuth2TokenService(profile_.get()).release()));
-    signin_.reset(new FakeSupervisedUserSigninManagerWrapper());
+    signin_.reset(new FakeSigninManagerWrapper());
 
     ProfileSyncServiceStartBehavior behavior =
         browser_defaults::kSyncAutoStarts ? AUTO_START : MANUAL_START;
@@ -86,7 +84,7 @@ class StartupControllerTest : public testing::Test {
   bool started() const { return started_; }
   void clear_started() { started_ = false; }
   StartupController* controller() { return controller_.get(); }
-  FakeSupervisedUserSigninManagerWrapper* signin() { return signin_.get(); }
+  FakeSigninManagerWrapper* signin() { return signin_.get(); }
   FakeProfileOAuth2TokenService* token_service() {
     return token_service_.get();
   }
@@ -97,7 +95,7 @@ class StartupControllerTest : public testing::Test {
   bool started_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<StartupController> controller_;
-  scoped_ptr<FakeSupervisedUserSigninManagerWrapper> signin_;
+  scoped_ptr<FakeSigninManagerWrapper> signin_;
   scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   scoped_ptr<TestingProfile> profile_;

@@ -55,7 +55,7 @@
 
 class Profile;
 class ProfileOAuth2TokenService;
-class SupervisedUserSigninManagerWrapper;
+class SigninManagerWrapper;
 class SyncErrorController;
 class SyncTypePreferenceProvider;
 
@@ -239,7 +239,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   ProfileSyncService(
       scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
       Profile* profile,
-      scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
+      scoped_ptr<SigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
       browser_sync::ProfileSyncServiceStartBehavior start_behavior);
   ~ProfileSyncService() override;
@@ -873,7 +873,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address.
-  const scoped_ptr<SupervisedUserSigninManagerWrapper> signin_;
+  const scoped_ptr<SigninManagerWrapper> signin_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;

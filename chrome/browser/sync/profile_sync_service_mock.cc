@@ -9,12 +9,12 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
-#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync_driver/signin_manager_wrapper.h"
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
     : ProfileSyncServiceMock(
@@ -28,8 +28,7 @@ ProfileSyncServiceMock::ProfileSyncServiceMock(
     : ProfileSyncService(
           factory.Pass(),
           profile,
-          make_scoped_ptr(new SupervisedUserSigninManagerWrapper(
-              profile,
+          make_scoped_ptr(new SigninManagerWrapper(
               SigninManagerFactory::GetForProfile(profile))),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           browser_sync::MANUAL_START) {

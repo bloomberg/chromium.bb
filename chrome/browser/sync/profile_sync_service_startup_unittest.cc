@@ -79,7 +79,7 @@ class TestProfileSyncServiceNoBackup : public ProfileSyncService {
   TestProfileSyncServiceNoBackup(
       scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
       Profile* profile,
-      scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
+      scoped_ptr<SigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
       browser_sync::ProfileSyncServiceStartBehavior start_behavior)
      : ProfileSyncService(factory.Pass(), profile, signin_wrapper.Pass(),
@@ -127,8 +127,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
         scoped_ptr<sync_driver::SyncApiComponentFactory>(
             new ProfileSyncComponentsFactoryMock()),
-        profile, make_scoped_ptr(new SupervisedUserSigninManagerWrapper(
-                     profile, SigninManagerFactory::GetForProfile(profile))),
+        profile, make_scoped_ptr(new SigninManagerWrapper(
+                     SigninManagerFactory::GetForProfile(profile))),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         browser_sync::MANUAL_START));
   }
@@ -230,8 +230,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
         scoped_ptr<sync_driver::SyncApiComponentFactory>(
             new ProfileSyncComponentsFactoryMock()),
-        profile, make_scoped_ptr(
-                     new SupervisedUserSigninManagerWrapper(profile, signin)),
+        profile, make_scoped_ptr(new SigninManagerWrapper(signin)),
         oauth2_token_service, browser_sync::AUTO_START));
   }
 };

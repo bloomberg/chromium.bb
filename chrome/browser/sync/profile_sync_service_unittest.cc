@@ -23,7 +23,6 @@
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -41,6 +40,7 @@
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/fake_data_type_controller.h"
 #include "components/sync_driver/pref_names.h"
+#include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service_observer.h"
@@ -278,8 +278,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_.reset(new ProfileSyncService(
         scoped_ptr<sync_driver::SyncApiComponentFactory>(components_factory_),
         profile_,
-        make_scoped_ptr(new SupervisedUserSigninManagerWrapper(profile_,
-                                                               signin)),
+        make_scoped_ptr(new SigninManagerWrapper(signin)),
         oauth2_token_service,
         behavior));
     service_->SetClearingBrowseringDataForTesting(

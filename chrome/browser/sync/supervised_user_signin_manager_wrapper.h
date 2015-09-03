@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "components/sync_driver/signin_manager_wrapper.h"
 
 class Profile;
 class SigninManagerBase;
@@ -17,22 +18,20 @@ class SigninManagerBase;
 // getting the "effective" username and account identifiers, services can
 // use this class to wrap the SigninManager and return supervised user account
 // information when appropriate.
-class SupervisedUserSigninManagerWrapper {
+class SupervisedUserSigninManagerWrapper : public SigninManagerWrapper {
  public:
   SupervisedUserSigninManagerWrapper(Profile* profile,
                                      SigninManagerBase* original);
-  virtual ~SupervisedUserSigninManagerWrapper();
+  ~SupervisedUserSigninManagerWrapper() override;
 
-  virtual std::string GetEffectiveUsername() const;
-  virtual std::string GetAccountIdToUse() const;
-
-  virtual std::string GetSyncScopeToUse() const;
-
-  SigninManagerBase* GetOriginal();
+  // SigninManagerWrapper implementation
+  std::string GetEffectiveUsername() const override;
+  std::string GetAccountIdToUse() const override;
+  std::string GetSyncScopeToUse() const override;
 
  private:
   Profile* profile_;
-  SigninManagerBase* original_;
+
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserSigninManagerWrapper);
 };
 
