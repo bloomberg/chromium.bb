@@ -1775,6 +1775,9 @@
       <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_NOT_PLURALIZED">
         with <ph name="num">$1</ph> items
       </message>
+      <message desc="Further describes a list-like element with a number of items for braille. e.g. This will be combined with other messages to produce: lst +3." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_NOT_PLURALIZED_BRL">
+        +<ph name="num">$1</ph>
+      </message>
       <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS">
         with {COUNT, plural, =1 {# item}other {# items}}
       </message>
