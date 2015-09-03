@@ -61,7 +61,7 @@ gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
 #endif
 }
 
-int PermissionBubbleRequestImpl::GetIconID() const {
+int PermissionBubbleRequestImpl::GetIconId() const {
   int icon_id;
   switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:

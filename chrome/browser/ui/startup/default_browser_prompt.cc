@@ -78,7 +78,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   void AllowExpiry() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -136,7 +136,7 @@ DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
     UMA_HISTOGRAM_BOOLEAN("DefaultBrowserWarning.Ignored", true);
 }
 
-int DefaultBrowserInfoBarDelegate::GetIconID() const {
+int DefaultBrowserInfoBarDelegate::GetIconId() const {
   return IDR_PRODUCT_LOGO_32;
 }
 

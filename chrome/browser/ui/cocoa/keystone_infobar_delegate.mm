@@ -51,7 +51,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   void SetCanExpire() { can_expire_ = true; }
 
   // ConfirmInfoBarDelegate
-  int GetIconID() const override;
+  int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -104,7 +104,7 @@ KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
 KeystonePromotionInfoBarDelegate::~KeystonePromotionInfoBarDelegate() {
 }
 
-int KeystonePromotionInfoBarDelegate::GetIconID() const {
+int KeystonePromotionInfoBarDelegate::GetIconId() const {
   return IDR_PRODUCT_LOGO_32;
 }
 

@@ -47,7 +47,7 @@ void PopupBlockedInfoBarDelegate::Create(content::WebContents* web_contents,
 PopupBlockedInfoBarDelegate::~PopupBlockedInfoBarDelegate() {
 }
 
-int PopupBlockedInfoBarDelegate::GetIconID() const {
+int PopupBlockedInfoBarDelegate::GetIconId() const {
   return IDR_BLOCKED_POPUPS;
 }
 

@@ -57,7 +57,7 @@ AutofillCCInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int AutofillCCInfoBarDelegate::GetIconID() const {
+int AutofillCCInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_AUTOFILL_CC;
 }
 

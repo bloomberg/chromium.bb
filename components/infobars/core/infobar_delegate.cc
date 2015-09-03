@@ -34,7 +34,7 @@ InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() const {
   return WARNING_TYPE;
 }
 
-int InfoBarDelegate::GetIconID() const {
+int InfoBarDelegate::GetIconId() const {
   return kNoIconID;
 }
 
@@ -59,7 +59,7 @@ gfx::Image InfoBarDelegate::GetIcon() const {
   }
 #endif
 
-  int icon_id = GetIconID();
+  int icon_id = GetIconId();
   return icon_id == kNoIconID ? gfx::Image() :
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(icon_id);
 }

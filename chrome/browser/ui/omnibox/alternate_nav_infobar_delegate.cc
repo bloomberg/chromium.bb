@@ -98,7 +98,7 @@ AlternateNavInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int AlternateNavInfoBarDelegate::GetIconID() const {
+int AlternateNavInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_ALT_NAV_URL;
 }
 

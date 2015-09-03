@@ -49,7 +49,7 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   ~QuotaPermissionRequest() override;
 
   // PermissionBubbleRequest:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
   bool HasUserGesture() const override;
@@ -86,7 +86,7 @@ QuotaPermissionRequest::QuotaPermissionRequest(
 
 QuotaPermissionRequest::~QuotaPermissionRequest() {}
 
-int QuotaPermissionRequest::GetIconID() const {
+int QuotaPermissionRequest::GetIconId() const {
   // TODO(gbillock): get the proper image here
   return IDR_INFOBAR_WARNING;
 }

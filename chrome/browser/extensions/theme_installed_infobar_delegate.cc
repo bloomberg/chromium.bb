@@ -108,7 +108,7 @@ ThemeInstalledInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int ThemeInstalledInfoBarDelegate::GetIconID() const {
+int ThemeInstalledInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_THEME;
 }
 

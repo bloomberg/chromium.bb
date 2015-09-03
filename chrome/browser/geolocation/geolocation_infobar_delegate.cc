@@ -39,7 +39,7 @@ GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
 GeolocationInfoBarDelegate::~GeolocationInfoBarDelegate() {
 }
 
-int GeolocationInfoBarDelegate::GetIconID() const {
+int GeolocationInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_GEOLOCATION;
 }
 

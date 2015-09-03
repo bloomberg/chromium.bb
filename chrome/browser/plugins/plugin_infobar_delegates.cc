@@ -73,7 +73,7 @@ void PluginInfoBarDelegate::LoadBlockedPlugins() {
       web_contents, true, identifier_);
 }
 
-int PluginInfoBarDelegate::GetIconID() const {
+int PluginInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
@@ -256,7 +256,7 @@ PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
 PluginMetroModeInfoBarDelegate::~PluginMetroModeInfoBarDelegate() {
 }
 
-int PluginMetroModeInfoBarDelegate::GetIconID() const {
+int PluginMetroModeInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 

@@ -108,7 +108,7 @@ PermissionUpdateInfoBarDelegate::~PermissionUpdateInfoBarDelegate() {
       base::android::AttachCurrentThread(), java_delegate_.obj());
 }
 
-int PermissionUpdateInfoBarDelegate::GetIconID() const {
+int PermissionUpdateInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_WARNING;
 }
 

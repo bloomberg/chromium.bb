@@ -36,7 +36,7 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetLinkText() const override;
 
   std::string identifier_;
@@ -120,7 +120,7 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~PluginMetroModeInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;

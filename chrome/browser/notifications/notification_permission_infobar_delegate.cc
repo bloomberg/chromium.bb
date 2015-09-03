@@ -39,7 +39,7 @@ NotificationPermissionInfobarDelegate::NotificationPermissionInfobarDelegate(
 NotificationPermissionInfobarDelegate::~NotificationPermissionInfobarDelegate()
     {}
 
-int NotificationPermissionInfobarDelegate::GetIconID() const {
+int NotificationPermissionInfobarDelegate::GetIconId() const {
   return IDR_INFOBAR_DESKTOP_NOTIFICATIONS;
 }
 

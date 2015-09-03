@@ -30,7 +30,7 @@ class PermissionBubbleRequest {
 
   // The icon to use next to the message text fragment in the permission bubble.
   // Must be a valid icon of size 18x18.
-  virtual int GetIconID() const = 0;
+  virtual int GetIconId() const = 0;
 
   // Returns the full prompt text for this permission. This is the only text
   // that will be shown in the single-permission case and should be phrased

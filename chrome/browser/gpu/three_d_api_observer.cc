@@ -38,7 +38,7 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~ThreeDAPIInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
   ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate() override;
   base::string16 GetMessageText() const override;
@@ -86,7 +86,7 @@ ThreeDAPIInfoBarDelegate::~ThreeDAPIInfoBarDelegate() {
   }
 }
 
-int ThreeDAPIInfoBarDelegate::GetIconID() const {
+int ThreeDAPIInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_3D_BLOCKED;
 }
 

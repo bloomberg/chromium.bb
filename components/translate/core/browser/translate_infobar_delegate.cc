@@ -355,7 +355,7 @@ TranslateInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int TranslateInfoBarDelegate::GetIconID() const {
+int TranslateInfoBarDelegate::GetIconId() const {
   return translate_manager_->translate_client()->GetInfobarIconID();
 }
 

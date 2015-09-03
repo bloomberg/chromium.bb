@@ -38,7 +38,7 @@ RegisterProtocolHandlerPermissionRequest
 RegisterProtocolHandlerPermissionRequest::
 ~RegisterProtocolHandlerPermissionRequest() {}
 
-int RegisterProtocolHandlerPermissionRequest::GetIconID() const {
+int RegisterProtocolHandlerPermissionRequest::GetIconId() const {
   return IDR_REGISTER_PROTOCOL_HANDLER;
 }
 

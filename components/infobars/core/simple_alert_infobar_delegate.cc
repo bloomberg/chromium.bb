@@ -32,7 +32,7 @@ SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
 SimpleAlertInfoBarDelegate::~SimpleAlertInfoBarDelegate() {
 }
 
-int SimpleAlertInfoBarDelegate::GetIconID() const {
+int SimpleAlertInfoBarDelegate::GetIconId() const {
   return icon_id_;
 }
 

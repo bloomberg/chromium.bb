@@ -56,7 +56,7 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~PermissionUpdateInfoBarDelegate() override;
 
   // PermissionInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
 
   // ConfirmInfoBarDelegate:

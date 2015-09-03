@@ -66,7 +66,7 @@ ProtectedMediaIdentifierInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int ProtectedMediaIdentifierInfoBarDelegate::GetIconID() const {
+int ProtectedMediaIdentifierInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
 }
 

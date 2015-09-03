@@ -135,7 +135,7 @@ class ReloadPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~ReloadPluginInfoBarDelegate() override;
 
   // ConfirmInfobarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -163,7 +163,7 @@ ReloadPluginInfoBarDelegate::ReloadPluginInfoBarDelegate(
 
 ReloadPluginInfoBarDelegate::~ReloadPluginInfoBarDelegate(){ }
 
-int ReloadPluginInfoBarDelegate::GetIconID() const {
+int ReloadPluginInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_PLUGIN_CRASHED;
 }
 

@@ -55,7 +55,7 @@ SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
   }
 }
 
-int SessionCrashedInfoBarDelegate::GetIconID() const {
+int SessionCrashedInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_RESTORE_SESSION;
 }
 

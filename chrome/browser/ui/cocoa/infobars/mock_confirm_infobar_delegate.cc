@@ -25,7 +25,7 @@ MockConfirmInfoBarDelegate::~MockConfirmInfoBarDelegate() {
     owner_->OnInfoBarDelegateClosed();
 }
 
-int MockConfirmInfoBarDelegate::GetIconID() const {
+int MockConfirmInfoBarDelegate::GetIconId() const {
   icon_accessed_ = true;
   return kNoIconID;
 }

@@ -47,7 +47,7 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
   void set_should_expire() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -96,7 +96,7 @@ AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
 AutolaunchInfoBarDelegate::~AutolaunchInfoBarDelegate() {
 }
 
-int AutolaunchInfoBarDelegate::GetIconID() const {
+int AutolaunchInfoBarDelegate::GetIconId() const {
   return IDR_PRODUCT_LOGO_32;
 }
 

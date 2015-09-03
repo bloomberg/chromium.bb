@@ -41,7 +41,7 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
-  int GetIconID() const override;
+  int GetIconId() const override;
   void InfoBarDismissed() override;
   MediaStreamInfoBarDelegate* AsMediaStreamInfoBarDelegate() override;
   base::string16 GetMessageText() const override;

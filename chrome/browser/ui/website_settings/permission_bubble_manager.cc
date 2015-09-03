@@ -21,14 +21,14 @@ namespace {
 class CancelledRequest : public PermissionBubbleRequest {
  public:
   explicit CancelledRequest(PermissionBubbleRequest* cancelled)
-      : icon_(cancelled->GetIconID()),
+      : icon_(cancelled->GetIconId()),
         message_text_(cancelled->GetMessageText()),
         message_fragment_(cancelled->GetMessageTextFragment()),
         user_gesture_(cancelled->HasUserGesture()),
         hostname_(cancelled->GetRequestingHostname()) {}
   ~CancelledRequest() override {}
 
-  int GetIconID() const override { return icon_; }
+  int GetIconId() const override { return icon_; }
   base::string16 GetMessageText() const override { return message_text_; }
   base::string16 GetMessageTextFragment() const override {
     return message_fragment_;

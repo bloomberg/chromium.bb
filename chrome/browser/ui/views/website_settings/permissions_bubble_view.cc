@@ -251,7 +251,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
                                     &grey);
       icon->SetImage(gfx::CreateVectorIcon(vector_id, kIconSize, grey));
     } else {
-      icon->SetImage(bundle.GetImageSkiaNamed(requests.at(index)->GetIconID()));
+      icon->SetImage(bundle.GetImageSkiaNamed(requests.at(index)->GetIconId()));
       icon->SetImageSize(gfx::Size(kIconSize, kIconSize));
     }
     icon->SetTooltipText(base::string16());  // Redundant with the text fragment

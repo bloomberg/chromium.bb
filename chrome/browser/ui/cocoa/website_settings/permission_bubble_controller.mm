@@ -472,7 +472,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   base::scoped_nsobject<NSImageView> permissionIcon(
       [[NSImageView alloc] initWithFrame:NSZeroRect]);
   [permissionIcon setImage:ui::ResourceBundle::GetSharedInstance().
-      GetNativeImageNamed(request->GetIconID()).ToNSImage()];
+      GetNativeImageNamed(request->GetIconId()).ToNSImage()];
   [permissionIcon setFrameSize:kPermissionIconSize];
   [permissionView addSubview:permissionIcon];
 

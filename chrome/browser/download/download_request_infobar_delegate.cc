@@ -55,7 +55,7 @@ DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
       host_(host) {
 }
 
-int DownloadRequestInfoBarDelegate::GetIconID() const {
+int DownloadRequestInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
 }
 

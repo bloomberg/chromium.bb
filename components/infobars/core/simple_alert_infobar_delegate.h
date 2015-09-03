@@ -30,7 +30,7 @@ class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~SimpleAlertInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;

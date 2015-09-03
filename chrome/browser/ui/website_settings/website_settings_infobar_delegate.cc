@@ -33,7 +33,7 @@ WebsiteSettingsInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int WebsiteSettingsInfoBarDelegate::GetIconID() const {
+int WebsiteSettingsInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_ALT_NAV_URL;
 }
 

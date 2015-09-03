@@ -36,7 +36,7 @@ class MidiPermissionInfoBarDelegate : public PermissionInfobarDelegate {
   ~MidiPermissionInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
 
   GURL requesting_frame_;

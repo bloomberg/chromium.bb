@@ -57,7 +57,7 @@ AppBannerInfoBarDelegateDesktop::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int AppBannerInfoBarDelegateDesktop::GetIconID() const {
+int AppBannerInfoBarDelegateDesktop::GetIconId() const {
   return IDR_INFOBAR_APP_BANNER;
 }
 

@@ -31,7 +31,7 @@ class GeolocationInfoBarDelegate :  public PermissionInfobarDelegate {
   ~GeolocationInfoBarDelegate() override;
 
   // PermissionInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
 
   GURL requesting_frame_;

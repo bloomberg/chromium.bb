@@ -146,7 +146,7 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~HungPluginInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -186,7 +186,7 @@ HungPluginInfoBarDelegate::HungPluginInfoBarDelegate(
 HungPluginInfoBarDelegate::~HungPluginInfoBarDelegate() {
 }
 
-int HungPluginInfoBarDelegate::GetIconID() const {
+int HungPluginInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_PLUGIN_CRASHED;
 }
 

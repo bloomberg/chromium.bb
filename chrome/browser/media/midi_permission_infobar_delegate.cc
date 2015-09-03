@@ -38,7 +38,7 @@ MidiPermissionInfoBarDelegate::MidiPermissionInfoBarDelegate(
 MidiPermissionInfoBarDelegate::~MidiPermissionInfoBarDelegate() {
 }
 
-int MidiPermissionInfoBarDelegate::GetIconID() const {
+int MidiPermissionInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_MIDI;
 }
 

@@ -88,7 +88,7 @@ MediaStreamInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int MediaStreamInfoBarDelegate::GetIconID() const {
+int MediaStreamInfoBarDelegate::GetIconId() const {
   return controller_->IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
                                          : IDR_INFOBAR_MEDIA_STREAM_MIC;
 }

@@ -19,7 +19,7 @@ DownloadPermissionRequest::DownloadPermissionRequest(
 
 DownloadPermissionRequest::~DownloadPermissionRequest() {}
 
-int DownloadPermissionRequest::GetIconID() const {
+int DownloadPermissionRequest::GetIconId() const {
   return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
 }
 

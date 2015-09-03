@@ -198,7 +198,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   // InfoBarDelegate:
   Type GetInfoBarType() const override;
-  int GetIconID() const override;
+  int GetIconId() const override;
   void InfoBarDismissed() override;
   TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() override;
 

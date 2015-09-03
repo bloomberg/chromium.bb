@@ -40,7 +40,7 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   const std::string& GetSecurityOriginSpec() const;
 
   // PermissionBubbleRequest:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
   bool HasUserGesture() const override;

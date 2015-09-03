@@ -58,7 +58,7 @@ void FullscreenInfoBarDelegate::CloseFullscreenInfoBar(
     infobar()->owner()->RemoveInfoBar(infobar());
 }
 
-int FullscreenInfoBarDelegate::GetIconID() const {
+int FullscreenInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_FULLSCREEN;
 }
 

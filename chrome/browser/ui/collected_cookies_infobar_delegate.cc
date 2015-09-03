@@ -32,7 +32,7 @@ CollectedCookiesInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int CollectedCookiesInfoBarDelegate::GetIconID() const {
+int CollectedCookiesInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_COOKIE;
 }
 

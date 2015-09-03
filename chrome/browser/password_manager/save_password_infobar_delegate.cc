@@ -104,7 +104,7 @@ SavePasswordInfoBarDelegate::GetInfoBarAutomationType() const {
   return PASSWORD_INFOBAR;
 }
 
-int SavePasswordInfoBarDelegate::GetIconID() const {
+int SavePasswordInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_SAVE_PASSWORD;
 }
 

@@ -60,7 +60,7 @@ MockPermissionBubbleRequest::MockPermissionBubbleRequest(
 
 MockPermissionBubbleRequest::~MockPermissionBubbleRequest() {}
 
-int MockPermissionBubbleRequest::GetIconID() const {
+int MockPermissionBubbleRequest::GetIconId() const {
   // Use a valid icon ID to support UI tests.
   return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 }

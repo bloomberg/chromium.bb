@@ -124,7 +124,7 @@ const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
   return request_.security_origin.spec();
 }
 
-int MediaStreamDevicesController::GetIconID() const {
+int MediaStreamDevicesController::GetIconId() const {
   if (IsAskingForVideo())
     return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 

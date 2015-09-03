@@ -43,7 +43,7 @@ class SSLAddCertificateInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -76,7 +76,7 @@ SSLAddCertificateInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int SSLAddCertificateInfoBarDelegate::GetIconID() const {
+int SSLAddCertificateInfoBarDelegate::GetIconId() const {
   // TODO(davidben): Use a more appropriate icon.
   return IDR_INFOBAR_SAVE_PASSWORD;
 }

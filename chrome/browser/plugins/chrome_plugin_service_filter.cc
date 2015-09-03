@@ -76,7 +76,7 @@ class NPAPIRemovalInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~NPAPIRemovalInfoBarDelegate() override;
 
   // ConfirmInfobarDelegate:
-  int GetIconID() const override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetLinkText() const override;
@@ -149,7 +149,7 @@ NPAPIRemovalInfoBarDelegate::NPAPIRemovalInfoBarDelegate(
 NPAPIRemovalInfoBarDelegate::~NPAPIRemovalInfoBarDelegate() {
 }
 
-int NPAPIRemovalInfoBarDelegate::GetIconID() const {
+int NPAPIRemovalInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_WARNING;
 }
 

@@ -48,7 +48,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
   InfoBarAutomationType GetInfoBarAutomationType() const override;
-  int GetIconID() const override;
+  int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
