@@ -1495,7 +1495,7 @@ void ThreadState::takeSnapshot(SnapshotType type)
     for (size_t gcInfoIndex = 1; gcInfoIndex <= GCInfoTable::gcInfoIndex(); ++gcInfoIndex) {
         String dumpName = classesDumpName + String::format("/%lu_", static_cast<unsigned long>(gcInfoIndex));
 #if ENABLE(GC_PROFILING)
-        dumpName += Heap::gcInfo(gcInfoIndex)->className();
+        dumpName.append(Heap::gcInfo(gcInfoIndex)->className());
 #endif
         WebMemoryAllocatorDump* classDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
         classDump->AddScalar("live_count", "objects", info.liveCount[gcInfoIndex]);
