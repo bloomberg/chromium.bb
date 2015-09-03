@@ -48,6 +48,15 @@ enum ResourceRequestCachePolicy {
     ReloadBypassingCache, // end-to-end reload
 };
 
+enum ResourceRequestBlockedReason {
+    ResourceRequestBlockedReasonCSP,
+    ResourceRequestBlockedReasonMixedContent,
+    ResourceRequestBlockedReasonOrigin,
+    ResourceRequestBlockedReasonInspector,
+    ResourceRequestBlockedReasonOther,
+    ResourceRequestBlockedReasonNone
+};
+
 enum InputToLoadPerfMetricReportPolicy {
     NoReport, // Don't report metrics for this ResourceRequest.
     ReportLink, // Report metrics for this request as initiated by a link click.

@@ -350,10 +350,20 @@ void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const
 
 bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
 {
+    ResourceRequestBlockedReason reason = canRequestInternal(type, resourceRequest, url, options, forPreload, originRestriction);
+    if (reason != ResourceRequestBlockedReasonNone) {
+        InspectorInstrumentation::didBlockRequest(frame(), resourceRequest, ensureLoaderForNotifications(), options.initiatorInfo, reason);
+        return false;
+    }
+    return true;
+}
+
+ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
+{
     InstrumentingAgents* agents = InspectorInstrumentation::instrumentingAgentsFor(frame());
     if (agents && agents->inspectorResourceAgent()) {
-        if (agents->inspectorResourceAgent()->shouldBlockRequest(frame(), resourceRequest, ensureLoaderForNotifications(), options.initiatorInfo))
-            return false;
+        if (agents->inspectorResourceAgent()->shouldBlockRequest(resourceRequest))
+            return ResourceRequestBlockedReasonInspector;
     }
 
     SecurityOrigin* securityOrigin = options.securityOrigin.get();
@@ -364,7 +374,7 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
         if (!forPreload)
             FrameLoader::reportLocalLoadFailed(frame(), url.elidedString());
         WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay");
-        return false;
+        return ResourceRequestBlockedReasonOther;
     }
 
     // Some types of resources can be loaded only from the same origin. Other
@@ -387,7 +397,7 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
         // FIXME: Are we sure about Resource::Font?
         if (originRestriction == FetchRequest::RestrictToSameOrigin && !securityOrigin->canRequest(url)) {
             printAccessDeniedMessage(url);
-            return false;
+            return ResourceRequestBlockedReasonOrigin;
         }
         break;
     case Resource::XSLStyleSheet:
@@ -395,7 +405,7 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
     case Resource::SVGDocument:
         if (!securityOrigin->canRequest(url)) {
             printAccessDeniedMessage(url);
-            return false;
+            return ResourceRequestBlockedReasonOrigin;
         }
         break;
     }
@@ -424,34 +434,34 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         ASSERT(ContentSecurityPolicy::isScriptResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
-            return false;
+            return ResourceRequestBlockedReasonCSP;
         break;
     case Resource::Script:
     case Resource::ImportResource:
         ASSERT(ContentSecurityPolicy::isScriptResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
-            return false;
+            return ResourceRequestBlockedReasonCSP;
 
         if (!frame()->loader().client()->allowScriptFromSource(!frame()->settings() || frame()->settings()->scriptEnabled(), url)) {
             frame()->loader().client()->didNotAllowScript();
-            return false;
+            return ResourceRequestBlockedReasonCSP;
         }
         break;
     case Resource::CSSStyleSheet:
         ASSERT(ContentSecurityPolicy::isStyleResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, redirectStatus, cspReporting))
-            return false;
+            return ResourceRequestBlockedReasonCSP;
         break;
     case Resource::SVGDocument:
     case Resource::Image:
         ASSERT(ContentSecurityPolicy::isImageResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, redirectStatus, cspReporting))
-            return false;
+            return ResourceRequestBlockedReasonCSP;
         break;
     case Resource::Font: {
         ASSERT(ContentSecurityPolicy::isFontResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, redirectStatus, cspReporting))
-            return false;
+            return ResourceRequestBlockedReasonCSP;
         break;
     }
     case Resource::MainResource:
@@ -464,22 +474,22 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
     case Resource::TextTrack:
         ASSERT(ContentSecurityPolicy::isMediaResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, redirectStatus, cspReporting))
-            return false;
+            return ResourceRequestBlockedReasonCSP;
 
         if (!frame()->loader().client()->allowMedia(url))
-            return false;
+            return ResourceRequestBlockedReasonOther;
         break;
     }
 
     // SVG Images have unique security rules that prevent all subresource requests
     // except for data urls.
     if (type != Resource::MainResource && frame()->chromeClient().isSVGImageChromeClient() && !url.protocolIsData())
-        return false;
+        return ResourceRequestBlockedReasonOrigin;
 
     // FIXME: Once we use RequestContext for CSP (http://crbug.com/390497), remove this extra check.
     if (resourceRequest.requestContext() == WebURLRequest::RequestContextManifest) {
         if (!shouldBypassMainWorldCSP && !csp->allowManifestFromSource(url, redirectStatus, cspReporting))
-            return false;
+            return ResourceRequestBlockedReasonCSP;
     }
 
     // Measure the number of legacy URL schemes ('ftp://') and the number of embedded-credential
@@ -506,7 +516,10 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
     // They'll still get a warning in the console about CSP blocking the load.
     MixedContentChecker::ReportingStatus mixedContentReporting = forPreload ?
         MixedContentChecker::SuppressReport : MixedContentChecker::SendReport;
-    return !MixedContentChecker::shouldBlockFetch(MixedContentChecker::effectiveFrameForFrameType(frame(), resourceRequest.frameType()), resourceRequest, url, mixedContentReporting);
+    if (MixedContentChecker::shouldBlockFetch(MixedContentChecker::effectiveFrameForFrameType(frame(), resourceRequest.frameType()), resourceRequest, url, mixedContentReporting))
+        return ResourceRequestBlockedReasonMixedContent;
+
+    return ResourceRequestBlockedReasonNone;
 }
 
 bool FrameFetchContext::isControlledByServiceWorker() const

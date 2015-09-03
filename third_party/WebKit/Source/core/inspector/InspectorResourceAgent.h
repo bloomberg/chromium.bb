@@ -38,6 +38,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -58,7 +59,6 @@ class KURL;
 class NetworkResourcesData;
 class ResourceError;
 class ResourceLoader;
-class ResourceRequest;
 class ResourceResponse;
 class ThreadableLoaderClient;
 class XHRReplayData;
@@ -83,6 +83,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Called from instrumentation.
+    void didBlockRequest(LocalFrame*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason);
     void willSendRequest(LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void markResourceAsCached(unsigned long identifier);
     void didReceiveResourceResponse(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
@@ -151,7 +152,7 @@ public:
     // Called from other agents.
     void setHostId(const String&);
     bool fetchResourceContent(Document*, const KURL&, String* content, bool* base64Encoded);
-    bool shouldBlockRequest(LocalFrame*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&);
+    bool shouldBlockRequest(const ResourceRequest&);
 
 private:
     explicit InspectorResourceAgent(InspectorPageAgent*);

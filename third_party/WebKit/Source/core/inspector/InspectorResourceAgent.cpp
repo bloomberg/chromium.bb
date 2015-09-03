@@ -208,6 +208,25 @@ TypeBuilder::Network::ResourcePriority::Enum resourcePriorityJSON(ResourceLoadPr
     return TypeBuilder::Network::ResourcePriority::Medium;
 }
 
+TypeBuilder::Network::BlockedReason::Enum buildBlockedReason(ResourceRequestBlockedReason reason)
+{
+    switch (reason) {
+    case ResourceRequestBlockedReasonCSP:
+        return TypeBuilder::Network::BlockedReason::Enum::Csp;
+    case ResourceRequestBlockedReasonMixedContent:
+        return TypeBuilder::Network::BlockedReason::Enum::Mixed_content;
+    case ResourceRequestBlockedReasonOrigin:
+        return TypeBuilder::Network::BlockedReason::Enum::Origin;
+    case ResourceRequestBlockedReasonInspector:
+        return TypeBuilder::Network::BlockedReason::Enum::Inspector;
+    case ResourceRequestBlockedReasonOther:
+        return TypeBuilder::Network::BlockedReason::Enum::Other;
+    case ResourceRequestBlockedReasonNone:
+    default:
+        ASSERT_NOT_REACHED();
+        return TypeBuilder::Network::BlockedReason::Enum::Other;
+    }
+}
 
 } // namespace
 
@@ -383,22 +402,25 @@ DEFINE_TRACE(InspectorResourceAgent)
     InspectorBaseAgent::trace(visitor);
 }
 
-bool InspectorResourceAgent::shouldBlockRequest(LocalFrame* frame, const ResourceRequest& request, DocumentLoader* loader, const FetchInitiatorInfo& initiatorInfo)
+bool InspectorResourceAgent::shouldBlockRequest(const ResourceRequest& request)
 {
     String url = request.url().string();
     RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
     for (const auto& entry : *blockedURLs) {
-        if (url.contains(entry.key)) {
-            unsigned long identifier = createUniqueIdentifier();
-            willSendRequestInternal(frame, identifier, loader, request, ResourceResponse(), initiatorInfo);
-
-            String requestId = IdentifiersFactory::requestId(identifier);
-            bool blocked = true;
-            frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), String(), nullptr, &blocked);
+        if (url.contains(entry.key))
             return true;
-        }
     }
     return false;
+}
+
+void InspectorResourceAgent::didBlockRequest(LocalFrame* frame, const ResourceRequest& request, DocumentLoader* loader, const FetchInitiatorInfo& initiatorInfo, ResourceRequestBlockedReason reason)
+{
+    unsigned long identifier = createUniqueIdentifier();
+    willSendRequestInternal(frame, identifier, loader, request, ResourceResponse(), initiatorInfo);
+
+    String requestId = IdentifiersFactory::requestId(identifier);
+    TypeBuilder::Network::BlockedReason::Enum protocolReason = buildBlockedReason(reason);
+    frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), String(), nullptr, &protocolReason);
 }
 
 void InspectorResourceAgent::willSendRequestInternal(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)

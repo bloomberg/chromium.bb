@@ -46,6 +46,7 @@
 #include "core/layout/LayoutImage.h"
 #include "core/page/ChromeClient.h"
 #include "platform/network/FormData.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "wtf/RefPtr.h"
