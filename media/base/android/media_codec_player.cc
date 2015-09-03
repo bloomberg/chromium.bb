@@ -606,7 +606,9 @@ void MediaCodecPlayer::OnPrefetchDone() {
 
 void MediaCodecPlayer::OnPrerollDone() {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
+
+  // http://crbug.com/526755
+  DVLOG(0) << __FUNCTION__;
 
   StartStatus status = StartDecoders();
   if (status != kStartOk)
@@ -1022,7 +1024,8 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::StartDecoders() {
 
   base::TimeDelta current_time = GetInterpolatedTime();
 
-  DVLOG(1) << __FUNCTION__ << " current_time:" << current_time;
+  // http://crbug.com/526755
+  DVLOG(0) << __FUNCTION__ << " current_time:" << current_time;
 
   if (!AudioFinished()) {
     if (!audio_decoder_->Start(current_time))

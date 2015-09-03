@@ -400,6 +400,9 @@ void MediaCodecDecoder::OnLastFrameRendered(bool eos_encountered) {
   completed_ = (eos_encountered && !drain_decoder_);
 
   if (completed_ && !preroll_done_cb_.is_null()) {
+    // http://crbug.com/526755
+    DVLOG(0) << class_name() << "::" << __FUNCTION__
+             << ": completed, calling preroll_done_cb_";
     media_task_runner_->PostTask(FROM_HERE,
                                  base::ResetAndReturn(&preroll_done_cb_));
   }
@@ -418,7 +421,9 @@ void MediaCodecDecoder::OnLastFrameRendered(bool eos_encountered) {
 void MediaCodecDecoder::OnPrerollDone() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  DVLOG(1) << class_name() << "::" << __FUNCTION__;
+  // http://crbug.com/526755
+  DVLOG(0) << class_name() << "::" << __FUNCTION__
+           << " state:" << AsString(GetState());
 
   preroll_mode_ = kNoPreroll;
 
