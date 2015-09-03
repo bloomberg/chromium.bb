@@ -2,4 +2,4 @@
 KeygenHandlerTest.SmokeTest
 
 # Fails under Mac Valgrind (see http://crbug.com/527544).
-NextProto_SpdySessionTest.ReadDataWithoutYielding_*
+*SpdySessionTest.ReadDataWithoutYielding*
