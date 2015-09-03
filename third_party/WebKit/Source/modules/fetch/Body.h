@@ -50,10 +50,14 @@ public:
         ActiveDOMObject::trace(visitor);
     }
 
+    void makeOpaque() { m_opaque = true; }
+    bool opaque() const { return m_opaque; }
+
 private:
     virtual String mimeType() const = 0;
 
     bool m_bodyPassed;
+    bool m_opaque;
 };
 
 } // namespace blink

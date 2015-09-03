@@ -75,6 +75,7 @@ public:
     void set(const String& name, Blob*, const String& filename = String());
 
     void makeOpaque() { m_opaque = true; }
+    bool opaque() const { return m_opaque; }
 
 private:
     explicit DOMFormData(const WTF::TextEncoding&);

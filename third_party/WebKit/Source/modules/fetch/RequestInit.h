@@ -32,6 +32,9 @@ public:
     String credentials;
     String redirect;
     String integrity;
+
+    // https://w3c.github.io/webappsec/specs/credentialmanagement/#monkey-patching-fetch-2
+    bool opaque;
 };
 
 }
