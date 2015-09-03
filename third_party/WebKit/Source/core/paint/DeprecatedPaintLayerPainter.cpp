@@ -84,9 +84,9 @@ void DeprecatedPaintLayerPainter::paintLayer(GraphicsContext* context, const Dep
     if (!m_paintLayer.layoutObject()->opacity() && !m_paintLayer.layoutObject()->hasBackdropFilter())
         return;
 
-    if (!needsRepaint && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, *m_paintLayer.layoutObject()))
+    if (!needsRepaint && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer))
         return;
-    SubsequenceRecorder subsequenceRecorder(*context, *m_paintLayer.layoutObject());
+    SubsequenceRecorder subsequenceRecorder(*context, m_paintLayer);
 
     if (m_paintLayer.paintsWithTransparency(paintingInfo.globalPaintFlags()))
         paintFlags |= PaintLayerHaveTransparency;

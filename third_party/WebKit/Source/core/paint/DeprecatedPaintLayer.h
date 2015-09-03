@@ -551,6 +551,9 @@ public:
     void setNeedsRepaint();
     void clearNeedsRepaint() { m_needsRepaint = false; }
 
+    // For subsequence display items.
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+
 private:
     // Bounding box in the coordinates of this layer.
     LayoutRect logicalBoundingBox() const;

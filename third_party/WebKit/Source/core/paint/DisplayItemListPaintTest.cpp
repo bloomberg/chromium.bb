@@ -221,7 +221,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
     LayoutView& layoutView = *document().layoutView();
-    LayoutObject& html = *document().documentElement()->layoutObject();
+    DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     Element& div = *toElement(document().body()->firstChild());
     LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
@@ -230,26 +230,26 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
 
     EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 4,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(html, DisplayItem::BeginSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(html, DisplayItem::EndSubsequence));
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
     div.focus();
     document().view()->updateAllLifecyclePhases();
 
     EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 5,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(html, DisplayItem::BeginSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(divLayoutObject, DisplayItem::Caret), // New!
-        TestDisplayItem(html, DisplayItem::EndSubsequence));
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 }
 
 TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
 {
     setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
     LayoutView& layoutView = *document().layoutView();
-    LayoutObject& html = *document().documentElement()->layoutObject();
+    DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     Element& div = *toElement(document().body()->firstChild());
     LayoutBlock& divBlock = *toLayoutBlock(document().body()->firstChild()->layoutObject());
     LayoutText& text = *toLayoutText(divBlock.firstChild());
@@ -259,9 +259,9 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
 
     EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 4,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(html, DisplayItem::BeginSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(firstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(html, DisplayItem::EndSubsequence));
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
     div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
     document().view()->updateAllLifecyclePhases();
@@ -272,10 +272,10 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
 
     EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 5,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(html, DisplayItem::BeginSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(newFirstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(html, DisplayItem::EndSubsequence));
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 }
 
 TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, CachedSubsequence)
@@ -290,52 +290,54 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, CachedSubsequence)
     document().view()->updateAllLifecyclePhases();
 
     LayoutView& layoutView = *document().layoutView();
-    LayoutObject& html = *document().documentElement()->layoutObject();
+    DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     LayoutObject& container1 = *document().getElementById("container1")->layoutObject();
+    DeprecatedPaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
     LayoutObject& content1 = *document().getElementById("content1")->layoutObject();
     LayoutObject& container2 = *document().getElementById("container2")->layoutObject();
+    DeprecatedPaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
     EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 11,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(html, DisplayItem::BeginSubsequence),
-        TestDisplayItem(container1, DisplayItem::BeginSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::BeginSubsequence),
         TestDisplayItem(container1, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(content1, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(container1, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2, DisplayItem::BeginSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::BeginSubsequence),
         TestDisplayItem(container2, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(content2, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(container2, DisplayItem::EndSubsequence),
-        TestDisplayItem(html, DisplayItem::EndSubsequence));
+        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 100px; background-color: green");
     updateLifecyclePhasesToPaintForSlimmingPaintV2Clean();
 
     EXPECT_DISPLAY_LIST_WITH_CACHED_RED_FILL_IN_DEBUG(newDisplayItemsBeforeUpdate(), 8,
         TestDisplayItem(layoutView, DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::BoxDecorationBackground)),
-        TestDisplayItem(html, DisplayItem::BeginSubsequence),
-        TestDisplayItem(container1, DisplayItem::BeginSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::BeginSubsequence),
         TestDisplayItem(container1, DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::BoxDecorationBackground)),
         TestDisplayItem(content1, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(container1, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2, DisplayItem::CachedSubsequence),
-        TestDisplayItem(html, DisplayItem::EndSubsequence));
+        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::CachedSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
     compositeForSlimmingPaintV2();
 
     EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 11,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(html, DisplayItem::BeginSubsequence),
-        TestDisplayItem(container1, DisplayItem::BeginSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::BeginSubsequence),
         TestDisplayItem(container1, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(content1, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(container1, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2, DisplayItem::BeginSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::BeginSubsequence),
         TestDisplayItem(container2, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(content2, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(container2, DisplayItem::EndSubsequence),
-        TestDisplayItem(html, DisplayItem::EndSubsequence));
+        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 }
 
 } // namespace blink
