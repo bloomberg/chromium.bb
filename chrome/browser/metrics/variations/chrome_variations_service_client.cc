@@ -16,6 +16,10 @@
 #include "chrome/browser/upgrade_detector_impl.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif
+
 namespace {
 
 // Gets the version number to use for variations seed simulation. Must be called
@@ -64,6 +68,17 @@ ChromeVariationsServiceClient::GetNetworkTimeTracker() {
 
 version_info::Channel ChromeVariationsServiceClient::GetChannel() {
   return chrome::GetChannel();
+}
+
+bool ChromeVariationsServiceClient::OverridesRestrictParameter(
+    std::string* parameter) {
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings::Get()->GetString(
+      chromeos::kVariationsRestrictParameter, parameter);
+  return true;
+#else
+  return false;
+#endif
 }
 
 void ChromeVariationsServiceClient::OverrideUIString(

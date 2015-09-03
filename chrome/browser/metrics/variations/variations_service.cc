@@ -37,10 +37,6 @@
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#endif
-
 namespace chrome_variations {
 
 namespace {
@@ -107,20 +103,14 @@ std::string GetPlatformString() {
 #endif
 }
 
-// Gets the restrict parameter from |policy_pref_service| or from Chrome OS
-// settings in the case of that platform.
-std::string GetRestrictParameterPref(PrefService* policy_pref_service) {
+// Gets the restrict parameter from either the client or |policy_pref_service|.
+std::string GetRestrictParameterPref(VariationsServiceClient* client,
+                                     PrefService* policy_pref_service) {
   std::string parameter;
-#if defined(OS_CHROMEOS)
-  chromeos::CrosSettings::Get()->GetString(
-      chromeos::kVariationsRestrictParameter, &parameter);
-#else
-  if (policy_pref_service) {
-    parameter =
-        policy_pref_service->GetString(prefs::kVariationsRestrictParameter);
-  }
-#endif
-  return parameter;
+  if (client->OverridesRestrictParameter(&parameter) || !policy_pref_service)
+    return parameter;
+
+  return policy_pref_service->GetString(prefs::kVariationsRestrictParameter);
 }
 
 enum ResourceRequestsAllowedState {
@@ -375,8 +365,10 @@ GURL VariationsService::GetVariationsServerURL(
     server_url_string = kDefaultServerUrl;
   GURL server_url = GURL(server_url_string);
 
-  const std::string restrict_param = !restrict_mode_override.empty() ?
-      restrict_mode_override : GetRestrictParameterPref(policy_pref_service);
+  const std::string restrict_param =
+      !restrict_mode_override.empty()
+          ? restrict_mode_override
+          : GetRestrictParameterPref(client_.get(), policy_pref_service);
   if (!restrict_param.empty()) {
     server_url = net::AppendOrReplaceQueryParameter(server_url,
                                                     "restrict",

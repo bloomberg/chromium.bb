@@ -52,6 +52,11 @@ class VariationsServiceClient {
   // Gets the channel of the embedder.
   virtual version_info::Channel GetChannel() = 0;
 
+  // Returns whether the embedder overrides the value of the restrict parameter.
+  // |parameter| is an out-param that will contain the value of the restrict
+  // parameter if true is returned.
+  virtual bool OverridesRestrictParameter(std::string* parameter) = 0;
+
   // Allows the embedder to override the string resource specified by |hash|
   // with |string| in the resource bundle if desired.
   virtual void OverrideUIString(uint32_t hash,
