@@ -55,16 +55,8 @@ void SharedResourcesDataSourceIOS::StartDataRequest(
   WebClient* web_client = GetWebClient();
 
   if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS) {
-    std::vector<std::string> placeholders;
-    placeholders.push_back(webui::GetTextDirection());  // $1
-    placeholders.push_back(webui::GetFontFamily());  // $2
-    placeholders.push_back(webui::GetFontSize());  // $3
-
-    const std::string& chrome_shared =
-        web_client->GetDataResource(idr, ui::SCALE_FACTOR_NONE).as_string();
-    std::string replaced =
-        base::ReplaceStringPlaceholders(chrome_shared, placeholders, nullptr);
-    bytes = base::RefCountedString::TakeString(&replaced);
+    std::string css = webui::GetWebUiCssTextDefaults();
+    bytes = base::RefCountedString::TakeString(&css);
   } else {
     bytes = web_client->GetDataResourceBytes(idr);
   }
