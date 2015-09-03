@@ -1111,8 +1111,6 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         m_lastLineLineMinWidth = currMaxWidth;
     }
 
-    // TODO(wkorman): Look into potentially removing GlyphOverflow or at least the
-    // computeBounds field as we no longer use it for line-box-contain implementation.
     GlyphOverflow glyphOverflow;
     glyphOverflow.setFromBounds(glyphBounds, f.fontMetrics().floatAscent(), f.fontMetrics().floatDescent(), m_maxWidth);
     // We shouldn't change our mind once we "know".
