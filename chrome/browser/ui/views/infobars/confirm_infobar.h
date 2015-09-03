@@ -15,6 +15,7 @@ class ElevationIconSetter;
 
 namespace views {
 class Label;
+class LabelButton;
 }
 
 // An infobar that shows a message, up to two optional buttons, and an optional,

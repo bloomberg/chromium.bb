@@ -16,6 +16,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/clip_transform_recorder.h"
 #include "ui/gfx/canvas.h"
@@ -47,6 +48,13 @@ bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {
       label_2->GetPreferredSize().width();
 }
 
+const gfx::FontList& GetFontList() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontList(ui::MaterialDesignController::IsModeMaterial()
+                            ? ui::ResourceBundle::BaseFont
+                            : ui::ResourceBundle::MediumFont);
+}
+
 }  // namespace
 
 
@@ -74,9 +82,7 @@ InfoBarView::~InfoBarView() {
 }
 
 views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  views::Label* label = new views::Label(
-      text, rb.GetFontList(ui::ResourceBundle::MediumFont));
+  views::Label* label = new views::Label(text, GetFontList());
   label->SizeToPreferredSize();
   label->SetBackgroundColor(background()->get_color());
   label->SetEnabledColor(SK_ColorBLACK);
@@ -86,9 +92,8 @@ views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
 
 views::Link* InfoBarView::CreateLink(const base::string16& text,
                                      views::LinkListener* listener) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::Link* link = new views::Link(text);
-  link->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
+  link->SetFontList(GetFontList());
   link->SizeToPreferredSize();
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   link->set_listener(listener);
@@ -100,31 +105,34 @@ views::Link* InfoBarView::CreateLink(const base::string16& text,
 views::LabelButton* InfoBarView::CreateLabelButton(
     views::ButtonListener* listener,
     const base::string16& text) {
-  scoped_ptr<views::LabelButtonAssetBorder> label_button_border(
-      new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
-  const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
-  label_button_border->SetPainter(
-      false, views::Button::STATE_NORMAL,
-      views::Painter::CreateImageGridPainter(kNormalImageSet));
-  const int kHoveredImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_HOVER);
-  label_button_border->SetPainter(
-      false, views::Button::STATE_HOVERED,
-      views::Painter::CreateImageGridPainter(kHoveredImageSet));
-  const int kPressedImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_PRESSED);
-  label_button_border->SetPainter(
-      false, views::Button::STATE_PRESSED,
-      views::Painter::CreateImageGridPainter(kPressedImageSet));
+  views::LabelButton* button = new views::LabelButton(listener, text);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    button->SetStyle(views::Button::STYLE_BUTTON);
+  } else {
+    scoped_ptr<views::LabelButtonAssetBorder> button_border(
+        new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
+    const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
+    button_border->SetPainter(
+        false, views::Button::STATE_NORMAL,
+        views::Painter::CreateImageGridPainter(kNormalImageSet));
+    const int kHoveredImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_HOVER);
+    button_border->SetPainter(
+        false, views::Button::STATE_HOVERED,
+        views::Painter::CreateImageGridPainter(kHoveredImageSet));
+    const int kPressedImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_PRESSED);
+    button_border->SetPainter(
+        false, views::Button::STATE_PRESSED,
+        views::Painter::CreateImageGridPainter(kPressedImageSet));
 
-  views::LabelButton* label_button = new views::LabelButton(listener, text);
-  label_button->SetBorder(label_button_border.Pass());
-  label_button->set_animate_on_state_change(false);
-  label_button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
-  label_button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  label_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-  label_button->SizeToPreferredSize();
-  label_button->SetFocusable(true);
-  return label_button;
+    button->SetBorder(button_border.Pass());
+    button->set_animate_on_state_change(false);
+    button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
+    button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
+  }
+  button->SetFocusable(true);
+  return button;
 }
 
 // static
@@ -231,8 +239,10 @@ void InfoBarView::ViewHierarchyChanged(
   }
 
   // Ensure the infobar is tall enough to display its contents.
+  int height = ui::MaterialDesignController::IsModeMaterial()
+                   ? InfoBarContainerDelegate::kDefaultBarTargetHeightMd
+                   : InfoBarContainerDelegate::kDefaultBarTargetHeight;
   const int kMinimumVerticalPadding = 6;
-  int height = InfoBarContainerDelegate::kDefaultBarTargetHeight;
   for (int i = 0; i < child_count(); ++i) {
     const int child_height = child_at(i)->height();
     height = std::max(height, child_height + kMinimumVerticalPadding);

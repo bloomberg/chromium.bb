@@ -55,7 +55,8 @@ class InfoBarView : public infobars::InfoBar,
   views::Link* CreateLink(const base::string16& text,
                           views::LinkListener* listener) const;
 
-  // Creates a button with an infobar-specific appearance.
+  // Creates a focusable button for use on an infobar. The appearance is
+  // customized for infobars (except in Material mode).
   // NOTE: Subclasses must ignore button presses if we're unowned.
   static views::LabelButton* CreateLabelButton(views::ButtonListener* listener,
                                                const base::string16& text);

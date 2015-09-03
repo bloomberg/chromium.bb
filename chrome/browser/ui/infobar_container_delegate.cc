@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/infobar_container_delegate.h"
+
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -21,6 +23,7 @@ const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 9;
 #endif
 
 const int InfoBarContainerDelegate::kDefaultBarTargetHeight = 36;
+const int InfoBarContainerDelegate::kDefaultBarTargetHeightMd = 40;
 const int InfoBarContainerDelegate::kMaximumArrowTargetHeight = 24;
 const int InfoBarContainerDelegate::kDefaultArrowTargetHalfWidth =
     kDefaultArrowTargetHeight;
@@ -94,7 +97,10 @@ void InfoBarContainerDelegate::ComputeInfoBarElementSizes(
   if (*arrow_height)
     *arrow_height += kSeparatorLineHeight;
 
-  *bar_height = animation.CurrentValueBetween(
-      0,
-      (bar_target_height == -1) ? kDefaultBarTargetHeight : bar_target_height);
+  int target_height = bar_target_height != -1
+                          ? bar_target_height
+                          : ui::MaterialDesignController::IsModeMaterial()
+                                ? kDefaultBarTargetHeightMd
+                                : kDefaultBarTargetHeight;
+  *bar_height = animation.CurrentValueBetween(0, target_height);
 }

@@ -8,6 +8,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -75,6 +76,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
             ok_button_,
             base::Bind(&ConfirmInfoBar::Layout, base::Unretained(this))));
       AddChildView(ok_button_);
+      ok_button_->SizeToPreferredSize();
     }
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
@@ -82,6 +84,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
           this,
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
       AddChildView(cancel_button_);
+      cancel_button_->SizeToPreferredSize();
     }
 
     base::string16 link_text(delegate->GetLinkText());
@@ -99,10 +102,10 @@ void ConfirmInfoBar::ButtonPressed(views::Button* sender,
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   ConfirmInfoBarDelegate* delegate = GetDelegate();
-  if ((ok_button_ != NULL) && sender == ok_button_) {
+  if (sender == ok_button_) {
     if (delegate->Accept())
       RemoveSelf();
-  } else if ((cancel_button_ != NULL) && (sender == cancel_button_)) {
+  } else if (sender == cancel_button_) {
     if (delegate->Cancel())
       RemoveSelf();
   } else {
@@ -132,6 +135,6 @@ int ConfirmInfoBar::NonLabelWidth() const {
       0 : kEndOfLabelSpacing;
   if (ok_button_)
     width += ok_button_->width() + (cancel_button_ ? kButtonButtonSpacing : 0);
-  width += (cancel_button_ ? cancel_button_->width() : 0);
+  width += cancel_button_ ? cancel_button_->width() : 0;
   return width + ((link_->text().empty() || !width) ? 0 : kEndOfLabelSpacing);
 }
