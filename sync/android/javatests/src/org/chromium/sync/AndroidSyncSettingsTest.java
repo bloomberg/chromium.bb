@@ -11,6 +11,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -310,8 +311,10 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
                 AndroidSyncSettings.getContractAuthority(mContext));
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    /*@SmallTest
+    @Feature({"Sync"})*/
+    // http://crbug.com/527856
+    @DisabledTest
     public void testAndroidSyncSettingsPostsNotifications() throws InterruptedException {
         // Turn on syncability.
         mSyncContentResolverDelegate.setMasterSyncAutomatically(true);
