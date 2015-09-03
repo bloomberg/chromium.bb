@@ -749,6 +749,8 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.h
 
 crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
+crbug.com/527009 plugins/npruntime/plugin-scriptable-object-invoke-default.html [ NeedsManualRebaseline ]
+
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Failure ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
