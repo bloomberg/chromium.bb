@@ -117,14 +117,12 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
 
   resource_waiter_.reset(
       new DocumentResourceWaiter(global_state_, response.Pass(), this));
-  LoadIfNecessary();
 }
 
 void HTMLDocumentOOPIF::Destroy() {
   if (resource_waiter_) {
     mojo::View* root = resource_waiter_->root();
     if (root) {
-      root->RemoveObserver(this);
       resource_waiter_.reset();
       delete root->connection();
     } else {
@@ -135,7 +133,6 @@ void HTMLDocumentOOPIF::Destroy() {
     // deleting this (OnConnectionLost()).
     frame_->Close();
   } else if (transferable_state_.root) {
-    transferable_state_.root->RemoveObserver(this);
     // This triggers deleting us.
     if (transferable_state_.owns_view_tree_connection)
       delete transferable_state_.root->connection();
@@ -152,13 +149,8 @@ HTMLDocumentOOPIF::~HTMLDocumentOOPIF() {
   STLDeleteElements(&ax_providers_);
 }
 
-void HTMLDocumentOOPIF::LoadIfNecessary() {
-  if (!frame_ && resource_waiter_->IsReady())
-    Load();
-}
-
 void HTMLDocumentOOPIF::Load() {
-  DCHECK(resource_waiter_ && resource_waiter_->IsReady());
+  DCHECK(resource_waiter_ && resource_waiter_->is_ready());
 
   // Note: |view| is null if we're taking over for an existing frame.
   mojo::View* view = resource_waiter_->root();
@@ -180,9 +172,6 @@ void HTMLDocumentOOPIF::Load() {
     Destroy();
     return;
   }
-
-  if (view)
-    view->RemoveObserver(this);
 
   if (devtools_agent_request_.is_pending()) {
     if (frame_->devtools_agent()) {
@@ -212,30 +201,11 @@ HTMLDocumentOOPIF::BeforeLoadCache* HTMLDocumentOOPIF::GetBeforeLoadCache() {
 
 void HTMLDocumentOOPIF::OnEmbed(View* root) {
   transferable_state_.root = root;
-
-  // We're an observer until we start the load.
-  root->AddObserver(this);
-  resource_waiter_->set_root(root);
-
-  LoadIfNecessary();
+  resource_waiter_->SetRoot(root);
 }
 
 void HTMLDocumentOOPIF::OnConnectionLost(mojo::ViewTreeConnection* connection) {
   delete this;
-}
-
-void HTMLDocumentOOPIF::OnViewViewportMetricsChanged(
-    mojo::View* view,
-    const mojo::ViewportMetrics& old_metrics,
-    const mojo::ViewportMetrics& new_metrics) {
-  LoadIfNecessary();
-}
-
-void HTMLDocumentOOPIF::OnViewDestroyed(View* view) {
-  if (resource_waiter_) {
-    resource_waiter_->root()->RemoveObserver(this);
-    resource_waiter_->set_root(nullptr);
-  }
 }
 
 void HTMLDocumentOOPIF::OnFrameDidFinishLoad() {

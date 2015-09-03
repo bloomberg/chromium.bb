@@ -15,6 +15,7 @@
 #include "components/html_viewer/html_factory.h"
 #include "components/html_viewer/html_frame.h"
 #include "components/html_viewer/html_frame_delegate.h"
+#include "components/html_viewer/html_frame_tree_manager_observer.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/web_view/web_view_switches.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -43,6 +44,24 @@ bool FindFrameDataIndex(const mojo::Array<web_view::FrameDataPtr>& frame_data,
 
 }  // namespace
 
+// Object that calls OnHTMLFrameTreeManagerChangeIdAdvanced() from the
+// destructor.
+class HTMLFrameTreeManager::ChangeIdAdvancedNotifier {
+ public:
+  explicit ChangeIdAdvancedNotifier(
+      base::ObserverList<HTMLFrameTreeManagerObserver>* observers)
+      : observers_(observers) {}
+  ~ChangeIdAdvancedNotifier() {
+    FOR_EACH_OBSERVER(HTMLFrameTreeManagerObserver, *observers_,
+                      OnHTMLFrameTreeManagerChangeIdAdvanced());
+  }
+
+ private:
+  base::ObserverList<HTMLFrameTreeManagerObserver>* observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChangeIdAdvancedNotifier);
+};
+
 // static
 HTMLFrameTreeManager::TreeMap* HTMLFrameTreeManager::instances_ = nullptr;
 
@@ -69,13 +88,8 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
 
   on_connect_callback.Run();
 
-  HTMLFrameTreeManager* frame_tree = nullptr;
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          web_view::switches::kOOPIFAlwaysCreateNewFrameTree) &&
-      instances_->count(frame_data[0]->frame_id)) {
-    frame_tree = (*instances_)[frame_data[0]->frame_id];
-  }
+  HTMLFrameTreeManager* frame_tree =
+      FindFrameTreeWithRoot(frame_data[0]->frame_id);
 
   if (view_connect_type == web_view::VIEW_CONNECT_TYPE_USE_EXISTING &&
       !frame_tree) {
@@ -140,8 +154,27 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   return frame;
 }
 
+// static
+HTMLFrameTreeManager* HTMLFrameTreeManager::FindFrameTreeWithRoot(
+    uint32_t root_frame_id) {
+  return (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+              web_view::switches::kOOPIFAlwaysCreateNewFrameTree) &&
+          instances_ && instances_->count(root_frame_id))
+             ? (*instances_)[root_frame_id]
+             : nullptr;
+}
+
 blink::WebView* HTMLFrameTreeManager::GetWebView() {
   return root_->web_view();
+}
+
+void HTMLFrameTreeManager::AddObserver(HTMLFrameTreeManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void HTMLFrameTreeManager::RemoveObserver(
+    HTMLFrameTreeManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void HTMLFrameTreeManager::OnFrameDestroyed(HTMLFrame* frame) {
@@ -169,6 +202,9 @@ HTMLFrameTreeManager::HTMLFrameTreeManager(GlobalState* global_state)
 HTMLFrameTreeManager::~HTMLFrameTreeManager() {
   DCHECK(!root_ || !local_root_);
   RemoveFromInstances();
+
+  FOR_EACH_OBSERVER(HTMLFrameTreeManagerObserver, observers_,
+                    OnHTMLFrameTreeManagerDestroyed());
 }
 
 void HTMLFrameTreeManager::Init(
@@ -249,6 +285,8 @@ void HTMLFrameTreeManager::ProcessOnFrameAdded(
   if (!PrepareForStructureChange(source, change_id))
     return;
 
+  ChangeIdAdvancedNotifier notifier(&observers_);
+
   HTMLFrame* parent = root_->FindFrame(frame_data->parent_id);
   if (!parent) {
     DVLOG(1) << "Received invalid parent in OnFrameAdded "
@@ -278,6 +316,8 @@ void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
                                                  uint32_t frame_id) {
   if (!PrepareForStructureChange(source, change_id))
     return;
+
+  ChangeIdAdvancedNotifier notifier(&observers_);
 
   pending_remove_ids_.erase(frame_id);
 

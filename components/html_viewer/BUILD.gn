@@ -92,6 +92,7 @@ source_set("lib") {
     "html_frame_properties.h",
     "html_frame_tree_manager.cc",
     "html_frame_tree_manager.h",
+    "html_frame_tree_manager_observer.h",
     "html_viewer.cc",
     "html_viewer.h",
     "html_widget.cc",

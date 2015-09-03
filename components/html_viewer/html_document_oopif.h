@@ -15,7 +15,6 @@
 #include "components/html_viewer/ax_provider_impl.h"
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
-#include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
@@ -40,7 +39,6 @@ class DocumentResourceWaiter;
 class GlobalState;
 class HTMLFactory;
 class HTMLFrame;
-class HTMLFrameTreeManager;
 class TestHTMLViewerImpl;
 class ViewTreeDelegateImpl;
 class WebLayerTreeViewImpl;
@@ -52,7 +50,6 @@ class WebLayerTreeViewImpl;
 // . Explicitly by way of Destroy().
 class HTMLDocumentOOPIF
     : public mojo::ViewTreeDelegate,
-      public mojo::ViewObserver,
       public HTMLFrameDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
       public mojo::InterfaceFactory<web_view::FrameTreeClient>,
@@ -77,7 +74,7 @@ class HTMLDocumentOOPIF
   void Destroy();
 
  private:
-  friend class DocumentResourceWaiter;  // So it can call LoadIfNecessary().
+  friend class DocumentResourceWaiter;  // So it can call Load().
 
   // Requests for interfaces before the document is loaded go here. Once
   // loaded the requests are bound and BeforeLoadCache is deleted.
@@ -105,7 +102,6 @@ class HTMLDocumentOOPIF
 
   ~HTMLDocumentOOPIF() override;
 
-  void LoadIfNecessary();
   void Load();
 
   BeforeLoadCache* GetBeforeLoadCache();
@@ -113,13 +109,6 @@ class HTMLDocumentOOPIF
   // ViewTreeDelegate:
   void OnEmbed(mojo::View* root) override;
   void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
-
-  // ViewObserver:
-  void OnViewViewportMetricsChanged(
-      mojo::View* view,
-      const mojo::ViewportMetrics& old_metrics,
-      const mojo::ViewportMetrics& new_metrics) override;
-  void OnViewDestroyed(mojo::View* view) override;
 
   // HTMLFrameDelegate:
   mojo::ApplicationImpl* GetApp() override;

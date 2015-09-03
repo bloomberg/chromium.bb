@@ -23,9 +23,16 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
       change_id_(0u),
       view_id_(0u),
       view_connect_type_(web_view::VIEW_CONNECT_TYPE_USE_NEW),
-      frame_tree_client_binding_(this) {}
+      frame_tree_client_binding_(this),
+      is_ready_(false),
+      waiting_for_change_id_(false),
+      target_frame_tree_(nullptr) {}
 
 DocumentResourceWaiter::~DocumentResourceWaiter() {
+  if (root_)
+    root_->RemoveObserver(this);
+  if (target_frame_tree_)
+    target_frame_tree_->RemoveObserver(this);
 }
 
 void DocumentResourceWaiter::Release(
@@ -37,7 +44,7 @@ void DocumentResourceWaiter::Release(
     uint32_t* view_id,
     ViewConnectType* view_connect_type,
     OnConnectCallback* on_connect_callback) {
-  DCHECK(IsReady());
+  DCHECK(is_ready_);
   *frame_tree_client_request = frame_tree_client_request_.Pass();
   *frame_tree_server = server_.Pass();
   *frame_data = frame_data_.Pass();
@@ -51,10 +58,11 @@ mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
   return response_.Pass();
 }
 
-bool DocumentResourceWaiter::IsReady() const {
-  return (!frame_data_.is_null() &&
-          ((view_connect_type_ == web_view::VIEW_CONNECT_TYPE_USE_EXISTING) ||
-           (root_ && root_->viewport_metrics().device_pixel_ratio != 0.0f)));
+void DocumentResourceWaiter::SetRoot(mojo::View* root) {
+  DCHECK(!root_);
+  root_ = root;
+  root_->AddObserver(this);
+  UpdateIsReady();
 }
 
 void DocumentResourceWaiter::Bind(
@@ -64,6 +72,52 @@ void DocumentResourceWaiter::Bind(
     return;
   }
   frame_tree_client_binding_.Bind(request.Pass());
+}
+
+void DocumentResourceWaiter::UpdateIsReady() {
+  if (is_ready_)
+    return;
+
+  // See description of |waiting_for_change_id_| for details.
+  if (waiting_for_change_id_) {
+    if (target_frame_tree_->change_id() == change_id_) {
+      is_ready_ = true;
+      waiting_for_change_id_ = false;
+      document_->Load();
+    }
+    return;
+  }
+
+  // The first portion of ready is when we have received OnConnect()
+  // (|frame_data_| is valid) and we have a view with valid metrics. The view
+  // is not necessary is ViewConnectType is USE_EXISTING, which means the
+  // application is not asked for a ViewTreeClient. The metrics are necessary
+  // to initialize ResourceBundle. If USE_EXISTING is true, it means a View has
+  // already been provided to another HTMLDocumentOOPIF and there is no need to
+  // wait for metrics.
+  bool is_ready =
+      (!frame_data_.is_null() &&
+       ((view_connect_type_ == web_view::VIEW_CONNECT_TYPE_USE_EXISTING) ||
+        (root_ && root_->viewport_metrics().device_pixel_ratio != 0.0f)));
+  if (is_ready) {
+    HTMLFrameTreeManager* frame_tree =
+        HTMLFrameTreeManager::FindFrameTreeWithRoot(frame_data_[0]->frame_id);
+    // Once we've received OnConnect() and the view (if necessary), we determine
+    // which HTMLFrameTreeManager the new frame ends up in. If there is an
+    // existing HTMLFrameTreeManager then we must wait for the change_id
+    // supplied to OnConnect() to be <= that of the HTMLFrameTreeManager's
+    // change_id. If we did not wait for the change id to be <= then the
+    // structure of the tree is not in the expected state and it's possible the
+    // frame communicated in OnConnect() does not exist yet.
+    if (frame_tree && change_id_ > frame_tree->change_id()) {
+      waiting_for_change_id_ = true;
+      target_frame_tree_ = frame_tree;
+      target_frame_tree_->AddObserver(this);
+    } else {
+      is_ready_ = true;
+      document_->Load();
+    }
+  }
 }
 
 void DocumentResourceWaiter::OnConnect(
@@ -82,8 +136,7 @@ void DocumentResourceWaiter::OnConnect(
   on_connect_callback_ = callback;
   CHECK(frame_data_.size() > 0u);
   frame_tree_client_request_ = frame_tree_client_binding_.Unbind();
-  if (IsReady())
-    document_->LoadIfNecessary();
+  UpdateIsReady();
 }
 
 void DocumentResourceWaiter::OnFrameAdded(uint32_t change_id,
@@ -117,6 +170,26 @@ void DocumentResourceWaiter::OnPostMessageEvent(
 void DocumentResourceWaiter::OnWillNavigate(uint32_t target_frame_id) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTIMPLEMENTED();
+}
+
+void DocumentResourceWaiter::OnViewViewportMetricsChanged(
+    mojo::View* view,
+    const mojo::ViewportMetrics& old_metrics,
+    const mojo::ViewportMetrics& new_metrics) {
+  UpdateIsReady();
+}
+
+void DocumentResourceWaiter::OnViewDestroyed(mojo::View* view) {
+  root_->RemoveObserver(this);
+  root_ = nullptr;
+}
+
+void DocumentResourceWaiter::OnHTMLFrameTreeManagerChangeIdAdvanced() {
+  UpdateIsReady();
+}
+
+void DocumentResourceWaiter::OnHTMLFrameTreeManagerDestroyed() {
+  document_->Destroy();  // This destroys us.
 }
 
 }  // namespace html_viewer

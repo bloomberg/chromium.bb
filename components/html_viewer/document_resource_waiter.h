@@ -6,6 +6,8 @@
 #define COMPONENTS_HTML_VIEWER_DOCUMENT_RESOURCE_WAITER_H_
 
 #include "base/basictypes.h"
+#include "components/html_viewer/html_frame_tree_manager_observer.h"
+#include "components/view_manager/public/cpp/view_observer.h"
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -17,13 +19,16 @@ class View;
 namespace html_viewer {
 
 class HTMLDocumentOOPIF;
+class HTMLFrameTreeManager;
 class GlobalState;
 
 // DocumentResourceWaiter waits for the necessary resources needed to load an
-// HTMLDocument. Use IsReady() to determine when everything is available. Once
+// HTMLDocument. Once ready it calls to HTMLDocumentOOPIF::Load(). Once
 // ready it is assumed HTMLDocument will call back for the FrameTreeClient and
 // FrameData.
-class DocumentResourceWaiter : public web_view::FrameTreeClient {
+class DocumentResourceWaiter : public web_view::FrameTreeClient,
+                               public HTMLFrameTreeManagerObserver,
+                               public mojo::ViewObserver {
  public:
   DocumentResourceWaiter(GlobalState* global_state,
                          mojo::URLResponsePtr response,
@@ -40,17 +45,22 @@ class DocumentResourceWaiter : public web_view::FrameTreeClient {
                web_view::ViewConnectType* view_connect_type,
                OnConnectCallback* on_connect_callback);
 
+  uint32_t change_id() const { return change_id_; }
+
   mojo::URLResponsePtr ReleaseURLResponse();
 
   // See class description.
-  bool IsReady() const;
+  bool is_ready() const { return is_ready_; }
 
-  void set_root(mojo::View* root) { root_ = root; }
+  void SetRoot(mojo::View* root);
   mojo::View* root() { return root_; }
 
   void Bind(mojo::InterfaceRequest<web_view::FrameTreeClient> request);
 
  private:
+  // Updates |is_ready_|, and if ready starts the Load() in the document.
+  void UpdateIsReady();
+
   // web_view::FrameTreeClient:
   void OnConnect(web_view::FrameTreeServerPtr server,
                  uint32_t change_id,
@@ -69,6 +79,17 @@ class DocumentResourceWaiter : public web_view::FrameTreeClient {
                           web_view::HTMLMessageEventPtr event) override;
   void OnWillNavigate(uint32_t target_frame_id) override;
 
+  // ViewObserver:
+  void OnViewViewportMetricsChanged(
+      mojo::View* view,
+      const mojo::ViewportMetrics& old_metrics,
+      const mojo::ViewportMetrics& new_metrics) override;
+  void OnViewDestroyed(mojo::View* view) override;
+
+  // HTMLFrameTreeManagerObserver:
+  void OnHTMLFrameTreeManagerChangeIdAdvanced() override;
+  void OnHTMLFrameTreeManagerDestroyed() override;
+
   GlobalState* global_state_;
   HTMLDocumentOOPIF* document_;
   mojo::URLResponsePtr response_;
@@ -84,6 +105,16 @@ class DocumentResourceWaiter : public web_view::FrameTreeClient {
   // here.
   mojo::InterfaceRequest<web_view::FrameTreeClient> frame_tree_client_request_;
   mojo::Binding<web_view::FrameTreeClient> frame_tree_client_binding_;
+
+  bool is_ready_;
+
+  // See comments in UpdateIsReady() for details of this.
+  //
+  // While |waiting_for_change_id_| is true DocumentResourceWaiter is an
+  // HTMLFrameTreeManagerObserver on |target_frame_tree_|.
+  bool waiting_for_change_id_;
+
+  HTMLFrameTreeManager* target_frame_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentResourceWaiter);
 };
