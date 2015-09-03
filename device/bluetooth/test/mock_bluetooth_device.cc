@@ -23,6 +23,8 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(bluetooth_class_));
   ON_CALL(*this, GetDeviceName())
       .WillByDefault(testing::Return(name_));
+  ON_CALL(*this, GetIdentifier())
+      .WillByDefault(testing::Return(address_ + "-Identifier"));
   ON_CALL(*this, GetAddress())
       .WillByDefault(testing::Return(address_));
   ON_CALL(*this, GetDeviceType())

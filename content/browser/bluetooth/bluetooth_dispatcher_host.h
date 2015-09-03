@@ -68,6 +68,8 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                              bool powered) override;
   void DeviceAdded(device::BluetoothAdapter* adapter,
                    device::BluetoothDevice* device) override;
+  void DeviceRemoved(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
 
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDevice(

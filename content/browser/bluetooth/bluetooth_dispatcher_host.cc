@@ -239,7 +239,7 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
 
   void AddFilteredDevice(const device::BluetoothDevice& device) {
     if (chooser && MatchesFilters(device, filters)) {
-      chooser->AddDevice(device.GetIdentifier(), device.GetName());
+      chooser->AddDevice(device.GetAddress(), device.GetName());
     }
   }
 
@@ -293,12 +293,25 @@ void BluetoothDispatcherHost::AdapterPoweredChanged(
 
 void BluetoothDispatcherHost::DeviceAdded(device::BluetoothAdapter* adapter,
                                           device::BluetoothDevice* device) {
-  VLOG(1) << "Adding device to all choosers: " << device->GetIdentifier();
+  VLOG(1) << "Adding device to all choosers: " << device->GetAddress();
   for (IDMap<RequestDeviceSession, IDMapOwnPointer>::iterator iter(
            &request_device_sessions_);
        !iter.IsAtEnd(); iter.Advance()) {
     RequestDeviceSession* session = iter.GetCurrentValue();
     session->AddFilteredDevice(*device);
+  }
+}
+
+void BluetoothDispatcherHost::DeviceRemoved(device::BluetoothAdapter* adapter,
+                                            device::BluetoothDevice* device) {
+  VLOG(1) << "Marking device removed on all choosers: " << device->GetAddress();
+  for (IDMap<RequestDeviceSession, IDMapOwnPointer>::iterator iter(
+           &request_device_sessions_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    RequestDeviceSession* session = iter.GetCurrentValue();
+    if (session->chooser) {
+      session->chooser->RemoveDevice(device->GetAddress());
+    }
   }
 }
 
@@ -397,7 +410,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
   VLOG(1) << "Populating " << adapter_->GetDevices().size()
           << " devices in chooser " << chooser_id;
   for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
-    VLOG(1) << "\t" << device->GetIdentifier();
+    VLOG(1) << "\t" << device->GetAddress();
     session->AddFilteredDevice(*device);
   }
 
@@ -753,9 +766,9 @@ void BluetoothDispatcherHost::FinishClosingChooser(
   DCHECK_EQ(static_cast<int>(event),
             static_cast<int>(BluetoothChooser::Event::SELECTED));
 
-  const device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   const device::BluetoothDevice* const device = adapter_->GetDevice(device_id);
   if (device == nullptr) {
+    VLOG(1) << "Device " << device_id << " no longer in adapter";
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::CHOSEN_DEVICE_VANISHED);
     Send(new BluetoothMsg_RequestDeviceError(
         session->thread_id, session->request_id,
