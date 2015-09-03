@@ -247,6 +247,17 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     protected abstract void animatePromoAcceptance();
 
     /**
+     * Animates the BottomBar text visibility. The BottomBar context text fades out while the
+     * BottomBar search text fades in.
+     */
+    protected abstract void animateSearchTermResolution();
+
+    /**
+     * Cancels the search term resolution animation if it is in progress.
+     */
+    protected abstract void cancelSearchTermResolutionAnimation();
+
+    /**
      * Event notification that the Panel did get closed.
      * @param reason The reason the panel is closing.
      */
@@ -533,7 +544,8 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     // --------------------------------------------------------------------------------------------
     private float mSearchBarMarginSide;
     private float mSearchBarHeight;
-    private float mSearchBarTextOpacity;
+    private float mBottomBarSearchContextOpacity = 1.f;
+    private float mBottomBarSearchTermOpacity = 1.f;
     private boolean mIsSearchBarBorderVisible;
     private float mSearchBarBorderY;
     private float mSearchBarBorderHeight;
@@ -562,10 +574,17 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     /**
-     * @return The opacity of the Contextual Search Bar text.
+     * @return The opacity of the BottomBar search context view.
      */
-    public float getSearchBarTextOpacity() {
-        return mSearchBarTextOpacity;
+    public float getBottomBarSearchContextOpacity() {
+        return mBottomBarSearchContextOpacity;
+    }
+
+    /**
+     * @return The opacity of the BottomBar search term view.
+     */
+    public float getBottomBarSearchTermOpacity() {
+        return mBottomBarSearchTermOpacity;
     }
 
     /**
@@ -910,7 +929,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         if (state == PanelState.CLOSED) {
             mIsShowing = false;
             destroyPromoView();
-            destroyContextualSearchControl();
+            destroyBottomBarTextControl();
             onClose(reason);
         } else if (state == PanelState.EXPANDED && isFullscreenSizePanel()
                 || (state == PanelState.MAXIMIZED && !isFullscreenSizePanel())) {
@@ -1050,9 +1069,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Search Bar border.
         mIsSearchBarBorderVisible = false;
 
-        // Search Bar text opacity.
-        mSearchBarTextOpacity = 1.f;
-
         // Arrow Icon.
         mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_PEEKED;
         mArrowIconRotation = ARROW_ICON_ROTATION_STATE_PEEKED;
@@ -1097,9 +1113,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
                 getSearchBarHeightExpanded(),
                 percentage));
         mSearchBarHeight = searchBarHeight;
-
-        // Search Bar text opacity.
-        mSearchBarTextOpacity = 1.f;
 
         // Search Bar border.
         mIsSearchBarBorderVisible = true;
@@ -1160,9 +1173,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Search Bar border.
         mIsSearchBarBorderVisible = true;
         mSearchBarBorderY = searchBarHeight - SEARCH_BAR_BORDER_HEIGHT_DP + 1;
-
-        // Search Bar text opacity.
-        mSearchBarTextOpacity = 1.f;
 
         // Determine fading element opacities. If both the arrow icon and close
         // icon are visible, the arrow icon needs to finish fading out before
@@ -1331,9 +1341,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     public void setDynamicResourceLoader(DynamicResourceLoader resourceLoader) {
         mResourceLoader = resourceLoader;
 
-        if (mControl != null) {
-            mResourceLoader.registerResource(R.id.contextual_search_view,
-                    mControl.getResourceAdapter());
+        if (mBottomBarTextControl != null) {
+            mResourceLoader.registerResource(R.id.contextual_search_context_view,
+                    mBottomBarTextControl.getSearchContextResourceAdapter());
+            mResourceLoader.registerResource(R.id.contextual_search_term_view,
+                    mBottomBarTextControl.getSearchTermResourceAdapter());
         }
 
         if (mPromoView != null) {
@@ -1352,55 +1364,83 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     // ============================================================================================
-    // ContextualSearchControl
+    // BottomBarTextControl
     // ============================================================================================
 
-    // TODO(pedrosimonetti): rename this to something more generic (e.g. BottomBarTextView).
-
-    private ContextualSearchControl mControl;
+    private BottomBarTextControl mBottomBarTextControl;
 
     /**
-     * Inflates the Contextual Search control, if needed. The View will be set to INVISIBLE
-     * after being inflated, because it won't actually be displayed on the screen (its
-     * snapshot will be displayed instead).
+     * Creates the BottomBarTextControl, if needed. The Views are set to INVISIBLE, because they
+     * won't actually be displayed on the screen (their snapshots will be displayed instead).
      */
-    protected ContextualSearchControl getContextualSearchControl() {
+    protected BottomBarTextControl getBottomBarTextControl() {
         assert mContainerView != null;
 
-        if (mControl == null) {
-            LayoutInflater.from(mContext).inflate(R.layout.contextual_search_view, mContainerView);
-            mControl = (ContextualSearchControl)
-                    mContainerView.findViewById(R.id.contextual_search_view);
+        if (mBottomBarTextControl == null) {
+            mBottomBarTextControl = new BottomBarTextControl(mContext, mContainerView);
 
             // Adjust size for small Panel.
             if (!isFullscreenSizePanel()) {
-                mControl.getLayoutParams().width = getMaximumWidthPx();
-                mControl.requestLayout();
+                mBottomBarTextControl.setWidth(getMaximumWidthPx());
             }
 
             if (mResourceLoader != null) {
-                mResourceLoader.registerResource(R.id.contextual_search_view,
-                        mControl.getResourceAdapter());
+                mResourceLoader.registerResource(R.id.contextual_search_context_view,
+                        mBottomBarTextControl.getSearchContextResourceAdapter());
+                mResourceLoader.registerResource(R.id.contextual_search_term_view,
+                        mBottomBarTextControl.getSearchTermResourceAdapter());
             }
         }
 
-        assert mControl != null;
-        // TODO(pedrosimonetti): For now, we're still relying on a Android View
-        // to render the text that appears in the Search Bar. The View will be
-        // invisible and will not capture events. Consider rendering the text
-        // in the Compositor and get rid of the View entirely.
-        mControl.setVisibility(View.INVISIBLE);
-        return mControl;
+        assert mBottomBarTextControl != null;
+        return mBottomBarTextControl;
     }
 
-    protected void destroyContextualSearchControl() {
-        if (mControl != null) {
-            mContainerView.removeView(mControl);
-            mControl = null;
+    protected void destroyBottomBarTextControl() {
+        if (mBottomBarTextControl != null) {
+            mBottomBarTextControl.removeFromContainer();
+            mBottomBarTextControl = null;
             if (mResourceLoader != null) {
-                mResourceLoader.unregisterResource(R.id.contextual_search_view);
+                mResourceLoader.unregisterResource(R.id.contextual_search_context_view);
+                mResourceLoader.unregisterResource(R.id.contextual_search_term_view);
             }
         }
+    }
+
+    /**
+     * Updates the UI state for the BottomBar text. The BottomBar search context view will fade out
+     * while the search term fades in.
+     *
+     * @param percentage The visibility percentage of the BottomBar search term view.
+     */
+    protected void updateBottomBarTextVisibility(float percentage) {
+        // The search context will start fading out before the search term starts fading in.
+        // They will both be partially visible for overlapPercentage of the animation duration.
+        float overlapPercentage = .75f;
+        float fadingOutPercentage = Math.max(1 - (percentage / overlapPercentage), 0.f);
+        float fadingInPercentage =
+                Math.max(percentage - (1 - overlapPercentage), 0.f) / overlapPercentage;
+
+        mBottomBarSearchContextOpacity = fadingOutPercentage;
+        mBottomBarSearchTermOpacity = fadingInPercentage;
+    }
+
+    /**
+     * Resets the BottomBar text visibility when a new search context is set. The BottomBar search
+     * context is made visible and the BottomBar search text invisible.
+     */
+    protected void resetBottomBarSearchContextVisibility() {
+        mBottomBarSearchContextOpacity = 1.f;
+        mBottomBarSearchTermOpacity = 0.f;
+    }
+
+    /**
+     * Resets the BottomBar text visibility when a new search term is set. The BottomBar search
+     * term is made visible and the BottomBar search context invisible.
+     */
+    protected void resetBottomBarSearchTermVisibility() {
+        mBottomBarSearchContextOpacity = 0.f;
+        mBottomBarSearchTermOpacity = 1.f;
     }
 
     // ============================================================================================

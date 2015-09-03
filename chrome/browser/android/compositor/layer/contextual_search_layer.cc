@@ -34,7 +34,8 @@ scoped_refptr<ContextualSearchLayer> ContextualSearchLayer::Create(
 
 void ContextualSearchLayer::SetProperties(
     int panel_shadow_resource_id,
-    int search_bar_text_resource_id,
+    int search_context_resource_id,
+    int search_term_resource_id,
     int search_bar_shadow_resource_id,
     int search_provider_icon_resource_id,
     int arrow_up_resource_id,
@@ -52,7 +53,8 @@ void ContextualSearchLayer::SetProperties(
     float search_panel_height,
     float search_bar_margin_side,
     float search_bar_height,
-    float search_bar_text_opacity,
+    float search_context_opacity,
+    float search_term_opacity,
     bool search_bar_border_visible,
     float search_bar_border_y,
     float search_bar_border_height,
@@ -68,9 +70,12 @@ void ContextualSearchLayer::SetProperties(
     float progress_bar_opacity,
     int progress_bar_completion) {
   // Grabs the dynamic Search Bar Text resource.
-  ui::ResourceManager::Resource* search_bar_text_resource =
+  ui::ResourceManager::Resource* search_context_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                     search_bar_text_resource_id);
+                                     search_context_resource_id);
+  ui::ResourceManager::Resource* search_term_resource =
+      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
+                                     search_term_resource_id);
 
   // Grabs required static resources.
   ui::ResourceManager::Resource* panel_shadow_resource =
@@ -117,16 +122,27 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Search Bar Text
   // ---------------------------------------------------------------------------
-  if (search_bar_text_resource) {
+  if (search_context_resource) {
     // Centers the text vertically in the Search Bar.
     float search_bar_padding_top =
         search_bar_height / 2 -
-        search_bar_text_resource->size.height() / 2;
-    search_bar_text_->SetUIResourceId(
-        search_bar_text_resource->ui_resource->id());
-    search_bar_text_->SetBounds(search_bar_text_resource->size);
-    search_bar_text_->SetPosition(gfx::PointF(0.f, search_bar_padding_top));
-    search_bar_text_->SetOpacity(search_bar_text_opacity);
+        search_context_resource->size.height() / 2;
+    search_context_->SetUIResourceId(
+        search_context_resource->ui_resource->id());
+    search_context_->SetBounds(search_context_resource->size);
+    search_context_->SetPosition(gfx::PointF(0.f, search_bar_padding_top));
+    search_context_->SetOpacity(search_context_opacity);
+  }
+
+  if (search_term_resource) {
+    // Centers the text vertically in the Search Bar.
+    float search_bar_padding_top =
+        search_bar_height / 2 -
+        search_term_resource->size.height() / 2;
+    search_term_->SetUIResourceId(search_term_resource->ui_resource->id());
+    search_term_->SetBounds(search_term_resource->size);
+    search_term_->SetPosition(gfx::PointF(0.f, search_bar_padding_top));
+    search_term_->SetOpacity(search_term_opacity);
   }
 
   // ---------------------------------------------------------------------------
@@ -390,7 +406,9 @@ ContextualSearchLayer::ContextualSearchLayer(
           cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
       search_bar_background_(
           cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
-      search_bar_text_(
+      search_context_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      search_term_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       search_bar_shadow_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
@@ -426,8 +444,10 @@ ContextualSearchLayer::ContextualSearchLayer(
   layer_->AddChild(search_bar_background_);
 
   // Search Bar Text
-  search_bar_text_->SetIsDrawable(true);
-  layer_->AddChild(search_bar_text_);
+  search_context_->SetIsDrawable(true);
+  layer_->AddChild(search_context_);
+  search_term_->SetIsDrawable(true);
+  layer_->AddChild(search_term_);
 
   // Search Provider Icon
   search_provider_icon_->SetIsDrawable(true);

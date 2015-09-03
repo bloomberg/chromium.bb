@@ -515,15 +515,36 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     @Override
-    public ContextualSearchControl getContextualSearchControl() {
+    public BottomBarTextControl getBottomBarTextControl() {
         // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        return super.getContextualSearchControl();
+        return super.getBottomBarTextControl();
     }
 
     @Override
     public boolean shouldAnimatePanelCloseOnPromoteToTab() {
         return mSearchPanelFeatures.shouldAnimatePanelCloseOnPromoteToTab();
     }
+
+    @Override
+    public void displaySearchTerm(String searchTerm) {
+        cancelSearchTermResolutionAnimation();
+        getBottomBarTextControl().setSearchTerm(searchTerm);
+        resetBottomBarSearchTermVisibility();
+    }
+
+    @Override
+    public void displaySearchContext(String selection, String start, String end) {
+        cancelSearchTermResolutionAnimation();
+        getBottomBarTextControl().setSearchContext(selection, start, end);
+        resetBottomBarSearchContextVisibility();
+    }
+
+    @Override
+    public void onSearchTermResolutionResponse(String searchTerm) {
+        getBottomBarTextControl().setSearchTerm(searchTerm);
+        animateSearchTermResolution();
+    }
+
 
     // ============================================================================================
     // Methods for managing this panel's ContentViewCore.

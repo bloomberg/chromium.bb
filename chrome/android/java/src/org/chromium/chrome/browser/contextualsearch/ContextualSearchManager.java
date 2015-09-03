@@ -20,7 +20,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WebContentsFactory;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
@@ -510,7 +509,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             mSearchRequest = new ContextualSearchRequest(mSelectionController.getSelectedText(),
                     null, shouldPrefetch);
             mDidLoadResolvedSearchRequest = false;
-            getContextualSearchControl().setCentralText(mSelectionController.getSelectedText());
+            mSearchPanelDelegate.displaySearchTerm(mSelectionController.getSelectedText());
             if (shouldPrefetch) loadSearchUrl();
         }
 
@@ -581,13 +580,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private InfoBarContainer getInfoBarContainer() {
         Tab tab = mActivity.getActivityTab();
         return tab == null ? null : tab.getInfoBarContainer();
-    }
-
-    /**
-     * Inflates the Contextual Search control, if needed.
-     */
-    private ContextualSearchControl getContextualSearchControl() {
-        return mSearchPanelDelegate.getContextualSearchControl();
     }
 
     /**
@@ -673,7 +665,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
     @CalledByNative
     private void onSurroundingTextAvailable(final String beforeText, final String afterText) {
         if (mSearchPanelDelegate.isShowing()) {
-            getContextualSearchControl().setSearchContext(
+            mSearchPanelDelegate.displaySearchContext(
                     mSelectionController.getSelectedText(), beforeText, afterText);
         }
     }
@@ -736,7 +728,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
                     R.string.contextual_search_error, responseCode);
             doLiteralSearch = true;
         }
-        getContextualSearchControl().setCentralText(message);
+        mSearchPanelDelegate.onSearchTermResolutionResponse(message);
 
         // If there was an error, fall back onto a literal search for the selection.
         // Since we're showing the panel, there must be a selection.
@@ -1341,7 +1333,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             String selection, boolean selectionValid, float x, float y) {
         if (mSearchPanelDelegate.isShowing()) {
             if (selectionValid) {
-                getContextualSearchControl().setCentralText(selection);
+                mSearchPanelDelegate.displaySearchTerm(selection);
             } else {
                 hideContextualSearch(StateChangeReason.INVALID_SELECTION);
             }
