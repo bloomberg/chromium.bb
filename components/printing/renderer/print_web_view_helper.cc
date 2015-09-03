@@ -520,9 +520,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   options->SetString("pageNumber",
                      base::StringPrintf("%d/%d", page_number, total_pages));
 
-  // Fallback to initiator URL and title if it's empty for printed frame.
-  base::string16 url = source_frame.document().url().string();
-  options->SetString("url", url.empty() ? params.url : url);
+  options->SetString("url", params.url);
   base::string16 title = source_frame.document().title();
   options->SetString("title", title.empty() ? params.title : title);
 
