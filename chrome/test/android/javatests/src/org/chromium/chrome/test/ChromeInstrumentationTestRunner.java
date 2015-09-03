@@ -12,21 +12,6 @@ import android.util.Log;
 
 import junit.framework.TestCase;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.HttpVersion;
-import org.apache.http.RequestLine;
-import org.apache.http.StatusLine;
-import org.apache.http.entity.FileEntity;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.message.BasicStatusLine;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpParams;
-
 import org.chromium.base.test.BaseInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
 import org.chromium.base.test.BaseTestResult.SkipCheck;
@@ -44,11 +29,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
  *  An Instrumentation test runner that optionally spawns a test HTTP server.
  *  The server's root directory is the device's external storage directory.
+ *
+ *  TODO(jbudorick): remove uses of deprecated org.apache.* crbug.com/488192
  */
+@SuppressWarnings("deprecation")
 public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunner {
 
     private static final String TAG = "ChromeInstrumentationTestRunner";
@@ -145,16 +132,18 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
         }
 
         @Override
-        protected HttpParams getConnectionParams() {
-            HttpParams httpParams = new BasicHttpParams();
-            httpParams.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
+        protected org.apache.http.params.HttpParams getConnectionParams() {
+            org.apache.http.params.HttpParams httpParams =
+                    new org.apache.http.params.BasicHttpParams();
+            httpParams.setParameter(org.apache.http.params.CoreProtocolPNames.PROTOCOL_VERSION,
+                    org.apache.http.HttpVersion.HTTP_1_0);
             return httpParams;
         }
 
         @Override
-        protected void handleGet(HttpRequest request, HttpResponseCallback callback)
-                throws HttpException {
-            RequestLine requestLine = request.getRequestLine();
+        protected void handleGet(org.apache.http.HttpRequest request, HttpResponseCallback callback)
+                throws org.apache.http.HttpException {
+            org.apache.http.RequestLine requestLine = request.getRequestLine();
 
             String requestPath = requestLine.getUri();
             if (requestPath.startsWith(File.separator)) {
@@ -163,22 +152,22 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
             File requestedFile = new File(mRootDirectory, requestPath);
             String requestedPath = requestedFile.getAbsolutePath();
 
-            int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+            int status = org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
             String reason = "";
-            HttpEntity entity = null;
+            org.apache.http.HttpEntity entity = null;
             if (!requestedPath.startsWith(mRootPath)) {
                 Log.w(TAG, "Client tried to request something outside of " + mRootPath + ": "
                         + requestedPath);
-                status = HttpStatus.SC_FORBIDDEN;
+                status = org.apache.http.HttpStatus.SC_FORBIDDEN;
             } else if (!requestedFile.exists()) {
                 Log.w(TAG, "Client requested non-existent file: " + requestedPath);
-                status = HttpStatus.SC_NOT_FOUND;
+                status = org.apache.http.HttpStatus.SC_NOT_FOUND;
             } else if (!requestedFile.isFile()) {
                 Log.w(TAG, "Client requested something that isn't a file: " + requestedPath);
-                status = HttpStatus.SC_BAD_REQUEST;
+                status = org.apache.http.HttpStatus.SC_BAD_REQUEST;
                 reason = requestLine.getUri() + " is not a file.";
             } else {
-                status = HttpStatus.SC_OK;
+                status = org.apache.http.HttpStatus.SC_OK;
                 String contentType = null;
                 int extensionIndex = requestedPath.lastIndexOf('.');
                 if (extensionIndex == -1) {
@@ -191,11 +180,13 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
                         contentType = DEFAULT_CONTENT_TYPE;
                     }
                 }
-                entity = new FileEntity(requestedFile, contentType);
+                entity = new org.apache.http.entity.FileEntity(requestedFile, contentType);
             }
 
-            StatusLine statusLine = new BasicStatusLine(HttpVersion.HTTP_1_0, status, reason);
-            HttpResponse response = new BasicHttpResponse(statusLine);
+            org.apache.http.StatusLine statusLine = new org.apache.http.message.BasicStatusLine(
+                    org.apache.http.HttpVersion.HTTP_1_0, status, reason);
+            org.apache.http.HttpResponse response =
+                    new org.apache.http.message.BasicHttpResponse(statusLine);
             if (entity != null) {
                 response.setEntity(entity);
             }
