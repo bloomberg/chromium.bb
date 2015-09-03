@@ -44,15 +44,25 @@ class AdbClientSocket {
 
   void SendCommand(const std::string& command,
                    bool is_void,
+                   bool has_length,
                    const CommandCallback& callback);
 
   scoped_ptr<net::StreamSocket> socket_;
 
  private:
-  void ReadResponse(const CommandCallback& callback, bool is_void, int result);
+  void ReadResponse(const CommandCallback& callback,
+                    bool is_void,
+                    bool has_length,
+                    int result);
 
-  void OnResponseHeader(const CommandCallback& callback,
+  void OnResponseStatus(const CommandCallback& callback,
                         bool is_void,
+                        bool has_length,
+                        scoped_refptr<net::IOBuffer> response_buffer,
+                        int result);
+
+  void OnResponseLength(const CommandCallback& callback,
+                        const std::string& response,
                         scoped_refptr<net::IOBuffer> response_buffer,
                         int result);
 

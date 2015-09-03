@@ -62,7 +62,7 @@ class AdbTransportSocket : public AdbClientSocket {
     if (!CheckNetResultOrDie(result))
       return;
     SendCommand(base::StringPrintf(kHostTransportCommand, serial_.c_str()),
-        true, base::Bind(&AdbTransportSocket::SendLocalAbstract,
+        true, true, base::Bind(&AdbTransportSocket::SendLocalAbstract,
                          base::Unretained(this)));
   }
 
@@ -70,7 +70,7 @@ class AdbTransportSocket : public AdbClientSocket {
     if (!CheckNetResultOrDie(result))
       return;
     SendCommand(base::StringPrintf(kLocalAbstractCommand, socket_name_.c_str()),
-        true, base::Bind(&AdbTransportSocket::OnSocketAvailable,
+        true, true, base::Bind(&AdbTransportSocket::OnSocketAvailable,
                          base::Unretained(this)));
   }
 
@@ -268,7 +268,10 @@ class AdbQuerySocket : AdbClientSocket {
       return;
     }
     bool is_void = current_query_ < queries_.size() - 1;
-    SendCommand(query, is_void,
+    // The |shell| command is a special case because it is the only command that
+    // doesn't include a length at the beginning of the data stream.
+    bool has_length = query.find("shell:") != 0;
+    SendCommand(query, is_void, has_length,
         base::Bind(&AdbQuerySocket::OnResponse, base::Unretained(this)));
   }
 
@@ -382,6 +385,7 @@ void AdbClientSocket::Connect(const net::CompletionCallback& callback) {
 
 void AdbClientSocket::SendCommand(const std::string& command,
                                   bool is_void,
+                                  bool has_length,
                                   const CommandCallback& callback) {
   scoped_refptr<net::StringIOBuffer> request_buffer =
       new net::StringIOBuffer(EncodeMessage(command));
@@ -390,13 +394,15 @@ void AdbClientSocket::SendCommand(const std::string& command,
                               base::Bind(&AdbClientSocket::ReadResponse,
                                          base::Unretained(this),
                                          callback,
-                                         is_void));
+                                         is_void,
+                                         has_length));
   if (result != net::ERR_IO_PENDING)
-    ReadResponse(callback, is_void, result);
+    ReadResponse(callback, is_void, has_length, result);
 }
 
 void AdbClientSocket::ReadResponse(const CommandCallback& callback,
                                    bool is_void,
+                                   bool has_length,
                                    int result) {
   if (result < 0) {
     callback.Run(result, "IO error");
@@ -406,18 +412,20 @@ void AdbClientSocket::ReadResponse(const CommandCallback& callback,
       new net::IOBuffer(kBufferSize);
   result = socket_->Read(response_buffer.get(),
                          kBufferSize,
-                         base::Bind(&AdbClientSocket::OnResponseHeader,
+                         base::Bind(&AdbClientSocket::OnResponseStatus,
                                     base::Unretained(this),
                                     callback,
                                     is_void,
+                                    has_length,
                                     response_buffer));
   if (result != net::ERR_IO_PENDING)
-    OnResponseHeader(callback, is_void, response_buffer, result);
+    OnResponseStatus(callback, is_void, has_length, response_buffer, result);
 }
 
-void AdbClientSocket::OnResponseHeader(
+void AdbClientSocket::OnResponseStatus(
     const CommandCallback& callback,
     bool is_void,
+    bool has_length,
     scoped_refptr<net::IOBuffer> response_buffer,
     int result) {
   if (result <= 0) {
@@ -441,18 +449,63 @@ void AdbClientSocket::OnResponseHeader(
   data = data.substr(4);
 
   if (!is_void) {
-    int payload_length = 0;
-    int bytes_left = -1;
-    if (data.length() >= 4 &&
-        base::HexStringToInt(data.substr(0, 4), &payload_length)) {
-      data = data.substr(4);
-      bytes_left = payload_length - result + 8;
+    if (!has_length) {
+      // Payload doesn't include length, so skip straight to reading in data.
+      OnResponseData(callback, data, response_buffer, -1, 0);
+    } else if (data.length() >= 4) {
+      // We've already read the length out of the socket, so we don't need to
+      // read more yet.
+      OnResponseLength(callback, data, response_buffer, 0);
     } else {
-      bytes_left = -1;
+      // Part or all of the length is still in the socket, so we need to read it
+      // out of the socket before parsing the length.
+      result = socket_->Read(response_buffer.get(),
+                             kBufferSize,
+                             base::Bind(&AdbClientSocket::OnResponseLength,
+                                        base::Unretained(this),
+                                        callback,
+                                        data,
+                                        response_buffer));
+      if (result != net::ERR_IO_PENDING)
+        OnResponseLength(callback, data, response_buffer, result);
     }
-    OnResponseData(callback, data, response_buffer, bytes_left, 0);
   } else {
     callback.Run(net::OK, data);
+  }
+}
+
+void AdbClientSocket::OnResponseLength(
+    const CommandCallback& callback,
+    const std::string& response,
+    scoped_refptr<net::IOBuffer> response_buffer,
+    int result) {
+  if (result < 0) {
+    callback.Run(result, "IO error");
+    return;
+  }
+
+  std::string new_response =
+      response + std::string(response_buffer->data(), result);
+  if (new_response.length() < 4) {
+    result = socket_->Read(response_buffer.get(),
+                           kBufferSize,
+                           base::Bind(&AdbClientSocket::OnResponseLength,
+                                      base::Unretained(this),
+                                      callback,
+                                      new_response,
+                                      response_buffer));
+    if (result != net::ERR_IO_PENDING)
+      OnResponseLength(callback, new_response, response_buffer, result);
+  } else {
+    int payload_length = 0;
+    if (!base::HexStringToInt(new_response.substr(0, 4), &payload_length)) {
+      callback.Run(net::ERR_FAILED, new_response);
+      return;
+    }
+
+    new_response = new_response.substr(4);
+    int bytes_left = payload_length - new_response.length();
+    OnResponseData(callback, new_response, response_buffer, bytes_left, 0);
   }
 }
 
