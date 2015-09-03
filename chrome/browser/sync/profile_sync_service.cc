@@ -1158,14 +1158,6 @@ void ProfileSyncService::OnBackendInitialized(
   DVLOG(1) << "Setting preferred types for non-blocking DTM";
   non_blocking_data_type_manager_.SetPreferredTypes(GetPreferredDataTypes());
 
-  // Give the DataTypeControllers a handle to the now initialized backend
-  // as a UserShare.
-  for (DataTypeController::TypeMap::iterator it =
-       directory_data_type_controllers_.begin();
-       it != directory_data_type_controllers_.end(); ++it) {
-    it->second->OnUserShareReady(GetUserShare());
-  }
-
   if (backend_mode_ == BACKUP || backend_mode_ == ROLLBACK)
     ConfigureDataTypeManager();
   else

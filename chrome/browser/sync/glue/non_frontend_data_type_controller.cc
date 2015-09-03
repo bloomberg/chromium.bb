@@ -157,10 +157,10 @@ NonFrontendDataTypeController::AssociationResult::AssociationResult(
 NonFrontendDataTypeController::AssociationResult::~AssociationResult() {}
 
 NonFrontendDataTypeController::NonFrontendDataTypeController(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client)
-    : DataTypeController(ui_thread, error_callback),
+    : DirectoryDataTypeController(ui_thread, error_callback),
       state_(NOT_RUNNING),
       sync_client_(sync_client),
       model_associator_(NULL),
@@ -293,13 +293,13 @@ void NonFrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
 }
 
 NonFrontendDataTypeController::NonFrontendDataTypeController()
-    : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
+    : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+                                  base::Closure()),
       state_(NOT_RUNNING),
       sync_client_(NULL),
       model_associator_(NULL),
       change_processor_(NULL),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 NonFrontendDataTypeController::~NonFrontendDataTypeController() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

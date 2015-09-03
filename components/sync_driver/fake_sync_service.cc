@@ -11,8 +11,9 @@
 
 namespace sync_driver {
 
-FakeSyncService::FakeSyncService() : error_(GoogleServiceAuthError::NONE) {
-}
+FakeSyncService::FakeSyncService()
+    : error_(GoogleServiceAuthError::NONE),
+      user_share_(make_scoped_ptr(new syncer::UserShare())) {}
 
 FakeSyncService::~FakeSyncService() {
 }
@@ -132,7 +133,7 @@ bool FakeSyncService::IsCryptographerReady(
 }
 
 syncer::UserShare* FakeSyncService::GetUserShare() const {
-  return new syncer::UserShare();
+  return user_share_.get();
 }
 
 LocalDeviceInfoProvider* FakeSyncService::GetLocalDeviceInfoProvider() const {

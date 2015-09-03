@@ -18,7 +18,7 @@ namespace sync_driver {
 class ProxyDataTypeController : public DataTypeController {
  public:
   explicit ProxyDataTypeController(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       syncer::ModelType type);
 
   // DataTypeController interface.
@@ -26,10 +26,10 @@ class ProxyDataTypeController : public DataTypeController {
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
   syncer::ModelType type() const override;
-  syncer::ModelSafeGroup model_safe_group() const override;
-  ChangeProcessor* GetChangeProcessor() const override;
   std::string name() const override;
   State state() const override;
+  void ActivateDataType(BackendDataTypeConfigurer* configurer) override;
+  void DeactivateDataType(BackendDataTypeConfigurer* configurer) override;
 
   // DataTypeErrorHandler interface.
   void OnSingleDataTypeUnrecoverableError(

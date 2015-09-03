@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "components/sync_driver/data_type_controller_mock.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/non_ui_data_type_controller_mock.h"
 #include "sync/api/fake_syncable_service.h"
@@ -178,7 +179,8 @@ class NonUIDataTypeControllerFake
   scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
 };
 
-class SyncNonUIDataTypeControllerTest : public testing::Test {
+class SyncNonUIDataTypeControllerTest : public testing::Test,
+                                        public FakeSyncClient {
  public:
   SyncNonUIDataTypeControllerTest()
       : backend_thread_("dbthread") {}
@@ -189,7 +191,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     // All of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonUIDataTypeControllerMock>();
     non_ui_dtc_ = new NonUIDataTypeControllerFake(
-        NULL, dtc_mock_.get(), change_processor_.get(),
+        this, dtc_mock_.get(), change_processor_.get(),
         backend_thread_.task_runner());
   }
 

@@ -6,18 +6,22 @@
 
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/sync_driver/fake_sync_service.h"
 
 namespace sync_driver {
 
-FakeSyncClient::FakeSyncClient() : factory_(nullptr) {}
+FakeSyncClient::FakeSyncClient()
+    : factory_(nullptr),
+      sync_service_(make_scoped_ptr(new FakeSyncService())) {}
 
 FakeSyncClient::FakeSyncClient(SyncApiComponentFactory* factory)
-    : factory_(factory) {}
+    : factory_(factory),
+      sync_service_(make_scoped_ptr(new FakeSyncService())) {}
 
 FakeSyncClient::~FakeSyncClient() {}
 
 SyncService* FakeSyncClient::GetSyncService() {
-  return nullptr;
+  return sync_service_.get();
 }
 
 PrefService* FakeSyncClient::GetPrefService() {

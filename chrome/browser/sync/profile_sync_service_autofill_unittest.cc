@@ -150,12 +150,17 @@ class TestSyncClient : public sync_driver::FakeSyncClient {
   TestSyncClient(PersonalDataManager* pdm,
                  const scoped_refptr<AutofillWebDataService>& web_data_service)
       : pdm_(pdm),
+        sync_service_(nullptr),
         web_data_service_(web_data_service) {}
   ~TestSyncClient() override {}
 
   // FakeSyncClient overrides.
   autofill::PersonalDataManager* GetPersonalDataManager() override {
     return pdm_;
+  }
+  sync_driver::SyncService* GetSyncService() override {
+    DCHECK(sync_service_);
+    return sync_service_;
   }
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override {
     return web_data_service_;
@@ -172,8 +177,13 @@ class TestSyncClient : public sync_driver::FakeSyncClient {
     }
   }
 
+  void SetSyncService(sync_driver::SyncService* sync_service) {
+    sync_service_ = sync_service;
+  }
+
  private:
   PersonalDataManager* pdm_;
+  sync_driver::SyncService* sync_service_;
   scoped_refptr<AutofillWebDataService> web_data_service_;
 };
 
@@ -499,6 +509,7 @@ class ProfileSyncServiceAutofillTest
     signin->SetAuthenticatedAccountInfo("12345", "test_user@gmail.com");
     sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
                                                                     callback);
+    sync_client_->SetSyncService(sync_service_);
 
     ProfileSyncComponentsFactoryMock* components =
         sync_service_->components_factory_mock();

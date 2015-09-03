@@ -5,6 +5,7 @@
 #include "components/sync_driver/fake_data_type_controller.h"
 
 #include "base/thread_task_runner_handle.h"
+#include "sync/api/sync_merge_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,12 +14,12 @@ using syncer::ModelType;
 namespace sync_driver {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
-      : DataTypeController(base::ThreadTaskRunnerHandle::Get(),
-        base::Closure()),
-        state_(NOT_RUNNING),
-        model_load_delayed_(false),
-        type_(type),
-        ready_for_start_(true) {}
+    : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+                                  base::Closure()),
+      state_(NOT_RUNNING),
+      model_load_delayed_(false),
+      type_(type),
+      ready_for_start_(true) {}
 
 FakeDataTypeController::~FakeDataTypeController() {
 }

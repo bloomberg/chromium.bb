@@ -13,7 +13,9 @@
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
 #include "components/sync_driver/sync_client.h"
+#include "components/sync_driver/sync_service.h"
 #include "sync/api/sync_error.h"
+#include "sync/api/sync_merge_result.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
@@ -21,19 +23,18 @@
 namespace sync_driver {
 
 UIDataTypeController::UIDataTypeController()
-    : DataTypeController(base::ThreadTaskRunnerHandle::Get(),
-                         base::Closure()),
+    : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+                                  base::Closure()),
       sync_client_(NULL),
       state_(NOT_RUNNING),
-      type_(syncer::UNSPECIFIED) {
-}
+      type_(syncer::UNSPECIFIED) {}
 
 UIDataTypeController::UIDataTypeController(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
     syncer::ModelType type,
     SyncClient* sync_client)
-    : DataTypeController(ui_thread, error_callback),
+    : DirectoryDataTypeController(ui_thread, error_callback),
       sync_client_(sync_client),
       state_(NOT_RUNNING),
       type_(type),
@@ -131,12 +132,10 @@ void UIDataTypeController::Associate() {
 
   // Connect |shared_change_processor_| to the syncer and get the
   // syncer::SyncableService associated with type().
+  DCHECK(sync_client_->GetSyncService());
   local_service_ = shared_change_processor_->Connect(
-      sync_client_,
-      processor_factory_.get(),
-      user_share(),
-      this,
-      type(),
+      sync_client_, processor_factory_.get(),
+      sync_client_->GetSyncService()->GetUserShare(), this, type(),
       weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
     syncer::SyncError error(FROM_HERE,

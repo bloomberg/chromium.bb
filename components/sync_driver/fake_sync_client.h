@@ -8,6 +8,7 @@
 #include "components/sync_driver/sync_client.h"
 
 namespace sync_driver {
+class FakeSyncService;
 
 // Fake implementation of SyncClient interface for tests.
 class FakeSyncClient : public SyncClient {
@@ -29,6 +30,7 @@ class FakeSyncClient : public SyncClient {
 
  private:
   SyncApiComponentFactory* factory_;
+  scoped_ptr<FakeSyncService> sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncClient);
 };

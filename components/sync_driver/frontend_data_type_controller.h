@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
+#include "components/sync_driver/directory_data_type_controller.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -41,10 +41,11 @@ namespace browser_sync {
 // NOTE: This class is deprecated! New sync datatypes should be using the
 // syncer::SyncableService API and the UIDataTypeController instead.
 // TODO(zea): Delete this once all types are on the new API.
-class FrontendDataTypeController : public sync_driver::DataTypeController {
+class FrontendDataTypeController
+    : public sync_driver::DirectoryDataTypeController {
  public:
   FrontendDataTypeController(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client);
 

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/directory_data_type_controller.h"
 #include "components/sync_driver/shared_change_processor.h"
 
 namespace base {
@@ -30,10 +30,10 @@ namespace sync_driver {
 // thread we perform initialization on, so we don't have to worry about thread
 // safety. The main start/stop funtionality is implemented by default.
 // Note: RefCountedThreadSafe by way of DataTypeController.
-class UIDataTypeController : public DataTypeController {
+class UIDataTypeController : public DirectoryDataTypeController {
  public:
   UIDataTypeController(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback,
       syncer::ModelType type,
       SyncClient* sync_client);

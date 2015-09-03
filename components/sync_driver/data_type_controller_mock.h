@@ -7,6 +7,7 @@
 
 #include "components/sync_driver/data_type_controller.h"
 #include "sync/api/sync_error.h"
+#include "sync/api/sync_merge_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace sync_driver {

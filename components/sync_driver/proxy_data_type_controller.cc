@@ -4,10 +4,12 @@
 
 #include "components/sync_driver/proxy_data_type_controller.h"
 
+#include "sync/api/sync_merge_result.h"
+
 namespace sync_driver {
 
 ProxyDataTypeController::ProxyDataTypeController(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     syncer::ModelType type)
     : DataTypeController(ui_thread, base::Closure()),
       state_(NOT_RUNNING),
@@ -43,15 +45,6 @@ syncer::ModelType ProxyDataTypeController::type() const {
   return type_;
 }
 
-syncer::ModelSafeGroup ProxyDataTypeController::model_safe_group() const {
-  DCHECK(syncer::ProxyTypes().Has(type_));
-  return syncer::GROUP_PASSIVE;
-}
-
-ChangeProcessor* ProxyDataTypeController::GetChangeProcessor() const {
-  return NULL;
-}
-
 std::string ProxyDataTypeController::name() const {
   // For logging only.
   return syncer::ModelTypeToString(type());
@@ -69,5 +62,11 @@ void ProxyDataTypeController::OnSingleDataTypeUnrecoverableError(
 void ProxyDataTypeController::OnModelLoaded() {
   NOTIMPLEMENTED();
 }
+
+void ProxyDataTypeController::ActivateDataType(
+    BackendDataTypeConfigurer* configurer) {}
+
+void ProxyDataTypeController::DeactivateDataType(
+    BackendDataTypeConfigurer* configurer) {}
 
 }  // namespace sync_driver

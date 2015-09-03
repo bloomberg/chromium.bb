@@ -11,12 +11,10 @@
 namespace sync_driver {
 
 DataTypeController::DataTypeController(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback)
     : base::RefCountedDeleteOnMessageLoop<DataTypeController>(ui_thread),
-      error_callback_(error_callback),
-      user_share_(NULL) {
-}
+      error_callback_(error_callback) {}
 
 DataTypeController::~DataTypeController() {
 }
@@ -39,14 +37,6 @@ syncer::SyncError DataTypeController::CreateAndUploadError(
                            syncer::SyncError::DATATYPE_ERROR,
                            message,
                            type);
-}
-
-void DataTypeController::OnUserShareReady(syncer::UserShare* share) {
-  user_share_ = share;
-}
-
-syncer::UserShare* DataTypeController::user_share() const {
-  return user_share_;
 }
 
 bool DataTypeController::ReadyForStart() const {

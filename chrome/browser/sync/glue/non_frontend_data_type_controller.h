@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
+#include "components/sync_driver/directory_data_type_controller.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 
 class Profile;
@@ -45,13 +45,14 @@ namespace browser_sync {
 //    model_safe_group()
 //    PostTaskOnBackendThread()
 //    CreateSyncComponents()
-class NonFrontendDataTypeController : public sync_driver::DataTypeController {
+class NonFrontendDataTypeController
+    : public sync_driver::DirectoryDataTypeController {
  public:
   // For creating non-frontend processor/associator and associating on backend.
   class BackendComponentsContainer;
 
   NonFrontendDataTypeController(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client);
 

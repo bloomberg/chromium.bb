@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__
 #define COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__
 
-#include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_manager.h"
+#include "components/sync_driver/directory_data_type_controller.h"
 
 namespace sync_driver {
 
@@ -19,7 +19,7 @@ namespace sync_driver {
 // behavior of controllers. (It would be easier of the above classes
 // used delegation instead of subclassing for per-data-type
 // functionality.)
-class FakeDataTypeController : public DataTypeController {
+class FakeDataTypeController : public DirectoryDataTypeController {
  public:
   explicit FakeDataTypeController(syncer::ModelType type);
 

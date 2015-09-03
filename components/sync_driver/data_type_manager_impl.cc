@@ -16,7 +16,6 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/data_type_status_table.h"
@@ -496,7 +495,11 @@ void DataTypeManagerImpl::StartNextAssociation(AssociationGroup group) {
 void DataTypeManagerImpl::OnSingleDataTypeWillStop(
     syncer::ModelType type,
     const syncer::SyncError& error) {
-  configurer_->DeactivateDataType(type);
+  DataTypeController::TypeMap::const_iterator c_it = controllers_->find(type);
+  DCHECK(c_it != controllers_->end());
+  // Delegate deactivation to the controller.
+  c_it->second->DeactivateDataType(configurer_);
+
   if (error.IsSet()) {
     DataTypeStatusTable::TypeErrorMap failed_types;
     failed_types[type] = error;
@@ -520,10 +523,8 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
   DataTypeController::TypeMap::const_iterator c_it = controllers_->find(type);
   DCHECK(c_it != controllers_->end());
   if (c_it->second->state() == DataTypeController::RUNNING) {
-    // Tell the backend about the change processor for this type so it can
-    // begin routing changes to it.
-    configurer_->ActivateDataType(type, c_it->second->model_safe_group(),
-                                  c_it->second->GetChangeProcessor());
+    // Delegate activation to the controller.
+    c_it->second->ActivateDataType(configurer_);
   }
 
   if (!debug_info_listener_.IsInitialized())

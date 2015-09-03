@@ -338,6 +338,8 @@ class ProfileSyncService : public sync_driver::SyncService,
   // ProfileSyncService.  It declares that this sync type may be activated at
   // some point in the future.  This function call does not enable or activate
   // the syncing of this type
+  // TODO(stanisc): crbug.com/515962: this should merge with
+  // RegisterDataTypeController.
   void RegisterNonBlockingType(syncer::ModelType type);
 
   // Called by a component that supports non-blocking sync when it is ready to
@@ -347,6 +349,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   // should result in a message to enable syncing for this type when the sync
   // backend is available.  If the type is not to be synced, this should result
   // in a message that allows the component to delete its local sync state.
+  // TODO(stanisc): crbug.com/515962: review usage of this.
   void InitializeNonBlockingType(
       syncer::ModelType type,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,

@@ -11,16 +11,17 @@
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_service.h"
 #include "sync/api/sync_error.h"
+#include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
 
 namespace browser_sync {
 
 FrontendDataTypeController::FrontendDataTypeController(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client)
-    : DataTypeController(ui_thread, error_callback),
+    : DirectoryDataTypeController(ui_thread, error_callback),
       sync_client_(sync_client),
       state_(NOT_RUNNING) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -136,10 +137,10 @@ void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
 }
 
 FrontendDataTypeController::FrontendDataTypeController()
-    : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
+    : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+                                  base::Closure()),
       sync_client_(NULL),
-      state_(NOT_RUNNING) {
-}
+      state_(NOT_RUNNING) {}
 
 FrontendDataTypeController::~FrontendDataTypeController() {
   DCHECK(thread_checker_.CalledOnValidThread());

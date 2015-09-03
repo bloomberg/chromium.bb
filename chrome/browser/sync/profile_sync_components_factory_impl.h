@@ -96,10 +96,7 @@ class ProfileSyncComponentsFactoryImpl
   // being explicitly enabled/disabled by the command line.
   void RegisterCommonDataTypes(syncer::ModelTypeSet disabled_types,
                                syncer::ModelTypeSet enabled_types);
-  // Used to bind a callback to give to DataTypeControllers to disable
-  // data types.
-  sync_driver::DataTypeController::DisableTypeCallback
-      MakeDisableCallbackFor(syncer::ModelType type);
+
   void DisableBrokenType(syncer::ModelType type,
                          const tracked_objects::Location& from_here,
                          const std::string& message);

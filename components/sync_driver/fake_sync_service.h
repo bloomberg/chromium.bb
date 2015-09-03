@@ -82,6 +82,7 @@ class FakeSyncService : public sync_driver::SyncService {
   GoogleServiceAuthError error_;
   GURL sync_service_url_;
   std::string unrecoverable_error_message_;
+  scoped_ptr<syncer::UserShare> user_share_;
 };
 
 }  // namespace sync_driver
