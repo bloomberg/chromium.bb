@@ -109,8 +109,8 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/chrome_device_client.h"
+#include "chrome/browser/services/gcm/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_client_factory.h"
-#include "components/gcm_driver/gcm_desktop_utils.h"
 #endif
 
 #if defined(ENABLE_BACKGROUND)
@@ -1165,24 +1165,11 @@ void BrowserProcessImpl::CreateGCMDriver() {
 #else
   base::FilePath store_path;
   CHECK(PathService::Get(chrome::DIR_GLOBAL_GCM_STORE, &store_path));
-  base::SequencedWorkerPool* worker_pool =
-      content::BrowserThread::GetBlockingPool();
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       make_scoped_ptr(new gcm::GCMClientFactory),
       local_state(),
       store_path,
-      system_request_context(),
-      chrome::GetChannel(),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO),
-      blocking_task_runner);
+      system_request_context());
 #endif  // defined(OS_ANDROID)
 }
 

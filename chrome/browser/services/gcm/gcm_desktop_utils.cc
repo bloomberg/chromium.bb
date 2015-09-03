@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/gcm_driver/gcm_desktop_utils.h"
+#include "chrome/browser/services/gcm/gcm_desktop_utils.h"
 
 #include "base/command_line.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
 #include "components/sync_driver/sync_util.h"
+#include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 namespace gcm {
@@ -38,7 +41,8 @@ GCMClient::ChromePlatform GetPlatform() {
 #endif
 }
 
-GCMClient::ChromeChannel GetChannel(version_info::Channel channel) {
+GCMClient::ChromeChannel GetChannel() {
+  version_info::Channel channel = chrome::GetChannel();
   switch (channel) {
     case version_info::Channel::UNKNOWN:
       return GCMClient::CHANNEL_UNKNOWN;
@@ -60,22 +64,22 @@ std::string GetVersion() {
   return version_info::GetVersionNumber();
 }
 
-GCMClient::ChromeBuildInfo GetChromeBuildInfo(version_info::Channel channel) {
+GCMClient::ChromeBuildInfo GetChromeBuildInfo() {
   GCMClient::ChromeBuildInfo chrome_build_info;
   chrome_build_info.platform = GetPlatform();
-  chrome_build_info.channel = GetChannel(channel);
+  chrome_build_info.channel = GetChannel();
   chrome_build_info.version = GetVersion();
   return chrome_build_info;
 }
 
-std::string GetChannelStatusRequestUrl(version_info::Channel channel) {
+std::string GetChannelStatusRequestUrl() {
   GURL sync_url(GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
-                                  channel));
+                                  chrome::GetChannel()));
   return sync_url.spec() + kChannelStatusRelativePath;
 }
 
-std::string GetUserAgent(version_info::Channel channel) {
-  return MakeDesktopUserAgentForSync(channel);
+std::string GetUserAgent() {
+  return MakeDesktopUserAgentForSync(chrome::GetChannel());
 }
 
 }  // namespace
@@ -84,22 +88,27 @@ scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
     scoped_ptr<GCMClientFactory> gcm_client_factory,
     PrefService* prefs,
     const base::FilePath& store_path,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    version_info::Channel channel,
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
+    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
+
+  scoped_refptr<base::SequencedWorkerPool> worker_pool(
+      content::BrowserThread::GetBlockingPool());
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
   return scoped_ptr<GCMDriver>(new GCMDriverDesktop(
       gcm_client_factory.Pass(),
-      GetChromeBuildInfo(channel),
-      GetChannelStatusRequestUrl(channel),
-      GetUserAgent(channel),
+      GetChromeBuildInfo(),
+      GetChannelStatusRequestUrl(),
+      GetUserAgent(),
       prefs,
       store_path,
       request_context,
-      ui_task_runner,
-      io_task_runner,
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO),
       blocking_task_runner));
 }
 
