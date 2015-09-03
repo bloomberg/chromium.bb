@@ -1438,9 +1438,11 @@ float Gtk2UI::GetDeviceScaleFactor() const {
   if (gfx::Display::HasForceDeviceScaleFactor())
     return gfx::Display::GetForcedDeviceScaleFactor();
   const int kCSSDefaultDPI = 96;
-  float scale = GetDPI() / kCSSDefaultDPI;
+  const float scale = GetDPI() / kCSSDefaultDPI;
   // Round to 1 decimal, e.g. to 1.4.
-  return roundf(scale * 10) / 10;
+  const float rounded = roundf(scale * 10) / 10;
+  // See crbug.com/484400
+  return rounded < 1.3 ? 1.0 : rounded;
 }
 
 }  // namespace libgtk2ui
