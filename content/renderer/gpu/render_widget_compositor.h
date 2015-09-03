@@ -90,8 +90,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
       const blink::WebSize& unused_deprecated,
       const blink::WebSize& device_viewport_size);
   virtual void setViewportSize(const blink::WebSize& device_viewport_size);
-  virtual blink::WebSize layoutViewportSize() const;
-  virtual blink::WebSize deviceViewportSize() const;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;
   virtual void setDeviceScaleFactor(float device_scale);

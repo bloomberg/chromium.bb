@@ -619,14 +619,6 @@ void RenderWidgetCompositor::setViewportSize(
   layer_tree_host_->SetViewportSize(device_viewport_size);
 }
 
-WebSize RenderWidgetCompositor::layoutViewportSize() const {
-  return layer_tree_host_->device_viewport_size();
-}
-
-WebSize RenderWidgetCompositor::deviceViewportSize() const {
-  return layer_tree_host_->device_viewport_size();
-}
-
 WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
     const WebFloatPoint& point) const {
   return point;

@@ -80,7 +80,6 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   virtual void setRootLayer(const blink::WebLayer& layer);
   virtual void clearRootLayer();
   virtual void setViewportSize(const blink::WebSize& device_viewport_size);
-  virtual blink::WebSize deviceViewportSize() const;
   virtual void setDeviceScaleFactor(float);
   virtual float deviceScaleFactor() const;
   virtual void setBackgroundColor(blink::WebColor color);
