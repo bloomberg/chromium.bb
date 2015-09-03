@@ -195,7 +195,7 @@ class _Generator(object):
     elif type_.property_type == PropertyType.ARRAY:
       if generate_typedefs and type_.description:
         c.Comment(type_.description)
-      c.Cblock(self._GenerateType(type_.item_type))
+      c.Cblock(self._GenerateType(type_.item_type, is_toplevel=is_toplevel))
       if generate_typedefs:
         (c.Append('typedef std::vector<%s > %s;' % (
                        self._type_helper.GetCppType(type_.item_type),

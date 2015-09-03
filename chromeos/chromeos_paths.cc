@@ -47,6 +47,9 @@ const base::FilePath::CharType kDeviceLocalAccountExternalDataDir[] =
 const base::FilePath::CharType kDeviceLocalAccountComponentPolicy[] =
     FILE_PATH_LITERAL("/var/cache/device_local_account_component_policy");
 
+const base::FilePath::CharType kDeviceExtensionLocalCache[] =
+    FILE_PATH_LITERAL("/var/cache/external_cache");
+
 const base::FilePath::CharType kDeviceColorProfileDirectory[] =
     FILE_PATH_LITERAL("/usr/share/color/icc");
 
@@ -84,6 +87,9 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case DIR_DEVICE_COLOR_CALIBRATION_PROFILES:
       *result = base::FilePath(kDeviceColorProfileDirectory);
+      break;
+    case DIR_DEVICE_EXTENSION_LOCAL_CACHE:
+      *result = base::FilePath(kDeviceExtensionLocalCache);
       break;
     default:
       return false;
@@ -131,6 +137,9 @@ void RegisterStubPathOverrides(const base::FilePath& stubs_dir) {
   PathService::Override(
       DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY,
       parent.AppendASCII("stub_device_local_account_component_policy"));
+  PathService::Override(
+      DIR_DEVICE_EXTENSION_LOCAL_CACHE,
+      parent.AppendASCII("stub_device_local_extension_cache"));
 }
 
 }  // namespace chromeos

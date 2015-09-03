@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -51,6 +52,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -117,6 +119,12 @@ const char kTestLocalFsKioskApp[] = "bmbpicmpniaclbbpdkfglgipkkebnbjf";
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //       detail/aaedpojejpghjkedenggihopfhfijcko
 const char kTestGetVolumeListKioskApp[] = "aaedpojejpghjkedenggihopfhfijcko";
+
+// Testing apps for testing kiosk multi-app feature.
+const char kTestPrimaryKioskApp[] = "ceobkcclegcliomogfoeoheahogoecgl";
+const char kTestSecondaryApp1[] = "ihplaomghjbeafnpnjkhppmfpnmdihgd";
+const char kTestSecondaryApp2[] = "fiehokkcgaojmbhfhlpiheggjhaedjoc";
+const char kTestSecondaryApp3[] = "aabnpdpieclcikafhdkkpldcaodmfoai";
 
 // Fake usb stick mount path.
 const char kFakeUsbMountPathUpdatePass[] =
@@ -187,6 +195,16 @@ void OnNetworkWaitTimedOut(const base::Closure& runner_quit_task) {
 void LockAndUnlock(scoped_ptr<base::Lock> lock) {
   lock->Acquire();
   lock->Release();
+}
+
+bool IsAppInstalled(const std::string app_id) {
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+  DCHECK(app_profile);
+  const extensions::Extension* app =
+      extensions::ExtensionSystem::Get(app_profile)
+          ->extension_service()
+          ->GetInstalledExtension(app_id);
+  return app != nullptr;
 }
 
 // Helper functions for CanConfigureNetwork mock.
@@ -1247,6 +1265,18 @@ class KioskUpdateTest : public KioskTest {
   KioskUpdateTest() {}
   ~KioskUpdateTest() override {}
 
+  struct TestAppInfo {
+    std::string id;
+    std::string version;
+    std::string crx_filename;
+    TestAppInfo() {}
+    TestAppInfo(const std::string& id,
+                const std::string& version,
+                const std::string& crx_filename)
+        : id(id), version(version), crx_filename(crx_filename) {}
+    ~TestAppInfo() {}
+  };
+
  protected:
   void SetUp() override {
     fake_disk_mount_manager_ = new KioskFakeDiskMountManager();
@@ -1267,6 +1297,9 @@ class KioskUpdateTest : public KioskTest {
     // the app manager would accept existing files in its extension cache on the
     // next startup) and copy the list to our stub settings provider as well.
     settings_helper_.CopyStoredValue(kAccountsPrefDeviceLocalAccounts);
+
+    CreateAndInitializeLocalCache();
+
     KioskTest::SetUpOnMainThread();
   }
 
@@ -1343,6 +1376,47 @@ class KioskUpdateTest : public KioskTest {
     EXPECT_EQ(version, GetInstalledAppVersion().GetString());
   }
 
+  void LaunchKioskWithSecondaryApps(
+      const TestAppInfo& primary_app,
+      const std::vector<TestAppInfo>& secondary_apps) {
+    // Pre-cache the primary app.
+    PreCacheApp(primary_app.id, primary_app.version, primary_app.crx_filename);
+
+    set_test_app_id(primary_app.id);
+    fake_cws()->SetNoUpdate(primary_app.id);
+    for (size_t i = 0; i < secondary_apps.size(); ++i) {
+      fake_cws()->SetUpdateCrx(secondary_apps[i].id,
+                               secondary_apps[i].crx_filename,
+                               secondary_apps[i].version);
+    }
+
+    // Launch the primary app.
+    StartUIForAppLaunch();
+    SimulateNetworkOnline();
+    LaunchApp(test_app_id(), false);
+    WaitForAppLaunchWithOptions(false, true);
+
+    // Verify the primary app and the secondary apps are all installed.
+    EXPECT_EQ(primary_app.version, GetInstalledAppVersion().GetString());
+    for (size_t i = 0; i < secondary_apps.size(); ++i)
+      EXPECT_TRUE(IsAppInstalled(secondary_apps[i].id));
+  }
+
+  void LaunchTestKioskAppWithTwoSecondaryApps() {
+    TestAppInfo primary_app(kTestPrimaryKioskApp, "1.0.0",
+                            std::string(kTestPrimaryKioskApp) + "-1.0.0.crx");
+
+    std::vector<TestAppInfo> secondary_apps;
+    TestAppInfo secondary_app_1(kTestSecondaryApp1, "1.0.0",
+                                std::string(kTestSecondaryApp1) + "-1.0.0.crx");
+    secondary_apps.push_back(secondary_app_1);
+    TestAppInfo secondary_app_2(kTestSecondaryApp2, "1.0.0",
+                                std::string(kTestSecondaryApp2) + "-1.0.0.crx");
+    secondary_apps.push_back(secondary_app_2);
+
+    LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
+  }
+
  private:
   class KioskAppExternalUpdateWaiter : public KioskAppManagerObserver {
    public:
@@ -1394,6 +1468,19 @@ class KioskUpdateTest : public KioskTest {
 
     DISALLOW_COPY_AND_ASSIGN(KioskAppExternalUpdateWaiter);
   };
+
+  // The local cache is supposed to be initialized on chromeos device, and a
+  // ready flag file will be pre-created to mark the ready state, before chrome
+  // starts. In order for the tests to run without being on real chromeos
+  // device, we need to manually create this file.
+  void CreateAndInitializeLocalCache() {
+    base::FilePath extension_cache_dir;
+    CHECK(PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
+                           &extension_cache_dir));
+    base::FilePath cache_init_file = extension_cache_dir.Append(
+        extensions::LocalExtensionCache::kCacheReadyFlagFileName);
+    EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);
+  }
 
   // Owned by DiskMountManager.
   KioskFakeDiskMountManager* fake_disk_mount_manager_;
@@ -1706,6 +1793,68 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+/* ***** Test Kiosk multi-app feature ***** */
+
+// Launch a primary kiosk app which has two secondary apps.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       LaunchTestKioskAppWithTwoSecondaryApps) {
+  LaunchTestKioskAppWithTwoSecondaryApps();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskRemoveOneApp) {
+  LaunchTestKioskAppWithTwoSecondaryApps();
+}
+
+// Update the primary app to version 2 which removes one of the secondary app
+// from its manifest.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
+  set_test_app_id(kTestPrimaryKioskApp);
+  fake_cws()->SetUpdateCrx(
+      kTestPrimaryKioskApp,
+      std::string(kTestPrimaryKioskApp) + "-2.0.0-1app.crx", "2.0.0");
+  fake_cws()->SetNoUpdate(kTestSecondaryApp1);
+  fake_cws()->SetNoUpdate(kTestSecondaryApp2);
+
+  StartUIForAppLaunch();
+  SimulateNetworkOnline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchWithOptions(false, true);
+
+  // Verify the secondary app kTestSecondaryApp1 is removed.
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
+  EXPECT_FALSE(IsAppInstalled(kTestSecondaryApp1));
+  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2));
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskAddOneApp) {
+  LaunchTestKioskAppWithTwoSecondaryApps();
+}
+
+// Update the primary app to version 3 which adds a new secondary app in its
+// manifest.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
+  set_test_app_id(kTestPrimaryKioskApp);
+  fake_cws()->SetUpdateCrx(
+      kTestPrimaryKioskApp,
+      std::string(kTestPrimaryKioskApp) + "-3.0.0-3app.crx", "3.0.0");
+  fake_cws()->SetNoUpdate(kTestSecondaryApp1);
+  fake_cws()->SetNoUpdate(kTestSecondaryApp2);
+  fake_cws()->SetUpdateCrx(kTestSecondaryApp3,
+                           std::string(kTestSecondaryApp3) + "-1.0.0.crx",
+                           "1.0.0");
+
+  StartUIForAppLaunch();
+  SimulateNetworkOnline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchWithOptions(false, true);
+
+  // Verify the secondary app kTestSecondaryApp3 is installed.
+  EXPECT_EQ("3.0.0", GetInstalledAppVersion().GetString());
+  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp1));
+  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2));
+  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp3));
 }
 
 class KioskEnterpriseTest : public KioskTest {

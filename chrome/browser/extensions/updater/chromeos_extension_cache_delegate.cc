@@ -6,18 +6,16 @@
 
 #include <stddef.h>
 
+#include "base/path_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/settings/cros_settings_names.h"
 
 namespace extensions {
-namespace {
 
-const char kLocalCacheDir[] = "/var/cache/external_cache";
-
-}  // namespace
-
-ChromeOSExtensionCacheDelegate::ChromeOSExtensionCacheDelegate()
-    : cache_dir_(kLocalCacheDir) {
+ChromeOSExtensionCacheDelegate::ChromeOSExtensionCacheDelegate() {
+  CHECK(PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
+                         &cache_dir_));
 }
 
 ChromeOSExtensionCacheDelegate::ChromeOSExtensionCacheDelegate(

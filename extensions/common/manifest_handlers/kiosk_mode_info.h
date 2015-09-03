@@ -22,16 +22,27 @@ struct KioskModeInfo : public Extension::ManifestData {
     ONLY
   };
 
-  explicit KioskModeInfo(KioskStatus kiosk_status);
+  KioskModeInfo(KioskStatus kiosk_status,
+                const std::vector<std::string>& secondary_app_ids);
   ~KioskModeInfo() override;
 
-  KioskStatus kiosk_status;
+  // Gets the KioskModeInfo for |extension|, or NULL if none was
+  // specified.
+  static KioskModeInfo* Get(const Extension* extension);
 
   // Whether the extension or app is enabled for app kiosk mode.
   static bool IsKioskEnabled(const Extension* extension);
 
   // Whether the extension or app should only be available in kiosk mode.
   static bool IsKioskOnly(const Extension* extension);
+
+  // Returns true if |extension| declares kiosk secondary apps.
+  static bool HasSecondaryApps(const Extension* extension);
+
+  KioskStatus kiosk_status;
+
+  // The IDs of the kiosk secondary apps.
+  const std::vector<std::string> secondary_app_ids;
 };
 
 // Parses the "kiosk_enabled" and "kiosk_only" manifest keys.

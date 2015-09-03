@@ -175,6 +175,12 @@
       "platform_app"
     ]
   },
+  "kiosk_secondary_apps": {
+    "channel": "stable",
+    "extension_types": [
+      "platform_app"
+    ]   
+  },
   "launcher_page": {
     "channel": "stable",
     "min_manifest_version": 2,

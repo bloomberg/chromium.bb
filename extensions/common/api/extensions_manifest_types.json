@@ -207,7 +207,21 @@
             }
           }
         }
-      }
+      },
+      {
+        "id": "KioskSecondaryApps",
+        "type": "array",
+        "description": "The <code>kiosk_secondary_apps</code> manifest property lists the secondary kiosk apps to be deployed by the primary kiosk app.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "ID of secondary kiosk app",
+              "type": "string"
+            }
+          }
+        }
+      }      
     ]
   }
 ]

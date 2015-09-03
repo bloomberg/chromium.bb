@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "crypto/sha2.h"
+#include "net/base/url_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using net::test_server::BasicHttpResponse;
@@ -29,6 +30,44 @@ const char kWebstoreDomain[] = "cws.com";
 // Kiosk app crx file download path under web store site.
 const char kCrxDownloadPath[] = "/chromeos/app_mode/webstore/downloads/";
 
+const char kAppNoUpdateTemplate[] =
+    "<app appid=\"$AppId\" status=\"ok\">"
+      "<updatecheck status=\"noupdate\"/>"
+    "</app>";
+
+const char kAppHasUpdateTemplate[] =
+    "<app appid=\"$AppId\" status=\"ok\">"
+      "<updatecheck codebase=\"$CrxDownloadUrl\" fp=\"1.$FP\" "
+        "hash=\"\" hash_sha256=\"$FP\" size=\"$Size\" status=\"ok\" "
+        "version=\"$Version\"/>"
+    "</app>";
+
+const char kPrivateStoreAppHasUpdateTemplate[] =
+    "<app appid=\"$AppId\">"
+      "<updatecheck codebase=\"$CrxDownloadUrl\" version=\"$Version\"/>"
+    "</app>";
+
+const char kUpdateContentTemplate[] =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+    "<gupdate xmlns=\"http://www.google.com/update2/response\" "
+        "protocol=\"2.0\" server=\"prod\">"
+      "<daystart elapsed_days=\"2569\" elapsed_seconds=\"36478\"/>"
+      "$APPS"
+    "</gupdate>";
+
+bool GetAppIdsFromUpdateUrl(const GURL& update_url,
+                            std::vector<std::string>* ids) {
+  for (net::QueryIterator it(update_url); !it.IsAtEnd(); it.Advance()) {
+    if (it.GetKey() != "x")
+      continue;
+    std::string id;
+    net::GetValueForKeyInQuery(GURL("http://dummy?" + it.GetUnescapedValue()),
+                               "id", &id);
+    ids->push_back(id);
+  }
+  return !ids->empty();
+}
+
 }  // namespace
 
 FakeCWS::FakeCWS() : update_check_count_(0) {
@@ -38,9 +77,8 @@ FakeCWS::~FakeCWS() {
 }
 
 void FakeCWS::Init(EmbeddedTestServer* embedded_test_server) {
-  has_update_template_ =
-      "chromeos/app_mode/webstore/update_check/has_update.xml";
-  no_update_template_ = "chromeos/app_mode/webstore/update_check/no_update.xml";
+  has_update_template_ = kAppHasUpdateTemplate;
+  no_update_template_ = kAppNoUpdateTemplate;
   update_check_end_point_ = "/update_check.xml";
 
   SetupWebStoreURL(embedded_test_server->base_url());
@@ -51,9 +89,8 @@ void FakeCWS::Init(EmbeddedTestServer* embedded_test_server) {
 
 void FakeCWS::InitAsPrivateStore(EmbeddedTestServer* embedded_test_server,
                                  const std::string& update_check_end_point) {
-  has_update_template_ =
-      "chromeos/app_mode/webstore/update_check/has_update_private_store.xml";
-  no_update_template_ = "chromeos/app_mode/webstore/update_check/no_update.xml";
+  has_update_template_ = kPrivateStoreAppHasUpdateTemplate;
+  no_update_template_ = kAppNoUpdateTemplate;
   update_check_end_point_ = update_check_end_point;
 
   SetupWebStoreURL(embedded_test_server->base_url());
@@ -77,24 +114,25 @@ void FakeCWS::SetUpdateCrx(const std::string& app_id,
   const std::string sha256 = crypto::SHA256HashString(crx_content);
   const std::string sha256_hex = base::HexEncode(sha256.c_str(), sha256.size());
 
-  SetUpdateCheckContent(
-      has_update_template_,
-      crx_download_url,
-      app_id,
-      sha256_hex,
-      base::UintToString(crx_content.size()),
-      version,
-      &update_check_content_);
+  std::string update_check_content(has_update_template_);
+  base::ReplaceSubstringsAfterOffset(&update_check_content, 0, "$AppId",
+                                     app_id);
+  base::ReplaceSubstringsAfterOffset(
+      &update_check_content, 0, "$CrxDownloadUrl", crx_download_url.spec());
+  base::ReplaceSubstringsAfterOffset(&update_check_content, 0, "$FP",
+                                     sha256_hex);
+  base::ReplaceSubstringsAfterOffset(&update_check_content, 0, "$Size",
+                                     base::UintToString(crx_content.size()));
+  base::ReplaceSubstringsAfterOffset(&update_check_content, 0, "$Version",
+                                     version);
+  id_to_update_check_content_map_[app_id] = update_check_content;
 }
 
 void FakeCWS::SetNoUpdate(const std::string& app_id) {
-  SetUpdateCheckContent(no_update_template_,
-                        GURL(),
-                        app_id,
-                        "",
-                        "",
-                        "",
-                        &update_check_content_);
+  std::string app_update_check_content(no_update_template_);
+  base::ReplaceSubstringsAfterOffset(&app_update_check_content, 0, "$AppId",
+                                     app_id);
+  id_to_update_check_content_map_[app_id] = app_update_check_content;
 }
 
 int FakeCWS::GetUpdateCheckCountAndReset() {
@@ -128,40 +166,42 @@ void FakeCWS::OverrideGalleryCommandlineSwitches() {
                                   update_url.spec());
 }
 
-void FakeCWS::SetUpdateCheckContent(const std::string& update_check_file,
-                                    const GURL& crx_download_url,
-                                    const std::string& app_id,
-                                    const std::string& crx_fp,
-                                    const std::string& crx_size,
-                                    const std::string& version,
+bool FakeCWS::GetUpdateCheckContent(const std::vector<std::string>& ids,
                                     std::string* update_check_content) {
-  base::FilePath test_data_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-  base::FilePath update_file =
-      test_data_dir.AppendASCII(update_check_file.c_str());
-  ASSERT_TRUE(base::ReadFileToString(update_file, update_check_content));
+  std::string apps_content;
+  for (const std::string& id : ids) {
+    std::string app_update_content;
+    auto it = id_to_update_check_content_map_.find(id);
+    if (it == id_to_update_check_content_map_.end())
+      return false;
+    apps_content.append(it->second);
+  }
+  if (apps_content.empty())
+    return false;
 
-  base::ReplaceSubstringsAfterOffset(update_check_content, 0, "$AppId", app_id);
-  base::ReplaceSubstringsAfterOffset(
-      update_check_content, 0, "$CrxDownloadUrl", crx_download_url.spec());
-  base::ReplaceSubstringsAfterOffset(update_check_content, 0, "$FP", crx_fp);
-  base::ReplaceSubstringsAfterOffset(update_check_content, 0,
-                                     "$Size", crx_size);
-  base::ReplaceSubstringsAfterOffset(update_check_content, 0,
-                                     "$Version", version);
+  *update_check_content = kUpdateContentTemplate;
+  base::ReplaceSubstringsAfterOffset(update_check_content, 0, "$APPS",
+                                     apps_content);
+  return true;
 }
 
 scoped_ptr<HttpResponse> FakeCWS::HandleRequest(const HttpRequest& request) {
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
   std::string request_path = request_url.path();
-  if (!update_check_content_.empty() &&
-      request_path.find(update_check_end_point_) != std::string::npos) {
-    ++update_check_count_;
-    scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
-    http_response->set_code(net::HTTP_OK);
-    http_response->set_content_type("text/xml");
-    http_response->set_content(update_check_content_);
-    return http_response.Pass();
+  if (request_path.find(update_check_end_point_) != std::string::npos &&
+      !id_to_update_check_content_map_.empty()) {
+    std::vector<std::string> ids;
+    if (GetAppIdsFromUpdateUrl(request_url, &ids)) {
+      std::string update_check_content;
+      if (GetUpdateCheckContent(ids, &update_check_content)) {
+        ++update_check_count_;
+        scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+        http_response->set_code(net::HTTP_OK);
+        http_response->set_content_type("text/xml");
+        http_response->set_content(update_check_content);
+        return http_response.Pass();
+      }
+    }
   }
 
   return scoped_ptr<HttpResponse>();

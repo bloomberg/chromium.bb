@@ -22,7 +22,7 @@ class ChromeOSExtensionCacheDelegate : public ExtensionCacheDelegate {
   size_t GetMaximumCacheSize() const override;
 
  private:
-  const base::FilePath cache_dir_;
+  base::FilePath cache_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSExtensionCacheDelegate);
 };

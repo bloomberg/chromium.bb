@@ -491,8 +491,10 @@ void ExternalProviderImpl::CreateExternalProviders(
 #if defined(OS_CHROMEOS)
     chromeos::KioskAppManager* kiosk_app_manager =
         chromeos::KioskAppManager::Get();
-    DCHECK(kiosk_app_manager);
-    if (kiosk_app_manager && !kiosk_app_manager->external_loader_created()) {
+    CHECK(kiosk_app_manager);
+
+    // Kiosk primary app external provider.
+    if (!kiosk_app_manager->external_loader_created()) {
       scoped_ptr<ExternalProviderImpl> kiosk_app_provider(
           new ExternalProviderImpl(
               service, kiosk_app_manager->CreateExternalLoader(), profile,
@@ -502,6 +504,19 @@ void ExternalProviderImpl::CreateExternalProviders(
       kiosk_app_provider->set_install_immediately(true);
       provider_list->push_back(
           linked_ptr<ExternalProviderInterface>(kiosk_app_provider.release()));
+    }
+
+    // Kiosk secondary app external provider.
+    if (!kiosk_app_manager->secondary_app_external_loader_created()) {
+      scoped_ptr<ExternalProviderImpl> secondary_kiosk_app_provider(
+          new ExternalProviderImpl(
+              service, kiosk_app_manager->CreateSecondaryAppExternalLoader(),
+              profile, Manifest::EXTERNAL_PREF,
+              Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS));
+      secondary_kiosk_app_provider->set_auto_acknowledge(true);
+      secondary_kiosk_app_provider->set_install_immediately(true);
+      provider_list->push_back(linked_ptr<ExternalProviderInterface>(
+          secondary_kiosk_app_provider.release()));
     }
 #endif
     return;

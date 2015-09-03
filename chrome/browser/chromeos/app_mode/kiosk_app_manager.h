@@ -176,12 +176,19 @@ class KioskAppManager : public KioskAppDataDelegate,
   void AddObserver(KioskAppManagerObserver* observer);
   void RemoveObserver(KioskAppManagerObserver* observer);
 
-  // Creates extensions::ExternalLoader for installing kiosk apps during their
-  // first time launch.
+  // Creates extensions::ExternalLoader for installing the primary kiosk app
+  // during its first time launch.
   extensions::ExternalLoader* CreateExternalLoader();
+
+  // Creates extensions::ExternalLoader for installing secondary kiosk apps
+  // before launching the primary app for the first time.
+  extensions::ExternalLoader* CreateSecondaryAppExternalLoader();
 
   // Installs kiosk app with |id| from cache.
   void InstallFromCache(const std::string& id);
+
+  // Installs the secondary apps listed in |ids|.
+  void InstallSecondaryApps(const std::vector<std::string>& ids);
 
   void UpdateExternalCache();
 
@@ -203,6 +210,9 @@ class KioskAppManager : public KioskAppDataDelegate,
       const ExternalCache::PutExternalExtensionCallback& callback);
 
   bool external_loader_created() const { return external_loader_created_; }
+  bool secondary_app_external_loader_created() const {
+    return secondary_app_external_loader_created_;
+  }
 
   // Notifies the KioskAppManager that a given app was auto-launched
   // automatically with no delay on startup. Certain privacy-sensitive
@@ -288,9 +298,13 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   scoped_ptr<KioskExternalUpdater> usb_stick_updater_;
 
-  // The extension external loader for installing kiosk app.
+  // The extension external loader for deploying primary app.
   bool external_loader_created_;
   base::WeakPtr<KioskAppExternalLoader> external_loader_;
+
+  // The extension external loader for deploying secondary apps.
+  bool secondary_app_external_loader_created_;
+  base::WeakPtr<KioskAppExternalLoader> secondary_app_external_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManager);
 };

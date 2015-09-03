@@ -68,6 +68,7 @@ const char kKeycode[] = "keyCode";
 const char kKioskEnabled[] = "kiosk_enabled";
 const char kKioskOnly[] = "kiosk_only";
 const char kKioskMode[] = "kiosk_mode";
+const char kKioskSecondaryApps[] = "kiosk_secondary_apps";
 const char kLanguage[] = "language";
 const char kLaunch[] = "app.launch";
 const char kLaunchContainer[] = "app.launch.container";
@@ -458,6 +459,12 @@ const char kInvalidKioskOnly[] =
     "Invalid value for 'kiosk_only'.";
 const char kInvalidKioskOnlyButNotEnabled[] =
     "The 'kiosk_only' key is set, but 'kiosk_enabled' is not set.";
+const char kInvalidKioskSecondaryApps[] =
+    "Invalid value for 'kiosk_secondary_apps'";
+const char kInvalidKioskSecondaryAppsBadAppEntry[] =
+    "Invalid app id item for 'kiosk_secondary_apps'";
+const char kInvalidKioskSecondaryAppsBadAppId[] =
+    "Invalid app id value for 'kiosk_secondary_apps'";
 const char kInvalidLauncherPage[] = "Invalid value for 'launcher_page'.";
 const char kInvalidLauncherPagePage[] =
     "Invalid value for 'launcher_page.page'.";

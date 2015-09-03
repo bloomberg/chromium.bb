@@ -465,13 +465,26 @@ void KioskAppManager::RemoveObserver(KioskAppManagerObserver* observer) {
 extensions::ExternalLoader* KioskAppManager::CreateExternalLoader() {
   if (external_loader_created_) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   external_loader_created_ = true;
   KioskAppExternalLoader* loader = new KioskAppExternalLoader();
   external_loader_ = loader->AsWeakPtr();
 
   return loader;
+}
+
+extensions::ExternalLoader*
+KioskAppManager::CreateSecondaryAppExternalLoader() {
+  if (secondary_app_external_loader_created_) {
+    NOTREACHED();
+    return nullptr;
+  }
+  secondary_app_external_loader_created_ = true;
+  KioskAppExternalLoader* secondary_loader = new KioskAppExternalLoader();
+  secondary_app_external_loader_ = secondary_loader->AsWeakPtr();
+
+  return secondary_loader;
 }
 
 void KioskAppManager::InstallFromCache(const std::string& id) {
@@ -485,6 +498,25 @@ void KioskAppManager::InstallFromCache(const std::string& id) {
     LOG(ERROR) << "Can't find app in the cached externsions"
                << " id = " << id;
   }
+}
+
+void KioskAppManager::InstallSecondaryApps(
+    const std::vector<std::string>& ids) {
+  if (ids.empty())
+    return;
+
+  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  for (const std::string& id : ids) {
+    scoped_ptr<base::DictionaryValue> extension_entry(
+        new base::DictionaryValue);
+    extension_entry->SetStringWithoutPathExpansion(
+        extensions::ExternalProviderImpl::kExternalUpdateUrl,
+        extension_urls::GetWebstoreUpdateUrl().spec());
+    extension_entry->SetBoolean(
+        extensions::ExternalProviderImpl::kIsFromWebstore, true);
+    prefs->Set(id, extension_entry.Pass());
+  }
+  secondary_app_external_loader_->SetCurrentAppExtensions(prefs.Pass());
 }
 
 void KioskAppManager::UpdateExternalCache() {
@@ -511,7 +543,9 @@ void KioskAppManager::PutValidatedExternalExtension(
 }
 
 KioskAppManager::KioskAppManager()
-    : ownership_established_(false), external_loader_created_(false) {
+    : ownership_established_(false),
+      external_loader_created_(false),
+      secondary_app_external_loader_created_(false) {
   base::FilePath cache_dir;
   GetCrxCacheDir(&cache_dir);
   external_cache_.reset(
