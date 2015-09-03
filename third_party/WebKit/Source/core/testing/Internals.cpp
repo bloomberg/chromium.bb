@@ -112,6 +112,7 @@
 #include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
+#include "core/page/scrolling/ScrollState.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGImageElement.h"
 #include "core/testing/DictionaryTest.h"
@@ -2407,6 +2408,15 @@ ClientRect* Internals::boundsInViewportSpace(Element* element)
 {
     ASSERT(element);
     return ClientRect::create(element->boundsInViewportSpace());
+}
+
+void Internals::setScrollChain(
+    ScrollState* scrollState, const WillBeHeapVector<RefPtrWillBeMember<Element>>& elements, ExceptionState&)
+{
+    WillBeHeapDeque<RefPtrWillBeMember<Element>> scrollChain;
+    for (size_t i = 0; i < elements.size(); ++i)
+        scrollChain.append(elements[i]);
+    scrollState->setScrollChain(scrollChain);
 }
 
 void Internals::forceBlinkGCWithoutV8GC()

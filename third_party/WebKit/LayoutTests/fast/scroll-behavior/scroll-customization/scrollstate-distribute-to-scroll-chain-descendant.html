@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ScrollState constructor behaves correctly</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+test(function() {
+  assert_true('ScrollState' in window, "'ScrollState' in window");
+  // TODO(tdresser): Don't rely on window.internals. See crbug.com/483091 for details.
+  assert_true(window.internals !== null, "'ScrollState' in window");
+}, "These tests only work with scroll customization enabled.");
+
+var elementCount = 10;
+var remainingNumberOfTimesToBeCalled = elementCount;
+
+var distributeScroll = function(scrollState) {
+  this.calledOrder = elementCount - remainingNumberOfTimesToBeCalled;
+  remainingNumberOfTimesToBeCalled--;
+  scrollState.distributeToScrollChainDescendant();
+}
+
+var elements = [];
+for (var i = 0; i < elementCount; ++i) {
+  var element = document.createElement("div");
+  element.creationOrder = i;
+  element.setDistributeScroll(distributeScroll.bind(element), "disable-native-scroll");
+  elements.push(element);
+}
+
+if ('ScrollState' in window && window.internals) {
+  test(function() {
+    var scrollState = new ScrollState(100, 0, 0, 0, 0, false, false);
+    window.internals.setScrollChain(scrollState, elements);
+    scrollState.distributeToScrollChainDescendant();
+    assert_equals(0, remainingNumberOfTimesToBeCalled);
+    for (var i = 0; i < elementCount; ++i) {
+      assert_equals(elements[i].creationOrder, elements[i].calledOrder);
+    }
+  }, "distributeToScrollChainDescendant propagates correctly.");
+
+  test(function() {
+    var scrollState = new ScrollState(100, 0, 0, 0, 0, false, false);
+    window.internals.setScrollChain(scrollState, []);
+    assert_equals(0, remainingNumberOfTimesToBeCalled);
+    scrollState.distributeToScrollChainDescendant();
+    assert_equals(0, remainingNumberOfTimesToBeCalled);
+  }, "distributeToScrollChainDescendant with empty scroll chain does nothing.");
+}
+</script>
+</body>
+</html>

@@ -350,7 +350,9 @@ public:
     bool isInCanvasFontCache(Document*, const String&);
     unsigned canvasFontCacheMaxFonts();
 
-    // Scheudle a forced Blink GC run (Oilpan) at the end of event loop.
+    void setScrollChain(ScrollState*, const WillBeHeapVector<RefPtrWillBeMember<Element>>& elements, ExceptionState&);
+
+    // Schedule a forced Blink GC run (Oilpan) at the end of event loop.
     // Note: This is designed to be only used from PerformanceTests/BlinkGC to explicitly measure only Blink GC time.
     //       Normal LayoutTests should use gc() instead as it would trigger both Blink GC and V8 GC.
     void forceBlinkGCWithoutV8GC();
