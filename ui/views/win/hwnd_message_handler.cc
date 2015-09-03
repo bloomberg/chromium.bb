@@ -330,9 +330,9 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
       dwm_transition_desired_(false),
+      sent_window_size_changing_(false),
       autohide_factory_(this),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 HWNDMessageHandler::~HWNDMessageHandler() {
   delegate_ = NULL;
@@ -2482,6 +2482,7 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
   if ((old_size != new_size && !(window_pos->flags & SWP_NOSIZE)) ||
       window_pos->flags & SWP_FRAMECHANGED) {
     delegate_->HandleWindowSizeChanging();
+    sent_window_size_changing_ = true;
   }
 
   if (ScopedFullscreenVisibility::IsHiddenForFullscreen(hwnd())) {
@@ -2520,6 +2521,10 @@ void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
     delegate_->HandleVisibilityChanged(false);
     if (direct_manipulation_helper_)
       direct_manipulation_helper_->Deactivate(hwnd());
+  }
+  if (sent_window_size_changing_) {
+    sent_window_size_changing_ = false;
+    delegate_->HandleWindowSizeChanged();
   }
   SetMsgHandled(FALSE);
 }

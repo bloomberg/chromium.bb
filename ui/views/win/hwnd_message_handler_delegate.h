@@ -220,6 +220,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when the window size is about to change.
   virtual void HandleWindowSizeChanging() = 0;
 
+  // Called when the window size has finished changing.
+  virtual void HandleWindowSizeChanged() = 0;
+
  protected:
   virtual ~HWNDMessageHandlerDelegate() {}
 };

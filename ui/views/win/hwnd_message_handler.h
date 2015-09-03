@@ -596,6 +596,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // glass. Defaults to false.
   bool dwm_transition_desired_;
 
+  // True if HandleWindowSizeChanging has been called in the delegate, but not
+  // HandleWindowSizeChanged.
+  bool sent_window_size_changing_;
+
   // Manages observation of Windows Session Change messages.
   scoped_ptr<WindowsSessionChangeObserver> windows_session_change_observer_;
 

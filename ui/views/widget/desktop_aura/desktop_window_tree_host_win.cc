@@ -900,6 +900,16 @@ void DesktopWindowTreeHostWin::HandleWindowSizeChanging() {
     compositor()->DisableSwapUntilResize();
 }
 
+void DesktopWindowTreeHostWin::HandleWindowSizeChanged() {
+  // A resize may not have occurred if the window size happened not to have
+  // changed (can occur on Windows 10 when snapping a window to the side of
+  // the screen). In that case do a resize to the current size to reenable
+  // swaps.
+  if (compositor())
+    compositor()->SetScaleAndSize(compositor()->device_scale_factor(),
+                                  compositor()->size());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, private:
 
