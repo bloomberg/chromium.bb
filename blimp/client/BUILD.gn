@@ -1,0 +1,96 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
+shared_library("blimp_client") {
+  sources = [
+    "compositor/blimp_compositor.cc",
+    "compositor/blimp_compositor.h",
+    "compositor/blimp_context_provider.cc",
+    "compositor/blimp_context_provider.h",
+    "compositor/blimp_output_surface.cc",
+    "compositor/blimp_output_surface.h",
+    "compositor/blimp_task_graph_runner.cc",
+    "compositor/blimp_task_graph_runner.h",
+    "compositor/test/dummy_layer_driver.cc",
+    "compositor/test/dummy_layer_driver.h",
+  ]
+
+  deps = [
+    "//base",
+    "//blimp/common:blimp_common",
+    "//cc",
+    "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/common:gles2_utils",
+    "//gpu/skia_bindings",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (is_android) {
+    sources += [
+      "android/blimp_jni_registrar.cc",
+      "android/blimp_jni_registrar.h",
+      "android/blimp_library_loader.cc",
+      "android/blimp_library_loader.h",
+      "android/blimp_view.cc",
+      "android/blimp_view.h",
+      "compositor/blimp_compositor_android.cc",
+      "compositor/blimp_compositor_android.h",
+    ]
+
+    deps += [ ":jni_headers" ]
+
+    libs = [ "android" ]
+  }
+}
+
+if (is_android) {
+  generate_jni("jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
+      "android/java/src/org/chromium/blimp/BlimpView.java",
+    ]
+
+    jni_package = "blimp"
+  }
+
+  blimp_apk_manifest = "$target_gen_dir/blimp_apk_manifest/AndroidManifest.xml"
+
+  jinja_template("blimp_apk_manifest") {
+    input = "android/AndroidManifest.xml.jinja2"
+    output = blimp_apk_manifest
+  }
+
+  android_resources("blimp_apk_resources") {
+    resource_dirs = [ "android/java/res" ]
+    android_manifest = blimp_apk_manifest
+    deps = [
+      ":blimp_apk_manifest",
+    ]
+  }
+
+  android_apk("blimp_apk") {
+    java_files = [
+      "android/java/src/org/chromium/blimp/BlimpApplication.java",
+      "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
+      "android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
+      "android/java/src/org/chromium/blimp/BlimpView.java",
+    ]
+
+    deps = [
+      ":blimp_apk_manifest",
+      ":blimp_apk_resources",
+      ":blimp_client",
+      "//base:base_java",
+    ]
+    apk_name = "Blimp"
+    android_manifest = blimp_apk_manifest
+    native_libs = [ "libblimp_client.so" ]
+  }
+}

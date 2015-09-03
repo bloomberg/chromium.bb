@@ -1,0 +1,13 @@
+include_rules = [
+  "+base",
+  "+cc",
+  "-cc/blink",
+  "-chrome"
+  "-content",
+  "+gpu",
+  "+jni",
+  "+skia",
+  "+third_party/skia",
+  "+ui/gfx",
+  "+ui/gl",
+]

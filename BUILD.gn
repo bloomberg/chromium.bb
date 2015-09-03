@@ -216,6 +216,7 @@ group("both_gn_and_gyp") {
   if (is_android) {
     deps += [
       "//base/android/linker:chromium_android_linker",
+      "//blimp/client:blimp_apk",
       "//build/android/gyp/test:hello_world",
       "//build/android/rezip",
       "//chrome/android:chrome_public_apk",

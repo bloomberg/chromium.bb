@@ -1,0 +1,14 @@
+include_rules = [
+  "+base",
+  "+cc",
+  "-cc/blink",
+  "-content",
+  "+third_party/skia",
+  "+ui/gfx",
+  "+ui/gl",
+
+  # TODO(dtrainor): Remove this once the LayerTreeHost settings for Blimp
+  # are finalized or are pushed from the server component.  See
+  # crbug.com/527655.
+  "!content/public/common/content_switches.h",
+]
