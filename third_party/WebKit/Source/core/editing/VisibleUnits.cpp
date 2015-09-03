@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/editing/VisibleUnits.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -671,19 +669,14 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     if (!boundary)
         return VisiblePosition();
 
-    Document& d = boundary->document();
     Position start = Position::editingPositionOf(boundary, 0).parentAnchoredEquivalent();
     Position end = pos.parentAnchoredEquivalent();
 
     Vector<UChar, 1024> string;
     unsigned suffixLength = 0;
 
-    TrackExceptionState exceptionState;
     if (requiresContextForWordBoundary(characterBefore(c))) {
-        RefPtrWillBeRawPtr<Range> forwardsScanRange(d.createRange());
-        forwardsScanRange->setEndAfter(boundary, exceptionState);
-        forwardsScanRange->setStart(end.anchorNode(), end.offsetInContainerNode(), exceptionState);
-        TextIterator forwardsIterator(forwardsScanRange->startPosition(), forwardsScanRange->endPosition());
+        TextIterator forwardsIterator(end, Position::afterNode(boundary));
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
             forwardsIterator.text().appendTextTo(characters);
@@ -695,10 +688,6 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
             forwardsIterator.advance();
         }
     }
-
-    ASSERT(!exceptionState.hadException());
-    if (exceptionState.hadException())
-        return VisiblePosition();
 
     SimplifiedBackwardsTextIterator it(start, end);
     unsigned next = 0;
