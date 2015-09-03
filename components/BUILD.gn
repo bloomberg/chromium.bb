@@ -249,6 +249,7 @@ group("all_components") {
     deps += [
       "//components/app_modal",
       "//components/browsing_data",
+      "//components/certificate_transparency",
       "//components/guest_view/browser",
       "//components/guest_view/common",
       "//components/guest_view/renderer",
@@ -304,6 +305,7 @@ test("components_unittests") {
     "//components/bookmarks/managed:unit_tests",
     "//components/bubble:unit_tests",
     "//components/captive_portal:unit_tests",
+    "//components/certificate_transparency:unit_tests",
     "//components/cloud_devices/common:unit_tests",
     "//components/component_updater:unit_tests",
     "//components/content_settings/core/browser:unit_tests",

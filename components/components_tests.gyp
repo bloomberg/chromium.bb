@@ -87,6 +87,9 @@
     'captive_portal_unittest_sources': [
       'captive_portal/captive_portal_detector_unittest.cc',
     ],
+    'certificate_transparency_unittest_sources': [
+      'certificate_transparency/log_proof_fetcher_unittest.cc',
+    ],
     'cloud_devices_unittest_sources': [
       'cloud_devices/common/cloud_devices_urls_unittest.cc',
       'cloud_devices/common/printer_description_unittest.cc',
@@ -1003,6 +1006,7 @@
         }],
         ['OS != "ios"', {
           'sources': [
+            '<@(certificate_transparency_unittest_sources)',
             '<@(devtools_http_handler_unittest_sources)',
             '<@(error_page_unittest_sources)',
             '<@(guest_view_unittest_sources)',
@@ -1023,6 +1027,7 @@
             'components.gyp:autofill_content_browser',
             'components.gyp:autofill_content_renderer',
             'components.gyp:autofill_content_test_support',
+            'components.gyp:certificate_transparency',
             'components.gyp:crash_test_support',
             'components.gyp:data_reduction_proxy_content_browser',
             'components.gyp:devtools_http_handler',

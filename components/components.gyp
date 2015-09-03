@@ -100,6 +100,7 @@
         'app_modal.gypi',
         'browsing_data.gypi',
         'cdm.gypi',
+        'certificate_transparency.gypi',
         'crash.gypi',
         'devtools_discovery.gypi',
         'devtools_http_handler.gypi',

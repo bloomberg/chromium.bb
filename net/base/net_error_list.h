@@ -351,6 +351,11 @@ NET_ERROR(ICANN_NAME_COLLISION, -166)
 // not a certificate error code as no X509Certificate object is available. This
 // error is fatal.
 NET_ERROR(SSL_SERVER_CERT_BAD_FORMAT, -167)
+// Certificate Transparency: Received a signed tree head that failed to parse.
+NET_ERROR(CT_STH_PARSING_FAILED, -168)
+// Certificate Transparency: Received a signed tree head whose JSON parsing was
+// OK but was missing some of the fields.
+NET_ERROR(CT_STH_INCOMPLETE, -169)
 
 // Certificate error codes
 //
