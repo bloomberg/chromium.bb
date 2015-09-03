@@ -1657,8 +1657,3 @@ crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/527009 fast/dom/plugin-attributes-enumeration.html [ NeedsManualRebaseline ]
 
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
-
-crbug.com/522797 [ Mavericks ] compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ NeedsRebaseline ]
-crbug.com/522797 [ Mavericks ] css3/flexbox/repaint-rtl-column.html [ NeedsRebaseline ]
-crbug.com/522797 [ Mavericks ] media/video-paint-invalidation.html [ NeedsRebaseline ]
-crbug.com/522797 [ Yosemite ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
