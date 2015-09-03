@@ -61,9 +61,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-using namespace WTF::Unicode;
-
 template <typename PositionType>
 static PositionType canonicalizeCandidate(const PositionType& candidate)
 {
