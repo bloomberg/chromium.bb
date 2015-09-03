@@ -44,11 +44,11 @@ ResourceBuffer::~ResourceBuffer() {
 bool ResourceBuffer::Initialize(int buffer_size,
                                 int min_allocation_size,
                                 int max_allocation_size) {
-  DCHECK(!IsInitialized());
+  CHECK(!IsInitialized());
 
   // It would be wasteful if these are not multiples of min_allocation_size.
-  DCHECK_EQ(0, buffer_size % min_allocation_size);
-  DCHECK_EQ(0, max_allocation_size % min_allocation_size);
+  CHECK_EQ(0, buffer_size % min_allocation_size);
+  CHECK_EQ(0, max_allocation_size % min_allocation_size);
 
   buf_size_ = buffer_size;
   min_alloc_size_ = min_allocation_size;
@@ -65,7 +65,7 @@ bool ResourceBuffer::ShareToProcess(
     base::ProcessHandle process_handle,
     base::SharedMemoryHandle* shared_memory_handle,
     int* shared_memory_size) {
-  DCHECK(IsInitialized());
+  CHECK(IsInitialized());
 
   if (!shared_mem_.ShareToProcess(process_handle, shared_memory_handle))
     return false;
@@ -75,7 +75,7 @@ bool ResourceBuffer::ShareToProcess(
 }
 
 bool ResourceBuffer::CanAllocate() const {
-  DCHECK(IsInitialized());
+  CHECK(IsInitialized());
 
   if (alloc_start_ == -1)
     return true;
@@ -88,7 +88,7 @@ bool ResourceBuffer::CanAllocate() const {
 }
 
 char* ResourceBuffer::Allocate(int* size) {
-  DCHECK(CanAllocate());
+  CHECK(CanAllocate());
 
   int alloc_offset = 0;
   int alloc_size;
@@ -112,13 +112,13 @@ char* ResourceBuffer::Allocate(int* size) {
       alloc_end_ = buf_size_;
     } else {
       // It must be possible to allocate a least min_alloc_size_.
-      DCHECK(alloc_start_ >= min_alloc_size_);
+      CHECK(alloc_start_ >= min_alloc_size_);
       alloc_size = alloc_start_;
       alloc_end_ = alloc_start_;
     }
   } else {
     // This is the wraparound case.
-    DCHECK(alloc_end_ < alloc_start_);
+    CHECK(alloc_end_ < alloc_start_);
     alloc_offset = alloc_end_;
     alloc_size = alloc_start_ - alloc_end_;
     alloc_end_ = alloc_start_;
@@ -140,20 +140,20 @@ char* ResourceBuffer::Allocate(int* size) {
 }
 
 int ResourceBuffer::GetLastAllocationOffset() const {
-  DCHECK(!alloc_sizes_.empty());
-  DCHECK(alloc_end_ >= alloc_sizes_.back());
+  CHECK(!alloc_sizes_.empty());
+  CHECK(alloc_end_ >= alloc_sizes_.back());
   return alloc_end_ - alloc_sizes_.back();
 }
 
 void ResourceBuffer::ShrinkLastAllocation(int new_size) {
-  DCHECK(!alloc_sizes_.empty());
+  CHECK(!alloc_sizes_.empty());
 
   int aligned_size = (new_size / min_alloc_size_) * min_alloc_size_;
   if (aligned_size < new_size)
     aligned_size += min_alloc_size_;
 
-  DCHECK_LE(new_size, aligned_size);
-  DCHECK_GE(alloc_sizes_.back(), aligned_size);
+  CHECK_LE(new_size, aligned_size);
+  CHECK_GE(alloc_sizes_.back(), aligned_size);
 
   int* last_allocation_size = &alloc_sizes_.back();
   alloc_end_ -= (*last_allocation_size - aligned_size);
@@ -161,19 +161,19 @@ void ResourceBuffer::ShrinkLastAllocation(int new_size) {
 }
 
 void ResourceBuffer::RecycleLeastRecentlyAllocated() {
-  DCHECK(!alloc_sizes_.empty());
+  CHECK(!alloc_sizes_.empty());
   int allocation_size = alloc_sizes_.front();
   alloc_sizes_.pop();
 
   alloc_start_ += allocation_size;
-  DCHECK(alloc_start_ <= buf_size_);
+  CHECK(alloc_start_ <= buf_size_);
 
   if (alloc_start_ == alloc_end_) {
-    DCHECK(alloc_sizes_.empty());
+    CHECK(alloc_sizes_.empty());
     alloc_start_ = -1;
     alloc_end_ = -1;
   } else if (alloc_start_ == buf_size_) {
-    DCHECK(!alloc_sizes_.empty());
+    CHECK(!alloc_sizes_.empty());
     alloc_start_ = 0;
   }
 }
