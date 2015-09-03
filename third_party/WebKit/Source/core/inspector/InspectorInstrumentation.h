@@ -92,7 +92,7 @@ private:
 
 inline void frontendCreated() { atomicIncrement(&FrontendCounter::s_frontendCounter); }
 inline void frontendDeleted() { atomicDecrement(&FrontendCounter::s_frontendCounter); }
-inline bool hasFrontends() { return FrontendCounter::s_frontendCounter; }
+inline bool hasFrontends() { return acquireLoad(&FrontendCounter::s_frontendCounter); }
 
 CORE_EXPORT void registerInstrumentingAgents(InstrumentingAgents*);
 CORE_EXPORT void unregisterInstrumentingAgents(InstrumentingAgents*);
