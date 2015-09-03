@@ -462,6 +462,7 @@ void TextFieldInputType::updatePlaceholderText()
         RefPtrWillBeRawPtr<HTMLElement> newElement = HTMLDivElement::create(element().document());
         placeholder = newElement.get();
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
+        placeholder->setInlineStyleProperty(CSSPropertyDisplay, element().isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         Element* container = containerElement();
         Node* previous = container ? container : element().innerEditorElement();
@@ -497,7 +498,7 @@ void TextFieldInputType::subtreeHasChanged()
     // sanitizeUserInputValue().
     // sanitizeValue() is needed because IME input doesn't dispatch BeforeTextInsertedEvent.
     element().setValueFromRenderer(sanitizeValue(convertFromVisibleValue(element().innerEditorValue())));
-    element().updatePlaceholderVisibility(false);
+    element().updatePlaceholderVisibility();
     element().pseudoStateChanged(CSSSelector::PseudoValid);
     element().pseudoStateChanged(CSSSelector::PseudoInvalid);
 
@@ -526,7 +527,7 @@ void TextFieldInputType::updateView()
 {
     if (!element().suggestedValue().isNull()) {
         element().setInnerEditorValue(element().suggestedValue());
-        element().updatePlaceholderVisibility(false);
+        element().updatePlaceholderVisibility();
     } else if (element().needsToUpdateViewValue()) {
         // Update the view only if needsToUpdateViewValue is true. It protects
         // an unacceptable view value from being overwritten with the DOM value.
@@ -535,7 +536,7 @@ void TextFieldInputType::updateView()
         // updated. In this case, updateView() is called but we should not
         // update the view value.
         element().setInnerEditorValue(visibleValue());
-        element().updatePlaceholderVisibility(false);
+        element().updatePlaceholderVisibility();
     }
 }
 

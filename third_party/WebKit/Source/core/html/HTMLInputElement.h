@@ -259,6 +259,10 @@ public:
     virtual void ensureFallbackContent();
     virtual void ensurePrimaryContent();
     bool hasFallbackContent() const;
+
+    bool isPlaceholderVisible() const override { return m_isPlaceholderVisible; }
+    void setPlaceholderVisibility(bool) override;
+
 protected:
     HTMLInputElement(Document&, HTMLFormElement*, bool createdByParser);
 
@@ -384,6 +388,7 @@ private:
     unsigned m_hasTouchEventHandler : 1;
     unsigned m_shouldRevealPassword : 1;
     unsigned m_needsToUpdateViewValue : 1;
+    unsigned m_isPlaceholderVisible : 1;
     RefPtrWillBeMember<InputType> m_inputType;
     RefPtrWillBeMember<InputTypeView> m_inputTypeView;
     // The ImageLoader must be owned by this element because the loader code assumes

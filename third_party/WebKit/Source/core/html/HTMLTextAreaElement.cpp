@@ -84,6 +84,7 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* fo
     , m_wrap(SoftWrap)
     , m_isDirty(false)
     , m_valueIsUpToDate(true)
+    , m_isPlaceholderVisible(false)
 {
 }
 
@@ -274,7 +275,7 @@ void HTMLTextAreaElement::subtreeHasChanged()
     m_valueIsUpToDate = false;
     setNeedsValidityCheck();
     setAutofilled(false);
-    updatePlaceholderVisibility(false);
+    updatePlaceholderVisibility();
 
     if (!focused())
         return;
@@ -332,7 +333,7 @@ void HTMLTextAreaElement::updateValue() const
     const_cast<HTMLTextAreaElement*>(this)->m_valueIsUpToDate = true;
     const_cast<HTMLTextAreaElement*>(this)->notifyFormStateChanged();
     m_isDirty = true;
-    const_cast<HTMLTextAreaElement*>(this)->updatePlaceholderVisibility(false);
+    const_cast<HTMLTextAreaElement*>(this)->updatePlaceholderVisibility();
 }
 
 String HTMLTextAreaElement::value() const
@@ -384,7 +385,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     setInnerEditorValue(m_value);
     if (eventBehavior == DispatchNoEvent)
         setLastChangeWasNotUserEdit();
-    updatePlaceholderVisibility(false);
+    updatePlaceholderVisibility();
     setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
     m_suggestedValue = String();
     setNeedsValidityCheck();
@@ -499,7 +500,7 @@ void HTMLTextAreaElement::setSuggestedValue(const String& value)
         setInnerEditorValue(m_suggestedValue);
     else
         setInnerEditorValue(m_value);
-    updatePlaceholderVisibility(false);
+    updatePlaceholderVisibility();
     setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
 }
 
@@ -604,6 +605,11 @@ bool HTMLTextAreaElement::matchesReadWritePseudoClass() const
     return !isReadOnly();
 }
 
+void HTMLTextAreaElement::setPlaceholderVisibility(bool visible)
+{
+    m_isPlaceholderVisible = visible;
+}
+
 void HTMLTextAreaElement::updatePlaceholderText()
 {
     HTMLElement* placeholder = placeholderElement();
@@ -618,6 +624,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
         placeholder = newElement.get();
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
+        placeholder->setInlineStyleProperty(CSSPropertyDisplay, isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
         userAgentShadowRoot()->insertBefore(placeholder, innerEditorElement()->nextSibling());
     }
     placeholder->setTextContent(placeholderText);

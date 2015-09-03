@@ -150,6 +150,7 @@ public:
         PseudoDefault,
         PseudoDisabled,
         PseudoOptional,
+        PseudoPlaceholderShown,
         PseudoRequired,
         PseudoReadOnly,
         PseudoReadWrite,

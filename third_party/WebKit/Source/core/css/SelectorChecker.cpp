@@ -777,6 +777,10 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
             return isFirstOfType(element, element.tagQName()) && isLastOfType(element, element.tagQName());
         }
         break;
+    case CSSSelector::PseudoPlaceholderShown:
+        if (isHTMLTextFormControlElement(element))
+            return toHTMLTextFormControlElement(element).isPlaceholderVisible();
+        break;
     case CSSSelector::PseudoNthChild:
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)

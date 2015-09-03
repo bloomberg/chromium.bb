@@ -59,11 +59,12 @@ public:
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
     // The derived class should return true if placeholder processing is needed.
+    virtual bool isPlaceholderVisible() const = 0;
+    virtual void setPlaceholderVisibility(bool) = 0;
     virtual bool supportsPlaceholder() const = 0;
     String strippedPlaceholder() const;
-    bool placeholderShouldBeVisible() const;
     HTMLElement* placeholderElement() const;
-    void updatePlaceholderVisibility(bool);
+    void updatePlaceholderVisibility();
 
     VisiblePosition visiblePositionForIndex(int) const;
     int indexForVisiblePosition(const VisiblePosition&) const;
@@ -152,6 +153,8 @@ private:
     virtual void handleFocusEvent(Element* /* oldFocusedNode */, WebFocusType) { }
     // Called in dispatchBlurEvent(), after placeholder process, before calling parent's dispatchBlurEvent().
     virtual void handleBlurEvent() { }
+
+    bool placeholderShouldBeVisible() const;
 
     String m_textAsOfLastFormControlChangeEvent;
     bool m_lastChangeWasUserEdit;

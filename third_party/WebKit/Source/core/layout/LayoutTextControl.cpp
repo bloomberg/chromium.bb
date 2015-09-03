@@ -77,7 +77,7 @@ void LayoutTextControl::styleDidChange(StyleDifference diff, const ComputedStyle
         innerEditorLayoutObject->setStyle(createInnerEditorStyle(styleRef()));
         innerEditor->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Control));
     }
-    textFormControlElement()->updatePlaceholderVisibility(false);
+    textFormControlElement()->updatePlaceholderVisibility();
 }
 
 static inline void updateUserModifyProperty(HTMLTextFormControlElement& node, ComputedStyle& style)

@@ -102,6 +102,7 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoDefault:
     case CSSSelector::PseudoDisabled:
     case CSSSelector::PseudoOptional:
+    case CSSSelector::PseudoPlaceholderShown:
     case CSSSelector::PseudoRequired:
     case CSSSelector::PseudoReadOnly:
     case CSSSelector::PseudoReadWrite:
@@ -259,6 +260,7 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
         case CSSSelector::PseudoEnabled:
         case CSSSelector::PseudoDisabled:
         case CSSSelector::PseudoOptional:
+        case CSSSelector::PseudoPlaceholderShown:
         case CSSSelector::PseudoRequired:
         case CSSSelector::PseudoValid:
         case CSSSelector::PseudoInvalid:

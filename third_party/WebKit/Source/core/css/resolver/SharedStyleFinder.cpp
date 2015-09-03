@@ -95,6 +95,9 @@ bool SharedStyleFinder::canShareStyleWithControl(Element& candidate) const
             return false;
     }
 
+    if (candidateInput.isPlaceholderVisible() != thisInput.isPlaceholderVisible())
+        return false;
+
     return true;
 }
 

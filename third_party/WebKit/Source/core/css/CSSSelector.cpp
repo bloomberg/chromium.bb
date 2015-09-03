@@ -224,6 +224,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoDefault:
     case PseudoDisabled:
     case PseudoOptional:
+    case PseudoPlaceholderShown:
     case PseudoRequired:
     case PseudoReadOnly:
     case PseudoReadWrite:
@@ -337,6 +338,7 @@ const static NameToPseudoStruct pseudoTypeWithoutArgumentsMap[] = {
 {"optional",                      CSSSelector::PseudoOptional},
 {"out-of-range",                  CSSSelector::PseudoOutOfRange},
 {"past",                          CSSSelector::PseudoPastCue},
+{"placeholder-shown",             CSSSelector::PseudoPlaceholderShown},
 {"read-only",                     CSSSelector::PseudoReadOnly},
 {"read-write",                    CSSSelector::PseudoReadWrite},
 {"required",                      CSSSelector::PseudoRequired},
@@ -532,6 +534,7 @@ void CSSSelector::updatePseudoType(const AtomicString& value, bool hasArguments)
     case PseudoOnlyChild:
     case PseudoOnlyOfType:
     case PseudoOptional:
+    case PseudoPlaceholderShown:
     case PseudoOutOfRange:
     case PseudoPastCue:
     case PseudoReadOnly:
