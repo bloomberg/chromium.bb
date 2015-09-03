@@ -124,6 +124,8 @@ class ServerView : public mojo::Surface,
  private:
   typedef std::vector<ServerView*> Views;
 
+  void DestroyAllSurfaceFactoryResources();
+
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
@@ -148,8 +150,11 @@ class ServerView : public mojo::Surface,
   std::map<std::string, std::vector<uint8_t>> properties_;
 
   base::ObserverList<ServerViewObserver> observers_;
-  mojo::SurfaceClientPtr client_;
-  mojo::Binding<Surface> binding_;
+  mojo::SurfaceClientPtr current_client_;
+  mojo::Binding<Surface> current_binding_;
+
+  mojo::SurfaceClientPtr pending_client_;
+  mojo::Binding<Surface> pending_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerView);
 };
