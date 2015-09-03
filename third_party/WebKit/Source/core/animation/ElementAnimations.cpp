@@ -42,7 +42,23 @@ ElementAnimations::ElementAnimations()
 
 ElementAnimations::~ElementAnimations()
 {
+#if !ENABLE(OILPAN)
+    ASSERT(m_effects.isEmpty());
+#endif
 }
+
+#if !ENABLE(OILPAN)
+void ElementAnimations::dispose()
+{
+    // The notifyElementDestroyed() is called for elements that happen to live
+    // longer than the KeyframeEffect. This undeterminism is fine because
+    // all the notifyElementDestroyed() does is to clear the raw pointers
+    // held by the KeyframeEffect.
+    for (KeyframeEffect* effect : m_effects)
+        effect->notifyElementDestroyed();
+    m_effects.clear();
+}
+#endif
 
 void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
 {
@@ -88,6 +104,9 @@ DEFINE_TRACE(ElementAnimations)
     visitor->trace(m_cssAnimations);
     visitor->trace(m_defaultStack);
     visitor->trace(m_animations);
+#if !ENABLE(OILPAN)
+    visitor->trace(m_effects);
+#endif
 }
 
 const ComputedStyle* ElementAnimations::baseComputedStyle() const

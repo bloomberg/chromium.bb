@@ -172,6 +172,8 @@ inline ElementRareData::ElementRareData(LayoutObject* layoutObject)
 inline ElementRareData::~ElementRareData()
 {
 #if !ENABLE(OILPAN)
+    if (m_elementAnimations)
+        m_elementAnimations->dispose();
     ASSERT(!m_shadow);
 #endif
     ASSERT(!m_generatedBefore);

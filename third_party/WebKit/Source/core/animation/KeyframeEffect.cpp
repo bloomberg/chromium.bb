@@ -83,6 +83,10 @@ KeyframeEffect::KeyframeEffect(Element* target, EffectModel* model, const Timing
     , m_sampledEffect(nullptr)
     , m_priority(priority)
 {
+#if !ENABLE(OILPAN)
+    if (m_target)
+        m_target->ensureElementAnimations().addEffect(this);
+#endif
 }
 
 KeyframeEffect::~KeyframeEffect()
