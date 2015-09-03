@@ -476,6 +476,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
             mFindToolbarManager.hideToolbar(false);
         }
 
+        // Dismiss the undo SnackBar if present by committing all tab closures.
+        mActivity.getTabModelSelector().commitAllTabClosures();
+
         if (!mSearchPanelDelegate.isShowing()) {
             // If visible, hide the infobar container before showing the Contextual Search panel.
             InfoBarContainer container = getInfoBarContainer();
