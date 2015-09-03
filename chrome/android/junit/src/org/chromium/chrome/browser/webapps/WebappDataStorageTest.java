@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +26,7 @@ import org.robolectric.annotation.Config;
  * SharedPreferences as expected.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {BackgroundShadowAsyncTask.class})
 public class WebappDataStorageTest {
 
     private SharedPreferences mSharedPreferences;
@@ -35,11 +36,15 @@ public class WebappDataStorageTest {
     public void setUp() throws Exception {
         mSharedPreferences = Robolectric.application
                 .getSharedPreferences("webapp_test", Context.MODE_PRIVATE);
+
+        // Set the last_used as if the web app had been registered by WebappRegistry.
+        mSharedPreferences.edit().putLong("last_used", 0).commit();
+
         mCallbackCalled = false;
     }
 
     @Test
-    @Feature("{Webapp}")
+    @Feature({"Webapp"})
     public void testBackwardCompat() {
         assertEquals("webapp_", WebappDataStorage.SHARED_PREFS_FILE_PREFIX);
         assertEquals("splash_icon", WebappDataStorage.KEY_SPLASH_ICON);
@@ -47,8 +52,8 @@ public class WebappDataStorageTest {
     }
 
     @Test
-    @Feature("{Webapp}")
-    public void testLastUsedRetrieval() throws InterruptedException {
+    @Feature({"Webapp"})
+    public void testLastUsedRetrieval() throws Exception {
         mSharedPreferences.edit()
                 .putLong(WebappDataStorage.KEY_LAST_USED, 100L)
                 .commit();
@@ -61,17 +66,19 @@ public class WebappDataStorageTest {
                         assertEquals(100L, (long) readObject);
                     }
                 });
-        Robolectric.runBackgroundTasks();
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
         assertTrue(mCallbackCalled);
     }
 
     @Test
-    @Feature("{Webapp}")
-    public void testOpenUpdatesLastUsed() throws InterruptedException {
+    @Feature({"Webapp"})
+    public void testOpenUpdatesLastUsed() throws Exception {
         long before = System.currentTimeMillis();
 
         WebappDataStorage.open(Robolectric.application, "test");
-        Robolectric.runBackgroundTasks();
+        BackgroundShadowAsyncTask.runBackgroundTasks();
 
         long after = System.currentTimeMillis();
         long value = mSharedPreferences.getLong(WebappDataStorage.KEY_LAST_USED, -1L);
@@ -79,8 +86,8 @@ public class WebappDataStorageTest {
     }
 
     @Test
-    @Feature("{Webapp}")
-    public void testSplashImageRetrieval() throws InterruptedException {
+    @Feature({"Webapp"})
+    public void testSplashImageRetrieval() throws Exception {
         final Bitmap expected = createBitmap();
         mSharedPreferences.edit()
                 .putString(WebappDataStorage.KEY_SPLASH_ICON,
@@ -98,17 +105,20 @@ public class WebappDataStorageTest {
                         assertTrue(bitmapEquals(expected, actual));
                     }
                 });
-        Robolectric.runBackgroundTasks();
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
         assertTrue(mCallbackCalled);
     }
 
     @Test
-    @Feature("{Webapp}")
-    public void testSplashImageUpdate() throws InterruptedException {
+    @Feature({"Webapp"})
+    public void testSplashImageUpdate() throws Exception {
         final Bitmap expectedImage = createBitmap();
         WebappDataStorage.open(Robolectric.application, "test")
                 .updateSplashScreenImage(expectedImage);
-        Robolectric.runBackgroundTasks();
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+
         assertEquals(ShortcutHelper.encodeBitmapAsString(expectedImage),
                 mSharedPreferences.getString(WebappDataStorage.KEY_SPLASH_ICON, null));
     }

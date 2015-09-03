@@ -9,31 +9,45 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 
 /**
- * This is a class used to store data about an installed webapp. It uses SharedPreferences
- * to persist the data to disk. Every time {@link WebappDataStorage#open(Context, String)}
- * is used, the last used time is updated. It is not updated however, if
- * {@link WebappDataStorage#getLastUsedTime(Context, String, FetchCallback<Long>)} is used.
+ * Stores data about an installed web app. Uses SharedPreferences to persist the data to disk.
+ * Before this class is used, the web app must be registered in {@link WebappRegistry}.
+ *
+ * EXAMPLE USAGE:
+ *
+ * (1) UPDATING/RETRIEVING THE ICON (web app MUST have been registered in WebappRegistry)
+ * WebappDataStorage storage = WebappDataStorage.open(context, id);
+ * storage.updateSplashScreenImage(bitmap);
+ * storage.getSplashScreenImage(callback);
  */
 public class WebappDataStorage {
 
     static final String SHARED_PREFS_FILE_PREFIX = "webapp_";
     static final String KEY_SPLASH_ICON = "splash_icon";
     static final String KEY_LAST_USED = "last_used";
+    static final long INVALID_LAST_USED = -1;
 
     private final SharedPreferences mPreferences;
 
     /**
      * Opens an instance of WebappDataStorage for the webapp specified.
      * @param context  The context to open the SharedPreferences.
-     * @param webappId The ID of the webapp which is being opened.
+     * @param webappId The ID of the web app which is being opened.
      */
-    public static WebappDataStorage open(Context context, String webappId) {
-        WebappDataStorage storage = new WebappDataStorage(
+    public static WebappDataStorage open(final Context context, final String webappId) {
+        final WebappDataStorage storage = new WebappDataStorage(
                 context.getApplicationContext(), webappId);
-        storage.updateLastUsedTime();
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected final Void doInBackground(Void... nothing) {
+                assert storage.getLastUsedTime() != INVALID_LAST_USED;
+                storage.updateLastUsedTime();
+                return null;
+            }
+        }.execute();
         return storage;
     }
 
@@ -44,20 +58,33 @@ public class WebappDataStorage {
      * @param webappId The ID of the webapp the used time is being read for.
      * @param callback Called when the last used time has been retrieved.
      */
-    public static void getLastUsedTime(Context context, String webappId,
-            FetchCallback<Long> callback) {
-        new WebappDataStorage(context.getApplicationContext(), webappId)
-                .getLastUsedTime(callback);
+    public static void getLastUsedTime(final Context context, final String webappId,
+            final FetchCallback<Long> callback) {
+        new AsyncTask<Void, Void, Long>() {
+            @Override
+            protected final Long doInBackground(Void... nothing) {
+                long lastUsed = new WebappDataStorage(context.getApplicationContext(), webappId)
+                        .getLastUsedTime();
+                assert lastUsed != INVALID_LAST_USED;
+                return lastUsed;
+            }
+
+            @Override
+            protected final void onPostExecute(Long lastUsed) {
+                callback.onDataRetrieved(lastUsed);
+            }
+        }.execute();
     }
 
-    private WebappDataStorage(Context context, String webappId) {
+    /** Package private for use by WebappRegistry */
+    WebappDataStorage(Context context, String webappId) {
         mPreferences = context.getSharedPreferences(
                 SHARED_PREFS_FILE_PREFIX + webappId, Context.MODE_PRIVATE);
     }
 
     /*
      * Asynchronously retrieves the splash screen image associated with the
-     * current webapp.
+     * current web app.
      * @param callback Called when the splash screen image has been retrieved.
      *                 May be null if no image was found.
      */
@@ -66,39 +93,22 @@ public class WebappDataStorage {
     }
 
     /*
-     * Update the information associated with the webapp with the specified data.
-     * @param splashScreenImage The image which should be shown on the splash screen of the webapp.
+     * Update the information associated with the web app with the specified data.
+     * @param splashScreenImage The image which should be shown on the splash screen of the web app.
      */
     public void updateSplashScreenImage(Bitmap splashScreenImage) {
         new UpdateTask(splashScreenImage).execute();
     }
 
-    private void getLastUsedTime(final FetchCallback<Long> callback) {
-        new AsyncTask<Void, Void, Long>() {
-            @Override
-            protected final Long doInBackground(Void... nothing) {
-                return mPreferences.getLong(KEY_LAST_USED, -1L);
-            }
-
-            @Override
-            protected final void onPostExecute(Long result) {
-                assert result != -1L;
-                callback.onDataRetrieved(result);
-            }
-        }.execute();
+    /** Package private for use by WebappRegistry */
+    void updateLastUsedTime() {
+        assert !ThreadUtils.runningOnUiThread();
+        mPreferences.edit().putLong(KEY_LAST_USED, System.currentTimeMillis()).commit();
     }
 
-    private WebappDataStorage updateLastUsedTime() {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected final Void doInBackground(Void... nothing) {
-                mPreferences.edit()
-                        .putLong(KEY_LAST_USED, System.currentTimeMillis())
-                        .commit();
-                return null;
-            }
-        }.execute();
-        return this;
+    private long getLastUsedTime() {
+        assert !ThreadUtils.runningOnUiThread();
+        return mPreferences.getLong(KEY_LAST_USED, INVALID_LAST_USED);
     }
 
     /**
