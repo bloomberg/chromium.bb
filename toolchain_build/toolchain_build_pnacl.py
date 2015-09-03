@@ -148,6 +148,21 @@ def ProgramPath(program):
     pass
   return None
 
+
+def InputsForCommands(commands):
+  """Returns a dict of extra 'inputs' items for command names.
+Each command name that is an absolute path gets an item named for
+its basename.  The logic here is that commands named by absolute
+paths do not come from the system installation and hence those
+binaries themselves should be considered inputs for memoization.
+"""
+  inputs = {}
+  for command in commands:
+    if os.path.isabs(command):
+      inputs[os.path.basename(command)] = command
+  return inputs
+
+
 # Return a tuple (C compiler, C++ compiler, ar, ranlib) of the compilers and
 # tools to compile the host toolchains.
 def CompilersForHost(host):
@@ -245,8 +260,12 @@ def HostArchToolFlags(host, extra_cflags, opts):
 
 def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
                            use_afl_fuzz=False):
-  """ Return flags passed to LLVM and binutils configure for compilers and
-  compile flags. """
+  """Return flags passed to LLVM and binutils configure for compilers and
+  compile flags.
+
+  Returns the tuple (flags, inputs) where 'flags' is a list of arguments to
+  configure and 'inputs' is a dict of extra inputs to be hashed.
+  """
   configure_args = []
   extra_cc_args = []
 
@@ -272,8 +291,11 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
 
   extra_cxx_args = list(extra_cc_args)
 
+  hashables = []
+
   if not options.gcc:
     cc, cxx, ar, ranlib = CompilersForHost(host)
+    hashables += [cc, cxx, ar, ranlib]
 
     # Introduce afl-fuzz compiler wrappers if needed.
     if use_afl_fuzz:
@@ -310,27 +332,33 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
     if is_cross:
       # LLVM's linux->mingw cross build needs this
       configure_args.append('CC_FOR_BUILD=gcc')
-  return configure_args
+  return configure_args, InputsForCommands(hashables)
 
 
 def LibCxxHostArchFlags(host):
   cc, cxx, _, _ = CompilersForHost(host)
+  hashables = [cc, cxx]
   cmake_flags = []
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if TripleIsLinux(host) and not TripleIsX8664(host):
     # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
     cmake_flags.extend(['-DCMAKE_C_FLAGS=-m32',
                         '-DCMAKE_CXX_FLAGS=-m32'])
-  return cmake_flags
+  return cmake_flags, InputsForCommands(hashables)
 
 
 def CmakeHostArchFlags(host, options):
-  """ Set flags passed to LLVM cmake for compilers and compile flags. """
+  """Set flags passed to LLVM cmake for compilers and compile flags.
+
+  Returns the tuple (flags, inputs) where 'flags' is a list of arguments to
+  cmake and 'inputs' is a dict of extra inputs to be hashed.
+  """
   cmake_flags = []
   if options.afl_fuzz_dir:
     cc, cxx = AflFuzzCompilers(options.afl_fuzz_dir)
   else:
     cc, cxx, _, _ = CompilersForHost(host)
+  hashables = [cc, cxx]
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if ProgramPath('ccache'):
@@ -347,7 +375,7 @@ def CmakeHostArchFlags(host, options):
   for linker_type in ['EXE', 'SHARED', 'MODULE']:
     cmake_flags.extend([('-DCMAKE_%s_LINKER_FLAGS=' % linker_type) +
                         ' '.join(tool_flags['LDFLAGS'])])
-  return cmake_flags
+  return cmake_flags, InputsForCommands(hashables)
 
 
 def ConfigureBinutilsCommon():
@@ -544,14 +572,16 @@ def HostLibs(host, options):
     })
   elif not options.gcc:
     # Libc++ is only tested with the clang build
+    libcxx_host_arch_flags, libcxx_inputs = LibCxxHostArchFlags(host)
     libs.update({
         H('libcxx'): {
             'dependencies': ['libcxx_src', 'libcxxabi_src'],
             'type': 'build',
+            'inputs': libcxx_inputs,
             'commands': [
                 command.SkipForIncrementalCommand([
                     'cmake', '-G', 'Unix Makefiles'] +
-                     LibCxxHostArchFlags(host) +
+                     libcxx_host_arch_flags +
                      ['-DLIBCXX_CXX_ABI=libcxxabi',
                       '-DLIBCXX_LIBCXXABI_INCLUDE_PATHS=' + command.path.join(
                           '%(abs_libcxxabi_src)s', 'include'),
@@ -581,6 +611,10 @@ def HostTools(host, options):
   # TODO(jfb): gold's build currently generates the following error on Windows:
   #            too many arguments for format.
   binutils_do_werror = not TripleIsWindows(host)
+  # TODO(mcgrathr): With post-3.7 Clang, binutils (opcodes) build gets:
+  #     error: shifting a negative signed value is undefined
+  #            [-Werror,-Wshift-negative-value]
+  binutils_do_werror = False
   extra_gold_deps = []
   if host == 'le32-nacl':
     # TODO(bradnelson): Fix warnings so this can go away.
@@ -616,22 +650,22 @@ def HostTools(host, options):
         dummy_makefile, command.path.join(dir, 'Makefile')))
     return commands
 
+  binutils_host_arch_flags, binutils_inputs = ConfigureHostArchFlags(
+      host, warning_flags, options, options.binutils_pnacl_extra_configure)
+  binutils_inputs.update({'macros': os.path.join(
+      NACL_DIR, 'pnacl', 'support', 'clang_direct', 'nacl-arm-macros.s')})
   tools = {
       # The binutils_pnacl package is used both for bitcode linking (gold) and
       # for its conventional use with arm-nacl-clang.
       H('binutils_pnacl'): {
           'dependencies': ['binutils_pnacl_src'] + extra_gold_deps,
           'type': 'build',
-          'inputs' : { 'macros': os.path.join(NACL_DIR,
-              'pnacl', 'support', 'clang_direct', 'nacl-arm-macros.s')},
+          'inputs' : binutils_inputs,
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
                   '%(binutils_pnacl_src)s/configure'] +
-                  ConfigureBinutilsCommon() +
-                  ConfigureHostArchFlags(
-                    host, warning_flags, options,
-                    options.binutils_pnacl_extra_configure) +
+                  ConfigureBinutilsCommon() + binutils_host_arch_flags +
                   [
                   '--enable-gold=yes',
                   '--enable-plugins',
@@ -701,7 +735,12 @@ def HostTools(host, options):
   # TODO(jfb) Windows currently uses MinGW's GCC 4.8.1 which generates warnings
   #           on upstream LLVM code. Turn on -Werror once these are fixed.
   #           The same applies for the default GCC on current Ubuntu.
-  llvm_do_werror = not (TripleIsWindows(host) or options.gcc)
+  # TODO(mcgrathr): The latest Clang gets -Wredunant-move errors under
+  # -Werror, and llvm's configure makes it difficult to get -Wno-... options
+  # in the place they need to be, so just disable -Werror for now.
+  # After the next LLVM merge, the LLVM sources will probably be compatible
+  # with the latest Clang and -Werror.
+  llvm_do_werror = False and not (TripleIsWindows(host) or options.gcc)
 
   # Older CMake ignore CMAKE_*_LINKER_FLAGS during config step.
   # https://public.kitware.com/Bug/view.php?id=14066
@@ -710,16 +749,19 @@ def HostTools(host, options):
       HostArchToolFlags(host, [], options)['LDFLAGS'])}
   llvm_cmake_config_env.update(AflFuzzEnvMap(host, options))
 
+  llvm_host_arch_flags, llvm_inputs = CmakeHostArchFlags(host, options)
+  llvm_inputs.update({'test_xfails': os.path.join(NACL_DIR,
+                                                  'pnacl', 'scripts')})
   llvm_cmake = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
                            'subzero_src'],
-          'inputs': {'test_xfails': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
+          'inputs': llvm_inputs,
           'type': 'build',
           'commands': [
               command.SkipForIncrementalCommand([
                   'cmake', '-G', 'Ninja'] +
-                  CmakeHostArchFlags(host, options) + asan_flags +
+                  llvm_host_arch_flags + asan_flags +
                   [
                   '-DBUILD_SHARED_LIBS=ON',
                   '-DCMAKE_BUILD_TYPE=' + ('Debug' if HostIsDebug(options)
@@ -755,19 +797,22 @@ def HostTools(host, options):
         command.Remove(*[os.path.join('%(output)s', 'lib', f) for f
                          in '*.a', '*Hello.*', 'BugpointPasses.*']),
     ]
+  llvm_host_arch_flags, llvm_inputs = ConfigureHostArchFlags(
+      host, [], options, use_afl_fuzz=options.afl_fuzz_dir)
+  llvm_inputs.update({'test_xfails': os.path.join(NACL_DIR,
+                                                  'pnacl', 'scripts')})
   llvm_autoconf = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
                            'subzero_src'],
-          'inputs': {'test_xfails': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
+          'inputs': llvm_inputs,
           'type': 'build',
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
                   '%(llvm_src)s/configure'] +
                   AflFuzzEnvList(host, options) +
-                  ConfigureHostArchFlags(host, [], options,
-                                         use_afl_fuzz=options.afl_fuzz_dir) +
+                  llvm_host_arch_flags +
                   LLVMConfigureAssertionsFlags(options) +
                   [
                    '--disable-bindings', # ocaml is currently the only binding.
