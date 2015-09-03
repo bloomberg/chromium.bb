@@ -934,36 +934,6 @@ TEST_F(HostContentSettingsMapTest, GetContentSetting) {
                 embedder, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 }
 
-TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
-  GURL http_host("http://example.com/");
-  GURL https_host("https://example.com/");
-  GURL embedder("chrome://foo");
-  GURL extension("chrome-extension://foo");
-  EXPECT_FALSE(HostContentSettingsMap::ShouldAllowAllContent(
-                   http_host, embedder, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-  EXPECT_FALSE(HostContentSettingsMap::ShouldAllowAllContent(
-                   http_host, embedder, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_FALSE(HostContentSettingsMap::ShouldAllowAllContent(
-                   http_host, embedder, CONTENT_SETTINGS_TYPE_COOKIES));
-  EXPECT_TRUE(HostContentSettingsMap::ShouldAllowAllContent(
-                  https_host, embedder, CONTENT_SETTINGS_TYPE_COOKIES));
-  EXPECT_TRUE(HostContentSettingsMap::ShouldAllowAllContent(
-                  https_host, embedder, CONTENT_SETTINGS_TYPE_COOKIES));
-  EXPECT_TRUE(HostContentSettingsMap::ShouldAllowAllContent(
-                  embedder, http_host, CONTENT_SETTINGS_TYPE_COOKIES));
-#if defined(ENABLE_EXTENSIONS)
-  EXPECT_TRUE(HostContentSettingsMap::ShouldAllowAllContent(
-                  extension, extension, CONTENT_SETTINGS_TYPE_COOKIES));
-#else
-  EXPECT_FALSE(HostContentSettingsMap::ShouldAllowAllContent(
-                   extension, extension, CONTENT_SETTINGS_TYPE_COOKIES));
-#endif
-  EXPECT_FALSE(HostContentSettingsMap::ShouldAllowAllContent(
-                   extension, extension, CONTENT_SETTINGS_TYPE_PLUGINS));
-  EXPECT_FALSE(HostContentSettingsMap::ShouldAllowAllContent(
-                   extension, http_host, CONTENT_SETTINGS_TYPE_COOKIES));
-}
-
 TEST_F(HostContentSettingsMapTest, IsSettingAllowedForType) {
   TestingProfile profile;
   PrefService* prefs = profile.GetPrefs();

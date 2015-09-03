@@ -133,9 +133,16 @@ ContentSetting CookieSettings::GetCookieSetting(const GURL& url,
                                                 const GURL& first_party_url,
                                                 bool setting_cookie,
                                                 SettingSource* source) const {
-  if (HostContentSettingsMap::ShouldAllowAllContent(
-          url, first_party_url, CONTENT_SETTINGS_TYPE_COOKIES))
+  // Auto-allow in extensions or for WebUI embedded in a secure origin.
+  if (url.SchemeIsCryptographic() && first_party_url.SchemeIs(kChromeUIScheme))
     return CONTENT_SETTING_ALLOW;
+
+#if defined(ENABLE_EXTENSIONS)
+  if (url.SchemeIs(kExtensionScheme) &&
+      first_party_url.SchemeIs(kExtensionScheme)) {
+    return CONTENT_SETTING_ALLOW;
+  }
+#endif
 
   // First get any host-specific settings.
   SettingInfo info;

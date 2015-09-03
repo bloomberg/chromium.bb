@@ -15,10 +15,12 @@
 #include "base/time/clock.h"
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
+#include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/content_settings_policy_provider.h"
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -33,16 +35,6 @@ namespace {
 typedef std::vector<content_settings::Rule> Rules;
 
 typedef std::pair<std::string, std::string> StringPair;
-
-// These constants are copied from extensions/common/extension_constants.h and
-// content/public/common/url_constants.h to avoid complicated dependencies.
-// TODO(vabr): Get these constants through the ContentSettingsClient.
-const char kChromeDevToolsScheme[] = "chrome-devtools";
-const char kChromeUIScheme[] = "chrome";
-
-#if defined(ENABLE_EXTENSIONS)
-const char kExtensionScheme[] = "chrome-extension";
-#endif
 
 struct ProviderNamesSourceMapEntry {
   const char* provider_name;
@@ -67,6 +59,14 @@ static_assert(
 // Resource identifiers are supported (but not required) for plugins.
 bool SupportsResourceIdentifier(ContentSettingsType content_type) {
   return content_type == CONTENT_SETTINGS_TYPE_PLUGINS;
+}
+
+bool SchemeCanBeWhitelisted(const std::string& scheme) {
+  return scheme == content_settings::kChromeDevToolsScheme ||
+#if defined(ENABLE_EXTENSIONS)
+         scheme == content_settings::kExtensionScheme ||
+#endif
+         scheme == content_settings::kChromeUIScheme;
 }
 
 }  // namespace
@@ -98,6 +98,9 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
 // static
 void HostContentSettingsMap::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // Ensure the content settings are all registered.
+  content_settings::ContentSettingsRegistry::GetInstance();
+
   registry->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
 
   // Register the prefs for the content settings providers.
@@ -589,44 +592,6 @@ void HostContentSettingsMap::UsedContentSettingsProviders() const {
 #endif
 }
 
-bool HostContentSettingsMap::ShouldAllowAllContent(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type) {
-  if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
-      content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-      content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-    return false;
-  }
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  if (content_type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
-    return false;
-  }
-#endif
-  if (secondary_url.SchemeIs(kChromeUIScheme) &&
-      content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
-      primary_url.SchemeIsCryptographic()) {
-    return true;
-  }
-#if defined(ENABLE_EXTENSIONS)
-  if (primary_url.SchemeIs(kExtensionScheme)) {
-    switch (content_type) {
-      case CONTENT_SETTINGS_TYPE_PLUGINS:
-      case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-        return false;
-      case CONTENT_SETTINGS_TYPE_COOKIES:
-        return secondary_url.SchemeIs(kExtensionScheme);
-      default:
-        return true;
-    }
-  }
-#endif
-  return primary_url.SchemeIs(kChromeDevToolsScheme) ||
-         primary_url.SchemeIs(kChromeUIScheme);
-}
-
 scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
     const GURL& primary_url,
     const GURL& secondary_url,
@@ -636,15 +601,27 @@ scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
 
-  // Check if the scheme of the requesting url is whitelisted.
-  if (ShouldAllowAllContent(primary_url, secondary_url, content_type)) {
-    if (info) {
-      info->source = content_settings::SETTING_SOURCE_WHITELIST;
-      info->primary_pattern = ContentSettingsPattern::Wildcard();
-      info->secondary_pattern = ContentSettingsPattern::Wildcard();
+  // Check if the requested setting is whitelisted.
+  // TODO(raymes): Move this into GetContentSetting. This has nothing to do with
+  // website settings
+  const content_settings::ContentSettingsInfo* content_settings_info =
+      content_settings::ContentSettingsRegistry::GetInstance()->Get(
+          content_type);
+  if (content_settings_info) {
+    for (const std::string& scheme :
+         content_settings_info->whitelisted_schemes()) {
+      DCHECK(SchemeCanBeWhitelisted(scheme));
+
+      if (primary_url.SchemeIs(scheme.c_str())) {
+        if (info) {
+          info->source = content_settings::SETTING_SOURCE_WHITELIST;
+          info->primary_pattern = ContentSettingsPattern::Wildcard();
+          info->secondary_pattern = ContentSettingsPattern::Wildcard();
+        }
+        return scoped_ptr<base::Value>(
+            new base::FundamentalValue(CONTENT_SETTING_ALLOW));
+      }
     }
-    return scoped_ptr<base::Value>(
-        new base::FundamentalValue(CONTENT_SETTING_ALLOW));
   }
 
   return GetWebsiteSettingInternal(primary_url,

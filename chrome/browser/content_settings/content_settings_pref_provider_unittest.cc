@@ -27,6 +27,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
@@ -97,6 +98,13 @@ class DeadlockCheckerObserver {
 };
 
 class PrefProviderTest : public testing::Test {
+ public:
+  PrefProviderTest() {
+    // Ensure all content settings are initialized.
+    ContentSettingsRegistry::GetInstance();
+  }
+
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
 };
 

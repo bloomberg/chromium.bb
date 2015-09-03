@@ -201,13 +201,6 @@ class HostContentSettingsMap
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
 
-  // Returns true if we should allow all content types for this URL.  This is
-  // true for various internal objects like chrome:// URLs, so UI and other
-  // things users think of as "not webpages" don't break.
-  static bool ShouldAllowAllContent(const GURL& primary_url,
-                                    const GURL& secondary_url,
-                                    ContentSettingsType content_type);
-
   // Returns the ProviderType associated with the given source string.
   // TODO(estade): I regret adding this. At the moment there are no legitimate
   // uses. We should stick to ProviderType rather than string so we don't have

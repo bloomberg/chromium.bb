@@ -16,62 +16,70 @@ namespace content_settings {
 
 class WebsiteSettingsRegistryTest : public testing::Test {
  protected:
-  const WebsiteSettingsRegistry* registry() { return &registry_; }
+  WebsiteSettingsRegistry* registry() { return &registry_; }
 
  private:
   WebsiteSettingsRegistry registry_;
 };
 
 TEST_F(WebsiteSettingsRegistryTest, Get) {
-  // CONTENT_SETTINGS_TYPE_COOKIES should be registered.
+  // CONTENT_SETTINGS_TYPE_APP_BANNER should be registered.
   const WebsiteSettingsInfo* info =
-      registry()->Get(CONTENT_SETTINGS_TYPE_COOKIES);
+      registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER);
   ASSERT_TRUE(info);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_COOKIES, info->type());
-  EXPECT_EQ("cookies", info->name());
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_APP_BANNER, info->type());
+  EXPECT_EQ("app-banner", info->name());
 }
 
 TEST_F(WebsiteSettingsRegistryTest, GetByName) {
   // Random string shouldn't be registered.
   EXPECT_FALSE(registry()->GetByName("abc"));
 
-  // "cookies" should be registered.
-  const WebsiteSettingsInfo* info = registry()->GetByName("cookies");
+  // "app-banner" should be registered.
+  const WebsiteSettingsInfo* info = registry()->GetByName("app-banner");
   ASSERT_TRUE(info);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_COOKIES, info->type());
-  EXPECT_EQ("cookies", info->name());
-  EXPECT_EQ(registry()->Get(CONTENT_SETTINGS_TYPE_COOKIES), info);
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_APP_BANNER, info->type());
+  EXPECT_EQ("app-banner", info->name());
+  EXPECT_EQ(registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER), info);
+
+  // Register a new setting.
+  registry()->Register(static_cast<ContentSettingsType>(10), "test", nullptr,
+                       WebsiteSettingsInfo::UNSYNCABLE,
+                       WebsiteSettingsInfo::LOSSY);
+  info = registry()->GetByName("test");
+  ASSERT_TRUE(info);
+  EXPECT_EQ(10, info->type());
+  EXPECT_EQ("test", info->name());
+  EXPECT_EQ(registry()->Get(static_cast<ContentSettingsType>(10)), info);
 }
 
 TEST_F(WebsiteSettingsRegistryTest, Properties) {
+  // "app-banner" should be registered.
   const WebsiteSettingsInfo* info =
-      registry()->Get(CONTENT_SETTINGS_TYPE_COOKIES);
+      registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER);
   ASSERT_TRUE(info);
-  EXPECT_EQ("profile.content_settings.exceptions.cookies", info->pref_name());
-  EXPECT_EQ("profile.default_content_setting_values.cookies",
+  EXPECT_EQ("profile.content_settings.exceptions.app_banner",
+            info->pref_name());
+  EXPECT_EQ("profile.default_content_setting_values.app_banner",
+            info->default_value_pref_name());
+  ASSERT_FALSE(info->initial_default_value());
+  EXPECT_EQ(PrefRegistry::LOSSY_PREF, info->GetPrefRegistrationFlags());
+
+  // Register a new setting.
+  registry()->Register(static_cast<ContentSettingsType>(10), "test",
+                       make_scoped_ptr(new base::FundamentalValue(999)),
+                       WebsiteSettingsInfo::SYNCABLE,
+                       WebsiteSettingsInfo::LOSSY);
+  info = registry()->Get(static_cast<ContentSettingsType>(10));
+  ASSERT_TRUE(info);
+  EXPECT_EQ("profile.content_settings.exceptions.test", info->pref_name());
+  EXPECT_EQ("profile.default_content_setting_values.test",
             info->default_value_pref_name());
   int setting;
   ASSERT_TRUE(info->initial_default_value()->GetAsInteger(&setting));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
-  EXPECT_EQ(user_prefs::PrefRegistrySyncable::SYNCABLE_PREF,
-            info->GetPrefRegistrationFlags());
-
-  info = registry()->Get(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  ASSERT_TRUE(info);
-  EXPECT_EQ("profile.content_settings.exceptions.media_stream_camera",
-            info->pref_name());
-  EXPECT_EQ("profile.default_content_setting_values.media_stream_camera",
-            info->default_value_pref_name());
-  ASSERT_TRUE(info->initial_default_value()->GetAsInteger(&setting));
-  EXPECT_EQ(CONTENT_SETTING_ASK, setting);
-  EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
-            info->GetPrefRegistrationFlags());
-
-  info = registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER);
-  EXPECT_EQ(PrefRegistry::LOSSY_PREF, info->GetPrefRegistrationFlags());
-
-  info = registry()->Get(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
-  EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
+  EXPECT_EQ(999, setting);
+  EXPECT_EQ(PrefRegistry::LOSSY_PREF |
+                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF,
             info->GetPrefRegistrationFlags());
 }
 

@@ -28,6 +28,16 @@ class RuleIterator;
 
 typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
+// These constants are copied from extensions/common/extension_constants.h and
+// content/public/common/url_constants.h to avoid complicated dependencies.
+// TODO(vabr): Get these constants through the ContentSettingsClient.
+const char kChromeDevToolsScheme[] = "chrome-devtools";
+const char kChromeUIScheme[] = "chrome";
+
+#if defined(ENABLE_EXTENSIONS)
+const char kExtensionScheme[] = "chrome-extension";
+#endif
+
 std::string ContentSettingToString(ContentSetting setting);
 
 ContentSetting ContentSettingFromString(const std::string& name);

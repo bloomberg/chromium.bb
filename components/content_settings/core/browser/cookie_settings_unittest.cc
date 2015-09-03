@@ -22,7 +22,9 @@ class CookieSettingsTest : public testing::Test {
         kAllowedSite("http://good.allays.com"),
         kFirstPartySite("http://cool.things.com"),
         kBlockedFirstPartySite("http://no.thirdparties.com"),
+        kChromeURL("chrome://foo"),
         kExtensionURL("chrome-extension://deadbeef"),
+        kHttpSite("http://example.com"),
         kHttpsSite("https://example.com"),
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
     CookieSettings::RegisterProfilePrefs(prefs_.registry());
@@ -42,10 +44,30 @@ class CookieSettingsTest : public testing::Test {
   const GURL kAllowedSite;
   const GURL kFirstPartySite;
   const GURL kBlockedFirstPartySite;
+  const GURL kChromeURL;
   const GURL kExtensionURL;
+  const GURL kHttpSite;
   const GURL kHttpsSite;
   ContentSettingsPattern kAllHttpsSitesPattern;
 };
+
+TEST_F(CookieSettingsTest, TestWhitelistedScheme) {
+  cookie_settings_->SetCookieSetting(ContentSettingsPattern::Wildcard(),
+                                     ContentSettingsPattern::Wildcard(),
+                                     CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(kHttpSite, kChromeURL));
+  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kHttpsSite, kChromeURL));
+  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kChromeURL, kHttpSite));
+#if defined(ENABLE_EXTENSIONS)
+  EXPECT_TRUE(
+      cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kExtensionURL));
+#else
+  EXPECT_FALSE(
+      cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kExtensionURL));
+#endif
+  EXPECT_FALSE(
+      cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kHttpSite));
+}
 
 TEST_F(CookieSettingsTest, CookiesBlockSingle) {
   cookie_settings_->SetCookieSetting(

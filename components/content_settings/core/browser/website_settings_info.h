@@ -18,7 +18,6 @@ class Value;
 namespace content_settings {
 
 // This class stores the properties related to a website setting.
-// TODO(raymes): Move more properties into this class.
 class WebsiteSettingsInfo {
  public:
   enum SyncStatus { SYNCABLE, UNSYNCABLE };

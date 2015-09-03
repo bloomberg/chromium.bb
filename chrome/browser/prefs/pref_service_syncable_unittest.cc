@@ -14,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/sync_change.h"
@@ -76,6 +77,10 @@ class PrefServiceSyncableTest : public testing::Test {
         next_pref_remote_sync_node_id_(0) {}
 
   void SetUp() override {
+    // Ensure all content settings are initialized. TODO(raymes): remove this
+    // once WebsiteSettingsRegistry is properly iterable.
+    content_settings::ContentSettingsRegistry::GetInstance();
+
     prefs_.registry()->RegisterStringPref(kUnsyncedPreferenceName,
                                           kUnsyncedPreferenceDefaultValue);
     prefs_.registry()->RegisterStringPref(
