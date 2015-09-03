@@ -1236,6 +1236,22 @@ def ArchiveFile(file_to_archive, archive_dir):
   return filename
 
 
+class ChromeIsPinnedUprevError(failures_lib.InfrastructureFailure):
+  """Raised when we try to uprev while chrome is pinned."""
+
+  def __init__(self, new_chrome_atom):
+    """Initialize a ChromeIsPinnedUprevError.
+
+    Args:
+      new_chrome_atom: The chrome atom that we failed to
+                       uprev to, due to chrome being pinned.
+    """
+    msg = ('Failed up uprev to chrome version %s as chrome was pinned.' %
+           new_chrome_atom)
+    super(ChromeIsPinnedUprevError, self).__init__(msg)
+    self.new_chrome_atom = new_chrome_atom
+
+
 def MarkChromeAsStable(buildroot,
                        tracking_branch,
                        chrome_rev,
@@ -1290,7 +1306,7 @@ def MarkChromeAsStable(buildroot,
     except cros_build_lib.RunCommandError:
       logging.error('Cannot emerge-%s =%s\nIs Chrome pinned to an older '
                     'version?' % (board, chrome_atom))
-      raise
+      raise ChromeIsPinnedUprevError(chrome_atom)
 
   return chrome_atom
 
