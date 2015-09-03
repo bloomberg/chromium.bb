@@ -30,6 +30,7 @@ DEFINE_RESOURCE_ID(IDR_INFOBAR_SAVE_PASSWORD,\
 DEFINE_RESOURCE_ID(IDR_INFOBAR_WARNING, R.drawable.infobar_warning)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
 DEFINE_RESOURCE_ID(IDR_BLOCKED_POPUPS, R.drawable.infobar_blocked_popups)
+DEFINE_RESOURCE_ID(IDR_INFOBAR_FROZEN_TAB, R.drawable.infobar_restore)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_FULLSCREEN, R.drawable.infobar_fullscreen)
 
 // WebsiteSettingsUI images, used in ConnectionInfoPopup

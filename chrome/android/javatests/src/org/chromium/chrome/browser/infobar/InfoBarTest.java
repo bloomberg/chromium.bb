@@ -151,6 +151,96 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     /**
+     * Verifies the unresponsive renderer notification creates an InfoBar.
+     */
+    @Smoke
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testInfoBarForHungRenderer() throws InterruptedException {
+        loadUrl(HELLO_WORLD_URL);
+
+        // Fake an unresponsive renderer signal.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity()
+                        .getActivityTab()
+                        .getChromeWebContentsDelegateAndroid()
+                        .rendererUnresponsive();
+            }
+        });
+        assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
+
+        // Make sure it has Kill/Wait buttons.
+        List<InfoBar> infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
+        assertEquals("Wrong infobar count", 1, infoBars.size());
+        assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
+        assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
+
+        // Fake a responsive renderer signal.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity()
+                        .getActivityTab()
+                        .getChromeWebContentsDelegateAndroid()
+                        .rendererResponsive();
+            }
+        });
+        assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
+        infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
+        assertTrue("Wrong infobar count", infoBars.isEmpty());
+    }
+
+    /**
+     * Verifies the hung renderer InfoBar can kill the hung renderer.
+     */
+    @Smoke
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testInfoBarForHungRendererCanKillRenderer() throws InterruptedException {
+        loadUrl(HELLO_WORLD_URL);
+
+        // Fake an unresponsive renderer signal.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity()
+                        .getActivityTab()
+                        .getChromeWebContentsDelegateAndroid()
+                        .rendererUnresponsive();
+            }
+        });
+        assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
+
+        // Make sure it has Kill/Wait buttons.
+        final List<InfoBar> infoBars =
+                getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
+        assertEquals("Wrong infobar count", 1, infoBars.size());
+        assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
+        assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
+
+        // Activite the Kill button.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                InfoBarUtil.clickPrimaryButton(infoBars.get(0));
+            }
+        });
+
+        // The renderer should have been killed and the InfoBar removed.
+        assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
+        assertTrue("Wrong infobar count",
+                getActivity().getActivityTab().getInfoBarContainer().getInfoBars().isEmpty());
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab().isShowingSadTab();
+            }
+        }, MAX_TIMEOUT, CHECK_INTERVAL);
+    }
+
+    /**
      * Verify InfoBarContainers swap the WebContents they are monitoring properly.
      */
     @MediumTest

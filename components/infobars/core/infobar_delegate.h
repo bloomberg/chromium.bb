@@ -10,6 +10,7 @@
 #include "ui/base/window_open_disposition.h"
 
 class ConfirmInfoBarDelegate;
+class HungRendererInfoBarDelegate;
 class InsecureContentInfoBarDelegate;
 class MediaStreamInfoBarDelegate;
 class NativeAppInfoBarDelegate;
@@ -117,6 +118,7 @@ class InfoBarDelegate {
 
   // Type-checking downcast routines:
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
+  virtual HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate();
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
   virtual MediaStreamInfoBarDelegate* AsMediaStreamInfoBarDelegate();
   virtual NativeAppInfoBarDelegate* AsNativeAppInfoBarDelegate();

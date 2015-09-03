@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "components/favicon/core/favicon_driver_observer.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "components/sessions/session_id.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/notification_observer.h"
@@ -43,6 +44,10 @@ class TabContentManager;
 namespace content {
 class ContentViewCore;
 class WebContents;
+}
+
+namespace infobars {
+class InfoBar;
 }
 
 namespace offline_pages {
@@ -117,12 +122,14 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool HasPrerenderedUrl(GURL gurl);
 
+  void OnRendererUnresponsive(JNIEnv* env, jobject obj);
+  void OnRendererResponsive(JNIEnv* env, jobject obj);
+
   void MakeLoadURLParams(
       chrome::NavigateParams* params,
       content::NavigationController::LoadURLParams* load_url_params);
 
-  // CoreTabHelperDelegate ----------------------------------------------------
-
+  // Overridden from CoreTabHelperDelegate:
   void SwapTabContents(content::WebContents* old_contents,
                        content::WebContents* new_contents,
                        bool did_start_load,
@@ -136,12 +143,12 @@ class TabAndroid : public CoreTabHelperDelegate,
   void OnWebContentsInstantSupportDisabled(
       const content::WebContents* web_contents) override;
 
-  // NotificationObserver -----------------------------------------------------
+  // Overridden from NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // favicon::FaviconDriverObserver -------------------------------------------
+  // Overridden from favicon::FaviconDriverObserver:
   void OnFaviconAvailable(const gfx::Image& image) override;
   void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
                         bool icon_url_changed) override;

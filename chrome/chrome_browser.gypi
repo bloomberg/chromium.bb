@@ -156,6 +156,8 @@
       'browser/android/history_report/usage_reports_buffer_backend.h',
       'browser/android/history_report/usage_reports_buffer_service.cc',
       'browser/android/history_report/usage_reports_buffer_service.h',
+      'browser/android/hung_renderer_infobar_delegate.cc',
+      'browser/android/hung_renderer_infobar_delegate.h',
       'browser/android/intent_helper.cc',
       'browser/android/intent_helper.h',
       'browser/android/intercept_download_resource_throttle.cc',

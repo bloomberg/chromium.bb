@@ -475,6 +475,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public void rendererUnresponsive() {
             super.rendererUnresponsive();
+            if (mNativeTabAndroid != 0) nativeOnRendererUnresponsive(mNativeTabAndroid);
             if (mFullscreenManager == null) return;
             mFullscreenHungRendererToken =
                     mFullscreenManager.showControlsPersistentAndClearOldToken(
@@ -484,6 +485,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public void rendererResponsive() {
             super.rendererResponsive();
+            if (mNativeTabAndroid != 0) nativeOnRendererResponsive(mNativeTabAndroid);
             if (mFullscreenManager == null) return;
             mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
             mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
@@ -2883,6 +2885,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeDetachOverlayContentViewCore(long nativeTabAndroid,
             ContentViewCore content);
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
+    private native void nativeOnRendererUnresponsive(long nativeTabAndroid);
+    private native void nativeOnRendererResponsive(long nativeTabAndroid);
 
     private static native void nativeRecordStartupToCommitUma();
 }

@@ -86,6 +86,10 @@ ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
   return nullptr;
 }
 
+HungRendererInfoBarDelegate* InfoBarDelegate::AsHungRendererInfoBarDelegate() {
+  return nullptr;
+}
+
 InsecureContentInfoBarDelegate*
     InfoBarDelegate::AsInsecureContentInfoBarDelegate() {
   return nullptr;

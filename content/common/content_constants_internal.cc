@@ -6,7 +6,13 @@
 
 namespace content {
 
+#if defined(OS_ANDROID)
+const int64 kHungRendererDelayMs = 5000;
+#else
+// TODO(jdduke): Consider shortening this delay on desktop. It was originally
+// set to 5 seconds but was extended to accomodate less responsive plugins.
 const int64 kHungRendererDelayMs = 30000;
+#endif
 
 const uint16 kMaxPluginSideLength = 1 << 15;
 // 8m pixels.

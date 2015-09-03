@@ -35615,6 +35615,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer.Hung.MobileInfoBar.UserEvent"
+    enum="MobileHungRendererInfoBarEvent">
+  <owner>jdduke@chromium.org</owner>
+  <summary>
+    Android: Records the terminal event associated with a hung renderer infobar.
+    This includes both the explicit user actions as well as implicit dismissals,
+    e.g., when the renderer regains responsiveness before the infobar is
+    interactively dismissed.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.LayoutMs" units="milliseconds">
   <obsolete>
     Deprecated as of 3/2015.
@@ -65201,6 +65212,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Accept default account"/>
   <int value="3" label="Accept another account"/>
   <int value="4" label="No thanks"/>
+</enum>
+
+<enum name="MobileHungRendererInfoBarEvent" type="int">
+  <int value="0" label="Clicked the 'Wait' button"/>
+  <int value="1" label="Clicked the 'Kill' button"/>
+  <int value="2" label="Clicked the 'X' (close) button)"/>
+  <int value="3" label="Infobar dismissed after renderer became responsive"/>
+  <int value="4" label="Infobar dismissed after tab closed"/>
 </enum>
 
 <enum name="MobileSessionShutdownType" type="int">
