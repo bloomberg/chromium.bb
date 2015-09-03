@@ -869,7 +869,6 @@ void ThreadProxy::ScheduledActionCommit() {
 
   blocked_main().main_thread_inside_commit = true;
   impl().layer_tree_host_impl->BeginCommit();
-  layer_tree_host()->BeginCommitOnImplThread(impl().layer_tree_host_impl.get());
   layer_tree_host()->FinishCommitOnImplThread(
       impl().layer_tree_host_impl.get());
   blocked_main().main_thread_inside_commit = false;

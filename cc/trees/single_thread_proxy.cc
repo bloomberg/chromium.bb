@@ -230,7 +230,6 @@ void SingleThreadProxy::DoCommit() {
         blocking_main_thread_task_runner()));
 
     layer_tree_host_impl_->BeginCommit();
-    layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
 
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.

@@ -107,7 +107,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
   void DidStopFlinging();
   void Layout();
-  void BeginCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void WillCommit();
   void CommitComplete();

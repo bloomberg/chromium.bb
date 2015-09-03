@@ -236,11 +236,6 @@ void LayerTreeHost::Layout() {
   client_->Layout();
 }
 
-void LayerTreeHost::BeginCommitOnImplThread(LayerTreeHostImpl* host_impl) {
-  DCHECK(proxy_->IsImplThread());
-  TRACE_EVENT0("cc", "LayerTreeHost::CommitTo");
-}
-
 // This function commits the LayerTreeHost to an impl tree. When modifying
 // this function, keep in mind that the function *runs* on the impl thread! Any
 // code that is logically a main thread operation, e.g. deletion of a Layer,
