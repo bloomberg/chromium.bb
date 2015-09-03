@@ -127,6 +127,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
 
+  void ShowCertificateViewer(int certificate_id);
+
   // BeforeUnload interception ////////////////////////////////////////////////
 
   // In order to preserve any edits the user may have made in devtools, the

@@ -1374,6 +1374,14 @@ content::SecurityStyle Browser::GetSecurityStyle(
   return security_info.security_style;
 }
 
+void Browser::ShowCertificateViewerInDevTools(
+    content::WebContents* web_contents, int cert_id) {
+  DevToolsWindow* devtools_window =
+      DevToolsWindow::GetInstanceForInspectedWebContents(web_contents);
+  if (devtools_window)
+    devtools_window->ShowCertificateViewer(cert_id);
+}
+
 bool Browser::IsMouseLocked() const {
   return exclusive_access_manager_->mouse_lock_controller()->IsMouseLocked();
 }

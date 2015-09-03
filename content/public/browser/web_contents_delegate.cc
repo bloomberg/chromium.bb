@@ -240,4 +240,9 @@ SecurityStyle WebContentsDelegate::GetSecurityStyle(
   return content::SECURITY_STYLE_UNKNOWN;
 }
 
+void WebContentsDelegate::ShowCertificateViewerInDevTools(
+    WebContents* web_contents,
+    int cert_id) {
+}
+
 }  // namespace content

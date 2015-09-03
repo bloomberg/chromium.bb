@@ -12,6 +12,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -842,6 +843,12 @@ WebContents* DevToolsWindow::OpenURLFromTab(
   content::NavigationController::LoadURLParams load_url_params(params.url);
   main_web_contents_->GetController().LoadURLWithParams(load_url_params);
   return main_web_contents_;
+}
+
+void DevToolsWindow::ShowCertificateViewer(int certificate_id) {
+  ::ShowCertificateViewerByID(
+      is_docked_ ? GetInspectedWebContents() : main_web_contents_,
+      nullptr, certificate_id);
 }
 
 void DevToolsWindow::ActivateContents(WebContents* contents) {

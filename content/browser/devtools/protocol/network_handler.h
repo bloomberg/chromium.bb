@@ -40,6 +40,7 @@ class NetworkHandler {
                                     double upload_throughput);
   Response GetCertificateDetails(int certificate_id,
                                  scoped_refptr<CertificateDetails>* result);
+  Response ShowCertificateViewer(int certificate_id);
 
  private:
   void SendGetCookiesResponse(

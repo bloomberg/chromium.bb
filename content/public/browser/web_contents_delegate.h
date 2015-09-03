@@ -500,6 +500,11 @@ class CONTENT_EXPORT WebContentsDelegate {
       WebContents* web_contents,
       SecurityStyleExplanations* security_style_explanations);
 
+  // Displays platform-specific (OS) dialog with the certificate details.
+  virtual void ShowCertificateViewerInDevTools(
+      WebContents* web_contents,
+      int cert_id);
+
  protected:
   virtual ~WebContentsDelegate();
 

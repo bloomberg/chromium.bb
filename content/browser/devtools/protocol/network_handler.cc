@@ -15,6 +15,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
@@ -308,6 +310,15 @@ Response NetworkHandler::GetCertificateDetails(
                     ->set_issuer(issuer)
                     ->set_valid_from(valid_from.ToDoubleT())
                     ->set_valid_to(valid_to.ToDoubleT());
+  return Response::OK();
+}
+
+Response NetworkHandler::ShowCertificateViewer(int certificate_id) {
+  if (!host_)
+    return Response::InternalError("Could not connect to view");
+  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
+  web_contents->GetDelegate()->ShowCertificateViewerInDevTools(
+      web_contents, certificate_id);
   return Response::OK();
 }
 
