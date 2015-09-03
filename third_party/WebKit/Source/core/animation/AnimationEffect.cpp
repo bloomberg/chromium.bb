@@ -115,7 +115,7 @@ void AnimationEffect::computedTiming(ComputedTimingProperties& computedTiming)
     // KeyframeEffectOptions members.
     computedTiming.setDelay(specifiedTiming().startDelay * 1000);
     computedTiming.setEndDelay(specifiedTiming().endDelay * 1000);
-    computedTiming.setFill(Timing::fillModeString(resolvedFillMode(specifiedTiming().fillMode, isAnimation())));
+    computedTiming.setFill(Timing::fillModeString(resolvedFillMode(specifiedTiming().fillMode, isKeyframeEffect())));
     computedTiming.setIterationStart(specifiedTiming().iterationStart);
     computedTiming.setIterations(specifiedTiming().iterationCount);
 
@@ -150,7 +150,7 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
         const Phase currentPhase = calculatePhase(activeDuration, localTime, m_timing);
         // FIXME: parentPhase depends on groups being implemented.
         const AnimationEffect::Phase parentPhase = AnimationEffect::PhaseActive;
-        const double activeTime = calculateActiveTime(activeDuration, resolvedFillMode(m_timing.fillMode, isAnimation()), localTime, parentPhase, currentPhase, m_timing);
+        const double activeTime = calculateActiveTime(activeDuration, resolvedFillMode(m_timing.fillMode, isKeyframeEffect()), localTime, parentPhase, currentPhase, m_timing);
 
         double currentIteration;
         double timeFraction;
@@ -176,7 +176,7 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
             ASSERT(localActiveDuration >= 0);
             const double localLocalTime = localTime < m_timing.startDelay ? localTime : localActiveDuration + m_timing.startDelay;
             const AnimationEffect::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_timing);
-            const double localActiveTime = calculateActiveTime(localActiveDuration, resolvedFillMode(m_timing.fillMode, isAnimation()), localLocalTime, parentPhase, localCurrentPhase, m_timing);
+            const double localActiveTime = calculateActiveTime(localActiveDuration, resolvedFillMode(m_timing.fillMode, isKeyframeEffect()), localLocalTime, parentPhase, localCurrentPhase, m_timing);
             const double startOffset = m_timing.iterationStart * localIterationDuration;
             ASSERT(startOffset >= 0);
             const double scaledActiveTime = calculateScaledActiveTime(localActiveDuration, localActiveTime, startOffset, m_timing);

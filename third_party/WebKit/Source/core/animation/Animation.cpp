@@ -360,7 +360,7 @@ void Animation::notifyStartTime(double timelineTime)
 
 bool Animation::affects(const Element& element, CSSPropertyID property) const
 {
-    if (!m_content || !m_content->isAnimation())
+    if (!m_content || !m_content->isKeyframeEffect())
         return false;
 
     const KeyframeEffect* effect = toKeyframeEffect(m_content.get());
@@ -695,7 +695,7 @@ bool Animation::canStartAnimationOnCompositor() const
     if (m_playbackRate == 0 || (std::isinf(effectEnd()) && m_playbackRate < 0) || (timeline() && timeline()->playbackRate() != 1))
         return false;
 
-    return m_timeline && m_content && m_content->isAnimation() && playing();
+    return m_timeline && m_content && m_content->isKeyframeEffect() && playing();
 }
 
 bool Animation::isCandidateForAnimationOnCompositor() const
@@ -767,13 +767,13 @@ void Animation::restartAnimationOnCompositor()
 
 void Animation::cancelIncompatibleAnimationsOnCompositor()
 {
-    if (m_content && m_content->isAnimation())
+    if (m_content && m_content->isKeyframeEffect())
         toKeyframeEffect(m_content.get())->cancelIncompatibleAnimationsOnCompositor();
 }
 
 bool Animation::hasActiveAnimationsOnCompositor()
 {
-    if (!m_content || !m_content->isAnimation())
+    if (!m_content || !m_content->isKeyframeEffect())
         return false;
 
     return toKeyframeEffect(m_content.get())->hasActiveAnimationsOnCompositor();
@@ -954,7 +954,7 @@ void Animation::attachCompositedLayers()
         return;
 
     ASSERT(m_content);
-    ASSERT(m_content->isAnimation());
+    ASSERT(m_content->isKeyframeEffect());
 
     if (toKeyframeEffect(m_content.get())->canAttachCompositedLayers())
         toKeyframeEffect(m_content.get())->attachCompositedLayers();

@@ -61,7 +61,7 @@ public:
 
     ~KeyframeEffect() override;
 
-    bool isAnimation() const override { return true; }
+    bool isKeyframeEffect() const override { return true; }
 
     bool affects(PropertyHandle) const;
     const EffectModel* model() const { return m_model.get(); }
@@ -118,7 +118,7 @@ private:
     friend class AnimationAnimationV8Test;
 };
 
-DEFINE_TYPE_CASTS(KeyframeEffect, AnimationEffect, animationNode, animationNode->isAnimation(), animationNode.isAnimation());
+DEFINE_TYPE_CASTS(KeyframeEffect, AnimationEffect, animationNode, animationNode->isKeyframeEffect(), animationNode.isKeyframeEffect());
 
 } // namespace blink
 

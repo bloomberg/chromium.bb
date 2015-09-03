@@ -742,7 +742,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationEvent::data(c
     value->setString("state", player.playState());
     if (const AnimationEffect* effect = player.effect()) {
         value->setString("name", effect->name());
-        if (effect->isAnimation()) {
+        if (effect->isKeyframeEffect()) {
             if (Element* target = toKeyframeEffect(effect)->target())
                 setNodeInfo(value.get(), target, "nodeId", "nodeName");
         }

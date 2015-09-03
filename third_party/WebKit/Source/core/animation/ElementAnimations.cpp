@@ -50,7 +50,7 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
         const Animation& animation = *entry.key;
         ASSERT(animation.effect());
         // FIXME: Needs to consider AnimationGroup once added.
-        ASSERT(animation.effect()->isAnimation());
+        ASSERT(animation.effect()->isKeyframeEffect());
         const KeyframeEffect& effect = *toKeyframeEffect(animation.effect());
         if (effect.isCurrent()) {
             if (effect.affects(PropertyHandle(CSSPropertyOpacity)))

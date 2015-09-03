@@ -268,7 +268,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
                         update.updateAnimation(animationName, animation, InertEffect::create(
                             createKeyframeEffectModel(resolver, animatingElement, element, &style, parentStyle, animationName, keyframeTimingFunction.get(), i),
                             timing, isPaused, animation->unlimitedCurrentTimeInternal()), specifiedTiming, keyframesRule);
-                    } else if (!isAnimationStyleChange && animation->effect() && animation->effect()->isAnimation()) {
+                    } else if (!isAnimationStyleChange && animation->effect() && animation->effect()->isKeyframeEffect()) {
                         EffectModel* model = toKeyframeEffect(animation->effect())->model();
                         if (model && model->isKeyframeEffectModel()) {
                             KeyframeEffectModelBase* keyframeEffect = toKeyframeEffectModelBase(model);
@@ -389,7 +389,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         // after cancelation, transitions must be downgraded or they'll fail
         // to be considered when retriggering themselves. This can happen if
         // the transition is captured through getAnimations then played.
-        if (animation->effect() && animation->effect()->isAnimation())
+        if (animation->effect() && animation->effect()->isKeyframeEffect())
             toKeyframeEffect(animation->effect())->downgradeToNormal();
         animation->update(TimingUpdateOnDemand);
     }
@@ -399,7 +399,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         if (m_transitions.contains(id)) {
             Animation* animation = m_transitions.take(id).animation;
             // Transition must be downgraded
-            if (animation->effect() && animation->effect()->isAnimation())
+            if (animation->effect() && animation->effect()->isKeyframeEffect())
                 toKeyframeEffect(animation->effect())->downgradeToNormal();
         }
     }
