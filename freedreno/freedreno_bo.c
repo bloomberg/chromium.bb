@@ -245,7 +245,6 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 	lseek(fd, 0, SEEK_CUR);
 
 	bo = bo_from_handle(dev, size, handle);
-	bo->fd = fd;
 
 out_unlock:
 	pthread_mutex_unlock(&table_lock);
