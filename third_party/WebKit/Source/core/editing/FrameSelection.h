@@ -28,7 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
-#include "core/editing/Caret.h"
+#include "core/editing/CaretBase.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"

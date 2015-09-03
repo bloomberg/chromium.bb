@@ -26,7 +26,7 @@
 #ifndef DragCaretController_h
 #define DragCaretController_h
 
-#include "core/editing/Caret.h"
+#include "core/editing/CaretBase.h"
 
 namespace blink {
 

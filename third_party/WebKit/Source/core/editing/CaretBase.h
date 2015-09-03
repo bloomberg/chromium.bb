@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Caret_h
-#define Caret_h
+#ifndef CaretBase_h
+#define CaretBase_h
 
 #include "core/CoreExport.h"
 #include "core/editing/VisiblePosition.h"
@@ -74,4 +74,4 @@ private:
 
 } // namespace blink
 
-#endif // Caret_h
+#endif // CaretBase_h

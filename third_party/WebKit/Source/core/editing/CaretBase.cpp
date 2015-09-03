@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/editing/Caret.h"
+#include "core/editing/CaretBase.h"
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
@@ -53,11 +53,11 @@ static inline bool caretRendersInsideNode(Node* node)
 LayoutBlock* CaretBase::caretLayoutObject(Node* node)
 {
     if (!node)
-        return 0;
+        return nullptr;
 
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)
-        return 0;
+        return nullptr;
 
     // if caretNode is a block and caret is inside it then caret should be painted by that block
     bool paintedByBlock = layoutObject->isLayoutBlock() && caretRendersInsideNode(node);
