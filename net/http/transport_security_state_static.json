@@ -2921,7 +2921,6 @@
     { "name": "cobalt.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "dealbanana.it", "include_subdomains": true, "mode": "force-https" },
     { "name": "cydia-search.io", "include_subdomains": true, "mode": "force-https" },
-    { "name": "delbart.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "dotsiam.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "clevertarget.ru", "include_subdomains": true, "mode": "force-https" },
     { "name": "connext.de", "include_subdomains": true, "mode": "force-https" },
