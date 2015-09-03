@@ -155,7 +155,6 @@ class CONTENT_EXPORT RenderFrameProxy
                               float scale_factor,
                               const cc::SurfaceSequence& sequence);
   void OnUpdateOpener(int opener_routing_id);
-  void OnDisownOpener();
   void OnDidStopLoading();
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
   void OnDispatchLoad();

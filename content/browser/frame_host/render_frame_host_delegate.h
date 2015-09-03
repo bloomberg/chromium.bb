@@ -152,8 +152,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Ensure that |source_rfh| has swapped-out RenderViews and
   // RenderFrameProxies for itself and for all frames on its opener chain in
-  // the current frame's SiteInstance. Returns the routing ID of the
-  // swapped-out RenderView corresponding to |source_rfh|.
+  // the current frame's SiteInstance.
   //
   // TODO(alexmos): This method currently supports cross-process postMessage,
   // where we may need to create any missing proxies for the message's source
