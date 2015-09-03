@@ -29,6 +29,7 @@ include_rules = [
   "+components/open_from_clipboard",
   "+components/password_manager/core/browser",
   "+components/pref_registry",
+  "+components/proxy_config",
   "+components/rlz",
   "+components/search",
   "+components/search_engines",
