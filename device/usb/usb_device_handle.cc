@@ -4,17 +4,10 @@
 
 #include "device/usb/usb_device_handle.h"
 
-#include "base/logging.h"
-
 namespace device {
 
-void UsbDeviceHandle::GenericTransfer(UsbEndpointDirection direction,
-                                      uint8 endpoint,
-                                      scoped_refptr<net::IOBuffer> buffer,
-                                      size_t length,
-                                      unsigned int timeout,
-                                      const TransferCallback& callback) {
-  NOTREACHED();
-}
+UsbDeviceHandle::UsbDeviceHandle() {}
+
+UsbDeviceHandle::~UsbDeviceHandle() {}
 
 }  // namespace device

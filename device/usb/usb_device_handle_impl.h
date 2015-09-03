@@ -67,20 +67,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                        unsigned int timeout,
                        const TransferCallback& callback) override;
 
-  void BulkTransfer(UsbEndpointDirection direction,
-                    uint8 endpoint,
-                    scoped_refptr<net::IOBuffer> buffer,
-                    size_t length,
-                    unsigned int timeout,
-                    const TransferCallback& callback) override;
-
-  void InterruptTransfer(UsbEndpointDirection direction,
-                         uint8 endpoint,
-                         scoped_refptr<net::IOBuffer> buffer,
-                         size_t length,
-                         unsigned int timeout,
-                         const TransferCallback& callback) override;
-
   void IsochronousTransfer(UsbEndpointDirection direction,
                            uint8 endpoint,
                            scoped_refptr<net::IOBuffer> buffer,

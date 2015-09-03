@@ -630,24 +630,6 @@ void UsbDeviceHandleImpl::ControlTransfer(UsbEndpointDirection direction,
   }
 }
 
-void UsbDeviceHandleImpl::BulkTransfer(UsbEndpointDirection direction,
-                                       uint8 endpoint,
-                                       scoped_refptr<net::IOBuffer> buffer,
-                                       size_t length,
-                                       unsigned int timeout,
-                                       const TransferCallback& callback) {
-  GenericTransfer(direction, endpoint, buffer, length, timeout, callback);
-}
-
-void UsbDeviceHandleImpl::InterruptTransfer(UsbEndpointDirection direction,
-                                            uint8 endpoint,
-                                            scoped_refptr<net::IOBuffer> buffer,
-                                            size_t length,
-                                            unsigned int timeout,
-                                            const TransferCallback& callback) {
-  GenericTransfer(direction, endpoint, buffer, length, timeout, callback);
-}
-
 void UsbDeviceHandleImpl::IsochronousTransfer(
     UsbEndpointDirection direction,
     uint8 endpoint,

@@ -74,20 +74,6 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                unsigned int timeout,
                                const TransferCallback& callback) = 0;
 
-  virtual void BulkTransfer(UsbEndpointDirection direction,
-                            uint8 endpoint,
-                            scoped_refptr<net::IOBuffer> buffer,
-                            size_t length,
-                            unsigned int timeout,
-                            const TransferCallback& callback) = 0;
-
-  virtual void InterruptTransfer(UsbEndpointDirection direction,
-                                 uint8 endpoint,
-                                 scoped_refptr<net::IOBuffer> buffer,
-                                 size_t length,
-                                 unsigned int timeout,
-                                 const TransferCallback& callback) = 0;
-
   virtual void IsochronousTransfer(UsbEndpointDirection direction,
                                    uint8 endpoint,
                                    scoped_refptr<net::IOBuffer> buffer,
@@ -102,14 +88,14 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                scoped_refptr<net::IOBuffer> buffer,
                                size_t length,
                                unsigned int timeout,
-                               const TransferCallback& callback);
+                               const TransferCallback& callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<UsbDeviceHandle>;
 
-  UsbDeviceHandle() {};
+  UsbDeviceHandle();
 
-  virtual ~UsbDeviceHandle() {};
+  virtual ~UsbDeviceHandle();
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandle);
 };

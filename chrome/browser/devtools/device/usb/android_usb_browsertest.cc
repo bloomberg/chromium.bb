@@ -184,13 +184,6 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                        unsigned int timeout,
                        const TransferCallback& callback) override {}
 
-  void BulkTransfer(UsbEndpointDirection direction,
-                    uint8 endpoint,
-                    scoped_refptr<net::IOBuffer> buffer,
-                    size_t length,
-                    unsigned int timeout,
-                    const TransferCallback& callback) override {}
-
   void GenericTransfer(UsbEndpointDirection direction,
                        uint8 endpoint,
                        scoped_refptr<net::IOBuffer> buffer,
@@ -348,13 +341,6 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
         FROM_HERE, base::Bind(query.callback, device::USB_TRANSFER_COMPLETED,
                               query.buffer, query.size));
   }
-
-  void InterruptTransfer(UsbEndpointDirection direction,
-                         uint8 endpoint,
-                         scoped_refptr<net::IOBuffer> buffer,
-                         size_t length,
-                         unsigned int timeout,
-                         const TransferCallback& callback) override {}
 
   void IsochronousTransfer(UsbEndpointDirection direction,
                            uint8 endpoint,
