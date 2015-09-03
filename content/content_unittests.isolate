@@ -61,6 +61,7 @@
       'variables': {
         'files': [
           '../testing/test_env.py',
+          '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

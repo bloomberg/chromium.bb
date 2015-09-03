@@ -26,6 +26,7 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
+          '<(PRODUCT_DIR)/net_unittests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/pyproto/google/',
           'tools/testserver/',
         ],

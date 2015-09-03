@@ -38,6 +38,7 @@
       'variables': {
         'files': [
           '../../testing/test_env.py',
+          '<(PRODUCT_DIR)/message_center_unittests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/ui_test.pak',
         ],
       },

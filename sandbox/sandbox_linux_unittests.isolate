@@ -12,6 +12,9 @@
         'command': [
           '<(PRODUCT_DIR)/sandbox_linux_unittests',
         ],
+        'files': [
+          '<(PRODUCT_DIR)/sandbox_linux_unittests',
+        ],
       },
     }],
   ],

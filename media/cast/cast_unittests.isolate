@@ -38,6 +38,7 @@
       'variables': {
         'files': [
           '../../testing/test_env.py',
+          '<(PRODUCT_DIR)/cast_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

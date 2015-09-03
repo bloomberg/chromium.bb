@@ -4,6 +4,7 @@
 {
   'variables': {
     'command': [ '<(PRODUCT_DIR)/sandbox_mac_unittests' ],
+    'files': [ '<(PRODUCT_DIR)/sandbox_mac_unittests' ],
   },
   'includes': [ '../base/base.isolate' ],
 }

@@ -4,6 +4,7 @@
 {
   'variables': {
     'files': [
+      '<(PRODUCT_DIR)/courgette_unittests<(EXECUTABLE_SUFFIX)',
       'testdata/',
     ],
     'command': [

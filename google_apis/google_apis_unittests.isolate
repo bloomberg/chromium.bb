@@ -16,6 +16,7 @@
         ],
         'files': [
           '../testing/test_env.py',
+          '<(PRODUCT_DIR)/google_apis_unittests<(EXECUTABLE_SUFFIX)',
           'test/',
         ],
       },

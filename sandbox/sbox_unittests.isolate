@@ -12,6 +12,9 @@
         'command': [
           '<(PRODUCT_DIR)/sbox_unittests.exe',
         ],
+        'files': [
+          '<(PRODUCT_DIR)/sbox_unittests.exe',
+        ],
       },
     }],
     ['OS=="win" and target_arch=="ia32"', {

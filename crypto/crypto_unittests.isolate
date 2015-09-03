@@ -18,6 +18,7 @@
       'variables': {
         'files': [
           '../testing/test_env.py',
+          '<(PRODUCT_DIR)/crypto_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
