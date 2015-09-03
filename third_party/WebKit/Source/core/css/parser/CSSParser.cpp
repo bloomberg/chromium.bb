@@ -33,7 +33,7 @@ void CSSParser::parseDeclarationListForInspector(const CSSParserContext& context
 void CSSParser::parseSelector(const CSSParserContext& context, const String& selector, CSSSelectorList& selectorList)
 {
     CSSTokenizer::Scope scope(selector);
-    CSSSelectorParser::parseSelector(scope.tokenRange(), context, starAtom, nullptr, selectorList);
+    CSSSelectorParser::parseSelector(scope.tokenRange(), context, nullptr, selectorList);
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParser::parseRule(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& rule)

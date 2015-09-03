@@ -50,9 +50,9 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
     }
 }
 
-void CSSSelectorParser::parseSelector(CSSParserTokenRange range, const CSSParserContext& context, const AtomicString& defaultNamespace, StyleSheetContents* styleSheet, CSSSelectorList& output)
+void CSSSelectorParser::parseSelector(CSSParserTokenRange range, const CSSParserContext& context, StyleSheetContents* styleSheet, CSSSelectorList& output)
 {
-    CSSSelectorParser parser(context, defaultNamespace, styleSheet);
+    CSSSelectorParser parser(context, styleSheet);
     range.consumeWhitespace();
     CSSSelectorList result;
     parser.consumeComplexSelectorList(range, result);
@@ -63,9 +63,8 @@ void CSSSelectorParser::parseSelector(CSSParserTokenRange range, const CSSParser
     ASSERT(!(output.isValid() && parser.m_failedParsing));
 }
 
-CSSSelectorParser::CSSSelectorParser(const CSSParserContext& context, const AtomicString& defaultNamespace, StyleSheetContents* styleSheet)
+CSSSelectorParser::CSSSelectorParser(const CSSParserContext& context, StyleSheetContents* styleSheet)
 : m_context(context)
-, m_defaultNamespace(defaultNamespace)
 , m_styleSheet(styleSheet)
 , m_failedParsing(false)
 {
@@ -162,7 +161,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSPars
     if (!compoundSelector) {
         if (hasNamespace)
             return CSSParserSelector::create(determineNameInNamespace(namespacePrefix, elementName));
-        return CSSParserSelector::create(QualifiedName(nullAtom, elementName, m_defaultNamespace));
+        return CSSParserSelector::create(QualifiedName(nullAtom, elementName, defaultNamespace()));
     }
     prependTypeSelectorIfNeeded(namespacePrefix, elementName, compoundSelector.get());
     return compoundSelector.release();
@@ -536,20 +535,27 @@ bool CSSSelectorParser::consumeANPlusB(CSSParserTokenRange& range, std::pair<int
     return true;
 }
 
+const AtomicString& CSSSelectorParser::defaultNamespace() const
+{
+    if (!m_styleSheet)
+        return starAtom;
+    return m_styleSheet->defaultNamespace();
+}
+
 QualifiedName CSSSelectorParser::determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName)
 {
     if (!m_styleSheet)
-        return QualifiedName(prefix, localName, m_defaultNamespace);
+        return QualifiedName(prefix, localName, defaultNamespace());
     return QualifiedName(prefix, localName, m_styleSheet->determineNamespace(prefix));
 }
 
 void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector* compoundSelector)
 {
-    if (elementName.isNull() && m_defaultNamespace == starAtom && !compoundSelector->crossesTreeScopes())
+    if (elementName.isNull() && defaultNamespace() == starAtom && !compoundSelector->crossesTreeScopes())
         return;
 
     AtomicString determinedElementName = elementName.isNull() ? starAtom : elementName;
-    AtomicString determinedNamespace = namespacePrefix != nullAtom && m_styleSheet ? m_styleSheet->determineNamespace(namespacePrefix) : m_defaultNamespace;
+    AtomicString determinedNamespace = namespacePrefix != nullAtom && m_styleSheet ? m_styleSheet->determineNamespace(namespacePrefix) : defaultNamespace();
     QualifiedName tag(namespacePrefix, determinedElementName, determinedNamespace);
 
     if (compoundSelector->crossesTreeScopes())

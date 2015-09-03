@@ -113,10 +113,12 @@ TEST(CSSSelectorParserTest, InvalidANPlusB)
     }
 }
 
-TEST(CSSSelectorParserTest, ContentPseudoInCompound)
+TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound)
 {
     const char* testCases[][2] = {
-        { "::content", "*::content" }, // crbug.com/478969
+        { "::shadow", "*::shadow" }, // crbug.com/478969
+        { ".a::shadow", ".a::shadow" },
+        { "::content", "::content" },
         { ".a::content", ".a::content" },
         { "::content.a", ".a::content" },
         { "::content.a.b", ".b.a::content" },
@@ -128,7 +130,7 @@ TEST(CSSSelectorParserTest, ContentPseudoInCompound)
         CSSTokenizer::Scope scope(testCases[i][0]);
         CSSParserTokenRange range = scope.tokenRange();
         CSSSelectorList list;
-        CSSSelectorParser::parseSelector(range, CSSParserContext(HTMLStandardMode, nullptr), nullAtom, nullptr, list);
+        CSSSelectorParser::parseSelector(range, CSSParserContext(HTMLStandardMode, nullptr), nullptr, list);
         EXPECT_STREQ(testCases[i][1], list.selectorsText().ascii().data());
     }
 }

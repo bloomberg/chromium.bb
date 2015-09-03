@@ -31,7 +31,6 @@ namespace blink {
 
 CSSParserImpl::CSSParserImpl(const CSSParserContext& context, StyleSheetContents* styleSheet)
 : m_context(context)
-, m_defaultNamespace(starAtom)
 , m_styleSheet(styleSheet)
 , m_observerWrapper(nullptr)
 {
@@ -389,8 +388,6 @@ PassRefPtrWillBeRawPtr<StyleRuleNamespace> CSSParserImpl::consumeNamespaceRule(C
     if (uri.isNull() || !prelude.atEnd())
         return nullptr; // Parse error, expected string or URI
 
-    if (namespacePrefix.isNull())
-        m_defaultNamespace = uri;
     return StyleRuleNamespace::create(namespacePrefix, uri);
 }
 
@@ -539,7 +536,7 @@ PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTo
 
     OwnPtr<CSSParserSelector> selector;
     if (!typeSelector.isNull() && pseudo.isNull()) {
-        selector = CSSParserSelector::create(QualifiedName(nullAtom, typeSelector, m_defaultNamespace));
+        selector = CSSParserSelector::create(QualifiedName(nullAtom, typeSelector, m_styleSheet->defaultNamespace()));
     } else {
         selector = CSSParserSelector::create();
         if (!pseudo.isNull()) {
@@ -549,7 +546,7 @@ PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTo
                 return nullptr; // Parse error; unknown page pseudo-class
         }
         if (!typeSelector.isNull())
-            selector->prependTagSelector(QualifiedName(nullAtom, typeSelector, m_defaultNamespace));
+            selector->prependTagSelector(QualifiedName(nullAtom, typeSelector, m_styleSheet->defaultNamespace()));
     }
 
     if (m_observerWrapper) {
@@ -602,7 +599,7 @@ static void observeSelectors(CSSParserObserverWrapper& wrapper, CSSParserTokenRa
 PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
     CSSSelectorList selectorList;
-    CSSSelectorParser::parseSelector(prelude, m_context, m_defaultNamespace, m_styleSheet, selectorList);
+    CSSSelectorParser::parseSelector(prelude, m_context, m_styleSheet, selectorList);
     if (!selectorList.isValid())
         return nullptr; // Parse error, invalid selector list
 

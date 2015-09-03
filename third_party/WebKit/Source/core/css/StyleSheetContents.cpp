@@ -60,6 +60,7 @@ unsigned StyleSheetContents::estimatedSizeInBytes() const
 StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext& context)
     : m_ownerRule(ownerRule)
     , m_originalURL(originalURL)
+    , m_defaultNamespace(starAtom)
     , m_hasSyntacticallyValidCSSHeader(true)
     , m_didLoadErrorOccur(false)
     , m_isMutable(false)
@@ -77,6 +78,7 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     , m_importRules(o.m_importRules.size())
     , m_childRules(o.m_childRules.size())
     , m_namespaces(o.m_namespaces)
+    , m_defaultNamespace(o.m_defaultNamespace)
     , m_hasSyntacticallyValidCSSHeader(o.m_hasSyntacticallyValidCSSHeader)
     , m_didLoadErrorOccur(false)
     , m_isMutable(false)
@@ -258,8 +260,11 @@ void StyleSheetContents::wrapperDeleteRule(unsigned index)
 
 void StyleSheetContents::parserAddNamespace(const AtomicString& prefix, const AtomicString& uri)
 {
-    if (uri.isNull() || prefix.isNull())
+    ASSERT(!uri.isNull());
+    if (prefix.isNull()) {
+        m_defaultNamespace = uri;
         return;
+    }
     PrefixNamespaceURIMap::AddResult result = m_namespaces.add(prefix, uri);
     if (result.isNewEntry)
         return;

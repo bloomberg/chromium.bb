@@ -64,6 +64,7 @@ public:
 
     const CSSParserContext& parserContext() const { return m_parserContext; }
 
+    const AtomicString& defaultNamespace() { return m_defaultNamespace; }
     const AtomicString& determineNamespace(const AtomicString& prefix);
 
     void parseAuthorStyleSheet(const CSSStyleSheetResource*, const SecurityOrigin*);
@@ -174,6 +175,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> m_childRules;
     typedef HashMap<AtomicString, AtomicString> PrefixNamespaceURIMap;
     PrefixNamespaceURIMap m_namespaces;
+    AtomicString m_defaultNamespace;
 
     bool m_hasSyntacticallyValidCSSHeader : 1;
     bool m_didLoadErrorOccur : 1;

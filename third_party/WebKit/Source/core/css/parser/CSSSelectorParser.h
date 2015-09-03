@@ -19,12 +19,12 @@ class StyleSheetContents;
 class CORE_EXPORT CSSSelectorParser {
     STACK_ALLOCATED();
 public:
-    static void parseSelector(CSSParserTokenRange, const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*, CSSSelectorList&);
+    static void parseSelector(CSSParserTokenRange, const CSSParserContext&, StyleSheetContents*, CSSSelectorList&);
 
     static bool consumeANPlusB(CSSParserTokenRange&, std::pair<int, int>&);
 
 private:
-    CSSSelectorParser(const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*);
+    CSSSelectorParser(const CSSParserContext&, StyleSheetContents*);
 
     // These will all consume trailing comments if successful
 
@@ -48,6 +48,7 @@ private:
     CSSSelector::Match consumeAttributeMatch(CSSParserTokenRange&);
     CSSSelector::AttributeMatchType consumeAttributeFlags(CSSParserTokenRange&);
 
+    const AtomicString& defaultNamespace() const;
     QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
     void prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector*);
     void rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, CSSParserSelector*, bool tagIsImplicit);
@@ -55,7 +56,6 @@ private:
     static PassOwnPtr<CSSParserSelector> addSimpleSelectorToCompound(PassOwnPtr<CSSParserSelector> compoundSelector, PassOwnPtr<CSSParserSelector> simpleSelector);
 
     const CSSParserContext& m_context;
-    AtomicString m_defaultNamespace;
     RawPtrWillBeMember<StyleSheetContents> m_styleSheet; // FIXME: Should be const
 
     bool m_failedParsing;
