@@ -5,6 +5,7 @@
 #include "gpu/gles2_conform_support/egl/display.h"
 
 #include <vector>
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -29,6 +30,9 @@ namespace egl {
 Display::Display(EGLNativeDisplayType display_id)
     : display_id_(display_id),
       is_initialized_(false),
+#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+      exit_manager_(new base::AtExitManager),
+#endif
       create_offscreen_(false),
       create_offscreen_width_(0),
       create_offscreen_height_(0) {
