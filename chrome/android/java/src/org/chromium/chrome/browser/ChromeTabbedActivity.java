@@ -425,7 +425,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
                     getToolbarManager()
                             .getActionModeController().getActionModeCallback());
-            getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
+            if (getContextualSearchManager() != null) {
+                getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
+            }
 
             OnClickListener tabSwitcherClickHandler = new OnClickListener() {
                 @Override
