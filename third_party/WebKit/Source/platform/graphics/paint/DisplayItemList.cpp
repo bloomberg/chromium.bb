@@ -244,7 +244,7 @@ struct DisplayItemList::OutOfOrderIndexContext {
     DisplayItemIndicesByClientMap displayItemIndicesByClient;
 };
 
-DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id& id, OutOfOrderIndexContext& context)
+DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItem(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
 {
     ASSERT(clientCacheIsValid(id.client));
 
@@ -252,16 +252,12 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::i
     if (foundIndex != kNotFound)
         return m_currentDisplayItems.begin() + foundIndex;
 
-    return findOutOfOrderCachedItemForward(currentIt, id, context);
+    return findOutOfOrderCachedItemForward(id, context);
 }
 
 // Find forward for the item and index all skipped indexable items.
-DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayItems::iterator currentIt, const DisplayItem::Id& id, OutOfOrderIndexContext& context)
+DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
 {
-    // Items before currentIt should have been copied. Skip indexing of them.
-    if (currentIt - context.nextItemToIndex > 0)
-        context.nextItemToIndex = currentIt;
-
     DisplayItems::iterator currentEnd = m_currentDisplayItems.end();
     for (; context.nextItemToIndex != currentEnd; ++context.nextItemToIndex) {
         const DisplayItem& item = *context.nextItemToIndex;
@@ -367,7 +363,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
             ASSERT(newDisplayItem.isCached());
             ASSERT(clientCacheIsValid(newDisplayItem.client()) || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !paintOffsetWasInvalidated(newDisplayItem.client())));
             if (!isSynchronized) {
-                currentIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, outOfOrderIndexContext);
+                currentIt = findOutOfOrderCachedItem(newDisplayItemId, outOfOrderIndexContext);
 
                 if (currentIt == currentEnd) {
 #ifndef NDEBUG
@@ -406,6 +402,9 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
             if (isSynchronized)
                 ++currentIt;
         }
+        // Items before currentIt should have been copied so we don't need to index them.
+        if (currentIt - outOfOrderIndexContext.nextItemToIndex > 0)
+            outOfOrderIndexContext.nextItemToIndex = currentIt;
     }
 
 #if ENABLE(ASSERT)

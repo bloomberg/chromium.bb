@@ -516,6 +516,31 @@ TEST_F(DisplayItemListTest, CachedSubsequenceSwapOrder)
         TestDisplayItem(container1, DisplayItem::EndSubsequence));
 }
 
+TEST_F(DisplayItemListTest, OutOfOrderNoCrash)
+{
+    TestDisplayItemClient client("client");
+    GraphicsContext context(&displayItemList());
+
+    const DisplayItem::Type type1 = DisplayItem::DrawingFirst;
+    const DisplayItem::Type type2 = static_cast<DisplayItem::Type>(DisplayItem::DrawingFirst + 1);
+    const DisplayItem::Type type3 = static_cast<DisplayItem::Type>(DisplayItem::DrawingFirst + 2);
+    const DisplayItem::Type type4 = static_cast<DisplayItem::Type>(DisplayItem::DrawingFirst + 3);
+
+    drawRect(context, client, type1, FloatRect(100, 100, 100, 100));
+    drawRect(context, client, type2, FloatRect(100, 100, 50, 200));
+    drawRect(context, client, type3, FloatRect(100, 100, 50, 200));
+    drawRect(context, client, type4, FloatRect(100, 100, 100, 100));
+
+    displayItemList().commitNewDisplayItems();
+
+    drawRect(context, client, type2, FloatRect(100, 100, 50, 200));
+    drawRect(context, client, type3, FloatRect(100, 100, 50, 200));
+    drawRect(context, client, type1, FloatRect(100, 100, 100, 100));
+    drawRect(context, client, type4, FloatRect(100, 100, 100, 100));
+
+    displayItemList().commitNewDisplayItems();
+}
+
 TEST_F(DisplayItemListTest, CachedNestedSubsequenceUpdate)
 {
     TestDisplayItemClient container1("container1");

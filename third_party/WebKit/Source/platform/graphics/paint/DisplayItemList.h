@@ -178,8 +178,8 @@ private:
     static void addItemToIndexIfNeeded(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
 
     struct OutOfOrderIndexContext;
-    DisplayItems::iterator findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id&, OutOfOrderIndexContext&);
-    DisplayItems::iterator findOutOfOrderCachedItemForward(DisplayItems::iterator currentIt, const DisplayItem::Id&, OutOfOrderIndexContext&);
+    DisplayItems::iterator findOutOfOrderCachedItem(const DisplayItem::Id&, OutOfOrderIndexContext&);
+    DisplayItems::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&, OutOfOrderIndexContext&);
     void copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList);
 
 #if ENABLE(ASSERT)
