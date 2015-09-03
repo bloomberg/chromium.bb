@@ -1797,8 +1797,8 @@ TEST_F(PictureLayerTilingIteratorTest, GiantRect) {
   float contents_scale = 1.f;
 
   client_.SetTileSize(tile_size);
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreatePile(tile_size, layer_size, filled);
+  scoped_refptr<FakePicturePileImpl> pile = FakePicturePileImpl::CreatePile(
+      tile_size, layer_size, gfx::Rect(), filled);
   tiling_ = TestablePictureLayerTiling::Create(
       PENDING_TREE, contents_scale, pile, &client_, LayerTreeSettings());
 

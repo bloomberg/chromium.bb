@@ -31,13 +31,14 @@ FakePicturePileImpl::~FakePicturePileImpl() {}
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreatePile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds,
+    const gfx::Rect& recorded_viewport,
     bool is_filled) {
   FakePicturePile pile(LayerTreeSettings().minimum_contents_scale,
                        LayerTreeSettings().default_tile_grid_size);
   pile.tiling().SetBorderTexels(0);
   pile.tiling().SetTilingSize(layer_bounds);
   pile.tiling().SetMaxTextureSize(tile_size);
-  pile.SetRecordedViewport(is_filled ? gfx::Rect(layer_bounds) : gfx::Rect());
+  pile.SetRecordedViewport(recorded_viewport);
   pile.SetHasAnyRecordings(is_filled);
   if (is_filled) {
     for (int x = 0; x < pile.tiling().num_tiles_x(); ++x) {
@@ -53,15 +54,17 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreatePile(
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFilledPile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
+  gfx::Rect recorded_viewport(layer_bounds);
   bool is_filled = true;
-  return CreatePile(tile_size, layer_bounds, is_filled);
+  return CreatePile(tile_size, layer_bounds, recorded_viewport, is_filled);
 }
 
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateEmptyPile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
+  gfx::Rect recorded_viewport;
   bool is_filled = false;
-  return CreatePile(tile_size, layer_bounds, is_filled);
+  return CreatePile(tile_size, layer_bounds, recorded_viewport, is_filled);
 }
 
 scoped_refptr<FakePicturePileImpl>

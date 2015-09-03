@@ -198,6 +198,10 @@ bool DisplayListRasterSource::HasRecordings() const {
   return !!display_list_.get();
 }
 
+gfx::Rect DisplayListRasterSource::RecordedViewport() const {
+  return recorded_viewport_;
+}
+
 void DisplayListRasterSource::SetShouldAttemptToUseDistanceFieldText() {
   should_attempt_to_use_distance_field_text_ = true;
 }

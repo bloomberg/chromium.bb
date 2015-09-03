@@ -45,6 +45,7 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
       std::vector<skia::PositionPixelRef>* pixel_refs) const override;
   bool CoversRect(const gfx::Rect& layer_rect) const override;
   bool HasRecordings() const override;
+  gfx::Rect RecordedViewport() const override;
   void SetShouldAttemptToUseDistanceFieldText() override;
   bool ShouldAttemptToUseDistanceFieldText() const override;
   void DidBeginTracing() override;

@@ -20,6 +20,7 @@ class FakePicturePileImpl : public PicturePileImpl {
   static scoped_refptr<FakePicturePileImpl> CreatePile(
       const gfx::Size& tile_size,
       const gfx::Size& layer_bounds,
+      const gfx::Rect& recorded_viewport,
       bool is_filled);
 
   static scoped_refptr<FakePicturePileImpl> CreateFilledPileWithDefaultTileSize(

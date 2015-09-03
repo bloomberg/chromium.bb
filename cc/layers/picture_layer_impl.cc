@@ -182,11 +182,19 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Rect visible_geometry_rect =
         scaled_occlusion.GetUnoccludedContentRect(geometry_rect);
-    // TODO(enne): HasRecordings is a workaround for crash in crbug.com/526402.
-    // Need proper fix for when recording does not cover visible rect.
-    if (visible_geometry_rect.IsEmpty() || !raster_source_->HasRecordings())
+
+    // The raster source may not be valid over the entire visible rect,
+    // and rastering outside of that may cause incorrect pixels.
+    gfx::Rect scaled_recorded_viewport = gfx::ScaleToEnclosingRect(
+        raster_source_->RecordedViewport(), max_contents_scale);
+    geometry_rect.Intersect(scaled_recorded_viewport);
+    opaque_rect.Intersect(scaled_recorded_viewport);
+    visible_geometry_rect.Intersect(scaled_recorded_viewport);
+
+    if (visible_geometry_rect.IsEmpty())
       return;
 
+    DCHECK(raster_source_->HasRecordings());
     gfx::Rect quad_content_rect = shared_quad_state->visible_quad_layer_rect;
     gfx::Size texture_size = quad_content_rect.size();
     gfx::RectF texture_rect = gfx::RectF(texture_size);

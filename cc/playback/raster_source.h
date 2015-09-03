@@ -83,6 +83,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Returns true if this raster source has anything to rasterize.
   virtual bool HasRecordings() const = 0;
 
+  // Valid rectangle in which everything is recorded and can be rastered from.
+  virtual gfx::Rect RecordedViewport() const = 0;
+
   // Informs the raster source that it should attempt to use distance field text
   // during rasterization.
   virtual void SetShouldAttemptToUseDistanceFieldText() = 0;

@@ -59,6 +59,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   bool IsSolidColor() const override;
   SkColor GetSolidColor() const override;
   bool HasRecordings() const override;
+  gfx::Rect RecordedViewport() const override;
   bool CanUseLCDText() const override;
   scoped_refptr<RasterSource> CreateCloneWithoutLCDText() const override;
 

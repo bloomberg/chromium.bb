@@ -1697,6 +1697,7 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
 
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
+  gfx::Rect layer_rect(layer_bounds);
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
@@ -1706,6 +1707,7 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
   gfx::Rect layer_invalidation(150, 200, 30, 180);
   SetupTreesWithInvalidation(pending_pile, active_pile, layer_invalidation);
 
+  active_layer_->SetContentsOpaque(true);
   active_layer_->draw_properties().visible_layer_rect = gfx::Rect(layer_bounds);
 
   AppendQuadsData data;
@@ -1716,6 +1718,69 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
   ASSERT_EQ(1U, render_pass->quad_list.size());
   EXPECT_EQ(DrawQuad::PICTURE_CONTENT,
             render_pass->quad_list.front()->material);
+  EXPECT_EQ(render_pass->quad_list.front()->rect, layer_rect);
+  EXPECT_EQ(render_pass->quad_list.front()->opaque_rect, layer_rect);
+  EXPECT_EQ(render_pass->quad_list.front()->visible_rect, layer_rect);
+}
+
+TEST_F(PictureLayerImplTest, ResourcelessPartialRecording) {
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(700, 650);
+  gfx::Rect layer_rect(layer_bounds);
+  host_impl_.SetDeviceScaleFactor(2.f);
+
+  gfx::Rect recorded_viewport(20, 30, 40, 50);
+  bool is_filled = true;
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreatePile(tile_size, layer_bounds,
+                                      recorded_viewport, is_filled);
+  SetupPendingTree(active_pile);
+  ActivateTree();
+
+  active_layer_->SetContentsOpaque(true);
+  gfx::Rect visible_rect(30, 35, 10, 5);
+  active_layer_->draw_properties().visible_layer_rect = visible_rect;
+
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, nullptr);
+  active_layer_->AppendQuads(render_pass.get(), &data);
+  active_layer_->DidDraw(nullptr);
+
+  gfx::Rect scaled_visible = gfx::ScaleToEnclosingRect(visible_rect, 2.f);
+  gfx::Rect scaled_recorded = gfx::ScaleToEnclosingRect(recorded_viewport, 2.f);
+  gfx::Rect quad_visible = gfx::IntersectRects(scaled_visible, scaled_recorded);
+
+  ASSERT_EQ(1U, render_pass->quad_list.size());
+  EXPECT_EQ(DrawQuad::PICTURE_CONTENT,
+            render_pass->quad_list.front()->material);
+  const DrawQuad* quad = render_pass->quad_list.front();
+  EXPECT_EQ(quad_visible, quad->rect);
+  EXPECT_EQ(quad_visible, quad->opaque_rect);
+  EXPECT_EQ(quad_visible, quad->visible_rect);
+}
+
+TEST_F(PictureLayerImplTest, ResourcelessEmptyRecording) {
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(700, 650);
+
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  SetupPendingTree(active_pile);
+  ActivateTree();
+
+  active_layer_->SetContentsOpaque(true);
+  active_layer_->draw_properties().visible_layer_rect = gfx::Rect(layer_bounds);
+
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, nullptr);
+  active_layer_->AppendQuads(render_pass.get(), &data);
+  active_layer_->DidDraw(nullptr);
+
+  EXPECT_EQ(0U, render_pass->quad_list.size());
 }
 
 TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {

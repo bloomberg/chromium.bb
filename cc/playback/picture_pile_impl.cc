@@ -340,6 +340,10 @@ bool PicturePileImpl::HasRecordings() const {
   return has_any_recordings_;
 }
 
+gfx::Rect PicturePileImpl::RecordedViewport() const {
+  return recorded_viewport_;
+}
+
 gfx::Rect PicturePileImpl::PaddedRect(const PictureMapKey& key) const {
   gfx::Rect padded_rect = tiling_.TileBounds(key.first, key.second);
   padded_rect.Inset(-buffer_pixels(), -buffer_pixels(), -buffer_pixels(),
