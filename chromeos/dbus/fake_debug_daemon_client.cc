@@ -80,13 +80,6 @@ void FakeDebugDaemonClient::GetNetworkInterfaces(
       FROM_HERE, base::Bind(callback, false, ""));
 }
 
-void FakeDebugDaemonClient::GetPerfData(uint32_t duration,
-                                        const GetPerfDataCallback& callback) {
-  std::vector<uint8> data;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, data));
-}
-
 void FakeDebugDaemonClient::GetPerfOutput(
     uint32_t duration,
     const GetPerfOutputCallback& callback) {

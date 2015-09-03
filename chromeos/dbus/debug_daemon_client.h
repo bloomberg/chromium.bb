@@ -83,17 +83,6 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
   virtual void GetNetworkInterfaces(
       const GetNetworkInterfacesCallback& callback) = 0;
 
-  // Called once GetPerfData() is complete only if the the data is successfully
-  // obtained from debugd.
-  typedef base::Callback<void(const std::vector<uint8>& data)>
-      GetPerfDataCallback;
-
-  // Runs perf for |duration| seconds and returns data collected.
-  // TODO(sque): This is being replaced by GetPerfOutput(). Remove this function
-  // and the above callback typedef when the new function is running.
-  virtual void GetPerfData(uint32_t duration,
-                           const GetPerfDataCallback& callback) = 0;
-
   // Called once GetPerfOutput() is complete only if the the data is
   // successfully obtained from debugd.
   // Arguments:
