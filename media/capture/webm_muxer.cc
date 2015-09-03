@@ -4,17 +4,23 @@
 
 #include "media/capture/webm_muxer.h"
 
-#include <limits>
-
 #include "base/bind.h"
+#include "media/base/limits.h"
 #include "media/base/video_frame.h"
 
 namespace media {
 
 static double GetFrameRate(const scoped_refptr<VideoFrame>& video_frame) {
-  double frame_rate = 0.0f;
-  base::IgnoreResult(video_frame->metadata()->GetDouble(
-      VideoFrameMetadata::FRAME_RATE, &frame_rate));
+  const double kZeroFrameRate = 0.0;
+  const double kDefaultFrameRate = 30.0;
+
+  double frame_rate = kDefaultFrameRate;
+  if (!video_frame->metadata()->GetDouble(
+          VideoFrameMetadata::FRAME_RATE, &frame_rate) ||
+      frame_rate <= kZeroFrameRate ||
+      frame_rate > media::limits::kMaxFramesPerSecond) {
+    frame_rate = kDefaultFrameRate;
+  }
   return frame_rate;
 }
 
