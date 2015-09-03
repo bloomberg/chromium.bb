@@ -10,6 +10,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/html/DOMFormData.h"
 #include "modules/credentialmanager/FormDataOptions.h"
+#include "modules/credentialmanager/PasswordCredentialData.h"
 #include "platform/credentialmanager/PlatformPasswordCredential.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebCredential.h"
@@ -22,12 +23,12 @@ PasswordCredential* PasswordCredential::create(WebPasswordCredential* webPasswor
     return new PasswordCredential(webPasswordCredential);
 }
 
-PasswordCredential* PasswordCredential::create(const String& id, const String& password, const String& name, const String& icon, ExceptionState& exceptionState)
+PasswordCredential* PasswordCredential::create(const PasswordCredentialData& data, ExceptionState& exceptionState)
 {
-    KURL iconURL = parseStringAsURL(icon, exceptionState);
+    KURL iconURL = parseStringAsURL(data.iconURL(), exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-    return new PasswordCredential(id, password, name, iconURL);
+    return new PasswordCredential(data.id(), data.password(), data.name(), iconURL);
 }
 
 PasswordCredential::PasswordCredential(WebPasswordCredential* webPasswordCredential)

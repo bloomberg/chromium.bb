@@ -15,22 +15,13 @@ namespace blink {
 
 class DOMFormData;
 class FormDataOptions;
+class PasswordCredentialData;
 class WebPasswordCredential;
 
 class PasswordCredential final : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PasswordCredential* create(const String& id, const String& password, ExceptionState& exceptionState)
-    {
-        return create(id, password, emptyString(), emptyString(), exceptionState);
-    }
-
-    static PasswordCredential* create(const String& id, const String& password, const String& name, ExceptionState& exceptionState)
-    {
-        return create(id, password, name, emptyString(), exceptionState);
-    }
-
-    static PasswordCredential* create(const String& id, const String& password, const String& name, const String& icon, ExceptionState&);
+    static PasswordCredential* create(const PasswordCredentialData&, ExceptionState&);
     static PasswordCredential* create(WebPasswordCredential*);
 
     // PasswordCredential.idl
