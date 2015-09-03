@@ -1,4 +1,9 @@
 {
+    "AutofillFieldMetadata": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "AutomaticTabDiscarding": [
         {
             "group_name": "Enabled"
@@ -7,6 +12,16 @@
     "CaptivePortalInterstitial": [
         {
             "group_name": "Enabled"
+        }
+    ],
+    "ExtensionDeveloperModeWarning": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "ExtensionInstallVerification": [
+        {
+            "group_name": "Enforce"
         }
     ],
     "InstanceID": [
@@ -19,7 +34,7 @@
             "group_name": "Enabled"
         }
     ],
-    "RefreshTokenDeviceId": [
+    "PluginPowerSaver": [
         {
             "group_name": "Enabled"
         }
@@ -30,6 +45,11 @@
             "params": {
               "alternate_protocol_probability_threshold": "0.01"
             }
+        }
+    ],
+    "RefreshTokenDeviceId": [
+        {
+            "group_name": "Enabled"
         }
     ],
     "ReportCertificateErrors": [
@@ -61,6 +81,17 @@
             "group_name": "DontShowAndDontSend"
         }
     ],
+    "SafeBrowsingReportPhishingErrorLink": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Control"
+        },
+        {
+            "group_name": "Disabled"
+        }
+    ],
     "SdchPersistence": [
         {
             "group_name": "Enabled"
@@ -74,7 +105,7 @@
             "group_name": "Disabled"
         }
     ],
-    "AutofillFieldMetadata": [
+    "TabSyncByRecency": [
         {
             "group_name": "Enabled"
         }
@@ -90,32 +121,6 @@
             "params": {
                 "fetch_period_min": "30"
             }
-        }
-    ],
-    "ExtensionInstallVerification": [
-        {
-            "group_name": "Enforce"
-        }
-    ],
-    "ExtensionDeveloperModeWarning": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
-    "TabSyncByRecency": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
-    "SafeBrowsingReportPhishingErrorLink": [
-        {
-            "group_name": "Enabled"
-        },
-        {
-            "group_name": "Control"
-        },
-        {
-            "group_name": "Disabled"
         }
     ]
 }
