@@ -79,6 +79,8 @@ class MEDIA_EXPORT VideoRendererImpl
   void ThreadMain() override;
 
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
+  void SetGpuMemoryBufferVideoForTesting(
+      scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
 
   // VideoRendererSink::RenderCallback implementation.
   scoped_refptr<VideoFrame> Render(base::TimeTicks deadline_min,
@@ -106,7 +108,8 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status.
-  void FrameReady(VideoFrameStream::Status status,
+  void FrameReady(uint32_t sequence_token,
+                  VideoFrameStream::Status status,
                   const scoped_refptr<VideoFrame>& frame);
 
   // Helper method for adding a frame to |ready_frames_|.
@@ -189,10 +192,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // Provides video frames to VideoRendererImpl.
   scoped_ptr<VideoFrameStream> video_frame_stream_;
 
-  // Callback called when a new frame is available from |video_frame_stream_|.
-  base::Callback<void(VideoFrameStream::Status status,
-                      const scoped_refptr<VideoFrame>&)> frame_ready_cb_;
-
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
   scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
 
@@ -240,6 +239,11 @@ class MEDIA_EXPORT VideoRendererImpl
   };
   State state_;
 
+  // An integer that represents how many times the video frame stream has been
+  // reset. This is useful when doing video frame copies asynchronously since we
+  // want to discard video frames that might be received after the stream has
+  // been reset.
+  uint32_t sequence_token_;
   // Video thread handle.
   base::PlatformThreadHandle thread_;
 

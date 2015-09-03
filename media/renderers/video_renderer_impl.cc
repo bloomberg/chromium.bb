@@ -64,6 +64,7 @@ VideoRendererImpl::VideoRendererImpl(
       rendered_end_of_stream_(false),
       frame_available_(&lock_),
       state_(kUninitialized),
+      sequence_token_(0),
       thread_(),
       pending_read_(false),
       drop_frames_(drop_frames),
@@ -81,12 +82,6 @@ VideoRendererImpl::VideoRendererImpl(
       gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
     gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
         media_task_runner, worker_task_runner, gpu_factories));
-    frame_ready_cb_ =
-        base::Bind(&VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers,
-                   weak_factory_.GetWeakPtr());
-  } else {
-    frame_ready_cb_ =
-        base::Bind(&VideoRendererImpl::FrameReady, weak_factory_.GetWeakPtr());
   }
 }
 
@@ -433,6 +428,11 @@ void VideoRendererImpl::SetTickClockForTesting(
   tick_clock_.swap(tick_clock);
 }
 
+void VideoRendererImpl::SetGpuMemoryBufferVideoForTesting(
+    scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool) {
+  gpu_memory_buffer_pool_.swap(gpu_memory_buffer_pool);
+}
+
 void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   time_progressing_ = time_progressing;
@@ -489,22 +489,28 @@ void VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers(
     VideoFrameStream::Status status,
     const scoped_refptr<VideoFrame>& frame) {
   if (status != VideoFrameStream::OK || start_timestamp_ > frame->timestamp()) {
-    VideoRendererImpl::FrameReady(status, frame);
+    VideoRendererImpl::FrameReady(sequence_token_, status, frame);
     return;
   }
 
   DCHECK(frame);
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       frame, base::Bind(&VideoRendererImpl::FrameReady,
-                        weak_factory_.GetWeakPtr(), status));
+                        weak_factory_.GetWeakPtr(), sequence_token_, status));
 }
 
-void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
+void VideoRendererImpl::FrameReady(uint32_t sequence_token,
+                                   VideoFrameStream::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   bool start_sink = false;
   {
     base::AutoLock auto_lock(lock_);
+    // Stream has been reset and this VideoFrame was decoded before the reset
+    // but the async copy finished after.
+    if (sequence_token != sequence_token_)
+      return;
+
     DCHECK_NE(state_, kUninitialized);
     DCHECK_NE(state_, kFlushed);
 
@@ -710,9 +716,16 @@ void VideoRendererImpl::AttemptRead_Locked() {
   switch (state_) {
     case kPlaying:
       pending_read_ = true;
-      video_frame_stream_->Read(frame_ready_cb_);
+      if (gpu_memory_buffer_pool_) {
+        video_frame_stream_->Read(base::Bind(
+            &VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers,
+            weak_factory_.GetWeakPtr()));
+      } else {
+        video_frame_stream_->Read(base::Bind(&VideoRendererImpl::FrameReady,
+                                             weak_factory_.GetWeakPtr(),
+                                             sequence_token_));
+      }
       return;
-
     case kUninitialized:
     case kInitializing:
     case kFlushing:
@@ -724,12 +737,14 @@ void VideoRendererImpl::AttemptRead_Locked() {
 void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kFlushing, state_);
-  DCHECK(!pending_read_);
   DCHECK(ready_frames_.empty());
   DCHECK(!received_end_of_stream_);
   DCHECK(!rendered_end_of_stream_);
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
+  // Pending read might be true if an async video frame copy is in flight.
+  pending_read_ = false;
+  sequence_token_++;
   state_ = kFlushed;
   latest_possible_paint_time_ = last_media_time_ = base::TimeTicks();
   base::ResetAndReturn(&flush_cb_).Run();

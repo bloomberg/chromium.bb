@@ -26,11 +26,12 @@ class GpuVideoAcceleratorFactories;
 // in a round trip to the browser/GPU process.
 class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
  public:
+  GpuMemoryBufferVideoFramePool();
   GpuMemoryBufferVideoFramePool(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories);
-  ~GpuMemoryBufferVideoFramePool();
+  virtual ~GpuMemoryBufferVideoFramePool();
 
   // Callback used by MaybeCreateHardwareFrame to deliver a new VideoFrame
   // after it has been copied to GpuMemoryBuffers.
@@ -43,8 +44,9 @@ class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
   // |video_frame|.
   // If it's not possible to create a new hardware VideoFrame, |video_frame|
   // itself will passed to |cb|.
-  void MaybeCreateHardwareFrame(const scoped_refptr<VideoFrame>& video_frame,
-                                const FrameReadyCB& frame_ready_cb);
+  virtual void MaybeCreateHardwareFrame(
+      const scoped_refptr<VideoFrame>& video_frame,
+      const FrameReadyCB& frame_ready_cb);
 
  private:
   class PoolImpl;

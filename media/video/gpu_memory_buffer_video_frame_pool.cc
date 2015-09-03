@@ -555,6 +555,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::ReturnFrameResources(
   frame_resources->in_use = false;
 }
 
+GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool() {}
+
 GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
