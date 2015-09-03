@@ -63,22 +63,15 @@
                 style="@android:style/Widget.Holo.ProgressBar.Large"/>
         </FrameLayout>
     </LinearLayout>
-    <!-- The navigation drawer. -->
+    <!-- The navigation drawer. The account-switcher and navigation menu will be programmatically
+         added to this view. -->
     <LinearLayout
-        android:layout_width="240dp"
+        android:id="@+id/navigation_drawer"
+        android:layout_width="300dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_gravity="start"
         android:padding="16dp"
         android:background="@android:color/background_light">
-        <Spinner
-            android:id="@+id/accounts_spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-        <ListView
-            android:id="@+id/navigation_menu"
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:choiceMode="singleChoice"/>
     </LinearLayout>
 </android.support.v4.widget.DrawerLayout>

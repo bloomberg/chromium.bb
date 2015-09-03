@@ -4,8 +4,6 @@
 
 package org.chromium.chromoting;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -27,12 +25,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.chromium.chromoting.accountswitcher.AccountSwitcher;
+import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
 import org.chromium.chromoting.jni.JniInterface;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -41,7 +42,7 @@ import java.util.Locale;
  * also requests and renews authentication tokens using the system account manager.
  */
 public class Chromoting extends AppCompatActivity implements JniInterface.ConnectionListener,
-        AdapterView.OnItemSelectedListener, HostListLoader.Callback, View.OnClickListener {
+        AccountSwitcher.Callback, HostListLoader.Callback, View.OnClickListener {
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
 
@@ -59,14 +60,12 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
     /** Result code used for starting {@link CardboardDesktopActivity}. */
     public static final int CARDBOARD_DESKTOP_ACTIVITY = 1;
 
-    /** User's account details. */
-    private Account mAccount;
+    /** Preference names for storing selected and recent accounts. */
+    private static final String PREFERENCE_SELECTED_ACCOUNT = "account_name";
+    private static final String PREFERENCE_RECENT_ACCOUNT_PREFIX = "recent_account_";
 
-    /** List of accounts on the system. */
-    private Account[] mAccounts;
-
-    /** SpinnerAdapter used in the action bar for selecting accounts. */
-    private AccountsAdapter mAccountsAdapter;
+    /** User's account name (email). */
+    private String mAccount;
 
     /** Account auth token. */
     private String mToken;
@@ -109,7 +108,11 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
      */
     private boolean mWaitingForAuthToken = false;
 
+    private DrawerLayout mDrawerLayout;
+
     private ActionBarDrawerToggle mDrawerToggle;
+
+    private AccountSwitcher mAccountSwitcher;
 
     /** Shows a warning explaining that a Google account is required, then closes the activity. */
     private void showNoAccountsDialog() {
@@ -188,12 +191,17 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
 
         findViewById(R.id.host_setup_link_android).setOnClickListener(this);
 
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 R.string.open_navigation_drawer, R.string.close_navigation_drawer);
-        drawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        ListView navigationMenu = (ListView) findViewById(R.id.navigation_menu);
+        ListView navigationMenu = new ListView(this);
+        navigationMenu.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        navigationMenu.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT));
+
         String[] navigationMenuItems = new String[] {
             getString(R.string.actionbar_help)
         };
@@ -211,6 +219,15 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
 
         // Make the navigation drawer icon visible in the ActionBar.
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mAccountSwitcher = AccountSwitcherFactory.getInstance().createAccountSwitcher(this, this);
+        mAccountSwitcher.setNavigation(navigationMenu);
+        LinearLayout navigationDrawer = (LinearLayout) findViewById(R.id.navigation_drawer);
+        View switcherView = mAccountSwitcher.getView();
+        switcherView.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        navigationDrawer.addView(switcherView, 0);
 
         // Bring native components online.
         JniInterface.loadLibrary(this);
@@ -240,35 +257,46 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
     public void onStart() {
         super.onStart();
 
-        mAccounts = AccountManager.get(this).getAccountsByType(ACCOUNT_TYPE);
-        if (mAccounts.length == 0) {
-            showNoAccountsDialog();
-            return;
-        }
-
-        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
-        int index = -1;
-        if (prefs.contains("account_name") && prefs.contains("account_type")) {
-            mAccount = new Account(prefs.getString("account_name", null),
-                    prefs.getString("account_type", null));
-            index = Arrays.asList(mAccounts).indexOf(mAccount);
-        }
-        if (index == -1) {
-            // Preference not loaded, or does not correspond to a valid account, so just pick the
-            // first account arbitrarily.
-            index = 0;
-            mAccount = mAccounts[0];
-        }
-
         getSupportActionBar().setTitle(R.string.mode_me2me);
 
-        mAccountsAdapter = new AccountsAdapter(this, mAccounts);
-        Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
-        accountsSpinner.setAdapter(mAccountsAdapter);
-        accountsSpinner.setOnItemSelectedListener(this);
-        accountsSpinner.setSelection(index);
+        // Load any previously-selected account and recents from Preferences.
+        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
 
-        refreshHostList();
+        String selected = prefs.getString(PREFERENCE_SELECTED_ACCOUNT, null);
+
+        ArrayList<String> recents = new ArrayList<String>();
+        for (int i = 0;; i++) {
+            String prefName = PREFERENCE_RECENT_ACCOUNT_PREFIX + i;
+            String recent = prefs.getString(prefName, null);
+            if (recent != null) {
+                recents.add(recent);
+            } else {
+                break;
+            }
+        }
+
+        String[] recentsArray = recents.toArray(new String[recents.size()]);
+        mAccountSwitcher.setSelectedAndRecentAccounts(selected, recentsArray);
+        mAccountSwitcher.reloadAccounts();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        String[] recents = mAccountSwitcher.getRecentAccounts();
+
+        SharedPreferences.Editor preferences = getPreferences(MODE_PRIVATE).edit();
+        if (mAccount != null) {
+            preferences.putString(PREFERENCE_SELECTED_ACCOUNT, mAccount);
+        }
+
+        for (int i = 0; i < recents.length; i++) {
+            String prefName = PREFERENCE_RECENT_ACCOUNT_PREFIX + i;
+            preferences.putString(prefName, recents[i]);
+        }
+
+        preferences.apply();
     }
 
     /** Called when the activity is finally finished. */
@@ -377,7 +405,7 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
                 });
         SessionConnector connector = new SessionConnector(this, this, mHostListLoader);
         mAuthenticator = new SessionAuthenticator(this, host);
-        connector.connectToHost(mAccount.name, mToken, host, mAuthenticator);
+        connector.connectToHost(mAccount, mToken, host, mAuthenticator);
     }
 
     private void refreshHostList() {
@@ -395,7 +423,7 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
     private void requestAuthToken(boolean expireCurrentToken) {
         mWaitingForAuthToken = true;
 
-        OAuthTokenFetcher fetcher = new OAuthTokenFetcher(this, mAccount.name,
+        OAuthTokenFetcher fetcher = new OAuthTokenFetcher(this, mAccount,
                 new OAuthTokenFetcher.Callback() {
                     @Override
                     public void onTokenFetched(String token) {
@@ -422,11 +450,8 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
     }
 
     @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int itemPosition, long itemId) {
-        mAccount = mAccounts[itemPosition];
-
-        getPreferences(MODE_PRIVATE).edit().putString("account_name", mAccount.name)
-                .putString("account_type", mAccount.type).apply();
+    public void onAccountSelected(String accountName) {
+        mAccount = accountName;
 
         // The current host list is no longer valid for the new account, so clear the list.
         mHosts = new HostInfo[0];
@@ -435,7 +460,13 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
     }
 
     @Override
-    public void onNothingSelected(AdapterView<?> parent) {
+    public void onAccountsListEmpty() {
+        showNoAccountsDialog();
+    }
+
+    @Override
+    public void onRequestCloseDrawer() {
+        mDrawerLayout.closeDrawers();
     }
 
     @Override

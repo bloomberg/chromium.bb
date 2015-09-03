@@ -6,6 +6,12 @@ package org.chromium.chromoting;
 
 import android.app.Application;
 
+import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
+
 /** Main context for the application. */
 public class RemotingApplication extends Application {
+    @Override
+    public void onCreate() {
+        AccountSwitcherFactory.setInstance(new AccountSwitcherFactory());
+    }
 }
