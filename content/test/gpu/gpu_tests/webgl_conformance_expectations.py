@@ -134,6 +134,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mountainlion', ('intel', 0x116)], bug=314997)
     self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
         ['mountainlion', ('intel', 0x116)], bug=322795)
+    self.Flaky('conformance/ogles/*',
+        ['mountainlion', ('intel', 0x116)], bug=527250)
 
     # Mac 10.8 / Intel HD 4000 failures.
     self.Fail('conformance/context/context-hidden-alpha.html',
