@@ -12,13 +12,13 @@ using gfx::ViewConfiguration;
 
 namespace ui {
 namespace {
-// This was the minimum tap/press size used on Android before the new gesture
-// detection pipeline.
-const float kMinGestureBoundsLengthDips = 24.f;
 
-// This value is somewhat arbitrary, but provides a reasonable maximum
-// approximating a large thumb depression.
-const float kMaxGestureBoundsLengthDips = kMinGestureBoundsLengthDips * 4.f;
+// Touch radii on Android can be both noisy and inaccurate. The old Java
+// gesture detection pipeline used a fixed value of 24 as the gesture bounds.
+// We relax that value somewhat, but not by much; there's a fairly small window
+// within which gesture bounds are useful for features like touch adjustment.
+const float kMinGestureBoundsLengthDips = 20.f;
+const float kMaxGestureBoundsLengthDips = 32.f;
 
 class GestureConfigurationAndroid : public GestureConfiguration {
  public:
