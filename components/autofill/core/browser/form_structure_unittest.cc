@@ -55,13 +55,12 @@ class FormStructureTest : public testing::Test {
 
  protected:
   void DisableAutofillMetadataFieldTrial() {
-    field_trial_list_.reset(nullptr);
+    field_trial_list_.reset();
   }
 
  private:
   void EnableAutofillMetadataFieldTrial() {
-    // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
-    field_trial_list_.reset(nullptr);
+    field_trial_list_.reset();
     field_trial_list_.reset(
         new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
