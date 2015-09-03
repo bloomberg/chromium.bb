@@ -18,3 +18,4 @@ config = benchmark_runner.ProjectConfig(
 
 config.telemetry_dir = os.path.realpath(os.path.join(
     top_level_dir, os.pardir, 'telemetry'))
+
