@@ -39,6 +39,7 @@ drm_intel_bo_subdata
 drm_intel_bo_unmap
 drm_intel_bo_unpin
 drm_intel_bo_unreference
+drm_intel_bo_use_48b_address_range
 drm_intel_bo_wait_rendering
 drm_intel_bufmgr_check_aperture_space
 drm_intel_bufmgr_destroy
