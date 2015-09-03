@@ -28,21 +28,14 @@
 
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/FastAllocBase.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-class DeprecatedPaintLayer;
 class HitTestLocation;
 
 class ClipRect {
     WTF_MAKE_FAST_ALLOCATED(ClipRect);
 public:
-    static PassOwnPtr<ClipRect> create(const ClipRect& other)
-    {
-        return adoptPtr(new ClipRect(other));
-    }
-
     ClipRect()
         : m_hasRadius(false)
     { }
@@ -75,18 +68,7 @@ public:
     bool isEmpty() const { return m_rect.isEmpty(); }
     bool intersects(const HitTestLocation&) const;
 
-    const DeprecatedPaintLayer* rootLayer() const
-    {
-        return m_rootLayer;
-    }
-
-    void setRootLayer(const DeprecatedPaintLayer* rootLayer)
-    {
-        m_rootLayer = rootLayer;
-    }
-
 private:
-    const DeprecatedPaintLayer* m_rootLayer;
     LayoutRect m_rect;
     bool m_hasRadius;
 };

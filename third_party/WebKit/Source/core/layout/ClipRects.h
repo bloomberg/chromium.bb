@@ -31,15 +31,20 @@
 
 namespace blink {
 
-class DeprecatedPaintLayer;
-
-class ClipRects {
+class ClipRects : public RefCounted<ClipRects> {
     WTF_MAKE_FAST_ALLOCATED(ClipRects);
 public:
+    static PassRefPtr<ClipRects> create()
+    {
+        return adoptRef(new ClipRects);
+    }
+    static PassRefPtr<ClipRects> create(const ClipRects& other)
+    {
+        return adoptRef(new ClipRects(other));
+    }
 
     ClipRects()
-        : m_rootLayer(nullptr)
-        , m_fixed(0)
+        : m_fixed(0)
     {
     }
 
@@ -77,24 +82,12 @@ public:
         m_fixedClipRect = other.fixedClipRect();
         m_posClipRect = other.posClipRect();
         m_fixed = other.fixed();
-        m_rootLayer = other.m_rootLayer;
         return *this;
-    }
-
-    void setRootLayer(const DeprecatedPaintLayer* layer)
-    {
-        m_rootLayer = layer;
-    }
-
-    const DeprecatedPaintLayer* rootLayer()
-    {
-        return m_rootLayer;
     }
 
 private:
     ClipRects(const LayoutRect& r)
-        : m_rootLayer(nullptr)
-        , m_overflowClipRect(r)
+        : m_overflowClipRect(r)
         , m_fixedClipRect(r)
         , m_posClipRect(r)
         , m_fixed(0)
@@ -102,18 +95,13 @@ private:
     }
 
     ClipRects(const ClipRects& other)
-        : m_rootLayer(other.m_rootLayer)
-        , m_overflowClipRect(other.overflowClipRect())
+        : m_overflowClipRect(other.overflowClipRect())
         , m_fixedClipRect(other.fixedClipRect())
         , m_posClipRect(other.posClipRect())
         , m_fixed(other.fixed())
     {
     }
 
-    // ClipRects are accumulated relative to this layer. Its clips and the clips
-    // of its descendents are intersected down to the layer being calculated. It
-    // also determines the coordinate space of the clips.
-    const DeprecatedPaintLayer* m_rootLayer;
     ClipRect m_overflowClipRect;
     ClipRect m_fixedClipRect;
     ClipRect m_posClipRect;

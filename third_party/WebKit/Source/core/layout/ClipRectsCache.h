@@ -15,14 +15,12 @@ namespace blink {
 
 class DeprecatedPaintLayer;
 
-// TODO: Because this is mostly empty, this should be moved to a better place
 enum ClipRectsCacheSlot {
     // Relative to the ancestor treated as the root (e.g. transformed layer). Used for hit testing.
     RootRelativeClipRects,
     RootRelativeClipRectsIgnoringViewportClip,
 
     // Relative to the LayoutView's layer. Used for compositing overlap testing.
-    // Computed during the compositing update step (see CompositingInputsUpdater::update).
     AbsoluteClipRects,
 
     // Relative to painting ancestor. Used for painting.
@@ -31,6 +29,37 @@ enum ClipRectsCacheSlot {
 
     NumberOfClipRectsCacheSlots,
     UncachedClipRects,
+};
+
+class ClipRectsCache {
+    WTF_MAKE_FAST_ALLOCATED(ClipRectsCache);
+public:
+    struct Entry {
+        Entry()
+            : root(nullptr)
+#if ENABLE(ASSERT)
+            , scrollbarRelevancy(IgnoreOverlayScrollbarSize)
+#endif
+        {
+        }
+        const DeprecatedPaintLayer* root;
+        RefPtr<ClipRects> clipRects;
+#if ENABLE(ASSERT)
+        OverlayScrollbarSizeRelevancy scrollbarRelevancy;
+#endif
+    };
+    Entry& get(ClipRectsCacheSlot slot)
+    {
+        ASSERT(slot < NumberOfClipRectsCacheSlots);
+        return m_entries[slot];
+    }
+    void clear(ClipRectsCacheSlot slot)
+    {
+        ASSERT(slot < NumberOfClipRectsCacheSlots);
+        m_entries[slot] = Entry();
+    }
+private:
+    Entry m_entries[NumberOfClipRectsCacheSlots];
 };
 
 } // namespace blink

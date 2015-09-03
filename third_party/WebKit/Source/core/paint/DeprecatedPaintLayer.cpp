@@ -376,6 +376,8 @@ void DeprecatedPaintLayer::updateTransform(const ComputedStyle* oldStyle, const 
 
         // DeprecatedPaintLayers with transforms act as clip rects roots, so clear the cached clip rects here.
         m_clipper.clearClipRectsIncludingDescendants();
+    } else if (hasTransform) {
+        m_clipper.clearClipRectsIncludingDescendants(AbsoluteClipRects);
     }
 
     updateTransformationMatrix();
@@ -1400,10 +1402,7 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
 
     // Calculate clip rects relative to the enclosingPaginationLayer. The purpose of this call is to determine our bounds clipped to intermediate
     // layers between us and the pagination context. It's important to minimize the number of fragments we need to create and this helps with that.
-    // This code uses a non-standard root layer, which can populate our cache with unexpected values.
-    // Thus we bypass the clip rect cache by ignoring |clipRectsCacheSlot| and passing UncachedClipRects.
-    // TODO(chadarmstrong): If possible, this code should use the cache (one way would be by computing the root layer relative to |clipRectsCacheSlot|).
-    ClipRectsContext paginationClipRectsContext(enclosingPaginationLayer(), UncachedClipRects, inOverlayScrollbarSizeRelevancy);
+    ClipRectsContext paginationClipRectsContext(enclosingPaginationLayer(), clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy);
     if (respectOverflowClip == IgnoreOverflowClip)
         paginationClipRectsContext.setIgnoreOverflowClip();
     LayoutRect layerBoundsInFlowThread;
@@ -1442,10 +1441,7 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
     ClipRect ancestorClipRect = dirtyRect;
     if (const DeprecatedPaintLayer* paginationParentLayer = enclosingPaginationLayer()->parent()) {
         const DeprecatedPaintLayer* ancestorLayer = rootLayerIsInsidePaginationLayer ? paginationParentLayer : rootLayer;
-        // This code uses a non-standard root layer, which can populate our cache with unexpected values.
-        // Thus we bypass the clip rect cache by ignoring |clipRectsCacheSlot| and passing UncachedClipRects.
-        // TODO(chadarmstrong): If possible, this code should use the cache (one way would be by computing the root layer relative to |clipRectsCacheSlot|).
-        ClipRectsContext clipRectsContext(ancestorLayer, UncachedClipRects, inOverlayScrollbarSizeRelevancy);
+        ClipRectsContext clipRectsContext(ancestorLayer, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy);
         if (respectOverflowClip == IgnoreOverflowClip)
             clipRectsContext.setIgnoreOverflowClip();
         ancestorClipRect = enclosingPaginationLayer()->clipper().backgroundClipRect(clipRectsContext);

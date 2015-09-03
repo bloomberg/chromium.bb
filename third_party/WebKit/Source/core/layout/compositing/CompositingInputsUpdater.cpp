@@ -26,7 +26,6 @@ CompositingInputsUpdater::~CompositingInputsUpdater()
 void CompositingInputsUpdater::update()
 {
     TRACE_EVENT0("blink", "CompositingInputsUpdater::update");
-    m_rootLayer->clipper().precalculateAbsoluteClipRects();
     updateRecursive(m_rootLayer, DoNotForceUpdate, AncestorInfo());
 }
 
