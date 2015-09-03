@@ -35,8 +35,7 @@ ServerView::ServerView(ServerViewDelegate* delegate,
       // problems for code that adds an observer as part of an observer
       // notification (such as ServerViewDrawTracker).
       observers_(base::ObserverList<ServerViewObserver>::NOTIFY_EXISTING_ONLY),
-      current_binding_(this),
-      pending_binding_(this) {
+      binding_(this) {
   DCHECK(delegate);  // Must provide a delegate.
 }
 
@@ -52,9 +51,9 @@ ServerView::~ServerView() {
   FOR_EACH_OBSERVER(ServerViewObserver, observers_, OnViewDestroyed(this));
 
   // SurfaceFactory's destructor will attempt to return resources which will
-  // call back into here and access |current_client_| so we should destroy
+  // call back into here and access |client_| so we should destroy
   // |surface_factory_| early on.
-  DestroyAllSurfaceFactoryResources();
+  surface_factory_.reset();
 }
 
 void ServerView::AddObserver(ServerViewObserver* observer) {
@@ -67,10 +66,18 @@ void ServerView::RemoveObserver(ServerViewObserver* observer) {
 
 void ServerView::Bind(mojo::InterfaceRequest<Surface> request,
                       mojo::SurfaceClientPtr client) {
-  if (pending_binding_.is_bound())
-    pending_binding_.Close();
-  pending_binding_.Bind(request.Pass());
-  pending_client_ = client.Pass();
+  if (binding_.is_bound()) {
+    if (surface_factory_) {
+      // Destroy frame surfaces submitted by the old client before replacing
+      // client_, so those surfaces will be returned to the old client.
+      surface_factory_->DestroyAll();
+      SetSurfaceId(cc::SurfaceId());
+    }
+    binding_.Close();
+    client_ = nullptr;
+  }
+  binding_.Bind(request.Pass());
+  client_ = client.Pass();
 }
 
 void ServerView::Add(ServerView* child) {
@@ -243,21 +250,6 @@ void ServerView::SetSurfaceId(cc::SurfaceId surface_id) {
 void ServerView::SubmitCompositorFrame(
     mojo::CompositorFramePtr frame,
     const SubmitCompositorFrameCallback& callback) {
-  // We let the previous connection continue to submit frames until the new
-  // connection submits a frame in order to avoid white flashes as new apps
-  // are embedded.
-  if (pending_binding_.is_bound()) {
-    // Destroy frame surfaces submitted by the |current_client_| before
-    // replacing it with the |pending_client_|, so those surfaces will be
-    // returned through the correct connection.
-    DestroyAllSurfaceFactoryResources();
-    if (current_binding_.is_bound())
-      current_binding_.Close();
-
-    // Set the pending binding as current.
-    current_binding_.Bind(pending_binding_.Unbind());
-    current_client_ = pending_client_.Pass();
-  }
   gfx::Size frame_size = frame->passes[0]->output_rect.To<gfx::Rect>().size();
   // Create Surfaces state on demand.
   if (!surface_factory_) {
@@ -311,21 +303,11 @@ void ServerView::BuildDebugInfo(const std::string& depth,
 }
 #endif
 
-void ServerView::DestroyAllSurfaceFactoryResources() {
-  if (!surface_factory_)
-    return;
-  surface_factory_->DestroyAll();
-  // We clear the |surface_id_| without calling SetSurfaceId in order to avoid
-  // scheduling a frame to be drawn. Since we've destroyed all resources, we
-  // cannot use the current |surface_id_| again, if there is one.
-  surface_id_ = cc::SurfaceId();
-}
-
 void ServerView::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  if (!current_client_)
+  if (!client_)
     return;
-  current_client_->ReturnResources(
+  client_->ReturnResources(
       mojo::Array<mojo::ReturnedResourcePtr>::From(resources));
 }
 
