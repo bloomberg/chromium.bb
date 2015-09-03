@@ -251,29 +251,34 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   PopulateSourceMap();
   WakeEventPage::Get()->Init(content::RenderThread::Get());
 
-  // chrome-extensions: and chrome-extensions-resource: schemes should be
-  // treated as secure because communication with them is entirely in the
-  // browser, so there is no danger of manipulation or eavesdropping on
-  // communication with them by third parties.
-  WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
-  blink::WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
+  // WebSecurityPolicy whitelists. They should be registered for both
+  // chrome-extension: and chrome-extension-resource.
+  using RegisterFunction = void (*)(const WebString&);
+  RegisterFunction register_functions[] = {
+      // Treat as secure because communication with them is entirely in the
+      // browser, so there is no danger of manipulation or eavesdropping on
+      // communication with them by third parties.
+      WebSecurityPolicy::registerURLSchemeAsSecure,
+      // As far as Blink is concerned, they should be allowed to receive CORS
+      // requests. At the Extensions layer, requests will actually be blocked
+      // unless overridden by the web_accessible_resources manifest key.
+      // TODO(kalman): See what happens with a service worker.
+      WebSecurityPolicy::registerURLSchemeAsCORSEnabled,
+      // Resources should bypass Content Security Policy checks when included in
+      // protected resources. TODO(kalman): What are "protected resources"?
+      WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy,
+      // Extension resources are HTTP-like and safe to expose to the fetch API.
+      // The rules for the fetch API are consistent with XHR.
+      WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI,
+  };
 
+  WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
   WebString extension_resource_scheme(base::ASCIIToUTF16(
       kExtensionResourceScheme));
-  blink::WebSecurityPolicy::registerURLSchemeAsSecure(
-      extension_resource_scheme);
-
-  // chrome-extension: and chrome-extension-resource: resources should be
-  // allowed to receive CORS requests.
-  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
-  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_resource_scheme);
-
-  // chrome-extension: resources should bypass Content Security Policy checks
-  // when included in protected resources.
-  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
-      extension_scheme);
-  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
-      extension_resource_scheme);
+  for (RegisterFunction func : register_functions) {
+    func(extension_scheme);
+    func(extension_resource_scheme);
+  }
 }
 
 Dispatcher::~Dispatcher() {

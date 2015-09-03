@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,10 +23,14 @@ TestExtensionDir::~TestExtensionDir() {
 }
 
 void TestExtensionDir::WriteManifest(base::StringPiece manifest) {
-  // TODO(kalman): Write some more convenient way to specify a manifest than
-  // via JSON, which requires awkwardly escaping all quotes. E.g. add a feature
-  // to JSONReader that can parse '' literals rather than "".
   WriteFile(FILE_PATH_LITERAL("manifest.json"), manifest);
+}
+
+void TestExtensionDir::WriteManifestWithSingleQuotes(
+    base::StringPiece manifest) {
+  std::string double_quotes;
+  base::ReplaceChars(manifest.data(), "'", "\"", &double_quotes);
+  WriteManifest(double_quotes);
 }
 
 void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
