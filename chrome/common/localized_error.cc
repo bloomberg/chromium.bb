@@ -46,8 +46,7 @@ namespace {
 static const char kRedirectLoopLearnMoreUrl[] =
     "https://support.google.com/chrome/answer/95626";
 static const char kWeakDHKeyLearnMoreUrl[] =
-    "https://www.chromium.org/administrators/"
-    "err_ssl_weak_server_ephemeral_dh_key";
+    "https://support.google.com/chrome?p=dh_error";
 static const char kCachedCopyButtonFieldTrial[] =
     "EnableGoogleCachedCopyTextExperiment";
 static const char kCachedCopyButtonExpTypeControl[] = "control";
