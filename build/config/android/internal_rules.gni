@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
+import("//third_party/ijar/ijar.gni")
 
 assert(is_android)
 
@@ -476,26 +477,11 @@ template("process_java_prebuilt") {
     }
   }
 
-  action("${target_name}__jar_toc") {
-    script = "//build/android/gyp/jar_toc.py"
-    depfile = "$target_gen_dir/$target_name.d"
-    outputs = [
-      depfile,
-      _jar_toc_path,
-      _jar_toc_path + ".md5.stamp",
-    ]
-    inputs = [
-      _output_jar_path,
-    ]
-    args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-      "--jar-path",
-      rebase_path(_output_jar_path, root_build_dir),
-      "--toc-path",
-      rebase_path(_jar_toc_path, root_build_dir),
-    ]
-    public_deps = [
+  # TODO(agrieve): Change file extension to .ijar and use them in classpaths.
+  generate_interface_jar("${target_name}__jar_toc") {
+    input_jar = _output_jar_path
+    output_jar = _jar_toc_path
+    deps = [
       ":$_output_jar_target",
     ]
   }
