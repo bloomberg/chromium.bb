@@ -5,8 +5,9 @@
 #include "config.h"
 #include "core/animation/DoubleStyleInterpolation.h"
 
-#include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleBuilder.h"
+#include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 

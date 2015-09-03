@@ -1216,6 +1216,8 @@
             'css/parser/CSSParserTokenRange.cpp',
             'css/parser/CSSParserTokenRange.h',
             'css/parser/CSSParserValues.cpp',
+            'css/parser/CSSParserSelector.h',
+            'css/parser/CSSParserSelector.cpp',
             'css/parser/CSSPropertyParser.cpp',
             'css/parser/CSSPropertyParser.h',
             'css/parser/CSSSelectorParser.cpp',

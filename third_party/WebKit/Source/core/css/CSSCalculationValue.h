@@ -35,7 +35,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSParserValues.h"
 #include "platform/CalculationValue.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

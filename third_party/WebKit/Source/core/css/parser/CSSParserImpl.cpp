@@ -14,6 +14,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserObserver.h"
 #include "core/css/parser/CSSParserObserverWrapper.h"
+#include "core/css/parser/CSSParserSelector.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/parser/CSSSelectorParser.h"

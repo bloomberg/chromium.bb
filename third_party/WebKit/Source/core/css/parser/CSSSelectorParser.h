@@ -6,8 +6,8 @@
 #define CSSSelectorParser_h
 
 #include "core/CoreExport.h"
+#include "core/css/parser/CSSParserSelector.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSParserValues.h"
 
 namespace blink {
 
