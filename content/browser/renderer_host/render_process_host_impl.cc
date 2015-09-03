@@ -756,7 +756,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(ENABLE_PLUGINS)
           PluginServiceImpl::GetInstance(),
 #else
-          NULL,
+          nullptr,
 #endif
           GetBrowserContext(),
           GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
@@ -765,8 +765,16 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           media_internals,
           storage_partition_impl_->GetDOMStorageContext()));
   AddFilter(render_message_filter.get());
-  AddFilter(
-      new RenderFrameMessageFilter(GetID(), widget_helper_.get()));
+  AddFilter(new RenderFrameMessageFilter(
+      GetID(),
+#if defined(ENABLE_PLUGINS)
+      PluginServiceImpl::GetInstance(),
+#else
+      nullptr,
+#endif
+      GetBrowserContext(),
+      GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
+      widget_helper_.get()));
   BrowserContext* browser_context = GetBrowserContext();
   ResourceContext* resource_context = browser_context->GetResourceContext();
 

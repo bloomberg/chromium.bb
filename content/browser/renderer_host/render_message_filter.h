@@ -9,7 +9,6 @@
 #include <windows.h>
 #endif
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -23,11 +22,9 @@
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/common/three_d_api_types.h"
 #include "ipc/message_filter.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
-#include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -48,6 +45,7 @@
 #include "content/common/pepper_renderer_instance_data.h"
 #endif
 
+class GURL;
 struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
 
@@ -101,9 +99,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                       MediaInternals* media_internals,
                       DOMStorageContextWrapper* dom_storage_context);
 
-  // IPC::MessageFilter methods:
-  void OnChannelClosing() override;
-
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
@@ -136,8 +131,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   friend class BrowserThread;
   friend class base::DeleteHelper<RenderMessageFilter>;
 
-  class OpenChannelToNpapiPluginCallback;
-
   void OnGetProcessMemorySizes(size_t* private_bytes, size_t* shared_bytes);
   void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
                       int* route_id,
@@ -151,18 +144,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnCreateFullscreenWidget(int opener_id,
                                 int* route_id,
                                 int* surface_id);
-  void OnSetCookie(int render_frame_id,
-                   const GURL& url,
-                   const GURL& first_party_for_cookies,
-                   const std::string& cookie);
-  void OnGetCookies(int render_frame_id,
-                    const GURL& url,
-                    const GURL& first_party_for_cookies,
-                    IPC::Message* reply_msg);
-  void OnCookiesEnabled(int render_frame_id,
-                        const GURL& url,
-                        const GURL& first_party_for_cookies,
-                        bool* cookies_enabled);
 
 #if defined(OS_MACOSX)
   // Messages for OOP font loading.
@@ -179,18 +160,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void GetPluginsCallback(IPC::Message* reply_msg,
                           const std::vector<WebPluginInfo>& plugins);
-  void OnGetPluginInfo(int render_frame_id,
-                       const GURL& url,
-                       const GURL& policy_url,
-                       const std::string& mime_type,
-                       bool* found,
-                       WebPluginInfo* info,
-                       std::string* actual_mime_type);
-  void OnOpenChannelToPlugin(int render_frame_id,
-                             const GURL& url,
-                             const GURL& policy_url,
-                             const std::string& mime_type,
-                             IPC::Message* reply_msg);
   void OnOpenChannelToPepperPlugin(const base::FilePath& path,
                                    IPC::Message* reply_msg);
   void OnDidCreateOutOfProcessPepperInstance(
@@ -265,30 +234,8 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                               IPC::Message* reply_msg);
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
-  // Check the policy for getting cookies. Gets the cookies if allowed.
-  void CheckPolicyForCookies(int render_frame_id,
-                             const GURL& url,
-                             const GURL& first_party_for_cookies,
-                             IPC::Message* reply_msg,
-                             const net::CookieList& cookie_list);
-
-  // Writes the cookies to reply messages, and sends the message.
-  // Callback functions for getting cookies from cookie store.
-  void SendGetCookiesResponse(IPC::Message* reply_msg,
-                              const std::string& cookies);
-
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
-  void OnCompletedOpenChannelToNpapiPlugin(
-      OpenChannelToNpapiPluginCallback* client);
-
-  void OnAre3DAPIsBlocked(int render_frame_id,
-                          const GURL& top_origin_url,
-                          ThreeDAPIType requester,
-                          bool* blocked);
-  void OnDidLose3DContext(const GURL& top_origin_url,
-                          ThreeDAPIType context_type,
-                          int arb_robustness_status_code);
 
 #if defined(OS_ANDROID)
   void OnWebAudioMediaCodec(base::SharedMemoryHandle encoded_data_handle,
@@ -325,7 +272,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 
   // Whether this process is used for incognito contents.
-  // This doesn't belong here; http://crbug.com/89628
   bool incognito_;
 
   // Initialized to 0, accessed on FILE thread only.
@@ -334,8 +280,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
 
   int render_process_id_;
-
-  std::set<OpenChannelToNpapiPluginCallback*> plugin_host_clients_;
 
   media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
