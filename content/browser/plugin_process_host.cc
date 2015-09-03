@@ -189,12 +189,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
   base::CommandLine::StringType plugin_launcher =
       browser_command_line.GetSwitchValueNative(switches::kPluginLauncher);
 
-#if defined(OS_MACOSX)
-  // Run the plugin process in a mode tolerant of heap execution without
-  // explicit mprotect calls. Some plugins still rely on this quaint and
-  // archaic "feature." See http://crbug.com/93551.
-  int flags = ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION;
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
   int flags = plugin_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
                                         ChildProcessHost::CHILD_NORMAL;
 #else

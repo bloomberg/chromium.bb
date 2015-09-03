@@ -57,24 +57,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // gdb). In this case, you'd use GetChildPath to get the real executable
     // file name, and then prepend the GDB command to the command line.
     CHILD_ALLOW_SELF = 1 << 0,
-#elif defined(OS_MACOSX)
-
-    // Requests that the child run in a process that does not have the
-    // PIE (position-independent executable) bit set, effectively disabling
-    // ASLR. For process types that need to allocate a large contiguous
-    // region, ASLR may not leave a large enough "hole" for the purpose. This
-    // option should be used sparingly, and only when absolutely necessary.
-    // This option is currently incompatible with CHILD_ALLOW_HEAP_EXECUTION.
-    CHILD_NO_PIE = 1 << 1,
-
-    // Requests that the child run in a process that does not protect the
-    // heap against execution. Normally, heap pages may be made executable
-    // with mprotect, so this mode should be used sparingly. It is intended
-    // for processes that may host plugins that expect an executable heap
-    // without having to call mprotect. This option is currently incompatible
-    // with CHILD_NO_PIE.
-    CHILD_ALLOW_HEAP_EXECUTION = 1 << 2,
-#endif
+#endif  // defined(OS_LINUX)
   };
 
   // Returns the pathname to be used for a child process.  If a subprocess
@@ -82,9 +65,8 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // the default child process pathname will be returned.  On most platforms,
   // this will be the same as the currently-executing process.
   //
-  // The |flags| argument accepts one or more flags such as CHILD_ALLOW_SELF
-  // and CHILD_ALLOW_HEAP_EXECUTION as defined above. Pass only CHILD_NORMAL
-  // if none of these special behaviors are required.
+  // The |flags| argument accepts one or more flags such as CHILD_ALLOW_SELF.
+  // Pass only CHILD_NORMAL if none of these special behaviors are required.
   //
   // On failure, returns an empty FilePath.
   static base::FilePath GetChildPath(int flags);

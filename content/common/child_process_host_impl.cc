@@ -42,48 +42,6 @@ base::LazyInstance<IPC::AttachmentBrokerPrivilegedWin>::Leaky
 
 namespace {
 
-#if defined(OS_MACOSX)
-// Given |path| identifying a Mac-style child process executable path, adjusts
-// it to correspond to |feature|. For a child process path such as
-// ".../Chromium Helper.app/Contents/MacOS/Chromium Helper", the transformed
-// path for feature "NP" would be
-// ".../Chromium Helper NP.app/Contents/MacOS/Chromium Helper NP". The new
-// path is returned.
-base::FilePath TransformPathForFeature(const base::FilePath& path,
-                                 const std::string& feature) {
-  std::string basename = path.BaseName().value();
-
-  base::FilePath macos_path = path.DirName();
-  const char kMacOSName[] = "MacOS";
-  DCHECK_EQ(kMacOSName, macos_path.BaseName().value());
-
-  base::FilePath contents_path = macos_path.DirName();
-  const char kContentsName[] = "Contents";
-  DCHECK_EQ(kContentsName, contents_path.BaseName().value());
-
-  base::FilePath helper_app_path = contents_path.DirName();
-  const char kAppExtension[] = ".app";
-  std::string basename_app = basename;
-  basename_app.append(kAppExtension);
-  DCHECK_EQ(basename_app, helper_app_path.BaseName().value());
-
-  base::FilePath root_path = helper_app_path.DirName();
-
-  std::string new_basename = basename;
-  new_basename.append(1, ' ');
-  new_basename.append(feature);
-  std::string new_basename_app = new_basename;
-  new_basename_app.append(kAppExtension);
-
-  base::FilePath new_path = root_path.Append(new_basename_app)
-                                     .Append(kContentsName)
-                                     .Append(kMacOSName)
-                                     .Append(new_basename);
-
-  return new_path;
-}
-#endif  // OS_MACOSX
-
 // Global atomic to generate child process unique IDs.
 base::StaticAtomicSequenceNumber g_unique_id;
 
@@ -122,26 +80,6 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
   // executable.
   if (child_path.empty())
     PathService::Get(CHILD_PROCESS_EXE, &child_path);
-
-#if defined(OS_MACOSX)
-  DCHECK(!(flags & CHILD_NO_PIE && flags & CHILD_ALLOW_HEAP_EXECUTION));
-
-  // If needed, choose an executable with special flags set that inform the
-  // kernel to enable or disable specific optional process-wide features.
-  if (flags & CHILD_NO_PIE) {
-    // "NP" is "No PIE". This results in Chromium Helper NP.app or
-    // Google Chrome Helper NP.app.
-    child_path = TransformPathForFeature(child_path, "NP");
-  } else if (flags & CHILD_ALLOW_HEAP_EXECUTION) {
-    // "EH" is "Executable Heap". A non-executable heap is only available to
-    // 32-bit processes on Mac OS X 10.7. Most code can and should run with a
-    // non-executable heap, but the "EH" feature is provided to allow code
-    // intolerant of a non-executable heap to work properly on 10.7. This
-    // results in Chromium Helper EH.app or Google Chrome Helper EH.app.
-    child_path = TransformPathForFeature(child_path, "EH");
-  }
-#endif
-
   return child_path;
 }
 

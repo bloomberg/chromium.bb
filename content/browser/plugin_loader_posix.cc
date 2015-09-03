@@ -141,9 +141,6 @@ void PluginLoaderPosix::LoadPluginsInternal() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get());
   process_host_ = host->AsWeakPtr();
   process_host_->DisableSandbox();
-#if defined(OS_MACOSX)
-  host->set_child_flags(ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION);
-#endif
 
   bool launched = LaunchUtilityProcess();
   if (!launched) {

@@ -119,8 +119,6 @@ const base::FilePath::CharType kFrameworkName[] =
     FPL(PRODUCT_STRING " Framework.framework");
 
 const char* const kHelperFlavorSuffixes[] = {
-  FPL("EH"),  // Executable heap
-  FPL("NP"),  // No PIE
   NULL
 };
 #endif  // OS_MACOSX

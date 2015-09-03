@@ -613,26 +613,6 @@ void ChromeMainDelegate::InitMacCrashReporter(
     CHECK(command_line.HasSwitch(switches::kProcessType) &&
           !process_type.empty())
         << "Helper application requires --type.";
-
-    // In addition, some helper flavors only work with certain process types.
-    base::FilePath executable;
-    if (PathService::Get(base::FILE_EXE, &executable) &&
-        executable.value().size() >= 3) {
-      std::string last_three =
-          executable.value().substr(executable.value().size() - 3);
-
-      if (last_three == " EH") {
-        CHECK(process_type == switches::kPluginProcess ||
-              process_type == switches::kUtilityProcess)
-            << "Executable-heap process requires --type="
-            << switches::kPluginProcess << " or "
-            << switches::kUtilityProcess << ", saw " << process_type;
-      } else {
-        CHECK(process_type != switches::kPluginProcess)
-            << "Non-executable-heap PIE process is intolerant of --type="
-            << switches::kPluginProcess;
-      }
-    }
   } else {
     CHECK(!command_line.HasSwitch(switches::kProcessType) &&
           process_type.empty())

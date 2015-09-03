@@ -8,11 +8,7 @@
 #
 # This script creates additional helper .app bundles for Chromium, based on
 # the existing helper .app bundle, changing their Mach-O header's flags to
-# enable and disable various features. Based on Chromium Helper.app, it will
-# create Chromium Helper EH.app, which has the MH_NO_HEAP_EXECUTION bit
-# cleared to support Chromium child processes that require an executable heap,
-# and Chromium Helper NP.app, which has the MH_PIE bit cleared to support
-# Chromium child processes that cannot tolerate ASLR.
+# enable and disable various features.
 #
 # This script expects to be called from the chrome_exe target as a postbuild,
 # and operates directly within the built-up browser app's versioned directory.
@@ -86,6 +82,3 @@ APP_NAME="${2}"
 
 CONTENTS_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}"
 CONTAINING_DIR="${CONTENTS_DIR}/${DIRECTORY_WITHIN_CONTENTS}"
-
-make_helper "${CONTAINING_DIR}" "${APP_NAME}" "EH" "--executable-heap"
-make_helper "${CONTAINING_DIR}" "${APP_NAME}" "NP" "--no-pie"
