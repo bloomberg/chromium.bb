@@ -168,6 +168,26 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
 
     self.assertEqual(urls, EXPECTED)
 
+  def testBasic_SignTypesEmptyList(self):
+    """Tests PushImage behavior when |sign_types| is empty instead of None.
+
+    As part of the buildbots, PushImage function always receives a tuple for
+    |sign_types| argument.  This test checks the behavior for empty tuple.
+    """
+    EXPECTED = {
+        'canary': [
+            ('gs://chromeos-releases/canary-channel/test.board-hi/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions')],
+        'dev': [
+            ('gs://chromeos-releases/dev-channel/test.board-hi/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions')],
+    }
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                                 profile='hi', sign_types=())
+
+    self.assertEqual(urls, EXPECTED)
+
   def testBasicMock(self):
     """Simple smoke test in mock mode"""
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
