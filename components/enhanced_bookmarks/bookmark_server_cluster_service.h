@@ -88,15 +88,6 @@ class BookmarkServerClusterService : public KeyedService,
                                        const std::string& remote_id) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, Cluster);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, SignOut);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, Serialization);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, SaveToPrefs);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, BadAuth);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, EmptyAuth);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest,
-                           ClearClusterMapOnRemoveAllBookmarks);
-
   // Overriden from SigninManagerBase::Observer.
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;

@@ -96,11 +96,6 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
   base::ObserverList<BookmarkServerServiceObserver> observers_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, Cluster);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, SignOut);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest,
-                           ClearClusterMapOnRemoveAllBookmarks);
-
   // net::URLFetcherDelegate methods. Called when the query is finished.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
