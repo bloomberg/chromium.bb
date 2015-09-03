@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -213,6 +214,20 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
     remove_mask |= site_data_mask;
     origin_mask |= BrowsingDataHelper::PROTECTED_WEB;
   }
+
+  // Record the deletion of cookies and cache.
+  BrowsingDataRemover::CookieOrCacheDeletionChoice choice =
+      BrowsingDataRemover::NEITHER_COOKIES_NOR_CACHE;
+  if (prefs->GetBoolean(prefs::kDeleteCookies)) {
+    choice = prefs->GetBoolean(prefs::kDeleteCache)
+        ? BrowsingDataRemover::BOTH_COOKIES_AND_CACHE
+        : BrowsingDataRemover::ONLY_COOKIES;
+  } else if (prefs->GetBoolean(prefs::kDeleteCache)) {
+    choice = BrowsingDataRemover::ONLY_CACHE;
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "History.ClearBrowsingData.UserDeletedCookieOrCacheFromDialog",
+      choice, BrowsingDataRemover::MAX_CHOICE_VALUE);
 
   // BrowsingDataRemover deletes itself when done.
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);

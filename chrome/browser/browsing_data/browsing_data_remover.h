@@ -115,6 +115,16 @@ class BrowsingDataRemover
     REMOVE_WIPE_PROFILE = REMOVE_ALL | REMOVE_NOCHECKS,
   };
 
+  // A helper enum to report the deletion of cookies and/or cache. Do not
+  // reorder the entries, as this enum is passed to UMA.
+  enum CookieOrCacheDeletionChoice {
+    NEITHER_COOKIES_NOR_CACHE,
+    ONLY_COOKIES,
+    ONLY_CACHE,
+    BOTH_COOKIES_AND_CACHE,
+    MAX_CHOICE_VALUE
+  };
+
   // When BrowsingDataRemover successfully removes data, a notification of type
   // NOTIFICATION_BROWSING_DATA_REMOVED is triggered with a Details object of
   // this type.

@@ -117,16 +117,6 @@ CallbackList* GetOnBrowsingDataRemovedCallbacks() {
   return g_on_browsing_data_removed_callbacks;
 }
 
-// A helper enum to report the deletion of cookies and/or cache. Do not reorder
-// the entries, as this enum is passed to UMA.
-enum CookieOrCacheDeletionChoice {
-  NEITHER_COOKIES_NOR_CACHE,
-  ONLY_COOKIES,
-  ONLY_CACHE,
-  BOTH_COOKIES_AND_CACHE,
-  MAX_CHOICE_VALUE
-};
-
 }  // namespace
 
 bool BrowsingDataRemover::is_removing_ = false;

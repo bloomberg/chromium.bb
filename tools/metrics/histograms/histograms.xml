@@ -14017,6 +14017,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.ClearBrowsingData.UserDeletedCookieOrCacheFromDialog"
+    enum="CookieOrCacheDeletion">
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Recorded when the user deletes their browsing data manually from the
+    ClearBrowsingData dialog. Shows whether cookies and/or cache were among the
+    selected data types.
+  </summary>
+</histogram>
+
 <histogram name="History.DatabaseAdvancedMetricsTime" units="milliseconds">
   <owner>shess@chromium.org</owner>
   <summary>
