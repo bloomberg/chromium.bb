@@ -10,6 +10,13 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
+#endif
+
 // GlobalError ---------------------------------------------------------------
 
 GlobalError::GlobalError() {}
@@ -18,10 +25,16 @@ GlobalError::~GlobalError() {}
 
 GlobalError::Severity GlobalError::GetSeverity() { return SEVERITY_MEDIUM; }
 
-int GlobalError::MenuItemIconResourceID() {
-  // If you change this make sure to also change the bubble icon and the wrench
-  // icon color.
-  return IDR_INPUT_ALERT_MENU;
+gfx::Image GlobalError::MenuItemIcon() {
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INPUT_ALERT_MENU);
+#else
+  SkColor icon_color;
+  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_Amber, &icon_color);
+  return gfx::Image(
+      gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 18, icon_color));
+#endif
 }
 
 // GlobalErrorWithStandardBubble ---------------------------------------------

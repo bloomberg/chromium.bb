@@ -41,8 +41,8 @@ class GlobalError {
   virtual int MenuItemCommandID() = 0;
   // Returns the label for the menu item.
   virtual base::string16 MenuItemLabel() = 0;
-  // Returns the resource ID for the menu item icon.
-  virtual int MenuItemIconResourceID();
+  // Returns the menu item icon.
+  virtual gfx::Image MenuItemIcon();
   // Called when the user clicks on the menu item.
   virtual void ExecuteMenuItem(Browser* browser) = 0;
 

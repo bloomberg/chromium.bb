@@ -16,6 +16,8 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
@@ -208,10 +210,10 @@ void NewAvatarButton::Update() {
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
   } else if (has_auth_error_) {
-    // TODO(estade): revisit this color.
+    SkColor icon_color;
+    ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_Amber, &icon_color);
     SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13,
-                                   SkColorSetRGB(0xFF, 0xC6, 0x1E)));
+             gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13, icon_color));
   } else {
     SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
   }

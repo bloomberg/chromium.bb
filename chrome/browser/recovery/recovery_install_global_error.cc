@@ -65,8 +65,9 @@ base::string16 RecoveryInstallGlobalError::MenuItemLabel() {
   return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
 }
 
-int RecoveryInstallGlobalError::MenuItemIconResourceID() {
-  return IDR_UPDATE_MENU_SEVERITY_HIGH;
+gfx::Image RecoveryInstallGlobalError::MenuItemIcon() {
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_UPDATE_MENU_SEVERITY_HIGH);
 }
 
 void RecoveryInstallGlobalError::ExecuteMenuItem(Browser* browser) {

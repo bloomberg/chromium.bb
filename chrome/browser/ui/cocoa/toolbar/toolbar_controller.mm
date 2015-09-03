@@ -21,6 +21,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sync/sync_global_error_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -246,6 +247,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
                              profile:profile
                              browser:browser
                         nibFileNamed:@"Toolbar"])) {
+    // Start global error services now so we badge the menu correctly.
+    SyncGlobalErrorFactory::GetForProfile(profile);
   }
   return self;
 }
