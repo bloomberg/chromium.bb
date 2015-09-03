@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="no">
 <translation id="1287053896835709737">Gult på svart</translation>
 <translation id="1408730541890277710">Erstatt bildene med den alternative teksten for dem.</translation>
 <translation id="145360476452865422">Animasjonsretningslinjer:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Åpne lang beskrivelse i ny fane</translation>
 <translation id="2223143012868735942">Et egendefinerbart fargefilter brukes på nettsteder for å forbedre fargeoppfattelsen.</translation>
 <translation id="2394933097471027016">Prøv det nå – markørsurfing er alltid aktivert på denne siden!</translation>
-<translation id="2471847333270902538">Fargevalg for <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Fargevalg for <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Hold nede &lt;span class='key'&gt;Option&lt;/span&gt;-tasten for å flytte markøren ord for ord.</translation>
 <translation id="2795227192542594043">Denne utvidelsen gir deg en flyttbar markør på nettsiden, slik at du kan merke tekst med tastaturet.</translation>
 <translation id="2808027189040546825">Trinn 1: Velg raden med de svakeste stjernene:</translation>

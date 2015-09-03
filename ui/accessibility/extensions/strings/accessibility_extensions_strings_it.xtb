@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="it">
 <translation id="1287053896835709737">Giallo su nero</translation>
 <translation id="1408730541890277710">Sostituisci le immagini con il relativo testo alternativo.</translation>
 <translation id="145360476452865422">Norme relative alle animazioni:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Apri descrizione dettagliata in una nuova scheda</translation>
 <translation id="2223143012868735942">Un filtro dei colori personalizzabile che viene applicato alle pagine web per migliorare la percezione dei colori.</translation>
 <translation id="2394933097471027016">Prova subito: la funzione di navigazione con cursore è sempre attiva in questa pagina.</translation>
-<translation id="2471847333270902538">Combinazione di colori per <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Combinazione di colori per <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Tieni premuto &lt;span class='key'&gt;Opzione&lt;/span&gt; per spostarti per parole.</translation>
 <translation id="2795227192542594043">Questa estensione inserisce un cursore mobile nella pagina web, che ti consente di selezionare testo con la tastiera.</translation>
 <translation id="2808027189040546825">Passaggio 1. Seleziona la riga con le stelline sbiadite:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">Abilita</translation>
 <translation id="3622586652998721735">Imposta come schema predefinito</translation>
 <translation id="3812541808639806898">Visualizzazione testo alternativo immagine</translation>
-<translation id="381767806621926835">Fai clic con il pulsante destro del mouse su qualsiasi elemento con attributo &quot;longdesc&quot; o &quot;aria-describedat&quot; per accedere alla relativa descrizione dettagliata.</translation>
+<translation id="381767806621926835">Fai clic con il pulsante destro del mouse su qualsiasi elemento con attributo "longdesc" o "aria-describedat" per accedere alla relativa descrizione dettagliata.</translation>
 <translation id="4023902424053835668">Scorri il testo delle pagine web utilizzando i tasti freccia.</translation>
 <translation id="4388820049312272371">Metti in evidenza la posizione del cursore con un breve flash.</translation>
 <translation id="4394049700291259645">Disabilita</translation>

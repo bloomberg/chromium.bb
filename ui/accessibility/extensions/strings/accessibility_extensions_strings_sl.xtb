@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sl">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sl">
 <translation id="1287053896835709737">Rumeno na črnem</translation>
 <translation id="1408730541890277710">Zamenjava slik z nadomestnim besedilom.</translation>
 <translation id="145360476452865422">Pravilnik o animacijah:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Odpri daljši opis na novem zavihku</translation>
 <translation id="2223143012868735942">Prilagodljiv barvni filter, uporabljen na spletnih straneh za izboljšanje barvne percepcije.</translation>
 <translation id="2394933097471027016">Preskusite ga – na tej strani je brskanje s kazalko vedno omogočeno.</translation>
-<translation id="2471847333270902538">Barvna shema za spletno mesto <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Barvna shema za spletno mesto <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Pritisnite tipko &lt;span class='key'&gt;Option&lt;/span&gt;, če se želite pomikati po besedah.</translation>
 <translation id="2795227192542594043">Ta razširitev vam ponuja kazalec, ki ga je mogoče premikati na spletni strani, kar omogoča izbiranje besedila s tipkovnico.</translation>
 <translation id="2808027189040546825">1. korak: izberite vrstico z najslabše vidnimi zvezdicami:</translation>

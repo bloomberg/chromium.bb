@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="uk">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="uk">
 <translation id="1287053896835709737">Жовтий на чорному</translation>
 <translation id="1408730541890277710">Заміна зображень альтернативним текстом.</translation>
 <translation id="145360476452865422">Правила анімації:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Відкрити докладний опис у новій вкладці</translation>
 <translation id="2223143012868735942">До сторінок застосовується спеціальний фільтр, щоб покращити сприйняття кольорів.</translation>
 <translation id="2394933097471027016">Спробуйте. На цій сторінці клавішну навігацію завжди ввімкнено.</translation>
-<translation id="2471847333270902538">Схема кольорів для веб-сайту <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Схема кольорів для веб-сайту <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Щоб переходити між словами, утримуйте клавішу &lt;span class='key'&gt;Option&lt;/span&gt;.</translation>
 <translation id="2795227192542594043">Завдяки цьому розширенню можна використовувати курсор, щоб виділяти текст на веб-сторінках за допомогою клавіатури.</translation>
 <translation id="2808027189040546825">Крок 1. Виберіть рядок із найблідішими зірочками:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">Увімкнути</translation>
 <translation id="3622586652998721735">Зробити схемою за умовчанням</translation>
 <translation id="3812541808639806898">Вікно альтернативного тексту зображення</translation>
-<translation id="381767806621926835">Натисніть правою кнопкою миші будь-який вміст з атрибутом &quot;longdesc&quot; або &quot;aria-describedat&quot;, щоб перейти до його докладного опису.</translation>
+<translation id="381767806621926835">Натисніть правою кнопкою миші будь-який вміст з атрибутом "longdesc" або "aria-describedat", щоб перейти до його докладного опису.</translation>
 <translation id="4023902424053835668">Перегляд тексту веб-сторінок за допомогою клавіш зі стрілками.</translation>
 <translation id="4388820049312272371">Виділити положення курсора швидким блиманням.</translation>
 <translation id="4394049700291259645">Вимкнути</translation>
@@ -56,7 +58,7 @@
 <translation id="7586636300921797327">Крок 2. Пересуньте повзунок так, щоб було видно всі зірочки у
         вибраному рядку</translation>
 <translation id="7658239707568436148">Скасувати</translation>
-<translation id="786423340267544509">Додавайте контур до елементів за допомогою атрибутів &quot;aria-describedat&quot; або &quot;longdesc&quot;.</translation>
+<translation id="786423340267544509">Додавайте контур до елементів за допомогою атрибутів "aria-describedat" або "longdesc".</translation>
 <translation id="7942349550061667556">Червоний</translation>
 <translation id="8254860724243898966">Щоб увімкнути клавішну навігацію, натисніть клавішу &lt;span class='key'&gt;Alt&lt;/span&gt; і значок &lt;img src='increase_brightness.png'&gt; (клавішу збільшення яскравості або F7). Натисніть її знову, щоб вимкнути цю функцію.</translation>
 <translation id="8260673944985561857">Параметри клавішної навігації</translation>

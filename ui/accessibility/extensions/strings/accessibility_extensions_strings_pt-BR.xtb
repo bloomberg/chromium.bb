@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-BR">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="pt-BR">
 <translation id="1287053896835709737">Amarelo no preto</translation>
 <translation id="1408730541890277710">Substitua imagens pelo texto alternativo.</translation>
 <translation id="145360476452865422">Política de animação:</translation>
@@ -9,10 +11,10 @@
 <translation id="1791496371305830581">Permitir todas as imagens animadas.</translation>
 <translation id="1996252509865389616">Ativar?</translation>
 <translation id="2079545284768500474">Desfazer</translation>
-<translation id="2179565792157161713">Abrir descrição longa em &quot;Nova guia&quot;</translation>
+<translation id="2179565792157161713">Abrir descrição longa em "Nova guia"</translation>
 <translation id="2223143012868735942">Um filtro de cor personalizável aplicado a páginas da Web para melhorar a percepção das cores.</translation>
 <translation id="2394933097471027016">Experimente agora. A extensão Caret Browsing está sempre ativada nesta página.</translation>
-<translation id="2471847333270902538">Esquema de cores para <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Esquema de cores para <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Mantenha a tecla &lt;span class='key'&gt;Option&lt;/span&gt; pressionada para se mover por palavras.</translation>
 <translation id="2795227192542594043">Esta extensão fornece um cursor móvel na página da Web, permitindo que você selecione o texto com o teclado.</translation>
 <translation id="2808027189040546825">Etapa 1: selecione a linha com as estrelas mais fracas:</translation>
@@ -21,8 +23,8 @@
 <translation id="3410969471888629217">Esquecer personalizações de site</translation>
 <translation id="3435896845095436175">Ativar</translation>
 <translation id="3622586652998721735">Definir como esquema padrão</translation>
-<translation id="3812541808639806898">Visualizador de texto &quot;Alt&quot; da imagem</translation>
-<translation id="381767806621926835">Clique com o botão direito do mouse em qualquer item que tenha um atributo &quot;longdesc&quot; ou &quot;aria-describedat&quot; para acessar a respectiva descrição longa.</translation>
+<translation id="3812541808639806898">Visualizador de texto "Alt" da imagem</translation>
+<translation id="381767806621926835">Clique com o botão direito do mouse em qualquer item que tenha um atributo "longdesc" ou "aria-describedat" para acessar a respectiva descrição longa.</translation>
 <translation id="4023902424053835668">Procure o texto de páginas da Web usando teclas de seta.</translation>
 <translation id="4388820049312272371">Destaque a posição do cursor com um flash rápido.</translation>
 <translation id="4394049700291259645">Desativar</translation>

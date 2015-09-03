@@ -1,6 +1,8 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="da">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="da">
 <translation id="1287053896835709737">Gul og sort</translation>
-<translation id="1408730541890277710">Udskift billeder med deres &quot;alt&quot;-tekst.</translation>
+<translation id="1408730541890277710">Udskift billeder med deres "alt"-tekst.</translation>
 <translation id="145360476452865422">Animationspolitik:</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1588438908519853928">Normal</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Åbn lang beskrivelse på en ny fane</translation>
 <translation id="2223143012868735942">Et justerbart farvefilter anvendes på websider for at forbedre farveopfattelsen.</translation>
 <translation id="2394933097471027016">Prøv det nu. Tastebrowsing er altid aktiveret på denne side.</translation>
-<translation id="2471847333270902538">Farvetema for <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Farvetema for <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Hold &lt;span class='key'&gt;Alt&lt;/span&gt; nede for at flytte efter ord.</translation>
 <translation id="2795227192542594043">Denne udvidelse giver dig en bevægelig markør på websiden, så du kan vælge tekst med tastaturet.</translation>
 <translation id="2808027189040546825">Trin 1: Vælg rækken med de mest utydelige stjerner:</translation>
@@ -21,8 +23,8 @@
 <translation id="3410969471888629217">Glem websitets tilpasninger</translation>
 <translation id="3435896845095436175">Aktiver</translation>
 <translation id="3622586652998721735">Vælg som standardtema</translation>
-<translation id="3812541808639806898">Visningsprogram for billeder og &quot;Alt&quot;-tekst</translation>
-<translation id="381767806621926835">Højreklik på indhold med en &quot;longdesc&quot;- eller &quot;Aria-describedat&quot;-attribut for at få adgang den lange version af beskrivelsen.</translation>
+<translation id="3812541808639806898">Visningsprogram for billeder og "Alt"-tekst</translation>
+<translation id="381767806621926835">Højreklik på indhold med en "longdesc"- eller "Aria-describedat"-attribut for at få adgang den lange version af beskrivelsen.</translation>
 <translation id="4023902424053835668">Gennemse teksten på websider ved hjælp af piletasterne.</translation>
 <translation id="4388820049312272371">Fremhæv markørens position med et hurtigt glimt.</translation>
 <translation id="4394049700291259645">Deaktiver</translation>

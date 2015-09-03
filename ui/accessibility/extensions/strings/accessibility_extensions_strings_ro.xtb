@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ro">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ro">
 <translation id="1287053896835709737">Galben pe negru</translation>
 <translation id="1408730541890277710">Înlocuiește imaginile cu textul alternativ.</translation>
 <translation id="145360476452865422">Politica privind animația:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Deschide descrierea lungă într-o filă nouă</translation>
 <translation id="2223143012868735942">Un filtru de culoare care poate fi personalizat și care se aplică paginilor web pentru a îmbunătăți percepția culorilor.</translation>
 <translation id="2394933097471027016">Încearcă acum. Navigarea cu tastatura este activată întotdeauna în această pagină!</translation>
-<translation id="2471847333270902538">Schemă de culori pentru <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Schemă de culori pentru <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Apasă lung pe &lt;span class='key'&gt;Opțiune&lt;/span&gt; pentru a te deplasa cuvânt cu cuvânt.</translation>
 <translation id="2795227192542594043">Această extensie îți oferă un cursor ce se poate deplasa în pagina web, cu care poți să selectezi textul cu tastatura.</translation>
 <translation id="2808027189040546825">Pasul 1: selectează rândul cu stelele cele mai estompate:</translation>

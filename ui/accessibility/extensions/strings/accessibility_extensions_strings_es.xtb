@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="es">
 <translation id="1287053896835709737">Amarillo sobre negro</translation>
 <translation id="1408730541890277710">Sustituye imágenes por su texto alternativo.</translation>
 <translation id="145360476452865422">Política de animación:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Abre la descripción larga en una pestaña nueva</translation>
 <translation id="2223143012868735942">Un filtro de color personalizado que se aplica a las páginas web para mejorar la percepción del color.</translation>
 <translation id="2394933097471027016">Pruébala ahora: la navegación por cursor de texto está habilitada en esta página.</translation>
-<translation id="2471847333270902538">Esquema de colores para <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Esquema de colores para <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Mantén pulsada la tecla &lt;span class='key'&gt;Opción&lt;/span&gt; para desplazarte palabra por palabra.</translation>
 <translation id="2795227192542594043">Esta extensión te ofrece un cursor que se puede mover en la página web, lo que te permite seleccionar texto con el teclado.</translation>
 <translation id="2808027189040546825">Paso 1. Selecciona la fila con las estrellas más borrosas:</translation>

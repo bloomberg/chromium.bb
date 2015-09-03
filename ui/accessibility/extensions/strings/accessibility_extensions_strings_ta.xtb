@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ta">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ta">
 <translation id="1287053896835709737">கருமையில் மஞ்சள்</translation>
 <translation id="1408730541890277710">மாற்று உரையின் மூலம் படங்களை இடமாற்றவும்</translation>
 <translation id="145360476452865422">அனிமேஷன் கொள்கை:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">நீண்ட விளக்கத்தைப் புதிய தாவலில் திற</translation>
 <translation id="2223143012868735942">வண்ண உணர்வுக்காட்சியை மேம்படுத்த, இணையப் பக்கங்களில் தனிப்பயனாக்கக்கூடிய வண்ண வடிப்பான் பயன்படுத்தப்பட்டது.</translation>
 <translation id="2394933097471027016">இப்போதே முயற்சிக்கவும் - இந்தப் பக்கத்தில் சுட்டி உலாவல் எப்போதும் இயக்கப்பட்டிருக்கும்!</translation>
-<translation id="2471847333270902538"><ph name="SITE"/>க்கான வண்ணத் திட்டம்:</translation>
+<translation id="2471847333270902538"><ph name="SITE" />க்கான வண்ணத் திட்டம்:</translation>
 <translation id="2648340354586434750">வார்த்தைகளில் நகர &lt;span class='key'&gt;Option&lt;/span&gt; என்ற விசையை அழுத்திப்பிடிக்கவும்.</translation>
 <translation id="2795227192542594043">இந்த நீட்டிப்பில் கிடைக்கும் இணைய பக்கத்தில் நகரும் கர்சர், உங்களை விசைப்பலகை மூலம் உரையைத் தேர்வுசெய்ய அனுமதிக்கிறது.</translation>
 <translation id="2808027189040546825">படி 1: மங்கலான நட்சத்திரங்களைக் கொண்ட வரிசையைத் தேர்ந்தெடுக்கவும்:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">இயக்கு</translation>
 <translation id="3622586652998721735">இயல்புநிலைத் திட்டமாக அமை</translation>
 <translation id="3812541808639806898">இமேஜ் Alt டெக்ஸ்ட் வியூவர்</translation>
-<translation id="381767806621926835">விரிவான விளக்கத்தை அணுக &quot;longdesc&quot; அல்லது &quot;aria-describedat&quot; பண்புக்கூறுடன் உள்ள எதன் மீதாவது வலது கிளிக் செய்யவும்.</translation>
+<translation id="381767806621926835">விரிவான விளக்கத்தை அணுக "longdesc" அல்லது "aria-describedat" பண்புக்கூறுடன் உள்ள எதன் மீதாவது வலது கிளிக் செய்யவும்.</translation>
 <translation id="4023902424053835668">அம்புக்குறி விசைகளைப் பயன்படுத்தி இணைய பக்கங்களின் உரையில் உலாவவும்.</translation>
 <translation id="4388820049312272371">விரைவான ஃபிளாஷ் மூலம் கர்சரின் நிலையை ஹைலைட் செய்யவும்.</translation>
 <translation id="4394049700291259645">முடக்கு</translation>

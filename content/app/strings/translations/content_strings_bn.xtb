@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bn">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="bn">
 <translation id="1014825444426747588">খালি</translation>
 <translation id="1020833440720551630">অডিও ট্র্যাক নিঃশব্দ করুন</translation>
 <translation id="10623998915015855">টগল বোতাম</translation>
@@ -18,21 +20,21 @@
 <translation id="1842960171412779397">নির্বাচন করুন</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">স্থিতি</translation>
-<translation id="1938124657309484470">মানকে অবশ্যই <ph name="MAXIMUM_DATE_OR_TIME"/> বা আগের হতে হবে৷</translation>
-<translation id="2060505056492490888">'<ph name="INVALIDDOMAIN"/>' এ একটি ভুল অবস্থানে '<ph name="DOT"/>' ব্যবহৃত হয়েছে৷</translation>
+<translation id="1938124657309484470">মানকে অবশ্যই <ph name="MAXIMUM_DATE_OR_TIME" /> বা আগের হতে হবে৷</translation>
+<translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />' এ একটি ভুল অবস্থানে '<ph name="DOT" />' ব্যবহৃত হয়েছে৷</translation>
 <translation id="2148716181193084225">আজ</translation>
-<translation id="2226276347425096477">দয়া করে এই পাঠ্যটি <ph name="MAX_CHARACTERS"/>টি অক্ষর বা তার কমে (আপনি বর্তমানে <ph name="CURRENT_LENGTH"/>টি অক্ষর ব্যবহার করছেন) সংক্ষিপ্ত করুন৷</translation>
-<translation id="2247351761944213033"><ph name="WEEKNUMBER"/> সপ্তাহ, <ph name="YEAR"/></translation>
+<translation id="2226276347425096477">দয়া করে এই পাঠ্যটি <ph name="MAX_CHARACTERS" />টি অক্ষর বা তার কমে (আপনি বর্তমানে <ph name="CURRENT_LENGTH" />টি অক্ষর ব্যবহার করছেন) সংক্ষিপ্ত করুন৷</translation>
+<translation id="2247351761944213033"><ph name="WEEKNUMBER" /> সপ্তাহ, <ph name="YEAR" /></translation>
 <translation id="2291999235780842123">চেকবাক্স</translation>
 <translation id="248395913932153421">দিন</translation>
 <translation id="2507943997699731163">দয়া করে এই ক্ষেত্রটি পূরণ করুন৷</translation>
 <translation id="2548326553472216322">কোন সাম্প্রতিক অনুসন্ধান নেই</translation>
 <translation id="2572483411312390101">চালনা করুন</translation>
-<translation id="2613802280814924224">দয়া করে একটি বৈধ মান লিখুন৷ কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE"/>৷</translation>
+<translation id="2613802280814924224">দয়া করে একটি বৈধ মান লিখুন৷ কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE" />৷</translation>
 <translation id="2653659639078652383">জমা</translation>
 <translation id="2674318244760992338">পাদলেখ</translation>
 <translation id="2723001399770238859">অডিও</translation>
-<translation id="2746543609216772311">মানকে অবশ্যই <ph name="MINIMUM_DATE_OR_TIME"/> বা পরবর্তী হতে হবে৷</translation>
+<translation id="2746543609216772311">মানকে অবশ্যই <ph name="MINIMUM_DATE_OR_TIME" /> বা পরবর্তী হতে হবে৷</translation>
 <translation id="2761667185364618470">আপনি যদি এগিয়ে যেতে চান তবে দয়া করে এই বাক্সটি পরীক্ষা করুন৷</translation>
 <translation id="2846343701378493991">1024 (মধ্যম গ্রেড)</translation>
 <translation id="2901282870647571346">চলচ্চিত্রের বর্তমান অবস্থা</translation>
@@ -41,30 +43,30 @@
 <translation id="3040011195152428237">লিঙ্ক</translation>
 <translation id="3075154866155599887">দয়া করে একটি বৈধ মান লিখুন৷ ক্ষেত্রটি অসম্পূর্ণ অথবা একটি অবৈধ তারিখ আছে৷</translation>
 <translation id="310520048233152454">দয়া করে একটি বৈধ URL প্রবেশ করুন৷</translation>
-<translation id="3450233048674729344">মানটি অবশ্যই <ph name="MAXIMUM"/>এর চেয়ে কম বা সমান হবে৷</translation>
+<translation id="3450233048674729344">মানটি অবশ্যই <ph name="MAXIMUM" />এর চেয়ে কম বা সমান হবে৷</translation>
 <translation id="3486220673238053218">সংজ্ঞা</translation>
 <translation id="3632707345189162177">চলচ্চিত্রের অবশিষ্ট সেকেন্ড</translation>
 <translation id="3706100364254443312">পরিবর্তন করুন</translation>
 <translation id="3732799496749320381">মিমি</translation>
 <translation id="3785482301506746191">চলচ্চিত্র সময় স্ক্রাবার</translation>
 <translation id="3808586225841795776">পদ</translation>
-<translation id="3822383571486410024">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS"/> অক্ষরের বা তার বেশি (আপনি বর্তমানে <ph name="CURRENT_LENGTH"/>টি অক্ষর ব্যবহার করেছেন) দৈর্ঘের করুন।</translation>
-<translation id="383465348367842624">'<ph name="ATSIGN"/>' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER"/>' চিহ্ন থাকা উচিত নয়৷</translation>
+<translation id="3822383571486410024">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি (আপনি বর্তমানে <ph name="CURRENT_LENGTH" />টি অক্ষর ব্যবহার করেছেন) দৈর্ঘের করুন।</translation>
+<translation id="383465348367842624">'<ph name="ATSIGN" />' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER" />' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="4103419683916926126">মিলিসেকেন্ড</translation>
 <translation id="4201051445878709314">পূর্ববর্তী মাস দেখান</translation>
 <translation id="4202807286478387388">লাফ দিন</translation>
-<translation id="4360991593054037559">দয়া করে একটি বৈধ মান লিখুন৷ দুটি কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE_LOW"/> এবং <ph name="VALID_VALUE_HIGHER"/>৷</translation>
+<translation id="4360991593054037559">দয়া করে একটি বৈধ মান লিখুন৷ দুটি কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE_LOW" /> এবং <ph name="VALID_VALUE_HIGHER" />৷</translation>
 <translation id="4522570452068850558">বিশদ বিবরণ</translation>
 <translation id="4597532268155981612">ফর্ম</translation>
-<translation id="4664250907885839816">'<ph name="ATSIGN"/>' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER"/>' চিহ্ন থাকা উচিত নয়৷</translation>
+<translation id="4664250907885839816">'<ph name="ATSIGN" />' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER" />' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="4763480195061959176">ভিডিও</translation>
 <translation id="4812940957355064477">দয়া করে একটি সংখ্যা লিখুন৷</translation>
-<translation id="4975562563186953947"><ph name="SELECTED_COUNT"/>টি নির্বাচিত</translation>
-<translation id="49969490063480558">দয়া করে '<ph name="ATSIGN"/>' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS"/>' অসম্পূর্ণ৷</translation>
+<translation id="4975562563186953947"><ph name="SELECTED_COUNT" />টি নির্বাচিত</translation>
+<translation id="49969490063480558">দয়া করে '<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
 <translation id="5048533449481078685">তালিকা নির্দেশক</translation>
 <translation id="5117590920725113268">পরবর্তী মাস দেখান</translation>
-<translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM"/>এর চেয়ে বেশি বা সমান হবে৷</translation>
-<translation id="5307600278924710095">'<ph name="ATSIGN"/>' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS"/>' অসম্পূর্ণ৷</translation>
+<translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM" />এর চেয়ে বেশি বা সমান হবে৷</translation>
+<translation id="5307600278924710095">'<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
 <translation id="5406322316791861025">আকার</translation>
 <translation id="5466621249238537318">দয়া করে এক বা একাধিক ফাইল নির্বাচন করুন৷</translation>
 <translation id="5468998798572797635">পূর্ণ স্ক্রীন বন্ধ করুন</translation>
@@ -103,7 +105,7 @@
 <translation id="7740016676195725605">বদ্ধ পরিচয়লিপিগুলির প্রদর্শন থামান</translation>
 <translation id="7740050170769002709">HTML সামগ্রী</translation>
 <translation id="7789962463072032349">বিরাম</translation>
-<translation id="7888071071722539607">ইমেল ঠিনাকাটিতে দয়া করে একটি '<ph name="ATSIGN"/>' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS"/>' এ একটি '<ph name="ATSIGN"/>' অনুপস্থিত৷</translation>
+<translation id="7888071071722539607">ইমেল ঠিনাকাটিতে দয়া করে একটি '<ph name="ATSIGN" />' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS" />' এ একটি '<ph name="ATSIGN" />' অনুপস্থিত৷</translation>
 <translation id="795667975304826397">কোনও ফাইল চয়ন করা হয় নি</translation>
 <translation id="8053789581856978548">অনুসন্ধান পাঠ্য ফিল্ড</translation>
 <translation id="8115662671911883373">বন্ধ পরিচয়লিপিগুলির প্রদর্শন শুরু করুন</translation>
@@ -114,7 +116,7 @@
 <translation id="8244226242650769279">ছবি মানচিত্র</translation>
 <translation id="835897206747267392">অকার্যকর মান৷</translation>
 <translation id="838869780401515933">চেক করুন</translation>
-<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> টি ফাইল</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> টি ফাইল</translation>
 <translation id="8451268428117625855">দয়া করে একটি ফাইল নির্বাচন করুন৷</translation>
 <translation id="8534579021159131403">মিনিট</translation>
 <translation id="8541249477527128034">মিডিয়া নিয়ন্ত্রণ</translation>
@@ -130,5 +132,5 @@
 <translation id="9050748414552849310">বন্ধ করা পরিচয়লিপিগুলি দেখান</translation>
 <translation id="9108370397979208512">গণিত</translation>
 <translation id="9132465097189459683">অন্যান্য...</translation>
-<translation id="9155987714137265666"><ph name="WEEK"/>, <ph name="WEEK_START_DATE"/> এ শুরু</translation>
+<translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> এ শুরু</translation>
 </translationbundle>

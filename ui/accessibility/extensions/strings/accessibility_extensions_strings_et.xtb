@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="et">
 <translation id="1287053896835709737">Kollane mustal</translation>
 <translation id="1408730541890277710">Kujutiste asendamine nende alternatiivse tekstiga.</translation>
 <translation id="145360476452865422">Animatsioonide eeskirjad:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Ava pikk kirjeldus uuel vahelehel</translation>
 <translation id="2223143012868735942">Veebilehtedele rakendatav kohandatav värvifilter värvide tajumise täiustamiseks.</translation>
 <translation id="2394933097471027016">Proovige seda kohe – sisestusmärgiga sirvimine on sellel lehel alati lubatud!</translation>
-<translation id="2471847333270902538">Saidi <ph name="SITE"/> värviskeem:</translation>
+<translation id="2471847333270902538">Saidi <ph name="SITE" /> värviskeem:</translation>
 <translation id="2648340354586434750">Sõnahaaval liikumiseks hoidke all &lt;span class='key'&gt;valikuklahvi&lt;/span&gt;.</translation>
 <translation id="2795227192542594043">See laiendus lisab veebilehele liigutatava kursori, mille abil saate klaviatuuriga teksti valida.</translation>
 <translation id="2808027189040546825">1. toiming. Valige vähimate tärnidega rida:</translation>

@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="vi">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="vi">
 <translation id="1287053896835709737">Vàng trên nền đen</translation>
 <translation id="1408730541890277710">Thay thế hình ảnh bằng văn bản thay thế.</translation>
 <translation id="145360476452865422">Chính sách hoạt ảnh:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Mở mô tả dài trong tab mới</translation>
 <translation id="2223143012868735942">Bộ lọc màu tùy chỉnh được áp dụng cho các trang web để tăng cường nhận biết màu.</translation>
 <translation id="2394933097471027016">Hãy dùng thử ngay bây giờ - chế độ Duyệt với con nháy luôn được bật trên trang này!</translation>
-<translation id="2471847333270902538">Lược đồ màu dành cho <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Lược đồ màu dành cho <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Nhấn và giữ &lt;span class='key'&gt;Tùy chọn&lt;/span&gt; để di chuyển theo từ.</translation>
 <translation id="2795227192542594043">Tiện ích này cung cấp cho bạn một con trỏ di động trong trang web, cho phép bạn chọn văn bản bằng bàn phím.</translation>
 <translation id="2808027189040546825">Bước 1: Chọn hàng có các ngôi sao nhạt nhất:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">Bật</translation>
 <translation id="3622586652998721735">Đặt làm giao thức mặc định</translation>
 <translation id="3812541808639806898">Trình xem văn bản thay thế hình ảnh</translation>
-<translation id="381767806621926835">Nhấp chuột phải vào bất cứ nội dung nào có thuộc tính &quot;longdesc&quot; hoặc &quot;aria-describedat&quot; để truy cập vào mô tả dài của nội dung đó.</translation>
+<translation id="381767806621926835">Nhấp chuột phải vào bất cứ nội dung nào có thuộc tính "longdesc" hoặc "aria-describedat" để truy cập vào mô tả dài của nội dung đó.</translation>
 <translation id="4023902424053835668">Duyệt qua văn bản của trang web bằng các phím mũi tên.</translation>
 <translation id="4388820049312272371">Đánh dấu nhanh vị trí con trỏ.</translation>
 <translation id="4394049700291259645">Vô hiệu hóa</translation>

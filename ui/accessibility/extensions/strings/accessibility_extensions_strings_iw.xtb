@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="iw">
 <translation id="1287053896835709737">צהוב או שחור</translation>
 <translation id="1408730541890277710">‏החלף תמונות בטקסט alt שלהן.</translation>
 <translation id="145360476452865422">מדיניות בנושא אנימציה:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">פתיחת תיאור ארוך בכרטיסייה חדשה</translation>
 <translation id="2223143012868735942">מסנן צבע הניתן להתאמה המופעל באתרים כדי לשפר את ההבחנה בין צבעים.</translation>
 <translation id="2394933097471027016">נסה עכשיו - דפדוף עם סמן מופעל תמיד בדף זה!</translation>
-<translation id="2471847333270902538">ערכת צבעים עבור <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">ערכת צבעים עבור <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">‏לחץ לחיצה ארוכה על ‎&lt;span class='key'&gt;‎Option&lt;/span&gt;‎ כדי לעבור לפי מילים.</translation>
 <translation id="2795227192542594043">תוסף זה מספק סמן הניתן להזזה בדף האינטרנט, כך שתוכל לבחור טקסט באמצעות המקלדת.</translation>
 <translation id="2808027189040546825">שלב 1: בחר את השורה המכילה את הכוכבים העמומים ביותר:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">הפעל</translation>
 <translation id="3622586652998721735">הגדר כברירת מחדל של ערכת צבעים</translation>
 <translation id="3812541808639806898">‏מציג טקסט Alt של תמונה</translation>
-<translation id="381767806621926835">‏לחץ לחיצה ארוכה על כל פריט עם המאפיין &quot;longdesc&quot; או &quot;aria-describedat&quot; כדי לגשת לתיאור הארוך שלו.</translation>
+<translation id="381767806621926835">‏לחץ לחיצה ארוכה על כל פריט עם המאפיין "longdesc" או "aria-describedat" כדי לגשת לתיאור הארוך שלו.</translation>
 <translation id="4023902424053835668">דפדף בטקסט של דפי אינטרנט באמצעות מקשי החצים.</translation>
 <translation id="4388820049312272371">הדגש את מיקום הסמן באמצעות הבהוב מהיר.</translation>
 <translation id="4394049700291259645">השבת</translation>

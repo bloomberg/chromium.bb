@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="th">
 <translation id="1287053896835709737">สีเหลืองบนสีดำ</translation>
 <translation id="1408730541890277710">แทนที่รูปภาพด้วยข้อความ alt ของภาพ</translation>
 <translation id="145360476452865422">นโยบายภาพเคลื่อนไหว</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">เปิดคำอธิบายแบบยาวในแท็บใหม่</translation>
 <translation id="2223143012868735942">ฟิลเตอร์สีแบบกำหนดค่าได้ซึ่งใช้กับหน้าเว็บเพื่อปรับปรุงการรับรู้สี</translation>
 <translation id="2394933097471027016">ลองใช้งานเลย การเรียกดูด้วยแป้นพิมพ์จะเปิดใช้บนหน้านี้เสมอ!</translation>
-<translation id="2471847333270902538">รูปแบบชุดสีสำหรับ <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">รูปแบบชุดสีสำหรับ <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">กด&lt;span class='key'&gt;ตัวเลือก&lt;/span&gt;ค้างไว้เพื่อเลื่อนไปทีละคำ</translation>
 <translation id="2795227192542594043">ส่วนขยายนี้จะให้คุณมีเคอร์เซอร์ที่เลื่อนไปยังที่ต่างๆ ได้ในหน้าเว็บ ซึ่งทำให้คุณสามารถเลือกข้อความด้วยแป้นพิมพ์ได้</translation>
 <translation id="2808027189040546825">ขั้นตอนที่ 1: เลือกแถวที่มีดาวสว่างน้อยที่สุด:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">เปิดการใช้งาน</translation>
 <translation id="3622586652998721735">ตั้งค่าเป็นรูปแบบเริ่มต้น</translation>
 <translation id="3812541808639806898">โปรแกรมดูข้อความของภาพ Alt</translation>
-<translation id="381767806621926835">คลิกขวาที่ใดก็ได้ด้วยแอตทริบิวต์ &quot;longdesc&quot; หรือ &quot;aria-describedat&quot; เพื่อเข้าถึงคำอธิบายแบบยาว</translation>
+<translation id="381767806621926835">คลิกขวาที่ใดก็ได้ด้วยแอตทริบิวต์ "longdesc" หรือ "aria-describedat" เพื่อเข้าถึงคำอธิบายแบบยาว</translation>
 <translation id="4023902424053835668">เรียกดูข้อความของหน้าเว็บโดยใช้แป้นลูกศร</translation>
 <translation id="4388820049312272371">ไฮไลต์ตำแหน่งเคอร์เซอร์ด้วยการกะพริบเร็วๆ</translation>
 <translation id="4394049700291259645">ปิดการใช้งาน</translation>

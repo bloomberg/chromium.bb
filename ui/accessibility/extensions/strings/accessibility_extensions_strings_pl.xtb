@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="pl">
 <translation id="1287053896835709737">Żółty tekst na czarnym tle</translation>
 <translation id="1408730541890277710">Zastąp obrazy ich tekstem alternatywnym.</translation>
 <translation id="145360476452865422">Zasady animacji:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Otwórz długi opis w nowej karcie</translation>
 <translation id="2223143012868735942">Dostosowywany filtr kolorów, który działa na stronach internetowych i poprawia widoczność kolorów.</translation>
 <translation id="2394933097471027016">Wypróbuj teraz – przeglądanie przy użyciu kursora jest zawsze włączone na tej stronie.</translation>
-<translation id="2471847333270902538">Schemat kolorów dla <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Schemat kolorów dla <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Przytrzymaj &lt;span class='key'&gt;Option&lt;/span&gt;, by przechodzić do kolejnych słów.</translation>
 <translation id="2795227192542594043">To rozszerzenie dodaje ruchomy kursor na stronie internetowej, dzięki czemu możesz zaznaczać tekst, używając klawiatury.</translation>
 <translation id="2808027189040546825">Krok 1 – wybierz wiersz zawierający najbledsze gwiazdki:</translation>

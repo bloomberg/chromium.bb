@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="nl">
 <translation id="1287053896835709737">Geel op zwart</translation>
 <translation id="1408730541890277710">Afbeeldingen vervangen door hun alternatieve tekst.</translation>
 <translation id="145360476452865422">Beleid ten aanzien van animatie:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Lange beschrijving openen in nieuw tabblad</translation>
 <translation id="2223143012868735942">Een aanpasbaar kleurenfilter dat wordt toegepast op webpagina's om de kleurperceptie te verbeteren.</translation>
 <translation id="2394933097471027016">Nu uitproberen - Bladeren met navigatietoetsen is altijd ingeschakeld op deze pagina!</translation>
-<translation id="2471847333270902538">Kleurenschema voor <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Kleurenschema voor <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Houd de toets &lt;span class='key'&gt;Option&lt;/span&gt; ingedrukt om van woord naar woord te springen.</translation>
 <translation id="2795227192542594043">Deze extensie biedt je een verplaatsbare muisaanwijzer in de webpagina, zodat je tekst kunt selecteren met het toetsenbord.</translation>
 <translation id="2808027189040546825">Stap 1: selecteer de rij met de meest fletse sterren:</translation>

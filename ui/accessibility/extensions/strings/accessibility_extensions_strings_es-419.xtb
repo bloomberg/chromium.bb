@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es-419">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="es-419">
 <translation id="1287053896835709737">Amarillo sobre negro</translation>
 <translation id="1408730541890277710">Reemplazar las imágenes por su texto alternativo</translation>
 <translation id="145360476452865422">Política de animaciones:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Abrir descripción larga en nueva pestaña</translation>
 <translation id="2223143012868735942">Un filtro de color personalizable aplicado a las páginas web para mejorar la percepción del color</translation>
 <translation id="2394933097471027016">Pruébalo ahora. La navegación por cursor de texto siempre está habilitada en esta página.</translation>
-<translation id="2471847333270902538">Combinación de colores para <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Combinación de colores para <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Mantén presionado &lt;span class='key'&gt;Opción&lt;/span&gt; para moverte por palabra.</translation>
 <translation id="2795227192542594043">Esta extensión ofrece un cursor desplazable en la página web que te permite seleccionar texto con el teclado.</translation>
 <translation id="2808027189040546825">Paso 1. Selecciona la fila con las estrellas más tenues:</translation>
@@ -21,12 +23,12 @@
 <translation id="3410969471888629217">Olvidar personalizaciones del sitio</translation>
 <translation id="3435896845095436175">Habilitar</translation>
 <translation id="3622586652998721735">Establecer como combinación predeterminada</translation>
-<translation id="3812541808639806898">Visualizador de texto &quot;Alt&quot; de imágenes</translation>
-<translation id="381767806621926835">Haz clic con el botón secundario en cualquier elemento con un atributo &quot;longdesc&quot; o &quot;aria-describedat&quot; para acceder a una descripción larga.</translation>
+<translation id="3812541808639806898">Visualizador de texto "Alt" de imágenes</translation>
+<translation id="381767806621926835">Haz clic con el botón secundario en cualquier elemento con un atributo "longdesc" o "aria-describedat" para acceder a una descripción larga.</translation>
 <translation id="4023902424053835668">Explorar el texto o las páginas web con las teclas de flecha</translation>
 <translation id="4388820049312272371">Resaltar la posición del cursor con un parpadeo rápido</translation>
 <translation id="4394049700291259645">Inhabilitar</translation>
-<translation id="4769065380738716500">Las imágenes se reemplazaron por su texto &quot;alt&quot;.</translation>
+<translation id="4769065380738716500">Las imágenes se reemplazaron por su texto "alt".</translation>
 <translation id="4896660567607030658">Sin comentarios, solo mostrar el cursor</translation>
 <translation id="4937901943818762779">Permitir imágenes animadas solo una vez</translation>
 <translation id="4954450790315188152">Cuando la navegación por cursor de texto está habilitada:</translation>

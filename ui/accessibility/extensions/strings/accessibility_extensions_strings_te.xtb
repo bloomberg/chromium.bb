@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="te">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="te">
 <translation id="1287053896835709737">నలుపులో పసుపు రంగు</translation>
 <translation id="1408730541890277710">చిత్రాలను వాటి ప్రత్యామ్నాయ వచనంతో భర్తీ చేయండి.</translation>
 <translation id="145360476452865422">యానిమేషన్ విధానం:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">సుదీర్ఘ వివరణను కొత్త ట్యాబ్‌లో తెరువు</translation>
 <translation id="2223143012868735942">రంగు గ్రాహ్యతను మెరుగుపరచడానికి అనుకూలీకృత రంగు ఫిల్టర్ వెబ్‌పేజీలకు వర్తింపజేయబడింది.</translation>
 <translation id="2394933097471027016">ఇప్పుడే దీన్ని ప్రయత్నించండి - కేరెట్ బ్రౌజింగ్ ఈ పేజీలో ఎల్లప్పుడూ ప్రారంభించబడి ఉంటుంది!</translation>
-<translation id="2471847333270902538"><ph name="SITE"/> కోసం రంగు స్కీమ్:</translation>
+<translation id="2471847333270902538"><ph name="SITE" /> కోసం రంగు స్కీమ్:</translation>
 <translation id="2648340354586434750">పదాల వారీగా తరలించడానికి &lt;span class='key'&gt;Option&lt;/span&gt;ని నొక్కి పట్టుకోండి.</translation>
 <translation id="2795227192542594043">ఈ పొడిగింపు మీకు వెబ్ పేజీలో తరలించదగిన కర్సర్‌ను అందిస్తుంది, కీబోర్డ్‌తో వచనాన్ని ఎంచుకోవడానికి మిమ్మల్ని అనుమతిస్తుంది.</translation>
 <translation id="2808027189040546825">దశ 1: మిరుమిట్లు గొలిపే నక్షత్రాలు గల అడ్డు వరుసను ఎంచుకోండి:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">ప్రారంభించండి</translation>
 <translation id="3622586652998721735">డిఫాల్ట్ స్కీమ్‌గా సెట్ చేయి</translation>
 <translation id="3812541808639806898">చిత్రం Alt వచన వ్యూయర్</translation>
-<translation id="381767806621926835">&quot;longdesc&quot; లేదా &quot;aria-describedat&quot; లక్షణం ఉన్న ఏదైనా అంశం యొక్క సుదీర్ఘ వివరణను ప్రాప్యత చేయడానికి దానిపై కుడి క్లిక్ చేయండి.</translation>
+<translation id="381767806621926835">"longdesc" లేదా "aria-describedat" లక్షణం ఉన్న ఏదైనా అంశం యొక్క సుదీర్ఘ వివరణను ప్రాప్యత చేయడానికి దానిపై కుడి క్లిక్ చేయండి.</translation>
 <translation id="4023902424053835668">బాణం కీలను ఉపయోగించి వెబ్ పేజీల వచనాన్ని బ్రౌజ్ చేయండి.</translation>
 <translation id="4388820049312272371">కర్సర్ స్థానాన్ని శీఘ్ర ఫ్లాష్‌తో హైలైట్ చేయండి.</translation>
 <translation id="4394049700291259645">ఆపివెయ్యి</translation>

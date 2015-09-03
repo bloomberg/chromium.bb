@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="en-GB">
 <translation id="1287053896835709737">Yellow on Black</translation>
 <translation id="1408730541890277710">Replace images with their alt text.</translation>
 <translation id="145360476452865422">Animation Policy:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Open Long Description In New Tab</translation>
 <translation id="2223143012868735942">A customisable colour filter applied to web pages to improve colour perception.</translation>
 <translation id="2394933097471027016">Try it out now – Caret Browsing is always enabled on this page!</translation>
-<translation id="2471847333270902538">Colour scheme for <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Colour scheme for <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Hold down &lt;span class='key'&gt;Option&lt;/span&gt; to move by words.</translation>
 <translation id="2795227192542594043">This extension gives you a movable cursor in the web page, allowing you to select text with the keyboard.</translation>
 <translation id="2808027189040546825">Step 1: Select the row with the faintest stars:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">Enable</translation>
 <translation id="3622586652998721735">Set as default scheme</translation>
 <translation id="3812541808639806898">Image Alt Text Viewer</translation>
-<translation id="381767806621926835">Right-click on anything with a &quot;longdesc&quot; or &quot;aria-describedat&quot; attribute to access its long description.</translation>
+<translation id="381767806621926835">Right-click on anything with a "longdesc" or "aria-describedat" attribute to access its long description.</translation>
 <translation id="4023902424053835668">Browse the text of web pages using arrow keys.</translation>
 <translation id="4388820049312272371">Highlight the cursor position with a quick flash.</translation>
 <translation id="4394049700291259645">Disable</translation>

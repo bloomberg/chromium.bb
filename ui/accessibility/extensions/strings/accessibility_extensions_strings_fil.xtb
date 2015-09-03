@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fil">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fil">
 <translation id="1287053896835709737">Yellow on Black</translation>
 <translation id="1408730541890277710">Palitan ang mga larawan ng alt text ng mga ito.</translation>
 <translation id="145360476452865422">Patakaran sa Animation:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Buksan Ang Mahabang Paglalarawan Sa Bagong Tab</translation>
 <translation id="2223143012868735942">Isang naku-customize na filter para sa kulay na nalalapat sa mga webpage upang pahusayin ang pagtingin sa kulay.</translation>
 <translation id="2394933097471027016">Subukan ito ngayon - palaging naka-enable ang Pagba-browse ng Caret sa page na ito!</translation>
-<translation id="2471847333270902538">Scheme ng kulay para sa <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Scheme ng kulay para sa <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Pindutin nang matagal ang &lt;span class='key'&gt;Opsyon&lt;/span&gt; upang lumipat ayon sa mga salita.</translation>
 <translation id="2795227192542594043">Nagbibigay sa iyo ang extension na ito ng naililipat na cursor sa web page, na nagbibigay-daan sa iyo na pumili ng text gamit ang keyboard.</translation>
 <translation id="2808027189040546825">Hakbang 1: Piliin ang row na may mga pinakamalabong star:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">I-enable</translation>
 <translation id="3622586652998721735">Itakda bilang default na scheme</translation>
 <translation id="3812541808639806898">Alt Text Viewer ng Larawan</translation>
-<translation id="381767806621926835">Mag-right click sa anumang bagay na may attribute na &quot;longdesc&quot; o &quot;aria-describedat&quot; upang i-access ang mahabang paglalarawan nito.</translation>
+<translation id="381767806621926835">Mag-right click sa anumang bagay na may attribute na "longdesc" o "aria-describedat" upang i-access ang mahabang paglalarawan nito.</translation>
 <translation id="4023902424053835668">I-browse ang text ng mga web page gamit ang mga arrow key.</translation>
 <translation id="4388820049312272371">I-highlight ang posisyon ng cursor sa pamamagitan ng mabilisang pagkislap.</translation>
 <translation id="4394049700291259645">Huwag paganahin</translation>

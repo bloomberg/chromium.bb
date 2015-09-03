@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sv">
 <translation id="1287053896835709737">Gult på svart</translation>
 <translation id="1408730541890277710">Ersätta bilder med deras alternativa text.</translation>
 <translation id="145360476452865422">Animeringspolicy:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Öppna lång beskrivning på ny flik</translation>
 <translation id="2223143012868735942">Ett anpassningsbart färgfilter tillämpas på webbsidor för att förbättra färguppfattningen.</translation>
 <translation id="2394933097471027016">Prova nu – textmarkörläget är alltid aktiverat på den här sidan!</translation>
-<translation id="2471847333270902538">Färgschema för <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Färgschema för <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Tryck länge på &lt;span class='key'&gt;Option&lt;/span&gt; för att flytta efter ord.</translation>
 <translation id="2795227192542594043">Med det här tillägget får du en flyttbar markör på webbsidan så att du kan markera text med tangentbordet.</translation>
 <translation id="2808027189040546825">Steg 1: Välj raden med de svagaste stjärnorna:</translation>

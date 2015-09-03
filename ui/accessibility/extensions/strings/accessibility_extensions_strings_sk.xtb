@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sk">
 <translation id="1287053896835709737">Žlté na čiernom</translation>
 <translation id="1408730541890277710">Nahradenie obrázkov ich alternatívnym textom.</translation>
 <translation id="145360476452865422">Pravidlá pre animácie:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Otvoriť dlhý popis na novej karte</translation>
 <translation id="2223143012868735942">Prispôsobiteľný filter farieb použitý na webových stránkach, ktorý zlepšuje vnímanie farieb.</translation>
 <translation id="2394933097471027016">Vyskúšajte to – prehliadanie Caret je na tejto stránke vždy povolené!</translation>
-<translation id="2471847333270902538">Farebná schéma pre stránky <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Farebná schéma pre stránky <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Ak sa chcete posúvať po slovách, stlačte kláves &lt;span class='key'&gt;Option&lt;/span&gt;.</translation>
 <translation id="2795227192542594043">Toto rozšírenie vám poskytne pohyblivý kurzor na webovej stránke, ktorý vám umožní vyberať text pomocou klávesnice.</translation>
 <translation id="2808027189040546825">Krok 1 – vyberte riadok s najslabšími hviezdičkami:</translation>

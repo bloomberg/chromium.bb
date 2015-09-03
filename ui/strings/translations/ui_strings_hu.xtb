@@ -1,17 +1,19 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hu">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="hu">
 <translation id="1127811143501539442">{DAYS,plural, =1{1 napja}other{# napja}}</translation>
 <translation id="1167268268675672572">Sor elejére és kijelölés módosítása</translation>
 <translation id="1190609913194133056">Értesítési központ</translation>
 <translation id="1243314992276662751">Feltöltés</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
-<translation id="1413622004203049571">A(z) <ph name="NOTIFIER_NAME"/> értesítéseinek kikapcsolása</translation>
+<translation id="1413622004203049571">A(z) <ph name="NOTIFIER_NAME" /> értesítéseinek kikapcsolása</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 perc és }other{# perc és }}</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 perc}other{# perc}}</translation>
-<translation id="1761785978543082658"><ph name="QUANTITY"/> bájt</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY" /> bájt</translation>
 <translation id="1781701194097416995">Egy szóval lefelé</translation>
 <translation id="1801827354178857021">Időszak</translation>
-<translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 óra és }other{# óra és }}</translation>
 <translation id="1860796786778352021">Értesítés bezárása</translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -20,7 +22,7 @@
 <translation id="2148716181193084225">Ma</translation>
 <translation id="2168039046890040389">Oldal fel</translation>
 <translation id="2190355936436201913">(üres)</translation>
-<translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
+<translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2405367043325750948">Törlés előrefelé</translation>
 <translation id="2479520428668657293">Jobbra és kijelölés módosítása</translation>
 <translation id="2482878487686419369">Értesítések</translation>
@@ -33,7 +35,7 @@
 <translation id="2803313416453193357">Mappa megnyitása</translation>
 <translation id="2983818520079887040">Beállítások...</translation>
 <translation id="3036649622769666520">Fájlok megnyitása</translation>
-<translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3066573403916685335">Le</translation>
 <translation id="3087734570205094154">Alja</translation>
 <translation id="3157931365184549694">Visszaállítás</translation>
@@ -43,8 +45,8 @@
 <translation id="3600566671520689681">{DAYS,plural, =1{1 nap van hátra}other{# nap van hátra}}</translation>
 <translation id="364720409959344976">Mappa kiválasztása a feltöltéshez</translation>
 <translation id="3660179305079774227">Felfelé nyíl</translation>
-<translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
-<translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3889424535448813030">Jobb nyíl</translation>
 <translation id="3909791450649380159">Ki&amp;vágás</translation>
@@ -57,14 +59,14 @@
 <translation id="436869212180315161">Sajtó</translation>
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="4588090240171750605">Görgetés jobbra</translation>
-<translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4927753642311223124">Itt nincs semmi, továbbmehet.</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 másodperc}other{# másodperc}}</translation>
 <translation id="4971687151119236543">Előző szám</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5076340679995252485">&amp;Beillesztés</translation>
-<translation id="5120799197269191491">Keresőgomb+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="5120799197269191491">Keresőgomb+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">Befejezés</translation>
 <translation id="5329858601952122676">&amp;Törlés</translation>
 <translation id="5349525451964472598">Lefelé és kijelölés módosítása</translation>
@@ -76,13 +78,13 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 másodperc van hátra}other{# másodperc van hátra}}</translation>
 <translation id="5941711191222866238">Kicsinyítés</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 óra}other{# óra}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Alkalmazások</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6122334925474904337">Egy szóval jobbra és kijelölés módosítása</translation>
 <translation id="6129953537138746214">Szóköz</translation>
 <translation id="6135826906199951471">Del</translation>
-<translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
+<translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6364916375976753737">Görgetés balra</translation>
 <translation id="6394627529324717982">Vessző</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 másodperce}other{# másodperce}}</translation>
@@ -98,7 +100,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{1 óra van hátra}other{# óra van hátra}}</translation>
 <translation id="688711909580084195">Névtelen weboldal</translation>
 <translation id="6903282483217634857">Jobbra</translation>
-<translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
+<translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6918245111648057970">Értesítések engedélyezése mindegyik felhasználónak a következőtől:</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -110,7 +112,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 perce}other{# perce}}</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 perc van hátra}other{# perc van hátra}}</translation>
 <translation id="7457942297256758195">Összes törlése</translation>
-<translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7649070708921625228">Súgó</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7781829728241885113">Tegnap</translation>
@@ -128,14 +130,14 @@
 <translation id="8331626408530291785">Görgetés felfelé</translation>
 <translation id="8371695176452482769">Most beszéljen</translation>
 <translation id="8394908167088220973">Lejátszás/szüneteltetés</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="8471049483003785219">Egy szóval balra és kijelölés módosítása</translation>
-<translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> fájl (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
-<translation id="8677655579646609597"><ph name="QUANTITY"/> kB/s</translation>
-<translation id="8806053966018712535"><ph name="FOLDER_NAME"/> mappa</translation>
-<translation id="8901569739625249689"><ph name="QUANTITY"/> kB</translation>
+<translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> fájl (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
+<translation id="8806053966018712535"><ph name="FOLDER_NAME" /> mappa</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8924469368910458384">Törlés a sor elejéig</translation>
 <translation id="9038489124413477075">Név nélküli mappa</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 mp}other{# mp}}</translation>

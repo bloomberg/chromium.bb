@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bn">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="bn">
 <translation id="1287053896835709737">কালোতে হলুদ</translation>
 <translation id="1408730541890277710">তাদের বৈকল্পিক পাঠ্যের সাথে চিত্রগুলি প্রতিস্থাপন করুন৷</translation>
 <translation id="145360476452865422">অ্যানিমেশান নীতি:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">নতুন ট্যাবে দীর্ঘ বিবরণ খুলুন</translation>
 <translation id="2223143012868735942">রঙ উপলব্ধি উন্নত করতে একটি পছন্দসই রঙ ফিল্টার ওয়েব পেজে প্রয়োগ করা হয়েছে৷</translation>
 <translation id="2394933097471027016">এখনই এটি ব্যবহার করে দেখুন - ক্যারেট ব্রাউজিং সর্বদা এই পৃষ্ঠায় সক্ষম করা থাকে!</translation>
-<translation id="2471847333270902538"><ph name="SITE"/> এর জন্য রঙের স্কীম:</translation>
+<translation id="2471847333270902538"><ph name="SITE" /> এর জন্য রঙের স্কীম:</translation>
 <translation id="2648340354586434750">শব্দগুলির দ্বারা সরাতে &lt;span class='key'&gt;বিকল্প&lt;/span&gt; টিপে ধরে রাখুন৷</translation>
 <translation id="2795227192542594043">এই এক্সটেনশানটি আপনাকে ওয়েব পৃষ্ঠাটির উপর একটি চলনশীল কার্সার দেয়, আপনাকে কীবোর্ড দিয়ে পাঠ্য নির্বাচন করতে দেয়৷</translation>
 <translation id="2808027189040546825">পদক্ষেপ ১: ক্ষীণতম তারকা সহ সারিটি নির্বাচন করুন:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">সক্ষম করুন</translation>
 <translation id="3622586652998721735">ডিফল্ট স্কীম হিসাবে সেট করুন</translation>
 <translation id="3812541808639806898">বৈকল্পিক পাঠ্য প্রদর্শক চিত্র</translation>
-<translation id="381767806621926835">কোনো &quot;longdesc&quot; বা &quot;aria-describedat&quot; অ্যাট্রিবিউটগুলির সাথে যেকোনো কিছুর উপর ডান-ক্লিক করুন৷</translation>
+<translation id="381767806621926835">কোনো "longdesc" বা "aria-describedat" অ্যাট্রিবিউটগুলির সাথে যেকোনো কিছুর উপর ডান-ক্লিক করুন৷</translation>
 <translation id="4023902424053835668">তীর চিহ্নগুলি ব্যবহার করে ওয়েব পৃষ্ঠাগুলির পাঠ্য ব্রাউজ করুন৷</translation>
 <translation id="4388820049312272371">একটি দ্রুত ফ্ল্যাশের সাথে কার্সারের অবস্থান হাইলাইট করুন৷</translation>
 <translation id="4394049700291259645">অক্ষম</translation>

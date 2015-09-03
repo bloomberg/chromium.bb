@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sr">
 <translation id="1287053896835709737">Жуто на црном</translation>
 <translation id="1408730541890277710">Замените слике њиховим алтернативним текстом.</translation>
 <translation id="145360476452865422">Смернице за анимацију:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Отвори пун опис на новој картици</translation>
 <translation id="2223143012868735942">Прилагодљиви филтер за боје се примењује на веб-странице ради побољшања перцепције боја.</translation>
 <translation id="2394933097471027016">Испробајте одмах – Навигација курсором је увек омогућена на овој страници!</translation>
-<translation id="2471847333270902538">Шема боја за <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Шема боја за <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Држите тастер &lt;span class='key'&gt;Option&lt;/span&gt; да бисте прелазили са једне речи на другу.</translation>
 <translation id="2795227192542594043">Уз овај додатак на веб-страницама ћете видети курсор који можете да померате тастатуром и којим можете да изаберете текст на страницама.</translation>
 <translation id="2808027189040546825">1. корак: Изаберите ред са најслабије видљивим звездицама:</translation>

@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="lt">
 <translation id="1287053896835709737">Geltona ant juodos</translation>
 <translation id="1408730541890277710">Pakeisti vaizdus jų „alt“ tekstu.</translation>
 <translation id="145360476452865422">Animacijos politika:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Atidaryti ilgą aprašą naujame skirtuke</translation>
 <translation id="2223143012868735942">Visiems tinklalapiams pritaikytas tinkintas spalvų filtras, kad spalvos būtų rodomos geriau.</translation>
 <translation id="2394933097471027016">Išbandykite dabar – „Caret Browsing“ visada įgalinta šiame puslapyje!</translation>
-<translation id="2471847333270902538">Spalvų schema, skirta svetainei <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Spalvų schema, skirta svetainei <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Laikykite paspaudę &lt;span class='key'&gt;Option&lt;/span&gt;, kad pereitumėte žodžiais.</translation>
 <translation id="2795227192542594043">Naudojant šį plėtinį tinklalapyje pateikiamas perkeliamas žymeklis, kad galėtumėte pasirinkti tekstą naudodami klaviatūrą.</translation>
 <translation id="2808027189040546825">1 veiksmas: pasirinkite eilutę su blankiausiomis žvaigždutėmis:</translation>

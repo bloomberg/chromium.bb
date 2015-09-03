@@ -1,17 +1,19 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fa">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fa">
 <translation id="1127811143501539442">{DAYS,plural, =1{۱ روز قبل}one{# روز قبل}other{# روز قبل}}</translation>
 <translation id="1167268268675672572">حرکت به ابتدای خط و اصلاح انتخاب</translation>
 <translation id="1190609913194133056">مرکز اعلان</translation>
 <translation id="1243314992276662751">آپلود</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
-<translation id="1413622004203049571">غیرفعال کردن اعلان‌ها از <ph name="NOTIFIER_NAME"/></translation>
+<translation id="1413622004203049571">غیرفعال کردن اعلان‌ها از <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{۱ دقیقه و }one{# دقیقه و }other{# دقیقه و }}</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
-<translation id="1761785978543082658"><ph name="QUANTITY"/> بایت</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY" /> بایت</translation>
 <translation id="1781701194097416995">حرکت به کلمه چپ</translation>
 <translation id="1801827354178857021">دوره زمانی</translation>
-<translation id="1809410197924942083"><ph name="QUANTITY"/> مگابایت/ثانیه</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY" /> مگابایت/ثانیه</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{۱ ساعت و }one{# ساعت و }other{# ساعت و }}</translation>
 <translation id="1860796786778352021">بستن اعلان</translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -20,7 +22,7 @@
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2168039046890040389">صفحه بالا</translation>
 <translation id="2190355936436201913">(خالی)</translation>
-<translation id="2297836609126180313"><ph name="QUANTITY"/> ترابایت/ثانیه</translation>
+<translation id="2297836609126180313"><ph name="QUANTITY" /> ترابایت/ثانیه</translation>
 <translation id="2405367043325750948">حذف به سمت جلو</translation>
 <translation id="2479520428668657293">حرکت به راست و اصلاح انتخاب</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
@@ -33,7 +35,7 @@
 <translation id="2803313416453193357">بازکردن پوشه</translation>
 <translation id="2983818520079887040">تنظیمات...</translation>
 <translation id="3036649622769666520">باز کردن فایل‌ها</translation>
-<translation id="3049748772180311791"><ph name="QUANTITY"/> مگابایت</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> مگابایت</translation>
 <translation id="3066573403916685335">حرکت به پایین</translation>
 <translation id="3087734570205094154">پایین</translation>
 <translation id="3157931365184549694">بازیابی</translation>
@@ -43,8 +45,8 @@
 <translation id="3600566671520689681">{DAYS,plural, =1{۱ روز باقی مانده است}one{# روز باقی مانده است}other{# روز باقی مانده است}}</translation>
 <translation id="364720409959344976">انتخاب پوشه برای آپلود</translation>
 <translation id="3660179305079774227">پیکان بالا</translation>
-<translation id="3740362395218339114"><ph name="QUANTITY"/> گیگابایت/ثانیه</translation>
-<translation id="3757388668994797779"><ph name="QUANTITY"/> گیگابایت</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY" /> گیگابایت/ثانیه</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> گیگابایت</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3889424535448813030">پیکان راست</translation>
 <translation id="3909791450649380159">&amp;برش</translation>
@@ -57,14 +59,14 @@
 <translation id="436869212180315161">فشار دادن</translation>
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="4588090240171750605">پیمایش به راست</translation>
-<translation id="4820616160060340806">فرمان+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="4820616160060340806">فرمان+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4927753642311223124">اینجا خبری نیست، برگردید.</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{۱ ثانیه}one{# ثانیه}other{# ثانیه}}</translation>
 <translation id="4971687151119236543">آهنگ قبلی رسانه</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5076340679995252485">&amp;جاگذاری</translation>
-<translation id="5120799197269191491">جستجو+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="520299402983819650"><ph name="QUANTITY"/> پتابایت</translation>
+<translation id="5120799197269191491">جستجو+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="528468243742722775">پایان</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
 <translation id="5349525451964472598">حرکت به چپ و اصلاح انتخاب</translation>
@@ -76,13 +78,13 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{۱ ثانیه باقی مانده است}one{# ثانیه باقی مانده است}other{# ثانیه باقی مانده است}}</translation>
 <translation id="5941711191222866238">کوچک کردن</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{۱ ساعت}one{# ساعت}other{# ساعت}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">همه برنامه‌ها</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6122334925474904337">حرکت به کلمه راست و اصلاح انتخاب</translation>
 <translation id="6129953537138746214">فضا</translation>
 <translation id="6135826906199951471">حذف</translation>
-<translation id="6142413573757616983"><ph name="QUANTITY"/> بایت/ثانیه</translation>
+<translation id="6142413573757616983"><ph name="QUANTITY" /> بایت/ثانیه</translation>
 <translation id="6364916375976753737">پیمایش به چپ</translation>
 <translation id="6394627529324717982">کاما</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
@@ -98,7 +100,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{۱ ساعت باقی مانده است}one{# ساعت باقی مانده است}other{# ساعت باقی مانده است}}</translation>
 <translation id="688711909580084195">صفحهٔ وب بدون عنوان</translation>
 <translation id="6903282483217634857">حرکت به راست</translation>
-<translation id="6907759265145635167"><ph name="QUANTITY"/> پتابایت/ثانیه</translation>
+<translation id="6907759265145635167"><ph name="QUANTITY" /> پتابایت/ثانیه</translation>
 <translation id="6918245111648057970">دریافت اعلان از موارد زیر برای هر کاربر مجاز است:</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6965382102122355670">تأیید</translation>
@@ -110,7 +112,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>
 <translation id="7457942297256758195">پاک کردن همه</translation>
-<translation id="7460907917090416791"><ph name="QUANTITY"/> ترابایت</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> ترابایت</translation>
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7781829728241885113">دیروز</translation>
@@ -128,14 +130,14 @@
 <translation id="8331626408530291785">پیمایش به بالا</translation>
 <translation id="8371695176452482769">اکنون صحبت کنید</translation>
 <translation id="8394908167088220973">پخش/توقف موقت رسانه</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="8471049483003785219">حرکت به کلمه چپ و اصلاح انتخاب</translation>
-<translation id="8602707065186045623">فایل <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
-<translation id="8677655579646609597"><ph name="QUANTITY"/> کیلوبایت/ثانیه</translation>
-<translation id="8806053966018712535">پوشه <ph name="FOLDER_NAME"/></translation>
-<translation id="8901569739625249689"><ph name="QUANTITY"/> کیلوبایت</translation>
+<translation id="8602707065186045623">فایل <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY" /> کیلوبایت/ثانیه</translation>
+<translation id="8806053966018712535">پوشه <ph name="FOLDER_NAME" /></translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> کیلوبایت</translation>
 <translation id="8924469368910458384">حذف تا ابتدای خط</translation>
 <translation id="9038489124413477075">پوشه بدون نام</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{۱ ثانیه}one{# ثانیه}other{# ثانیه}}</translation>

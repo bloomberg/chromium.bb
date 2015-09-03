@@ -1,17 +1,19 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sk">
 <translation id="1127811143501539442">{DAYS,plural, =1{Včera}few{Pred # dňami}many{Pred # dňom}other{Pred # dňami}}</translation>
 <translation id="1167268268675672572">Presunúť na začiatok riadka a upraviť výber</translation>
 <translation id="1190609913194133056">Centrum upozornení</translation>
 <translation id="1243314992276662751">Nahrať</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1398853756734560583">Maximalizovať</translation>
-<translation id="1413622004203049571">Zakázať upozornenia od <ph name="NOTIFIER_NAME"/></translation>
+<translation id="1413622004203049571">Zakázať upozornenia od <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minúta a }few{# minúty a }many{# minúty a }other{# minút a }}</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minúta}few{# minúty}many{# minúty}other{# minút}}</translation>
-<translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1781701194097416995">Presunúť slovo doľava</translation>
 <translation id="1801827354178857021">Bodka</translation>
-<translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{Pred 1 hodinou a }few{Pred # hodinami a }many{Pred # hodinou a }other{Pred # hodinami a }}</translation>
 <translation id="1860796786778352021">Zavrieť upozornenie</translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -20,7 +22,7 @@
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(prázdne)</translation>
-<translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
+<translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2405367043325750948">Odstrániť nasledujúci znak</translation>
 <translation id="2479520428668657293">Presunúť doprava a upraviť výber</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
@@ -33,7 +35,7 @@
 <translation id="2803313416453193357">Otvoriť priečinok</translation>
 <translation id="2983818520079887040">Nastavenia...</translation>
 <translation id="3036649622769666520">Otvoriť súbory</translation>
-<translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3066573403916685335">Presunúť nadol</translation>
 <translation id="3087734570205094154">Spodok</translation>
 <translation id="3157931365184549694">Obnoviť</translation>
@@ -43,8 +45,8 @@
 <translation id="3600566671520689681">{DAYS,plural, =1{Zostáva 1 deň}few{Zostávajú # dni}many{Zostáva # dňa}other{Zostáva # dní}}</translation>
 <translation id="364720409959344976">Výber priečinka na nahranie</translation>
 <translation id="3660179305079774227">Šípka nahor</translation>
-<translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
-<translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3889424535448813030">Šípka doprava</translation>
 <translation id="3909791450649380159">&amp;Vystrihnúť</translation>
@@ -57,14 +59,14 @@
 <translation id="436869212180315161">Stlačiť</translation>
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="4588090240171750605">Rolovať doprava</translation>
-<translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME"/></translation>
+<translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4927753642311223124">Tu sa nič nenachádza, pokračujte ďalej.</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekundy}other{# sekúnd}}</translation>
 <translation id="4971687151119236543">Média – predchádzajúca stopa</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5076340679995252485">&amp;Vložiť</translation>
-<translation id="5120799197269191491">Hľadať+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="5120799197269191491">Hľadať+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Odstrániť</translation>
 <translation id="5349525451964472598">Presunúť doľava a upraviť výber</translation>
@@ -76,13 +78,13 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Zostáva 1 sekunda}few{Zostávajú # sekundy}many{Zostáva # sekundy}other{Zostáva # sekúnd}}</translation>
 <translation id="5941711191222866238">Minimalizovať</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodín}}</translation>
-<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Všetky aplikácie</translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
 <translation id="6122334925474904337">Presunúť slovo doprava a upraviť výber</translation>
 <translation id="6129953537138746214">Medzera</translation>
 <translation id="6135826906199951471">Del</translation>
-<translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
+<translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6364916375976753737">Rolovať doľava</translation>
 <translation id="6394627529324717982">Čiarka</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pred 1 s}few{Pred # s}many{Pred # s}other{Pred # s}}</translation>
@@ -98,7 +100,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{Zostáva 1 hodina}few{Zostávajú # hodiny}many{Zostáva # hodiny}other{Zostáva # hodín}}</translation>
 <translation id="688711909580084195">Nepomenovaná webová stránka</translation>
 <translation id="6903282483217634857">Presunúť doprava</translation>
-<translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
+<translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6918245111648057970">Povoliť upozornenia na nasledujúce položky pre každého používateľa:</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -110,7 +112,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pred 1 min}few{Pred # min}many{Pred # min}other{Pred # min}}</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zostáva 1 minúta}few{Zostávajú # minúty}many{Zostáva # minúty}other{Zostáva # minút}}</translation>
 <translation id="7457942297256758195">Vymazať všetky</translation>
-<translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7781829728241885113">Včera</translation>
@@ -128,14 +130,14 @@
 <translation id="8331626408530291785">Rolovať nahor</translation>
 <translation id="8371695176452482769">Hovorte…</translation>
 <translation id="8394908167088220973">Média – prehrať / pozastaviť</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="8471049483003785219">Presunúť slovo doľava a upraviť výber</translation>
-<translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> Súbor (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
-<translation id="8677655579646609597"><ph name="QUANTITY"/> kB/s</translation>
-<translation id="8806053966018712535">Priečinok <ph name="FOLDER_NAME"/></translation>
-<translation id="8901569739625249689"><ph name="QUANTITY"/> kB</translation>
+<translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Súbor (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
+<translation id="8806053966018712535">Priečinok <ph name="FOLDER_NAME" /></translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8924469368910458384">Odstrániť po začiatok riadka</translation>
 <translation id="9038489124413477075">Priečinok bez názvu</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>

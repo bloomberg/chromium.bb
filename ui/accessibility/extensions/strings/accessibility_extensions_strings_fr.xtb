@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fr">
 <translation id="1287053896835709737">Jaune sur noir</translation>
 <translation id="1408730541890277710">Remplacez les images par leur texte de substitution.</translation>
 <translation id="145360476452865422">Gestion des animations :</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Ouvrir la description longue dans un nouvel onglet</translation>
 <translation id="2223143012868735942">Filtre de couleur personnalisable appliqué aux pages Web pour améliorer la perception des couleurs</translation>
 <translation id="2394933097471027016">Essayez dès maintenant : la navigation au clavier est toujours activée sur cette page.</translation>
-<translation id="2471847333270902538">Palette de couleurs pour <ph name="SITE"/> :</translation>
+<translation id="2471847333270902538">Palette de couleurs pour <ph name="SITE" /> :</translation>
 <translation id="2648340354586434750">Maintenez la touche &lt;span class='key'&gt;Option&lt;/span&gt; enfoncée pour vous déplacer d'un mot à l'autre.</translation>
 <translation id="2795227192542594043">Cette extension ajoute un curseur sur la page Web que vous pouvez déplacer pour sélectionner du texte à l'aide du clavier.</translation>
 <translation id="2808027189040546825">Étape 1 : sélectionner la ligne avec les étoiles les moins visibles</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">Activer</translation>
 <translation id="3622586652998721735">Définir comme modèle par défaut</translation>
 <translation id="3812541808639806898">Visionneuse du texte de substitution des images</translation>
-<translation id="381767806621926835">Cliquez avec le bouton droit de la souris sur un élément qui présente un attribut &quot;longdesc&quot; ou &quot;aria-describedat&quot; pour accéder à sa description longue.</translation>
+<translation id="381767806621926835">Cliquez avec le bouton droit de la souris sur un élément qui présente un attribut "longdesc" ou "aria-describedat" pour accéder à sa description longue.</translation>
 <translation id="4023902424053835668">Parcourir le texte des pages Web à l'aide des flèches</translation>
 <translation id="4388820049312272371">Mettre la position du curseur en évidence avec un bref flash</translation>
 <translation id="4394049700291259645">Désactiver</translation>

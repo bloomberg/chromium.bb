@@ -1,17 +1,19 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="lv">
 <translation id="1127811143501539442">{DAYS,plural, =1{Pirms 1 dienas}zero{Pirms # dienām}one{Pirms # dienas}other{Pirms # dienām}}</translation>
 <translation id="1167268268675672572">Pārvietot uz rindiņas sākumu un mainīt atlasi</translation>
 <translation id="1190609913194133056">Paziņojumu centrs</translation>
 <translation id="1243314992276662751">Augšupielādēt</translation>
 <translation id="1293699935367580298">Atsolis</translation>
 <translation id="1398853756734560583">Maksimizēt</translation>
-<translation id="1413622004203049571">Atspējot paziņojumu saņemšanu no: <ph name="NOTIFIER_NAME"/></translation>
+<translation id="1413622004203049571">Atspējot paziņojumu saņemšanu no: <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minūte un }zero{# minūtes un }one{# minūte un }other{# minūtes un }}</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minūte}zero{# minūtes}one{# minūte}other{# minūtes}}</translation>
-<translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1781701194097416995">Pārvietot pa kreisi par vienu vārdu</translation>
 <translation id="1801827354178857021">Periods</translation>
-<translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 stunda un }zero{# stundas un }one{# stunda un }other{# stundas un }}</translation>
 <translation id="1860796786778352021">Paziņojuma aizvēršana</translation>
 <translation id="1871244248791675517">Iespraušana</translation>
@@ -20,7 +22,7 @@
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2168039046890040389">Augšup</translation>
 <translation id="2190355936436201913">(tukšs)</translation>
-<translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
+<translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2405367043325750948">Dzēst nākamo</translation>
 <translation id="2479520428668657293">Pārvietot pa labi un mainīt atlasi</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
@@ -33,7 +35,7 @@
 <translation id="2803313416453193357">Atvērt mapi</translation>
 <translation id="2983818520079887040">Iestatījumi...</translation>
 <translation id="3036649622769666520">Atvērt failus</translation>
-<translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3066573403916685335">Pārvietot lejup</translation>
 <translation id="3087734570205094154">Apakšā</translation>
 <translation id="3157931365184549694">Atjaunot</translation>
@@ -43,8 +45,8 @@
 <translation id="3600566671520689681">{DAYS,plural, =1{Atlikusi 1 diena}zero{Atlikušas # dienas}one{Atlikusi # diena}other{Atlikušas # dienas}}</translation>
 <translation id="364720409959344976">Augšupielādējamās mapes atlase</translation>
 <translation id="3660179305079774227">Bulta augšup</translation>
-<translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
-<translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3889424535448813030">Labā bulta</translation>
 <translation id="3909791450649380159">Izgrie&amp;zt</translation>
@@ -57,14 +59,14 @@
 <translation id="436869212180315161">Nospiediet</translation>
 <translation id="4552416320897244156">Lejup</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
-<translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4927753642311223124">Te nekā nav, varat doties tālāk!</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunde}zero{# sekundes}one{# sekunde}other{# sekundes}}</translation>
 <translation id="4971687151119236543">Multivide — iepriekšējā dziesma</translation>
-<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5076340679995252485">&amp;Ielīmēt</translation>
-<translation id="5120799197269191491">Meklēšanas taustiņš + <ph name="KEY_COMBO_NAME"/></translation>
-<translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="5120799197269191491">Meklēšanas taustiņš + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">Beigas</translation>
 <translation id="5329858601952122676">Dzēst</translation>
 <translation id="5349525451964472598">Pārvietot pa kreisi un mainīt atlasi</translation>
@@ -76,13 +78,13 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Atlikusi 1 sekunde}zero{Atlikušas # sekundes}one{Atlikusi # sekunde}other{Atlikušas # sekundes}}</translation>
 <translation id="5941711191222866238">Minimizēt</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 stunda}zero{# stundas}one{# stunda}other{# stundas}}</translation>
-<translation id="5948410903763073882">Alt +<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="5948410903763073882">Alt +<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Visas lietotnes</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6122334925474904337">Pārvietot pa labi par vienu vārdu un mainīt atlasi</translation>
 <translation id="6129953537138746214">Atstarpe</translation>
 <translation id="6135826906199951471">Dzēst</translation>
-<translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
+<translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6364916375976753737">Ritināt pa kreisi</translation>
 <translation id="6394627529324717982">Komats</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pirms 1 s}zero{Pirms # s}one{Pirms # s}other{Pirms # s}}</translation>
@@ -98,7 +100,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{Atlikusi 1 stunda}zero{Atlikušas # stundas}one{Atlikusi # stunda}other{Atlikušas # stundas}}</translation>
 <translation id="688711909580084195">Tīmekļa lapa bez nosaukuma</translation>
 <translation id="6903282483217634857">Pārvietot pa labi</translation>
-<translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
+<translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6918245111648057970">Atļaut paziņojumus visiem lietotājiem no:</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6965382102122355670">Labi</translation>
@@ -110,7 +112,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pirms 1 min}zero{Pirms # min}one{Pirms # min}other{Pirms # min}}</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Atlikusi 1 minūte}zero{Atlikušas # minūtes}one{Atlikusi # minūte}other{Atlikušas # minūtes}}</translation>
 <translation id="7457942297256758195">Notīrīt visu</translation>
-<translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7781829728241885113">Vakar</translation>
@@ -128,14 +130,14 @@
 <translation id="8331626408530291785">Ritināt augšup</translation>
 <translation id="8371695176452482769">Runājiet tūlīt</translation>
 <translation id="8394908167088220973">Multivide — atskaņot/apturēt</translation>
-<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8447116497070723931">Augšup</translation>
 <translation id="8471049483003785219">Pārvietot pa kreisi par vienu vārdu un mainīt atlasi</translation>
-<translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
-<translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
-<translation id="8806053966018712535">Mape <ph name="FOLDER_NAME"/></translation>
-<translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
+<translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8806053966018712535">Mape <ph name="FOLDER_NAME" /></translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8924469368910458384">Dzēst līdz rindiņas sākumam</translation>
 <translation id="9038489124413477075">Mape bez nosaukuma</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}zero{# s}one{# s}other{# s}}</translation>

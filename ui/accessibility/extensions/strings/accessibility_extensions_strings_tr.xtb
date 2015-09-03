@@ -1,6 +1,8 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="tr">
 <translation id="1287053896835709737">Siyah üzerine sarı</translation>
-<translation id="1408730541890277710">Resimleri &quot;alt&quot; metinleri ile değiştirme.</translation>
+<translation id="1408730541890277710">Resimleri "alt" metinleri ile değiştirme.</translation>
 <translation id="145360476452865422">Animasyon Politikası:</translation>
 <translation id="1555130319947370107">Mavi</translation>
 <translation id="1588438908519853928">Normal</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Uzun Açıklamayı Yeni Sekmede Aç</translation>
 <translation id="2223143012868735942">Renk algısını iyileştirmek için web sayfalarına uygulanan özelleştirilebilir bir renk filtresi.</translation>
 <translation id="2394933097471027016">Caret Browsing bu sayfada her zaman etkindir, hemen deneyin!</translation>
-<translation id="2471847333270902538"><ph name="SITE"/> için renk düzeni:</translation>
+<translation id="2471847333270902538"><ph name="SITE" /> için renk düzeni:</translation>
 <translation id="2648340354586434750">Kelime kelime hareket etmek için &lt;span class='key'&gt;Seçenek&lt;/span&gt; tuşunu basılı tutun.</translation>
 <translation id="2795227192542594043">Bu uzantı size web sayfasında hareket ettirilebilen bir imleç sunarak klavye ile seçim yapmanıza olanak sağlar.</translation>
 <translation id="2808027189040546825">1. Adım: En sönük yıldızlı satırı seçin:</translation>
@@ -21,8 +23,8 @@
 <translation id="3410969471888629217">Site özelleştirmelerini unut</translation>
 <translation id="3435896845095436175">Etkinleştir</translation>
 <translation id="3622586652998721735">Varsayılan düzen olarak belirle</translation>
-<translation id="3812541808639806898">Resim &quot;Alt&quot; Metni Görüntüleyici</translation>
-<translation id="381767806621926835">&quot;longdesc&quot; veya &quot;aria-describedat&quot; özelliği olan herhangi bir şeyi sağ tıklayıp uzun açıklamasına erişin.</translation>
+<translation id="3812541808639806898">Resim "Alt" Metni Görüntüleyici</translation>
+<translation id="381767806621926835">"longdesc" veya "aria-describedat" özelliği olan herhangi bir şeyi sağ tıklayıp uzun açıklamasına erişin.</translation>
 <translation id="4023902424053835668">Web sayfalarının metinlerine ok tuşlarını kullanarak göz atın.</translation>
 <translation id="4388820049312272371">İmleç konumunu hızlı bir yanıp sönme ile vurgulama.</translation>
 <translation id="4394049700291259645">Devre dışı bırak</translation>

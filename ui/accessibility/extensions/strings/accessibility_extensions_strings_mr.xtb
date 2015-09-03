@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="mr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="mr">
 <translation id="1287053896835709737">काळ्‍यावर पिवळे</translation>
 <translation id="1408730541890277710">त्यांच्या वैकल्पिक मजकूरासह प्रतिमा बदला.</translation>
 <translation id="145360476452865422">अ‍ॅनिमेशन धोरण:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">दीर्घ वर्णन नवीन टॅबमध्‍ये उघडा</translation>
 <translation id="2223143012868735942">रंग आकलन सुधारण्यासाठी वेबपृषठांवर लागू केलेला एक सानुकूल करण्यायोग्य रंग फिल्टर.</translation>
 <translation id="2394933097471027016">हे आता वापरून पहा - कॅरेट ब्राउझिंग या पृष्‍ठावर नेहमी सक्षम केले असते!</translation>
-<translation id="2471847333270902538">यासाठी रंग योजना <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">यासाठी रंग योजना <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">शब्दांनुसार हलविण्‍यासाठी &lt;span class='key'&gt;पर्याय&lt;/span&gt; धरून ठेवा.</translation>
 <translation id="2795227192542594043">हा विस्‍तार आपल्‍याला कीबोर्डसह मजकूर निवडण्‍याची अनुमती देणारा, वेबपृष्‍ठामधील हलणारा कर्सर देतो.</translation>
 <translation id="2808027189040546825">चरण 1: सर्वाधिक अंधुक तारे असलेली पंक्ती निवडा:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">सक्षम करा</translation>
 <translation id="3622586652998721735">डीफॉल्‍ट योजना म्‍हणून सेट करा</translation>
 <translation id="3812541808639806898">प्रतिमा Alt मजकूर दर्शक</translation>
-<translation id="381767806621926835">त्याच्या मोठ्या वर्णनावर प्रवेश करण्यासाठी &quot;longdesc&quot; किंवा &quot;aria-describedat&quot; विशेषतेसह कशावरही उजवीकडे-क्लिक करा.</translation>
+<translation id="381767806621926835">त्याच्या मोठ्या वर्णनावर प्रवेश करण्यासाठी "longdesc" किंवा "aria-describedat" विशेषतेसह कशावरही उजवीकडे-क्लिक करा.</translation>
 <translation id="4023902424053835668">बाण की चा वापर करून वेबपृष्‍ठांचा मजकूर ब्राऊझ करा.</translation>
 <translation id="4388820049312272371">दृत फ्‍लॅशने कर्सर स्‍थिती हायलाइट करा.</translation>
 <translation id="4394049700291259645">अक्षम करा</translation>
@@ -50,7 +52,7 @@
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="6838518108677880446">सेटअप:</translation>
 <translation id="690628312087070417">कॅरेट खूप अंतरावर जाते तेव्‍हा:</translation>
-<translation id="6965382102122355670">ठिक आहे</translation>
+<translation id="6965382102122355670">ठीक आहे</translation>
 <translation id="7379645913608427028">प्रमाण</translation>
 <translation id="7384431257964758081">उच्च तीव्रता सक्षम केली आहे</translation>
 <translation id="7586636300921797327">चरण 2: निवडलेल्‍या पंक्तीमध्‍ये सर्व तारे दृश्‍यमान होईपर्यंत स्लायडर समायोजित करा</translation>

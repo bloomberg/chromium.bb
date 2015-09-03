@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ms">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ms">
 <translation id="1287053896835709737">Kuning pada Hitam</translation>
 <translation id="1408730541890277710">Gantikan imej dengan teks alternatifnya.</translation>
 <translation id="145360476452865422">Dasar Animasi:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Buka Keterangan Panjang di Tab Baharu</translation>
 <translation id="2223143012868735942">Penapis warna boleh disesuaikan digunakan pada halaman web untuk meningkatkan tanggapan warna.</translation>
 <translation id="2394933097471027016">Cubalah sekarang - Penyemakan Imbas Karet sentiasa didayakan di halaman ini!</translation>
-<translation id="2471847333270902538">Skim warna untuk <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Skim warna untuk <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Tekan dan tahan &lt;span class='key'&gt;Pilihan&lt;/span&gt; untuk bergerak perkataan demi perkataan.</translation>
 <translation id="2795227192542594043">Sambungan ini memberi anda kursor boleh alih di halaman web yang membolehkan anda memilih teks menggunakan papan kekunci.</translation>
 <translation id="2808027189040546825">Langkah 1: Pilih baris dengan bintang paling malap:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">Dayakan</translation>
 <translation id="3622586652998721735">Tetapkan sebagai skim lalai</translation>
 <translation id="3812541808639806898">Alat Lihat Teks Alt Imej</translation>
-<translation id="381767806621926835">Klik kanan pada apa-apa yang mempunyai atribut &quot;longdesc&quot; atau &quot;aria-describedat&quot; untuk mengakses penerangan panjang.</translation>
+<translation id="381767806621926835">Klik kanan pada apa-apa yang mempunyai atribut "longdesc" atau "aria-describedat" untuk mengakses penerangan panjang.</translation>
 <translation id="4023902424053835668">Semak imbas teks tapak web menggunakan kekunci anak panah.</translation>
 <translation id="4388820049312272371">Serlahkan kedudukan kursor dengan kilat pantas.</translation>
 <translation id="4394049700291259645">Lumpuhkan</translation>

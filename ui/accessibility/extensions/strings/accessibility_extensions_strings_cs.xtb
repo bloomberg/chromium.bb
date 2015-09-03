@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="cs">
 <translation id="1287053896835709737">Žlutá na černé</translation>
 <translation id="1408730541890277710">Umožňuje nahradit obrázky alternativním textem.</translation>
 <translation id="145360476452865422">Zásady animací:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Otevřít dlouhý popis na nové kartě</translation>
 <translation id="2223143012868735942">Přizpůsobitelný barevný filtr používaný na webové stránky s cílem zlepšit vnímání barev.</translation>
 <translation id="2394933097471027016">Vyzkoušejte to – procházení pomocí kurzoru je na této stránce vždy aktivováno.</translation>
-<translation id="2471847333270902538">Barevné schéma webu <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Barevné schéma webu <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Chcete-li se pohybovat po jednotlivých slovech, přidržte klávesu &lt;span class='key'&gt;Option&lt;/span&gt;.</translation>
 <translation id="2795227192542594043">Toto rozšíření nabízí pohyblivý kurzor, díky kterému můžete na webových stránkách vybírat text pomocí klávesnice.</translation>
 <translation id="2808027189040546825">Krok 1: Vyberte řádek s nejméně jasnými hvězdičkami:</translation>

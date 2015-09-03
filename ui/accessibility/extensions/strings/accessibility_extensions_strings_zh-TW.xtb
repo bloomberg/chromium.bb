@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="zh-TW">
 <translation id="1287053896835709737">黑底黃字</translation>
 <translation id="1408730541890277710">使用替代文字取代圖片。</translation>
 <translation id="145360476452865422">動畫政策：</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">在新分頁中開啟詳細說明</translation>
 <translation id="2223143012868735942">可供自訂的色彩濾鏡，套用到網頁後可強化色彩感知度。</translation>
 <translation id="2394933097471027016">這個網頁會一律啟用鍵盤瀏覽功能，歡迎立即體驗！</translation>
-<translation id="2471847333270902538"><ph name="SITE"/> 的色彩配置：</translation>
+<translation id="2471847333270902538"><ph name="SITE" /> 的色彩配置：</translation>
 <translation id="2648340354586434750">按住 &lt;span class='key'&gt;Option&lt;/span&gt; 鍵可逐字移動。</translation>
 <translation id="2795227192542594043">啟用這項擴充功能後，網頁上會顯示可移動的游標，讓您使用鍵盤選取文字。</translation>
 <translation id="2808027189040546825">步驟 1 - 選取星星亮度最微弱的一列：</translation>

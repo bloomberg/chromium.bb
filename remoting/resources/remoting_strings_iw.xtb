@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="iw">
 <translation id="1002108253973310084">זוהתה גרסת פרוטוקול לא תואמת. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה בשני המחשבים ונסה שוב.</translation>
 <translation id="1050693411695664090">איכות גרועה</translation>
 <translation id="1152528166145813711">בחר...</translation>
@@ -9,7 +11,7 @@
 • בכל אחד מהמחשבים שלך, הגדר גישה מרחוק באמצעות אפליקציית שולחן העבודה המרוחק של Chrome, שבחנות האינטרנט של Chrome‏: https://chrome.google.com/remotedesktop
 • במכשיר Android, פתח את האפליקציה והקש על מחשב הנמצא במצב מקוון כדי להתחבר אליו.
 
-מחשבים מרוחקים שאין להם מקלדות עבור אנגלית של ארה&quot;ב עשויים לקבל קלט טקסט שגוי. בקרוב נוסיף תמיכה לפריסות מקלדת נוספות!
+מחשבים מרוחקים שאין להם מקלדות עבור אנגלית של ארה"ב עשויים לקבל קלט טקסט שגוי. בקרוב נוסיף תמיכה לפריסות מקלדת נוספות!
 
 למידע על פרטיות, עדיין במדיניות הפרטיות של Google ‏(http://goo.gl/SyrVzj) ומדיניות הפרטיות של Chrome ‏(http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(התכונה הזו אינה זמינה עדיין בשביל המחשב שלך)</translation>
@@ -25,10 +27,10 @@
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
 <translation id="1704090719919187045">‏העדפות מארח Chromoting</translation>
 <translation id="1738759452976856405">הפסק הקלטה</translation>
-<translation id="174018511426417793">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, התקן את 'שולחן עבודה מרוחק של Chrome' במחשב היעד ולחץ על '<ph name="BUTTON_NAME"/>'.</translation>
+<translation id="174018511426417793">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, התקן את 'שולחן עבודה מרוחק של Chrome' במחשב היעד ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="1742469581923031760">מתחבר…</translation>
 <translation id="1770394049404108959">איני יכול לפתוח את היישום.</translation>
-<translation id="177096447311351977">‏IP הערוץ של הלקוח: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' ערוץ='<ph name="CHANNEL_TYPE"/>' חיבור='<ph name="CONNECTION_TYPE"/>'.</translation>
+<translation id="177096447311351977">‏IP הערוץ של הלקוח: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' ערוץ='<ph name="CHANNEL_TYPE" />' חיבור='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">סגור חלון</translation>
 <translation id="1818475040640568770">אין לך מחשבים רשומים.</translation>
 <translation id="1841799852846221389">משבית חיבורים מרוחקים למחשב זה...</translation>
@@ -58,7 +60,7 @@
 <translation id="2256115617011615191">הפעל מחדש כעת</translation>
 <translation id="225614027745146050">ברוכים הבאים</translation>
 <translation id="228809120910082333">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה, כדי לאפשר גישה באמצעות Chromoting.</translation>
-<translation id="2314101195544969792">לא הייתה פעילות ב-<ph name="APPLICATION_NAME"/> במשך זמן-מה. אתה תנותק בקרוב.</translation>
+<translation id="2314101195544969792">לא הייתה פעילות ב-<ph name="APPLICATION_NAME" /> במשך זמן-מה. אתה תנותק בקרוב.</translation>
 <translation id="2353140552984634198">‏תוכל לגשת למחשב זה באופן מאובטח באמצעות Chromoting.</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
@@ -79,7 +81,7 @@
 <translation id="2888969873284818612">אירעה שגיאת רשת. נפעיל את היישום מחדש כשהמכשיר יהיה שוב מקוון.</translation>
 <translation id="2894654864775534701">המחשב הזו משותף כרגע כחלק מחשבון אחר.</translation>
 <translation id="2919669478609886916">אתה משתף כעת את המחשב הזה עם משתמש אחר. האם ברצונך להמשיך את השיתוף?</translation>
-<translation id="2921543551052660690">‏נכנסת בעבר כ-<ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN"/>היכנס אל Chromium<ph name="LINK_END"/> עם החשבון והתקן מחדש את Chromoting.</translation>
+<translation id="2921543551052660690">‏נכנסת בעבר כ-<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />היכנס אל Chromium<ph name="LINK_END" /> עם החשבון והתקן מחדש את Chromoting.</translation>
 <translation id="2926340305933667314">הניסיון להשבית גישה מרחוק למחשב זה נכשל. נסה שוב מאוחר יותר.</translation>
 <translation id="2939145106548231838">אמת מול המארח</translation>
 <translation id="2998137343848432918">• נוסף מסך המציג את פרטי הכניסה.
@@ -94,7 +96,7 @@
 <translation id="3197730452537982411">שולחן עבודה מרוחק</translation>
 <translation id="3244258558056547981">‏הצג את תצוגת Cardboard.</translation>
 <translation id="3258789396564295715">‏תוכל לגשת למחשב זה באופן מאובטח באמצעות 'שולחן עבודה מרוחק של Chrome'.</translation>
-<translation id="327263477022142889">‏רוצה לעזור לשפר את שולחן העבודה המרוחק של Chrome‏? <ph name="LINK_BEGIN"/>השב על הסקר.<ph name="LINK_END"/></translation>
+<translation id="327263477022142889">‏רוצה לעזור לשפר את שולחן העבודה המרוחק של Chrome‏? <ph name="LINK_BEGIN" />השב על הסקר.<ph name="LINK_END" /></translation>
 <translation id="3286521253923406898">‏בקר מארח Chromoting</translation>
 <translation id="332624996707057614">ערוך את שם המחשב</translation>
 <translation id="3339299787263251426">גש אל המחשב שלך באופן מאובטח דרך האינטרנט</translation>
@@ -115,30 +117,30 @@ Chromoting</translation>
 <translation id="3905196214175737742">דומיין לא חוקי של בעל המארח.</translation>
 <translation id="3908017899227008678">הקטן להתאמה</translation>
 <translation id="3931191050278863510">המארח הופסק.</translation>
-<translation id="3933246213702324812">‏Chromoting ב-<ph name="HOSTNAME"/> אינו מעודכן ויש לעדכן אותו.</translation>
+<translation id="3933246213702324812">‏Chromoting ב-<ph name="HOSTNAME" /> אינו מעודכן ויש לעדכן אותו.</translation>
 <translation id="3950820424414687140">כניסה</translation>
 <translation id="3989511127559254552">כדי להמשיך, ראשית עליך להעניק הרשאות גישה מורחבות למחשב שלך. עליך לעשות זאת פעם אחת בלבד.</translation>
 <translation id="4006787130661126000">‏אם ברצונך להשתמש ב'שולחן עבודה מרוחק של Chrome' כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
 <translation id="4068946408131579958">כל החיבורים</translation>
 <translation id="409800995205263688">הערה: הגדרות המדיניות מתירות חיבורים רק בין מחשבים הנמצאים בתוך הרשת שלך.</translation>
 <translation id="4155497795971509630">חלק מהרכיבים הדרושים חסרים. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה ונסה שוב.</translation>
-<translation id="4156740505453712750">‏כדי להגן על הגישה למחשב זה, בחר PIN באורך <ph name="BOLD_START"/>שש ספרות לפחות<ph name="BOLD_END"/>. PIN זה יידרש בעת התחברות ממיקום אחר.</translation>
+<translation id="4156740505453712750">‏כדי להגן על הגישה למחשב זה, בחר PIN באורך <ph name="BOLD_START" />שש ספרות לפחות<ph name="BOLD_END" />. PIN זה יידרש בעת התחברות ממיקום אחר.</translation>
 <translation id="4176825807642096119">קוד גישה</translation>
 <translation id="4207623512727273241">הפעל את המתקין לפני שתמשיך.</translation>
 <translation id="4240294130679914010">‏מסיר ההתקנה של מארח Chromoting</translation>
 <translation id="4277463233460010382">‏מחשב זה מוגדר לאפשר ללקוח אחד או יותר להתחבר מבלי להזין PIN.</translation>
 <translation id="4277736576214464567">קוד הגישה אינו חוקי. נסה שוב.</translation>
-<translation id="4361728918881830843">‏כדי להפעיל חיבורים מרחוק למחשב אחר, התקן את 'שולחן עבודה מרוחק של Chrome' במחשב האחר ולחץ על '<ph name="BUTTON_NAME"/>'.</translation>
-<translation id="4368630973089289038">‏רוצה לעזור לשפר את Chromoting‏? <ph name="LINK_BEGIN"/>השב על הסקר.<ph name="LINK_END"/></translation>
+<translation id="4361728918881830843">‏כדי להפעיל חיבורים מרחוק למחשב אחר, התקן את 'שולחן עבודה מרוחק של Chrome' במחשב האחר ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
+<translation id="4368630973089289038">‏רוצה לעזור לשפר את Chromoting‏? <ph name="LINK_BEGIN" />השב על הסקר.<ph name="LINK_END" /></translation>
 <translation id="4394049700291259645">השבת</translation>
 <translation id="4405930547258349619">ספריית ליבה</translation>
 <translation id="4430435636878359009">השבת חיבורים מרוחקים למחשב זה</translation>
 <translation id="4430915108080446161">יוצר קוד גישה...</translation>
 <translation id="4472575034687746823">תחילת העבודה</translation>
-<translation id="4481276415609939789">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, התקן את Chromoting במחשב היעד ולחץ על '<ph name="BUTTON_NAME"/>'.</translation>
+<translation id="4481276415609939789">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, התקן את Chromoting במחשב היעד ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="4513946894732546136">משוב</translation>
 <translation id="4517233780764084060">‏שים לב: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chromoting ל'פתח כחלון'.</translation>
-<translation id="4563926062592110512">לקוח שהתנתק: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="4563926062592110512">לקוח שהתנתק: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">גישה</translation>
 <translation id="4573676252416618192">‏מארח שולחן העבודה
 המרוחק של Chrome</translation>
@@ -148,13 +150,13 @@ Chromoting</translation>
 <translation id="477305884757156764">היישום איטי מדי.</translation>
 <translation id="4795786176190567663">אין לך הרשאה לביצוע הפעולה.</translation>
 <translation id="4804818685124855865">נתק</translation>
-<translation id="4808503597364150972">‏הזן את ה-PIN של <ph name="HOSTNAME"/>.</translation>
+<translation id="4808503597364150972">‏הזן את ה-PIN של <ph name="HOSTNAME" />.</translation>
 <translation id="4812684235631257312">מארח</translation>
 <translation id="4867841927763172006">‏שלח PrtScn</translation>
 <translation id="4913529628896049296">ממתין לחיבור...</translation>
 <translation id="4918086044614829423">אשר</translation>
 <translation id="492843737083352574">נתקלתי בקשיים עם המקלדת או העכבר.</translation>
-<translation id="5064360042339518108"><ph name="HOSTNAME"/> (לא מקוון)</translation>
+<translation id="5064360042339518108"><ph name="HOSTNAME" /> (לא מקוון)</translation>
 <translation id="5070121137485264635">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק לשולחן העבודה המרוחק של Chrome הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="5156271271724754543">‏הזן את אותו PIN בשתי התיבות.</translation>
 <translation id="5168917394043976756">פתח את חלונית ההזזה לניווט</translation>
@@ -164,8 +166,8 @@ Chromoting</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של 'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="5285241842433869526">למד כיצד להגדיר מחשב לגישה מרחוק.</translation>
 <translation id="5308380583665731573">התחברות</translation>
-<translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE"/>” וייתן לך את קוד הגישה.</translation>
-<translation id="5379087427956679853">‏'שולחן עבודה מרוחק של Chrome' מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום 'שולחן עבודה מרוחק של Chrome', שניתן למצוא בכתובת <ph name="URL"/>.</translation>
+<translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE" />” וייתן לך את קוד הגישה.</translation>
+<translation id="5379087427956679853">‏'שולחן עבודה מרוחק של Chrome' מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום 'שולחן עבודה מרוחק של Chrome', שניתן למצוא בכתובת <ph name="URL" />.</translation>
 <translation id="5397086374758643919">‏מסיר ההתקנה של מארח שולחן העבודה המרוחק של Chrome‏</translation>
 <translation id="5419185025274123272">לא ניתן היה לאפס את היישום. תוכל עדיין לשלוח דוח באגים.</translation>
 <translation id="544077782045763683">המארח כבה.</translation>
@@ -176,13 +178,13 @@ Chromoting</translation>
 <translation id="5619148062500147964">למחשב זה</translation>
 <translation id="5625493749705183369">גש למחשבים אחרים או אפשר למשתמש אחר לגשת למחשב שלך דרך האינטרנט באופן מאובטח.</translation>
 <translation id="5702987232842159181">מחובר:</translation>
-<translation id="5708869785009007625">שולחן העבודה שלך משותף כעת עם <ph name="USER"/>.</translation>
+<translation id="5708869785009007625">שולחן העבודה שלך משותף כעת עם <ph name="USER" />.</translation>
 <translation id="5773590752998175013">תאריך ההתאמה</translation>
 <translation id="579702532610384533">התחבר מחדש</translation>
 <translation id="5843054235973879827">מדוע פעולה זו בטוחה?</translation>
 <translation id="5859141382851488196">חלון חדש…</translation>
 <translation id="6001953797859482435">‏העדפות מארח שולחן העבודה המרוחק של Chrome</translation>
-<translation id="6011539954251327702">‏Chromoting מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום Chromoting, שניתן למצוא בכתובת <ph name="URL"/>.</translation>
+<translation id="6011539954251327702">‏Chromoting מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום Chromoting, שניתן למצוא בכתובת <ph name="URL" />.</translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6062854958530969723">אתחול המארח נכשל.</translation>
 <translation id="6091564239975589852">שלח מקשים</translation>
@@ -190,9 +192,9 @@ Chromoting</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="6173536234069435147">‏איני יכול לפתוח את הקבצים שלי ב-Google Drive.</translation>
 <translation id="6178645564515549384">מארח העברת הודעות ייעודי עבור סיוע מרוחק</translation>
-<translation id="6193698048504518729">התחבר אל <ph name="HOSTNAME"/></translation>
+<translation id="6193698048504518729">התחבר אל <ph name="HOSTNAME" /></translation>
 <translation id="6198252989419008588">‏שנה PIN</translation>
-<translation id="6204583485351780592"><ph name="HOSTNAME"/> (לא עדכני)</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME" /> (לא עדכני)</translation>
 <translation id="6221358653751391898">‏אתה לא מחובר ל-Chrome. היכנס ונסה שוב.</translation>
 <translation id="6284412385303060032">המארח הפועל במסך הכניסה למסוף כבה כדי לתמוך במצב הסתרה על ידי מעבר אל מארח הרץ בפעילות באתר שהיא ספציפית למשתמש.</translation>
 <translation id="629730747756840877">חשבון</translation>
@@ -207,21 +209,21 @@ Chromoting</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6570205395680337606">אפס את היישום. תאבד עבודות שלא נשמרו.</translation>
 <translation id="6612717000975622067">‏שלח Ctrl-Alt-Del</translation>
-<translation id="6640610550128933069">חיבור אחרון לרשת ב-<ph name="DATE"/></translation>
+<translation id="6640610550128933069">חיבור אחרון לרשת ב-<ph name="DATE" /></translation>
 <translation id="6668065415969892472">‏ה-PIN שלך עודכן.</translation>
 <translation id="6681800064886881394">‏Copyright © 2013 Google Inc.‎. כל הזכויות שמורות.</translation>
 <translation id="6746493157771801606">נקה היסטוריה</translation>
 <translation id="6748108480210050150">מ-</translation>
-<translation id="677755392401385740">המארח הופעל עבור המשתמש: <ph name="HOST_USERNAME"/>.</translation>
+<translation id="677755392401385740">המארח הופעל עבור המשתמש: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">הצג/ערוך</translation>
 <translation id="6930242544192836755">משך החיבור</translation>
 <translation id="6939719207673461467">הצג/הסתר מקלדת.</translation>
 <translation id="6944854424004126054">שחזר חלון</translation>
 <translation id="6965382102122355670">אישור</translation>
-<translation id="6985691951107243942">האם אתה בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME"/>? אם תשנה את דעתך, יהיה עליך להיכנס למחשב זה כדי להפעיל מחדש את החיבורים.</translation>
+<translation id="6985691951107243942">האם אתה בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />? אם תשנה את דעתך, יהיה עליך להיכנס למחשב זה כדי להפעיל מחדש את החיבורים.</translation>
 <translation id="6998989275928107238">אל</translation>
 <translation id="7017806586333792422">התחל הקלטה</translation>
-<translation id="7019153418965365059">שגיאת מארח לא מזוהה: <ph name="HOST_OFFLINE_REASON"/>.</translation>
+<translation id="7019153418965365059">שגיאת מארח לא מזוהה: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">סיוע מרחוק</translation>
 <translation id="7038683108611689168">‏עזור לנו לשפר את Chromoting בכך שתאפשר לנו לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
 <translation id="712467900648340229">נכשל החיבור למכשיר העברה.</translation>
@@ -231,8 +233,8 @@ Chromoting</translation>
 <translation id="7312846573060934304">המארח אינו מקוון.</translation>
 <translation id="7319983568955948908">הפסק את השיתוף</translation>
 <translation id="7401733114166276557">‏שולחן עבודה מרוחק של Chrome</translation>
-<translation id="7434397035092923453">נדחתה גישה עבור לקוח: <ph name="CLIENT_USERNAME"/>.</translation>
-<translation id="7444276978508498879">לקוח שהתחבר: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7434397035092923453">נדחתה גישה עבור לקוח: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7444276978508498879">לקוח שהתחבר: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7606912958770842224">הפעל חיבורים מרוחקים</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>
@@ -240,7 +242,7 @@ Chromoting</translation>
 <translation id="7672203038394118626">חיבורים מרוחקים למחשב זה הושבתו.</translation>
 <translation id="7693372326588366043">רענן את רשימת המארחים</translation>
 <translation id="7782471917492991422">בדוק את הגדרות ניהול צריכת החשמל של המחשב כדי לוודא שאינו מוגדר לעבור למצב שינה בזמן חוסר פעילות.</translation>
-<translation id="7810127880729796595">הצג סטטיסטיקה (חיבור: <ph name="QUALITY"/>)</translation>
+<translation id="7810127880729796595">הצג סטטיסטיקה (חיבור: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">‏חלק מהרכיבים הדרושים חסרים. ודא שאתה משתמש בגרסה העדכנית ביותר של Chrome ונסה שוב.</translation>
 <translation id="7868137160098754906">‏הזן את מספר ה-PIN עבור המחשב המרוחק.</translation>
 <translation id="7869445566579231750">אין לך הרשאה להריץ את היישום הזה.</translation>
@@ -256,7 +258,7 @@ Chromoting</translation>
 <translation id="8196755618196986400">כדי שנוכל ליצור איתך קשר ולקבל מידע נוסף, כתובת האימייל שלך תיכלל בכל משוב שתשלח.</translation>
 <translation id="8244400547700556338">למד כיצד.</translation>
 <translation id="8261506727792406068">מחק</translation>
-<translation id="8355326866731426344">התוקף של קוד גישה זה יפוג ב-<ph name="TIMEOUT"/></translation>
+<translation id="8355326866731426344">התוקף של קוד גישה זה יפוג ב-<ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">כלול יומני יישומים שיסייעו לנו לפתור את הבעיה (היומנים עשויים לכלול מידע פרטי).</translation>
 <translation id="837021510621780684">ממחשב זה</translation>
 <translation id="8383794970363966105">‏כדי להשתמש ב-Chromoting, עליך להוסיף חשבון Google למכשיר שלך.</translation>
@@ -265,12 +267,12 @@ Chromoting</translation>
 <translation id="8509907436388546015">תהליך השילוב של שולחנות עבודה</translation>
 <translation id="8513093439376855948">מארח העברת הודעות ייעודי עבור ניהול אירוח מרחוק</translation>
 <translation id="8525306231823319788">מסך מלא</translation>
-<translation id="8548209692293300397">‏נכנסת בעבר כ-<ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN"/>היכנס אל Google Chrome<ph name="LINK_END"/> עם החשבון והתקן מחדש את שולחן העבודה המרוחק של Chrome.</translation>
+<translation id="8548209692293300397">‏נכנסת בעבר כ-<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />היכנס אל Google Chrome<ph name="LINK_END" /> עם החשבון והתקן מחדש את שולחן העבודה המרוחק של Chrome.</translation>
 <translation id="8642984861538780905">איכות סבירה</translation>
 <translation id="8712909229180978490">‏איני יכול לראות את הקבצים השמורים שלי ב-Google Drive באינטרנט.</translation>
 <translation id="8759753423332885148">למידע נוסף</translation>
 <translation id="894763922177556086">איכות טובה</translation>
-<translation id="897805526397249209">‏כדי להפעיל חיבורים מרוחקים למחשב אחר, התקן את Chromoting במחשב האחר ולחץ על '<ph name="BUTTON_NAME"/>'.</translation>
+<translation id="897805526397249209">‏כדי להפעיל חיבורים מרוחקים למחשב אחר, התקן את Chromoting במחשב האחר ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="8998327464021325874">‏בקר מארח שולחן העבודה המרוחק של Chrome</translation>
 <translation id="9016232822027372900">התחבר בכל זאת</translation>
 <translation id="906458777597946297">הגדל את החלון</translation>
@@ -279,7 +281,7 @@ Chromoting</translation>
 <translation id="9188433529406846933">מתן הרשאה</translation>
 <translation id="9213184081240281106">תצורה לא חוקית של המארח.</translation>
 <translation id="951991426597076286">דחה</translation>
-<translation id="979100198331752041">‏שולחן העבודה המרוחק של Chrome ב-<ph name="HOSTNAME"/> אינו מעודכן ויש לעדכן אותו.</translation>
+<translation id="979100198331752041">‏שולחן העבודה המרוחק של Chrome ב-<ph name="HOSTNAME" /> אינו מעודכן ויש לעדכן אותו.</translation>
 <translation id="985602178874221306">‏מחברי Chromium</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (התחברות אחרונה <ph name="DATE_OR_TIME"/>)</translation>
+<translation id="992215271654996353"><ph name="HOSTNAME" /> (התחברות אחרונה <ph name="DATE_OR_TIME" />)</translation>
 </translationbundle>

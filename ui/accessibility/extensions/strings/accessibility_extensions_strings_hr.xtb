@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="hr">
 <translation id="1287053896835709737">Žuto na crnom</translation>
 <translation id="1408730541890277710">Zamijenite slike njihovim alternativnim tekstom.</translation>
 <translation id="145360476452865422">Pravila o animacijama:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Otvori dugi opis na novoj kartici</translation>
 <translation id="2223143012868735942">Prilagodljivi filtar boja koji se primjenjuje na web-stranice radi boljeg raspoznavanja boja.</translation>
 <translation id="2394933097471027016">Isprobajte odmah – Pregledavanje kursorom uvijek je omogućeno na toj stranici!</translation>
-<translation id="2471847333270902538">Shema boja za <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Shema boja za <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Držite tipku &lt;span class='key'&gt;Option&lt;/span&gt; da biste se pomicali po riječima.</translation>
 <translation id="2795227192542594043">To proširenje pruža pokretni kursor na web-stranici, tako da tekst možete odabrati pomoću tipkovnice.</translation>
 <translation id="2808027189040546825">1. korak: odaberite redak s najbljeđim zvjezdicama:</translation>
@@ -22,7 +24,7 @@
 <translation id="3435896845095436175">Omogući</translation>
 <translation id="3622586652998721735">Postavi kao zadanu shemu</translation>
 <translation id="3812541808639806898">Preglednik alternativnog teksta slike</translation>
-<translation id="381767806621926835">Kliknite desnom tipkom bilo koju stavku s atributima &quot;longdesc&quot; ili &quot;aria-describedat&quot; da biste pristupili dugom opisu.</translation>
+<translation id="381767806621926835">Kliknite desnom tipkom bilo koju stavku s atributima "longdesc" ili "aria-describedat" da biste pristupili dugom opisu.</translation>
 <translation id="4023902424053835668">Pregledavajte tekst web-stranica pomoću tipki strelica.</translation>
 <translation id="4388820049312272371">Istakni položaj kursora brzim bljeskanjem.</translation>
 <translation id="4394049700291259645">Onemogući</translation>

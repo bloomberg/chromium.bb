@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="zh-CN">
 <translation id="1287053896835709737">黑底黄字</translation>
 <translation id="1408730541890277710">将图片替换成对应的替代文字。</translation>
 <translation id="145360476452865422">动画政策：</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">在新标签页中打开详细说明</translation>
 <translation id="2223143012868735942">一种可自定义的颜色滤镜，可应用于网页以增强颜色的辨识度。</translation>
 <translation id="2394933097471027016">您可以立即试用 - 光标浏览模式在此页面上始终处于启用状态！</translation>
-<translation id="2471847333270902538"><ph name="SITE"/> 的颜色方案：</translation>
+<translation id="2471847333270902538"><ph name="SITE" /> 的颜色方案：</translation>
 <translation id="2648340354586434750">按住 &lt;span class='key'&gt;Option&lt;/span&gt; 键可逐字移动。</translation>
 <translation id="2795227192542594043">启用此扩展程序后，网页中会显示一个可移动的光标，让您能够通过键盘选择文字。</translation>
 <translation id="2808027189040546825">第 1 步：选择星标颜色最弱的行：</translation>

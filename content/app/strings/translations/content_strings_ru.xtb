@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ru">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ru">
 <translation id="1014825444426747588">нет данных</translation>
 <translation id="1020833440720551630">отключение звуковой дорожки</translation>
 <translation id="10623998915015855">кнопка-переключатель</translation>
@@ -18,21 +20,21 @@
 <translation id="1842960171412779397">выбрать</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="1930711995431081526">статус</translation>
-<translation id="1938124657309484470">Максимальное значение должно быть <ph name="MAXIMUM_DATE_OR_TIME"/>.</translation>
-<translation id="2060505056492490888">Недопустимое положение символа &quot;<ph name="DOT"/>&quot; в адресе &quot;<ph name="INVALIDDOMAIN"/>&quot;.</translation>
+<translation id="1938124657309484470">Максимальное значение должно быть <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
+<translation id="2060505056492490888">Недопустимое положение символа "<ph name="DOT" />" в адресе "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Сегодня</translation>
-<translation id="2226276347425096477">Длина текста не должна превышать <ph name="MAX_CHARACTERS"/> симв. (сейчас <ph name="CURRENT_LENGTH"/> симв.).</translation>
-<translation id="2247351761944213033">Неделя <ph name="WEEKNUMBER"/>, <ph name="YEAR"/></translation>
+<translation id="2226276347425096477">Длина текста не должна превышать <ph name="MAX_CHARACTERS" /> симв. (сейчас <ph name="CURRENT_LENGTH" /> симв.).</translation>
+<translation id="2247351761944213033">Неделя <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2291999235780842123">флажок</translation>
 <translation id="248395913932153421">День</translation>
 <translation id="2507943997699731163">Заполните это поле.</translation>
 <translation id="2548326553472216322">Нет недавних поисков</translation>
 <translation id="2572483411312390101">воспроизведение</translation>
-<translation id="2613802280814924224">Введите допустимое значение. Ближайшее допустимое значение: <ph name="VALID_VALUE"/>.</translation>
+<translation id="2613802280814924224">Введите допустимое значение. Ближайшее допустимое значение: <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2674318244760992338">нижний колонтитул</translation>
 <translation id="2723001399770238859">аудио</translation>
-<translation id="2746543609216772311">Минимальное значение должно быть <ph name="MINIMUM_DATE_OR_TIME"/>.</translation>
+<translation id="2746543609216772311">Минимальное значение должно быть <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
 <translation id="2761667185364618470">Чтобы продолжить, установите этот флажок.</translation>
 <translation id="2846343701378493991">1024 (Средний размер)</translation>
 <translation id="2901282870647571346">текущий статус ролика</translation>
@@ -41,30 +43,30 @@
 <translation id="3040011195152428237">ссылка</translation>
 <translation id="3075154866155599887">Введите верное значение. Поле не заполнено или введена недействительная дата.</translation>
 <translation id="310520048233152454">Введите URL.</translation>
-<translation id="3450233048674729344">Значение должно быть меньше или равно <ph name="MAXIMUM"/>.</translation>
+<translation id="3450233048674729344">Значение должно быть меньше или равно <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">описание</translation>
 <translation id="3632707345189162177">оставшееся время в секундах</translation>
 <translation id="3706100364254443312">переключить</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3785482301506746191">полоса прокрутки</translation>
 <translation id="3808586225841795776">запрос</translation>
-<translation id="3822383571486410024">Минимально допустимое количество символов: <ph name="MIN_CHARACTERS"/>. Длина текста сейчас: <ph name="CURRENT_LENGTH"/>.</translation>
-<translation id="383465348367842624">Часть адреса до символа &quot;<ph name="ATSIGN"/>&quot; не должна содержать символ &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
+<translation id="3822383571486410024">Минимально допустимое количество символов: <ph name="MIN_CHARACTERS" />. Длина текста сейчас: <ph name="CURRENT_LENGTH" />.</translation>
+<translation id="383465348367842624">Часть адреса до символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4103419683916926126">Миллисекунды</translation>
 <translation id="4201051445878709314">Показать предыдущий месяц</translation>
 <translation id="4202807286478387388">перейти</translation>
-<translation id="4360991593054037559">Введите допустимое значение. Ближайшие допустимые значения: <ph name="VALID_VALUE_LOW"/> и <ph name="VALID_VALUE_HIGHER"/>.</translation>
+<translation id="4360991593054037559">Введите допустимое значение. Ближайшие допустимые значения: <ph name="VALID_VALUE_LOW" /> и <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4522570452068850558">Подробнее</translation>
 <translation id="4597532268155981612">форма</translation>
-<translation id="4664250907885839816">Часть адреса после символа &quot;<ph name="ATSIGN"/>&quot; не должна содержать символ &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
+<translation id="4664250907885839816">Часть адреса после символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4763480195061959176">видео</translation>
 <translation id="4812940957355064477">Введите число.</translation>
-<translation id="4975562563186953947">Выбрано: <ph name="SELECTED_COUNT"/></translation>
-<translation id="49969490063480558">Введите часть адреса после символа &quot;<ph name="ATSIGN"/>&quot;. Адрес &quot;<ph name="INVALIDADDRESS"/>&quot; неполный.</translation>
+<translation id="4975562563186953947">Выбрано: <ph name="SELECTED_COUNT" /></translation>
+<translation id="49969490063480558">Введите часть адреса после символа "<ph name="ATSIGN" />". Адрес "<ph name="INVALIDADDRESS" />" неполный.</translation>
 <translation id="5048533449481078685">маркер списка</translation>
 <translation id="5117590920725113268">Показать следующий месяц</translation>
-<translation id="5164977714490026579">Значение должно быть больше или равно <ph name="MINIMUM"/>.</translation>
-<translation id="5307600278924710095">Введите часть адреса до символа &quot;<ph name="ATSIGN"/>&quot;. Адрес &quot;<ph name="INVALIDADDRESS"/>&quot; неполный.</translation>
+<translation id="5164977714490026579">Значение должно быть больше или равно <ph name="MINIMUM" />.</translation>
+<translation id="5307600278924710095">Введите часть адреса до символа "<ph name="ATSIGN" />". Адрес "<ph name="INVALIDADDRESS" />" неполный.</translation>
 <translation id="5406322316791861025">фигура</translation>
 <translation id="5466621249238537318">Выберите один или несколько файлов.</translation>
 <translation id="5468998798572797635">выход из полноэкранного режима</translation>
@@ -103,7 +105,7 @@
 <translation id="7740016676195725605">скрыть субтитры</translation>
 <translation id="7740050170769002709">HTML-содержание</translation>
 <translation id="7789962463072032349">Пауза</translation>
-<translation id="7888071071722539607">Адрес электронной почты должен содержать символ &quot;<ph name="ATSIGN"/>&quot;. В адресе &quot;<ph name="INVALIDADDRESS"/>&quot; отсутствует символ &quot;<ph name="ATSIGN"/>&quot;.</translation>
+<translation id="7888071071722539607">Адрес электронной почты должен содержать символ "<ph name="ATSIGN" />". В адресе "<ph name="INVALIDADDRESS" />" отсутствует символ "<ph name="ATSIGN" />".</translation>
 <translation id="795667975304826397">Файл не выбран</translation>
 <translation id="8053789581856978548">поле поиска</translation>
 <translation id="8115662671911883373">показать субтитры</translation>
@@ -114,7 +116,7 @@
 <translation id="8244226242650769279">графическая карта</translation>
 <translation id="835897206747267392">Недопустимые данные.</translation>
 <translation id="838869780401515933">поставить галочку</translation>
-<translation id="8444882422881193423">Число файлов: <ph name="NUMBER_OF_FILES"/></translation>
+<translation id="8444882422881193423">Число файлов: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="8451268428117625855">Выберите файл.</translation>
 <translation id="8534579021159131403">Минуты</translation>
 <translation id="8541249477527128034">управление мультимедиа</translation>
@@ -130,5 +132,5 @@
 <translation id="9050748414552849310">показать субтитры</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9132465097189459683">Другое…</translation>
-<translation id="9155987714137265666"><ph name="WEEK"/>, начинается <ph name="WEEK_START_DATE"/></translation>
+<translation id="9155987714137265666"><ph name="WEEK" />, начинается <ph name="WEEK_START_DATE" /></translation>
 </translationbundle>

@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fi">
 <translation id="1287053896835709737">Keltainen mustalla pohjalla</translation>
 <translation id="1408730541890277710">Korvaa kuvat niiden alt-tekstillä.</translation>
 <translation id="145360476452865422">Animaatiokäytäntö:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Avaa pitkä kuvaus uudella välilehdellä</translation>
 <translation id="2223143012868735942">Muokattavissa oleva värisuodatin, joka helpottaa värien näkemistä verkkosivuilla.</translation>
 <translation id="2394933097471027016">Kokeile heti – Näppäimistöselaaminen on aina käytössä tällä sivulla!</translation>
-<translation id="2471847333270902538">Sivuston <ph name="SITE"/> väriteema:</translation>
+<translation id="2471847333270902538">Sivuston <ph name="SITE" /> väriteema:</translation>
 <translation id="2648340354586434750">Siirry sanojen mukaan painamalla &lt;span class='key'&gt;option&lt;/span&gt;-näppäintä pitkään.</translation>
 <translation id="2795227192542594043">Tämä laajennus lisää verkkosivulle liikuteltavan osoittimen, jonka avulla voit valita tekstiä näppäimistöllä.</translation>
 <translation id="2808027189040546825">Vaihe 1: valitse rivi, jolla on haaleimmat tähdet:</translation>

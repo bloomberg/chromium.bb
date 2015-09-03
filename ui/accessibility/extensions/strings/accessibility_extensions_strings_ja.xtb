@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ja">
 <translation id="1287053896835709737">黒の背景に黄色の文字</translation>
 <translation id="1408730541890277710">画像の代わりに代替テキストを表示します。</translation>
 <translation id="145360476452865422">アニメーションのポリシー:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">詳しい説明を新しいタブで開く</translation>
 <translation id="2223143012868735942">カスタマイズ可能なカラーフィルタをウェブページに適用して色を認識しやすくします。</translation>
 <translation id="2394933097471027016">お試しください - このページではカーソル ブラウジングが常に有効になっています。</translation>
-<translation id="2471847333270902538"><ph name="SITE"/> の配色:</translation>
+<translation id="2471847333270902538"><ph name="SITE" /> の配色:</translation>
 <translation id="2648340354586434750">単語単位で移動するには &lt;span class='key'&gt;Option&lt;/span&gt; キーを押したままにします。</translation>
 <translation id="2795227192542594043">この拡張機能を使用すると、ウェブページでカーソルを移動でき、キーボードを使ってテキストを選択できます。</translation>
 <translation id="2808027189040546825">ステップ 1: 最も見えにくいスターがある行を選択します。</translation>

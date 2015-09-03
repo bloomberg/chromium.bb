@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ko">
 <translation id="1287053896835709737">검은색 바탕에 노란색</translation>
 <translation id="1408730541890277710">이미지를 대체 텍스트로 바꿉니다.</translation>
 <translation id="145360476452865422">애니메이션 정책:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">새 탭에서 상세 설명 열기</translation>
 <translation id="2223143012868735942">웹페이지에 적용하는 맞춤설정이 가능한 색상 필터로 색상 인식도를 높일 수 있습니다.</translation>
 <translation id="2394933097471027016">지금 시도해 보세요. 이 페이지에는 캐럿 브라우징이 항상 사용 설정되어 있습니다.</translation>
-<translation id="2471847333270902538"><ph name="SITE"/>의 색구성표:</translation>
+<translation id="2471847333270902538"><ph name="SITE" />의 색구성표:</translation>
 <translation id="2648340354586434750">&lt;span class='key'&gt;옵션&lt;/span&gt;을 눌러 단어별로 이동합니다.</translation>
 <translation id="2795227192542594043">이 확장 프로그램을 사용하면 웹페이지에서 이동 가능한 커서가 표시되어 키보드로 텍스트를 선택할 수 있습니다.</translation>
 <translation id="2808027189040546825">1단계: 가장 희미한 별표가 있는 행을 선택</translation>

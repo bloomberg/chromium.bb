@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="bg">
 <translation id="1287053896835709737">Жълто върху черно</translation>
 <translation id="1408730541890277710">Замяна на изображенията с текста от атрибута им alt.</translation>
 <translation id="145360476452865422">Правило за анимациите:</translation>
@@ -12,7 +14,7 @@
 <translation id="2179565792157161713">Отваряне на дългото описание в нов раздел</translation>
 <translation id="2223143012868735942">Цветови филтър, който може да се персонализира и да се прилага за уеб страници с цел подобряване на възприемането на цветовете.</translation>
 <translation id="2394933097471027016">Изпробвайте разширението Caret Browsing още сега – то е винаги активирано на тази страница!</translation>
-<translation id="2471847333270902538">Цветова схема за <ph name="SITE"/>:</translation>
+<translation id="2471847333270902538">Цветова схема за <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Натиснете и задръжте &lt;span class='key'&gt;Option&lt;/span&gt;, за да се придвижвате дума по дума.</translation>
 <translation id="2795227192542594043">Това разширение ви предоставя курсор, който може да се мести в уеб страниците, и ви позволява да избирате текст с клавиатурата.</translation>
 <translation id="2808027189040546825">Стъпка 1: Изберете реда с най-бледите звезди:</translation>
