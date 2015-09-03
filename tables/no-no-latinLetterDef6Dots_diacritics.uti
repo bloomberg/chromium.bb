@@ -358,7 +358,7 @@ lowercase  ʐ  4-1356  # Latin Small Letter Z with Retroflex Hook
 lowercase  ẚ  4-1     # Latin Small Letter a with Right Half Ring
 lowercase  ⱱ  4-1236  # Latin Small Letter V with Right Hook
 uplow Ǻǻ 4-1          # Latin Letter a with Ring Above and Acute
-uplow Åå 4-1          # Latin Letter a with Ring Above
+#uplow Åå 4-1          # Latin Letter a with Ring Above
 uplow Ůů 4-136        # Latin Letter U with Ring Above
 lowercase  ẘ  4-2456  # Latin Small Letter W with Ring Above
 lowercase  ẙ  4-13456 # Latin Small Letter Y with Ring Above
@@ -373,7 +373,7 @@ uplow Ƀƀ 4-12        # Latin Letter B with Stroke
 uplow Ɨɨ 4-24         # Latin Letter I with Stroke : barred i i bar
 uplow Ƶƶ 4-1356      # Latin Letter Z with Stroke
 uplow Łł 4-123       # Latin Letter L with Stroke
-uplow Øø 4-135        # Latin Letter O with Stroke : o slash
+#uplow Øø 4-135        # Latin Letter O with Stroke : o slash
 uplow Ǿǿ 4-135        # Latin Letter O with Stroke and Acute
 uplow Ꝅꝅ 4-13         # Latin Letter K with Stroke and Diagonal Stroke
 uplow Ꝑꝑ 4-1234       # Latin Letter P with Stroke Through Descender

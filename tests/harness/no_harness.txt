@@ -9,8 +9,8 @@
       "data": [
         {
           "comment": "Norwegian alphabet",
-          "input": "a b c d e f g h i j k l m n o p q r s t u v w x y z æ ø å",
-          "output": "⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵ ⠜ ⠪ ⠡"
+          "input": "a b c d e f g h i j k l m n o p q r s t u v w x y z æ ø å Æ Ø Å",
+          "output": "⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵ ⠜ ⠪ ⠡ ⠠⠜ ⠠⠪ ⠠⠡"
         }
       ]
     },
@@ -686,7 +686,7 @@
       "data": [
         {
           "comment": "Mengdeparentes: Example 1",
-          "xfail": true,
+          "xfail": false,
           "input": "{ }",
           "output": "⠣ ⠜"
         }
@@ -696,7 +696,7 @@
       "data": [
         {
           "comment": "Mengdeparentes: Example 2",
-          "xfail": true,
+          "xfail": false,
           "input": "L = {1, 3, 4}",
           "output": "⠠⠇ ⠶⠣⠼⠁⠂ ⠼⠉⠂ ⠼⠙⠜"
         }
@@ -885,7 +885,7 @@
       "data": [
         {
           "comment": "Number sign:Example 3",
-          "xfail": true,
+          "xfail": false,
           "input": "Viderekobling oppløses ved å trykke #21#.",
           "output": "⠠⠧⠊⠙⠑⠗⠑⠅⠕⠃⠇⠊⠝⠛ ⠕⠏⠏⠇⠪⠎⠑⠎ ⠧⠑⠙ ⠡ ⠞⠗⠽⠅⠅⠑ ⠼⠠⠼⠃⠁⠼⠄"
         }
@@ -1052,7 +1052,7 @@
       "data": [
         {
           "comment": "Small Latin letters: Example 1",
-          "xfail": true,
+          "xfail": false,
           "input": "Anne løser oppgavene 19 c, 24 d og 33 c.",
           "output": "⠠⠁⠝⠝⠑ ⠇⠪⠎⠑⠗ ⠕⠏⠏⠛⠁⠧⠑⠝⠑ ⠼⠁⠊⠰⠉⠂ ⠼⠃⠙⠰⠙ ⠕⠛ ⠼⠉⠉⠰⠉⠄"
         }
@@ -1315,6 +1315,21 @@
         }
       ]
     },
+    
+    
+    {
+      "data": [
+        {
+          "comment": "Highlighting: Example 5_bold and nested italic",
+          "xfail": false,
+          "input":    "hør    her    du    må    gjøre    det",
+          "typeform": "00000000000000444444554444444440000000",
+          "output":   "⠓⠪⠗    ⠓⠑⠗    ⠠⠄⠙⠥    ⠆⠍⠡⠰    ⠛⠚⠪⠗⠑⠠⠄    ⠙⠑⠞"
+        }
+      ]
+    },
+    
+    
     {
       "data": [
         {
@@ -2216,7 +2231,7 @@
         {
           "comment": "Currencies: Example 8",
           "xfail": false,
-          "input": "$29 kostet boka, sa han.",
+          "input": "\"$29 kostet boka,\" sa han.",
           "output": "⠲⠠⠲⠼⠃⠊ ⠅⠕⠎⠞⠑⠞ ⠃⠕⠅⠁⠂⠲ ⠎⠁ ⠓⠁⠝⠄"
         }
       ]

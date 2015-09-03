@@ -109,6 +109,8 @@ uplow Χχ 12346               # khi
 uplow Ψψ 13456               # psi
 uplow Ωω 2456                # omega
 
+
+
 uplow \x00C8\x00E8 2346      # e with grave è x00C8 / 00E8
 uplow \x00C9\x00E9 123456    # e with acute é x00C9 / 00E9
 uplow \x00CA\x00EA 126       # e with circumflex x00CA / 00EA
@@ -159,7 +161,10 @@ lowercase \x00F3 1456      # DEC 243 ó
 lowercase \x00F4 4-135       # DEC 244 ô
 
 # Diacritic characters
+
 include no-no-latinLetterDef6Dots_diacritics.uti
+
+
 
 # ------------------- End char definitions --------------------
 
