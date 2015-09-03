@@ -213,9 +213,15 @@ void MediaCodecVideoDecoder::Render(int buffer_index,
                                     bool eos_encountered) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
-           << " index:" << buffer_index << " size:" << size
-           << (eos_encountered ? " EOS " : " ") << AsString(render_mode);
+  // http://crbug.com/526755
+  if (verbose_) {
+    DVLOG(0) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
+             << (eos_encountered ? " EOS " : " ") << AsString(render_mode);
+  } else {
+    DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
+             << " index:" << buffer_index << " size:" << size
+             << (eos_encountered ? " EOS " : " ") << AsString(render_mode);
+  }
 
   // Normally EOS comes as a separate access unit that does not have data,
   // the corresponding |size| will be 0.
@@ -307,7 +313,13 @@ void MediaCodecVideoDecoder::ReleaseOutputBuffer(int buffer_index,
                                                  bool eos_encountered) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts;
+  // http://crbug.com/526755
+  if (verbose_) {
+    DVLOG(0) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
+             << " eos_encountered:" << eos_encountered;
+  } else {
+    DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts;
+  }
 
   // Do not render if we are in emergency stop, there might be no surface.
   if (InEmergencyStop())

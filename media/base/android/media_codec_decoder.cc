@@ -391,7 +391,8 @@ void MediaCodecDecoder::RequestToStop() {
 void MediaCodecDecoder::OnLastFrameRendered(bool eos_encountered) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  DVLOG(1) << class_name() << "::" << __FUNCTION__
+  // http://crbug.com/526755
+  DVLOG(0) << class_name() << "::" << __FUNCTION__
            << " eos_encountered:" << eos_encountered;
 
   decoder_thread_.Stop();  // synchronous
@@ -482,6 +483,12 @@ void MediaCodecDecoder::SetCodecCreatedCallbackForTests(base::Closure cb) {
   codec_created_for_tests_cb_ = cb;
 }
 
+// http://crbug.com/526755
+void MediaCodecDecoder::SetVerboseForTests(bool value) {
+  // UI task runner.
+  verbose_ = value;
+}
+
 int MediaCodecDecoder::NumDelayedRenderTasks() const {
   return 0;
 }
@@ -507,6 +514,13 @@ void MediaCodecDecoder::CheckLastFrame(bool eos_encountered,
   bool last_frame_when_stopping = GetState() == kStopping && !has_delayed_tasks;
 
   if (last_frame_when_stopping || eos_encountered) {
+    if (verbose_) {
+      DVLOG(0) << class_name() << "::" << __FUNCTION__
+               << " last_frame_when_stopping:" << last_frame_when_stopping
+               << " eos_encountered:" << eos_encountered
+               << ", posting MediaCodecDecoder::OnLastFrameRendered";
+    }
+
     media_task_runner_->PostTask(
         FROM_HERE, base::Bind(&MediaCodecDecoder::OnLastFrameRendered,
                               weak_factory_.GetWeakPtr(), eos_encountered));
@@ -573,8 +587,9 @@ void MediaCodecDecoder::ProcessNextFrame() {
 
   if (state == kStopping) {
     if (NumDelayedRenderTasks() == 0 && !last_frame_posted_) {
-      DVLOG(1) << class_name() << "::" << __FUNCTION__
-               << ": kStopping, posting OnLastFrameRendered";
+      // http://crbug.com/526755
+      DVLOG(0) << class_name() << "::" << __FUNCTION__
+               << ": kStopping, no delayed tasks, posting OnLastFrameRendered";
       media_task_runner_->PostTask(
           FROM_HERE, base::Bind(&MediaCodecDecoder::OnLastFrameRendered,
                                 weak_factory_.GetWeakPtr(), false));
@@ -671,7 +686,7 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
       return false;
 
     case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
-      DVLOG(0)
+      DVLOG(2)
           << class_name() << "::" << __FUNCTION__
           << ": DequeueInputBuffer returned MediaCodec.INFO_TRY_AGAIN_LATER.";
       return true;

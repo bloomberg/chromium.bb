@@ -1590,6 +1590,10 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
     return;
   }
 
+  // http://crbug.com/526755
+  // Set verbose mode to the decoders after decoders are created.
+  player_->SetVerboseForTests(true);
+
   // Post configuration after the player has been initialized.
   demuxer_->PostInternalConfigs();
 

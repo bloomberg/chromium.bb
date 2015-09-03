@@ -531,6 +531,16 @@ bool MediaCodecPlayer::IsPrerollingForTests(DemuxerStream::Type type) const {
     return false;
 }
 
+// http://crbug.com/526755
+void MediaCodecPlayer::SetVerboseForTests(bool value) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+
+  if (audio_decoder_)
+    audio_decoder_->SetVerboseForTests(value);
+  if (video_decoder_)
+    video_decoder_->SetVerboseForTests(value);
+}
+
 // Events from Player, called on UI thread
 
 void MediaCodecPlayer::OnMediaMetadataChanged(base::TimeDelta duration,
