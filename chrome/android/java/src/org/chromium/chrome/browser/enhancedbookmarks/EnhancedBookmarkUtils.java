@@ -88,7 +88,7 @@ public class EnhancedBookmarkUtils {
                 } else if (offlinePageBridge.isStorageAlmostFull()) {
                     messageId = pageSavedOffline
                             ? R.string.offline_pages_page_saved_storage_near_full
-                            : R.string.offline_pages_page_failed_to_save;
+                            : R.string.offline_pages_page_failed_to_save_storage_near_full;
                     // Show "Free up space" button.
                     buttonId = R.string.offline_pages_free_up_space_title;
                     snackbarController = createSnackbarControllerForFreeUpSpaceButton(
