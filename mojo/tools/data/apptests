@@ -21,6 +21,13 @@
 #
 # TODO(vtl|msw): Add a way of specifying data dependencies.
 
+view_manager_apptests = { 'test': 'mojo:view_manager_apptests' }
+# osmesa is not used on android, so no flags are needed for
+# view_manager_apptests.
+if config.target_os != config.OS_ANDROID:
+  view_manager_apptests['args'] = [ '--use-x11-test-config',
+                                    '--override-use-gl-with-osmesa-for-tests' ]
+
 tests = [
   {
     'test': 'mojo:clipboard_apptests',
@@ -39,11 +46,7 @@ tests = [
   #  'test': 'mojo:runner_apptests',
   #  'type': 'gtest_isolated',
   #},
-  {
-    'test': 'mojo:view_manager_apptests',
-    'args': ['--use-x11-test-config',
-             '--override-use-gl-with-osmesa-for-tests']
-  },
+  view_manager_apptests,
 ]
 
 # TODO(msw): Get these tests passing on Android too. http://crbug.com/486220
