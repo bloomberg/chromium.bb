@@ -1,3 +1,0 @@
-This tests that evaluating JS that calls NPN_GetURL to evaluate a javascript: URL that destroys the plugin doesn't crash.
-
-SUCCESS

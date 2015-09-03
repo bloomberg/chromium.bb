@@ -1,4 +1,0 @@
-PLUGIN: NPP_Destroy
-This tests that accessing plugin script objects from a destroyed plugin cause throws the right exceptions.
-SUCCESS
-

@@ -94,8 +94,6 @@ crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Image
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/474440 [ Mac Debug ] plugins/destroy-reentry.html [ Timeout ]
-
 # Times out on the windows trybot.
 crbug.com/481269 [ Win ] fast/dom/gc-treescope.html [ Pass Timeout ]
 
@@ -749,8 +747,6 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.h
 
 crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
-crbug.com/527009 plugins/npruntime/plugin-scriptable-object-invoke-default.html [ NeedsManualRebaseline ]
-
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Failure ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
@@ -804,9 +800,7 @@ crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansio
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.html [ Pass Slow ]
 
 # Disabled until the test plugin is fixed.
-crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
-crbug.com/363099 [ Win ] plugins/netscape-destroy-plugin-script-objects.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failure ]
 
 # These are experiencing assertions in harfbuzz.
@@ -1335,8 +1329,6 @@ crbug.com/521730 [ Win10 ] inspector/file-reader-with-network-panel.html [ Failu
 crbug.com/521730 [ Win10 ] inspector/sources/debugger-step/debugger-step-out-document-write.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] media/W3C/audio/error/error_onerror_called_on_bogus_source.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] paint/inline/outline-offset.html [ ImageOnlyFailure Timeout ]
-crbug.com/521730 [ Win10 ] plugins/destroy-on-setwindow.html [ Failure Pass ]
-crbug.com/521730 [ Win10 ] plugins/return-negative-one-from-write.html [ Failure Pass ]
 crbug.com/521730 [ Win10 ] svg/as-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass Timeout ]
 crbug.com/521730 [ Win10 ] svg/as-image/svg-object-intrinsic-size.html [ Missing Timeout ]
 crbug.com/521730 [ Win10 ] svg/as-object/nested-embedded-svg-size-changes.html [ Pass Timeout ]
@@ -1535,9 +1527,7 @@ crbug.com/521764 [ Win10 ] fast/canvas/webgl/framebuffer-bindings-unaffected-on-
 crbug.com/521764 [ Win10 ] fast/dom/Range/range-clone-contents.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/sources/debugger-pause/pause-in-inline-script.html [ Pass Timeout ]
-crbug.com/521764 [ Win10 ] plugins/get-user-agent-with-null-npp-from-npp-new.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] plugins/no-mime-with-valid-extension.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] plugins/npruntime/npruntime.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] plugins/plugin-cancel-sync-xhr.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] animations/svg-attribute-interpolation/svg-in-interpolation.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] animations/svg-attribute-interpolation/svg-kernelUnitLength-interpolation.html [ Failure Pass ]
@@ -1556,8 +1546,6 @@ crbug.com/521764 [ Win10 ] inspector/console/console-tests.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/tracing/timeline-auto-record.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/tracing/timeline-timer-fired-from-eval-call-site.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] plugins/netscape-plugin-map-data-to-src.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] plugins/npp-set-window-called-during-destruction.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] plugins/return-error-from-new-stream-doesnt-invoke-destroy-stream.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] plugins/update-widgets-crash.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] printing/webgl-repeated-printing.html [ Crash Timeout ]
 crbug.com/521764 [ Win10 ] svg/custom/textPath-remove-path-pattern.svg [ ImageOnlyFailure Pass Timeout ]

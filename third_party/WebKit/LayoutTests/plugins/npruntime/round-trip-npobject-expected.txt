@@ -1,5 +1,0 @@
-Test for bug 35965: Crash when passing an object returned from plugin back to the plugin.
-
-PASS if no crash.
-
-

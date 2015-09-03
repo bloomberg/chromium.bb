@@ -1,1 +1,0 @@
-Test for rdar://problem/6937089 PASSED.
