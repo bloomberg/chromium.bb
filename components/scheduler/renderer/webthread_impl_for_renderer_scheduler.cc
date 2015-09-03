@@ -5,6 +5,7 @@
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
 #include "components/scheduler/child/task_queue.h"
+#include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
@@ -17,8 +18,8 @@ WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
       task_runner_(scheduler->DefaultTaskRunner()),
       idle_task_runner_(scheduler->IdleTaskRunner()),
       scheduler_(scheduler),
-      thread_id_(base::PlatformThread::CurrentId()) {
-}
+      thread_id_(base::PlatformThread::CurrentId()),
+      web_task_runner_(new WebTaskRunnerImpl(scheduler->DefaultTaskRunner())) {}
 
 WebThreadImplForRendererScheduler::~WebThreadImplForRendererScheduler() {
 }
@@ -39,6 +40,10 @@ base::SingleThreadTaskRunner* WebThreadImplForRendererScheduler::TaskRunner()
 SingleThreadIdleTaskRunner* WebThreadImplForRendererScheduler::IdleTaskRunner()
     const {
   return idle_task_runner_.get();
+}
+
+blink::WebTaskRunner* WebThreadImplForRendererScheduler::taskRunner() {
+  return web_task_runner_.get();
 }
 
 void WebThreadImplForRendererScheduler::AddTaskObserverInternal(

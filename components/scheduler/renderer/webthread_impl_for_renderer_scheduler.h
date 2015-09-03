@@ -15,6 +15,7 @@ class WebScheduler;
 namespace scheduler {
 class RendererScheduler;
 class WebSchedulerImpl;
+class WebTaskRunnerImpl;
 
 class SCHEDULER_EXPORT WebThreadImplForRendererScheduler
     : public WebThreadBase {
@@ -25,6 +26,7 @@ class SCHEDULER_EXPORT WebThreadImplForRendererScheduler
   // blink::WebThread implementation.
   blink::WebScheduler* scheduler() const;
   blink::PlatformThreadId threadId() const override;
+  virtual blink::WebTaskRunner* taskRunner();
 
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* TaskRunner() const override;
@@ -41,6 +43,7 @@ class SCHEDULER_EXPORT WebThreadImplForRendererScheduler
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   RendererScheduler* scheduler_;  // Not owned.
   blink::PlatformThreadId thread_id_;
+  scoped_ptr<WebTaskRunnerImpl> web_task_runner_;
 };
 
 }  // namespace scheduler

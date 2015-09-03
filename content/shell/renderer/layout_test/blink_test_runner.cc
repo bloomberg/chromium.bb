@@ -56,6 +56,7 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -107,7 +108,7 @@ namespace content {
 
 namespace {
 
-class InvokeTaskHelper : public WebThread::Task {
+class InvokeTaskHelper : public blink::WebTaskRunner::Task {
  public:
   InvokeTaskHelper(scoped_ptr<test_runner::WebTask> task)
       : task_(task.Pass()) {}
@@ -290,14 +291,14 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
 }
 
 void BlinkTestRunner::PostTask(test_runner::WebTask* task) {
-  Platform::current()->currentThread()->postTask(
+  Platform::current()->currentThread()->taskRunner()->postTask(
       WebTraceLocation(__FUNCTION__, __FILE__),
       new InvokeTaskHelper(make_scoped_ptr(task)));
 }
 
 void BlinkTestRunner::PostDelayedTask(test_runner::WebTask* task,
                                       long long ms) {
-  Platform::current()->currentThread()->postDelayedTask(
+  Platform::current()->currentThread()->taskRunner()->postDelayedTask(
       WebTraceLocation(__FUNCTION__, __FILE__),
       new InvokeTaskHelper(make_scoped_ptr(task)), ms);
 }

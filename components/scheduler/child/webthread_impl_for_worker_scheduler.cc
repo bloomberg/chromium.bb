@@ -11,6 +11,7 @@
 #include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
 #include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
+#include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
@@ -53,6 +54,7 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
       worker_scheduler_->DefaultTaskRunner(),
       worker_scheduler_->DefaultTaskRunner()));
   base::MessageLoop::current()->AddDestructionObserver(this);
+  web_task_runner_ = make_scoped_ptr(new WebTaskRunnerImpl(task_runner_));
   completion->Signal();
 }
 
@@ -85,6 +87,10 @@ base::SingleThreadTaskRunner* WebThreadImplForWorkerScheduler::TaskRunner()
 SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::IdleTaskRunner()
     const {
   return idle_task_runner_.get();
+}
+
+blink::WebTaskRunner* WebThreadImplForWorkerScheduler::taskRunner() {
+  return web_task_runner_.get();
 }
 
 void WebThreadImplForWorkerScheduler::AddTaskObserverInternal(

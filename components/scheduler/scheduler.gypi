@@ -34,6 +34,8 @@
       'child/task_queue_sets.h',
       'child/web_scheduler_impl.cc',
       'child/web_scheduler_impl.h',
+      'child/web_task_runner_impl.cc',
+      'child/web_task_runner_impl.h',
       'child/webthread_base.cc',
       'child/webthread_base.h',
       'child/webthread_impl_for_worker_scheduler.cc',

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
+#include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/child/worker_scheduler.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
@@ -19,7 +20,9 @@ WebSchedulerImpl::WebSchedulerImpl(
     : child_scheduler_(child_scheduler),
       idle_task_runner_(idle_task_runner),
       loading_task_runner_(loading_task_runner),
-      timer_task_runner_(timer_task_runner) {}
+      timer_task_runner_(timer_task_runner),
+      loading_web_task_runner_(new WebTaskRunnerImpl(loading_task_runner)),
+      timer_web_task_runner_(new WebTaskRunnerImpl(timer_task_runner)) {}
 
 WebSchedulerImpl::~WebSchedulerImpl() {
 }
@@ -120,6 +123,14 @@ void WebSchedulerImpl::postTimerTask(
       base::TimeDelta::FromSecondsD(delaySecs));
 }
 
+blink::WebTaskRunner* WebSchedulerImpl::loadingTaskRunner() {
+  return loading_web_task_runner_.get();
+}
+
+blink::WebTaskRunner* WebSchedulerImpl::timerTaskRunner() {
+  return timer_web_task_runner_.get();
+}
+
 void WebSchedulerImpl::postTimerTaskAt(
     const blink::WebTraceLocation& web_location,
     blink::WebThread::Task* task,
@@ -131,6 +142,18 @@ void WebSchedulerImpl::postTimerTaskAt(
   timer_task_runner_->PostDelayedTaskAt(
       location,
       base::Bind(&WebSchedulerImpl::runTask, base::Passed(&scoped_task)),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(monotonicTime));
+}
+
+void WebSchedulerImpl::postTimerTaskAt(
+    const blink::WebTraceLocation& web_location,
+    blink::WebTaskRunner::Task* task,
+    double monotonicTime) {
+  DCHECK(timer_task_runner_);
+  tracked_objects::Location location(web_location.functionName(),
+                                     web_location.fileName(), -1, nullptr);
+  timer_task_runner_->PostDelayedTaskAt(
+      location, base::Bind(&blink::WebTaskRunner::Task::run, base::Owned(task)),
       base::TimeTicks() + base::TimeDelta::FromSecondsD(monotonicTime));
 }
 
