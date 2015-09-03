@@ -2121,6 +2121,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         FinishImeCompositionSession();
 
       blink::WebMouseEvent mouse_event = MakeWebMouseEvent(*event);
+      ModifyEventMovementAndCoords(&mouse_event);
       if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
         host_->delegate()->GetInputEventRouter()->RouteMouseEvent(this,
                                                                   &mouse_event);
