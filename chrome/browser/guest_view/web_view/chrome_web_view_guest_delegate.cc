@@ -39,7 +39,18 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
       ContextMenuDelegate::FromWebContents(guest_web_contents());
   DCHECK(menu_delegate);
 
-  pending_menu_ = menu_delegate->BuildMenu(guest_web_contents(), params);
+  content::ContextMenuParams new_params = params;
+  // The only case where |context_menu_position_| is not initialized is the case
+  // where the input event is directly sent to the guest WebContents without
+  // ever going throught the embedder and BrowserPlugin's
+  // RenderWidgetHostViewGuest. This only happens in some tests, e.g.,
+  // WebViewInteractiveTest.ContextMenuParamCoordinates.
+  if (context_menu_position_) {
+    new_params.x = context_menu_position_->x();
+    new_params.y = context_menu_position_->y();
+  }
+
+  pending_menu_ = menu_delegate->BuildMenu(guest_web_contents(), new_params);
   // It's possible for the returned menu to be null, so early out to avoid
   // a crash. TODO(wjmaclean): find out why it's possible for this to happen
   // in the first place, and if it's an error.
@@ -138,5 +149,13 @@ void ChromeWebViewGuestDelegate::OnAccessibilityStatusChanged(
   }
 }
 #endif
+
+void ChromeWebViewGuestDelegate::SetContextMenuPosition(
+    const gfx::Point& position) {
+  if (context_menu_position_ == nullptr)
+    context_menu_position_.reset(new gfx::Point());
+
+  *context_menu_position_ = position;
+}
 
 }  // namespace extensions

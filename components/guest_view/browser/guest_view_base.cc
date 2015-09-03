@@ -368,6 +368,8 @@ bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
   return true;
 }
 
+void GuestViewBase::SetContextMenuPosition(const gfx::Point& position) {}
+
 WebContents* GuestViewBase::CreateNewGuestWindow(
     const WebContents::CreateParams& create_params) {
   auto guest_manager = GuestViewManager::FromBrowserContext(browser_context());

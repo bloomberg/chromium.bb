@@ -354,6 +354,8 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
 
   void ApplyAttributes(const base::DictionaryValue& params);
 
+  void SetContextMenuPosition(const gfx::Point& position) override;
+
   // Identifies the set of rules registries belonging to this guest.
   int rules_registry_id_;
 

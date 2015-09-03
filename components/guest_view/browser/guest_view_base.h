@@ -271,7 +271,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SetAttachParams(const base::DictionaryValue& params);
   void SetOpener(GuestViewBase* opener);
 
-  // BrowserPluginGuestDelegate implementation.
   content::WebContents* CreateNewGuestWindow(
       const content::WebContents::CreateParams& create_params) final;
   void DidAttach(int guest_proxy_routing_id) final;
@@ -368,6 +367,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // embedder. This should generally be true for guests that make up the
   // entirety of the embedder's content.
   virtual bool ShouldHandleFindRequestsForEmbedder() const;
+
+  // BrowserPluginGuestDelegate implementation.
+  void SetContextMenuPosition(const gfx::Point& position) override;
 
  private:
   class OwnerContentsObserver;

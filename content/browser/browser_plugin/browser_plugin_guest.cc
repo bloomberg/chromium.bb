@@ -1001,4 +1001,9 @@ void BrowserPluginGuest::OnImeCompositionRangeChanged(
 }
 #endif
 
+void BrowserPluginGuest::SetContextMenuPosition(const gfx::Point& position) {
+  if (delegate_)
+    delegate_->SetContextMenuPosition(position);
+}
+
 }  // namespace content

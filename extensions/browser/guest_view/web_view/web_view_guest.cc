@@ -567,6 +567,11 @@ void WebViewGuest::LoadAbort(bool is_top_level,
       new GuestViewEvent(webview::kEventLoadAbort, args.Pass()));
 }
 
+void WebViewGuest::SetContextMenuPosition(const gfx::Point& position) {
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->SetContextMenuPosition(position);
+}
+
 void WebViewGuest::CreateNewGuestWebViewWindow(
     const content::OpenURLParams& params) {
   GuestViewManager* guest_manager =

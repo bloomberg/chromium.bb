@@ -86,6 +86,12 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Provides the delegate with an interface with which to communicate with the
   // content module.
   virtual void SetGuestHost(GuestHost* guest_host) {}
+
+  // Sets the position of the context menu for the guest contents. The value
+  // reported from the guest renderer should be ignored. The reported value
+  // fromt he guest renderer is incorrect in situations where BrowserPlugin is
+  // subject to CSS transforms.
+  virtual void SetContextMenuPosition(const gfx::Point& position) {}
 };
 
 }  // namespace content

@@ -637,8 +637,24 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     const gfx::Rect& guest_window_rect,
     const blink::WebInputEvent* event) {
   if (blink::WebInputEvent::isMouseEventType(event->type)) {
-    host_->ForwardMouseEvent(
-        *static_cast<const blink::WebMouseEvent*>(event));
+    // The mouse events for BrowserPlugin are modified by all
+    // the CSS transforms applied on the <object> and embedder. As a result of
+    // this, the coordinates passed on to the guest renderer are potentially
+    // incorrect to determine the position of the context menu(they are not the
+    // actual X, Y of the window). As a hack, we report the last location of a
+    // right mouse up to the BrowserPluginGuest to inform it of the next
+    // potential location for context menu (BUG=470087).
+    // TODO(ekaramad): Find a better and more fundamental solution. Could the
+    // ContextMenuParams be based on global X, Y?
+    const blink::WebMouseEvent& mouse_event =
+        static_cast<const blink::WebMouseEvent&>(*event);
+    // A MouseDown on the ButtonRight could suggest a ContextMenu.
+    if (guest_ && mouse_event.type == blink::WebInputEvent::MouseDown &&
+        mouse_event.button == blink::WebPointerProperties::ButtonRight)
+      guest_->SetContextMenuPosition(
+          gfx::Point(mouse_event.globalX - GetViewBounds().x(),
+                     mouse_event.globalY - GetViewBounds().y()));
+    host_->ForwardMouseEvent(mouse_event);
     return;
   }
 
