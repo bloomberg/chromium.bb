@@ -58,7 +58,6 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -218,21 +217,16 @@ void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const Fl
 
 PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
 {
-    // TODO(fmalita): instead of rasterizing, investigate returning a SkPicture-backed image.
-
     if (!m_page)
         return nullptr;
 
-    IntSize size = this->size();
-    SkImageInfo imageInfo = SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType);
-    SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRaster(imageInfo, &disableLCDProps));
-    if (!surface)
-        return nullptr;
+    SkPictureRecorder recorder;
+    SkCanvas* canvas = recorder.beginRecording(width(), height());
+    drawForContainer(canvas, SkPaint(), size(), 1, rect(), rect());
+    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
 
-    drawForContainer(surface->getCanvas(), SkPaint(), size, 1, rect(), rect());
-
-    return adoptRef(surface->newImageSnapshot());
+    return adoptRef(
+        SkImage::NewFromPicture(picture.get(), SkISize::Make(width(), height()), nullptr, nullptr));
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,
