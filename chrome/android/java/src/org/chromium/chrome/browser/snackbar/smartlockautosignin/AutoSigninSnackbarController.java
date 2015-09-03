@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.snackbar.smartlockautosignin;
 
-import android.content.Context;
-
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -27,17 +24,15 @@ public class AutoSigninSnackbarController
 
     /**
      * Displays Auto sign-in snackbar, which communicates to the users that they
-     * were signed in to the web site. Displays the |username| in the message.
+     * were signed in to the web site.
      */
     @CalledByNative
-    private static void showSnackbar(Tab tab, String username) {
+    private static void showSnackbar(Tab tab, String text) {
         SnackbarManager snackbarManager = tab.getSnackbarManager();
         if (snackbarManager == null) return;
         AutoSigninSnackbarController snackbar =
                 new AutoSigninSnackbarController(snackbarManager, tab);
-        Context context = tab.getWindowAndroid().getApplicationContext();
-        String text = context.getString(R.string.passwords_auto_signin_message);
-        snackbarManager.showSnackbar(Snackbar.make(username, snackbar).setTemplateText(text));
+        snackbarManager.showSnackbar(Snackbar.make(text, snackbar).setSingleLine(false));
     }
 
     /**

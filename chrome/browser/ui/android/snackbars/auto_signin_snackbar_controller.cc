@@ -7,13 +7,15 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/grit/generated_resources.h"
 #include "jni/AutoSigninSnackbarController_jni.h"
+#include "ui/base/l10n/l10n_util.h"
 
 void ShowAutoSigninSnackbar(TabAndroid *tab, const base::string16& username) {
   JNIEnv *env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> message =
-      base::android::ConvertUTF16ToJavaString(
-          env, username);
+  ScopedJavaLocalRef<jstring> message = base::android::ConvertUTF16ToJavaString(
+      env, l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE,
+                                      username));
   Java_AutoSigninSnackbarController_showSnackbar(
       env, tab->GetJavaObject().obj(), message.obj());
 }
