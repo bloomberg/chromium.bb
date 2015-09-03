@@ -28,7 +28,7 @@ class IOBuffer;
 namespace device {
 
 struct EndpointMapValue {
-  uint8_t interface_number;
+  int interface_number;
   UsbTransferType transfer_type;
 };
 
