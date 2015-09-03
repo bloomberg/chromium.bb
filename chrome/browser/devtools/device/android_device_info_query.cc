@@ -86,9 +86,9 @@ const BrowserDescriptor kBrowserDescriptors[] = {
     "Content Shell"
   },
   {
-    "org.chromium.chrome.shell",
-    "chrome_shell_devtools_remote",
-    "Chrome Shell"
+    "org.chromium.chrome",
+    kChromeDefaultSocket,
+    "Chromium"
   },
 };
 
