@@ -23,11 +23,13 @@
 namespace blink {
 
 template<typename T> class CrossThreadPersistent;
+template<typename T> class CrossThreadWeakPersistent;
 template<typename T> struct GCInfoTrait;
 class HeapObjectHeader;
 template<typename T> class Member;
 template<typename T> class TraceTrait;
 template<typename T> class WeakMember;
+template<typename T> class WeakPersistent;
 
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class AdjustAndMarkTrait;
 
@@ -286,7 +288,19 @@ public:
 };
 
 template<typename T>
+class TraceEagerlyTrait<WeakPersistent<T>> {
+public:
+    static const bool value = TraceEagerlyTrait<T>::value;
+};
+
+template<typename T>
 class TraceEagerlyTrait<CrossThreadPersistent<T>> {
+public:
+    static const bool value = TraceEagerlyTrait<T>::value;
+};
+
+template<typename T>
+class TraceEagerlyTrait<CrossThreadWeakPersistent<T>> {
 public:
     static const bool value = TraceEagerlyTrait<T>::value;
 };
