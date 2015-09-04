@@ -45,7 +45,6 @@ class WebLocalFrameImpl;
 
 class WebDevToolsFrontendImpl final : public WebDevToolsFrontend, public InspectorFrontendClient {
     WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
-    WTF_MAKE_FAST_ALLOCATED(WebDevToolsFrontendImpl);
 public:
     WebDevToolsFrontendImpl(WebLocalFrameImpl*, WebDevToolsFrontendClient*);
     ~WebDevToolsFrontendImpl() override;

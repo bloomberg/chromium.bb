@@ -29,7 +29,6 @@
 #include "modules/speech/SpeechRecognitionClient.h"
 #include "public/web/WebSpeechRecognizerClient.h"
 #include "wtf/Compiler.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -40,7 +39,6 @@ class WebSpeechRecognizer;
 class WebString;
 
 class SpeechRecognitionClientProxy final : public SpeechRecognitionClient, public WebSpeechRecognizerClient {
-    WTF_MAKE_FAST_ALLOCATED(SpeechRecognitionClientProxy);
 public:
     ~SpeechRecognitionClientProxy() override;
 

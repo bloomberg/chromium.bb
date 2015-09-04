@@ -34,14 +34,12 @@
 #include "platform/fonts/Font.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "public/web/WebFont.h"
-#include "wtf/FastAllocBase.h"
 
 namespace blink {
 
 class FontDescription;
 
 class WebFontImpl final : public WebFont {
-    WTF_MAKE_FAST_ALLOCATED(WebFontImpl);
 public:
     explicit WebFontImpl(const FontDescription&);
 

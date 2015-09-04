@@ -45,7 +45,6 @@ class LocalFrame;
 class WebViewImpl;
 
 class FullscreenController final : public NoBaseWillBeGarbageCollected<FullscreenController> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FullscreenController);
 public:
     static PassOwnPtrWillBeRawPtr<FullscreenController> create(WebViewImpl*);
 

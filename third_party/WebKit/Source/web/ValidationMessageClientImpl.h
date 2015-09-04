@@ -39,7 +39,6 @@ class WebViewImpl;
 
 class ValidationMessageClientImpl final : public NoBaseWillBeGarbageCollectedFinalized<ValidationMessageClientImpl>, public ValidationMessageClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ValidationMessageClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<ValidationMessageClientImpl> create(WebViewImpl&);
     ~ValidationMessageClientImpl() override;

@@ -5,7 +5,6 @@
 #ifndef OpenedFrameTracker_h
 #define OpenedFrameTracker_h
 
-#include "wtf/FastAllocBase.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 
@@ -19,7 +18,6 @@ class WebFrame;
 // Due to layering restrictions, we need to hide the implementation, since
 // public/web/ cannot depend on wtf/.
 class OpenedFrameTracker {
-    WTF_MAKE_FAST_ALLOCATED(OpenedFrameTracker);
     WTF_MAKE_NONCOPYABLE(OpenedFrameTracker);
 public:
     OpenedFrameTracker();

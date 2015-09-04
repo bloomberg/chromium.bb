@@ -40,7 +40,6 @@ class MIDIAccessInitializer;
 class WebMIDIClient;
 
 class MIDIClientProxy final : public MIDIClient {
-    WTF_MAKE_FAST_ALLOCATED(MIDIClientProxy);
 public:
     static PassOwnPtr<MIDIClientProxy> create(WebMIDIClient* client)
     {

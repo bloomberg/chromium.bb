@@ -32,7 +32,6 @@
 #define ContextMenuClientImpl_h
 
 #include "core/page/ContextMenuClient.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -40,7 +39,6 @@ class WebViewImpl;
 struct WebContextMenuData;
 
 class ContextMenuClientImpl final : public ContextMenuClient {
-    DISALLOW_ALLOCATION();
 public:
     explicit ContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) { }
     ~ContextMenuClientImpl() override {}

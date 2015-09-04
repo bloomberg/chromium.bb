@@ -40,7 +40,6 @@ class WebColorChooser;
 
 class ColorChooserUIController : public NoBaseWillBeGarbageCollectedFinalized<ColorChooserUIController>, public WebColorChooserClient, public ColorChooser {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ColorChooserUIController);
 public:
     static PassOwnPtrWillBeRawPtr<ColorChooserUIController> create(LocalFrame* frame, ColorChooserClient* client)
     {

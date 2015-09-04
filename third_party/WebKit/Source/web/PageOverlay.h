@@ -32,7 +32,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -50,7 +49,6 @@ class WebGraphicsContext;
 // With Slimming Paint, internal clients can extract a GraphicsContext to add
 // to the DisplayItemList owned by the GraphicsLayer
 class PageOverlay : public GraphicsLayerClient {
-    WTF_MAKE_FAST_ALLOCATED(PageOverlay);
 public:
     class Delegate : public GarbageCollectedFinalized<Delegate> {
     public:

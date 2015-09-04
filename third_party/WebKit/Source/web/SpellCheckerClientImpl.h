@@ -34,14 +34,12 @@
 #include "core/page/SpellCheckerClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextCheckerClient.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 
 class WebViewImpl;
 
 class SpellCheckerClientImpl final : public SpellCheckerClient, public TextCheckerClient {
-    DISALLOW_ALLOCATION();
 public:
     explicit SpellCheckerClientImpl(WebViewImpl*);
 

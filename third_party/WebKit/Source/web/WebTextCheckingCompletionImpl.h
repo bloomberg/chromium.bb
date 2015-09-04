@@ -39,7 +39,6 @@
 namespace blink {
 
 class WebTextCheckingCompletionImpl final : public WebTextCheckingCompletion {
-    WTF_MAKE_FAST_ALLOCATED(WebTextCheckingCompletionImpl);
 public:
     explicit WebTextCheckingCompletionImpl(PassRefPtrWillBeRawPtr<TextCheckingRequest> request)
         : m_request(request)

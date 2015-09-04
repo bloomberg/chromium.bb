@@ -38,7 +38,6 @@ namespace blink {
 
 class DatabaseClientImpl final : public NoBaseWillBeGarbageCollectedFinalized<DatabaseClientImpl>, public DatabaseClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DatabaseClientImpl);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DatabaseClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<DatabaseClientImpl> create();
 

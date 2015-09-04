@@ -31,7 +31,6 @@
 #ifndef WebEntities_h
 #define WebEntities_h
 
-#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
@@ -39,7 +38,6 @@ namespace blink {
 
 // FIXME: This class is wrong and needs to be removed!
 class WebEntities {
-    DISALLOW_ALLOCATION();
 public:
     // &apos;, &percnt;, &nsup;, &supl; are not defined by the HTML standards.
     //  - IE does not support &apos; as an HTML entity (but support it as an XML

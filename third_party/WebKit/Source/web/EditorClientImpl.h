@@ -32,7 +32,6 @@
 #define EditorClientImpl_h
 
 #include "core/page/EditorClient.h"
-#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -41,7 +40,6 @@ class LocalFrame;
 class WebViewImpl;
 
 class EditorClientImpl final : public EditorClient {
-    DISALLOW_ALLOCATION();
 public:
     explicit EditorClientImpl(WebViewImpl*);
     ~EditorClientImpl() override;

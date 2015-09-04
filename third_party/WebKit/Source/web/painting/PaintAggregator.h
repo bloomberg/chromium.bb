@@ -33,7 +33,6 @@
 
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
-#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -41,7 +40,6 @@ namespace blink {
 // This class is responsible for aggregating multiple invalidation and scroll
 // commands to produce a scroll and repaint sequence.
 class PaintAggregator {
-    STACK_ALLOCATED();
 public:
     // This structure describes an aggregation of invalidateRect and scrollRect
     // calls. If |scrollRect| is non-empty, then that rect should be scrolled
@@ -51,7 +49,6 @@ public:
     // |scrollDelta| can only specify scrolling in one direction (i.e., the x
     // and y members cannot both be non-zero).
     struct PendingUpdate {
-        STACK_ALLOCATED();
         PendingUpdate();
         ~PendingUpdate();
 

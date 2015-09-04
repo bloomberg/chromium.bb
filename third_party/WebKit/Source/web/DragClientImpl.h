@@ -33,14 +33,12 @@
 
 #include "core/page/DragActions.h"
 #include "core/page/DragClient.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 
 class WebViewImpl;
 
 class DragClientImpl final : public DragClient {
-    DISALLOW_ALLOCATION();
 public:
     explicit DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
 

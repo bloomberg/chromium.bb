@@ -37,7 +37,6 @@
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "public/web/WebInputEvent.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -58,25 +57,21 @@ class Widget;
 // corresponding WebCore events.
 
 class PlatformMouseEventBuilder : public PlatformMouseEvent {
-    DISALLOW_ALLOCATION();
 public:
     PlatformMouseEventBuilder(Widget*, const WebMouseEvent&);
 };
 
 class PlatformWheelEventBuilder : public PlatformWheelEvent {
-    DISALLOW_ALLOCATION();
 public:
     PlatformWheelEventBuilder(Widget*, const WebMouseWheelEvent&);
 };
 
 class PlatformGestureEventBuilder : public PlatformGestureEvent {
-    DISALLOW_ALLOCATION();
 public:
     PlatformGestureEventBuilder(Widget*, const WebGestureEvent&);
 };
 
 class PlatformKeyboardEventBuilder : public PlatformKeyboardEvent {
-    DISALLOW_ALLOCATION();
 public:
     PlatformKeyboardEventBuilder(const WebKeyboardEvent&);
     void setKeyType(Type);
@@ -85,20 +80,17 @@ public:
 
 // Converts a WebTouchPoint to a PlatformTouchPoint.
 class PlatformTouchPointBuilder : public PlatformTouchPoint {
-    DISALLOW_ALLOCATION();
 public:
     PlatformTouchPointBuilder(Widget*, const WebTouchPoint&);
 };
 
 // Converts a WebTouchEvent to a PlatformTouchEvent.
 class PlatformTouchEventBuilder : public PlatformTouchEvent {
-    DISALLOW_ALLOCATION();
 public:
     PlatformTouchEventBuilder(Widget*, const WebTouchEvent&);
 };
 
 class WebMouseEventBuilder : public WebMouseEvent {
-    WTF_MAKE_FAST_ALLOCATED(WebMouseEventBuilder);
 public:
     // Converts a MouseEvent to a corresponding WebMouseEvent.
     // NOTE: This is only implemented for mousemove, mouseover, mouseout,
@@ -111,7 +103,6 @@ public:
 // Converts a WheelEvent to a corresponding WebMouseWheelEvent.
 // If the event mapping fails, the event type will be set to Undefined.
 class WebMouseWheelEventBuilder : public WebMouseWheelEvent {
-    WTF_MAKE_FAST_ALLOCATED(WebMouseWheelEventBuilder);
 public:
     WebMouseWheelEventBuilder(const Widget*, const LayoutObject*, const WheelEvent&);
 };
@@ -122,7 +113,6 @@ public:
 // keyup, and keypress. If the event mapping fails, the event type will be set
 // to Undefined.
 class WebKeyboardEventBuilder : public WebKeyboardEvent {
-    WTF_MAKE_FAST_ALLOCATED(WebKeyboardEventBuilder);
 public:
     WebKeyboardEventBuilder(const KeyboardEvent&);
 };
@@ -131,7 +121,6 @@ public:
 // NOTE: WebTouchEvents have a cap on the number of WebTouchPoints. Any points
 // exceeding that cap will be dropped.
 class WebTouchEventBuilder : public WebTouchEvent {
-    DISALLOW_ALLOCATION();
 public:
     WebTouchEventBuilder(const LayoutObject*, const TouchEvent&);
 };
@@ -139,7 +128,6 @@ public:
 // Converts GestureEvent to a corresponding WebGestureEvent.
 // NOTE: If event mapping fails, the type will be set to Undefined.
 class WebGestureEventBuilder : public WebGestureEvent {
-    DISALLOW_ALLOCATION();
 public:
     WebGestureEventBuilder(const LayoutObject*, const GestureEvent&);
 };

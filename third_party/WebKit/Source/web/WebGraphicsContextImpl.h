@@ -8,7 +8,6 @@
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "public/web/WebGraphicsContext.h"
-#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -19,8 +18,7 @@ class GraphicsContext;
 // Wraps a blink::GraphicsContext.
 // Internal consumers can extract the underlying context (via WebGraphicsContextImpl).
 // External consumers can make a single drawing using a WebCanvas.
-class WebGraphicsContextImpl final : public WebGraphicsContext {
-    DISALLOW_ALLOCATION();
+class WebGraphicsContextImpl : public WebGraphicsContext {
 public:
     WebGraphicsContextImpl(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
     ~WebGraphicsContextImpl();

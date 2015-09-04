@@ -35,13 +35,11 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebFileChooserCompletion.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class WebFileChooserCompletionImpl final : public WebFileChooserCompletion {
-    WTF_MAKE_FAST_ALLOCATED(WebFileChooserCompletionImpl);
 public:
     explicit WebFileChooserCompletionImpl(PassRefPtr<FileChooser>);
     ~WebFileChooserCompletionImpl() override;

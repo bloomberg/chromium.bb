@@ -40,7 +40,6 @@
 #include "public/web/WebRemoteFrameClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
-#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -75,7 +74,6 @@ public:
 
 // Convenience class for handling the lifetime of a WebView and its associated mainframe in tests.
 class WebViewHelper {
-    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(WebViewHelper);
 public:
     WebViewHelper(SettingOverrider* = 0);
@@ -103,7 +101,6 @@ private:
 // Minimal implementation of WebFrameClient needed for unit tests that load frames. Tests that load
 // frames and need further specialization of WebFrameClient behavior should subclass this.
 class TestWebFrameClient : public WebFrameClient {
-    WTF_MAKE_FAST_ALLOCATED(TestWebFrameClient);
 public:
     TestWebFrameClient();
 
@@ -122,7 +119,6 @@ private:
 // Minimal implementation of WebRemoteFrameClient needed for unit tests that load remote frames. Tests that load
 // frames and need further specialization of WebFrameClient behavior should subclass this.
 class TestWebRemoteFrameClient : public WebRemoteFrameClient {
-    DISALLOW_ALLOCATION();
 public:
     TestWebRemoteFrameClient();
 
@@ -141,7 +137,6 @@ private:
 };
 
 class TestWebViewClient : public WebViewClient {
-    WTF_MAKE_FAST_ALLOCATED(TestWebViewClient);
 public:
     virtual ~TestWebViewClient() { }
     void initializeLayerTreeView() override;
@@ -152,7 +147,6 @@ private:
 };
 
 class UseMockScrollbarSettings {
-    DISALLOW_ALLOCATION();
 public:
     UseMockScrollbarSettings()
     {

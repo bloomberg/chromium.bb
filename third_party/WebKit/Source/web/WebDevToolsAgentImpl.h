@@ -74,7 +74,6 @@ class WebDevToolsAgentImpl final
     , public InspectorRuntimeAgent::Client
     , public InspectorFrontendChannel
     , private WebThread::TaskObserver {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebDevToolsAgentImpl);
 public:
     static PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
     ~WebDevToolsAgentImpl() override;

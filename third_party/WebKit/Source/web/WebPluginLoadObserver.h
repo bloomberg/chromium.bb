@@ -32,7 +32,6 @@
 #define WebPluginLoadObserver_h
 
 #include "public/platform/WebURL.h"
-#include "wtf/FastAllocBase.h"
 
 namespace blink {
 
@@ -40,7 +39,6 @@ class WebPluginContainerImpl;
 struct WebURLError;
 
 class WebPluginLoadObserver {
-    WTF_MAKE_FAST_ALLOCATED(WebPluginLoadObserver);
 public:
     WebPluginLoadObserver(WebPluginContainerImpl* pluginContainer,
                           const WebURL& notifyURL, void* notifyData)

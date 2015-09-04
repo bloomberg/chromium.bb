@@ -32,7 +32,6 @@
 #define UserMediaClientImpl_h
 
 #include "modules/mediastream/UserMediaClient.h"
-#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -43,7 +42,6 @@ class WebUserMediaClient;
 class WebLocalFrameImpl;
 
 class UserMediaClientImpl final : public UserMediaClient {
-    DISALLOW_ALLOCATION();
 public:
     explicit UserMediaClientImpl(WebLocalFrameImpl*);
 

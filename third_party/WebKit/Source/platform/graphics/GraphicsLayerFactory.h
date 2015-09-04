@@ -27,7 +27,6 @@
 #define GraphicsLayerFactory_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -36,7 +35,6 @@ class GraphicsLayer;
 class GraphicsLayerClient;
 
 class PLATFORM_EXPORT GraphicsLayerFactory {
-    WTF_MAKE_FAST_ALLOCATED(GraphicsLayerFactory);
 public:
     virtual ~GraphicsLayerFactory() { }
 

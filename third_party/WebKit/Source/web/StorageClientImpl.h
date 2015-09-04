@@ -6,14 +6,12 @@
 #define StorageClientImpl_h
 
 #include "modules/storage/StorageClient.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 
 class WebViewImpl;
 
 class StorageClientImpl : public StorageClient {
-    DISALLOW_ALLOCATION();
 public:
     explicit StorageClientImpl(WebViewImpl*);
 
