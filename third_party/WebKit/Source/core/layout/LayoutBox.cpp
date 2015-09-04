@@ -1353,6 +1353,9 @@ bool LayoutBox::invalidatePaintOfLayerRectsForImage(WrappedImagePtr image, const
                 setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
             else
                 setShouldDoFullPaintInvalidation();
+
+            if (drawingBackground)
+                invalidateBackgroundObscurationStatus();
             return true;
         }
     }
