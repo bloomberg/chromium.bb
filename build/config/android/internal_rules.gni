@@ -1054,11 +1054,6 @@ template("compile_java") {
   # Mark srcjar_deps as used.
   assert(_srcjar_deps == [] || true)
 
-  _system_jars = []
-  if (defined(invoker.android) && invoker.android) {
-    _system_jars += [ android_sdk_jar ]
-  }
-
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
   _rebased_jar_path = rebase_path(_intermediate_jar_path, root_build_dir)
 
@@ -1080,14 +1075,14 @@ template("compile_java") {
       _intermediate_jar_path + ".md5.stamp",
     ]
     sources = _java_files + _java_srcjars
-    inputs = _system_jars + [ _build_config ]
+    inputs = [
+      _build_config,
+    ]
 
-    _rebased_system_jars = rebase_path(_system_jars, root_build_dir)
     _rebased_java_srcjars = rebase_path(_java_srcjars, root_build_dir)
     _rebased_depfile = rebase_path(depfile, root_build_dir)
     args = [
       "--depfile=$_rebased_depfile",
-      "--classpath=$_rebased_system_jars",
       "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
       "--jar-path=$_rebased_jar_path",
       "--java-srcjars=$_rebased_java_srcjars",
@@ -1165,6 +1160,7 @@ template("java_library_impl") {
       defined(invoker.supports_android) && invoker.supports_android
   _requires_android =
       defined(invoker.requires_android) && invoker.requires_android
+  assert(_requires_android || true)  # Mark as used.
 
   if (_supports_android) {
     _dex_path = _base_path + ".dex.jar"
@@ -1265,8 +1261,6 @@ template("java_library_impl") {
     srcjar_deps = _srcjar_deps
     srcjars = _srcjars
     chromium_code = _chromium_code
-    android = _requires_android
-
     supports_android = _supports_android
     deps = build_config_deps
   }
