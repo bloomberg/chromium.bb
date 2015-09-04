@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//third_party/ijar/ijar.gni")
 
 sun_tools_jar_path = "$root_gen_dir/sun_tools_jar/tools.jar"
 
@@ -24,6 +25,11 @@ action("find_sun_tools_jar") {
 java_prebuilt("sun_tools_java") {
   jar_path = sun_tools_jar_path
   jar_dep = ":find_sun_tools_jar"
+}
+
+generate_interface_jar("android_ijar") {
+  input_jar = android_sdk_jar
+  output_jar = "$root_out_dir/lib.java/android.interface.jar"
 }
 
 action("cpplib_stripped") {

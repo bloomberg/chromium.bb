@@ -413,7 +413,8 @@ template("process_java_prebuilt") {
 
   _input_jar_path = invoker.input_jar_path
   _output_jar_path = invoker.output_jar_path
-  _jar_toc_path = _output_jar_path + ".TOC"
+  _output_ijar_path = get_path_info(_output_jar_path, "dir") + "/" +
+                      get_path_info(_output_jar_path, "name") + ".interface.jar"
 
   assert(invoker.build_config != "")
 
@@ -477,10 +478,9 @@ template("process_java_prebuilt") {
     }
   }
 
-  # TODO(agrieve): Change file extension to .ijar and use them in classpaths.
-  generate_interface_jar("${target_name}__jar_toc") {
+  generate_interface_jar("${target_name}__ijar") {
     input_jar = _output_jar_path
-    output_jar = _jar_toc_path
+    output_jar = _output_ijar_path
     deps = [
       ":$_output_jar_target",
     ]
@@ -489,7 +489,7 @@ template("process_java_prebuilt") {
   group(target_name) {
     forward_variables_from(invoker, [ "visibility" ])
     public_deps = [
-      ":${target_name}__jar_toc",
+      ":${target_name}__ijar",
       ":$_output_jar_target",
     ]
   }
@@ -984,7 +984,7 @@ template("java_prebuilt_impl") {
 #
 # Outputs:
 #  $jar_path.jar
-#  $jar_path.jar.TOC
+#  $jar_path.interface.jar
 #
 # Variables
 #   java_files: List of .java files to compile.
@@ -1083,6 +1083,7 @@ template("compile_java") {
     _rebased_depfile = rebase_path(depfile, root_build_dir)
     args = [
       "--depfile=$_rebased_depfile",
+      "--use-ijars",
       "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
       "--jar-path=$_rebased_jar_path",
       "--java-srcjars=$_rebased_java_srcjars",
@@ -1090,8 +1091,11 @@ template("compile_java") {
       "--jar-excluded-classes=$_jar_excluded_patterns",
     ]
     if (_supports_android) {
-      _rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
-      args += [ "--bootclasspath=$_rebased_android_sdk_jar" ]
+      deps += [ "//build/android:android_ijar" ]
+      _android_sdk_ijar = "$root_out_dir/lib.java/android.interface.jar"
+      inputs += [ _android_sdk_ijar ]
+      _rebased_android_sdk_ijar = rebase_path(_android_sdk_ijar, root_build_dir)
+      args += [ "--bootclasspath=$_rebased_android_sdk_ijar" ]
     }
     foreach(e, _manifest_entries) {
       args += [ "--manifest-entry=" + e ]

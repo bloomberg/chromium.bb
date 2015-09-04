@@ -133,6 +133,10 @@ def _ParseOptions(argv):
       help='Classpath for javac. If this is specified multiple times, they '
       'will all be appended to construct the classpath.')
   parser.add_option(
+      '--use-ijars',
+      action='store_true',
+      help='Whether to use interface jars (.interface.jar) when compiling')
+  parser.add_option(
       '--javac-includes',
       default='',
       help='A list of file patterns. If provided, only java files that match'
@@ -201,12 +205,19 @@ def main(argv):
 
   java_files = _FilterJavaFiles(java_files, options.javac_includes)
 
+  runtime_classpath = options.classpath
+  compile_classpath = runtime_classpath
+  if options.use_ijars:
+    ijar_re = re.compile(r'\.jar$')
+    compile_classpath = (
+        [ijar_re.sub('.interface.jar', p) for p in runtime_classpath])
+
   javac_args = [
       '-g',
       # Chromium only allows UTF8 source files.  Being explicit avoids
       # javac pulling a default encoding from the user's environment.
       '-encoding', 'UTF-8',
-      '-classpath', ':'.join(options.classpath),
+      '-classpath', ':'.join(compile_classpath),
       ]
 
   if options.bootclasspath:
@@ -231,11 +242,13 @@ def main(argv):
 
   # Compute the list of paths that when changed, we need to rebuild.
   input_paths = options.bootclasspath + options.java_srcjars + java_files
-  for path in options.classpath:
-    if os.path.exists(path + '.TOC'):
-      input_paths.append(path + '.TOC')
-    else:
-      input_paths.append(path)
+  # TODO(agrieve): Remove this .TOC heuristic once GYP is no more.
+  if not options.use_ijars:
+    for path in compile_classpath:
+      if os.path.exists(path + '.TOC'):
+        input_paths.append(path + '.TOC')
+      else:
+        input_paths.append(path)
   python_deps = build_utils.GetPythonDependencies()
 
   def OnStaleMd5():
@@ -266,7 +279,7 @@ def main(argv):
         if options.manifest_entry:
           entries = [e.split(':') for e in options.manifest_entry]
         manifest_file = os.path.join(temp_dir, 'manifest')
-        _CreateManifest(manifest_file, options.classpath, options.main_class,
+        _CreateManifest(manifest_file, runtime_classpath, options.main_class,
                         entries)
       else:
         manifest_file = None
