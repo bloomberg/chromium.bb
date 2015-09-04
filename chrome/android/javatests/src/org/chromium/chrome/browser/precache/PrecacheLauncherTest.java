@@ -13,6 +13,9 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
+import java.util.EnumSet;
+import java.util.concurrent.Callable;
+
 /**
  * Unit tests for {@link PrecacheLauncher}.
  *
@@ -109,9 +112,14 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         waitUntilUiThreadIdle();
 
         assertEquals(false, isPrecachingEnabled());
+        assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
+                             FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
+                             FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
+                failureReasons());
 
         setSyncInitialized(true);
         assertEquals(false, isPrecachingEnabled());
+        assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
     }
 
     @SmallTest
@@ -121,10 +129,15 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         waitUntilUiThreadIdle();
 
         assertEquals(false, isPrecachingEnabled());
+        assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
+                             FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
+                             FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
+                failureReasons());
 
         mLauncher.setShouldRun(true);
         setSyncInitialized(true);
         assertEquals(true, isPrecachingEnabled());
+        assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
     }
 
     @SmallTest
@@ -135,9 +148,11 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         waitUntilUiThreadIdle();
 
         assertEquals(false, isPrecachingEnabled());
+        assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
 
         mLauncher.setShouldRun(true);
         assertEquals(true, isPrecachingEnabled());
+        assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
     }
 
     @SmallTest
@@ -149,9 +164,11 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         waitUntilUiThreadIdle();
 
         assertEquals(true, isPrecachingEnabled());
+        assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
 
         mLauncher.setShouldRun(false);
         assertEquals(false, isPrecachingEnabled());
+        assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
     }
 
     /** Return the Context for the Chromium app. */
@@ -167,6 +184,16 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     /** Return the value of the is_precaching_enabled pref, as set by updateEnabledSync. */
     private boolean isPrecachingEnabled() {
         return PrecacheServiceLauncher.isPrecachingEnabled(getTargetContext());
+    }
+
+    /** Return the set of failure reasons for mLauncher. */
+    private EnumSet<FailureReason> failureReasons() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<EnumSet<FailureReason>>() {
+            @Override
+            public EnumSet<FailureReason> call() {
+                return mLauncher.failureReasons();
+            }
+        });
     }
 
     /** Pretend the sync backend is initialized or not. */

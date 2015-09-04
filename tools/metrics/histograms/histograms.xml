@@ -33346,6 +33346,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.Fetch.FailureReasons">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    A bit vector of reasons why the precache fetch failed to start. Bit values
+    are documented in the FailureReason Java enum.
+  </summary>
+</histogram>
+
 <histogram name="Precache.Fetch.PercentCompleted" units="percentage">
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>

@@ -96,7 +96,8 @@ PrecacheManager::AllowedType PrecacheManager::PrecachingAllowed() const {
     return AllowedType::PENDING;
 
   // SyncService delegates to SyncPrefs, which must be called on the UI thread.
-  if (sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS) &&
+  if (history_service_ &&
+      sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS) &&
       !sync_service_->GetEncryptedDataTypes().Has(syncer::SESSIONS))
     return AllowedType::ALLOWED;
 
@@ -114,7 +115,7 @@ void PrecacheManager::StartPrecaching(
   }
   precache_completion_callback_ = precache_completion_callback;
 
-  if (history_service_ && IsInExperimentGroup()) {
+  if (IsInExperimentGroup()) {
     is_precaching_ = true;
 
     BrowserThread::PostTask(
@@ -128,7 +129,7 @@ void PrecacheManager::StartPrecaching(
     history_service_->TopHosts(
         NumTopHosts(),
         base::Bind(&PrecacheManager::OnHostsReceived, AsWeakPtr()));
-  } else if (history_service_ && IsInControlGroup()) {
+  } else if (IsInControlGroup()) {
     // Set is_precaching_ so that the longer delay is placed between calls to
     // TopHosts.
     is_precaching_ = true;

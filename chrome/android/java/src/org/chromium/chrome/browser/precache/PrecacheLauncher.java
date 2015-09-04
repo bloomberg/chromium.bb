@@ -13,12 +13,41 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 
+import java.util.EnumSet;
+
 /** Class that interacts with the PrecacheManager to control precache cycles. */
 public abstract class PrecacheLauncher {
     private static final String TAG = "cr.Precache";
 
+    private static final PrecacheLauncher sInstance = new PrecacheLauncher() {
+        /** A null implementation, as it is not needed by clients of sInstance. */
+        @Override
+        protected void onPrecacheCompleted(boolean tryAgainSoon) {}
+    };
+
+    /** Returns the singleton instance of PrecacheLauncher. */
+    public static PrecacheLauncher get() {
+        return sInstance;
+    }
+
     /** Pointer to the native PrecacheLauncher object. Set to 0 when uninitialized. */
     private long mNativePrecacheLauncher;
+
+    /**
+     * Initialized by updateEnabled to call updateEnabledSync when the sync backend is initialized.
+     * Only accessed on the UI thread.
+     */
+    private ProfileSyncService.SyncStateChangedListener mListener = null;
+
+    /**
+     * Boolean failure indicators, reflecting the state of the last call to updatePrecachingEnabled.
+     * Access must occur on the UI thread. Values default to false -- so if mCalled is false, the
+     * value of the other booleans is not necessarily valid.
+     */
+    private boolean mCalled = false;
+    private boolean mSyncInitialized = false;
+    private boolean mPrerenderEnabled = false;
+    private boolean mShouldRun = false;
 
     /** Destroy the native PrecacheLauncher, releasing the memory that it was using. */
     public void destroy() {
@@ -83,13 +112,20 @@ public abstract class PrecacheLauncher {
      * @param context The application context.
      */
     private void updateEnabledSync(Context context) {
+        ThreadUtils.assertOnUiThread();
         PrivacyPreferencesManager privacyPreferencesManager =
                 PrivacyPreferencesManager.getInstance(context);
 
+        boolean prerenderEnabled = privacyPreferencesManager.shouldPrerender();
+        boolean shouldRun = nativeShouldRun();
+
+        mPrerenderEnabled = prerenderEnabled;
+        mShouldRun = shouldRun;
+
         // privacyPreferencesManager.shouldPrerender() and nativeShouldRun() can only be executed on
         // the UI thread.
-        PrecacheServiceLauncher.setIsPrecachingEnabled(context.getApplicationContext(),
-                privacyPreferencesManager.shouldPrerender() && nativeShouldRun());
+        PrecacheServiceLauncher.setIsPrecachingEnabled(
+                context.getApplicationContext(), prerenderEnabled && shouldRun);
         Log.v(TAG, "updateEnabledSync complete");
     }
 
@@ -106,12 +142,14 @@ public abstract class PrecacheLauncher {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
+                mCalled = true;
                 final ProfileSyncService sync = ProfileSyncService.get();
 
                 if (mListener == null) {
                     mListener = new ProfileSyncService.SyncStateChangedListener() {
                         public void syncStateChanged() {
                             if (sync.isSyncInitialized()) {
+                                mSyncInitialized = true;
                                 updateEnabledSync(context);
                             }
                         }
@@ -137,14 +175,18 @@ public abstract class PrecacheLauncher {
         sInstance.updateEnabled(context);
     }
 
-    private static final PrecacheLauncher sInstance = new PrecacheLauncher() {
-        @Override
-        protected void onPrecacheCompleted(boolean tryAgainSoon) {}
-    };
-
-    // Initialized by updateEnabled to call updateEnabledSync when the sync
-    // backend is initialized. Only accessed on the UI thread.
-    private ProfileSyncService.SyncStateChangedListener mListener = null;
+    /** Returns the set of reasons that the "precache.is_precaching_enabled" pref is false. */
+    public EnumSet<FailureReason> failureReasons() {
+        ThreadUtils.assertOnUiThread();
+        EnumSet<FailureReason> reasons = EnumSet.noneOf(FailureReason.class);
+        if (!mCalled) reasons.add(FailureReason.UPDATE_PRECACHING_ENABLED_NEVER_CALLED);
+        if (!mSyncInitialized) reasons.add(FailureReason.SYNC_NOT_INITIALIZED);
+        if (!mPrerenderEnabled) {
+            reasons.add(FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED);
+        }
+        if (!mShouldRun) reasons.add(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE);
+        return reasons;
+    }
 
     private native long nativeInit();
     private native void nativeDestroy(long nativePrecacheLauncher);
