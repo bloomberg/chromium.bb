@@ -87,11 +87,11 @@ bool ParseFunction(WebUsbFunctionSubset* function,
 
     uint8_t type = (*it)[1];
     if (type == kUrlDescriptorType) {
-      GURL origin;
-      if (!ParseUrl(&origin, it, end)) {
+      GURL url;
+      if (!ParseUrl(&url, it, end)) {
         return false;
       }
-      function->origins.push_back(origin);
+      function->origins.push_back(url.GetOrigin());
     } else {
       return false;
     }
@@ -139,11 +139,11 @@ bool ParseConfiguration(WebUsbConfigurationSubset* configuration,
       }
       configuration->functions.push_back(function);
     } else if (type == kUrlDescriptorType) {
-      GURL origin;
-      if (!ParseUrl(&origin, it, end)) {
+      GURL url;
+      if (!ParseUrl(&url, it, end)) {
         return false;
       }
-      configuration->origins.push_back(origin);
+      configuration->origins.push_back(url.GetOrigin());
     } else {
       return false;
     }
@@ -198,11 +198,11 @@ bool WebUsbDescriptorSet::Parse(const std::vector<uint8_t>& bytes) {
       }
       configurations.push_back(configuration);
     } else if (type == kUrlDescriptorType) {
-      GURL origin;
-      if (!ParseUrl(&origin, &it, end)) {
+      GURL url;
+      if (!ParseUrl(&url, &it, end)) {
         return false;
       }
-      origins.push_back(origin);
+      origins.push_back(url.GetOrigin());
     } else {
       return false;
     }
