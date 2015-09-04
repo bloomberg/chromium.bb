@@ -117,11 +117,11 @@ void CronetDataReductionProxy::Init(bool enable,
               url_request_context_getter_.get(),
               make_scoped_ptr(new data_reduction_proxy::DataStore()),
               task_runner_, task_runner_, task_runner_, base::TimeDelta()));
-  io_data_->SetDataReductionProxyService(
-      data_reduction_proxy_service->GetWeakPtr());
   settings_->InitDataReductionProxySettings(
       prefs_.get(), io_data_.get(), data_reduction_proxy_service.Pass());
   settings_->SetDataReductionProxyEnabled(enable);
+  io_data_->SetDataReductionProxyService(
+      data_reduction_proxy_service->GetWeakPtr());
   settings_->MaybeActivateDataReductionProxy(true);
 }
 
