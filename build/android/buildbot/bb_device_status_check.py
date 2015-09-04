@@ -295,11 +295,9 @@ def main():
 
   run_tests_helper.SetLogLevel(args.verbose)
 
-  if args.blacklist_file:
-    blacklist = device_blacklist.Blacklist(args.blacklist_file)
-  else:
-    # TODO(jbudorick): Remove this once bots pass the blacklist file.
-    blacklist = device_blacklist.Blacklist(device_blacklist.BLACKLIST_JSON)
+  blacklist = (device_blacklist.Blacklist(args.blacklist_file)
+               if args.blacklist_file
+               else None)
 
   last_devices_path = os.path.join(
       args.out_dir, device_list.LAST_DEVICES_FILENAME)

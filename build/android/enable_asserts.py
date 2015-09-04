@@ -28,10 +28,9 @@ def main():
 
   args = parser.parse_args()
 
-  if args.blacklist_file:
-    blacklist = device_blacklist.Blacklist(args.blacklist_file)
-  else:
-    blacklist = None
+  blacklist = (device_blacklist.Blacklist(args.blacklist_file)
+               if args.blacklist_file
+               else None)
 
   # TODO(jbudorick): Accept optional serial number and run only for the
   # specified device when present.
