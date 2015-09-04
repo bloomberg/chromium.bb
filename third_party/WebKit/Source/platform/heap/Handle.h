@@ -357,9 +357,6 @@ public:
     CrossThreadWeakPersistent(const RawPtr<U>& other) : Parent(other.get()) { }
 };
 
-// PersistentNode must be the left-most class to let the
-// visitor->trace(static_cast<Collection*>(this)) trace the correct position.
-// FIXME: derive affinity based on the collection.
 template<typename Collection>
 class PersistentHeapCollectionBase : public Collection {
     // We overload the various new and delete operators with using the WTF DefaultAllocator to ensure persistent
@@ -399,6 +396,7 @@ private:
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
     {
+        // FIXME: Derive affinity based on the collection.
         ThreadState* state = ThreadState::current();
         ASSERT(state->checkThread());
         m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline);
