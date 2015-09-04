@@ -2155,7 +2155,7 @@ _FUNCTION_INFO = {
   },
   'BindBufferRange': {
     'type': 'Bind',
-    'id_mapping': [ 'Buffer' ],
+    'decoder_func': 'DoBindBufferRange',
     'gen_func': 'GenBuffersARB',
     'valid_args': {
       '3': '4',

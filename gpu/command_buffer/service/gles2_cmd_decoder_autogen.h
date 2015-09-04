@@ -76,17 +76,7 @@ error::Error GLES2DecoderImpl::HandleBindBufferRange(
   GLuint buffer = c.buffer;
   GLintptr offset = static_cast<GLintptr>(c.offset);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  if (!group_->GetBufferServiceId(buffer, &buffer)) {
-    if (!group_->bind_generates_resource()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindBufferRange",
-                         "invalid buffer id");
-      return error::kNoError;
-    }
-    GLuint client_id = buffer;
-    glGenBuffersARB(1, &buffer);
-    CreateBuffer(client_id, buffer);
-  }
-  glBindBufferRange(target, index, buffer, offset, size);
+  DoBindBufferRange(target, index, buffer, offset, size);
   return error::kNoError;
 }
 
