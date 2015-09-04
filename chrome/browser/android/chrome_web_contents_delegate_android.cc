@@ -17,6 +17,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
@@ -42,6 +43,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
+using content::BluetoothChooser;
 using content::FileChooserParams;
 using content::WebContents;
 
@@ -101,6 +103,15 @@ void ChromeWebContentsDelegateAndroid::RunFileChooser(
     WebContents* web_contents,
     const FileChooserParams& params) {
   FileSelectHelper::RunFileChooser(web_contents, params);
+}
+
+scoped_ptr<BluetoothChooser>
+ChromeWebContentsDelegateAndroid::RunBluetoothChooser(
+    content::WebContents* web_contents,
+    const BluetoothChooser::EventHandler& event_handler,
+    const GURL& origin) {
+  return make_scoped_ptr(
+      new BluetoothChooserAndroid(web_contents, event_handler, origin));
 }
 
 void ChromeWebContentsDelegateAndroid::CloseContents(

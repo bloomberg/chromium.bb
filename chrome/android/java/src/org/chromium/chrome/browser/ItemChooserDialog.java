@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.text.SpannableString;
@@ -31,7 +32,9 @@ import org.chromium.chrome.R;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A general-purpose dialog for presenting a list of things to pick from.
@@ -76,17 +79,33 @@ public class ItemChooserDialog {
         public final SpannableString mNoneFound;
         // A status message to show above the button row.
         public final SpannableString mStatus;
+        // An error state.
+        public final SpannableString mErrorMessage;
+        // A status message to go with the error state.
+        public final SpannableString mErrorStatus;
         // The label for the positive button (e.g. Select/Pair).
         public final String mPositiveButton;
 
         public ItemChooserLabels(SpannableString title, String searching, SpannableString noneFound,
-                SpannableString status, String positiveButton) {
+                SpannableString status, SpannableString errorMessage, SpannableString errorStatus,
+                String positiveButton) {
             mTitle = title;
             mSearching = searching;
             mNoneFound = noneFound;
             mStatus = status;
+            mErrorMessage = errorMessage;
+            mErrorStatus = errorStatus;
             mPositiveButton = positiveButton;
         }
+    }
+
+    /**
+     * The various states the dialog can represent.
+     */
+    private enum State {
+        STARTING,
+        PROGRESS_UPDATE_AVAILABLE,
+        SHOWING_ERROR,
     }
 
     /**
@@ -105,6 +124,9 @@ public class ItemChooserDialog {
         // The zero-based index of the item currently selected in the dialog,
         // or -1 (INVALID_POSITION) if nothing is selected.
         private int mSelectedItem = ListView.INVALID_POSITION;
+
+        // A set of keys that are marked as disabled in the dialog.
+        private Set<String> mDisabledEntries = new HashSet<String>();
 
         public ItemAdapter(Context context, int resource) {
             super(context, resource);
@@ -134,6 +156,26 @@ public class ItemChooserDialog {
             return row.mKey;
         }
 
+        /**
+         * Sets whether the itam is enabled. Disabled items are grayed out.
+         * @param id The id of the item to affect.
+         * @param enabled Whether the item should be enabled or not.
+         */
+        public void setEnabled(String id, boolean enabled) {
+            if (enabled) {
+                mDisabledEntries.remove(id);
+            } else {
+                mDisabledEntries.add(id);
+            }
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            ItemChooserRow item = getItem(position);
+            return !mDisabledEntries.contains(item.mKey);
+        }
+
         @Override
         public int getViewTypeCount() {
             return 1;
@@ -160,7 +202,12 @@ public class ItemChooserDialog {
                 view.setTextColor(Color.WHITE);
             } else {
                 view.setBackground(null);
-                view.setTextColor(mDefaultTextColor);
+                if (!isEnabled(position)) {
+                    view.setTextColor(getContext().getResources().getColor(
+                            R.color.primary_text_disabled_material_light));
+                } else {
+                    view.setTextColor(mDefaultTextColor);
+                }
             }
 
             ItemChooserRow item = getItem(position);
@@ -186,7 +233,7 @@ public class ItemChooserDialog {
 
     // Individual UI elements.
     private TextViewWithClickableSpans mTitle;
-    private TextViewWithClickableSpans mNotFoundMessage;
+    private TextViewWithClickableSpans mEmptyMessage;
     private ProgressBar mProgressBar;
     private ListView mListView;
     private TextView mStatus;
@@ -226,17 +273,13 @@ public class ItemChooserDialog {
         mStatus = (TextView) dialogContainer.findViewById(R.id.status);
         mTitle = (TextViewWithClickableSpans) dialogContainer.findViewById(
                 R.id.dialog_title);
-        mNotFoundMessage =
-                (TextViewWithClickableSpans) dialogContainer.findViewById(
-                        R.id.not_found_message);
+        mEmptyMessage =
+                (TextViewWithClickableSpans) dialogContainer.findViewById(R.id.not_found_message);
 
         mTitle.setText(labels.mTitle);
         mTitle.setMovementMethod(LinkMovementMethod.getInstance());
 
-        mNotFoundMessage.setText(labels.mNoneFound);
-        mNotFoundMessage.setMovementMethod(LinkMovementMethod.getInstance());
-
-        mStatus.setText(labels.mSearching);
+        mEmptyMessage.setMovementMethod(LinkMovementMethod.getInstance());
         mStatus.setMovementMethod(LinkMovementMethod.getInstance());
 
         mConfirmButton = (Button) dialogContainer.findViewById(R.id.positive);
@@ -247,16 +290,17 @@ public class ItemChooserDialog {
             public void onClick(View v) {
                 mItemSelectedCallback.onItemSelected(
                         mItemAdapter.getSelectedItemKey());
+                mDialog.setOnDismissListener(null);
                 mDialog.dismiss();
             }
         });
 
         mItemAdapter = new ItemAdapter(mContext, R.layout.item_chooser_dialog_row);
         mListView.setAdapter(mItemAdapter);
-        mListView.setEmptyView(mNotFoundMessage);
-        mNotFoundMessage.setVisibility(View.GONE);
+        mListView.setEmptyView(mEmptyMessage);
         mListView.setOnItemClickListener(mItemAdapter);
         mListView.setDivider(null);
+        setState(State.STARTING);
 
         // The list is the main element in the dialog and it should grow and
         // shrink according to the size of the screen available (clamped to a
@@ -283,6 +327,12 @@ public class ItemChooserDialog {
         mDialog.addContentView(view,
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                                               LinearLayout.LayoutParams.MATCH_PARENT));
+        mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                mItemSelectedCallback.onItemSelected("");
+            }
+        });
 
         Window window = mDialog.getWindow();
         if (!DeviceFormFactor.isTablet(mContext)) {
@@ -297,6 +347,10 @@ public class ItemChooserDialog {
         mDialog.show();
     }
 
+    public void dismiss() {
+        mDialog.dismiss();
+    }
+
     /**
      * Add items to show in the dialog.
      *
@@ -307,17 +361,20 @@ public class ItemChooserDialog {
      */
     public void showList(List<ItemChooserRow> list) {
         mProgressBar.setVisibility(View.GONE);
-        mStatus.setText(mLabels.mStatus);
 
-        if (list.isEmpty()) {
-            boolean showEmptyMessage = mItemAdapter.isEmpty();
-            mNotFoundMessage.setVisibility(
-                    showEmptyMessage ? View.VISIBLE : View.GONE);
-            mListView.setVisibility(showEmptyMessage ? View.GONE : View.VISIBLE);
-        } else {
-            mListView.setVisibility(View.VISIBLE);
+        if (!list.isEmpty()) {
             mItemAdapter.addAll(list);
         }
+        setState(State.PROGRESS_UPDATE_AVAILABLE);
+    }
+
+    /**
+     * Sets whether the item is enabled.
+     * @param id The id of the item to affect.
+     * @param enabled Whether the item should be enabled or not.
+     */
+    public void setEnabled(String id, boolean enabled) {
+        mItemAdapter.setEnabled(id, enabled);
     }
 
     /**
@@ -325,5 +382,37 @@ public class ItemChooserDialog {
      */
     public void clear() {
         mItemAdapter.clear();
+        setState(State.STARTING);
+    }
+
+    /**
+     * Set the error state for the dialog.
+     */
+    public void setErrorState() {
+        setState(State.SHOWING_ERROR);
+    }
+
+    private void setState(State state) {
+        switch (state) {
+            case STARTING:
+                mStatus.setText(mLabels.mSearching);
+                mListView.setVisibility(View.GONE);
+                mProgressBar.setVisibility(View.VISIBLE);
+                break;
+            case SHOWING_ERROR:
+                mProgressBar.setVisibility(View.GONE);
+                mEmptyMessage.setText(mLabels.mErrorMessage);
+                mStatus.setText(mLabels.mErrorStatus);
+                break;
+            case PROGRESS_UPDATE_AVAILABLE:
+                mStatus.setText(mLabels.mStatus);
+                mProgressBar.setVisibility(View.GONE);
+                mListView.setVisibility(View.VISIBLE);
+
+                boolean showEmptyMessage = mItemAdapter.isEmpty();
+                mEmptyMessage.setText(mLabels.mNoneFound);
+                mEmptyMessage.setVisibility(showEmptyMessage ? View.VISIBLE : View.GONE);
+                break;
+        }
     }
 }

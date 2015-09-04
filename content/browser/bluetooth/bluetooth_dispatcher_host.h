@@ -151,6 +151,11 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                           int request_id,
                           device::BluetoothGattService::GattErrorCode);
 
+  // Show help pages from the chooser dialog.
+  void ShowBluetoothOverviewLink();
+  void ShowBluetoothPairingLink();
+  void ShowBluetoothAdapterOffLink();
+
   int render_process_id_;
 
   // Maps a (thread_id,request_id) to information about its requestDevice call,

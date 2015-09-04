@@ -1006,6 +1006,28 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Loading…
       </message>
 
+      <!-- Bluetooth Picker UI strings -->
+      <message name="IDS_BLUETOOTH_DIALOG_TITLE" desc="The header message shown on top of the dialog that lets the user pick a Bluetooth device for the site to pair with. Shown above a list of Bluetooth devices discovered. ">
+        <ph name="SITE">%1$s<ex>https://www.google.com</ex></ph> wants to <ph name="BEGIN_LINK">&lt;link&gt;</ph>pair with<ph name="END_LINK">&lt;/link&gt;</ph>:</message>
+      <message name="IDS_BLUETOOTH_SEARCHING" desc="The message shown in the Bluetooth picker dialog while scanning for devices.">
+        Searching for devices...
+      </message>
+      <message name="IDS_BLUETOOTH_CONFIRM_BUTTON" desc="The button to confirm association of a website with a Bluetooth device. Use the same term as in 'Pair this Bluetooth headset with your phone.'">
+        Pair
+      </message>
+      <message name="IDS_BLUETOOTH_NOT_SEEING_IT" desc="The message to show at the bottom of the dialog when Bluetooth scanning has uncovered some items. Allows the user to restart the scan, in case their device is not listed.">
+        Not seeing your device? <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>Search again<ph name="END_LINK1">&lt;/link1&gt;</ph> or <ph name="BEGIN_LINK2">&lt;link2&gt;</ph>Get help<ph name="END_LINK2">&lt;/link2&gt;</ph>.
+      </message>
+      <message name="IDS_BLUETOOTH_NOT_FOUND" desc="The message to show when no items were found during Bluetooth device scanning.">
+        No bluetooth devices found. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Search again<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_BLUETOOTH_ADAPTER_OFF" desc="The message to show when scanning cannot start because the bluetooth adapter is turned off.">
+        Turn on Bluetooth in <ph name="BEGIN_LINK">&lt;link&gt;</ph>device settings<ph name="END_LINK">&lt;/link&gt;</ph> to allow pairing.
+      </message>
+      <message name="IDS_BLUETOOTH_ADAPTER_OFF_HELP" desc="The status message to show along with the message when the bluetooth adapter is turned off (to get Help).">
+        <ph name="BEGIN_LINK">&lt;link&gt;</ph>Help<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+
       <!-- Sync error strings -->
       <message name="IDS_SYNC_ERROR_GENERIC" desc="Sync error string for generic error. [CHAR-LIMIT=80]">
         Sync error

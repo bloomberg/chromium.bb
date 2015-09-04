@@ -27,6 +27,8 @@
       'browser/ui/android/autofill/card_unmask_prompt_view_android.h',
       'browser/ui/android/autofill/password_generation_popup_view_android.cc',
       'browser/ui/android/autofill/password_generation_popup_view_android.h',
+      'browser/ui/android/bluetooth_chooser_android.cc',
+      'browser/ui/android/bluetooth_chooser_android.h',
       'browser/ui/android/certificate_viewer_android.cc',
       'browser/ui/android/certificate_viewer_android.h',
       'browser/ui/android/chrome_http_auth_handler.cc',

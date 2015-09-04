@@ -722,8 +722,12 @@ void BluetoothDispatcherHost::OnBluetoothChooserEvent(
     BluetoothChooser::Event event,
     const std::string& device_id) {
   switch (event) {
+    case BluetoothChooser::Event::RESCAN:
+      // TODO(jyasskin): Implement starting a new Bluetooth discovery session.
+      NOTIMPLEMENTED();
+      break;
     case BluetoothChooser::Event::CANCELLED:
-    case BluetoothChooser::Event::SELECTED:
+    case BluetoothChooser::Event::SELECTED: {
       RequestDeviceSession* session =
           request_device_sessions_.Lookup(chooser_id);
       DCHECK(session) << "Shouldn't close the dialog twice.";
@@ -742,6 +746,16 @@ void BluetoothDispatcherHost::OnBluetoothChooserEvent(
                          device_id))) {
         LOG(WARNING) << "No TaskRunner; not closing requestDevice dialog.";
       }
+      break;
+    }
+    case BluetoothChooser::Event::SHOW_OVERVIEW_HELP:
+      ShowBluetoothOverviewLink();
+      break;
+    case BluetoothChooser::Event::SHOW_PAIRING_HELP:
+      ShowBluetoothPairingLink();
+      break;
+    case BluetoothChooser::Event::SHOW_ADAPTER_OFF_HELP:
+      ShowBluetoothAdapterOffLink();
       break;
   }
 }
@@ -898,6 +912,18 @@ void BluetoothDispatcherHost::OnWriteValueFailed(
   Send(new BluetoothMsg_WriteCharacteristicValueError(
       thread_id, request_id,
       TranslateGATTError(error_code, UMAGATTOperation::CHARACTERISTIC_WRITE)));
+}
+
+void BluetoothDispatcherHost::ShowBluetoothOverviewLink() {
+  NOTIMPLEMENTED();
+}
+
+void BluetoothDispatcherHost::ShowBluetoothPairingLink() {
+  NOTIMPLEMENTED();
+}
+
+void BluetoothDispatcherHost::ShowBluetoothAdapterOffLink() {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace content

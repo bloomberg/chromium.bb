@@ -111,6 +111,7 @@
 #include "chrome/browser/ui/android/autofill/card_unmask_prompt_view_android.h"
 #include "chrome/browser/ui/android/autofill/credit_card_scanner_view_android.h"
 #include "chrome/browser/ui/android/autofill/password_generation_popup_view_android.h"
+#include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/certificate_viewer_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/connection_info_popup_android.h"
@@ -195,6 +196,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
     {"AutofillProfileBridge", autofill::RegisterAutofillProfileBridge},
     {"AutoSigninSnackbarController", RegisterAutoSigninSnackbarController},
+    {"BluetoothChooserAndroid", BluetoothChooserAndroid::Register},
     {"BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
     {"CertificateViewer", RegisterCertificateViewer},

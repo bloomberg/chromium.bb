@@ -22,6 +22,14 @@ class CONTENT_EXPORT BluetoothChooser {
     CANCELLED,
     // The user selected device |opt_device_id|.
     SELECTED,
+    // The user asked for a new Bluetooth discovery session to start.
+    RESCAN,
+    // Show overview page for Bluetooth.
+    SHOW_OVERVIEW_HELP,
+    // Show help page explaining what Bluetooth pairing means.
+    SHOW_PAIRING_HELP,
+    // Show help page explaining why scanning failed because Bluetooth is off.
+    SHOW_ADAPTER_OFF_HELP,
 
     // As the dialog implementations grow more user-visible buttons and knobs,
     // we'll add enumerators here to support them.

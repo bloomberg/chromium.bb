@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "components/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -41,6 +42,10 @@ class ChromeWebContentsDelegateAndroid
                            bool to_different_document) override;
   void RunFileChooser(content::WebContents* web_contents,
                       const content::FileChooserParams& params) override;
+  scoped_ptr<content::BluetoothChooser> RunBluetoothChooser(
+      content::WebContents* web_contents,
+      const content::BluetoothChooser::EventHandler& event_handler,
+      const GURL& origin) override;
   void CloseContents(content::WebContents* web_contents) override;
   blink::WebDisplayMode GetDisplayMode(
       const content::WebContents* web_contents) const override;

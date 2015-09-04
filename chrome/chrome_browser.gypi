@@ -1717,6 +1717,7 @@
       'android/java/src/org/chromium/chrome/browser/autofill/CreditCardScanner.java',
       'android/java/src/org/chromium/chrome/browser/autofill/PasswordGenerationPopupBridge.java',
       'android/java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java',
+      'android/java/src/org/chromium/chrome/browser/BluetoothChooserDialog.java',
       'android/java/src/org/chromium/chrome/browser/BookmarksBridge.java',
       'android/java/src/org/chromium/chrome/browser/bookmark/EditBookmarkHelper.java',
       'android/java/src/org/chromium/chrome/browser/banners/AppBannerManager.java',
