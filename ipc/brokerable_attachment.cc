@@ -4,25 +4,45 @@
 
 #include "ipc/brokerable_attachment.h"
 
+#include "ipc/attachment_broker.h"
+
+#if USE_ATTACHMENT_BROKER
 #include "crypto/random.h"
+#endif
 
 namespace IPC {
 
-namespace {
 
+#if USE_ATTACHMENT_BROKER
+BrokerableAttachment::AttachmentId::AttachmentId() {
 // In order to prevent mutually untrusted processes from stealing resources from
 // one another, the nonce must be secret. This generates a 128-bit,
 // cryptographicaly-strong random number.
-BrokerableAttachment::AttachmentId GetRandomId() {
-  BrokerableAttachment::AttachmentId id;
-  crypto::RandBytes(id.nonce, BrokerableAttachment::kNonceSize);
-  return id;
+  crypto::RandBytes(nonce, BrokerableAttachment::kNonceSize);
+}
+#else
+BrokerableAttachment::AttachmentId::AttachmentId() {
+  CHECK(false) << "Not allowed to construct an attachment id if the platform "
+                  "does not support attachment brokering.";
+}
+#endif
+
+BrokerableAttachment::AttachmentId::AttachmentId(const char* start_address,
+                                                 size_t size) {
+  DCHECK(size == BrokerableAttachment::kNonceSize);
+  for (size_t i = 0; i < BrokerableAttachment::kNonceSize; ++i)
+    nonce[i] = start_address[i];
 }
 
-}  // namespace
+void BrokerableAttachment::AttachmentId::SerializeToBuffer(char* start_address,
+                                                           size_t size) {
+  DCHECK(size == BrokerableAttachment::kNonceSize);
+  for (size_t i = 0; i < BrokerableAttachment::kNonceSize; ++i)
+    start_address[i] = nonce[i];
+}
 
 BrokerableAttachment::BrokerableAttachment()
-    : id_(GetRandomId()), needs_brokering_(false) {}
+    : needs_brokering_(false) {}
 
 BrokerableAttachment::BrokerableAttachment(const AttachmentId& id,
                                            bool needs_brokering)
