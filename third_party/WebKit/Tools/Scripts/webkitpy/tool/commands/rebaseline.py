@@ -801,7 +801,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
     # FIXME: Move this somewhere more general.
     def tree_status(self):
-        blink_tree_status_url = "http://blink-status.appspot.com/status"
+        blink_tree_status_url = "http://chromium-status.appspot.com/status"
         status = urllib2.urlopen(blink_tree_status_url).read().lower()
         if status.find('closed') != -1 or status == "0":
             return 'closed'
