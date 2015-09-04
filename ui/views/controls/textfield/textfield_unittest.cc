@@ -457,7 +457,29 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 #endif
   }
 
+  bool TestingNativeCrOs() const {
+#if defined(OS_CHROMEOS)
+    return true;
+#else
+    return false;
+#endif  // defined(OS_CHROMEOS)
+  }
+
  protected:
+  void SendKeyPress(ui::KeyboardCode key_code, int flags) {
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+    // The Mac EventGenerator hooks in before IME. It sends events first to an
+    // NSResponder, which is necessary to interpret keyboard events into
+    // appropriate editing commands.
+    event_generator_->PressKey(key_code, flags);
+#else
+    // TODO(shuchen): making EventGenerator support input method and using
+    // EventGenerator here. crbug.com/512315.
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
+    input_method_->DispatchKeyEvent(&event);
+#endif
+  }
+
   void SendKeyEvent(ui::KeyboardCode key_code,
                     bool alt,
                     bool shift,
@@ -476,17 +498,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
                 (command ? ui::EF_COMMAND_DOWN : 0) |
                 (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
 
-#if defined(OS_MACOSX) && !defined(USE_AURA)
-    // The Mac EventGenerator hooks in before IME. It sends events first to an
-    // NSResponder, which is necessary to interpret keyboard events into
-    // appropriate editing commands.
-    event_generator_->PressKey(key_code, flags);
-#else
-    // TODO(shuchen): making EventGenerator support input method and using
-    // EventGenerator here. crbug.com/512315.
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
-    input_method_->DispatchKeyEvent(&event);
-#endif
+    SendKeyPress(key_code, flags);
   }
 
   void SendKeyEvent(ui::KeyboardCode key_code,
@@ -705,6 +717,29 @@ TEST_F(TextfieldTest, KeyTest) {
     EXPECT_STR_EQ("TeXT!1!1", textfield_->text());
   else
     EXPECT_STR_EQ("TexT!1!1", textfield_->text());
+}
+
+TEST_F(TextfieldTest, KeysWithModifiersTest) {
+  InitTextfield();
+  const int ctrl = ui::EF_CONTROL_DOWN;
+  const int alt = ui::EF_ALT_DOWN;
+  const int command = ui::EF_COMMAND_DOWN;
+  const int altgr = ui::EF_ALTGR_DOWN;
+  const int shift = ui::EF_SHIFT_DOWN;
+
+  SendKeyPress(ui::VKEY_T, shift);
+  SendKeyPress(ui::VKEY_E, shift | altgr);
+  SendKeyPress(ui::VKEY_X, 0);
+  SendKeyPress(ui::VKEY_T, ctrl);
+  SendKeyPress(ui::VKEY_1, alt);
+  SendKeyPress(ui::VKEY_2, command);
+  SendKeyPress(ui::VKEY_3, 0);
+  SendKeyPress(ui::VKEY_4, 0);
+
+  if (TestingNativeCrOs())
+    EXPECT_STR_EQ("TEx34", textfield_->text());
+  else
+    EXPECT_STR_EQ("TEx234", textfield_->text());
 }
 
 TEST_F(TextfieldTest, ControlAndSelectTest) {

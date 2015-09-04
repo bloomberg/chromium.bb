@@ -17,6 +17,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -1449,17 +1450,13 @@ void Textfield::InsertText(const base::string16& new_text) {
 }
 
 void Textfield::InsertChar(base::char16 ch, int flags) {
-  const int kControlModifierMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
-                                   ui::EF_COMMAND_DOWN | ui::EF_ALTGR_DOWN |
-                                   ui::EF_MOD3_DOWN;
-
   // Filter out all control characters, including tab and new line characters,
-  // and all characters with Alt modifier. But allow characters with the AltGr
-  // modifier. On Windows AltGr is represented by Alt+Ctrl, and on Linux it's a
-  // different flag that we don't care about.
+  // and all characters with Alt modifier (and Search on ChromeOS). But allow
+  // characters with the AltGr modifier. On Windows AltGr is represented by
+  // Alt+Ctrl, and on Linux it's a different flag that we don't care about.
   const bool should_insert_char =
       ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
-      (flags & kControlModifierMask) != ui::EF_ALT_DOWN;
+      !ui::IsSystemKeyModifier(flags);
   if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE || !should_insert_char)
     return;
 

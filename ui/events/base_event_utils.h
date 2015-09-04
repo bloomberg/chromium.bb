@@ -14,6 +14,9 @@ namespace ui {
 // Generate an unique identifier for events.
 EVENTS_BASE_EXPORT uint32 GetNextTouchEventId();
 
+// Checks if |flags| contains system key modifiers.
+EVENTS_BASE_EXPORT bool IsSystemKeyModifier(int flags);
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_BASE_EVENT_UTILS_H_

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 
 namespace {
@@ -85,7 +86,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
   text[0] = character;
   unmodifiedText[0] = character;
   isSystemKey =
-      (state & ui::EF_ALT_DOWN) != 0 && (state & ui::EF_ALTGR_DOWN) == 0;
+      ui::IsSystemKeyModifier(state) && (state & ui::EF_ALTGR_DOWN) == 0;
   setKeyIdentifierFromWindowsKeyCode();
 }
 
