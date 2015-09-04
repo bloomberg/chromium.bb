@@ -370,25 +370,6 @@ public:
         : Vector<T, inlineCapacity, HeapAllocator>(other)
     {
     }
-
-    template<typename U>
-    void append(const U* data, size_t dataSize)
-    {
-        Vector<T, inlineCapacity, HeapAllocator>::append(data, dataSize);
-    }
-
-    template<typename U>
-    void append(const U& other)
-    {
-        Vector<T, inlineCapacity, HeapAllocator>::append(other);
-    }
-
-    template<typename U, size_t otherCapacity>
-    void appendVector(const HeapVector<U, otherCapacity>& other)
-    {
-        const Vector<U, otherCapacity, HeapAllocator>& otherVector = other;
-        Vector<T, inlineCapacity, HeapAllocator>::appendVector(otherVector);
-    }
 };
 
 template<typename T, size_t inlineCapacity = 0>
