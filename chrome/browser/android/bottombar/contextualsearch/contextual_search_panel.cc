@@ -117,12 +117,6 @@ void ContextualSearchPanel::DestroyWebContents(JNIEnv* env, jobject jobj) {
   web_contents_delegate_.reset();
 }
 
-void ContextualSearchPanel::ReleaseWebContents(JNIEnv* env, jobject jboj) {
-  DCHECK(web_contents_.get());
-  web_contents_delegate_.reset();
-  ignore_result(web_contents_.release());
-}
-
 void ContextualSearchPanel::SetInterceptNavigationDelegate(
     JNIEnv* env,
     jobject obj,

@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.contextualsearch;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTab;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.common.TopControlsState;
 
@@ -54,24 +56,11 @@ public interface ContextualSearchManagementDelegate {
     void promoteToTab();
 
     /**
-     * Resets the Search Content View scroll position.
-     */
-    void resetSearchContentViewScroll();
-
-    /**
      * Gets the Search Content View's vertical scroll position. If the Search Content View
      * is not available it returns -1.
      * @return The Search Content View scroll position.
      */
     float getSearchContentViewVerticalScroll();
-
-    /**
-     * Sets the visibility of the Search Content View.
-     * TODO(pedrosimonetti): Revisit this API. Consumers should not be allowed to make
-     * it invisible, only visible.
-     * @param isVisible True to make it visible.
-     */
-    void setSearchContentViewVisibility(boolean isVisible);
 
     /**
      * Sets the delegate responsible for manipulating the ContextualSearchLayout.
@@ -123,4 +112,60 @@ public interface ContextualSearchManagementDelegate {
      * @return Whether the current activity contains a {@link CustomTab}.
      */
     boolean isCustomTab();
+
+    /**
+     * This method is called when the panel's ContentViewCore is created.
+     * @param contentView The created ContentViewCore.
+     */
+    void onContentViewCreated(ContentViewCore contentView);
+
+    /**
+     * This method is called when the panel's ContentViewCore is destroyed.
+     */
+    void onContentViewDestroyed();
+
+    /**
+     * This is called on navigation of the contextual search pane This is called on navigation
+     * of the contextual search panel.
+     * @param isFailure If the request resulted in an error page.
+     */
+    void onContextualSearchRequestNavigation(boolean isFailure);
+
+    /**
+     * This is called when the search panel is shown or is hidden.
+     * @param isVisible True if the panel is now visible.
+     */
+    void onContentViewVisibilityChanged(boolean isVisible);
+
+    /**
+     * This is called when the panel has loaded search results.
+     */
+    void onSearchResultsLoaded();
+
+    /**
+     * Called when an external navigation occurs.
+     * @param url The URL being navigated to.
+     */
+    void onExternalNavigation(String url);
+
+    /**
+     * Handles the WebContentsObserver#didNavigateMainFrame callback.
+     * @param url The URL of the navigation.
+     * @param httpResultCode The HTTP result code of the navigation.
+     */
+    void handleDidNavigateMainFrame(String url, int httpResultCode);
+
+    /**
+     * Called when the WebContents for the panel starts loading.
+     */
+    void onStartedLoading();
+
+    /**
+     * Determine if a particular navigation should be ignored.
+     * @param externalNavHandler External navigation handler for the activity the panel is in.
+     * @param navigationParams The navigation params for the current navigation.
+     * @return True if the navigation should be ignored.
+     */
+    boolean shouldInterceptNavigation(ExternalNavigationHandler externalNavHandler,
+            NavigationParams navigationParams);
 }

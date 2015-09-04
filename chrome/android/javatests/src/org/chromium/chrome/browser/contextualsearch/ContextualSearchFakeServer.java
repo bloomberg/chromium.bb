@@ -18,9 +18,11 @@ import javax.annotation.Nullable;
  *              be something like ContextualSearchFakeEnvironment.
  */
 @VisibleForTesting
-class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator {
+class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator,
+        ContextualSearchContentController {
 
     private final ContextualSearchNetworkCommunicator mBaseManager;
+    private final ContextualSearchContentController mContentController;
     private String mLoadedUrl;
     private String mSearchTermRequested;
     private boolean mShouldUseHttps;
@@ -32,8 +34,10 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator 
      * @param baseManager The manager to call back to for server responses.
      */
     @VisibleForTesting
-    ContextualSearchFakeServer(ContextualSearchNetworkCommunicator baseManager) {
+    ContextualSearchFakeServer(ContextualSearchNetworkCommunicator baseManager,
+            ContextualSearchContentController contentController) {
         mBaseManager = baseManager;
+        mContentController = contentController;
     }
 
     @Override
@@ -48,7 +52,7 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator 
         mLoadedUrlCount++;
         // This will not actually load a URL because no Search Content View will be created
         // when under test -- see comments in createNewSearchContentView.
-        mBaseManager.loadUrl(url);
+        mContentController.loadUrl(url);
     }
 
     @Override
@@ -75,12 +79,7 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator 
     }
 
     @Override
-    public void handleDidNavigateMainFrame(String url, int httpResultCode) {
-        mBaseManager.handleDidNavigateMainFrame(url, httpResultCode);
-    }
-
-    @Override
-    public void createNewSearchContentView() {
+    public void createNewContentView() {
         mIsSearchContentViewCreated = true;
         // Don't call the super method because that will cause loadUrl to make a live request!
         // This method is only called by loadUrl, which will subseqently check if the CV was
@@ -89,9 +88,9 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator 
     }
 
     @Override
-    public void destroySearchContentView() {
+    public void destroyContentView() {
         mIsSearchContentViewCreated = false;
-        mBaseManager.destroySearchContentView();
+        mContentController.destroyContentView();
     }
 
     /**

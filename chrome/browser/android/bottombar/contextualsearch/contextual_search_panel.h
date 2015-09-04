@@ -44,9 +44,6 @@ class ContextualSearchPanel {
   // Destroys the WebContents.
   void DestroyWebContents(JNIEnv* env, jobject jobj);
 
-  // Release ownership of WebContents.
-  void ReleaseWebContents(JNIEnv* env, jobject jobj);
-
   // Sets the delegate used to convert navigations to intents.
   void SetInterceptNavigationDelegate(JNIEnv* env,
                                       jobject obj,

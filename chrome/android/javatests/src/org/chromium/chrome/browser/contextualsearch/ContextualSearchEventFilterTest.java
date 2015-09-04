@@ -19,10 +19,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ContextualSearchEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
-import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
-import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
-import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content_public.browser.WebContents;
 
 /**
  * Class responsible for testing the ContextualSearchEventFilter.
@@ -142,26 +138,17 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
             return 0;
         }
 
-        // TODO(mdjones): Most of these should be removed in when refactor is complete.
         @Override
         public void destroy() {}
 
         @Override
+        public void createNewContentView() {}
+
+        @Override
+        public void destroyContentView() {}
+
+        @Override
         public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {}
-
-        @Override
-        public void setWebContents(ContentViewCore contentViewCore,
-                WebContentsDelegateAndroid delegate) {}
-
-        @Override
-        public void destroyWebContents() {}
-
-        @Override
-        public void releaseWebContents() {}
-
-        @Override
-        public void setInterceptNavigationDelegate(InterceptNavigationDelegate delegate,
-                WebContents webContents) {}
     }
 
     // --------------------------------------------------------------------------------------------

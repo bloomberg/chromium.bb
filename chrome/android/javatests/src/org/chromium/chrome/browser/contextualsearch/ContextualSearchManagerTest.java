@@ -80,9 +80,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         mManager = getActivity().getContextualSearchManager();
 
         if (mManager != null) {
-            mFakeServer = new ContextualSearchFakeServer(mManager);
-            mManager.setNetworkCommunicator(mFakeServer);
             mPanelDelegate = mManager.getContextualSearchPanelDelegate();
+            mFakeServer = new ContextualSearchFakeServer(mManager,
+                    mPanelDelegate.getContentController());
+            mManager.setNetworkCommunicator(mFakeServer);
+            mPanelDelegate.setContentController(mFakeServer);
             mSelectionController = mManager.getSelectionController();
             mPolicy = ContextualSearchPolicy.getInstance(getActivity());
 
@@ -288,7 +290,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     private void fakeContentViewDidNavigate(int httpResultCode) {
         String url = mFakeServer.getLoadedUrl();
-        mFakeServer.handleDidNavigateMainFrame(url, httpResultCode);
+        mManager.handleDidNavigateMainFrame(url, httpResultCode);
     }
 
     /**
