@@ -221,11 +221,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   bool send_ack = true;
   if (request_info && data_length > 0) {
-    // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-    base::debug::Alias(request_info);
-    int buffer_size = request_info->buffer_size;
-    base::debug::Alias(&buffer_size);
-
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
