@@ -1,0 +1,47 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page.html">
+
+<dom-module id="cr-settings-on-startup-page">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="on_startup_shared.css">
+  <template>
+    <cr-settings-animated-pages id="pages" in-subpage="{{inSubpage}}">
+      <neon-animatable id="main">
+        <div id="locationLabel" i18n-content="onStartup"></div>
+        <div>
+          <paper-radio-group selected="{{prefValue}}">
+            <!--
+            see https://github.com/PolymerElements/paper-radio-button/issues/51
+            for info on 'placeholder' -->
+            <paper-radio-button
+                name="5" i18n-content="onStartupOpenNewTab">placeholder
+            </paper-radio-button>
+            <paper-radio-button
+                name="1" i18n-content="onStartupContinue">placeholder
+            </paper-radio-button>
+            <paper-radio-button
+                name="4" i18n-content="onStartupOpenSpecific">placeholder
+            </paper-radio-button>
+          </paper-radio-group>
+          <paper-button
+              on-tap="onSetPagesTap_" raised i18n-content="onStartupSetPages">
+          </paper-button>
+        </div>
+      </neon-animatable>
+      <neon-animatable id="startup-urls">
+        <div class="subheader">
+          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
+          </paper-icon-button>
+          <h2 i18n-content="onStartupSetPages"></h2>
+        </div>
+        <cr-settings-startup-urls-page prefs="{{prefs}}">
+        </cr-settings-startup-urls-page>
+      </neon-animatable>
+    </cr-settings-animated-pages>
+  </template>
+  <script src="on_startup_page.js"></script>
+</dom-module>
