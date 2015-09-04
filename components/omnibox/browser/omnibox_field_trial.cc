@@ -103,7 +103,8 @@ void InitializeScoreBuckets(const VariationParams& params,
 
 HUPScoringParams::ScoreBuckets::ScoreBuckets()
     : relevance_cap_(-1),
-      half_life_days_(-1) {
+      half_life_days_(-1),
+      use_decay_factor_(false) {
 }
 
 HUPScoringParams::ScoreBuckets::~ScoreBuckets() {
