@@ -368,7 +368,11 @@ class SingleTestRunner(object):
         # This can save a lot of execution time if we have a lot of crashes or timeouts.
         if test_output.crash or test_output.timeout:
             expected_driver_output = DriverOutput(text=None, image=None, image_hash=None, audio=None)
-            return self._compare_output(expected_driver_output, test_output)
+            test_result = self._compare_output(expected_driver_output, test_output)
+
+            if test_output.crash:
+                test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory, self._test_name, test_output, expected_driver_output, test_result.failures)
+            return test_result
 
         # A reftest can have multiple match references and multiple mismatch references;
         # the test fails if any mismatch matches and all of the matches don't match.

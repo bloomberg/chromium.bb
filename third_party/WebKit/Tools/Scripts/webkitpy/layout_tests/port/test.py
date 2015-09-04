@@ -643,6 +643,12 @@ class TestDriver(Driver):
             crash_logs = CrashLogs(self._port.host)
             crash_log = crash_logs.find_newest_log(crashed_process_name, None) or ''
 
+        if 'crash-reftest.html' in test_name:
+            crashed_process_name = self._port.driver_name()
+            crashed_pid = 3
+            crash = True
+            crash_log = 'reftest crash log'
+
         if stop_when_done:
             self.stop()
 
