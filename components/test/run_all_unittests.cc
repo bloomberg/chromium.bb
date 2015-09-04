@@ -10,13 +10,13 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "content/public/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "url/url_util.h"
 
 #if !defined(OS_IOS)
+#include "content/public/test/test_content_client_initializer.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
@@ -103,15 +103,21 @@ class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {
   ~ComponentsUnitTestEventListener() override {}
 
   void OnTestStart(const testing::TestInfo& test_info) override {
+#if !defined(OS_IOS)
     content_initializer_.reset(new content::TestContentClientInitializer());
+#endif
   }
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
+#if !defined(OS_IOS)
     content_initializer_.reset();
+#endif
   }
 
  private:
+#if !defined(OS_IOS)
   scoped_ptr<content::TestContentClientInitializer> content_initializer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ComponentsUnitTestEventListener);
 };

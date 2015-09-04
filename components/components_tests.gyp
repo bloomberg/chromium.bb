@@ -837,9 +837,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs_test_support',
         '../base/base.gyp:test_support_base',
-        # TODO(blundell): Eliminate the need for this dependency in code
-        # that iOS shares. crbug.com/325243
-        '../content/content_shell_and_tests.gyp:test_support_content',
         '../google_apis/google_apis.gyp:google_apis_test_support',
         '../jingle/jingle.gyp:notifier_test_util',
         '../net/net.gyp:net_test_support',
@@ -1024,6 +1021,7 @@
             '<@(web_modal_unittest_sources)',
           ],
           'dependencies': [
+            '../content/content_shell_and_tests.gyp:test_support_content',
             '../skia/skia.gyp:skia',
             'components.gyp:autofill_content_browser',
             'components.gyp:autofill_content_renderer',
