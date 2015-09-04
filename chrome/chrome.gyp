@@ -667,6 +667,7 @@
           'target_name': 'chrome_locale_paks',
           'type': 'none',
           'variables': {
+            'package_name': 'chrome_locale_paks',
             'locale_pak_files': [ '<@(chrome_android_pak_locale_resources)' ],
           },
           'includes': [

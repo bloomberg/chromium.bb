@@ -12,10 +12,6 @@
       }],
     ],
   },
-  'includes': [
-    'chrome_android_paks.gypi', # Included for the list of pak resources.
-    'chrome_shell.gypi', # Built atop chrome_android_core (defined here)
-  ],
   'targets': [
     {
       # GN: //chrome:chrome_android_core

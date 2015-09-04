@@ -3025,33 +3025,6 @@
     ['OS == "android"', {
       'targets': [
         {
-          # GN: //chrome/android:chrome_shell_test_apk
-          'target_name': 'chrome_shell_test_apk',
-          'type': 'none',
-          'dependencies': [
-            'chrome_java',
-            'chrome_shell_apk_java',
-            'chrome_java_test_support',
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_java_test_support',
-            '../content/content_shell_and_tests.gyp:content_java_test_support',
-            '../testing/android/on_device_instrumentation.gyp:broker_java',
-            '../testing/android/on_device_instrumentation.gyp:require_driver_apk',
-          ],
-          'variables': {
-            'apk_name': 'ChromeShellTest',
-            'java_in_dir': 'android/shell/javatests',
-            'additional_src_dirs': ['android/javatests_shell/src'],
-            'is_test_apk': 1,
-            'test_type': 'instrumentation',
-            'isolate_file': 'chrome_shell_test_apk.isolate',
-          },
-          'includes': [
-            '../build/java_apk.gypi',
-            '../build/android/test_runner.gypi',
-          ],
-        },
-        {
           # GN: //chrome/android:chrome_junit_tests
           'target_name': 'chrome_junit_tests',
           'type': 'none',

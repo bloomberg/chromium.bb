@@ -1081,9 +1081,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_CLOSE_TAB" desc="Content description for the close tab button.">
         Close tab
       </message>
-      <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_NEW_TAB" desc="Content description for the new tab button.">
-        New tab
-      </message>
       <message name="IDS_TAB_LOADING_DEFAULT_TITLE" desc="The title of a tab when we are still waiting for either the URL or the real title. This generally shows when the page is first loading.">
         Loading…
       </message>
@@ -1176,9 +1173,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_ACCESSIBILITY_MENU_FORWARD" desc="Content description for the forward navigation button.">
         Go forward
-      </message>
-      <message name="IDS_ACCESSIBILITY_MENU_BACK" desc="Content description for the backard navigation button.">
-        Go back
       </message>
       <message name="IDS_ACCESSIBILITY_MENU_INFO" desc="Content description for the button which opens the page info popup, which displays security information and permissions for the current page">
         View site information

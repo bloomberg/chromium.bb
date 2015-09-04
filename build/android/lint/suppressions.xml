@@ -54,9 +54,8 @@ Still reading?
     <ignore regexp=".*: data_reduction_illustration.png, reader_mode_bar_background.9.png, tabs_moved_htc.png, tabs_moved_nexus.png, tabs_moved_samsung.png$"/>
   </issue>
   <issue id="IconLocation">
-    <!-- It is OK for content_shell_apk and chrome_shell_apk to have missing assets. -->
+    <!-- It is OK for content_shell_apk to have missing assets. -->
     <ignore path="content/shell/android/java/res/"/>
-    <ignore path="chrome/android/shell/res/"/>
     <!-- Suppression for chrome/test/chromedriver/test/webview_shell/java/res/drawable/icon.png -->
     <ignore path="res/drawable/icon.png"/>
     <!-- TODO(lambroslambrou) remove this once crbug.com/502030 is fixed. -->
