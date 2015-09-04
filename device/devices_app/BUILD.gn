@@ -34,40 +34,42 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("devices") {
-  sources = [
-    "main.cc",
-  ]
+if (!is_component_build) {
+  mojo_native_application("devices") {
+    sources = [
+      "main.cc",
+    ]
 
-  deps = [
-    "//base",
-    "//device/devices_app/public/cpp:factory",
-    "//mojo/application/public/cpp",
-  ]
+    deps = [
+      "//base",
+      "//device/devices_app/public/cpp:factory",
+      "//mojo/application/public/cpp",
+    ]
 
-  public_deps = [
-    ":lib",
-  ]
-}
+    public_deps = [
+      ":lib",
+    ]
+  }
 
-mojo_native_application("apptests") {
-  output_name = "devices_apptests"
+  mojo_native_application("apptests") {
+    output_name = "devices_apptests"
 
-  testonly = true
+    testonly = true
 
-  sources = [
-    "devices_apptest.cc",
-  ]
+    sources = [
+      "devices_apptest.cc",
+    ]
 
-  deps = [
-    "//base",
-    "//mojo/application/public/cpp:test_support",
-  ]
+    deps = [
+      "//base",
+      "//mojo/application/public/cpp:test_support",
+    ]
 
-  public_deps = [
-    ":lib",
-    "//device/devices_app/usb/public/interfaces",
-  ]
+    public_deps = [
+      ":lib",
+      "//device/devices_app/usb/public/interfaces",
+    ]
 
-  data_deps = [ ":devices" ]
+    data_deps = [ ":devices" ]
+  }
 }
