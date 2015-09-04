@@ -1449,8 +1449,17 @@ TEST_P(GLES2DecoderWithShaderTest, GetActiveUniformsivBadSharedMemoryFails) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, GetShaderInfoLogValidArgs) {
-  const char* kInfo = "hello";
   const uint32 kBucketId = 123;
+  const char kSource0[] = "void main() { gl_Position = vec4(1.0); }";
+  const char* kSource[] = {kSource0};
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
+  ShaderSourceBucket bucket_cmd;
+  bucket_cmd.Init(client_shader_id_, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(bucket_cmd));
+  ClearSharedMemory();
+
+  const char* kInfo = "hello";
   CompileShader compile_cmd;
   GetShaderInfoLog cmd;
   EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
@@ -1626,6 +1635,17 @@ TEST_P(GLES2DecoderWithShaderTest,
 }
 
 TEST_P(GLES2DecoderTest, CompileShaderValidArgs) {
+  // ShaderSource should not actually call any GL calls yet.
+  const uint32 kInBucketId = 123;
+  const char kSource0[] = "void main() { gl_Position = vec4(1.0); }";
+  const char* kSource[] = {kSource0};
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kInBucketId, 1, kSource, 1, kValidStrEnd);
+  ShaderSourceBucket bucket_cmd;
+  bucket_cmd.Init(client_shader_id_, kInBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(bucket_cmd));
+  ClearSharedMemory();
+
   // Compile shader should not actually call any GL calls yet.
   CompileShader cmd;
   cmd.Init(client_shader_id_);
@@ -1642,10 +1662,14 @@ TEST_P(GLES2DecoderTest, CompileShaderValidArgs) {
         .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
 
+  GetShaderiv::Result* result =
+      static_cast<GetShaderiv::Result*>(shared_memory_address_);
+  result->size = 0;
   GetShaderiv status_cmd;
   status_cmd.Init(client_shader_id_, GL_COMPILE_STATUS,
                   kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(status_cmd));
+  EXPECT_EQ(GL_TRUE, *result->GetData());
 }
 
 TEST_P(GLES2DecoderTest, CompileShaderInvalidArgs) {

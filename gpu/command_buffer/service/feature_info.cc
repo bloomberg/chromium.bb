@@ -219,6 +219,13 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   enable_gl_path_rendering_switch_ =
       command_line->HasSwitch(switches::kEnableGLPathRendering);
 
+  // The shader translator is needed to translate from WebGL-conformant GLES SL
+  // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
+  // target context GLSL, etc.
+  // The flag here is for testing only.
+  disable_shader_translator_ =
+      command_line->HasSwitch(switches::kDisableGLSLTranslator);
+
   unsafe_es3_apis_enabled_ = false;
 }
 

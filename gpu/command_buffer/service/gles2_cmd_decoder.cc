@@ -1986,7 +1986,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // if not returning an error.
   error::Error current_decoder_error_;
 
-  bool use_shader_translator_;
   scoped_refptr<ShaderTranslatorInterface> vertex_translator_;
   scoped_refptr<ShaderTranslatorInterface> fragment_translator_;
 
@@ -2544,7 +2543,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       surfaceless_(false),
       backbuffer_needs_clear_bits_(0),
       current_decoder_error_(error::kNoError),
-      use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
       feature_info_(group_->feature_info()),
       frame_number_(0),
@@ -2578,21 +2576,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       validation_fbo_multisample_(0),
       validation_fbo_(0) {
   DCHECK(group);
-
-  // The shader translator is used for WebGL even when running on EGL
-  // because additional restrictions are needed (like only enabling
-  // GL_OES_standard_derivatives on demand).  It is used for the unit
-  // tests because GLES2DecoderWithShaderTest.GetShaderInfoLogValidArgs passes
-  // the empty string to CompileShader and this is not a valid shader.
-  bool disable_translator =
-      base::CommandLine::InitializedForCurrentProcess()
-          ? base::CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kDisableGLSLTranslator)
-          : false;
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationMockGL ||
-      disable_translator) {
-    use_shader_translator_ = false;
-  }
 }
 
 GLES2DecoderImpl::~GLES2DecoderImpl() {
@@ -3199,8 +3182,7 @@ void GLES2DecoderImpl::UpdateCapabilities() {
 
 bool GLES2DecoderImpl::InitializeShaderTranslator() {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::InitializeShaderTranslator");
-
-  if (!use_shader_translator_) {
+  if (feature_info_->disable_shader_translator()) {
     return true;
   }
   ShBuiltInResources resources;
@@ -7873,7 +7855,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   }
 
   scoped_refptr<ShaderTranslatorInterface> translator;
-  if (use_shader_translator_) {
+  if (!feature_info_->disable_shader_translator()) {
       translator = shader->shader_type() == GL_VERTEX_SHADER ?
                    vertex_translator_ : fragment_translator_;
   }
