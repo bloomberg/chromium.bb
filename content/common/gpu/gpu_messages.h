@@ -669,10 +669,11 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
 // These messages are sent from Renderer process to GPU process.
 
 // Send input buffer for decoding.
-IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_Decode,
+IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_Decode,
                     base::SharedMemoryHandle, /* input_buffer_handle */
                     int32, /* bitstream_buffer_id */
-                    uint32) /* size */
+                    uint32, /* size */
+                    base::TimeDelta) /* presentation_timestamp */
 
 // Sent from Renderer process to the GPU process to give the texture IDs for
 // the textures the decoder will use for output.

@@ -118,8 +118,8 @@ void GpuVideoDecodeAcceleratorHost::Decode(
   }
 
   Send(new AcceleratedVideoDecoderMsg_Decode(
-      decoder_route_id_, handle, bitstream_buffer.id(),
-      bitstream_buffer.size()));
+      decoder_route_id_, handle, bitstream_buffer.id(), bitstream_buffer.size(),
+      bitstream_buffer.presentation_timestamp()));
 }
 
 void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(

@@ -514,9 +514,10 @@ void RTCVideoDecoder::RequestBufferDecode() {
     }
 
     // Create a BitstreamBuffer and send to VDA to decode.
-    media::BitstreamBuffer bitstream_buffer(buffer_data.bitstream_buffer_id,
-                                            shm_buffer->shm->handle(),
-                                            buffer_data.size);
+    media::BitstreamBuffer bitstream_buffer(
+        buffer_data.bitstream_buffer_id, shm_buffer->shm->handle(),
+        buffer_data.size,
+        base::TimeDelta::FromInternalValue(buffer_data.timestamp));
     bool inserted = bitstream_buffers_in_decoder_
         .insert(std::make_pair(bitstream_buffer.id(), shm_buffer)).second;
     DCHECK(inserted);

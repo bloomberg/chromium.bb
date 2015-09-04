@@ -150,6 +150,12 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
       PendingBitstreamBuffers;
   PendingBitstreamBuffers pending_bitstream_buffers_;
 
+  // A map of presentation timestamp to bitstream buffer id for the bitstream
+  // buffers that have been submitted to the decoder but haven't yet produced an
+  // output frame with the same timestamp. Note: there will only be one entry
+  // for multiple bitstream buffers that have the same presentation timestamp.
+  std::map<base::TimeDelta, int32> bitstream_buffers_in_decoder_;
+
   // Keeps track of bitstream ids notified to the client with
   // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
   std::list<int32> bitstreams_notified_in_advance_;

@@ -241,8 +241,11 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   memcpy(shm_buffer->shm->memory(), buffer->data(), size);
-  BitstreamBuffer bitstream_buffer(
-      next_bitstream_buffer_id_, shm_buffer->shm->handle(), size);
+  // AndroidVideoDecodeAccelerator needs the timestamp to output frames in
+  // presentation order.
+  BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_,
+                                   shm_buffer->shm->handle(), size,
+                                   buffer->timestamp());
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
   DCHECK(!ContainsKey(bitstream_buffers_in_decoder_, bitstream_buffer.id()));

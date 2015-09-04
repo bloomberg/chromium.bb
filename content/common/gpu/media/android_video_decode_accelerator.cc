@@ -202,27 +202,28 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
     return;
   }
 
-  // Abuse the presentation time argument to propagate the bitstream
-  // buffer ID to the output, so we can report it back to the client in
-  // PictureReady().
-  base::TimeDelta timestamp =
-      base::TimeDelta::FromMicroseconds(bitstream_buffer.id());
-
   scoped_ptr<base::SharedMemory> shm(
       new base::SharedMemory(bitstream_buffer.handle(), true));
-
   RETURN_ON_FAILURE(shm->Map(bitstream_buffer.size()),
-                    "Failed to SharedMemory::Map()",
-                    UNREADABLE_INPUT);
+                    "Failed to SharedMemory::Map()", UNREADABLE_INPUT);
 
-  status =
-      media_codec_->QueueInputBuffer(input_buf_index,
-                                     static_cast<const uint8*>(shm->memory()),
-                                     bitstream_buffer.size(),
-                                     timestamp);
+  const base::TimeDelta presentation_timestamp =
+      bitstream_buffer.presentation_timestamp();
+  DCHECK(presentation_timestamp != media::kNoTimestamp())
+      << "Bitstream buffers must have valid presentation timestamps";
+  // There may already be a bitstream buffer with this timestamp, e.g., VP9 alt
+  // ref frames, but it's OK to overwrite it because we only expect a single
+  // output frame to have that timestamp. AVDA clients only use the bitstream
+  // buffer id in the returned Pictures to map a bitstream buffer back to a
+  // timestamp on their side, so either one of the bitstream buffer ids will
+  // result in them finding the right timestamp.
+  bitstream_buffers_in_decoder_[presentation_timestamp] = bitstream_buffer.id();
+
+  status = media_codec_->QueueInputBuffer(
+      input_buf_index, static_cast<const uint8*>(shm->memory()),
+      bitstream_buffer.size(), presentation_timestamp);
   RETURN_ON_FAILURE(status == media::MEDIA_CODEC_OK,
-                    "Failed to QueueInputBuffer: " << status,
-                    PLATFORM_FAILURE);
+                    "Failed to QueueInputBuffer: " << status, PLATFORM_FAILURE);
 
   // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
   // will be returned from the bitstream buffer. However, MediaCodec API is
@@ -250,14 +251,15 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
   }
 
   bool eos = false;
-  base::TimeDelta timestamp;
+  base::TimeDelta presentation_timestamp;
   int32 buf_index = 0;
   do {
     size_t offset = 0;
     size_t size = 0;
 
     media::MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
-        NoWaitTimeOut(), &buf_index, &offset, &size, &timestamp, &eos, NULL);
+        NoWaitTimeOut(), &buf_index, &offset, &size, &presentation_timestamp,
+        &eos, NULL);
     switch (status) {
       case media::MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
       case media::MEDIA_CODEC_ERROR:
@@ -322,20 +324,29 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
         base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
                    weak_this_factory_.GetWeakPtr()));
   } else {
-    int64 bitstream_buffer_id = timestamp.InMicroseconds();
-    SendCurrentSurfaceToClient(static_cast<int32>(bitstream_buffer_id));
+    // Get the bitstream buffer id from the timestamp.
+    auto it = bitstream_buffers_in_decoder_.find(presentation_timestamp);
+    // Require the decoder to output at most one frame for each distinct input
+    // buffer timestamp. A VP9 alt ref frame is a case where an input buffer,
+    // with a possibly unique timestamp, will not result in a corresponding
+    // output frame.
+    CHECK(it != bitstream_buffers_in_decoder_.end())
+        << "Unexpected output frame timestamp";
+    const int32 bitstream_buffer_id = it->second;
+    bitstream_buffers_in_decoder_.erase(bitstream_buffers_in_decoder_.begin(),
+                                        ++it);
+    SendCurrentSurfaceToClient(bitstream_buffer_id);
 
     // Removes ids former or equal than the id from decoder. Note that
     // |bitstreams_notified_in_advance_| does not mean bitstream ids in decoder
     // because of frame reordering issue. We just maintain this roughly and use
     // for the throttling purpose.
-    std::list<int32>::iterator it;
-    for (it = bitstreams_notified_in_advance_.begin();
-        it != bitstreams_notified_in_advance_.end();
-        ++it) {
-      if (*it == bitstream_buffer_id) {
+    for (auto bitstream_it = bitstreams_notified_in_advance_.begin();
+         bitstream_it != bitstreams_notified_in_advance_.end();
+         ++bitstream_it) {
+      if (*bitstream_it == bitstream_buffer_id) {
         bitstreams_notified_in_advance_.erase(
-            bitstreams_notified_in_advance_.begin(), ++it);
+            bitstreams_notified_in_advance_.begin(), ++bitstream_it);
         break;
       }
     }
@@ -518,6 +529,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
   std::swap(free_picture_ids_, empty);
   CHECK(free_picture_ids_.empty());
   picturebuffers_requested_ = false;
+  bitstream_buffers_in_decoder_.clear();
 
   // On some devices, and up to at least JB-MR1,
   // - flush() can fail after EOS (b/8125974); and
