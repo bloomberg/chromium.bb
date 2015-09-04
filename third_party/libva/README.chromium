@@ -2,7 +2,7 @@ Name: libva
 URL: http://freedesktop.org/wiki/Software/vaapi
 Source: git clone git://anongit.freedesktop.org/git/libva
 Version: unknown
-RealVersion: git tag libva-1.3.1
+RealVersion: git tag libva-1.6.0
 License: MIT
 License File: COPYING
 Security Critical: no
