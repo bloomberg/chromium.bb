@@ -24,7 +24,7 @@ class SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
   // This should never outlive the OnMemoryDump call since the
   // ProcessMemoryDump is valid only in that timeframe. Optional
   // |dump_name_prefix| argument specifies the prefix appended to the dump
-  // name skia provides. By defualt it is taken as empty string.
+  // name skia provides. By default it is taken as empty string.
   SkTraceMemoryDump_Chrome(
       base::trace_event::ProcessMemoryDump* process_memory_dump);
 
@@ -52,9 +52,9 @@ class SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
   }
 
  private:
-  base::trace_event::ProcessMemoryDump* process_memory_dump_;
-
   std::string dump_name_prefix_;
+
+  base::trace_event::ProcessMemoryDump* process_memory_dump_;
 
   // Helper to create allocator dumps.
   base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
