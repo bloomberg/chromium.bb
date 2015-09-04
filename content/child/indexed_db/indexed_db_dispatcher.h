@@ -13,9 +13,9 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
+#include "content/public/child/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
@@ -44,7 +44,7 @@ class ThreadSafeSender;
 
 // Handle the indexed db related communication for this context thread - the
 // main thread and each worker thread have their own copies.
-class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
+class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
  public:
   // Constructor made public to allow RenderThreadImpl to own a copy without
   // failing a NOTREACHED in ThreadSpecificInstance in tests that instantiate
@@ -58,8 +58,8 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
   static IndexedDBDispatcher* ThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
   static blink::WebIDBMetadata ConvertMetadata(
       const IndexedDBDatabaseMetadata& idb_metadata);
@@ -188,9 +188,7 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
 
   enum { kAllCursors = -1 };
 
-  static int32 CurrentWorkerId() {
-    return WorkerTaskRunner::Instance()->CurrentWorkerId();
-  }
+  static int32 CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
 
   template <typename T>
   void init_params(T* params, blink::WebIDBCallbacks* callbacks_ptr) {

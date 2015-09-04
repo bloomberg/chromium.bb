@@ -15,7 +15,6 @@
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/notification_constants.h"
 #include "content/public/common/platform_notification_data.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -28,7 +27,7 @@ namespace content {
 namespace {
 
 int CurrentWorkerId() {
-  return WorkerTaskRunner::Instance()->CurrentWorkerId();
+  return WorkerThread::GetCurrentId();
 }
 
 }  // namespace
@@ -60,11 +59,11 @@ NotificationManager* NotificationManager::ThreadSpecificInstance(
   NotificationManager* manager = new NotificationManager(
       thread_safe_sender, main_thread_task_runner, notification_dispatcher);
   if (CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(manager);
+    WorkerThread::AddObserver(manager);
   return manager;
 }
 
-void NotificationManager::OnWorkerRunLoopStopped() {
+void NotificationManager::WillStopCurrentWorkerThread() {
   delete this;
 }
 

@@ -72,7 +72,7 @@ base::LazyInstance<base::ThreadLocalPointer<void>>::Leaky g_dispatcher_tls =
 void* const kHasBeenDeleted = reinterpret_cast<void*>(0x1);
 
 int CurrentWorkerId() {
-  return WorkerTaskRunner::Instance()->CurrentWorkerId();
+  return WorkerThread::GetCurrentId();
 }
 
 WebBluetoothDevice::VendorIDSource GetWebVendorIdSource(
@@ -111,7 +111,7 @@ BluetoothDispatcher* BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
 
   BluetoothDispatcher* dispatcher = new BluetoothDispatcher(thread_safe_sender);
   if (CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+    WorkerThread::AddObserver(dispatcher);
   return dispatcher;
 }
 
@@ -225,7 +225,7 @@ void BluetoothDispatcher::writeValue(
       CurrentWorkerId(), request_id, characteristic_instance_id.utf8(), value));
 }
 
-void BluetoothDispatcher::OnWorkerRunLoopStopped() {
+void BluetoothDispatcher::WillStopCurrentWorkerThread() {
   delete this;
 }
 

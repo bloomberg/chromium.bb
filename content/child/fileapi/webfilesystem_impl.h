@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "content/child/worker_task_runner.h"
+#include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 
 namespace base {
@@ -28,7 +28,7 @@ class WebFileWriterClient;
 namespace content {
 
 class WebFileSystemImpl : public blink::WebFileSystem,
-                          public WorkerTaskRunner::Observer,
+                          public WorkerThread::Observer,
                           public base::NonThreadSafe {
  public:
   class WaitableCallbackResults;
@@ -41,7 +41,7 @@ class WebFileSystemImpl : public blink::WebFileSystem,
           main_thread_task_runner);
 
   // Deletes thread-specific instance (if exists). For workers it deletes
-  // itself in OnWorkerRunLoopStopped(), but for an instance created on the
+  // itself in WillStopCurrentWorkerThread(), but for an instance created on the
   // main thread this method must be called.
   static void DeleteThreadSpecificInstance();
 
@@ -50,8 +50,8 @@ class WebFileSystemImpl : public blink::WebFileSystem,
           main_thread_task_runner);
   virtual ~WebFileSystemImpl();
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
   // WebFileSystem implementation.
   virtual void openFileSystem(

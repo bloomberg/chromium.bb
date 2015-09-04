@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
-#include "content/child/worker_task_runner.h"
+#include "content/public/child/worker_thread.h"
 #include "storage/common/quota/quota_types.h"
 
 class GURL;
@@ -33,7 +33,7 @@ class QuotaMessageFilter;
 // process from/to the main browser process.  There is one instance
 // per each thread.  Thread-specific instance can be obtained by
 // ThreadSpecificInstance().
-class QuotaDispatcher : public WorkerTaskRunner::Observer {
+class QuotaDispatcher : public WorkerThread::Observer {
  public:
   class Callback {
    public:
@@ -53,8 +53,8 @@ class QuotaDispatcher : public WorkerTaskRunner::Observer {
       ThreadSafeSender* thread_safe_sender,
       QuotaMessageFilter* quota_message_filter);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
   void OnMessageReceived(const IPC::Message& msg);
 

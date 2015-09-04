@@ -382,13 +382,13 @@ WebFileSystemImpl* WebFileSystemImpl::ThreadSpecificInstance(
     return g_webfilesystem_tls.Pointer()->Get();
   WebFileSystemImpl* filesystem =
       new WebFileSystemImpl(main_thread_task_runner);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(filesystem);
+  if (WorkerThread::GetCurrentId())
+    WorkerThread::AddObserver(filesystem);
   return filesystem;
 }
 
 void WebFileSystemImpl::DeleteThreadSpecificInstance() {
-  DCHECK(!WorkerTaskRunner::Instance()->CurrentWorkerId());
+  DCHECK(!WorkerThread::GetCurrentId());
   if (g_webfilesystem_tls.Pointer()->Get())
     delete g_webfilesystem_tls.Pointer()->Get();
 }
@@ -404,7 +404,7 @@ WebFileSystemImpl::~WebFileSystemImpl() {
   g_webfilesystem_tls.Pointer()->Set(NULL);
 }
 
-void WebFileSystemImpl::OnWorkerRunLoopStopped() {
+void WebFileSystemImpl::WillStopCurrentWorkerThread() {
   delete this;
 }
 

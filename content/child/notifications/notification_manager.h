@@ -14,8 +14,8 @@
 #include "base/single_thread_task_runner.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/pending_notifications_tracker.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/platform_notification_messages.h"
+#include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 
 class SkBitmap;
@@ -26,7 +26,7 @@ struct PlatformNotificationData;
 class ThreadSafeSender;
 
 class NotificationManager : public blink::WebNotificationManager,
-                            public WorkerTaskRunner::Observer {
+                            public WorkerThread::Observer {
  public:
   ~NotificationManager() override;
 
@@ -37,8 +37,8 @@ class NotificationManager : public blink::WebNotificationManager,
       base::SingleThreadTaskRunner* main_thread_task_runner,
       NotificationDispatcher* notification_dispatcher);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
   // blink::WebNotificationManager implementation.
   virtual void show(const blink::WebSecurityOrigin& origin,

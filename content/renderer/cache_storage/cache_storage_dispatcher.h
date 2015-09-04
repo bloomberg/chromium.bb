@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "content/child/worker_task_runner.h"
+#include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
@@ -26,7 +26,7 @@ struct ServiceWorkerResponse;
 
 // Handle the Cache Storage messaging for this context thread. The
 // main thread and each worker thread have their own instances.
-class CacheStorageDispatcher : public WorkerTaskRunner::Observer {
+class CacheStorageDispatcher : public WorkerThread::Observer {
  public:
   explicit CacheStorageDispatcher(ThreadSafeSender* thread_safe_sender);
   ~CacheStorageDispatcher() override;
@@ -36,8 +36,8 @@ class CacheStorageDispatcher : public WorkerTaskRunner::Observer {
   static CacheStorageDispatcher* ThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
   bool Send(IPC::Message* msg);
 
@@ -173,9 +173,7 @@ class CacheStorageDispatcher : public WorkerTaskRunner::Observer {
   using BatchCallbacksMap =
       IDMap<blink::WebServiceWorkerCache::CacheBatchCallbacks, IDMapOwnPointer>;
 
-  static int32 CurrentWorkerId() {
-    return WorkerTaskRunner::Instance()->CurrentWorkerId();
-  }
+  static int32 CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
 
   void PopulateWebResponseFromResponse(
       const ServiceWorkerResponse& response,

@@ -11,7 +11,6 @@
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/push_messaging_messages.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscription.h"
@@ -21,7 +20,7 @@ namespace content {
 namespace {
 
 int CurrentWorkerId() {
-  return WorkerTaskRunner::Instance()->CurrentWorkerId();
+  return WorkerThread::GetCurrentId();
 }
 
 // Returns the id of the given |service_worker_registration|, which
@@ -57,11 +56,11 @@ PushProvider* PushProvider::ThreadSpecificInstance(
   PushProvider* provider =
       new PushProvider(thread_safe_sender, push_dispatcher);
   if (CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(provider);
+    WorkerThread::AddObserver(provider);
   return provider;
 }
 
-void PushProvider::OnWorkerRunLoopStopped() {
+void PushProvider::WillStopCurrentWorkerThread() {
   delete this;
 }
 

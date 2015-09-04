@@ -17,6 +17,25 @@ namespace content {
 // posting tasks back to them.
 class CONTENT_EXPORT WorkerThread {
  public:
+  // Observes worker thread lifetime.
+  class CONTENT_EXPORT Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Notifies the observer that the current worker thread is about to be
+    // stopped.
+    //
+    // The worker state may have already been destroyed. To observe that, use
+    // ContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread.
+    virtual void WillStopCurrentWorkerThread() {}
+  };
+
+  // Adds/removes an Observer. Observers are stored per-thread, so it is only
+  // valid to call these from a worker thread, and events will be dispatched on
+  // that worker's thread.
+  static void AddObserver(Observer* observer);
+  static void RemoveObserver(Observer* observer);
+
   // Returns the thread ID for the current worker thread, or 0 if this is not a
   // worker thread (for example, the render thread). Worker thread IDs will
   // always be > 0.

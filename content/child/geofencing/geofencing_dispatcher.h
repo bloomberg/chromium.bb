@@ -5,11 +5,14 @@
 #ifndef CONTENT_CHILD_GEOFENCING_GEOFENCING_DISPATCHER_H_
 #define CONTENT_CHILD_GEOFENCING_GEOFENCING_DISPATCHER_H_
 
+#include <map>
+#include <string>
+
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/geofencing_types.h"
+#include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/WebGeofencingProvider.h"
 
 namespace base {
@@ -24,7 +27,7 @@ class Message;
 namespace content {
 class ThreadSafeSender;
 
-class GeofencingDispatcher : public WorkerTaskRunner::Observer {
+class GeofencingDispatcher : public WorkerThread::Observer {
  public:
   explicit GeofencingDispatcher(ThreadSafeSender* sender);
   ~GeofencingDispatcher() override;
@@ -76,8 +79,8 @@ class GeofencingDispatcher : public WorkerTaskRunner::Observer {
       GeofencingStatus status,
       const std::map<std::string, blink::WebCircularGeofencingRegion>& regions);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   IDMap<blink::WebGeofencingCallbacks, IDMapOwnPointer>

@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/permissions/permission_observers_registry.h"
-#include "content/child/worker_task_runner.h"
+#include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionClient.h"
 
 namespace base {
@@ -23,10 +23,9 @@ class PermissionDispatcher;
 // PermissionDispatcherThreadProxy is a a proxy to the PermissionDispatcher for
 // callers running on a different thread than the main thread. There is one
 // instance of that class per thread.
-class PermissionDispatcherThreadProxy :
-    public blink::WebPermissionClient,
-    public PermissionObserversRegistry,
-    public WorkerTaskRunner::Observer {
+class PermissionDispatcherThreadProxy : public blink::WebPermissionClient,
+                                        public PermissionObserversRegistry,
+                                        public WorkerThread::Observer {
  public:
   static PermissionDispatcherThreadProxy* GetThreadInstance(
       base::SingleThreadTaskRunner* main_thread_task_runner,
@@ -51,8 +50,8 @@ class PermissionDispatcherThreadProxy :
                               blink::WebPermissionObserver* observer);
   virtual void stopListening(blink::WebPermissionObserver* observer);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
  private:
   PermissionDispatcherThreadProxy(

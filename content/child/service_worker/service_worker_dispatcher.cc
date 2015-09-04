@@ -40,7 +40,7 @@ base::LazyInstance<ThreadLocalPointer<void>>::Leaky g_dispatcher_tls =
 void* const kHasBeenDeleted = reinterpret_cast<void*>(0x1);
 
 int CurrentWorkerId() {
-  return WorkerTaskRunner::Instance()->CurrentWorkerId();
+  return WorkerThread::GetCurrentId();
 }
 
 }  // namespace
@@ -254,8 +254,8 @@ ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
 
   ServiceWorkerDispatcher* dispatcher =
       new ServiceWorkerDispatcher(thread_safe_sender, main_thread_task_runner);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+  if (WorkerThread::GetCurrentId())
+    WorkerThread::AddObserver(dispatcher);
   return dispatcher;
 }
 
@@ -266,7 +266,7 @@ ServiceWorkerDispatcher* ServiceWorkerDispatcher::GetThreadSpecificInstance() {
       g_dispatcher_tls.Pointer()->Get());
 }
 
-void ServiceWorkerDispatcher::OnWorkerRunLoopStopped() {
+void ServiceWorkerDispatcher::WillStopCurrentWorkerThread() {
   delete this;
 }
 

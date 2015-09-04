@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "content/public/child/worker_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,38 +14,32 @@ namespace content {
 
 class WorkerTaskRunnerTest : public testing::Test {
  public:
-  void FakeStart() {
-    task_runner_.OnWorkerRunLoopStarted();
-  }
-  void FakeStop() {
-    task_runner_.OnWorkerRunLoopStopped();
-  }
+  void FakeStart() { task_runner_.DidStartWorkerRunLoop(); }
+  void FakeStop() { task_runner_.WillStopWorkerRunLoop(); }
   WorkerTaskRunner task_runner_;
 
  private:
   base::MessageLoop message_loop_;
 };
 
-class MockObserver : public WorkerTaskRunner::Observer {
+class MockObserver : public WorkerThread::Observer {
  public:
-  MOCK_METHOD0(OnWorkerRunLoopStopped, void());
+  MOCK_METHOD0(WillStopCurrentWorkerThread, void());
   void RemoveSelfOnNotify() {
-    ON_CALL(*this, OnWorkerRunLoopStopped()).WillByDefault(
-        testing::Invoke(this, &MockObserver::RemoveSelf));
+    ON_CALL(*this, WillStopCurrentWorkerThread())
+        .WillByDefault(testing::Invoke(this, &MockObserver::RemoveSelf));
   }
-  void RemoveSelf() {
-    runner_->RemoveStopObserver(this);
-  }
+  void RemoveSelf() { WorkerThread::RemoveObserver(this); }
   WorkerTaskRunner* runner_;
 };
 
 TEST_F(WorkerTaskRunnerTest, BasicObservingAndWorkerId) {
-  ASSERT_EQ(0, task_runner_.CurrentWorkerId());
+  ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
-  EXPECT_CALL(o, OnWorkerRunLoopStopped()).Times(1);
+  EXPECT_CALL(o, WillStopCurrentWorkerThread()).Times(1);
   FakeStart();
-  task_runner_.AddStopObserver(&o);
-  ASSERT_LT(0, task_runner_.CurrentWorkerId());
+  WorkerThread::AddObserver(&o);
+  ASSERT_LT(0, WorkerThread::GetCurrentId());
   FakeStop();
 }
 
@@ -52,9 +47,9 @@ TEST_F(WorkerTaskRunnerTest, CanRemoveSelfDuringNotification) {
   MockObserver o;
   o.RemoveSelfOnNotify();
   o.runner_ = &task_runner_;
-  EXPECT_CALL(o, OnWorkerRunLoopStopped()).Times(1);
+  EXPECT_CALL(o, WillStopCurrentWorkerThread()).Times(1);
   FakeStart();
-  task_runner_.AddStopObserver(&o);
+  WorkerThread::AddObserver(&o);
   FakeStop();
 }
 

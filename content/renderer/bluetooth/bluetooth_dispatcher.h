@@ -7,8 +7,8 @@
 
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/bluetooth/bluetooth_device.h"
+#include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 
@@ -35,7 +35,7 @@ class ThreadSafeSender;
 // Incoming IPC messages are received by the BluetoothMessageFilter and
 // directed to the thread specific instance of this class.
 // Outgoing messages come from WebBluetoothImpl.
-class BluetoothDispatcher : public WorkerTaskRunner::Observer {
+class BluetoothDispatcher : public WorkerThread::Observer {
  public:
   explicit BluetoothDispatcher(ThreadSafeSender* sender);
   ~BluetoothDispatcher() override;
@@ -70,8 +70,8 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
                   const std::vector<uint8_t>& value,
                   blink::WebBluetoothWriteValueCallbacks*);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
  private:
   // IPC Handlers, see definitions in bluetooth_messages.h.

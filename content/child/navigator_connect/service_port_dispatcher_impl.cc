@@ -46,17 +46,17 @@ void ServicePortDispatcherImpl::Create(
 }
 
 ServicePortDispatcherImpl::~ServicePortDispatcherImpl() {
-  WorkerTaskRunner::Instance()->RemoveStopObserver(this);
+  WorkerThread::RemoveObserver(this);
 }
 
 ServicePortDispatcherImpl::ServicePortDispatcherImpl(
     base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
     mojo::InterfaceRequest<ServicePortDispatcher> request)
     : binding_(this, request.Pass()), proxy_(proxy) {
-  WorkerTaskRunner::Instance()->AddStopObserver(this);
+  WorkerThread::AddObserver(this);
 }
 
-void ServicePortDispatcherImpl::OnWorkerRunLoopStopped() {
+void ServicePortDispatcherImpl::WillStopCurrentWorkerThread() {
   delete this;
 }
 

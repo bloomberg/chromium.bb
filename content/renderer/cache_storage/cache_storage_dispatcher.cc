@@ -220,12 +220,12 @@ CacheStorageDispatcher* CacheStorageDispatcher::ThreadSpecificInstance(
 
   CacheStorageDispatcher* dispatcher =
       new CacheStorageDispatcher(thread_safe_sender);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+  if (WorkerThread::GetCurrentId())
+    WorkerThread::AddObserver(dispatcher);
   return dispatcher;
 }
 
-void CacheStorageDispatcher::OnWorkerRunLoopStopped() {
+void CacheStorageDispatcher::WillStopCurrentWorkerThread() {
   delete this;
 }
 

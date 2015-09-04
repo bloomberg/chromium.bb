@@ -24,7 +24,6 @@
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/mojo/service_registry_impl.h"
@@ -339,7 +338,7 @@ void ServiceWorkerContextClient::workerContextFailedToStart() {
 void ServiceWorkerContextClient::workerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
   DCHECK(!worker_task_runner_.get());
-  DCHECK_NE(0, WorkerTaskRunner::Instance()->CurrentWorkerId());
+  DCHECK_NE(0, WorkerThread::GetCurrentId());
   worker_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   // g_worker_client_tls.Pointer()->Get() could return NULL if this context
   // gets deleted before workerContextStarted() is called.
@@ -363,8 +362,7 @@ void ServiceWorkerContextClient::workerContextStarted(
   SetRegistrationInServiceWorkerGlobalScope();
 
   Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(
-      embedded_worker_id_,
-      WorkerTaskRunner::Instance()->CurrentWorkerId(),
+      embedded_worker_id_, WorkerThread::GetCurrentId(),
       provider_context_->provider_id()));
 
   TRACE_EVENT_ASYNC_STEP_INTO0(
@@ -389,16 +387,17 @@ void ServiceWorkerContextClient::didEvaluateWorkerScript(bool success) {
 void ServiceWorkerContextClient::didInitializeWorkerContext(
     v8::Local<v8::Context> context,
     const blink::WebURL& url) {
-  // TODO(annekao): Remove WebURL parameter from Blink (since url and script_url
-  // are equal). Also remove m_documentURL from ServiceWorkerGlobalScopeProxy.
-  DCHECK_EQ(script_url_, GURL(url));
+  // TODO(annekao): Remove WebURL parameter from Blink, it's at best redundant
+  // given |script_url_|, and may be empty in the future.
+  // Also remove m_documentURL from ServiceWorkerGlobalScopeProxy.
   GetContentClient()
       ->renderer()
       ->DidInitializeServiceWorkerContextOnWorkerThread(context, script_url_);
 }
 
-void ServiceWorkerContextClient::willDestroyWorkerContext() {
-  // At this point OnWorkerRunLoopStopped is already called, so
+void ServiceWorkerContextClient::willDestroyWorkerContext(
+    v8::Local<v8::Context> context) {
+  // At this point WillStopCurrentWorkerThread is already called, so
   // worker_task_runner_->RunsTasksOnCurrentThread() returns false
   // (while we're still on the worker thread).
   proxy_ = NULL;

@@ -28,7 +28,7 @@ base::LazyInstance<base::ThreadLocalPointer<void>>::Leaky g_dispatcher_tls =
 void* const kHasBeenDeleted = reinterpret_cast<void*>(0x1);
 
 int CurrentWorkerId() {
-  return WorkerTaskRunner::Instance()->CurrentWorkerId();
+  return WorkerThread::GetCurrentId();
 }
 
 }  // namespace
@@ -145,8 +145,8 @@ GeofencingDispatcher* GeofencingDispatcher::GetOrCreateThreadSpecificInstance(
 
   GeofencingDispatcher* dispatcher =
       new GeofencingDispatcher(thread_safe_sender);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+  if (WorkerThread::GetCurrentId())
+    WorkerThread::AddObserver(dispatcher);
   return dispatcher;
 }
 
@@ -217,7 +217,7 @@ void GeofencingDispatcher::OnGetRegisteredRegionsComplete(
   get_registered_regions_requests_.Remove(request_id);
 }
 
-void GeofencingDispatcher::OnWorkerRunLoopStopped() {
+void GeofencingDispatcher::WillStopCurrentWorkerThread() {
   delete this;
 }
 

@@ -53,7 +53,7 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
 };
 
 int CurrentWorkerId() {
-  return WorkerTaskRunner::Instance()->CurrentWorkerId();
+  return WorkerThread::GetCurrentId();
 }
 
 }  // namespace
@@ -83,12 +83,12 @@ QuotaDispatcher* QuotaDispatcher::ThreadSpecificInstance(
 
   QuotaDispatcher* dispatcher = new QuotaDispatcher(
       thread_safe_sender, quota_message_filter);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+  if (WorkerThread::GetCurrentId())
+    WorkerThread::AddObserver(dispatcher);
   return dispatcher;
 }
 
-void QuotaDispatcher::OnWorkerRunLoopStopped() {
+void QuotaDispatcher::WillStopCurrentWorkerThread() {
   delete this;
 }
 

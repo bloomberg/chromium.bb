@@ -1144,12 +1144,15 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
 
 void BlinkPlatformImpl::didStartWorkerRunLoop() {
   WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
-  worker_task_runner->OnWorkerRunLoopStarted();
+  worker_task_runner->DidStartWorkerRunLoop();
 }
 
 void BlinkPlatformImpl::didStopWorkerRunLoop() {
+  // TODO(kalman): blink::Platform::didStopWorkerRunLoop should be called
+  // willStopWorkerRunLoop, because at this point the run loop hasn't been
+  // stopped. WillStopWorkerRunLoop is the correct name.
   WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
-  worker_task_runner->OnWorkerRunLoopStopped();
+  worker_task_runner->WillStopWorkerRunLoop();
 }
 
 blink::WebCrypto* BlinkPlatformImpl::crypto() {

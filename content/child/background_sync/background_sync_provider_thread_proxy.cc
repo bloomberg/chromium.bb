@@ -85,7 +85,7 @@ BackgroundSyncProviderThreadProxy::GetThreadInstance(
   if (g_sync_provider_tls.Pointer()->Get())
     return g_sync_provider_tls.Pointer()->Get();
 
-  if (!WorkerTaskRunner::Instance()->CurrentWorkerId()) {
+  if (!WorkerThread::GetCurrentId()) {
     // This could happen if GetThreadInstance is called very late (say by a
     // garbage collected SyncRegistration).
     return nullptr;
@@ -94,7 +94,7 @@ BackgroundSyncProviderThreadProxy::GetThreadInstance(
   BackgroundSyncProviderThreadProxy* instance =
       new BackgroundSyncProviderThreadProxy(main_thread_task_runner,
                                             sync_provider);
-  WorkerTaskRunner::Instance()->AddStopObserver(instance);
+  WorkerThread::AddObserver(instance);
   return instance;
 }
 
@@ -108,12 +108,12 @@ void BackgroundSyncProviderThreadProxy::registerBackgroundSync(
   DCHECK(callbacks);
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&BackgroundSyncProvider::registerBackgroundSync,
-                 base::Unretained(sync_provider_), options,
-                 service_worker_registration, requested_from_service_worker,
-                 new CallbackThreadAdapter<blink::WebSyncRegistrationCallbacks>(
-                     make_scoped_ptr(callbacks),
-                     WorkerTaskRunner::Instance()->CurrentWorkerId())));
+      base::Bind(
+          &BackgroundSyncProvider::registerBackgroundSync,
+          base::Unretained(sync_provider_), options,
+          service_worker_registration, requested_from_service_worker,
+          new CallbackThreadAdapter<blink::WebSyncRegistrationCallbacks>(
+              make_scoped_ptr(callbacks), WorkerThread::GetCurrentId())));
 }
 
 void BackgroundSyncProviderThreadProxy::unregisterBackgroundSync(
@@ -133,8 +133,7 @@ void BackgroundSyncProviderThreadProxy::unregisterBackgroundSync(
           // for thread-safety.
           static_cast<base::string16>(tag), service_worker_registration,
           new CallbackThreadAdapter<blink::WebSyncUnregistrationCallbacks>(
-              make_scoped_ptr(callbacks),
-              WorkerTaskRunner::Instance()->CurrentWorkerId())));
+              make_scoped_ptr(callbacks), WorkerThread::GetCurrentId())));
 }
 
 void BackgroundSyncProviderThreadProxy::getRegistration(
@@ -146,14 +145,14 @@ void BackgroundSyncProviderThreadProxy::getRegistration(
   DCHECK(callbacks);
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&BackgroundSyncProvider::getRegistration,
-                 base::Unretained(sync_provider_), periodicity,
-                 // We cast WebString to string16 before crossing threads
-                 // for thread-safety.
-                 static_cast<base::string16>(tag), service_worker_registration,
-                 new CallbackThreadAdapter<blink::WebSyncRegistrationCallbacks>(
-                     make_scoped_ptr(callbacks),
-                     WorkerTaskRunner::Instance()->CurrentWorkerId())));
+      base::Bind(
+          &BackgroundSyncProvider::getRegistration,
+          base::Unretained(sync_provider_), periodicity,
+          // We cast WebString to string16 before crossing threads
+          // for thread-safety.
+          static_cast<base::string16>(tag), service_worker_registration,
+          new CallbackThreadAdapter<blink::WebSyncRegistrationCallbacks>(
+              make_scoped_ptr(callbacks), WorkerThread::GetCurrentId())));
 }
 
 void BackgroundSyncProviderThreadProxy::getRegistrations(
@@ -169,8 +168,7 @@ void BackgroundSyncProviderThreadProxy::getRegistrations(
           base::Unretained(sync_provider_), periodicity,
           service_worker_registration,
           new CallbackThreadAdapter<blink::WebSyncGetRegistrationsCallbacks>(
-              make_scoped_ptr(callbacks),
-              WorkerTaskRunner::Instance()->CurrentWorkerId())));
+              make_scoped_ptr(callbacks), WorkerThread::GetCurrentId())));
 }
 
 void BackgroundSyncProviderThreadProxy::getPermissionStatus(
@@ -186,11 +184,10 @@ void BackgroundSyncProviderThreadProxy::getPermissionStatus(
           base::Unretained(sync_provider_), periodicity,
           service_worker_registration,
           new CallbackThreadAdapter<blink::WebSyncGetPermissionStatusCallbacks>(
-              make_scoped_ptr(callbacks),
-              WorkerTaskRunner::Instance()->CurrentWorkerId())));
+              make_scoped_ptr(callbacks), WorkerThread::GetCurrentId())));
 }
 
-void BackgroundSyncProviderThreadProxy::OnWorkerRunLoopStopped() {
+void BackgroundSyncProviderThreadProxy::WillStopCurrentWorkerThread() {
   delete this;
 }
 

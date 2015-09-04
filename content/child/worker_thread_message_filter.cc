@@ -38,7 +38,7 @@ bool WorkerThreadMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   // If the IPC message is received in a worker thread, but it has already been
   // stopped, then drop the message.
   if (!main_thread_task_runner_->BelongsToCurrentThread() &&
-      !WorkerTaskRunner::Instance()->CurrentWorkerId()) {
+      !WorkerThread::GetCurrentId()) {
     return false;
   }
   OnFilteredMessageReceived(msg);

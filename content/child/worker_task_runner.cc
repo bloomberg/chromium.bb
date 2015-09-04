@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/child/worker_thread_impl.h"
 
 namespace content {
 
@@ -37,11 +38,6 @@ class DoNothingTaskRunner : public base::TaskRunner {
 
 }  // namespace
 
-struct WorkerTaskRunner::ThreadLocalState {
-  ThreadLocalState() {}
-  base::ObserverList<WorkerTaskRunner::Observer> stop_observers_;
-};
-
 WorkerTaskRunner::WorkerTaskRunner()
     : task_runner_for_dead_worker_(new DoNothingTaskRunner()) {
 }
@@ -63,52 +59,33 @@ int WorkerTaskRunner::PostTaskToAllThreads(const base::Closure& closure) {
   return static_cast<int>(task_runner_map_.size());
 }
 
-int WorkerTaskRunner::CurrentWorkerId() {
-  if (!current_tls_.Get())
-    return 0;
-  return base::PlatformThread::CurrentId();
-}
-
 WorkerTaskRunner* WorkerTaskRunner::Instance() {
   static base::LazyInstance<WorkerTaskRunner>::Leaky
       worker_task_runner = LAZY_INSTANCE_INITIALIZER;
   return worker_task_runner.Pointer();
 }
 
-void WorkerTaskRunner::AddStopObserver(Observer* obs) {
-  DCHECK(CurrentWorkerId() > 0);
-  current_tls_.Get()->stop_observers_.AddObserver(obs);
-}
-
-void WorkerTaskRunner::RemoveStopObserver(Observer* obs) {
-  DCHECK(CurrentWorkerId() > 0);
-  current_tls_.Get()->stop_observers_.RemoveObserver(obs);
-}
-
 WorkerTaskRunner::~WorkerTaskRunner() {
 }
 
-void WorkerTaskRunner::OnWorkerRunLoopStarted() {
-  DCHECK(!current_tls_.Get());
+void WorkerTaskRunner::DidStartWorkerRunLoop() {
   DCHECK(!base::PlatformThread::CurrentRef().is_null());
-  current_tls_.Set(new ThreadLocalState());
-
+  // Note: call into WorkerThreadImpl rather than this class observing
+  // WorkerThreadImpl, to ensure that the task runner exists before anybody is
+  // notified that the worker thread has started.
+  WorkerThreadImpl::DidStartCurrentWorkerThread();
   int id = base::PlatformThread::CurrentId();
   base::AutoLock locker_(task_runner_map_lock_);
   task_runner_map_[id] = base::ThreadTaskRunnerHandle::Get().get();
   CHECK(task_runner_map_[id]);
 }
 
-void WorkerTaskRunner::OnWorkerRunLoopStopped() {
-  DCHECK(current_tls_.Get());
-  FOR_EACH_OBSERVER(Observer, current_tls_.Get()->stop_observers_,
-                    OnWorkerRunLoopStopped());
+void WorkerTaskRunner::WillStopWorkerRunLoop() {
+  WorkerThreadImpl::WillStopCurrentWorkerThread();
   {
     base::AutoLock locker(task_runner_map_lock_);
-    task_runner_map_.erase(CurrentWorkerId());
+    task_runner_map_.erase(WorkerThread::GetCurrentId());
   }
-  delete current_tls_.Get();
-  current_tls_.Set(NULL);
 }
 
 base::TaskRunner* WorkerTaskRunner::GetTaskRunnerFor(int worker_id) {

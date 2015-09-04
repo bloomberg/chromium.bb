@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/child/worker_task_runner.h"
+#include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncProvider.h"
 
 namespace base {
@@ -25,7 +26,7 @@ class BackgroundSyncProvider;
 // call the WebSyncProvider methods, and wrapping the callbacks passed in with
 // code to switch back to the original calling thread.
 class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
-                                          public WorkerTaskRunner::Observer {
+                                          public WorkerThread::Observer {
  public:
   static BackgroundSyncProviderThreadProxy* GetThreadInstance(
       base::SingleThreadTaskRunner* main_thread_task_runner,
@@ -57,8 +58,8 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetPermissionStatusCallbacks* callbacks);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
  private:
   BackgroundSyncProviderThreadProxy(

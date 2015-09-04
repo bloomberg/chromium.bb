@@ -73,12 +73,14 @@ IndexedDBDispatcher* IndexedDBDispatcher::ThreadSpecificInstance(
     return g_idb_dispatcher_tls.Pointer()->Get();
 
   IndexedDBDispatcher* dispatcher = new IndexedDBDispatcher(thread_safe_sender);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+  if (WorkerThread::GetCurrentId())
+    WorkerThread::AddObserver(dispatcher);
   return dispatcher;
 }
 
-void IndexedDBDispatcher::OnWorkerRunLoopStopped() { delete this; }
+void IndexedDBDispatcher::WillStopCurrentWorkerThread() {
+  delete this;
+}
 
 WebIDBMetadata IndexedDBDispatcher::ConvertMetadata(
     const IndexedDBDatabaseMetadata& idb_metadata) {

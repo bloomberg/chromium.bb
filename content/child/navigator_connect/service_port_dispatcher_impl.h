@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/service_port_service.mojom.h"
+#include "content/public/child/worker_thread.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace blink {
@@ -23,7 +23,7 @@ namespace content {
 // channel and the lifetime of the worker thread. If either the channel is
 // disconnected or the worker thread stops the instance deletes itself.
 class ServicePortDispatcherImpl : public ServicePortDispatcher,
-                                  public WorkerTaskRunner::Observer {
+                                  public WorkerThread::Observer {
  public:
   static void Create(base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
                      mojo::InterfaceRequest<ServicePortDispatcher> request);
@@ -35,8 +35,8 @@ class ServicePortDispatcherImpl : public ServicePortDispatcher,
       base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
       mojo::InterfaceRequest<ServicePortDispatcher> request);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
   // ServicePortDispatcher implementation.
   void Connect(const mojo::String& target_url,

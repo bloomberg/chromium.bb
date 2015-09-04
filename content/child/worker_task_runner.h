@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_local.h"
 #include "content/common/content_export.h"
+#include "content/public/child/worker_thread.h"
 
 namespace base {
 class TaskRunner;
@@ -26,22 +26,10 @@ class CONTENT_EXPORT WorkerTaskRunner {
 
   bool PostTask(int id, const base::Closure& task);
   int PostTaskToAllThreads(const base::Closure& task);
-  int CurrentWorkerId();
   static WorkerTaskRunner* Instance();
 
-  class CONTENT_EXPORT Observer {
-   public:
-    virtual ~Observer() {}
-    virtual void OnWorkerRunLoopStopped() = 0;
-  };
-  // Add/Remove an observer that will get notified when the current worker run
-  // loop is stopping. This observer will not get notified when other threads
-  // are stopping.  It's only valid to call these on a worker thread.
-  void AddStopObserver(Observer* observer);
-  void RemoveStopObserver(Observer* observer);
-
-  void OnWorkerRunLoopStarted();
-  void OnWorkerRunLoopStopped();
+  void DidStartWorkerRunLoop();
+  void WillStopWorkerRunLoop();
 
   base::TaskRunner* GetTaskRunnerFor(int worker_id);
 
@@ -59,9 +47,6 @@ class CONTENT_EXPORT WorkerTaskRunner {
   // results. |task_runner_for_dead_worker_| is used to handle such messages,
   // which silently discards all the tasks it receives.
   scoped_refptr<base::TaskRunner> task_runner_for_dead_worker_;
-
-  struct ThreadLocalState;
-  base::ThreadLocalPointer<ThreadLocalState> current_tls_;
 
   IDToTaskRunnerMap task_runner_map_;
   base::Lock task_runner_map_lock_;

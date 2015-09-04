@@ -12,7 +12,7 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/push_messaging/push_dispatcher.h"
-#include "content/child/worker_task_runner.h"
+#include "content/public/child/worker_thread.h"
 #include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushProvider.h"
@@ -28,7 +28,7 @@ namespace content {
 class ThreadSafeSender;
 
 class PushProvider : public blink::WebPushProvider,
-                     public WorkerTaskRunner::Observer {
+                     public WorkerThread::Observer {
  public:
   ~PushProvider() override;
 
@@ -38,8 +38,8 @@ class PushProvider : public blink::WebPushProvider,
       ThreadSafeSender* thread_safe_sender,
       PushDispatcher* push_dispatcher);
 
-  // WorkerTaskRunner::Observer implementation.
-  void OnWorkerRunLoopStopped() override;
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
 
   // blink::WebPushProvider implementation.
   virtual void subscribe(
