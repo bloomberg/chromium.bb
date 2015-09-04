@@ -403,21 +403,21 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      *     Action                     Model List         Close List        Comprehensive List
      * 1.  Initial State              [ 0 1s ]           -                 [ 0 1s ]
      * 2.  CloseTab(0, allow undo)    [ 1s ]             [ 0 ]             [ 0 1s ]
-     * 3.  CancelClose(0)             [ 0s 1 ]           -                 [ 0s 1 ]
+     * 3.  CancelClose(0)             [ 0 1s ]           -                 [ 0 1s ]
      * 4.  CloseTab(0, allow undo)    [ 1s ]             [ 0 ]             [ 0 1s ]
-     * 5.  CloseTab(1, allow undo)    -                  [ 1 0 ]           [ 0 1s ]
-     * 6.  CancelClose(1)             [ 1s ]             [ 0 ]             [ 0s 1 ]
-     * 7.  CancelClose(0)             [ 0s 1 ]           -                 [ 0s 1 ]
+     * 5.  CloseTab(1, allow undo)    -                  [ 1 0 ]           [ 0s 1 ]
+     * 6.  CancelClose(1)             [ 1s ]             [ 0 ]             [ 0 1s ]
+     * 7.  CancelClose(0)             [ 0 1s ]           -                 [ 0 1s ]
      * 8.  CloseTab(1, allow undo)    [ 0s ]             [ 1 ]             [ 0s 1 ]
      * 9.  CloseTab(0, allow undo)    -                  [ 0 1 ]           [ 0s 1 ]
      * 10. CancelClose(1)             [ 1s ]             [ 0 ]             [ 0 1s ]
-     * 11. CancelClose(0)             [ 0s 1 ]           -                 [ 0s 1 ]
+     * 11. CancelClose(0)             [ 0 1s ]           -                 [ 0 1s ]
      * 12. CloseTab(1, allow undo)    [ 0s ]             [ 1 ]             [ 0s 1 ]
      * 13. CloseTab(0, allow undo)    -                  [ 0 1 ]           [ 0s 1 ]
      * 14. CancelClose(0)             [ 0s ]             [ 1 ]             [ 0s 1 ]
      * 15. CloseTab(0, allow undo)    -                  [ 0 1 ]           [ 0s 1 ]
      * 16. CancelClose(0)             [ 0s ]             [ 1 ]             [ 0s 1 ]
-     * 17. CancelClose(1)             [ 0 1s ]           -                 [ 0 1s ]
+     * 17. CancelClose(1)             [ 0s 1 ]           -                 [ 0s 1 ]
      * 18. CloseTab(0, disallow undo) [ 1s ]             -                 [ 1s ]
      * 19. CreateTab(0)               [ 1 0s ]           -                 [ 1 0s ]
      * 20. CloseTab(0, allow undo)    [ 1s ]             [ 0 ]             [ 1s 0 ]
@@ -450,7 +450,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 3.
         cancelTabClosureOnUiThread(model, tab0);
-        checkState(model, new Tab[] { tab0, tab1 }, tab0, EMPTY, fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab1 }, tab1, EMPTY, fullList, tab1);
 
         // 4.
         closeTabOnUiThread(model, tab0, true);
@@ -466,7 +466,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 7.
         cancelTabClosureOnUiThread(model, tab0);
-        checkState(model, new Tab[] { tab0, tab1 }, tab0, EMPTY, fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab1 }, tab1, EMPTY, fullList, tab1);
 
         // 8.
         closeTabOnUiThread(model, tab1, true);
@@ -482,7 +482,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 11.
         cancelTabClosureOnUiThread(model, tab0);
-        checkState(model, new Tab[] { tab0, tab1 }, tab0, EMPTY, fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab1 }, tab1, EMPTY, fullList, tab1);
 
         // 12.
         closeTabOnUiThread(model, tab1, true);
@@ -506,7 +506,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 17.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab0, tab1 }, tab1, EMPTY, fullList, tab1);
+        checkState(model, new Tab[] { tab0, tab1 }, tab0, EMPTY, fullList, tab0);
 
         // 18.
         closeTabOnUiThread(model, tab0, false);
@@ -556,24 +556,24 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * 4.  CloseTab(2, allow undo)    [ 3s ]             [ 2 1 0 ]         [ 0 1 2 3s ]
      * 5.  CloseTab(3, allow undo)    -                  [ 3 2 1 0 ]       [ 0s 1 2 3 ]
      * 6.  CancelClose(3)             [ 3s ]             [ 2 1 0 ]         [ 0 1 2 3s ]
-     * 7.  CancelClose(2)             [ 2s 3 ]           [ 1 0 ]           [ 0 1 2s 3 ]
-     * 8.  CancelClose(1)             [ 1s 2 3 ]         [ 0 ]             [ 0 1s 2 3 ]
-     * 9.  CancelClose(0)             [ 0s 1 2 3 ]       -                 [ 0s 1 2 3 ]
+     * 7.  CancelClose(2)             [ 2 3s ]           [ 1 0 ]           [ 0 1 2 3s ]
+     * 8.  CancelClose(1)             [ 1 2 3s ]         [ 0 ]             [ 0 1 2 3s ]
+     * 9.  CancelClose(0)             [ 0 1 2 3s ]       -                 [ 0 1 2 3s ]
      * 10. SelectTab(3)               [ 0 1 2 3s ]       -                 [ 0 1 2 3s ]
      * 11. CloseTab(3, allow undo)    [ 0 1 2s ]         [ 3 ]             [ 0 1 2s 3 ]
      * 12. CloseTab(2, allow undo)    [ 0 1s ]           [ 2 3 ]           [ 0 1s 2 3 ]
      * 13. CloseTab(1, allow undo)    [ 0s ]             [ 1 2 3 ]         [ 0s 1 2 3 ]
      * 14. CloseTab(0, allow undo)    -                  [ 0 1 2 3 ]       [ 0s 1 2 3 ]
      * 15. CancelClose(0)             [ 0s ]             [ 1 2 3 ]         [ 0s 1 2 3 ]
-     * 16. CancelClose(1)             [ 0 1s ]           [ 2 3 ]           [ 0 1s 2 3 ]
-     * 17. CancelClose(2)             [ 0 1 2s ]         [ 3 ]             [ 0 1 2s 3 ]
-     * 18. CancelClose(3)             [ 0 1 2 3s ]       -                 [ 0 1 2 3s ]
-     * 19. CloseTab(2, allow undo)    [ 0 1 3s ]         [ 2 ]             [ 0 1 2 3s ]
-     * 20. CloseTab(0, allow undo)    [ 1 3s ]           [ 0 2 ]           [ 0 1 2 3s ]
+     * 16. CancelClose(1)             [ 0s 1 ]           [ 2 3 ]           [ 0s 1 2 3 ]
+     * 17. CancelClose(2)             [ 0s 1 2 ]         [ 3 ]             [ 0s 1 2 3 ]
+     * 18. CancelClose(3)             [ 0s 1 2 3 ]       -                 [ 0s 1 2 3 ]
+     * 19. CloseTab(2, allow undo)    [ 0s 1 3 ]         [ 2 ]             [ 0s 1 2 3 ]
+     * 20. CloseTab(0, allow undo)    [ 1s 3 ]           [ 0 2 ]           [ 0 1s 2 3 ]
      * 21. CloseTab(3, allow undo)    [ 1s ]             [ 3 0 2 ]         [ 0 1s 2 3 ]
-     * 22. CancelClose(3)             [ 1 3s ]           [ 0 2 ]           [ 0 1 2 3s ]
-     * 23. CancelClose(0)             [ 0s 1 3 ]         [ 2 ]             [ 0s 1 2 3 ]
-     * 24. CancelClose(2)             [ 0 1 2s 3 ]       -                 [ 0 1 2s 3 ]
+     * 22. CancelClose(3)             [ 1s 3 ]           [ 0 2 ]           [ 0 1s 2 3 ]
+     * 23. CancelClose(0)             [ 0 1s 3 ]         [ 2 ]             [ 0 1s 2 3 ]
+     * 24. CancelClose(2)             [ 0 1s 2 3 ]       -                 [ 0 1s 2 3 ]
      *
      * @throws InterruptedException
      */
@@ -621,17 +621,17 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 7.
         cancelTabClosureOnUiThread(model, tab2);
-        checkState(model, new Tab[] { tab2, tab3 }, tab2, new Tab[] { tab1, tab0 },
-                fullList, tab2);
+        checkState(model, new Tab[] { tab2, tab3 }, tab3, new Tab[] { tab1, tab0 },
+                fullList, tab3);
 
         // 8.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab1, tab2, tab3 }, tab1, new Tab[] { tab0 },
-                fullList, tab1);
+        checkState(model, new Tab[] { tab1, tab2, tab3 }, tab3, new Tab[] { tab0 },
+                fullList, tab3);
 
         // 9.
         cancelTabClosureOnUiThread(model, tab0);
-        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab0, EMPTY, fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab3, EMPTY, fullList, tab3);
 
         // 10.
         selectTabOnUiThread(model, tab3);
@@ -663,27 +663,27 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 16.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab0, tab1 }, tab1, new Tab[] { tab2, tab3 },
-                fullList, tab1);
+        checkState(model, new Tab[] { tab0, tab1 }, tab0, new Tab[] { tab2, tab3 },
+                fullList, tab0);
 
         // 17.
         cancelTabClosureOnUiThread(model, tab2);
-        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab2, new Tab[] { tab3 },
-                fullList, tab2);
+        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab0, new Tab[] { tab3 },
+                fullList, tab0);
 
         // 18.
         cancelTabClosureOnUiThread(model, tab3);
-        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab3, EMPTY, fullList, tab3);
+        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab0, EMPTY, fullList, tab0);
 
         // 19.
         closeTabOnUiThread(model, tab2, true);
-        checkState(model, new Tab[] { tab0, tab1, tab3 }, tab3, new Tab[] { tab2 },
-                fullList, tab3);
+        checkState(model, new Tab[] { tab0, tab1, tab3 }, tab0, new Tab[] { tab2 },
+                fullList, tab0);
 
         // 20.
         closeTabOnUiThread(model, tab0, true);
-        checkState(model, new Tab[] { tab1, tab3 }, tab3, new Tab[] { tab0, tab2 },
-                fullList, tab3);
+        checkState(model, new Tab[] { tab1, tab3 }, tab1, new Tab[] { tab0, tab2 },
+                fullList, tab1);
 
         // 21.
         closeTabOnUiThread(model, tab3, true);
@@ -692,17 +692,17 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 22.
         cancelTabClosureOnUiThread(model, tab3);
-        checkState(model, new Tab[] { tab1, tab3 }, tab3, new Tab[] { tab0, tab2 },
-                fullList, tab3);
+        checkState(model, new Tab[] { tab1, tab3 }, tab1, new Tab[] { tab0, tab2 },
+                fullList, tab1);
 
         // 23.
         cancelTabClosureOnUiThread(model, tab0);
-        checkState(model, new Tab[] { tab0, tab1, tab3 }, tab0, new Tab[] { tab2 },
-                fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab1, tab3 }, tab1, new Tab[] { tab2 },
+                fullList, tab1);
 
         // 24.
         cancelTabClosureOnUiThread(model, tab2);
-        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab2, EMPTY, fullList, tab2);
+        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab1, EMPTY, fullList, tab1);
     }
 
 
@@ -715,24 +715,24 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * 4.  CloseTab(2, allow undo)    [ 3s ]             [ 2 1 0 ]         [ 0 1 2 3s ]
      * 5.  CloseTab(3, allow undo)    -                  [ 3 2 1 0 ]       [ 0s 1 2 3 ]
      * 6.  CancelClose(0)             [ 0s ]             [ 3 2 1 ]         [ 0s 1 2 3 ]
-     * 7.  CancelClose(1)             [ 0 1s ]           [ 3 2 ]           [ 0 1s 2 3 ]
-     * 8.  CancelClose(2)             [ 0 1 2s ]         [ 3 ]             [ 0 1 2s 3 ]
-     * 9.  CancelClose(3)             [ 0 1 2 3s ]       -                 [ 0 1 2 3s ]
-     * 10. CloseTab(3, allow undo)    [ 0 1 2s ]         [ 3 ]             [ 0 1 2s 3 ]
-     * 11. CloseTab(2, allow undo)    [ 0 1s ]           [ 2 3 ]           [ 0 1s 2 3 ]
+     * 7.  CancelClose(1)             [ 0s 1 ]           [ 3 2 ]           [ 0s 1 2 3 ]
+     * 8.  CancelClose(2)             [ 0s 1 2 ]         [ 3 ]             [ 0s 1 2 3 ]
+     * 9.  CancelClose(3)             [ 0s 1 2 3 ]       -                 [ 0s 1 2 3 ]
+     * 10. CloseTab(3, allow undo)    [ 0s 1 2 ]         [ 3 ]             [ 0s 1 2 3 ]
+     * 11. CloseTab(2, allow undo)    [ 0s 1 ]           [ 2 3 ]           [ 0s 1 2 3 ]
      * 12. CloseTab(1, allow undo)    [ 0s ]             [ 1 2 3 ]         [ 0s 1 2 3 ]
      * 13. CloseTab(0, allow undo)    -                  [ 0 1 2 3 ]       [ 0s 1 2 3 ]
      * 14. CancelClose(3)             [ 3s ]             [ 0 1 2 ]         [ 0 1 2 3s ]
-     * 15. CancelClose(2)             [ 2s 3 ]           [ 0 1 ]           [ 0 1 2s 3 ]
-     * 16. CancelClose(1)             [ 1s 2 3 ]         [ 0 ]             [ 0 1s 2 3 ]
-     * 17. CancelClose(0)             [ 0s 1 2 3 ]       -                 [ 0s 1 2 3 ]
+     * 15. CancelClose(2)             [ 2 3s ]           [ 0 1 ]           [ 0 1 2 3s ]
+     * 16. CancelClose(1)             [ 1 2 3s ]         [ 0 ]             [ 0 1 2 3s ]
+     * 17. CancelClose(0)             [ 0 1 2 3s ]       -                 [ 0 1 2 3s ]
      * 18. SelectTab(3)               [ 0 1 2 3s ]       -                 [ 0 1 2 3s ]
      * 19. CloseTab(2, allow undo)    [ 0 1 3s ]         [ 2 ]             [ 0 1 2 3s ]
      * 20. CloseTab(0, allow undo)    [ 1 3s ]           [ 0 2 ]           [ 0 1 2 3s ]
      * 21. CloseTab(3, allow undo)    [ 1s ]             [ 3 0 2 ]         [ 0 1s 2 3 ]
-     * 22. CancelClose(2)             [ 1 2s ]           [ 3 0 ]           [ 0 1 2s 3 ]
-     * 23. CancelClose(0)             [ 0s 1 2 ]         [ 3 ]             [ 0s 1 2 3 ]
-     * 24. CancelClose(3)             [ 0 1 2 3s ]       -                 [ 0 1 2 3s ]
+     * 22. CancelClose(2)             [ 1s 2 ]           [ 3 0 ]           [ 0 1s 2 3 ]
+     * 23. CancelClose(0)             [ 0 1s 2 ]         [ 3 ]             [ 0 1s 2 3 ]
+     * 24. CancelClose(3)             [ 0 1s 2 3 ]       -                 [ 0 1s 2 3 ]
      *
      * @throws InterruptedException
      */
@@ -780,27 +780,27 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 7.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab0, tab1 }, tab1, new Tab[] { tab3, tab2 },
-                fullList, tab1);
+        checkState(model, new Tab[] { tab0, tab1 }, tab0, new Tab[] { tab3, tab2 },
+                fullList, tab0);
 
         // 8.
         cancelTabClosureOnUiThread(model, tab2);
-        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab2, new Tab[] { tab3 },
-                fullList, tab2);
+        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab0, new Tab[] { tab3 },
+                fullList, tab0);
 
         // 9.
         cancelTabClosureOnUiThread(model, tab3);
-        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab3, EMPTY, fullList, tab3);
+        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab0, EMPTY, fullList, tab0);
 
         // 10.
         closeTabOnUiThread(model, tab3, true);
-        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab2, new Tab[] { tab3 },
-                fullList, tab2);
+        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab0, new Tab[] { tab3 },
+                fullList, tab0);
 
         // 11.
         closeTabOnUiThread(model, tab2, true);
-        checkState(model, new Tab[] { tab0, tab1 }, tab1, new Tab[] { tab2, tab3 },
-                fullList, tab1);
+        checkState(model, new Tab[] { tab0, tab1 }, tab0, new Tab[] { tab2, tab3 },
+                fullList, tab0);
 
         // 12.
         closeTabOnUiThread(model, tab1, true);
@@ -818,17 +818,17 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 15.
         cancelTabClosureOnUiThread(model, tab2);
-        checkState(model, new Tab[] { tab2, tab3 }, tab2, new Tab[] { tab0, tab1 },
-                fullList, tab2);
+        checkState(model, new Tab[] { tab2, tab3 }, tab3, new Tab[] { tab0, tab1 },
+                fullList, tab3);
 
         // 16.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab1, tab2, tab3 }, tab1, new Tab[] { tab0 },
-                fullList, tab1);
+        checkState(model, new Tab[] { tab1, tab2, tab3 }, tab3, new Tab[] { tab0 },
+                fullList, tab3);
 
         // 17.
         cancelTabClosureOnUiThread(model, tab0);
-        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab0, EMPTY, fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab3, EMPTY, fullList, tab3);
 
         // 18.
         selectTabOnUiThread(model, tab3);
@@ -851,17 +851,17 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 22.
         cancelTabClosureOnUiThread(model, tab2);
-        checkState(model, new Tab[] { tab1, tab2 }, tab2, new Tab[] { tab3, tab0 },
-                fullList, tab2);
+        checkState(model, new Tab[] { tab1, tab2 }, tab1, new Tab[] { tab3, tab0 },
+                fullList, tab1);
 
         // 23.
         cancelTabClosureOnUiThread(model, tab0);
-        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab0, new Tab[] { tab3 },
-                fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab1, new Tab[] { tab3 },
+                fullList, tab1);
 
         // 24.
         cancelTabClosureOnUiThread(model, tab3);
-        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab3, EMPTY, fullList, tab3);
+        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab1, EMPTY, fullList, tab1);
     }
 
     /**
@@ -873,16 +873,16 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * 4.  CloseTab(2, allow undo)    [ 3s ]             [ 2 1 0 ]         [ 0 1 2 3s ]
      * 5.  CloseTab(3, allow undo)    -                  [ 3 2 1 0 ]       [ 0s 1 2 3 ]
      * 6.  CancelClose(2)             [ 2s ]             [ 3 1 0 ]         [ 0 1 2s 3 ]
-     * 7.  CancelClose(1)             [ 1s 2 ]           [ 3 0 ]           [ 0 1s 2 3 ]
-     * 8.  CancelClose(3)             [ 1 2 3s ]         [ 0 ]             [ 0 1 2 3s ]
-     * 9.  CancelClose(0)             [ 0s 1 2 3 ]       -                 [ 0s 1 2 3 ]
-     * 10. CloseTab(1, allow undo)    [ 0s 2 3 ]         [ 1 ]             [ 0s 1 2 3 ]
-     * 11. CancelClose(1)             [ 0 1s 2 3 ]       -                 [ 0 1s 2 3 ]
-     * 12. CloseTab(3, disallow undo) [ 0 1s 2 ]         -                 [ 0 1s 2 ]
-     * 13. CloseTab(1, allow undo)    [ 0s 2 ]           [ 1 ]             [ 0s 1 2 ]
+     * 7.  CancelClose(1)             [ 1 2s ]           [ 3 0 ]           [ 0 1 2s 3 ]
+     * 8.  CancelClose(3)             [ 1 2s 3 ]         [ 0 ]             [ 0 1 2s 3 ]
+     * 9.  CancelClose(0)             [ 0 1 2s 3 ]       -                 [ 0 1 2s 3 ]
+     * 10. CloseTab(1, allow undo)    [ 0 2s 3 ]         [ 1 ]             [ 0 1 2s 3 ]
+     * 11. CancelClose(1)             [ 0 1 2s 3 ]       -                 [ 0 1 2s 3 ]
+     * 12. CloseTab(3, disallow undo) [ 0 1 2s ]         -                 [ 0 1 2s ]
+     * 13. CloseTab(1, allow undo)    [ 0 2s ]           [ 1 ]             [ 0 1 2s ]
      * 14. CloseTab(0, allow undo)    [ 2s ]             [ 0 1 ]           [ 0 1 2s ]
      * 15. CommitClose(0)             [ 2s ]             [ 1 ]             [ 1 2s ]
-     * 16. CancelClose(1)             [ 1s 2 ]           -                 [ 1s 2 ]
+     * 16. CancelClose(1)             [ 1 2s ]           -                 [ 1 2s ]
      * 17. CloseTab(2, disallow undo) [ 1s ]             -                 [ 1s ]
      *
      * @throws InterruptedException
@@ -931,36 +931,36 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 7.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab1, tab2 }, tab1, new Tab[] { tab3, tab0 },
-                fullList, tab1);
+        checkState(model, new Tab[] { tab1, tab2 }, tab2, new Tab[] { tab3, tab0 },
+                fullList, tab2);
 
         // 8.
         cancelTabClosureOnUiThread(model, tab3);
-        checkState(model, new Tab[] { tab1, tab2, tab3 }, tab3, new Tab[] { tab0 },
-                fullList, tab3);
+        checkState(model, new Tab[] { tab1, tab2, tab3 }, tab2, new Tab[] { tab0 },
+                fullList, tab2);
 
         // 9.
         cancelTabClosureOnUiThread(model, tab0);
-        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab0, EMPTY, fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab2, EMPTY, fullList, tab2);
 
         // 10.
         closeTabOnUiThread(model, tab1, true);
-        checkState(model, new Tab[] { tab0, tab2, tab3 }, tab0, new Tab[] { tab1 },
-                fullList, tab0);
+        checkState(model, new Tab[] { tab0, tab2, tab3 }, tab2, new Tab[] { tab1 },
+                fullList, tab2);
 
         // 11.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab1, EMPTY, fullList, tab1);
+        checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab2, EMPTY, fullList, tab2);
 
         // 12.
         closeTabOnUiThread(model, tab3, false);
         fullList = new Tab[] { tab0, tab1, tab2 };
-        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab1, EMPTY, fullList, tab1);
+        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab2, EMPTY, fullList, tab2);
 
         // 13.
         closeTabOnUiThread(model, tab1, true);
-        checkState(model, new Tab[] { tab0, tab2 }, tab0, new Tab[] { tab1 }, fullList,
-                tab0);
+        checkState(model, new Tab[] { tab0, tab2 }, tab2, new Tab[] { tab1 }, fullList,
+                tab2);
 
         // 14.
         closeTabOnUiThread(model, tab0, true);
@@ -974,7 +974,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 16.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab1, tab2 }, tab1, EMPTY, fullList, tab1);
+        checkState(model, new Tab[] { tab1, tab2 }, tab2, EMPTY, fullList, tab2);
 
         // 17.
         closeTabOnUiThread(model, tab2, false);
@@ -988,14 +988,14 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * 1.  Initial State              [ 0 1 2 3s ]       -                 [ 0 1 2 3s ]
      * 2.  CloseTab(1, allow undo)    [ 0 2 3s ]         [ 1 ]             [ 0 1 2 3s ]
      * 3.  CloseTab(3, allow undo)    [ 0 2s ]           [ 3 1 ]           [ 0 1 2s 3 ]
-     * 4.  CancelClose(1)             [ 0 1s 2 ]         [ 3 ]             [ 0 1s 2 3 ]
+     * 4.  CancelClose(1)             [ 0 1 2s ]         [ 3 ]             [ 0 1 2s 3 ]
      * 5.  CloseTab(2, allow undo)    [ 0 1s ]           [ 2 3 ]           [ 0 1s 2 3 ]
      * 6.  CloseTab(0, allow undo)    [ 1s ]             [ 0 2 3 ]         [ 0 1s 2 3 ]
      * 7.  CommitClose(0)             [ 1s ]             [ 2 3 ]           [ 1s 2 3 ]
-     * 8.  CancelClose(3)             [ 1 3s ]           [ 2 ]             [ 1 2 3s ]
+     * 8.  CancelClose(3)             [ 1s 3 ]           [ 2 ]             [ 1s 2 3 ]
      * 9.  CloseTab(1, allow undo)    [ 3s ]             [ 1 2 ]           [ 1 2 3s ]
      * 10. CommitClose(2)             [ 3s ]             [ 1 ]             [ 1 3s ]
-     * 11. CancelClose(1)             [ 1s 3 ]           -                 [ 1s 3 ]
+     * 11. CancelClose(1)             [ 1 3s ]           -                 [ 1 3s ]
      * 12. CloseTab(3, allow undo)    [ 1s ]             [ 3 ]             [ 1s 3 ]
      * 13. CloseTab(1, allow undo)    -                  [ 1 3 ]           [ 1s 3 ]
      * 14. CommitAll                  -                  -                 -
@@ -1032,8 +1032,8 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 4.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab1, new Tab[] { tab3 },
-                fullList, tab1);
+        checkState(model, new Tab[] { tab0, tab1, tab2 }, tab2, new Tab[] { tab3 },
+                fullList, tab2);
 
         // 5.
         closeTabOnUiThread(model, tab2, true);
@@ -1053,8 +1053,8 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 8.
         cancelTabClosureOnUiThread(model, tab3);
-        checkState(model, new Tab[] { tab1, tab3 }, tab3, new Tab[] { tab2 }, fullList,
-                tab3);
+        checkState(model, new Tab[] { tab1, tab3 }, tab1, new Tab[] { tab2 }, fullList,
+                tab1);
 
         // 9.
         closeTabOnUiThread(model, tab1, true);
@@ -1068,7 +1068,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 11.
         cancelTabClosureOnUiThread(model, tab1);
-        checkState(model, new Tab[] { tab1, tab3 }, tab1, EMPTY, fullList, tab1);
+        checkState(model, new Tab[] { tab1, tab3 }, tab3, EMPTY, fullList, tab3);
 
         // 12.
         closeTabOnUiThread(model, tab3, true);
@@ -1130,7 +1130,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
 
         // 5.
         cancelAllTabClosuresOnUiThread(model, fullList);
-        checkState(model, fullList, tab3, EMPTY, fullList, tab3);
+        checkState(model, fullList, tab0, EMPTY, fullList, tab0);
 
         // 6.
         closeAllTabsOnUiThread(model);

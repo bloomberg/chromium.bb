@@ -192,14 +192,16 @@ public abstract class TabModelBase extends TabModelJniBridge {
         //   * Otherwise, if closing the last incognito tab, select the current normal tab.
         //   * Otherwise, select nothing.
         Tab nextTab = null;
-        if (tabToClose != currentTab && currentTab != null) {
+        if (tabToClose != currentTab && currentTab != null && !currentTab.isClosing()) {
             nextTab = currentTab;
-        } else if (parentTab != null && !mModelDelegate.isInOverviewMode()) {
+        } else if (parentTab != null && !parentTab.isClosing()
+                && !mModelDelegate.isInOverviewMode()) {
             nextTab = parentTab;
-        } else if (adjacentTab != null) {
+        } else if (adjacentTab != null && !adjacentTab.isClosing()) {
             nextTab = adjacentTab;
         } else if (isIncognito()) {
             nextTab = TabModelUtils.getCurrentTab(mModelDelegate.getModel(false));
+            if (nextTab != null && nextTab.isClosing()) nextTab = null;
         }
 
         return nextTab;
@@ -251,12 +253,14 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
         boolean activeModel = mModelDelegate.getCurrentModel() == this;
 
-        // If we're the active model call setIndex to actually select this tab, otherwise just set
-        // mIndex but don't kick off everything that happens when calling setIndex().
-        if (activeModel) {
-            TabModelUtils.setIndex(this, insertIndex);
-        } else {
-            mIndex = insertIndex;
+        if (mIndex == INVALID_TAB_INDEX) {
+            // If we're the active model call setIndex to actually select this tab, otherwise just
+            // set mIndex but don't kick off everything that happens when calling setIndex().
+            if (activeModel) {
+                TabModelUtils.setIndex(this, insertIndex);
+            } else {
+                mIndex = insertIndex;
+            }
         }
 
         for (TabModelObserver obs : mObservers) obs.tabClosureUndone(tab);
@@ -332,6 +336,7 @@ public abstract class TabModelBase extends TabModelJniBridge {
     public void closeAllTabs(boolean allowDelegation, boolean uponExit) {
         commitAllTabClosures();
 
+        for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
         while (getCount() > 0) {
             TabModelUtils.closeTabByIndex(this, 0);
         }
@@ -350,6 +355,8 @@ public abstract class TabModelBase extends TabModelJniBridge {
      *                removed from this list.
      */
     public void closeAllTabs(boolean animate, boolean uponExit, boolean canUndo) {
+        for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
+
         ArrayList<Integer> closedTabs = new ArrayList<Integer>();
         while (getCount() > 0) {
             Tab tab = getTabAt(0);
@@ -391,6 +398,14 @@ public abstract class TabModelBase extends TabModelJniBridge {
         return currentTab != null ? currentTab.getId() : Tab.INVALID_TAB_ID;
     }
 
+    private boolean hasVaildTab() {
+        if (mTabs.size() <= 0) return false;
+        for (int i = 0; i < mTabs.size(); i++) {
+            if (!mTabs.get(i).isClosing()) return true;
+        }
+        return false;
+    }
+
     // This function is complex and its behavior depends on persisted state, including mIndex.
     @Override
     public void setIndex(int i, final TabSelectionType type) {
@@ -402,7 +417,7 @@ public abstract class TabModelBase extends TabModelJniBridge {
                 mModelDelegate.selectModel(isIncognito());
             }
 
-            if (mTabs.size() <= 0) {
+            if (!hasVaildTab()) {
                 mIndex = INVALID_TAB_INDEX;
             } else {
                 mIndex = MathUtils.clamp(i, 0, mTabs.size() - 1);
