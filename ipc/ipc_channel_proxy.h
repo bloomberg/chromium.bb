@@ -195,7 +195,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
 
     // IPC::Listener methods:
     bool OnMessageReceived(const Message& message) override;
-    void OnChannelConnected(int32 peer_pid) override;
+    void OnChannelConnected(int32_t peer_pid) override;
     void OnChannelError() override;
 
     // Like OnMessageReceived but doesn't try the filters.

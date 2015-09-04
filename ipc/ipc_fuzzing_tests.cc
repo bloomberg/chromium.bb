@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <stdio.h>
-#include <string>
+
 #include <sstream>
+#include <string>
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
@@ -38,7 +40,7 @@ namespace {
 
 TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
   // This was BUG 984408.
-  uint32 v1 = kuint32max - 1;
+  uint32_t v1 = kuint32max - 1;
   int v2 = 666;
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
   EXPECT_TRUE(m.WriteInt(v1));
@@ -51,7 +53,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
 
 TEST(IPCMessageIntegrity, ReadBeyondBufferStr16) {
   // This was BUG 984408.
-  uint32 v1 = kuint32max - 1;
+  uint32_t v1 = kuint32max - 1;
   int v2 = 777;
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
   EXPECT_TRUE(m.WriteInt(v1));
@@ -101,7 +103,7 @@ TEST(IPCMessageIntegrity, MAYBE_ReadVectorTooLarge1) {
   EXPECT_TRUE(m.WriteInt64(1));
   EXPECT_TRUE(m.WriteInt64(2));
 
-  std::vector<int64> vec;
+  std::vector<int64_t> vec;
   base::PickleIterator iter(m);
   EXPECT_FALSE(ReadParam(&m, &iter, &vec));
 }
@@ -115,7 +117,7 @@ TEST(IPCMessageIntegrity, ReadVectorTooLarge2) {
   EXPECT_TRUE(m.WriteInt64(1));
   EXPECT_TRUE(m.WriteInt64(2));
 
-  std::vector<int64> vec;
+  std::vector<int64_t> vec;
   base::PickleIterator iter(m);
   EXPECT_FALSE(ReadParam(&m, &iter, &vec));
 }
@@ -170,7 +172,7 @@ class FuzzerServerListener : public SimpleListener {
     Cleanup();
   }
 
-  bool RoundtripAckReply(int routing, uint32 type_id, int reply) {
+  bool RoundtripAckReply(int routing, uint32_t type_id, int reply) {
     IPC::Message* message = new IPC::Message(routing, type_id,
                                              IPC::Message::PRIORITY_NORMAL);
     message->WriteInt(reply + 1);
@@ -185,7 +187,7 @@ class FuzzerServerListener : public SimpleListener {
       base::MessageLoop::current()->Quit();
   }
 
-  void ReplyMsgNotHandled(uint32 type_id) {
+  void ReplyMsgNotHandled(uint32_t type_id) {
     RoundtripAckReply(FUZZER_ROUTING_ID, MsgUnhandled::ID, type_id);
     Cleanup();
   }
@@ -213,7 +215,7 @@ class FuzzerClientListener : public SimpleListener {
     return true;
   }
 
-  bool ExpectMessage(int value, uint32 type_id) {
+  bool ExpectMessage(int value, uint32_t type_id) {
     if (!MsgHandlerInternal(type_id))
       return false;
     int msg_value1 = 0;
@@ -233,12 +235,12 @@ class FuzzerClientListener : public SimpleListener {
     return true;
   }
 
-  bool ExpectMsgNotHandled(uint32 type_id) {
+  bool ExpectMsgNotHandled(uint32_t type_id) {
     return ExpectMessage(type_id, MsgUnhandled::ID);
   }
 
  private:
-  bool MsgHandlerInternal(uint32 type_id) {
+  bool MsgHandlerInternal(uint32_t type_id) {
     base::MessageLoop::current()->Run();
     if (NULL == last_msg_)
       return false;

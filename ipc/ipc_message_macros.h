@@ -194,6 +194,8 @@
 #ifndef IPC_IPC_MESSAGE_MACROS_H_
 #define IPC_IPC_MESSAGE_MACROS_H_
 
+#include <stdint.h>
+
 #include "base/profiler/scoped_profile.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/param_traits_macros.h"
@@ -591,7 +593,7 @@
    public:                                                                    \
     typedef IPC::Message Schema;                                              \
     enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(int32 routing_id)                                               \
+    msg_class(int32_t routing_id)                                             \
         : IPC::Message(routing_id, ID, PRIORITY_NORMAL) {}                    \
     static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
@@ -615,7 +617,7 @@
     typedef IPC::MessageSchema<IPC_TUPLE_IN_##in_cnt in_list> Schema;         \
     typedef Schema::Param Param;                                              \
     enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(int32 routing_id IPC_COMMA_##in_cnt                             \
+    msg_class(int32_t routing_id IPC_COMMA_##in_cnt                           \
               IPC_TYPE_IN_##in_cnt in_list);                                  \
     ~msg_class() override;                                                    \
     static bool Read(const Message* msg, Schema::Param* p);                   \
@@ -651,7 +653,7 @@
     typedef Schema::ReplyParam ReplyParam;                                    \
     typedef Schema::SendParam SendParam;                                      \
     enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(int32 routing_id                                                \
+    msg_class(int32_t routing_id                                              \
               IPC_COMMA_OR_##in_cnt(IPC_COMMA_##out_cnt)                      \
               IPC_TYPE_IN_##in_cnt in_list                                    \
               IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)                     \
@@ -690,7 +692,7 @@
   }
 
 #define IPC_ASYNC_ROUTED_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  msg_class::msg_class(int32 routing_id IPC_COMMA_##in_cnt                    \
+  msg_class::msg_class(int32_t routing_id IPC_COMMA_##in_cnt                  \
                        IPC_TYPE_IN_##in_cnt in_list) :                        \
       IPC::Message(routing_id, ID, PRIORITY_NORMAL) {                         \
         Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \
@@ -720,7 +722,7 @@
   }
 
 #define IPC_SYNC_ROUTED_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)   \
-  msg_class::msg_class(int32 routing_id                                       \
+  msg_class::msg_class(int32_t routing_id                                     \
                        IPC_COMMA_OR_##in_cnt(IPC_COMMA_##out_cnt)             \
                        IPC_TYPE_IN_##in_cnt in_list                           \
                        IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)            \
@@ -793,7 +795,7 @@
   class LoggerRegisterHelper##msg_class {                               \
  public:                                                                \
     LoggerRegisterHelper##msg_class() {                                 \
-      const uint32 msg_id = static_cast<uint32>(msg_class::ID);         \
+      const uint32_t msg_id = static_cast<uint32_t>(msg_class::ID);     \
       IPC_LOG_TABLE_ADD_ENTRY(msg_id, msg_class::Log);                  \
     }                                                                   \
   };                                                                    \

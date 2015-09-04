@@ -15,7 +15,7 @@ void MessageFilter::OnFilterAdded(Sender* sender) {}
 
 void MessageFilter::OnFilterRemoved() {}
 
-void MessageFilter::OnChannelConnected(int32 peer_pid) {}
+void MessageFilter::OnChannelConnected(int32_t peer_pid) {}
 
 void MessageFilter::OnChannelError() {}
 
@@ -26,7 +26,7 @@ bool MessageFilter::OnMessageReceived(const Message& message) {
 }
 
 bool MessageFilter::GetSupportedMessageClasses(
-    std::vector<uint32>* /*supported_message_classes*/) const {
+    std::vector<uint32_t>* /*supported_message_classes*/) const {
   return false;
 }
 

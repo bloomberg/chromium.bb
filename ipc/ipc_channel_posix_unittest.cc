@@ -7,6 +7,7 @@
 #include "ipc/ipc_channel_posix.h"
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -28,7 +29,7 @@
 
 namespace {
 
-static const uint32 kQuitMessage = 47;
+static const uint32_t kQuitMessage = 47;
 
 class IPCChannelPosixTestListener : public IPC::Listener {
  public:
@@ -55,7 +56,7 @@ class IPCChannelPosixTestListener : public IPC::Listener {
     return true;
   }
 
-  void OnChannelConnected(int32 peer_pid) override {
+  void OnChannelConnected(int32_t peer_pid) override {
     status_ = CONNECTED;
     if (!quit_only_on_message_) {
       QuitRunLoop();

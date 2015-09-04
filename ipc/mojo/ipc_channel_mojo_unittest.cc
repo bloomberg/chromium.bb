@@ -4,6 +4,8 @@
 
 #include "ipc/mojo/ipc_channel_mojo.h"
 
+#include <stdint.h>
+
 #include "base/base_paths.h"
 #include "base/files/file.h"
 #include "base/location.h"
@@ -133,7 +135,7 @@ class TestChannelListenerWithExtraExpectations
       : is_connected_called_(false) {
   }
 
-  void OnChannelConnected(int32 peer_pid) override {
+  void OnChannelConnected(int32_t peer_pid) override {
     IPC::TestChannelListener::OnChannelConnected(peer_pid);
     EXPECT_TRUE(base::kNullProcessId != peer_pid);
     is_connected_called_ = true;
@@ -200,7 +202,7 @@ class ListenerExpectingErrors : public IPC::Listener {
       : has_error_(false) {
   }
 
-  void OnChannelConnected(int32 peer_pid) override {
+  void OnChannelConnected(int32_t peer_pid) override {
     base::MessageLoop::current()->Quit();
   }
 
@@ -243,7 +245,7 @@ class ListenerThatQuits : public IPC::Listener {
     return true;
   }
 
-  void OnChannelConnected(int32 peer_pid) override {
+  void OnChannelConnected(int32_t peer_pid) override {
     base::MessageLoop::current()->Quit();
   }
 };
@@ -595,7 +597,7 @@ class ListenerSendingOneOk : public IPC::Listener {
     return true;
   }
 
-  void OnChannelConnected(int32 peer_pid) override {
+  void OnChannelConnected(int32_t peer_pid) override {
     ListenerThatExpectsOK::SendOK(sender_);
     base::MessageLoop::current()->Quit();
   }
@@ -815,7 +817,7 @@ const base::ProcessId kMagicChildId = 54321;
 
 class ListenerThatVerifiesPeerPid : public IPC::Listener {
  public:
-  void OnChannelConnected(int32 peer_pid) override {
+  void OnChannelConnected(int32_t peer_pid) override {
     EXPECT_EQ(peer_pid, kMagicChildId);
     base::MessageLoop::current()->Quit();
   }

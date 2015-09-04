@@ -22,11 +22,11 @@ base::StaticAtomicSequenceNumber g_ref_num;
 // Create a reference number for identifying IPC messages in traces. The return
 // values has the reference number stored in the upper 24 bits, leaving the low
 // 8 bits set to 0 for use as flags.
-inline uint32 GetRefNumUpper24() {
+inline uint32_t GetRefNumUpper24() {
   base::trace_event::TraceLog* trace_log =
       base::trace_event::TraceLog::GetInstance();
-  uint32 pid = trace_log ? trace_log->process_id() : 0;
-  uint32 count = g_ref_num.GetNext();
+  uint32_t pid = trace_log ? trace_log->process_id() : 0;
+  uint32_t count = g_ref_num.GetNext();
   // The 24 bit hash is composed of 14 bits of the count and 10 bits of the
   // Process ID. With the current trace event buffer cap, the 14-bit count did
   // not appear to wrap during a trace. Note that it is not a big deal if
@@ -53,7 +53,7 @@ Message::Message() : base::Pickle(sizeof(Header)) {
   Init();
 }
 
-Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
+Message::Message(int32_t routing_id, uint32_t type, PriorityValue priority)
     : base::Pickle(sizeof(Header)) {
   header()->routing = routing_id;
   header()->type = type;
@@ -92,7 +92,7 @@ Message& Message::operator=(const Message& other) {
   return *this;
 }
 
-void Message::SetHeaderValues(int32 routing, uint32 type, uint32 flags) {
+void Message::SetHeaderValues(int32_t routing, uint32_t type, uint32_t flags) {
   // This should only be called when the message is already empty.
   DCHECK(payload_size() == 0);
 
@@ -107,22 +107,22 @@ void Message::EnsureMessageAttachmentSet() {
 }
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
-void Message::set_sent_time(int64 time) {
+void Message::set_sent_time(int64_t time) {
   DCHECK((header()->flags & HAS_SENT_TIME_BIT) == 0);
   header()->flags |= HAS_SENT_TIME_BIT;
   WriteInt64(time);
 }
 
-int64 Message::sent_time() const {
+int64_t Message::sent_time() const {
   if ((header()->flags & HAS_SENT_TIME_BIT) == 0)
     return 0;
 
   const char* data = end_of_payload();
-  data -= sizeof(int64);
-  return *(reinterpret_cast<const int64*>(data));
+  data -= sizeof(int64_t);
+  return *(reinterpret_cast<const int64_t*>(data));
 }
 
-void Message::set_received_time(int64 time) const {
+void Message::set_received_time(int64_t time) const {
   received_time_ = time;
 }
 #endif

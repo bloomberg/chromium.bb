@@ -4,6 +4,7 @@
 
 #include "ipc/ipc_channel_win.h"
 
+#include <stdint.h>
 #include <windows.h>
 
 #include "base/auto_reset.h"
@@ -222,11 +223,11 @@ void ChannelWin::HandleInternalMessage(const Message& msg) {
   DCHECK_EQ(msg.type(), static_cast<unsigned>(Channel::HELLO_MESSAGE_TYPE));
   // The hello message contains one parameter containing the PID.
   base::PickleIterator it(msg);
-  int32 claimed_pid;
+  int32_t claimed_pid;
   bool failed = !it.ReadInt(&claimed_pid);
 
   if (!failed && validate_client_) {
-    int32 secret;
+    int32_t secret;
     failed = it.ReadInt(&secret) ? (secret != client_secret_) : true;
   }
 
@@ -260,8 +261,8 @@ bool ChannelWin::DidEmptyInputBuffers() {
 }
 
 // static
-const base::string16 ChannelWin::PipeName(
-    const std::string& channel_id, int32* secret) {
+const base::string16 ChannelWin::PipeName(const std::string& channel_id,
+                                          int32_t* secret) {
   std::string name("\\\\.\\pipe\\chrome.");
 
   // Prevent the shared secret from ending up in the pipe name.
@@ -356,7 +357,7 @@ bool ChannelWin::CreatePipe(const IPC::ChannelHandle &channel_handle,
 
   // Don't send the secret to the untrusted process, and don't send a secret
   // if the value is zero (for IPC backwards compatability).
-  int32 secret = validate_client_ ? 0 : client_secret_;
+  int32_t secret = validate_client_ ? 0 : client_secret_;
   if (!m->WriteInt(GetCurrentProcessId()) ||
       (secret && !m->WriteUInt32(secret))) {
     pipe_.Close();
@@ -469,7 +470,7 @@ bool ChannelWin::ProcessOutgoingMessages(
   DCHECK(m->size() <= INT_MAX);
   BOOL ok = WriteFile(pipe_.Get(),
                       m->data(),
-                      static_cast<uint32>(m->size()),
+                      static_cast<uint32_t>(m->size()),
                       NULL,
                       &output_state_.context.overlapped);
   if (!ok) {

@@ -314,15 +314,15 @@ void ParamTraits<unsigned int>::Log(const param_type& p, std::string* l) {
 }
 
 void ParamTraits<long>::Log(const param_type& p, std::string* l) {
-  l->append(base::Int64ToString(static_cast<int64>(p)));
+  l->append(base::Int64ToString(static_cast<int64_t>(p)));
 }
 
 void ParamTraits<unsigned long>::Log(const param_type& p, std::string* l) {
-  l->append(base::Uint64ToString(static_cast<uint64>(p)));
+  l->append(base::Uint64ToString(static_cast<uint64_t>(p)));
 }
 
 void ParamTraits<long long>::Log(const param_type& p, std::string* l) {
-  l->append(base::Int64ToString(static_cast<int64>(p)));
+  l->append(base::Int64ToString(static_cast<int64_t>(p)));
 }
 
 void ParamTraits<unsigned long long>::Log(const param_type& p, std::string* l) {
@@ -697,32 +697,32 @@ void ParamTraits<base::File::Info>::Log(const param_type& p,
 }
 
 void ParamTraits<base::Time>::Write(Message* m, const param_type& p) {
-  ParamTraits<int64>::Write(m, p.ToInternalValue());
+  ParamTraits<int64_t>::Write(m, p.ToInternalValue());
 }
 
 bool ParamTraits<base::Time>::Read(const Message* m,
                                    base::PickleIterator* iter,
                                    param_type* r) {
-  int64 value;
-  if (!ParamTraits<int64>::Read(m, iter, &value))
+  int64_t value;
+  if (!ParamTraits<int64_t>::Read(m, iter, &value))
     return false;
   *r = base::Time::FromInternalValue(value);
   return true;
 }
 
 void ParamTraits<base::Time>::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+  ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
 }
 
 void ParamTraits<base::TimeDelta>::Write(Message* m, const param_type& p) {
-  ParamTraits<int64>::Write(m, p.ToInternalValue());
+  ParamTraits<int64_t>::Write(m, p.ToInternalValue());
 }
 
 bool ParamTraits<base::TimeDelta>::Read(const Message* m,
                                         base::PickleIterator* iter,
                                         param_type* r) {
-  int64 value;
-  bool ret = ParamTraits<int64>::Read(m, iter, &value);
+  int64_t value;
+  bool ret = ParamTraits<int64_t>::Read(m, iter, &value);
   if (ret)
     *r = base::TimeDelta::FromInternalValue(value);
 
@@ -730,18 +730,18 @@ bool ParamTraits<base::TimeDelta>::Read(const Message* m,
 }
 
 void ParamTraits<base::TimeDelta>::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+  ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
 }
 
 void ParamTraits<base::TimeTicks>::Write(Message* m, const param_type& p) {
-  ParamTraits<int64>::Write(m, p.ToInternalValue());
+  ParamTraits<int64_t>::Write(m, p.ToInternalValue());
 }
 
 bool ParamTraits<base::TimeTicks>::Read(const Message* m,
                                         base::PickleIterator* iter,
                                         param_type* r) {
-  int64 value;
-  bool ret = ParamTraits<int64>::Read(m, iter, &value);
+  int64_t value;
+  bool ret = ParamTraits<int64_t>::Read(m, iter, &value);
   if (ret)
     *r = base::TimeTicks::FromInternalValue(value);
 
@@ -749,18 +749,18 @@ bool ParamTraits<base::TimeTicks>::Read(const Message* m,
 }
 
 void ParamTraits<base::TimeTicks>::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+  ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
 }
 
 void ParamTraits<base::TraceTicks>::Write(Message* m, const param_type& p) {
-  ParamTraits<int64>::Write(m, p.ToInternalValue());
+  ParamTraits<int64_t>::Write(m, p.ToInternalValue());
 }
 
 bool ParamTraits<base::TraceTicks>::Read(const Message* m,
                                          base::PickleIterator* iter,
                                          param_type* r) {
-  int64 value;
-  bool ret = ParamTraits<int64>::Read(m, iter, &value);
+  int64_t value;
+  bool ret = ParamTraits<int64_t>::Read(m, iter, &value);
   if (ret)
     *r = base::TraceTicks::FromInternalValue(value);
 
@@ -768,7 +768,7 @@ bool ParamTraits<base::TraceTicks>::Read(const Message* m,
 }
 
 void ParamTraits<base::TraceTicks>::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+  ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
 }
 
 void ParamTraits<IPC::ChannelHandle>::Write(Message* m, const param_type& p) {
@@ -850,16 +850,16 @@ void ParamTraits<Message>::Write(Message* m, const Message& p) {
   // could be 64-bit and the host browser could be 32-bits. The nested message
   // may or may not be safe to send between 32-bit and 64-bit systems, but we
   // leave that up to the code sending the message to ensure.
-  m->WriteUInt32(static_cast<uint32>(p.routing_id()));
+  m->WriteUInt32(static_cast<uint32_t>(p.routing_id()));
   m->WriteUInt32(p.type());
   m->WriteUInt32(p.flags());
-  m->WriteData(p.payload(), static_cast<uint32>(p.payload_size()));
+  m->WriteData(p.payload(), static_cast<uint32_t>(p.payload_size()));
 }
 
 bool ParamTraits<Message>::Read(const Message* m,
                                 base::PickleIterator* iter,
                                 Message* r) {
-  uint32 routing_id, type, flags;
+  uint32_t routing_id, type, flags;
   if (!iter->ReadUInt32(&routing_id) ||
       !iter->ReadUInt32(&type) ||
       !iter->ReadUInt32(&flags))
@@ -870,7 +870,7 @@ bool ParamTraits<Message>::Read(const Message* m,
   if (!iter->ReadData(&payload, &payload_size))
     return false;
 
-  r->SetHeaderValues(static_cast<int32>(routing_id), type, flags);
+  r->SetHeaderValues(static_cast<int32_t>(routing_id), type, flags);
   return r->WriteBytes(payload, payload_size);
 }
 
@@ -888,7 +888,7 @@ void ParamTraits<HANDLE>::Write(Message* m, const param_type& p) {
 bool ParamTraits<HANDLE>::Read(const Message* m,
                                base::PickleIterator* iter,
                                param_type* r) {
-  int32 temp;
+  int32_t temp;
   if (!iter->ReadInt(&temp))
     return false;
   *r = LongToHandle(temp);

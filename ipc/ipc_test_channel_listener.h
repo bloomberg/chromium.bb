@@ -5,6 +5,8 @@
 #ifndef IPC_IPC_TEST_CHANNEL_LISTENER_H_
 #define IPC_IPC_TEST_CHANNEL_LISTENER_H_
 
+#include <stddef.h>
+
 #include "ipc/ipc_listener.h"
 
 namespace IPC {

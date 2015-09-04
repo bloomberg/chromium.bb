@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 #include <algorithm>
@@ -358,7 +359,7 @@ bool ChannelNacl::ShouldDispatchInputMessage(Message* msg) {
 }
 
 bool ChannelNacl::GetNonBrokeredAttachments(Message* msg) {
-  uint16 header_fds = msg->header()->num_fds;
+  uint16_t header_fds = msg->header()->num_fds;
   CHECK(header_fds == input_fds_.size());
   if (header_fds == 0)
     return true;  // Nothing to do.

@@ -4,6 +4,8 @@
 
 #include "ipc/ipc_channel.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/atomic_sequence_num.h"
@@ -38,7 +40,7 @@ std::string Channel::GenerateUniqueRandomChannelID() {
   return base::StringPrintf("%d.%u.%d",
       process_id,
       g_last_id.GetNext(),
-      base::RandInt(0, std::numeric_limits<int32>::max()));
+      base::RandInt(0, std::numeric_limits<int32_t>::max()));
 }
 
 }  // namespace IPC

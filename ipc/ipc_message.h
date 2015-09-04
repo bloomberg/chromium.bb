@@ -5,6 +5,8 @@
 #ifndef IPC_IPC_MESSAGE_H_
 #define IPC_IPC_MESSAGE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -56,7 +58,7 @@ class IPC_EXPORT Message : public base::Pickle {
 
   // Initialize a message with a user-defined type, priority value, and
   // destination WebView ID.
-  Message(int32 routing_id, uint32 type, PriorityValue priority);
+  Message(int32_t routing_id, uint32_t type, PriorityValue priority);
 
   // Initializes a message from a const block of data.  The data is not copied;
   // instead the data is merely referenced by this message.  Only const methods
@@ -126,25 +128,25 @@ class IPC_EXPORT Message : public base::Pickle {
     return dispatch_error_;
   }
 
-  uint32 type() const {
+  uint32_t type() const {
     return header()->type;
   }
 
-  int32 routing_id() const {
+  int32_t routing_id() const {
     return header()->routing;
   }
 
-  void set_routing_id(int32 new_id) {
+  void set_routing_id(int32_t new_id) {
     header()->routing = new_id;
   }
 
-  uint32 flags() const {
+  uint32_t flags() const {
     return header()->flags;
   }
 
   // Sets all the given header values. The message should be empty at this
   // call.
-  void SetHeaderValues(int32 routing, uint32 type, uint32 flags);
+  void SetHeaderValues(int32_t routing, uint32_t type, uint32_t flags);
 
   template<class T, class S, class P>
   static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,
@@ -190,11 +192,11 @@ class IPC_EXPORT Message : public base::Pickle {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   // Adds the outgoing time from Time::Now() at the end of the message and sets
   // a bit to indicate that it's been added.
-  void set_sent_time(int64 time);
-  int64 sent_time() const;
+  void set_sent_time(int64_t time);
+  int64_t sent_time() const;
 
-  void set_received_time(int64 time) const;
-  int64 received_time() const { return received_time_; }
+  void set_received_time(int64_t time) const;
+  int64_t received_time() const { return received_time_; }
   void set_output_params(const std::string& op) const { output_params_ = op; }
   const std::string& output_params() const { return output_params_; }
   // The following four functions are needed so we can log sync messages with
@@ -219,12 +221,12 @@ class IPC_EXPORT Message : public base::Pickle {
 
 #pragma pack(push, 4)
   struct Header : base::Pickle::Header {
-    int32 routing;  // ID of the view that this message is destined for
-    uint32 type;    // specifies the user-defined message type
-    uint32 flags;   // specifies control flags for the message
+    int32_t routing;  // ID of the view that this message is destined for
+    uint32_t type;    // specifies the user-defined message type
+    uint32_t flags;   // specifies control flags for the message
 #if defined(OS_POSIX)
-    uint16 num_fds; // the number of descriptors included with this message
-    uint16 pad;     // explicitly initialize this to appease valgrind
+    uint16_t num_fds; // the number of descriptors included with this message
+    uint16_t pad;     // explicitly initialize this to appease valgrind
 #endif
   };
 #pragma pack(pop)
@@ -261,7 +263,7 @@ class IPC_EXPORT Message : public base::Pickle {
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   // Used for logging.
-  mutable int64 received_time_;
+  mutable int64_t received_time_;
   mutable std::string output_params_;
   mutable LogData* log_data_;
   mutable bool dont_log_;

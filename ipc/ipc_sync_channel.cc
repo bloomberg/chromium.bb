@@ -96,7 +96,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
   void DispatchMessages(SyncContext* dispatching_context) {
     bool first_time = true;
-    uint32 expected_version = 0;
+    uint32_t expected_version = 0;
     SyncMessageQueue::iterator it;
     while (true) {
       Message* message = NULL;
@@ -204,7 +204,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
   typedef std::list<QueuedMessage> SyncMessageQueue;
   SyncMessageQueue message_queue_;
-  uint32 message_queue_version_;  // Used to signal DispatchMessages to rescan
+  uint32_t message_queue_version_;  // Used to signal DispatchMessages to rescan
 
   std::vector<QueuedMessage> received_replies_;
 

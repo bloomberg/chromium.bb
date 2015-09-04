@@ -5,6 +5,8 @@
 #ifndef IPC_IPC_TEST_SINK_H_
 #define IPC_IPC_TEST_SINK_H_
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -106,14 +108,14 @@ class TestSink : public Channel {
   // Returns the first message with the given ID in the queue. If there is no
   // message with the given ID, returns NULL. The returned pointer will only be
   // valid until another message is received or the list is cleared.
-  const Message* GetFirstMessageMatching(uint32 id) const;
+  const Message* GetFirstMessageMatching(uint32_t id) const;
 
   // Returns the message with the given ID in the queue. If there is no such
   // message or there is more than one of that message, this will return NULL
   // (with the expectation that you'll do an ASSERT_TRUE() on the result).
   // The returned pointer will only be valid until another message is received
   // or the list is cleared.
-  const Message* GetUniqueMessageMatching(uint32 id) const;
+  const Message* GetUniqueMessageMatching(uint32_t id) const;
 
   // Adds the given listener as a filter to the TestSink.
   // When a message is received by the TestSink, it will be dispatched to

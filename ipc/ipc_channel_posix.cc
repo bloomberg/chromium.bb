@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -440,7 +441,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
 
       // DCHECK_LE above already checks that
       // num_fds < kMaxDescriptorsPerMessage so no danger of overflow.
-      msg->header()->num_fds = static_cast<uint16>(num_fds);
+      msg->header()->num_fds = static_cast<uint16_t>(num_fds);
     }
 
     if (bytes_written == 1) {
@@ -812,7 +813,7 @@ bool ChannelPosix::ShouldDispatchInputMessage(Message* msg) {
 // This will read from the input_fds_ (READWRITE mode only) and read more
 // handles from the FD pipe if necessary.
 bool ChannelPosix::GetNonBrokeredAttachments(Message* msg) {
-  uint16 header_fds = msg->header()->num_fds;
+  uint16_t header_fds = msg->header()->num_fds;
   if (!header_fds)
     return true;  // Nothing to do.
 

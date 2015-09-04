@@ -4,6 +4,8 @@
 
 #include "ipc/message_filter_router.h"
 
+#include <stdint.h>
+
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/message_filter.h"
@@ -45,7 +47,7 @@ MessageFilterRouter::~MessageFilterRouter() {}
 void MessageFilterRouter::AddFilter(MessageFilter* filter) {
   // Determine if the filter should be applied to all messages, or only
   // messages of a certain class.
-  std::vector<uint32> supported_message_classes;
+  std::vector<uint32_t> supported_message_classes;
   if (filter->GetSupportedMessageClasses(&supported_message_classes)) {
     DCHECK(!supported_message_classes.empty());
     for (size_t i = 0; i < supported_message_classes.size(); ++i) {

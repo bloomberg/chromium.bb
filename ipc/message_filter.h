@@ -5,6 +5,8 @@
 #ifndef IPC_MESSAGE_FILTER_H_
 #define IPC_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -34,7 +36,7 @@ class IPC_EXPORT MessageFilter
 
   // Called to inform the filter that the IPC channel is connected and we
   // have received the internal Hello message from the peer.
-  virtual void OnChannelConnected(int32 peer_pid);
+  virtual void OnChannelConnected(int32_t peer_pid);
 
   // Called when there is an error on the channel, typically that the channel
   // has been closed.
@@ -53,7 +55,7 @@ class IPC_EXPORT MessageFilter
   // if the resulting contents of |supported_message_classes| may be used to
   // selectively offer messages of a particular class to the filter.
   virtual bool GetSupportedMessageClasses(
-      std::vector<uint32>* supported_message_classes) const;
+      std::vector<uint32_t>* supported_message_classes) const;
 
  protected:
   virtual ~MessageFilter();

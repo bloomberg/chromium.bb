@@ -5,7 +5,8 @@
 #ifndef IPC_IPC_LISTENER_H_
 #define IPC_IPC_LISTENER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "build/build_config.h"
 #include "ipc/ipc_export.h"
 
@@ -22,7 +23,7 @@ class IPC_EXPORT Listener {
 
   // Called when the channel is connected and we have received the internal
   // Hello message from the peer.
-  virtual void OnChannelConnected(int32 peer_pid) {}
+  virtual void OnChannelConnected(int32_t peer_pid) {}
 
   // Called when an error is detected that causes the channel to close.
   // This method is not called when a channel is closed normally.

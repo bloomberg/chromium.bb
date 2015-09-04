@@ -5,6 +5,8 @@
 #ifndef IPC_IPC_LOGGING_H_
 #define IPC_IPC_LOGGING_H_
 
+#include <stdint.h>
+
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
@@ -23,7 +25,7 @@ typedef void (*LogFunction)(std::string* name,
                             const IPC::Message* msg,
                             std::string* params);
 
-typedef base::hash_map<uint32, LogFunction > LogFunctionMap;
+typedef base::hash_map<uint32_t, LogFunction > LogFunctionMap;
 
 namespace IPC {
 
@@ -73,7 +75,7 @@ class IPC_EXPORT Logging {
   // Like the *MsgLog functions declared for each message class, except this
   // calls the correct one based on the message type automatically.  Defined in
   // ipc_logging.cc.
-  static void GetMessageText(uint32 type, std::string* name,
+  static void GetMessageText(uint32_t type, std::string* name,
                              const Message* message, std::string* params);
 
   static void set_log_function_map(LogFunctionMap* functions) {

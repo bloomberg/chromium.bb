@@ -167,7 +167,7 @@ void Logging::OnPostDispatchMessage(const Message& message,
   }
 }
 
-void Logging::GetMessageText(uint32 type, std::string* name,
+void Logging::GetMessageText(uint32_t type, std::string* name,
                              const Message* message,
                              std::string* params) {
   if (!log_function_map_)

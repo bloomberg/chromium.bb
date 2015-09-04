@@ -4,6 +4,8 @@
 
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "ipc/ipc_message_utils.h"
@@ -21,11 +23,11 @@ class MojoServerBootstrap : public MojoBootstrap {
   MojoServerBootstrap();
 
  private:
-  void SendClientPipe(int32 peer_pid);
+  void SendClientPipe(int32_t peer_pid);
 
   // Listener implementations
   bool OnMessageReceived(const Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
 
   mojo::embedder::ScopedPlatformHandle server_pipe_;
   bool connected_;
@@ -36,7 +38,7 @@ class MojoServerBootstrap : public MojoBootstrap {
 MojoServerBootstrap::MojoServerBootstrap() : connected_(false) {
 }
 
-void MojoServerBootstrap::SendClientPipe(int32 peer_pid) {
+void MojoServerBootstrap::SendClientPipe(int32_t peer_pid) {
   DCHECK_EQ(state(), STATE_INITIALIZED);
   DCHECK(connected_);
 
@@ -73,7 +75,7 @@ void MojoServerBootstrap::SendClientPipe(int32 peer_pid) {
   set_state(STATE_WAITING_ACK);
 }
 
-void MojoServerBootstrap::OnChannelConnected(int32 peer_pid) {
+void MojoServerBootstrap::OnChannelConnected(int32_t peer_pid) {
   DCHECK_EQ(state(), STATE_INITIALIZED);
   connected_ = true;
   SendClientPipe(peer_pid);
@@ -103,7 +105,7 @@ class MojoClientBootstrap : public MojoBootstrap {
  private:
   // Listener implementations
   bool OnMessageReceived(const Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
 
   DISALLOW_COPY_AND_ASSIGN(MojoClientBootstrap);
 };
@@ -136,7 +138,7 @@ bool MojoClientBootstrap::OnMessageReceived(const Message& message) {
   return true;
 }
 
-void MojoClientBootstrap::OnChannelConnected(int32 peer_pid) {
+void MojoClientBootstrap::OnChannelConnected(int32_t peer_pid) {
 }
 
 }  // namespace

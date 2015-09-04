@@ -100,7 +100,7 @@ bool ChannelProxy::Context::OnMessageReceivedNoFilter(const Message& message) {
 }
 
 // Called on the IPC::Channel thread
-void ChannelProxy::Context::OnChannelConnected(int32 peer_pid) {
+void ChannelProxy::Context::OnChannelConnected(int32_t peer_pid) {
   // We cache off the peer_pid so it can be safely accessed from both threads.
   peer_pid_ = channel_->GetPeerPID();
 

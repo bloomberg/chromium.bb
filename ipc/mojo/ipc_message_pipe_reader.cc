@@ -4,6 +4,8 @@
 
 #include "ipc/mojo/ipc_message_pipe_reader.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -77,9 +79,9 @@ bool MessagePipeReader::Send(scoped_ptr<Message> message) {
   if (result == MOJO_RESULT_OK) {
     result = MojoWriteMessage(handle(),
                               message->data(),
-                              static_cast<uint32>(message->size()),
+                              static_cast<uint32_t>(message->size()),
                               handles.empty() ? nullptr : &handles[0],
-                              static_cast<uint32>(handles.size()),
+                              static_cast<uint32_t>(handles.size()),
                               MOJO_WRITE_MESSAGE_FLAG_NONE);
   }
 
@@ -98,7 +100,7 @@ bool MessagePipeReader::Send(scoped_ptr<Message> message) {
 
 void MessagePipeReader::OnMessageReceived() {
   Message message(data_buffer().empty() ? "" : &data_buffer()[0],
-                  static_cast<uint32>(data_buffer().size()));
+                  static_cast<uint32_t>(data_buffer().size()));
 
   std::vector<MojoHandle> handle_buffer;
   TakeHandleBuffer(&handle_buffer);

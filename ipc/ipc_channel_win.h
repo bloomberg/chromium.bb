@@ -7,6 +7,8 @@
 
 #include "ipc/ipc_channel.h"
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
@@ -56,7 +58,7 @@ class ChannelWin : public Channel,
   bool IsAttachmentBrokerEndpoint() override;
 
   static const base::string16 PipeName(const std::string& channel_id,
-                                       int32* secret);
+                                       int32_t* secret);
   bool CreatePipe(const IPC::ChannelHandle &channel_handle, Mode mode);
 
   bool ProcessConnection();
@@ -121,13 +123,13 @@ class ChannelWin : public Channel,
   bool validate_client_;
 
   // Tracks the lifetime of this object, for debugging purposes.
-  uint32 debug_flags_;
+  uint32_t debug_flags_;
 
   // This is a unique per-channel value used to authenticate the client end of
   // a connection. If the value is non-zero, the client passes it in the hello
   // and the host validates. (We don't send the zero value fto preserve IPC
   // compatability with existing clients that don't validate the channel.)
-  int32 client_secret_;
+  int32_t client_secret_;
 
   scoped_ptr<base::ThreadChecker> thread_check_;
 
