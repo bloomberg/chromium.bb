@@ -51,15 +51,19 @@ static void VerifyCadenceVector(VideoCadenceEstimator* estimator,
       CreateCadenceFromString(expected_cadence);
 
   estimator->Reset();
-  const base::TimeDelta acceptable_drift = Interval(frame_hertz) / 2;
+  const base::TimeDelta acceptable_drift = std::max(Interval(frame_hertz) / 2,
+                                                    Interval(render_hertz));
   const bool cadence_changed = estimator->UpdateCadenceEstimate(
       Interval(render_hertz), Interval(frame_hertz), acceptable_drift);
   EXPECT_EQ(cadence_changed, estimator->has_cadence());
   EXPECT_EQ(expected_cadence_vector.empty(), !estimator->has_cadence());
 
   // Nothing further to test.
-  if (expected_cadence_vector.empty())
+  if (expected_cadence_vector.empty() || !estimator->has_cadence())
     return;
+
+  EXPECT_EQ(expected_cadence_vector.size(),
+            estimator->cadence_size_for_testing());
 
   // Spot two cycles of the cadence.
   for (size_t i = 0; i < expected_cadence_vector.size() * 2; ++i) {
@@ -75,30 +79,50 @@ TEST(VideoCadenceEstimatorTest, CadenceCalculations) {
   estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
   const std::string kEmptyCadence = "[]";
+  VerifyCadenceVector(&estimator, 1, NTSC(60), "[60]");
+
   VerifyCadenceVector(&estimator, 24, 60, "[3:2]");
   VerifyCadenceVector(&estimator, NTSC(24), 60, "[3:2]");
+  VerifyCadenceVector(&estimator, 24, NTSC(60), "[3:2]");
 
-  VerifyCadenceVector(&estimator, 25, 60, kEmptyCadence);
-  VerifyCadenceVector(&estimator, NTSC(30), 60, "[2]");
+  VerifyCadenceVector(&estimator, 25, 60, "[2:3:2:3:2]");
+  VerifyCadenceVector(&estimator, NTSC(25), 60, "[2:3:2:3:2]");
+  VerifyCadenceVector(&estimator, 25, NTSC(60), "[2:3:2:3:2]");
+
   VerifyCadenceVector(&estimator, 30, 60, "[2]");
-  VerifyCadenceVector(&estimator, 50, 60, kEmptyCadence);
+  VerifyCadenceVector(&estimator, NTSC(30), 60, "[2]");
+  VerifyCadenceVector(&estimator, 29.5, 60, kEmptyCadence);
+
+  VerifyCadenceVector(&estimator, 50, 60, "[1:1:2:1:1]");
+  VerifyCadenceVector(&estimator, NTSC(50), 60, "[1:1:2:1:1]");
+  VerifyCadenceVector(&estimator, 50, NTSC(60), "[1:1:2:1:1]");
+
   VerifyCadenceVector(&estimator, NTSC(60), 60, "[1]");
+  VerifyCadenceVector(&estimator, 60, NTSC(60), "[1]");
+
   VerifyCadenceVector(&estimator, 120, 60, "[1:0]");
+  VerifyCadenceVector(&estimator, NTSC(120), 60, "[1:0]");
+  VerifyCadenceVector(&estimator, 120, NTSC(60), "[1:0]");
+
+  // Test cases for cadence below 1.
   VerifyCadenceVector(&estimator, 120, 24, "[1:0:0:0:0]");
+  VerifyCadenceVector(&estimator, 120, 48, "[1:0:0:1:0]");
+  VerifyCadenceVector(&estimator, 120, 72, "[1:0:1:0:1]");
+  VerifyCadenceVector(&estimator, 90, 60, "[1:0:1]");
 
   // 50Hz is common in the EU.
   VerifyCadenceVector(&estimator, NTSC(24), 50, kEmptyCadence);
   VerifyCadenceVector(&estimator, 24, 50, kEmptyCadence);
+
   VerifyCadenceVector(&estimator, NTSC(25), 50, "[2]");
   VerifyCadenceVector(&estimator, 25, 50, "[2]");
-  VerifyCadenceVector(&estimator, NTSC(30), 50, kEmptyCadence);
-  VerifyCadenceVector(&estimator, 30, 50, kEmptyCadence);
+
+  VerifyCadenceVector(&estimator, NTSC(30), 50, "[2:1:2]");
+  VerifyCadenceVector(&estimator, 30, 50, "[2:1:2]");
+
   VerifyCadenceVector(&estimator, NTSC(60), 50, kEmptyCadence);
   VerifyCadenceVector(&estimator, 60, 50, kEmptyCadence);
 
-  VerifyCadenceVector(&estimator, 25, NTSC(60), kEmptyCadence);
-  VerifyCadenceVector(&estimator, 120, NTSC(60), kEmptyCadence);
-  VerifyCadenceVector(&estimator, 1, NTSC(60), "[60]");
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableDrift) {
@@ -185,20 +209,6 @@ TEST(VideoCadenceEstimatorTest, CadenceHystersisPreventsOscillation) {
   EXPECT_TRUE(estimator->UpdateCadenceEstimate(
       render_interval, frame_interval * 0.75, acceptable_drift));
   EXPECT_FALSE(estimator->has_cadence());
-}
-
-TEST(VideoCadenceEstimatorTest, TwoFrameCadenceIsActuallyOneFrame) {
-  VideoCadenceEstimator estimator(
-      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs));
-  estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
-
-  const base::TimeDelta render_interval =
-      base::TimeDelta::FromMicroseconds(16715);
-  const base::TimeDelta frame_duration =
-      base::TimeDelta::FromMicroseconds(33360);
-
-  EXPECT_TRUE(estimator.UpdateCadenceEstimate(render_interval, frame_duration,
-                                              frame_duration / 2));
 }
 
 }  // namespace media

@@ -102,9 +102,28 @@ class VideoRendererAlgorithmTest : public testing::Test {
     return algorithm_.cadence_estimator_.has_cadence();
   }
 
-  bool IsUsingFractionalCadence() const {
-    return is_using_cadence() &&
-           !algorithm_.cadence_estimator_.GetCadenceForFrame(1);
+  bool IsCadenceBelowOne() const {
+    if (!is_using_cadence())
+      return false;
+
+    size_t size = algorithm_.cadence_estimator_.cadence_size_for_testing();
+    for (size_t i = 0; i < size; ++i) {
+      if (!algorithm_.cadence_estimator_.GetCadenceForFrame(i))
+        return true;
+    }
+
+    return false;
+  }
+
+  double CadenceValue() const {
+    int num_render_intervals = 0;
+    size_t size = algorithm_.cadence_estimator_.cadence_size_for_testing();
+    for (size_t i = 0; i < size; ++i) {
+      num_render_intervals +=
+          algorithm_.cadence_estimator_.GetCadenceForFrame(i);
+    }
+
+    return (num_render_intervals + 0.0) / size;
   }
 
   size_t frames_queued() const { return algorithm_.frame_queue_.size(); }
@@ -222,16 +241,15 @@ class VideoRendererAlgorithmTest : public testing::Test {
         ASSERT_NEAR(GetUsableFrameCount(deadline_max),
                     algorithm_.EffectiveFramesQueued(),
                     fresh_algorithm ? 0 : 1);
-      } else if (is_using_cadence() && !IsUsingFractionalCadence()) {
+      } else if (is_using_cadence() && !IsCadenceBelowOne()) {
         // If there was no glitch in the last render, the two queue sizes should
         // be off by exactly one frame; i.e., the current frame doesn't count.
         if (!last_render_had_glitch() && fresh_algorithm)
           ASSERT_EQ(frames_queued() - 1, algorithm_.EffectiveFramesQueued());
-      } else if (IsUsingFractionalCadence()) {
+      } else if (IsCadenceBelowOne()) {
         // The frame estimate should be off by at most one frame.
         const size_t estimated_frames_queued =
-            frames_queued() /
-            algorithm_.cadence_estimator_.cadence_size_for_testing();
+            std::floor(frames_queued() * CadenceValue());
         ASSERT_NEAR(algorithm_.EffectiveFramesQueued(), estimated_frames_queued,
                     1);
       }
@@ -1013,10 +1031,10 @@ TEST_F(VideoRendererAlgorithmTest, FilmCadence) {
 TEST_F(VideoRendererAlgorithmTest, CadenceCalculations) {
   ASSERT_EQ("[3:2]", GetCadence(24, 60));
   ASSERT_EQ("[3:2]", GetCadence(NTSC(24), 60));
-  ASSERT_EQ("[]", GetCadence(25, 60));
+  ASSERT_EQ("[2:3:2:3:2]", GetCadence(25, 60));
   ASSERT_EQ("[2]", GetCadence(NTSC(30), 60));
   ASSERT_EQ("[2]", GetCadence(30, 60));
-  ASSERT_EQ("[]", GetCadence(50, 60));
+  ASSERT_EQ("[1:1:2:1:1]", GetCadence(50, 60));
   ASSERT_EQ("[1]", GetCadence(NTSC(60), 60));
   ASSERT_EQ("[1:0]", GetCadence(120, 60));
 
@@ -1025,12 +1043,12 @@ TEST_F(VideoRendererAlgorithmTest, CadenceCalculations) {
   ASSERT_EQ("[]", GetCadence(24, 50));
   ASSERT_EQ("[2]", GetCadence(NTSC(25), 50));
   ASSERT_EQ("[2]", GetCadence(25, 50));
-  ASSERT_EQ("[]", GetCadence(NTSC(30), 50));
-  ASSERT_EQ("[]", GetCadence(30, 50));
+  ASSERT_EQ("[2:1:2]", GetCadence(NTSC(30), 50));
+  ASSERT_EQ("[2:1:2]", GetCadence(30, 50));
   ASSERT_EQ("[]", GetCadence(NTSC(60), 50));
   ASSERT_EQ("[]", GetCadence(60, 50));
 
-  ASSERT_EQ("[]", GetCadence(25, NTSC(60)));
+  ASSERT_EQ("[2:3:2:3:2]", GetCadence(25, NTSC(60)));
   ASSERT_EQ("[1:0]", GetCadence(120, NTSC(60)));
   ASSERT_EQ("[60]", GetCadence(1, NTSC(60)));
 }
@@ -1162,9 +1180,9 @@ TEST_F(VideoRendererAlgorithmTest, VariableFrameRateCadence) {
   TickGenerator frame_tg(base::TimeTicks(), NTSC(30));
   TickGenerator display_tg(tick_clock_->NowTicks(), 60);
 
-  const double kTestRates[] = {1.0, 2, 0.215, 0.5, 1.0};
-  const bool kTestRateHasCadence[arraysize(kTestRates)] = {
-      true, true, false, true, true};
+  const double kTestRates[] = {1.0, 2, 0.215, 0.5, 1.0, 3.15};
+  const bool kTestRateHasCadence[arraysize(kTestRates)] = {true, true, true,
+                                                           true, true, false};
 
   for (size_t i = 0; i < arraysize(kTestRates); ++i) {
     const double playback_rate = kTestRates[i];

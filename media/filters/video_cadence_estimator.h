@@ -17,8 +17,8 @@ namespace media {
 // durations over time.
 //
 // Cadence is the ideal repeating frame pattern for a group of frames; currently
-// VideoCadenceEstimator supports 1-frame ([N]), 2-frame ([3:2]), and N-frame
-// fractional ([1:0:...:0]) cadences.  Details on what this means are below.
+// VideoCadenceEstimator supports N-frame ([a1:a2:..:aN]) cadences where N <= 5.
+// Details on what this means are below.
 //
 // The perfect cadence of a set of frames is the ratio of the frame duration to
 // render interval length.  I.e. for 30fps in 60Hz the cadence would be (1/30) /
@@ -38,37 +38,33 @@ namespace media {
 // shortening or lengthening the actual rendered frame duration.  Doing so
 // ensures each frame gets an optimal amount of display time.
 //
+// For N-frame cadence, the idea is similar, we just round the perfect cadence
+// to some K/N, where K is an integer, and distribute [floor(K/N), floor(K/N)+1]
+// into the cadence vector as evenly as possible.  For example, 23.97fps in
+// 60Hz, the perfect cadence is 2.50313, we can round it to 2.5 = 5/2, and we
+// can then construct the cadence vector as [2:3].
+//
 // The delta between the perfect cadence and the rounded cadence leads to drift
 // over time of the actual VideoFrame timestamp relative to its rendered time,
 // so we perform some calculations to ensure we only use a cadence when it will
 // take some time to drift an undesirable amount; see CalculateCadence() for
 // details on how this calculation is made.
 //
-// 2-frame cadence is an extension of 1-frame cadence.  Consider the case of
-// 24fps in 60Hz, which has a perfect cadence of 2.5; rounding up to a cadence
-// of 3 would cause drift to accumulate unusably fast.  A better approximation
-// of this cadence would be [3:2].
-//
-// Fractional cadence is a special case of N-frame cadence which can be used
-// when the frame duration is shorter than the render interval; e.g. 120fps in
-// 60Hz.  In this case, the first frame in each group of N frames is displayed
-// once, while the next N - 1 frames are dropped; i.e. the cadence is of the
-// form [1:0:..:0].  Using the previous example N = 120/60 = 2, which means the
-// cadence would be [1:0].  See CalculateFractionalCadence() for more details.
-//
 // In practice this works out to the following for common setups if we use
 // cadence based selection:
 //
 //    29.5fps in 60Hz,    ~17ms max drift => exhausted in ~1 second.
 //    29.9fps in 60Hz,    ~17ms max drift => exhausted in ~16.4 seconds.
-//    24fps   in 60Hz,    ~21ms max drift => exhausted in ~0.15 seconds.
-//    25fps   in 60Hz,     20ms max drift => exhausted in ~4.0 seconds.
-//    59.9fps in 60Hz,   ~8.3ms max drift => exhausted in ~8.2 seconds.
+//    24fps   in 59.9Hz,  ~21ms max drift => exhausted in ~12.6 seconds.
+//    24.9fps in 60Hz,    ~20ms max drift => exhausted in ~4.0 seconds.
+//    59.9fps in 60Hz,    ~8.3ms max drift => exhausted in ~8.2 seconds.
 //    24.9fps in 50Hz,    ~20ms max drift => exhausted in ~20.5 seconds.
-//    120fps  in 59.9Hz, ~8.3ms max drift => exhausted in ~8.2 seconds.
+//    120fps  in 59.9Hz,  ~8.3ms max drift => exhausted in ~8.2 seconds.
 //
 class MEDIA_EXPORT VideoCadenceEstimator {
  public:
+  using Cadence = std::vector<int>;
+
   // As mentioned in the introduction, the determination of whether to clamp to
   // a given cadence is based on how long it takes before a frame would have to
   // be dropped or repeated to compensate for reaching the maximum acceptable
@@ -116,53 +112,19 @@ class MEDIA_EXPORT VideoCadenceEstimator {
   std::string GetCadenceForTesting() const { return CadenceToString(cadence_); }
 
  private:
-  using Cadence = std::vector<int>;
-
-  // Attempts to find a 1-frame, 2-frame, or N-frame fractional cadence; returns
-  // the cadence vector if cadence is found and sets |time_until_max_drift| for
-  // the computed cadence.
+  // Attempts to find an N-frame cadence.  Returns the cadence vector if cadence
+  // is found and sets |time_until_max_drift| for the computed cadence. If
+  // multiple cadences satisfying the max drift constraint exist, we are going
+  // to return the one with largest |time_until_max_drift|.
+  // For details on the math and algorithm, see https://goo.gl/QK0vbz
   Cadence CalculateCadence(base::TimeDelta render_interval,
                            base::TimeDelta frame_duration,
                            base::TimeDelta max_acceptable_drift,
                            base::TimeDelta* time_until_max_drift) const;
 
-  // Calculates the clamped cadence for the given |render_interval| and
-  // |frame_duration|, then calculates how long that cadence can be used before
-  // exhausting |max_acceptable_drift|.  If the time until exhaustion is greater
-  // than |minimum_time_until_max_drift_|, returns true and sets |cadence| to
-  // the clamped cadence.  If the clamped cadence is unusable, |cadence| will be
-  // set to zero.
-  //
-  // Sets |time_until_max_drift| to the computed glitch time.  Set to zero if
-  // the clamped cadence is unusable.
-  bool CalculateOneFrameCadence(base::TimeDelta render_interval,
-                                base::TimeDelta frame_duration,
-                                base::TimeDelta max_acceptable_drift,
-                                Cadence* cadence,
-                                base::TimeDelta* time_until_max_drift) const;
-
-  // Similar to CalculateCadence() except it tries to find the ideal number of
-  // frames which can fit into a |render_interval|; which means doing the same
-  // calculations as CalculateCadence() but with the ratio of |render_interval|
-  // to |frame_duration| instead of the other way around.
-  bool CalculateFractionalCadence(base::TimeDelta render_interval,
-                                  base::TimeDelta frame_duration,
-                                  base::TimeDelta max_acceptable_drift,
-                                  Cadence* cadence,
-                                  base::TimeDelta* time_until_max_drift) const;
-
   // Converts a cadence vector into a human readable string of the form
-  // "[a, b, ..., z]".
+  // "[a: b: ...: z]".
   std::string CadenceToString(const Cadence& cadence) const;
-
-  // Returns true if the drift of the rendered frame duration versus its actual
-  // frame duration take longer than |minimum_time_until_max_drift_| to exhaust
-  // |max_acceptable_drift|.  |time_until_max_drift| is set to how long it will
-  // take before a glitch (frame drop or repeat occurs).
-  bool IsAcceptableCadence(base::TimeDelta rendered_frame_duration,
-                           base::TimeDelta actual_frame_duration,
-                           base::TimeDelta max_acceptable_drift,
-                           base::TimeDelta* time_until_max_drift) const;
 
   // The approximate best N-frame cadence for all frames seen thus far; updated
   // by UpdateCadenceEstimate().  Empty when no cadence has been detected.
