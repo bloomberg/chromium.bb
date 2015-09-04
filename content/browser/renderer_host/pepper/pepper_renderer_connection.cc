@@ -9,8 +9,8 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/pepper_renderer_instance_data.h"
-#include "content/common/view_messages.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/public/browser/content_browser_client.h"
@@ -25,7 +25,10 @@ namespace content {
 
 namespace {
 
-const uint32 kFilteredMessageClasses[] = {PpapiMsgStart, ViewMsgStart, };
+const uint32 kFilteredMessageClasses[] = {
+  PpapiMsgStart,
+  FrameMsgStart,
+};
 
 // Responsible for creating the pending resource hosts, holding their IDs until
 // all of them have been created for a single message, and sending the reply to
@@ -140,9 +143,9 @@ bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PepperRendererConnection, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHost,
                         OnMsgCreateResourceHostsFromHost)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateInProcessInstance,
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidCreateInProcessInstance,
                         OnMsgDidCreateInProcessInstance)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDeleteInProcessInstance,
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDeleteInProcessInstance,
                         OnMsgDidDeleteInProcessInstance)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

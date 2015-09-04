@@ -247,7 +247,6 @@ class TestSaveImageFromDataURL : public RenderMessageFilter {
       BrowserContext* context)
       : RenderMessageFilter(
             0,
-            nullptr,
             context,
             context->GetRequestContext(),
             nullptr,

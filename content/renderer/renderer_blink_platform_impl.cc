@@ -785,24 +785,19 @@ void RendererBlinkPlatformImpl::getPluginList(
   std::vector<WebPluginInfo> plugins;
   if (!plugin_refresh_allowed_)
     refresh = false;
-  RenderThread::Get()->Send(
-      new ViewHostMsg_GetPlugins(refresh, &plugins));
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    const WebPluginInfo& plugin = plugins[i];
-
+  RenderThread::Get()->Send(new FrameHostMsg_GetPlugins(refresh, &plugins));
+  for (const WebPluginInfo& plugin : plugins) {
     builder->addPlugin(
         plugin.name, plugin.desc,
         plugin.path.BaseName().AsUTF16Unsafe());
 
-    for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
-      const WebPluginMimeType& mime_type = plugin.mime_types[j];
-
+    for (const WebPluginMimeType& mime_type : plugin.mime_types) {
       builder->addMediaTypeToLastPlugin(
           WebString::fromUTF8(mime_type.mime_type), mime_type.description);
 
-      for (size_t k = 0; k < mime_type.file_extensions.size(); ++k) {
+      for (const auto& extension : mime_type.file_extensions) {
         builder->addFileExtensionToLastMediaType(
-            WebString::fromUTF8(mime_type.file_extensions[k]));
+            WebString::fromUTF8(extension));
       }
     }
   }

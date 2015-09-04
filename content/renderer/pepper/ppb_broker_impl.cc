@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/ppb_broker_impl.h"
 
 #include "base/logging.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_broker.h"
@@ -76,7 +77,7 @@ int32_t PPB_Broker_Impl::Connect(
 
     // Have the browser start the broker process for us.
     RenderThreadImpl::current()->Send(
-        new ViewHostMsg_OpenChannelToPpapiBroker(routing_id_, broker_path));
+        new FrameHostMsg_OpenChannelToPpapiBroker(routing_id_, broker_path));
   }
 
   RenderThreadImpl::current()->Send(

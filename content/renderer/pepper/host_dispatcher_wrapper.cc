@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 
-#include "content/common/view_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/public/common/origin_util.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -96,7 +96,7 @@ void HostDispatcherWrapper::AddInstance(PP_Instance instance) {
             .document()
             .isPrivilegedContext(unused) &&
         content::IsOriginSecure(plugin_instance->GetPluginURL());
-    render_frame->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
+    render_frame->Send(new FrameHostMsg_DidCreateOutOfProcessPepperInstance(
         plugin_child_id_, instance,
         PepperRendererInstanceData(
             0,  // The render process id will be supplied in the browser.
@@ -115,7 +115,7 @@ void HostDispatcherWrapper::RemoveInstance(PP_Instance instance) {
   if (host) {
     RenderFrame* render_frame = host->GetRenderFrameForInstance(instance);
     if (render_frame) {
-      render_frame->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
+      render_frame->Send(new FrameHostMsg_DidDeleteOutOfProcessPepperInstance(
           plugin_child_id_, instance, is_external_));
     }
   }

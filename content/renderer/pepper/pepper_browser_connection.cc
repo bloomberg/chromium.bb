@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "content/common/view_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/render_frame_impl.h"
 #include "ipc/ipc_message_macros.h"
@@ -46,7 +46,7 @@ void PepperBrowserConnection::DidCreateInProcessInstance(
   // In process plugins are deprecated and the only in-process plugin that
   // exists is the "NaCl plugin" which will never need to know this.
   bool is_privileged_context = false;
-  Send(new ViewHostMsg_DidCreateInProcessInstance(
+  Send(new FrameHostMsg_DidCreateInProcessInstance(
       instance,
       // Browser provides the render process id.
       PepperRendererInstanceData(0, render_frame_id, document_url, plugin_url,
@@ -54,7 +54,7 @@ void PepperBrowserConnection::DidCreateInProcessInstance(
 }
 
 void PepperBrowserConnection::DidDeleteInProcessInstance(PP_Instance instance) {
-  Send(new ViewHostMsg_DidDeleteInProcessInstance(instance));
+  Send(new FrameHostMsg_DidDeleteInProcessInstance(instance));
 }
 
 void PepperBrowserConnection::SendBrowserCreate(

@@ -21,6 +21,10 @@
 #include "content/common/mac/font_loader.h"
 #endif
 
+#if defined(ENABLE_PLUGINS)
+#include "content/common/pepper_renderer_instance_data.h"
+#endif
+
 class GURL;
 
 namespace net {
@@ -57,6 +61,8 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 
  private:
   class OpenChannelToNpapiPluginCallback;
+  class OpenChannelToPpapiPluginCallback;
+  class OpenChannelToPpapiBrokerCallback;
 
   ~RenderFrameMessageFilter() override;
 
@@ -109,6 +115,9 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 #endif
 
 #if defined(ENABLE_PLUGINS)
+  void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
+  void GetPluginsCallback(IPC::Message* reply_msg,
+                          const std::vector<WebPluginInfo>& plugins);
   void OnGetPluginInfo(int render_frame_id,
                        const GURL& url,
                        const GURL& policy_url,
@@ -121,9 +130,23 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
                              const GURL& policy_url,
                              const std::string& mime_type,
                              IPC::Message* reply_msg);
-
   void OnCompletedOpenChannelToNpapiPlugin(
       OpenChannelToNpapiPluginCallback* client);
+  void OnOpenChannelToPepperPlugin(const base::FilePath& path,
+                                   IPC::Message* reply_msg);
+  void OnDidCreateOutOfProcessPepperInstance(
+      int plugin_child_id,
+      int32 pp_instance,
+      PepperRendererInstanceData instance_data,
+      bool is_external);
+  void OnDidDeleteOutOfProcessPepperInstance(int plugin_child_id,
+                                             int32 pp_instance,
+                                             bool is_external);
+  void OnOpenChannelToPpapiBroker(int routing_id,
+                                  const base::FilePath& path);
+  void OnPluginInstanceThrottleStateChange(int plugin_child_id,
+                                           int32 pp_instance,
+                                           bool is_throttled);
 #endif  // ENABLE_PLUGINS
 
   // Returns the correct net::URLRequestContext depending on what type of url is
@@ -131,7 +154,15 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
   // Only call on the IO thread.
   net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
+#if defined(ENABLE_PLUGINS)
   PluginServiceImpl* plugin_service_;
+  base::FilePath profile_data_directory_;
+
+  // Initialized to 0, accessed on FILE thread only.
+  base::TimeTicks last_plugin_refresh_time_;
+
+  std::set<OpenChannelToNpapiPluginCallback*> plugin_host_clients_;
+#endif  // ENABLE_PLUGINS
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
@@ -144,10 +175,6 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 
   // Whether this process is used for incognito contents.
   bool incognito_;
-
-#if defined(ENABLE_PLUGINS)
-  std::set<OpenChannelToNpapiPluginCallback*> plugin_host_clients_;
-#endif  // ENABLE_PLUGINS
 
   const int render_process_id_;
 };

@@ -753,11 +753,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(
           GetID(),
-#if defined(ENABLE_PLUGINS)
-          PluginServiceImpl::GetInstance(),
-#else
-          nullptr,
-#endif
           GetBrowserContext(),
           GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
           widget_helper_.get(),

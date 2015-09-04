@@ -35,10 +35,6 @@
 #include "base/threading/worker_pool.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
-#include "content/common/pepper_renderer_instance_data.h"
-#endif
-
 class GURL;
 struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
@@ -72,12 +68,10 @@ namespace content {
 class BrowserContext;
 class DOMStorageContextWrapper;
 class MediaInternals;
-class PluginServiceImpl;
 class RenderWidgetHelper;
 class ResourceContext;
 class ResourceDispatcherHostImpl;
 struct Referrer;
-struct WebPluginInfo;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
@@ -85,7 +79,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
-                      PluginServiceImpl * plugin_service,
                       BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper,
@@ -100,8 +93,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                                 BrowserThread::ID* thread) override;
   base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
-
-  bool OffTheRecord() const;
 
   int render_process_id() const { return render_process_id_; }
 
@@ -139,26 +130,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                                 int* route_id,
                                 int* surface_id);
 
-#if defined(ENABLE_PLUGINS)
-  void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
-  void GetPluginsCallback(IPC::Message* reply_msg,
-                          const std::vector<WebPluginInfo>& plugins);
-  void OnOpenChannelToPepperPlugin(const base::FilePath& path,
-                                   IPC::Message* reply_msg);
-  void OnDidCreateOutOfProcessPepperInstance(
-      int plugin_child_id,
-      int32 pp_instance,
-      PepperRendererInstanceData instance_data,
-      bool is_external);
-  void OnDidDeleteOutOfProcessPepperInstance(int plugin_child_id,
-                                             int32 pp_instance,
-                                             bool is_external);
-  void OnOpenChannelToPpapiBroker(int routing_id,
-                                  const base::FilePath& path);
-  void OnPluginInstanceThrottleStateChange(int plugin_child_id,
-                                           int32 pp_instance,
-                                           bool is_throttled);
-#endif  // defined(ENABLE_PLUGINS)
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(int render_view_id,
                      int render_frame_id,
@@ -237,12 +208,10 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 uint32 sync_point);
 
-  // Cached resource request dispatcher host and plugin service, guaranteed to
-  // be non-null if Init succeeds. We do not own the objects, they are managed
-  // by the BrowserProcess, which has a wider scope than we do.
+  // Cached resource request dispatcher host, guaranteed to be non-null. We do
+  // not own it; it is managed by the BrowserProcess, which has a wider scope
+  // than we do.
   ResourceDispatcherHostImpl* resource_dispatcher_host_;
-  PluginServiceImpl* plugin_service_;
-  base::FilePath profile_data_directory_;
 
   HostSharedBitmapManagerClient bitmap_manager_client_;
 
@@ -253,12 +222,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   ResourceContext* resource_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
-
-  // Whether this process is used for incognito contents.
-  bool incognito_;
-
-  // Initialized to 0, accessed on FILE thread only.
-  base::TimeTicks last_plugin_refresh_time_;
 
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
 

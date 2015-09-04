@@ -22,7 +22,6 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -39,13 +38,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_save_info.h"
-#include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_manager.h"
@@ -70,17 +67,8 @@
 #include "media/base/android/webaudio_media_codec_bridge.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
-#include "content/browser/plugin_service_impl.h"
-#include "content/browser/ppapi_plugin_process_host.h"
-#endif
-
 namespace content {
 namespace {
-
-#if defined(ENABLE_PLUGINS)
-const int kPluginsRefreshThresholdInSeconds = 3;
-#endif
 
 const uint32 kFilteredMessageClasses[] = {
   ChildProcessMsgStart,
@@ -95,116 +83,10 @@ base::LazyInstance<gfx::ColorProfile>::Leaky g_color_profile =
     LAZY_INSTANCE_INITIALIZER;
 #endif
 
-// Common functionality for converting a sync renderer message to a callback
-// function in the browser. Derive from this, create it on the heap when
-// issuing your callback. When done, write your reply parameters into
-// reply_msg(), and then call SendReplyAndDeleteThis().
-class RenderMessageCompletionCallback {
- public:
-  RenderMessageCompletionCallback(RenderMessageFilter* filter,
-                                  IPC::Message* reply_msg)
-      : filter_(filter),
-        reply_msg_(reply_msg) {
-  }
-
-  virtual ~RenderMessageCompletionCallback() {
-    if (reply_msg_) {
-      // If the owner of this class failed to call SendReplyAndDeleteThis(),
-      // send an error reply to prevent the renderer from being hung.
-      reply_msg_->set_reply_error();
-      filter_->Send(reply_msg_);
-    }
-  }
-
-  RenderMessageFilter* filter() { return filter_.get(); }
-  IPC::Message* reply_msg() { return reply_msg_; }
-
-  void SendReplyAndDeleteThis() {
-    filter_->Send(reply_msg_);
-    reply_msg_ = NULL;
-    delete this;
-  }
-
- private:
-  scoped_refptr<RenderMessageFilter> filter_;
-  IPC::Message* reply_msg_;
-};
-
-#if defined(ENABLE_PLUGINS)
-
-class OpenChannelToPpapiPluginCallback
-    : public RenderMessageCompletionCallback,
-      public PpapiPluginProcessHost::PluginClient {
- public:
-  OpenChannelToPpapiPluginCallback(RenderMessageFilter* filter,
-                                   ResourceContext* context,
-                                   IPC::Message* reply_msg)
-      : RenderMessageCompletionCallback(filter, reply_msg),
-        context_(context) {
-  }
-
-  void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
-                           int* renderer_id) override {
-    *renderer_handle = filter()->PeerHandle();
-    *renderer_id = filter()->render_process_id();
-  }
-
-  void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
-                            base::ProcessId plugin_pid,
-                            int plugin_child_id) override {
-    ViewHostMsg_OpenChannelToPepperPlugin::WriteReplyParams(
-        reply_msg(), channel_handle, plugin_pid, plugin_child_id);
-    SendReplyAndDeleteThis();
-  }
-
-  bool OffTheRecord() override { return filter()->OffTheRecord(); }
-
-  ResourceContext* GetResourceContext() override { return context_; }
-
- private:
-  ResourceContext* context_;
-};
-
-class OpenChannelToPpapiBrokerCallback
-    : public PpapiPluginProcessHost::BrokerClient {
- public:
-  OpenChannelToPpapiBrokerCallback(RenderMessageFilter* filter,
-                                   int routing_id)
-      : filter_(filter),
-        routing_id_(routing_id) {
-  }
-
-  ~OpenChannelToPpapiBrokerCallback() override {}
-
-  void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
-                           int* renderer_id) override {
-    *renderer_handle = filter_->PeerHandle();
-    *renderer_id = filter_->render_process_id();
-  }
-
-  void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
-                            base::ProcessId plugin_pid,
-                            int /* plugin_child_id */) override {
-    filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
-                                                        plugin_pid,
-                                                        channel_handle));
-    delete this;
-  }
-
-  bool OffTheRecord() override { return filter_->OffTheRecord(); }
-
- private:
-  scoped_refptr<RenderMessageFilter> filter_;
-  int routing_id_;
-};
-
-#endif  // ENABLE_PLUGINS
-
 }  // namespace
 
 RenderMessageFilter::RenderMessageFilter(
     int render_process_id,
-    PluginServiceImpl* plugin_service,
     BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper,
@@ -214,13 +96,10 @@ RenderMessageFilter::RenderMessageFilter(
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
-      plugin_service_(plugin_service),
-      profile_data_directory_(browser_context->GetPath()),
       bitmap_manager_client_(HostSharedBitmapManager::current()),
       request_context_(request_context),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
-      incognito_(browser_context->IsOffTheRecord()),
       dom_storage_context_(dom_storage_context),
       render_process_id_(render_process_id),
       audio_manager_(audio_manager),
@@ -255,19 +134,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SaveImageFromDataURL,
                         OnSaveImageFromDataURL)
-#if defined(ENABLE_PLUGINS)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
-                                    OnOpenChannelToPepperPlugin)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateOutOfProcessPepperInstance,
-                        OnDidCreateOutOfProcessPepperInstance)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDeleteOutOfProcessPepperInstance,
-                        OnDidDeleteOutOfProcessPepperInstance)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToPpapiBroker,
-                        OnOpenChannelToPpapiBroker)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PluginInstanceThrottleStateChange,
-                        OnPluginInstanceThrottleStateChange)
-#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
         RenderWidgetResizeHelper::Get()->PostRendererProcessMsg(
@@ -334,10 +200,6 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
   if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
     return audio_manager_->GetTaskRunner().get();
   return NULL;
-}
-
-bool RenderMessageFilter::OffTheRecord() const {
-  return incognito_;
 }
 
 void RenderMessageFilter::OnCreateWindow(
@@ -421,128 +283,6 @@ void RenderMessageFilter::OnGetProcessMemorySizes(size_t* private_bytes,
   }
 }
 
-#if defined(ENABLE_PLUGINS)
-void RenderMessageFilter::OnGetPlugins(
-    bool refresh,
-    IPC::Message* reply_msg) {
-  // Don't refresh if the specified threshold has not been passed.  Note that
-  // this check is performed before off-loading to the file thread.  The reason
-  // we do this is that some pages tend to request that the list of plugins be
-  // refreshed at an excessive rate.  This instigates disk scanning, as the list
-  // is accumulated by doing multiple reads from disk.  This effect is
-  // multiplied when we have several pages requesting this operation.
-  if (refresh) {
-    const base::TimeDelta threshold = base::TimeDelta::FromSeconds(
-        kPluginsRefreshThresholdInSeconds);
-    const base::TimeTicks now = base::TimeTicks::Now();
-    if (now - last_plugin_refresh_time_ >= threshold) {
-      // Only refresh if the threshold hasn't been exceeded yet.
-      PluginServiceImpl::GetInstance()->RefreshPlugins();
-      last_plugin_refresh_time_ = now;
-    }
-  }
-
-  PluginServiceImpl::GetInstance()->GetPlugins(
-      base::Bind(&RenderMessageFilter::GetPluginsCallback, this, reply_msg));
-}
-
-void RenderMessageFilter::GetPluginsCallback(
-    IPC::Message* reply_msg,
-    const std::vector<WebPluginInfo>& all_plugins) {
-  // Filter the plugin list.
-  PluginServiceFilter* filter = PluginServiceImpl::GetInstance()->GetFilter();
-  std::vector<WebPluginInfo> plugins;
-
-  int child_process_id = -1;
-  int routing_id = MSG_ROUTING_NONE;
-  for (size_t i = 0; i < all_plugins.size(); ++i) {
-    // Copy because the filter can mutate.
-    WebPluginInfo plugin(all_plugins[i]);
-    if (!filter || filter->IsPluginAvailable(child_process_id,
-                                             routing_id,
-                                             resource_context_,
-                                             GURL(),
-                                             GURL(),
-                                             &plugin)) {
-      plugins.push_back(plugin);
-    }
-  }
-
-  ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
-  Send(reply_msg);
-}
-
-void RenderMessageFilter::OnOpenChannelToPepperPlugin(
-    const base::FilePath& path,
-    IPC::Message* reply_msg) {
-  plugin_service_->OpenChannelToPpapiPlugin(
-      render_process_id_,
-      path,
-      profile_data_directory_,
-      new OpenChannelToPpapiPluginCallback(this, resource_context_, reply_msg));
-}
-
-void RenderMessageFilter::OnDidCreateOutOfProcessPepperInstance(
-    int plugin_child_id,
-    int32 pp_instance,
-    PepperRendererInstanceData instance_data,
-    bool is_external) {
-  // It's important that we supply the render process ID ourselves based on the
-  // channel the message arrived on. We use the
-  //   PP_Instance -> (process id, view id)
-  // mapping to decide how to handle messages received from the (untrusted)
-  // plugin, so an exploited renderer must not be able to insert fake mappings
-  // that may allow it access to other render processes.
-  DCHECK_EQ(0, instance_data.render_process_id);
-  instance_data.render_process_id = render_process_id_;
-  if (is_external) {
-    // We provide the BrowserPpapiHost to the embedder, so it's safe to cast.
-    BrowserPpapiHostImpl* host = static_cast<BrowserPpapiHostImpl*>(
-        GetContentClient()->browser()->GetExternalBrowserPpapiHost(
-            plugin_child_id));
-    if (host)
-      host->AddInstance(pp_instance, instance_data);
-  } else {
-    PpapiPluginProcessHost::DidCreateOutOfProcessInstance(
-        plugin_child_id, pp_instance, instance_data);
-  }
-}
-
-void RenderMessageFilter::OnDidDeleteOutOfProcessPepperInstance(
-    int plugin_child_id,
-    int32 pp_instance,
-    bool is_external) {
-  if (is_external) {
-    // We provide the BrowserPpapiHost to the embedder, so it's safe to cast.
-    BrowserPpapiHostImpl* host = static_cast<BrowserPpapiHostImpl*>(
-        GetContentClient()->browser()->GetExternalBrowserPpapiHost(
-            plugin_child_id));
-    if (host)
-      host->DeleteInstance(pp_instance);
-  } else {
-    PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
-        plugin_child_id, pp_instance);
-  }
-}
-
-void RenderMessageFilter::OnOpenChannelToPpapiBroker(
-    int routing_id,
-    const base::FilePath& path) {
-  plugin_service_->OpenChannelToPpapiBroker(
-      render_process_id_,
-      path,
-      new OpenChannelToPpapiBrokerCallback(this, routing_id));
-}
-
-void RenderMessageFilter::OnPluginInstanceThrottleStateChange(
-    int plugin_child_id,
-    int32 pp_instance,
-    bool is_throttled) {
-  // Feature is only implemented for non-external Plugins.
-  PpapiPluginProcessHost::OnPluginInstanceThrottleStateChange(
-      plugin_child_id, pp_instance, is_throttled);
-}
-#endif  // defined(ENABLE_PLUGINS)
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();

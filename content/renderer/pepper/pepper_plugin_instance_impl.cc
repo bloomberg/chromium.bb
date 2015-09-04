@@ -23,7 +23,6 @@
 #include "cc/layers/texture_layer.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
-#include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
@@ -2055,7 +2054,7 @@ void PepperPluginInstanceImpl::OnThrottleStateChange() {
   SendDidChangeView();
 
   bool is_throttled = throttler_->IsThrottled();
-  render_frame()->Send(new ViewHostMsg_PluginInstanceThrottleStateChange(
+  render_frame()->Send(new FrameHostMsg_PluginInstanceThrottleStateChange(
       module_->GetPluginChildId(), pp_instance_, is_throttled));
 }
 

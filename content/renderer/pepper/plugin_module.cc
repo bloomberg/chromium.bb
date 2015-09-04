@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/view_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -796,7 +796,7 @@ scoped_refptr<PluginModule> PluginModule::Create(
   IPC::ChannelHandle channel_handle;
   base::ProcessId peer_pid = 0;
   int plugin_child_id = 0;
-  render_frame->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
+  render_frame->Send(new FrameHostMsg_OpenChannelToPepperPlugin(
       path, &channel_handle, &peer_pid, &plugin_child_id));
   if (channel_handle.name.empty()) {
     // Couldn't be initialized.
