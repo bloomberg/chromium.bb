@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -113,13 +114,13 @@ private:
     bool shouldScheduleReload() const;
     bool shouldScheduleNavigation(const String& url) const;
 
-    void timerFired(Timer<NavigationScheduler>*);
+    void navigateTask();
     void schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation>);
 
     static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
 
     RawPtrWillBeMember<LocalFrame> m_frame;
-    Timer<NavigationScheduler> m_timer;
+    CancellableTaskFactory m_navigateTaskFactory;
     OwnPtrWillBeMember<ScheduledNavigation> m_redirect;
     int m_navigationDisableCount;
 };

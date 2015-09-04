@@ -48,6 +48,7 @@
 #include "core/page/Page.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
+#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -266,7 +267,7 @@ private:
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
     : m_frame(frame)
-    , m_timer(this, &NavigationScheduler::timerFired)
+    , m_navigateTaskFactory(WTF::bind(&NavigationScheduler::navigateTask, this))
     , m_navigationDisableCount(0)
 {
 }
@@ -371,7 +372,7 @@ void NavigationScheduler::scheduleReload()
     schedule(ScheduledReload::create());
 }
 
-void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
+void NavigationScheduler::navigateTask()
 {
     if (!m_frame->page())
         return;
@@ -413,20 +414,22 @@ void NavigationScheduler::startTimer()
         return;
 
     ASSERT(m_frame->page());
-    if (m_timer.isActive())
+    if (m_navigateTaskFactory.isPending())
         return;
     if (!m_redirect->shouldStartTimer(m_frame))
         return;
 
-    m_timer.startOneShot(m_redirect->delay(), FROM_HERE);
+    Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postDelayedTask(
+        FROM_HERE, m_navigateTaskFactory.cancelAndCreate(), m_redirect->delay());
+
     InspectorInstrumentation::frameScheduledNavigation(m_frame, m_redirect->delay());
 }
 
 void NavigationScheduler::cancel()
 {
-    if (m_timer.isActive())
+    if (m_navigateTaskFactory.isPending())
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
-    m_timer.stop();
+    m_navigateTaskFactory.cancel();
     m_redirect.clear();
 }
 
