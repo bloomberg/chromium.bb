@@ -100,31 +100,39 @@ class Mixer::Group {
 
         double multiplier = multiplier_;
         double boost = boost_;
-        KnownResults::const_iterator known_it =
-            known_results.find(result->id());
-        if (known_it != known_results.end()) {
-          switch (known_it->second) {
-            case PERFECT_PRIMARY:
-              boost = 4.0;
-              break;
-            case PREFIX_PRIMARY:
-              boost = 3.75;
-              break;
-            case PERFECT_SECONDARY:
-              boost = 3.25;
-              break;
-            case PREFIX_SECONDARY:
-              boost = 3.0;
-              break;
-            case UNKNOWN_RESULT:
-              NOTREACHED() << "Unknown result in KnownResults?";
-              break;
-          }
-        }
 
-        // If this is a voice query, voice results receive a massive boost.
-        if (is_voice_query && result->voice_result())
-          boost += 4.0;
+        // Recommendations should not be affected by query-to-launch correlation
+        // from KnownResults as it causes recommendations to become dominated by
+        // previously clicked results. This happens because the recommendation
+        // query is the empty string and the clicked results get forever
+        // boosted.
+        if (result->display_type() != SearchResult::DISPLAY_RECOMMENDATION) {
+          KnownResults::const_iterator known_it =
+              known_results.find(result->id());
+          if (known_it != known_results.end()) {
+            switch (known_it->second) {
+              case PERFECT_PRIMARY:
+                boost = 4.0;
+                break;
+              case PREFIX_PRIMARY:
+                boost = 3.75;
+                break;
+              case PERFECT_SECONDARY:
+                boost = 3.25;
+                break;
+              case PREFIX_SECONDARY:
+                boost = 3.0;
+                break;
+              case UNKNOWN_RESULT:
+                NOTREACHED() << "Unknown result in KnownResults?";
+                break;
+            }
+          }
+
+          // If this is a voice query, voice results receive a massive boost.
+          if (is_voice_query && result->voice_result())
+            boost += 4.0;
+        }
 
         results_.push_back(SortData(result, relevance * multiplier + boost));
       }

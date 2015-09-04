@@ -66,7 +66,10 @@ int TestSearchResult::instantiation_count = 0;
 class TestSearchProvider : public SearchProvider {
  public:
   explicit TestSearchProvider(const std::string& prefix)
-      : prefix_(prefix), count_(0), bad_relevance_range_(false) {}
+      : prefix_(prefix),
+        count_(0),
+        bad_relevance_range_(false),
+        display_type_(SearchResult::DISPLAY_LIST) {}
   ~TestSearchProvider() override {}
 
   // SearchProvider overrides:
@@ -81,6 +84,7 @@ class TestSearchProvider : public SearchProvider {
       if (bad_relevance_range_)
         relevance = 10.0 - i * 10;
       TestSearchResult* result = new TestSearchResult(id, relevance);
+      result->set_display_type(display_type_);
       if (voice_result_indices.find(i) != voice_result_indices.end())
         result->set_voice_result(true);
       Add(scoped_ptr<SearchResult>(result).Pass());
@@ -89,6 +93,9 @@ class TestSearchProvider : public SearchProvider {
   void Stop() override {}
 
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
+  void set_display_type(SearchResult::DisplayType display_type) {
+    display_type_ = display_type;
+  }
   void set_count(size_t count) { count_ = count; }
   void set_as_voice_result(size_t index) { voice_result_indices.insert(index); }
   void set_bad_relevance_range() { bad_relevance_range_ = true; }
@@ -97,6 +104,7 @@ class TestSearchProvider : public SearchProvider {
   std::string prefix_;
   size_t count_;
   bool bad_relevance_range_;
+  SearchResult::DisplayType display_type_;
   // Indices of results that will have the |voice_result| flag set.
   std::set<size_t> voice_result_indices;
 
@@ -371,6 +379,25 @@ TEST_P(MixerTest, KnownResultsPriority) {
   // omnibox 1 -- 4 should be prioritised over the others. They should be
   // ordered 4, 3, 2, 1 (in order of match quality).
   EXPECT_EQ("omnibox4,omnibox3,omnibox2,omnibox1,omnibox0,omnibox5",
+            GetResults());
+}
+
+// Tests that "known results" are not considered for recommendation results.
+TEST_P(MixerTest, KnownResultsIgnoredForRecommendations) {
+  // This gives omnibox 0 -- 5.
+  omnibox_provider()->set_count(6);
+  omnibox_provider()->set_display_type(SearchResult::DISPLAY_RECOMMENDATION);
+
+  // omnibox 1 -- 4 are "known results".
+  AddKnownResult("omnibox1", PREFIX_SECONDARY);
+  AddKnownResult("omnibox2", PERFECT_SECONDARY);
+  AddKnownResult("omnibox3", PREFIX_PRIMARY);
+  AddKnownResult("omnibox4", PERFECT_PRIMARY);
+
+  RunQuery();
+
+  // omnibox 1 -- 4 should be unaffected despite being known results.
+  EXPECT_EQ("omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5",
             GetResults());
 }
 
