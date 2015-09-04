@@ -136,7 +136,6 @@ drm_private struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
 
 	bo = &msm_bo->base;
 	bo->funcs = &funcs;
-	bo->fd = -1;
 
 	return bo;
 }

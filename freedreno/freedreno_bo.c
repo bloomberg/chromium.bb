@@ -298,11 +298,6 @@ void fd_bo_del(struct fd_bo *bo)
 	if (!atomic_dec_and_test(&bo->refcnt))
 		return;
 
-	if (bo->fd >= 0) {
-		close(bo->fd);
-		bo->fd = -1;
-	}
-
 	pthread_mutex_lock(&table_lock);
 
 	if (bo->bo_reuse) {
@@ -386,19 +381,18 @@ uint32_t fd_bo_handle(struct fd_bo *bo)
 
 int fd_bo_dmabuf(struct fd_bo *bo)
 {
-	if (bo->fd < 0) {
-		int ret, prime_fd;
+	int ret, prime_fd;
 
-		ret = drmPrimeHandleToFD(bo->dev->fd, bo->handle, DRM_CLOEXEC,
-					&prime_fd);
-		if (ret) {
-			return ret;
-		}
-
-		bo->fd = prime_fd;
-		bo->bo_reuse = 0;
+	ret = drmPrimeHandleToFD(bo->dev->fd, bo->handle, DRM_CLOEXEC,
+			&prime_fd);
+	if (ret) {
+		ERROR_MSG("failed to get dmabuf fd: %d", ret);
+		return ret;
 	}
-	return dup(bo->fd);
+
+	bo->bo_reuse = 0;
+
+	return prime_fd;
 }
 
 uint32_t fd_bo_size(struct fd_bo *bo)

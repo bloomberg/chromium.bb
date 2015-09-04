@@ -138,7 +138,6 @@ struct fd_bo {
 	uint32_t size;
 	uint32_t handle;
 	uint32_t name;
-	int fd;          /* dmabuf handle */
 	void *map;
 	atomic_t refcnt;
 	const struct fd_bo_funcs *funcs;

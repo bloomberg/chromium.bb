@@ -168,7 +168,6 @@ drm_private struct fd_bo * kgsl_bo_from_handle(struct fd_device *dev,
 
 	bo = &kgsl_bo->base;
 	bo->funcs = &funcs;
-	bo->fd = -1;
 
 	for (i = 0; i < ARRAY_SIZE(kgsl_bo->list); i++)
 		list_inithead(&kgsl_bo->list[i]);
