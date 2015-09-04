@@ -2397,7 +2397,7 @@ LayoutUnit LayoutBox::computeContentAndScrollbarLogicalHeightUsing(SizeType heig
     if (height.isIntrinsic()) {
         if (intrinsicContentHeight == -1)
             return -1; // Intrinsic height isn't available.
-        return computeIntrinsicLogicalContentHeightUsing(height, intrinsicContentHeight, borderAndPaddingLogicalHeight());
+        return computeIntrinsicLogicalContentHeightUsing(height, intrinsicContentHeight, borderAndPaddingLogicalHeight()) + scrollbarLogicalHeight();
     }
     if (height.isFixed())
         return height.value();

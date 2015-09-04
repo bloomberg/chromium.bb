@@ -1,0 +1,13 @@
+When a block inside a flexbox adds scrollbars due to overflow, the parent flexbox should re-flex based on the child size including scrollbars.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS hbox.clientHeight is hbox.scrollHeight
+PASS intrinsicHeightBox.clientHeight is intrinsicHeightBox.scrollHeight
+FAIL vbox.clientWidth should be 100. Was 70.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 
+

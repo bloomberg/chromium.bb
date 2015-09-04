@@ -96,7 +96,7 @@ private:
     bool isColumnFlow() const;
     bool isLeftToRightFlow() const;
     bool isMultiline() const;
-    Length flexBasisForChild(LayoutBox& child) const;
+    Length flexBasisForChild(const LayoutBox& child) const;
     LayoutUnit crossAxisExtentForChild(LayoutBox& child) const;
     LayoutUnit crossAxisIntrinsicExtentForChild(LayoutBox& child) const;
     LayoutUnit childIntrinsicHeight(LayoutBox& child) const;
@@ -132,7 +132,9 @@ private:
     bool mainAxisLengthIsDefinite(LayoutBox& child, const Length& flexBasis) const;
     bool childFlexBaseSizeRequiresLayout(LayoutBox& child) const;
     bool needToStretchChildLogicalHeight(LayoutBox& child) const;
+    bool childHasIntrinsicMainAxisSize(const LayoutBox& child) const;
     EOverflow mainAxisOverflowForChild(LayoutBox& child) const;
+    EOverflow crossAxisOverflowForChild(LayoutBox& child) const;
 
     void layoutFlexItems(bool relayoutChildren, SubtreeLayoutScope&);
     LayoutUnit autoMarginOffsetInMainAxis(const OrderedFlexItemList&, LayoutUnit& availableFreeSpace);

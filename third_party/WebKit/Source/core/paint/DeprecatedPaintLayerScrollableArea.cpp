@@ -650,7 +650,7 @@ void DeprecatedPaintLayerScrollableArea::scrollToOffset(const DoubleSize& scroll
     }
 }
 
-void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
+void DeprecatedPaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scrollOffset, bool& autoHorizontalScrollBarChanged, bool& autoVerticalScrollBarChanged)
 {
     ASSERT(box().hasOverflowClip());
 
@@ -661,8 +661,31 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
             destroyScrollbar(VerticalScrollbar);
     }
 
-    DoubleSize originalScrollOffset = adjustedScrollOffset();
+    scrollOffset = adjustedScrollOffset();
     computeScrollDimensions();
+    bool hasHorizontalOverflow = this->hasHorizontalOverflow();
+    bool hasVerticalOverflow = this->hasVerticalOverflow();
+    if (hasOverlayScrollbars()) {
+        if (!scrollSize(HorizontalScrollbar))
+            setHasHorizontalScrollbar(false);
+        if (!scrollSize(VerticalScrollbar))
+            setHasVerticalScrollbar(false);
+    }
+
+    // overflow:auto may need to lay out again if scrollbars got added/removed.
+    autoHorizontalScrollBarChanged = (box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow)) || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar());
+    autoVerticalScrollBarChanged = (box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow)) || (box().style()->overflowY() == OSCROLL && !verticalScrollbar());
+    if (!visualViewportSuppliesScrollbars() && (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)) {
+        if (box().hasAutoHorizontalScrollbar() || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar()))
+            setHasHorizontalScrollbar(box().style()->overflowX() == OSCROLL ? true : hasHorizontalOverflow);
+        if (box().hasAutoVerticalScrollbar() || (box().style()->overflowY() == OSCROLL && !verticalScrollbar()))
+            setHasVerticalScrollbar(box().style()->overflowY() == OSCROLL ? true : hasVerticalOverflow);
+    }
+}
+
+void DeprecatedPaintLayerScrollableArea::finalizeScrollDimensions(const DoubleSize& originalScrollOffset, bool autoHorizontalScrollBarChanged, bool autoVerticalScrollBarChanged)
+{
+    ASSERT(box().hasOverflowClip());
 
     // Layout may cause us to be at an invalid scroll position. In this case we need
     // to pull our scroll offsets back to the max (or push them up to the min).
@@ -689,18 +712,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
             verticalScrollbar()->setEnabled(hasVerticalOverflow);
     }
 
-    // We need to layout again if scrollbars are added or removed by overflow:auto,
-    // or by changing between native and custom.
-    bool horizontalScrollBarChanged = (box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow))
-        || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar());
-    bool verticalScrollBarChanged = (box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow))
-        || (box().style()->overflowY() == OSCROLL && !verticalScrollbar());
-    if (!visualViewportSuppliesScrollbars() && (horizontalScrollBarChanged || verticalScrollBarChanged)) {
-        if (box().hasAutoHorizontalScrollbar() || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar()))
-            setHasHorizontalScrollbar(box().style()->overflowX() == OSCROLL ? true : hasHorizontalOverflow);
-        if (box().hasAutoVerticalScrollbar() || (box().style()->overflowY() == OSCROLL && !verticalScrollbar()))
-            setHasVerticalScrollbar(box().style()->overflowY() == OSCROLL ? true : hasVerticalOverflow);
-
+    if (!visualViewportSuppliesScrollbars() && (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)) {
         if (hasVerticalOverflow || hasHorizontalOverflow)
             updateScrollCornerStyle();
 
@@ -711,14 +723,14 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
             box().document().setAnnotatedRegionsDirty(true);
 
         // Our proprietary overflow: overlay value doesn't trigger a layout.
-        if ((horizontalScrollBarChanged && box().style()->overflowX() != OOVERLAY) || (verticalScrollBarChanged && box().style()->overflowY() != OOVERLAY)) {
+        if ((autoHorizontalScrollBarChanged && box().style()->overflowX() != OOVERLAY) || (autoVerticalScrollBarChanged && box().style()->overflowY() != OOVERLAY)) {
             if (!m_inOverflowRelayout) {
                 m_inOverflowRelayout = true;
                 SubtreeLayoutScope layoutScope(box());
                 layoutScope.setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
                 if (box().isLayoutBlock()) {
                     LayoutBlock& block = toLayoutBlock(box());
-                    block.scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
+                    block.scrollbarsChanged(autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
                     block.layoutBlock(true);
                 } else {
                     box().layout();
@@ -755,6 +767,15 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
 
     DisableCompositingQueryAsserts disabler;
     positionOverflowControls();
+}
+
+void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
+{
+    DoubleSize originalScrollOffset;
+    bool autoHorizontalScrollBarChanged;
+    bool autoVerticalScrollBarChanged;
+    updateScrollDimensions(originalScrollOffset, autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
+    finalizeScrollDimensions(originalScrollOffset, autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
 }
 
 ScrollBehavior DeprecatedPaintLayerScrollableArea::scrollBehaviorStyle() const

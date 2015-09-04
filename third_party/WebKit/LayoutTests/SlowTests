@@ -224,3 +224,6 @@ crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html 
 crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
 
 crbug.com/521857 [ Win Debug ] imported/web-platform-tests/IndexedDB/idbdatabase_createObjectStore10-1000ends.htm [ Slow ]
+
+crbug.com/528419 [ Linux ] inspector/elements/shadow/shadow-host-display-modes.html [ Slow ]
+crbug.com/528419 [ Linux ] inspector/elements/styles-2/pseudo-elements.html [ Slow ]
