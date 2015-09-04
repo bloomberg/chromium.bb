@@ -439,7 +439,7 @@
                 'leviw+renderwatch@chromium.org',
                 'zoltan@webkit.org',
                 'szager+layoutwatch@chromium.org',
-                'blink-reviews-rendering@chromium.org' ],
+                'blink-reviews-layout@chromium.org' ],
     'paint' : [ 'blink-reviews-paint@chromium.org',
                 'slimming-paint-reviews@chromium.org',
                 'dongseong.hwang@intel.com' ],
