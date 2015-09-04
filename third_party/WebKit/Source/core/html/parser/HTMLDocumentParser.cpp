@@ -43,6 +43,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/NavigationScheduler.h"
 #include "platform/SharedBuffer.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/ThreadedDataReceiver.h"

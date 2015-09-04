@@ -34,7 +34,6 @@
 #include "core/frame/LocalFrameLifecycleNotifier.h"
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/Supplementable.h"
@@ -64,6 +63,7 @@ class IntPoint;
 class IntSize;
 class InstrumentingAgents;
 class LocalDOMWindow;
+class NavigationScheduler;
 class Node;
 class NodeTraversal;
 class Range;
@@ -197,7 +197,7 @@ private:
         IntRect paintingRect, float opacity = 1);
 
     mutable FrameLoader m_loader;
-    mutable NavigationScheduler m_navigationScheduler;
+    OwnPtrWillBeMember<NavigationScheduler> m_navigationScheduler;
 
     RefPtrWillBeMember<FrameView> m_view;
     RefPtrWillBeMember<LocalDOMWindow> m_domWindow;
@@ -254,7 +254,8 @@ inline FrameLoader& LocalFrame::loader() const
 
 inline NavigationScheduler& LocalFrame::navigationScheduler() const
 {
-    return m_navigationScheduler;
+    ASSERT(m_navigationScheduler);
+    return *m_navigationScheduler.get();
 }
 
 inline FrameView* LocalFrame::view() const

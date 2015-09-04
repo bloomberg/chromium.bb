@@ -57,6 +57,7 @@
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/NavigationScheduler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -247,7 +248,7 @@ void LocalFrame::navigate(Document& originDocument, const KURL& url, bool replac
         request.resourceRequest().setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
         m_loader.load(request);
     } else {
-        m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), replaceCurrentItem);
+        m_navigationScheduler->scheduleLocationChange(&originDocument, url.string(), replaceCurrentItem);
     }
 }
 
@@ -268,7 +269,7 @@ void LocalFrame::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedir
         request.setClientRedirect(clientRedirectPolicy);
         m_loader.load(request, loadType);
     } else {
-        m_navigationScheduler.scheduleReload();
+        m_navigationScheduler->scheduleReload();
     }
 }
 
@@ -839,7 +840,7 @@ String LocalFrame::localLayerTreeAsText(unsigned flags) const
 inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
     : Frame(client, host, owner)
     , m_loader(this)
-    , m_navigationScheduler(this)
+    , m_navigationScheduler(NavigationScheduler::create(this))
     , m_script(ScriptController::create(this))
     , m_editor(Editor::create(*this))
     , m_spellChecker(SpellChecker::create(*this))

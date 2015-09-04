@@ -32,9 +32,7 @@
 #define NavigationScheduler_h
 
 #include "core/CoreExport.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -45,11 +43,58 @@
 
 namespace blink {
 
+class CancellableTaskFactory;
 class Document;
 class FormSubmission;
 class LocalFrame;
-class NavigationScheduler;
 class ScheduledNavigation;
+
+class CORE_EXPORT NavigationScheduler final : public NoBaseWillBeGarbageCollectedFinalized<NavigationScheduler> {
+    WTF_MAKE_NONCOPYABLE(NavigationScheduler);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NavigationScheduler);
+public:
+    static PassOwnPtrWillBeRawPtr<NavigationScheduler> create(LocalFrame* frame)
+    {
+        return adoptPtrWillBeNoop(new NavigationScheduler(frame));
+    }
+
+    ~NavigationScheduler();
+
+    bool locationChangePending();
+    bool isNavigationScheduled() const;
+
+    void scheduleRedirect(double delay, const String& url);
+    void scheduleLocationChange(Document*, const String& url, bool replacesCurrentItem = true);
+    void schedulePageBlock(Document*);
+    void scheduleFormSubmission(Document*, PassRefPtrWillBeRawPtr<FormSubmission>);
+    void scheduleReload();
+
+    void startTimer();
+    void cancel();
+
+    DECLARE_TRACE();
+
+private:
+    friend class FrameNavigationDisabler;
+    explicit NavigationScheduler(LocalFrame*);
+
+    void disableFrameNavigation() { ++m_navigationDisableCount; }
+    void enableFrameNavigation() { --m_navigationDisableCount; }
+    bool isFrameNavigationAllowed() const { return !m_navigationDisableCount; }
+
+    bool shouldScheduleReload() const;
+    bool shouldScheduleNavigation(const String& url) const;
+
+    void navigateTask();
+    void schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation>);
+
+    static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
+
+    RawPtrWillBeMember<LocalFrame> m_frame;
+    OwnPtr<CancellableTaskFactory> m_navigateTaskFactory;
+    OwnPtrWillBeMember<ScheduledNavigation> m_redirect;
+    int m_navigationDisableCount;
+};
 
 class NavigationDisablerForBeforeUnload {
     WTF_MAKE_NONCOPYABLE(NavigationDisablerForBeforeUnload);
@@ -78,51 +123,7 @@ public:
     ~FrameNavigationDisabler();
 
 private:
-    FrameNavigationDisabler() = delete;
-
-    NavigationScheduler& m_navigationScheduler;
-};
-
-class CORE_EXPORT NavigationScheduler final {
-    WTF_MAKE_NONCOPYABLE(NavigationScheduler);
-    DISALLOW_ALLOCATION();
-public:
-    explicit NavigationScheduler(LocalFrame*);
-    ~NavigationScheduler();
-
-    bool locationChangePending();
-    bool isNavigationScheduled() const;
-
-    void scheduleRedirect(double delay, const String& url);
-    void scheduleLocationChange(Document*, const String& url, bool replacesCurrentItem = true);
-    void schedulePageBlock(Document*);
-    void scheduleFormSubmission(Document*, PassRefPtrWillBeRawPtr<FormSubmission>);
-    void scheduleReload();
-
-    void startTimer();
-    void cancel();
-
-    DECLARE_TRACE();
-
-private:
-    friend class FrameNavigationDisabler;
-
-    void disableFrameNavigation() { ++m_navigationDisableCount; }
-    void enableFrameNavigation() { --m_navigationDisableCount; }
-    bool isFrameNavigationAllowed() const { return !m_navigationDisableCount; }
-
-    bool shouldScheduleReload() const;
-    bool shouldScheduleNavigation(const String& url) const;
-
-    void navigateTask();
-    void schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation>);
-
-    static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
-
-    RawPtrWillBeMember<LocalFrame> m_frame;
-    CancellableTaskFactory m_navigateTaskFactory;
-    OwnPtrWillBeMember<ScheduledNavigation> m_redirect;
-    int m_navigationDisableCount;
+    RawPtrWillBeMember<NavigationScheduler> m_navigationScheduler;
 };
 
 } // namespace blink

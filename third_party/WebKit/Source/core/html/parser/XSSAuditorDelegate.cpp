@@ -32,6 +32,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/NavigationScheduler.h"
 #include "core/loader/PingLoader.h"
 #include "platform/JSONValues.h"
 #include "platform/network/FormData.h"
