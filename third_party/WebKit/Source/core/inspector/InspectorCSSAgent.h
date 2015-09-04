@@ -115,7 +115,6 @@ public:
     void disable(ErrorString*) override;
     void reset();
     void mediaQueryResultChanged();
-    void setCSSPropertyValue(ErrorString*, Element*, CSSPropertyID, const String&);
 
     void activeStyleSheetsUpdated(Document*);
     void documentDetached(Document*);
@@ -145,8 +144,11 @@ public:
     void collectMediaQueriesFromStyleSheet(CSSStyleSheet*, TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>* mediaArray);
     PassRefPtr<TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > buildMediaListChain(CSSRule*);
-    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> findEffectiveDeclaration(Element*, CSSPropertyID);
 
+    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> findEffectiveDeclaration(CSSPropertyID, CSSRuleList* matchedRulesList, CSSStyleDeclaration* inlineStyle);
+    void setCSSPropertyValue(ErrorString*, Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
+
+    PassRefPtrWillBeRawPtr<CSSRuleList> matchedRulesList(Element*);
 private:
     class StyleSheetAction;
     class SetStyleSheetTextAction;

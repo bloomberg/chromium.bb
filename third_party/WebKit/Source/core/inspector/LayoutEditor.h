@@ -8,7 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSStyleRule.h"
+#include "core/css/CSSRuleList.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
@@ -49,7 +49,8 @@ private:
     RefPtrWillBeRawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtr<JSONObject> createValueDescription(const String&) const;
     void appendAnchorFor(JSONArray*, const String&, const String&, const FloatPoint&, const FloatPoint&) const;
-    void initializeCSSRules();
+    bool setCSSPropertyValueInCurrentRule(const String&);
+    bool currentStyleIsInline();
 
     RefPtrWillBeMember<Element> m_element;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
@@ -60,9 +61,9 @@ private:
     CSSPrimitiveValue::UnitType m_valueUnitType;
     bool m_isDirty;
 
-    WillBeHeapVector<RefPtrWillBeMember<CSSStyleRule>> m_matchedRules;
-    // -1 means "inline style".
-    int m_currentRuleIndex;
+    RefPtrWillBeRawPtr<CSSRuleList> m_matchedRules;
+    // When m_currentRuleIndex == m_matchedRules.length(), current style is inline style.
+    unsigned m_currentRuleIndex;
 };
 
 } // namespace blink

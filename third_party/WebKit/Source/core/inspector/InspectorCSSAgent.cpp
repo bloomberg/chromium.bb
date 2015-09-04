@@ -94,6 +94,32 @@ String createShorthandValue(Document* document, const String& shorthand, const S
     return style->getPropertyValue(shorthand);
 }
 
+PassRefPtrWillBeRawPtr<CSSRuleList> filterDuplicateRules(RefPtrWillBeRawPtr<CSSRuleList> ruleList)
+{
+    RefPtrWillBeRawPtr<StaticCSSRuleList> uniqRuleList = StaticCSSRuleList::create();
+    if (!ruleList)
+        return uniqRuleList.release();
+
+    HashSet<CSSStyleRule*> uniqRulesSet;
+
+    Vector<RefPtrWillBeRawPtr<CSSRule>> uniqRules;
+    for (unsigned i = ruleList->length(); i > 0; --i) {
+        CSSRule* rule = ruleList->item(i - 1);
+        if (!rule || rule->type() != CSSRule::STYLE_RULE)
+            continue;
+
+        CSSStyleRule* styleRule = toCSSStyleRule(rule);
+        if (uniqRulesSet.contains(styleRule))
+            continue;
+        uniqRulesSet.add(styleRule);
+        uniqRules.append(styleRule);
+    }
+
+    for (unsigned i = uniqRules.size(); i > 0; --i)
+        uniqRuleList->rules().append(uniqRules[i - 1]);
+    return uniqRuleList.release();
+}
+
 } // namespace
 
 namespace CSSAgentState {
@@ -1393,18 +1419,10 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::
     if (!ruleList)
         return result.release();
 
-    HashSet<CSSStyleRule*> uniqRulesSet;
-    Vector<CSSStyleRule*> uniqRules;
-    for (unsigned i = ruleList->length(); i > 0; --i) {
-        CSSStyleRule* rule = asCSSStyleRule(ruleList->item(i - 1));
-        if (uniqRulesSet.contains(rule))
-            continue;
-        uniqRulesSet.add(rule);
-        uniqRules.append(rule);
-    }
+    RefPtrWillBeRawPtr<CSSRuleList> uniqRules = filterDuplicateRules(ruleList);
 
-    for (unsigned i = uniqRules.size(); i > 0; --i) {
-        CSSStyleRule* rule = uniqRules.at(i - 1);
+    for (unsigned i = 0; i < uniqRules->length(); ++i) {
+        CSSStyleRule* rule = asCSSStyleRule(uniqRules->item(i));
         RefPtr<TypeBuilder::CSS::CSSRule> ruleObject = buildObjectForRule(rule);
         if (!ruleObject)
             continue;
@@ -1515,11 +1533,9 @@ void InspectorCSSAgent::resetPseudoStates()
         document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDeclaration(Element* element, CSSPropertyID propertyId)
+PassRefPtrWillBeRawPtr<CSSRuleList> InspectorCSSAgent::matchedRulesList(Element* element)
 {
     PseudoId elementPseudoId = element->pseudoId();
-    CSSStyleDeclaration* inlineStyle =  element->style();
-
     if (elementPseudoId) {
         element = element->parentOrShadowHostElement();
         if (!element)
@@ -1531,8 +1547,17 @@ PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDecl
     if (!ownerDocument->isActive())
         return nullptr;
 
-    String longhand = getPropertyNameString(propertyId);
+    StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
+    element->updateDistribution();
+    return filterDuplicateRules(styleResolver.pseudoCSSRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules));
+}
 
+PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDeclaration(CSSPropertyID propertyId, CSSRuleList* ruleList, CSSStyleDeclaration* inlineStyle)
+{
+    if (!ruleList && !inlineStyle)
+        return nullptr;
+
+    String longhand = getPropertyNameString(propertyId);
     RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle = nullptr;
     bool isImportant = false;
 
@@ -1540,10 +1565,6 @@ PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDecl
         foundStyle = inlineStyle;
         isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
     }
-
-    StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
-    element->updateDistribution();
-    RefPtrWillBeRawPtr<CSSRuleList> ruleList = styleResolver.pseudoCSSRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules);
 
     for (unsigned i = 0, size = ruleList ? ruleList->length() : 0; i < size; ++i) {
         if (isImportant)
@@ -1571,39 +1592,16 @@ PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDecl
     return foundStyle.release();
 }
 
-void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* element, CSSPropertyID propertyId, const String& value)
+void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* element, RefPtrWillBeRawPtr<CSSStyleDeclaration> style, CSSPropertyID propertyId, const String& value, bool forceImportant)
 {
-    Document* ownerDocument = element->ownerDocument();
-    if (!ownerDocument->isActive()) {
-        *errorString = "Can't edit a node from a non-active document";
-        return;
-    }
-
-    Vector<StylePropertyShorthand, 4> shorthands;
-    getMatchingShorthandsForLonghand(propertyId, &shorthands);
-
-    String shorthand =  shorthands.size() > 0 ? getPropertyNameString(shorthands[0].id()) : String();
-    String longhand = getPropertyNameString(propertyId);
-
-    RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle = findEffectiveDeclaration(element, propertyId);
-    CSSStyleDeclaration* inlineStyle =  element->style();
-    if (!foundStyle || !foundStyle->parentStyleSheet())
-        foundStyle = inlineStyle;
-
-    if (!foundStyle) {
-        *errorString = "Can't find a style to edit";
-        return;
-    }
-
     InspectorStyleSheetBase* inspectorStyleSheet =  nullptr;
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = nullptr;
-    if (foundStyle != inlineStyle) {
-        InspectorStyleSheet* styleSheet =  bindStyleSheet(foundStyle->parentStyleSheet());
+    // An absence of the parent rule means that given style is an inline style.
+    if (style->parentRule()) {
+        InspectorStyleSheet* styleSheet = bindStyleSheet(style->parentStyleSheet());
         inspectorStyleSheet = styleSheet;
-        sourceData = styleSheet->sourceDataForRule(foundStyle->parentRule());
-    }
-
-    if (!sourceData) {
+        sourceData = styleSheet->sourceDataForRule(style->parentRule());
+    } else {
         InspectorStyleSheetForInlineStyle* inlineStyleSheet = asInspectorStyleSheet(element);
         inspectorStyleSheet = inlineStyleSheet;
         sourceData = inlineStyleSheet->ruleSourceData();
@@ -1613,6 +1611,12 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
         *errorString = "Can't find a source to edit";
         return;
     }
+
+    Vector<StylePropertyShorthand, 4> shorthands;
+    getMatchingShorthandsForLonghand(propertyId, &shorthands);
+
+    String shorthand =  shorthands.size() > 0 ? getPropertyNameString(shorthands[0].id()) : String();
+    String longhand = getPropertyNameString(propertyId);
 
     int foundIndex = -1;
     WillBeHeapVector<CSSPropertySourceData> properties = sourceData->styleSourceData->propertyData;
@@ -1638,8 +1642,7 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     String styleText = styleSheetText.substring(bodyRange.start, bodyRange.length());
     SourceRange changeRange;
     if (foundIndex == -1) {
-        bool isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
-        String newPropertyText = "\n" + longhand + ": " + value + (isImportant ? " !important" : "") + ";";
+        String newPropertyText = "\n" + longhand + ": " + value + (forceImportant ? " !important" : "") + ";";
         if (!styleText.isEmpty() && !styleText.stripWhiteSpace().endsWith(';'))
             newPropertyText = ";" + newPropertyText;
         styleText.append(newPropertyText);
@@ -1649,11 +1652,11 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
         CSSPropertySourceData declaration = properties[foundIndex];
         String newValueText;
         if (declaration.name == shorthand)
-            newValueText = createShorthandValue(ownerDocument, shorthand, declaration.value, longhand, value);
+            newValueText = createShorthandValue(element->ownerDocument(), shorthand, declaration.value, longhand, value);
         else
             newValueText = value;
 
-        String newPropertyText = declaration.name + ": " + newValueText + (declaration.important ? " !important" : "") + ";";
+        String newPropertyText = declaration.name + ": " + newValueText + (declaration.important || forceImportant ? " !important" : "") + ";";
         styleText.replace(declaration.range.start - bodyRange.start, declaration.range.length(), newPropertyText);
         changeRange.start = declaration.range.start;
         changeRange.end = changeRange.start + newPropertyText.length();
@@ -1667,6 +1670,7 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
 
 void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorString, int nodeId, const String& propertyName, const String& value)
 {
+    // TODO: move testing from CSSAgent to layout editor.
     Element* element = elementForId(errorString, nodeId);
     if (!element)
         return;
@@ -1676,7 +1680,26 @@ void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorStrin
         *errorString = "Invalid property name";
         return;
     }
-    setCSSPropertyValue(errorString, element, cssPropertyID(propertyName), value);
+
+    Document* ownerDocument = element->ownerDocument();
+    if (!ownerDocument->isActive()) {
+        *errorString = "Can't edit a node from a non-active document";
+        return;
+    }
+
+    CSSPropertyID propertyId = cssPropertyID(propertyName);
+    CSSStyleDeclaration* inlineStyle = element->style();
+    RefPtrWillBeRawPtr<CSSRuleList> ruleList = matchedRulesList(element);
+    RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle = findEffectiveDeclaration(propertyId, ruleList.get(), inlineStyle);
+    if (!foundStyle || !foundStyle->parentStyleSheet())
+        foundStyle = inlineStyle;
+
+    if (!foundStyle) {
+        *errorString = "Can't find a style to edit";
+        return;
+    }
+
+    setCSSPropertyValue(errorString, element, foundStyle.get(), propertyId, value);
 }
 
 DEFINE_TRACE(InspectorCSSAgent)
