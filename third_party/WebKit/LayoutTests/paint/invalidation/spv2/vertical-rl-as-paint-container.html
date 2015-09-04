@@ -1,0 +1,21 @@
+<!-- Based on fast/repaint/vertical-rl-as-paint-container.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    onload = runPaintInvalidationTest;
+    window.expectedPaintInvalidationObjects = [
+        "LayoutText #text",
+        "InlineTextBox 'Lorem ipsum dolor'",
+        "InlineTextBox 'sit amet,'",
+        "InlineTextBox 'consectetur'",
+        "InlineTextBox 'adipiscing elit.'",
+    ];
+    function paintInvalidationTest() {
+        var target = document.getElementById('target');
+        target.style.color = 'green';
+    }
+</script>
+<div id="target" style="-webkit-writing-mode:vertical-rl; -webkit-backface-visibility:hidden; width:600px; height:400px; font:20px/1 Ahem; color:red;">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+</div>
+<p>All text above should be green.</p>

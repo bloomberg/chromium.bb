@@ -1,0 +1,24 @@
+<!-- Based on fast/repaint/text-in-relative-positioned-inline.html -->
+<head>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script>
+        window.expectedPaintInvalidationObjects = [
+            "InlineTextBox 'ab'",
+            "LayoutText #text",
+            "InlineFlowBox",
+            "LayoutInline (relative positioned) SPAN id='target'",
+            "LayoutText #text",
+            "RootInlineBox",
+        ];
+        function paintInvalidationTest()
+        {
+            document.getElementById("target").style.display = "none";
+        }
+    </script>
+</head>
+<body onload="runPaintInvalidationTest()">
+    <div style="margin-left: 100px; font: 100px; -webkit-font-smoothing: none; height: 100px;">
+        <span id="target" style="position: relative; left: -100px; color: red;">ab</span>
+    </div>
+    <div style="width: 100px; height: 100px; background-color: green; margin-top: -100px;"></div>
+</body>

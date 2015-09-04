@@ -1,0 +1,31 @@
+<!-- Based on fast/repaint/border-radius-with-outline.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+<!-- Should full repaint because the actual border radius changes. -->
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='target'",
+];
+function paintInvalidationTest()
+{
+    document.getElementById('target').style.width = '200px';
+}
+window.onload = runPaintInvalidationTest;
+</script>
+<style>
+body {
+    margin: 0;
+}
+div {
+    position: absolute;
+    width: 80px;
+    height: 200px;
+    top: 100px;
+    left: 100px;
+    background-color: green;
+    border-radius: 50px;
+    outline: 5px solid green;
+    outline-offset: 50px;
+}
+</style>
+<div id="target"></div>

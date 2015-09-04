@@ -1,0 +1,30 @@
+<!-- Based on fast/repaint/canvas-resize.html -->
+<!DOCTYPE html>
+<style>
+canvas {
+  position: absolute;
+  width: 600px;
+  height: 500px;
+  top: 50px;
+  left: 50px;
+}
+</style>
+Tests paint invalidation of canvas when it's resized. Passes if there is a whole green circle.
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutHTMLCanvas (positioned) CANVAS id='canvas'",
+];
+function paintInvalidationTest() {
+  document.getElementById('canvas').style.width = '500px';
+}
+onload = runPaintInvalidationTest;
+
+var ctx = document.getElementById('canvas').getContext('2d');
+ctx.beginPath();
+ctx.arc(250, 250, 250, 0, 2 * Math.PI);
+ctx.fillStyle = 'green';
+ctx.fill();
+</script>

@@ -1,0 +1,62 @@
+<!-- Based on fast/table/border-collapsing/cached-change-tbody-border-width.html -->
+<!--
+Calculating collapsed borders for big tables is expensive, so we cache them and recalculate when needed.
+Here we change tbody border width, expect that cache is invalidated and paint produces expected image.
+-->
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
+        <script src="resources/paint-invalidation-test.js"></script>
+        <script type="text/javascript">
+            window.expectedPaintInvalidationObjects = [
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTable TABLE",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableSection TBODY id='tbody'",
+                "LayoutTableRow TR",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableRow TR",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableSection TBODY",
+                "LayoutTableRow TR",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+            ];
+            function paintInvalidationTest() {
+                document.getElementById("tbody").style.borderWidth = "4px";
+            }
+        </script>
+    </head>
+    <body onload="runPaintInvalidationTest()">
+        <table style="border-collapse:collapse; border:1px solid blue">
+            <tbody style="border:1px solid yellow" id="tbody">
+                <tr>
+                    <td style="border:2px solid lime"/>
+                    <td/>
+                </tr>
+                <tr>
+                    <td/>
+                    <td/>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td/>
+                    <td/>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>
+

@@ -1,0 +1,38 @@
+<!-- Based on fast/repaint/multicol-as-paint-container.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    onload = runPaintInvalidationTest;
+    window.expectedPaintInvalidationObjects = [
+        "LayoutText #text",
+        "InlineTextBox 'Lorem ipsum'",
+        "InlineTextBox 'dolor sit amet,'",
+        "InlineTextBox 'consectetur'",
+        "InlineTextBox 'adipiscing'",
+        "InlineTextBox 'elit. Fusce'",
+        "InlineTextBox 'varius, metus'",
+        "InlineTextBox 'eu fringilla'",
+        "InlineTextBox 'pulvinar, ipsum'",
+        "InlineTextBox 'sapien'",
+        "InlineTextBox 'ultricies arcu,'",
+        "InlineTextBox 'non condimentum'",
+        "InlineTextBox 'quam est eu'",
+        "InlineTextBox 'purus. Ut nisl'",
+        "InlineTextBox 'libero,'",
+        "InlineTextBox 'suscipit ut leo'",
+        "InlineTextBox 'eget, dapibus'",
+        "InlineTextBox 'ultrices dolor.'",
+        "LayoutMultiColumnSet (anonymous)",
+    ];
+    function paintInvalidationTest() {
+        var target = document.getElementById('target');
+        target.style.color = 'green';
+    }
+</script>
+<div id="target" style="-webkit-columns:2; -webkit-backface-visibility:hidden; width:630px; font:20px/1 Ahem; color:red;">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
+    varius, metus eu fringilla pulvinar, ipsum sapien ultricies arcu,
+    non condimentum quam est eu purus. Ut nisl libero, suscipit ut leo
+    eget, dapibus ultrices dolor.
+</div>
+<p>All text above should be green.</p>

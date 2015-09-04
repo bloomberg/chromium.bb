@@ -59,7 +59,3 @@ function finishPaintInvalidationTest()
         testRunner.notifyDone();
     });
 }
-
-setTimeout(function() {
-    testRunner.notifyDone();
-}, 2000);

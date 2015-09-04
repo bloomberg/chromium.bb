@@ -1,0 +1,43 @@
+<!-- Based on fast/repaint/filter-repaint-accelerated-child-with-filter-child.html -->
+<!DOCTYPE html>
+<style>
+div {
+    width: 200px;
+    height: 200px;
+}
+
+.blur {
+    -webkit-filter: blur(10px);
+}
+
+.drop-shadow {
+    -webkit-filter: drop-shadow(16px 16px 10px black);
+}
+
+.accelerated {
+    transform: translateZ(0);
+}
+
+#resize {
+    background-color: green;
+}
+</style>
+
+<div class="blur">
+    <div class="accelerated">
+        <div class="drop-shadow" id="resize"></div>
+    </div>
+</div>
+
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow DIV id='resize' class='drop-shadow'",
+];
+function paintInvalidationTest() {
+    var resizeElement = document.getElementById("resize");
+    resizeElement.style.width = "100px";
+}
+window.onload = runPaintInvalidationTest;
+</script>

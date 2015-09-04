@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<div id="container" style="overflow:-webkit-paged-x; -webkit-column-gap:0; width:500px; height:500px; -webkit-writing-mode:vertical-rl;">
+    <div style="width:100px;">
+        <div id="elm" style="width:1000px; background:green;"></div>
+    </div>
+</div>
+<script>
+        document.getElementById("container").scrollLeft = 0;
+</script>
+<p>Test changing the background color of a big block that overflows the flow thread.</p>
+<p>A green square with a horizontal scrollbar should be seen above.</p>

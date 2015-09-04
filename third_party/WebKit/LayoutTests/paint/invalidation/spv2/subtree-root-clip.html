@@ -1,0 +1,22 @@
+<!-- Based on fast/repaint/subtree-root-clip.html -->
+<!DOCTYPE HTML>
+<html>
+<head>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script>
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow (floating) DIV",
+            "LayoutBlockFlow DIV id='inner'",
+        ];
+        function paintInvalidationTest()
+        {
+            document.getElementById("inner").style.width = "0";
+        }
+    </script>
+</head>
+<body onload="runPaintInvalidationTest()">
+<div style="float: left; overflow: hidden; width: 100px; height: 100px; background-color: green;">
+    <div id="inner" style="width: 100px; height: 100px; background-color: red;"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!-- Based on fast/repaint/float-new-in-block.html -->
+<script src="resources/paint-invalidation-test.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow (floating) DIV id='target'",
+    ];
+    function paintInvalidationTest()
+    {
+        document.getElementById("target").style.removeProperty("display");
+    }
+</script>
+<body onload="runPaintInvalidationTest()">
+    <div style="height: 20px; background-color: lightblue;">
+        <div id="target" style="display: none; float: left; width: 100px; height: 100px; background-color: green;"></div>
+    </div>
+</body>

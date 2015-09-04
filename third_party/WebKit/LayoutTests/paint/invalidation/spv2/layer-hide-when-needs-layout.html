@@ -1,0 +1,27 @@
+<!-- Based on fast/repaint/layer-hide-when-needs-layout.html -->
+<html>
+<head>
+    <title>Test for http://bugs.webkit.org/show_bug.cgi?id=13544</title>
+    <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow (positioned) DIV id='target'",
+        ];
+        function paintInvalidationTest()
+        {
+            var div = document.getElementById("target");
+            div.style.visibility = 'hidden';
+            // Now make this a layout hint to avoid the repaint done in setStyle().
+            div.style.width = '50px';
+        }
+    </script>
+</head>
+<body onload="runPaintInvalidationTest()">
+    <div style="position: relative;">
+        <div style="background: green; width: 100px; height: 100px;">
+        </div>
+        <div id="target" style="position: absolute; top: 0; width: 100px; height: 100px; background: red;">
+        </div>
+    </div>
+</body>
+</html>

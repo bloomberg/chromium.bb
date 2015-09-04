@@ -1,0 +1,9 @@
+Based on svg/custom/text-match-highlight.html. Here run it as a repaint test to check correctness of invalidation.
+Automatic test requires run-layout-test. To manually test, open this file in Chrome and find 'findme' in the page.
+There should be 9 highlighted instances of "findme". The 6th higlighted instance should be active.
+Lorum ipsum findme lorum ipsum findmefindme lorum.
+longtextfindmenoyou.
+Can you findme in this boring text?
+Findme in a typewriter!
+Findme on a path! Did you findme?
+

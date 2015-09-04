@@ -1,0 +1,27 @@
+<!-- Based on fast/repaint/table-cell-overflow.html -->
+<head>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow DIV id='target'",
+    ];
+    function paintInvalidationTest()
+    {
+        document.getElementById("target").style.backgroundColor = "transparent";
+    }
+</script>
+</head>
+<body onload="runPaintInvalidationTest();">
+<table cellpadding=1 cellspacing=0>
+    <tr>
+        <td>
+            <div style="width: 100px;">
+                <div style="width: 100px; height: 100px; background-color: blue; margin-left: 50px;"></div>
+            </div>
+        </td>
+        <td>
+            <div style="width: 100px; height: 100px; background-color: red;" id="target"></div>
+        </td>
+    </tr>
+</table>
+</body>

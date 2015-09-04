@@ -1,0 +1,27 @@
+<!-- Based on fast/repaint/image-resize.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+window.expectedPaintInvalidationObjects = [
+    "LayoutImage (positioned) IMG",
+];
+function paintInvalidationTest() {
+  var img = document.getElementsByTagName('img')[0];
+  img.style.width = '100px';
+  img.style.height = '200px';
+}
+onload = runPaintInvalidationTest;
+</script>
+<style>
+img {
+  position: absolute;
+  top: 50px;
+  left: 0px;
+  width: 150px;
+  height: 150px;
+}
+</style>
+The image should be fully repainted on resize. Passes if there is a whole apple after resize.
+<img src="../../../fast/repaint/resources/apple.jpg">

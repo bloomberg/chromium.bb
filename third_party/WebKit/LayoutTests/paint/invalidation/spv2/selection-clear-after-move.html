@@ -1,0 +1,36 @@
+<!-- Based on fast/repaint/selection-clear-after-move.html -->
+<!DOCTYPE html>
+<script src="../../../fast/repaint/../../resources/run-after-layout-and-paint.js"></script>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutImage IMG",
+];
+function paintInvalidationTest() {
+  getSelection().removeAllRanges();
+}
+onload = function() {
+  getSelection().selectAllChildren(document.getElementById('div'));
+  runAfterLayoutAndPaint(function() {
+    document.getElementById('div').style.top = '300px';
+    runPaintInvalidationTest();
+  });
+};
+</script>
+<style>
+img {
+  vertical-align: text-bottom;
+  width: 50px;
+  height: 50px;
+}
+div {
+  position: absolute;
+  top: 100px;
+  left: 100px;
+}
+</style>
+Tests paint invalidation of selection when its cleared after the container is moved.<br>
+Passes if no selection left.
+<div id="div">
+  <img></img>
+</div>

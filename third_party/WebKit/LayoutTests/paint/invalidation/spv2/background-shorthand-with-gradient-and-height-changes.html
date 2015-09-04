@@ -1,0 +1,41 @@
+<!-- Based on fast/repaint/background-shorthand-with-gradient-and-height-changes.html -->
+<html>
+<head>
+<script src="resources/paint-invalidation-test.js"></script>
+
+<style>
+#outer {
+    padding-top: 200px;
+    /* background-size is implicitly set to initial via the background shorthand. */
+	background:-webkit-gradient(
+	    linear, 
+	    left top, 
+	    left bottom, 
+	    color-stop(0%, rgba(255,255,0,0)), color-stop(100%, rgba(0,0,0,1))
+	);
+}
+
+#inner {
+    height: 100px;
+}
+</style>
+
+<script>
+//This test verifies that gradient background gets repainted properly after child box height change.
+
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow DIV id='outer'",
+    "LayoutBlockFlow DIV id='inner'",
+];
+function paintInvalidationTest() {
+    document.getElementById('inner').style.height = 300 + 'px';
+}
+</script>
+</head>
+<body onload='runPaintInvalidationTest();'>
+<div id='outer'>
+    <div id='inner'>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+The image should be fully repainted on resize. Passes if there is a whole apple after resize. 

@@ -1,0 +1,27 @@
+<!-- Based on fast/repaint/multicol-with-abspos.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    onload = runPaintInvalidationTest;
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow (positioned) DIV id='target'",
+        "LayoutText #text",
+        "InlineTextBox 'PASS'",
+    ];
+    function paintInvalidationTest() {
+        var target = document.getElementById('target');
+        target.style.visibility = 'visible';
+    }
+</script>
+<p>A green PASS should be seen at the bottom-left corner.</p>
+<div style="-webkit-columns:4; -webkit-column-gap:10px; column-fill:auto; width:630px; height:40px; color:green;">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <!-- This absolutely positioned box is not part of the flow thread, since the nearest
+         non-statically positioned box is further up than that. -->
+    <div id="target" style="position:absolute; left:0; bottom:0; visibility:hidden;">PASS</div>
+</div>

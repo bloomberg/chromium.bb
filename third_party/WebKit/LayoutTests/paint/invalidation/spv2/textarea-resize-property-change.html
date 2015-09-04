@@ -1,0 +1,22 @@
+<!-- Based on fast/repaint/textarea-resize-property-change.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutTextControl (positioned) TEXTAREA id='textarea'",
+];
+function paintInvalidationTest() {
+  document.getElementById('textarea').style.resize = 'auto';
+}
+onload = runPaintInvalidationTest;
+</script>
+Tests paint invalidation when a textarea's resize property changed.
+Passes if the resize handle is repainted correctly.
+<textarea id="textarea" style="
+  position: absolute;
+  top: 50px;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  resize: none">
+</textarea>

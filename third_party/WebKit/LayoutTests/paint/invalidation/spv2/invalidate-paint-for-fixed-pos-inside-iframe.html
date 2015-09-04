@@ -1,0 +1,24 @@
+<!-- Based on fast/repaint/invalidate-paint-for-fixed-pos-inside-iframe.html -->
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.onload = function() {
+    runPaintInvalidationTest();
+};
+
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV",
+];
+function paintInvalidationTest() {
+    document.getElementsByTagName('iframe')[0]
+        .contentDocument
+        .getElementsByTagName('div')[0]
+        .style
+        .backgroundColor = 'green';
+}
+</script>
+</head>
+<div style="height: 400px"></div>
+<iframe srcdoc="<div style='position: fixed; height: 50px; width: 50px; background-color: red;'></div>"></iframe>

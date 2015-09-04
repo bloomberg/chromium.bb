@@ -1,0 +1,34 @@
+<!-- Based on fast/repaint/fixed-margin-change-repaint.html -->
+<!DOCTYPE HTML>
+<script src="resources/paint-invalidation-test.js"></script>
+<style>
+    body {
+        margin: 0;
+    }
+    #container {
+        position: relative;
+        top: 40px;
+        width: 200px;
+        height: 400px;
+    }
+    #test {
+        position: fixed;
+        background-color: green;
+        width: 100px;
+        height: 100px;
+    }
+</style>
+<script>
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow (positioned) DIV id='test'",
+    ];
+    function paintInvalidationTest()
+    {
+        document.getElementById("test").style['margin-top'] = '20px';
+    }
+    window.onload = runPaintInvalidationTest;
+</script>
+<div id="container">
+    <div id="test"></div>
+</div>
+Tests the repainting of fixed element when margin-top changes.

@@ -1,0 +1,74 @@
+<!-- Based on fast/repaint/inline-reflow.html -->
+<!DOCTYPE HTML>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "RootInlineBox",
+    "InlineTextBox 'A A A A A'",
+    "InlineTextBox 'AA AA AA'",
+    "InlineTextBox 'AA AAA AAA'",
+    "InlineTextBox 'AAA AAAA'",
+    "InlineTextBox 'AAAA AAAAA'",
+    "InlineTextBox 'AAAAA'",
+    "InlineTextBox 'AAAAAA'",
+    "InlineTextBox 'AAAAAAA'",
+    "InlineTextBox 'AAAAAA'",
+    "InlineTextBox 'AAAAA'",
+    "InlineTextBox 'AAAAA AAAA'",
+    "InlineTextBox 'AAAA AAA'",
+    "InlineTextBox 'AAA AAA AA'",
+    "InlineTextBox 'AA AA AA A'",
+    "InlineTextBox 'A A A A'",
+    "RootInlineBox",
+    "InlineTextBox 'A A A A A'",
+    "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
+    "LayoutText #text",
+    "InlineTextBox 'A A A A A AA AA'",
+    "InlineTextBox 'AA AA AAA AAA'",
+    "InlineTextBox 'AAA AAAA AAAA'",
+    "InlineTextBox 'AAAAA AAAAA'",
+    "InlineTextBox 'AAAAAA AAAAAAA'",
+    "InlineTextBox 'AAAAAA AAAAA'",
+    "InlineTextBox 'AAAAA AAAA AAAA'",
+    "InlineTextBox 'AAA AAA AAA AA'",
+    "InlineTextBox 'AA AA AA A A A'",
+    "InlineTextBox 'A A'",
+    "LayoutBlockFlow (positioned) DIV id='div2' class='container'",
+];
+function paintInvalidationTest()
+{
+    document.getElementById('div1').style.width = '300px';
+    document.getElementById('div2').style.width = '300px';
+}
+window.onload = runPaintInvalidationTest;
+</script>
+<style>
+body {
+    margin: 0;
+}
+.container {
+    font: 20px Ahem;
+    width: 200px;
+    position: absolute;
+}
+</style>
+<div class="container" id="div1">
+A A A A A AA AA AA AA AAA AAA AAA AAAA AAAA AAAAA AAAAA AAAAAA AAAAAAA AAAAAA AAAAA AAAAA AAAA AAAA AAA AAA AAA AA AA AA AA A A A A A
+</div>
+<div class="container" id="div2" style="top: 300px">
+A A A A A
+</div>

@@ -1,0 +1,29 @@
+<!-- Based on fast/repaint/scroll-with-transformed-parent-layer.html -->
+<html>
+<head>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css"></style>
+    <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
+            "LayoutBlockFlow (positioned) DIV class='absolute green'",
+            "LayoutBlockFlow (positioned) DIV class='absolute red'",
+        ];
+        function paintInvalidationTest()
+        {
+            var moveMeElement = document.getElementById('moveMe');
+            moveMeElement.scrollTop = 100;
+            moveMeElement.scrollLeft = 50;
+        }
+    </script>
+</head>
+<body style="height:2000px;" onload="runPaintInvalidationTest()">
+    <!-- You should see 1 green rectangle rotated in the output and no red. -->
+    <div style="top: 150px; left: 100px" class="absolute clipped rotated">
+        <div id="moveMe" class="absolute clipped" style="top: 0px; left: 0px;">
+            <div class="absolute green" style="top: 100px; left: 50px"></div>
+            <div class="absolute red" style="top: 0px; left: 0px;"></div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!-- Based on fast/repaint/multicol-repaint.html -->
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <style type="text/css" media="screen">
+
+    .container {
+      width: 400px;
+      height: 100px;
+      border: 1px solid black;
+      font-size: 50px;
+      -webkit-column-count: 2;
+      column-count: 2;
+      column-fill: auto;
+    }
+
+  </style>
+  <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
+  <script type="text/javascript">
+     window.expectedPaintInvalidationObjects = [
+         "RootInlineBox",
+         "RootInlineBox",
+         "InlineTextBox '\u00A0'",
+         "InlineTextBox '\n'",
+         "InlineTextBox ''",
+         "LayoutMultiColumnFlowThread (anonymous)",
+         "LayoutText #text",
+         "InlineTextBox 'XXXXXX'",
+     ];
+     function paintInvalidationTest()
+     {
+         document.getElementById('a').innerHTML = 'XXXXXX';
+     }
+  </script>
+</head>
+<body onload="runPaintInvalidationTest();">
+  
+  <div class="container">
+    &nbsp;<br>
+    <span id="a">x</span>
+  </div>
+</body>
+</html>

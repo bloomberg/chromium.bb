@@ -1,0 +1,33 @@
+<!-- Based on fast/repaint/filter-invalidation-after-display.html -->
+<!DOCTYPE html>
+<style>
+.green {
+  background-color: green;
+}
+.box {
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  left: 300px;
+}
+.drop-shadowed {
+  -webkit-filter: drop-shadow(100px 100px 10px red);
+}
+</style>
+<!--
+    This test checks that we correctly invalidate filters when they are removed.
+    There should be no red below.
+-->
+<div class="green drop-shadowed box" id="box"></div>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='box' class='green box'",
+    "LayoutBlockFlow (positioned) DIV id='box' class='green box'",
+];
+function paintInvalidationTest() {
+    var box = document.getElementById('box');
+    box.classList.toggle('drop-shadowed');
+}
+window.onload = runPaintInvalidationTest;
+</script>

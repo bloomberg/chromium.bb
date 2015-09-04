@@ -1,0 +1,14 @@
+<!-- Based on fast/repaint/absolute-display-block-to-none.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='absolute'",
+];
+function paintInvalidationTest() {
+  document.getElementById('absolute').style.display = 'none';
+}
+onload = runPaintInvalidationTest;
+</script>
+When an absolute positioned element is set display:none, we should not invalidate the whole body.
+<div id="absolute" style="position: absolute; width: 100px; height: 100px; top: 100px; left: 100px; background-color: red"></div>

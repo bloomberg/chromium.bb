@@ -1,0 +1,20 @@
+<!-- Based on fast/repaint/inline-relative-positioned.html -->
+<script src="resources/paint-invalidation-test.js"></script>
+<script src="../../../fast/repaint/../../resources/ahem.js"></script>
+<body onload="runPaintInvalidationTest()">
+<span style="position: relative; top: 80px;">
+    <div id="target" style="display: inline-block; width: 100px; height: 100px; overflow: hidden; font-family: Ahem; font-size: 100px; background: red; color: green;">p</div>
+</span>
+<script>
+    window.expectedPaintInvalidationObjects = [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='target'",
+        "LayoutText #text",
+        "InlineTextBox 'a'",
+    ];
+    function paintInvalidationTest()
+    {
+        document.getElementById("target").firstChild.data = "a";
+    }
+</script>

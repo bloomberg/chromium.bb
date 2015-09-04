@@ -1,0 +1,21 @@
+<!-- Based on fast/repaint/overflow-flipped-writing-mode-table.html -->
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    onload = runPaintInvalidationTest;
+
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow DIV id='target'",
+    ];
+    function paintInvalidationTest()
+    {
+        document.getElementById("target").style.visibility = "hidden";
+    }
+</script>
+<div style="height: 100px; width: 100px; background-color: red; -webkit-writing-mode: horizontal-bt;">
+    <div style="display: table; width: 100px;">
+        <div style="height: 25px;">
+            <div style="height: 100px; background-color: green;"></div>
+        </div>
+    </div>
+</div>
+<div id="target" style="height: 50px; width: 100px; background-color: red; margin-top: -100px;"></div>

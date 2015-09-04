@@ -1,0 +1,17 @@
+<!-- Based on fast/repaint/multicol-relpos-with-abspos.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    onload = runPaintInvalidationTest;
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow (positioned) DIV id='target'",
+    ];
+    function paintInvalidationTest() {
+        var target = document.getElementById('target');
+        target.style.visibility = 'visible';
+    }
+</script>
+<div style="position:relative; -webkit-columns:4; -webkit-column-gap:10px; width:630px; height:40px; column-fill:auto;">
+    <div id="target" style="position:absolute; width:20px; height:20px; right:0; bottom:0; visibility:hidden; background:green;"></div>
+</div>
+<p>A green rectangle should be seen above.</p>

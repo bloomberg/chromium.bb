@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<style>
+div {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  width: 100px;
+  height: 100px;
+  outline: green solid 5px;
+  outline-offset: 10px;
+}
+
+</style>
+
+Box should be repainted when outline-offset style changes. Passes if no red.
+<div id="target"></div>

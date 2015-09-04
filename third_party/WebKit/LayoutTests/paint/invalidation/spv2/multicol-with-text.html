@@ -1,0 +1,27 @@
+<!-- Based on fast/repaint/multicol-with-text.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    onload = runPaintInvalidationTest;
+    window.expectedPaintInvalidationObjects = [
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox '\n'",
+        "InlineTextBox '\n'",
+        "InlineTextBox '\n'",
+        "LayoutMultiColumnFlowThread (anonymous)",
+        "LayoutText #text",
+        "InlineTextBox 'PASS'",
+    ];
+    function paintInvalidationTest() {
+        var mc = document.getElementById('mc');
+        mc.appendChild(document.createTextNode('PASS'));
+    }
+</script>
+<div id="mc" style="-webkit-columns:4; -webkit-column-gap:10px; column-fill:auto; width:630px; height:20px; color:green;">
+    <br>
+    <br>
+    <br>
+</div>
+<p>A green PASS should be seen above.</p>

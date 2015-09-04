@@ -1,0 +1,17 @@
+<!-- Based on fast/repaint/trailing-floats-root-line-box-overflow.html -->
+<head>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script>
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow (positioned) DIV id='target'",
+        ];
+        function paintInvalidationTest()
+        {
+            document.getElementById("target").style.display = "none";
+        }
+    </script>
+</head>
+<body onload="runPaintInvalidationTest()">
+    <div style="background-color: yellow;"><div style="display: inline-block; width: 100px; height: 100px; background-color: green; margin-top: 50px; margin-bottom: -100px;"></div><br><div style="float: left;"></div></div>
+    <div style="position: absolute; height: 100px; background-color: red; width: 100px;" id="target"></div>
+</body>

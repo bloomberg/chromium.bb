@@ -1,0 +1,37 @@
+<!-- Based on fast/repaint/transform-replaced-shadows.html -->
+<html>
+<head>
+  <title>Scaling and box-shadow</title>
+  <style type="text/css" media="screen">
+    #box {
+      height: 100px;
+      width: 100px;
+      margin: 20px;
+      background-color: gray;
+      -webkit-transform-origin: top left;
+      -webkit-box-shadow: 0px 20px 20px black;
+      transform: scale(2);
+    }
+    
+    #box.smaller {
+      transform: scale(1);
+    }
+  </style>
+
+  <script src="resources/paint-invalidation-test.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript" charset="utf-8">
+    window.expectedPaintInvalidationObjects = [
+        "LayoutImage IMG id='box' class='smaller'",
+    ];
+    function paintInvalidationTest()
+    {
+      document.getElementById('box').className = 'smaller';
+    }
+  </script>
+</head>
+<body onload="runPaintInvalidationTest()">
+
+<img id="box">
+
+</body>
+</html>

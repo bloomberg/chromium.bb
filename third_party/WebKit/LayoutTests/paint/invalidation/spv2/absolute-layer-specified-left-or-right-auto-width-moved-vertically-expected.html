@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<style>
+    #left, #right {
+        position: absolute;
+        top: 400px;
+        -webkit-backface-visibility: hidden;
+    }
+    #left {
+        left: 0px;
+    }
+    #right {
+        right: 0px;
+    }
+</style>
+
+There should be no repaint when the divs are moved vertically.
+<div id="left">Left</div>
+<div id="right">Right</div>
+<pre id="result"></pre>

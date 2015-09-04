@@ -1,0 +1,38 @@
+<!-- Based on fast/repaint/hover-pseudo-borders-whitespace.html -->
+<!doctype html>
+<style>
+
+div {
+    width: 100px;
+    height: 100px;
+}
+
+#div_border {
+    border: 10px solid;
+}
+
+#div_outline {
+    outline: 10px solid;
+    margin: 20px 0 0 10px;
+}
+
+#div_border:hover, #div_border:hover + #div_outline {
+    color: green;
+}
+
+</style>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow DIV id='div_border'",
+        "LayoutBlockFlow DIV id='div_outline'",
+    ];
+    function paintInvalidationTest() {
+        if (!window.testRunner)
+            return;
+        eventSender.mouseMoveTo(50, 50);
+    }
+    window.addEventListener("load", runPaintInvalidationTest);
+</script>
+<div id="div_border"></div>
+<div id="div_outline"></div>

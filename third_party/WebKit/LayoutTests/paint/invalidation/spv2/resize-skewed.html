@@ -1,0 +1,35 @@
+<!-- Based on fast/repaint/resize-skewed.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='skewed'",
+];
+function paintInvalidationTest() {
+  document.getElementById('skewed').style.width = '200px';
+}
+onload = runPaintInvalidationTest;
+</script>
+<style>
+div {
+  position: absolute;
+  transform: skew(-45deg);
+  transform-origin: left top;
+  top: 50px;
+  left: 500px;
+  height: 500px;
+}
+#skewed {
+  width: 100px;
+  background-color: green;
+}
+#indicator {
+  margin-left: 1px;
+  width: 198px; /* Narrower than the target to avoid anti-alias effect. */
+  background-color: red;
+}
+</style>
+Tests paint invalidation when a skewed element is resized. Passes if there is no red. 
+<div id="indicator"></div>
+<div id="skewed"></div>
+
