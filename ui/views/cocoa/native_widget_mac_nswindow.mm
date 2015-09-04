@@ -5,6 +5,7 @@
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 
 #include "base/mac/foundation_util.h"
+#import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -23,6 +24,7 @@
 @implementation NativeWidgetMacNSWindow {
  @private
   base::scoped_nsobject<CommandDispatcher> commandDispatcher_;
+  base::scoped_nsprotocol<id<UserInterfaceItemCommandHandler>> commandHandler_;
 }
 
 - (instancetype)initWithContentRect:(NSRect)contentRect
@@ -160,12 +162,40 @@
 
 // CommandDispatchingWindow implementation.
 
+- (void)setCommandHandler:(id<UserInterfaceItemCommandHandler>)commandHandler {
+  commandHandler_.reset([commandHandler retain]);
+}
+
 - (BOOL)redispatchKeyEvent:(NSEvent*)event {
   return [commandDispatcher_ redispatchKeyEvent:event];
 }
 
 - (BOOL)defaultPerformKeyEquivalent:(NSEvent*)event {
   return [super performKeyEquivalent:event];
+}
+
+- (void)commandDispatch:(id)sender {
+  [commandHandler_ commandDispatch:sender window:self];
+}
+
+- (void)commandDispatchUsingKeyModifiers:(id)sender {
+  [commandHandler_ commandDispatchUsingKeyModifiers:sender window:self];
+}
+
+// NSWindow overrides (NSUserInterfaceItemValidations implementation)
+
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  // Since this class implements these selectors, |super| will always say they
+  // are enabled. Only use [super] to validate other selectors. If there is no
+  // command handler, defer to AppController.
+  if ([item action] == @selector(commandDispatch:) ||
+      [item action] == @selector(commandDispatchUsingKeyModifiers:)) {
+    return commandHandler_
+               ? [commandHandler_ validateUserInterfaceItem:item window:self]
+               : [[NSApp delegate] validateUserInterfaceItem:item];
+  }
+
+  return [super validateUserInterfaceItem:item];
 }
 
 @end

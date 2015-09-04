@@ -12,6 +12,7 @@
 
 @protocol CommandDispatcherDelegate;
 @protocol CommandDispatchingWindow;
+@protocol UserInterfaceItemCommandHandler;
 
 // CommandDispatcher guides the processing of key events to ensure key commands
 // are executed in the appropriate order. In particular, it allows a first
@@ -81,6 +82,11 @@ UI_BASE_EXPORT @interface CommandDispatcher : NSObject
 // CommandDispatcher.
 @protocol CommandDispatchingWindow
 
+// If set, NSUserInterfaceItemValidations for -commandDispatch: and
+// -commandDispatchUsingKeyModifiers: will be redirected to the command handler.
+// Retains |commandHandler|.
+-(void)setCommandHandler:(id<UserInterfaceItemCommandHandler>) commandHandler;
+
 // This can be implemented with -[CommandDispatcher redispatchKeyEvent:]. It's
 // so that callers can simply return events to the NSWindow.
 - (BOOL)redispatchKeyEvent:(NSEvent*)event;
@@ -88,6 +94,16 @@ UI_BASE_EXPORT @interface CommandDispatcher : NSObject
 // Short-circuit to the default -[NSResponder performKeyEquivalent:] which
 // CommandDispatcher calls as part of its -performKeyEquivalent: flow.
 - (BOOL)defaultPerformKeyEquivalent:(NSEvent*)event;
+
+// AppKit will call -[NSUserInterfaceValidations validateUserInterfaceItem:] to
+// validate UI items. Any item whose target is FirstResponder, or nil, will
+// traverse the responder chain looking for a responder that implements the
+// item's selector. Thus NSWindow is usually the last to be checked and will
+// handle any items that are not validated elsewhere in the chain. Implement the
+// following so that menu items with these selectors are validated by
+// CommandDispatchingWindow.
+- (void)commandDispatch:(id)sender;
+- (void)commandDispatchUsingKeyModifiers:(id)sender;
 
 @end
 

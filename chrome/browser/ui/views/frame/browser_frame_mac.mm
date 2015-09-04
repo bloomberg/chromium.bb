@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
+#import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_shutdown.h"
@@ -70,6 +71,8 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
                       backing:NSBackingStoreBuffered
                         defer:NO]);
   [ns_window setCommandDispatcherDelegate:command_dispatcher_delegate_];
+  [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
+                                   autorelease]];
   return ns_window.autorelease();
 }
 

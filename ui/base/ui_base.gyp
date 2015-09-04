@@ -131,6 +131,7 @@
         'cocoa/tracking_area.mm',
         'cocoa/underlay_opengl_hosting_window.h',
         'cocoa/underlay_opengl_hosting_window.mm',
+        'cocoa/user_interface_item_command_handler.h',
         'cocoa/view_description.h',
         'cocoa/view_description.mm',
         'cocoa/window_size_constants.h',

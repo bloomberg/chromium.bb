@@ -1378,6 +1378,8 @@
       'browser/ui/cocoa/bookmarks/bookmark_menu_bridge.mm',
       'browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h',
       'browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.mm',
+      'browser/ui/cocoa/browser_window_command_handler.h',
+      'browser/ui/cocoa/browser_window_command_handler.mm',
       'browser/ui/cocoa/certificate_viewer_mac.mm',
       'browser/ui/cocoa/chrome_command_dispatcher_delegate.h',
       'browser/ui/cocoa/chrome_command_dispatcher_delegate.mm',

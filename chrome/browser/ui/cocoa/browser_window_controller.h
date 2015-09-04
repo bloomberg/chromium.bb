@@ -58,11 +58,10 @@ namespace extensions {
 class Command;
 }
 
-@interface BrowserWindowController :
-  TabWindowController<NSUserInterfaceValidations,
-                      BookmarkBarControllerDelegate,
-                      ViewResizer,
-                      TabStripControllerDelegate> {
+@interface BrowserWindowController
+    : TabWindowController<BookmarkBarControllerDelegate,
+                          ViewResizer,
+                          TabStripControllerDelegate> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -498,9 +497,6 @@ class Command;
 // Toggles fullscreen mode.  Meant to be called by Lion windows when they enter
 // or exit Lion fullscreen mode.  Must not be called on Snow Leopard or earlier.
 - (void)handleLionToggleFullscreen;
-
-// The title of the fullscreen menu item in the menu bar.
-- (NSString*)titleForFullscreenMenuItem;
 
 // Enters Browser/Appkit Fullscreen.
 // If |withToolbar| is NO, the tab strip and toolbar are hidden
