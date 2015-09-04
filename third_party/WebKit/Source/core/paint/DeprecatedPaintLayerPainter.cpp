@@ -139,7 +139,7 @@ public:
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style.clipPath());
             if (clipPath->isValid()) {
                 if (!rootRelativeBoundsComputed) {
-                    rootRelativeBounds = paintLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
+                    rootRelativeBounds = paintLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
                 m_clipPathRecorder.emplace(*context, *paintLayer.layoutObject(), clipPath->path(FloatRect(rootRelativeBounds)));
@@ -151,7 +151,7 @@ public:
             Element* element = document.getElementById(referenceClipPathOperation->fragment());
             if (isSVGClipPathElement(element) && element->layoutObject()) {
                 if (!rootRelativeBoundsComputed) {
-                    rootRelativeBounds = paintLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
+                    rootRelativeBounds = paintLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
 
@@ -323,7 +323,7 @@ bool DeprecatedPaintLayerPainter::atLeastOneFragmentIntersectsDamageRect(Depreca
         // (i.e. only contains an overflow portion of the layer), intersection will fail. The reason
         // for this is that fragment.layerBounds is set to the border box, not the bounding box, of
         // the layer.
-        if (m_paintLayer.intersectsDamageRect(fragment.layerBounds, fragment.backgroundRect.rect(), localPaintingInfo.rootLayer, &newOffsetFromRoot))
+        if (m_paintLayer.intersectsDamageRect(fragment.layerBounds, fragment.backgroundRect.rect(), newOffsetFromRoot))
             return true;
     }
     return false;

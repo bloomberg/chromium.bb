@@ -1413,7 +1413,7 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
         outlineRectInFlowThread, &offsetWithinPaginatedLayer);
 
     // Take our bounding box within the flow thread and clip it.
-    LayoutRect layerBoundingBoxInFlowThread = layerBoundingBox ? *layerBoundingBox : physicalBoundingBox(enclosingPaginationLayer(), &offsetWithinPaginatedLayer);
+    LayoutRect layerBoundingBoxInFlowThread = layerBoundingBox ? *layerBoundingBox : physicalBoundingBox(offsetWithinPaginatedLayer);
     layerBoundingBoxInFlowThread.intersect(backgroundRectInFlowThread.rect());
 
     // Make the dirty rect relative to the fragmentation context (multicol container, etc.).
@@ -2030,7 +2030,7 @@ bool DeprecatedPaintLayer::hasBlockSelectionGapBounds() const
     return toLayoutBlock(layoutObject())->shouldPaintSelectionGaps();
 }
 
-bool DeprecatedPaintLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const DeprecatedPaintLayer* rootLayer, const LayoutPoint* offsetFromRoot) const
+bool DeprecatedPaintLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const LayoutPoint& offsetFromRoot) const
 {
     // Always examine the canvas and the root.
     // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the LayoutView
@@ -2049,7 +2049,7 @@ bool DeprecatedPaintLayer::intersectsDamageRect(const LayoutRect& layerBounds, c
 
     // Otherwise we need to compute the bounding box of this single layer and see if it intersects
     // the damage rect.
-    return physicalBoundingBox(rootLayer, offsetFromRoot).intersects(damageRect);
+    return physicalBoundingBox(offsetFromRoot).intersects(damageRect);
 }
 
 LayoutRect DeprecatedPaintLayer::logicalBoundingBox() const
@@ -2098,13 +2098,17 @@ static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, Layou
     return result;
 }
 
-LayoutRect DeprecatedPaintLayer::physicalBoundingBox(const DeprecatedPaintLayer* ancestorLayer, const LayoutPoint* offsetFromRoot) const
+LayoutRect DeprecatedPaintLayer::physicalBoundingBox(const DeprecatedPaintLayer* ancestorLayer) const
+{
+    LayoutPoint offsetFromRoot;
+    convertToLayerCoords(ancestorLayer, offsetFromRoot);
+    return physicalBoundingBox(offsetFromRoot);
+}
+
+LayoutRect DeprecatedPaintLayer::physicalBoundingBox(const LayoutPoint& offsetFromRoot) const
 {
     LayoutRect result = flippedLogicalBoundingBox(logicalBoundingBox(), layoutObject());
-    if (offsetFromRoot)
-        result.moveBy(*offsetFromRoot);
-    else
-        convertToLayerCoords(ancestorLayer, result);
+    result.moveBy(offsetFromRoot);
     return result;
 }
 
@@ -2149,10 +2153,9 @@ static void expandRectForReflectionAndStackingChildren(const DeprecatedPaintLaye
     }
 }
 
-LayoutRect DeprecatedPaintLayer::physicalBoundingBoxIncludingReflectionAndStackingChildren(const DeprecatedPaintLayer* ancestorLayer, const LayoutPoint& offsetFromRoot) const
+LayoutRect DeprecatedPaintLayer::physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot) const
 {
-    LayoutPoint origin;
-    LayoutRect result = physicalBoundingBox(ancestorLayer, &origin);
+    LayoutRect result = physicalBoundingBox(LayoutPoint());
 
     const_cast<DeprecatedPaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
@@ -2187,8 +2190,7 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
     LayoutRect result = clipper().localClipRect();
     // TODO(chrishtr): avoid converting to IntRect and back.
     if (result == LayoutRect(LayoutRect::infiniteIntRect())) {
-        LayoutPoint origin;
-        result = physicalBoundingBox(ancestorLayer, &origin);
+        result = physicalBoundingBox(LayoutPoint());
 
         const_cast<DeprecatedPaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 

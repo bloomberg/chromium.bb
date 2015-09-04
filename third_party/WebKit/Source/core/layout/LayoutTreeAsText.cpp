@@ -662,7 +662,9 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const DeprecatedPaintLayer* r
     // Ensure our lists are up-to-date.
     layer->stackingNode()->updateLayerListsIfNeeded();
 
-    bool shouldPaint = (behavior & LayoutAsTextShowAllLayers) ? true : layer->intersectsDamageRect(layerBounds, damageRect.rect(), rootLayer);
+    LayoutPoint offsetFromRoot;
+    layer->convertToLayerCoords(rootLayer, offsetFromRoot);
+    bool shouldPaint = (behavior & LayoutAsTextShowAllLayers) ? true : layer->intersectsDamageRect(layerBounds, damageRect.rect(), offsetFromRoot);
 
     Vector<DeprecatedPaintLayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;

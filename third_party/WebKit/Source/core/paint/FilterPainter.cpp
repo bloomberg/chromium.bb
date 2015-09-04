@@ -40,7 +40,7 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
         return;
 
     if (!rootRelativeBoundsComputed) {
-        rootRelativeBounds = layer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
+        rootRelativeBounds = layer.physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetFromRoot);
         rootRelativeBoundsComputed = true;
     }
 

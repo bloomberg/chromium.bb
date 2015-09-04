@@ -240,12 +240,12 @@ public:
     // The hitTest() method looks for mouse events by walking layers that intersect the point from front to back.
     bool hitTest(HitTestResult&);
 
-    // Pass offsetFromRoot if known.
-    bool intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const DeprecatedPaintLayer* rootLayer, const LayoutPoint* offsetFromRoot = 0) const;
+    bool intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const LayoutPoint& offsetFromRoot) const;
 
     // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
-    LayoutRect physicalBoundingBox(const DeprecatedPaintLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0) const;
-    LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const DeprecatedPaintLayer* ancestorLayer, const LayoutPoint& offsetFromRoot) const;
+    LayoutRect physicalBoundingBox(const LayoutPoint& offsetFromRoot) const;
+    LayoutRect physicalBoundingBox(const DeprecatedPaintLayer* ancestorLayer) const;
+    LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot) const;
     LayoutRect fragmentsBoundingBox(const DeprecatedPaintLayer* ancestorLayer) const;
 
     LayoutRect boundingBoxForCompositingOverlapTest() const;
