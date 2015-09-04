@@ -62,7 +62,7 @@ const char* const kKnownSettings[] = {
     kExtensionCacheSize,
     kHeartbeatEnabled,
     kHeartbeatFrequency,
-    kLogUploadEnabled,
+    kSystemLogUploadEnabled,
     kPolicyMissingMitigationMode,
     kRebootOnShutdown,
     kReleaseChannel,
@@ -449,9 +449,9 @@ void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,
 
   const em::DeviceLogUploadSettingsProto& log_upload_policy =
       policy.device_log_upload_settings();
-  if (log_upload_policy.has_log_upload_enabled()) {
-    new_values_cache->SetBoolean(kLogUploadEnabled,
-                                 log_upload_policy.log_upload_enabled());
+  if (log_upload_policy.has_system_log_upload_enabled()) {
+    new_values_cache->SetBoolean(kSystemLogUploadEnabled,
+                                 log_upload_policy.system_log_upload_enabled());
   }
 }
 

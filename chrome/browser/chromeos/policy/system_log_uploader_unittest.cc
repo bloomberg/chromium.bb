@@ -142,7 +142,7 @@ class SystemLogUploaderTest : public testing::Test {
   SystemLogUploaderTest() : task_runner_(new base::TestSimpleTaskRunner()) {}
 
   void SetUp() override {
-    settings_helper_.ReplaceProvider(chromeos::kLogUploadEnabled);
+    settings_helper_.ReplaceProvider(chromeos::kSystemLogUploadEnabled);
   }
 
   void TearDown() override {
@@ -199,7 +199,7 @@ TEST_F(SystemLogUploaderTest, SuccessTest) {
   scoped_ptr<MockSystemLogDelegate> syslog_delegate(
       new MockSystemLogDelegate(false, SystemLogUploader::SystemLogs()));
   syslog_delegate->set_upload_allowed(true);
-  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, true);
+  settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
   SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
@@ -216,7 +216,7 @@ TEST_F(SystemLogUploaderTest, ThreeFailureTest) {
   scoped_ptr<MockSystemLogDelegate> syslog_delegate(
       new MockSystemLogDelegate(true, SystemLogUploader::SystemLogs()));
   syslog_delegate->set_upload_allowed(true);
-  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, true);
+  settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
   SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
@@ -243,7 +243,7 @@ TEST_F(SystemLogUploaderTest, CheckHeaders) {
   scoped_ptr<MockSystemLogDelegate> syslog_delegate(
       new MockSystemLogDelegate(false, system_logs));
   syslog_delegate->set_upload_allowed(true);
-  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, true);
+  settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
   SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
@@ -260,7 +260,7 @@ TEST_F(SystemLogUploaderTest, DisableLogUpload) {
   scoped_ptr<MockSystemLogDelegate> syslog_delegate(
       new MockSystemLogDelegate(true, SystemLogUploader::SystemLogs()));
   MockSystemLogDelegate* mock_delegate = syslog_delegate.get();
-  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, true);
+  settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
   mock_delegate->set_upload_allowed(true);
   SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
 
@@ -271,7 +271,7 @@ TEST_F(SystemLogUploaderTest, DisableLogUpload) {
 
   // Disable log upload and check that frequency is usual, because there is no
   // errors, we should not upload logs.
-  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, false);
+  settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, false);
   mock_delegate->set_upload_allowed(false);
   task_runner_->RunPendingTasks();
 

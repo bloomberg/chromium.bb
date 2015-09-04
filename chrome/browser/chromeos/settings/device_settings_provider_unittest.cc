@@ -100,11 +100,11 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   }
 
   // Helper routine to enable/disable log upload settings in policy.
-  void SetLogUploadSettings(bool enable_log_upload) {
+  void SetLogUploadSettings(bool enable_system_log_upload) {
     EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     em::DeviceLogUploadSettingsProto* proto =
         device_policy_.payload().mutable_device_log_upload_settings();
-    proto->set_log_upload_enabled(enable_log_upload);
+    proto->set_system_log_upload_enabled(enable_system_log_upload);
     device_policy_.Build();
     device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
     ReloadDeviceSettings();
@@ -156,7 +156,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // decoded.
   void VerifyLogUploadSettings(bool expected_enable_state) {
     const base::FundamentalValue expected_enabled_value(expected_enable_state);
-    EXPECT_TRUE(base::Value::Equals(provider_->Get(kLogUploadEnabled),
+    EXPECT_TRUE(base::Value::Equals(provider_->Get(kSystemLogUploadEnabled),
                                     &expected_enabled_value));
   }
 

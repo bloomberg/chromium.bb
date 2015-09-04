@@ -199,7 +199,7 @@ SystemLogUploader::SystemLogUploader(
 
   // Watch for policy changes.
   upload_enabled_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kLogUploadEnabled,
+      chromeos::kSystemLogUploadEnabled,
       base::Bind(&SystemLogUploader::RefreshUploadSettings,
                  base::Unretained(this)));
 
@@ -298,7 +298,8 @@ void SystemLogUploader::RefreshUploadSettings() {
 
   // CrosSettings are trusted - we want to use the last trusted values, by
   // default do not upload system logs.
-  if (!settings->GetBoolean(chromeos::kLogUploadEnabled, &upload_enabled_))
+  if (!settings->GetBoolean(chromeos::kSystemLogUploadEnabled,
+                            &upload_enabled_))
     upload_enabled_ = false;
 }
 
