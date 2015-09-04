@@ -82,6 +82,20 @@ void PermissionDispatcherThreadProxy::requestPermission(
                  WorkerTaskRunner::Instance()->CurrentWorkerId()));
 }
 
+void PermissionDispatcherThreadProxy::requestPermissions(
+    const blink::WebVector<blink::WebPermissionType>& types,
+    const blink::WebURL& origin,
+    blink::WebPermissionsCallback* callback) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PermissionDispatcher::RequestPermissionsForWorker,
+                 base::Unretained(permission_dispatcher_),
+                 types,
+                 origin.string().utf8(),
+                 base::Unretained(callback),
+                 WorkerTaskRunner::Instance()->CurrentWorkerId()));
+}
+
 void PermissionDispatcherThreadProxy::revokePermission(
     blink::WebPermissionType type,
     const blink::WebURL& origin,

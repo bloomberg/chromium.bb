@@ -43,6 +43,10 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   virtual void requestPermission(blink::WebPermissionType,
                                  const blink::WebURL& origin,
                                  blink::WebPermissionCallback* callback);
+  virtual void requestPermissions(
+      const blink::WebVector<blink::WebPermissionType>& types,
+      const blink::WebURL& origin,
+      blink::WebPermissionsCallback* callback);
   virtual void revokePermission(blink::WebPermissionType,
                                 const blink::WebURL& origin,
                                 blink::WebPermissionCallback* callback);
@@ -60,6 +64,11 @@ class PermissionDispatcher : public blink::WebPermissionClient,
                                   const std::string& origin,
                                   blink::WebPermissionCallback* callback,
                                   int worker_thread_id);
+  void RequestPermissionsForWorker(
+      const blink::WebVector<blink::WebPermissionType>& types,
+      const std::string& origin,
+      blink::WebPermissionsCallback* callback,
+      int worker_thread_id);
   void RevokePermissionForWorker(blink::WebPermissionType type,
                                  const std::string& origin,
                                  blink::WebPermissionCallback* callback,
@@ -77,14 +86,19 @@ class PermissionDispatcher : public blink::WebPermissionClient,
       const base::Callback<void(blink::WebPermissionStatus)>& callback);
 
  private:
-   using PendingCallbackMap = base::ScopedPtrHashMap<uintptr_t,
+   using PermissionCallbackMap = base::ScopedPtrHashMap<uintptr_t,
       scoped_ptr<blink::WebPermissionCallback>>;
+   using PermissionsCallbackMap = base::ScopedPtrHashMap<uintptr_t,
+          scoped_ptr<blink::WebPermissionsCallback>>;
 
   // Runs the given |callback| with |status| as a parameter. It has to be run
   // on a worker thread.
-  static void RunCallbackOnWorkerThread(
+  static void RunPermissionCallbackOnWorkerThread(
       scoped_ptr<blink::WebPermissionCallback> callback,
       blink::WebPermissionStatus status);
+  static void RunPermissionsCallbackOnWorkerThread(
+      scoped_ptr<blink::WebPermissionsCallback> callback,
+      scoped_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses);
 
   // Helper method that returns an initialized PermissionServicePtr.
   PermissionServicePtr& GetPermissionServicePtr();
@@ -97,6 +111,11 @@ class PermissionDispatcher : public blink::WebPermissionClient,
                                 const std::string& origin,
                                 blink::WebPermissionCallback* callback,
                                 int worker_thread_id);
+  void RequestPermissionsInternal(
+      const blink::WebVector<blink::WebPermissionType>& types,
+      const std::string& origin,
+      blink::WebPermissionsCallback* callback,
+      int worker_thread_id);
   void RevokePermissionInternal(blink::WebPermissionType type,
                                 const std::string& origin,
                                 blink::WebPermissionCallback* callback,
@@ -106,6 +125,10 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   void OnPermissionResponse(int worker_thread_id,
                             uintptr_t callback_key,
                             PermissionStatus status);
+  void OnRequestPermissionsResponse(
+      int worker_thread_id,
+      uintptr_t callback_key,
+      const mojo::Array<PermissionStatus>& status);
   void OnPermissionChanged(blink::WebPermissionType type,
                            const std::string& origin,
                            blink::WebPermissionObserver* observer,
@@ -120,7 +143,11 @@ class PermissionDispatcher : public blink::WebPermissionClient,
                                blink::WebPermissionObserver* observer,
                                PermissionStatus current_status);
 
-  PendingCallbackMap pending_callbacks_;
+  // Pending callbacks for query(), revoke() and request() single permission.
+  PermissionCallbackMap permission_callbacks_;
+
+  // Pending callbacks for request() multiple permissions.
+  PermissionsCallbackMap permissions_callbacks_;
 
   ServiceRegistry* service_registry_;
   PermissionServicePtr permission_service_;

@@ -131,6 +131,22 @@ void PermissionServiceImpl::RequestPermission(
                  request_id));
 }
 
+void PermissionServiceImpl::RequestPermissions(
+    mojo::Array<PermissionName> permissions,
+    const mojo::String& origin,
+    bool user_gesture,
+    const PermissionsStatusCallback& callback) {
+  NOTIMPLEMENTED();
+
+  // TODO(lalitm,mlamouri): this is returning the current permission statuses
+  // in order for the call to successfully return. It will be changed later.
+  // See https://crbug.com/516626
+  mojo::Array<PermissionStatus> result(permissions.size());
+  for (size_t i = 0; i < permissions.size(); ++i)
+    result[i] = GetPermissionStatusFromName(permissions[i], GURL(origin));
+  callback.Run(result.Pass());
+}
+
 void PermissionServiceImpl::OnRequestPermissionResponse(
     int request_id,
     PermissionStatus status) {
