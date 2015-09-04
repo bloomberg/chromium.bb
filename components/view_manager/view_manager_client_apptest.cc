@@ -692,8 +692,8 @@ TEST_F(ViewManagerTest, EmbedRootSeesHierarchyChanged) {
   View* embed_view = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(embed_view);
 
+  embed_view->SetAccessPolicy(ViewTree::ACCESS_POLICY_EMBED_ROOT);
   ViewTreeConnection* vm2 = Embed(embed_view);
-  vm2->SetEmbedRoot();
   View* vm2_v1 = vm2->CreateView();
   vm2->GetRoot()->AddChild(vm2_v1);
 
@@ -709,8 +709,8 @@ TEST_F(ViewManagerTest, EmbedFromEmbedRoot) {
   View* embed_view = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(embed_view);
 
+  embed_view->SetAccessPolicy(ViewTree::ACCESS_POLICY_EMBED_ROOT);
   ViewTreeConnection* vm2 = Embed(embed_view);
-  vm2->SetEmbedRoot();
   View* vm2_v1 = vm2->CreateView();
   vm2->GetRoot()->AddChild(vm2_v1);
 

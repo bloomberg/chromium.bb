@@ -52,7 +52,8 @@ class TestViewTreeClient : public mojo::ViewTreeClient {
   void OnEmbed(uint16_t connection_id,
                ViewDataPtr root,
                mojo::ViewTreePtr tree,
-               mojo::Id focused_view_id) override {
+               mojo::Id focused_view_id,
+               uint32_t access_policy) override {
     // TODO(sky): add test coverage of |focused_view_id|.
     tracker_.OnEmbed(connection_id, root.Pass());
   }

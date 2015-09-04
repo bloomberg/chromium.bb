@@ -43,10 +43,14 @@ ViewTreeImpl::ViewTreeImpl(
   ServerView* view = GetView(root_id);
   CHECK(view);
   root_.reset(new ViewId(root_id));
-  if (view->GetRoot() == view)
+  if (view->GetRoot() == view) {
     access_policy_.reset(new WindowManagerAccessPolicy(id_, this));
-  else
+    is_embed_root_ = true;
+  } else {
     access_policy_.reset(new DefaultAccessPolicy(id_, this));
+    is_embed_root_ = (view->get_and_clear_pending_access_policy() &
+                      ViewTree::ACCESS_POLICY_EMBED_ROOT) != 0;
+  }
 }
 
 ViewTreeImpl::~ViewTreeImpl() {
@@ -69,7 +73,9 @@ void ViewTreeImpl::Init(mojo::ViewTreeClient* client, mojo::ViewTreePtr tree) {
       ViewIdToTransportId(focused_view ? focused_view->id() : ViewId()));
 
   client->OnEmbed(id_, ViewToViewData(to_send.front()), tree.Pass(),
-                  focused_view_transport_id);
+                  focused_view_transport_id,
+                  is_embed_root_ ? ViewTree::ACCESS_POLICY_EMBED_ROOT
+                                 : ViewTree::ACCESS_POLICY_DEFAULT);
 }
 
 const ServerView* ViewTreeImpl::GetView(const ViewId& id) const {
@@ -626,10 +632,10 @@ void ViewTreeImpl::SetViewTextInputState(
     view->SetTextInputState(state.To<ui::TextInputState>());
 }
 
-void ViewTreeImpl::SetImeVisibility(uint32_t view_id,
+void ViewTreeImpl::SetImeVisibility(Id transport_view_id,
                                     bool visible,
                                     mojo::TextInputStatePtr state) {
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
+  ServerView* view = GetView(ViewIdFromTransportId(transport_view_id));
   bool success = view && access_policy_->CanSetViewTextInputState(view);
   if (success) {
     if (!state.is_null())
@@ -641,8 +647,20 @@ void ViewTreeImpl::SetImeVisibility(uint32_t view_id,
   }
 }
 
-void ViewTreeImpl::SetEmbedRoot() {
-  is_embed_root_ = true;
+void ViewTreeImpl::SetAccessPolicy(Id transport_view_id,
+                                   uint32 policy_bitmask) {
+  const ViewId view_id(ViewIdFromTransportId(transport_view_id));
+  ServerView* view = GetView(view_id);
+  if (!view)
+    return;
+
+  ViewTreeImpl* existing_owner =
+      connection_manager_->GetConnectionWithRoot(view_id);
+  if (existing_owner)
+    return;  // Only allow changing the access policy when nothing is embedded.
+
+  if (access_policy_->CanSetAccessPolicy(view))
+    view->set_pending_access_policy(policy_bitmask);
 }
 
 void ViewTreeImpl::Embed(mojo::Id transport_view_id,

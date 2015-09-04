@@ -23,14 +23,13 @@ void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
 
 }  // namespace
 
-ServerView::ServerView(ServerViewDelegate* delegate,
-                       const ViewId& id)
+ServerView::ServerView(ServerViewDelegate* delegate, const ViewId& id)
     : delegate_(delegate),
       id_(id),
       parent_(nullptr),
       visible_(false),
       opacity_(1),
-      allows_reembed_(false),
+      pending_access_policy_(mojo::ViewTree::ACCESS_POLICY_DEFAULT),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as ServerViewDrawTracker).

@@ -126,10 +126,6 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
   // Record when the browser window was displayed, used for performance testing.
   const base::Time display_time = base::Time::Now();
 
-  // Make it so we get OnWillEmbed() for any Embed()s done by other apps we
-  // Embed().
-  root->connection()->SetEmbedRoot();
-
   root_ = root;
 
   host_->SetTitle("Mandoline");
@@ -141,6 +137,8 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
 
   root_->AddChild(content_);
   content_->SetVisible(true);
+
+  content_->SetAccessPolicy(mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT);
 
   web_view_.Init(app_, content_);
 

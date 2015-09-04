@@ -41,8 +41,8 @@ class ViewTreeConnection {
   // are initially hidden, use SetVisible(true) to show.
   virtual View* CreateView() = 0;
 
-  // Set view_tree.mojom for details.
-  virtual void SetEmbedRoot() = 0;
+  // Returns true if ACCESS_POLICY_EMBED_ROOT was specified.
+  virtual bool IsEmbedRoot() = 0;
 };
 
 }  // namespace mojo

@@ -182,6 +182,11 @@ void ViewTreeClientImpl::SetImeVisibility(Id view_id,
   tree_->SetImeVisibility(view_id, visible, state.Pass());
 }
 
+void ViewTreeClientImpl::SetAccessPolicy(Id view_id, uint32_t access_policy) {
+  DCHECK(tree_);
+  tree_->SetAccessPolicy(view_id, access_policy);
+}
+
 void ViewTreeClientImpl::Embed(Id view_id, ViewTreeClientPtr client) {
   DCHECK(tree_);
   tree_->Embed(view_id, client.Pass(), ActionCompletedCallback());
@@ -248,10 +253,8 @@ View* ViewTreeClientImpl::CreateView() {
   return view;
 }
 
-void ViewTreeClientImpl::SetEmbedRoot() {
-  // TODO(sky): this isn't right. The server may ignore the call.
-  is_embed_root_ = true;
-  tree_->SetEmbedRoot();
+bool ViewTreeClientImpl::IsEmbedRoot() {
+  return is_embed_root_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -260,13 +263,16 @@ void ViewTreeClientImpl::SetEmbedRoot() {
 void ViewTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
                                  ViewDataPtr root_data,
                                  ViewTreePtr tree,
-                                 Id focused_view_id) {
+                                 Id focused_view_id,
+                                 uint32 access_policy) {
   if (tree) {
     DCHECK(!tree_);
     tree_ = tree.Pass();
     tree_.set_connection_error_handler([this]() { delete this; });
   }
   connection_id_ = connection_id;
+  is_embed_root_ =
+      (access_policy & mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT) != 0;
 
   DCHECK(!root_);
   root_ = AddViewToConnection(this, nullptr, root_data);

@@ -100,6 +100,10 @@ bool DefaultAccessPolicy::CanSetFocus(const ServerView* view) const {
          delegate_->IsRootForAccessPolicy(view->id());
 }
 
+bool DefaultAccessPolicy::CanSetAccessPolicy(const ServerView* view) const {
+  return false;
+}
+
 bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerView* view,
     const ServerView** new_parent,

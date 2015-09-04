@@ -88,6 +88,11 @@ bool WindowManagerAccessPolicy::CanSetFocus(const ServerView* view) const {
   return true;
 }
 
+bool WindowManagerAccessPolicy::CanSetAccessPolicy(
+    const ServerView* view) const {
+  return true;
+}
+
 bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerView* view,
     const ServerView** new_parent,

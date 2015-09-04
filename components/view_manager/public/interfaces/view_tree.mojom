@@ -44,6 +44,19 @@ enum ErrorCode {
 //
 // The root view is identified with a connection id of 0, and value of 1.
 interface ViewTree {
+  enum AccessPolicy {
+    DEFAULT = 0,
+
+    // An embed root has the following abilities:
+    // . The app sees all the descendants of the view the app is ebmedded at,
+    //   even those from separate connections.
+    // . The app is able to Embed() in all the descendants of the view the app
+    //   is embedded at, even those from separate connections.
+    // Only connections originating from the ViewTreeHostFactory can grant this
+    // policy.
+    EMBED_ROOT = 1,
+  };
+
   // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
   // Additionally the connection id (embedded in |view_id|) must match that of
@@ -113,9 +126,6 @@ interface ViewTree {
   // search (pre-order).
   GetViewTree(uint32 view_id) => (array<ViewData> views);
 
-  // TODO(sky): rename this and clarify what it does.
-  SetEmbedRoot();
-
   // A connection may grant access to a view from another connection by way of
   // Embed(). Embed() results in a new ViewTreeClient configured with a root of
   // |view_id|.
@@ -135,8 +145,7 @@ interface ViewTree {
   // When a connection embeds an app the connection no longer has privileges
   // to access or see any of the children of the view. If the view had existing
   // children the children are removed. The one exception is the root
-  // connection and any embed roots. The root always see the full tree, and
-  // embed roots see the complete tree at their embed point.
+  // connection and any connections with the policy ACCESS_POLICY_EMBED_ROOT.
   Embed(uint32 view_id, ViewTreeClient client) => (bool success);
 
   SetFocus(uint32 view_id);
@@ -148,6 +157,15 @@ interface ViewTree {
   // If state is non-null, the specified view's text input state is updated.
   // Otherwise the existing state is used.
   SetImeVisibility(uint32 view_id, bool visible, TextInputState? state);
+
+  // Sets the access policy for the next ViewTreeClient embedded in |view_id|.
+  //
+  // Not all connections are allowed to change the access policy. See each
+  // constant for specifics.
+  //
+  // policy_bitmask is a bitmask of the kAccessPolicy constants. See them for
+  // details.
+  SetAccessPolicy(uint32 view_id, uint32 policy_bitmask);
 };
 
 // Changes to views are not sent to the connection that originated the
@@ -161,7 +179,8 @@ interface ViewTreeClient {
   OnEmbed(uint16 connection_id,
           ViewData root,
           ViewTree? tree,
-          uint32 focused_view);
+          uint32 focused_view,
+          uint32 access_policy);
 
   // Invoked when the application embedded at |view| is disconnected.
   OnEmbeddedAppDisconnected(uint32 view);

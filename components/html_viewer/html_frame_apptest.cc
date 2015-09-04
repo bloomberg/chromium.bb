@@ -230,9 +230,6 @@ class HTMLFrameTest : public ViewManagerTestBase {
   void SetUp() override {
     ViewManagerTestBase::SetUp();
 
-    // Make it so we get OnEmbedForDescendant().
-    window_manager()->SetEmbedRoot();
-
     // Start a test server.
     http_server_.reset(new net::SpawnedTestServer(
         net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,

@@ -280,6 +280,13 @@ bool View::IsDrawn() const {
   return parent_ ? parent_->IsDrawn() : drawn_;
 }
 
+void View::SetAccessPolicy(uint32_t policy_bitmask) {
+  if (connection_) {
+    static_cast<ViewTreeClientImpl*>(connection_)
+        ->SetAccessPolicy(id_, policy_bitmask);
+  }
+}
+
 void View::AddObserver(ViewObserver* observer) {
   observers_.AddObserver(observer);
 }

@@ -92,7 +92,9 @@ void WebViewImpl::GetViewTreeClient(
 // WebViewImpl, mojo::ViewTreeDelegate implementation:
 
 void WebViewImpl::OnEmbed(mojo::View* root) {
-  root->connection()->SetEmbedRoot();
+  // We must have been granted embed root priviledges, otherwise we can't
+  // Embed() in any descendants.
+  DCHECK(root->connection()->IsEmbedRoot());
   root->AddObserver(this);
   root_ = root;
   content_ = root->connection()->CreateView();

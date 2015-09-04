@@ -48,12 +48,8 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
                    const std::vector<uint8_t>& data);
   void SetViewTextInputState(Id view_id, TextInputStatePtr state);
   void SetImeVisibility(Id view_id, bool visible, TextInputStatePtr state);
+  void SetAccessPolicy(Id view_id, uint32_t access_policy);
 
-  void Embed(const String& url, Id view_id);
-  void Embed(mojo::URLRequestPtr request,
-             Id view_id,
-             InterfaceRequest<ServiceProvider> services,
-             ServiceProviderPtr exposed_services);
   void Embed(Id view_id, ViewTreeClientPtr client);
 
   void RequestSurface(Id view_id,
@@ -87,13 +83,14 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
   View* GetViewById(Id id) override;
   View* GetFocusedView() override;
   View* CreateView() override;
-  void SetEmbedRoot() override;
+  bool IsEmbedRoot() override;
 
   // Overridden from ViewTreeClient:
   void OnEmbed(ConnectionSpecificId connection_id,
                ViewDataPtr root,
                ViewTreePtr tree,
-               Id focused_view_id) override;
+               Id focused_view_id,
+               uint32_t access_policy) override;
   void OnEmbeddedAppDisconnected(Id view_id) override;
   void OnUnembed() override;
   void OnViewBoundsChanged(Id view_id,

@@ -303,7 +303,8 @@ class ViewTreeClientImpl : public mojo::ViewTreeClient,
   void OnEmbed(ConnectionSpecificId connection_id,
                ViewDataPtr root,
                mojo::ViewTreePtr tree,
-               mojo::Id focused_view_id) override {
+               mojo::Id focused_view_id,
+               uint32_t access_policy) override {
     // TODO(sky): add coverage of |focused_view_id|.
     tree_ = tree.Pass();
     connection_id_ = connection_id;

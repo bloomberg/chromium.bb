@@ -197,17 +197,17 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
       mojo::Id view_id,
       mojo::InterfaceRequest<mojo::Surface> surface,
       mojo::SurfaceClientPtr client) override;
-  void SetEmbedRoot() override;
   void Embed(mojo::Id transport_view_id,
              mojo::ViewTreeClientPtr client,
              const mojo::Callback<void(bool)>& callback) override;
   void SetFocus(uint32_t view_id) override;
   void SetViewTextInputState(uint32_t view_id,
                              mojo::TextInputStatePtr state) override;
-  void SetImeVisibility(uint32_t view_id,
+  void SetImeVisibility(mojo::Id transport_view_id,
                         bool visible,
                         mojo::TextInputStatePtr state) override;
-
+  void SetAccessPolicy(mojo::Id transport_view_id,
+                       uint32 policy_bitmask) override;
 
   // AccessPolicyDelegate:
   bool IsRootForAccessPolicy(const ViewId& id) const override;
@@ -227,7 +227,7 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
 
   mojo::ViewTreeClient* client_;
 
-  scoped_ptr<AccessPolicy> access_policy_;
+  scoped_ptr<view_manager::AccessPolicy> access_policy_;
 
   // The views created by this connection. This connection owns these objects.
   ViewMap view_map_;

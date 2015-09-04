@@ -44,6 +44,18 @@ class ServerView : public mojo::Surface,
   void AddObserver(ServerViewObserver* observer);
   void RemoveObserver(ServerViewObserver* observer);
 
+  // Sets the access policy that is used the next time Embed() is called.
+  void set_pending_access_policy(uint32_t policy) {
+    pending_access_policy_ = policy;
+  }
+
+  // Returns |pending_access_policy_| and resets it to the default.
+  uint32_t get_and_clear_pending_access_policy() {
+    const uint32_t policy = pending_access_policy_;
+    pending_access_policy_ = mojo::ViewTree::ACCESS_POLICY_DEFAULT;
+    return policy;
+  }
+
   // Binds the provided |request| to |this| object. If an interface is already
   // bound to this ServerView then the old connection is closed first.
   void Bind(mojo::InterfaceRequest<Surface> request,
@@ -107,10 +119,6 @@ class ServerView : public mojo::Surface,
     return last_submitted_frame_size_;
   }
 
-  // See mojom for for details.
-  void set_allows_reembed(bool value) { allows_reembed_ = value; }
-  bool allows_reembed() const { return allows_reembed_; }
-
   // mojo::Surface:
   void SubmitCompositorFrame(
       mojo::CompositorFramePtr frame,
@@ -141,7 +149,7 @@ class ServerView : public mojo::Surface,
   scoped_ptr<cc::SurfaceFactory> surface_factory_;
   float opacity_;
   gfx::Transform transform_;
-  bool allows_reembed_;
+  uint32_t pending_access_policy_;
   ui::TextInputState text_input_state_;
   gfx::Size last_submitted_frame_size_;
 

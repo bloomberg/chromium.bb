@@ -102,6 +102,9 @@ class View {
   // View is attached to the root.
   bool IsDrawn() const;
 
+  // See mojom for details.
+  void SetAccessPolicy(uint32_t policy_bitmask);
+
   // Observation.
   void AddObserver(ViewObserver* observer);
   void RemoveObserver(ViewObserver* observer);
