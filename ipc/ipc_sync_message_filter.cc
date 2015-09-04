@@ -71,10 +71,10 @@ bool SyncMessageFilter::Send(Message* message) {
 }
 
 void SyncMessageFilter::OnFilterAdded(Sender* sender) {
-  sender_ = sender;
   std::vector<Message*> pending_messages;
   {
     base::AutoLock auto_lock(lock_);
+    sender_ = sender;
     io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     pending_messages_.release(&pending_messages);
   }
@@ -83,11 +83,13 @@ void SyncMessageFilter::OnFilterAdded(Sender* sender) {
 }
 
 void SyncMessageFilter::OnChannelError() {
+  base::AutoLock auto_lock(lock_);
   sender_ = NULL;
   SignalAllEvents();
 }
 
 void SyncMessageFilter::OnChannelClosing() {
+  base::AutoLock auto_lock(lock_);
   sender_ = NULL;
   SignalAllEvents();
 }
@@ -129,6 +131,7 @@ void SyncMessageFilter::SendOnIOThread(Message* message) {
   if (message->is_sync()) {
     // We don't know which thread sent it, but it doesn't matter, just signal
     // them all.
+    base::AutoLock auto_lock(lock_);
     SignalAllEvents();
   }
 
@@ -136,7 +139,7 @@ void SyncMessageFilter::SendOnIOThread(Message* message) {
 }
 
 void SyncMessageFilter::SignalAllEvents() {
-  base::AutoLock auto_lock(lock_);
+  lock_.AssertAcquired();
   for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
        iter != pending_sync_messages_.end(); ++iter) {
     (*iter)->done_event->Signal();
