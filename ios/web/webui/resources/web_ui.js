@@ -43,6 +43,10 @@ Function.prototype.bind = function(context) {
  */
 window['chrome']['requestFavicon'] = function(el, imageSet) {
   var cssUrls = imageSet.match(/url\([^\)]+\) \dx/g);
+  // TODO(jyquinn): Review match above (crbug.com/528080).
+  if (!cssUrls) {
+    return;
+  }
   // Extract url from CSS -webkit-image-set.
   var faviconUrl = '';
   for (var i = 0; i < cssUrls.length; ++i) {
