@@ -17,6 +17,7 @@ component("blimp_common") {
 
   deps = [
     "//base",
+    "//blimp/common/proto",
     "//cc",
     "//skia",
     "//ui/gfx/geometry",

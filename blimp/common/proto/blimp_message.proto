@@ -1,0 +1,65 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Contains the BlimpMessage proto which frames all messages sent over Blimp
+// subchannels. BlimpMessage protos are serialized and transmitted over the
+// wire to the Blimplet server.
+//
+// Each BlimpMessage has a few identifying fields which provide the browser
+// session and tab ID as context. The message details are stored in a
+// feature-specific field (see field IDs 1000 and onward).
+// The |type| field tells the receiving end how the BlimpMessage should
+// be unpacked and which component it should be routed to.
+//
+// CONVENTIONS:
+// * A BlimpMessage can contain only one feature message.
+// * Feature message protos are placed in their own files.
+// * Features are applied to unidirectional channels. Client->server and
+//   server->client channels for a component should be broken out as distinct
+//   features, even if they are conceptually similar.
+// * Shared proto types are contained in 'common.proto'.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+import "client_control.proto";
+import "compositor.proto";
+import "input.proto";
+import "server_control.proto";
+
+package blimp;
+
+message BlimpMessage {
+  enum Type {
+    COMPOSITOR = 0;
+    INPUT = 1;
+    CLIENT_CONTROL = 2;
+    SERVER_CONTROL = 3;
+  }
+  // Identifies the feature type of this message.
+  // The feature-specific contents are contained in optional fields of the same
+  // name (example: use |compositor| field for type=COMPOSITOR.)
+  optional Type type = 1;
+
+  // Uniquely identifies the Blimp session that originated this message.
+  // Session IDs are invalidated whenever new sessions are created.
+  // If a message's |session_id| does not match the client's session ID,
+  // then the message may have originated from a discarded session and can be
+  // safely ignored.
+  optional int32 session_id = 2;
+
+  // ID of the tab that is referenced by this message.
+  // Messages that are tab-agnostic may leave this field unset.
+  optional int32 target_tab_id = 3;
+
+  // Feature-specific messages follow.
+  // Only one of these fields may be set per BlimpMessage.
+  // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.
+  optional CompositorMessage compositor = 1000;
+  optional InputMessage input = 1001;
+  optional ClientControlMessage client_control = 1002;
+  optional ServerControlMessage server_control = 1003;
+}
+

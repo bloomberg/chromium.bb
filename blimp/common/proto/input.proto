@@ -1,0 +1,38 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Message definitions for the input subprotocol.
+//
+// Current definitions are just placeholders and are NOT final.
+// Feel free to modify this interface as necessary during feature work.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+import "common.proto";
+
+package blimp;
+
+message ClickArgs {
+  optional CoordinatePair target = 1;
+}
+
+message DragArgs {
+  optional CoordinatePair origin = 1;
+  optional CoordinatePair destination = 2;
+  optional CoordinatePair elastic_overscroll = 3;
+}
+
+message InputMessage {
+  enum Type {
+    CLICK = 1;
+    DRAG = 2;
+  }
+  optional Type type = 1;
+
+  optional ClickArgs click = 1000;
+  optional DragArgs drag = 1001;
+}
+
