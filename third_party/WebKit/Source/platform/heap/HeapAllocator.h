@@ -412,21 +412,6 @@ public:
     }
 };
 
-template<typename T, size_t i>
-inline void swap(HeapVector<T, i>& a, HeapVector<T, i>& b) { a.swap(b); }
-template<typename T, size_t i>
-inline void swap(HeapDeque<T, i>& a, HeapDeque<T, i>& b) { a.swap(b); }
-template<typename T, typename U, typename V>
-inline void swap(HeapHashSet<T, U, V>& a, HeapHashSet<T, U, V>& b) { a.swap(b); }
-template<typename T, typename U, typename V, typename W, typename X>
-inline void swap(HeapHashMap<T, U, V, W, X>& a, HeapHashMap<T, U, V, W, X>& b) { a.swap(b); }
-template<typename T, size_t i, typename U>
-inline void swap(HeapListHashSet<T, i, U>& a, HeapListHashSet<T, i, U>& b) { a.swap(b); }
-template<typename T, typename U, typename V>
-inline void swap(HeapLinkedHashSet<T, U, V>& a, HeapLinkedHashSet<T, U, V>& b) { a.swap(b); }
-template<typename T, typename U, typename V>
-inline void swap(HeapHashCountedSet<T, U, V>& a, HeapHashCountedSet<T, U, V>& b) { a.swap(b); }
-
 } // namespace blink
 
 #endif
