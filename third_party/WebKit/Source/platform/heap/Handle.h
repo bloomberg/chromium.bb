@@ -989,6 +989,16 @@ private:
     OwnPtr<Persistent<Self>> m_keepAlive;
 };
 
+template<typename T>
+class AllowCrossThreadWeakPersistent {
+    STACK_ALLOCATED();
+public:
+    explicit AllowCrossThreadWeakPersistent(T* value) : m_value(value) { }
+    CrossThreadWeakPersistent<T> value() const { return m_value; }
+private:
+    CrossThreadWeakPersistent<T> m_value;
+};
+
 } // namespace blink
 
 namespace WTF {
@@ -1177,6 +1187,18 @@ struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, blink::IsGa
 template<typename T>
 struct ParamStorageTraits<RawPtr<T>> : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
     static_assert(sizeof(T), "T must be fully defined");
+};
+
+template<typename T>
+struct ParamStorageTraits<blink::AllowCrossThreadWeakPersistent<T>> {
+    static_assert(sizeof(T), "T must be fully defined");
+    using StorageType = blink::CrossThreadWeakPersistent<T>;
+
+    static StorageType wrap(const blink::AllowCrossThreadWeakPersistent<T>& value) { return value.value(); }
+
+    // Currently assume that the call sites of this unwrap() account for cleared weak references also.
+    // TODO(sof): extend WTF::FunctionWrapper call overloading to also handle (CrossThread)WeakPersistent.
+    static T* unwrap(const StorageType& value) { return value.get(); }
 };
 
 template<typename T>

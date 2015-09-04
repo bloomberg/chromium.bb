@@ -203,6 +203,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/SegmentedString.h"
@@ -366,25 +367,6 @@ private:
     }
 };
 
-} // namespace blink
-
-namespace WTF {
-
-#if ENABLE(OILPAN)
-// NOTE this is to prevent Document::m_executeScriptsWaitingForResourcesTask from leaking.
-template<>
-struct PointerParamStorageTraits<blink::Document*, true> {
-    using StorageType = blink::CrossThreadWeakPersistent<blink::Document>;
-
-    static StorageType wrap(blink::Document* value) { return value; }
-    static blink::Document* unwrap(const StorageType& value) { return value.get(); }
-};
-#endif
-
-} // namespace WTF
-
-namespace blink {
-
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(*this)
@@ -401,7 +383,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_paginatedForScreen(false)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
-    , m_executeScriptsWaitingForResourcesTask(WTF::bind(&Document::executeScriptsWaitingForResources, this))
+    , m_executeScriptsWaitingForResourcesTask(CancellableTaskFactory::create(this, &Document::executeScriptsWaitingForResources))
     , m_hasAutofocused(false)
     , m_clearFocusedElementTimer(this, &Document::clearFocusedElementTimerFired)
     , m_domTreeVersion(++s_globalTreeVersion)
@@ -2982,7 +2964,7 @@ void Document::didRemoveAllPendingStylesheet()
 void Document::didLoadAllScriptBlockingResources()
 {
     Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(
-        FROM_HERE, m_executeScriptsWaitingForResourcesTask.cancelAndCreate());
+        FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
 
     if (frame())
         frame()->loader().client()->didRemoveAllPendingStylesheet();

@@ -21,14 +21,9 @@ WebTaskRunner::Task* CancellableTaskFactory::cancelAndCreate()
     return new CancellableTask(m_weakPtrFactory.createWeakPtr());
 }
 
-NO_LAZY_SWEEP_SANITIZE_ADDRESS
 void CancellableTaskFactory::CancellableTask::run()
 {
     if (CancellableTaskFactory* taskFactory = m_weakPtr.get()) {
-#if defined(ADDRESS_SANITIZER)
-        if (taskFactory->m_unpoisonBeforeUpdate)
-            ASAN_UNPOISON_MEMORY_REGION(reinterpret_cast<unsigned char*>(taskFactory), sizeof(CancellableTaskFactory));
-#endif
         Closure* closure = taskFactory->m_closure.get();
         taskFactory->m_weakPtrFactory.revokeAll();
         (*closure)();

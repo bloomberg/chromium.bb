@@ -78,7 +78,7 @@ public:
     }
     ~HTMLParserScheduler();
 
-    bool isScheduledForResume() const { return m_isSuspendedWithActiveTimer || m_cancellableContinueParse.isPending(); }
+    bool isScheduledForResume() const { return m_isSuspendedWithActiveTimer || m_cancellableContinueParse->isPending(); }
 
     void scheduleForResume();
     bool yieldIfNeeded(const SpeculationsPumpSession&, bool startingScript);
@@ -106,7 +106,7 @@ private:
     HTMLDocumentParser* m_parser;
     WebTaskRunner* m_loadingTaskRunner; // NOT OWNED
 
-    CancellableTaskFactory m_cancellableContinueParse;
+    OwnPtr<CancellableTaskFactory> m_cancellableContinueParse;
     bool m_isSuspendedWithActiveTimer;
 };
 

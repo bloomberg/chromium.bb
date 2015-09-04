@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/Platform.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
