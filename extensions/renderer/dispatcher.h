@@ -268,9 +268,6 @@ class Dispatcher : public content::RenderProcessObserver,
   // not idle, to ensure that IdleHandle gets called eventually.
   scoped_ptr<base::RepeatingTimer<content::RenderThread> > forced_idle_timer_;
 
-  // All declared function names.
-  std::set<std::string> function_names_;
-
   // The extensions and apps that are active in this process.
   ExtensionIdSet active_extension_ids_;
 
