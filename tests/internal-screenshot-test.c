@@ -30,6 +30,7 @@
 #include <string.h> /* memcpy */
 #include <cairo.h>
 
+#include "zalloc.h"
 #include "weston-test-client-helper.h"
 
 char *server_parameters="--use-pixman --width=320 --height=240";
@@ -92,9 +93,9 @@ load_surface_from_png(const char *fname)
 	}
 
 	/* Disguise the cairo surface in a weston test surface */
-	reference = xzalloc(sizeof *reference);
+	reference = zalloc(sizeof *reference);
 	if (reference == NULL) {
-		perror("xzalloc reference");
+		perror("zalloc reference");
 		cairo_surface_destroy(reference_cairo_surface);
 		return NULL;
 	}
@@ -114,9 +115,9 @@ load_surface_from_png(const char *fname)
 
 	/* Allocate new buffer for our weston reference, and copy the data from
 	   the cairo surface so we can destroy it */
-	reference->data = xzalloc(source_data_size);
+	reference->data = zalloc(source_data_size);
 	if (reference->data == NULL) {
-		perror("xzalloc reference data");
+		perror("zalloc reference data");
 		cairo_surface_destroy(reference_cairo_surface);
 		free(reference);
 		return NULL;
@@ -143,7 +144,7 @@ static struct surface*
 create_screenshot_surface(struct client *client)
 {
 	struct surface* screenshot;
-	screenshot = xzalloc(sizeof *screenshot);
+	screenshot = zalloc(sizeof *screenshot);
 	if (screenshot == NULL)
 		return NULL;
 	screenshot->wl_buffer = create_shm_buffer(client,
