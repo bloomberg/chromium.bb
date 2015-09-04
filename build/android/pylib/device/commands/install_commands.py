@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import os
+import posixpath
 
 from pylib import constants
 
@@ -22,8 +23,10 @@ exec app_process $base/bin %s $@
 
 
 def Installed(device):
-  return (all(device.FileExists('%s/%s' % (BIN_DIR, c)) for c in _COMMANDS)
-          and device.FileExists('%s/chromium_commands.jar' % _FRAMEWORK_DIR))
+  paths = [posixpath.join(BIN_DIR, c) for c in _COMMANDS]
+  paths.append(posixpath.join(_FRAMEWORK_DIR, 'chromium_commands.jar'))
+  return device.PathExists(paths)
+
 
 def InstallCommands(device):
   if device.IsUserBuild():
