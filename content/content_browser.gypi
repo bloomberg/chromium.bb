@@ -1242,6 +1242,8 @@
       'browser/renderer_host/media/audio_input_renderer_host.h',
       'browser/renderer_host/media/audio_input_sync_writer.cc',
       'browser/renderer_host/media/audio_input_sync_writer.h',
+      'browser/renderer_host/media/audio_output_device_enumerator.cc',
+      'browser/renderer_host/media/audio_output_device_enumerator.h',
       'browser/renderer_host/media/audio_renderer_host.cc',
       'browser/renderer_host/media/audio_renderer_host.h',
       'browser/renderer_host/media/audio_sync_reader.cc',

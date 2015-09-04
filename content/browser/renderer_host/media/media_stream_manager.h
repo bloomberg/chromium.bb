@@ -38,6 +38,7 @@
 #include "base/power_monitor/power_observer.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread.h"
+#include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
@@ -51,6 +52,7 @@ class AudioManager;
 namespace content {
 
 class AudioInputDeviceManager;
+class AudioOutputDeviceEnumerator;
 class BrowserContext;
 class FakeMediaStreamUIProxy;
 class MediaStreamDeviceSettings;
@@ -78,6 +80,7 @@ class CONTENT_EXPORT MediaStreamManager
   static void SendMessageToNativeLog(const std::string& message);
 
   explicit MediaStreamManager(media::AudioManager* audio_manager);
+
   ~MediaStreamManager() override;
 
   // Used to access VideoCaptureManager.
@@ -85,6 +88,9 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Used to access AudioInputDeviceManager.
   AudioInputDeviceManager* audio_input_device_manager();
+
+  // Used to access AudioOutputDeviceEnumerator.
+  AudioOutputDeviceEnumerator* audio_output_device_enumerator();
 
   // Creates a new media access request which is identified by a unique string
   // that's returned to the caller. This will trigger the infobar and ask users
@@ -242,10 +248,8 @@ class CONTENT_EXPORT MediaStreamManager
 
   void DoEnumerateDevices(const std::string& label);
 
-  // Enumerates audio output devices. No caching.
-  void EnumerateAudioOutputDevices(const std::string& label);
-
-  void AudioOutputDevicesEnumerated(const StreamDeviceInfoArray& devices);
+  void AudioOutputDevicesEnumerated(
+      const AudioOutputDeviceEnumeration& device_enumeration);
 
   // Helpers.
   // Checks if all devices that was requested in the request identififed by
@@ -371,6 +375,7 @@ class CONTENT_EXPORT MediaStreamManager
   media::AudioManager* const audio_manager_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
+  scoped_ptr<AudioOutputDeviceEnumerator> audio_output_device_enumerator_;
 #if defined(OS_WIN)
   base::Thread video_capture_thread_;
 #endif

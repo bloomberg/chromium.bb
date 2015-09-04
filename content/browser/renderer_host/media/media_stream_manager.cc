@@ -22,6 +22,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
+#include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
 #include "content/browser/renderer_host/media/media_capture_devices_impl.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -227,6 +228,8 @@ bool CalledOnIOThread() {
   return BrowserThread::CurrentlyOn(BrowserThread::IO) ||
          !BrowserThread::IsMessageLoopValid(BrowserThread::IO);
 }
+
+void DummyEnumerationCallback(const AudioOutputDeviceEnumeration& e) {}
 
 }  // namespace
 
@@ -466,6 +469,13 @@ AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(audio_input_device_manager_.get());
   return audio_input_device_manager_.get();
+}
+
+AudioOutputDeviceEnumerator*
+MediaStreamManager::audio_output_device_enumerator() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(audio_output_device_enumerator_.get());
+  return audio_output_device_enumerator_.get();
 }
 
 std::string MediaStreamManager::MakeMediaAccessRequest(
@@ -742,11 +752,10 @@ void MediaStreamManager::DoEnumerateDevices(const std::string& label) {
     request->SetState(MEDIA_DEVICE_AUDIO_OUTPUT, MEDIA_REQUEST_STATE_REQUESTED);
     if (active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_OUTPUT] == 0) {
       ++active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_OUTPUT];
-      device_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&MediaStreamManager::EnumerateAudioOutputDevices,
-                     base::Unretained(this),
-                     label));
+      DCHECK(audio_output_device_enumerator_);
+      audio_output_device_enumerator_->Enumerate(
+          base::Bind(&MediaStreamManager::AudioOutputDevicesEnumerated,
+                     base::Unretained(this)));
     }
     return;
   }
@@ -775,35 +784,20 @@ void MediaStreamManager::DoEnumerateDevices(const std::string& label) {
   DVLOG(1) << "Enumerate Devices ({label = " << label <<  "})";
 }
 
-void MediaStreamManager::EnumerateAudioOutputDevices(const std::string& label) {
-  DCHECK(device_task_runner_->BelongsToCurrentThread());
-
-  scoped_ptr<media::AudioDeviceNames> device_names(
-      new media::AudioDeviceNames());
-  audio_manager_->GetAudioOutputDeviceNames(device_names.get());
-  StreamDeviceInfoArray devices;
-  for (const media::AudioDeviceName& device_info : *device_names) {
-    StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_OUTPUT,
-                            device_info.device_name,
-                            device_info.unique_id);
-    devices.push_back(device);
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::AudioOutputDevicesEnumerated,
-                 base::Unretained(this),
-                 devices));
-}
-
 void MediaStreamManager::AudioOutputDevicesEnumerated(
-    const StreamDeviceInfoArray& devices) {
+    const AudioOutputDeviceEnumeration& device_enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "AudioOutputDevicesEnumerated()";
+  StreamDeviceInfoArray device_infos;
+  for (const auto& entry : device_enumeration) {
+    StreamDeviceInfo device_info(MEDIA_DEVICE_AUDIO_OUTPUT, entry.device_name,
+                                 entry.unique_id);
+    device_infos.push_back(device_info);
+  }
 
   const std::string log_message =
       "New device enumeration result:\n" +
-      GetLogMessageString(MEDIA_DEVICE_AUDIO_OUTPUT, devices);
+      GetLogMessageString(MEDIA_DEVICE_AUDIO_OUTPUT, device_infos);
   SendMessageToNativeLog(log_message);
 
   // Publish the result for all requests waiting for device list(s).
@@ -814,7 +808,7 @@ void MediaStreamManager::AudioOutputDevicesEnumerated(
       DCHECK_EQ(MEDIA_ENUMERATE_DEVICES, request.second->request_type);
       request.second->SetState(MEDIA_DEVICE_AUDIO_OUTPUT,
                                MEDIA_REQUEST_STATE_PENDING_APPROVAL);
-      request.second->devices = devices;
+      request.second->devices = device_infos;
       FinalizeEnumerateDevices(request.first, request.second);
     }
   }
@@ -966,7 +960,14 @@ void MediaStreamManager::StartMonitoring() {
   monitoring_started_ = true;
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
 
-  // Enumerate both the audio and video devices to cache the device lists
+  // Enable caching for audio output device enumerations and do an enumeration
+  // to populate the cache.
+  audio_output_device_enumerator_->SetCachePolicy(
+      AudioOutputDeviceEnumerator::CACHE_POLICY_MANUAL_INVALIDATION);
+  audio_output_device_enumerator_->Enumerate(
+      base::Bind(&DummyEnumerationCallback));
+
+  // Enumerate both the audio and video input devices to cache the device lists
   // and send them to media observer.
   ++active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_CAPTURE];
   audio_input_device_manager_->EnumerateDevices(MEDIA_DEVICE_AUDIO_CAPTURE);
@@ -989,6 +990,8 @@ void MediaStreamManager::StopMonitoring() {
   monitoring_started_ = false;
   ClearEnumerationCache(&audio_enumeration_cache_);
   ClearEnumerationCache(&video_enumeration_cache_);
+  audio_output_device_enumerator_->SetCachePolicy(
+      AudioOutputDeviceEnumerator::CACHE_POLICY_NO_CACHING);
 }
 
 #if defined(OS_MACOSX)
@@ -1644,6 +1647,9 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
 #else
   video_capture_manager_->Register(this, device_task_runner_);
 #endif
+
+  audio_output_device_enumerator_.reset(new AudioOutputDeviceEnumerator(
+      audio_manager_, AudioOutputDeviceEnumerator::CACHE_POLICY_NO_CACHING));
 }
 
 void MediaStreamManager::Opened(MediaStreamType stream_type,
@@ -1992,6 +1998,7 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
 
   audio_input_device_manager_ = NULL;
   video_capture_manager_ = NULL;
+  audio_output_device_enumerator_ = NULL;
 }
 
 void MediaStreamManager::NotifyDevicesChanged(
@@ -2062,12 +2069,14 @@ void MediaStreamManager::OnDevicesChanged(
   // changes (from the operating system).
 
   MediaStreamType stream_type;
-  if (device_type == base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE)
+  if (device_type == base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE) {
     stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
-  else if (device_type == base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE)
+    audio_output_device_enumerator_->InvalidateCache();
+  } else if (device_type == base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE) {
     stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
-  else
+  } else {
     return;  // Uninteresting device change.
+  }
 
   // Always do enumeration even though some enumeration is in progress, because
   // those enumeration commands could be sent before these devices change.
