@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -128,14 +129,14 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
         assertEquals("Unexpected number of spans:", 4, spans.length);
-        spans[0].assertIsColoredSpan("https", 0,
-                mResources.getColor(R.color.url_emphasis_start_scheme_secure));
-        spans[1].assertIsColoredSpan("://", 5,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[2].assertIsColoredSpan("www.google.com", 8,
-                mResources.getColor(R.color.url_emphasis_domain_and_registry));
-        spans[3].assertIsColoredSpan("/", 22,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
+        spans[0].assertIsColoredSpan("https", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_start_scheme_secure));
+        spans[1].assertIsColoredSpan("://", 5, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[2].assertIsColoredSpan("www.google.com", 8, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_domain_and_registry));
+        spans[3].assertIsColoredSpan("/", 22, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
     }
 
     /**
@@ -152,14 +153,14 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
         assertEquals("Unexpected number of spans:", 4, spans.length);
-        spans[0].assertIsColoredSpan("https", 0,
-                mResources.getColor(R.color.url_emphasis_light_non_emphasized_text));
-        spans[1].assertIsColoredSpan("://", 5,
-                mResources.getColor(R.color.url_emphasis_light_non_emphasized_text));
-        spans[2].assertIsColoredSpan("www.google.com", 8,
-                mResources.getColor(R.color.url_emphasis_light_domain_and_registry));
-        spans[3].assertIsColoredSpan("/", 22,
-                mResources.getColor(R.color.url_emphasis_light_non_emphasized_text));
+        spans[0].assertIsColoredSpan("https", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_light_non_emphasized_text));
+        spans[1].assertIsColoredSpan("://", 5, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_light_non_emphasized_text));
+        spans[2].assertIsColoredSpan("www.google.com", 8, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_light_domain_and_registry));
+        spans[3].assertIsColoredSpan("/", 22, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_light_non_emphasized_text));
     }
 
     /**
@@ -178,14 +179,15 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
 
         assertEquals("Unexpected number of spans:", 5, spans.length);
         spans[0].assertIsStrikethroughSpan("https", 0);
-        spans[1].assertIsColoredSpan("https", 0,
-                mResources.getColor(R.color.url_emphasis_start_scheme_security_error));
-        spans[2].assertIsColoredSpan("://", 5,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[3].assertIsColoredSpan("www.google.com", 8,
-                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+        spans[1].assertIsColoredSpan("https", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_start_scheme_security_error));
+        spans[2].assertIsColoredSpan("://", 5, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[3].assertIsColoredSpan("www.google.com", 8, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_domain_and_registry));
         spans[4].assertIsColoredSpan("/q?query=abc123&results=1", 22,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
+                ApiCompatibilityUtils.getColor(mResources,
+                        R.color.url_emphasis_non_emphasized_text));
     }
 
     /**
@@ -203,12 +205,12 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
 
         assertEquals("Unexpected number of spans:", 4, spans.length);
         spans[0].assertIsStrikethroughSpan("https", 0);
-        spans[1].assertIsColoredSpan("https", 0,
-                mResources.getColor(R.color.url_emphasis_start_scheme_security_warning));
-        spans[2].assertIsColoredSpan("://", 5,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[3].assertIsColoredSpan("www.dodgysite.com", 8,
-                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+        spans[1].assertIsColoredSpan("https", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_start_scheme_security_warning));
+        spans[2].assertIsColoredSpan("://", 5, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[3].assertIsColoredSpan("www.dodgysite.com", 8, ApiCompatibilityUtils.getColor(
+                mResources, R.color.url_emphasis_domain_and_registry));
     }
 
     /**
@@ -225,12 +227,12 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
         assertEquals("Unexpected number of spans:", 3, spans.length);
-        spans[0].assertIsColoredSpan("about", 0,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[1].assertIsColoredSpan(":", 5,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[2].assertIsColoredSpan("blank", 6,
-                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+        spans[0].assertIsColoredSpan("about", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[1].assertIsColoredSpan(":", 5, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[2].assertIsColoredSpan("blank", 6, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_domain_and_registry));
     }
 
     /**
@@ -248,8 +250,8 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
         assertEquals("Unexpected number of spans:", 1, spans.length);
-        spans[0].assertIsColoredSpan("data", 0,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
+        spans[0].assertIsColoredSpan("data", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
     }
 
     /**
@@ -266,12 +268,12 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
         assertEquals("Unexpected number of spans:", 3, spans.length);
-        spans[0].assertIsColoredSpan("chrome", 0,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[1].assertIsColoredSpan("://", 6,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[2].assertIsColoredSpan("bookmarks", 9,
-                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+        spans[0].assertIsColoredSpan("chrome", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[1].assertIsColoredSpan("://", 6, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[2].assertIsColoredSpan("bookmarks", 9, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_domain_and_registry));
     }
 
     /**
@@ -288,12 +290,12 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
         assertEquals("Unexpected number of spans:", 3, spans.length);
-        spans[0].assertIsColoredSpan("chrome-native", 0,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[1].assertIsColoredSpan("://", 13,
-                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[2].assertIsColoredSpan("bookmarks", 16,
-                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+        spans[0].assertIsColoredSpan("chrome-native", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[1].assertIsColoredSpan("://", 13, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_non_emphasized_text));
+        spans[2].assertIsColoredSpan("bookmarks", 16, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_domain_and_registry));
     }
 
     /**
@@ -310,8 +312,8 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
         assertEquals("Unexpected number of spans:", 1, spans.length);
-        spans[0].assertIsColoredSpan("invalidurl", 0,
-                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+        spans[0].assertIsColoredSpan("invalidurl", 0, ApiCompatibilityUtils.getColor(mResources,
+                R.color.url_emphasis_domain_and_registry));
     }
 
     /**

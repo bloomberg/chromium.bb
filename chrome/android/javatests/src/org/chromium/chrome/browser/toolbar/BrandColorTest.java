@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
@@ -79,7 +80,8 @@ public class BrandColorTest extends DocumentActivityTestBase {
         super.startMainActivityWithURL(url);
         mToolbar = (ToolbarPhone) getActivity().findViewById(R.id.toolbar);
         mToolbarDataProvider = mToolbar.getToolbarDataProvider();
-        mDefaultColor = getActivity().getResources().getColor(R.color.default_primary_color);
+        mDefaultColor = ApiCompatibilityUtils.getColor(getActivity().getResources(),
+                R.color.default_primary_color);
     }
 
     /**
@@ -184,6 +186,7 @@ public class BrandColorTest extends DocumentActivityTestBase {
                 return getActivity().getActivityTab().isShowingInterstitialPage();
             }
         }));
-        checkForBrandColor(getActivity().getResources().getColor(R.color.default_primary_color));
+        checkForBrandColor(ApiCompatibilityUtils.getColor(
+                getActivity().getResources(), R.color.default_primary_color));
     }
 }
