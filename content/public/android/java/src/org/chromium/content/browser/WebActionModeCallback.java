@@ -105,6 +105,7 @@ public class WebActionModeCallback implements ActionMode.Callback {
     private boolean mEditable;
     private boolean mIsPasswordType;
     private boolean mIsInsertion;
+    private boolean mIsDestroyed;
 
     public WebActionModeCallback(Context context, ActionHandler actionHandler) {
         mContext = context;
@@ -189,6 +190,8 @@ public class WebActionModeCallback implements ActionMode.Callback {
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        if (mIsDestroyed) return true;
+
         int id = item.getItemId();
 
         if (id == R.id.select_action_menu_select_all) {
@@ -216,6 +219,7 @@ public class WebActionModeCallback implements ActionMode.Callback {
 
     @Override
     public void onDestroyActionMode(ActionMode mode) {
+        mIsDestroyed = true;
         mActionHandler.onDestroyActionMode();
     }
 
@@ -229,6 +233,7 @@ public class WebActionModeCallback implements ActionMode.Callback {
      * @param outRect The Rect to be populated with the content position.
      */
     public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+        if (mIsDestroyed) return;
         mActionHandler.onGetContentRect(outRect);
     }
 
