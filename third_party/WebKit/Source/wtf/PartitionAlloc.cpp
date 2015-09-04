@@ -59,6 +59,7 @@ int PartitionRootBase::gInitializedLock = 0;
 bool PartitionRootBase::gInitialized = false;
 PartitionPage PartitionRootBase::gSeedPage;
 PartitionBucket PartitionRootBase::gPagedBucket;
+void (*PartitionRootBase::gOomHandlingFunction)() = nullptr;
 
 static uint16_t partitionBucketNumSystemPages(size_t size)
 {
@@ -136,6 +137,12 @@ static void partitionBucketInitBase(PartitionBucket* bucket, PartitionRootBase* 
     bucket->decommittedPagesHead = 0;
     bucket->numFullPages = 0;
     bucket->numSystemPagesPerSlotSpan = partitionBucketNumSystemPages(bucket->slotSize);
+}
+
+void partitionAllocGlobalInit(void (*oomHandlingFunction)())
+{
+    ASSERT(oomHandlingFunction);
+    PartitionRootBase::gOomHandlingFunction = oomHandlingFunction;
 }
 
 void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_t maxAllocation)
@@ -308,6 +315,8 @@ static NEVER_INLINE void partitionOutOfMemory(const PartitionRootBase* root)
         partitionOutOfMemoryWithLotsOfUncommitedPages();
     }
 #endif
+    if (PartitionRootBase::gOomHandlingFunction)
+        (*PartitionRootBase::gOomHandlingFunction)();
     IMMEDIATE_CRASH();
 }
 

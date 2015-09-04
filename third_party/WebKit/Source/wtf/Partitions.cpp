@@ -31,6 +31,7 @@
 #include "config.h"
 #include "wtf/Partitions.h"
 
+#include "wtf/Alias.h"
 #include "wtf/DefaultAllocator.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/MainThread.h"
@@ -51,6 +52,7 @@ void Partitions::initialize()
     spinLockLock(&s_initializationLock);
 
     if (!s_initialized) {
+        partitionAllocGlobalInit(&Partitions::handleOutOfMemory);
         m_fastMallocAllocator.init();
         m_bufferAllocator.init();
         m_nodeAllocator.init();
@@ -120,6 +122,92 @@ void Partitions::dumpMemoryStats(bool isLightDump, PartitionStatsDumper* partiti
     partitionDumpStatsGeneric(bufferPartition(), "buffer_partition", isLightDump, partitionStatsDumper);
     partitionDumpStats(nodePartition(), "node_partition", isLightDump, partitionStatsDumper);
     partitionDumpStats(layoutPartition(), "layout_partition", isLightDump, partitionStatsDumper);
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsing2G()
+{
+    size_t signature = 2UL * 1024 * 1024 * 1024;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsing1G()
+{
+    size_t signature = 1UL * 1024 * 1024 * 1024;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsing512M()
+{
+    size_t signature = 512 * 1024 * 1024;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsing256M()
+{
+    size_t signature = 256 * 1024 * 1024;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsing128M()
+{
+    size_t signature = 128 * 1024 * 1024;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsing64M()
+{
+    size_t signature = 64 * 1024 * 1024;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsing32M()
+{
+    size_t signature = 32 * 1024 * 1024;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsing16M()
+{
+    size_t signature = 16 * 1024 * 1024;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionsOutOfMemoryUsingLessThan16M()
+{
+    size_t signature = 16 * 1024 * 1024 - 1;
+    alias(&signature);
+    IMMEDIATE_CRASH();
+}
+
+void Partitions::handleOutOfMemory()
+{
+    volatile size_t totalUsage = totalSizeOfCommittedPages();
+
+    if (totalUsage >= 2UL * 1024 * 1024 * 1024)
+        partitionsOutOfMemoryUsing2G();
+    if (totalUsage >= 1UL * 1024 * 1024 * 1024)
+        partitionsOutOfMemoryUsing1G();
+    if (totalUsage >= 512 * 1024 * 1024)
+        partitionsOutOfMemoryUsing512M();
+    if (totalUsage >= 256 * 1024 * 1024)
+        partitionsOutOfMemoryUsing256M();
+    if (totalUsage >= 128 * 1024 * 1024)
+        partitionsOutOfMemoryUsing128M();
+    if (totalUsage >= 64 * 1024 * 1024)
+        partitionsOutOfMemoryUsing64M();
+    if (totalUsage >= 32 * 1024 * 1024)
+        partitionsOutOfMemoryUsing32M();
+    if (totalUsage >= 16 * 1024 * 1024)
+        partitionsOutOfMemoryUsing16M();
+    partitionsOutOfMemoryUsingLessThan16M();
 }
 
 } // namespace WTF

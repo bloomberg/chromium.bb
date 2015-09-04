@@ -316,6 +316,8 @@ struct WTF_EXPORT PartitionRootBase {
     // that.
     static PartitionPage gSeedPage;
     static PartitionBucket gPagedBucket;
+    // gOomHandlingFunction is invoked when ParitionAlloc hits OutOfMemory.
+    static void (*gOomHandlingFunction)();
 };
 
 // Never instantiate a PartitionRoot directly, instead use PartitionAlloc.
@@ -383,6 +385,7 @@ public:
     virtual void partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats*) = 0;
 };
 
+WTF_EXPORT void partitionAllocGlobalInit(void (*oomHandlingFunction)());
 WTF_EXPORT void partitionAllocInit(PartitionRoot*, size_t numBuckets, size_t maxAllocation);
 WTF_EXPORT bool partitionAllocShutdown(PartitionRoot*);
 WTF_EXPORT void partitionAllocGenericInit(PartitionRootGeneric*);

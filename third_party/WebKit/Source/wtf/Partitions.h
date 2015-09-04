@@ -118,6 +118,8 @@ public:
         return partitionAllocActualSize(bufferPartition(), n);
     }
 
+    static void handleOutOfMemory();
+
 private:
     static int s_initializationLock;
     static bool s_initialized;

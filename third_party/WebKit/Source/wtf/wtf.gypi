@@ -6,6 +6,8 @@
             'AddressSanitizer.h',
             'AddressSpaceRandomization.cpp',
             'AddressSpaceRandomization.h',
+            'Alias.cpp',
+            'Alias.h',
             'Alignment.h',
             'Allocator.h',
             'ArrayBuffer.cpp',
