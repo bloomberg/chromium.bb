@@ -155,6 +155,9 @@
       <structure name="IDR_SETTINGS_PREFS_JS"
                  file="prefs/prefs.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PREFS_TYPES_HTML"
+                 file="prefs/prefs_types.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PREFS_TYPES_JS"
                  file="prefs/prefs_types.js"
                  type="chrome_html" />
