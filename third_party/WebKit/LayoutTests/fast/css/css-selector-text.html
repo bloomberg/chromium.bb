@@ -139,7 +139,7 @@ testSelectorRoundTrip(':-webkit-any(a.class1.class2.class3:hover)');
 debug('');
 
 shouldBe("parseThenSerializeRule('*:active { }')", "':active { }'");
-shouldBe("parseThenSerializeRule('|a { }')", "'a { }'");
+testSelectorRoundTrip("|a");
 
 debug('');
 

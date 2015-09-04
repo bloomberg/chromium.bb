@@ -102,7 +102,7 @@ PASS setThenReadSelectorText(':-webkit-any(.class1:hover)') is ':-webkit-any(.cl
 PASS setThenReadSelectorText(':-webkit-any(a.class1.class2.class3:hover)') is ':-webkit-any(a.class1.class2.class3:hover)'
 
 PASS setThenReadSelectorText('*:active') is ':active'
-PASS setThenReadSelectorText('|a') is 'a'
+PASS setThenReadSelectorText('|a') is '|a'
 
 PASS setThenReadSelectorText('input[type=file]:focus') is 'input[type="file"]:focus'
 

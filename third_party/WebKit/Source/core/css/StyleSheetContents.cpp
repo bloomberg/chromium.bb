@@ -274,7 +274,9 @@ void StyleSheetContents::parserAddNamespace(const AtomicString& prefix, const At
 const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& prefix)
 {
     if (prefix.isNull())
-        return nullAtom; // No namespace. If an element/attribute has a namespace, we won't match it.
+        return defaultNamespace();
+    if (prefix.isEmpty())
+        return emptyAtom; // No namespace. If an element/attribute has a namespace, we won't match it.
     if (prefix == starAtom)
         return starAtom; // We'll match any namespace.
     return m_namespaces.get(prefix);

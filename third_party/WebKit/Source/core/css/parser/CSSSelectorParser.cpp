@@ -142,8 +142,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSPars
 
     AtomicString namespacePrefix;
     AtomicString elementName;
-    bool hasNamespace;
-    if (!consumeName(range, elementName, namespacePrefix, hasNamespace)) {
+    if (!consumeName(range, elementName, namespacePrefix)) {
         compoundSelector = consumeSimpleSelector(range);
         if (!compoundSelector)
             return nullptr;
@@ -158,11 +157,8 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSPars
             compoundSelector = simpleSelector.release();
     }
 
-    if (!compoundSelector) {
-        if (hasNamespace)
-            return CSSParserSelector::create(determineNameInNamespace(namespacePrefix, elementName));
-        return CSSParserSelector::create(QualifiedName(nullAtom, elementName, defaultNamespace()));
-    }
+    if (!compoundSelector)
+        return CSSParserSelector::create(determineNameInNamespace(namespacePrefix, elementName));
     prependTypeSelectorIfNeeded(namespacePrefix, elementName, compoundSelector.get());
     return compoundSelector.release();
 }
@@ -186,11 +182,10 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeSimpleSelector(CSSParser
     return selector.release();
 }
 
-bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& name, AtomicString& namespacePrefix, bool& hasNamespace)
+bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& name, AtomicString& namespacePrefix)
 {
     name = nullAtom;
     namespacePrefix = nullAtom;
-    hasNamespace = false;
 
     const CSSParserToken& firstToken = range.peek();
     if (firstToken.type() == IdentToken) {
@@ -200,7 +195,8 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& na
         name = starAtom;
         range.consume();
     } else if (firstToken.type() == DelimiterToken && firstToken.delimiter() == '|') {
-        // No namespace
+        // This is an empty namespace, which'll get assigned this value below
+        name = emptyAtom;
     } else {
         return false;
     }
@@ -209,7 +205,6 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& na
         return true;
     range.consume();
 
-    hasNamespace = true;
     namespacePrefix = name;
     const CSSParserToken& nameToken = range.consume();
     if (nameToken.type() == IdentToken) {
@@ -265,17 +260,16 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeAttribute(CSSParserToken
 
     AtomicString namespacePrefix;
     AtomicString attributeName;
-    bool hasNamespace;
-    if (!consumeName(block, attributeName, namespacePrefix, hasNamespace))
+    if (!consumeName(block, attributeName, namespacePrefix))
         return nullptr;
     block.consumeWhitespace();
 
     if (m_context.isHTMLDocument())
         attributeName = attributeName.lower();
 
-    QualifiedName qualifiedName = hasNamespace
-        ? determineNameInNamespace(namespacePrefix, attributeName)
-        : QualifiedName(nullAtom, attributeName, nullAtom);
+    QualifiedName qualifiedName = namespacePrefix.isNull()
+        ? QualifiedName(nullAtom, attributeName, nullAtom)
+        : determineNameInNamespace(namespacePrefix, attributeName);
 
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
 
@@ -555,8 +549,7 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
         return;
 
     AtomicString determinedElementName = elementName.isNull() ? starAtom : elementName;
-    AtomicString determinedNamespace = namespacePrefix != nullAtom && m_styleSheet ? m_styleSheet->determineNamespace(namespacePrefix) : defaultNamespace();
-    QualifiedName tag(namespacePrefix, determinedElementName, determinedNamespace);
+    QualifiedName tag = determineNameInNamespace(namespacePrefix, determinedElementName);
 
     if (compoundSelector->crossesTreeScopes())
         return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, compoundSelector, elementName.isNull());

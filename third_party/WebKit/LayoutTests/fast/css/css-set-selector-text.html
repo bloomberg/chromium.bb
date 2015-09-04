@@ -156,7 +156,7 @@ testSelectorRoundTrip(':-webkit-any(a.class1.class2.class3:hover)');
 debug('');
 
 shouldBe("setThenReadSelectorText('*:active')", "':active'");
-shouldBe("setThenReadSelectorText('|a')", "'a'");
+testSelectorRoundTrip("|a");
 
 debug('');
 

@@ -36,7 +36,7 @@ private:
     // This doesn't include element names, since they're handled specially
     PassOwnPtr<CSSParserSelector> consumeSimpleSelector(CSSParserTokenRange&);
 
-    bool consumeName(CSSParserTokenRange&, AtomicString& name, AtomicString& namespacePrefix, bool& hasNamespace);
+    bool consumeName(CSSParserTokenRange&, AtomicString& name, AtomicString& namespacePrefix);
 
     // These will return nullptr when the selector is invalid
     PassOwnPtr<CSSParserSelector> consumeId(CSSParserTokenRange&);

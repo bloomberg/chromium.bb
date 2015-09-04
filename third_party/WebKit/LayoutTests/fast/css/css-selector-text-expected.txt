@@ -92,7 +92,7 @@ PASS parseThenSerializeRule(':-webkit-any(.class1:hover) { }') is ':-webkit-any(
 PASS parseThenSerializeRule(':-webkit-any(a.class1.class2.class3:hover) { }') is ':-webkit-any(a.class1.class2.class3:hover) { }'
 
 PASS parseThenSerializeRule('*:active { }') is ':active { }'
-PASS parseThenSerializeRule('|a { }') is 'a { }'
+PASS parseThenSerializeRule('|a { }') is '|a { }'
 
 PASS parseThenSerializeRule('input[type=file]:focus { }') is 'input[type="file"]:focus { }'
 

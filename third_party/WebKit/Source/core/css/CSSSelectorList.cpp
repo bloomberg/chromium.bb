@@ -153,11 +153,10 @@ class SelectorNeedsNamespaceResolutionFunctor {
 public:
     bool operator()(const CSSSelector& selector)
     {
-        if (selector.match() == CSSSelector::Tag && selector.tagQName().prefix() != nullAtom && selector.tagQName().prefix() != starAtom)
-            return true;
-        if (selector.isAttributeSelector() && selector.attribute().prefix() != nullAtom && selector.attribute().prefix() != starAtom)
-            return true;
-        return false;
+        if (selector.match() != CSSSelector::Tag && !selector.isAttributeSelector())
+            return false;
+        const AtomicString& prefix = selector.isAttributeSelector() ? selector.attribute().prefix() : selector.tagQName().prefix();
+        return prefix != nullAtom && prefix != emptyAtom && prefix != starAtom;
     }
 };
 
