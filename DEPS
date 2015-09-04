@@ -8,7 +8,8 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 346931
+  # chrome_rev: 347262
+  "build_rev": "5cf45f1207974c46bbc6fe370a02346e04715264", # from cr commit position 347262
   "valgrind_rev": "3a97aa8142b6e63f16789b22daafb42d202f91dc",
   "tools_valgrind_rev": "5c26149fe6769b7968d093adc457c8dd128fc5b1", # from cr commit position 346297
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
@@ -55,8 +56,8 @@ deps = {
     Var("chromium_git") + "/chromium/buildtools.git@" +
      Var("buildtools_revision"),
   "build":
-    Var("chromium_git") + "/native_client/gn_config.git@" +
-    Var("gn_config_revision"),
+    Var("chromium_git") + "/chromium/src/build.git@" +
+    Var("build_rev"),
   "testing/gtest":
     Var("chromium_git") + "/external/googletest.git@" + Var("gtest_rev"),
   "third_party":

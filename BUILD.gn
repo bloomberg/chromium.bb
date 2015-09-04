@@ -35,8 +35,15 @@ trusted_deps = []
 
 if (use_trusted_x86) {
   group("trusted_x86") {
+    if (is_linux) {
+      toolchain = "//build/toolchain/linux:clang_x86"
+    } else if (is_win) {
+      toolchain = "//build/toolchain/win:x86"
+    } else {
+      assert(False, "unsupported OS for a trusted x86 build")
+    }
     deps = [
-      "//native_client/src:trusted_targets(//native_client/build/toolchain/$current_os:trusted_x86)",
+      "//native_client/src:trusted_targets($toolchain)",
     ]
   }
   trusted_deps += [ ":trusted_x86" ]
@@ -44,8 +51,17 @@ if (use_trusted_x86) {
 
 if (use_trusted_x64) {
   group("trusted_x64") {
+    if (is_linux) {
+      toolchain = "//build/toolchain/linux:clang_x64"
+    } else if (is_mac) {
+      toolchain = "//build/toolchain/mac:clang_x64"
+    } else if (is_win) {
+      toolchain = "//build/toolchain/win:x64"
+    } else {
+      assert(False, "unsupported OS for a trusted x64 build")
+    }
     deps = [
-      "//native_client/src:trusted_targets(//native_client/build/toolchain/$current_os:trusted_x64)",
+      "//native_client/src:trusted_targets($toolchain)",
     ]
   }
   trusted_deps += [ ":trusted_x64" ]
@@ -53,8 +69,10 @@ if (use_trusted_x64) {
 
 if (use_trusted_arm) {
   group("trusted_arm") {
+    assert(is_linux)
+    toolchain = "//build/toolchain/linux:arm"
     deps = [
-      "//native_client/src:trusted_targets(//native_client/build/toolchain/$current_os:trusted_arm)",
+      "//native_client/src:trusted_targets($toolchain)",
     ]
   }
   trusted_deps += [ ":trusted_arm" ]
@@ -64,6 +82,7 @@ group("trusted") {
   deps = trusted_deps
 }
 
+
 #
 # This is the root untrusted target which will build all trusted components
 #
@@ -71,34 +90,34 @@ group("untrusted") {
   deps = []
   if (use_nacl_x86) {
     if (use_gcc_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x86)" ]
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:newlib_x86)" ]
     }
     if (use_gcc_glibc) {
-      deps += [ "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:glibc_x86)" ]
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:glibc_x86)" ]
     }
     if (use_clang_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:clang_newlib_x86)" ]
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:clang_newlib_x86)" ]
     }
-    deps += [ "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:irt_x86)" ]
+    deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_x86)" ]
   }
   if (use_nacl_x64) {
     if (use_gcc_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x64)" ]
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:newlib_x64)" ]
     }
     if (use_gcc_glibc) {
-      deps += [ "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:glibc_x64)" ]
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:glibc_x64)" ]
     }
     if (use_clang_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:clang_newlib_x64)" ]
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:clang_newlib_x64)" ]
     }
-    deps += [ "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:irt_x64)" ]
+    deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_x64)" ]
   }
   if (use_nacl_arm) {
     if (use_gcc_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_arm)" ]
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:newlib_arm)" ]
     }
 
     # No gcc build, yet.
-    deps += [ "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:irt_arm)" ]
+    deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_arm)" ]
   }
 }

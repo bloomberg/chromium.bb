@@ -13,7 +13,7 @@ executable("irt_core") {
     "irt_pnacl_translator_link.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     ":irt_core_lib",
   ]
 }
@@ -53,7 +53,7 @@ static_library("irt_core_lib") {
   ]
 
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     "//native_client/src/shared/gio:gio",
     "//native_client/src/shared/platform:platform",
     "//native_client/src/shared/srpc:srpc",

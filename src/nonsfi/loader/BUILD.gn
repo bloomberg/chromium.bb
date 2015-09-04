@@ -6,7 +6,7 @@ static_library("elf_loader") {
   sources = ["elf_loader.c"]
 
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     "//native_client/src/shared/platform:platform",
   ]
 }

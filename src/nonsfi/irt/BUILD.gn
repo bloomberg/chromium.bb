@@ -10,6 +10,6 @@ static_library("irt_interfaces") {
   ]
 
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }

@@ -9,6 +9,6 @@ static_library("thread_interface") {
     "nacl_thread_interface.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }

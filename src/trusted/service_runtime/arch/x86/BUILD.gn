@@ -7,6 +7,6 @@ static_library("service_runtime_x86_common") {
     "nacl_ldt_x86.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }

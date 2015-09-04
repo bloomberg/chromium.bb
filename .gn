@@ -9,4 +9,4 @@
 root = "//native_client"
 
 # The location of the build configuration file.
-buildconfig = "//native_client/build/config/BUILDCONFIG.gn"
+buildconfig = "//build/config/BUILDCONFIG.gn"

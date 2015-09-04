@@ -7,7 +7,7 @@ static_library("validators") {
     "validator_init.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 
   if (current_cpu == "arm") {
@@ -29,7 +29,7 @@ static_library("validation_cache") {
     "validation_cache.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     "//native_client/src/shared/platform:platform",
   ]
 }

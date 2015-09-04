@@ -17,7 +17,7 @@ static_library("nacl_dyncode_private") {
     ]
   }
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("nacl_random_private") {
@@ -33,7 +33,7 @@ static_library("nacl_random_private") {
     ]
   }
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("nacl_sys_private") {
@@ -57,7 +57,7 @@ static_library("nacl_sys_private") {
     ]
   }
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("imc_syscalls") {
@@ -79,7 +79,7 @@ static_library("imc_syscalls") {
     ]
   }
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("nacl_exception_private") {
@@ -95,7 +95,7 @@ static_library("nacl_exception_private") {
     ]
   }
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("nacl_list_mappings_private") {
@@ -111,7 +111,7 @@ static_library("nacl_list_mappings_private") {
     ]
   }
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("nacl_dyncode") {
@@ -127,7 +127,7 @@ static_library("nacl_dyncode") {
     ]
   }
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("nacl") {
@@ -353,7 +353,7 @@ static_library("nacl") {
   }
 
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 
@@ -371,7 +371,7 @@ source_set("irt_random") {
   }
 
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("nacl_exception") {
@@ -388,7 +388,7 @@ static_library("nacl_exception") {
   }
 
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 static_library("nacl_list_mappings") {
@@ -405,7 +405,7 @@ static_library("nacl_list_mappings") {
   }
 
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 
@@ -424,7 +424,7 @@ if (current_os != "glibc") {
     }
 
     deps = [
-      "//native_client/build/config/nacl:nacl_base",
+      "//build/config/nacl:nacl_base",
     ]
   }
   source_set("gc_hooks_private") {
@@ -440,7 +440,7 @@ if (current_os != "glibc") {
       ]
     }
     deps = [
-      "//native_client/build/config/nacl:nacl_base",
+      "//build/config/nacl:nacl_base",
     ]
   }
   source_set("private_blockhook") {
@@ -457,7 +457,7 @@ if (current_os != "glibc") {
     }
 
     deps = [
-      "//native_client/build/config/nacl:nacl_base",
+      "//build/config/nacl:nacl_base",
     ]
   }
 }

@@ -16,7 +16,7 @@ static_library("arm_validator_core") {
     "gen/arm32_decode_actuals_2.cc",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     "//native_client/src/trusted/cpu_features:cpu_features",
   ]
 }
@@ -26,7 +26,7 @@ static_library("ncvalidate_arm_v2") {
     "ncvalidate.cc",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     ":arm_validator_core",
     "//native_client/src/trusted/validator:validation_cache",
   ]
@@ -37,6 +37,6 @@ static_library("arm_validator_reporters") {
     "problem_reporter.cc",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }

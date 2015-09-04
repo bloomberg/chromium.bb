@@ -256,7 +256,12 @@ def BuildScript(status, context):
       CommandGclientRunhooks(context)
 
   # Make sure our GN build is working.
-  can_use_gn = context.Linux() and context['arch'] != 'arm'
+  # TODO(mcgrathr): Make this work on Linux bots again.
+  # can_use_gn = context.Linux() and context['arch'] != 'arm'
+  buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
+  can_use_gn = (buildername == 'nacl-precise64_newlib_opt' or
+                buildername == 'nacl-precise64-newlib-opt')
+
   gn_out = '../out'
 
   if can_use_gn:
@@ -425,7 +430,7 @@ def BuildScript(status, context):
       '32': 'x86',
       '64': 'x64'
     }[context['arch']]
-    gn_sel_ldr = os.path.join(gn_out, 'trusted_' + arch_name, 'sel_ldr')
+    gn_sel_ldr = os.path.join(gn_out, 'sel_ldr')
     gn_irt = os.path.join(gn_out, 'irt_' + arch_name, 'irt_core.nexe')
     gn_extra = [
         'force_sel_ldr=' + gn_sel_ldr,

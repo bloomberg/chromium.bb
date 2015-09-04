@@ -7,7 +7,7 @@ static_library("sel_main") {
     "sel_main.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     "//native_client/src/trusted/debug_stub:debug_stub",
     ":sel",
   ]
@@ -18,7 +18,7 @@ static_library("sel_main_chrome") {
     "sel_main_chrome.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     "//native_client/src/trusted/debug_stub:debug_stub",
     ":sel",
   ]
@@ -29,7 +29,7 @@ static_library("env_cleanser") {
     "env_cleanser.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 
@@ -38,7 +38,7 @@ static_library("nacl_error_code") {
     "nacl_error_code.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
 
@@ -186,7 +186,7 @@ static_library("sel") {
   }
 
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
     "//native_client/src/trusted/service_runtime:nacl_error_code",
     "//native_client/src/trusted/service_runtime:env_cleanser",
     "//native_client/src/trusted/simple_service:simple_service",

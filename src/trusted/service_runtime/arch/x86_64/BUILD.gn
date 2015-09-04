@@ -41,6 +41,6 @@ static_library("service_runtime_x86_64") {
   }
   defines = [ "NACL_X86_64_ZERO_BASED_SANDBOX=0" ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }

@@ -12,6 +12,6 @@ static_library("nacl_interval") {
     "nacl_interval_range_tree.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }

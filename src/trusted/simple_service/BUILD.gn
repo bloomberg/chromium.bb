@@ -11,6 +11,6 @@ static_library("simple_service") {
     "nacl_simple_service.c",
   ]
   deps = [
-    "//native_client/build/config/nacl:nacl_base",
+    "//build/config/nacl:nacl_base",
   ]
 }
