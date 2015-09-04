@@ -50,13 +50,6 @@ public:
         virtual void run(double deadlineSeconds) = 0;
     };
 
-    // TODO(alexclarke): Remove this once it's no longer referenced by chromium.
-    class BLINK_PLATFORM_EXPORT Task {
-    public:
-        virtual ~Task() { }
-        virtual void run() = 0;
-    };
-
     class BLINK_PLATFORM_EXPORT TaskObserver {
     public:
         virtual ~TaskObserver() { }
@@ -64,12 +57,6 @@ public:
         virtual void didProcessTask() = 0;
     };
 
-    // postTask() and postDelayedTask() take ownership of the passed Task
-    // object. It is safe to invoke postTask() and postDelayedTask() from any
-    // thread.
-    // TODO(alexclarke): Remove postTask & postDelayedTask.
-    virtual void postTask(const WebTraceLocation&, Task*) { }
-    virtual void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) { };
 
     // Returns a WebTaskRunner bound to the underlying scheduler's default task queue.
     virtual WebTaskRunner* taskRunner() { return nullptr; }
