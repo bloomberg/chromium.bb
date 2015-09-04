@@ -251,67 +251,22 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
 
 // Convenience constructors to allow inline initialization of the permission
 // ID sets.
+// TODO(treib): Once we're allowed to use uniform initialization (and
+// std::initializer_list), get rid of this helper.
 class ChromePermissionMessageRule::PermissionIDSetInitializer
     : public std::set<APIPermission::ID> {
  public:
-  PermissionIDSetInitializer() {}
-
-  // Don't make the constructor explicit to make the usage convenient.
-  PermissionIDSetInitializer(APIPermission::ID a) {  // NOLINT(runtime/explicit)
-    insert(a);
-  }
-
-  PermissionIDSetInitializer(APIPermission::ID a, APIPermission::ID b)
-      : PermissionIDSetInitializer(a) {
-    insert(b);
-  }
-
-  PermissionIDSetInitializer(APIPermission::ID a,
-                             APIPermission::ID b,
-                             APIPermission::ID c)
-      : PermissionIDSetInitializer(a, b) {
-    insert(c);
-  }
-
-  PermissionIDSetInitializer(APIPermission::ID a,
-                             APIPermission::ID b,
-                             APIPermission::ID c,
-                             APIPermission::ID d)
-      : PermissionIDSetInitializer(a, b, c) {
-    insert(d);
-  }
-
-  PermissionIDSetInitializer(APIPermission::ID a,
-                             APIPermission::ID b,
-                             APIPermission::ID c,
-                             APIPermission::ID d,
-                             APIPermission::ID e)
-      : PermissionIDSetInitializer(a, b, c, d) {
-    insert(e);
-  }
-
-  PermissionIDSetInitializer(APIPermission::ID a,
-                             APIPermission::ID b,
-                             APIPermission::ID c,
-                             APIPermission::ID d,
-                             APIPermission::ID e,
-                             APIPermission::ID f)
-      : PermissionIDSetInitializer(a, b, c, d, e) {
-    insert(f);
-  }
-
-  PermissionIDSetInitializer(APIPermission::ID a,
-                             APIPermission::ID b,
-                             APIPermission::ID c,
-                             APIPermission::ID d,
-                             APIPermission::ID e,
-                             APIPermission::ID f,
-                             APIPermission::ID g)
-      : PermissionIDSetInitializer(a, b, c, d, e, f) {
-    insert(g);
+  template <typename... IDs>
+  PermissionIDSetInitializer(IDs... ids) {
+    // This effectively calls insert() with each of the ids.
+    ExpandHelper(insert(ids)...);
   }
 
   virtual ~PermissionIDSetInitializer() {}
+
+ private:
+  template <typename... Args>
+  void ExpandHelper(Args&&...) {}
 };
 
 ChromePermissionMessageRule::ChromePermissionMessageRule(
@@ -389,16 +344,17 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_DEBUGGER, {APIPermission::kDebugger}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
        {APIPermission::kPlugin},
-       // TODO(treib): Add the other IDs implied by kFullAccess/kHostsAll.
-       {APIPermission::kFullAccess, APIPermission::kHostsAll,
-        APIPermission::kHostsAllReadOnly, APIPermission::kDeclarativeWebRequest,
-        APIPermission::kTopSites, APIPermission::kTab}},
+       {APIPermission::kDeclarativeWebRequest, APIPermission::kFavicon,
+        APIPermission::kFullAccess, APIPermission::kHostsAll,
+        APIPermission::kHostsAllReadOnly, APIPermission::kProcesses,
+        APIPermission::kTab, APIPermission::kTopSites,
+        APIPermission::kWebNavigation}},
       {IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
        {APIPermission::kFullAccess},
-       // TODO(treib): Add the other IDs implied by kHostsAll.
-       {APIPermission::kHostsAll, APIPermission::kHostsAllReadOnly,
-        APIPermission::kDeclarativeWebRequest, APIPermission::kTopSites,
-        APIPermission::kTab}},
+       {APIPermission::kDeclarativeWebRequest, APIPermission::kFavicon,
+        APIPermission::kHostsAll, APIPermission::kHostsAllReadOnly,
+        APIPermission::kProcesses, APIPermission::kTab,
+        APIPermission::kTopSites, APIPermission::kWebNavigation}},
 
       // Hosts permission messages.
       // Full host access already allows DeclarativeWebRequest, reading the list
@@ -409,17 +365,23 @@ ChromePermissionMessageRule::GetAllRules() {
       // message if both permissions are required.
       {IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS,
        {APIPermission::kHostsAll},
-       // TODO(treib): Add kHostReadWrite and kHostReadOnly.
        {APIPermission::kDeclarativeWebRequest, APIPermission::kFavicon,
-        APIPermission::kHostsAllReadOnly, APIPermission::kProcesses,
+        APIPermission::kHostsAllReadOnly, APIPermission::kHostReadOnly,
+        APIPermission::kHostReadWrite, APIPermission::kProcesses,
         APIPermission::kTab, APIPermission::kTopSites,
         APIPermission::kWebNavigation}},
       {IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY,
        {APIPermission::kHostsAllReadOnly},
-       // TODO(treib): Add kHostReadOnly.
-       {APIPermission::kFavicon, APIPermission::kProcesses, APIPermission::kTab,
+       {APIPermission::kFavicon, APIPermission::kHostReadOnly,
+        APIPermission::kProcesses, APIPermission::kTab,
         APIPermission::kTopSites, APIPermission::kWebNavigation}},
 
+      {new CommaSeparatedListFormatter(IDS_EXTENSION_PROMPT_WARNING_1_HOST,
+                                       IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
+                                       IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
+                                       IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST),
+       {APIPermission::kHostReadWrite},
+       {}},
       {new CommaSeparatedListFormatter(
            IDS_EXTENSION_PROMPT_WARNING_1_HOST_READ_ONLY,
            IDS_EXTENSION_PROMPT_WARNING_2_HOSTS_READ_ONLY,
@@ -427,41 +389,39 @@ ChromePermissionMessageRule::GetAllRules() {
            IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST_READ_ONLY),
        {APIPermission::kHostReadOnly},
        {}},
-      {new CommaSeparatedListFormatter(IDS_EXTENSION_PROMPT_WARNING_1_HOST,
-                                       IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
-                                       IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
-                                       IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST),
-       {APIPermission::kHostReadWrite},
-       {}},
 
       // History-related permission messages.
       // History already allows reading favicons, tab access and accessing the
       // list of most frequently visited sites.
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS,
-       {APIPermission::kSessions, APIPermission::kHistory},
+       {APIPermission::kHistory, APIPermission::kSessions},
        {APIPermission::kFavicon, APIPermission::kProcesses, APIPermission::kTab,
         APIPermission::kTopSites, APIPermission::kWebNavigation}},
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS,
-       {APIPermission::kSessions, APIPermission::kTab},
+       {APIPermission::kTab, APIPermission::kSessions},
        {APIPermission::kFavicon, APIPermission::kProcesses,
         APIPermission::kTopSites, APIPermission::kWebNavigation}},
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE,
        {APIPermission::kHistory},
        {APIPermission::kFavicon, APIPermission::kProcesses, APIPermission::kTab,
         APIPermission::kTopSites, APIPermission::kWebNavigation}},
+      // Note: kSessions allows reading history from other devices only if kTab
+      // is also present. Therefore, there are no _AND_SESSIONS versions of
+      // the other rules that generate the HISTORY_READ warning.
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ,
        {APIPermission::kTab},
        {APIPermission::kFavicon, APIPermission::kProcesses,
         APIPermission::kTopSites, APIPermission::kWebNavigation}},
-      // TODO(treib): Should we have _AND_SESSIONS versions of these 2 as well?
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ,
        {APIPermission::kProcesses},
-       {}},
+       {APIPermission::kFavicon, APIPermission::kTopSites,
+        APIPermission::kWebNavigation}},
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ,
        {APIPermission::kWebNavigation},
-       {}},
+       {APIPermission::kFavicon, APIPermission::kTopSites}},
       {IDS_EXTENSION_PROMPT_WARNING_FAVICON, {APIPermission::kFavicon}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_TOPSITES, {APIPermission::kTopSites}, {}},
+
       {IDS_EXTENSION_PROMPT_WARNING_DECLARATIVE_WEB_REQUEST,
        {APIPermission::kDeclarativeWebRequest},
        {}},
@@ -469,8 +429,8 @@ ChromePermissionMessageRule::GetAllRules() {
       // Messages generated by the sockets permission.
       {IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST,
        {APIPermission::kSocketAnyHost},
-       // TODO(treib): Add kSocketDomainHosts and kSocketSpecificHosts.
-       {}},
+       {APIPermission::kSocketDomainHosts,
+        APIPermission::kSocketSpecificHosts}},
       {new SpaceSeparatedListFormatter(
            IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN,
            IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS),
@@ -526,21 +486,19 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kAccessibilityFeaturesRead},
        {}},
 
-      // TODO(sashab): Add the missing combinations of media galleries
-      // permissions so a valid permission is generated for all combinations.
+      // Media galleries permissions. We don't have strings for every possible
+      // combination, e.g. we don't bother with a special string for "write, but
+      // not read" - just show the "read and write" string instead, etc.
       {IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE_DELETE,
        {APIPermission::kMediaGalleriesAllGalleriesCopyTo,
-        APIPermission::kMediaGalleriesAllGalleriesDelete,
-        APIPermission::kMediaGalleriesAllGalleriesRead},
-       {}},
+        APIPermission::kMediaGalleriesAllGalleriesDelete},
+       {APIPermission::kMediaGalleriesAllGalleriesRead}},
       {IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE,
-       {APIPermission::kMediaGalleriesAllGalleriesCopyTo,
-        APIPermission::kMediaGalleriesAllGalleriesRead},
-       {}},
+       {APIPermission::kMediaGalleriesAllGalleriesCopyTo},
+       {APIPermission::kMediaGalleriesAllGalleriesRead}},
       {IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE,
-       {APIPermission::kMediaGalleriesAllGalleriesDelete,
-        APIPermission::kMediaGalleriesAllGalleriesRead},
-       {}},
+       {APIPermission::kMediaGalleriesAllGalleriesDelete},
+       {APIPermission::kMediaGalleriesAllGalleriesRead}},
       {IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ,
        {APIPermission::kMediaGalleriesAllGalleriesRead},
        {}},
