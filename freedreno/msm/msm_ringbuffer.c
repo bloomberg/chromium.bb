@@ -253,7 +253,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		cmd->nr_relocs = (b > a) ? b - a : 0;
 	}
 
-	DEBUG_MSG("nr_cmds=%u, nr_bos=%u\n", req.nr_cmds, req.nr_bos);
+	DEBUG_MSG("nr_cmds=%u, nr_bos=%u", req.nr_cmds, req.nr_bos);
 
 	ret = drmCommandWriteRead(ring->pipe->dev->fd, DRM_MSM_GEM_SUBMIT,
 			&req, sizeof(req));
@@ -267,7 +267,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 			struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
 			struct drm_msm_gem_submit_reloc *relocs = U642VOID(cmd->relocs);
-			ERROR_MSG("  cmd[%d]: type=%u, submit_idx=%u, submit_offset=%u, size=%u\n",
+			ERROR_MSG("  cmd[%d]: type=%u, submit_idx=%u, submit_offset=%u, size=%u",
 					i, cmd->type, cmd->submit_idx, cmd->submit_offset, cmd->size);
 			for (j = 0; j < cmd->nr_relocs; j++) {
 				struct drm_msm_gem_submit_reloc *r = &relocs[j];
