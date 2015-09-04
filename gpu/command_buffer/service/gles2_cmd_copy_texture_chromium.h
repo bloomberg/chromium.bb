@@ -14,6 +14,7 @@
 namespace gpu {
 namespace gles2 {
 
+struct DecoderTextureState;
 class GLES2Decoder;
 
 }  // namespace gles2.
@@ -34,20 +35,25 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                      GLenum source_target,
                      GLuint source_id,
                      GLenum source_internal_format,
+                     GLenum dest_target,
                      GLuint dest_id,
                      GLenum dest_internal_format,
+                     GLenum dest_type,
                      GLsizei width,
                      GLsizei height,
                      bool flip_y,
                      bool premultiply_alpha,
-                     bool unpremultiply_alpha);
+                     bool unpremultiply_alpha,
+                     const gles2::DecoderTextureState* texture_state);
 
   void DoCopySubTexture(const gles2::GLES2Decoder* decoder,
                         GLenum source_target,
                         GLuint source_id,
                         GLenum source_internal_format,
+                        GLenum dest_target,
                         GLuint dest_id,
                         GLenum dest_internal_format,
+                        GLenum dest_type,
                         GLint xoffset,
                         GLint yoffset,
                         GLint x,
@@ -60,22 +66,28 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                         GLsizei source_height,
                         bool flip_y,
                         bool premultiply_alpha,
-                        bool unpremultiply_alpha);
+                        bool unpremultiply_alpha,
+                        const gles2::DecoderTextureState* texture_state);
 
   // This will apply a transform on the texture coordinates before sampling
   // the source texture and copying to the destination texture. The transform
   // matrix should be given in column-major form, so it can be passed
   // directly to GL.
-  void DoCopyTextureWithTransform(const gles2::GLES2Decoder* decoder,
-                                  GLenum source_target,
-                                  GLuint source_id,
-                                  GLuint dest_id,
-                                  GLsizei width,
-                                  GLsizei height,
-                                  bool flip_y,
-                                  bool premultiply_alpha,
-                                  bool unpremultiply_alpha,
-                                  const GLfloat transform_matrix[16]);
+  void DoCopyTextureWithTransform(
+      const gles2::GLES2Decoder* decoder,
+      GLenum source_target,
+      GLuint source_id,
+      GLenum dest_target,
+      GLuint dest_id,
+      GLenum dest_internal_format,
+      GLenum dest_type,
+      GLsizei width,
+      GLsizei height,
+      bool flip_y,
+      bool premultiply_alpha,
+      bool unpremultiply_alpha,
+      const gles2::DecoderTextureState* texture_state,
+      const GLfloat transform_matrix[16]);
 
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;
@@ -99,6 +111,7 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   void DoCopyTextureInternal(const gles2::GLES2Decoder* decoder,
                              GLenum source_target,
                              GLuint source_id,
+                             GLenum dest_target,
                              GLuint dest_id,
                              GLint xoffset,
                              GLint yoffset,

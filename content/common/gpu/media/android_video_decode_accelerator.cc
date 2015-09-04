@@ -389,16 +389,11 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
                                              0.0f, 1.0f, 0.0f, 0.0f,
                                              0.0f, 0.0f, 1.0f, 0.0f,
                                              0.0f, 0.0f, 0.0f, 1.0f};
-  copier_->DoCopyTextureWithTransform(gl_decoder_.get(),
-                                      GL_TEXTURE_EXTERNAL_OES,
-                                      surface_texture_id_,
-                                      picture_buffer_texture_id,
-                                      size_.width(),
-                                      size_.height(),
-                                      false,
-                                      false,
-                                      false,
-                                      default_matrix);
+  copier_->DoCopyTextureWithTransform(
+      gl_decoder_.get(), GL_TEXTURE_EXTERNAL_OES, surface_texture_id_,
+      GL_TEXTURE_2D, picture_buffer_texture_id, GL_RGBA, GL_UNSIGNED_BYTE,
+      size_.width(), size_.height(), false, false, false, nullptr,
+      default_matrix);
 
   // TODO(henryhsu): Pass (0, 0) as visible size will cause several test
   // cases failed. We should make sure |size_| is coded size or visible size.

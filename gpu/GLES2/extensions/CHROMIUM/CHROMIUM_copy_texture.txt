@@ -82,13 +82,19 @@ New Procedures and Functions
     INVALID_OPERATION is generated if the internal format of <source_id> is not one of
     formats from the table above.
 
-    INVALID_VALUE is generated if <target> is not GL_TEXTURE_2D.
+    INVALID_VALUE is generated if <target> is not GL_TEXTURE_2D,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Z, or GL_TEXTURE_CUBE_MAP_NEGATIVE_Z.
 
     INVALID_VALUE is generated if <source_id> or <dest_id> are not valid texture
     objects.
 
     INVALID_VALUE is generated if textures corresponding to <dest_id> have not
-    been bound as GL_TEXTURE_2D object.
+    been bound as GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP object.
+
+    INVALID_VALUE is generated if the bound target of textures corresponding to
+    <dest_id> doesn't match <target>.
 
     INVALID_VALUE is generated if textures corresponding to <source_id> have not
     been bound as GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB or
@@ -126,7 +132,10 @@ New Procedures and Functions
     INVALID_OPERATION is generated if source internal_format and destination
     internal_format are not one of the valid formats described above.
 
-    INVALID_VALUE is generated if <target> is not GL_TEXTURE_2D.
+    INVALID_VALUE is generated if <target> is not GL_TEXTURE_2D,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Z, or GL_TEXTURE_CUBE_MAP_NEGATIVE_Z.
 
     INVALID_OPERATION is generated if the destination texture has not been
     defined.
@@ -163,3 +172,4 @@ Revision History
     16/7/2014   Add GL_TEXTURE_RECTANGLE_ARB as valid source_id target
     19/6/2015   Add arguments unpack_flip_y, unpack_premultiply_alpha, and
                 unpack_unmultiply_alpha to both commands.
+    6/8/2015    support GL_TEXTURE_CUBE_MAP destination target.
