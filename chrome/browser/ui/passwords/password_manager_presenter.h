@@ -64,10 +64,6 @@ class PasswordManagerPresenter
   // Returns the password store associated with the currently active profile.
   password_manager::PasswordStore* GetPasswordStore();
 
-  // Returns true if the user needs to be authenticated before a plaintext
-  // password is revealed.
-  bool IsAuthenticationRequired();
-
   // Sets the password and exception list of the UI view.
   void SetPasswordList();
   void SetPasswordExceptionList();
@@ -123,7 +119,7 @@ class PasswordManagerPresenter
 
   // Indicates whether or not the password manager should require the user to
   // reauthenticate before revealing plaintext passwords.
-  bool require_reauthentication_;
+  const bool require_reauthentication_;
 
   // The last time the user was successfully authenticated.
   // Used to determine whether or not to reveal plaintext passwords.

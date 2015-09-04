@@ -13,9 +13,12 @@
 #include <security.h>
 #undef SECURITY_WIN32
 
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "chrome/browser/password_manager/password_manager_util_win.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
@@ -32,8 +35,20 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace password_manager_util {
+namespace password_manager_util_win {
 namespace {
+
+enum OsPasswordStatus {
+  PASSWORD_STATUS_UNKNOWN = 0,
+  PASSWORD_STATUS_UNSUPPORTED,
+  PASSWORD_STATUS_BLANK,
+  PASSWORD_STATUS_NONBLANK,
+  PASSWORD_STATUS_WIN_DOMAIN,
+  // NOTE: Add new status types only immediately above this line. Also,
+  // make sure the enum list in tools/histogram/histograms.xml is
+  // updated with any change in here.
+  MAX_PASSWORD_STATUS
+};
 
 const unsigned kMaxPasswordRetries = 3;
 
@@ -147,55 +162,63 @@ bool CheckBlankPassword(const WCHAR* username) {
 }
 
 void GetOsPasswordStatusInternal(PasswordCheckPrefs* prefs,
-                                 OsPasswordStatus* retVal) {
+                                 OsPasswordStatus* status) {
   DWORD username_length = CREDUI_MAX_USERNAME_LENGTH;
   WCHAR username[CREDUI_MAX_USERNAME_LENGTH+1] = {};
-  *retVal = PASSWORD_STATUS_UNKNOWN;
+  *status = PASSWORD_STATUS_UNKNOWN;
 
   if (GetUserNameEx(NameUserPrincipal, username, &username_length)) {
     // If we are on a domain, it is almost certain that the password is not
     // blank, but we do not actively check any further than this to avoid any
     // failed login attempts hitting the domain controller.
-    *retVal = PASSWORD_STATUS_WIN_DOMAIN;
+    *status = PASSWORD_STATUS_WIN_DOMAIN;
   } else {
     username_length = CREDUI_MAX_USERNAME_LENGTH;
     // CheckBlankPasswordWithPrefs() isn't safe to call on before Windows 7.
     // http://crbug.com/345916
     if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
         GetUserName(username, &username_length)) {
-      *retVal = CheckBlankPasswordWithPrefs(username, prefs) ?
+      *status = CheckBlankPasswordWithPrefs(username, prefs) ?
           PASSWORD_STATUS_BLANK :
           PASSWORD_STATUS_NONBLANK;
     }
   }
 }
 
-void ReplyOsPasswordStatus(const base::Callback<void(OsPasswordStatus)>& reply,
-                           PasswordCheckPrefs* prefs,
-                           OsPasswordStatus* retVal) {
+void ReplyOsPasswordStatus(scoped_ptr<PasswordCheckPrefs> prefs,
+                           scoped_ptr<OsPasswordStatus> status) {
   PrefService* local_state = g_browser_process->local_state();
   prefs->Write(local_state);
-  reply.Run(*retVal);
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus", *status,
+                            MAX_PASSWORD_STATUS);
+}
+
+void GetOsPasswordStatus() {
+  // Preferences can be accessed on the UI thread only.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PrefService* local_state = g_browser_process->local_state();
+  scoped_ptr<PasswordCheckPrefs> prefs(new PasswordCheckPrefs);
+  prefs->Read(local_state);
+  scoped_ptr<OsPasswordStatus> status(
+      new OsPasswordStatus(PASSWORD_STATUS_UNKNOWN));
+  bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GetOsPasswordStatusInternal, prefs.get(), status.get()),
+      base::Bind(&ReplyOsPasswordStatus, base::Passed(&prefs),
+                 base::Passed(&status)),
+      true);
+  if (!posted) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
+                              PASSWORD_STATUS_UNKNOWN, MAX_PASSWORD_STATUS);
+  }
 }
 
 }  // namespace
 
-void GetOsPasswordStatus(const base::Callback<void(OsPasswordStatus)>& reply) {
-  // Preferences can be accessed on the UI thread only.
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PrefService* local_state = g_browser_process->local_state();
-  PasswordCheckPrefs* prefs = new PasswordCheckPrefs;
-  prefs->Read(local_state);
-  OsPasswordStatus* retVal = new OsPasswordStatus(PASSWORD_STATUS_UNKNOWN);
-  bool posted = base::WorkerPool::PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GetOsPasswordStatusInternal,
-                 base::Unretained(prefs), base::Unretained(retVal)),
-      base::Bind(&ReplyOsPasswordStatus,
-                 reply, base::Owned(prefs), base::Owned(retVal)),
-      true);
-  if (!posted)
-    reply.Run(PASSWORD_STATUS_UNKNOWN);
+void DelayReportOsPassword() {
+  content::BrowserThread::PostDelayedTask(content::BrowserThread::UI, FROM_HERE,
+                                          base::Bind(&GetOsPasswordStatus),
+                                          base::TimeDelta::FromSeconds(40));
 }
 
 bool AuthenticateUser(gfx::NativeWindow window) {
@@ -297,4 +320,4 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   return retval;
 }
 
-}  // namespace password_manager_util
+}  // namespace password_manager_util_win

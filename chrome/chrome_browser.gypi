@@ -962,7 +962,6 @@
       'browser/browser_process.h',
       'browser/browser_process_platform_part_base.cc',
       'browser/browser_process_platform_part_base.h',
-      'browser/password_manager/password_manager_util_ios.mm',
     ],
     # Desktop Linux and ChromeOS.
     'chrome_browser_linux_sources': [
@@ -992,6 +991,8 @@
       'browser/media_galleries/fileapi/iphoto_data_provider.h',
       'browser/media_galleries/fileapi/iphoto_file_util.cc',
       'browser/media_galleries/fileapi/iphoto_file_util.h',
+      'browser/password_manager/password_manager_util_mac.h',
+      'browser/password_manager/password_manager_util_mac.mm',
     ],
     # Android and iOS, not CrOS.
     'chrome_browser_mobile_sources': [
@@ -1293,6 +1294,8 @@
       'browser/hang_monitor/hung_window_detector.h',
       'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.cc',
       'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h',
+      'browser/password_manager/password_manager_util_win.cc',
+      'browser/password_manager/password_manager_util_win.h',
       'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
     ],
     'chrome_browser_non_win_sources': [
@@ -2048,10 +2051,6 @@
     'chrome_browser_password_manager_sources': [
       'browser/password_manager/chrome_password_manager_client.cc',
       'browser/password_manager/chrome_password_manager_client.h',
-      'browser/password_manager/password_manager_util_android.cc',
-      'browser/password_manager/password_manager_util_linux.cc',
-      'browser/password_manager/password_manager_util_mac.mm',
-      'browser/password_manager/password_manager_util_win.cc',
       'browser/password_manager/password_store_factory.cc',
       'browser/password_manager/password_store_factory.h',
       'browser/password_manager/password_store_mac.cc',

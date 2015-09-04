@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "chrome/browser/password_manager/password_manager_util_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
@@ -16,9 +16,9 @@
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace password_manager_util {
+namespace password_manager_util_mac {
 
-bool AuthenticateUser(gfx::NativeWindow window) {
+bool AuthenticateUser() {
   NSString* identifier = [base::mac::MainBundle() bundleIdentifier];
   AuthorizationString name =
       [[identifier stringByAppendingString:@".show-passwords"] UTF8String];
@@ -39,9 +39,4 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   return authorization.get() != NULL;
 }
 
-// TODO(dubroy): Implement on Mac.
-void GetOsPasswordStatus(const base::Callback<void(OsPasswordStatus)>& reply) {
-  reply.Run(PASSWORD_STATUS_UNSUPPORTED);
-}
-
-}  // namespace password_manager_util
+}  // namespace password_manager_util_mac

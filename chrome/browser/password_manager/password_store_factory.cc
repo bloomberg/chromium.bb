@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/thread_task_runner_handle.h"
@@ -23,7 +24,6 @@
 #include "components/password_manager/core/browser/affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/password_manager/password_manager_util_win.h"
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #elif defined(OS_MACOSX)
@@ -65,23 +66,6 @@ const LocalProfileId kInvalidLocalProfileId =
 const char kLibsecretFieldTrialName[] = "Libsecret";
 const char kLibsecretFieldTrialDisabledGroupName[] = "Disabled";
 #endif
-
-void ReportOsPassword(password_manager_util::OsPasswordStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
-                            status,
-                            password_manager_util::MAX_PASSWORD_STATUS);
-}
-
-void DelayReportOsPassword() {
-  // Avoid checking OS password until later on in browser startup
-  // since it calls a few Windows APIs.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&password_manager_util::GetOsPasswordStatus,
-                 base::Bind(&ReportOsPassword)),
-      base::TimeDelta::FromSeconds(40));
-}
 
 base::FilePath GetAffiliationDatabasePath(Profile* profile) {
   DCHECK(profile);
@@ -241,7 +225,9 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
 
 KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  DelayReportOsPassword();
+#if defined(OS_WIN)
+  password_manager_util_win::DelayReportOsPassword();
+#endif
   Profile* profile = static_cast<Profile*>(context);
 
   // Given that LoginDatabase::Init() takes ~100ms on average; it will be called

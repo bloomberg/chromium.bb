@@ -23,11 +23,16 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/password_manager/password_manager_util_win.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/password_manager/password_manager_util_mac.h"
+#endif
 
 using password_manager::PasswordStore;
 
@@ -35,11 +40,11 @@ PasswordManagerPresenter::PasswordManagerPresenter(
     PasswordUIView* password_view)
     : populater_(this),
       exception_populater_(this),
+      require_reauthentication_(
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisablePasswordManagerReauthentication)),
       password_view_(password_view) {
   DCHECK(password_view_);
-  require_reauthentication_ =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePasswordManagerReauthentication);
 }
 
 PasswordManagerPresenter::~PasswordManagerPresenter() {
@@ -133,9 +138,17 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
     NOTREACHED();
     return;
   }
-  if (IsAuthenticationRequired()) {
-    if (password_manager_util::AuthenticateUser(
-        password_view_->GetNativeWindow()))
+  if (require_reauthentication_ &&
+      (base::TimeTicks::Now() - last_authentication_time_) >
+          base::TimeDelta::FromSeconds(60)) {
+    bool authenticated = true;
+#if defined(OS_WIN)
+    authenticated = password_manager_util_win::AuthenticateUser(
+        password_view_->GetNativeWindow());
+#elif defined(OS_MACOSX)
+    authenticated = password_manager_util_mac::AuthenticateUser();
+#endif
+    if (authenticated)
       last_authentication_time_ = base::TimeTicks::Now();
     else
       return;
@@ -202,12 +215,6 @@ void PasswordManagerPresenter::SetPasswordList() {
 
 void PasswordManagerPresenter::SetPasswordExceptionList() {
   password_view_->SetPasswordExceptionList(password_exception_list_);
-}
-
-bool PasswordManagerPresenter::IsAuthenticationRequired() {
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(60);
-  return require_reauthentication_ &&
-      (base::TimeTicks::Now() - last_authentication_time_) > delta;
 }
 
 PasswordManagerPresenter::ListPopulater::ListPopulater(
