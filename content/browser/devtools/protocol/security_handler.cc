@@ -43,10 +43,13 @@ void AddExplanations(
     const std::vector<SecurityStyleExplanation>& explanations_to_add,
     std::vector<scoped_refptr<SecurityStateExplanation>>* explanations) {
   for (const auto& it : explanations_to_add) {
-    explanations->push_back(SecurityStateExplanation::Create()
-                                ->set_security_state(security_style)
-                                ->set_summary(it.summary)
-                                ->set_description(it.description));
+    scoped_refptr<SecurityStateExplanation> explanation =
+        SecurityStateExplanation::Create()->set_security_state(security_style)
+                                          ->set_summary(it.summary)
+                                          ->set_description(it.description);
+    if (it.cert_id > 0)
+      explanation->set_certificate_id(it.cert_id);
+    explanations->push_back(explanation);
   }
 }
 

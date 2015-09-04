@@ -93,6 +93,7 @@ struct SecurityInfo {
   SHA1DeprecationStatus sha1_deprecation_status;
   MixedContentStatus mixed_content_status;
   net::CertStatus cert_status;
+  int cert_id;
   bool scheme_is_cryptographic;
 };
 

@@ -86,6 +86,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -387,7 +388,8 @@ class SecurityStyleTestObserver : public WebContentsObserver {
 // Check that |observer|'s latest event was for an expired certificate
 // and that it saw the proper SecurityStyle and explanations.
 void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
-                              int error) {
+                              int error,
+                              Browser* browser) {
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
             observer.latest_security_style());
 
@@ -404,13 +406,20 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
   EXPECT_EQ(l10n_util::GetStringFUTF8(
                 IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
             expired_explanation.broken_explanations[0].description);
+
+  // Check the associated certificate id.
+  int cert_id = browser->tab_strip_model()->GetActiveWebContents()->
+      GetController().GetActiveEntry()->GetSSL().cert_id;
+  EXPECT_EQ(cert_id,
+            expired_explanation.broken_explanations[0].cert_id);
 }
 
 // Checks that the given |secure_explanations| contains appropriate
 // an appropriate explanation if the certificate status is valid.
 void CheckSecureExplanations(
     const std::vector<content::SecurityStyleExplanation>& secure_explanations,
-    CertificateStatus cert_status) {
+    CertificateStatus cert_status,
+    Browser* browser) {
   if (cert_status != VALID_CERTIFICATE) {
     EXPECT_EQ(0u, secure_explanations.size());
     return;
@@ -421,6 +430,9 @@ void CheckSecureExplanations(
             secure_explanations[0].summary);
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION),
             secure_explanations[0].description);
+  int cert_id = browser->tab_strip_model()->GetActiveWebContents()->
+      GetController().GetActiveEntry()->GetSSL().cert_id;
+  EXPECT_EQ(cert_id, secure_explanations[0].cert_id);
 }
 
 }  // namespace
@@ -2977,7 +2989,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   ASSERT_EQ(0u, mixed_content_explanation.warning_explanations.size());
   ASSERT_EQ(0u, mixed_content_explanation.broken_explanations.size());
   CheckSecureExplanations(mixed_content_explanation.secure_explanations,
-                          VALID_CERTIFICATE);
+                          VALID_CERTIFICATE, browser());
   EXPECT_TRUE(mixed_content_explanation.scheme_is_cryptographic);
   EXPECT_TRUE(mixed_content_explanation.displayed_insecure_content);
   EXPECT_FALSE(mixed_content_explanation.ran_insecure_content);
@@ -2994,9 +3006,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   // interstitial should fire.
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
-  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID, browser());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
-                          INVALID_CERTIFICATE);
+                          INVALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
@@ -3010,7 +3022,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
-                          VALID_CERTIFICATE);
+                          VALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
@@ -3020,9 +3032,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   ui_test_utils::NavigateToURL(browser(), expired_url);
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
-  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID, browser());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
-                          INVALID_CERTIFICATE);
+                          INVALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
@@ -3036,9 +3048,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   // through because once the interstitial is clicked through, all URLs
   // for this host will remain in a broken state.
   ProceedThroughInterstitial(web_contents);
-  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID, browser());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
-                          INVALID_CERTIFICATE);
+                          INVALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
@@ -3075,7 +3087,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
   EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
-                          VALID_CERTIFICATE);
+                          VALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
@@ -3093,11 +3105,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
 
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
-  CheckBrokenSecurityStyle(observer, net::ERR_CERT_COMMON_NAME_INVALID);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_COMMON_NAME_INVALID,
+                           browser());
   ProceedThroughInterstitial(web_contents);
-  CheckBrokenSecurityStyle(observer, net::ERR_CERT_COMMON_NAME_INVALID);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_COMMON_NAME_INVALID,
+                           browser());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
-                          INVALID_CERTIFICATE);
+                          INVALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
@@ -3113,7 +3127,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
   EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
-                          VALID_CERTIFICATE);
+                          VALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);

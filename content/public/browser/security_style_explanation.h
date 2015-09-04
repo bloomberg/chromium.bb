@@ -20,11 +20,16 @@ struct SecurityStyleExplanation {
   CONTENT_EXPORT SecurityStyleExplanation(){};
   CONTENT_EXPORT SecurityStyleExplanation(const std::string& summary,
                                           const std::string& description)
-      : summary(summary), description(description) {}
+      : summary(summary), description(description), cert_id(0) {}
+  CONTENT_EXPORT SecurityStyleExplanation(const std::string& summary,
+                                          const std::string& description,
+                                          int cert_id)
+      : summary(summary), description(description), cert_id(cert_id) {}
   CONTENT_EXPORT ~SecurityStyleExplanation() {}
 
   std::string summary;
   std::string description;
+  int cert_id;
 };
 
 }  // namespace content

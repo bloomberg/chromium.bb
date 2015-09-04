@@ -1324,13 +1324,15 @@ content::SecurityStyle Browser::GetSecurityStyle(
     security_style_explanations->broken_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_BROKEN_SHA1),
-            l10n_util::GetStringUTF8(IDS_BROKEN_SHA1_DESCRIPTION)));
+            l10n_util::GetStringUTF8(IDS_BROKEN_SHA1_DESCRIPTION),
+            security_info.cert_id));
   } else if (security_info.sha1_deprecation_status ==
              connection_security::DEPRECATED_SHA1_WARNING) {
     security_style_explanations->warning_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_WARNING_SHA1),
-            l10n_util::GetStringUTF8(IDS_WARNING_SHA1_DESCRIPTION)));
+            l10n_util::GetStringUTF8(IDS_WARNING_SHA1_DESCRIPTION),
+            security_info.cert_id));
   }
 
   security_style_explanations->ran_insecure_content =
@@ -1351,7 +1353,8 @@ content::SecurityStyle Browser::GetSecurityStyle(
     content::SecurityStyleExplanation explanation(
         l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
         l10n_util::GetStringFUTF8(
-            IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string));
+            IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
+        security_info.cert_id);
 
     if (net::IsCertStatusMinorError(security_info.cert_status))
       security_style_explanations->warning_explanations.push_back(explanation);
@@ -1367,7 +1370,8 @@ content::SecurityStyle Browser::GetSecurityStyle(
           content::SecurityStyleExplanation(
               l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
               l10n_util::GetStringUTF8(
-                  IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION)));
+                  IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION),
+              security_info.cert_id));
     }
   }
 

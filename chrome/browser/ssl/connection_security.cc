@@ -232,6 +232,7 @@ void GetSecurityInfoForWebContents(const content::WebContents* web_contents,
   security_info->sha1_deprecation_status = GetSHA1DeprecationStatus(cert, ssl);
   security_info->mixed_content_status = GetMixedContentStatus(ssl);
   security_info->cert_status = ssl.cert_status;
+  security_info->cert_id = ssl.cert_id;
 }
 
 }  // namespace connection_security
