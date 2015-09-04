@@ -1208,10 +1208,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             updateSecurityButton(false);
         } else {
             updateSecurityButton(true);
-            // Since we emphasize the schema of the URL based on the security type, we need to
-            // refresh the emphasis.
-            mUrlBar.deEmphasizeUrl();
         }
+        // Since we emphasize the schema of the URL based on the security type, we need to
+        // refresh the emphasis.
+        mUrlBar.deEmphasizeUrl();
         emphasizeUrl();
     }
 
