@@ -142,7 +142,7 @@ class HttpProtocolHandlerCore
                               SSLCertRequestInfo* cert_request_info) override;
   void OnSSLCertificateError(URLRequest* request,
                              const SSLInfo& ssl_info,
-                             bool is_hsts_host) override;
+                             bool fatal) override;
   void OnResponseStarted(URLRequest* request) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
@@ -419,10 +419,10 @@ void HttpProtocolHandlerCore::HostStateCallback(bool carryOn) {
 
 void HttpProtocolHandlerCore::OnSSLCertificateError(URLRequest* request,
                                                     const SSLInfo& ssl_info,
-                                                    bool is_hsts_host) {
+                                                    bool fatal) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (is_hsts_host) {
+  if (fatal) {
     if (tracker_) {
       tracker_->OnSSLCertificateError(request, ssl_info, false,
                                       base::Bind(&DoNothing));
@@ -442,7 +442,7 @@ void HttpProtocolHandlerCore::OnSSLCertificateError(URLRequest* request,
     RequestTracker::SSLCallback callback =
         base::Bind(&HttpProtocolHandlerCore::SSLErrorCallback, this);
     DCHECK(tracker_);
-    tracker_->OnSSLCertificateError(request, ssl_info, !is_hsts_host, callback);
+    tracker_->OnSSLCertificateError(request, ssl_info, !fatal, callback);
   }
 }
 
