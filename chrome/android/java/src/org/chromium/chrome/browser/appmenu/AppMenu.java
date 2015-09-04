@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -146,9 +147,11 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         int footerHeight = 0;
         if (footerResourceId != 0) {
             mPopup.setPromptPosition(ListPopupWindow.POSITION_PROMPT_BELOW);
-            mPopup.setPromptView(LayoutInflater.from(context).inflate(footerResourceId, null));
-            footerHeight = context.getResources().getDimensionPixelSize(
-                    R.dimen.menu_footer_height);
+            View promptView = LayoutInflater.from(context).inflate(footerResourceId, null);
+            mPopup.setPromptView(promptView);
+            int measureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+            promptView.measure(measureSpec, measureSpec);
+            footerHeight = promptView.getMeasuredHeight();
         }
         mPopup.setOnDismissListener(new OnDismissListener() {
             @Override
