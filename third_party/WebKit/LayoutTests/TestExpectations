@@ -1133,6 +1133,9 @@ crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/context-no-desele
 crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
 
+crbug.com/528431 paint/invalidation/spv2/fixed-img-src-change-after-scroll.html [ Skip ]
+crbug.com/528431 paint/invalidation/spv2/background-image-paint-invalidation.html [ Skip ]
+
 # Win10 specific failures that still need triaging.
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-navigated.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed-and-gced.html [ Failure ]
