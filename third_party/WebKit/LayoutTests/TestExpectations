@@ -897,6 +897,10 @@ crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
+crbug.com/522797 [ Retina ] compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ NeedsRebaseline ]
+crbug.com/522797 [ Retina ] css3/flexbox/repaint-rtl-column.html [ NeedsRebaseline ]
+crbug.com/522797 [ Retina ] media/video-paint-invalidation.html [ NeedsRebaseline ]
+
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
