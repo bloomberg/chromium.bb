@@ -1023,12 +1023,9 @@ void FrameView::layout()
         }
 
         TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), "LayoutTree",
-            this, TracedLayoutObject::create(*layoutView()));
+            this, TracedLayoutObject::create(*layoutView(), false));
 
         performLayout(inSubtreeLayout);
-
-        TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), "LayoutTree",
-            this, TracedLayoutObject::create(*layoutView()));
 
         ASSERT(m_layoutSubtreeRootList.isEmpty());
     } // Reset m_layoutSchedulingEnabled to its previous value.
@@ -1040,6 +1037,9 @@ void FrameView::layout()
 
     // FIXME: Could find the common ancestor layer of all dirty subtrees and mark from there. crbug.com/462719
     layoutView()->enclosingLayer()->updateLayerPositionsAfterLayout();
+
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), "LayoutTree",
+        this, TracedLayoutObject::create(*layoutView(), true));
 
     layoutView()->compositor()->didLayout();
 
