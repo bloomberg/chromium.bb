@@ -38,7 +38,7 @@ class SurfaceTextureManagerImpl : public SurfaceTextureManager,
   // |service| is the instance of
   // org.chromium.content.app.ChildProcessService.
   explicit SurfaceTextureManagerImpl(
-      const base::android::ScopedJavaLocalRef<jobject>& service)
+      const base::android::JavaRef<jobject>& service)
       : service_(service) {
     SurfaceTexturePeer::InitInstance(this);
     GpuSurfaceLookup::InitInstance(this);
@@ -132,13 +132,9 @@ class SurfaceTextureManagerImpl : public SurfaceTextureManager,
 // Chrome actually uses the renderer code path for all of its child
 // processes such as renderers, plugins, etc.
 void InternalInitChildProcess(JNIEnv* env,
-                              jclass clazz,
-                              jobject service_in,
+                              const JavaParamRef<jobject>& service,
                               jint cpu_count,
                               jlong cpu_features) {
-  base::android::ScopedJavaLocalRef<jobject> service(
-      env, env->NewLocalRef(service_in));
-
   // Set the CPU properties.
   android_setCpu(cpu_count, cpu_features);
   SurfaceTextureManager::SetInstance(new SurfaceTextureManagerImpl(service));
@@ -163,7 +159,7 @@ void InitChildProcess(JNIEnv* env,
                       const JavaParamRef<jobject>& service,
                       jint cpu_count,
                       jlong cpu_features) {
-  InternalInitChildProcess(env, clazz, service, cpu_count, cpu_features);
+  InternalInitChildProcess(env, service, cpu_count, cpu_features);
 }
 
 void ExitChildProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {

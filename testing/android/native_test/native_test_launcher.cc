@@ -81,9 +81,7 @@ static void RunTests(JNIEnv* env,
   base::CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
 
   // Set the application context in base.
-  base::android::ScopedJavaLocalRef<jobject> scoped_context(
-      env, env->NewLocalRef(app_context));
-  base::android::InitApplicationContext(env, scoped_context);
+  base::android::InitApplicationContext(env, app_context);
   base::android::RegisterJni(env);
 
   std::vector<std::string> args;

@@ -31,9 +31,7 @@ LazyInstance<scoped_ptr<ContentMainDelegate> > g_content_main_delegate =
 static void InitApplicationContext(JNIEnv* env,
                                    const JavaParamRef<jclass>& clazz,
                                    const JavaParamRef<jobject>& context) {
-  base::android::ScopedJavaLocalRef<jobject> scoped_context(
-      env, env->NewLocalRef(context));
-  base::android::InitApplicationContext(env, scoped_context);
+  base::android::InitApplicationContext(env, context);
 }
 
 static jint Start(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
