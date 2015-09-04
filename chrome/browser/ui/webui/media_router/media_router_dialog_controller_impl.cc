@@ -243,6 +243,9 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
 void MediaRouterDialogControllerImpl::Reset() {
   MediaRouterDialogController::Reset();
   dialog_observer_.reset();
+
+  if (action_)
+    action_->OnPopupHidden();
 }
 
 void MediaRouterDialogControllerImpl::OnDialogNavigated(

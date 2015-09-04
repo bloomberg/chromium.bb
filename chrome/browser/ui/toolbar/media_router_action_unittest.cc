@@ -346,7 +346,9 @@ TEST_F(MediaRouterActionUnitTest, IconPressedState) {
   EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
   dialog_controller_->CloseMediaRouterDialog();
 
+  EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
   dialog_controller_->Reset();
+
   EXPECT_CALL(*mock_delegate, OnPopupShown(true)).WillOnce(testing::Return());
   dialog_controller_->CreateMediaRouterDialog();
 
