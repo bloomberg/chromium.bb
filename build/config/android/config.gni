@@ -20,6 +20,13 @@ if (is_android) {
     default_android_sdk_build_tools_version = "23.0.0"
   }
 
+  if (!defined(default_android_keystore_path)) {
+    default_android_keystore_path =
+        "//build/android/ant/chromium-debug.keystore"
+    default_android_keystore_name = "chromiumdebugkey"
+    default_android_keystore_password = "chromium"
+  }
+
   if (!defined(google_play_services_library)) {
     google_play_services_library =
         "//third_party/android_tools:google_play_services_default_java"
@@ -35,10 +42,14 @@ if (is_android) {
     android_sdk_version = default_android_sdk_version
     android_sdk_build_tools_version = default_android_sdk_build_tools_version
 
-    android_default_keystore_path =
-        "//build/android/ant/chromium-debug.keystore"
-    android_default_keystore_name = "chromiumdebugkey"
-    android_default_keystore_password = "chromium"
+    # The path to the keystore to use for signing builds.
+    android_keystore_path = default_android_keystore_path
+
+    # The name of the keystore to use for signing builds.
+    android_keystore_name = default_android_keystore_name
+
+    # The password for the keystore to use for signing builds.
+    android_keystore_password = default_android_keystore_password
 
     # This is a unique identifier for a given build. It's used for
     # identifying various build artifacts corresponding to a particular build of

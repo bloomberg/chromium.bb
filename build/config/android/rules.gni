@@ -1184,9 +1184,9 @@ template("android_apk") {
   if (defined(invoker.version_name)) {
     _version_name = invoker.version_name
   }
-  _keystore_path = android_default_keystore_path
-  _keystore_name = android_default_keystore_name
-  _keystore_password = android_default_keystore_password
+  _keystore_path = android_keystore_path
+  _keystore_name = android_keystore_name
+  _keystore_password = android_keystore_password
 
   if (defined(invoker.keystore_path)) {
     _keystore_path = invoker.keystore_path
