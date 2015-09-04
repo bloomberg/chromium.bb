@@ -2142,16 +2142,7 @@ void RenderWidget::DidChangeBodyBackgroundColor(SkColor bg_color) {
 }
 
 bool RenderWidget::DoesRecordFullLayer() const {
-  SynchronousCompositorFactory* synchronous_compositor_factory =
-      SynchronousCompositorFactory::GetInstance();
-
-  // We assume that the absence of synchronous_compositor_factory
-  // means we are in Chrome. In chrome, we want to clip, i.e.
-  // *not* to record the full layer.
-  if (!synchronous_compositor_factory)
-    return false;
-
-  return synchronous_compositor_factory->RecordFullLayer();
+  return false;
 }
 #endif
 

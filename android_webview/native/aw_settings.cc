@@ -418,6 +418,8 @@ void AwSettings::PopulateWebPreferencesLocked(
 
   web_prefs->fullscreen_supported =
       Java_AwSettings_getFullscreenSupportedLocked(env, obj);
+  web_prefs->record_whole_document =
+      Java_AwSettings_getRecordFullDocument(env, obj);
 }
 
 static jlong Init(JNIEnv* env,

@@ -337,7 +337,7 @@ class CONTENT_EXPORT RenderWidget
 
 #if defined(OS_ANDROID)
   void DidChangeBodyBackgroundColor(SkColor bg_color);
-  bool DoesRecordFullLayer() const;
+  virtual bool DoesRecordFullLayer() const;
 #endif
 
   bool host_closing() const { return host_closing_; }

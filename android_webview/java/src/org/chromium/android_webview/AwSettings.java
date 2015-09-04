@@ -1760,6 +1760,12 @@ public class AwSettings {
     }
 
     @CalledByNative
+    private boolean getRecordFullDocument() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return AwContentsStatics.getRecordFullDocument();
+    }
+
+    @CalledByNative
     private void updateEverything() {
         synchronized (mAwSettingsLock) {
             updateEverythingLocked();

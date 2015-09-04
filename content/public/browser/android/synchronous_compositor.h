@@ -44,12 +44,6 @@ class CONTENT_EXPORT SynchronousCompositor {
   static void SetGpuService(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
 
-  // By default, synchronous compopsitor records the full layer, not only
-  // what is inside and around the view port. This can be used to switch
-  // between this record-full-layer behavior and normal record-around-viewport
-  // behavior.
-  static void SetRecordFullDocument(bool record_full_document);
-
   // Turn on using ipc-based command buffer at run time. This should be removed
   // once this feature is fully launched.
   static void SetUseIpcCommandBuffer();

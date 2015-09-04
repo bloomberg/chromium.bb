@@ -1113,13 +1113,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setReportScreenSizeInPhysicalPixelsQuirk(
       prefs.report_screen_size_in_physical_pixels_quirk);
   settings->setPreferHiddenVolumeControls(true);
-
-  bool record_full_layer =
-      RenderViewImpl::FromWebView(web_view)
-          ? RenderViewImpl::FromWebView(web_view)->DoesRecordFullLayer()
-          : false;
-  settings->setMainFrameClipsContent(!record_full_layer);
-
+  settings->setMainFrameClipsContent(!prefs.record_whole_document);
   settings->setShrinksViewportContentToFit(true);
   settings->setUseMobileViewportStyle(true);
 #endif
@@ -3408,6 +3402,12 @@ bool RenderViewImpl::CanComposeInline() {
 void RenderViewImpl::DidCompletePageScaleAnimation() {
   FocusChangeComplete();
 }
+
+#if defined(OS_ANDROID)
+bool RenderViewImpl::DoesRecordFullLayer() const {
+  return webkit_preferences_.record_whole_document;
+}
+#endif
 
 void RenderViewImpl::SetScreenMetricsEmulationParameters(
     bool enabled,

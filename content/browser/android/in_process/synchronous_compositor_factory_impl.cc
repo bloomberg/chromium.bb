@@ -146,8 +146,7 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
 };
 
 SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
-    : record_full_layer_(true),
-      use_ipc_command_buffer_(false),
+    : use_ipc_command_buffer_(false),
       num_hardware_compositors_(0) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
@@ -161,11 +160,6 @@ SynchronousCompositorFactoryImpl::~SynchronousCompositorFactoryImpl() {}
 scoped_refptr<base::SingleThreadTaskRunner>
 SynchronousCompositorFactoryImpl::GetCompositorTaskRunner() {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
-}
-
-bool
-SynchronousCompositorFactoryImpl::RecordFullLayer() {
-  return record_full_layer_;
 }
 
 scoped_ptr<cc::OutputSurface>
@@ -348,11 +342,6 @@ SynchronousCompositorFactoryImpl::GpuThreadService() {
         android_view_service_->sync_point_manager());
   }
   return gpu_thread_service_;
-}
-
-void SynchronousCompositorFactoryImpl::SetRecordFullDocument(
-    bool record_full_document) {
-  record_full_layer_ = record_full_document;
 }
 
 void SynchronousCompositorFactoryImpl::SetUseIpcCommandBuffer() {

@@ -47,7 +47,6 @@ class SynchronousCompositorFactory {
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorTaskRunner() = 0;
-  virtual bool RecordFullLayer() = 0;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
       int surface_id,

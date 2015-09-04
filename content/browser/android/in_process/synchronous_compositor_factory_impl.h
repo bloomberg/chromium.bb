@@ -37,7 +37,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   // SynchronousCompositorFactory
   scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner()
       override;
-  bool RecordFullLayer() override;
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
       int surface_id,
@@ -66,7 +65,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
   base::Thread* CreateInProcessGpuThread(
       const InProcessChildThreadParams& params);
-  void SetRecordFullDocument(bool record_full_document);
   void SetUseIpcCommandBuffer();
   void CompositorInitializedHardwareDraw();
   void CompositorReleasedHardwareDraw();
@@ -90,7 +88,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   class VideoContextProvider;
   scoped_refptr<VideoContextProvider> video_context_provider_;
 
-  bool record_full_layer_;
   bool use_ipc_command_buffer_;
 
   // |num_hardware_compositor_lock_| is updated on UI thread only but can be

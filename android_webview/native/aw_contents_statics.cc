@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "jni/AwContentsStatics_jni.h"
@@ -88,13 +87,6 @@ ScopedJavaLocalRef<jstring> GetUnreachableWebDataUrl(
     const JavaParamRef<jclass>&) {
   return base::android::ConvertUTF8ToJavaString(
       env, content::kUnreachableWebDataURL);
-}
-
-// static
-void SetRecordFullDocument(JNIEnv* env,
-                           const JavaParamRef<jclass>&,
-                           jboolean record_full_document) {
-  content::SynchronousCompositor::SetRecordFullDocument(record_full_document);
 }
 
 // static
