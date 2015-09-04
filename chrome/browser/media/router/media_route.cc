@@ -11,16 +11,18 @@ namespace media_router {
 
 MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
                        const MediaSource& media_source,
-                       const MediaSink& media_sink,
+                       const MediaSink::Id& media_sink_id,
                        const std::string& description,
                        bool is_local,
-                       const std::string& custom_controller_path)
+                       const std::string& custom_controller_path,
+                       bool for_display)
     : media_route_id_(media_route_id),
       media_source_(media_source),
-      media_sink_(media_sink),
+      media_sink_id_(media_sink_id),
       description_(description),
       is_local_(is_local),
-      custom_controller_path_(custom_controller_path) {}
+      custom_controller_path_(custom_controller_path),
+      for_display_(for_display) {}
 
 MediaRoute::~MediaRoute() {
 }

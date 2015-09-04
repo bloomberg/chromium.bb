@@ -73,17 +73,18 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
             std::vector<media_router::IssueAction>(),
             "route_id",
             media_router::Issue::NOTIFICATION,
-            false, std::string())),
-        fake_issue_warning_(media_router::Issue(
-            "title warning",
-            "message warning",
-            media_router::IssueAction(
-                media_router::IssueAction::TYPE_LEARN_MORE),
-            std::vector<media_router::IssueAction>(),
-            "route_id",
-            media_router::Issue::WARNING,
             false,
-            "www.google.com")),
+            std::string())),
+        fake_issue_warning_(
+            media_router::Issue("title warning",
+                                "message warning",
+                                media_router::IssueAction(
+                                    media_router::IssueAction::TYPE_LEARN_MORE),
+                                std::vector<media_router::IssueAction>(),
+                                "route_id",
+                                media_router::Issue::WARNING,
+                                false,
+                                "www.google.com")),
         fake_issue_fatal_(media_router::Issue(
             "title fatal",
             "message fatal",
@@ -93,25 +94,30 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
             media_router::Issue::FATAL,
             true,
             std::string())),
-        fake_sink1_("fakeSink1", "Fake Sink 1",
-                    media_router::MediaSink::IconType::CAST),
-        fake_sink2_("fakeSink2", "Fake Sink 2",
-                    media_router::MediaSink::IconType::CAST),
         fake_source1_("fakeSource1"),
         fake_source2_("fakeSource2"),
-        fake_route_local_("route1", fake_source1_, fake_sink1_, "desc1",
-            true, "path.html"),
-        fake_route_remote_("route2", fake_source2_, fake_sink2_, "desc2",
-            false, "path.html"),
-        active_icon_(ui::ResourceBundle::GetSharedInstance().
-            GetImageNamed(IDR_MEDIA_ROUTER_ACTIVE_ICON)),
-        error_icon_(ui::ResourceBundle::GetSharedInstance().
-            GetImageNamed(IDR_MEDIA_ROUTER_ERROR_ICON)),
-        idle_icon_(ui::ResourceBundle::GetSharedInstance().
-            GetImageNamed(IDR_MEDIA_ROUTER_IDLE_ICON)),
-        warning_icon_(ui::ResourceBundle::GetSharedInstance().
-            GetImageNamed(IDR_MEDIA_ROUTER_WARNING_ICON)) {
-  }
+        fake_route_local_("route1",
+                          fake_source1_,
+                          "fakeSink1",
+                          "desc1",
+                          true,
+                          "path.html",
+                          false),
+        fake_route_remote_("route2",
+                           fake_source2_,
+                           "fakeSink2",
+                           "desc2",
+                           false,
+                           "path.html",
+                           true),
+        active_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_MEDIA_ROUTER_ACTIVE_ICON)),
+        error_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_MEDIA_ROUTER_ERROR_ICON)),
+        idle_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_MEDIA_ROUTER_IDLE_ICON)),
+        warning_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_MEDIA_ROUTER_WARNING_ICON)) {}
 
   ~MediaRouterActionUnitTest() override {}
 
@@ -155,9 +161,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   const media_router::Issue fake_issue_warning_;
   const media_router::Issue fake_issue_fatal_;
 
-  // Fake Sinks and Sources, used for the Routes.
-  const media_router::MediaSink fake_sink1_;
-  const media_router::MediaSink fake_sink2_;
+  // Fake Sources, used for the Routes.
   const media_router::MediaSource fake_source1_;
   const media_router::MediaSource fake_source2_;
 

@@ -119,7 +119,7 @@ void MediaRouterAndroid::JoinRoute(
     }
 
     // Since ref() could be different, use the existing route's source id.
-    const std::string& sink_id = route.media_sink().id();
+    const MediaSink::Id& sink_id = route.media_sink_id();
     const std::string& potential_route_id = base::StringPrintf(
         "route:%s/%s/%s",
         presentation_id.c_str(),
@@ -311,13 +311,10 @@ void MediaRouterAndroid::OnRouteCreated(
   if (!request)
     return;
 
-  MediaRoute route(
-      ConvertJavaStringToUTF8(env, jmedia_route_id),
-      request->media_source,
-      request->media_sink,
-      std::string(),
-      jis_local,
-      std::string());
+  MediaRoute route(ConvertJavaStringToUTF8(env, jmedia_route_id),
+                   request->media_source, request->media_sink.id(),
+                   std::string(), jis_local, std::string(),
+                   true);  // TODO(avayvod): Populate for_display.
 
   for (const MediaRouteResponseCallback& callback : request->callbacks)
     callback.Run(&route, request->presentation_id, std::string());

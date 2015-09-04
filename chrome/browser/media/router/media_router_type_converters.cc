@@ -55,24 +55,13 @@ TypeConverter<media_router::MediaSink, MediaSinkPtr>::Convert(
 }
 
 // static
-MediaSinkPtr TypeConverter<MediaSinkPtr, media_router::MediaSink>::Convert(
-    const media_router::MediaSink& input) {
-  MediaSinkPtr output(media_router::interfaces::MediaSink::New());
-  output->sink_id = input.id();
-  output->name = input.name();
-  output->icon_type = SinkIconTypeToMojo(input.icon_type());
-  output->is_launching = input.is_launching();
-  return output.Pass();
-}
-
-// static
 media_router::MediaRoute
 TypeConverter<media_router::MediaRoute, MediaRoutePtr>::Convert(
     const MediaRoutePtr& input) {
   return media_router::MediaRoute(
       input->media_route_id, media_router::MediaSource(input->media_source),
-      input->media_sink.To<media_router::MediaSink>(), input->description,
-      input->is_local, input->custom_controller_path);
+      input->media_sink_id, input->description, input->is_local,
+      input->custom_controller_path, input->for_display);
 }
 
 // static
@@ -81,24 +70,8 @@ TypeConverter<scoped_ptr<media_router::MediaRoute>, MediaRoutePtr>::Convert(
     const MediaRoutePtr& input) {
   return make_scoped_ptr(new media_router::MediaRoute(
       input->media_route_id, media_router::MediaSource(input->media_source),
-      input->media_sink.To<media_router::MediaSink>(), input->description,
-      input->is_local, input->custom_controller_path));
-}
-
-// static
-MediaRoutePtr TypeConverter<MediaRoutePtr, media_router::MediaRoute>::Convert(
-    const media_router::MediaRoute& input) {
-  MediaRoutePtr output(media_router::interfaces::MediaRoute::New());
-  if (!input.media_source().Empty())
-    output->media_source = input.media_source().id();
-  output->media_route_id = input.media_route_id();
-  output->media_sink =
-      media_router::interfaces::MediaSink::From<media_router::MediaSink>(
-          input.media_sink());
-  output->description = input.description();
-  output->is_local = input.is_local();
-  output->custom_controller_path = input.custom_controller_path();
-  return output.Pass();
+      input->media_sink_id, input->description, input->is_local,
+      input->custom_controller_path, input->for_display));
 }
 
 media_router::Issue::Severity IssueSeverityFromMojo(

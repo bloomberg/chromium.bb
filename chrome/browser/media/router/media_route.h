@@ -34,12 +34,15 @@ class MediaRoute {
   // |is_local|: true if the route was created from this browser.
   // |custom_controller_path|: custom controller path if it is given by route
   //                      provider. empty otherwise.
+  // |for_display|: Set to true if this route should be displayed for
+  //                |media_sink_id| in UI.
   MediaRoute(const MediaRoute::Id& media_route_id,
              const MediaSource& media_source,
-             const MediaSink& media_sink,
+             const MediaSink::Id& media_sink_id,
              const std::string& description,
              bool is_local,
-             const std::string& custom_controller_path);
+             const std::string& custom_controller_path,
+             bool for_display);
   ~MediaRoute();
 
   // The media route identifier.
@@ -48,8 +51,8 @@ class MediaRoute {
   // The media source being routed.
   const MediaSource& media_source() const { return media_source_; }
 
-  // The sink being routed to.
-  const MediaSink& media_sink() const { return media_sink_; }
+  // The ID of sink being routed to.
+  const MediaSink::Id& media_sink_id() const { return media_sink_id_; }
 
   // The description of the media route activity, for example
   // "Playing Foo Bar Music All Access."
@@ -67,15 +70,18 @@ class MediaRoute {
     return custom_controller_path_;
   }
 
+  bool for_display() const { return for_display_; }
+
   bool Equals(const MediaRoute& other) const;
 
  private:
   MediaRoute::Id media_route_id_;
   MediaSource media_source_;
-  MediaSink media_sink_;
+  MediaSink::Id media_sink_id_;
   std::string description_;
   bool is_local_;
   std::string custom_controller_path_;
+  bool for_display_;
 };
 
 class MediaRouteIdToPresentationSessionMapping {

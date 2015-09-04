@@ -34,13 +34,6 @@ struct TypeConverter<media_router::MediaSink,
       const media_router::interfaces::MediaSinkPtr& input);
 };
 
-template <>
-struct TypeConverter<media_router::interfaces::MediaSinkPtr,
-                     media_router::MediaSink> {
-  static media_router::interfaces::MediaSinkPtr Convert(
-      const media_router::MediaSink& input);
-};
-
 // MediaRoute conversion.
 template <>
 struct TypeConverter<media_router::MediaRoute,
@@ -54,13 +47,6 @@ struct TypeConverter<scoped_ptr<media_router::MediaRoute>,
                      media_router::interfaces::MediaRoutePtr> {
   static scoped_ptr<media_router::MediaRoute> Convert(
       const media_router::interfaces::MediaRoutePtr& input);
-};
-
-template <>
-struct TypeConverter<media_router::interfaces::MediaRoutePtr,
-                     media_router::MediaRoute> {
-  static media_router::interfaces::MediaRoutePtr Convert(
-      const media_router::MediaRoute& input);
 };
 
 // Issue conversion.

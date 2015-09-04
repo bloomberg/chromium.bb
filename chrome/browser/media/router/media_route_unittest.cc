@@ -18,33 +18,27 @@ namespace media_router {
 
 // Tests the == operator to ensure that only route ID equality is being checked.
 TEST(MediaRouteTest, Equals) {
-  MediaRoute route1(kRouteId1, MediaSourceForCastApp("DialApp"),
-                    MediaSink("sinkId", "sinkName", MediaSink::IconType::CAST),
-                    "Description", false, "");
+  MediaRoute route1(kRouteId1, MediaSourceForCastApp("DialApp"), "sinkId",
+                    "Description", false, "", false);
 
   // Same as route1 with different sink ID.
   MediaRoute route2(kRouteId1, MediaSourceForCastApp("DialApp"),
-                    MediaSink("differentSinkId", "different sink",
-                              MediaSink::IconType::CAST),
-                    "Description", false, "");
+                    "differentSinkId", "Description", false, "", false);
   EXPECT_TRUE(route1.Equals(route2));
 
   // Same as route1 with different description.
-  MediaRoute route3(kRouteId1, MediaSourceForCastApp("DialApp"),
-                    MediaSink("sinkId", "sinkName", MediaSink::IconType::CAST),
-                    "differentDescription", false, "");
+  MediaRoute route3(kRouteId1, MediaSourceForCastApp("DialApp"), "sinkId",
+                    "differentDescription", false, "", false);
   EXPECT_TRUE(route1.Equals(route3));
 
   // Same as route1 with different is_local.
-  MediaRoute route4(kRouteId1, MediaSourceForCastApp("DialApp"),
-                    MediaSink("sinkId", "sinkName", MediaSink::IconType::CAST),
-                    "Description", true, "");
+  MediaRoute route4(kRouteId1, MediaSourceForCastApp("DialApp"), "sinkId",
+                    "Description", true, "", false);
   EXPECT_TRUE(route1.Equals(route4));
 
   // The ID is different from route1's.
-  MediaRoute route5(kRouteId2, MediaSourceForCastApp("DialApp"),
-                    MediaSink("sinkId", "sinkName", MediaSink::IconType::CAST),
-                    "Description", false, "");
+  MediaRoute route5(kRouteId2, MediaSourceForCastApp("DialApp"), "sinkId",
+                    "Description", false, "", false);
   EXPECT_FALSE(route1.Equals(route5));
 }
 

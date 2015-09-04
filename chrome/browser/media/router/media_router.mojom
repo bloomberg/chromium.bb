@@ -30,8 +30,8 @@ struct MediaRoute {
   // The ID of the media source being sent through this media route.
   // May be missing if route is not local.
   string? media_source;
-  // The sink that is rendering the media content.
-  MediaSink media_sink;
+  // The ID of sink that is rendering the media content.
+  string media_sink_id;
   // Human readable description of this route, e.g.
   // "Tab casting".
   string description;
@@ -41,6 +41,8 @@ struct MediaRoute {
   // component extension. When set, the route can have custom route detail as
   // well as its own route controls in the media router dialog.
   string? custom_controller_path;
+  // Set to true if this route should be displayed for |media_sink_id| in UI.
+  bool for_display;
 };
 
 // Notifications or an actionable events to be shown to the user.

@@ -61,21 +61,19 @@ define('media_router_bindings', [
    * Returns a Mojo MediaRoute object given a MediaRoute and a
    * media sink name.
    * @param {!MediaRoute} route
-   * @param {!string} sinkName
    * @return {!mojo.MediaRoute}
    */
-  function routeToMojo_(route, sinkName) {
+  function routeToMojo_(route) {
     return new mediaRouterMojom.MediaRoute({
       'media_route_id': route.id,
       'media_source': route.mediaSource,
-      'media_sink': new mediaRouterMojom.MediaSink({
-        'sink_id': route.sinkId,
-        'name': sinkName,
-      }),
+      'media_sink_id': route.sinkId,
       'description': route.description,
       'icon_url': route.iconUrl,
       'is_local': route.isLocal,
       'custom_controller_path': route.customControllerPath,
+      // TODO(imcheng): Remove logic when extension always sets the field.
+      'for_display': route.forDisplay == undefined ? true : route.forDisplay
     });
   }
 
@@ -259,22 +257,9 @@ define('media_router_bindings', [
    * Called by the provider manager when the set of active routes
    * has been updated.
    * @param {!Array<MediaRoute>} routes The active set of media routes.
-   * @param {!Array<MediaSink>} sinks The active set of media sinks.
    */
-  MediaRouter.prototype.onRoutesUpdated = function(routes, sinks) {
-    // Create an inverted index relating sink IDs to their names.
-    var sinkNameMap = {};
-    for (var i = 0; i < sinks.length; i++) {
-      sinkNameMap[sinks[i].id] = sinks[i].friendlyName;
-    }
-
-    // Convert MediaRoutes to Mojo objects and add their sink names
-    // via sinkNameMap.
-    var mojoRoutes = routes.map(function(nextRoute) {
-      return routeToMojo_(nextRoute, sinkNameMap[nextRoute.sinkId]);
-    });
-
-    this.service_.onRoutesUpdated(mojoRoutes, sinks.map(sinkToMojo_));
+  MediaRouter.prototype.onRoutesUpdated = function(routes) {
+    this.service_.onRoutesUpdated(routes.map(routeToMojo_));
   };
 
   /**
@@ -463,8 +448,7 @@ define('media_router_bindings', [
     return this.handlers_.createRoute(
         sourceUrn, sinkId, presentationId, origin, tabId)
         .then(function(route) {
-          // Sink name is not used, so it is omitted here.
-          return {route: routeToMojo_(route, "")};
+          return {route: routeToMojo_(route)};
         }.bind(this))
         .catch(function(err) {
           return {error_text: 'Error creating route: ' + err.message};
@@ -487,8 +471,7 @@ define('media_router_bindings', [
       function(sourceUrn, presentationId, origin, tabId) {
     return this.handlers_.joinRoute(sourceUrn, presentationId, origin, tabId)
         .then(function(newRoute) {
-          // Sink name is not used, so it is omitted here.
-          return {route: routeToMojo_(newRoute, "")};
+          return {route: routeToMojo_(newRoute)};
         },
         function(err) {
           return {error_text: 'Error joining route: ' + err.message};

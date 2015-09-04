@@ -122,11 +122,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   std::string description("This is a route");
   bool is_local = true;
   std::vector<MediaRoute> routes;
-  routes.push_back(MediaRoute(route_id, MediaSource("mediaSource"),
-                              MediaSink(sink_id, "The sink",
-                                  MediaSink::IconType::CAST),
-                              description,
-                              is_local, kControllerPathForTesting));
+  routes.push_back(MediaRoute(route_id, MediaSource("mediaSource"), sink_id,
+                              description, is_local, kControllerPathForTesting,
+                              true));
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
       ReturnRef(provider_extension_id()));
@@ -168,9 +166,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   MediaSink sink(sink_id, "The sink", MediaSink::IconType::CAST);
   std::string description("This is a route");
   bool is_local = true;
-  MediaRoute route(route_id, MediaSource("mediaSource"),
-                   MediaSink(sink_id, "The sink", MediaSink::IconType::CAST),
-                   description, is_local, "");
+  MediaRoute route(route_id, MediaSource("mediaSource"), sink_id, description,
+                   is_local, "", true);
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
       ReturnRef(provider_extension_id()));

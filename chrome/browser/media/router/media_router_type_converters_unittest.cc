@@ -13,18 +13,12 @@ namespace media_router {
 TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
   MediaSink expected_media_sink("sinkId1", "Sink 1", MediaSink::IconType::CAST,
                                 true);
-  interfaces::MediaSinkPtr expected_mojo_sink(interfaces::MediaSink::New());
-  expected_mojo_sink->sink_id = "sinkId1";
-  expected_mojo_sink->name = "Sink 1";
-  expected_mojo_sink->icon_type =
+  interfaces::MediaSinkPtr mojo_sink(interfaces::MediaSink::New());
+  mojo_sink->sink_id = "sinkId1";
+  mojo_sink->name = "Sink 1";
+  mojo_sink->icon_type =
       media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
-  expected_mojo_sink->is_launching = true;
-
-  interfaces::MediaSinkPtr mojo_sink =
-      mojo::TypeConverter<interfaces::MediaSinkPtr, MediaSink>::Convert(
-          expected_media_sink);
-
-  EXPECT_EQ(expected_mojo_sink, mojo_sink);
+  mojo_sink->is_launching = true;
 
   MediaSink media_sink = mojo::TypeConverter<
       media_router::MediaSink,
@@ -67,33 +61,20 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSinkIconType) {
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   MediaSource expected_source(MediaSourceForTab(123));
-  MediaRoute expected_media_route("routeId1", expected_source,
-                                  MediaSink("sinkId", "sinkName",
-                                      MediaSink::IconType::CAST),
-                                  "Description", false, "cast_view.html");
-  interfaces::MediaRoutePtr expected_mojo_route(interfaces::MediaRoute::New());
-  expected_mojo_route->media_route_id = "routeId1";
-  expected_mojo_route->media_source = expected_source.id();
-  expected_mojo_route->media_sink = interfaces::MediaSink::New();
-  expected_mojo_route->media_sink->sink_id = "sinkId";
-  expected_mojo_route->media_sink->name = "sinkName";
-  expected_mojo_route->media_sink->icon_type =
-      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
-  expected_mojo_route->description = "Description";
-  expected_mojo_route->is_local = false;
-  expected_mojo_route->custom_controller_path = "cast_view.html";
-
-  interfaces::MediaRoutePtr mojo_route = mojo::TypeConverter<
-      media_router::interfaces::MediaRoutePtr,
-      media_router::MediaRoute>::Convert(expected_media_route);
-  EXPECT_EQ(expected_mojo_route, mojo_route);
+  MediaRoute expected_media_route("routeId1", expected_source, "sinkId",
+                                  "Description", false, "cast_view.html", true);
+  interfaces::MediaRoutePtr mojo_route(interfaces::MediaRoute::New());
+  mojo_route->media_route_id = "routeId1";
+  mojo_route->media_source = expected_source.id();
+  mojo_route->media_sink_id = "sinkId";
+  mojo_route->description = "Description";
+  mojo_route->is_local = false;
+  mojo_route->custom_controller_path = "cast_view.html";
+  mojo_route->for_display = true;
 
   MediaRoute media_route = mojo_route.To<MediaRoute>();
   EXPECT_TRUE(expected_media_route.Equals(media_route));
-  EXPECT_EQ(expected_media_route.media_sink().name(),
-            media_route.media_sink().name());
-  EXPECT_EQ(expected_media_route.media_sink().id(),
-            media_route.media_sink().id());
+  EXPECT_EQ(expected_media_route.media_sink_id(), media_route.media_sink_id());
   EXPECT_EQ(expected_media_route.description(), media_route.description());
   EXPECT_TRUE(
       expected_media_route.media_source().Equals(media_route.media_source()));
@@ -102,33 +83,22 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   EXPECT_EQ(expected_media_route.is_local(), media_route.is_local());
   EXPECT_EQ(expected_media_route.custom_controller_path(),
             media_route.custom_controller_path());
+  EXPECT_EQ(expected_media_route.for_display(), media_route.for_display());
 }
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
-  MediaRoute expected_media_route("routeId1", MediaSource(),
-                                  MediaSink("sinkId", "sinkName",
-                                      MediaSink::IconType::CAST, false),
-                                  "Description", false, "");
-  interfaces::MediaRoutePtr expected_mojo_route(interfaces::MediaRoute::New());
+  MediaRoute expected_media_route("routeId1", MediaSource(), "sinkId",
+                                  "Description", false, "", false);
+  interfaces::MediaRoutePtr mojo_route(interfaces::MediaRoute::New());
   // MediaRoute::media_source is omitted.
-  expected_mojo_route->media_route_id = "routeId1";
-  expected_mojo_route->media_sink = interfaces::MediaSink::New();
-  expected_mojo_route->media_sink->sink_id = "sinkId";
-  expected_mojo_route->media_sink->name = "sinkName";
-  expected_mojo_route->media_sink->icon_type =
-      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
-  expected_mojo_route->media_sink->is_launching = false;
-  expected_mojo_route->description = "Description";
-  expected_mojo_route->is_local = false;
-
-  interfaces::MediaRoutePtr mojo_route = mojo::TypeConverter<
-      media_router::interfaces::MediaRoutePtr,
-      media_router::MediaRoute>::Convert(expected_media_route);
-  EXPECT_EQ(expected_mojo_route, mojo_route);
+  mojo_route->media_route_id = "routeId1";
+  mojo_route->media_sink_id = "sinkId";
+  mojo_route->description = "Description";
+  mojo_route->is_local = false;
+  mojo_route->for_display = false;
 
   MediaRoute media_route = mojo_route.To<MediaRoute>();
   EXPECT_TRUE(expected_media_route.Equals(media_route));
-  EXPECT_EQ("sinkName", media_route.media_sink().name());
 }
 
 TEST(MediaRouterTypeConvertersTest, ConvertIssue) {

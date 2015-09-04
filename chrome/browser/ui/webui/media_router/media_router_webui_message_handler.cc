@@ -64,7 +64,7 @@ scoped_ptr<base::DictionaryValue> RouteToValue(
   scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
 
   dictionary->SetString("id", route.media_route_id());
-  dictionary->SetString("sinkId", route.media_sink().id());
+  dictionary->SetString("sinkId", route.media_sink_id());
   dictionary->SetString("title", route.description());
   dictionary->SetBoolean("isLocal", route.is_local());
 

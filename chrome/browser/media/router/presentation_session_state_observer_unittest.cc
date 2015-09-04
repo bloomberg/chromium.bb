@@ -90,10 +90,9 @@ TEST_F(PresentationSessionStateObserverTest, InvokeCallbackWithDisconnected) {
 
   // Route list update is expected to follow creation of route.
   std::vector<MediaRoute> routes;
-  routes.push_back(
-      MediaRoute(route_id, MediaSourceForPresentationUrl(kPresentationUrl),
-                 MediaSink("sinkId", "A sink", MediaSink::IconType::CAST),
-                 "Description", true, ""));
+  routes.push_back(MediaRoute(route_id,
+                              MediaSourceForPresentationUrl(kPresentationUrl),
+                              "sinkId", "Description", true, "", false));
   observer_->OnRoutesUpdated(routes);
 
   // New route list does not contain |route_id|, which means it is disconnected.
@@ -119,10 +118,9 @@ TEST_F(PresentationSessionStateObserverTest, Reset) {
 
   // Route list update is expected to follow creation of route.
   std::vector<MediaRoute> routes;
-  routes.push_back(
-      MediaRoute(route_id, MediaSourceForPresentationUrl(kPresentationUrl),
-                 MediaSink("sinkId", "A sink", MediaSink::IconType::CAST),
-                 "Description", true, ""));
+  routes.push_back(MediaRoute(route_id,
+                              MediaSourceForPresentationUrl(kPresentationUrl),
+                              "sinkId", "Description", true, "", false));
   observer_->OnRoutesUpdated(routes);
 
   // |route_id| is no longer being tracked.
