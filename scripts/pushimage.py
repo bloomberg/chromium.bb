@@ -36,8 +36,13 @@ VERSION_REGEX = r'^R([0-9]+)-([^-]+)'
 # Keep it in sync with the signer config files [gs_test_buckets].
 TEST_SIGN_BUCKET_BASE = 'gs://chromeos-throw-away-bucket/signer-tests'
 
-# Ketsets that are only valid in the above test bucket.
-TEST_KEYSETS = set(('test-keys-mp', 'test-keys-premp'))
+# Keysets that are only valid in the above test bucket.
+TEST_KEYSET_PREFIX = 'test-keys'
+TEST_KEYSETS = set((
+    'mp',
+    'premp',
+    'nvidia-premp',
+))
 
 
 class PushError(Exception):
@@ -243,7 +248,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     logging.info('Upload mode: mock; signers will not process anything')
     tbs_base = gs_base = os.path.join(constants.TRASH_BUCKET, 'pushimage-tests',
                                       getpass.getuser())
-  elif TEST_KEYSETS & force_keysets:
+  elif set(['%s-%s' % (TEST_KEYSET_PREFIX, x)
+            for x in TEST_KEYSETS]) & force_keysets:
     logging.info('Upload mode: test; signers will process test keys')
     # We need the tbs_base to be in the place the signer will actually scan.
     tbs_base = TEST_SIGN_BUCKET_BASE
@@ -416,10 +422,9 @@ def main(argv):
                       help='show what would be done, but do not upload')
   parser.add_argument('-M', '--mock', default=False, action='store_true',
                       help='upload things to a testing bucket (dev testing)')
-  parser.add_argument('--test-sign-mp', default=False, action='store_true',
-                      help='mung signing behavior to sign w/test mp keys')
-  parser.add_argument('--test-sign-premp', default=False, action='store_true',
-                      help='mung signing behavior to sign w/test premp keys')
+  parser.add_argument('--test-sign', default=[], action='append',
+                      choices=TEST_KEYSETS,
+                      help='mung signing behavior to sign w/ test keys')
   parser.add_argument('--priority', type=int, default=50,
                       help='set signing priority (lower == higher prio)')
   parser.add_argument('--sign-types', default=None, nargs='+',
@@ -431,11 +436,8 @@ def main(argv):
   opts = parser.parse_args(argv)
   opts.Freeze()
 
-  force_keysets = set()
-  if opts.test_sign_mp:
-    force_keysets.add('test-keys-mp')
-  if opts.test_sign_premp:
-    force_keysets.add('test-keys-premp')
+  force_keysets = set(['%s-%s' % (TEST_KEYSET_PREFIX, x)
+                       for x in opts.test_sign])
 
   # If we aren't using mock or test or dry run mode, then let's prompt the user
   # to make sure they actually want to do this.  It's rare that people want to
