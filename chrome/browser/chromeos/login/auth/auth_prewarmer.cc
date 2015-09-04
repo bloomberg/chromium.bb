@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/auth/auth_prewarmer.h"
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/profiles/profile.h"
@@ -92,7 +93,6 @@ void AuthPrewarmer::DoPrewarm() {
   const int kConnectionsNeeded = 1;
 
   std::vector<GURL> urls;
-  urls.push_back(GaiaUrls::GetInstance()->client_login_url());
   urls.push_back(GaiaUrls::GetInstance()->service_login_url());
 
   for (size_t i = 0; i < urls.size(); ++i) {
@@ -116,7 +116,7 @@ bool AuthPrewarmer::IsNetworkConnected() const {
 }
 
 net::URLRequestContextGetter* AuthPrewarmer::GetRequestContext() const {
-  return ProfileHelper::GetSigninProfile()->GetRequestContext();
+  return login::GetSigninContext();
 }
 
 }  // namespace chromeos
