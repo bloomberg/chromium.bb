@@ -34,6 +34,7 @@
 #include "modules/webgl/ANGLEInstancedArrays.h"
 #include "modules/webgl/CHROMIUMSubscribeUniform.h"
 #include "modules/webgl/EXTBlendMinMax.h"
+#include "modules/webgl/EXTDisjointTimerQuery.h"
 #include "modules/webgl/EXTFragDepth.h"
 #include "modules/webgl/EXTShaderTextureLOD.h"
 #include "modules/webgl/EXTTextureFilterAnisotropic.h"
@@ -112,6 +113,7 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
     registerExtension<CHROMIUMSubscribeUniform>(m_chromiumSubscribeUniform);
     registerExtension<EXTBlendMinMax>(m_extBlendMinMax);
+    registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery, DraftExtension);
     registerExtension<EXTFragDepth>(m_extFragDepth);
     registerExtension<EXTShaderTextureLOD>(m_extShaderTextureLOD);
     registerExtension<EXTsRGB>(m_extsRGB);
@@ -140,6 +142,7 @@ DEFINE_TRACE(WebGLRenderingContext)
     visitor->trace(m_angleInstancedArrays);
     visitor->trace(m_chromiumSubscribeUniform);
     visitor->trace(m_extBlendMinMax);
+    visitor->trace(m_extDisjointTimerQuery);
     visitor->trace(m_extFragDepth);
     visitor->trace(m_extShaderTextureLOD);
     visitor->trace(m_extsRGB);

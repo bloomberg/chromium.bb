@@ -62,6 +62,7 @@ class ANGLEInstancedArrays;
 class CHROMIUMSubscribeUniform;
 class CHROMIUMValuebuffer;
 class EXTBlendMinMax;
+class EXTDisjointTimerQuery;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
 class EXTsRGB;
@@ -432,6 +433,7 @@ public:
     bool isWebGL2OrHigher() { return version() >= 2; }
 
 protected:
+    friend class EXTDisjointTimerQuery;
     friend class WebGLDrawBuffers;
     friend class WebGLFramebuffer;
     friend class WebGLObject;
@@ -790,6 +792,7 @@ protected:
     ScriptValue getBooleanArrayParameter(ScriptState*, GLenum);
     ScriptValue getFloatParameter(ScriptState*, GLenum);
     ScriptValue getIntParameter(ScriptState*, GLenum);
+    ScriptValue getInt64Parameter(ScriptState*, GLenum);
     ScriptValue getUnsignedIntParameter(ScriptState*, GLenum);
     ScriptValue getWebGLFloatArrayParameter(ScriptState*, GLenum);
     ScriptValue getWebGLIntArrayParameter(ScriptState*, GLenum);

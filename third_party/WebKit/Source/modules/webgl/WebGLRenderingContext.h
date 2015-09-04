@@ -64,6 +64,7 @@ private:
     PersistentWillBeMember<ANGLEInstancedArrays> m_angleInstancedArrays;
     PersistentWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
     PersistentWillBeMember<EXTBlendMinMax> m_extBlendMinMax;
+    PersistentWillBeMember<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
     PersistentWillBeMember<EXTFragDepth> m_extFragDepth;
     PersistentWillBeMember<EXTShaderTextureLOD> m_extShaderTextureLOD;
     PersistentWillBeMember<EXTsRGB> m_extsRGB;

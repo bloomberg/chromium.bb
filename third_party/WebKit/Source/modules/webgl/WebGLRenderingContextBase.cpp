@@ -2866,6 +2866,17 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
             return WebGLAny(scriptState, maxDrawBuffers());
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
         return ScriptValue::createNull(scriptState);
+    case GL_TIMESTAMP_EXT:
+        if (extensionEnabled(EXTDisjointTimerQueryName))
+            return getInt64Parameter(scriptState, GL_TIMESTAMP_EXT);
+        synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, EXT_disjoint_timer_query not enabled");
+        return ScriptValue::createNull(scriptState);
+    case GL_GPU_DISJOINT_EXT:
+        if (extensionEnabled(EXTDisjointTimerQueryName))
+            return getBooleanParameter(scriptState, GL_GPU_DISJOINT_EXT);
+        synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, EXT_disjoint_timer_query not enabled");
+        return ScriptValue::createNull(scriptState);
+
     default:
         if ((extensionEnabled(WebGLDrawBuffersName) || isWebGL2OrHigher())
             && pname >= GL_DRAW_BUFFER0_EXT
@@ -5165,6 +5176,14 @@ ScriptValue WebGLRenderingContextBase::getIntParameter(ScriptState* scriptState,
     GLint value = 0;
     if (!isContextLost())
         webContext()->getIntegerv(pname, &value);
+    return WebGLAny(scriptState, value);
+}
+
+ScriptValue WebGLRenderingContextBase::getInt64Parameter(ScriptState* scriptState, GLenum pname)
+{
+    GLint64 value = 0;
+    if (!isContextLost())
+        webContext()->getInteger64v(pname, &value);
     return WebGLAny(scriptState, value);
 }
 

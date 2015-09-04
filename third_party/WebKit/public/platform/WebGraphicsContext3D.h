@@ -392,6 +392,10 @@ public:
     virtual void getQueryivEXT(WGC3Denum target, WGC3Denum pname, WGC3Dint* params) { }
     virtual void getQueryObjectuivEXT(WebGLId query, WGC3Denum pname, WGC3Duint* params) { }
 
+    // GL_EXT_disjoint_timer_query
+    virtual void queryCounterEXT(WebGLId query, WGC3Denum target) {}
+    virtual void getQueryObjectui64vEXT(WebGLId query, WGC3Denum pname, WGC3Duint64* params) {}
+
     // GL_CHROMIUM_bind_uniform_location
     virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location, const WGC3Dchar* uniform) { }
 
