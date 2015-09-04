@@ -212,18 +212,6 @@ public class ProfileSyncService {
     }
 
     /**
-     * Checks if we need a passphrase to decrypt any data type (including types that aren't
-     * currently enabled or supported, such as passwords). This API is used to determine if we
-     * need to provide a decryption passphrase before we can re-encrypt with a custom passphrase.
-     *
-     * @return true if we need a passphrase for some type.
-     */
-    public boolean isPassphraseRequiredForExternalType() {
-        assert isSyncInitialized();
-        return nativeIsPassphraseRequiredForExternalType(mNativeProfileSyncServiceAndroid);
-    }
-
-    /**
      * Checks if the sync backend is running.
      *
      * @return true if sync is initialized/running.
@@ -511,8 +499,6 @@ public class ProfileSyncService {
     private native boolean nativeIsEncryptEverythingEnabled(long nativeProfileSyncServiceAndroid);
     private native void nativeEnableEncryptEverything(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsPassphraseRequiredForDecryption(
-            long nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsPassphraseRequiredForExternalType(
             long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsUsingSecondaryPassphrase(long nativeProfileSyncServiceAndroid);
     private native boolean nativeSetDecryptionPassphrase(

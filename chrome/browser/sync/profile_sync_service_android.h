@@ -80,10 +80,6 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   // currently enabled types.
   jboolean IsPassphraseRequiredForDecryption(JNIEnv* env, jobject obj);
 
-  // Returns true if the sync code needs a decryption passphrase for *any* type,
-  // even types that aren't supported on this platform (like passwords).
-  jboolean IsPassphraseRequiredForExternalType(JNIEnv* env, jobject obj);
-
   // Returns true if the sync code needs a custom decryption passphrase.
   // Can not be called if the sync backend is not initialized.
   jboolean IsUsingSecondaryPassphrase(JNIEnv* env, jobject obj);

@@ -229,13 +229,6 @@ jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForDecryption(
   return false;
 }
 
-jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForExternalType(
-    JNIEnv* env, jobject) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return
-      sync_service_->passphrase_required_reason() == syncer::REASON_DECRYPTION;
-}
-
 jboolean ProfileSyncServiceAndroid::IsUsingSecondaryPassphrase(
     JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
