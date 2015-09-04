@@ -47,6 +47,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererHidden() override;
   void OnRendererVisible() override;
+  void OnRendererBackgrounded() override;
+  void OnRendererForegrounded() override;
   void OnPageLoadStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
@@ -57,6 +59,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   void Shutdown() override;
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
+  void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
 
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
@@ -133,6 +136,11 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // user gestures.
   static const int kIdlePeriodStarvationThresholdMillis = 10000;
 
+  // The amount of time to wait before suspending shared timers after the
+  // renderer has been backgrounded. This is use donly if background suspension
+  // of shared timers is enabled.
+  static const int kSuspendTimersWhenBackgroundedDelayMillis = 5 * 60 * 1000;
+
   // Schedules an immediate PolicyUpdate, if there isn't one already pending and
   // sets |policy_may_need_update_|. Note |any_thread_lock_| must be
   // locked.
@@ -182,6 +190,11 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // |kIdlePeriodStarvationThresholdMillis|.
   bool HadAnIdlePeriodRecently(base::TimeTicks now) const;
 
+  // Helpers for safely suspending/resuming the timer queue after a
+  // background/foreground signal.
+  void SuspendTimerQueueWhenBackgrounded();
+  void ResumeTimerQueueWhenForegrounded();
+
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
 
@@ -193,6 +206,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
+  CancelableClosureHolder suspend_timers_when_backgrounded_closure_;
 
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.
@@ -209,6 +223,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
     base::TimeDelta expected_short_idle_period_duration_;
     int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
     bool renderer_hidden_;
+    bool renderer_backgrounded_;
+    bool timer_queue_suspension_when_backgrounded_enabled_;
+    bool timer_queue_suspended_when_backgrounded_;
     bool was_shutdown_;
   };
 

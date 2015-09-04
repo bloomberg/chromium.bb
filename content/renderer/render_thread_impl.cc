@@ -1156,6 +1156,11 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 
+  renderer_scheduler_->SetTimerQueueSuspensionWhenBackgroundedEnabled(
+      GetContentClient()
+          ->renderer()
+          ->AllowTimerSuspensionWhenProcessBackgrounded());
+
   cc_blink::SetSharedBitmapAllocationFunction(AllocateSharedBitmapFunction);
 
   SkGraphics::SetResourceCacheSingleAllocationByteLimit(
@@ -1617,6 +1622,15 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
+  ChildThreadImpl::OnProcessBackgrounded(backgrounded);
+
+  if (backgrounded)
+    renderer_scheduler_->OnRendererBackgrounded();
+  else
+    renderer_scheduler_->OnRendererForegrounded();
 }
 
 void RenderThreadImpl::OnCreateNewFrame(FrameMsg_NewFrame_Params params) {

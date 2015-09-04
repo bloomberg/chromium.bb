@@ -66,6 +66,12 @@ void FakeRendererScheduler::OnRendererHidden() {
 void FakeRendererScheduler::OnRendererVisible() {
 }
 
+void FakeRendererScheduler::OnRendererBackgrounded() {
+}
+
+void FakeRendererScheduler::OnRendererForegrounded() {
+}
+
 void FakeRendererScheduler::OnPageLoadStarted() {
 }
 
@@ -93,5 +99,8 @@ void FakeRendererScheduler::SuspendTimerQueue() {
 
 void FakeRendererScheduler::ResumeTimerQueue() {
 }
+
+void FakeRendererScheduler::SetTimerQueueSuspensionWhenBackgroundedEnabled(
+    bool enabled) {}
 
 }  // namespace content

@@ -324,6 +324,11 @@ class RendererSchedulerImplTest : public testing::Test {
         RendererSchedulerImpl::kIdlePeriodStarvationThresholdMillis);
   }
 
+  static base::TimeDelta suspend_timers_when_backgrounded_delay() {
+    return base::TimeDelta::FromMilliseconds(
+        RendererSchedulerImpl::kSuspendTimersWhenBackgroundedDelayMillis);
+  }
+
   template <typename E>
   static void CallForEachEnumValue(E first,
                                    E last,
@@ -1789,4 +1794,44 @@ TEST_F(RendererSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
   EXPECT_TRUE(run_order.empty());
 }
 
+TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
+  scheduler_->SetTimerQueueSuspensionWhenBackgroundedEnabled(true);
+
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+
+  // The background signal will not immediately suspend the timer queue.
+  scheduler_->OnRendererBackgrounded();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T1"), std::string("T2")));
+
+  run_order.clear();
+  PostTestTasks(&run_order, "T3");
+  RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("T3")));
+
+  // Advance the time until after the scheduled timer queue suspension.
+  run_order.clear();
+  clock_->Advance(suspend_timers_when_backgrounded_delay() +
+                  base::TimeDelta::FromMilliseconds(10));
+  RunUntilIdle();
+  ASSERT_TRUE(run_order.empty());
+
+  // Timer tasks should be suspended until the foregrounded signal.
+  PostTestTasks(&run_order, "T4 T5");
+  RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  scheduler_->OnRendererForegrounded();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T4"), std::string("T5")));
+
+  // Subsequent timer tasks should fire as usual.
+  run_order.clear();
+  PostTestTasks(&run_order, "T6");
+  RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("T6")));
+}
 }  // namespace scheduler

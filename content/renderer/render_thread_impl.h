@@ -433,6 +433,7 @@ class CONTENT_EXPORT RenderThreadImpl
  private:
   // ChildThread
   bool OnControlMessageReceived(const IPC::Message& msg) override;
+  void OnProcessBackgrounded(bool backgrounded) override;
 
   // GpuChannelHostFactory implementation:
   bool IsMainThread() override;

@@ -32,6 +32,8 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererHidden() override;
   void OnRendererVisible() override;
+  void OnRendererBackgrounded() override;
+  void OnRendererForegrounded() override;
   void OnPageLoadStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
@@ -42,6 +44,7 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void Shutdown() override;
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
+  void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);

@@ -54,6 +54,10 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   end_renderer_hidden_idle_period_closure_.Reset(base::Bind(
       &RendererSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
 
+  suspend_timers_when_backgrounded_closure_.Reset(
+      base::Bind(&RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded,
+                 weak_factory_.GetWeakPtr()));
+
   timer_task_runner_->AddTaskObserver(
       &MainThreadOnly().timer_task_cost_estimator_);
 
@@ -81,6 +85,9 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly()
       current_policy_(Policy::NORMAL),
       timer_queue_suspend_count_(0),
       renderer_hidden_(false),
+      renderer_backgrounded_(false),
+      timer_queue_suspension_when_backgrounded_enabled_(false),
+      timer_queue_suspended_when_backgrounded_(false),
       was_shutdown_(false) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
@@ -229,6 +236,38 @@ void RendererSchedulerImpl::OnRendererVisible() {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this, AsValue(helper_.Now()));
+}
+
+void RendererSchedulerImpl::OnRendererBackgrounded() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::OnRendererBackgrounded");
+  helper_.CheckOnValidThread();
+  if (helper_.IsShutdown() || MainThreadOnly().renderer_backgrounded_)
+    return;
+
+  MainThreadOnly().renderer_backgrounded_ = true;
+  if (!MainThreadOnly().timer_queue_suspension_when_backgrounded_enabled_)
+    return;
+
+  suspend_timers_when_backgrounded_closure_.Cancel();
+  base::TimeDelta suspend_timers_when_backgrounded_delay =
+      base::TimeDelta::FromMilliseconds(
+          kSuspendTimersWhenBackgroundedDelayMillis);
+  control_task_runner_->PostDelayedTask(
+      FROM_HERE, suspend_timers_when_backgrounded_closure_.callback(),
+      suspend_timers_when_backgrounded_delay);
+}
+
+void RendererSchedulerImpl::OnRendererForegrounded() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::OnRendererForegrounded");
+  helper_.CheckOnValidThread();
+  if (helper_.IsShutdown() || !MainThreadOnly().renderer_backgrounded_)
+    return;
+
+  MainThreadOnly().renderer_backgrounded_ = false;
+  suspend_timers_when_backgrounded_closure_.Cancel();
+  ResumeTimerQueueWhenForegrounded();
 }
 
 void RendererSchedulerImpl::EndIdlePeriod() {
@@ -460,10 +499,12 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   TaskQueue::QueuePriority compositor_queue_priority =
       TaskQueue::NORMAL_PRIORITY;
   TaskQueue::QueuePriority loading_queue_priority = TaskQueue::NORMAL_PRIORITY;
-  TaskQueue::QueuePriority timer_queue_priority =
-      MainThreadOnly().timer_queue_suspend_count_ != 0
-          ? TaskQueue::DISABLED_PRIORITY
-          : TaskQueue::NORMAL_PRIORITY;
+  TaskQueue::QueuePriority timer_queue_priority = TaskQueue::NORMAL_PRIORITY;
+
+  if (MainThreadOnly().timer_queue_suspend_count_ != 0 ||
+      MainThreadOnly().timer_queue_suspended_when_backgrounded_) {
+    timer_queue_priority = TaskQueue::DISABLED_PRIORITY;
+  }
 
   switch (new_policy) {
     case Policy::COMPOSITOR_PRIORITY:
@@ -608,6 +649,12 @@ void RendererSchedulerImpl::ResumeTimerQueue() {
   ForceUpdatePolicy();
 }
 
+void RendererSchedulerImpl::SetTimerQueueSuspensionWhenBackgroundedEnabled(
+    bool enabled) {
+  // Note that this will only take effect for the next backgrounded signal.
+  MainThreadOnly().timer_queue_suspension_when_backgrounded_enabled_ = enabled;
+}
+
 // static
 const char* RendererSchedulerImpl::PolicyToString(Policy policy) {
   switch (policy) {
@@ -649,6 +696,12 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                    IdleHelper::IdlePeriodStateToString(
                        idle_helper_.SchedulerIdlePeriodState()));
   state->SetBoolean("renderer_hidden", MainThreadOnly().renderer_hidden_);
+  state->SetBoolean("renderer_backgrounded",
+                    MainThreadOnly().renderer_backgrounded_);
+  state->SetBoolean("timer_queue_suspended_when_backgrounded",
+                    MainThreadOnly().timer_queue_suspended_when_backgrounded_);
+  state->SetInteger("timer_queue_suspend_count",
+                    MainThreadOnly().timer_queue_suspend_count_);
   state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());
   state->SetDouble("last_input_signal_time",
                    (AnyThread().last_input_signal_time_ - base::TimeTicks())
@@ -708,6 +761,24 @@ bool RendererSchedulerImpl::HadAnIdlePeriodRecently(base::TimeTicks now) const {
   return (now - AnyThread().last_idle_period_end_time_) <=
          base::TimeDelta::FromMilliseconds(
              kIdlePeriodStarvationThresholdMillis);
+}
+
+void RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded() {
+  DCHECK(MainThreadOnly().renderer_backgrounded_);
+  if (MainThreadOnly().timer_queue_suspended_when_backgrounded_)
+    return;
+
+  MainThreadOnly().timer_queue_suspended_when_backgrounded_ = true;
+  ForceUpdatePolicy();
+}
+
+void RendererSchedulerImpl::ResumeTimerQueueWhenForegrounded() {
+  DCHECK(!MainThreadOnly().renderer_backgrounded_);
+  if (!MainThreadOnly().timer_queue_suspended_when_backgrounded_)
+    return;
+
+  MainThreadOnly().timer_queue_suspended_when_backgrounded_ = false;
+  ForceUpdatePolicy();
 }
 
 }  // namespace scheduler

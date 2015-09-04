@@ -1169,6 +1169,15 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 #endif
 }
 
+bool ChromeContentRendererClient::
+    AllowTimerSuspensionWhenProcessBackgrounded() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool ChromeContentRendererClient::AllowPopup() {
 #if defined(ENABLE_EXTENSIONS)
   extensions::ScriptContext* current_context =

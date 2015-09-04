@@ -90,6 +90,10 @@ bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }
 
+bool ContentRendererClient::AllowTimerSuspensionWhenProcessBackgrounded() {
+  return false;
+}
+
 bool ContentRendererClient::AllowPopup() {
   return false;
 }

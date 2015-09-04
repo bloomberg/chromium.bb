@@ -660,6 +660,14 @@ bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
+void ChildThreadImpl::OnProcessBackgrounded(bool backgrounded) {
+  // Set timer slack to maximum on main thread when in background.
+  base::TimerSlack timer_slack = base::TIMER_SLACK_NONE;
+  if (backgrounded)
+    timer_slack = base::TIMER_SLACK_MAXIMUM;
+  base::MessageLoop::current()->SetTimerSlack(timer_slack);
+}
+
 void ChildThreadImpl::OnShutdown() {
   base::MessageLoop::current()->Quit();
 }
@@ -736,14 +744,6 @@ void ChildThreadImpl::EnsureConnected() {
 
 bool ChildThreadImpl::IsInBrowserProcess() const {
   return browser_process_io_runner_;
-}
-
-void ChildThreadImpl::OnProcessBackgrounded(bool background) {
-  // Set timer slack to maximum on main thread when in background.
-  base::TimerSlack timer_slack = base::TIMER_SLACK_NONE;
-  if (background)
-    timer_slack = base::TIMER_SLACK_MAXIMUM;
-  base::MessageLoop::current()->SetTimerSlack(timer_slack);
 }
 
 }  // namespace content

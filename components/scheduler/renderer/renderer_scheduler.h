@@ -79,6 +79,18 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // Must be called on the main thread.
   virtual void OnRendererVisible() = 0;
 
+  // Tells the scheduler that the renderer process has been backgrounded, i.e.,
+  // there are no critical, user facing activities (visual, audio, etc...)
+  // driven by this process. A stricter condition than |OnRendererHidden()|, the
+  // process is assumed to be foregrounded when the scheduler is constructed.
+  // Must be called on the main thread.
+  virtual void OnRendererBackgrounded() = 0;
+
+  // Tells the scheduler that the renderer process has been foregrounded.
+  // This is the assumed state when the scheduler is constructed.
+  // Must be called on the main thread.
+  virtual void OnRendererForegrounded() = 0;
+
   // Tells the scheduler that a page load has started.  The scheduler will
   // prioritize loading tasks for a short duration afterwards.
   // Must be called from the main thread.
@@ -97,6 +109,10 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // Decrements the timer queue suspension count and re-enables the timer queue
   // if the suspension count is zero and the current schduler policy allows it.
   virtual void ResumeTimerQueue() = 0;
+
+  // Sets whether to allow suspension of timers after the backgrounded signal is
+  // received via OnRendererBackgrounded. Defaults to disabled.
+  virtual void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) = 0;
 
  protected:
   RendererScheduler();
