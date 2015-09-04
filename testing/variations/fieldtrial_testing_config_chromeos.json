@@ -1,15 +1,5 @@
 {
-    "AutofillFieldMetadata": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "CaptivePortalInterstitial": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
-    "PluginPowerSaver": [
         {
             "group_name": "Enabled"
         }
@@ -54,6 +44,11 @@
         },
         {
             "group_name": "Disabled"
+        }
+    ],
+    "AutofillFieldMetadata": [
+        {
+            "group_name": "Enabled"
         }
     ],
     "UseDelayAgnosticAEC": [
