@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
@@ -31,12 +32,10 @@
 
 using content::Manifest;
 
-// Android's preferred icon size in DP is 48, as defined in
-// http://developer.android.com/design/style/iconography.html
-const int AddToHomescreenDataFetcher::kPreferredIconSizeInDp = 48;
-
 AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
     content::WebContents* web_contents,
+    int ideal_splash_image_size_in_dp,
+    int ideal_icon_size_in_dp,
     Observer* observer)
     : WebContentsObserver(web_contents),
       weak_observer_(observer),
@@ -46,9 +45,8 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       icon_timeout_timer_(false, false),
       shortcut_info_(dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
                      web_contents->GetURL())),
-      preferred_icon_size_in_px_(kPreferredIconSizeInDp *
-          gfx::Screen::GetScreenFor(web_contents->GetNativeView())->
-              GetPrimaryDisplay().device_scale_factor()) {
+      ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp),
+      ideal_icon_size_in_dp_(ideal_icon_size_in_dp) {
   // Send a message to the renderer to retrieve information about the page.
   is_waiting_for_web_application_info_ = true;
   Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
@@ -110,7 +108,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifest(
 
   GURL icon_src = ManifestIconSelector::FindBestMatchingIcon(
       manifest.icons,
-      kPreferredIconSizeInDp,
+      ideal_icon_size_in_dp_,
       gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
 
   // If fetching the Manifest icon fails, fallback to the best favicon
@@ -118,11 +116,17 @@ void AddToHomescreenDataFetcher::OnDidGetManifest(
   if (!ManifestIconDownloader::Download(
         web_contents(),
         icon_src,
-        kPreferredIconSizeInDp,
+        ideal_icon_size_in_dp_,
         base::Bind(&AddToHomescreenDataFetcher::OnManifestIconFetched,
                    this))) {
     FetchFavicon();
   }
+
+  // Save the splash screen URL for the later download.
+  splash_screen_url_ = ManifestIconSelector::FindBestMatchingIcon(
+      manifest.icons,
+      ideal_splash_image_size_in_dp_,
+      gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
 
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 
@@ -155,6 +159,15 @@ AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {
   DCHECK(!weak_observer_);
 }
 
+void AddToHomescreenDataFetcher::FetchSplashScreenImage(
+    const std::string& webapp_id) {
+  ShortcutHelper::FetchSplashScreenImage(
+      web_contents(),
+      splash_screen_url_,
+      ideal_splash_image_size_in_dp_,
+      webapp_id);
+}
+
 void AddToHomescreenDataFetcher::FetchFavicon() {
   if (!web_contents() || !weak_observer_) return;
 
@@ -174,7 +187,10 @@ void AddToHomescreenDataFetcher::FetchFavicon() {
 
   // Using favicon if its size is not smaller than platform required size,
   // otherwise using the largest icon among all avaliable icons.
-  int threshold_to_get_any_largest_icon = preferred_icon_size_in_px_ - 1;
+  int ideal_icon_size_in_px = ideal_icon_size_in_dp_ *
+      gfx::Screen::GetScreenFor(web_contents()->GetNativeView())->
+          GetPrimaryDisplay().device_scale_factor();
+  int threshold_to_get_any_largest_icon = ideal_icon_size_in_px - 1;
   favicon_service->GetLargestRawFaviconForPageURL(
       shortcut_info_.url,
       icon_types,

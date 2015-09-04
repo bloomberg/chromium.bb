@@ -53,7 +53,13 @@ class AddToHomescreenDataFetcher
   // renderer process. The initialization is asynchronous and
   // OnDidGetWebApplicationInfo is expected to be called when finished.
   AddToHomescreenDataFetcher(content::WebContents* web_contents,
+                             int ideal_splash_image_size_in_dp,
+                             int ideal_icon_size_in_dp,
                              Observer* observer);
+
+  // Called to fetch the splash screen image to be stored for the webapp with
+  // the specified |id|.
+  void FetchSplashScreenImage(const std::string& id);
 
   // IPC message received when the initialization is finished.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);
@@ -96,13 +102,14 @@ class AddToHomescreenDataFetcher
   bool is_ready_;
   base::Timer icon_timeout_timer_;
   ShortcutInfo shortcut_info_;
+  GURL splash_screen_url_;
 
   // The icon must only be set on the UI thread for thread safety.
   SkBitmap shortcut_icon_;
   base::CancelableTaskTracker favicon_task_tracker_;
 
-  const int preferred_icon_size_in_px_;
-  static const int kPreferredIconSizeInDp;
+  const int ideal_splash_image_size_in_dp_;
+  const int ideal_icon_size_in_dp_;
 
   friend class base::RefCounted<AddToHomescreenDataFetcher>;
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcher);

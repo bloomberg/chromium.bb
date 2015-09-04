@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -38,10 +39,12 @@ namespace banners {
 
 AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     int event_request_id,
+    scoped_refptr<AppBannerDataFetcherAndroid> data_fetcher,
     const base::string16& app_title,
     SkBitmap* app_icon,
     const content::Manifest& web_app_data)
-    : app_title_(app_title),
+    : data_fetcher_(data_fetcher),
+      app_title_(app_title),
       app_icon_(app_icon),
       event_request_id_(event_request_id),
       web_app_data_(web_app_data),
@@ -240,12 +243,16 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
     ShortcutInfo info(GURL::EmptyGURL());
     info.UpdateFromManifest(web_app_data_);
     info.UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
+
+    const std::string& uid = base::GenerateGUID();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO,
         FROM_HERE,
         base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
                    info,
+                   uid,
                    *app_icon_.get()));
+    data_fetcher_->FetchWebappSplashScreenImage(uid);
 
     SendBannerAccepted(web_contents, "web");
     return true;

@@ -27,17 +27,17 @@ bool AppBannerManager::URLsAreForTheSamePage(const GURL& first,
          first.path() == second.path() && first.query() == second.query();
 }
 
-AppBannerManager::AppBannerManager(int icon_size)
-    : ideal_icon_size_(icon_size),
+AppBannerManager::AppBannerManager(int ideal_icon_size_in_dp)
+    : ideal_icon_size_in_dp_(ideal_icon_size_in_dp),
       data_fetcher_(nullptr),
       weak_factory_(this) {
   AppBannerSettingsHelper::UpdateFromFieldTrial();
 }
 
 AppBannerManager::AppBannerManager(content::WebContents* web_contents,
-                                   int icon_size)
+                                   int ideal_icon_size_in_dp)
     : content::WebContentsObserver(web_contents),
-      ideal_icon_size_(icon_size),
+      ideal_icon_size_in_dp_(ideal_icon_size_in_dp),
       data_fetcher_(nullptr),
       weak_factory_(this) {
   AppBannerSettingsHelper::UpdateFromFieldTrial();
@@ -75,7 +75,7 @@ void AppBannerManager::DidFinishLoad(
 
   // Kick off the data retrieval pipeline.
   data_fetcher_ = CreateAppBannerDataFetcher(weak_factory_.GetWeakPtr(),
-                                             ideal_icon_size_);
+                                             ideal_icon_size_in_dp_);
   data_fetcher_->Start(validated_url, last_transition_type_);
 }
 

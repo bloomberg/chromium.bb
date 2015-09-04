@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.banners;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.app.Instrumentation.ActivityResult;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -29,6 +31,7 @@ import org.chromium.chrome.browser.infobar.AppBannerInfoBarAndroid;
 import org.chromium.chrome.browser.infobar.AppBannerInfoBarDelegateAndroid;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
@@ -115,6 +118,28 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             }
 
             return packages;
+        }
+    }
+
+    private static class TestDataStorageFactory extends WebappDataStorage.Factory {
+        public Bitmap mSplashImage;
+
+        @Override
+        public WebappDataStorage create(final Context context, final String webappId) {
+            return new WebappDataStorageWrapper(context, webappId);
+        }
+
+        private class WebappDataStorageWrapper extends WebappDataStorage {
+
+            public WebappDataStorageWrapper(Context context, String webappId) {
+                super(context, webappId);
+            }
+
+            @Override
+            public void updateSplashScreenImage(Bitmap splashScreenImage) {
+                assertNull(mSplashImage);
+                mSplashImage = splashScreenImage;
+            }
         }
     }
 
@@ -447,5 +472,93 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             }
         }));
         assertTrue(waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE));
+    }
+
+    @SmallTest
+    @Feature({"AppBanners"})
+    public void testWebAppSplashscreenIsDownloaded() throws Exception {
+        // Sets the overriden factory to observer splash screen update.
+        final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
+        WebappDataStorage.setFactoryForTests(dataStorageFactory);
+
+        // Create a Tab that doesn't have the AppBannerManager enabled.  This prevents race
+        // conditions between service worker activation and AppBannerManager getting triggered.
+        // This race condition is a known problem, which is why the specs include wiggle room for
+        // how many times a site must be visited.
+        AppBannerManager.setIsEnabledForTesting(false);
+        loadUrlInNewTab("about:blank");
+
+        // Visit a site that can have a banner, then wait until the service worker is activated.
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(
+                new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL)));
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                String url = getActivity().getActivityTab().getUrl();
+                Uri uri = Uri.parse(url);
+                return TextUtils.equals(uri.getFragment(), "sw_activated");
+            }
+        }));
+        AppBannerManager.setIsEnabledForTesting(true);
+
+        // Revisit the site in a new tab, which will have the AppBannerManager enabled.
+        loadUrlInNewTab("about:blank");
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(
+                new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL)));
+
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                AppBannerManager manager =
+                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                return !manager.isFetcherActiveForTesting();
+            }
+        }));
+        assertTrue(waitUntilNoInfoBarsExist());
+
+        // Add the animation listener in.
+        InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
+        final InfobarListener listener = new InfobarListener();
+        container.setAnimationListener(listener);
+
+        // Indicate a day has passed, then revisit the page to show the banner.
+        AppBannerManager.setTimeDeltaForTesting(1);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(
+                new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL)));
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                AppBannerManager manager =
+                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                return !manager.isFetcherActiveForTesting();
+            }
+        }));
+        assertTrue(waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE));
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return listener.mDoneAnimating;
+            }
+        }));
+
+        // Click the button to trigger the adding of the shortcut.
+        InfoBar infobar = container.getInfoBars().get(0);
+        final Button button =
+                (Button) infobar.getContentWrapper().findViewById(R.id.button_primary);
+        TouchCommon.singleClickView(button);
+
+        // Make sure that the splash screen icon was downloaded.
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return dataStorageFactory.mSplashImage != null;
+            }
+        }));
+
+        // Test that bitmap sizes match expectations.
+        int idealSize = getActivity().getResources().getDimensionPixelSize(
+                R.dimen.webapp_splash_image_size);
+        assertEquals(idealSize, dataStorageFactory.mSplashImage.getWidth());
+        assertEquals(idealSize, dataStorageFactory.mSplashImage.getHeight());
     }
 }

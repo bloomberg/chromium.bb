@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ShortcutHelper;
 
 /**
@@ -30,6 +31,8 @@ public class WebappDataStorage {
     static final String KEY_LAST_USED = "last_used";
     static final long INVALID_LAST_USED = -1;
 
+    private static Factory sFactory = new Factory();
+
     private final SharedPreferences mPreferences;
 
     /**
@@ -38,8 +41,7 @@ public class WebappDataStorage {
      * @param webappId The ID of the web app which is being opened.
      */
     public static WebappDataStorage open(final Context context, final String webappId) {
-        final WebappDataStorage storage = new WebappDataStorage(
-                context.getApplicationContext(), webappId);
+        final WebappDataStorage storage = sFactory.create(context, webappId);
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
@@ -76,9 +78,16 @@ public class WebappDataStorage {
         }.execute();
     }
 
-    /** Package private for use by WebappRegistry */
-    WebappDataStorage(Context context, String webappId) {
-        mPreferences = context.getSharedPreferences(
+    /**
+     * Sets the factory used to generate WebappDataStorage objects.
+     */
+    @VisibleForTesting
+    public static void setFactoryForTests(Factory factory) {
+        sFactory = factory;
+    }
+
+    protected WebappDataStorage(Context context, String webappId) {
+        mPreferences = context.getApplicationContext().getSharedPreferences(
                 SHARED_PREFS_FILE_PREFIX + webappId, Context.MODE_PRIVATE);
     }
 
@@ -116,6 +125,21 @@ public class WebappDataStorage {
      */
     public interface FetchCallback<T> {
         public void onDataRetrieved(T readObject);
+    }
+
+    /**
+     * Factory used to generate WebappDataStorage objects.
+     *
+     * It is used in tests to override methods in WebappDataStorage and inject the mocked objects.
+     */
+    public static class Factory {
+
+        /**
+         * Generates a WebappDataStorage class for a specified web app.
+         */
+        public WebappDataStorage create(final Context context, final String webappId) {
+            return new WebappDataStorage(context, webappId);
+        }
     }
 
     private final class BitmapFetchTask extends AsyncTask<Void, Void, Bitmap> {

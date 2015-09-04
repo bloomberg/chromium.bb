@@ -38,7 +38,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns whether or not the URLs match for everything except for the ref.
   static bool URLsAreForTheSamePage(const GURL& first, const GURL& second);
 
-  explicit AppBannerManager(int icon_size);
+  explicit AppBannerManager(int ideal_icon_size_in_dp);
   ~AppBannerManager() override;
 
   // WebContentsObserver overrides.
@@ -51,20 +51,21 @@ class AppBannerManager : public content::WebContentsObserver,
                      const GURL& validated_url) override;
 
  protected:
-  AppBannerManager(content::WebContents* web_contents, int icon_size);
+  AppBannerManager(content::WebContents* web_contents,
+                   int ideal_icon_size_in_dp);
 
   void ReplaceWebContents(content::WebContents* web_contents);
 
   // Creates an AppBannerDataFetcher, which constructs an app banner.
   virtual AppBannerDataFetcher* CreateAppBannerDataFetcher(
       base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
-      const int ideal_icon_size) = 0;
+      const int ideal_icon_size_in_dp) = 0;
 
   // Return whether the AppBannerDataFetcher is active.
   bool IsFetcherActive();
 
   scoped_refptr<AppBannerDataFetcher> data_fetcher() { return data_fetcher_; }
-  int ideal_icon_size() { return ideal_icon_size_; }
+  int ideal_icon_size_in_dp() const { return ideal_icon_size_in_dp_; }
 
  private:
   // AppBannerDataFetcher::Delegate overrides.
@@ -83,7 +84,7 @@ class AppBannerManager : public content::WebContentsObserver,
   void CancelActiveFetcher();
 
   // Ideal icon size to use.
-  const int ideal_icon_size_;
+  const int ideal_icon_size_in_dp_;
 
   // The type of navigation made to the page
   ui::PageTransition last_transition_type_;

@@ -71,7 +71,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         mIconView = layout.getIcon();
 
         Resources res = getContext().getResources();
-        int iconSize = res.getDimensionPixelSize(R.dimen.app_banner_icon_size);
+        int iconSize = res.getDimensionPixelSize(R.dimen.webapp_home_screen_icon_size);
         int iconSpacing = res.getDimensionPixelSize(R.dimen.app_banner_icon_spacing);
         layout.setIconSizeAndSpacing(iconSize, iconSize, iconSpacing);
 

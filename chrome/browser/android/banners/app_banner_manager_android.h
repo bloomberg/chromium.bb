@@ -25,7 +25,10 @@ class AppBannerManagerAndroid : public AppBannerManager {
   // Registers native methods.
   static bool Register(JNIEnv* env);
 
-  AppBannerManagerAndroid(JNIEnv* env, jobject obj, int icon_size);
+  AppBannerManagerAndroid(JNIEnv* env,
+                          jobject obj,
+                          int ideal_splash_image_size_in_dp,
+                          int ideal_icon_size_in_dp);
   ~AppBannerManagerAndroid() override;
 
   // Destroys the AppBannerManagerAndroid.
@@ -51,7 +54,7 @@ class AppBannerManagerAndroid : public AppBannerManager {
  protected:
   AppBannerDataFetcher* CreateAppBannerDataFetcher(
       base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
-      const int ideal_icon_size) override;
+      const int ideal_icon_size_in_dp) override;
 
  private:
   // AppBannerDataFetcher::Delegate overrides.
@@ -65,6 +68,9 @@ class AppBannerManagerAndroid : public AppBannerManager {
 
   std::string ExtractQueryValueForName(const GURL& url,
                                        const std::string& name);
+
+  // Ideal splash screen image size to use.
+  const int ideal_splash_image_size_in_dp_;
 
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;

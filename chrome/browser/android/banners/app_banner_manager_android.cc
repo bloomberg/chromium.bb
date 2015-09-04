@@ -31,10 +31,13 @@ const char kPlayInlineReferrer[] = "playinline=chrome_inline";
 
 namespace banners {
 
-AppBannerManagerAndroid::AppBannerManagerAndroid(JNIEnv* env,
-                                                 jobject obj,
-                                                 int icon_size)
-    : AppBannerManager(icon_size),
+AppBannerManagerAndroid::AppBannerManagerAndroid(
+    JNIEnv* env,
+    jobject obj,
+    int ideal_splash_image_size_in_dp,
+    int ideal_icon_size_in_dp)
+    : AppBannerManager(ideal_icon_size_in_dp),
+      ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp),
       weak_java_banner_view_manager_(env, obj) {
 }
 
@@ -92,7 +95,7 @@ bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
       ConvertUTF8ToJavaString(env, referrer));
   Java_AppBannerManager_fetchAppDetails(env, jobj.obj(), jurl.obj(),
                                         jpackage.obj(), jreferrer.obj(),
-                                        ideal_icon_size());
+                                        ideal_icon_size_in_dp());
   return true;
 }
 
@@ -141,9 +144,10 @@ std::string AppBannerManagerAndroid::ExtractQueryValueForName(
 
 AppBannerDataFetcher* AppBannerManagerAndroid::CreateAppBannerDataFetcher(
     base::WeakPtr<Delegate> weak_delegate,
-    const int ideal_icon_size) {
+    const int ideal_icon_size_in_dp) {
   return new AppBannerDataFetcherAndroid(web_contents(), weak_delegate,
-                                         ideal_icon_size);
+                                         ideal_splash_image_size_in_dp_,
+                                         ideal_icon_size_in_dp);
 }
 
 bool AppBannerManagerAndroid::OnAppDetailsRetrieved(JNIEnv* env,
@@ -176,9 +180,13 @@ bool AppBannerManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj, jint icon_size) {
+jlong Init(JNIEnv* env,
+           const JavaParamRef<jobject>& obj,
+           jint ideal_splash_image_size_in_dp,
+           jint ideal_icon_size_in_dp) {
   AppBannerManagerAndroid* manager =
-      new AppBannerManagerAndroid(env, obj, icon_size);
+      new AppBannerManagerAndroid(env, obj,
+          ideal_splash_image_size_in_dp, ideal_icon_size_in_dp);
   return reinterpret_cast<intptr_t>(manager);
 }
 

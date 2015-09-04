@@ -13,10 +13,12 @@ import android.text.TextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -59,6 +61,10 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
             + "<title>" + META_APP_NAME_PAGE_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
 
+    private static final String MANIFEST_URL =
+            TestHttpServerClient.getUrl("chrome/test/data/webapps/manifest_test_page.html");
+    private static final String MANIFEST_TITLE = "Web app banner test page";
+
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
         public Intent mBroadcastedIntent;
 
@@ -74,6 +80,28 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
         public void clearBroadcastedIntent() {
             mBroadcastedIntent = null;
+        }
+    }
+
+    private static class TestDataStorageFactory extends WebappDataStorage.Factory {
+        public Bitmap mSplashImage;
+
+        @Override
+        public WebappDataStorage create(final Context context, final String webappId) {
+            return new WebappDataStorageWrapper(context, webappId);
+        }
+
+        private class WebappDataStorageWrapper extends WebappDataStorage {
+
+            public WebappDataStorageWrapper(Context context, String webappId) {
+                super(context, webappId);
+            }
+
+            @Override
+            public void updateSplashScreenImage(Bitmap splashScreenImage) {
+                assertNull(mSplashImage);
+                mSplashImage = splashScreenImage;
+            }
         }
     }
 
@@ -162,6 +190,30 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
         addShortcutToURL(META_APP_NAME_HTML, META_APP_NAME_PAGE_TITLE, "");
         Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
         assertEquals(META_APP_NAME_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+    }
+
+    @SmallTest
+    @Feature("{Webapp}")
+    public void testAddWebappShortcutSplashScreenIcon() throws InterruptedException {
+        // Sets the overriden factory to observer splash screen update.
+        final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
+        WebappDataStorage.setFactoryForTests(dataStorageFactory);
+
+        addShortcutToURL(MANIFEST_URL, MANIFEST_TITLE, "");
+
+        // Make sure that the splash screen image was downloaded.
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return dataStorageFactory.mSplashImage != null;
+            }
+        }));
+
+        // Test that bitmap sizes match expectations.
+        int idealSize = mActivity.getResources().getDimensionPixelSize(
+                R.dimen.webapp_splash_image_size);
+        assertEquals(idealSize, dataStorageFactory.mSplashImage.getWidth());
+        assertEquals(idealSize, dataStorageFactory.mSplashImage.getHeight());
     }
 
     private void addShortcutToURL(String url, final String expectedPageTitle, final String title)

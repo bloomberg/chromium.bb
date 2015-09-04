@@ -70,7 +70,6 @@
     <dimen name="infobar_icon_size">36dp</dimen>
 
     <!-- App banner dimensions -->
-    <dimen name="app_banner_icon_size">48dp</dimen>
     <dimen name="app_banner_icon_spacing">16dp</dimen>
 
     <!-- Contextual search dimensions -->
@@ -191,6 +190,10 @@
     <dimen name="find_in_page_popup_width">375dp</dimen>
     <dimen name="find_in_page_popup_height">60dp</dimen>
     <dimen name="find_in_page_popup_margin_end">62dp</dimen>
+
+    <!-- Web app dimensions -->
+    <dimen name="webapp_splash_image_size">128dp</dimen>
+    <dimen name="webapp_home_screen_icon_size">48dp</dimen>
 
     <!-- Toolbar dimensions -->
     <dimen name="toolbar_tab_count_text_size_1_digit">12dp</dimen>

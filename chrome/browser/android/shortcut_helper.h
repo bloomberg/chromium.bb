@@ -10,6 +10,10 @@
 #include "chrome/browser/android/shortcut_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 // ShortcutHelper is the C++ counterpart of org.chromium.chrome.browser's
 // ShortcutHelper in Java.
 class ShortcutHelper {
@@ -20,9 +24,23 @@ class ShortcutHelper {
   // Adds a shortcut to the launcher using a SkBitmap.
   // Must be called on the IO thread.
   static void AddShortcutInBackgroundWithSkBitmap(const ShortcutInfo& info,
+                                                  const std::string& webapp_id,
                                                   const SkBitmap& icon_bitmap);
+
+  // Fetches the splash screen image and stores it inside the WebappDataStorage
+  // of the webapp.
+  static void FetchSplashScreenImage(content::WebContents* web_contents,
+                                     const GURL& image_url,
+                                     const int ideal_splash_image_size_in_dp,
+                                     const std::string& webapp_id);
+
+  // Stores the data of the webapp which is not placed inside the shortcut.
+  static void StoreWebappData(const std::string& webapp_id,
+                              const SkBitmap& splash_image);
+
  private:
-  ShortcutHelper();
+  ShortcutHelper() = delete;
+  ~ShortcutHelper() = delete;
 
   DISALLOW_COPY_AND_ASSIGN(ShortcutHelper);
 };
