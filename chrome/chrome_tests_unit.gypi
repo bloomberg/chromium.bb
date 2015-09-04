@@ -542,6 +542,8 @@
       # unit_tests than in base_unittests.
       '../base/path_service_unittest.cc',
 
+      # TODO(hashimoto): those tests should be componentized and moved to
+      # //components:components_unittests, http://crbug.com/527882.
       '../components/search_engines/template_url_fetcher_unittest.cc',
       '../components/search_engines/template_url_parser_unittest.cc',
       '../components/search_engines/template_url_service_sync_unittest.cc',
