@@ -22,12 +22,15 @@ namespace mandoline {
 
 PhoneBrowserApplicationDelegate::PhoneBrowserApplicationDelegate()
     : app_(nullptr),
+      root_(nullptr),
       content_(nullptr),
       web_view_(this),
       default_url_("http://www.google.com/") {
 }
 
 PhoneBrowserApplicationDelegate::~PhoneBrowserApplicationDelegate() {
+  if (root_)
+    root_->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,11 +69,14 @@ void PhoneBrowserApplicationDelegate::LaunchURL(const mojo::String& url) {
 // PhoneBrowserApplicationDelegate, mojo::ViewTreeDelegate implementation:
 
 void PhoneBrowserApplicationDelegate::OnEmbed(mojo::View* root) {
+  CHECK(!root_);
+  root_ = root;
   root->connection()->SetEmbedRoot();
   content_ = root->connection()->CreateView();
   root->AddChild(content_);
   content_->SetBounds(root->bounds());
   content_->SetVisible(true);
+  root->AddObserver(this);
 
   host_->SetSize(mojo::Size::From(gfx::Size(320, 640)));
   web_view_.Init(app_, content_);
@@ -88,6 +94,7 @@ void PhoneBrowserApplicationDelegate::OnViewBoundsChanged(
     mojo::View* view,
     const mojo::Rect& old_bounds,
     const mojo::Rect& new_bounds) {
+  CHECK_EQ(view, root_);
   content_->SetBounds(
       *mojo::Rect::From(gfx::Rect(0, 0, new_bounds.width, new_bounds.height)));
 }

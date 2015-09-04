@@ -66,6 +66,7 @@ class PhoneBrowserApplicationDelegate :
   mojo::ApplicationImpl* app_;
   mojo::ViewTreeHostPtr host_;
 
+  mojo::View* root_;
   mojo::View* content_;
   web_view::WebView web_view_;
 
