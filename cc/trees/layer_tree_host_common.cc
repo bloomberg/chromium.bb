@@ -12,6 +12,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_iterator.h"
+#include "cc/layers/render_surface_draw_properties.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
@@ -2268,146 +2269,105 @@ static bool ApproximatelyEqual(const gfx::Transform& a,
 
 void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
                                         PropertyTrees* property_trees) {
-  const bool render_surface_draw_transforms_match =
-      ApproximatelyEqual(render_surface->draw_transform(),
-                         DrawTransformOfRenderSurfaceFromPropertyTrees(
-                             render_surface, property_trees->transform_tree));
+  RenderSurfaceDrawProperties draw_properties;
+  ComputeSurfaceDrawPropertiesUsingPropertyTrees(render_surface, property_trees,
+                                                 &draw_properties);
+
+  // content_rect has to be computed recursively, so is computed separately from
+  // other draw properties.
+  draw_properties.content_rect =
+      render_surface->content_rect_from_property_trees();
+
+  const bool render_surface_draw_transforms_match = ApproximatelyEqual(
+      render_surface->draw_transform(), draw_properties.draw_transform);
   CHECK(render_surface_draw_transforms_match)
       << "expected: " << render_surface->draw_transform().ToString()
-      << " actual: "
-      << DrawTransformOfRenderSurfaceFromPropertyTrees(
-             render_surface, property_trees->transform_tree)
-             .ToString();
+      << " actual: " << draw_properties.draw_transform.ToString();
 
   const bool render_surface_screen_space_transform_match =
       ApproximatelyEqual(render_surface->screen_space_transform(),
-                         ScreenSpaceTransformOfRenderSurfaceFromPropertyTrees(
-                             render_surface, property_trees->transform_tree));
+                         draw_properties.screen_space_transform);
   CHECK(render_surface_screen_space_transform_match)
       << "expected: " << render_surface->screen_space_transform().ToString()
-      << " actual: "
-      << ScreenSpaceTransformOfRenderSurfaceFromPropertyTrees(
-             render_surface, property_trees->transform_tree)
-             .ToString();
+      << " actual: " << draw_properties.screen_space_transform.ToString();
 
   const bool render_surface_replica_draw_transforms_match =
       ApproximatelyEqual(render_surface->replica_draw_transform(),
-                         DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
-                             render_surface, property_trees->transform_tree));
+                         draw_properties.replica_draw_transform);
   CHECK(render_surface_replica_draw_transforms_match)
       << "expected: " << render_surface->replica_draw_transform().ToString()
-      << " actual: "
-      << DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
-             render_surface, property_trees->transform_tree)
-             .ToString();
+      << " actual: " << draw_properties.replica_draw_transform.ToString();
 
   const bool render_surface_replica_screen_space_transforms_match =
-      ApproximatelyEqual(
-          render_surface->replica_screen_space_transform(),
-          ScreenSpaceTransformOfRenderSurfaceReplicaFromPropertyTrees(
-              render_surface, property_trees->transform_tree));
+      ApproximatelyEqual(render_surface->replica_screen_space_transform(),
+                         draw_properties.replica_screen_space_transform);
   CHECK(render_surface_replica_screen_space_transforms_match)
       << "expected: "
       << render_surface->replica_screen_space_transform().ToString()
       << " actual: "
-      << ScreenSpaceTransformOfRenderSurfaceReplicaFromPropertyTrees(
-             render_surface, property_trees->transform_tree)
-             .ToString();
+      << draw_properties.replica_screen_space_transform.ToString();
 
-  CHECK_EQ(render_surface->is_clipped(),
-           RenderSurfaceIsClippedFromPropertyTrees(render_surface,
-                                                   property_trees->clip_tree));
+  CHECK_EQ(render_surface->is_clipped(), draw_properties.is_clipped);
 
-  const bool render_surface_clip_rects_match =
-      ApproximatelyEqual(render_surface->clip_rect(),
-                         ClipRectOfRenderSurfaceFromPropertyTrees(
-                             render_surface, property_trees->clip_tree));
+  const bool render_surface_clip_rects_match = ApproximatelyEqual(
+      render_surface->clip_rect(), draw_properties.clip_rect);
   CHECK(render_surface_clip_rects_match)
-      << "expected: " << render_surface->clip_rect().ToString() << " actual: "
-      << ClipRectOfRenderSurfaceFromPropertyTrees(render_surface,
-                                                  property_trees->clip_tree)
-             .ToString();
+      << "expected: " << render_surface->clip_rect().ToString()
+      << " actual: " << draw_properties.clip_rect.ToString();
 
-  const bool render_surface_content_rects_match =
-      ApproximatelyEqual(render_surface->content_rect(),
-                         render_surface->content_rect_from_property_trees());
+  CHECK_EQ(render_surface->draw_opacity(), draw_properties.draw_opacity);
+
+  const bool render_surface_content_rects_match = ApproximatelyEqual(
+      render_surface->content_rect(), draw_properties.content_rect);
   CHECK(render_surface_content_rects_match)
       << "expected: " << render_surface->content_rect().ToString()
-      << " actual: "
-      << render_surface->content_rect_from_property_trees().ToString();
-
-  CHECK_EQ(render_surface->draw_opacity(),
-           DrawOpacityOfRenderSurfaceFromPropertyTrees(
-               render_surface, property_trees->effect_tree));
+      << " actual: " << draw_properties.content_rect.ToString();
 }
 
 void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
                                       PropertyTrees* property_trees,
                                       bool layers_always_allowed_lcd_text,
                                       bool can_use_lcd_text) {
-  const bool visible_rects_match =
-      ApproximatelyEqual(current_layer->visible_layer_rect(),
-                         current_layer->visible_rect_from_property_trees());
+  DrawProperties draw_properties;
+  ComputeLayerDrawPropertiesUsingPropertyTrees(
+      current_layer, property_trees, layers_always_allowed_lcd_text,
+      can_use_lcd_text, &draw_properties);
+
+  const bool visible_rects_match = ApproximatelyEqual(
+      current_layer->visible_layer_rect(), draw_properties.visible_layer_rect);
   CHECK(visible_rects_match)
       << "expected: " << current_layer->visible_layer_rect().ToString()
-      << " actual: "
-      << current_layer->visible_rect_from_property_trees().ToString();
+      << " actual: " << draw_properties.visible_layer_rect.ToString();
 
-  const bool draw_transforms_match =
-      ApproximatelyEqual(current_layer->draw_transform(),
-                         DrawTransformFromPropertyTrees(
-                             current_layer, property_trees->transform_tree));
+  const bool draw_transforms_match = ApproximatelyEqual(
+      current_layer->draw_transform(), draw_properties.target_space_transform);
   CHECK(draw_transforms_match)
       << "expected: " << current_layer->draw_transform().ToString()
-      << " actual: "
-      << DrawTransformFromPropertyTrees(
-             current_layer, property_trees->transform_tree).ToString();
+      << " actual: " << draw_properties.target_space_transform.ToString();
 
-  const bool draw_opacities_match =
-      current_layer->draw_opacity() ==
-      DrawOpacityFromPropertyTrees(current_layer, property_trees->effect_tree);
-  CHECK(draw_opacities_match)
-      << "expected: " << current_layer->draw_opacity()
-      << " actual: " << DrawOpacityFromPropertyTrees(
-                            current_layer, property_trees->effect_tree);
-
-  const bool can_use_lcd_text_match =
-      CanUseLcdTextFromPropertyTrees(
-          current_layer, layers_always_allowed_lcd_text, can_use_lcd_text,
-          property_trees) == current_layer->can_use_lcd_text();
-  CHECK(can_use_lcd_text_match);
-
+  CHECK_EQ(current_layer->draw_opacity(), draw_properties.opacity);
+  CHECK_EQ(current_layer->can_use_lcd_text(), draw_properties.can_use_lcd_text);
   CHECK_EQ(current_layer->screen_space_transform_is_animating(),
-           ScreenSpaceTransformIsAnimatingFromPropertyTrees(
-               current_layer, property_trees->transform_tree));
+           draw_properties.screen_space_transform_is_animating);
 
   const bool drawable_content_rects_match =
       ApproximatelyEqual(current_layer->drawable_content_rect(),
-                         DrawableContentRectFromPropertyTrees(
-                             current_layer, property_trees->transform_tree));
+                         draw_properties.drawable_content_rect);
   CHECK(drawable_content_rects_match)
       << "expected: " << current_layer->drawable_content_rect().ToString()
-      << " actual: "
-      << DrawableContentRectFromPropertyTrees(current_layer,
-                                              property_trees->transform_tree)
-             .ToString();
+      << " actual: " << draw_properties.drawable_content_rect.ToString();
 
-  const bool clip_rects_match = ApproximatelyEqual(
-      current_layer->clip_rect(),
-      ClipRectFromPropertyTrees(current_layer, property_trees->transform_tree));
+  const bool clip_rects_match =
+      ApproximatelyEqual(current_layer->clip_rect(), draw_properties.clip_rect);
   CHECK(clip_rects_match) << "expected: "
                           << current_layer->clip_rect().ToString()
                           << " actual: "
-                          << ClipRectFromPropertyTrees(
-                                 current_layer, property_trees->transform_tree)
-                                 .ToString();
+                          << draw_properties.clip_rect.ToString();
 
   CHECK_EQ(current_layer->draw_properties().maximum_animation_contents_scale,
-           MaximumAnimationTargetScaleFromPropertyTrees(
-               current_layer, property_trees->transform_tree));
+           draw_properties.maximum_animation_contents_scale);
   CHECK_EQ(current_layer->draw_properties().starting_animation_contents_scale,
-           StartingAnimationScaleFromPropertyTrees(
-               current_layer, property_trees->transform_tree));
+           draw_properties.starting_animation_contents_scale);
 }
 
 void VerifyPropertyTreeValues(
@@ -2582,10 +2542,9 @@ void CalculateRenderSurfaceLayerListInternal(
         // If the owning layer of a render surface draws content, the content
         // rect of the render surface is initialized to the drawable content
         // rect of the layer.
-        gfx::Rect content_rect =
-            layer->DrawsContent() ? DrawableContentRectFromPropertyTrees(
-                                        layer, property_trees->transform_tree)
-                                  : gfx::Rect();
+        gfx::Rect content_rect = layer->DrawsContent()
+                                     ? layer->drawable_content_rect()
+                                     : gfx::Rect();
         layer->render_surface()->SetAccumulatedContentRect(content_rect);
       }
     } else if (!layer_should_be_skipped &&
@@ -2594,8 +2553,7 @@ void CalculateRenderSurfaceLayerListInternal(
       // content rect of the render surface it is drawing into.
       gfx::Rect surface_content_rect =
           layer->render_target()->render_surface()->accumulated_content_rect();
-      surface_content_rect.Union(DrawableContentRectFromPropertyTrees(
-          layer, property_trees->transform_tree));
+      surface_content_rect.Union(layer->drawable_content_rect());
       layer->render_target()->render_surface()->SetAccumulatedContentRect(
           surface_content_rect);
     }
@@ -2634,9 +2592,7 @@ void CalculateRenderSurfaceLayerListInternal(
 
   if (verify_property_trees && render_to_separate_surface &&
       !IsRootLayer(layer)) {
-    if (!layer->replica_layer() &&
-        RenderSurfaceIsClippedFromPropertyTrees(layer->render_surface(),
-                                                property_trees->clip_tree)) {
+    if (!layer->replica_layer() && layer->render_surface()->is_clipped()) {
       // Here, we clip the render surface's content rect with its clip rect.
       // As the clip rect of render surface is in the surface's target space,
       // we first map the content rect into the target space, intersect it with
@@ -2646,11 +2602,8 @@ void CalculateRenderSurfaceLayerListInternal(
 
       if (!surface_content_rect.IsEmpty()) {
         gfx::Rect surface_clip_rect = LayerTreeHostCommon::CalculateVisibleRect(
-            ClipRectOfRenderSurfaceFromPropertyTrees(layer->render_surface(),
-                                                     property_trees->clip_tree),
-            surface_content_rect,
-            DrawTransformOfRenderSurfaceFromPropertyTrees(
-                layer->render_surface(), property_trees->transform_tree));
+            layer->render_surface()->clip_rect(), surface_content_rect,
+            layer->render_surface()->draw_transform());
         surface_content_rect.Intersect(surface_clip_rect);
         layer->render_surface()->SetAccumulatedContentRect(
             surface_content_rect);
@@ -2665,8 +2618,8 @@ void CalculateRenderSurfaceLayerListInternal(
                                           ->render_target()
                                           ->render_surface()
                                           ->accumulated_content_rect();
-      surface_target_rect.Union(DrawableContentRectOfSurfaceFromPropertyTrees(
-          layer->render_surface(), property_trees->transform_tree));
+      surface_target_rect.Union(
+          gfx::ToEnclosedRect(layer->render_surface()->DrawableContentRect()));
       layer->parent()
           ->render_target()
           ->render_surface()

@@ -16,8 +16,10 @@ class Transform;
 namespace cc {
 
 class ClipTree;
+struct DrawProperties;
 class Layer;
 class LayerImpl;
+struct RenderSurfaceDrawProperties;
 class RenderSurfaceImpl;
 class EffectTree;
 class TransformTree;
@@ -74,24 +76,20 @@ ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
                                       PropertyTrees* property_trees,
                                       LayerImplList* update_layer_list);
 
+void CC_EXPORT ComputeLayerDrawPropertiesUsingPropertyTrees(
+    const LayerImpl* layer,
+    const PropertyTrees* property_trees,
+    bool layers_always_allowed_lcd_text,
+    bool can_use_lcd_text,
+    DrawProperties* draw_properties);
+
+void CC_EXPORT ComputeSurfaceDrawPropertiesUsingPropertyTrees(
+    RenderSurfaceImpl* render_surface,
+    const PropertyTrees* property_trees,
+    RenderSurfaceDrawProperties* draw_properties);
+
 gfx::Transform CC_EXPORT
 DrawTransformFromPropertyTrees(const Layer* layer, const TransformTree& tree);
-
-gfx::Transform CC_EXPORT DrawTransformOfRenderSurfaceFromPropertyTrees(
-    const RenderSurfaceImpl* render_Surface,
-    const TransformTree& tree);
-
-bool CC_EXPORT
-RenderSurfaceIsClippedFromPropertyTrees(const RenderSurfaceImpl* render_surface,
-                                        const ClipTree& tree);
-
-gfx::Rect CC_EXPORT ClipRectOfRenderSurfaceFromPropertyTrees(
-    const RenderSurfaceImpl* render_surface,
-    const ClipTree& clip_tree);
-
-gfx::Transform CC_EXPORT ScreenSpaceTransformOfRenderSurfaceFromPropertyTrees(
-    const RenderSurfaceImpl* render_surface,
-    const TransformTree& tree);
 
 gfx::Transform CC_EXPORT
 DrawTransformFromPropertyTrees(const LayerImpl* layer,
@@ -104,56 +102,6 @@ ScreenSpaceTransformFromPropertyTrees(const Layer* layer,
 gfx::Transform CC_EXPORT
 ScreenSpaceTransformFromPropertyTrees(const LayerImpl* layer,
                                       const TransformTree& tree);
-
-bool CC_EXPORT
-ScreenSpaceTransformIsAnimatingFromPropertyTrees(const Layer* layer,
-                                                 const TransformTree& tree);
-
-bool CC_EXPORT
-ScreenSpaceTransformIsAnimatingFromPropertyTrees(const LayerImpl* layer,
-                                                 const TransformTree& tree);
-
-float CC_EXPORT
-MaximumAnimationTargetScaleFromPropertyTrees(const LayerImpl* layer,
-                                             const TransformTree& tree);
-
-float CC_EXPORT
-StartingAnimationScaleFromPropertyTrees(const LayerImpl* layer,
-                                        const TransformTree& tree);
-
-float CC_EXPORT DrawOpacityFromPropertyTrees(const LayerImpl* layer,
-                                             const EffectTree& tree);
-
-float CC_EXPORT
-DrawOpacityOfRenderSurfaceFromPropertyTrees(RenderSurfaceImpl* render_surface,
-                                            const EffectTree& tree);
-
-bool CC_EXPORT
-CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
-                               bool layers_always_allowed_lcd_text,
-                               bool can_use_lcd_text,
-                               PropertyTrees* property_trees);
-
-gfx::Rect CC_EXPORT DrawableContentRectOfSurfaceFromPropertyTrees(
-    const RenderSurfaceImpl* render_surface,
-    const TransformTree& transform_tree);
-
-gfx::Rect CC_EXPORT
-DrawableContentRectFromPropertyTrees(const LayerImpl* layer,
-                                     const TransformTree& transform_tree);
-
-gfx::Rect CC_EXPORT
-ClipRectFromPropertyTrees(const LayerImpl* layer,
-                          const TransformTree& transform_tree);
-
-gfx::Transform CC_EXPORT DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
-    const RenderSurfaceImpl* render_surface,
-    const TransformTree& tree);
-
-gfx::Transform CC_EXPORT
-ScreenSpaceTransformOfRenderSurfaceReplicaFromPropertyTrees(
-    const RenderSurfaceImpl* render_surface,
-    const TransformTree& tree);
 
 }  // namespace cc
 
