@@ -66,7 +66,6 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
   if (hr != S_OK)
     return hr;
 
-  ScopedComPtr<IMoniker> moniker;
   ScopedComPtr<IBaseFilter> capture_filter;
   for (ScopedComPtr<IMoniker> moniker;
        enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK;
