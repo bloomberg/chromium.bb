@@ -7043,6 +7043,36 @@ TEST_F(WebFrameSwapTest, SwapMainFrame)
     remoteFrame->close();
 }
 
+namespace {
+
+class SwapMainFrameWhenTitleChangesWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    SwapMainFrameWhenTitleChangesWebFrameClient() {}
+    ~SwapMainFrameWhenTitleChangesWebFrameClient() override {}
+
+    void didReceiveTitle(WebLocalFrame* frame, const WebString&, WebTextDirection) override
+    {
+        if (!frame->parent())
+            frame->swap(WebRemoteFrame::create(WebTreeScopeType::Document, nullptr));
+    }
+};
+
+} // anonymous namespace
+
+TEST_F(WebFrameTest, SwapMainFrameWhileLoading)
+{
+    SwapMainFrameWhenTitleChangesWebFrameClient frameClient;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    registerMockedHttpURLLoad("frame-a-b-c.html");
+    registerMockedHttpURLLoad("subframe-a.html");
+    registerMockedHttpURLLoad("subframe-b.html");
+    registerMockedHttpURLLoad("subframe-c.html");
+    registerMockedHttpURLLoad("subframe-hello.html");
+
+    webViewHelper.initializeAndLoad(m_baseURL + "frame-a-b-c.html", true, &frameClient);
+}
+
 void swapAndVerifyFirstChildConsistency(const char* const message, WebFrame* parent, WebFrame* newChild)
 {
     SCOPED_TRACE(message);
