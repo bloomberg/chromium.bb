@@ -1161,6 +1161,7 @@
       'browser/chromeos/attestation/fake_certificate.cc',
       'browser/chromeos/attestation/fake_certificate.h',
       'browser/chromeos/attestation/platform_verification_flow_unittest.cc',
+      'browser/chromeos/certificate_provider/certificate_provider_service_unittest.cc',
       'browser/chromeos/customization/customization_document_unittest.cc',
       'browser/chromeos/display/display_preferences_unittest.cc',
       'browser/chromeos/drive/download_handler_unittest.cc',
