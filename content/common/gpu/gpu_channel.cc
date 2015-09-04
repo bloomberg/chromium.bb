@@ -88,6 +88,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
       : preemption_state_(IDLE),
         gpu_channel_(gpu_channel),
         sender_(nullptr),
+        peer_pid_(base::kNullProcessId),
         sync_point_manager_(sync_point_manager),
         task_runner_(task_runner),
         messages_forwarded_to_channel_(0),
@@ -98,16 +99,64 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
     DCHECK(!sender_);
     sender_ = sender;
     timer_ = make_scoped_ptr(new base::OneShotTimer<GpuChannelMessageFilter>);
+    for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
+      filter->OnFilterAdded(sender_);
+    }
   }
 
   void OnFilterRemoved() override {
     DCHECK(sender_);
+    for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
+      filter->OnFilterRemoved();
+    }
     sender_ = nullptr;
+    peer_pid_ = base::kNullProcessId;
     timer_ = nullptr;
+  }
+
+  void OnChannelConnected(int32 peer_pid) override {
+    DCHECK(peer_pid_ == base::kNullProcessId);
+    peer_pid_ = peer_pid;
+    for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
+      filter->OnChannelConnected(peer_pid);
+    }
+  }
+
+  void OnChannelError() override {
+    for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
+      filter->OnChannelError();
+    }
+  }
+
+  void OnChannelClosing() override {
+    for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
+      filter->OnChannelClosing();
+    }
+  }
+
+  void AddChannelFilter(scoped_refptr<IPC::MessageFilter> filter) {
+    channel_filters_.push_back(filter);
+    if (sender_)
+      filter->OnFilterAdded(sender_);
+    if (peer_pid_ != base::kNullProcessId)
+      filter->OnChannelConnected(peer_pid_);
+  }
+
+  void RemoveChannelFilter(scoped_refptr<IPC::MessageFilter> filter) {
+    if (sender_)
+      filter->OnFilterRemoved();
+    channel_filters_.erase(
+        std::find(channel_filters_.begin(), channel_filters_.end(), filter));
   }
 
   bool OnMessageReceived(const IPC::Message& message) override {
     DCHECK(sender_);
+
+    for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
+      if (filter->OnMessageReceived(message)) {
+        return true;
+      }
+    }
 
     bool handled = false;
     if ((message.type() == GpuCommandBufferMsg_RetireSyncPoint::ID) &&
@@ -141,17 +190,6 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
                      gpu_channel_, sync_point_manager_, message.routing_id(),
                      base::get<0>(retire), sync_point));
       handled = true;
-    }
-
-    // These are handled by GpuJpegDecodeAccelerator and
-    // GpuVideoDecodeAccelerator.
-    // TODO(kcwu) Modify GpuChannel::AddFilter to handle additional filters by
-    // GpuChannelMessageFilter instead of by IPC::SyncChannel directly. Then we
-    // don't need to exclude them one by one here.
-    if (message.type() == AcceleratedJpegDecoderMsg_Decode::ID ||
-        message.type() == AcceleratedJpegDecoderMsg_Destroy::ID ||
-        message.type() == AcceleratedVideoDecoderMsg_Decode::ID) {
-      return false;
     }
 
     // All other messages get processed by the GpuChannel.
@@ -396,11 +434,13 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   // passed through - therefore the WeakPtr assumptions are respected.
   base::WeakPtr<GpuChannel> gpu_channel_;
   IPC::Sender* sender_;
+  base::ProcessId peer_pid_;
   gpu::SyncPointManager* sync_point_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<gpu::PreemptionFlag> preempting_flag_;
 
   std::queue<PendingMessage> pending_messages_;
+  std::vector<scoped_refptr<IPC::MessageFilter> > channel_filters_;
 
   // Count of the number of IPCs forwarded to the GpuChannel.
   uint64 messages_forwarded_to_channel_;
@@ -830,11 +870,15 @@ void GpuChannel::CacheShader(const std::string& key,
 }
 
 void GpuChannel::AddFilter(IPC::MessageFilter* filter) {
-  channel_->AddFilter(filter);
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GpuChannelMessageFilter::AddChannelFilter,
+                            filter_, make_scoped_refptr(filter)));
 }
 
 void GpuChannel::RemoveFilter(IPC::MessageFilter* filter) {
-  channel_->RemoveFilter(filter);
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GpuChannelMessageFilter::RemoveChannelFilter,
+                            filter_, make_scoped_refptr(filter)));
 }
 
 uint64 GpuChannel::GetMemoryUsage() {
