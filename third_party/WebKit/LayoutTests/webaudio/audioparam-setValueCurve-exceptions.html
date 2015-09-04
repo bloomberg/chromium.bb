@@ -114,6 +114,72 @@
         done();
       });
 
+      audit.defineTask("start-end", function (done) {
+        var success = true;
+        var context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
+        var g = context.createGain();
+        var curve = new Float32Array(2);
+
+        // Verify that a setValueCurve can start at the end of an automation.
+        var time = 0;
+        var timeInterval = testDurationSec / 50;
+        success = Should("setValueAtTime(1, " + time + ")", function () {
+          g.gain.setValueAtTime(1, time);
+        }).notThrow();
+
+        time += timeInterval;
+        success = Should("linearRampToValueAtTime(0, " + time + ")", function () {
+          g.gain.linearRampToValueAtTime(0, time);
+        }).notThrow() && success;
+
+        // setValueCurve starts at the end of the linear ramp. This should be fine.
+        success = Should("setValueCurveAtTime(..., " + time + ", " + timeInterval + ")", function () {
+          g.gain.setValueCurveAtTime(curve, time, timeInterval);
+        }).notThrow() && success;
+
+        // exponentialRamp ending one interval past the setValueCurve should be fine.
+        time += 2*timeInterval;
+        success = Should("exponentialRampToValueAtTime(1, " + time + ")", function () {
+          g.gain.exponentialRampToValueAtTime(1, time);
+        }).notThrow() && success;
+
+        // setValueCurve starts at the end of the exponential ramp. This should be fine.
+        success = Should("setValueCurveAtTime(..., " + time + ", " + timeInterval + ")", function () {
+          g.gain.setValueCurveAtTime(curve, time, timeInterval);
+        }).notThrow() && success;
+
+        // setValueCurve at the end of the setValueCurve should be fine.
+        time += timeInterval;
+        success = Should("setValueCurveAtTime(..., " + time + ", " + timeInterval + ")", function () {
+          g.gain.setValueCurveAtTime(curve, time, timeInterval);
+        }).notThrow() && success;
+
+        // setValueAtTime at the end of setValueCurve should be fine.
+        time += timeInterval;
+        success = Should("setValueAtTime(0, " + time + ")", function () {
+          g.gain.setValueAtTime(0, time);
+        }).notThrow() && success;
+
+        // setValueCurve at the end of setValueAtTime should be fine.
+        success = Should("setValueCurveAtTime(..., " + time + ", " + timeInterval + ")", function () {
+          g.gain.setValueCurveAtTime(curve, time, timeInterval);
+        }).notThrow() && success;
+
+        // setTarget starting at the end of setValueCurve should be fine.
+        time += timeInterval;
+        success = Should("setTargetAtTime(1, " + time + ", 1)", function () {
+          g.gain.setTargetAtTime(1, time, 1);
+        }).notThrow() && success;
+
+        var prefix = "setValueCurve with adjoining automation functions";
+        if (success)
+          testPassed(prefix + " allowed as expected.\n");
+        else
+          testFailed(prefix + " unexpectedly signaled errors.\n");
+
+        done();
+      });
+
       audit.defineTask("finish", function (done) {
         finishJSTest();
         done();

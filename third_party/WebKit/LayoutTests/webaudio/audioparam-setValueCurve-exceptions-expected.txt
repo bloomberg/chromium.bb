@@ -21,6 +21,17 @@ PASS setValueCurveAtTime(curve, 0.03125, 0.01) threw NotSupportedError: Failed t
 PASS setValueCurveAtTime(curve, 0.04375, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.04375, 0.01) overlaps setValueCurveAtTime(..., 0.05, 0.1).
 PASS setValueCurve overlapping existing automation functions correctly signaled errors.
 
+PASS setValueAtTime(1, 0) did not throw an exception.
+PASS linearRampToValueAtTime(0, 0.0025) did not throw an exception.
+PASS setValueCurveAtTime(..., 0.0025, 0.0025) did not throw an exception.
+PASS exponentialRampToValueAtTime(1, 0.0075) did not throw an exception.
+PASS setValueCurveAtTime(..., 0.0075, 0.0025) did not throw an exception.
+PASS setValueCurveAtTime(..., 0.01, 0.0025) did not throw an exception.
+PASS setValueAtTime(0, 0.0125) did not throw an exception.
+PASS setValueCurveAtTime(..., 0.0125, 0.0025) did not throw an exception.
+PASS setTargetAtTime(1, 0.015000000000000001, 1) did not throw an exception.
+PASS setValueCurve with adjoining automation functions allowed as expected.
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

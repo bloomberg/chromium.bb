@@ -193,9 +193,11 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& ex
 
     for (i = 0; i < m_events.size(); ++i) {
         if (event.type() == ParamEvent::SetValueCurve) {
-            // If this event is a SetValueCurve, make sure it doesn't overlap any existing event.
+            // If this event is a SetValueCurve, make sure it doesn't overlap any existing
+            // event. It's ok if the SetValueCurve starts at the same time as the end of some other
+            // duration.
             double endTime = event.time() + event.duration();
-            if (m_events[i].time() >= event.time() && m_events[i].time() < endTime) {
+            if (m_events[i].time() > event.time() && m_events[i].time() < endTime) {
                 exceptionState.throwDOMException(
                     NotSupportedError,
                     eventToString(event) + " overlaps " + eventToString(m_events[i]));
