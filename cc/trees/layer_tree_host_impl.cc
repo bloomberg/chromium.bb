@@ -533,15 +533,16 @@ bool LayerTreeHostImpl::HaveWheelEventHandlersAt(
   return layer_impl != NULL;
 }
 
-static LayerImpl* NextScrollLayer(LayerImpl* layer) {
-  if (LayerImpl* scroll_parent = layer->scroll_parent())
-    return scroll_parent;
+static LayerImpl* NextLayerInScrollOrder(LayerImpl* layer) {
+  if (layer->scroll_parent())
+    return layer->scroll_parent();
+
   return layer->parent();
 }
 
 static ScrollBlocksOn EffectiveScrollBlocksOn(LayerImpl* layer) {
   ScrollBlocksOn blocks = SCROLL_BLOCKS_ON_NONE;
-  for (; layer; layer = NextScrollLayer(layer)) {
+  for (; layer; layer = NextLayerInScrollOrder(layer)) {
     blocks |= layer->scroll_blocks_on();
   }
   return blocks;
@@ -2320,7 +2321,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
 
   // Walk up the hierarchy and look for a scrollable layer.
   LayerImpl* potentially_scrolling_layer_impl = NULL;
-  for (; layer_impl; layer_impl = NextScrollLayer(layer_impl)) {
+  for (; layer_impl; layer_impl = NextLayerInScrollOrder(layer_impl)) {
     // The content layer can also block attempts to scroll outside the main
     // thread.
     ScrollStatus status =
@@ -2365,18 +2366,11 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
 static bool HasScrollAncestor(LayerImpl* child, LayerImpl* scroll_ancestor) {
   DCHECK(scroll_ancestor);
   for (LayerImpl* ancestor = child; ancestor;
-       ancestor = NextScrollLayer(ancestor)) {
+       ancestor = NextLayerInScrollOrder(ancestor)) {
     if (ancestor->scrollable())
       return ancestor == scroll_ancestor;
   }
   return false;
-}
-
-static LayerImpl* nextLayerInScrollOrder(LayerImpl* layer) {
-  if (layer->scroll_parent())
-    return layer->scroll_parent();
-
-  return layer->parent();
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
@@ -2661,7 +2655,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   std::list<LayerImpl*> current_scroll_chain;
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer(); layer_impl;
-       layer_impl = nextLayerInScrollOrder(layer_impl)) {
+       layer_impl = NextLayerInScrollOrder(layer_impl)) {
     // Skip the outer viewport scroll layer so that we try to scroll the
     // viewport only once. i.e. The inner viewport layer represents the
     // viewport.
