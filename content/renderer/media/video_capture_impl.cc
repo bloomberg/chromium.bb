@@ -294,7 +294,7 @@ void VideoCaptureImpl::OnBufferReceived(
     media::VideoFrame::StorageType storage_type,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
-    const gpu::MailboxHolder& mailbox_holder) {
+    const std::vector<gpu::MailboxHolder>& mailbox_holders) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (state_ != VIDEO_CAPTURE_STATE_STARTED) {
     Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0, -1.0));
@@ -308,17 +308,15 @@ void VideoCaptureImpl::OnBufferReceived(
                        TRACE_EVENT_SCOPE_THREAD, "timestamp",
                        timestamp.ToInternalValue(), "time_delta",
                        (timestamp - first_frame_timestamp_).ToInternalValue());
-  // TODO(emircan): Handle texture upload and video frame creation for GMB
-  // backed buffers.
 
   scoped_refptr<media::VideoFrame> frame;
-  uint32* release_sync_point_storage = nullptr;
-  scoped_refptr<ClientBuffer> buffer;
-  if (mailbox_holder.mailbox.IsZero()) {
+  base::Callback<void(uint32, double)> buffer_finished_callback;
+  uint32* release_sync_point_storage = new uint32(0);
+  if (mailbox_holders.empty()) {
     DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
     const auto& iter = client_buffers_.find(buffer_id);
     DCHECK(iter != client_buffers_.end());
-    buffer = iter->second;
+    const scoped_refptr<ClientBuffer> buffer = iter->second;
     frame = media::VideoFrame::WrapExternalSharedMemory(
         pixel_format,
         coded_size,
@@ -329,27 +327,52 @@ void VideoCaptureImpl::OnBufferReceived(
         buffer->buffer()->handle(),
         0 /* shared_memory_offset */,
         timestamp - first_frame_timestamp_);
+    buffer_finished_callback = media::BindToCurrentLoop(
+        base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
+                   weak_factory_.GetWeakPtr(), buffer_id, buffer));
   } else {
-    DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format);
-    DCHECK(mailbox_holder.mailbox.Verify());  // Paranoia?
-    // To be deleted in DidFinishConsumingFrame().
-    release_sync_point_storage = new uint32(0);
-    frame = media::VideoFrame::WrapNativeTexture(
-    pixel_format,
-    mailbox_holder,
-    base::Bind(&SaveReleaseSyncPoint, release_sync_point_storage),
-    coded_size,
-    gfx::Rect(coded_size),
-    coded_size,
-    timestamp - first_frame_timestamp_);
+#if DCHECK_IS_ON()
+    for (const auto& mailbox_holder : mailbox_holders)
+      DCHECK(mailbox_holder.mailbox.Verify());
+    DCHECK(mailbox_holders.size() == 1u || mailbox_holders.size() == 3u);
+#endif
+
+    scoped_refptr<ClientBuffer2> buffer;
+    if (mailbox_holders.size() ==
+        media::VideoFrame::NumPlanes(media::PIXEL_FORMAT_ARGB)) {
+      DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format);
+      frame = media::VideoFrame::WrapNativeTexture(
+          pixel_format,
+          mailbox_holders[0],
+          base::Bind(&SaveReleaseSyncPoint, release_sync_point_storage),
+          coded_size,
+          gfx::Rect(coded_size),
+          coded_size,
+          timestamp - first_frame_timestamp_);
+    } else if (mailbox_holders.size() ==
+               media::VideoFrame::NumPlanes(media::PIXEL_FORMAT_I420)) {
+      DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
+      const auto& iter = client_buffer2s_.find(buffer_id);
+      DCHECK(iter != client_buffer2s_.end());
+      buffer = iter->second;
+      frame = media::VideoFrame::WrapYUV420NativeTextures(
+          mailbox_holders[media::VideoFrame::kYPlane],
+          mailbox_holders[media::VideoFrame::kUPlane],
+          mailbox_holders[media::VideoFrame::kVPlane],
+          base::Bind(&SaveReleaseSyncPoint, release_sync_point_storage),
+          coded_size,
+          gfx::Rect(coded_size),
+          coded_size,
+          timestamp - first_frame_timestamp_);
+    }
+    buffer_finished_callback = media::BindToCurrentLoop(
+        base::Bind(&VideoCaptureImpl::OnClientBufferFinished2,
+                   weak_factory_.GetWeakPtr(), buffer_id, buffer));
   }
   frame->AddDestructionObserver(
-      base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
-                 release_sync_point_storage,
-                 media::BindToCurrentLoop(base::Bind(
-                     &VideoCaptureImpl::OnClientBufferFinished,
-                     weak_factory_.GetWeakPtr(), buffer_id, buffer))));
-
+      base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame,
+                 frame->metadata(), release_sync_point_storage,
+                 buffer_finished_callback));
   frame->metadata()->MergeInternalValuesFrom(metadata);
   deliver_frame_cb_.Run(frame, timestamp);
 }
@@ -366,7 +389,7 @@ void VideoCaptureImpl::OnClientBufferFinished(
 }
 void VideoCaptureImpl::OnClientBufferFinished2(
     int buffer_id,
-    const scoped_refptr<ClientBuffer2>& gpu_memory_buffer,
+    const scoped_refptr<ClientBuffer2>& gpu_memory_buffer /* ignored_buffer */,
     uint32 release_sync_point,
     double consumer_resource_utilization) {
   OnClientBufferFinished(buffer_id, scoped_refptr<ClientBuffer>(),

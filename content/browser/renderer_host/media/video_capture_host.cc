@@ -106,9 +106,10 @@ void VideoCaptureHost::OnBufferReady(
   params.coded_size = video_frame->coded_size();
   params.visible_rect = video_frame->visible_rect();
   if (video_frame->HasTextures()) {
-    DCHECK_EQ(media::VideoFrame::NumPlanes(video_frame->format()), 1u)
-        << "Multiplanar textures not supported";
-    params.mailbox_holder = video_frame->mailbox_holder(0);
+    for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
+         ++i) {
+      params.mailbox_holders.push_back(video_frame->mailbox_holder(i));
+    }
   }
 
   Send(new VideoCaptureMsg_BufferReady(params));

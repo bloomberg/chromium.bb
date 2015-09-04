@@ -56,7 +56,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
         media::VideoFrame::StorageType storage_type,
         const gfx::Size& coded_size,
         const gfx::Rect& visible_rect,
-        const gpu::MailboxHolder& mailbox_holder) = 0;
+        const std::vector<gpu::MailboxHolder>& mailbox_holders) = 0;
 
     // Called when state of a video capture device has changed in the browser
     // process.
