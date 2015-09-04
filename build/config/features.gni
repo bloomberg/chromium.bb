@@ -125,14 +125,9 @@ declare_args() {
 # Additional dependent variables -----------------------------------------------
 
 # Set the version of CLD.
-#   0: Don't specify the version. This option is for the Finch testing.
-#   1: Use only CLD1.
+#   1: (DEPRECATED! See http://crbug.com/528305 for info) Use only CLD1.
 #   2: Use only CLD2.
-if (is_android) {
-  cld_version = 1
-} else {
-  cld_version = 2
-}
+cld_version = 2
 
 # libudev usage. This currently only affects the content layer.
 use_udev = is_linux

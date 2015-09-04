@@ -557,13 +557,12 @@
       'enable_print_preview%': 1,
 
       # Set the version of CLD.
-      #   1: Use only CLD1.
+      #   1: (DEPRECATED! See http://crbug.com/528305 for info) Use only CLD1.
       #   2: Use only CLD2.
       'cld_version%': 2,
 
       # For CLD2, the size of the tables that should be included in the build
-      # Only evaluated if cld_version == 2 or if building the CLD2 dynamic data
-      # tool explicitly.
+      # Only evaluated if cld_version == 2.
       # See third_party/cld_2/cld_2.gyp for more information.
       #   0: Small tables, lower accuracy
       #   2: Large tables, high accuracy
@@ -817,7 +816,7 @@
         ['OS=="android"', {
           'enable_extensions%': 0,
           'enable_google_now%': 0,
-          'cld_version%': 1,
+          'cld2_table_size%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
           'arm_neon%': 0,
@@ -869,7 +868,6 @@
           'disable_ftp_support%': 1,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
-          'cld_version%': 2,
           'cld2_table_size%': 0,
           'enable_basic_printing%': 0,
           'enable_print_preview%': 0,
