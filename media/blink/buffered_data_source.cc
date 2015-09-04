@@ -397,7 +397,8 @@ void BufferedDataSource::StartCallback(
                                    loader_->range_supported());
   }
 
-  base::ResetAndReturn(&init_cb_).Run(success);
+  render_task_runner_->PostTask(
+      FROM_HERE, base::Bind(base::ResetAndReturn(&init_cb_), success));
 }
 
 void BufferedDataSource::PartialReadStartCallback(
