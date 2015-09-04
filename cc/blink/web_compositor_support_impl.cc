@@ -127,10 +127,6 @@ WebFilterOperations* WebCompositorSupportImpl::createFilterOperations() {
   return new WebFilterOperationsImpl();
 }
 
-WebDisplayItemList* WebCompositorSupportImpl::createDisplayItemList() {
-  return new WebDisplayItemListImpl();
-}
-
 WebCompositorAnimationPlayer*
 WebCompositorSupportImpl::createAnimationPlayer() {
   return new WebCompositorAnimationPlayerImpl();
