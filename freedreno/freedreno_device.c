@@ -160,3 +160,8 @@ void fd_device_del(struct fd_device *dev)
 	fd_device_del_impl(dev);
 	pthread_mutex_unlock(&table_lock);
 }
+
+int fd_device_fd(struct fd_device *dev)
+{
+	return dev->fd;
+}
