@@ -1183,6 +1183,10 @@ void XMLHttpRequest::setRequestHeader(const AtomicString& name, const AtomicStri
         return;
     }
 
+    // Show deprecation warnings and count occurrences of such deprecated header values.
+    if (!value.isEmpty() && !isValidHTTPFieldContentRFC7230(value))
+        UseCounter::countDeprecation(executionContext(), UseCounter::HeaderValueNotMatchingRFC7230);
+
     // No script (privileged or not) can set unsafe headers.
     if (FetchUtils::isForbiddenHeaderName(name)) {
         logConsoleError(executionContext(), "Refused to set unsafe header \"" + name + "\"");

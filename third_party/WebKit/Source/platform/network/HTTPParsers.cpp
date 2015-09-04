@@ -115,7 +115,33 @@ bool isValidHTTPHeaderValue(const String& name)
     return name.containsOnlyLatin1() && !name.contains('\r') && !name.contains('\n') && !name.contains(static_cast<UChar>('\0'));
 }
 
-// See RFC 2616, Section 2.2.
+// See RFC 7230, Section 3.2.
+// Checks whether |value| matches field-content in RFC 7230.
+// link: http://tools.ietf.org/html/rfc7230#section-3.2
+bool isValidHTTPFieldContentRFC7230(const String& value)
+{
+    if (value.isEmpty())
+        return false;
+
+    UChar firstCharacter = value[0];
+    if (firstCharacter == ' ' || firstCharacter == '\t')
+        return false;
+
+    UChar lastCharacter = value[value.length() - 1];
+    if (lastCharacter == ' ' || lastCharacter == '\t')
+        return false;
+
+    for (unsigned i = 0; i < value.length(); ++i) {
+        UChar c = value[i];
+        // TODO(mkwst): Extract this character class to a central location, https://crbug.com/527324.
+        if (c == 0x7F || c > 0xFF || (c < 0x20 && c != '\t'))
+            return false;
+    }
+
+    return true;
+}
+
+// See RFC 7230, Section 3.2.6.
 bool isValidHTTPToken(const String& characters)
 {
     if (characters.isEmpty())

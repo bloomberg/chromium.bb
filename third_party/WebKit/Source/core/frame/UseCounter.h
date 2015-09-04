@@ -836,6 +836,7 @@ public:
         HTMLImportsHasStyleSheets = 940,
         WebkitTextInClipProperty = 941,
         WebkitTextInColorProperty = 942,
+        HeaderValueNotMatchingRFC7230 = 943,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

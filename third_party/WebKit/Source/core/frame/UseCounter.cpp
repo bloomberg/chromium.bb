@@ -972,6 +972,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case FetchAPIRequestContext:
         return "Request.context is deprecated and will be removed in M46 (see: https://www.chromestatus.com/feature/5534702526005248).";
 
+    case HeaderValueNotMatchingRFC7230:
+        return "Header values not matching to RFC 7230, will be deprecated (see: https://www.chromestatus.com/feature/6457425448140800).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
