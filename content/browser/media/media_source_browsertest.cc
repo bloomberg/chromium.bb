@@ -70,6 +70,9 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoOnly_WebM) {
   TestSimplePlayback("bear-320x240-video-only.webm", kWebMVideoOnly, kEnded);
 }
 
+// TODO(servolk): Android is supposed to support AAC in ADTS container with
+// 'audio/aac' mime type, but for some reason playback fails on trybots due to
+// some issue in OMX AAC decoder (crbug.com/528361)
 #if defined(USE_PROPRIETARY_CODECS) && !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_AAC_ADTS) {
   TestSimplePlayback("sfx.adts", kAAC_ADTS_AudioOnly, kEnded);

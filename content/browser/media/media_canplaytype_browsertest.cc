@@ -1017,6 +1017,11 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_AAC_ADTS) {
   EXPECT_EQ(kPropProbably, CanPlay("'audio/aac'"));
+
+  // audio/aac doesn't support the codecs parameter.
+  EXPECT_EQ(kNot, CanPlay("'audio/aac; codecs=\"1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/aac; codecs=\"aac\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/aac; codecs=\"mp4a.40.2\"'"));
 }
 
 }  // namespace content
