@@ -1,5 +1,4 @@
 include_rules = [
-  "+base",
   "+mojo/message_pump",
   "+third_party/WebKit/public",
   "+third_party/mojo/src/mojo/public/cpp/system",

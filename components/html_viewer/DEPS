@@ -1,6 +1,4 @@
 include_rules = [
-  "+base",
-  "+base/test",
   "+blink/public/resources",
   "+cc",
   "+components/clipboard",

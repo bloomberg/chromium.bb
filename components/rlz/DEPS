@@ -1,5 +1,4 @@
 include_rules = [
-  "+base",
   "+components/google",
   "+net",
   "+rlz",
