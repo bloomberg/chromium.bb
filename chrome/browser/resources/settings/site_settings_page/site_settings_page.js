@@ -33,14 +33,17 @@ Polymer({
     /**
      * Route for the page.
      */
-    route: String,
+    route: {
+      type: String,
+      value: '',
+    },
 
     /**
      * Whether the page is a subpage.
      */
     subpage: {
       type: Boolean,
-      value: false,
+      value: true,
       readOnly: true,
     },
 
@@ -61,6 +64,7 @@ Polymer({
       value: function() {
         return loadTimeData.getString('siteSettingsPageTitle');
       },
+      readOnly: true
     },
 
     /**

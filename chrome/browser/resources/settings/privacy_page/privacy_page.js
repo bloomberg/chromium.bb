@@ -71,5 +71,30 @@ Polymer({
       value: 'lock',
       readOnly: true,
     },
+
+    inSubpage: {
+      type: Boolean,
+      notify: true,
+    },
+  },
+
+  /** @private */
+  onBackTap_: function() {
+    this.$.pages.back();
+  },
+
+  /** @private */
+  onManageCertificatesTap_: function() {
+    this.$.pages.navigateTo('manage-certificates');
+  },
+
+  /** @private */
+  onSiteSettingsTap_: function() {
+    this.$.pages.navigateTo('site-settings');
+  },
+
+  /** @private */
+  onClearBrowsingDataTap_: function() {
+    // TODO(dschuyler)
   },
 });

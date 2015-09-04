@@ -1,67 +1,101 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
+<link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://md-settings/site_settings_page/site_settings_page.html">
 
 <dom-module id="cr-settings-privacy-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="privacy_page.css">
   <template>
-    <p class="privacy-explanation"
-        i18n-values=".innerHTML:improveBrowsingExperience">
-    </p>
-    <cr-settings-checkbox
-        pref="{{prefs.alternate_error_pages.enabled}}"
-        i18n-values="label:linkDoctorPref">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox
-        pref="{{prefs.search.suggest_enabled}}"
-        i18n-values="label:searchSuggestPref">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox
-        pref="{{prefs.net.network_prediction_options}}"
-        i18n-values="label:networkPredictionEnabled">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox
-        pref="{{prefs.safebrowsing.extended_reporting_enabled}}"
-        i18n-values="label:safeBrowsingEnableExtendedReporting">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
-        i18n-values="label:safeBrowsingEnableProtection">
-    </cr-settings-checkbox>
+    <cr-settings-animated-pages id="pages" in-subpage="{{inSubpage}}">
+      <neon-animatable id="main">
+        <p class="privacy-explanation"
+            i18n-values=".innerHTML:improveBrowsingExperience">
+        </p>
+        <cr-settings-checkbox
+            pref="{{prefs.alternate_error_pages.enabled}}"
+            i18n-values="label:linkDoctorPref">
+        </cr-settings-checkbox>
+        <cr-settings-checkbox
+            pref="{{prefs.search.suggest_enabled}}"
+            i18n-values="label:searchSuggestPref">
+        </cr-settings-checkbox>
+        <cr-settings-checkbox
+            pref="{{prefs.net.network_prediction_options}}"
+            i18n-values="label:networkPredictionEnabled">
+        </cr-settings-checkbox>
+        <cr-settings-checkbox
+            pref="{{prefs.safebrowsing.extended_reporting_enabled}}"
+            i18n-values="label:safeBrowsingEnableExtendedReporting">
+        </cr-settings-checkbox>
+        <cr-settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
+            i18n-values="label:safeBrowsingEnableProtection">
+        </cr-settings-checkbox>
 <if expr="_google_chrome">
-    <cr-settings-checkbox
-        pref="{{prefs.spellcheck.use_spelling_service}}"
-        i18n-values="label:spellingPref">
-    </cr-settings-checkbox>
+        <cr-settings-checkbox
+            pref="{{prefs.spellcheck.use_spelling_service}}"
+            i18n-values="label:spellingPref">
+        </cr-settings-checkbox>
 <if expr="chromeos">
-    <cr-settings-checkbox
-        pref="{{prefs.cros.metrics.reportingEnabled}}"
-        i18n-values="label:enableLogging">
-    </cr-settings-checkbox>
+        <cr-settings-checkbox
+            pref="{{prefs.cros.metrics.reportingEnabled}}"
+            i18n-values="label:enableLogging">
+        </cr-settings-checkbox>
 </if>
-    <!-- TODO(jlklein): Add non-chromeos metrics box. -->
+        <!-- TODO(jlklein): Add non-chromeos metrics box. -->
 </if>
-    <cr-settings-checkbox pref="{{prefs.enable_do_not_track}}"
-        i18n-values="label:doNotTrack">
-    </cr-settings-checkbox>
+        <cr-settings-checkbox pref="{{prefs.enable_do_not_track}}"
+            i18n-values="label:doNotTrack">
+        </cr-settings-checkbox>
 <if expr="chromeos">
-    <cr-settings-checkbox
-        pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
-        i18n-values="label:enableContentProtectionAttestation">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox
-        pref="{{prefs.settings.internet.wake_on_wifi_ssid}}"
-        i18n-values="label:wakeOnWifi">
-    </cr-settings-checkbox>
+        <cr-settings-checkbox
+            pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
+            i18n-values="label:enableContentProtectionAttestation">
+        </cr-settings-checkbox>
+        <cr-settings-checkbox
+            pref="{{prefs.settings.internet.wake_on_wifi_ssid}}"
+            i18n-values="label:wakeOnWifi">
+        </cr-settings-checkbox>
 </if>
-    <div class="privacy-buttons layout horizontal end-justified">
-      <cr-button i18n-content="manageCertificates"></cr-button>
-      <cr-button i18n-content="siteSettings"></cr-button>
-      <cr-button raised i18n-content="clearBrowsingData">
-      </cr-button>
-    </div>
+        <div class="privacy-buttons layout horizontal end-justified">
+          <cr-button
+              on-tap="onManageCertificatesTap_"
+              i18n-content="manageCertificates">
+          </cr-button>
+          <cr-button
+              on-tap="onSiteSettingsTap_"
+              i18n-content="siteSettings">
+          </cr-button>
+          <cr-button
+              on-tap="onClearBrowsingDataTap_"
+              raised i18n-content="clearBrowsingData">
+          </cr-button>
+        </div>
+      </neon-animatable>
+      <neon-animatable id="manage-certificates">
+        <div class="subheader">
+          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
+          </paper-icon-button>
+          <div i18n-content="manageCertificates"></div>
+        </div>
+        <cr-settings-certificate-manager-page>
+        </cr-settings-certificate-manager-page>
+      </neon-animatable>
+      <neon-animatable id="site-settings">
+        <div class="subheader">
+          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
+          </paper-icon-button>
+          <div i18n-content="siteSettings"></div>
+        </div>
+        <cr-settings-site-settings-page></cr-settings-site-settings-page>
+      </neon-animatable>
+    </cr-settings-animated-pages>
   </template>
   <script src="privacy_page.js"></script>
 </dom-module>
