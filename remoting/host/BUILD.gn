@@ -90,7 +90,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         "//build/config/linux:x11",
         "//build/config/linux:xrandr",
       ]
-      if (!is_chromeos) {
+      if (is_desktop_linux) {
         deps += [ "//build/config/linux/gtk2" ]
       }
     } else {
@@ -452,10 +452,10 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         deps += [ "//third_party/libjingle:libjingle_webrtc" ]
       }
 
-      if (is_linux) {
+      if (is_desktop_linux) {
         deps += [ "//build/config/linux/gtk2" ]
       }
-      if (is_linux || is_mac) {
+      if ((is_linux && !is_chromeos) || is_mac) {
         libs = [ "pam" ]
       }
     }

@@ -53,7 +53,7 @@ if (!is_win && enable_remoting_host) {
       deps += [ "//third_party/libjingle:libjingle_webrtc" ]
     }
 
-    if (is_linux) {
+    if (is_desktop_linux) {
       deps += [ "//build/config/linux/gtk2" ]
     }
   }
