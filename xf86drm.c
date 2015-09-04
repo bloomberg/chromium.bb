@@ -134,7 +134,8 @@ drmMsg(const char *format, ...)
 {
     va_list	ap;
     const char *env;
-    if (((env = getenv("LIBGL_DEBUG")) && strstr(env, "verbose")) || drm_server_info)
+    if (((env = getenv("LIBGL_DEBUG")) && strstr(env, "verbose")) ||
+        (drm_server_info && drm_server_info->debug_print))
     {
 	va_start(ap, format);
 	if (drm_server_info) {
@@ -339,7 +340,7 @@ static int drmOpenDevice(dev_t dev, int minor, int type)
     sprintf(buf, dev_name, DRM_DIR_NAME, minor);
     drmMsg("drmOpenDevice: node name is %s\n", buf);
 
-    if (drm_server_info) {
+    if (drm_server_info && drm_server_info->get_perms) {
 	drm_server_info->get_perms(&serv_group, &serv_mode);
 	devmode  = serv_mode ? serv_mode : DRM_DEV_MODE;
 	devmode &= ~(S_IXUSR|S_IXGRP|S_IXOTH);
@@ -362,7 +363,7 @@ static int drmOpenDevice(dev_t dev, int minor, int type)
 	mknod(buf, S_IFCHR | devmode, dev);
     }
 
-    if (drm_server_info) {
+    if (drm_server_info && drm_server_info->get_perms) {
 	group = ((int)serv_group >= 0) ? serv_group : DRM_DEV_GID;
 	chown_check_return(buf, user, group);
 	chmod(buf, devmode);
@@ -407,7 +408,7 @@ wait_for_udev:
 	    return DRM_ERR_NOT_ROOT;
 	remove(buf);
 	mknod(buf, S_IFCHR | devmode, dev);
-	if (drm_server_info) {
+	if (drm_server_info && drm_server_info->get_perms) {
 	    chown_check_return(buf, user, group);
 	    chmod(buf, devmode);
 	}
@@ -735,7 +736,8 @@ int drmOpen(const char *name, const char *busid)
  */
 int drmOpenWithType(const char *name, const char *busid, int type)
 {
-    if (!drmAvailable() && name != NULL && drm_server_info) {
+    if (!drmAvailable() && name != NULL && drm_server_info &&
+        drm_server_info->load_module) {
 	/* try to load the kernel module */
 	if (!drm_server_info->load_module(name)) {
 	    drmMsg("[drm] failed to load kernel module \"%s\"\n", name);
