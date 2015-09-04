@@ -14,34 +14,37 @@
 
 namespace cronet {
 
-void AddUrlInterceptors(JNIEnv* env, jclass jcaller) {
+void AddUrlInterceptors(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
   net::URLRequestMockDataJob::AddUrlHandler();
   net::URLRequestFailedJob::AddUrlHandler();
   net::SSLCertificateErrorJob::AddUrlHandler();
 }
 
-ScopedJavaLocalRef<jstring> GetMockUrlWithFailure(JNIEnv* jenv,
-                                                  jclass jcaller,
-                                                  jint jphase,
-                                                  jint jnet_error) {
+ScopedJavaLocalRef<jstring> GetMockUrlWithFailure(
+    JNIEnv* jenv,
+    const JavaParamRef<jclass>& jcaller,
+    jint jphase,
+    jint jnet_error) {
   GURL url(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
       static_cast<net::URLRequestFailedJob::FailurePhase>(jphase),
       static_cast<int>(jnet_error)));
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetMockUrlForData(JNIEnv* jenv,
-                                              jclass jcaller,
-                                              jstring jdata,
-                                              jint jdata_repeat_count) {
+ScopedJavaLocalRef<jstring> GetMockUrlForData(
+    JNIEnv* jenv,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jstring>& jdata,
+    jint jdata_repeat_count) {
   std::string data(base::android::ConvertJavaStringToUTF8(jenv, jdata));
   GURL url(net::URLRequestMockDataJob::GetMockHttpUrl(data,
                                                       jdata_repeat_count));
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetMockUrlForSSLCertificateError(JNIEnv* jenv,
-                                                             jclass jcaller) {
+ScopedJavaLocalRef<jstring> GetMockUrlForSSLCertificateError(
+    JNIEnv* jenv,
+    const JavaParamRef<jclass>& jcaller) {
   GURL url(net::SSLCertificateErrorJob::GetMockUrl());
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
 }

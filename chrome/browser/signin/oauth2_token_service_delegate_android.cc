@@ -162,9 +162,10 @@ ScopedJavaLocalRef<jobject> OAuth2TokenServiceDelegateAndroid::GetForProfile(
       static_cast<OAuth2TokenServiceDelegateAndroid*>(delegate)->java_ref_);
 }
 
-static ScopedJavaLocalRef<jobject> GetForProfile(JNIEnv* env,
-                                                 jclass clazz,
-                                                 jobject j_profile_android) {
+static ScopedJavaLocalRef<jobject> GetForProfile(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_profile_android) {
   return OAuth2TokenServiceDelegateAndroid::GetForProfile(env, clazz,
                                                           j_profile_android);
 }
@@ -461,8 +462,8 @@ void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
 // Called from Java when fetching of an OAuth2 token is finished. The
 // |authToken| param is only valid when |result| is true.
 void OAuth2TokenFetched(JNIEnv* env,
-                        jclass clazz,
-                        jstring authToken,
+                        const JavaParamRef<jclass>& clazz,
+                        const JavaParamRef<jstring>& authToken,
                         jboolean isTransientError,
                         jlong nativeCallback) {
   std::string token;

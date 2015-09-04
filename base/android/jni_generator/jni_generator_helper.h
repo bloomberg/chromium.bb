@@ -36,5 +36,6 @@ namespace jni_generator {
 }  // namespace jni_generator
 
 using base::android::ScopedJavaLocalRef;
+using base::android::JavaParamRef;
 
 #endif  // BASE_ANDROID_JNI_GENERATOR_JNI_GENERATOR_HELPER_H_

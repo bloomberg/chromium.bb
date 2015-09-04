@@ -67,7 +67,8 @@ void ToJavaOfflinePageList(JNIEnv* env,
 
 }  // namespace
 
-static jboolean IsOfflinePagesEnabled(JNIEnv* env, jclass clazz) {
+static jboolean IsOfflinePagesEnabled(JNIEnv* env,
+                                      const JavaParamRef<jclass>& clazz) {
   return offline_pages::IsOfflinePagesEnabled();
 }
 
@@ -215,7 +216,9 @@ base::FilePath OfflinePageBridge::GetDownloadsPath(
   return DownloadPrefs::FromDownloadManager(manager)->DownloadPath();
 }
 
-static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& j_profile) {
   return reinterpret_cast<jlong>(new OfflinePageBridge(
       env, obj, ProfileAndroid::FromProfileAndroid(j_profile)));
 }

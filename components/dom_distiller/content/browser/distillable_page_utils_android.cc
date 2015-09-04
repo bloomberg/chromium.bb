@@ -25,10 +25,10 @@ void OnIsPageDistillableResult(
 }  // namespace
 
 static void IsPageDistillable(JNIEnv* env,
-                              jclass jcaller,
-                              jobject webContents,
+                              const JavaParamRef<jclass>& jcaller,
+                              const JavaParamRef<jobject>& webContents,
                               jboolean is_mobile_optimized,
-                              jobject callback) {
+                              const JavaParamRef<jobject>& callback) {
   content::WebContents* web_contents(
       content::WebContents::FromJavaWebContents(webContents));
   scoped_ptr<ScopedJavaGlobalRef<jobject>> callback_holder(

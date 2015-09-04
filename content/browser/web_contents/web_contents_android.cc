@@ -156,7 +156,7 @@ WebContents* WebContents::FromJavaWebContents(
 
 // static
 static void DestroyWebContents(JNIEnv* env,
-                               jclass clazz,
+                               const JavaParamRef<jclass>& clazz,
                                jlong jweb_contents_android_ptr) {
   WebContentsAndroid* web_contents_android =
       reinterpret_cast<WebContentsAndroid*>(jweb_contents_android_ptr);
@@ -172,7 +172,7 @@ static void DestroyWebContents(JNIEnv* env,
 
 // static
 ScopedJavaLocalRef<jobject> FromNativePtr(JNIEnv* env,
-                                          jclass clazz,
+                                          const JavaParamRef<jclass>& clazz,
                                           jlong web_contents_ptr) {
   WebContentsAndroid* web_contents_android =
       reinterpret_cast<WebContentsAndroid*>(web_contents_ptr);

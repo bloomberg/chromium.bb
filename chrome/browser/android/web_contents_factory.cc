@@ -14,7 +14,7 @@
 
 static ScopedJavaLocalRef<jobject> CreateWebContents(
     JNIEnv* env,
-    jclass clazz,
+    const JavaParamRef<jclass>& clazz,
     jboolean incognito,
     jboolean initially_hidden) {
   Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile();

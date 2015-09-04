@@ -21,8 +21,9 @@
 #include "url/gurl.h"
 
 // static
-jlong LaunchFullscreenInfoBar(
-    JNIEnv* env, jobject obj, jobject tab) {
+jlong LaunchFullscreenInfoBar(JNIEnv* env,
+                              const JavaParamRef<jobject>& obj,
+                              const JavaParamRef<jobject>& tab) {
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   GURL origin = tab_android->GetURL().GetOrigin();
   FullscreenInfoBarDelegate* delegate = new FullscreenInfoBarDelegate(

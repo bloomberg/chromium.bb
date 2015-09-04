@@ -65,7 +65,9 @@ bool ToolbarModelAndroid::RegisterToolbarModelAndroid(JNIEnv* env) {
 }
 
 // static
-jlong Init(JNIEnv* env, jobject obj, jobject delegate) {
+jlong Init(JNIEnv* env,
+           const JavaParamRef<jobject>& obj,
+           const JavaParamRef<jobject>& delegate) {
   ToolbarModelAndroid* toolbar_model = new ToolbarModelAndroid(env, delegate);
   return reinterpret_cast<intptr_t>(toolbar_model);
 }
@@ -79,8 +81,8 @@ jlong Init(JNIEnv* env, jobject obj, jobject delegate) {
 
 // static
 jboolean IsDeprecatedSHA1Present(JNIEnv* env,
-                                 jclass jcaller,
-                                 jobject jweb_contents) {
+                                 const JavaParamRef<jclass>& jcaller,
+                                 const JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);

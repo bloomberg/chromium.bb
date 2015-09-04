@@ -136,7 +136,7 @@ bool WindowAndroid::CanRequestPermission(const std::string& permission) {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env, jobject obj) {
+jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   WindowAndroid* window = new WindowAndroid(env, obj);
   return reinterpret_cast<intptr_t>(window);
 }

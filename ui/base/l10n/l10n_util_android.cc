@@ -17,8 +17,9 @@
 
 namespace l10n_util {
 
-jint GetFirstStrongCharacterDirection(JNIEnv* env, jclass clazz,
-                                      jstring string) {
+jint GetFirstStrongCharacterDirection(JNIEnv* env,
+                                      const JavaParamRef<jclass>& clazz,
+                                      const JavaParamRef<jstring>& string) {
   return base::i18n::GetFirstStrongCharacterDirection(
       base::android::ConvertJavaStringToUTF16(env, string));
 }
@@ -93,7 +94,7 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
 }
 
 ScopedJavaLocalRef<jstring> GetDurationString(JNIEnv* env,
-                                              jclass clazz,
+                                              const JavaParamRef<jclass>& clazz,
                                               jlong timeInMillis) {
   ScopedJavaLocalRef<jstring> jtime_remaining =
       base::android::ConvertUTF16ToJavaString(

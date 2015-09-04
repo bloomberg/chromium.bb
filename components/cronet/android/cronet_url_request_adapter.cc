@@ -33,9 +33,9 @@ bool CronetUrlRequestAdapterRegisterJni(JNIEnv* env) {
 }
 
 static jlong CreateRequestAdapter(JNIEnv* env,
-                                  jobject jurl_request,
+                                  const JavaParamRef<jobject>& jurl_request,
                                   jlong jurl_request_context_adapter,
-                                  jstring jurl_string,
+                                  const JavaParamRef<jstring>& jurl_string,
                                   jint jpriority) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(

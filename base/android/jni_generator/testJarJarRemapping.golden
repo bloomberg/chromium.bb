@@ -27,40 +27,44 @@ jclass g_Example_clazz = NULL;
 
 // Step 2: method stubs.
 
-static void Test(JNIEnv* env, jclass jcaller,
-    jobject t);
+static void Test(JNIEnv* env, const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& t);
 
 static void Java_com_test_jni_1generator_Example_nativeTest(JNIEnv* env, jclass
     jcaller,
     jobject t) {
-  return Test(env, jcaller, t);
+  return Test(env, JavaParamRef<jclass>(env, jcaller),
+      JavaParamRef<jobject>(env, t));
 }
 
-static void Test2(JNIEnv* env, jclass jcaller,
-    jobject t);
+static void Test2(JNIEnv* env, const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& t);
 
 static void Java_com_test_jni_1generator_Example_nativeTest2(JNIEnv* env, jclass
     jcaller,
     jobject t) {
-  return Test2(env, jcaller, t);
+  return Test2(env, JavaParamRef<jclass>(env, jcaller),
+      JavaParamRef<jobject>(env, t));
 }
 
-static void Test3(JNIEnv* env, jclass jcaller,
-    jobject t);
+static void Test3(JNIEnv* env, const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& t);
 
 static void Java_com_test_jni_1generator_Example_nativeTest3(JNIEnv* env, jclass
     jcaller,
     jobject t) {
-  return Test3(env, jcaller, t);
+  return Test3(env, JavaParamRef<jclass>(env, jcaller),
+      JavaParamRef<jobject>(env, t));
 }
 
-static void Test4(JNIEnv* env, jclass jcaller,
-    jobject t);
+static void Test4(JNIEnv* env, const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& t);
 
 static void Java_com_test_jni_1generator_Example_nativeTest4(JNIEnv* env, jclass
     jcaller,
     jobject t) {
-  return Test4(env, jcaller, t);
+  return Test4(env, JavaParamRef<jclass>(env, jcaller),
+      JavaParamRef<jobject>(env, t));
 }
 
 // Step 3: RegisterNatives.

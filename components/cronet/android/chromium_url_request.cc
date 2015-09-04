@@ -107,9 +107,9 @@ bool ChromiumUrlRequestRegisterJni(JNIEnv* env) {
 }
 
 static jlong CreateRequestAdapter(JNIEnv* env,
-                                  jobject jcaller,
+                                  const JavaParamRef<jobject>& jcaller,
                                   jlong jurl_request_context_adapter,
-                                  jstring jurl,
+                                  const JavaParamRef<jstring>& jurl,
                                   jint jrequest_priority) {
   URLRequestContextAdapter* context_adapter =
       reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
@@ -128,10 +128,10 @@ static jlong CreateRequestAdapter(JNIEnv* env,
 
 // synchronized
 static void AddHeader(JNIEnv* env,
-                      jobject jcaller,
+                      const JavaParamRef<jobject>& jcaller,
                       jlong jurl_request_adapter,
-                      jstring jheader_name,
-                      jstring jheader_value) {
+                      const JavaParamRef<jstring>& jheader_name,
+                      const JavaParamRef<jstring>& jheader_value) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -143,9 +143,9 @@ static void AddHeader(JNIEnv* env,
 }
 
 static void SetMethod(JNIEnv* env,
-                      jobject jcaller,
+                      const JavaParamRef<jobject>& jcaller,
                       jlong jurl_request_adapter,
-                      jstring jmethod) {
+                      const JavaParamRef<jstring>& jmethod) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -156,10 +156,10 @@ static void SetMethod(JNIEnv* env,
 }
 
 static void SetUploadData(JNIEnv* env,
-                          jobject jcaller,
+                          const JavaParamRef<jobject>& jcaller,
                           jlong jurl_request_adapter,
-                          jstring jcontent_type,
-                          jbyteArray jcontent) {
+                          const JavaParamRef<jstring>& jcontent_type,
+                          const JavaParamRef<jbyteArray>& jcontent) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -177,9 +177,9 @@ static void SetUploadData(JNIEnv* env,
 }
 
 static void SetUploadChannel(JNIEnv* env,
-                             jobject jcaller,
+                             const JavaParamRef<jobject>& jcaller,
                              jlong jurl_request_adapter,
-                             jstring jcontent_type,
+                             const JavaParamRef<jstring>& jcontent_type,
                              jlong jcontent_length) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
@@ -190,9 +190,9 @@ static void SetUploadChannel(JNIEnv* env,
 }
 
 static void EnableChunkedUpload(JNIEnv* env,
-                                jobject jcaller,
+                                const JavaParamRef<jobject>& jcaller,
                                 jlong jurl_request_adapter,
-                                jstring jcontent_type) {
+                                const JavaParamRef<jstring>& jcontent_type) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -202,9 +202,9 @@ static void EnableChunkedUpload(JNIEnv* env,
 }
 
 static void AppendChunk(JNIEnv* env,
-                        jobject jcaller,
+                        const JavaParamRef<jobject>& jcaller,
                         jlong jurl_request_adapter,
-                        jobject jchunk_byte_buffer,
+                        const JavaParamRef<jobject>& jchunk_byte_buffer,
                         jint jchunk_size,
                         jboolean jis_last_chunk) {
   URLRequestAdapter* request_adapter =
@@ -218,7 +218,9 @@ static void AppendChunk(JNIEnv* env,
 }
 
 /* synchronized */
-static void Start(JNIEnv* env, jobject jcaller, jlong jurl_request_adapter) {
+static void Start(JNIEnv* env,
+                  const JavaParamRef<jobject>& jcaller,
+                  jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   if (request_adapter != NULL)
@@ -227,7 +229,7 @@ static void Start(JNIEnv* env, jobject jcaller, jlong jurl_request_adapter) {
 
 /* synchronized */
 static void DestroyRequestAdapter(JNIEnv* env,
-                                  jobject jcaller,
+                                  const JavaParamRef<jobject>& jcaller,
                                   jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
@@ -236,7 +238,9 @@ static void DestroyRequestAdapter(JNIEnv* env,
 }
 
 /* synchronized */
-static void Cancel(JNIEnv* env, jobject jcaller, jlong jurl_request_adapter) {
+static void Cancel(JNIEnv* env,
+                   const JavaParamRef<jobject>& jcaller,
+                   jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   if (request_adapter != NULL)
@@ -244,7 +248,7 @@ static void Cancel(JNIEnv* env, jobject jcaller, jlong jurl_request_adapter) {
 }
 
 static jint GetErrorCode(JNIEnv* env,
-                         jobject jcaller,
+                         const JavaParamRef<jobject>& jcaller,
                          jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
@@ -284,9 +288,10 @@ static jint GetErrorCode(JNIEnv* env,
   return REQUEST_ERROR_UNKNOWN;
 }
 
-static ScopedJavaLocalRef<jstring> GetErrorString(JNIEnv* env,
-                                                  jobject jcaller,
-                                                  jlong jurl_request_adapter) {
+static ScopedJavaLocalRef<jstring> GetErrorString(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -302,7 +307,7 @@ static ScopedJavaLocalRef<jstring> GetErrorString(JNIEnv* env,
 }
 
 static jint GetHttpStatusCode(JNIEnv* env,
-                              jobject jcaller,
+                              const JavaParamRef<jobject>& jcaller,
                               jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
@@ -310,17 +315,20 @@ static jint GetHttpStatusCode(JNIEnv* env,
   return request_adapter->http_status_code();
 }
 
-static ScopedJavaLocalRef<jstring>
-GetHttpStatusText(JNIEnv* env, jobject jcaller, jlong jurl_request_adapter) {
+static ScopedJavaLocalRef<jstring> GetHttpStatusText(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
   return ConvertUTF8ToJavaString(env, request_adapter->http_status_text());
 }
 
-static ScopedJavaLocalRef<jstring> GetContentType(JNIEnv* env,
-                                                  jobject jcaller,
-                                                  jlong jurl_request_adapter) {
+static ScopedJavaLocalRef<jstring> GetContentType(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -333,7 +341,7 @@ static ScopedJavaLocalRef<jstring> GetContentType(JNIEnv* env,
 }
 
 static jlong GetContentLength(JNIEnv* env,
-                              jobject jcaller,
+                              const JavaParamRef<jobject>& jcaller,
                               jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
@@ -341,10 +349,11 @@ static jlong GetContentLength(JNIEnv* env,
   return request_adapter->content_length();
 }
 
-static ScopedJavaLocalRef<jstring> GetHeader(JNIEnv* env,
-                                             jobject jcaller,
-                                             jlong jurl_request_adapter,
-                                             jstring jheader_name) {
+static ScopedJavaLocalRef<jstring> GetHeader(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    jlong jurl_request_adapter,
+    const JavaParamRef<jstring>& jheader_name) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -356,9 +365,9 @@ static ScopedJavaLocalRef<jstring> GetHeader(JNIEnv* env,
 }
 
 static void GetAllHeaders(JNIEnv* env,
-                          jobject jcaller,
+                          const JavaParamRef<jobject>& jcaller,
                           jlong jurl_request_adapter,
-                          jobject jheaders_map) {
+                          const JavaParamRef<jobject>& jheaders_map) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -389,7 +398,7 @@ static void GetAllHeaders(JNIEnv* env,
 
 static ScopedJavaLocalRef<jstring> GetNegotiatedProtocol(
     JNIEnv* env,
-    jobject jcaller,
+    const JavaParamRef<jobject>& jcaller,
     jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
@@ -400,7 +409,7 @@ static ScopedJavaLocalRef<jstring> GetNegotiatedProtocol(
 }
 
 static jboolean GetWasCached(JNIEnv* env,
-                             jobject jcaller,
+                             const JavaParamRef<jobject>& jcaller,
                              jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
@@ -410,7 +419,8 @@ static jboolean GetWasCached(JNIEnv* env,
   return was_cached ? JNI_TRUE : JNI_FALSE;
 }
 
-static void DisableRedirects(JNIEnv* env, jobject jcaller,
+static void DisableRedirects(JNIEnv* env,
+                             const JavaParamRef<jobject>& jcaller,
                              jlong jrequest_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jrequest_adapter);

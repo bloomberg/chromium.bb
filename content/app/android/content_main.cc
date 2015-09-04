@@ -28,13 +28,15 @@ LazyInstance<scoped_ptr<ContentMainDelegate> > g_content_main_delegate =
 
 }  // namespace
 
-static void InitApplicationContext(JNIEnv* env, jclass clazz, jobject context) {
+static void InitApplicationContext(JNIEnv* env,
+                                   const JavaParamRef<jclass>& clazz,
+                                   const JavaParamRef<jobject>& context) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(
       env, env->NewLocalRef(context));
   base::android::InitApplicationContext(env, scoped_context);
 }
 
-static jint Start(JNIEnv* env, jclass clazz) {
+static jint Start(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   TRACE_EVENT0("startup", "content::Start");
 
   // On Android we can have multiple requests to start the browser in process

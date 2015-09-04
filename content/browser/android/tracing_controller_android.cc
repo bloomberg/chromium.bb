@@ -14,7 +14,7 @@
 
 namespace content {
 
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   TracingControllerAndroid* profiler = new TracingControllerAndroid(env, obj);
   return reinterpret_cast<intptr_t>(profiler);
 }
@@ -102,8 +102,9 @@ void TracingControllerAndroid::OnKnownCategoriesReceived(
   LOG(WARNING) << "{\"traceCategoriesList\": " << received_category_list << "}";
 }
 
-static ScopedJavaLocalRef<jstring> GetDefaultCategories(JNIEnv* env,
-                                                        jobject obj) {
+static ScopedJavaLocalRef<jstring> GetDefaultCategories(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   base::trace_event::TraceConfig trace_config;
   return base::android::ConvertUTF8ToJavaString(
       env, trace_config.ToCategoryFilterString());

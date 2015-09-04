@@ -141,7 +141,7 @@ bool RegisterContextualSearchPanel(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jlong Init(JNIEnv* env, jobject obj) {
+jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   ContextualSearchPanel* manager = new ContextualSearchPanel(env, obj);
   return reinterpret_cast<intptr_t>(manager);
 }

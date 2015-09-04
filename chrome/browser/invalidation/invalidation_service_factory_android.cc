@@ -38,16 +38,17 @@ ScopedJavaLocalRef<jobject> InvalidationServiceFactoryAndroid::GetForTest(
   return ScopedJavaLocalRef<jobject>(service_android->java_ref_);
 }
 
-ScopedJavaLocalRef<jobject> GetForProfile(JNIEnv* env,
-                                          jclass clazz,
-                                          jobject j_profile) {
+ScopedJavaLocalRef<jobject> GetForProfile(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_profile) {
   return InvalidationServiceFactoryAndroid::GetForProfile(env, clazz,
                                                           j_profile);
 }
 
 ScopedJavaLocalRef<jobject> GetForTest(JNIEnv* env,
-                                       jclass clazz,
-                                       jobject j_context) {
+                                       const JavaParamRef<jclass>& clazz,
+                                       const JavaParamRef<jobject>& j_context) {
   return InvalidationServiceFactoryAndroid::GetForTest(env, clazz, j_context);
 }
 

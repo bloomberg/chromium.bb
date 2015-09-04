@@ -10,9 +10,9 @@
 
 // static
 void SaveHistogram(JNIEnv* env,
-                   jobject jcaller,
-                   jstring j_histogram_name,
-                   jlongArray j_frame_times_ms,
+                   const JavaParamRef<jobject>& jcaller,
+                   const JavaParamRef<jstring>& j_histogram_name,
+                   const JavaParamRef<jlongArray>& j_frame_times_ms,
                    jint j_count) {
   jlong *frame_times_ms = env->GetLongArrayElements(j_frame_times_ms, NULL);
   std::string histogram_name = base::android::ConvertJavaStringToUTF8(

@@ -142,7 +142,9 @@ void CopySessionToJava(
 
 }  // namespace
 
-static jlong Init(JNIEnv* env, jclass clazz, jobject profile) {
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jclass>& clazz,
+                  const JavaParamRef<jobject>& profile) {
   ForeignSessionHelper* foreign_session_helper = new ForeignSessionHelper(
       ProfileAndroid::FromProfileAndroid(profile));
   return reinterpret_cast<intptr_t>(foreign_session_helper);

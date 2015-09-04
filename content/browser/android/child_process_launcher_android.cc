@@ -89,7 +89,7 @@ static void SetSurfacePeer(
 // |handle| is the processID of the child process as originated in Java, 0 if
 // the ChildProcess could not be created.
 static void OnChildProcessStarted(JNIEnv*,
-                                  jclass,
+                                  const JavaParamRef<jclass>&,
                                   jlong client_context,
                                   jint handle) {
   StartChildProcessCallback* callback =
@@ -169,9 +169,12 @@ void SetChildProcessInForeground(base::ProcessHandle handle,
       static_cast<jint>(handle), static_cast<jboolean>(in_foreground));
 }
 
-void EstablishSurfacePeer(
-    JNIEnv* env, jclass clazz,
-    jint pid, jobject surface, jint primary_id, jint secondary_id) {
+void EstablishSurfacePeer(JNIEnv* env,
+                          const JavaParamRef<jclass>& clazz,
+                          jint pid,
+                          const JavaParamRef<jobject>& surface,
+                          jint primary_id,
+                          jint secondary_id) {
   ScopedJavaGlobalRef<jobject> jsurface;
   jsurface.Reset(env, surface);
   if (jsurface.is_null())
@@ -222,7 +225,7 @@ gfx::ScopedJavaSurface GetSurfaceTextureSurface(int surface_texture_id,
           env, surface_texture_id, client_id).obj());
 }
 
-jboolean IsSingleProcess(JNIEnv* env, jclass clazz) {
+jboolean IsSingleProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSingleProcess);
 }

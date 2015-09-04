@@ -27,8 +27,12 @@ bool RegisterLaunchMetrics(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static void RecordLaunch(JNIEnv* env, jclass caller, jboolean standalone,
-                         jstring jurl, int source, jobject jweb_contents) {
+static void RecordLaunch(JNIEnv* env,
+                         const JavaParamRef<jclass>& caller,
+                         jboolean standalone,
+                         const JavaParamRef<jstring>& jurl,
+                         int source,
+                         const JavaParamRef<jobject>& jweb_contents) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
 
   content::WebContents* web_contents =

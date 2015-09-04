@@ -10,7 +10,9 @@
 
 namespace mandoline {
 
-static void LaunchURL(JNIEnv* env, jclass clazz, jstring jurl) {
+static void LaunchURL(JNIEnv* env,
+                      const JavaParamRef<jclass>& clazz,
+                      const JavaParamRef<jstring>& jurl) {
   LaunchHandlerPtr launch_handler;
   mojo::runner::GetContext()->application_manager()->ConnectToService(
       GURL("mojo:phone_ui"), &launch_handler);

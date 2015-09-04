@@ -20,12 +20,14 @@ bool CronetHistogramManagerRegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static void EnsureInitialized(JNIEnv* env, jobject jcaller) {
+static void EnsureInitialized(JNIEnv* env,
+                              const JavaParamRef<jobject>& jcaller) {
   base::StatisticsRecorder::Initialize();
 }
 
-static ScopedJavaLocalRef<jbyteArray> GetHistogramDeltas(JNIEnv* env,
-                                                         jobject jcaller) {
+static ScopedJavaLocalRef<jbyteArray> GetHistogramDeltas(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
   std::vector<uint8> data;
   if (!HistogramManager::GetInstance()->GetDeltas(&data))
     return ScopedJavaLocalRef<jbyteArray>();

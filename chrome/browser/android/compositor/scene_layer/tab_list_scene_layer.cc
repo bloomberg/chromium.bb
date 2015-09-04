@@ -202,7 +202,7 @@ scoped_refptr<TabLayer> TabListSceneLayer::GetNextLayer(bool incognito) {
   return layer;
 }
 
-static jlong Init(JNIEnv* env, jobject jobj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   // This will automatically bind to the Java object and pass ownership there.
   TabListSceneLayer* scene_layer = new TabListSceneLayer(env, jobj);
   return reinterpret_cast<intptr_t>(scene_layer);

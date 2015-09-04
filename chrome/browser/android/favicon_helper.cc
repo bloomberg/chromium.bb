@@ -143,7 +143,7 @@ void OnFaviconImageResultAvailable(
 
 }  // namespace
 
-static jlong Init(JNIEnv* env, jclass clazz) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return reinterpret_cast<intptr_t>(new FaviconHelper());
 }
 
@@ -294,8 +294,8 @@ void FaviconHelper::EnsureFaviconIsAvailable(
 FaviconHelper::~FaviconHelper() {}
 
 static jint GetDominantColorForBitmap(JNIEnv* env,
-                                      jclass clazz,
-                                      jobject bitmap) {
+                                      const JavaParamRef<jclass>& clazz,
+                                      const JavaParamRef<jobject>& bitmap) {
   if (!bitmap)
     return 0;
 

@@ -149,7 +149,7 @@ void InternalInitChildProcess(JNIEnv* env,
 }  // namespace <anonymous>
 
 void RegisterGlobalFileDescriptor(JNIEnv* env,
-                                  jclass clazz,
+                                  const JavaParamRef<jclass>& clazz,
                                   jint id,
                                   jint fd,
                                   jlong offset,
@@ -159,14 +159,14 @@ void RegisterGlobalFileDescriptor(JNIEnv* env,
 }
 
 void InitChildProcess(JNIEnv* env,
-                      jclass clazz,
-                      jobject service,
+                      const JavaParamRef<jclass>& clazz,
+                      const JavaParamRef<jobject>& service,
                       jint cpu_count,
                       jlong cpu_features) {
   InternalInitChildProcess(env, clazz, service, cpu_count, cpu_features);
 }
 
-void ExitChildProcess(JNIEnv* env, jclass clazz) {
+void ExitChildProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   VLOG(0) << "ChildProcessService: Exiting child process.";
   base::android::LibraryLoaderExitHook();
   _exit(0);
@@ -176,7 +176,7 @@ bool RegisterChildProcessService(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ShutdownMainThread(JNIEnv* env, jobject obj) {
+void ShutdownMainThread(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   ChildThreadImpl::ShutdownThread();
 }
 

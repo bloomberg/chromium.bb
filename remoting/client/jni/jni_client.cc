@@ -23,7 +23,7 @@ void JniClient::Destroy(JNIEnv* env, jobject caller) {
   delete this;
 }
 
-static jlong Init(JNIEnv* env, jobject caller) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {
   return reinterpret_cast<intptr_t>(new JniClient());
 }
 

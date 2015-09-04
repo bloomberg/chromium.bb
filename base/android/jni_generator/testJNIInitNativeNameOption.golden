@@ -33,7 +33,7 @@ static jint Java_org_chromium_example_jni_1generator_Test_nativeMethod(JNIEnv*
     jint arg1) {
   Test* native = reinterpret_cast<Test*>(nativeTest);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
-  return native->Method(env, jcaller, arg1);
+  return native->Method(env, JavaParamRef<jobject>(env, jcaller), arg1);
 }
 
 // Step 3: RegisterNatives.

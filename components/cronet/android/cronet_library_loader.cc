@@ -87,15 +87,15 @@ void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
 }
 
 void CronetInitApplicationContext(JNIEnv* env,
-                                  jclass jcaller,
-                                  jobject japp_context) {
+                                  const JavaParamRef<jclass>& jcaller,
+                                  const JavaParamRef<jobject>& japp_context) {
   // Set application context.
   base::android::ScopedJavaLocalRef<jobject> scoped_app_context(env,
                                                                 japp_context);
   base::android::InitApplicationContext(env, scoped_app_context);
 }
 
-void CronetInitOnMainThread(JNIEnv* env, jclass jcaller) {
+void CronetInitOnMainThread(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
 #if !defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
   base::i18n::InitializeICU();
 #endif
@@ -113,7 +113,9 @@ void CronetInitOnMainThread(JNIEnv* env, jclass jcaller) {
   g_network_change_notifier = net::NetworkChangeNotifier::Create();
 }
 
-ScopedJavaLocalRef<jstring> GetCronetVersion(JNIEnv* env, jclass jcaller) {
+ScopedJavaLocalRef<jstring> GetCronetVersion(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller) {
   return base::android::ConvertUTF8ToJavaString(env, CRONET_VERSION);
 }
 

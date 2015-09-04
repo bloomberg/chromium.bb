@@ -198,6 +198,6 @@ DataReductionProxySettingsAndroid::GetLastBypassEvent(JNIEnv* env,
 }
 
 // Used by generated jni code.
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new DataReductionProxySettingsAndroid());
 }

@@ -109,7 +109,7 @@ bool RegisterLayerTitleCache(JNIEnv* env) {
 // ----------------------------------------------------------------------------
 
 jlong Init(JNIEnv* env,
-           jobject obj,
+           const JavaParamRef<jobject>& obj,
            jint fade_width,
            jint favicon_start_padding,
            jint favicon_end_padding,

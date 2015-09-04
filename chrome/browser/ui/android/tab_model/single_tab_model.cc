@@ -10,9 +10,10 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/SingleTabModel_jni.h"
 
-static void PermanentlyBlockAllNewWindows(JNIEnv* env,
-                                          jclass clazz,
-                                          jobject j_tab_android) {
+static void PermanentlyBlockAllNewWindows(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_tab_android) {
   TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab_android);
   if (!tab)
     return;

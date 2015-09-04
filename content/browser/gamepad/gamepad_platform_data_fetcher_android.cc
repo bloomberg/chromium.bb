@@ -63,15 +63,15 @@ void GamepadPlatformDataFetcherAndroid::PauseHint(bool paused) {
 }
 
 static void SetGamepadData(JNIEnv* env,
-                           jobject obj,
+                           const JavaParamRef<jobject>& obj,
                            jlong gamepads,
                            jint index,
                            jboolean mapping,
                            jboolean connected,
-                           jstring devicename,
+                           const JavaParamRef<jstring>& devicename,
                            jlong timestamp,
-                           jfloatArray jaxes,
-                           jfloatArray jbuttons) {
+                           const JavaParamRef<jfloatArray>& jaxes,
+                           const JavaParamRef<jfloatArray>& jbuttons) {
   DCHECK(gamepads);
   blink::WebGamepads* pads = reinterpret_cast<WebGamepads*>(gamepads);
   DCHECK_EQ(pads->length, unsigned(index));

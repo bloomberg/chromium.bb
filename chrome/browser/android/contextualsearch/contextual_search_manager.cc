@@ -146,7 +146,7 @@ bool RegisterContextualSearchManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jlong Init(JNIEnv* env, jobject obj) {
+jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   ContextualSearchManager* manager = new ContextualSearchManager(env, obj);
   return reinterpret_cast<intptr_t>(manager);
 }

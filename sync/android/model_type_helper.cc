@@ -11,8 +11,10 @@
 
 namespace syncer {
 
-static ScopedJavaLocalRef<jstring>
-ModelTypeToNotificationType(JNIEnv* env, jclass clazz, jint model_type_int) {
+static ScopedJavaLocalRef<jstring> ModelTypeToNotificationType(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jint model_type_int) {
   std::string model_type_string;
   ModelType model_type = static_cast<ModelType>(model_type_int);
   if (!RealModelTypeToNotificationType(model_type, &model_type_string)) {

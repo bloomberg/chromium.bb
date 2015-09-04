@@ -27,13 +27,14 @@ jclass g_Foo_clazz = NULL;
 
 // Step 2: method stubs.
 
-static void DoSomething(JNIEnv* env, jclass jcaller,
-    jobject callback);
+static void DoSomething(JNIEnv* env, const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& callback);
 
 static void Java_org_chromium_foo_Foo_nativeDoSomething(JNIEnv* env, jclass
     jcaller,
     jobject callback) {
-  return DoSomething(env, jcaller, callback);
+  return DoSomething(env, JavaParamRef<jclass>(env, jcaller),
+      JavaParamRef<jobject>(env, callback));
 }
 
 static base::subtle::AtomicWord g_Foo_calledByNative = 0;

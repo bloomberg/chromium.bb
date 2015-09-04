@@ -421,16 +421,17 @@ void AwSettings::PopulateWebPreferencesLocked(
 }
 
 static jlong Init(JNIEnv* env,
-                  jobject obj,
-                  jobject web_contents) {
+                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& web_contents) {
   content::WebContents* contents = content::WebContents::FromJavaWebContents(
       web_contents);
   AwSettings* settings = new AwSettings(env, obj, contents);
   return reinterpret_cast<intptr_t>(settings);
 }
 
-static ScopedJavaLocalRef<jstring> GetDefaultUserAgent(JNIEnv* env,
-                                                       jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetDefaultUserAgent(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return base::android::ConvertUTF8ToJavaString(env, GetUserAgent());
 }
 

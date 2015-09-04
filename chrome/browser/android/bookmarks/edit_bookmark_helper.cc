@@ -15,10 +15,10 @@
 using bookmarks::BookmarkNode;
 
 void SetPartnerBookmarkTitle(JNIEnv* env,
-                             jclass clazz,
-                             jobject jprofile,
+                             const JavaParamRef<jclass>& clazz,
+                             const JavaParamRef<jobject>& jprofile,
                              jlong bookmark_id,
-                             jstring new_title) {
+                             const JavaParamRef<jstring>& new_title) {
   PartnerBookmarksShim* partner_bookmarks_shim =
       PartnerBookmarksShim::BuildForBrowserContext(
           chrome::GetBrowserContextRedirectedInIncognito(

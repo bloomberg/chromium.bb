@@ -122,8 +122,8 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 // static
 ScopedJavaLocalRef<jstring> GetCachedFullNameForPrimaryAccount(
     JNIEnv* env,
-    jclass clazz,
-    jobject jprofile) {
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   ProfileInfoInterface& info =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -139,8 +139,8 @@ ScopedJavaLocalRef<jstring> GetCachedFullNameForPrimaryAccount(
 // static
 ScopedJavaLocalRef<jstring> GetCachedGivenNameForPrimaryAccount(
     JNIEnv* env,
-    jclass clazz,
-    jobject jprofile) {
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   ProfileInfoInterface& info =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -154,9 +154,10 @@ ScopedJavaLocalRef<jstring> GetCachedGivenNameForPrimaryAccount(
 }
 
 // static
-ScopedJavaLocalRef<jobject> GetCachedAvatarForPrimaryAccount(JNIEnv* env,
-                                                             jclass clazz,
-                                                             jobject jprofile) {
+ScopedJavaLocalRef<jobject> GetCachedAvatarForPrimaryAccount(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   ProfileInfoInterface& info =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -177,13 +178,12 @@ ScopedJavaLocalRef<jobject> GetCachedAvatarForPrimaryAccount(JNIEnv* env,
 }
 
 // static
-void StartFetchingAccountInfoFor(
-    JNIEnv* env,
-    jclass clazz,
-    jobject jprofile,
-    jstring jemail,
-    jint image_side_pixels,
-    jboolean is_pre_signin) {
+void StartFetchingAccountInfoFor(JNIEnv* env,
+                                 const JavaParamRef<jclass>& clazz,
+                                 const JavaParamRef<jobject>& jprofile,
+                                 const JavaParamRef<jstring>& jemail,
+                                 jint image_side_pixels,
+                                 jboolean is_pre_signin) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   const std::string email =
       base::android::ConvertJavaStringToUTF8(env, jemail);

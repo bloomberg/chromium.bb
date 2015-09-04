@@ -370,7 +370,7 @@ bool RegisterTabContentManager(JNIEnv* env) {
 // ----------------------------------------------------------------------------
 
 jlong Init(JNIEnv* env,
-           jobject obj,
+           const JavaParamRef<jobject>& obj,
            jint default_cache_size,
            jint approximation_cache_size,
            jint compression_queue_max_size,

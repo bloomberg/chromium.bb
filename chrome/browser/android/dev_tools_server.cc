@@ -229,26 +229,29 @@ bool RegisterDevToolsServer(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static jlong InitRemoteDebugging(JNIEnv* env,
-                                jobject obj,
-                                jstring socket_name_prefix) {
+static jlong InitRemoteDebugging(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& socket_name_prefix) {
   DevToolsServer* server = new DevToolsServer(
       base::android::ConvertJavaStringToUTF8(env, socket_name_prefix));
   return reinterpret_cast<intptr_t>(server);
 }
 
-static void DestroyRemoteDebugging(JNIEnv* env, jobject obj, jlong server) {
+static void DestroyRemoteDebugging(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj,
+                                   jlong server) {
   delete reinterpret_cast<DevToolsServer*>(server);
 }
 
 static jboolean IsRemoteDebuggingEnabled(JNIEnv* env,
-                                         jobject obj,
+                                         const JavaParamRef<jobject>& obj,
                                          jlong server) {
   return reinterpret_cast<DevToolsServer*>(server)->IsStarted();
 }
 
 static void SetRemoteDebuggingEnabled(JNIEnv* env,
-                                      jobject obj,
+                                      const JavaParamRef<jobject>& obj,
                                       jlong server,
                                       jboolean enabled,
                                       jboolean allow_debug_permission) {

@@ -23,9 +23,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // Gets the download warning text for the given file name.
-static ScopedJavaLocalRef<jstring> GetDownloadWarningText(JNIEnv* env,
-                                                          jclass clazz,
-                                                          jstring filename) {
+static ScopedJavaLocalRef<jstring> GetDownloadWarningText(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& filename) {
   return base::android::ConvertUTF8ToJavaString(
       env, l10n_util::GetStringFUTF8(
                IDS_PROMPT_DANGEROUS_DOWNLOAD,
@@ -33,16 +34,20 @@ static ScopedJavaLocalRef<jstring> GetDownloadWarningText(JNIEnv* env,
 }
 
 // Returns true if a file name is dangerous, or false otherwise.
-static jboolean IsDownloadDangerous(
-    JNIEnv* env, jclass clazz, jstring filename) {
+static jboolean IsDownloadDangerous(JNIEnv* env,
+                                    const JavaParamRef<jclass>& clazz,
+                                    const JavaParamRef<jstring>& filename) {
   base::FilePath path(base::android::ConvertJavaStringToUTF8(env, filename));
   return download_util::GetFileDangerLevel(path) !=
       download_util::NOT_DANGEROUS;
 }
 
 // Called when a dangerous download is validated.
-static void DangerousDownloadValidated(
-    JNIEnv* env, jclass clazz, jobject tab, jint download_id, jboolean accept) {
+static void DangerousDownloadValidated(JNIEnv* env,
+                                       const JavaParamRef<jclass>& clazz,
+                                       const JavaParamRef<jobject>& tab,
+                                       jint download_id,
+                                       jboolean accept) {
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   content::DownloadControllerAndroid::Get()->DangerousDownloadValidated(
       tab_android->web_contents(), download_id, accept);
@@ -61,14 +66,15 @@ void ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
 
 // Called when we need to interrupt download and ask users whether to overwrite
 // an existing file.
-static void LaunchDownloadOverwriteInfoBar(JNIEnv* env,
-                                           jclass clazz,
-                                           jobject delegate,
-                                           jobject tab,
-                                           jobject download_info,
-                                           jstring jfile_name,
-                                           jstring jdir_name,
-                                           jstring jdir_full_path) {
+static void LaunchDownloadOverwriteInfoBar(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& delegate,
+    const JavaParamRef<jobject>& tab,
+    const JavaParamRef<jobject>& download_info,
+    const JavaParamRef<jstring>& jfile_name,
+    const JavaParamRef<jstring>& jdir_name,
+    const JavaParamRef<jstring>& jdir_full_path) {
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
 
   std::string file_name =

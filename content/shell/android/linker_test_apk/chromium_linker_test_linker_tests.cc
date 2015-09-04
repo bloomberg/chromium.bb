@@ -196,13 +196,13 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
 }  // namespace
 
 jboolean CheckForSharedRelros(JNIEnv* env,
-                              jclass clazz,
+                              const JavaParamRef<jclass>& clazz,
                               jboolean in_browser_process) {
   return RunChecks(in_browser_process, true);
 }
 
 jboolean CheckForNoSharedRelros(JNIEnv* env,
-                                jclass clazz,
+                                const JavaParamRef<jclass>& clazz,
                                 jboolean in_browser_process) {
   return RunChecks(in_browser_process, false);
 }

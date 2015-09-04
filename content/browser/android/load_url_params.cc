@@ -18,7 +18,9 @@ bool RegisterLoadUrlParams(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jboolean IsDataScheme(JNIEnv* env, jclass clazz, jstring jurl) {
+jboolean IsDataScheme(JNIEnv* env,
+                      const JavaParamRef<jclass>& clazz,
+                      const JavaParamRef<jstring>& jurl) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
   return url.SchemeIs(url::kDataScheme);
 }

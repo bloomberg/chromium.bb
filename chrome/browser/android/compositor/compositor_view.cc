@@ -41,12 +41,12 @@ namespace chrome {
 namespace android {
 
 jlong Init(JNIEnv* env,
-           jobject obj,
+           const JavaParamRef<jobject>& obj,
            jboolean low_mem_device,
            jint empty_background_color,
            jlong native_window_android,
-           jobject jlayer_title_cache,
-           jobject jtab_content_manager) {
+           const JavaParamRef<jobject>& jlayer_title_cache,
+           const JavaParamRef<jobject>& jtab_content_manager) {
   CompositorView* view;
   ui::WindowAndroid* window_android =
       reinterpret_cast<ui::WindowAndroid*>(native_window_android);

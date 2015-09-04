@@ -36,7 +36,9 @@ WebContentsObserverProxy::WebContentsObserverProxy(JNIEnv* env,
 WebContentsObserverProxy::~WebContentsObserverProxy() {
 }
 
-jlong Init(JNIEnv* env, jobject obj, jobject java_web_contents) {
+jlong Init(JNIEnv* env,
+           const JavaParamRef<jobject>& obj,
+           const JavaParamRef<jobject>& java_web_contents) {
   WebContents* web_contents =
       WebContents::FromJavaWebContents(java_web_contents);
   CHECK(web_contents);

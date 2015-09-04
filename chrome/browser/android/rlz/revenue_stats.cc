@@ -18,12 +18,16 @@ bool RegisterRevenueStats(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static void SetSearchClient(JNIEnv* env, jclass clazz, jstring jclient) {
+static void SetSearchClient(JNIEnv* env,
+                            const JavaParamRef<jclass>& clazz,
+                            const JavaParamRef<jstring>& jclient) {
   SearchTermsDataAndroid::search_client_.Get() =
       base::android::ConvertJavaStringToUTF8(env, jclient);
 }
 
-static void SetRlzParameterValue(JNIEnv* env, jclass clazz, jstring jrlz) {
+static void SetRlzParameterValue(JNIEnv* env,
+                                 const JavaParamRef<jclass>& clazz,
+                                 const JavaParamRef<jstring>& jrlz) {
   SearchTermsDataAndroid::rlz_parameter_value_.Get() =
       base::android::ConvertJavaStringToUTF16(env, jrlz);
 }

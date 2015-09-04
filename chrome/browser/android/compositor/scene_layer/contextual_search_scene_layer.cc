@@ -119,7 +119,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       progress_bar_completion);
 }
 
-static jlong Init(JNIEnv* env, jobject jobj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   // This will automatically bind to the Java object and pass ownership there.
   ContextualSearchSceneLayer* tree_provider =
       new ContextualSearchSceneLayer(env, jobj);

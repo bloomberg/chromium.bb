@@ -12,10 +12,11 @@
 #include "jni/OmniboxUrlEmphasizer_jni.h"
 
 // static
-ScopedJavaLocalRef<jintArray> ParseForEmphasizeComponents(JNIEnv* env,
-                                                          jclass clazz,
-                                                          jobject jprofile,
-                                                          jstring jtext) {
+ScopedJavaLocalRef<jintArray> ParseForEmphasizeComponents(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile,
+    const JavaParamRef<jstring>& jtext) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
 

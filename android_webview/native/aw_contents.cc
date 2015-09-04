@@ -163,7 +163,9 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
 }
 
 // static
-void SetLocale(JNIEnv* env, jclass, jstring locale) {
+void SetLocale(JNIEnv* env,
+               const JavaParamRef<jclass>&,
+               const JavaParamRef<jstring>& locale) {
   g_locale = ConvertJavaStringToUTF8(env, locale);
 }
 
@@ -330,7 +332,9 @@ void AwContents::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-static jlong Init(JNIEnv* env, jclass, jobject browser_context) {
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jclass>&,
+                  const JavaParamRef<jobject>& browser_context) {
   // TODO(joth): Use |browser_context| to get the native BrowserContext, rather
   // than hard-code the default instance lookup here.
   scoped_ptr<WebContents> web_contents(content::WebContents::Create(
@@ -342,27 +346,28 @@ static jlong Init(JNIEnv* env, jclass, jobject browser_context) {
 
 static void SetForceAuxiliaryBitmapRendering(
     JNIEnv* env,
-    jclass,
+    const JavaParamRef<jclass>&,
     jboolean force_auxiliary_bitmap_rendering) {
   g_force_auxiliary_bitmap_rendering = force_auxiliary_bitmap_rendering;
 }
 
-static void SetAwDrawSWFunctionTable(JNIEnv* env, jclass,
+static void SetAwDrawSWFunctionTable(JNIEnv* env,
+                                     const JavaParamRef<jclass>&,
                                      jlong function_table) {
   RasterHelperSetAwDrawSWFunctionTable(
       reinterpret_cast<AwDrawSWFunctionTable*>(function_table));
 }
 
-static void SetAwDrawGLFunctionTable(JNIEnv* env, jclass,
-                                     jlong function_table) {
-}
+static void SetAwDrawGLFunctionTable(JNIEnv* env,
+                                     const JavaParamRef<jclass>&,
+                                     jlong function_table) {}
 
-static jlong GetAwDrawGLFunction(JNIEnv* env, jclass) {
+static jlong GetAwDrawGLFunction(JNIEnv* env, const JavaParamRef<jclass>&) {
   return reinterpret_cast<intptr_t>(&DrawGLFunction);
 }
 
 // static
-jint GetNativeInstanceCount(JNIEnv* env, jclass) {
+jint GetNativeInstanceCount(JNIEnv* env, const JavaParamRef<jclass>&) {
   return base::subtle::NoBarrier_Load(&g_instance_count);
 }
 
@@ -1215,7 +1220,8 @@ void AwContents::GrantFileSchemeAccesstoChildProcess(JNIEnv* env, jobject obj) {
       web_contents_->GetRenderProcessHost()->GetID(), url::kFileScheme);
 }
 
-void SetShouldDownloadFavicons(JNIEnv* env, jclass jclazz) {
+void SetShouldDownloadFavicons(JNIEnv* env,
+                               const JavaParamRef<jclass>& jclazz) {
   g_should_download_favicons = true;
 }
 

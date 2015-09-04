@@ -257,7 +257,7 @@ TemplateUrlServiceAndroid::GetSearchEngineUrlFromTemplateUrl(
   return base::android::ConvertUTF8ToJavaString(env, url);
 }
 
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   TemplateUrlServiceAndroid* template_url_service_android =
       new TemplateUrlServiceAndroid(env, obj);
   return reinterpret_cast<intptr_t>(template_url_service_android);

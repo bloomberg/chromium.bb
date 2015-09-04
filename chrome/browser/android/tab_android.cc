@@ -943,7 +943,7 @@ void TabAndroid::DetachOverlayContentViewCore(JNIEnv* env,
     content_view_core->GetLayer()->RemoveFromParent();
 }
 
-static void Init(JNIEnv* env, jobject obj) {
+static void Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   TRACE_EVENT0("native", "TabAndroid::Init");
   // This will automatically bind to the Java object and pass ownership there.
   new TabAndroid(env, obj);
@@ -954,7 +954,8 @@ bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static void RecordStartupToCommitUma(JNIEnv* env, jclass jcaller) {
+static void RecordStartupToCommitUma(JNIEnv* env,
+                                     const JavaParamRef<jclass>& jcaller) {
   // Currently it takes about 2000ms to commit a navigation if the measurement
   // begins very early in the browser start. How many buckets (b) are needed to
   // explore the _typical_ values with granularity 100ms and a maximum duration

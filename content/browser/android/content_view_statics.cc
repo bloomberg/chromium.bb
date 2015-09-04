@@ -96,9 +96,10 @@ base::LazyInstance<SuspendedProcessWatcher> g_suspended_processes_watcher =
 }  // namespace
 
 // Returns the first substring consisting of the address of a physical location.
-static ScopedJavaLocalRef<jstring> FindAddress(JNIEnv* env,
-                                               jclass clazz,
-                                               jstring addr) {
+static ScopedJavaLocalRef<jstring> FindAddress(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& addr) {
   base::string16 content_16 = ConvertJavaStringToUTF16(env, addr);
   base::string16 result_16;
   if (content::address_parser::FindAddress(content_16, &result_16))
@@ -107,7 +108,7 @@ static ScopedJavaLocalRef<jstring> FindAddress(JNIEnv* env,
 }
 
 static void SetWebKitSharedTimersSuspended(JNIEnv* env,
-                                           jclass obj,
+                                           const JavaParamRef<jclass>& obj,
                                            jboolean suspend) {
   if (suspend) {
     g_suspended_processes_watcher.Pointer()->SuspendWebKitSharedTimers();

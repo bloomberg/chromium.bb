@@ -305,47 +305,57 @@ bool PersonalDataManagerAndroid::Register(JNIEnv* env) {
 }
 
 // Returns whether the Autofill feature is enabled.
-static jboolean IsAutofillEnabled(JNIEnv* env, jclass clazz) {
+static jboolean IsAutofillEnabled(JNIEnv* env,
+                                  const JavaParamRef<jclass>& clazz) {
   return GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled);
 }
 
 // Enables or disables the Autofill feature.
-static void SetAutofillEnabled(JNIEnv* env, jclass clazz, jboolean enable) {
+static void SetAutofillEnabled(JNIEnv* env,
+                               const JavaParamRef<jclass>& clazz,
+                               jboolean enable) {
   GetPrefs()->SetBoolean(autofill::prefs::kAutofillEnabled, enable);
 }
 
 // Returns whether the Autofill feature is managed.
-static jboolean IsAutofillManaged(JNIEnv* env, jclass clazz) {
+static jboolean IsAutofillManaged(JNIEnv* env,
+                                  const JavaParamRef<jclass>& clazz) {
   return GetPrefs()->IsManagedPreference(autofill::prefs::kAutofillEnabled);
 }
 
 // Returns whether the Wallet import feature is available.
-static jboolean IsWalletImportFeatureAvailable(JNIEnv* env, jclass clazz) {
+static jboolean IsWalletImportFeatureAvailable(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return WalletIntegrationAvailableForProfile(GetProfile());
 }
 
 // Returns whether the Wallet import feature is enabled.
-static jboolean IsWalletImportEnabled(JNIEnv* env, jclass clazz) {
+static jboolean IsWalletImportEnabled(JNIEnv* env,
+                                      const JavaParamRef<jclass>& clazz) {
   return GetPrefs()->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled);
 }
 
 // Enables or disables the Wallet import feature.
-static void SetWalletImportEnabled(JNIEnv* env, jclass clazz, jboolean enable) {
+static void SetWalletImportEnabled(JNIEnv* env,
+                                   const JavaParamRef<jclass>& clazz,
+                                   jboolean enable) {
   GetPrefs()->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled, enable);
 }
 
 // Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using
 // the application locale, or an empty string.
-static ScopedJavaLocalRef<jstring> ToCountryCode(JNIEnv* env,
-                                                 jclass clazz,
-                                                 jstring jcountry_name) {
+static ScopedJavaLocalRef<jstring> ToCountryCode(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jcountry_name) {
   return ConvertUTF8ToJavaString(
       env, AutofillCountry::GetCountryCode(
                base::android::ConvertJavaStringToUTF16(env, jcountry_name),
                g_browser_process->GetApplicationLocale()));
 }
 
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   PersonalDataManagerAndroid* personal_data_manager_android =
       new PersonalDataManagerAndroid(env, obj);
   return reinterpret_cast<intptr_t>(personal_data_manager_android);

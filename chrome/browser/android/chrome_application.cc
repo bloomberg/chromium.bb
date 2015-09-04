@@ -81,12 +81,13 @@ void ChangeAppStatusOnIOThread(SafeBrowsingService* sb_service,
 
 }  // namespace
 
-static ScopedJavaLocalRef<jstring> GetBrowserUserAgent(JNIEnv* env,
-                                                       jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetBrowserUserAgent(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return ConvertUTF8ToJavaString(env, GetUserAgent());
 }
 
-static void FlushPersistentData(JNIEnv* env, jclass obj) {
+static void FlushPersistentData(JNIEnv* env, const JavaParamRef<jclass>& obj) {
   // Commit the prending writes for all the loaded profiles.
   std::vector<Profile*> loaded_profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
@@ -97,14 +98,16 @@ static void FlushPersistentData(JNIEnv* env, jclass obj) {
     g_browser_process->local_state()->CommitPendingWrite();
 }
 
-static void RemoveSessionCookies(JNIEnv* env, jclass obj) {
+static void RemoveSessionCookies(JNIEnv* env, const JavaParamRef<jclass>& obj) {
   std::vector<Profile*> loaded_profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   std::for_each(loaded_profiles.begin(), loaded_profiles.end(),
                 RemoveSessionCookiesForProfile);
 }
 
-static void ChangeAppStatus(JNIEnv* env, jclass obj, jboolean foreground) {
+static void ChangeAppStatus(JNIEnv* env,
+                            const JavaParamRef<jclass>& obj,
+                            jboolean foreground) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&ChangeAppStatusOnIOThread,

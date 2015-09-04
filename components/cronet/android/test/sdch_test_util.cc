@@ -100,8 +100,8 @@ void AddSdchObserverOnNetworkThreadLegacyAPI(
 }  // namespace
 
 void AddSdchObserver(JNIEnv* env,
-                     jobject jsdch_observer,
-                     jstring jtarget_url,
+                     const JavaParamRef<jobject>& jsdch_observer,
+                     const JavaParamRef<jstring>& jtarget_url,
                      jlong jadapter) {
   base::android::ScopedJavaGlobalRef<jobject> jsdch_observer_ref;
   // ScopedJavaGlobalRef do not hold onto the env reference, so it is safe to
@@ -119,8 +119,8 @@ void AddSdchObserver(JNIEnv* env,
 }
 
 void AddSdchObserverLegacyAPI(JNIEnv* env,
-                              jobject jsdch_observer,
-                              jstring jtarget_url,
+                              const JavaParamRef<jobject>& jsdch_observer,
+                              const JavaParamRef<jstring>& jtarget_url,
                               jlong jadapter) {
   base::android::ScopedJavaGlobalRef<jobject> jsdch_observer_ref;
   // ScopedJavaGlobalRef do not hold onto the env reference, so it is safe to

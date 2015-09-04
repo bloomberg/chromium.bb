@@ -29,7 +29,8 @@ using base::android::ConvertUTF8ToJavaString;
 // Called by the Java side when a notification event has been received, but the
 // NotificationUIManager has not been initialized yet. Enforce initialization of
 // the class.
-static void InitializeNotificationUIManager(JNIEnv* env, jclass clazz) {
+static void InitializeNotificationUIManager(JNIEnv* env,
+                                            const JavaParamRef<jclass>& clazz) {
   g_browser_process->notification_ui_manager();
 }
 

@@ -66,7 +66,7 @@ void ApplicationStatusListener::NotifyApplicationStateChange(
 }
 
 static void OnApplicationStateChange(JNIEnv* env,
-                                     jclass clazz,
+                                     const JavaParamRef<jclass>& clazz,
                                      jint new_state) {
   ApplicationState application_state = static_cast<ApplicationState>(new_state);
   ApplicationStatusListener::NotifyApplicationStateChange(application_state);

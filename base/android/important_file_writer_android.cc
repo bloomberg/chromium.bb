@@ -15,9 +15,9 @@ namespace base {
 namespace android {
 
 static jboolean WriteFileAtomically(JNIEnv* env,
-                                    jclass /* clazz */,
-                                    jstring file_name,
-                                    jbyteArray data) {
+                                    const JavaParamRef<jclass>& /* clazz */,
+                                    const JavaParamRef<jstring>& file_name,
+                                    const JavaParamRef<jbyteArray>& data) {
   // This is called on the UI thread during shutdown to save tab data, so
   // needs to enable IO.
   base::ThreadRestrictions::ScopedAllowIO allow_io;

@@ -135,6 +135,19 @@ def JavaDataTypeToC(java_type):
     return 'jobject'
 
 
+def WrapCTypeForDeclaration(c_type):
+  """Wrap the C datatype in a JavaRef if required."""
+  if re.match(RE_SCOPED_JNI_TYPES, c_type):
+    return 'const JavaParamRef<' + c_type + '>&'
+  else:
+    return c_type
+
+
+def JavaDataTypeToCForDeclaration(java_type):
+  """Returns a JavaRef-wrapped C datatype for the given java type."""
+  return WrapCTypeForDeclaration(JavaDataTypeToC(java_type))
+
+
 def JavaDataTypeToCForCalledByNativeParam(java_type):
   """Returns a C datatype to be when calling from native."""
   if java_type == 'int':
@@ -527,10 +540,9 @@ def MangleCalledByNatives(called_by_natives):
   return called_by_natives
 
 
-# Regex to match the JNI return types that should be included in a
-# ScopedJavaLocalRef.
-RE_SCOPED_JNI_RETURN_TYPES = re.compile(
-    'jobject|jclass|jstring|jthrowable|.*Array')
+# Regex to match the JNI types that should be wrapped in a JavaRef.
+RE_SCOPED_JNI_TYPES = re.compile('jobject|jclass|jstring|jthrowable|.*Array')
+
 
 # Regex to match a string like "@CalledByNative public void foo(int bar)".
 RE_CALLED_BY_NATIVE = re.compile(
@@ -1005,18 +1017,36 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
       return '\n'.join(all_namespaces) + '\n'
     return ''
 
-  def GetJNIFirstParam(self, native):
-    ret = []
+  def GetJNIFirstParamType(self, native):
     if native.type == 'method':
-      ret = ['jobject jcaller']
+      return 'jobject'
     elif native.type == 'function':
       if native.static:
-        ret = ['jclass jcaller']
+        return 'jclass'
       else:
-        ret = ['jobject jcaller']
-    return ret
+        return 'jobject'
+
+  def GetJNIFirstParam(self, native, for_declaration):
+    c_type = self.GetJNIFirstParamType(native)
+    if for_declaration:
+      c_type = WrapCTypeForDeclaration(c_type)
+    return [c_type + ' jcaller']
 
   def GetParamsInDeclaration(self, native):
+    """Returns the params for the forward declaration.
+
+    Args:
+      native: the native dictionary describing the method.
+
+    Returns:
+      A string containing the params.
+    """
+    return ',\n    '.join(self.GetJNIFirstParam(native, True) +
+                          [JavaDataTypeToCForDeclaration(param.datatype) + ' ' +
+                           param.name
+                           for param in native.params])
+
+  def GetParamsInStub(self, native):
     """Returns the params for the stub declaration.
 
     Args:
@@ -1025,7 +1055,7 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
     Returns:
       A string containing the params.
     """
-    return ',\n    '.join(self.GetJNIFirstParam(native) +
+    return ',\n    '.join(self.GetJNIFirstParam(native, False) +
                           [JavaDataTypeToC(param.datatype) + ' ' +
                            param.name
                            for param in native.params])
@@ -1056,6 +1086,16 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
               'JAVA_NAME': java_name}
     return template.substitute(values)
 
+  def GetJavaParamRefForCall(self, c_type, name):
+    return Template('JavaParamRef<${TYPE}>(env, ${NAME})').substitute({
+        'TYPE': c_type,
+        'NAME': name,
+    })
+
+  def GetJNIFirstParamForCall(self, native):
+    c_type = self.GetJNIFirstParamType(native)
+    return [self.GetJavaParamRefForCall(c_type, 'jcaller')]
+
   def GetNativeStub(self, native):
     is_method = native.type == 'method'
 
@@ -1065,8 +1105,14 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
       params = native.params
     params_in_call = []
     if not self.options.pure_native_methods:
-      params_in_call = ['env', 'jcaller']
-    params_in_call = ', '.join(params_in_call + [p.name for p in params])
+      params_in_call = ['env'] + self.GetJNIFirstParamForCall(native)
+    for p in params:
+      c_type = JavaDataTypeToC(p.datatype)
+      if re.match(RE_SCOPED_JNI_TYPES, c_type):
+        params_in_call.append(self.GetJavaParamRefForCall(c_type, p.name))
+      else:
+        params_in_call.append(p.name)
+    params_in_call = ', '.join(params_in_call)
 
     if self.options.native_exports:
       stub_visibility = 'extern "C" __attribute__((visibility("default")))\n'
@@ -1074,7 +1120,7 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
       stub_visibility = 'static '
     return_type = return_declaration = JavaDataTypeToC(native.return_type)
     post_call = ''
-    if re.match(RE_SCOPED_JNI_RETURN_TYPES, return_type):
+    if re.match(RE_SCOPED_JNI_TYPES, return_type):
       post_call = '.Release()'
       return_declaration = 'ScopedJavaLocalRef<' + return_type + '>'
     values = {
@@ -1082,6 +1128,7 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
         'RETURN_DECLARATION': return_declaration,
         'NAME': native.name,
         'PARAMS': self.GetParamsInDeclaration(native),
+        'PARAMS_IN_STUB': self.GetParamsInStub(native),
         'PARAMS_IN_CALL': params_in_call,
         'POST_CALL': post_call,
         'STUB_NAME': self.GetStubName(native),
@@ -1099,7 +1146,7 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
       })
       template = Template("""\
 ${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env,
-    ${PARAMS}) {
+    ${PARAMS_IN_STUB}) {
   ${P0_TYPE}* native = reinterpret_cast<${P0_TYPE}*>(${PARAM0_NAME});
   CHECK_NATIVE_PTR(env, jcaller, native, "${NAME}"${OPTIONAL_ERROR_RETURN});
   return native->${NAME}(${PARAMS_IN_CALL})${POST_CALL};
@@ -1109,7 +1156,7 @@ ${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env,
       template = Template("""
 static ${RETURN_DECLARATION} ${NAME}(JNIEnv* env, ${PARAMS});
 
-${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS}) {
+${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
   return ${NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)
@@ -1157,7 +1204,7 @@ ${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS}) {
     if return_type != 'void':
       pre_call = ' ' + pre_call
       return_declaration = return_type + ' ret ='
-      if re.match(RE_SCOPED_JNI_RETURN_TYPES, return_type):
+      if re.match(RE_SCOPED_JNI_TYPES, return_type):
         return_type = 'ScopedJavaLocalRef<' + return_type + '>'
         return_clause = 'return ' + return_type + '(env, ret);'
       else:

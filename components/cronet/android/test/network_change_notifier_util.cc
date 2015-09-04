@@ -45,7 +45,9 @@ class TestIPAddressObserver
 // Adds a TestIPAddressObserver to the list of IPAddressObservers, and returns
 // a boolean indicating whether the TestIPAddressObserver has received
 // notification when network changes.
-static jboolean IsTestIPAddressObserverCalled(JNIEnv* jenv, jclass jcaller) {
+static jboolean IsTestIPAddressObserverCalled(
+    JNIEnv* jenv,
+    const JavaParamRef<jclass>& jcaller) {
   // This method is called on a Java thread with no MessageLoop, but we need
   // one for the NetworkChangeNotifier to call the observer on.
   base::MessageLoop loop;

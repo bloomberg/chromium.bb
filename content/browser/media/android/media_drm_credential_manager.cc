@@ -60,8 +60,8 @@ void MediaDrmCredentialManager::ResetCredentials(
 // static
 void ResetCredentials(
     JNIEnv* env,
-    jclass clazz,
-    jobject j_media_drm_credential_manager_callback) {
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_media_drm_credential_manager_callback) {
   MediaDrmCredentialManager* media_drm_credential_manager =
       MediaDrmCredentialManager::GetInstance();
 

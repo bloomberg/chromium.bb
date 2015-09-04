@@ -11,7 +11,9 @@ bool RegisterAppMenuDragHelper(JNIEnv* env) {
 }
 
 // static
-void RecordAppMenuTouchDuration(JNIEnv* env, jclass jcaller, jlong time_ms) {
+void RecordAppMenuTouchDuration(JNIEnv* env,
+                                const JavaParamRef<jclass>& jcaller,
+                                jlong time_ms) {
   UMA_HISTOGRAM_TIMES("WrenchMenu.TouchDuration",
                       base::TimeDelta::FromMilliseconds(time_ms));
 }

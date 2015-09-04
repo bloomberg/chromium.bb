@@ -28,11 +28,11 @@ jclass g_TestJni_clazz = NULL;
 
 // Step 2: method stubs.
 
-static jint Init(JNIEnv* env, jobject jcaller);
+static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
 
 static jint Java_org_chromium_TestJni_00024MyInnerClass_nativeInit(JNIEnv* env,
     jobject jcaller) {
-  return Init(env, jcaller);
+  return Init(env, JavaParamRef<jobject>(env, jcaller));
 }
 
 // Step 3: RegisterNatives.

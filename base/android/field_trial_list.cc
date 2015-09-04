@@ -13,15 +13,18 @@
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 
-static ScopedJavaLocalRef<jstring> FindFullName(JNIEnv* env,
-                                                jclass clazz,
-                                                jstring jtrial_name) {
+static ScopedJavaLocalRef<jstring> FindFullName(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jtrial_name) {
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
   return ConvertUTF8ToJavaString(
       env, base::FieldTrialList::FindFullName(trial_name));
 }
 
-static jboolean TrialExists(JNIEnv* env, jclass clazz, jstring jtrial_name) {
+static jboolean TrialExists(JNIEnv* env,
+                            const JavaParamRef<jclass>& clazz,
+                            const JavaParamRef<jstring>& jtrial_name) {
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
   return base::FieldTrialList::TrialExists(trial_name);
 }

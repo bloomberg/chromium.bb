@@ -71,7 +71,7 @@ bool FontSizePrefsAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jlong Init(JNIEnv* env, jobject obj) {
+jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   FontSizePrefsAndroid* font_size_prefs_android =
       new FontSizePrefsAndroid(env, obj);
   return reinterpret_cast<intptr_t>(font_size_prefs_android);
@@ -109,7 +109,7 @@ void FontSizePrefsObserverAndroid::DestroyObserverAndroid(JNIEnv* env,
   delete this;
 }
 
-jlong InitObserverAndroid(JNIEnv* env, jobject obj) {
+jlong InitObserverAndroid(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   FontSizePrefsObserverAndroid* observer_wrapper =
       new FontSizePrefsObserverAndroid(env, obj);
   return reinterpret_cast<intptr_t>(observer_wrapper);

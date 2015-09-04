@@ -17,7 +17,10 @@ using base::android::GetApplicationContext;
 
 // Called by Java when the WebContents instance for a request Id is available.
 void OnWebContentsForRequestAvailable(
-    JNIEnv* env, jclass clazz, jint request_id, jobject android_web_contents) {
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jint request_id,
+    const JavaParamRef<jobject>& android_web_contents) {
   service_tab_launcher::ServiceTabLauncher::GetInstance()->OnTabLaunched(
       request_id,
       content::WebContents::FromJavaWebContents(android_web_contents));

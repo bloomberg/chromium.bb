@@ -26,7 +26,7 @@
 
 namespace history_report {
 
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   HistoryReportJniBridge* bridge = new HistoryReportJniBridge(env, obj);
   return reinterpret_cast<intptr_t>(bridge);
 }

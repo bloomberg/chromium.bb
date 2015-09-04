@@ -79,7 +79,9 @@ class LogoObserverAndroid : public search_provider_logos::LogoObserver {
 
 }  // namespace
 
-static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& j_profile) {
   LogoBridge* logo_bridge = new LogoBridge(j_profile);
   return reinterpret_cast<intptr_t>(logo_bridge);
 }

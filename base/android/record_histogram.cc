@@ -174,8 +174,8 @@ base::LazyInstance<HistogramCache>::Leaky g_histograms;
 }  // namespace
 
 void RecordBooleanHistogram(JNIEnv* env,
-                            jclass clazz,
-                            jstring j_histogram_name,
+                            const JavaParamRef<jclass>& clazz,
+                            const JavaParamRef<jstring>& j_histogram_name,
                             jint j_histogram_key,
                             jboolean j_sample) {
   bool sample = static_cast<bool>(j_sample);
@@ -185,8 +185,8 @@ void RecordBooleanHistogram(JNIEnv* env,
 }
 
 void RecordEnumeratedHistogram(JNIEnv* env,
-                               jclass clazz,
-                               jstring j_histogram_name,
+                               const JavaParamRef<jclass>& clazz,
+                               const JavaParamRef<jstring>& j_histogram_name,
                                jint j_histogram_key,
                                jint j_sample,
                                jint j_boundary) {
@@ -198,8 +198,8 @@ void RecordEnumeratedHistogram(JNIEnv* env,
 }
 
 void RecordCustomCountHistogram(JNIEnv* env,
-                                jclass clazz,
-                                jstring j_histogram_name,
+                                const JavaParamRef<jclass>& clazz,
+                                const JavaParamRef<jstring>& j_histogram_name,
                                 jint j_histogram_key,
                                 jint j_sample,
                                 jint j_min,
@@ -214,8 +214,8 @@ void RecordCustomCountHistogram(JNIEnv* env,
 }
 
 void RecordLinearCountHistogram(JNIEnv* env,
-                                jclass clazz,
-                                jstring j_histogram_name,
+                                const JavaParamRef<jclass>& clazz,
+                                const JavaParamRef<jstring>& j_histogram_name,
                                 jint j_histogram_key,
                                 jint j_sample,
                                 jint j_min,
@@ -230,31 +230,32 @@ void RecordLinearCountHistogram(JNIEnv* env,
 }
 
 void RecordSparseHistogram(JNIEnv* env,
-                                 jclass clazz,
-                                 jstring j_histogram_name,
-                                 jint j_histogram_key,
-                                 jint j_sample) {
+                           const JavaParamRef<jclass>& clazz,
+                           const JavaParamRef<jstring>& j_histogram_name,
+                           jint j_histogram_key,
+                           jint j_sample) {
     int sample = static_cast<int>(j_sample);
     g_histograms.Get()
         .SparseHistogram(env, j_histogram_name, j_histogram_key)
         ->Add(sample);
 }
 
-void RecordCustomTimesHistogramMilliseconds(JNIEnv* env,
-                                            jclass clazz,
-                                            jstring j_histogram_name,
-                                            jint j_histogram_key,
-                                            jlong j_duration,
-                                            jlong j_min,
-                                            jlong j_max,
-                                            jint j_num_buckets) {
+void RecordCustomTimesHistogramMilliseconds(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& j_histogram_name,
+    jint j_histogram_key,
+    jlong j_duration,
+    jlong j_min,
+    jlong j_max,
+    jint j_num_buckets) {
   g_histograms.Get()
       .CustomTimesHistogram(env, j_histogram_name, j_histogram_key, j_min,
                             j_max, j_num_buckets)
       ->AddTime(TimeDelta::FromMilliseconds(static_cast<int64>(j_duration)));
 }
 
-void Initialize(JNIEnv* env, jclass) {
+void Initialize(JNIEnv* env, const JavaParamRef<jclass>&) {
   StatisticsRecorder::Initialize();
 }
 
@@ -262,10 +263,11 @@ void Initialize(JNIEnv* env, jclass) {
 // MetricsUtils.HistogramDelta. It should live in a test-specific file, but we
 // currently can't have test-specific native code packaged in test-specific Java
 // targets - see http://crbug.com/415945.
-jint GetHistogramValueCountForTesting(JNIEnv* env,
-                                      jclass clazz,
-                                      jstring histogram_name,
-                                      jint sample) {
+jint GetHistogramValueCountForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& histogram_name,
+    jint sample) {
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(
       android::ConvertJavaStringToUTF8(env, histogram_name));
   if (histogram == nullptr) {

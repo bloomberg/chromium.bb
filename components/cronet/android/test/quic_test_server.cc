@@ -56,8 +56,8 @@ void ShutdownOnServerThread() {
 // Quic server is currently hardcoded to run on port 6121 of the localhost on
 // the device.
 void StartQuicTestServer(JNIEnv* env,
-                         jclass /*jcaller*/,
-                         jstring jtest_files_root) {
+                         const JavaParamRef<jclass>& /*jcaller*/,
+                         const JavaParamRef<jstring>& jtest_files_root) {
   DCHECK(!g_quic_server_thread);
   g_quic_server_thread = new base::Thread("quic server thread");
   base::Thread::Options thread_options;
@@ -70,18 +70,21 @@ void StartQuicTestServer(JNIEnv* env,
       FROM_HERE, base::Bind(&ServeFilesFromDirectory, test_files_root));
 }
 
-void ShutdownQuicTestServer(JNIEnv* env, jclass /*jcaller*/) {
+void ShutdownQuicTestServer(JNIEnv* env,
+                            const JavaParamRef<jclass>& /*jcaller*/) {
   DCHECK(!g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   g_quic_server_thread->task_runner()->PostTask(
       FROM_HERE, base::Bind(&ShutdownOnServerThread));
   delete g_quic_server_thread;
 }
 
-ScopedJavaLocalRef<jstring> GetServerHost(JNIEnv* env, jclass /*jcaller*/) {
+ScopedJavaLocalRef<jstring> GetServerHost(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& /*jcaller*/) {
   return base::android::ConvertUTF8ToJavaString(env, kServerHost);
 }
 
-int GetServerPort(JNIEnv* env, jclass /*jcaller*/) {
+int GetServerPort(JNIEnv* env, const JavaParamRef<jclass>& /*jcaller*/) {
   return kServerPort;
 }
 

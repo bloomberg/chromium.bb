@@ -72,7 +72,7 @@ bool RegisterImeAdapter(JNIEnv* env) {
 // Callback from Java to convert BackgroundColorSpan data to a
 // blink::WebCompositionUnderline instance, and append it to |underlines_ptr|.
 void AppendBackgroundColorSpan(JNIEnv*,
-                               jclass,
+                               const JavaParamRef<jclass>&,
                                jlong underlines_ptr,
                                jint start,
                                jint end,
@@ -94,7 +94,7 @@ void AppendBackgroundColorSpan(JNIEnv*,
 // Callback from Java to convert UnderlineSpan data to a
 // blink::WebCompositionUnderline instance, and append it to |underlines_ptr|.
 void AppendUnderlineSpan(JNIEnv*,
-                         jclass,
+                         const JavaParamRef<jclass>&,
                          jlong underlines_ptr,
                          jint start,
                          jint end) {

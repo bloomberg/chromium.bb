@@ -27,10 +27,10 @@ jclass g_TestJni_clazz = NULL;
 
 // Step 2: method stubs.
 
-static jint Init(JNIEnv* env, jobject jcaller);
+static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
 
 static jint Java_org_chromium_TestJni_nativeInit(JNIEnv* env, jobject jcaller) {
-  return Init(env, jcaller);
+  return Init(env, JavaParamRef<jobject>(env, jcaller));
 }
 
 static void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
@@ -39,7 +39,7 @@ static void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
-  return native->Destroy(env, jcaller);
+  return native->Destroy(env, JavaParamRef<jobject>(env, jcaller));
 }
 
 static jlong Java_org_chromium_TestJni_nativeAddBookmark(JNIEnv* env,
@@ -52,58 +52,67 @@ static jlong Java_org_chromium_TestJni_nativeAddBookmark(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddBookmark", 0);
-  return native->AddBookmark(env, jcaller, url, title, isFolder, parentId);
+  return native->AddBookmark(env, JavaParamRef<jobject>(env, jcaller),
+      JavaParamRef<jstring>(env, url), JavaParamRef<jstring>(env, title),
+      isFolder, parentId);
 }
 
-static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(JNIEnv* env, jclass
-    jcaller,
-    jstring url);
+static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(JNIEnv* env, const
+    JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jstring>& url);
 
 static jstring Java_org_chromium_TestJni_nativeGetDomainAndRegistry(JNIEnv* env,
     jclass jcaller,
     jstring url) {
-  return GetDomainAndRegistry(env, jcaller, url).Release();
+  return GetDomainAndRegistry(env, JavaParamRef<jclass>(env, jcaller),
+      JavaParamRef<jstring>(env, url)).Release();
 }
 
-static void CreateHistoricalTabFromState(JNIEnv* env, jclass jcaller,
-    jbyteArray state,
+static void CreateHistoricalTabFromState(JNIEnv* env, const
+    JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jbyteArray>& state,
     jint tab_index);
 
 static void Java_org_chromium_TestJni_nativeCreateHistoricalTabFromState(JNIEnv*
     env, jclass jcaller,
     jbyteArray state,
     jint tab_index) {
-  return CreateHistoricalTabFromState(env, jcaller, state, tab_index);
+  return CreateHistoricalTabFromState(env, JavaParamRef<jclass>(env, jcaller),
+      JavaParamRef<jbyteArray>(env, state), tab_index);
 }
 
-static ScopedJavaLocalRef<jbyteArray> GetStateAsByteArray(JNIEnv* env, jobject
-    jcaller,
-    jobject view);
+static ScopedJavaLocalRef<jbyteArray> GetStateAsByteArray(JNIEnv* env, const
+    JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jobject>& view);
 
 static jbyteArray Java_org_chromium_TestJni_nativeGetStateAsByteArray(JNIEnv*
     env, jobject jcaller,
     jobject view) {
-  return GetStateAsByteArray(env, jcaller, view).Release();
+  return GetStateAsByteArray(env, JavaParamRef<jobject>(env, jcaller),
+      JavaParamRef<jobject>(env, view)).Release();
 }
 
 static ScopedJavaLocalRef<jobjectArray> GetAutofillProfileGUIDs(JNIEnv* env,
-    jclass jcaller);
+    const JavaParamRef<jclass>& jcaller);
 
 static jobjectArray
     Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs(JNIEnv* env, jclass
     jcaller) {
-  return GetAutofillProfileGUIDs(env, jcaller).Release();
+  return GetAutofillProfileGUIDs(env, JavaParamRef<jclass>(env,
+      jcaller)).Release();
 }
 
-static void SetRecognitionResults(JNIEnv* env, jobject jcaller,
+static void SetRecognitionResults(JNIEnv* env, const JavaParamRef<jobject>&
+    jcaller,
     jint sessionId,
-    jobjectArray results);
+    const JavaParamRef<jobjectArray>& results);
 
 static void Java_org_chromium_TestJni_nativeSetRecognitionResults(JNIEnv* env,
     jobject jcaller,
     jint sessionId,
     jobjectArray results) {
-  return SetRecognitionResults(env, jcaller, sessionId, results);
+  return SetRecognitionResults(env, JavaParamRef<jobject>(env, jcaller),
+      sessionId, JavaParamRef<jobjectArray>(env, results));
 }
 
 static jlong Java_org_chromium_TestJni_nativeAddBookmarkFromAPI(JNIEnv* env,
@@ -119,24 +128,29 @@ static jlong Java_org_chromium_TestJni_nativeAddBookmarkFromAPI(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddBookmarkFromAPI", 0);
-  return native->AddBookmarkFromAPI(env, jcaller, url, created, isBookmark,
-      date, favicon, title, visits);
+  return native->AddBookmarkFromAPI(env, JavaParamRef<jobject>(env, jcaller),
+      JavaParamRef<jstring>(env, url), JavaParamRef<jobject>(env, created),
+      JavaParamRef<jobject>(env, isBookmark), JavaParamRef<jobject>(env, date),
+      JavaParamRef<jbyteArray>(env, favicon), JavaParamRef<jstring>(env, title),
+      JavaParamRef<jobject>(env, visits));
 }
 
-static jint FindAll(JNIEnv* env, jobject jcaller,
-    jstring find);
+static jint FindAll(JNIEnv* env, const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& find);
 
 static jint Java_org_chromium_TestJni_nativeFindAll(JNIEnv* env, jobject
     jcaller,
     jstring find) {
-  return FindAll(env, jcaller, find);
+  return FindAll(env, JavaParamRef<jobject>(env, jcaller),
+      JavaParamRef<jstring>(env, find));
 }
 
-static ScopedJavaLocalRef<jobject> GetInnerClass(JNIEnv* env, jclass jcaller);
+static ScopedJavaLocalRef<jobject> GetInnerClass(JNIEnv* env, const
+    JavaParamRef<jclass>& jcaller);
 
 static jobject Java_org_chromium_TestJni_nativeGetInnerClass(JNIEnv* env, jclass
     jcaller) {
-  return GetInnerClass(env, jcaller).Release();
+  return GetInnerClass(env, JavaParamRef<jclass>(env, jcaller)).Release();
 }
 
 static jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv* env,
@@ -149,8 +163,10 @@ static jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "QueryBitmap", NULL);
-  return native->QueryBitmap(env, jcaller, projection, selection, selectionArgs,
-      sortOrder).Release();
+  return native->QueryBitmap(env, JavaParamRef<jobject>(env, jcaller),
+      JavaParamRef<jobjectArray>(env, projection), JavaParamRef<jstring>(env,
+      selection), JavaParamRef<jobjectArray>(env, selectionArgs),
+      JavaParamRef<jstring>(env, sortOrder)).Release();
 }
 
 static void Java_org_chromium_TestJni_nativeGotOrientation(JNIEnv* env,
@@ -162,17 +178,19 @@ static void Java_org_chromium_TestJni_nativeGotOrientation(JNIEnv* env,
   DataFetcherImplAndroid* native =
       reinterpret_cast<DataFetcherImplAndroid*>(nativeDataFetcherImplAndroid);
   CHECK_NATIVE_PTR(env, jcaller, native, "GotOrientation");
-  return native->GotOrientation(env, jcaller, alpha, beta, gamma);
+  return native->GotOrientation(env, JavaParamRef<jobject>(env, jcaller), alpha,
+      beta, gamma);
 }
 
-static ScopedJavaLocalRef<jthrowable> MessWithJavaException(JNIEnv* env, jclass
-    jcaller,
-    jthrowable e);
+static ScopedJavaLocalRef<jthrowable> MessWithJavaException(JNIEnv* env, const
+    JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jthrowable>& e);
 
 static jthrowable Java_org_chromium_TestJni_nativeMessWithJavaException(JNIEnv*
     env, jclass jcaller,
     jthrowable e) {
-  return MessWithJavaException(env, jcaller, e).Release();
+  return MessWithJavaException(env, JavaParamRef<jclass>(env, jcaller),
+      JavaParamRef<jthrowable>(env, e)).Release();
 }
 
 // Step 3: RegisterNatives.

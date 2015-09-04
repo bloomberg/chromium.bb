@@ -99,10 +99,11 @@ bool CronetUploadDataStreamAdapterRegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static jlong AttachUploadDataToRequest(JNIEnv* env,
-                                       jobject jupload_data_stream,
-                                       jlong jcronet_url_request_adapter,
-                                       jlong jlength) {
+static jlong AttachUploadDataToRequest(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jupload_data_stream,
+    jlong jcronet_url_request_adapter,
+    jlong jlength) {
   CronetURLRequestAdapter* request_adapter =
       reinterpret_cast<CronetURLRequestAdapter*>(jcronet_url_request_adapter);
   DCHECK(request_adapter != nullptr);
@@ -118,17 +119,19 @@ static jlong AttachUploadDataToRequest(JNIEnv* env,
   return reinterpret_cast<jlong>(adapter);
 }
 
-static jlong CreateAdapterForTesting(JNIEnv* env,
-                                     jobject jupload_data_stream) {
+static jlong CreateAdapterForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jupload_data_stream) {
   CronetUploadDataStreamAdapter* adapter =
       new CronetUploadDataStreamAdapter(env, jupload_data_stream);
   return reinterpret_cast<jlong>(adapter);
 }
 
-static jlong CreateUploadDataStreamForTesting(JNIEnv* env,
-                                              jobject jupload_data_stream,
-                                              jlong jlength,
-                                              jlong jadapter) {
+static jlong CreateUploadDataStreamForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jupload_data_stream,
+    jlong jlength,
+    jlong jadapter) {
   CronetUploadDataStreamAdapter* adapter =
       reinterpret_cast<CronetUploadDataStreamAdapter*>(jadapter);
   CronetUploadDataStream* upload_data_stream =
@@ -136,9 +139,10 @@ static jlong CreateUploadDataStreamForTesting(JNIEnv* env,
   return reinterpret_cast<jlong>(upload_data_stream);
 }
 
-static void DestroyAdapter(JNIEnv* env,
-                           jclass jcronet_url_request_adapter,
-                           jlong jupload_data_stream_adapter) {
+static void DestroyAdapter(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcronet_url_request_adapter,
+    jlong jupload_data_stream_adapter) {
   CronetUploadDataStreamAdapter* adapter =
       reinterpret_cast<CronetUploadDataStreamAdapter*>(
           jupload_data_stream_adapter);

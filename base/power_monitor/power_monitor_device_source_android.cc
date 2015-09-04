@@ -19,15 +19,15 @@ void ProcessPowerEventHelper(PowerMonitorSource::PowerEvent event) {
 namespace android {
 
 // Native implementation of PowerMonitor.java.
-void OnBatteryChargingChanged(JNIEnv* env, jclass clazz) {
+void OnBatteryChargingChanged(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   ProcessPowerEventHelper(PowerMonitorSource::POWER_STATE_EVENT);
 }
 
-void OnMainActivityResumed(JNIEnv* env, jclass clazz) {
+void OnMainActivityResumed(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   ProcessPowerEventHelper(PowerMonitorSource::RESUME_EVENT);
 }
 
-void OnMainActivitySuspended(JNIEnv* env, jclass clazz) {
+void OnMainActivitySuspended(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   ProcessPowerEventHelper(PowerMonitorSource::SUSPEND_EVENT);
 }
 

@@ -571,7 +571,9 @@ void MostVisitedSites::TopSitesChanged(history::TopSites* top_sites,
   }
 }
 
-static jlong Init(JNIEnv* env, jobject obj, jobject jprofile) {
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& jprofile) {
   MostVisitedSites* most_visited_sites =
       new MostVisitedSites(ProfileAndroid::FromProfileAndroid(jprofile));
   return reinterpret_cast<intptr_t>(most_visited_sites);

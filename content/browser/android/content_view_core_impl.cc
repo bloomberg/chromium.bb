@@ -1450,11 +1450,11 @@ void ContentViewCoreImpl::PullReset() {
 
 // This is called for each ContentView.
 jlong Init(JNIEnv* env,
-           jobject obj,
-           jobject web_contents,
-           jobject view_android_delegate,
+           const JavaParamRef<jobject>& obj,
+           const JavaParamRef<jobject>& web_contents,
+           const JavaParamRef<jobject>& view_android_delegate,
            jlong window_android,
-           jobject retained_objects_set) {
+           const JavaParamRef<jobject>& retained_objects_set) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
       env, obj, WebContents::FromJavaWebContents(web_contents),
       view_android_delegate,
@@ -1463,8 +1463,10 @@ jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(view);
 }
 
-static ScopedJavaLocalRef<jobject>
-FromWebContentsAndroid(JNIEnv* env, jclass clazz, jobject jweb_contents) {
+static ScopedJavaLocalRef<jobject> FromWebContentsAndroid(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   if (!web_contents)
     return ScopedJavaLocalRef<jobject>();

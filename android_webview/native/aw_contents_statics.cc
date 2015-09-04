@@ -39,7 +39,9 @@ void NotifyClientCertificatesChanged() {
 }  // namespace
 
 // static
-void ClearClientCertPreferences(JNIEnv* env, jclass, jobject callback) {
+void ClearClientCertPreferences(JNIEnv* env,
+                                const JavaParamRef<jclass>&,
+                                const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
   j_callback->Reset(env, callback);
@@ -51,7 +53,9 @@ void ClearClientCertPreferences(JNIEnv* env, jclass, jobject callback) {
 }
 
 // static
-void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
+void SetDataReductionProxyKey(JNIEnv* env,
+                              const JavaParamRef<jclass>&,
+                              const JavaParamRef<jstring>& key) {
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
   DCHECK(browser_context->GetRequestContext());
@@ -72,28 +76,37 @@ void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
 }
 
 // static
-void SetDataReductionProxyEnabled(JNIEnv* env, jclass, jboolean enabled) {
+void SetDataReductionProxyEnabled(JNIEnv* env,
+                                  const JavaParamRef<jclass>&,
+                                  jboolean enabled) {
   AwBrowserContext::SetDataReductionProxyEnabled(enabled);
 }
 
 // static
-ScopedJavaLocalRef<jstring> GetUnreachableWebDataUrl(JNIEnv* env, jclass) {
+ScopedJavaLocalRef<jstring> GetUnreachableWebDataUrl(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&) {
   return base::android::ConvertUTF8ToJavaString(
       env, content::kUnreachableWebDataURL);
 }
 
 // static
-void SetRecordFullDocument(JNIEnv* env, jclass, jboolean record_full_document) {
+void SetRecordFullDocument(JNIEnv* env,
+                           const JavaParamRef<jclass>&,
+                           jboolean record_full_document) {
   content::SynchronousCompositor::SetRecordFullDocument(record_full_document);
 }
 
 // static
-void SetLegacyCacheRemovalDelayForTest(JNIEnv*, jclass, jlong delay_ms) {
+void SetLegacyCacheRemovalDelayForTest(JNIEnv*,
+                                       const JavaParamRef<jclass>&,
+                                       jlong delay_ms) {
   AwBrowserContext::SetLegacyCacheRemovalDelayForTest(delay_ms);
 }
 
 // static
-ScopedJavaLocalRef<jstring> GetProductVersion(JNIEnv* env, jclass) {
+ScopedJavaLocalRef<jstring> GetProductVersion(JNIEnv* env,
+                                              const JavaParamRef<jclass>&) {
   return base::android::ConvertUTF8ToJavaString(env, PRODUCT_VERSION);
 }
 

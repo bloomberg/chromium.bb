@@ -43,18 +43,19 @@ enum RemotePlaybackDeviceType {
 }  // namespace
 
 namespace remote_media {
-static void RecordRemotePlaybackDeviceSelected(
-    JNIEnv*, jclass, jint device_type) {
+static void RecordRemotePlaybackDeviceSelected(JNIEnv*,
+                                               const JavaParamRef<jclass>&,
+                                               jint device_type) {
   UMA_HISTOGRAM_ENUMERATION(
       "Cast.Sender.DeviceType", device_type, REMOTE_PLAYBACK_DEVICE_TYPE_COUNT);
 }
 
-static void RecordCastPlayRequested(JNIEnv*, jclass) {
+static void RecordCastPlayRequested(JNIEnv*, const JavaParamRef<jclass>&) {
   RecordAction(UserMetricsAction("Cast_Sender_CastPlayRequested"));
 }
 
 static void RecordCastDefaultPlayerResult(JNIEnv*,
-                                          jclass,
+                                          const JavaParamRef<jclass>&,
                                           jboolean cast_success) {
   if (cast_success) {
     UMA_HISTOGRAM_ENUMERATION("Cast.Sender.CastPlayerResult",
@@ -68,7 +69,7 @@ static void RecordCastDefaultPlayerResult(JNIEnv*,
 }
 
 static void RecordCastYouTubePlayerResult(JNIEnv*,
-                                          jclass,
+                                          const JavaParamRef<jclass>&,
                                           jboolean cast_success) {
   if (cast_success) {
     UMA_HISTOGRAM_ENUMERATION("Cast.Sender.CastPlayerResult", YT_PLAYER_SUCCESS,
@@ -79,13 +80,15 @@ static void RecordCastYouTubePlayerResult(JNIEnv*,
   }
 }
 
-static void RecordCastMediaType(JNIEnv*, jclass, jint media_type) {
+static void RecordCastMediaType(JNIEnv*,
+                                const JavaParamRef<jclass>&,
+                                jint media_type) {
   UMA_HISTOGRAM_ENUMERATION("Cast.Sender.CastMediaType", media_type,
       media::container_names::CONTAINER_MAX);
 }
 
 static void RecordCastEndedTimeRemaining(JNIEnv*,
-                                         jclass,
+                                         const JavaParamRef<jclass>&,
                                          jint video_total_time,
                                          jint time_left_in_video) {
   int percent_remaining = 100;

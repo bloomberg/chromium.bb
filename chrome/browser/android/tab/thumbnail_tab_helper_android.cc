@@ -28,8 +28,8 @@ bool RegisterThumbnailTabHelperAndroid(JNIEnv* env) {
 }
 
 static void InitThumbnailHelper(JNIEnv* env,
-                                jclass clazz,
-                                jobject jweb_contents) {
+                                const JavaParamRef<jclass>& clazz,
+                                const JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
@@ -44,8 +44,10 @@ static void InitThumbnailHelper(JNIEnv* env,
     thumbnail_tab_helper->set_enabled(false);
 }
 
-static jboolean ShouldUpdateThumbnail(
-    JNIEnv* env, jclass clazz, jobject jprofile, jstring jurl) {
+static jboolean ShouldUpdateThumbnail(JNIEnv* env,
+                                      const JavaParamRef<jclass>& clazz,
+                                      const JavaParamRef<jobject>& jprofile,
+                                      const JavaParamRef<jstring>& jurl) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
@@ -56,9 +58,9 @@ static jboolean ShouldUpdateThumbnail(
 }
 
 static void UpdateThumbnail(JNIEnv* env,
-                            jclass clazz,
-                            jobject jweb_contents,
-                            jobject bitmap,
+                            const JavaParamRef<jclass>& clazz,
+                            const JavaParamRef<jobject>& jweb_contents,
+                            const JavaParamRef<jobject>& bitmap,
                             jboolean jat_top) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);

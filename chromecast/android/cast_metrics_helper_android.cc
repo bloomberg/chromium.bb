@@ -14,11 +14,11 @@ bool CastMetricsHelperAndroid::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void LogMediaPlay(JNIEnv* env, jclass clazz) {
+void LogMediaPlay(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
 }
 
-void LogMediaPause(JNIEnv* env, jclass clazz) {
+void LogMediaPause(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
 }
 

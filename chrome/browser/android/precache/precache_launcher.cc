@@ -80,12 +80,12 @@ void PrecacheLauncher::OnPrecacheCompleted(bool try_again_soon) {
       try_again_soon ? JNI_TRUE : JNI_FALSE);
 }
 
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new PrecacheLauncher(env, obj));
 }
 
 // Must be run on the UI thread.
-static jboolean ShouldRun(JNIEnv* env, jobject obj) {
+static jboolean ShouldRun(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   Profile* profile = GetProfile();
   PrecacheManager* precache_manager = GetPrecacheManager(profile);
   return precache_manager && (precache_manager->IsInExperimentGroup() ||

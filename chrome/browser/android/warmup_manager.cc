@@ -12,9 +12,10 @@
 #include "jni/WarmupManager_jni.h"
 #include "url/gurl.h"
 
-
-static void PreconnectUrlAndSubresources(JNIEnv* env, jclass clazz,
-                                         jobject jprofile, jstring url_str) {
+static void PreconnectUrlAndSubresources(JNIEnv* env,
+                                         const JavaParamRef<jclass>& clazz,
+                                         const JavaParamRef<jobject>& jprofile,
+                                         const JavaParamRef<jstring>& url_str) {
   if (url_str) {
     GURL url = GURL(base::android::ConvertJavaStringToUTF8(env, url_str));
     Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);

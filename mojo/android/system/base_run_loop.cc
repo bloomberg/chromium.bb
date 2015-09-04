@@ -17,21 +17,28 @@
 namespace mojo {
 namespace android {
 
-static jlong CreateBaseRunLoop(JNIEnv* env, jobject jcaller) {
+static jlong CreateBaseRunLoop(JNIEnv* env,
+                               const JavaParamRef<jobject>& jcaller) {
   base::MessageLoop* message_loop =
       new base::MessageLoop(common::MessagePumpMojo::Create());
   return reinterpret_cast<uintptr_t>(message_loop);
 }
 
-static void Run(JNIEnv* env, jobject jcaller, jlong runLoopID) {
+static void Run(JNIEnv* env,
+                const JavaParamRef<jobject>& jcaller,
+                jlong runLoopID) {
   reinterpret_cast<base::MessageLoop*>(runLoopID)->Run();
 }
 
-static void RunUntilIdle(JNIEnv* env, jobject jcaller, jlong runLoopID) {
+static void RunUntilIdle(JNIEnv* env,
+                         const JavaParamRef<jobject>& jcaller,
+                         jlong runLoopID) {
   reinterpret_cast<base::MessageLoop*>(runLoopID)->RunUntilIdle();
 }
 
-static void Quit(JNIEnv* env, jobject jcaller, jlong runLoopID) {
+static void Quit(JNIEnv* env,
+                 const JavaParamRef<jobject>& jcaller,
+                 jlong runLoopID) {
   reinterpret_cast<base::MessageLoop*>(runLoopID)->Quit();
 }
 
@@ -42,9 +49,9 @@ static void RunJavaRunnable(
 }
 
 static void PostDelayedTask(JNIEnv* env,
-                            jobject jcaller,
+                            const JavaParamRef<jobject>& jcaller,
                             jlong runLoopID,
-                            jobject runnable,
+                            const JavaParamRef<jobject>& runnable,
                             jlong delay) {
   base::android::ScopedJavaGlobalRef<jobject> runnable_ref;
   // ScopedJavaGlobalRef do not hold onto the env reference, so it is safe to
@@ -56,7 +63,9 @@ static void PostDelayedTask(JNIEnv* env,
       base::TimeDelta::FromMicroseconds(delay));
 }
 
-static void DeleteMessageLoop(JNIEnv* env, jobject jcaller, jlong runLoopID) {
+static void DeleteMessageLoop(JNIEnv* env,
+                              const JavaParamRef<jobject>& jcaller,
+                              jlong runLoopID) {
   base::MessageLoop* message_loop =
       reinterpret_cast<base::MessageLoop*>(runLoopID);
   delete message_loop;

@@ -387,8 +387,8 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
 }  // namespace chrome
 
 jboolean IsCapturingAudio(JNIEnv* env,
-                          jclass clazz,
-                          jobject java_web_contents) {
+                          const JavaParamRef<jclass>& clazz,
+                          const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
@@ -398,8 +398,8 @@ jboolean IsCapturingAudio(JNIEnv* env,
 }
 
 jboolean IsCapturingVideo(JNIEnv* env,
-                          jclass clazz,
-                          jobject java_web_contents) {
+                          const JavaParamRef<jclass>& clazz,
+                          const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   scoped_refptr<MediaStreamCaptureIndicator> indicator =

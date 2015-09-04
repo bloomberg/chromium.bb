@@ -252,11 +252,14 @@ bool AwWebContentsDelegate::IsFullscreenForTabOrPending(
   return is_fullscreen_;
 }
 
-
 static void FilesSelectedInChooser(
-    JNIEnv* env, jclass clazz,
-    jint process_id, jint render_id, jint mode_flags,
-    jobjectArray file_paths, jobjectArray display_names) {
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jint process_id,
+    jint render_id,
+    jint mode_flags,
+    const JavaParamRef<jobjectArray>& file_paths,
+    const JavaParamRef<jobjectArray>& display_names) {
   content::RenderViewHost* rvh = content::RenderViewHost::FromID(process_id,
                                                                  render_id);
   if (!rvh)

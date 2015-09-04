@@ -17,10 +17,11 @@ namespace variations {
 
 namespace android {
 
-ScopedJavaLocalRef<jstring> GetVariationParamValue(JNIEnv* env,
-                                                   jclass clazz,
-                                                   jstring jtrial_name,
-                                                   jstring jparam_name) {
+ScopedJavaLocalRef<jstring> GetVariationParamValue(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jtrial_name,
+    const JavaParamRef<jstring>& jparam_name) {
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
   std::string param_name(ConvertJavaStringToUTF8(env, jparam_name));
   std::string param_value =

@@ -26,10 +26,11 @@ bool RegisterBrowserStartupController(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static void SetCommandLineFlags(JNIEnv* env,
-                                jclass clazz,
-                                jboolean single_process,
-                                jstring plugin_descriptor) {
+static void SetCommandLineFlags(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jboolean single_process,
+    const JavaParamRef<jstring>& plugin_descriptor) {
   std::string plugin_str =
       (plugin_descriptor == NULL
            ? std::string()
@@ -37,7 +38,8 @@ static void SetCommandLineFlags(JNIEnv* env,
   SetContentCommandLineFlags(static_cast<bool>(single_process), plugin_str);
 }
 
-static jboolean IsOfficialBuild(JNIEnv* env, jclass clazz) {
+static jboolean IsOfficialBuild(JNIEnv* env,
+                                const JavaParamRef<jclass>& clazz) {
 #if defined(OFFICIAL_BUILD)
   return true;
 #else
@@ -45,7 +47,8 @@ static jboolean IsOfficialBuild(JNIEnv* env, jclass clazz) {
 #endif
 }
 
-static jboolean IsPluginEnabled(JNIEnv* env, jclass clazz) {
+static jboolean IsPluginEnabled(JNIEnv* env,
+                                const JavaParamRef<jclass>& clazz) {
 #if defined(ENABLE_PLUGINS)
   return true;
 #else

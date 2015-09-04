@@ -18,9 +18,10 @@ bool RegisterValidationTestUtil(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-ScopedJavaLocalRef<jobject> ParseData(JNIEnv* env,
-                                      jclass jcaller,
-                                      jstring data_as_string) {
+ScopedJavaLocalRef<jobject> ParseData(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jstring>& data_as_string) {
   std::string input =
       base::android::ConvertJavaStringToUTF8(env, data_as_string);
   std::vector<uint8_t> data;

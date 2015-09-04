@@ -121,10 +121,10 @@ namespace android {
 // the user didn't select a certificate.
 static void OnSystemRequestCompletion(
     JNIEnv* env,
-    jclass clazz,
+    const JavaParamRef<jclass>& clazz,
     jlong request_id,
-    jobjectArray encoded_chain_ref,
-    jobject private_key_ref) {
+    const JavaParamRef<jobjectArray>& encoded_chain_ref,
+    const JavaParamRef<jobject>& private_key_ref) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Take back ownership of the delegate object.
@@ -179,7 +179,9 @@ static void NotifyClientCertificatesChanged() {
   net::CertDatabase::GetInstance()->OnAndroidKeyStoreChanged();
 }
 
-static void NotifyClientCertificatesChangedOnIOThread(JNIEnv* env, jclass) {
+static void NotifyClientCertificatesChangedOnIOThread(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&) {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     NotifyClientCertificatesChanged();
   } else {

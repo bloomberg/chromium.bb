@@ -69,10 +69,10 @@ void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(JNIEnv* env,
 }
 
 static jboolean HasPrerenderedUrl(JNIEnv* env,
-                                  jclass clazz,
-                                  jobject jprofile,
-                                  jstring jurl,
-                                  jobject jweb_contents) {
+                                  const JavaParamRef<jclass>& clazz,
+                                  const JavaParamRef<jobject>& jprofile,
+                                  const JavaParamRef<jstring>& jurl,
+                                  const JavaParamRef<jobject>& jweb_contents) {
   if (jurl == NULL)
     return false;
 
@@ -93,7 +93,7 @@ ExternalPrerenderHandlerAndroid::ExternalPrerenderHandlerAndroid() {}
 
 ExternalPrerenderHandlerAndroid::~ExternalPrerenderHandlerAndroid() {}
 
-static jlong Init(JNIEnv* env, jclass clazz) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   ExternalPrerenderHandlerAndroid* external_handler =
       new ExternalPrerenderHandlerAndroid();
   return reinterpret_cast<intptr_t>(external_handler);

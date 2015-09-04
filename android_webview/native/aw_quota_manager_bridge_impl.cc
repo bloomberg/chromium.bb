@@ -155,7 +155,8 @@ void RunOnUIThread(const base::Closure& task) {
 
 
 // static
-jlong GetDefaultNativeAwQuotaManagerBridge(JNIEnv* env, jclass clazz) {
+jlong GetDefaultNativeAwQuotaManagerBridge(JNIEnv* env,
+                                           const JavaParamRef<jclass>& clazz) {
   AwBrowserContext* browser_context =
       AwContentBrowserClient::GetAwBrowserContext();
 

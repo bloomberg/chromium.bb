@@ -36,7 +36,7 @@ jint
     jint arg1) {
   Test* native = reinterpret_cast<Test*>(nativeTest);
   CHECK_NATIVE_PTR(env, jcaller, native, "StaticMethod", 0);
-  return native->StaticMethod(env, jcaller, arg1);
+  return native->StaticMethod(env, JavaParamRef<jobject>(env, jcaller), arg1);
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -48,25 +48,25 @@ jint
     jint arg1) {
   Test* native = reinterpret_cast<Test*>(nativeTest);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
-  return native->Method(env, jcaller, arg1);
+  return native->Method(env, JavaParamRef<jobject>(env, jcaller), arg1);
 }
 
-static jint Init(JNIEnv* env, jobject jcaller);
+static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024MyInnerClass_nativeInit(JNIEnv*
     env, jobject jcaller) {
-  return Init(env, jcaller);
+  return Init(env, JavaParamRef<jobject>(env, jcaller));
 }
 
-static jint Init(JNIEnv* env, jobject jcaller);
+static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_nativeInit(JNIEnv*
     env, jobject jcaller) {
-  return Init(env, jcaller);
+  return Init(env, JavaParamRef<jobject>(env, jcaller));
 }
 
 static base::subtle::AtomicWord g_SampleForTests_testMethodWithParam = 0;

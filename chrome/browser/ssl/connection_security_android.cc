@@ -15,9 +15,10 @@ bool RegisterConnectionSecurityAndroid(JNIEnv* env) {
 }
 
 // static
-jint GetSecurityLevelForWebContents(JNIEnv* env,
-                                    jclass jcaller,
-                                    jobject jweb_contents) {
+jint GetSecurityLevelForWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);

@@ -57,7 +57,7 @@ void EmbeddedTestServerAndroid::Destroy(JNIEnv* env, jobject jobj) {
   delete this;
 }
 
-static void Init(JNIEnv* env, jobject jobj) {
+static void Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   TRACE_EVENT0("native", "EmbeddedTestServerAndroid::Init");
   new EmbeddedTestServerAndroid(env, jobj);
 }

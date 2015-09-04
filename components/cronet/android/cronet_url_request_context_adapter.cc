@@ -398,8 +398,8 @@ base::Thread* CronetURLRequestContextAdapter::GetFileThread() {
 // Creates RequestContextAdater if config is valid URLRequestContextConfig,
 // returns 0 otherwise.
 static jlong CreateRequestContextAdapter(JNIEnv* env,
-                                         jclass jcaller,
-                                         jstring jconfig) {
+                                         const JavaParamRef<jclass>& jcaller,
+                                         const JavaParamRef<jstring>& jconfig) {
   std::string config_string =
       base::android::ConvertJavaStringToUTF8(env, jconfig);
   scoped_ptr<URLRequestContextConfig> context_config(
@@ -412,7 +412,9 @@ static jlong CreateRequestContextAdapter(JNIEnv* env,
   return reinterpret_cast<jlong>(context_adapter);
 }
 
-static jint SetMinLogLevel(JNIEnv* env, jclass jcaller, jint jlog_level) {
+static jint SetMinLogLevel(JNIEnv* env,
+                           const JavaParamRef<jclass>& jcaller,
+                           jint jlog_level) {
   jint old_log_level = static_cast<jint>(logging::GetMinLogLevel());
   // MinLogLevel is global, shared by all URLRequestContexts.
   logging::SetMinLogLevel(static_cast<int>(jlog_level));

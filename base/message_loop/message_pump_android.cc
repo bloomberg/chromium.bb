@@ -21,8 +21,10 @@ using base::android::ScopedJavaLocalRef;
 // ----------------------------------------------------------------------------
 // This method can not move to anonymous namespace as it has been declared as
 // 'static' in system_message_handler_jni.h.
-static void DoRunLoopOnce(JNIEnv* env, jobject obj, jlong native_delegate,
-    jlong delayed_scheduled_time_ticks) {
+static void DoRunLoopOnce(JNIEnv* env,
+                          const JavaParamRef<jobject>& obj,
+                          jlong native_delegate,
+                          jlong delayed_scheduled_time_ticks) {
   base::MessagePump::Delegate* delegate =
       reinterpret_cast<base::MessagePump::Delegate*>(native_delegate);
   DCHECK(delegate);

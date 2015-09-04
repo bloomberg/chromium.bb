@@ -161,7 +161,7 @@ void CookiesFetcher::RestoreToCookieJarInternal(
 }
 
 // JNI functions
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new CookiesFetcher(env, obj, 0));
 }
 

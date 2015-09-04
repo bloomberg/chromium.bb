@@ -176,29 +176,32 @@ bool AppBannerManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jlong Init(JNIEnv* env, jobject obj, jint icon_size) {
+jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj, jint icon_size) {
   AppBannerManagerAndroid* manager =
       new AppBannerManagerAndroid(env, obj, icon_size);
   return reinterpret_cast<intptr_t>(manager);
 }
 
-void SetTimeDeltaForTesting(JNIEnv* env, jclass clazz, jint days) {
+void SetTimeDeltaForTesting(JNIEnv* env,
+                            const JavaParamRef<jclass>& clazz,
+                            jint days) {
   AppBannerDataFetcher::SetTimeDeltaForTesting(days);
 }
 
-void DisableSecureSchemeCheckForTesting(JNIEnv* env, jclass clazz) {
+void DisableSecureSchemeCheckForTesting(JNIEnv* env,
+                                        const JavaParamRef<jclass>& clazz) {
   AppBannerManager::DisableSecureSchemeCheckForTesting();
 }
 
 void SetEngagementWeights(JNIEnv* env,
-                          jclass clazz,
+                          const JavaParamRef<jclass>& clazz,
                           jdouble direct_engagement,
                           jdouble indirect_engagement) {
   AppBannerManager::SetEngagementWeights(direct_engagement,
                                          indirect_engagement);
 }
 
-jboolean IsEnabled(JNIEnv* env, jclass clazz) {
+jboolean IsEnabled(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return base::FieldTrialList::FindFullName("AppBanners") == "Enabled";
 }
 

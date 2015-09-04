@@ -110,18 +110,20 @@ void PasswordUIViewAndroid::HandleRemoveSavedPasswordException(
   password_manager_presenter_.RemovePasswordException(index);
 }
 
-ScopedJavaLocalRef<jstring> GetAccountDashboardURL(JNIEnv* env, jclass) {
+ScopedJavaLocalRef<jstring> GetAccountDashboardURL(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&) {
   return ConvertUTF8ToJavaString(env,
                                  chrome::kPasswordManagerAccountDashboardURL);
 }
 
-static jboolean ShouldDisplayManageAccountLink(
-    JNIEnv* env, jclass) {
+static jboolean ShouldDisplayManageAccountLink(JNIEnv* env,
+                                               const JavaParamRef<jclass>&) {
   return password_manager::ManageAccountLinkExperimentEnabled();
 }
 
-static jboolean ShouldUseSmartLockBranding(
-    JNIEnv* env, jclass) {
+static jboolean ShouldUseSmartLockBranding(JNIEnv* env,
+                                           const JavaParamRef<jclass>&) {
   const ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(
           ProfileManager::GetLastUsedProfile());
@@ -129,7 +131,7 @@ static jboolean ShouldUseSmartLockBranding(
 }
 
 // static
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   PasswordUIViewAndroid* controller = new PasswordUIViewAndroid(env, obj);
   return reinterpret_cast<intptr_t>(controller);
 }

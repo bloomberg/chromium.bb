@@ -17,16 +17,19 @@ bool g_has_child_account_status = false;
 
 }  // namespace
 
-jboolean IsChildAccountDetectionEnabled(JNIEnv* env, jobject obj) {
+jboolean IsChildAccountDetectionEnabled(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
   return ChildAccountService::IsChildAccountDetectionEnabled();
 }
 
-jboolean GetIsChildAccount(JNIEnv* env, jobject obj) {
+jboolean GetIsChildAccount(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetLastUsedProfile()->IsChild();
 }
 
-void SetIsChildAccount(JNIEnv* env, jobject obj, jboolean is_child) {
+void SetIsChildAccount(JNIEnv* env,
+                       const JavaParamRef<jobject>& obj,
+                       jboolean is_child) {
   VLOG(1) << "OnChildAccountSigninComplete";
 
   // If the browser process has not been created yet, store the child account

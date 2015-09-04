@@ -55,7 +55,6 @@ bool DocumentWebContentsDelegate::ShouldCreateWebContents(
   return false;
 }
 
-
-static jlong Initialize(JNIEnv* env, jobject obj) {
+static jlong Initialize(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new DocumentWebContentsDelegate(env, obj));
 }

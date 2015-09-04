@@ -115,7 +115,7 @@ void ContentReadbackHandler::OnFinishReadback(int readback_id,
 }
 
 // static
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   ContentReadbackHandler* content_readback_handler =
       new ContentReadbackHandler(env, obj);
   return reinterpret_cast<intptr_t>(content_readback_handler);

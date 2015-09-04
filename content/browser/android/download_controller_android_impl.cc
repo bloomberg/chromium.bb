@@ -99,12 +99,14 @@ void CreateContextMenuDownload(int render_process_id,
 namespace content {
 
 // JNI methods
-static void Init(JNIEnv* env, jobject obj) {
+static void Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   DownloadControllerAndroidImpl::GetInstance()->Init(env, obj);
 }
 
-static void OnRequestFileAccessResult(
-    JNIEnv* env, jobject obj, jlong callback_id, jboolean granted) {
+static void OnRequestFileAccessResult(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj,
+                                      jlong callback_id,
+                                      jboolean granted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback_id);
 

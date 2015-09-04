@@ -96,7 +96,9 @@ jboolean ProfileAndroid::IsOffTheRecord(JNIEnv* env, jobject obj) {
 }
 
 // static
-ScopedJavaLocalRef<jobject> GetLastUsedProfile(JNIEnv* env, jclass clazz) {
+ScopedJavaLocalRef<jobject> GetLastUsedProfile(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return ProfileAndroid::GetLastUsedProfile(env, clazz);
 }
 

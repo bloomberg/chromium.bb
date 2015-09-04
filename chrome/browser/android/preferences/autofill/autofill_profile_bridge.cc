@@ -46,18 +46,20 @@ enum AddressField {
 
 } // namespace
 
-static ScopedJavaLocalRef<jstring> GetDefaultCountryCode(JNIEnv* env,
-                                                         jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetDefaultCountryCode(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   std::string default_country_code =
       autofill::AutofillCountry::CountryCodeForLocale(
           g_browser_process->GetApplicationLocale());
   return ConvertUTF8ToJavaString(env, default_country_code);
 }
 
-static void GetSupportedCountries(JNIEnv* env,
-                                  jclass clazz,
-                                  jobject j_country_code_list,
-                                  jobject j_country_name_list) {
+static void GetSupportedCountries(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_country_code_list,
+    const JavaParamRef<jobject>& j_country_name_list) {
   std::vector<std::string> country_codes =
       ::i18n::addressinput::GetRegionCodes();
   std::vector<std::string> known_country_codes;
@@ -83,11 +85,11 @@ static void GetSupportedCountries(JNIEnv* env,
 
 static ScopedJavaLocalRef<jstring> GetAddressUiComponents(
     JNIEnv* env,
-    jclass clazz,
-    jstring j_country_code,
-    jstring j_language_code,
-    jobject j_id_list,
-    jobject j_name_list) {
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& j_country_code,
+    const JavaParamRef<jstring>& j_language_code,
+    const JavaParamRef<jobject>& j_id_list,
+    const JavaParamRef<jobject>& j_name_list) {
   std::string best_language_tag;
   std::vector<int> component_ids;
   std::vector<std::string> component_labels;

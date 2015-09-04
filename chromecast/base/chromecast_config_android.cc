@@ -47,7 +47,9 @@ void ChromecastConfigAndroid::SetSendUsageStatsChangedCallback(
 }
 
 // Called from Java.
-void SetSendUsageStatsEnabled(JNIEnv* env, jclass caller, jboolean enabled) {
+void SetSendUsageStatsEnabled(JNIEnv* env,
+                              const JavaParamRef<jclass>& caller,
+                              jboolean enabled) {
   ChromecastConfigAndroid::GetInstance()->
       send_usage_stats_changed_callback().Run(enabled);
 }

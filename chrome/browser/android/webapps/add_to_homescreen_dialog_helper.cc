@@ -24,7 +24,9 @@
 
 using content::Manifest;
 
-jlong Initialize(JNIEnv* env, jobject obj, jobject java_web_contents) {
+jlong Initialize(JNIEnv* env,
+                 const JavaParamRef<jobject>& obj,
+                 const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   AddToHomescreenDialogHelper* add_to_homescreen_helper =

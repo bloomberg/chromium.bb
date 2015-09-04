@@ -45,7 +45,7 @@ NetworkChangeNotifier::ConnectionSubtype ConvertConnectionSubtype(
 }  // namespace
 
 jdouble GetMaxBandwidthForConnectionSubtype(JNIEnv* env,
-                                            jclass caller,
+                                            const JavaParamRef<jclass>& caller,
                                             jint subtype) {
   return NetworkChangeNotifierAndroid::GetMaxBandwidthForConnectionSubtype(
       ConvertConnectionSubtype(subtype));

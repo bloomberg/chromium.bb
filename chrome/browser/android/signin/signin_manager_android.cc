@@ -284,15 +284,16 @@ void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
       SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed());
 }
 
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   SigninManagerAndroid* signin_manager_android =
       new SigninManagerAndroid(env, obj);
   return reinterpret_cast<intptr_t>(signin_manager_android);
 }
 
-static jboolean ShouldLoadPolicyForUser(JNIEnv* env,
-                                        jobject obj,
-                                        jstring j_username) {
+static jboolean ShouldLoadPolicyForUser(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_username) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   std::string username =
       base::android::ConvertJavaStringToUTF8(env, j_username);

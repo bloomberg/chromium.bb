@@ -17,9 +17,10 @@ bool g_on_app_enter_foreground_called = false;
 
 }  // namespace
 
-static void StartVariationsSession(JNIEnv* env,
-                                   jobject obj,
-                                   jstring jrestrict_mode) {
+static void StartVariationsSession(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jrestrict_mode) {
   DCHECK(g_browser_process);
 
   variations::VariationsService* variations_service =

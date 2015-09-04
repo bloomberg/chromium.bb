@@ -10,11 +10,11 @@
 namespace base {
 namespace android {
 
-jint GetCoreCount(JNIEnv*, jclass) {
+jint GetCoreCount(JNIEnv*, const JavaParamRef<jclass>&) {
   return android_getCpuCount();
 }
 
-jlong GetCpuFeatures(JNIEnv*, jclass) {
+jlong GetCpuFeatures(JNIEnv*, const JavaParamRef<jclass>&) {
   return android_getCpuFeatures();
 }
 

@@ -70,12 +70,12 @@ void AndroidLog(int priority, const char* format, ...) {
 }  // namespace
 
 static void RunTests(JNIEnv* env,
-                     jobject obj,
-                     jstring jcommand_line_flags,
-                     jstring jcommand_line_file_path,
-                     jstring jstdout_file_path,
+                     const JavaParamRef<jobject>& obj,
+                     const JavaParamRef<jstring>& jcommand_line_flags,
+                     const JavaParamRef<jstring>& jcommand_line_file_path,
+                     const JavaParamRef<jstring>& jstdout_file_path,
                      jboolean jstdout_fifo,
-                     jobject app_context) {
+                     const JavaParamRef<jobject>& app_context) {
   // Command line initialized basically, will be fully initialized later.
   static const char* const kInitialArgv[] = { "ChromeTestActivity" };
   base::CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);

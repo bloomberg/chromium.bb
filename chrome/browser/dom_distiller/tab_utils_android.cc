@@ -22,17 +22,17 @@
 namespace android {
 
 void DistillCurrentPageAndView(JNIEnv* env,
-                               jclass clazz,
-                               jobject j_web_contents) {
+                               const JavaParamRef<jclass>& clazz,
+                               const JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   ::DistillCurrentPageAndView(web_contents);
 }
 
 void DistillAndView(JNIEnv* env,
-                    jclass clazz,
-                    jobject j_source_web_contents,
-                    jobject j_destination_web_contents) {
+                    const JavaParamRef<jclass>& clazz,
+                    const JavaParamRef<jobject>& j_source_web_contents,
+                    const JavaParamRef<jobject>& j_destination_web_contents) {
   content::WebContents* source_web_contents =
       content::WebContents::FromJavaWebContents(j_source_web_contents);
   content::WebContents* destination_web_contents =
@@ -42,8 +42,8 @@ void DistillAndView(JNIEnv* env,
 
 ScopedJavaLocalRef<jstring> GetFormattedUrlFromOriginalDistillerUrl(
     JNIEnv* env,
-    jclass clazz,
-    jstring j_url) {
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   Profile* profile = ProfileManager::GetLastUsedProfile();
   std::string languages;  // Empty if Profile cannot be retrieved.

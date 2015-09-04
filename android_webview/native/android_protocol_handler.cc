@@ -272,8 +272,9 @@ scoped_ptr<net::URLRequestInterceptor> CreateAssetFileRequestInterceptor() {
 //
 // |context| should be a android.content.Context instance or NULL to enable
 // the use of the standard application context.
-static void SetResourceContextForTesting(JNIEnv* env, jclass /*clazz*/,
-                                         jobject context) {
+static void SetResourceContextForTesting(JNIEnv* env,
+                                         const JavaParamRef<jclass>& /*clazz*/,
+                                         const JavaParamRef<jobject>& context) {
   if (context) {
     ResetResourceContext(new JavaObjectWeakGlobalRef(env, context));
   } else {
@@ -281,13 +282,15 @@ static void SetResourceContextForTesting(JNIEnv* env, jclass /*clazz*/,
   }
 }
 
-static ScopedJavaLocalRef<jstring> GetAndroidAssetPath(JNIEnv* env,
-                                                       jclass /*clazz*/) {
+static ScopedJavaLocalRef<jstring> GetAndroidAssetPath(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& /*clazz*/) {
   return ConvertUTF8ToJavaString(env, android_webview::kAndroidAssetPath);
 }
 
-static ScopedJavaLocalRef<jstring> GetAndroidResourcePath(JNIEnv* env,
-                                                          jclass /*clazz*/) {
+static ScopedJavaLocalRef<jstring> GetAndroidResourcePath(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& /*clazz*/) {
   return ConvertUTF8ToJavaString(env, android_webview::kAndroidResourcePath);
 }
 

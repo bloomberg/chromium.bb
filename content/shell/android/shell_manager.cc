@@ -49,12 +49,16 @@ bool RegisterShellManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static void Init(JNIEnv* env, jclass clazz, jobject obj) {
+static void Init(JNIEnv* env,
+                 const JavaParamRef<jclass>& clazz,
+                 const JavaParamRef<jobject>& obj) {
   g_global_state.Get().j_shell_manager.Reset(
       base::android::ScopedJavaLocalRef<jobject>(env, obj));
 }
 
-void LaunchShell(JNIEnv* env, jclass clazz, jstring jurl) {
+void LaunchShell(JNIEnv* env,
+                 const JavaParamRef<jclass>& clazz,
+                 const JavaParamRef<jstring>& jurl) {
   ShellBrowserContext* browserContext =
       ShellContentBrowserClient::Get()->browser_context();
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));

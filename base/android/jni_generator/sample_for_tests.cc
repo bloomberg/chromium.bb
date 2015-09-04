@@ -66,22 +66,27 @@ base::android::ScopedJavaLocalRef<jstring> CPPClass::ReturnAString(
 }
 
 // Static free functions declared and called directly from java.
-static jlong Init(JNIEnv* env, jobject caller, jstring param) {
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jobject>& caller,
+                  const JavaParamRef<jstring>& param) {
   return 0;
 }
 
-static jdouble GetDoubleFunction(JNIEnv*, jobject) {
+static jdouble GetDoubleFunction(JNIEnv*, const JavaParamRef<jobject>&) {
   return 0;
 }
 
-static jfloat GetFloatFunction(JNIEnv*, jclass) {
+static jfloat GetFloatFunction(JNIEnv*, const JavaParamRef<jclass>&) {
   return 0;
 }
 
-static void SetNonPODDatatype(JNIEnv*, jobject, jobject) {
-}
+static void SetNonPODDatatype(JNIEnv*,
+                              const JavaParamRef<jobject>&,
+                              const JavaParamRef<jobject>&) {}
 
-static ScopedJavaLocalRef<jobject> GetNonPODDatatype(JNIEnv*, jobject) {
+static ScopedJavaLocalRef<jobject> GetNonPODDatatype(
+    JNIEnv*,
+    const JavaParamRef<jobject>&) {
   return ScopedJavaLocalRef<jobject>();
 }
 

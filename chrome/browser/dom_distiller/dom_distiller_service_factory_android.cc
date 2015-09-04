@@ -32,9 +32,10 @@ bool DomDistillerServiceFactoryAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-ScopedJavaLocalRef<jobject> GetForProfile(JNIEnv* env,
-                                          jclass clazz,
-                                          jobject j_profile) {
+ScopedJavaLocalRef<jobject> GetForProfile(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_profile) {
   return DomDistillerServiceFactoryAndroid::GetForProfile(env, clazz,
                                                           j_profile);
 }

@@ -61,11 +61,12 @@ bool ChromiumUrlRequestContextRegisterJni(JNIEnv* env) {
 }
 
 // Sets global user-agent to be used for all subsequent requests.
-static jlong CreateRequestContextAdapter(JNIEnv* env,
-                                         jobject jcaller,
-                                         jstring juser_agent,
-                                         jint jlog_level,
-                                         jstring jconfig) {
+static jlong CreateRequestContextAdapter(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& juser_agent,
+    jint jlog_level,
+    const JavaParamRef<jstring>& jconfig) {
   std::string user_agent = ConvertJavaStringToUTF8(env, juser_agent);
 
   std::string config = ConvertJavaStringToUTF8(env, jconfig);
@@ -98,7 +99,7 @@ static jlong CreateRequestContextAdapter(JNIEnv* env,
 
 // Releases native objects.
 static void ReleaseRequestContextAdapter(JNIEnv* env,
-                                         jobject jcaller,
+                                         const JavaParamRef<jobject>& jcaller,
                                          jlong jurl_request_context_adapter) {
   URLRequestContextAdapter* context_adapter =
       reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
@@ -111,15 +112,17 @@ static void ReleaseRequestContextAdapter(JNIEnv* env,
 }
 
 // Starts recording statistics.
-static void InitializeStatistics(JNIEnv* env, jobject jcaller) {
+static void InitializeStatistics(JNIEnv* env,
+                                 const JavaParamRef<jobject>& jcaller) {
   base::StatisticsRecorder::Initialize();
 }
 
 // Gets current statistics with |jfilter| as a substring as JSON text (an empty
 // |jfilter| will include all registered histograms).
-static ScopedJavaLocalRef<jstring> GetStatisticsJSON(JNIEnv* env,
-                                                     jobject jcaller,
-                                                     jstring jfilter) {
+static ScopedJavaLocalRef<jstring> GetStatisticsJSON(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jfilter) {
   std::string query = ConvertJavaStringToUTF8(env, jfilter);
   std::string json = base::StatisticsRecorder::ToJSON(query);
   return ConvertUTF8ToJavaString(env, json);
@@ -127,9 +130,9 @@ static ScopedJavaLocalRef<jstring> GetStatisticsJSON(JNIEnv* env,
 
 // Starts recording NetLog into file with |jfilename|.
 static void StartNetLogToFile(JNIEnv* env,
-                              jobject jcaller,
+                              const JavaParamRef<jobject>& jcaller,
                               jlong jurl_request_context_adapter,
-                              jstring jfilename,
+                              const JavaParamRef<jstring>& jfilename,
                               jboolean jlog_all) {
   URLRequestContextAdapter* context_adapter =
       reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
@@ -139,7 +142,7 @@ static void StartNetLogToFile(JNIEnv* env,
 
 // Stops recording NetLog.
 static void StopNetLog(JNIEnv* env,
-                       jobject jcaller,
+                       const JavaParamRef<jobject>& jcaller,
                        jlong jurl_request_context_adapter) {
   URLRequestContextAdapter* context_adapter =
       reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
@@ -148,7 +151,7 @@ static void StopNetLog(JNIEnv* env,
 
 // Called on application's main Java thread.
 static void InitRequestContextOnMainThread(JNIEnv* env,
-                                           jobject jcaller,
+                                           const JavaParamRef<jobject>& jcaller,
                                            jlong jurl_request_context_adapter) {
   URLRequestContextAdapter* context_adapter =
       reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);

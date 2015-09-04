@@ -27,9 +27,9 @@ using base::android::ConvertUTF8ToJavaString;
 
 // static
 static jlong Init(JNIEnv* env,
-                  jclass clazz,
-                  jobject obj,
-                  jobject java_web_contents) {
+                  const JavaParamRef<jclass>& clazz,
+                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
 

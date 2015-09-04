@@ -31,18 +31,21 @@ void AppendJavaStringArrayToCommandLine(JNIEnv* env,
 
 }  // namespace
 
-static void Reset(JNIEnv* env, jclass clazz) {
+static void Reset(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   CommandLine::Reset();
 }
 
-static jboolean HasSwitch(JNIEnv* env, jclass clazz, jstring jswitch) {
+static jboolean HasSwitch(JNIEnv* env,
+                          const JavaParamRef<jclass>& clazz,
+                          const JavaParamRef<jstring>& jswitch) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
   return CommandLine::ForCurrentProcess()->HasSwitch(switch_string);
 }
 
-static ScopedJavaLocalRef<jstring> GetSwitchValue(JNIEnv* env,
-                                                  jclass clazz,
-                                                  jstring jswitch) {
+static ScopedJavaLocalRef<jstring> GetSwitchValue(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jswitch) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
   std::string value(CommandLine::ForCurrentProcess()->GetSwitchValueNative(
       switch_string));
@@ -51,21 +54,27 @@ static ScopedJavaLocalRef<jstring> GetSwitchValue(JNIEnv* env,
   return ConvertUTF8ToJavaString(env, value);
 }
 
-static void AppendSwitch(JNIEnv* env, jclass clazz, jstring jswitch) {
+static void AppendSwitch(JNIEnv* env,
+                         const JavaParamRef<jclass>& clazz,
+                         const JavaParamRef<jstring>& jswitch) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
   CommandLine::ForCurrentProcess()->AppendSwitch(switch_string);
 }
 
-static void AppendSwitchWithValue(JNIEnv* env, jclass clazz,
-                                  jstring jswitch, jstring jvalue) {
+static void AppendSwitchWithValue(JNIEnv* env,
+                                  const JavaParamRef<jclass>& clazz,
+                                  const JavaParamRef<jstring>& jswitch,
+                                  const JavaParamRef<jstring>& jvalue) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
   std::string value_string (ConvertJavaStringToUTF8(env, jvalue));
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(switch_string,
                                                       value_string);
 }
 
-static void AppendSwitchesAndArguments(JNIEnv* env, jclass clazz,
-                                       jobjectArray array) {
+static void AppendSwitchesAndArguments(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobjectArray>& array) {
   AppendJavaStringArrayToCommandLine(env, array, false);
 }
 

@@ -134,13 +134,16 @@ bool BookmarksBridge::RegisterBookmarksBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& j_profile) {
   BookmarksBridge* delegate = new BookmarksBridge(env, obj, j_profile);
   return reinterpret_cast<intptr_t>(delegate);
 }
 
-static jboolean IsEnhancedBookmarksFeatureEnabled(JNIEnv* env,
-                                                  jclass clazz) {
+static jboolean IsEnhancedBookmarksFeatureEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return enhanced_bookmarks::IsEnhancedBookmarksEnabled();
 }
 

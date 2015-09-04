@@ -63,7 +63,9 @@ scoped_ptr<infobars::InfoBar> DataReductionProxyInfoBarDelegate::CreateInfoBar(
 
 
 // JNI for DataReductionProxyInfoBarDelegate.
-void
-Launch(JNIEnv* env, jclass clazz, jobject jweb_contents, jstring jlink_url) {
+void Launch(JNIEnv* env,
+            const JavaParamRef<jclass>& clazz,
+            const JavaParamRef<jobject>& jweb_contents,
+            const JavaParamRef<jstring>& jlink_url) {
   DataReductionProxyInfoBar::Launch(env, clazz, jweb_contents, jlink_url);
 }

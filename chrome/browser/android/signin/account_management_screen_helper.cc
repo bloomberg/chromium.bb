@@ -26,7 +26,7 @@ void AccountManagementScreenHelper::OpenAccountManagementScreen(
 }
 
 static void LogEvent(JNIEnv* env,
-                     jclass clazz,
+                     const JavaParamRef<jclass>& clazz,
                      jint metric,
                      jint gaiaServiceType) {
   ProfileMetrics::LogProfileAndroidAccountManagementMenu(

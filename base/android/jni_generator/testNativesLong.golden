@@ -32,7 +32,7 @@ static void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
-  return native->Destroy(env, jcaller);
+  return native->Destroy(env, JavaParamRef<jobject>(env, jcaller));
 }
 
 // Step 3: RegisterNatives.

@@ -9,9 +9,10 @@
 #include "jni/OmniboxViewUtil_jni.h"
 
 // static
-ScopedJavaLocalRef<jstring> SanitizeTextForPaste(JNIEnv* env,
-                                                 jclass clazz,
-                                                 jstring jtext) {
+ScopedJavaLocalRef<jstring> SanitizeTextForPaste(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jtext) {
   base::string16 pasted_text(
       base::android::ConvertJavaStringToUTF16(env, jtext));
   pasted_text = OmniboxView::SanitizeTextForPaste(pasted_text);

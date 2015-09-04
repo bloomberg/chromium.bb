@@ -11,7 +11,9 @@
 namespace base {
 namespace android {
 
-static void RecordUserAction(JNIEnv* env, jclass clazz, jstring j_action) {
+static void RecordUserAction(JNIEnv* env,
+                             const JavaParamRef<jclass>& clazz,
+                             const JavaParamRef<jstring>& j_action) {
   RecordComputedAction(ConvertJavaStringToUTF8(env, j_action));
 }
 

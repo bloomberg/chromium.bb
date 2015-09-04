@@ -13,9 +13,9 @@ namespace mojo {
 namespace runner {
 
 void Bootstrap(JNIEnv* env,
-               jobject,
-               jobject j_context,
-               jstring j_native_library_path,
+               const JavaParamRef<jobject>&,
+               const JavaParamRef<jobject>& j_context,
+               const JavaParamRef<jstring>& j_native_library_path,
                jint j_handle,
                jlong j_run_application_ptr,
                jboolean is_cached_app) {

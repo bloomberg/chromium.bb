@@ -37,7 +37,9 @@ bool RegisterChromotingJniRuntime(JNIEnv* env) {
 // Implementation of stubs defined in JniInterface_jni.h. These are the entry
 // points for JNI calls from Java into C++.
 
-static void LoadNative(JNIEnv* env, jclass clazz, jobject context) {
+static void LoadNative(JNIEnv* env,
+                       const JavaParamRef<jclass>& clazz,
+                       const JavaParamRef<jobject>& context) {
   base::android::ScopedJavaLocalRef<jobject> context_activity(env, context);
   base::android::InitApplicationContext(env, context_activity);
 
@@ -51,32 +53,38 @@ static void LoadNative(JNIEnv* env, jclass clazz, jobject context) {
   remoting::ChromotingJniRuntime::GetInstance();
 }
 
-static ScopedJavaLocalRef<jstring> GetApiKey(JNIEnv* env, jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetApiKey(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return ConvertUTF8ToJavaString(env, google_apis::GetAPIKey().c_str());
 }
 
-static ScopedJavaLocalRef<jstring> GetClientId(JNIEnv* env, jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetClientId(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return ConvertUTF8ToJavaString(
       env,
       google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING).c_str());
 }
 
-static ScopedJavaLocalRef<jstring> GetClientSecret(JNIEnv* env, jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetClientSecret(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return ConvertUTF8ToJavaString(
       env,
       google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING).c_str());
 }
 
 static void Connect(JNIEnv* env,
-                    jclass clazz,
-                    jstring username,
-                    jstring authToken,
-                    jstring hostJid,
-                    jstring hostId,
-                    jstring hostPubkey,
-                    jstring pairId,
-                    jstring pairSecret,
-                    jstring capabilities) {
+                    const JavaParamRef<jclass>& clazz,
+                    const JavaParamRef<jstring>& username,
+                    const JavaParamRef<jstring>& authToken,
+                    const JavaParamRef<jstring>& hostJid,
+                    const JavaParamRef<jstring>& hostId,
+                    const JavaParamRef<jstring>& hostPubkey,
+                    const JavaParamRef<jstring>& pairId,
+                    const JavaParamRef<jstring>& pairSecret,
+                    const JavaParamRef<jstring>& capabilities) {
   remoting::ChromotingJniRuntime::GetInstance()->ConnectToHost(
       ConvertJavaStringToUTF8(env, username).c_str(),
       ConvertJavaStringToUTF8(env, authToken).c_str(),
@@ -88,26 +96,26 @@ static void Connect(JNIEnv* env,
       ConvertJavaStringToUTF8(env, capabilities).c_str());
 }
 
-static void Disconnect(JNIEnv* env, jclass clazz) {
+static void Disconnect(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   remoting::ChromotingJniRuntime::GetInstance()->DisconnectFromHost();
 }
 
 static void AuthenticationResponse(JNIEnv* env,
-                                   jclass clazz,
-                                   jstring pin,
+                                   const JavaParamRef<jclass>& clazz,
+                                   const JavaParamRef<jstring>& pin,
                                    jboolean createPair,
-                                   jstring deviceName) {
+                                   const JavaParamRef<jstring>& deviceName) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->ProvideSecret(
       ConvertJavaStringToUTF8(env, pin).c_str(), createPair,
       ConvertJavaStringToUTF8(env, deviceName));
 }
 
-static void ScheduleRedraw(JNIEnv* env, jclass clazz) {
+static void ScheduleRedraw(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->RedrawDesktop();
 }
 
 static void SendMouseEvent(JNIEnv* env,
-                           jclass clazz,
+                           const JavaParamRef<jclass>& clazz,
                            jint x,
                            jint y,
                            jint whichButton,
@@ -122,7 +130,7 @@ static void SendMouseEvent(JNIEnv* env,
 }
 
 static void SendMouseWheelEvent(JNIEnv* env,
-                                jclass clazz,
+                                const JavaParamRef<jclass>& clazz,
                                 jint delta_x,
                                 jint delta_y) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->SendMouseWheelEvent(
@@ -130,31 +138,32 @@ static void SendMouseWheelEvent(JNIEnv* env,
 }
 
 static jboolean SendKeyEvent(JNIEnv* env,
-                         jclass clazz,
-                         jint keyCode,
-                         jboolean keyDown) {
+                             const JavaParamRef<jclass>& clazz,
+                             jint keyCode,
+                             jboolean keyDown) {
   return remoting::ChromotingJniRuntime::GetInstance()->session()->SendKeyEvent(
       keyCode, keyDown);
 }
 
 static void SendTextEvent(JNIEnv* env,
-                          jclass clazz,
-                          jstring text) {
+                          const JavaParamRef<jclass>& clazz,
+                          const JavaParamRef<jstring>& text) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->SendTextEvent(
       ConvertJavaStringToUTF8(env, text));
 }
 
 static void EnableVideoChannel(JNIEnv* env,
-                               jclass clazz,
+                               const JavaParamRef<jclass>& clazz,
                                jboolean enable) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->EnableVideoChannel(
       enable);
 }
 
-static void OnThirdPartyTokenFetched(JNIEnv* env,
-                                     jclass clazz,
-                                     jstring token,
-                                     jstring shared_secret) {
+static void OnThirdPartyTokenFetched(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& token,
+    const JavaParamRef<jstring>& shared_secret) {
   ChromotingJniRuntime* runtime = remoting::ChromotingJniRuntime::GetInstance();
   runtime->network_task_runner()->PostTask(FROM_HERE, base::Bind(
       &ChromotingJniInstance::HandleOnThirdPartyTokenFetched,
@@ -164,9 +173,9 @@ static void OnThirdPartyTokenFetched(JNIEnv* env,
 }
 
 static void SendExtensionMessage(JNIEnv* env,
-                                 jclass clazz,
-                                 jstring type,
-                                 jstring data) {
+                                 const JavaParamRef<jclass>& clazz,
+                                 const JavaParamRef<jstring>& type,
+                                 const JavaParamRef<jstring>& data) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->SendClientMessage(
       ConvertJavaStringToUTF8(env, type),
       ConvertJavaStringToUTF8(env, data));

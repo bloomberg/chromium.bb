@@ -64,7 +64,7 @@ void ReaderModeSceneLayer::UpdateReaderModeLayer(
       panel_text_opacity, header_background_color);
 }
 
-static jlong Init(JNIEnv* env, jobject jobj) {
+static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   // This will automatically bind to the Java object and pass ownership there.
   ReaderModeSceneLayer* tree_provider =
       new ReaderModeSceneLayer(env, jobj);
