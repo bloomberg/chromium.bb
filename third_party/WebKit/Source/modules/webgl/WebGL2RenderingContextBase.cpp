@@ -2298,60 +2298,104 @@ bool WebGL2RenderingContextBase::validateGetFramebufferAttachmentParameterFunc(c
 
 ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(ScriptState* scriptState, GLenum target, GLenum attachment, GLenum pname)
 {
-    if (isContextLost() || !validateGetFramebufferAttachmentParameterFunc("getFramebufferAttachmentParameter", target, attachment))
+    const char kFunctionName[] = "getFramebufferAttachmentParameter";
+    if (isContextLost() || !validateGetFramebufferAttachmentParameterFunc(kFunctionName, target, attachment))
         return ScriptValue::createNull(scriptState);
 
     WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
     ASSERT(!framebufferBinding || framebufferBinding->object());
 
-    WebGLSharedObject* attachmentObject = framebufferBinding ? framebufferBinding->getAttachmentObject(attachment) : 0;
-    if (framebufferBinding && !attachmentObject) {
-        if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE)
-            return WebGLAny(scriptState, GL_NONE);
-        if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME)
-            return ScriptValue::createNull(scriptState);
-        synthesizeGLError(GL_INVALID_OPERATION, "getFramebufferAttachmentParameter", "invalid parameter name");
-        return ScriptValue::createNull(scriptState);
-    }
-
-    // translate attachment for default framebuffer (an internal fbo)
+    // Default framebuffer (an internal fbo)
     if (!framebufferBinding) {
-        switch (attachment) {
-        case GL_BACK:
-            attachment = GL_COLOR_ATTACHMENT0;
-            break;
-        case GL_DEPTH:
-            attachment = GL_DEPTH_ATTACHMENT;
-            break;
-        case GL_STENCIL:
-            attachment = GL_STENCIL_ATTACHMENT;
-            break;
+        // We can use m_requestedAttribs because in WebGL 2, they are required to be honored.
+        bool hasDepth = m_requestedAttributes.depth();
+        bool hasStencil = m_requestedAttributes.stencil();
+        bool hasAlpha = m_requestedAttributes.alpha();
+        bool missingImage = (attachment == GL_DEPTH && !hasDepth)
+            || (attachment == GL_STENCIL && !hasStencil);
+        if (missingImage) {
+            switch (pname) {
+            case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
+                return WebGLAny(scriptState, GL_FRAMEBUFFER_DEFAULT);
+            default:
+                synthesizeGLError(GL_INVALID_ENUM, kFunctionName, "invalid parameter name");
+                return ScriptValue::createNull(scriptState);
+            }
+        }
+        switch (pname) {
+        case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
+            return WebGLAny(scriptState, GL_FRAMEBUFFER_DEFAULT);
+        case GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE:
+        case GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE:
+        case GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE:
+            {
+                GLint value = attachment == GL_BACK ? 8 : 0;
+                return WebGLAny(scriptState, value);
+            }
+        case GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE:
+            {
+                GLint value = (attachment == GL_BACK && hasAlpha) ? 8 : 0;
+                return WebGLAny(scriptState, value);
+            }
+        case GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE:
+            {
+                // For ES3 capable backend, DEPTH24_STENCIL8 has to be supported.
+                GLint value = attachment == GL_DEPTH ? 24 : 0;
+                return WebGLAny(scriptState, value);
+            }
+        case GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE:
+            {
+                GLint value = attachment == GL_STENCIL ? 8 : 0;
+                return WebGLAny(scriptState, value);
+            }
+        case GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE:
+            return WebGLAny(scriptState, GL_UNSIGNED_NORMALIZED);
+        case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING:
+            return WebGLAny(scriptState, GL_LINEAR);
         default:
-            ASSERT_NOT_REACHED();
-            break;
+            synthesizeGLError(GL_INVALID_ENUM, kFunctionName, "invalid parameter name");
+            return ScriptValue::createNull(scriptState);
         }
     }
+
+    WebGLSharedObject* attachmentObject = nullptr;
+    if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+        WebGLSharedObject* depthAttachment = framebufferBinding->getAttachmentObject(GL_DEPTH_ATTACHMENT);
+        WebGLSharedObject* stencilAttachment = framebufferBinding->getAttachmentObject(GL_STENCIL_ATTACHMENT);
+        if (depthAttachment != stencilAttachment) {
+            synthesizeGLError(GL_INVALID_OPERATION, kFunctionName,
+                "different objects bound to DEPTH_ATTACHMENT and STENCIL_ATTACHMENT");
+            return ScriptValue::createNull(scriptState);
+        }
+        attachmentObject = depthAttachment;
+    } else {
+        attachmentObject = framebufferBinding->getAttachmentObject(attachment);
+    }
+
+    if (!attachmentObject) {
+        switch (pname) {
+        case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
+            return WebGLAny(scriptState, GL_NONE);
+        case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
+            return ScriptValue::createNull(scriptState);
+        default:
+            synthesizeGLError(GL_INVALID_OPERATION, kFunctionName, "invalid parameter name");
+            return ScriptValue::createNull(scriptState);
+        }
+    }
+    ASSERT(attachmentObject->isTexture() || attachmentObject->isRenderbuffer());
 
     switch (pname) {
     case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
-        if (!attachmentObject) {
-            ASSERT(!framebufferBinding);
-            return WebGLAny(scriptState, GL_FRAMEBUFFER_DEFAULT);
-        }
-        ASSERT(attachmentObject->isTexture() || attachmentObject->isRenderbuffer());
         if (attachmentObject->isTexture())
             return WebGLAny(scriptState, GL_TEXTURE);
-        if (attachmentObject->isRenderbuffer())
-            return WebGLAny(scriptState, GL_RENDERBUFFER);
-        break;
+        return WebGLAny(scriptState, GL_RENDERBUFFER);
     case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-        if (!attachmentObject)
-            break;
         return WebGLAny(scriptState, attachmentObject);
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE:
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER:
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
-        if (!attachmentObject || !attachmentObject->isTexture())
+        if (!attachmentObject->isTexture())
             break;
     case GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE:
     case GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE:
@@ -2365,6 +2409,11 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(Script
             return WebGLAny(scriptState, value);
         }
     case GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE:
+        if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+            synthesizeGLError(GL_INVALID_OPERATION, kFunctionName,
+                "COMPONENT_TYPE can't be queried for DEPTH_STENCIL_ATTACHMENT");
+            return ScriptValue::createNull(scriptState);
+        }
     case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING:
         {
             GLint value = 0;
@@ -2374,7 +2423,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(Script
     default:
         break;
     }
-    synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name");
+    synthesizeGLError(GL_INVALID_ENUM, kFunctionName, "invalid parameter name");
     return ScriptValue::createNull(scriptState);
 }
 

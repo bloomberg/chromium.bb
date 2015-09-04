@@ -2627,7 +2627,7 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
             return WebGLAny(scriptState, attachmentObject);
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
-            if (extensionEnabled(EXTsRGBName) || isWebGL2OrHigher()) {
+            if (extensionEnabled(EXTsRGBName)) {
                 GLint value = 0;
                 webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
                 return WebGLAny(scriptState, value);
