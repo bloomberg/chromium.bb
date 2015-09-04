@@ -518,7 +518,15 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         notifyLoadedSheetAndAllCriticalSubresources(Node::ErrorOccurredLoadingSubresource);
         return;
     }
-
+    // While the stylesheet is asynchronously loading, the owner can be moved under
+    // shadow tree.  In that case, cancel any processing on the loaded content.
+    if (m_owner->isInShadowTree()) {
+        m_loading = false;
+        removePendingSheet();
+        if (m_sheet)
+            clearSheet();
+        return;
+    }
     // Completing the sheet load may cause scripts to execute.
     RefPtrWillBeRawPtr<Node> protector(m_owner.get());
 
