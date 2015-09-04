@@ -54,11 +54,6 @@ private:
     void decodeSize() override { decode(true); }
     void decode(size_t) override { decode(false); }
 
-    inline uint32_t readUint32(int offset) const
-    {
-        return BMPImageReader::readUint32(m_data.get(), m_decodedOffset + offset);
-    }
-
     // Decodes the image.  If |onlySize| is true, stops decoding after
     // calculating the image size. If decoding fails but there is no more
     // data coming, sets the "decode failure" flag.

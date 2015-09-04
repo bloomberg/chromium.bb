@@ -41,6 +41,16 @@ FastSharedBufferReader::FastSharedBufferReader(PassRefPtr<SharedBuffer> data)
 {
 }
 
+void FastSharedBufferReader::setData(PassRefPtr<SharedBuffer> data)
+{
+    if (data == m_data)
+        return;
+    m_data = data;
+    m_segment = 0;
+    m_segmentLength = 0;
+    m_dataPosition = 0;
+}
+
 const char* FastSharedBufferReader::getConsecutiveData(size_t dataPosition, size_t length, char* buffer)
 {
     RELEASE_ASSERT(dataPosition + length <= m_data->size());
