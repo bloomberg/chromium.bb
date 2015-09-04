@@ -389,26 +389,14 @@ public:
     HeapDeque<T, 0>& operator=(const HeapDeque& other)
     {
         HeapDeque<T> copy(other);
-        swap(copy);
+        Deque<T, inlineCapacity, HeapAllocator>::swap(copy);
         return *this;
-    }
-
-    // FIXME: Doesn't work if there is an inline buffer, due to crbug.com/360572
-    void swap(HeapDeque& other)
-    {
-        Deque<T, inlineCapacity, HeapAllocator>::swap(other);
     }
 
     template<size_t otherCapacity>
     HeapDeque(const HeapDeque<T, otherCapacity>& other)
         : Deque<T, inlineCapacity, HeapAllocator>(other)
     {
-    }
-
-    template<typename U>
-    void append(const U& other)
-    {
-        Deque<T, inlineCapacity, HeapAllocator>::append(other);
     }
 };
 
