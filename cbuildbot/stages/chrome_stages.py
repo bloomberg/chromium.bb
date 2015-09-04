@@ -89,7 +89,8 @@ class SyncChromeStage(generic_stages.BuilderStage,
           logging.error('Chrome is pinned. Attempting to continue build for '
                         'chrome atom %s anyway but build will ultimately fail.',
                         chrome_atom_to_build)
-          logging.info('Deleting pin file at %s and proceeding.')
+          logging.info('Deleting pin file at %s and proceeding.',
+                       CHROMEPIN_MASK_PATH)
           osutils.SafeUnlink(CHROMEPIN_MASK_PATH)
         else:
           raise
