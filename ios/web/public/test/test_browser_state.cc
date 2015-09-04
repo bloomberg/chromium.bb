@@ -15,9 +15,7 @@ namespace {
 class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   TestContextURLRequestContextGetter()
-      : null_task_runner_(new base::NullTaskRunner) {
-    context_.set_net_log(&net_log_);
-  }
+      : null_task_runner_(new base::NullTaskRunner) {}
 
   net::URLRequestContext* GetURLRequestContext() override { return &context_; }
 
@@ -30,7 +28,6 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
   ~TestContextURLRequestContextGetter() override {}
 
   net::TestURLRequestContext context_;
-  net::NetLog net_log_;
   scoped_refptr<base::SingleThreadTaskRunner> null_task_runner_;
 };
 

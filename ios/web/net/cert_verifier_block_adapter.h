@@ -6,42 +6,34 @@
 #define IOS_WEB_NET_CERT_VERIFIER_BLOCK_ADAPTER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
-#include "base/threading/thread_checker.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/cert_verify_result.h"
+#include "net/log/net_log.h"
 
 namespace net {
+
+class CertVerifyResult;
 class CRLSet;
-class NetLog;
 class X509Certificate;
-}  // namespace net
 
-namespace web {
-
-// Provides block-based interface for |net::CertVerifier|. This class must be
-// created and used on the same thread where the |net::CertVerifier| was
-// created.
+// Provides block-based interface for net::CertVerifier.
 class CertVerifierBlockAdapter {
  public:
-  // Constructs adapter with given |CertVerifier| and |NetLog|, both can not be
-  // null. CertVerifierBlockAdapter does NOT take ownership of |cert_verifier|
-  // and |net_log|.
-  CertVerifierBlockAdapter(net::CertVerifier* cert_verifier,
-                           net::NetLog* net_log);
+  CertVerifierBlockAdapter();
+  // Constructs adapter with given |CertVerifier| which can not be null.
+  CertVerifierBlockAdapter(scoped_ptr<CertVerifier> cert_verifier);
 
   // When the verifier is destroyed, all certificate verification requests are
   // canceled, and their completion handlers will not be called.
   ~CertVerifierBlockAdapter();
 
-  // Encapsulates verification params. |cert| and |hostname| are mandatory, the
+  // Encapsulates verification parms. |cert| and |hostname| are mandatory, the
   // other params are optional. If either of mandatory arguments is null or
   // empty then verification |CompletionHandler| will be called with
-  // ERR_INVALID_ARGUMENT |error|.
+  // ERR_INVALID_ARGUMENT status.
   struct Params {
     // Constructs Params from X509 cert and hostname, which are mandatory for
     // verification.
-    Params(const scoped_refptr<net::X509Certificate>& cert,
+    Params(scoped_refptr<net::X509Certificate> cert,
            const std::string& hostname);
     ~Params();
 
@@ -54,36 +46,31 @@ class CertVerifierBlockAdapter {
     // If non-empty, is a stapled OCSP response to use.
     std::string ocsp_response;
 
-    // Bitwise OR of |net::CertVerifier::VerifyFlags|.
-    int flags;
+    // Bitwise OR of CertVerifier::VerifyFlags.
+    CertVerifier::VerifyFlags flags;
 
-    // An optional |net::CRLSet| structure which can be used to avoid revocation
-    // checks over the network.
-    scoped_refptr<net::CRLSet> crl_set;
+    // An optional CRLSet structure which can be used to avoid revocation checks
+    // over the network.
+    scoped_refptr<CRLSet> crl_set;
   };
 
-  // Type of verification completion block. If cert is successfully validated
-  // |error| is OK, otherwise |error| is a net error code.
-  typedef void (^CompletionHandler)(net::CertVerifyResult result, int error);
+  // Type of verification completion block. On success CertVerifyResult is not
+  // null and status is OK, otherwise CertVerifyResult is null and status is a
+  // net error code.
+  typedef void (^CompletionHandler)(scoped_ptr<CertVerifyResult>, int status);
 
   // Verifies certificate with given |params|. |completion_handler| must not be
-  // null and can be called either synchronously (in the same runloop) or
-  // asynchronously.
+  // null and call be called either syncronously (in the same runloop) or
+  // asyncronously.
   void Verify(const Params& params, CompletionHandler completion_handler);
 
  private:
-  // Pending verification requests. Request must be alive until verification is
-  // completed, otherwise verification operation will be cancelled.
-  ScopedVector<net::CertVerifier::Request> pending_requests_;
-  // Underlying unowned CertVerifier.
-  net::CertVerifier* cert_verifier_;
-  // Unowned NetLog required by CertVerifier.
-  net::NetLog* net_log_;
-  // CertVerifierBlockAdapter should be used on the same thread where it was
-  // created.
-  base::ThreadChecker thread_checker_;
+  // Underlying CertVerifier.
+  scoped_ptr<CertVerifier> cert_verifier_;
+  // Net Log required by CertVerifier.
+  BoundNetLog net_log_;
 };
 
-}  // namespace web
+}  // net
 
 #endif  // IOS_WEB_NET_CERT_VERIFIER_BLOCK_ADAPTER_H_

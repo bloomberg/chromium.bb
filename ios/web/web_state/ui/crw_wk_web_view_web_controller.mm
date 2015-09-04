@@ -19,7 +19,6 @@
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/navigation/web_load_params.h"
-#import "ios/web/net/crw_cert_verification_controller.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
@@ -136,12 +135,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // CRWWebUIManager object for loading WebUI pages.
   base::scoped_nsobject<CRWWebUIManager> _webUIManager;
-
-  // Controller used for certs verification to help with blocking requests with
-  // bad SSL cert, presenting SSL interstitials and determining SSL status for
-  // Navigation Items.
-  base::scoped_nsobject<CRWCertVerificationController>
-      _certVerificationController;
 }
 
 // Response's MIME type of the last known navigation.
@@ -294,14 +287,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 #pragma mark CRWWebController public methods
 
 - (instancetype)initWithWebState:(scoped_ptr<web::WebStateImpl>)webState {
-  DCHECK(webState);
-  web::BrowserState* browserState = webState->GetBrowserState();
-  self = [super initWithWebState:webState.Pass()];
-  if (self) {
-    _certVerificationController.reset([[CRWCertVerificationController alloc]
-        initWithBrowserState:browserState]);
-  }
-  return self;
+  return [super initWithWebState:webState.Pass()];
 }
 
 - (BOOL)keyboardDisplayRequiresUserAction {
@@ -341,11 +327,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // TODO(eugenebut): implement dialogs/windows suppression using
   // WKNavigationDelegate methods where possible.
   [super setPageDialogOpenPolicy:policy];
-}
-
-- (void)close {
-  [_certVerificationController shutDown];
-  [super close];
 }
 
 #pragma mark -
@@ -1344,22 +1325,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                     completionHandler:
         (void (^)(NSURLSessionAuthChallengeDisposition disposition,
                   NSURLCredential *credential))completionHandler {
-  if (![challenge.protectionSpace.authenticationMethod
-          isEqual:NSURLAuthenticationMethodServerTrust]) {
-    completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
-    return;
-  }
-
-  SecTrustRef trust = challenge.protectionSpace.serverTrust;
-  scoped_refptr<net::X509Certificate> cert = web::CreateCertFromTrust(trust);
-  [_certVerificationController
-      decidePolicyForCert:cert
-                     host:challenge.protectionSpace.host
-        completionHandler:^(web::CertAcceptPolicy policy,
-                            net::CertStatus status) {
-          completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace,
-                            nil);
-        }];
+  NOTIMPLEMENTED();
+  completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
