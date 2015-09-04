@@ -107,6 +107,54 @@ private:
     ShouldRespectOverflowClip respectOverflowClipForViewport;
 };
 
+// DeprecatedPaintLayerClipper is responsible for computing and caching clip
+// rects.
+//
+// The main reason for this cache is that we compute the clip rects during
+// a layout tree walk but need them during a paint tree walk (see example
+// below for some explanations).
+//
+// A lot of complexity in this class come from the difference in inheritance
+// between 'overflow' and 'clip':
+// * 'overflow' applies based on the containing blocks chain.
+//    (http://www.w3.org/TR/CSS2/visufx.html#propdef-overflow)
+// * 'clip' applies to all descendants.
+//    (http://www.w3.org/TR/CSS2/visufx.html#propdef-clip)
+//
+// Let's take an example:
+// <!DOCTYPE html>
+// <div id="container" style="position: absolute; height: 100px; width: 100px">
+//   <div id="inflow" style="height: 200px; width: 200px;
+//       background-color: purple"></div>
+//   <div id="fixed" style="height: 200px; width: 200px; position: fixed;
+//       background-color: orange"></div>
+// </div>
+//
+// The paint tree looks like:
+//               html
+//              /   |
+//             /    |
+//            /     |
+//      container  fixed
+//         |
+//         |
+//       inflow
+//
+// If we add "overflow: hidden" to #container, the overflow clip will apply to
+// #inflow but not to #fixed. That's because #fixed's containing block is above
+// #container and thus 'overflow' doesn't apply to it. During our tree walk,
+// #fixed is a child of #container, which is the reason why we keep 3 clip rects
+// depending on the 'position' of the elements.
+//
+// Now instead if we add "clip: rect(0px, 100px, 100px, 0px)" to #container,
+// the clip will apply to both #inflow and #fixed. That's because 'clip'
+// applies to any descendant, regardless of containing blocks. Note that
+// #container and #fixed are siblings in the paint tree but #container does
+// clip #fixed. This is the reason why we compute the painting clip rects during
+// a layout tree walk and cache them for painting.
+//
+// This class is NOT DEPRECATED, DeprecatedPaintLayer is and we match its
+// naming.
 class DeprecatedPaintLayerClipper {
     DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerClipper);

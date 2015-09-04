@@ -38,6 +38,10 @@ namespace blink {
 
 enum ChildrenIteration {
     NegativeZOrderChildren = 1,
+    // Normal flow children are not mandated by CSS 2.1 but are an artifact of
+    // our implementation: we allocate DeprecatedPaintLayers for elements that
+    // are not treated as stacking contexts and thus we need to walk them
+    // during painting and hit-testing.
     NormalFlowChildren = 1 << 1,
     PositiveZOrderChildren = 1 << 2,
     AllChildren = NegativeZOrderChildren | NormalFlowChildren | PositiveZOrderChildren
