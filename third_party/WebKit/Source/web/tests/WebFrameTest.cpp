@@ -2306,7 +2306,12 @@ INSTANTIATE_TEST_CASE_P(All, WebFrameResizeTest, ::testing::Values(
     ParameterizedWebFrameTestConfig::Default,
     ParameterizedWebFrameTestConfig::RootLayerScrolls));
 
+// Fails on Android: https://crbug.com/528186
+#if OS(ANDROID)
+TEST_P(WebFrameResizeTest, DISABLED_ResizeYieldsCorrectScrollAndScaleForWidthEqualsDeviceWidth)
+#else
 TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDeviceWidth)
+#endif
 {
     // With width=device-width, pageScaleFactor is preserved across resizes as
     // long as the content adjusts according to the device-width.
@@ -2320,7 +2325,12 @@ TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDevice
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
+// Fails on Android: https://crbug.com/528186
+#if OS(ANDROID)
+TEST_P(WebFrameResizeTest, DISABLED_ResizeYieldsCorrectScrollAndScaleForMinimumScale)
+#else
 TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForMinimumScale)
+#endif
 {
     // This tests a scenario where minimum-scale is set to 1.0, but some element
     // on the page is slightly larger than the portrait width, so our "natural"
@@ -2336,7 +2346,12 @@ TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForMinimumScale)
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
+// Fails on Android: https://crbug.com/528186
+#if OS(ANDROID)
+TEST_P(WebFrameResizeTest, DISABLED_ResizeYieldsCorrectScrollAndScaleForFixedWidth)
+#else
 TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedWidth)
+#endif
 {
     // With a fixed width, pageScaleFactor scales by the relative change in viewport width.
     const char* url = "resize_scroll_fixed_width.html";
@@ -2349,7 +2364,12 @@ TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedWidth)
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
+// Fails on Android: https://crbug.com/528186
+#if OS(ANDROID)
+TEST_P(WebFrameResizeTest, DISABLED_ResizeYieldsCorrectScrollAndScaleForFixedLayout)
+#else
 TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
+#endif
 {
     // With a fixed layout, pageScaleFactor scales by the relative change in viewport width.
     const char* url = "resize_scroll_fixed_layout.html";
@@ -7766,7 +7786,12 @@ INSTANTIATE_TEST_CASE_P(All, ViewportOnResizeTest, ::testing::Values(
     ParameterizedWebFrameTestConfig::Default,
     ParameterizedWebFrameTestConfig::RootLayerScrolls));
 
+// Fails on Android: https://crbug.com/528186
+#if OS(ANDROID)
+TEST_P(ViewportOnResizeTest, DISABLED_ViewportInvalidatedOnResizeWithEmulation)
+#else
 TEST_P(ViewportOnResizeTest, ViewportInvalidatedOnResizeWithEmulation)
+#endif
 {
     WebDeviceEmulationParams params;
     params.screenPosition = WebDeviceEmulationParams::Mobile;
@@ -7868,7 +7893,12 @@ TEST_P(ParameterizedWebFrameTest, SendBeaconFromChildWithRemoteMainFrame)
 }
 
 // See https://crbug.com/525285.
+// Fails on Android: https://crbug.com/528186
+#if OS(ANDROID)
+TEST_P(ParameterizedWebFrameTest, DISABLED_RemoteToLocalSwapOnMainFrameInitializesCoreFrame)
+#else
 TEST_P(ParameterizedWebFrameTest, RemoteToLocalSwapOnMainFrameInitializesCoreFrame)
+#endif
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
