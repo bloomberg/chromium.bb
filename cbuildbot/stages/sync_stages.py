@@ -801,6 +801,8 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     assert self._run.config.master
 
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
+    logging.info('Creating new candidate manifest, including chrome version '
+                 '%s.', self._chrome_version)
     manifest = self.manifest_manager.CreateNewCandidate(
         chrome_version=self._chrome_version,
         build_id=build_id)
@@ -855,7 +857,10 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
         self._run.config.master):
       # PFQ master needs to determine what version of Chrome to build
       # for all slaves.
+      logging.info('I am a master running with CHROME_REV_LATEST, '
+                   'therefore getting latest chrome version.')
       self._chrome_version = self.GetLatestChromeVersion()
+      logging.info('Latest chrome version is: %s', self._chrome_version)
 
     ManifestVersionedSyncStage.PerformStage(self)
 
@@ -995,6 +1000,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
           constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS)
       db.ExtendDeadline(build_id, timeout)
 
+    logging.info('Creating new candidate manifest.')
     manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool,
                                                         build_id=build_id)
     if MasterSlaveLKGMSyncStage.sub_manager:
