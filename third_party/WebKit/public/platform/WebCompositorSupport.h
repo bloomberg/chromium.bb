@@ -41,7 +41,6 @@ class WebCompositorAnimationPlayer;
 class WebCompositorAnimationTimeline;
 class WebContentLayer;
 class WebContentLayerClient;
-class WebDisplayItemList;
 class WebExternalTextureLayer;
 class WebExternalTextureLayerClient;
 class WebFilterAnimationCurve;
@@ -93,8 +92,6 @@ public:
     virtual WebCompositorAnimationPlayer* createAnimationPlayer() { return nullptr; }
 
     virtual WebCompositorAnimationTimeline* createAnimationTimeline() { return nullptr; }
-
-    virtual WebDisplayItemList* createDisplayItemList() { return nullptr; }
 
 protected:
     virtual ~WebCompositorSupport() { }
