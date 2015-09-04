@@ -565,7 +565,9 @@ const char kEnableUserAlternateProtocolPorts[] =
 // apps).
 const char kEnableWebAppFrame[] = "enable-web-app-frame";
 
-extern const char kEnableWebUsbNotifications[] = "enable-webusb-notifications";
+// Enables webusb notifications, which shows notifications when usb devices with
+// landing page are plugged in.
+const char kEnableWebUsbNotifications[] = "enable-webusb-notifications";
 
 // Enables synchronizing WiFi credentials across devices, using Chrome Sync.
 const char kEnableWifiCredentialSync[]      = "enable-wifi-credential-sync";
