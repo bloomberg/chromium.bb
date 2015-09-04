@@ -37,6 +37,7 @@ source_set("base") {
 
   public_deps = [
     "//chromecast/base/metrics",
+    "//chromecast/public",
   ]
 
   deps = [

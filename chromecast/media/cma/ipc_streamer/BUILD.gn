@@ -20,6 +20,10 @@ source_set("ipc_streamer") {
 
   configs += [ "//chromecast:config" ]
 
+  public_deps = [
+    "//chromecast/public/media",
+  ]
+
   deps = [
     "//base",
     "//chromecast/media/cma/base",

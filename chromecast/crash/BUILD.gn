@@ -46,6 +46,7 @@ source_set("test_support") {
   deps = [
     ":crash",
     "//base",
+    "//chromecast/base",
   ]
 }
 

@@ -34,6 +34,11 @@ source_set("pipeline") {
     "video_pipeline_impl.h",
   ]
 
+  public_deps = [
+    "//chromecast/public",
+    "//chromecast/public/media",
+  ]
+
   deps = [
     "//base",
     "//chromecast/media/cma/backend",

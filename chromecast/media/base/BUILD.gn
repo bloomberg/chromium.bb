@@ -27,14 +27,19 @@ source_set("base") {
     "switching_media_renderer.h",
   ]
 
+  public_deps = [
+    "//chromecast/public/media",
+  ]
+
   configs += [ "//chromecast:config" ]
 
   deps = [
     "//base",
-    "//chromecast/public/media",
+    "//chromecast/public",
     "//crypto",
     "//crypto:platform",
     "//media",
+    "//net",
     "//third_party/widevine/cdm:version_h",
   ]
 

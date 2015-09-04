@@ -46,6 +46,7 @@ test("cast_media_unittests") {
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//chromecast/base",
     "//chromecast/base/metrics:test_support",
     "//chromecast/public",
     "//media",

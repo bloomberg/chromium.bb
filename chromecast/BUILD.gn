@@ -9,6 +9,8 @@ import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 import("//ui/ozone/ozone.gni")
 
+# TODO(slan): This target is being used far too broadly. We should reduce the
+# uses of this config to targets that actually need it. (b/23814594)
 config("config") {
   defines = []
 
