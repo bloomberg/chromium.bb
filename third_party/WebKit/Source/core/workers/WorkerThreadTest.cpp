@@ -25,6 +25,7 @@ using testing::Mock;
 namespace blink {
 
 namespace {
+
 class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
 public:
     MockWorkerLoaderProxyProvider() { }
@@ -262,7 +263,7 @@ TEST_F(WorkerThreadTest, StartAndStopImmediately)
 {
     EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_))
         .Times(AtMost(1));
-    EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true))
+    EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(_))
         .Times(AtMost(1));
     EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated())
         .Times(AtMost(1));
