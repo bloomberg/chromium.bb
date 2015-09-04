@@ -25,6 +25,65 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
   void ReturnResources(const ReturnedResourceArray& resources) override {}
 };
 
+// This test verifies that hit testing on a surface that does not exist does
+// not crash.
+TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
+  SurfaceManager manager;
+  EmptySurfaceFactoryClient client;
+  SurfaceFactory factory(&manager, &client);
+  SurfaceIdAllocator root_allocator(2);
+
+  SurfaceId root_surface_id = root_allocator.GenerateId();
+  SurfaceId child_surface_id;
+  // Give the child surface an invalid ID.
+  child_surface_id.id = 0xdeadbeef;
+
+  gfx::Size root_size(300, 300);
+  gfx::Rect root_rect(root_size);
+  gfx::Size child_size(200, 200);
+  gfx::Rect child_rect(child_size);
+  gfx::Rect child_solid_quad_size(100, 100);
+  gfx::Rect child_solid_quad_rect(child_solid_quad_size);
+
+  // Creates a root surface.
+  factory.Create(root_surface_id);
+  RenderPassId root_id(1, 1);
+  scoped_ptr<RenderPass> root_pass = RenderPass::Create();
+  root_pass->SetNew(root_id, root_rect, root_rect, gfx::Transform());
+
+  // Add a reference to the child surface on the root surface.
+  SharedQuadState* root_shared_state =
+      root_pass->CreateAndAppendSharedQuadState();
+  root_shared_state->SetAll(
+      gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f, 0.0f, 1.0f, 0.0f, 50.0f, 0.0f,
+                     0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f),
+      root_size, root_rect, root_rect, false, 1.0f, SkXfermode::kSrcOver_Mode,
+      0);
+  SurfaceDrawQuad* surface_quad =
+      root_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  surface_quad->SetNew(root_pass->shared_quad_state_list.back(), child_rect,
+                       child_rect, child_surface_id);
+
+  // Submit the root frame.
+  scoped_ptr<DelegatedFrameData> root_delegated_frame_data(
+      new DelegatedFrameData);
+  root_delegated_frame_data->render_pass_list.push_back(root_pass.Pass());
+  scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
+  root_frame->delegated_frame_data = root_delegated_frame_data.Pass();
+  factory.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
+                                SurfaceFactory::DrawCallback());
+
+  {
+    SurfaceHittest hittest(&manager);
+    gfx::Point transformed_point;
+    EXPECT_EQ(root_surface_id,
+              hittest.Hittest(root_surface_id, gfx::Point(100, 100),
+                              &transformed_point));
+  }
+
+  factory.Destroy(root_surface_id);
+}
+
 TEST(SurfaceHittestTest, Hittest_SingleSurface) {
   SurfaceManager manager;
   EmptySurfaceFactoryClient client;

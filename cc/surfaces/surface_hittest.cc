@@ -19,6 +19,8 @@ namespace {
 const RenderPass* GetRootRenderPass(SurfaceManager* manager,
                                     SurfaceId surface_id) {
   Surface* surface = manager->GetSurfaceForId(surface_id);
+  if (!surface)
+    return nullptr;
 
   const CompositorFrame* surface_frame = surface->GetEligibleFrame();
   if (!surface_frame)
