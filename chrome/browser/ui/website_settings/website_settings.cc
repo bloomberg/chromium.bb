@@ -555,9 +555,9 @@ void WebsiteSettings::Init(Profile* profile,
     if (ssl.content_status) {
       bool ran_insecure_content =
           !!(ssl.content_status & content::SSLStatus::RAN_INSECURE_CONTENT);
-      site_connection_status_ = ran_insecure_content ?
-          SITE_CONNECTION_STATUS_ENCRYPTED_ERROR
-          : SITE_CONNECTION_STATUS_MIXED_CONTENT;
+      site_connection_status_ = ran_insecure_content
+                                    ? SITE_CONNECTION_STATUS_MIXED_SCRIPT
+                                    : SITE_CONNECTION_STATUS_MIXED_CONTENT;
       site_connection_details_.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
           site_connection_details_,

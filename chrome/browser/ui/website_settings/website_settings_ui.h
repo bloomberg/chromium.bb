@@ -14,13 +14,9 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
 
-
 class GURL;
 class Profile;
 class WebsiteSettings;
-namespace content {
-struct SSLStatus;
-}
 
 namespace gfx {
 class Image;
