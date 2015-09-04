@@ -38,7 +38,7 @@
 #include "extensions/common/extension_set.h"
 #endif
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(TOOLKIT_VIEWS)
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
@@ -204,7 +204,7 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
   return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(TOOLKIT_VIEWS)
 gfx::ImageSkia GetFolderIcon(gfx::VectorIconId id) {
   SkColor icon_color;
   ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
@@ -497,7 +497,7 @@ bool IsValidBookmarkDropLocation(Profile* profile,
   return true;
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(TOOLKIT_VIEWS)
 gfx::ImageSkia GetBookmarkFolderIcon() {
   return GetFolderIcon(gfx::VectorIconId::FOLDER);
 }

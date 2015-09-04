@@ -69,10 +69,13 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   set_owned_by_client();
 
   ui::ThemeProvider* theme = location_bar_view_->GetThemeProvider();
-  top_shadow_ = theme->GetImageSkiaNamed(IDR_OMNIBOX_DROPDOWN_SHADOW_TOP);
-  int bottom_shadow_asset = ui::MaterialDesignController::IsModeMaterial() ?
-      IDR_OMNIBOX_DROPDOWN_SHADOW_BOTTOM : IDR_BUBBLE_B;
-  bottom_shadow_ = theme->GetImageSkiaNamed(bottom_shadow_asset);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    top_shadow_ = theme->GetImageSkiaNamed(IDR_OMNIBOX_DROPDOWN_SHADOW_TOP);
+    bottom_shadow_ =
+        theme->GetImageSkiaNamed(IDR_OMNIBOX_DROPDOWN_SHADOW_BOTTOM);
+  } else {
+    bottom_shadow_ = theme->GetImageSkiaNamed(IDR_BUBBLE_B);
+  }
 
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
