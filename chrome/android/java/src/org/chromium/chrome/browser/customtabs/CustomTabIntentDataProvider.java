@@ -100,7 +100,7 @@ public class CustomTabIntentDataProvider {
         mSession = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
         retrieveToolbarColor(intent, context);
         mEnableUrlBarHiding = IntentUtils.safeGetBooleanExtra(
-                intent, CustomTabsIntent.EXTRA_ENABLE_URLBAR_HIDING, false);
+                intent, CustomTabsIntent.EXTRA_ENABLE_URLBAR_HIDING, true);
         mKeepAliveServiceIntent = IntentUtils.safeGetParcelableExtra(intent, EXTRA_KEEP_ALIVE);
 
         Bundle actionButtonBundle =
