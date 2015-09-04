@@ -11,6 +11,7 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/errorcode.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
+#include "sandbox/linux/system_headers/linux_seccomp.h"
 
 namespace sandbox {
 namespace bpf_dsl {
@@ -20,8 +21,8 @@ class AllowResultExprImpl : public internal::ResultExprImpl {
  public:
   AllowResultExprImpl() {}
 
-  ErrorCode Compile(PolicyCompiler* pc) const override {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  CodeGen::Node Compile(PolicyCompiler* pc) const override {
+    return pc->Return(SECCOMP_RET_ALLOW);
   }
 
   bool IsAllow() const override { return true; }
@@ -38,8 +39,8 @@ class ErrorResultExprImpl : public internal::ResultExprImpl {
     CHECK(err_ >= ErrorCode::ERR_MIN_ERRNO && err_ <= ErrorCode::ERR_MAX_ERRNO);
   }
 
-  ErrorCode Compile(PolicyCompiler* pc) const override {
-    return pc->Error(err_);
+  CodeGen::Node Compile(PolicyCompiler* pc) const override {
+    return pc->Return(SECCOMP_RET_ERRNO + err_);
   }
 
   bool IsDeny() const override { return true; }
@@ -56,8 +57,8 @@ class KillResultExprImpl : public internal::ResultExprImpl {
  public:
   KillResultExprImpl() {}
 
-  ErrorCode Compile(PolicyCompiler* pc) const override {
-    return ErrorCode(ErrorCode::ERR_KILL);
+  CodeGen::Node Compile(PolicyCompiler* pc) const override {
+    return pc->Return(SECCOMP_RET_KILL);
   }
 
   bool IsDeny() const override { return true; }
@@ -72,8 +73,8 @@ class TraceResultExprImpl : public internal::ResultExprImpl {
  public:
   TraceResultExprImpl(uint16_t aux) : aux_(aux) {}
 
-  ErrorCode Compile(PolicyCompiler* pc) const override {
-    return ErrorCode(ErrorCode::ERR_TRACE + aux_);
+  CodeGen::Node Compile(PolicyCompiler* pc) const override {
+    return pc->Return(SECCOMP_RET_TRACE + aux_);
   }
 
  private:
@@ -91,7 +92,7 @@ class TrapResultExprImpl : public internal::ResultExprImpl {
     DCHECK(func_);
   }
 
-  ErrorCode Compile(PolicyCompiler* pc) const override {
+  CodeGen::Node Compile(PolicyCompiler* pc) const override {
     return pc->Trap(func_, arg_, safe_);
   }
 
@@ -116,7 +117,7 @@ class IfThenResultExprImpl : public internal::ResultExprImpl {
                        const ResultExpr& else_result)
       : cond_(cond), then_result_(then_result), else_result_(else_result) {}
 
-  ErrorCode Compile(PolicyCompiler* pc) const override {
+  CodeGen::Node Compile(PolicyCompiler* pc) const override {
     return cond_->Compile(
         pc, then_result_->Compile(pc), else_result_->Compile(pc));
   }
@@ -139,10 +140,10 @@ class ConstBoolExprImpl : public internal::BoolExprImpl {
  public:
   ConstBoolExprImpl(bool value) : value_(value) {}
 
-  ErrorCode Compile(PolicyCompiler* pc,
-                    ErrorCode true_ec,
-                    ErrorCode false_ec) const override {
-    return value_ ? true_ec : false_ec;
+  CodeGen::Node Compile(PolicyCompiler* pc,
+                        CodeGen::Node then_node,
+                        CodeGen::Node else_node) const override {
+    return value_ ? then_node : else_node;
   }
 
  private:
@@ -153,40 +154,39 @@ class ConstBoolExprImpl : public internal::BoolExprImpl {
   DISALLOW_COPY_AND_ASSIGN(ConstBoolExprImpl);
 };
 
-class PrimitiveBoolExprImpl : public internal::BoolExprImpl {
+class MaskedEqualBoolExprImpl : public internal::BoolExprImpl {
  public:
-  PrimitiveBoolExprImpl(int argno,
-                        ErrorCode::ArgType is_32bit,
-                        uint64_t mask,
-                        uint64_t value)
-      : argno_(argno), is_32bit_(is_32bit), mask_(mask), value_(value) {}
+  MaskedEqualBoolExprImpl(int argno,
+                          size_t width,
+                          uint64_t mask,
+                          uint64_t value)
+      : argno_(argno), width_(width), mask_(mask), value_(value) {}
 
-  ErrorCode Compile(PolicyCompiler* pc,
-                    ErrorCode true_ec,
-                    ErrorCode false_ec) const override {
-    return pc->CondMaskedEqual(
-        argno_, is_32bit_, mask_, value_, true_ec, false_ec);
+  CodeGen::Node Compile(PolicyCompiler* pc,
+                        CodeGen::Node then_node,
+                        CodeGen::Node else_node) const override {
+    return pc->MaskedEqual(argno_, width_, mask_, value_, then_node, else_node);
   }
 
  private:
-  ~PrimitiveBoolExprImpl() override {}
+  ~MaskedEqualBoolExprImpl() override {}
 
   int argno_;
-  ErrorCode::ArgType is_32bit_;
+  size_t width_;
   uint64_t mask_;
   uint64_t value_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrimitiveBoolExprImpl);
+  DISALLOW_COPY_AND_ASSIGN(MaskedEqualBoolExprImpl);
 };
 
 class NegateBoolExprImpl : public internal::BoolExprImpl {
  public:
   explicit NegateBoolExprImpl(const BoolExpr& cond) : cond_(cond) {}
 
-  ErrorCode Compile(PolicyCompiler* pc,
-                    ErrorCode true_ec,
-                    ErrorCode false_ec) const override {
-    return cond_->Compile(pc, false_ec, true_ec);
+  CodeGen::Node Compile(PolicyCompiler* pc,
+                        CodeGen::Node then_node,
+                        CodeGen::Node else_node) const override {
+    return cond_->Compile(pc, else_node, then_node);
   }
 
  private:
@@ -202,10 +202,11 @@ class AndBoolExprImpl : public internal::BoolExprImpl {
   AndBoolExprImpl(const BoolExpr& lhs, const BoolExpr& rhs)
       : lhs_(lhs), rhs_(rhs) {}
 
-  ErrorCode Compile(PolicyCompiler* pc,
-                    ErrorCode true_ec,
-                    ErrorCode false_ec) const override {
-    return lhs_->Compile(pc, rhs_->Compile(pc, true_ec, false_ec), false_ec);
+  CodeGen::Node Compile(PolicyCompiler* pc,
+                        CodeGen::Node then_node,
+                        CodeGen::Node else_node) const override {
+    return lhs_->Compile(pc, rhs_->Compile(pc, then_node, else_node),
+                         else_node);
   }
 
  private:
@@ -222,10 +223,11 @@ class OrBoolExprImpl : public internal::BoolExprImpl {
   OrBoolExprImpl(const BoolExpr& lhs, const BoolExpr& rhs)
       : lhs_(lhs), rhs_(rhs) {}
 
-  ErrorCode Compile(PolicyCompiler* pc,
-                    ErrorCode true_ec,
-                    ErrorCode false_ec) const override {
-    return lhs_->Compile(pc, true_ec, rhs_->Compile(pc, true_ec, false_ec));
+  CodeGen::Node Compile(PolicyCompiler* pc,
+                        CodeGen::Node then_node,
+                        CodeGen::Node else_node) const override {
+    return lhs_->Compile(pc, then_node,
+                         rhs_->Compile(pc, then_node, else_node));
   }
 
  private:
@@ -270,11 +272,7 @@ BoolExpr ArgEq(int num, size_t size, uint64_t mask, uint64_t val) {
   // accordingly.
   CHECK(size == 4 || size == 8);
 
-  // TODO(mdempsky): Should we just always use TP_64BIT?
-  const ErrorCode::ArgType arg_type =
-      (size == 4) ? ErrorCode::TP_32BIT : ErrorCode::TP_64BIT;
-
-  return BoolExpr(new const PrimitiveBoolExprImpl(num, arg_type, mask, val));
+  return BoolExpr(new const MaskedEqualBoolExprImpl(num, size, mask, val));
 }
 
 }  // namespace internal

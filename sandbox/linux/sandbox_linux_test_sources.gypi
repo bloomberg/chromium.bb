@@ -45,7 +45,6 @@
         'bpf_dsl/cons_unittest.cc',
         'bpf_dsl/dump_bpf.cc',
         'bpf_dsl/dump_bpf.h',
-        'bpf_dsl/errorcode_unittest.cc',
         'bpf_dsl/syscall_set_unittest.cc',
         'bpf_dsl/test_trap_registry.cc',
         'bpf_dsl/test_trap_registry.h',

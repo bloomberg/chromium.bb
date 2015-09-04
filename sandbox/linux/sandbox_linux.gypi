@@ -135,7 +135,6 @@
         'bpf_dsl/codegen.cc',
         'bpf_dsl/codegen.h',
         'bpf_dsl/cons.h',
-        'bpf_dsl/errorcode.cc',
         'bpf_dsl/errorcode.h',
         'bpf_dsl/linux_syscall_ranges.h',
         'bpf_dsl/policy.cc',

@@ -7,15 +7,12 @@
 
 #include <stdint.h>
 
-#include <map>
-#include <set>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
-#include "sandbox/linux/bpf_dsl/errorcode.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/sandbox_export.h"
 
@@ -47,49 +44,42 @@ class SANDBOX_EXPORT PolicyCompiler {
   // TODO(mdempsky): Move this into Policy?
   void SetPanicFunc(PanicFunc panic_func);
 
-  // Error returns an ErrorCode to indicate the system call should fail with
-  // the specified error number.
-  ErrorCode Error(int err);
-
-  // Trap returns an ErrorCode to indicate the system call should
-  // instead invoke a trap handler.
-  ErrorCode Trap(TrapRegistry::TrapFnc fnc, const void* aux, bool safe);
-
   // UnsafeTraps require some syscalls to always be allowed.
   // This helper function returns true for these calls.
   static bool IsRequiredForUnsafeTrap(int sysno);
 
-  // We can also use ErrorCode to request evaluation of a conditional
-  // statement based on inspection of system call parameters.
-  // This method wrap an ErrorCode object around the conditional statement.
+  // Functions below are meant for use within bpf_dsl itself.
+
+  // Return returns a CodeGen::Node that returns the specified seccomp
+  // return value.
+  CodeGen::Node Return(uint32_t ret);
+
+  // Trap returns a CodeGen::Node to indicate the system call should
+  // instead invoke a trap handler.
+  CodeGen::Node Trap(TrapRegistry::TrapFnc fnc, const void* aux, bool safe);
+
+  // MaskedEqual returns a CodeGen::Node that represents a conditional branch.
   // Argument "argno" (1..6) will be bitwise-AND'd with "mask" and compared
-  // to "value"; if equal, then "passed" will be returned, otherwise "failed".
-  // If "is32bit" is set, the argument must in the range of 0x0..(1u << 32 - 1)
+  // to "value"; if equal, then "passed" will be executed, otherwise "failed".
+  // If "width" is 4, the argument must in the range of 0x0..(1u << 32 - 1)
   // If it is outside this range, the sandbox treats the system call just
-  // the same as any other ABI violation (i.e. it aborts with an error
-  // message).
-  ErrorCode CondMaskedEqual(int argno,
-                            ErrorCode::ArgType is_32bit,
+  // the same as any other ABI violation (i.e., it panics).
+  CodeGen::Node MaskedEqual(int argno,
+                            size_t width,
                             uint64_t mask,
                             uint64_t value,
-                            const ErrorCode& passed,
-                            const ErrorCode& failed);
-
-  // Returns the fatal ErrorCode that is used to indicate that somebody
-  // attempted to pass a 64bit value in a 32bit system call argument.
-  // This method is primarily needed for testing purposes.
-  ErrorCode Unexpected64bitArgument();
+                            CodeGen::Node passed,
+                            CodeGen::Node failed);
 
  private:
   struct Range;
   typedef std::vector<Range> Ranges;
-  typedef std::set<ErrorCode, struct ErrorCode::LessThan> Conds;
 
-  // Used by CondExpressionHalf to track which half of the argument it's
+  // Used by MaskedEqualHalf to track which half of the argument it's
   // emitting instructions for.
-  enum ArgHalf {
-    LowerHalf,
-    UpperHalf,
+  enum class ArgHalf {
+    LOWER,
+    UPPER,
   };
 
   // Compile the configured policy into a complete instruction sequence.
@@ -118,7 +108,8 @@ class SANDBOX_EXPORT PolicyCompiler {
 
   // Finds all the ranges of system calls that need to be handled. Ranges are
   // sorted in ascending order of system call numbers. There are no gaps in the
-  // ranges. System calls with identical ErrorCodes are coalesced into a single
+  // ranges. System calls with identical CodeGen::Nodes are coalesced into a
+  // single
   // range.
   void FindRanges(Ranges* ranges);
 
@@ -131,32 +122,25 @@ class SANDBOX_EXPORT PolicyCompiler {
   // CodeGen node.
   CodeGen::Node CompileResult(const ResultExpr& res);
 
-  // Returns a BPF program snippet that makes the BPF filter program exit
-  // with the given ErrorCode "err". N.B. the ErrorCode may very well be a
-  // conditional expression; if so, this function will recursively call
-  // CondExpression() and possibly RetExpression() to build a complex set of
-  // instructions.
-  CodeGen::Node RetExpression(const ErrorCode& err);
-
-  // Returns a BPF program that evaluates the conditional expression in
-  // "cond" and returns the appropriate value from the BPF filter program.
-  // This function recursively calls RetExpression(); it should only ever be
-  // called from RetExpression().
-  CodeGen::Node CondExpression(const ErrorCode& cond);
-
   // Returns a BPF program that evaluates half of a conditional expression;
   // it should only ever be called from CondExpression().
-  CodeGen::Node CondExpressionHalf(const ErrorCode& cond,
-                                   ArgHalf half,
-                                   CodeGen::Node passed,
-                                   CodeGen::Node failed);
+  CodeGen::Node MaskedEqualHalf(int argno,
+                                size_t width,
+                                uint64_t full_mask,
+                                uint64_t full_value,
+                                ArgHalf half,
+                                CodeGen::Node passed,
+                                CodeGen::Node failed);
+
+  // Returns the fatal CodeGen::Node that is used to indicate that somebody
+  // attempted to pass a 64bit value in a 32bit system call argument.
+  CodeGen::Node Unexpected64bitArgument();
 
   const Policy* policy_;
   TrapRegistry* registry_;
   uint64_t escapepc_;
   PanicFunc panic_func_;
 
-  Conds conds_;
   CodeGen gen_;
   bool has_unsafe_traps_;
 
