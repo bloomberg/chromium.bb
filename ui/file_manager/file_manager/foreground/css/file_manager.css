@@ -296,7 +296,8 @@ body.check-select button:hover {
   color: rgb(90, 90, 90);
 }
 
-.dialog-header .icon-button > paper-ripple {
+.dialog-header .icon-button > paper-ripple,
+.dialog-header .ripples > paper-ripple {
   color: black;
 }
 
@@ -343,6 +344,13 @@ body.check-select .dialog-header
 
 .dialog-header button.icon-button > iron-icon {
   margin: 8px;
+}
+
+.dialog-header button.icon-button > files-toggle-ripple {
+  height: 28px;
+  left: 2px;
+  top: 2px;
+  width: 28px;
 }
 
 .dialog-header button.icon-button > .icon {
