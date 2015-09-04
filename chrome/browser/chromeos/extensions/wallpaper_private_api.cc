@@ -622,6 +622,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
+  wallpaper_api_util::RecordCustomWallpaperLayout(layout);
 
   bool update_wallpaper =
       user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
@@ -704,6 +705,7 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
   }
   info.layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
+  wallpaper_api_util::RecordCustomWallpaperLayout(info.layout);
 
   std::string email =
       user_manager::UserManager::Get()->GetActiveUser()->email();

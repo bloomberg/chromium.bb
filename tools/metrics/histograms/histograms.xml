@@ -1019,6 +1019,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.Wallpaper.CustomLayout" enum="WallpaperLayout">
+  <owner>xdai@chromium.org</owner>
+  <summary>
+    The custom wallpaper layout type. Recorded when the user sets a new custom
+    wallpaper or changes the existing custom wallpaper's layout.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Wallpaper.DefaultIndex">
   <obsolete>
     Deprecated as of 11/2012. Use of indices has been removed.
@@ -73711,6 +73719,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="Verify CVV"/>
   <int value="10" label="Invalid form field"/>
   <int value="11" label="Require phone number"/>
+</enum>
+
+<enum name="WallpaperLayout" type="int">
+  <int value="0" label="Center"/>
+  <int value="1" label="Center Cropped"/>
+  <int value="2" label="Stretch"/>
+  <int value="3" label="Tile"/>
 </enum>
 
 <enum name="WallpaperType" type="int">

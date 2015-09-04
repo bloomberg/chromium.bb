@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,6 +38,11 @@ wallpaper::WallpaperLayout GetLayoutEnum(const std::string& layout) {
   }
   // Default to use CENTER layout.
   return wallpaper::WALLPAPER_LAYOUT_CENTER;
+}
+
+void RecordCustomWallpaperLayout(const wallpaper::WallpaperLayout& layout) {
+  UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.CustomLayout", layout,
+                            wallpaper::NUM_WALLPAPER_LAYOUT);
 }
 
 }  // namespace wallpaper_api_util

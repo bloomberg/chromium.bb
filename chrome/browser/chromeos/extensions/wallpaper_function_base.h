@@ -14,8 +14,15 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace wallpaper_api_util {
+
 extern const char kCancelWallpaperMessage[];
+
 wallpaper::WallpaperLayout GetLayoutEnum(const std::string& layout);
+
+// This is used to record the wallpaper layout when the user sets a custom
+// wallpaper or changes the existing custom wallpaper's layout.
+void RecordCustomWallpaperLayout(const wallpaper::WallpaperLayout& layout);
+
 }  // namespace wallpaper_api_util
 
 // Wallpaper manager function base. It contains a image decoder to decode

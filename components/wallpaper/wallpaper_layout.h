@@ -7,6 +7,8 @@
 
 namespace wallpaper {
 
+// This enum is used to back a histogram, and should therefore be treated as
+// append-only.
 enum WallpaperLayout {
   // Center the wallpaper on the desktop without scaling it. The wallpaper
   // may be cropped.
@@ -18,7 +20,8 @@ enum WallpaperLayout {
   // desktop's size.
   WALLPAPER_LAYOUT_STRETCH,
   // Tile the wallpaper over the background without scaling it.
-  WALLPAPER_LAYOUT_TILE
+  WALLPAPER_LAYOUT_TILE,
+  NUM_WALLPAPER_LAYOUT,
 };
 
 }  // namespace wallpaper

@@ -85,6 +85,10 @@ void Resize(SkBitmap orig_bitmap,
               sub_image, skia::ImageOperations::RESIZE_LANCZOS3, new_width,
               new_height);
         }
+        break;
+      case NUM_WALLPAPER_LAYOUT:
+        NOTREACHED();
+        break;
     }
   }
 
