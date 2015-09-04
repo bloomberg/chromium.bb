@@ -620,6 +620,63 @@
             ],
             "profile": "llvm"
         },
+        "moblab-release": {
+            "_template": "moblab-release",
+            "afdo_use": false,
+            "archive_build_debug": true,
+            "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+            "binhost_bucket": "gs://chromeos-dev-installer",
+            "binhost_key": "RELEASE_BINHOST",
+            "build_tests": true,
+            "build_type": "canary",
+            "chrome_sdk": true,
+            "chromeos_official": true,
+            "description": "Moblab release builders",
+            "dev_installer_prebuilts": true,
+            "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+            "git_sync": false,
+            "hw_tests": [
+                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}",
+                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}"
+            ],
+            "hw_tests_override": [
+                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+            ],
+            "hwqual": true,
+            "image_test": true,
+            "images": [
+                "base",
+                "recovery",
+                "test"
+            ],
+            "important": false,
+            "internal": true,
+            "manifest": "official.xml",
+            "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+            "manifest_version": true,
+            "overlays": "both",
+            "paygen": true,
+            "paygen_skip_delta_payloads": true,
+            "paygen_skip_testing": true,
+            "push_image": true,
+            "signer_tests": false,
+            "trybot_list": true,
+            "upload_symbols": true,
+            "useflags": [
+                "-cros-debug",
+                "chrome_internal"
+            ],
+            "usepkg_build_packages": false,
+            "vm_tests": [
+                "smoke_suite",
+                "dev_mode_test",
+                "cros_vm_test"
+            ]
+        },
         "no-vmtest-pre-cq": {
             "_template": "no-vmtest-pre-cq",
             "archive": false,
@@ -7772,7 +7829,6 @@
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab_quick\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "image_test": false,
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -7805,25 +7861,12 @@
         "vm_tests": []
     },
     "guado_moblab-release": {
-        "_template": "release",
+        "_template": "moblab-release",
         "active_waterfall": "chromeos",
-        "afdo_use": false,
         "boards": [
             "guado_moblab"
         ],
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}"
-        ],
         "image_test": false,
-        "images": [
-            "base",
-            "recovery",
-            "test"
-        ],
-        "paygen_skip_delta_payloads": true,
-        "paygen_skip_testing": true,
-        "signer_tests": false,
         "vm_tests": []
     },
     "guado_moblab-release-afdo": {
@@ -12995,6 +13038,7 @@
         ],
         "description": "Commit Queue (internal)",
         "image_test": false,
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13027,25 +13071,12 @@
         "vm_tests": []
     },
     "panther_moblab-release": {
-        "_template": "release",
+        "_template": "moblab-release",
         "active_waterfall": "chromeos",
-        "afdo_use": false,
         "boards": [
             "panther_moblab"
         ],
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}"
-        ],
         "image_test": false,
-        "images": [
-            "base",
-            "recovery",
-            "test"
-        ],
-        "paygen_skip_delta_payloads": true,
-        "paygen_skip_testing": true,
-        "signer_tests": false,
         "vm_tests": []
     },
     "panther_moblab-release-afdo": {
@@ -18178,10 +18209,8 @@
             "stumpy_moblab"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab_quick\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "image_test": false,
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18214,27 +18243,11 @@
         "vm_tests": []
     },
     "stumpy_moblab-release": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "afdo_use": false,
+        "_template": "moblab-release",
         "boards": [
             "stumpy_moblab"
         ],
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}"
-        ],
         "image_test": false,
-        "images": [
-            "base",
-            "recovery",
-            "test"
-        ],
-        "important": true,
-        "paygen_skip_delta_payloads": true,
-        "paygen_skip_testing": true,
-        "signer_tests": false,
         "vm_tests": []
     },
     "stumpy_moblab-release-afdo": {

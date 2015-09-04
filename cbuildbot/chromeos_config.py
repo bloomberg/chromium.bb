@@ -586,7 +586,8 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
-        'guado_moblab-paladin',
+        'panther_moblab-paladin',
+        'stumpy_moblab-paladin',
 
         # Experimental Canaries (Group)
         'storm-release-group',
@@ -1605,6 +1606,7 @@ def GetConfig():
       'nyan_freon',
       'falco',
       'gizmo',
+      'guado_moblab',
       'kayle',
       'lakitu',
       'lakitu_mobbuild',
@@ -1615,7 +1617,6 @@ def GetConfig():
       'nyan',
       'oak',
       'panther',
-      'panther_moblab',
       'parrot',
       'peach_pit',
       'peppy',
@@ -1627,7 +1628,6 @@ def GetConfig():
       'stout',
       'strago',
       'stumpy',
-      'stumpy_moblab',
       'tricky',
       'veyron_pinky',
       'whirlwind',
@@ -1673,7 +1673,6 @@ def GetConfig():
   ])
 
   _paladin_moblab_hwtest_boards = frozenset([
-      'stumpy_moblab',
       'guado_moblab',
   ])
 
@@ -2226,86 +2225,39 @@ def GetConfig():
       signer_tests=False,
   )
 
+  moblab_release = site_config.AddTemplate(
+      'moblab-release',
+      _release,
+      description='Moblab release builders',
+      images=['base', 'recovery', 'test'],
+      paygen_skip_delta_payloads=True,
+      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
+      paygen_skip_testing=True,
+      important=False,
+      afdo_use=False,
+      signer_tests=False,
+      hw_tests=[
+          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE, blocking=True,
+                                  num=1, timeout=120*60),
+          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
+                                  warn_only=True, num=1),
+          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+                                  warn_only=True, num=1)],
+  )
+
   site_config.AddConfig(
-      _release, 'stumpy_moblab-release',
+      moblab_release, 'stumpy_moblab-release',
       _base_configs['stumpy_moblab'],
-      images=['base', 'recovery', 'test'],
-      paygen_skip_delta_payloads=True,
-      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
-      paygen_skip_testing=True,
-      important=True,
-      afdo_use=False,
-      signer_tests=False,
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE, blocking=True,
-                                  num=1, timeout=120*60),
-          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
-                                  warn_only=True, num=1),
-          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
-                                  warn_only=True, num=1)],
   )
 
   site_config.AddConfig(
-      _release, 'guado_moblab-release',
+      moblab_release, 'guado_moblab-release',
       _base_configs['guado_moblab'],
-      images=['base', 'recovery', 'test'],
-      paygen_skip_delta_payloads=True,
-      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
-      paygen_skip_testing=True,
-      important=False,
-      afdo_use=False,
-      signer_tests=False,
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE, blocking=True,
-                                  num=1, timeout=120*60),
-          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
-                                  warn_only=True, num=1),
-          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
-                                  warn_only=True, num=1)],
   )
 
   site_config.AddConfig(
-      _release, 'panther_moblab-release',
+      moblab_release, 'panther_moblab-release',
       _base_configs['panther_moblab'],
-      images=['base', 'recovery', 'test'],
-      paygen_skip_delta_payloads=True,
-      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
-      paygen_skip_testing=True,
-      important=False,
-      afdo_use=False,
-      signer_tests=False,
-      hw_tests=[
-          config_lib.HWTestConfig(
-              constants.HWTEST_BVT_SUITE, blocking=True,
-              warn_only=True, num=1
-          ),
-          config_lib.HWTestConfig(
-              constants.HWTEST_AU_SUITE, blocking=True,
-              warn_only=True, num=1
-          ),
-      ],
-  )
-
-  site_config.AddConfig(
-      _release, 'guado_moblab-release',
-      _base_configs['guado_moblab'],
-      images=['base', 'recovery', 'test'],
-      paygen_skip_delta_payloads=True,
-      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
-      paygen_skip_testing=True,
-      important=False,
-      afdo_use=False,
-      signer_tests=False,
-      hw_tests=[
-          config_lib.HWTestConfig(
-              constants.HWTEST_BVT_SUITE, blocking=True,
-              warn_only=True, num=1
-          ),
-          config_lib.HWTestConfig(
-              constants.HWTEST_AU_SUITE, blocking=True,
-              warn_only=True, num=1
-          ),
-      ],
   )
 
   site_config.AddConfig(
