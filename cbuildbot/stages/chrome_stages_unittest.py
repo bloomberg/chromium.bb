@@ -11,6 +11,7 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -105,3 +106,24 @@ class PatchChromeStageTest(generic_stages_unittest.AbstractStageTestCase):
     """Verify requested patches are applied."""
     stage = self.ConstructStage()
     stage.PerformStage()
+
+
+class SyncChromeStageTest(generic_stages_unittest.AbstractStageTestCase,
+                          cros_build_lib_unittest.RunCommandTestCase):
+  """Tests for SyncChromeStage."""
+
+  # pylint: disable-msg=protected-access
+  def setUp(self):
+    self._Prepare()
+    self.PatchObject(cbuildbot_run._BuilderRunBase, 'DetermineChromeVersion',
+                     return_value='35.0.1863.0')
+    self.PatchObject(commands, 'SyncChrome')
+
+  def ConstructStage(self):
+    return chrome_stages.SyncChromeStage(self._run)
+
+  def testBasic(self):
+    """Basic syntax sanity test."""
+    stage = self.ConstructStage()
+    stage.PerformStage()
+
