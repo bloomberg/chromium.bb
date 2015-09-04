@@ -549,13 +549,13 @@ TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
 
   TouchEvent event1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
                     non_zero_length1, 0, 0, 0);
-  EXPECT_EQ(non_zero_length1, event1.radius_x());
-  EXPECT_EQ(non_zero_length1, event1.radius_y());
+  EXPECT_EQ(non_zero_length1, event1.pointer_details().radius_x());
+  EXPECT_EQ(non_zero_length1, event1.pointer_details().radius_y());
 
   TouchEvent event2(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
                     0, non_zero_length2, 0, 0);
-  EXPECT_EQ(non_zero_length2, event2.radius_x());
-  EXPECT_EQ(non_zero_length2, event2.radius_y());
+  EXPECT_EQ(non_zero_length2, event2.pointer_details().radius_x());
+  EXPECT_EQ(non_zero_length2, event2.pointer_details().radius_y());
 }
 
 TEST(EventTest, TouchEventRotationAngleFixing) {
@@ -617,10 +617,6 @@ TEST(EventTest, PointerEventDetailsTouch) {
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().force());
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().tilt_x());
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().tilt_y());
-
-  EXPECT_EQ(0.0f, touch_event_plain.radius_x());
-  EXPECT_EQ(0.0f, touch_event_plain.radius_y());
-  EXPECT_EQ(0.0f, touch_event_plain.force());
 
   ui::TouchEvent touch_event_with_details(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0,
                                           0, ui::EventTimeForNow(), 10.0f, 5.0f,

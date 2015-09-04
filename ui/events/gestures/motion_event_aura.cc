@@ -17,10 +17,11 @@ PointerProperties GetPointerPropertiesFromTouchEvent(const TouchEvent& touch) {
   pointer_properties.raw_x = touch.root_location_f().x();
   pointer_properties.raw_y = touch.root_location_f().y();
   pointer_properties.id = touch.touch_id();
-  pointer_properties.pressure = touch.force();
+  pointer_properties.pressure = touch.pointer_details().force();
   pointer_properties.source_device_id = touch.source_device_id();
 
-  pointer_properties.SetAxesAndOrientation(touch.radius_x(), touch.radius_y(),
+  pointer_properties.SetAxesAndOrientation(touch.pointer_details().radius_x(),
+                                           touch.pointer_details().radius_y(),
                                            touch.rotation_angle());
   if (!pointer_properties.touch_major) {
     pointer_properties.touch_major =

@@ -193,9 +193,9 @@ EventPtr TypeConverter<EventPtr, ui::Event>::Convert(const ui::Event& input) {
     pointer_data->pointer_id = touch_event->touch_id();
     pointer_data->kind = POINTER_KIND_TOUCH;
     SetPointerDataLocationFromEvent(*touch_event, pointer_data.get());
-    pointer_data->radius_major = touch_event->radius_x();
-    pointer_data->radius_minor = touch_event->radius_y();
-    pointer_data->pressure = touch_event->force();
+    pointer_data->radius_major = touch_event->pointer_details().radius_x();
+    pointer_data->radius_minor = touch_event->pointer_details().radius_y();
+    pointer_data->pressure = touch_event->pointer_details().force();
     pointer_data->orientation = touch_event->rotation_angle();
     event->pointer_data = pointer_data.Pass();
   } else if (input.IsKeyEvent()) {

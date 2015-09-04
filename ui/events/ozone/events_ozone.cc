@@ -100,14 +100,14 @@ float GetTouchRadiusX(const base::NativeEvent& native_event) {
   const ui::TouchEvent* event =
       static_cast<const ui::TouchEvent*>(native_event);
   DCHECK(event->IsTouchEvent());
-  return event->radius_x();
+  return event->pointer_details().radius_x();
 }
 
 float GetTouchRadiusY(const base::NativeEvent& native_event) {
   const ui::TouchEvent* event =
       static_cast<const ui::TouchEvent*>(native_event);
   DCHECK(event->IsTouchEvent());
-  return event->radius_y();
+  return event->pointer_details().radius_y();
 }
 
 float GetTouchAngle(const base::NativeEvent& native_event) {
@@ -121,7 +121,7 @@ float GetTouchForce(const base::NativeEvent& native_event) {
   const ui::TouchEvent* event =
       static_cast<const ui::TouchEvent*>(native_event);
   DCHECK(event->IsTouchEvent());
-  return event->force();
+  return event->pointer_details().force();
 }
 
 bool GetScrollOffsets(const base::NativeEvent& native_event,
