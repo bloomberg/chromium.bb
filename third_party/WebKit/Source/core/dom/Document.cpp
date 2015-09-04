@@ -3029,9 +3029,6 @@ void Document::setViewportDescription(const ViewportDescription& viewportDescrip
         m_viewportDefaultMinWidth = viewportDescription.minWidth;
 
     if (viewportDescription.isLegacyViewportType()) {
-        if (settings() && !settings()->viewportMetaEnabled())
-            return;
-
         m_legacyViewportDescription = viewportDescription;
 
         // When no author style for @viewport is present, and a meta tag for defining
