@@ -528,6 +528,9 @@ void ServiceWorkerContextCore::TransferProviderHostIn(
     scoped_ptr<ServiceWorkerProviderHost> transferee) {
   ProviderMap* map = GetProviderMapForProcess(new_process_id);
   ServiceWorkerProviderHost* temp = map->Lookup(new_provider_id);
+  if (!temp)
+    return;
+
   DCHECK(temp->document_url().is_empty());
   transferee->CompleteCrossSiteTransfer(new_process_id,
                                         temp->frame_id(),
