@@ -442,6 +442,7 @@ class MsvsSettings(object):
     cl('FloatingPointModel',
         map={'0': 'precise', '1': 'strict', '2': 'fast'}, prefix='/fp:',
         default='0')
+    cl('CompileAsManaged', map={'false': '', 'true': '/clr'})
     cl('WholeProgramOptimization', map={'true': '/GL'})
     cl('WarningLevel', prefix='/W')
     cl('WarnAsError', map={'true': '/WX'})
