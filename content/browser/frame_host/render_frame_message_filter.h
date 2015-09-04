@@ -28,6 +28,7 @@
 class GURL;
 
 namespace net {
+class KeygenHandler;
 class URLRequestContext;
 class URLRequestContextGetter;
 }
@@ -104,11 +105,19 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
                           ThreeDAPIType context_type,
                           int arb_robustness_status_code);
 
+  void OnKeygen(uint32 key_size_index,
+                const std::string& challenge_string,
+                const GURL& url,
+                IPC::Message* reply_msg);
+  void PostKeygenToWorkerThread(IPC::Message* reply_msg,
+                                scoped_ptr<net::KeygenHandler> keygen_handler);
+  void OnKeygenOnWorkerThread(scoped_ptr<net::KeygenHandler> keygen_handler,
+                              IPC::Message* reply_msg);
+
 #if defined(OS_MACOSX)
   // Messages for OOP font loading.
   void OnLoadFont(const FontDescriptor& font, IPC::Message* reply_msg);
   void SendLoadFontReply(IPC::Message* reply, FontLoader::Result* result);
-
 #elif defined(OS_WIN)
   void OnPreCacheFontCharacters(const LOGFONT& log_font,
                                 const base::string16& characters);

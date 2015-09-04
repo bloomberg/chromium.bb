@@ -59,7 +59,6 @@ struct MediaLogEvent;
 }
 
 namespace net {
-class KeygenHandler;
 class URLRequestContext;
 class URLRequestContextGetter;
 }
@@ -180,12 +179,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnCacheableMetadataAvailable(const GURL& url,
                                     base::Time expected_response_time,
                                     const std::vector<char>& data);
-  void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
-                const GURL& url, IPC::Message* reply_msg);
-  void PostKeygenToWorkerThread(IPC::Message* reply_msg,
-                                scoped_ptr<net::KeygenHandler> keygen_handler);
-  void OnKeygenOnWorkerThread(scoped_ptr<net::KeygenHandler> keygen_handler,
-                              IPC::Message* reply_msg);
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
   bool CheckBenchmarkingEnabled() const;

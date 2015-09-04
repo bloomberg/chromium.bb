@@ -817,7 +817,7 @@ blink::WebString RendererBlinkPlatformImpl::signedPublicKeyAndChallengeString(
     const blink::WebString& challenge,
     const blink::WebURL& url) {
   std::string signed_public_key;
-  RenderThread::Get()->Send(new ViewHostMsg_Keygen(
+  RenderThread::Get()->Send(new FrameHostMsg_Keygen(
       static_cast<uint32>(key_size_index),
       challenge.utf8(),
       GURL(url),

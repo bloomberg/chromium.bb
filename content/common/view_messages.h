@@ -1288,20 +1288,6 @@ IPC_MESSAGE_ROUTED3(
     cc::CompositorFrame /* frame */,
     std::vector<IPC::Message> /* messages_to_deliver_with_frame */)
 
-//---------------------------------------------------------------------------
-// Request for cryptographic operation messages:
-// These are messages from the renderer to the browser to perform a
-// cryptographic operation.
-
-// Asks the browser process to generate a keypair for grabbing a client
-// certificate from a CA (<keygen> tag), and returns the signed public
-// key and challenge string.
-IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_Keygen,
-                            uint32 /* key size index */,
-                            std::string /* challenge string */,
-                            GURL /* URL of requestor */,
-                            std::string /* signed public key and challenge */)
-
 // Message sent from the renderer to the browser to request that the browser
 // cache |data| associated with |url| and |expected_response_time|.
 IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
