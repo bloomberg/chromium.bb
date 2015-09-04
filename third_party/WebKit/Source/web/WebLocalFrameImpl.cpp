@@ -741,7 +741,8 @@ void WebLocalFrameImpl::setOpener(WebFrame* opener)
 {
     WebFrame::setOpener(opener);
 
-    ASSERT(m_frame);
+    // TODO(alexmos,dcheng): This should ASSERT(m_frame) once we no longer have
+    // provisional local frames.
     if (m_frame && m_frame->document())
         m_frame->document()->initSecurityContext();
 }
@@ -1996,17 +1997,18 @@ void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFra
     // the main frame of the Page. However, this is a provisional frame, and may
     // disappear, so Page::m_mainFrame can't be updated just yet.
     OwnPtrWillBeRawPtr<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone);
-    m_frame = LocalFrame::create(m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
-    m_frame->setOwner(oldFrame->owner());
-    if (m_frame->owner() && !m_frame->owner()->isLocal())
-        toRemoteBridgeFrameOwner(m_frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
-    m_frame->tree().setName(name);
+    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
+    frame->setOwner(oldFrame->owner());
+    if (frame->owner() && !frame->owner()->isLocal())
+        toRemoteBridgeFrameOwner(frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
+    frame->tree().setName(name);
     setParent(oldWebFrame->parent());
     setOpener(oldWebFrame->opener());
+    setCoreFrame(frame);
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
-    m_frame->init();
+    frame->init();
 }
 
 void WebLocalFrameImpl::setAutofillClient(WebAutofillClient* autofillClient)
