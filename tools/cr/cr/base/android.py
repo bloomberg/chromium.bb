@@ -39,7 +39,7 @@ class AndroidPlatform(cr.Platform):
       CR_ADB_GDB=os.path.join('{CR_SRC}', 'build', 'android', 'adb_gdb'),
       CR_DEFAULT_TARGET='chrome_public',
       GYP_DEF_OS='android',
-      GN_ARG_os='"android"'
+      GN_ARG_target_os='"android"'
   )
 
   def __init__(self):

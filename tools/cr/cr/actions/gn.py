@@ -22,11 +22,6 @@ class GnPrepareOut(cr.PrepareOut):
   def priority(self):
     return -1
 
-  @property
-  def enabled(self):
-    # Disabled on Android for now.
-    return not cr.AndroidPlatform.GetInstance().is_active
-
   def UpdateContext(self):
     # Collapse GN_ARGS from all GN_ARG prefixes.
     gn_args = cr.context.Find('GN_ARGS') or ''
