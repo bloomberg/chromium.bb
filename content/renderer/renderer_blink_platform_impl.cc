@@ -36,6 +36,7 @@
 #include "content/child/webfileutilities_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/file_utilities_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -534,7 +535,7 @@ bool RendererBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
   uint32 font_data_size;
   FontDescriptor src_font_descriptor(src_font);
   base::SharedMemoryHandle font_data;
-  if (!RenderThread::Get()->Send(new ViewHostMsg_LoadFont(
+  if (!RenderThread::Get()->Send(new FrameHostMsg_LoadFont(
         src_font_descriptor, &font_data_size, &font_data, font_id))) {
     *out = NULL;
     *font_id = 0;
@@ -543,7 +544,7 @@ bool RendererBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
 
   if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle() ||
       *font_id == 0) {
-    LOG(ERROR) << "Bad response from ViewHostMsg_LoadFont() for " <<
+    LOG(ERROR) << "Bad response from FrameHostMsg_LoadFont() for " <<
         src_font_descriptor.font_name;
     *out = NULL;
     *font_id = 0;

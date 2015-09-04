@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_MESSAGE_FILTER_H_
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include <set>
 
 #include "content/common/frame_replication_state.h"
@@ -12,6 +16,10 @@
 #include "content/public/common/three_d_api_types.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
+
+#if defined(OS_MACOSX)
+#include "content/common/mac/font_loader.h"
+#endif
 
 class GURL;
 
@@ -90,8 +98,17 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
                           ThreeDAPIType context_type,
                           int arb_robustness_status_code);
 
-#if defined(ENABLE_PLUGINS)
+#if defined(OS_MACOSX)
+  // Messages for OOP font loading.
+  void OnLoadFont(const FontDescriptor& font, IPC::Message* reply_msg);
+  void SendLoadFontReply(IPC::Message* reply, FontLoader::Result* result);
 
+#elif defined(OS_WIN)
+  void OnPreCacheFontCharacters(const LOGFONT& log_font,
+                                const base::string16& characters);
+#endif
+
+#if defined(ENABLE_PLUGINS)
   void OnGetPluginInfo(int render_frame_id,
                        const GURL& url,
                        const GURL& policy_url,
@@ -107,7 +124,6 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 
   void OnCompletedOpenChannelToNpapiPlugin(
       OpenChannelToNpapiPluginCallback* client);
-
 #endif  // ENABLE_PLUGINS
 
   // Returns the correct net::URLRequestContext depending on what type of url is

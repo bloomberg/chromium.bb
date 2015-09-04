@@ -64,7 +64,6 @@
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/mac/font_descriptor.h"
 #include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
 #endif
 
@@ -123,11 +122,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     blink::ScrollbarButtonsPlacement::ScrollbarButtonsPlacementLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
-
-IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
-  IPC_STRUCT_TRAITS_MEMBER(font_name)
-  IPC_STRUCT_TRAITS_MEMBER(font_point_size)
-IPC_STRUCT_TRAITS_END()
 #endif
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
@@ -1533,13 +1527,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
                     int /* y */)
 
 #elif defined(OS_MACOSX)
-// Request that the browser load a font into shared memory for us.
-IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,
-                           FontDescriptor /* font to load */,
-                           uint32 /* buffer size */,
-                           base::SharedMemoryHandle /* font data */,
-                           uint32 /* font id */)
-
 // Informs the browser that a plugin has gained or lost focus.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
                     bool, /* focused */
@@ -1550,14 +1537,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
 
 // Receives content of a web page as plain text.
 IPC_MESSAGE_ROUTED1(ViewMsg_GetRenderedTextCompleted, std::string);
-
-#elif defined(OS_WIN)
-// Request that the given font characters be loaded by the browser so it's
-// cached by the OS. Please see RenderMessageFilter::OnPreCacheFontCharacters
-// for details.
-IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_PreCacheFontCharacters,
-                            LOGFONT /* font_data */,
-                            base::string16 /* characters */)
 #endif
 
 // Adding a new message? Stick to the sort order above: first platform

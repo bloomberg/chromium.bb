@@ -5,6 +5,7 @@
 // IPC messages for interacting with frames.
 // Multiply-included message file, hence no include guard.
 
+#include "base/memory/shared_memory.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "content/common/content_export.h"
@@ -31,6 +32,10 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if defined(OS_MACOSX)
+#include "content/common/mac/font_descriptor.h"
+#endif
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -411,6 +416,13 @@ IPC_STRUCT_BEGIN(FrameHostMsg_ShowPopup_Params)
   // Whether this is a multi-select popup.
   IPC_STRUCT_MEMBER(bool, allow_multiple_selection)
 IPC_STRUCT_END()
+#endif
+
+#if defined(OS_MACOSX)
+IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
+  IPC_STRUCT_TRAITS_MEMBER(font_name)
+  IPC_STRUCT_TRAITS_MEMBER(font_point_size)
+IPC_STRUCT_TRAITS_END()
 #endif
 
 // -----------------------------------------------------------------------------
@@ -1070,3 +1082,24 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ShowPopup,
 IPC_MESSAGE_ROUTED0(FrameHostMsg_HidePopup)
 
 #endif
+
+#if defined(OS_MACOSX)
+// Request that the browser load a font into shared memory for us.
+IPC_SYNC_MESSAGE_CONTROL1_3(FrameHostMsg_LoadFont,
+                            FontDescriptor /* font to load */,
+                            uint32 /* buffer size */,
+                            base::SharedMemoryHandle /* font data */,
+                            uint32 /* font id */)
+#elif defined(OS_WIN)
+// Request that the given font characters be loaded by the browser so it's
+// cached by the OS. Please see RenderMessageFilter::OnPreCacheFontCharacters
+// for details.
+IPC_SYNC_MESSAGE_CONTROL2_0(FrameHostMsg_PreCacheFontCharacters,
+                            LOGFONT /* font_data */,
+                            base::string16 /* characters */)
+#endif
+
+// Adding a new message? Stick to the sort order above: first platform
+// independent FrameMsg, then ifdefs for platform specific FrameMsg, then
+// platform independent FrameHostMsg, then ifdefs for platform specific
+// FrameHostMsg.

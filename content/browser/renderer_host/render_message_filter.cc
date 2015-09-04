@@ -63,15 +63,8 @@
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
-#include "content/common/mac/font_descriptor.h"
-#endif
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
-#endif
-#if defined(OS_WIN)
-#include "content/common/font_cache_dispatcher_win.h"
-#include "content/common/sandbox_win.h"
 #endif
 #if defined(OS_ANDROID)
 #include "media/base/android/webaudio_media_codec_bridge.h"
@@ -252,10 +245,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFontCharacters,
-                        OnPreCacheFontCharacters)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetProcessMemorySizes,
                         OnGetProcessMemorySizes)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
@@ -263,9 +252,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
                         OnCreateFullscreenWidget)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LoadFont, OnLoadFont)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SaveImageFromDataURL,
                         OnSaveImageFromDataURL)
@@ -434,34 +420,6 @@ void RenderMessageFilter::OnGetProcessMemorySizes(size_t* private_bytes,
     *shared_bytes = 0;
   }
 }
-
-#if defined(OS_MACOSX)
-void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
-                                     IPC::Message* reply_msg) {
-  FontLoader::Result* result = new FontLoader::Result;
-
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FontLoader::LoadFont, font, result),
-      base::Bind(&RenderMessageFilter::SendLoadFontReply, this, reply_msg,
-                 base::Owned(result)));
-}
-
-void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
-                                            FontLoader::Result* result) {
-  base::SharedMemoryHandle handle;
-  if (result->font_data_size == 0 || result->font_id == 0) {
-    result->font_data_size = 0;
-    result->font_id = 0;
-    handle = base::SharedMemory::NULLHandle();
-  } else {
-    result->font_data.GiveToProcess(base::GetCurrentProcessHandle(), &handle);
-  }
-  ViewHostMsg_LoadFont::WriteReplyParams(
-      reply, result->font_data_size, handle, result->font_id);
-  Send(reply);
-}
-#endif  // OS_MACOSX
 
 #if defined(ENABLE_PLUGINS)
 void RenderMessageFilter::OnGetPlugins(
@@ -858,40 +816,6 @@ void RenderMessageFilter::OnMediaLogEvents(
   if (media_internals_)
     media_internals_->OnMediaEvents(render_process_id_, events);
 }
-
-#if defined(OS_WIN)
-void RenderMessageFilter::OnPreCacheFontCharacters(const LOGFONT& font,
-                                                   const base::string16& str) {
-  // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
-  // GDI fonts (http://crbug.com/383227), even when using DirectWrite.
-  // Eventually this shouldn't be added and should be moved to
-  // FontCacheDispatcher too. http://crbug.com/356346.
-
-  // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
-  // Except that for True Type fonts,
-  // GetTextMetrics will not load the font in memory.
-  // The only way windows seem to load properly, it is to create a similar
-  // device (like the one in which we print), then do an ExtTextOut,
-  // as we do in the printing thread, which is sandboxed.
-  HDC hdc = CreateEnhMetaFile(NULL, NULL, NULL, NULL);
-  HFONT font_handle = CreateFontIndirect(&font);
-  DCHECK(NULL != font_handle);
-
-  HGDIOBJ old_font = SelectObject(hdc, font_handle);
-  DCHECK(NULL != old_font);
-
-  ExtTextOut(hdc, 0, 0, ETO_GLYPH_INDEX, 0, str.c_str(), str.length(), NULL);
-
-  SelectObject(hdc, old_font);
-  DeleteObject(font_handle);
-
-  HENHMETAFILE metafile = CloseEnhMetaFile(hdc);
-
-  if (metafile) {
-    DeleteEnhMetaFile(metafile);
-  }
-}
-#endif
 
 #if defined(OS_ANDROID)
 void RenderMessageFilter::OnWebAudioMediaCodec(

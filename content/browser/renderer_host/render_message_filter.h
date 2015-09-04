@@ -5,10 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include <string>
 #include <vector>
 
@@ -33,8 +29,6 @@
 
 #if defined(OS_MACOSX)
 #include <IOSurface/IOSurface.h>
-#include "base/mac/scoped_cftyperef.h"
-#include "content/common/mac/font_loader.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -144,17 +138,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnCreateFullscreenWidget(int opener_id,
                                 int* route_id,
                                 int* surface_id);
-
-#if defined(OS_MACOSX)
-  // Messages for OOP font loading.
-  void OnLoadFont(const FontDescriptor& font, IPC::Message* reply_msg);
-  void SendLoadFontReply(IPC::Message* reply, FontLoader::Result* result);
-#endif
-
-#if defined(OS_WIN)
-  void OnPreCacheFontCharacters(const LOGFONT& log_font,
-                                const base::string16& characters);
-#endif
 
 #if defined(ENABLE_PLUGINS)
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
