@@ -9,6 +9,9 @@ import("//build/config/ui.gni")
 declare_args() {
   # Optional system libraries.
   use_xkbcommon = false
+
+  # Support ChromeOS touchpad gestures with ozone.
+  use_evdev_gestures = false
 }
 
 if (use_xkbcommon) {
@@ -49,7 +52,7 @@ component("events_ozone") {
     ]
   }
 
-  if (use_ozone_evdev && use_udev) {
+  if (use_ozone && use_udev) {
     deps += [ "//device/udev_linux" ]
   }
 }
@@ -60,6 +63,16 @@ config("evdev") {
 
 config("evdev_gestures") {
   defines = [ "USE_EVDEV_GESTURES" ]
+}
+
+if (use_evdev_gestures) {
+  pkg_config("libevdev-cros") {
+    packages = [ "libevdev-cros" ]
+  }
+
+  pkg_config("libgestures") {
+    packages = [ "libgestures" ]
+  }
 }
 
 component("events_ozone_evdev") {
@@ -130,7 +143,7 @@ component("events_ozone_evdev") {
 
   public_configs = [ ":evdev" ]
 
-  if (use_ozone_evdev && use_evdev_gestures) {
+  if (use_ozone && use_evdev_gestures) {
     sources += [
       "evdev/libgestures_glue/event_reader_libevdev_cros.cc",
       "evdev/libgestures_glue/event_reader_libevdev_cros.h",
@@ -149,8 +162,8 @@ component("events_ozone_evdev") {
     public_configs += [ ":evdev_gestures" ]
 
     configs += [
-      "//build/config/linux:libevdev-cros",
-      "//build/config/linux:libgestures",
+      ":libevdev-cros",
+      ":libgestures",
     ]
   }
 }

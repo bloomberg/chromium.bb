@@ -60,16 +60,6 @@ pkg_config("dbus") {
   packages = [ "dbus-1" ]
 }
 
-if (use_evdev_gestures) {
-  pkg_config("libevdev-cros") {
-    packages = [ "libevdev-cros" ]
-  }
-
-  pkg_config("libgestures") {
-    packages = [ "libgestures" ]
-  }
-}
-
 config("x11") {
   libs = [
     "X11",
