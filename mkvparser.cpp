@@ -630,6 +630,15 @@ long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
   if (pos != end)
     return E_FILE_FORMAT_INVALID;
 
+  // Make sure DocType, DocTypeReadVersion, and DocTypeVersion are valid.
+  if (m_docType == NULL || m_docTypeReadVersion <= 0 || m_docTypeVersion <= 0)
+    return E_FILE_FORMAT_INVALID;
+
+  // Make sure EBMLMaxIDLength and EBMLMaxSizeLength are valid.
+  if (m_maxIdLength <= 0 || m_maxIdLength > 4 ||
+      m_maxSizeLength <= 0 || m_maxSizeLength > 8)
+    return E_FILE_FORMAT_INVALID;
+
   return 0;
 }
 

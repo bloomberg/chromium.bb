@@ -345,7 +345,7 @@ bool vttdemux::ParseHeader(mkvparser::IMkvReader* reader, mkvpos_t* pos) {
     return false;
   }
 
-  if (strcmp(h.m_docType, "webm") != 0) {
+  if (h.m_docType == NULL || strcmp(h.m_docType, "webm") != 0) {
     printf("bad doctype\n");
     return false;
   }

@@ -248,11 +248,14 @@ int main(int argc, char* argv[]) {
 
   long long pos = 0;
   mkvparser::EBMLHeader ebml_header;
-  ebml_header.Parse(&reader, pos);
+  long long ret = ebml_header.Parse(&reader, pos);
+  if (ret) {
+    printf("\n EBMLHeader::Parse() failed.");
+    return EXIT_FAILURE;
+  }
 
   mkvparser::Segment* parser_segment_;
-  long long ret =
-      mkvparser::Segment::CreateInstance(&reader, pos, parser_segment_);
+  ret = mkvparser::Segment::CreateInstance(&reader, pos, parser_segment_);
   if (ret) {
     printf("\n Segment::CreateInstance() failed.");
     return EXIT_FAILURE;

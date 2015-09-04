@@ -83,7 +83,11 @@ int main(int argc, char* argv[]) {
 
   EBMLHeader ebmlHeader;
 
-  ebmlHeader.Parse(&reader, pos);
+  long long ret = ebmlHeader.Parse(&reader, pos);
+  if (ret < 0) {
+    printf("\n EBMLHeader::Parse() failed.");
+    return -1;
+  }
 
   printf("\t\t\t    EBML Header\n");
   printf("\t\tEBML Version\t\t: %lld\n", ebmlHeader.m_version);
@@ -95,7 +99,7 @@ int main(int argc, char* argv[]) {
   typedef mkvparser::Segment seg_t;
   seg_t* pSegment_;
 
-  long long ret = seg_t::CreateInstance(&reader, pos, pSegment_);
+  ret = seg_t::CreateInstance(&reader, pos, pSegment_);
   if (ret) {
     printf("\n Segment::CreateInstance() failed.");
     return -1;
