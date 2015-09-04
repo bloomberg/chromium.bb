@@ -518,6 +518,11 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                                     blink::WGC3Denum pname,
                                     blink::WGC3Duint* params);
 
+  virtual void queryCounterEXT(blink::WebGLId query, blink::WGC3Denum target);
+  virtual void getQueryObjectui64vEXT(blink::WebGLId query,
+                                      blink::WGC3Denum pname,
+                                      blink::WGC3Duint64* params);
+
   void copyTextureCHROMIUM(
       blink::WGC3Denum target,
       blink::WebGLId source_id,

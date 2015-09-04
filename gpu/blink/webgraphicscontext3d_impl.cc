@@ -826,6 +826,13 @@ DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivEXT, WGC3Denum, WGC3Denum, WGC3Dint*)
 DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
+DELEGATE_TO_GL_2(queryCounterEXT, QueryCounterEXT, WebGLId, WGC3Denum)
+DELEGATE_TO_GL_3(getQueryObjectui64vEXT,
+                 GetQueryObjectui64vEXT,
+                 WebGLId,
+                 WGC3Denum,
+                 WGC3Duint64*)
+
 DELEGATE_TO_GL_8(copyTextureCHROMIUM,
                  CopyTextureCHROMIUM,
                  WGC3Denum,
