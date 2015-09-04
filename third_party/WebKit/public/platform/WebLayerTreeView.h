@@ -128,10 +128,6 @@ public:
     // object alive until it is called.
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) { }
 
-    // Blocks until the most recently composited frame has finished rendering on the GPU.
-    // This can have a significant performance impact and should be used with care.
-    virtual void finishAllRendering() { }
-
     // Prevents updates to layer tree from becoming visible.
     virtual void setDeferCommits(bool deferCommits) { }
 
