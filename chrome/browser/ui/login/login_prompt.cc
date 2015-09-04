@@ -4,22 +4,27 @@
 
 #include "chrome/browser/ui/login/login_prompt.h"
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -481,14 +486,23 @@ void ShowLoginPrompt(const GURL& request_url,
   base::string16 elided_realm;
   gfx::ElideString(base::UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
 
-  base::string16 host_and_port = base::ASCIIToUTF16(
-      request_url.scheme() + "://" + auth_info->challenger.ToString());
-  base::string16 explanation = elided_realm.empty() ?
-      l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
-                                 host_and_port) :
-      l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
-                                 host_and_port,
-                                 elided_realm);
+  std::string languages;
+  content::WebContents* web_contents = handler->GetWebContentsForLogin();
+  if (web_contents) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    if (profile)
+      languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  }
+
+  base::string16 authority =
+      url_formatter::FormatUrlForSecurityDisplay(request_url, languages);
+  base::string16 explanation =
+      elided_realm.empty()
+          ? l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
+                                       authority)
+          : l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION, authority,
+                                       elided_realm);
 
   if (!driver) {
 #if defined(ENABLE_EXTENSIONS)
@@ -535,9 +549,9 @@ void LoginDialogCallback(const GURL& request_url,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* parent_contents = handler->GetWebContentsForLogin();
   if (!parent_contents || handler->WasAuthHandled()) {
-    // The request may have been cancelled, or it may be for a renderer
-    // not hosted by a tab (e.g. an extension). Cancel just in case
-    // (cancelling twice is a no-op).
+    // The request may have been canceled, or it may be for a renderer not
+    // hosted by a tab (e.g. an extension). Cancel just in case (canceling twice
+    // is a no-op).
     handler->CancelAuth();
     return;
   }
