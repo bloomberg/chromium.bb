@@ -585,6 +585,7 @@ scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     }
     input_methods_list->Append(CreateInputMethodsEntry(*us_eng_descriptor,
                                                        selected).release());
+    manager->GetActiveIMEState()->EnableInputMethod(us_keyboard_id);
   }
   return input_methods_list.Pass();
 }
