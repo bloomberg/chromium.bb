@@ -203,7 +203,7 @@
     },
 
     'gpu_tests': {
-      'gn_args': 'archive_gpu_tests=true',
+      'gn_args': '', # not needed in GN builds.
       'gyp_defines': 'archive_gpu_tests=1',
     },
 
