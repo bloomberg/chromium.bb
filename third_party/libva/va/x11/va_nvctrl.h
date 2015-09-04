@@ -26,11 +26,9 @@
 
 #include <X11/Xlib.h>
 
-DLL_HIDDEN
 Bool VA_NVCTRLQueryDirectRenderingCapable( Display *dpy, int screen,
     Bool *isCapable );
 
-DLL_HIDDEN
 Bool VA_NVCTRLGetClientDriverName( Display *dpy, int screen,
     int *ddxDriverMajorVersion, int *ddxDriverMinorVersion,
     int *ddxDriverPatchVersion, char **clientDriverName );

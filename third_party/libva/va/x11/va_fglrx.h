@@ -27,7 +27,6 @@
 
 #include <X11/Xlib.h>
 
-DLL_HIDDEN
 Bool VA_FGLRXGetClientDriverName( Display *dpy, int screen,
     int *ddxDriverMajorVersion, int *ddxDriverMinorVersion,
     int *ddxDriverPatchVersion, char **clientDriverName );
