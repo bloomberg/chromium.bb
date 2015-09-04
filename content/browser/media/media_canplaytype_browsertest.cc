@@ -1015,4 +1015,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {
   TestMPEGUnacceptableCombinations("application/vnd.apple.mpegurl");
 }
 
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_AAC_ADTS) {
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/aac'"));
+}
+
 }  // namespace content

@@ -10,6 +10,9 @@
 #endif
 
 // Common media types.
+#if defined(USE_PROPRIETARY_CODECS) && !defined(OS_ANDROID)
+const char kAAC_ADTS_AudioOnly[] = "audio/aac";
+#endif
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 #if !defined(OS_ANDROID)
 const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
@@ -66,6 +69,12 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoAudio_WebM) {
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoOnly_WebM) {
   TestSimplePlayback("bear-320x240-video-only.webm", kWebMVideoOnly, kEnded);
 }
+
+#if defined(USE_PROPRIETARY_CODECS) && !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_AAC_ADTS) {
+  TestSimplePlayback("sfx.adts", kAAC_ADTS_AudioOnly, kEnded);
+}
+#endif
 
 // Opus is not supported in Android as of now.
 #if !defined(OS_ANDROID)

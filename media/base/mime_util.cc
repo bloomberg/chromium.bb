@@ -173,6 +173,8 @@ static const char* const proprietary_media_types[] = {
   "audio/mp3",
   "audio/x-mp3",
   "audio/mpeg",
+
+  // AAC / ADTS
   "audio/aac",
 
 #if defined(ENABLE_MPEG2TS_STREAM_PARSER)
@@ -276,6 +278,7 @@ static const MediaFormatStrict format_codec_mappings[] = {
     {"audio/mpeg", "mp3"},
     {"audio/mp3", ""},
     {"audio/x-mp3", ""},
+    {"audio/aac", ""},
     {"audio/mp4", kMP4AudioCodecsExpression},
     {"audio/x-m4a", kMP4AudioCodecsExpression},
     {"video/mp4", kMP4VideoCodecsExpression},
@@ -601,6 +604,11 @@ bool MimeUtil::GetDefaultCodecLowerCase(const std::string& mime_type_lower_case,
       mime_type_lower_case == "audio/mp3" ||
       mime_type_lower_case == "audio/x-mp3") {
     *default_codec = MimeUtil::MP3;
+    return true;
+  }
+
+  if (mime_type_lower_case == "audio/aac") {
+    *default_codec = MimeUtil::MPEG4_AAC_LC;
     return true;
   }
 
