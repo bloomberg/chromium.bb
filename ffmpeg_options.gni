@@ -4,6 +4,7 @@
 
 import("//build/config/arm.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 
 if (is_chrome_branded) {
   _default_ffmpeg_branding = "Chrome"
