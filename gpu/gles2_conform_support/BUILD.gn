@@ -47,27 +47,30 @@ executable("gles2_conform_support") {
 if (internal_gles2_conform_tests) {
   action("generate_gles2_conform_embedded_data") {
     script = "generate_gles2_embedded_data.py"
-    output = [
-      "$target_gen_dir/gles2_conform_test_embedded_data/FilesData.c",
-      "$target_gen_dir/gles2_conform_test_embedded_data/FilesData.h",
+    outputs = [
+      "$target_gen_dir/gles2_conform_test_embedded_data/FilesDATA.c",
+      "$target_gen_dir/gles2_conform_test_embedded_data/FilesDATA.h",
       "$target_gen_dir/gles2_conform_test_embedded_data/FilesTOC.c",
     ]
     args = [
-      "../../third_party/gles2_conform/GTF_ES/glsl/GTF",
-      "$target_gen_dir/gles2_conform_test_embedded_data",
+      rebase_path("//third_party/gles2_conform/GTF_ES/glsl/GTF"),
+      rebase_path("$target_gen_dir/gles2_conform_test_embedded_data"),
     ]
   }
-  gles2_conform_gypi = exec_script("//build/gypi_to_gn.py",
-                                   [ rebase_path("gles2_conform_gypi") ],
-                                   "scoped",
-                                   [ "gles2_conform_gypi" ])
+  gles2_conform_gypi =
+      exec_script("//build/gypi_to_gn.py",
+                  [
+                    rebase_path("gles2_conform.gypi"),
+                    "--replace=<(DEPTH)=../..",
+                    "--replace=<(SHARED_INTERMEDIATE_DIR)=$target_gen_dir",
+                  ],
+                  "scope",
+                  [ "gles2_conform.gypi" ])
   executable("gles2_conform_test_windowless") {
     testonly = true
-    sources = [
-      # Include a dummy c++ file to force linking of libstdc++.
-      "dummy.cc",
-      gles2_conform_gypi.gtf_es_sources,
-    ]
+
+    # Include a dummy c++ file to force linking of libstdc++.
+    sources = [ "dummy.cc" ] + gles2_conform_gypi.gtf_es_sources
     defines = [
       "GTF_API=GTF_GLES20",
       "HKEMBEDDEDFILESYSTEM",
@@ -75,14 +78,14 @@ if (internal_gles2_conform_tests) {
     deps = [
       ":generate_gles2_conform_embedded_data",
       "//build/config/sanitizers:deps",
-      "//gpu/command_buffer/client:gles2_c_libnocheck",
+      "//gpu/command_buffer/client:gles2_c_lib_nocheck",
       "//gpu/gles2_conform_support/egl",
       "//gpu/gles2_conform_support/native:windowless",
     ]
-    configs += [ "//build/compiler:no_incompatible_pointer_warnings" ]
+    configs += [ "//build/config/compiler:no_incompatible_pointer_warnings" ]
     if (is_linux) {
       if (!is_chromeos) {
-        deps += [ "//build/linux/system/gtk2" ]
+        deps += [ "//build/config/linux/gtk2" ]
 
         if (is_clang) {
           cflags = [
@@ -184,8 +187,8 @@ test("gles2_conform_test") {
   ]
 
   if (internal_gles2_conform_tests) {
-    deps += [ "gles2_conform_test_windowless" ]
-
-    data_deps = [ "//third_party/gles2_conform/GTF_ES/" ]
+    deps += [ ":gles2_conform_test_windowless" ]
+    # TODO: Make these tests pull in the correct data dependencies once they
+    # are exported in GN. Maybe from  //third_party/gles2_conform/GTF_ES/
   }
 }
