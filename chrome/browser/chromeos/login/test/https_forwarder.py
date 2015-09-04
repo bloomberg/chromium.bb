@@ -8,6 +8,7 @@ server that supports http only to be accessed over https.
 
 import BaseHTTPServer
 import minica
+import re
 import SocketServer
 import sys
 import urllib2
@@ -71,13 +72,23 @@ class RequestForwarder(BaseHTTPServer.BaseHTTPRequestHandler):
       #
       # Python 2 does not obey this requirement and folds multiple Set-Cookie
       # header fields into one. The following code undoes this folding by
-      # splitting the Set-Cookie header field at each comma. Note that this is a
-      # hack because the code does not (and cannot reliably) distinguish between
-      # commas inserted by Python while folding multiple headers and commas that
-      # were part of the original Set-Cookie headers.
+      # splitting cookies into separate fields again. Note that this is a hack
+      # because the code cannot reliably distinguish between commas inserted by
+      # Python while folding multiple headers and commas that were part of the
+      # original Set-Cookie headers. The code uses a heuristic that splits at
+      # every comma followed by a space, a token and an equals sign.
       if key == 'set-cookie':
-        for cookie in value.split(','):
-          self.send_header(key, cookie)
+        start = 0
+        # Find the next occurrence of a comma followed by a space, a token
+        # (defined by RFC 2616 section 2.2 as one or more ASCII characters
+        # except the characters listed in the regex below) and an equals sign.
+        for match in re.finditer(r', [^\000-\037\177()<>@,:\\"/[\]?={} ]+=',
+                                 value):
+          end = match.start()
+          if end > start:
+            self.send_header(key, value[start:end])
+          start = end + 2
+        self.send_header(key, value[start:])
       else:
         self.send_header(key, value)
     self.end_headers()
