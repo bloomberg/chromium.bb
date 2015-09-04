@@ -92,7 +92,6 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        visitor->trace(m_contextElement);
     }
 
 protected:
@@ -103,7 +102,22 @@ private:
     bool m_isReadOnly;
 
     // This reference is kept alive from V8 wrapper
-    RawPtrWillBeMember<SVGElement> m_contextElement;
+    // TODO(oilpan): This should be a Member. Currently we cannot do it because
+    // it creates a cycle as follows:
+    // SVGInterporation =(Persistent)=>
+    // SVGAnimatedProperty =(Member)=>
+    // SVGElement =(Member)=>
+    // ElementRareData =(Member)=>
+    // ElementAnimations =(part of object)=>
+    // CSSAnimations =(part of object)=>
+    // CSSAnimationUpdate =(Member)=>
+    // NewTransition =(Member)=>
+    // InertEffect =(Member)=>
+    // EffectModel =(RefPtr)=>
+    // InterpolationEffect =(RefPtr)=>
+    // InterpolationRecord =(RefPtr)=>
+    // SVGInterpolation
+    SVGElement* m_contextElement;
 
     const QualifiedName& m_attributeName;
 };
