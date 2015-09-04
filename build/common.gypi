@@ -1848,7 +1848,11 @@
         'use_openssl_certs%': 1,
 
         'proprietary_codecs%': '<(proprietary_codecs)',
-        'safe_browsing%': 3,
+
+        # safe_browsing defaults to 2 for public builds and is switched to 3 in
+        # //clank/supplement.gypi since mode 3 requires an internal API.
+        'safe_browsing%': 2,
+
         'enable_web_speech%': 0,
         'java_bridge%': 1,
         'use_allocator%': 'none',
