@@ -12,11 +12,9 @@
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/browser_resources.h"
 #include "grit/settings_resources.h"
 #include "grit/settings_resources_map.h"
 
@@ -44,8 +42,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   }
 
   AddLocalizedStrings(html_source);
-  html_source->AddResourcePath("md_settings.css", IDR_MD_SETTINGS_UI_CSS);
-  html_source->SetDefaultResource(IDR_MD_SETTINGS_UI_HTML);
+  html_source->SetDefaultResource(IDR_SETTINGS_SETTINGS_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source);

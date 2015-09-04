@@ -19,7 +19,7 @@
 
 namespace {
 
-// Note that md_settings.html contains a <script> tag which imports a script of
+// Note that settings.html contains a <script> tag which imports a script of
 // the following name. These names must be kept in sync.
 const char kLocalizedStringsFile[] = "strings.js";
 
