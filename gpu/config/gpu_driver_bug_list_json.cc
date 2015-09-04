@@ -1522,7 +1522,7 @@ LONG_STRING_CONST(
     {
       "id": 130,
       "description": "NVIDIA fails glReadPixels from incomplete cube map texture",
-      "cr_bugs": [528145],
+      "cr_bugs": [518889],
       "gl_vendor": "NVIDIA.*",
       "features": [
         "force_cube_complete"

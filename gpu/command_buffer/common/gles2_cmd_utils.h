@@ -137,8 +137,6 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   static size_t GLTargetToFaceIndex(uint32_t target);
 
-  static uint32_t GLTextureTargetToBindingTarget(uint32_t textarget);
-
   static uint32_t GetGLReadPixelsImplementationFormat(
       uint32_t internal_format);
 
