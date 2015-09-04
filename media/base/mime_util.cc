@@ -510,10 +510,15 @@ static bool IsValidH264Level(const std::string& level_str) {
 static bool ParseH264CodecID(const std::string& codec_id,
                              MimeUtil::Codec* codec,
                              bool* is_ambiguous) {
-  // Make sure we have avc1.xxxxxx or avc3.xxxxxx
+  // Make sure we have avc1.xxxxxx or avc3.xxxxxx , where xxxxxx are hex digits
+  if (!base::StartsWith(codec_id, "avc1.", base::CompareCase::SENSITIVE) &&
+      !base::StartsWith(codec_id, "avc3.", base::CompareCase::SENSITIVE)) {
+    return false;
+  }
   if (codec_id.size() != 11 ||
-      (!base::StartsWith(codec_id, "avc1.", base::CompareCase::SENSITIVE) &&
-       !base::StartsWith(codec_id, "avc3.", base::CompareCase::SENSITIVE))) {
+      !base::IsHexDigit(codec_id[5]) || !base::IsHexDigit(codec_id[6]) ||
+      !base::IsHexDigit(codec_id[7]) || !base::IsHexDigit(codec_id[8]) ||
+      !base::IsHexDigit(codec_id[9]) || !base::IsHexDigit(codec_id[10])) {
     return false;
   }
 
