@@ -37,8 +37,9 @@ public:
     static void paintChildrenOfFlexibleBox(LayoutFlexibleBox&, const PaintInfo&, const LayoutPoint& paintOffset);
     static void paintInlineBox(InlineBox&, const PaintInfo&, const LayoutPoint& paintOffset);
 
+    bool intersectsPaintRect(const PaintInfo&, const LayoutPoint& paintOffset) const;
+
 private:
-    LayoutRect overflowRectForPaintRejection() const;
     bool hasCaret() const;
     void paintCarets(const PaintInfo&, const LayoutPoint&);
     void paintContents(const PaintInfo&, const LayoutPoint&);

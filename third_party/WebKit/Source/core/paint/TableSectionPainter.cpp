@@ -9,6 +9,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableRow.h"
+#include "core/paint/BlockPainter.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
@@ -160,7 +161,8 @@ void TableSectionPainter::paintCell(LayoutTableCell* cell, const PaintInfo& pain
     PaintPhase paintPhase = paintInfo.phase;
     LayoutTableRow* row = toLayoutTableRow(cell->parent());
 
-    if (paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) {
+    if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
+        && BlockPainter(*cell).intersectsPaintRect(paintInfo, paintOffset)) {
         // We need to handle painting a stack of backgrounds. This stack (from bottom to top) consists of
         // the column group, column, row group, row, and then the cell.
         LayoutTableCol* column = m_layoutTableSection.table()->colElement(cell->col());
@@ -173,8 +175,8 @@ void TableSectionPainter::paintCell(LayoutTableCell* cell, const PaintInfo& pain
 
         if (columnHasBackground || columnGroupHasBackground || sectionHasBackground || rowHasBackground) {
             TableCellPainter tableCellPainter(*cell);
-            if (!LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, *cell, paintPhase, paintOffset)) {
-                LayoutObjectDrawingRecorder recorder(*paintInfo.context, *cell, paintPhase, tableCellPainter.paintBounds(cellPoint, TableCellPainter::AddOffsetFromParent), paintOffset);
+            if (!LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, *cell, DisplayItem::TableCellBackgroundFromContainers, paintOffset)) {
+                LayoutObjectDrawingRecorder recorder(*paintInfo.context, *cell, DisplayItem::TableCellBackgroundFromContainers, tableCellPainter.paintBounds(cellPoint, TableCellPainter::AddOffsetFromParent), paintOffset);
                 // Column groups and columns first.
                 // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in
                 // the stack, since we have already opened a transparency layer (potentially) for the table row group.

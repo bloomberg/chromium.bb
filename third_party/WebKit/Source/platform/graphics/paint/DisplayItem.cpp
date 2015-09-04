@@ -105,6 +105,7 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(ScrollbarVertical);
         DEBUG_STRING_CASE(SelectionGap);
         DEBUG_STRING_CASE(SelectionTint);
+        DEBUG_STRING_CASE(TableCellBackgroundFromContainers);
         DEBUG_STRING_CASE(TableCellBackgroundFromSelfPaintingRow);
         DEBUG_STRING_CASE(VideoBitmap);
         DEBUG_STRING_CASE(WebPlugin);

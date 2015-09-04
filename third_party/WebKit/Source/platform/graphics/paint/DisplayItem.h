@@ -90,7 +90,8 @@ public:
         ScrollbarVertical, // For ScrollbarThemeMacNonOverlayAPI only.
         SelectionGap,
         SelectionTint,
-        TableCellBackgroundFromSelfPaintingRow, // FIXME: To be deprecated.
+        TableCellBackgroundFromContainers,
+        TableCellBackgroundFromSelfPaintingRow,
         // Table collapsed borders can be painted together (e.g., left & top) but there are at most 4 phases of collapsed
         // border painting for a single cell. To disambiguate these phases of collapsed border painting, a mask is used.
         // TableCollapsedBorderBase can be larger than TableCollapsedBorderUnalignedBase to ensure the base lower bits are 0's.

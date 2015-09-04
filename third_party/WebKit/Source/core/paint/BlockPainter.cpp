@@ -29,18 +29,12 @@ namespace blink {
 
 void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    PaintInfo localPaintInfo(paintInfo);
+    if (!intersectsPaintRect(paintInfo, paintOffset))
+        return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBlock.location();
-
+    PaintInfo localPaintInfo(paintInfo);
     PaintPhase originalPhase = localPaintInfo.phase;
-
-    // Check if we need to do anything at all.
-    LayoutRect overflowBox = overflowRectForPaintRejection();
-    m_layoutBlock.flipForWritingMode(overflowBox);
-    overflowBox.moveBy(adjustedPaintOffset);
-    if (!overflowBox.intersects(LayoutRect(localPaintInfo.rect)))
-        return;
 
     // There are some cases where not all clipped visual overflow is accounted for.
     // FIXME: reduce the number of such cases.
@@ -240,15 +234,16 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& pa
         dragCaretController.paintDragCaret(frame, paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
 }
 
-LayoutRect BlockPainter::overflowRectForPaintRejection() const
+bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     LayoutRect overflowRect = m_layoutBlock.visualOverflowRect();
-    if (!m_layoutBlock.hasOverflowModel() || !m_layoutBlock.usesCompositedScrolling())
-        return overflowRect;
-
-    overflowRect.unite(m_layoutBlock.layoutOverflowRect());
-    overflowRect.move(-m_layoutBlock.scrolledContentOffset());
-    return overflowRect;
+    if (m_layoutBlock.hasOverflowModel() && m_layoutBlock.usesCompositedScrolling()) {
+        overflowRect.unite(m_layoutBlock.layoutOverflowRect());
+        overflowRect.move(-m_layoutBlock.scrolledContentOffset());
+    }
+    m_layoutBlock.flipForWritingMode(overflowRect);
+    overflowRect.moveBy(paintOffset + m_layoutBlock.location());
+    return (overflowRect.intersects(LayoutRect(paintInfo.rect)));
 }
 
 bool BlockPainter::hasCaret() const
