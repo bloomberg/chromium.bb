@@ -1167,8 +1167,14 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
 
 // Tests what happens when a tab does a same-site navigation away from a page
 // with cross-site iframes.
+// Flaky on Windows. http://crbug.com/528282.
+#if defined(OS_WIN)
+#define MAYBE_LeavePageWithCrossSiteIframes DISABLED_LeavePageWithCrossSiteIframes
+#else
+#define MAYBE_LeavePageWithCrossSiteIframes LeavePageWithCrossSiteIframes
+#endif
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
-                       LeavePageWithCrossSiteIframes) {
+                       MAYBE_LeavePageWithCrossSiteIframes) {
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
