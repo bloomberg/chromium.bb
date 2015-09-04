@@ -37,7 +37,8 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--enable-tegra-experimental-api \
 	--enable-install-test-programs \
 	--enable-cairo-tests \
-	--enable-manpages
+	--enable-manpages \
+	--enable-valgrind
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
