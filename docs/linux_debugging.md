@@ -269,12 +269,9 @@ See
 https://groups.google.com/a/chromium.org/forum/#!searchin/chromium-dev/gdb-add-index/chromium-dev/ELRuj1BDCL4/5Ki4LGx41CcJ
 for more info.
 
-Alternatively, specify:
-
-    linux_use_debug_fission=0
-
-in `GYP_DEFINES`. This improves load time of gdb significantly at the cost of
-link time.
+You can improve GDB load time significantly at the cost of link time by
+plitting symbols from the object files. In GN, set `use_debug_fission=false` in
+your "gn args". In GYP add `linux_use_debug_fission=0` to your `GYP_DEFINES`.
 
 ## Core files
 

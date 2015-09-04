@@ -1,6 +1,14 @@
-# Build instructions for Linux
+# Linux-specific build instructions
 
 [TOC]
+
+## Get the code
+
+[Get the Code](http://dev.chromium.org/developers/how-tos/get-the-code). The
+general instructions on the "Get the code" page cover basic Linux build setup
+and configuration.
+
+This page documents some additional Linux-specific build issues.
 
 ## Overview
 
@@ -8,126 +16,35 @@ Due its complexity, Chromium uses a set of custom tools to check out and build.
 Here's an overview of the steps you'll run:
 
 1.  **gclient**. A checkout involves pulling nearly 100 different SVN
-    repositories of code.  This process is managed with a tool called `gclient`.
-1.  **gyp**. The cross-platform build configuration system is called `gyp`, and
-    on Linux it generates ninja build files.  Running `gyp` is analogous to the
-    `./configure` step seen in most other software.
+    repositories of code. This process is managed with a tool called `gclient`.
+1.  **GN** / **gyp**. Cross-platform build configuration systems (GYP is the
+    older one, GN is the one being transitioned to). It generates ninja build
+    files. Running `gn`/`gyp` is analogous to the `./configure` step seen in
+    most other software.
 1.  **ninja**. The actual build itself uses `ninja`. A prebuilt binary is in
     `depot_tools` and should already be in your path if you followed the steps
     to check out Chromium.
 1.  We don't provide any sort of "install" step.
-1.  You may want to [use a chroot](using_a_linux_chroot.md) to isolate yourself
-    from versioning or packaging conflicts (or to run the layout tests).
+1.  You may want to
+    [use a chroot](http://code.google.com/p/chromium/wiki/UsingALinuxChroot) to
+    isolate yourself from versioning or packaging conflicts (or to run the
+    layout tests).
 
 ## Getting a checkout
 
-*   [Prerequisites](linux_build_instructions_prerequisites.md): what you need
-    before you build.
-*   [Get the Code](http://dev.chromium.org/developers/how-tos/get-the-code):
-    check out the source code.
+[Prerequisites](linux_build_instructions_prerequisites.md): what you need before
+you build.
 
-*** note
-Note: if you are working on Chromium OS and already have sources in
+**Note**. If you are working on Chromium OS and already have sources in
 `chromiumos/chromium`, you **must** run `chrome_set_ver --runhooks` to set the
 correct dependencies. This step is otherwise performed by `gclient` as part of
 your checkout.
-***
-
-## First Time Build Bootstrap
-
-*   Make sure your dependencies are up to date by running the
-    `install-build-deps.sh` script:
-
-    .../chromium/src$ build/install-build-deps.sh
-
-*   Before you build, you should also
-    [install API keys](https://sites.google.com/a/chromium.org/dev/developers/how-tos/api-keys).
-
-## `gyp` (configuring)
-
-After `gclient sync` finishes, it will run `gyp` automatically to generate the
-ninja build files. For standard chromium builds, this automatic step is
-sufficient and you can start [compiling](linux_build_instructions.md).
-
-To manually configure `gyp`, run `gclient runhooks` or run `gyp` directly via
-`build/gyp_chromium`. See [Configuring the Build](https://code.google.com/p/chromium/wiki/CommonBuildTasks#Configuring_the_Build) for detailed `gyp` options.
-
-[GypUserDocumentation](https://code.google.com/p/gyp/wiki/GypUserDocumentation) gives background on `gyp`, but is not necessary if you are just building Chromium.
-
-### Configuring `gyp`
-
-See [Configuring the Build](common_build_tasks.md) for details; most often
-you'll be changing the `GYP_DEFINES` options, which is discussed here.
-
-`gyp` supports a minimal amount of build configuration via the `-D` flag.
-
-    build/gyp_chromium -Dflag1=value1 -Dflag2=value2
-
-You can store these in the `GYP_DEFINES` environment variable, separating flags
-with spaces, as in:
-
-    export GYP_DEFINES="flag1=value1 flag2=value2"
-
-After changing your `GYP_DEFINES` you need to rerun `gyp`, either implicitly via
-`gclient sync` (which also syncs) or `gclient runhooks` or explicitly via
-`build/gyp_chromium`.
-
-Note that quotes are not necessary for a single flag, but are useful for
-clarity; `GYP_DEFINES=flag1=value1` is syntactically valid but can be confusing
-compared to `GYP_DEFINES="flag1=value1"`.
-
-If you have various flags for various purposes, you may find it more legible to
-break them up across several lines, taking care to include spaces, such as like
-this:
-
-    export GYP_DEFINES="flag1=value1 flag2=value2"
-
-or like this (allowing comments):
-
-    export GYP_DEFINES="flag1=value1" # comment
-    GYP_DEFINES+=" flag2=value2" # another comment
-
-
-### Sample configurations
-
-*   **gcc warnings**. By default we fail to build if there are any compiler
-    warnings. If you're getting warnings, can't build because of that, but just
-    want to get things done, you can specify `-Dwerror=` to turn that off:
-
-```script
-# one-off
-build/gyp_chromium -Dwerror=
-# via variable
-export GYP_DEFINES="werror="
-build/gyp_chromium
-```
-
-*   **ChromeOS**. `-Dchromeos=1` builds the ChromeOS version of Chrome. This is
-    **not** all of ChromeOS (see
-    [the ChromiumOS](http://www.chromium.org/chromium-os) page for full build
-    instructions), this is just the slightly tweaked version of the browser that
-    runs on that system. Its not designed to be run outside of ChromeOS and some
-    features won't work, but compiling on your Linux desktop can be useful for
-    certain types of development and testing.
-
-```shell
-# one-off
-build/gyp_chromium -Dchromeos=1
-# via variable
-export GYP_DEFINES="chromeos=1"
-build/gyp_chromium
-```
 
 ## Compilation
 
 The weird "`src/`" directory is an artifact of `gclient`. Start with:
 
     $ cd src
-
-### Build just chrome
-
-    $ ninja -C out/Debug chrome
-
 
 ### Faster builds
 
@@ -160,7 +77,6 @@ Pass `-C out/Release` to the ninja invocation:
 
     $ ninja -C out/Release chrome
 
-
 ### Seeing the commands
 
 If you want to see the actual commands that ninja is invoking, add `-v` to the
@@ -173,21 +89,27 @@ to see what ninja is actually doing.
 
 ### Clean builds
 
-All built files are put into the `out/` directory, so to start over with a clean
-build, just
+If you're using GN, you can clean the build directory (`out/Default` in this
+example):
+
+    gn clean out/Default
+
+This will delete all files except a bootstrap ninja file necessary for
+recreating the build.
+
+If you're using GYP, do:
 
     rm -rf out
+    gclient runhooks
 
-and run `gclient runhooks` or `build\gyp_chromium` again to recreate the ninja
-build files (which are also stored in `out/`). Or you can run `ninja -C
-out/Debug -t clean`.
+Ninja can also be used to clean a build with `ninja -C out/Debug -t clean` but
+this will not be as complete as the above methods.
 
 ### Linker Crashes
 
 If, during the final link stage:
 
     LINK(target) out/Debug/chrome
-
 
 You get an error like:
 
@@ -197,8 +119,7 @@ instance of 'std::bad_alloc'
 
 collect2: ld terminated with signal 11 [Segmentation fault], core dumped
 ```
-
-you are probably running out of memory when linking. Try one of:
+you are probably running out of memory when linking.  Try one of:
 
 1.  Use the `gold` linker
 1.  Build on a 64-bit computer
@@ -206,7 +127,7 @@ you are probably running out of memory when linking. Try one of:
 1.  Build as shared libraries (note: this build is for developers only, and may
     have broken functionality)
 
-Most of these are described on the [LinuxFasterBuilds](linux_faster_builds.md)
+Most of these are described on the [Linux Faster Builds](linux_faster_builds.md)
 page.
 
 ## Advanced Features

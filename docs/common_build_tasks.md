@@ -8,6 +8,9 @@ system.
 If you're new to Chromium development, read the
 [getting started guides](http://dev.chromium.org/developers/how-tos/get-the-code).
 
+There is some additional documentation on
+[setting GYP build parameters](http://dev.chromium.org/developers/gyp-environment-variables).
+
 [TOC]
 
 ## Faster Builds
