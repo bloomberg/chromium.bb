@@ -5,12 +5,10 @@
 import logging
 import re
 
-from telemetry.core import util
 from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 from telemetry import story
 
-util.AddDirToPythonPath(util.GetChromiumSrcDir(), 'build', 'android')
 from pylib.constants import keyevent # pylint: disable=import-error
 from pylib.device import intent # pylint: disable=import-error
 

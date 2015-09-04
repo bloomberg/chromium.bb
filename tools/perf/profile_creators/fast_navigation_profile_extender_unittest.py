@@ -5,10 +5,8 @@ import unittest
 
 from profile_creators.fast_navigation_profile_extender import (
     FastNavigationProfileExtender)
-from telemetry.core import util
 from telemetry.testing import options_for_unittests
 
-util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
 import mock  # pylint: disable=import-error
 
 

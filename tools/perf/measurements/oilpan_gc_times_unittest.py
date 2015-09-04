@@ -4,7 +4,6 @@
 
 from measurements import oilpan_gc_times
 
-from telemetry.core import util
 from telemetry.internal.results import page_test_results
 from telemetry.page import page as page_module
 from telemetry.testing import options_for_unittests
@@ -12,7 +11,6 @@ from telemetry.testing import page_test_test_case
 from telemetry.timeline import model
 from telemetry.timeline import slice as slice_data
 
-util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
 import mock  # pylint: disable=import-error
 
 

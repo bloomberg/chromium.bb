@@ -7,10 +7,6 @@ import sys
 import unittest
 import StringIO
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
-from telemetry.core import util
-
-util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
 import mock # pylint: disable=F0401
 
 import fetch_benchmark_deps
