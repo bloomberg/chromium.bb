@@ -98,6 +98,11 @@ class ServiceWorkerContext {
       const GURL& other_url,
       const CheckHasServiceWorkerCallback& callback) = 0;
 
+  // Stops all running service workers and unregisters all service worker
+  // registrations. This method is used in LayoutTests to make sure that the
+  // existing service worker will not affect the succeeding tests.
+  virtual void ClearAllServiceWorkersForTest(const base::Closure& callback) = 0;
+
  protected:
   ServiceWorkerContext() {}
   virtual ~ServiceWorkerContext() {}
