@@ -33,6 +33,7 @@
 
 #include "public/platform/WebCanvas.h"
 #include "public/web/WebWidget.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -63,6 +64,7 @@ public:
 
 // Common implementation of WebViewImpl and WebPagePopupImpl.
 class PageWidgetDelegate {
+    STATIC_ONLY(PageWidgetDelegate);
 public:
     // rootFrame arguments indicate a root localFrame from which to start performing the
     // specified operation. If rootFrame is 0, these methods will attempt to use the
@@ -72,9 +74,6 @@ public:
     static void paint(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
     static void paintIgnoringCompositing(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
     static bool handleInputEvent(PageWidgetEventHandler&, const WebInputEvent&, LocalFrame* root);
-
-private:
-    PageWidgetDelegate() { }
 };
 
 }

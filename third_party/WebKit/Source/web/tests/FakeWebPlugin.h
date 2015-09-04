@@ -32,6 +32,7 @@
 #define FakeWebPlugin_h
 
 #include "public/web/WebPlugin.h"
+#include "wtf/FastAllocBase.h"
 
 namespace blink {
 
@@ -44,6 +45,7 @@ class WebURLResponse;
 struct WebPluginParams;
 
 class FakeWebPlugin : public WebPlugin {
+    WTF_MAKE_FAST_ALLOCATED(FakeWebPlugin);
 public:
     FakeWebPlugin(WebFrame*, const WebPluginParams&);
 

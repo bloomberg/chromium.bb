@@ -50,6 +50,7 @@ class LinkHighlightImpl final : public LinkHighlight
     , public WebContentLayerClient
     , public WebCompositorAnimationDelegate
     , public WebCompositorAnimationPlayerClient {
+    WTF_MAKE_FAST_ALLOCATED(LinkHighlightImpl);
 public:
     static PassOwnPtr<LinkHighlightImpl> create(Node*, WebViewImpl*);
     ~LinkHighlightImpl() override;

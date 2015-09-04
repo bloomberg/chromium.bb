@@ -44,6 +44,7 @@ class WebLocalFrameImpl;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
 class AssociatedURLLoader final : public WebURLLoader {
+    WTF_MAKE_FAST_ALLOCATED(AssociatedURLLoader);
     WTF_MAKE_NONCOPYABLE(AssociatedURLLoader);
 public:
     AssociatedURLLoader(PassRefPtrWillBeRawPtr<WebLocalFrameImpl>, const WebURLLoaderOptions&);

@@ -19,6 +19,7 @@ class WebViewImpl;
 struct WebDeviceEmulationParams;
 
 class DevToolsEmulator final : public NoBaseWillBeGarbageCollectedFinalized<DevToolsEmulator> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DevToolsEmulator);
 public:
     ~DevToolsEmulator();
     static PassOwnPtrWillBeRawPtr<DevToolsEmulator> create(WebViewImpl*);

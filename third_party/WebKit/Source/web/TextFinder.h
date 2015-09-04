@@ -51,6 +51,7 @@ class WebLocalFrameImpl;
 template <typename T> class WebVector;
 
 class TextFinder final : public NoBaseWillBeGarbageCollectedFinalized<TextFinder> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(TextFinder);
 public:
     static PassOwnPtrWillBeRawPtr<TextFinder> create(WebLocalFrameImpl& ownerFrame);
 

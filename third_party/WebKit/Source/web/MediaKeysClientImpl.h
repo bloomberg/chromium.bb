@@ -6,10 +6,12 @@
 #define MediaKeysClientImpl_h
 
 #include "modules/encryptedmedia/MediaKeysClient.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class MediaKeysClientImpl final : public MediaKeysClient {
+    DISALLOW_ALLOCATION();
 public:
     MediaKeysClientImpl();
 

@@ -44,6 +44,7 @@ class WebPrerendererClient;
 class PrerendererClientImpl final : public NoBaseWillBeGarbageCollected<PrerendererClientImpl>, public PrerendererClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PrerendererClientImpl);
     WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PrerendererClientImpl);
 public:
     explicit PrerendererClientImpl(WebPrerendererClient*);
 

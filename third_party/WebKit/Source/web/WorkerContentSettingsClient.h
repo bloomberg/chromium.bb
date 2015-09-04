@@ -42,6 +42,7 @@ class WebWorkerContentSettingsClientProxy;
 
 class WorkerContentSettingsClient final : public NoBaseWillBeGarbageCollectedFinalized<WorkerContentSettingsClient>, public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerContentSettingsClient);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerContentSettingsClient> create(PassOwnPtr<WebWorkerContentSettingsClientProxy>);
     virtual ~WorkerContentSettingsClient();

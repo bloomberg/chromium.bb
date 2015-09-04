@@ -55,6 +55,7 @@ class WebEmbeddedWorkerImpl final
     , public WebDevToolsAgentClient
     , private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
+    WTF_MAKE_FAST_ALLOCATED(WebEmbeddedWorkerImpl);
 public:
     WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient>, PassOwnPtr<WebWorkerContentSettingsClientProxy>);
     ~WebEmbeddedWorkerImpl() override;

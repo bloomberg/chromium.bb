@@ -17,6 +17,7 @@ namespace blink {
 // 2. Trigger a load event on its owner element once it finishes a load.
 class RemoteBridgeFrameOwner final : public NoBaseWillBeGarbageCollectedFinalized<RemoteBridgeFrameOwner>, public FrameOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteBridgeFrameOwner);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(RemoteBridgeFrameOwner);
 public:
     static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
     {

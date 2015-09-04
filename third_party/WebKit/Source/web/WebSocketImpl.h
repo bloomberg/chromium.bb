@@ -37,6 +37,7 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebSocket.h"
 #include "public/web/WebSocketClient.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -48,6 +49,7 @@ class WebSocketChannelClientProxy;
 class WebURL;
 
 class WebSocketImpl final : public WebSocket {
+    WTF_MAKE_FAST_ALLOCATED(WebSocketImpl);
 public:
     WebSocketImpl(const WebDocument&, WebSocketClient*);
     ~WebSocketImpl() override;

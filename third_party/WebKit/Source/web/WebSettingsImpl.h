@@ -32,6 +32,7 @@
 #define WebSettingsImpl_h
 
 #include "public/web/WebSettings.h"
+#include "wtf/FastAllocBase.h"
 
 namespace blink {
 
@@ -39,6 +40,7 @@ class DevToolsEmulator;
 class Settings;
 
 class WebSettingsImpl final : public WebSettings {
+    WTF_MAKE_FAST_ALLOCATED(WebSettingsImpl);
 public:
     WebSettingsImpl(Settings*, DevToolsEmulator*);
     virtual ~WebSettingsImpl() { }

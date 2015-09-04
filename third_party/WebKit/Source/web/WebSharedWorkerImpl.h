@@ -70,6 +70,7 @@ class WebSharedWorkerImpl final
     , public WebSharedWorker
     , public WebDevToolsAgentClient
     , private WorkerLoaderProxyProvider {
+    WTF_MAKE_FAST_ALLOCATED(WebSharedWorkerImpl);
 public:
     explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
