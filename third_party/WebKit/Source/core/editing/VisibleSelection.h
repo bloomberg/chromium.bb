@@ -44,6 +44,21 @@ class LayoutPoint;
 const TextAffinity SEL_DEFAULT_AFFINITY = TextAffinity::Downstream; // NOLINT
 enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, DirectionLeft };
 
+// Listener of |VisibleSelection| modification. |didChangeVisibleSelection()|
+// will be invoked when base, extent, start or end is moved to a different
+// position.
+//
+// Objects implementing |VisibleSelectionChangeObserver| interface must outlive
+// the |VisibleSelection| object.
+class CORE_EXPORT VisibleSelectionChangeObserver : public WillBeGarbageCollectedMixin {
+    WTF_MAKE_NONCOPYABLE(VisibleSelectionChangeObserver);
+public:
+    VisibleSelectionChangeObserver();
+    virtual ~VisibleSelectionChangeObserver();
+    virtual void didChangeVisibleSelection() = 0;
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+};
+
 class CORE_EXPORT VisibleSelection {
     DISALLOW_ALLOCATION();
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelection);
@@ -174,20 +189,7 @@ public:
     void setWithoutValidation(const Position&, const Position&);
     void setWithoutValidation(const PositionInComposedTree&, const PositionInComposedTree&);
 
-    // Listener of VisibleSelection modification. didChangeVisibleSelection() will be invoked when base, extent, start
-    // or end is moved to a different position.
-    //
-    // Objects implementing |ChangeObserver| interface must outlive the VisibleSelection object.
-    class CORE_EXPORT ChangeObserver : public WillBeGarbageCollectedMixin {
-        WTF_MAKE_NONCOPYABLE(ChangeObserver);
-    public:
-        ChangeObserver();
-        virtual ~ChangeObserver();
-        virtual void didChangeVisibleSelection() = 0;
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
-    };
-
-    void setChangeObserver(ChangeObserver&);
+    void setChangeObserver(VisibleSelectionChangeObserver&);
     void clearChangeObserver();
     void didChange(); // Fire the change observer, if any.
 
@@ -242,7 +244,7 @@ private:
 
     // Oilpan: this reference has a lifetime that is at least as long
     // as this object.
-    RawPtrWillBeMember<ChangeObserver> m_changeObserver;
+    RawPtrWillBeMember<VisibleSelectionChangeObserver> m_changeObserver;
 
     // these are cached, can be recalculated by validate()
     SelectionType m_selectionType; // None, Caret, Range

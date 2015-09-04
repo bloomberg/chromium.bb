@@ -1047,15 +1047,15 @@ Node* VisibleSelection::nonBoundaryShadowTreeRootNode() const
     return start().anchorNode() && !start().anchorNode()->isShadowRoot() ? start().anchorNode()->nonBoundaryShadowTreeRootNode() : 0;
 }
 
-VisibleSelection::ChangeObserver::ChangeObserver()
+VisibleSelectionChangeObserver::VisibleSelectionChangeObserver()
 {
 }
 
-VisibleSelection::ChangeObserver::~ChangeObserver()
+VisibleSelectionChangeObserver::~VisibleSelectionChangeObserver()
 {
 }
 
-void VisibleSelection::setChangeObserver(ChangeObserver& observer)
+void VisibleSelection::setChangeObserver(VisibleSelectionChangeObserver& observer)
 {
     ASSERT(!m_changeObserver);
     m_changeObserver = &observer;

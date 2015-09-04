@@ -56,7 +56,7 @@ enum RevealExtentOption {
     DoNotRevealExtent
 };
 
-class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, public VisibleSelection::ChangeObserver, private CaretBase {
+class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, public VisibleSelectionChangeObserver, private CaretBase {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FrameSelection);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
@@ -228,7 +228,7 @@ public:
     bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
     void setShouldShowBlockCursor(bool);
 
-    // VisibleSelection::ChangeObserver interface.
+    // VisibleSelectionChangeObserver interface.
     void didChangeVisibleSelection() override;
 
     DECLARE_VIRTUAL_TRACE();

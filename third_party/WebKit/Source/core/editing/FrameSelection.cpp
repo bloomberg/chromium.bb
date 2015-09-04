@@ -2002,7 +2002,7 @@ DEFINE_TRACE(FrameSelection)
     visitor->trace(m_logicalRange);
     visitor->trace(m_previousCaretNode);
     visitor->trace(m_typingStyle);
-    VisibleSelection::ChangeObserver::trace(visitor);
+    VisibleSelectionChangeObserver::trace(visitor);
 }
 
 void FrameSelection::setCaretRectNeedsUpdate()
