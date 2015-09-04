@@ -1172,6 +1172,8 @@ if (is_win) {
   common_optimize_on_cflags = [
     "/Ob2",  # Both explicit and auto inlining.
     "/Oy-",  # Disable omitting frame pointers, must be after /O2.
+    "/d2Zi+",  # Improve debugging of optimized code.
+    "/Zc:inline",  # Remove unreferenced COMDAT (faster links).
   ]
   if (!is_asan) {
     common_optimize_on_cflags += [
@@ -1183,7 +1185,17 @@ if (is_win) {
       "/Gw",
     ]
   }
-  common_optimize_on_ldflags = [ "/OPT:REF" ]
+  common_optimize_on_ldflags = [ "/OPT:ICF" ]
+  if (is_official_build) {
+    common_optimize_on_ldflags += [
+      # Link-time code generation.
+      "/LTCG",
+
+      # Set the number of LTCG code-gen threads to eight. The default is four.
+      # This gives a 5-10% link speedup.
+      "/cgthreads:8",
+    ]
+  }
 } else {
   common_optimize_on_cflags = [
     # Don't emit the GCC version ident directives, they just end up in the
@@ -1296,7 +1308,6 @@ config("optimize_max") {
         # value of C4702 for PGO builds is likely very small.
         "/wd4702",
       ]
-      ldflags += [ "/LTCG" ]
     }
   } else {
     cflags = [ "-O2" ] + common_optimize_on_cflags
