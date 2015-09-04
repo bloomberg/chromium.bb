@@ -203,8 +203,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
 
 WTF::String DisplayItem::asDebugString() const
 {
-    if (!isValid())
-        return "null";
     WTF::StringBuilder stringBuilder;
     stringBuilder.append('{');
     dumpPropertiesAsDebugString(stringBuilder);
@@ -214,7 +212,13 @@ WTF::String DisplayItem::asDebugString() const
 
 void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
-    ASSERT(isValid());
+    if (!isValid()) {
+        stringBuilder.append("valid: false, originalDebugString: ");
+        // This is the original debug string which is in json format.
+        stringBuilder.append(clientDebugString());
+        return;
+    }
+
     stringBuilder.append(String::format("client: \"%p", client()));
     if (!clientDebugString().isEmpty()) {
         stringBuilder.append(' ');

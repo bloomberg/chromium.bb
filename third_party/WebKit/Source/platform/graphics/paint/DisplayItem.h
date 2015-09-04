@@ -328,6 +328,7 @@ public:
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
     const WTF::String& clientDebugString() const { return m_clientDebugString; }
+    void setClientDebugString(const WTF::String& s) { m_clientDebugString = s; }
     WTF::String asDebugString() const;
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const;
 #endif
@@ -344,9 +345,6 @@ private:
         , m_type(UninitializedType)
         , m_derivedSize(sizeof(*this))
         , m_skippedCache(false)
-#ifndef NDEBUG
-        , m_clientDebugString("invalid")
-#endif
     { }
 
     DisplayItemClient m_client;

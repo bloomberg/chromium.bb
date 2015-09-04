@@ -281,7 +281,7 @@ void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, D
     do {
         // We should always find the EndSubsequence display item.
         ASSERT(currentIt != m_currentDisplayItems.end());
-        updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
+        updatedList.appendByMoving(*currentIt);
         ++currentIt;
     } while (!endSubsequenceId.matches(updatedList.last()));
 }
@@ -346,9 +346,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
 #endif // ENABLE(ASSERT)
 
     // TODO(jbroman): Consider revisiting this heuristic.
-    DisplayItems updatedList(
-        kMaximumDisplayItemSize,
-        std::max(m_currentDisplayItems.usedCapacityInBytes(), m_newDisplayItems.usedCapacityInBytes()));
+    DisplayItems updatedList(std::max(m_currentDisplayItems.usedCapacityInBytes(), m_newDisplayItems.usedCapacityInBytes()));
     DisplayItems::iterator currentIt = m_currentDisplayItems.begin();
     DisplayItems::iterator currentEnd = m_currentDisplayItems.end();
     for (DisplayItems::iterator newIt = m_newDisplayItems.begin(); newIt != m_newDisplayItems.end(); ++newIt) {
@@ -379,7 +377,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
             }
 
             if (newDisplayItem.isCachedDrawing()) {
-                updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
+                updatedList.appendByMoving(*currentIt);
                 ++currentIt;
             } else {
                 ASSERT(newDisplayItem.type() == DisplayItem::CachedSubsequence);
@@ -397,7 +395,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
                     || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && paintOffsetWasInvalidated(newDisplayItem.client())));
             }
 #endif
-            updatedList.appendByMoving(*newIt, newIt->derivedSize());
+            updatedList.appendByMoving(*newIt);
 
             if (isSynchronized)
                 ++currentIt;
@@ -601,14 +599,12 @@ WTF::String DisplayItemList::displayItemsAsDebugString(const DisplayItems& list)
         const DisplayItem& displayItem = *it;
         if (i)
             stringBuilder.append(",\n");
-        if (!displayItem.isValid()) {
-            stringBuilder.append("null");
-            continue;
-        }
         stringBuilder.append(String::format("{index: %d, ", (int)i));
         displayItem.dumpPropertiesAsDebugString(stringBuilder);
-        stringBuilder.append(", cacheIsValid: ");
-        stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
+        if (displayItem.isValid()) {
+            stringBuilder.append(", cacheIsValid: ");
+            stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
+        }
         stringBuilder.append('}');
     }
     return stringBuilder.toString();

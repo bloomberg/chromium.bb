@@ -33,7 +33,26 @@ static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem
 // which were invalidated on this frame and do not change SimpleLayers.
 using DisplayListDiff = HashMap<DisplayItemClient, DisplayItem*>;
 
-using DisplayItems = ContiguousContainer<DisplayItem, kDisplayItemAlignment>;
+class DisplayItems : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
+public:
+    DisplayItems(size_t initialSizeBytes)
+        : ContiguousContainer(kMaximumDisplayItemSize, initialSizeBytes) {}
+
+    DisplayItem& appendByMoving(DisplayItem& item)
+    {
+#ifndef NDEBUG
+        WTF::String originalDebugString = item.asDebugString();
+#endif
+        DisplayItem& result = ContiguousContainer::appendByMoving(item, item.derivedSize());
+        // ContiguousContainer::appendByMoving() called in-place constructor on item, which invalidated it.
+        ASSERT(!item.isValid());
+#ifndef NDEBUG
+        // Save original debug string in the old item to help debugging.
+        item.setClientDebugString(originalDebugString);
+#endif
+        return result;
+    }
+};
 
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
@@ -141,8 +160,8 @@ public:
 
 protected:
     DisplayItemList()
-        : m_currentDisplayItems(kMaximumDisplayItemSize, 0)
-        , m_newDisplayItems(kMaximumDisplayItemSize, kInitialDisplayItemsCapacity * kMaximumDisplayItemSize)
+        : m_currentDisplayItems(0)
+        , m_newDisplayItems(kInitialDisplayItemsCapacity * kMaximumDisplayItemSize)
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_skippingCacheCount(0)
