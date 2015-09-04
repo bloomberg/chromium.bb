@@ -82,8 +82,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   // Sender overrides.
   bool Send(IPC::Message* msg) override;
 
-  bool HandleMessagesScheduled();
-  uint64 MessagesProcessed();
+  uint32_t ProcessedOrderNumber();
+  uint32_t UnprocessedOrderNumber();
 
   void LoseAllContexts();
 

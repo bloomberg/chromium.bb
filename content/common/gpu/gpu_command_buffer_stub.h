@@ -285,7 +285,7 @@ class GpuCommandBufferStub
   int sync_point_wait_count_;
 
   bool delayed_work_scheduled_;
-  uint64 previous_messages_processed_;
+  uint32_t previous_processed_num_;
   base::TimeTicks last_idle_time_;
 
   scoped_refptr<gpu::PreemptionFlag> preemption_flag_;

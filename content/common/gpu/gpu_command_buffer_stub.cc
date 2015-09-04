@@ -200,7 +200,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       watchdog_(watchdog),
       sync_point_wait_count_(0),
       delayed_work_scheduled_(false),
-      previous_messages_processed_(0),
+      previous_processed_num_(0),
       active_url_(active_url),
       total_gpu_memory_(0) {
   active_url_hash_ = base::Hash(active_url.possibly_invalid_spec());
@@ -342,12 +342,10 @@ void GpuCommandBufferStub::PollWork() {
     return;
 
   if (scheduler_) {
-    uint64 current_messages_processed =
-        channel()->gpu_channel_manager()->MessagesProcessed();
+    const uint32_t current_unprocessed_num =
+        channel()->gpu_channel_manager()->UnprocessedOrderNumber();
     // We're idle when no messages were processed or scheduled.
-    bool is_idle =
-        (previous_messages_processed_ == current_messages_processed) &&
-        !channel()->gpu_channel_manager()->HandleMessagesScheduled();
+    bool is_idle = (previous_processed_num_ == current_unprocessed_num);
     if (!is_idle && !last_idle_time_.is_null()) {
       base::TimeDelta time_since_idle =
           base::TimeTicks::Now() - last_idle_time_;
@@ -388,8 +386,8 @@ void GpuCommandBufferStub::ScheduleDelayedWork(int64 delay) {
 
   // Idle when no messages are processed between now and when
   // PollWork is called.
-  previous_messages_processed_ =
-      channel()->gpu_channel_manager()->MessagesProcessed();
+  previous_processed_num_ =
+      channel()->gpu_channel_manager()->ProcessedOrderNumber();
   if (last_idle_time_.is_null())
     last_idle_time_ = base::TimeTicks::Now();
 

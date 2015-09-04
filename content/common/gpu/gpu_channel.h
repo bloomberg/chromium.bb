@@ -5,7 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_GPU_CHANNEL_H_
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_H_
 
-#include <deque>
 #include <string>
 
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -50,6 +49,7 @@ class MessageFilter;
 namespace content {
 class GpuChannelManager;
 class GpuChannelMessageFilter;
+class GpuChannelMessageQueue;
 class GpuJpegDecodeAccelerator;
 class GpuWatchdog;
 
@@ -144,9 +144,6 @@ class CONTENT_EXPORT GpuChannel
 
   gpu::PreemptionFlag* GetPreemptionFlag();
 
-  bool handle_messages_scheduled() const { return handle_messages_scheduled_; }
-  uint64 messages_processed() const { return messages_processed_; }
-
   // If |preemption_flag->IsSet()|, any stub on this channel
   // should stop issuing GL commands. Setting this to NULL stops deferral.
   void SetPreemptByFlag(
@@ -175,6 +172,10 @@ class CONTENT_EXPORT GpuChannel
     return pending_valuebuffer_state_.get();
   }
 
+  uint32_t GetCurrentOrderNum() const { return current_order_num_; }
+  uint32_t GetProcessedOrderNum() const { return processed_order_num_; }
+  uint32_t GetUnprocessedOrderNum() const;
+
  protected:
   // The message filter on the io thread.
   scoped_refptr<GpuChannelMessageFilter> filter_;
@@ -184,6 +185,7 @@ class CONTENT_EXPORT GpuChannel
 
  private:
   friend class GpuChannelMessageFilter;
+  friend class GpuChannelMessageQueue;
 
   void OnDestroy();
 
@@ -200,8 +202,8 @@ class CONTENT_EXPORT GpuChannel
   void OnDestroyCommandBuffer(int32 route_id);
   void OnCreateJpegDecoder(int32 route_id, IPC::Message* reply_msg);
 
-  // Decrement the count of unhandled IPC messages and defer preemption.
-  void MessageProcessed();
+  // Update processed order number and defer preemption.
+  void MessageProcessed(uint32_t order_number);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
@@ -216,8 +218,6 @@ class CONTENT_EXPORT GpuChannel
   // Used to implement message routing functionality to CommandBuffer objects
   MessageRouter router_;
 
-  uint64 messages_processed_;
-
   // Whether the processing of IPCs on this channel is stalled and we should
   // preempt other GpuChannels.
   scoped_refptr<gpu::PreemptionFlag> preempting_flag_;
@@ -226,7 +226,7 @@ class CONTENT_EXPORT GpuChannel
   // commands (via their GpuScheduler) when preempted_flag_->IsSet()
   scoped_refptr<gpu::PreemptionFlag> preempted_flag_;
 
-  std::deque<IPC::Message*> deferred_messages_;
+  scoped_refptr<GpuChannelMessageQueue> message_queue_;
 
   // The id of the client who is on the other side of the channel.
   int client_id_;
@@ -253,8 +253,12 @@ class CONTENT_EXPORT GpuChannel
   gpu::gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* watchdog_;
   bool software_;
-  bool handle_messages_scheduled_;
-  IPC::Message* currently_processing_message_;
+
+  // Current IPC order number being processed.
+  uint32_t current_order_num_;
+
+  // Last finished IPC order number.
+  uint32_t processed_order_num_;
 
   size_t num_stubs_descheduled_;
 

@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/gpu_channel_manager.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -247,24 +249,28 @@ void GpuChannelManager::OnLoadedShader(std::string program_proto) {
     program_cache()->LoadProgram(program_proto);
 }
 
-bool GpuChannelManager::HandleMessagesScheduled() {
+uint32_t GpuChannelManager::ProcessedOrderNumber() {
+  uint32_t processed_order_num = 0;
   for (auto& kv : gpu_channels_) {
-    if (kv.second->handle_messages_scheduled())
-      return true;
+    processed_order_num =
+        std::max(processed_order_num, kv.second->GetProcessedOrderNum());
   }
-  return false;
+  return processed_order_num;
 }
 
-uint64 GpuChannelManager::MessagesProcessed() {
-  uint64 messages_processed = 0;
-  for (auto& kv : gpu_channels_)
-    messages_processed += kv.second->messages_processed();
-  return messages_processed;
+uint32_t GpuChannelManager::UnprocessedOrderNumber() {
+  uint32_t unprocessed_order_num = 0;
+  for (auto& kv : gpu_channels_) {
+    unprocessed_order_num =
+        std::max(unprocessed_order_num, kv.second->GetUnprocessedOrderNum());
+  }
+  return unprocessed_order_num;
 }
 
 void GpuChannelManager::LoseAllContexts() {
-  for (auto& kv : gpu_channels_)
+  for (auto& kv : gpu_channels_) {
     kv.second->MarkAllContextsLost();
+  }
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&GpuChannelManager::OnLoseAllContexts,
                                     weak_factory_.GetWeakPtr()));
