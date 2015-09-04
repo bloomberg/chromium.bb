@@ -39,12 +39,12 @@
     "args": [],
   },
   "angle_end2end_tests": {
-    "label": "//gpu:angle_end2end_tests",
+    "label": "//third_party/angle/src/tests:angle_end2end_tests",
     "type": "raw",
     "args": [],
   },
   "angle_unittests": {
-    "label": "//gpu:angle_unittests",
+    "label": "//third_party/angle/src/tests:angle_unittests",
     "type": "raw",
     "args": [],
   },
