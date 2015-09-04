@@ -67,32 +67,36 @@ class Range;
 //
 // NOTE: UPSTREAM affinity will be used only if pos is at end of a wrapped line,
 // otherwise it will be converted to DOWNSTREAM.
-class CORE_EXPORT VisiblePosition final {
+template <typename Strategy>
+class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
     DISALLOW_ALLOCATION();
 public:
-    VisiblePosition();
+    VisiblePositionTemplate();
 
     // Node: Other than |createVisiblePosition()|, we should not use
     // |createWithoutCanonicalization()|.
-    static VisiblePosition createWithoutCanonicalization(const PositionWithAffinity& canonicalized);
+    static VisiblePositionTemplate createWithoutCanonicalization(const PositionWithAffinityTemplate<Strategy>& canonicalized);
 
     // Intentionally delete |operator==()| and |operator!=()| for reducing
     // compilation error message.
     // TODO(yosin) We'll have |equals()| when we have use cases of checking
     // equality of both position and affinity.
-    bool operator==(const VisiblePosition&) const = delete;
-    bool operator!=(const VisiblePosition&) const = delete;
+    bool operator==(const VisiblePositionTemplate&) const = delete;
+    bool operator!=(const VisiblePositionTemplate&) const = delete;
 
     bool isNull() const { return m_positionWithAffinity.isNull(); }
     bool isNotNull() const { return m_positionWithAffinity.isNotNull(); }
     bool isOrphan() const { return deepEquivalent().isOrphan(); }
 
-    Position deepEquivalent() const { return m_positionWithAffinity.position(); }
-    Position toParentAnchoredPosition() const { return deepEquivalent().parentAnchoredEquivalent(); }
-    PositionWithAffinity toPositionWithAffinity() const { return m_positionWithAffinity; }
+    PositionAlgorithm<Strategy> deepEquivalent() const { return m_positionWithAffinity.position(); }
+    PositionAlgorithm<Strategy> toParentAnchoredPosition() const { return deepEquivalent().parentAnchoredEquivalent(); }
+    PositionWithAffinityTemplate<Strategy> toPositionWithAffinity() const { return m_positionWithAffinity; }
     TextAffinity affinity() const { return m_positionWithAffinity.affinity(); }
 
-    DECLARE_TRACE();
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_positionWithAffinity);
+    }
 
 #ifndef NDEBUG
     void debugPosition(const char* msg = "") const;
@@ -101,10 +105,14 @@ public:
 #endif
 
 private:
-    explicit VisiblePosition(const PositionWithAffinity&);
+    explicit VisiblePositionTemplate(const PositionWithAffinityTemplate<Strategy>&);
 
-    PositionWithAffinity m_positionWithAffinity;
+    PositionWithAffinityTemplate<Strategy> m_positionWithAffinity;
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
+
+using VisiblePosition = VisiblePositionTemplate<EditingStrategy>;
 
 CORE_EXPORT VisiblePosition createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);

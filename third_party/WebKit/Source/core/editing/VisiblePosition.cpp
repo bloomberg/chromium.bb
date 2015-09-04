@@ -49,18 +49,21 @@ namespace blink {
 
 using namespace HTMLNames;
 
-VisiblePosition::VisiblePosition()
+template <typename Strategy>
+VisiblePositionTemplate<Strategy>::VisiblePositionTemplate()
 {
 }
 
-VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinity)
+template <typename Strategy>
+VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(const PositionWithAffinityTemplate<Strategy>& positionWithAffinity)
     : m_positionWithAffinity(positionWithAffinity)
 {
 }
 
-VisiblePosition VisiblePosition::createWithoutCanonicalization(const PositionWithAffinity& canonicalized)
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::createWithoutCanonicalization(const PositionWithAffinityTemplate<Strategy>& canonicalized)
 {
-    return VisiblePosition(canonicalized);
+    return VisiblePositionTemplate<Strategy>(canonicalized);
 }
 
 template<typename Strategy>
@@ -97,7 +100,8 @@ VisiblePosition createVisiblePosition(const PositionInComposedTree& position, Te
 
 #ifndef NDEBUG
 
-void VisiblePosition::debugPosition(const char* msg) const
+template<typename Strategy>
+void VisiblePositionTemplate<Strategy>::debugPosition(const char* msg) const
 {
     if (isNull()) {
         fprintf(stderr, "Position [%s]: null\n", msg);
@@ -106,22 +110,21 @@ void VisiblePosition::debugPosition(const char* msg) const
     deepEquivalent().debugPosition(msg);
 }
 
-void VisiblePosition::formatForDebugger(char* buffer, unsigned length) const
+template<typename Strategy>
+void VisiblePositionTemplate<Strategy>::formatForDebugger(char* buffer, unsigned length) const
 {
     deepEquivalent().formatForDebugger(buffer, length);
 }
 
-void VisiblePosition::showTreeForThis() const
+template<typename Strategy>
+void VisiblePositionTemplate<Strategy>::showTreeForThis() const
 {
     deepEquivalent().showTreeForThis();
 }
 
 #endif
 
-DEFINE_TRACE(VisiblePosition)
-{
-    visitor->trace(m_positionWithAffinity);
-}
+template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
 
 } // namespace blink
 
