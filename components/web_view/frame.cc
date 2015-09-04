@@ -330,20 +330,25 @@ void Frame::SetClientPropertyImpl(const mojo::String& name,
   tree_->ClientPropertyChanged(this, name, value);
 }
 
-Frame* Frame::FindTargetFrame(uint32_t frame_id) {
+Frame* Frame::FindFrameWithIdFromSameApp(uint32_t frame_id) {
   if (frame_id == id_)
     return this;  // Common case.
-
-  // TODO(sky): I need a way to sanity check frame_id here, but the connection
-  // id isn't known to us.
 
   Frame* frame = FindFrame(frame_id);
   if (frame && frame->frame_tree_client_) {
     // The frame has it's own client/server pair. It should make requests using
     // the server it has rather than an ancestor.
-    DVLOG(1) << "ignore request for a frame that has its own client.";
+    DVLOG(1) << "ignoring request for a frame that has its own client.";
     return nullptr;
   }
+
+  if (frame && frame->app_id_ != app_id_) {
+    // An app is trying to send a message from another frame.
+    DVLOG(1) << "ignoring request for a frame from another app.";
+    return nullptr;
+  }
+
+  // TODO(sky): deal with kInvalidContentHandlerID?
 
   return frame;
 }
@@ -408,7 +413,8 @@ void Frame::OnViewDestroying(mojo::View* view) {
 void Frame::PostMessageEventToFrame(uint32_t source_frame_id,
                                     uint32_t target_frame_id,
                                     HTMLMessageEventPtr event) {
-  Frame* source = tree_->root()->FindFrame(source_frame_id);
+  Frame* source = FindFrameWithIdFromSameApp(source_frame_id);
+  // NOTE: |target_frame_id| is allowed to be from another connection.
   Frame* target = tree_->root()->FindFrame(target_frame_id);
   if (!target || !source || source == target || !tree_->delegate_ ||
       !tree_->delegate_->CanPostMessageEventToFrame(source, target,
@@ -422,25 +428,25 @@ void Frame::PostMessageEventToFrame(uint32_t source_frame_id,
 }
 
 void Frame::LoadingStarted(uint32_t frame_id) {
-  Frame* target_frame = FindTargetFrame(frame_id);
+  Frame* target_frame = FindFrameWithIdFromSameApp(frame_id);
   if (target_frame)
     target_frame->LoadingStartedImpl();
 }
 
 void Frame::LoadingStopped(uint32_t frame_id) {
-  Frame* target_frame = FindTargetFrame(frame_id);
+  Frame* target_frame = FindFrameWithIdFromSameApp(frame_id);
   if (target_frame)
     target_frame->LoadingStoppedImpl();
 }
 
 void Frame::ProgressChanged(uint32_t frame_id, double progress) {
-  Frame* target_frame = FindTargetFrame(frame_id);
+  Frame* target_frame = FindFrameWithIdFromSameApp(frame_id);
   if (target_frame)
     target_frame->ProgressChangedImpl(progress);
 }
 
 void Frame::TitleChanged(uint32_t frame_id, const mojo::String& title) {
-  Frame* target_frame = FindTargetFrame(frame_id);
+  Frame* target_frame = FindFrameWithIdFromSameApp(frame_id);
   if (target_frame)
     target_frame->TitleChangedImpl(title);
 }
@@ -448,7 +454,7 @@ void Frame::TitleChanged(uint32_t frame_id, const mojo::String& title) {
 void Frame::SetClientProperty(uint32_t frame_id,
                               const mojo::String& name,
                               mojo::Array<uint8_t> value) {
-  Frame* target_frame = FindTargetFrame(frame_id);
+  Frame* target_frame = FindFrameWithIdFromSameApp(frame_id);
   if (target_frame)
     target_frame->SetClientPropertyImpl(name, value.Pass());
 }
@@ -457,7 +463,7 @@ void Frame::OnCreatedFrame(
     uint32_t parent_id,
     uint32_t frame_id,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties) {
-  // TODO(sky): I need a way to verify the id. Unfortunately the code here
+  // TODO(sky): I need a way to verify the frame_id. Unfortunately the code here
   // doesn't know the connection id of the embedder, so it's not possible to
   // do it.
 
@@ -467,7 +473,7 @@ void Frame::OnCreatedFrame(
     return;
   }
 
-  Frame* parent_frame = FindFrame(parent_id);
+  Frame* parent_frame = FindFrameWithIdFromSameApp(parent_id);
   if (!parent_frame) {
     DVLOG(1) << "OnCreatedLocalFrame supplied invalid parent_id.";
     return;
@@ -486,6 +492,7 @@ void Frame::RequestNavigate(NavigationTargetType target_type,
                             uint32_t target_frame_id,
                             mojo::URLRequestPtr request) {
   if (target_type == NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
+    // |target_frame| is allowed to come from another connection.
     Frame* target_frame = tree_->root()->FindFrame(target_frame_id);
     if (!target_frame) {
       DVLOG(1) << "RequestNavigate EXIT_FRAME with no matching frame";

@@ -172,7 +172,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   // Returns the Frame whose id is |frame_id|. Returns nullptr if |frame_id| is
   // not from the same connection as this.
-  Frame* FindTargetFrame(uint32_t frame_id);
+  Frame* FindFrameWithIdFromSameApp(uint32_t frame_id);
 
   // Notifies the client and all descendants as appropriate.
   void NotifyAdded(const Frame* source,
