@@ -79,6 +79,7 @@
 #     # files.
 #   }
 import("//build/config/chrome_build.gni")
+import("//third_party/WebKit/Source/config.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -250,8 +251,13 @@ if (enable_google_now) {
   ]
 }
 
-# Note: use_concatenated_impulse_responses is omitted. It is never used and
-# should probably be removed from GYP build.
+if (use_concatenated_impulse_responses) {
+  grit_defines += [
+    "-D",
+    "use_concatenated_impulse_responses",
+  ]
+}
+
 if (enable_webrtc) {
   grit_defines += [
     "-D",
