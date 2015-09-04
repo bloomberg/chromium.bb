@@ -1,0 +1,30 @@
+Tests event listeners output in the Elements sidebar panel.
+
+Inspect Me
+
+======== click ========
+== frameworkUser
+[expanded] button#nodeevent-listener-sidebar-jquery2.html:11
+    useCapture: true
+    handler: function (){ console.log("second jquery"); }
+== frameworkUser
+[expanded] button#nodeevent-listener-sidebar-jquery2.html:10
+    useCapture: true
+    handler: function (){ console.log("first jquery"); }
+== normal
+[expanded] button#nodeevent-listener-sidebar-jquery2.html:12
+    useCapture: false
+    handler: function () { console.log("addEventListener"); }
+== frameworkInternal
+[expanded] button#nodejquery-2.1.4.min.js:3
+    useCapture: false
+    handler: function (b){return typeof n!==U&&n.event.triggered!==b.type?n.event.dispatch.apply(a,arguments):void 0}
+
+======== load ========
+== normal
+[expanded] Windowevent-listener-sidebar-jquery2.html:36
+    useCapture: false
+    handler: function onload(event) {
+  onloadHandler()
+}
+

@@ -461,8 +461,10 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
             InspectorTest.addResult("");
             InspectorTest.addResult("======== " + eventType + " ========");
             var listenerItems = listenerTypes[i].children();
-            for (var j = 0; j < listenerItems.length; ++j)
+            for (var j = 0; j < listenerItems.length; ++j) {
+                InspectorTest.addResult("== " + listenerItems[j].eventListener().listenerType());
                 InspectorTest.dumpObjectPropertyTreeElement(listenerItems[j]);
+            }
         }
         callback();
     }
