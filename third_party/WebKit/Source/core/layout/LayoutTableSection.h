@@ -67,6 +67,37 @@ private:
 class LayoutTableCell;
 class LayoutTableRow;
 
+// LayoutTableSection is used to represent table row group (display:
+// table-row-group), header group (display: table-header-group) and footer group
+// (display: table-footer-group).
+//
+// The object holds the internal representation of the rows (m_grid). See
+// recalcCells() below for some extra explanation.
+//
+// A lot of the complexity in this class is related to handling rowspan, colspan
+// or just non-regular tables.
+//
+// Example of rowspan / colspan leading to overlapping cells (rowspan and
+// colspan are overlapping):
+// <table>
+//   <tr>
+//       <td>first row</td>
+//       <td rowspan="2">rowspan</td>
+//     </tr>
+//    <tr>
+//        <td colspan="2">colspan</td>
+//     </tr>
+// </table>
+//
+// Example of non-regular table (missing one cell in the first row):
+// <!DOCTYPE html>
+// <table>
+//   <tr><td>First row only child.</td></tr>
+//   <tr>
+//     <td>Second row first child</td>
+//     <td>Second row second child</td>
+//   </tr>
+// </table>
 class CORE_EXPORT LayoutTableSection final : public LayoutBox {
 public:
     LayoutTableSection(Element*);
@@ -199,6 +230,16 @@ public:
 
     unsigned numRows() const { return m_grid.size(); }
     unsigned numColumns() const;
+
+    // recalcCells() is used when we are not sure about the section's structure
+    // and want to do an expensive (but safe) reconstruction of m_grid from
+    // scratch.
+    // An example of this is inserting a new cell in the middle of an existing
+    // row or removing a row.
+    //
+    // Accessing m_grid when m_needsCellRecalc is set is UNSAFE as pointers can
+    // be left dangling. Thus care should be taken in the code to check
+    // m_needsCellRecalc before accessing m_grid.
     void recalcCells();
     void recalcCellsIfNeeded()
     {
@@ -293,10 +334,29 @@ private:
 
     LayoutObjectChildList m_children;
 
+    // The representation of the rows and their cells (CellStruct).
     Vector<RowStruct> m_grid;
+
+    // The logical offset of each row from the top of the section.
+    //
+    // Note that this Vector has one more entry than the number of rows so that
+    // we can keep track of the final size of the section
+    // (m_rowPos[m_grid.size() + 1]).
+    //
+    // To know a row's height at |rowIndex|, use the formula:
+    // m_rowPos[rowIndex + 1] - m_rowPos[rowIndex]
     Vector<int> m_rowPos;
 
-    // the current insertion position
+    // The current insertion position in the grid.
+    // The position is used when inserting a new cell into the section to
+    // know where it should be inserted and expand our internal structure.
+    //
+    // The reason for them is that we process cells as we discover them
+    // during parsing or during recalcCells (ie in DOM order). This means
+    // that we can discover changes in the structure later (e.g. due to
+    // colspans, extra cells, ...).
+    //
+    // Do not use outside of recalcCells and addChild.
     unsigned m_cCol;
     unsigned m_cRow;
 

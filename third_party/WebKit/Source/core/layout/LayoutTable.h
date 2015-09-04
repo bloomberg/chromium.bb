@@ -41,6 +41,16 @@ class TableLayoutAlgorithm;
 
 enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 
+// LayoutTable is the LayoutObject associated with
+// display: table or inline-table.
+//
+// LayoutTable is the master coordinator for determining the overall table
+// structure. The reason is that LayoutTableSection children have a local
+// view over what their structure is but don't account for other
+// LayoutTableSection. Thus LayoutTable helps keep consistency across
+// LayoutTableSection. See e.g. m_column below.
+//
+// TODO(jchaffraix): Explain more of the class structure.
 class CORE_EXPORT LayoutTable final : public LayoutBlock {
 public:
     explicit LayoutTable(Element*);
@@ -323,6 +333,30 @@ private:
     void recalcCollapsedBordersIfNeeded();
 
     mutable Vector<int> m_columnPos;
+
+    // This Vector holds the columns counts over the entire table.
+    //
+    // To save memory at the expense of massive code complexity, the code tries
+    // to coalesce columns. This means that we try to the wider column grouping
+    // seen over the LayoutTableSections.
+    //
+    // Note that this is also a defensive pattern as <td colspan="6666666666">
+    // only allocates a single entry in this Vector. This argument is weak
+    // though as we cap colspans in HTMLTableCellElement.
+    //
+    // The following example would have 2 ColumnStruct [ 3, 2 ]:
+    // <table>
+    //   <tr>
+    //     <td colspan="3"></td>
+    //     <td colspan="2"></td>
+    //   </tr>
+    // </table>
+    //
+    // Columns can be split if we add a row with a different colspan structure.
+    // See splitColumn and appendColumn for operations over |m_columns|.
+    //
+    // See colToEffCol for converting an absolute column index into an
+    // index into |m_columns|.
     mutable Vector<ColumnStruct> m_columns;
     mutable Vector<LayoutTableCaption*> m_captions;
     mutable Vector<LayoutTableCol*> m_columnLayoutObjects;
@@ -331,6 +365,17 @@ private:
     mutable LayoutTableSection* m_foot;
     mutable LayoutTableSection* m_firstBody;
 
+    // The layout algorithm used by this table.
+    //
+    // CSS 2.1 defines 2 types of table layouts toggled with 'table-layout':
+    // fixed (TableLayoutAlgorithmFixed) and auto (TableLayoutAlgorithmAuto).
+    // See http://www.w3.org/TR/CSS21/tables.html#width-layout.
+    //
+    // The layout algorithm is delegated to TableLayoutAlgorithm. This enables
+    // changing 'table-layout' without having to reattach the <table>.
+    //
+    // As the algorithm is dependent on the style, this field is nullptr before
+    // the first style is applied in styleDidChange().
     OwnPtr<TableLayoutAlgorithm> m_tableLayout;
 
     // A sorted list of all unique border values that we want to paint.
