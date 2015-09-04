@@ -48,6 +48,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/locale_settings.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
@@ -55,6 +56,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_tracker.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -63,6 +65,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using base::UserMetricsAction;
@@ -300,6 +303,18 @@ void ConvertStringVectorToGURLVector(
   std::transform(src.begin(), src.end(), ret->begin(), &UrlFromString);
 }
 
+bool IsOnWelcomePage(content::WebContents* contents) {
+  // We have to check both the GetURL() similar to the other checks below, but
+  // also the original request url because the welcome page we use is a
+  // redirect.
+  GURL welcome_page(l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL));
+  return contents->GetURL() == welcome_page ||
+         (contents->GetController().GetVisibleEntry() &&
+          contents->GetController()
+                  .GetVisibleEntry()
+                  ->GetOriginalRequestURL() == welcome_page);
+}
+
 // Show the first run search engine bubble at the first appropriate opportunity.
 // This bubble may be delayed by other UI, like global errors and sync promos.
 class FirstRunBubbleLauncher : public content::NotificationObserver {
@@ -366,12 +381,12 @@ void FirstRunBubbleLauncher::Observe(
 
   // Suppress the first run bubble if a Gaia sign in page or the sync setup
   // page is showing.
-  if (contents &&
-      (contents->GetURL().GetOrigin().spec() ==
-           chrome::kChromeUIChromeSigninURL ||
-       gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
-       contents->GetURL() ==
-           chrome::GetSettingsUrl(chrome::kSyncSetupSubPage))) {
+  if (contents && (contents->GetURL().GetOrigin().spec() ==
+                       chrome::kChromeUIChromeSigninURL ||
+                   gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
+                   contents->GetURL() ==
+                       chrome::GetSettingsUrl(chrome::kSyncSetupSubPage) ||
+                   IsOnWelcomePage(contents))) {
     return;
   }
 
