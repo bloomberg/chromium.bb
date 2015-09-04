@@ -289,19 +289,6 @@ void WebTestDelegateImpl::ResetPermissions() {
   NOTIMPLEMENTED();
 }
 
-scoped_refptr<cc::TextureLayer>
-WebTestDelegateImpl::CreateTextureLayerForMailbox(
-    cc::TextureLayerClient* client) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-blink::WebLayer* WebTestDelegateImpl::InstantiateWebLayer(
-    scoped_refptr<cc::TextureLayer> layer) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 cc::SharedBitmapManager* WebTestDelegateImpl::GetSharedBitmapManager() {
   NOTIMPLEMENTED();
   return nullptr;

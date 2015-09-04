@@ -22,6 +22,7 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
         '../../cc/cc.gyp:cc',
+        '../../cc/blink/cc_blink.gyp:cc_blink',
         '../../gin/gin.gyp:gin',
         '../../gpu/gpu.gyp:gpu',
         '../../skia/skia.gyp:skia',

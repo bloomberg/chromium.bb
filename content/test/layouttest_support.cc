@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
-#include "cc/blink/web_layer_impl.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_proxy.h"
@@ -455,16 +454,6 @@ std::string DumpBackForwardList(std::vector<PageState>& page_state,
   }
   result.append("===============================================\n");
   return result;
-}
-
-scoped_refptr<cc::TextureLayer> CreateTextureLayerForMailbox(
-    cc::TextureLayerClient* client) {
-  return cc::TextureLayer::CreateForMailbox(
-      cc_blink::WebLayerImpl::LayerSettings(), client);
-}
-
-blink::WebLayer* InstantiateWebLayer(scoped_refptr<cc::TextureLayer> layer) {
-  return new cc_blink::WebLayerImpl(layer);
 }
 
 }  // namespace content

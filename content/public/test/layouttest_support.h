@@ -134,13 +134,6 @@ void DisableAutoResizeMode(RenderView* render_view,
 std::string DumpBackForwardList(std::vector<PageState>& page_state,
                                 size_t current_index);
 
-// Creates cc::TextureLayer for TestPlugin.
-scoped_refptr<cc::TextureLayer> CreateTextureLayerForMailbox(
-    cc::TextureLayerClient* client);
-
-// Instantiates WebLayerImpl for TestPlugin.
-blink::WebLayer* InstantiateWebLayer(scoped_refptr<cc::TextureLayer> layer);
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

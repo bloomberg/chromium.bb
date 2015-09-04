@@ -227,14 +227,6 @@ class WebTestDelegate {
   // Clear all the permissions set via SetPermission().
   virtual void ResetPermissions() = 0;
 
-  // Creates cc::TextureLayer for TestPlugin.
-  virtual scoped_refptr<cc::TextureLayer> CreateTextureLayerForMailbox(
-      cc::TextureLayerClient* client) = 0;
-
-  // Instantiates WebLayerImpl for TestPlugin.
-  virtual blink::WebLayer* InstantiateWebLayer(
-      scoped_refptr<cc::TextureLayer> layer) = 0;
-
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
   // Causes the beforeinstallprompt event to be sent to the renderer with a
