@@ -35,6 +35,7 @@ extern const char kVoiceSearchLocale[];
 extern const char kVoiceSearchTTS[];
 
 extern const char kSigninLastAccounts[];
+extern const char kSigninLastAccountsMigrated[];
 extern const char kSigninSharedAuthenticationUserId[];
 extern const char kSigninShouldPromptForSigninAgain[];
 
