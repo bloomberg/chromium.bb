@@ -101,22 +101,9 @@ private:
     const AnimatedPropertyType m_type;
     bool m_isReadOnly;
 
-    // This reference is kept alive from V8 wrapper
-    // TODO(oilpan): This should be a Member. Currently we cannot do it because
-    // it creates a cycle as follows:
-    // SVGInterporation =(Persistent)=>
-    // SVGAnimatedProperty =(Member)=>
-    // SVGElement =(Member)=>
-    // ElementRareData =(Member)=>
-    // ElementAnimations =(part of object)=>
-    // CSSAnimations =(part of object)=>
-    // CSSAnimationUpdate =(Member)=>
-    // NewTransition =(Member)=>
-    // InertEffect =(Member)=>
-    // EffectModel =(RefPtr)=>
-    // InterpolationEffect =(RefPtr)=>
-    // InterpolationRecord =(RefPtr)=>
-    // SVGInterpolation
+    // This raw pointer is safe since the SVG element is guaranteed to be kept
+    // alive by a V8 wrapper.
+    GC_PLUGIN_IGNORE("crbug.com/528275")
     SVGElement* m_contextElement;
 
     const QualifiedName& m_attributeName;
