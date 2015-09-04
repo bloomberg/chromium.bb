@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/backend/media_clock_device_default.h"
 
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {

@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/media_export.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_rotation.h"
 #include "media/filters/context_3d.h"

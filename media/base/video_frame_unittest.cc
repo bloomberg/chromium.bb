@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "media/base/buffers.h"
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

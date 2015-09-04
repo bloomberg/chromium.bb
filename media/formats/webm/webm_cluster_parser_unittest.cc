@@ -13,6 +13,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/mock_media_log.h"
+#include "media/base/timestamp_constants.h"
 #include "media/formats/webm/cluster_builder.h"
 #include "media/formats/webm/opus_packet_builder.h"
 #include "media/formats/webm/webm_cluster_parser.h"

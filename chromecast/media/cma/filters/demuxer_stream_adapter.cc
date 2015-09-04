@@ -12,9 +12,9 @@
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/simple_media_task_runner.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {

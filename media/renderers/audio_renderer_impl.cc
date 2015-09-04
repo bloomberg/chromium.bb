@@ -22,6 +22,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
+#include "media/base/timestamp_constants.h"
 #include "media/filters/audio_clock.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 

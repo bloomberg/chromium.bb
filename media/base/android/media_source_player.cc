@@ -18,7 +18,7 @@
 #include "media/base/android/audio_decoder_job.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/video_decoder_job.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

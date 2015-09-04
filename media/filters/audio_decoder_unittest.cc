@@ -18,6 +18,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
+#include "media/base/timestamp_constants.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/audio_file_reader.h"
 #include "media/filters/ffmpeg_audio_decoder.h"

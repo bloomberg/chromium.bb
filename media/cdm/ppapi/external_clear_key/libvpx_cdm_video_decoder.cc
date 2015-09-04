@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/buffers.h"
 #include "media/base/limits.h"
 
 // Include libvpx header files.

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/base/audio_timestamp_helper.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

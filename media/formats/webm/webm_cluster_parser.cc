@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
-#include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/timestamp_constants.h"
 #include "media/filters/webvtt_util.h"
 #include "media/formats/webm/webm_constants.h"
 #include "media/formats/webm/webm_crypto_helpers.h"

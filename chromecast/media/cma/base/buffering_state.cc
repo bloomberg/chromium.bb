@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {

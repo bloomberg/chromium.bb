@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/limits.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_util.h"
 #include "ui/gfx/geometry/point.h"
 

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <iomanip>
 
-#include "media/base/buffers.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
 

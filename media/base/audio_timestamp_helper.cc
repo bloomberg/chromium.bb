@@ -5,7 +5,7 @@
 #include "media/base/audio_timestamp_helper.h"
 
 #include "base/logging.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

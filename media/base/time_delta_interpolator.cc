@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/tick_clock.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

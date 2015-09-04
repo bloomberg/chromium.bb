@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_splicer.h"
+#include "media/base/timestamp_constants.h"
 #include "media/filters/source_buffer_platform.h"
 #include "media/filters/source_buffer_range.h"
 

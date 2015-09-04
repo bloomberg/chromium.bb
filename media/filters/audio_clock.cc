@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "media/base/buffers.h"
 
 namespace media {
 

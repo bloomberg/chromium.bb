@@ -7,8 +7,8 @@
 #include <cstdlib>
 
 #include "base/stl_util.h"
-#include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

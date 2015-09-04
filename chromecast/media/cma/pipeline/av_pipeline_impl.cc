@@ -25,8 +25,8 @@
 #include "chromecast/public/media/media_component_device.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {

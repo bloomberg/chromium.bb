@@ -9,7 +9,7 @@
 #include "base/threading/thread.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/audio_timestamp_helper.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace {
 

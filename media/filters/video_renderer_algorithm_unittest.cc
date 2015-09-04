@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/wall_clock_time_source.h"
 #include "media/filters/video_renderer_algorithm.h"

@@ -15,6 +15,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
+#include "media/base/timestamp_constants.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/blink/webmediasource_impl.h"
 #include "media/filters/chunk_demuxer.h"

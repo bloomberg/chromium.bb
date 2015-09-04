@@ -8,6 +8,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_pool.h"
 #include "third_party/libjingle/source/talk/media/base/videoframefactory.h"

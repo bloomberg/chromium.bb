@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp2t/es_adapter_video.h"
 #include "testing/gtest/include/gtest/gtest.h"

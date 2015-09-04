@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/media/cma/base/media_task_runner.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {

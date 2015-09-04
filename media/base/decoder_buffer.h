@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media_export.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

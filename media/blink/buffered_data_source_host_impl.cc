@@ -4,6 +4,8 @@
 
 #include "media/blink/buffered_data_source_host_impl.h"
 
+#include "media/base/timestamp_constants.h"
+
 namespace media {
 
 BufferedDataSourceHostImpl::BufferedDataSourceHostImpl()

@@ -11,7 +11,7 @@
 #include "media/base/android/media_codec_video_decoder.h"
 #include "media/base/android/test_data_factory.h"
 #include "media/base/android/test_statistics.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/surface_texture.h"
 

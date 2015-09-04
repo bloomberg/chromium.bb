@@ -16,7 +16,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/buffers.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"

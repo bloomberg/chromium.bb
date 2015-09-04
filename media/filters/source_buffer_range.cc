@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "media/base/timestamp_constants.h"
+
 namespace media {
 
 // Comparison operators for std::upper_bound() and std::lower_bound().

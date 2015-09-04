@@ -13,7 +13,6 @@
 #include "chromecast/media/cma/ipc_streamer/audio_decoder_config_marshaller.h"
 #include "chromecast/media/cma/ipc_streamer/decoder_buffer_base_marshaller.h"
 #include "chromecast/media/cma/ipc_streamer/video_decoder_config_marshaller.h"
-#include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
 
 namespace chromecast {

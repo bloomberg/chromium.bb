@@ -27,6 +27,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/text_renderer.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/blink/texttrack_impl.h"
 #include "media/blink/webaudiosourceprovider_impl.h"

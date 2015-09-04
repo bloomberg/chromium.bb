@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/buffers.h"
 #include "media/base/media_export.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

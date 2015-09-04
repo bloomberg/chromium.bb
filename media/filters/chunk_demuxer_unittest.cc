@@ -16,6 +16,7 @@
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
+#include "media/base/timestamp_constants.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/formats/webm/cluster_builder.h"
 #include "media/formats/webm/webm_constants.h"

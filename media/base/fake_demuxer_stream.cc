@@ -13,6 +13,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_helpers.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

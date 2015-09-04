@@ -7,9 +7,9 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
+#include "media/base/timestamp_constants.h"
 #include "media/formats/mp2t/es_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

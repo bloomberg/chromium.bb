@@ -10,7 +10,7 @@
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "chromecast/media/cma/base/cma_logging.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {

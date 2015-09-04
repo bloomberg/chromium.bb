@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
+#include "media/base/timestamp_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

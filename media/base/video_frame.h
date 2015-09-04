@@ -12,7 +12,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "media/base/buffers.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/rect.h"

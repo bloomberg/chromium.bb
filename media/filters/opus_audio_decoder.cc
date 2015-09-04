@@ -12,8 +12,8 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_discard_helper.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/timestamp_constants.h"
 #include "third_party/opus/src/include/opus.h"
 #include "third_party/opus/src/include/opus_multistream.h"
 

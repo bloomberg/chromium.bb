@@ -9,6 +9,7 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
+#include "media/base/timestamp_constants.h"
 #include "media/filters/decoder_stream.h"
 #include "media/filters/fake_video_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"

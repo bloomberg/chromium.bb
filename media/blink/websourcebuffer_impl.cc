@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "media/base/timestamp_constants.h"
 #include "media/filters/chunk_demuxer.h"
 #include "third_party/WebKit/public/platform/WebSourceBufferClient.h"
 

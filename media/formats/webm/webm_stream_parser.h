@@ -8,7 +8,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/buffers.h"
 #include "media/base/byte_queue.h"
 #include "media/base/stream_parser.h"
 #include "media/base/video_decoder_config.h"

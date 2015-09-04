@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "media/base/buffers.h"
 #include "media/base/media_log.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/formats/mp2t/es_parser_mpeg1audio.h"

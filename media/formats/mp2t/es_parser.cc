@@ -4,6 +4,7 @@
 
 #include "media/formats/mp2t/es_parser.h"
 
+#include "media/base/timestamp_constants.h"
 #include "media/formats/common/offset_byte_queue.h"
 
 namespace media {

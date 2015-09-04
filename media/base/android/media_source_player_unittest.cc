@@ -18,6 +18,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_data_util.h"
+#include "media/base/timestamp_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gl/android/surface_texture.h"
 

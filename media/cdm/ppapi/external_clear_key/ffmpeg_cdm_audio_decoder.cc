@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
-#include "media/base/buffers.h"
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
+#include "media/base/timestamp_constants.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 // Include FFmpeg header files.

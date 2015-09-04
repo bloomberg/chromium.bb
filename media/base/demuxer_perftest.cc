@@ -10,6 +10,7 @@
 #include "media/base/media.h"
 #include "media/base/media_log.h"
 #include "media/base/test_data_util.h"
+#include "media/base/timestamp_constants.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
 #include "testing/gtest/include/gtest/gtest.h"

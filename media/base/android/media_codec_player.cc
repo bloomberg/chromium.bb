@@ -13,7 +13,7 @@
 #include "media/base/android/media_codec_audio_decoder.h"
 #include "media/base/android/media_codec_video_decoder.h"
 #include "media/base/android/media_player_manager.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 #define RUN_ON_MEDIA_THREAD(METHOD, ...)                                     \
   do {                                                                       \

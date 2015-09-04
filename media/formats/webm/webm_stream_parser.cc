@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "media/base/timestamp_constants.h"
 #include "media/formats/webm/webm_cluster_parser.h"
 #include "media/formats/webm/webm_constants.h"
 #include "media/formats/webm/webm_content_encodings.h"

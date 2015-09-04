@@ -9,8 +9,8 @@
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_queue.h"
 #include "media/base/audio_bus.h"
-#include "media/base/buffers.h"
 #include "media/base/test_helpers.h"
+#include "media/base/timestamp_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

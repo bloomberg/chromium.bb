@@ -40,6 +40,7 @@
 #include "media/base/media_keys.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webmediaplayer_delegate.h"

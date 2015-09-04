@@ -33,7 +33,6 @@
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/media/video_pipeline_device.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "testing/gtest/include/gtest/gtest.h"

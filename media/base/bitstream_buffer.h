@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

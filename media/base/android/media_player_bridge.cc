@@ -14,7 +14,7 @@
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_resource_getter.h"
 #include "media/base/android/media_url_interceptor.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;

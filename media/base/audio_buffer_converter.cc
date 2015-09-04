@@ -11,8 +11,8 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
-#include "media/base/buffers.h"
 #include "media/base/sinc_resampler.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/vector_math.h"
 
 namespace media {

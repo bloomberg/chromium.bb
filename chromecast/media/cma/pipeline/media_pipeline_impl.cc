@@ -21,7 +21,7 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 #include "chromecast/public/media/media_clock_device.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {

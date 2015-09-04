@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/buffers.h"
 
 namespace media {
 

@@ -8,9 +8,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/audio_timestamp_helper.h"
-#include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_export.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
 #include "ui/gl/android/scoped_java_surface.h"

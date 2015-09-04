@@ -12,7 +12,7 @@
 #include "chromecast/public/media/decrypt_context.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/task_runner.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/blink/skcanvas_video_renderer.h"

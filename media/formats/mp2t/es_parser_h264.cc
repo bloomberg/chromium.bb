@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/filters/h264_parser.h"
 #include "media/formats/common/offset_byte_queue.h"

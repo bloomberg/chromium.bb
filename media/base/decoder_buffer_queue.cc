@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 

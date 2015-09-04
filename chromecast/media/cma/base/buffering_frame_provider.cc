@@ -9,7 +9,6 @@
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/buffers.h"
 
 namespace chromecast {
 namespace media {

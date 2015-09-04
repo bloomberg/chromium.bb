@@ -25,6 +25,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
+#include "media/base/timestamp_constants.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_aac_bitstream_converter.h"
 #include "media/filters/ffmpeg_bitstream_converter.h"

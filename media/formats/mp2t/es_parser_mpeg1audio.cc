@@ -4,16 +4,15 @@
 
 #include "media/formats/mp2t/es_parser_mpeg1audio.h"
 
-
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bit_reader.h"
-#include "media/base/buffers.h"
 #include "media/base/channel_layout.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/timestamp_constants.h"
 #include "media/formats/common/offset_byte_queue.h"
 #include "media/formats/mp2t/mp2t_common.h"
 #include "media/formats/mpeg/mpeg1_audio_stream_parser.h"

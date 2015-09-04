@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
-#include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 
 namespace media {

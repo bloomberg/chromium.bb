@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "media/base/buffers.h"
+#include "media/base/timestamp_constants.h"
 #include "media/formats/webm/webm_constants.h"
 #include "media/formats/webm/webm_content_encodings.h"
 
