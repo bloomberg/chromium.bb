@@ -6,18 +6,21 @@
  * @fileoverview Types for CrSettingsPrefsElement.
  */
 
+/** @type {{INITIALIZED: string, isInitialized: boolean}} */
+var CrSettingsPrefs;
+
 if (CrSettingsPrefs === undefined) {
-  var CrSettingsPrefs = {};
+  CrSettingsPrefs = {
+    /**
+     * The name of the event fired when prefs have been fetched and initialized.
+     * @const {string}
+     */
+    INITIALIZED: 'cr-settings-prefs-initialized',
 
-  /**
-   * The type of the event fired when prefs have been fetched and initialized.
-   * @const {string}
-   */
-  CrSettingsPrefs.INITIALIZED = 'cr-settings-prefs-initialized';
-
-  /**
-   * Global boolean set to true when all settings have been initialized.
-   * @type {boolean}
-   */
-  CrSettingsPrefs.isInitialized = false;
+    /**
+     * Global boolean set to true when all settings have been initialized.
+     * @type {boolean}
+     */
+    isInitialized: false,
+  };
 }

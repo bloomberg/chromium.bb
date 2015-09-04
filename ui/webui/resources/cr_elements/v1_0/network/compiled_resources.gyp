@@ -8,7 +8,7 @@
       'variables': {
         'depends': [
           'cr_onc_types.js',
-	],
+        ],
         'externs': [
           '../../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
@@ -23,7 +23,7 @@
           'cr_onc_types.js',
           'cr_network_list_item.js',
           '../../../../../../ui/webui/resources/js/load_time_data.js',
-	],
+        ],
         'externs': [
           '../../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
@@ -35,7 +35,7 @@
       'variables': {
         'depends': [
           'compiled_resources.gyp:cr_network_list',
-	],
+        ],
       },
       'includes': ['../../../../../../third_party/closure_compiler/compile_js.gypi'],
     }, 
