@@ -58,33 +58,6 @@ class DeprecatedPaintLayerCompositor;
 class ComputedStyle;
 class LayoutBoxModelObject;
 
-// DeprecatedPaintLayerStackingNode represents anything that is treated as a
-// stacking context.
-//
-// Stacking contexts are the basis for the CSS painting algorithm. The paint
-// order is determined by walking stacking contexts (or elements treated like a
-// stacking context like positioned objects or floats) in an order defined by
-// ‘z-index’. This walk is interleaved with content that is not a stacking.
-// context. See CSS 2.1 appendix E for the actual algorithm
-// http://www.w3.org/TR/CSS21/zindex.html
-// See also DeprecatedPaintLayerPainter (in particular paintLayerContents) for
-// our implementation of the walk.
-//
-// Stacking contexts form a subtree over the layout tree. Ideally we would want
-// objects of this class to be a node in this tree but there are potential
-// issues with stale pointers so we rely on DeprecatedPaintLayer's tree
-// structure.
-//
-// This class's purpose is to represent a node in the stacking context tree
-// (aka paint tree). It currently caches the z-order lists for painting and
-// hit-testing.
-//
-// To implement any z-order list iterations, use
-// DeprecatedPaintLayerStackingNodeIterator and
-// DeprecatedPaintLayerStackingNodeReverseIterator.
-//
-// This class is NOT DEPRECATED, DeprecatedPaintLayer is and we match its
-// naming.
 class CORE_EXPORT DeprecatedPaintLayerStackingNode {
     WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerStackingNode);
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNode);
