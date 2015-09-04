@@ -200,7 +200,6 @@ class BlinkPerfDOM(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Disabled('release_x64')  # http://crbug.com/480999
 class BlinkPerfEvents(perf_benchmark.PerfBenchmark):
   tag = 'events'
   test = _BlinkPerfMeasurement
