@@ -165,9 +165,9 @@ bool IsRequestFromExtension(const net::URLRequest* request,
 void ExtractRequestRoutingInfo(const net::URLRequest* request,
                                int* render_process_host_id,
                                int* routing_id) {
-  if (!request->GetUserData(NULL))
-    return;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  if (!info)
+    return;
   *render_process_host_id = info->GetChildID();
   *routing_id = info->GetRouteID();
 }
@@ -193,10 +193,10 @@ void ExtractRequestInfoDetails(const net::URLRequest* request,
                                int* render_process_host_id,
                                int* routing_id,
                                ResourceType* resource_type) {
-  if (!request->GetUserData(NULL))
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  if (!info)
     return;
 
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   *frame_id = info->GetRenderFrameID();
   *is_main_frame = info->IsMainFrame();
   *parent_frame_id = info->GetParentRenderFrameID();

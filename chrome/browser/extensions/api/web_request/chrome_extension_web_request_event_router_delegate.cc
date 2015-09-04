@@ -23,11 +23,13 @@ namespace {
 void ExtractExtraRequestDetailsInternal(const net::URLRequest* request,
                                         int* tab_id,
                                         int* window_id) {
-  if (!request->GetUserData(NULL))
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!info)
     return;
 
-  ExtensionRendererState::GetInstance()->GetTabAndWindowId(
-      content::ResourceRequestInfo::ForRequest(request), tab_id, window_id);
+  ExtensionRendererState::GetInstance()->GetTabAndWindowId(info, tab_id,
+                                                           window_id);
 }
 
 }  // namespace
