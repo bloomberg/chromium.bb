@@ -11,6 +11,7 @@
 #include "components/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -20,7 +21,7 @@ namespace html_viewer {
 
 namespace {
 
-class InvokeTaskHelper : public blink::WebThread::Task {
+class InvokeTaskHelper : public blink::WebTaskRunner::Task {
  public:
   InvokeTaskHelper(scoped_ptr<test_runner::WebTask> task)
       : task_(task.Pass()) {}
@@ -88,14 +89,14 @@ void WebTestDelegateImpl::PrintMessage(const std::string& message) {
 }
 
 void WebTestDelegateImpl::PostTask(test_runner::WebTask* task) {
-  blink::Platform::current()->currentThread()->postTask(
+  blink::Platform::current()->currentThread()->taskRunner()->postTask(
       blink::WebTraceLocation(__FUNCTION__, __FILE__),
       new InvokeTaskHelper(make_scoped_ptr(task)));
 }
 
 void WebTestDelegateImpl::PostDelayedTask(test_runner::WebTask* task,
                                           long long ms) {
-  blink::Platform::current()->currentThread()->postDelayedTask(
+  blink::Platform::current()->currentThread()->taskRunner()->postDelayedTask(
       blink::WebTraceLocation(__FUNCTION__, __FILE__),
       new InvokeTaskHelper(make_scoped_ptr(task)), ms);
 }

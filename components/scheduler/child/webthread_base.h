@@ -27,10 +27,6 @@ class SCHEDULER_EXPORT WebThreadBase : public blink::WebThread {
   virtual bool isCurrentThread() const;
   virtual blink::PlatformThreadId threadId() const = 0;
 
-  virtual void postTask(const blink::WebTraceLocation& location, Task* task);
-  virtual void postDelayedTask(const blink::WebTraceLocation& location,
-                               Task* task,
-                               long long delay_ms);
   virtual void postIdleTask(const blink::WebTraceLocation& location,
                             IdleTask* idle_task);
   virtual void postIdleTaskAfterWakeup(const blink::WebTraceLocation& location,
@@ -57,7 +53,6 @@ class SCHEDULER_EXPORT WebThreadBase : public blink::WebThread {
   virtual void RemoveTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer);
 
-  static void RunWebThreadTask(scoped_ptr<blink::WebThread::Task> task);
   static void RunWebThreadIdleTask(
       scoped_ptr<blink::WebThread::IdleTask> idle_task,
       base::TimeTicks deadline);
