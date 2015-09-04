@@ -144,7 +144,7 @@ TEST_F(MetricsStateManagerTest,
   const PrefService::Preference* low_entropy_pref =
       prefs_.FindPreference(prefs::kMetricsLowEntropySource);
   const char* kCachePrefName =
-      chrome_variations::prefs::kVariationsPermutedEntropyCache;
+      variations::prefs::kVariationsPermutedEntropyCache;
   int low_entropy_value = -1;
 
   // First, generate an initial low entropy source value.

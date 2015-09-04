@@ -15,7 +15,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 TEST(ExperimentLabelsTest, BuildGoogleUpdateExperimentLabel) {
   const variations::VariationID TEST_VALUE_A = 3300200;
@@ -191,4 +191,4 @@ TEST(ExperimentLabelsTest, ExtractNonVariationLabels) {
   }
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

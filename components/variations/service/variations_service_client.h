@@ -24,7 +24,7 @@ namespace network_time {
 class NetworkTimeTracker;
 }
 
-namespace chrome_variations {
+namespace variations {
 
 // An abstraction of operations that depend on the embedder's (e.g. Chrome)
 // environment.
@@ -66,6 +66,6 @@ class VariationsServiceClient {
   virtual void OnInitialStartup() {}
 };
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_CLIENT_H_

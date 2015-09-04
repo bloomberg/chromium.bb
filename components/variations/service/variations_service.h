@@ -42,7 +42,7 @@ namespace variations {
 class VariationsSeed;
 }
 
-namespace chrome_variations {
+namespace variations {
 
 // Used to setup field trials based on stored variations seed data, and fetch
 // new seed data from the variations server.
@@ -294,6 +294,6 @@ class VariationsService
   DISALLOW_COPY_AND_ASSIGN(VariationsService);
 };
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_

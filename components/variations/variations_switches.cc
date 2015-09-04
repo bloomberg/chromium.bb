@@ -4,7 +4,7 @@
 
 #include "components/variations/variations_switches.h"
 
-namespace chrome_variations {
+namespace variations {
 namespace switches {
 
 // Fakes the channel of the browser for purposes of Variations filtering. This
@@ -19,4 +19,4 @@ const char kFakeVariationsChannel[] = "fake-variations-channel";
 const char kVariationsServerURL[] = "variations-server-url";
 
 }  // namespace switches
-}  // namespace chrome_variations
+}  // namespace variations

@@ -22,7 +22,7 @@ namespace {
 
 void VerifyVariationsSeedSignatureOnUIThread(
     scoped_ptr<IncidentReceiver> incident_receiver) {
-  chrome_variations::VariationsService* variations_service =
+  variations::VariationsService* variations_service =
       g_browser_process->variations_service();
   if (!variations_service)
     return;

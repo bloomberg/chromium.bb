@@ -7,7 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/variations/variations_associated_data.h"
 
-namespace chrome_variations {
+namespace variations {
 
 VariationsRequestScheduler::VariationsRequestScheduler(
     const base::Closure& task) : task_(task) {
@@ -67,4 +67,4 @@ VariationsRequestScheduler* VariationsRequestScheduler::Create(
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-}  // namespace chrome_variations
+}  // namespace variations

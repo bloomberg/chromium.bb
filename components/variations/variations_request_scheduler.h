@@ -12,7 +12,7 @@
 
 class PrefService;
 
-namespace chrome_variations {
+namespace variations {
 
 // A helper class that makes VariationsService requests at the correct times.
 class VariationsRequestScheduler {
@@ -65,6 +65,6 @@ class VariationsRequestScheduler {
   DISALLOW_COPY_AND_ASSIGN(VariationsRequestScheduler);
 };
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_H_

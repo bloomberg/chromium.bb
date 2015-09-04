@@ -47,18 +47,18 @@ void SyncWithRegistryOnBlockingPool() {
   // Since the non-Variations contents of experiment_labels should not be,
   // clobbered, separate them from the Variations contents.
   const base::string16 other_labels =
-      ExtractNonVariationLabels(registry_labels);
+      variations::ExtractNonVariationLabels(registry_labels);
 
   // Compute the new Variations part of the label.
   base::FieldTrial::ActiveGroups active_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
   const base::string16 variation_labels =
-      BuildGoogleUpdateExperimentLabel(active_groups);
+      variations::BuildGoogleUpdateExperimentLabel(active_groups);
 
   // Append the old non-Variations labels with the new Variations labels and
   // write it back to the registry.
   const base::string16 combined_labels =
-      CombineExperimentLabels(variation_labels, other_labels);
+      variations::CombineExperimentLabels(variation_labels, other_labels);
 
   if (!GoogleUpdateSettings::SetExperimentLabels(is_system_install,
                                                  combined_labels)) {

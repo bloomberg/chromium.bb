@@ -299,15 +299,15 @@ bool MasterPreferences::GetExtensionsBlock(
 }
 
 std::string MasterPreferences::GetCompressedVariationsSeed() const {
-  return ExtractPrefString(chrome_variations::prefs::kVariationsCompressedSeed);
+  return ExtractPrefString(variations::prefs::kVariationsCompressedSeed);
 }
 
 std::string MasterPreferences::GetVariationsSeed() const {
-  return ExtractPrefString(chrome_variations::prefs::kVariationsSeed);
+  return ExtractPrefString(variations::prefs::kVariationsSeed);
 }
 
 std::string MasterPreferences::GetVariationsSeedSignature() const {
-  return ExtractPrefString(chrome_variations::prefs::kVariationsSeedSignature);
+  return ExtractPrefString(variations::prefs::kVariationsSeedSignature);
 }
 
 std::string MasterPreferences::ExtractPrefString(

@@ -26,7 +26,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -35,7 +35,7 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   TestVariationsServiceClient() {}
   ~TestVariationsServiceClient() override {}
 
-  // chrome_variations::VariationsServiceClient:
+  // variations::VariationsServiceClient:
   std::string GetApplicationLocale() override { return std::string(); }
   base::SequencedWorkerPool* GetBlockingPool() override { return nullptr; }
   base::Callback<base::Version(void)> GetVersionForSimulationCallback()
@@ -541,4 +541,4 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
   }
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

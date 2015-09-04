@@ -357,7 +357,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kHideWebStoreIcon,
     base::Value::TYPE_BOOLEAN },
   { key::kVariationsRestrictParameter,
-    chrome_variations::prefs::kVariationsRestrictParameter,
+    variations::prefs::kVariationsRestrictParameter,
     base::Value::TYPE_STRING },
   { key::kSupervisedUserCreationEnabled,
     prefs::kSupervisedUserCreationAllowed,

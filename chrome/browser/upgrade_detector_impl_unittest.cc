@@ -77,7 +77,7 @@ TEST(UpgradeDetectorImplTest, VariationsChanges) {
   EXPECT_TRUE(notifications_listener.notifications_received().empty());
 
   detector.OnExperimentChangesDetected(
-      chrome_variations::VariationsService::Observer::BEST_EFFORT);
+      variations::VariationsService::Observer::BEST_EFFORT);
   EXPECT_FALSE(detector.notify_upgrade());
   EXPECT_TRUE(notifications_listener.notifications_received().empty());
 
@@ -98,7 +98,7 @@ TEST(UpgradeDetectorImplTest, VariationsCriticalChanges) {
   EXPECT_TRUE(notifications_listener.notifications_received().empty());
 
   detector.OnExperimentChangesDetected(
-      chrome_variations::VariationsService::Observer::CRITICAL);
+      variations::VariationsService::Observer::CRITICAL);
   EXPECT_FALSE(detector.notify_upgrade());
   EXPECT_TRUE(notifications_listener.notifications_received().empty());
 

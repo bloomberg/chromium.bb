@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VARIATIONS_PREF_NAMES_H_
 #define COMPONENTS_VARIATIONS_PREF_NAMES_H_
 
-namespace chrome_variations {
+namespace variations {
 namespace prefs {
 
 // Alphabetical list of preference names specific to the variations component.

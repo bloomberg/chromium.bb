@@ -22,7 +22,7 @@ static void StartVariationsSession(JNIEnv* env,
                                    jstring jrestrict_mode) {
   DCHECK(g_browser_process);
 
-  chrome_variations::VariationsService* variations_service =
+  variations::VariationsService* variations_service =
       g_browser_process->variations_service();
   // Triggers an OnAppEnterForeground on the VariationsService. This may fetch
   // a new seed.

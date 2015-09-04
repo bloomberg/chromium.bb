@@ -62,11 +62,10 @@ rappor::RapporService* MetricsServicesManager::GetRapporService() {
   return rappor_service_.get();
 }
 
-chrome_variations::VariationsService*
-MetricsServicesManager::GetVariationsService() {
+variations::VariationsService* MetricsServicesManager::GetVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!variations_service_) {
-    variations_service_ = chrome_variations::VariationsService::Create(
+    variations_service_ = variations::VariationsService::Create(
         make_scoped_ptr(new ChromeVariationsServiceClient()), local_state_,
         GetMetricsStateManager(), switches::kDisableBackgroundNetworking);
   }

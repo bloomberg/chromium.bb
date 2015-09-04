@@ -41,13 +41,12 @@ class VariationsServiceDevicePolicyTest : public DevicePolicyCrosBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(VariationsServiceDevicePolicyTest, VariationsURLValid) {
   const std::string default_variations_url =
-      chrome_variations::VariationsService::
-          GetDefaultVariationsServerURLForTesting();
+      variations::VariationsService::GetDefaultVariationsServerURLForTesting();
 
   // g_browser_process->variations_service() is null by default in Chromium
   // builds, so construct a VariationsService locally instead.
-  scoped_ptr<chrome_variations::VariationsService> service =
-      chrome_variations::VariationsService::CreateForTesting(
+  scoped_ptr<variations::VariationsService> service =
+      variations::VariationsService::CreateForTesting(
           make_scoped_ptr(new ChromeVariationsServiceClient()),
           g_browser_process->local_state());
 

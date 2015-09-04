@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_VARIATIONS_VARIATIONS_URL_CONSTANTS_H_
 #define COMPONENTS_VARIATIONS_VARIATIONS_URL_CONSTANTS_H_
 
-namespace chrome_variations {
+namespace variations {
 
 extern const char kDefaultServerUrl[];
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_VARIATIONS_URL_CONSTANTS_H_

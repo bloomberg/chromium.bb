@@ -10,7 +10,7 @@
 
 class PrefService;
 
-namespace chrome_variations {
+namespace variations {
 
 // A specialized VariationsRequestScheduler that manages request cycles for
 // VariationsService on mobile platforms.
@@ -47,6 +47,6 @@ class VariationsRequestSchedulerMobile : public VariationsRequestScheduler {
   DISALLOW_COPY_AND_ASSIGN(VariationsRequestSchedulerMobile);
 };
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_MOBILE_H_

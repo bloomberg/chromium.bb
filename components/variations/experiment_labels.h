@@ -8,7 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 
-namespace chrome_variations {
+namespace variations {
 
 // Takes the list of active groups and builds the label for the ones that have
 // Google Update VariationID associated with them. This will return an empty
@@ -28,6 +28,6 @@ base::string16 CombineExperimentLabels(const base::string16& variation_labels,
 // associated with Chrome Variations.
 base::string16 ExtractNonVariationLabels(const base::string16& labels);
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_EXPERIMENT_LABELS_H_

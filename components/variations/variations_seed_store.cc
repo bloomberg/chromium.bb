@@ -17,7 +17,7 @@
 #include "crypto/signature_verifier.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -450,4 +450,4 @@ bool VariationsSeedStore::ApplyDeltaPatch(const std::string& existing_data,
   return true;
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

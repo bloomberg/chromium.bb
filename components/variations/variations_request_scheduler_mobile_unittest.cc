@@ -11,7 +11,7 @@
 #include "components/variations/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -142,4 +142,4 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundOnStartup) {
   EXPECT_EQ(2, executed);
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

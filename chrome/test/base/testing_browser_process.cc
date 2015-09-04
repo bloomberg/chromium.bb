@@ -148,8 +148,7 @@ PrefService* TestingBrowserProcess::local_state() {
   return local_state_;
 }
 
-chrome_variations::VariationsService*
-    TestingBrowserProcess::variations_service() {
+variations::VariationsService* TestingBrowserProcess::variations_service() {
   return nullptr;
 }
 

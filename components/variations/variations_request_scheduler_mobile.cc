@@ -7,7 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "components/variations/pref_names.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -65,4 +65,4 @@ VariationsRequestScheduler* VariationsRequestScheduler::Create(
   return new VariationsRequestSchedulerMobile(task, local_state);
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

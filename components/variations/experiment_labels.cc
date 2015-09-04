@@ -14,7 +14,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_experiment_util.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -113,4 +113,4 @@ base::string16 CombineExperimentLabels(const base::string16& variation_labels,
   return combined_labels;
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

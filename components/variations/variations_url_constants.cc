@@ -4,10 +4,10 @@
 
 #include "components/variations/variations_url_constants.h"
 
-namespace chrome_variations {
+namespace variations {
 
 // Default server of Variations seed info.
 const char kDefaultServerUrl[] =
     "https://clients4.google.com/chrome-variations/seed";
 
-}  // namespace chrome_variations
+}  // namespace variations

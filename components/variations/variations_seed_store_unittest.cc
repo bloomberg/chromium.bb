@@ -12,7 +12,7 @@
 #include "components/variations/proto/variations_seed.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -346,4 +346,4 @@ TEST(VariationsSeedStoreTest, ApplyDeltaPatch) {
   EXPECT_EQ(after_seed_data, output);
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

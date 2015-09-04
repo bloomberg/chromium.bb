@@ -18,7 +18,7 @@ namespace variations {
 class VariationsSeed;
 }
 
-namespace chrome_variations {
+namespace variations {
 
 // VariationsSeedStore is a helper class for reading and writing the variations
 // seed from Local State.
@@ -131,6 +131,6 @@ class VariationsSeedStore {
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedStore);
 };
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_VARIATIONS_SEED_STORE_H_

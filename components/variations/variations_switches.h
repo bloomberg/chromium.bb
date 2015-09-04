@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VARIATIONS_VARIATIONS_SWITCHES_H_
 #define COMPONENTS_VARIATIONS_VARIATIONS_SWITCHES_H_
 
-namespace chrome_variations {
+namespace variations {
 namespace switches {
 
 // Alphabetical list of switches specific to the variations component. Document

@@ -13,9 +13,8 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-class UpgradeDetectorImpl :
-    public UpgradeDetector,
-    public chrome_variations::VariationsService::Observer {
+class UpgradeDetectorImpl : public UpgradeDetector,
+                            public variations::VariationsService::Observer {
  public:
   ~UpgradeDetectorImpl() override;
 
@@ -30,7 +29,7 @@ class UpgradeDetectorImpl :
  protected:
   UpgradeDetectorImpl();
 
-  // chrome_variations::VariationsService::Observer:
+  // variations::VariationsService::Observer:
   void OnExperimentChangesDetected(Severity severity) override;
 
   // Trigger an "on upgrade" notification based on the specified |time_passed|

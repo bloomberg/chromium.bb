@@ -569,7 +569,7 @@ net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
   return io_thread()->system_url_request_context_getter();
 }
 
-chrome_variations::VariationsService* BrowserProcessImpl::variations_service() {
+variations::VariationsService* BrowserProcessImpl::variations_service() {
   DCHECK(CalledOnValidThread());
   return GetMetricsServicesManager()->GetVariationsService();
 }

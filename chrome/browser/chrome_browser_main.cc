@@ -669,8 +669,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 #if defined(FIELDTRIAL_TESTING_ENABLED)
   if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
       !command_line->HasSwitch(switches::kForceFieldTrials) &&
-      !command_line->HasSwitch(
-          chrome_variations::switches::kVariationsServerURL))
+      !command_line->HasSwitch(variations::switches::kVariationsServerURL))
     chrome_variations::AssociateDefaultFieldTrialConfig();
 #endif  // defined(FIELDTRIAL_TESTING_ENABLED)
 
@@ -685,7 +684,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
                   << " list specified.";
     metrics->AddSyntheticTrialObserver(provider);
   }
-  chrome_variations::VariationsService* variations_service =
+  variations::VariationsService* variations_service =
       browser_process_->variations_service();
   if (variations_service)
     variations_service->CreateTrialsFromSeed();
@@ -1010,24 +1009,22 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     if (!master_prefs_->variations_seed.empty() ||
         !master_prefs_->compressed_variations_seed.empty()) {
       if (!master_prefs_->variations_seed.empty()) {
-        local_state_->SetString(chrome_variations::prefs::kVariationsSeed,
+        local_state_->SetString(variations::prefs::kVariationsSeed,
                                 master_prefs_->variations_seed);
       }
       if (!master_prefs_->compressed_variations_seed.empty()) {
-        local_state_->SetString(
-            chrome_variations::prefs::kVariationsCompressedSeed,
-            master_prefs_->compressed_variations_seed);
+        local_state_->SetString(variations::prefs::kVariationsCompressedSeed,
+                                master_prefs_->compressed_variations_seed);
       }
       if (!master_prefs_->variations_seed_signature.empty()) {
-        local_state_->SetString(
-            chrome_variations::prefs::kVariationsSeedSignature,
-            master_prefs_->variations_seed_signature);
+        local_state_->SetString(variations::prefs::kVariationsSeedSignature,
+                                master_prefs_->variations_seed_signature);
       }
       // Set the variation seed date to the current system time. If the user's
       // clock is incorrect, this may cause some field trial expiry checks to
       // not do the right thing until the next seed update from the server,
       // when this value will be updated.
-      local_state_->SetInt64(chrome_variations::prefs::kVariationsSeedDate,
+      local_state_->SetInt64(variations::prefs::kVariationsSeedDate,
                              base::Time::Now().ToInternalValue());
     }
 
@@ -1622,7 +1619,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     RegisterComponentsForUpdate();
 
 #if defined(OS_ANDROID)
-  chrome_variations::VariationsService* variations_service =
+  variations::VariationsService* variations_service =
       browser_process_->variations_service();
   if (variations_service) {
     // Just initialize the policy prefs service here. Variations seed fetching
@@ -1691,7 +1688,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // RequestLanguageList
     if (parameters().ui_task == NULL) {
       // Request new variations seed information from server.
-      chrome_variations::VariationsService* variations_service =
+      variations::VariationsService* variations_service =
           browser_process_->variations_service();
       if (variations_service)
         variations_service->PerformPreMainMessageLoopStartup();

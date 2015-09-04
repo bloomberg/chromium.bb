@@ -37,7 +37,7 @@
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -757,4 +757,4 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
   return latest_country;
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

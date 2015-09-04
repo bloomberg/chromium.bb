@@ -26,7 +26,7 @@ namespace rappor {
 class RapporService;
 }
 
-namespace chrome_variations {
+namespace variations {
 class VariationsService;
 }
 
@@ -47,7 +47,7 @@ class MetricsServicesManager {
   rappor::RapporService* GetRapporService();
 
   // Returns the VariationsService, creating it if it hasn't been created yet.
-  chrome_variations::VariationsService* GetVariationsService();
+  variations::VariationsService* GetVariationsService();
 
   // Should be called when a plugin loading error occurs.
   void OnPluginLoadingError(const base::FilePath& plugin_path);
@@ -102,7 +102,7 @@ class MetricsServicesManager {
   scoped_ptr<rappor::RapporService> rappor_service_;
 
   // The VariationsService, for server-side experiments infrastructure.
-  scoped_ptr<chrome_variations::VariationsService> variations_service_;
+  scoped_ptr<variations::VariationsService> variations_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServicesManager);
 };

@@ -64,7 +64,7 @@ class TestingBrowserProcess : public BrowserProcess {
   WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
   PrefService* local_state() override;
-  chrome_variations::VariationsService* variations_service() override;
+  variations::VariationsService* variations_service() override;
   web_resource::PromoResourceService* promo_resource_service() override;
   policy::BrowserPolicyConnector* browser_policy_connector() override;
   policy::PolicyService* policy_service() override;

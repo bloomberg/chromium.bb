@@ -249,7 +249,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
   // Register for experiment notifications. Note that since this class is a
   // singleton, it does not need to unregister for notifications when destroyed,
   // since it outlives the VariationsService.
-  chrome_variations::VariationsService* variations_service =
+  variations::VariationsService* variations_service =
       g_browser_process->variations_service();
   if (variations_service)
     variations_service->AddObserver(this);

@@ -4,7 +4,7 @@
 
 #include "components/variations/pref_names.h"
 
-namespace chrome_variations {
+namespace variations {
 namespace prefs {
 
 // Base64-encoded compressed serialized form of the variations seed protobuf.

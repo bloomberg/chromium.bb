@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 TEST(VariationsRequestSchedulerTest, ScheduleFetchShortly) {
   base::MessageLoopForUI message_loop_;
@@ -22,4 +22,4 @@ TEST(VariationsRequestSchedulerTest, ScheduleFetchShortly) {
   EXPECT_TRUE(scheduler.one_shot_timer_.IsRunning());
 }
 
-}  // namespace chrome_variations
+}  // namespace variations
