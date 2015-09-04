@@ -143,7 +143,7 @@ void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
 }
 #endif
 
-bool MatchedPropertiesCache::isCacheable(const Element* element, const ComputedStyle& style, const ComputedStyle& parentStyle)
+bool MatchedPropertiesCache::isCacheable(const ComputedStyle& style, const ComputedStyle& parentStyle)
 {
     if (style.unique() || (style.styleType() != NOPSEUDO && parentStyle.unique()))
         return false;

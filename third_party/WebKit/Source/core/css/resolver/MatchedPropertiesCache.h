@@ -101,7 +101,7 @@ public:
     void clear();
     void clearViewportDependent();
 
-    static bool isCacheable(const Element*, const ComputedStyle&, const ComputedStyle& parentStyle);
+    static bool isCacheable(const ComputedStyle&, const ComputedStyle& parentStyle);
 
     DECLARE_TRACE();
 
