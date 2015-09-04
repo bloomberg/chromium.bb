@@ -22,9 +22,10 @@ harness_TESTS =					\
 	chr-us-g1_harness.txt		\
 	nl-BE-g1_harness.txt		\
 	en-us-g2-end-emphasis_harness.txt \
-	no_harness.txt      \      
+	no_harness.txt      \
 	no_harness_g1.txt     \
-	no_harness_g2.txt 
+	no_harness_g2.txt     \
+	no_harness_8dot.txt 
 
 EXTRA_DIST = $(harness_TESTS)			\
 	     runHarness.py
