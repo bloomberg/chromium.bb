@@ -13,8 +13,9 @@
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="privacy_page.css">
   <template>
-    <cr-settings-animated-pages id="pages" in-subpage="{{inSubpage}}">
-      <neon-animatable id="main">
+    <cr-settings-animated-pages id="pages" current-route="{{currentRoute}}"
+        section="privacy">
+      <neon-animatable id="">
         <p class="privacy-explanation"
             i18n-values=".innerHTML:improveBrowsingExperience">
         </p>

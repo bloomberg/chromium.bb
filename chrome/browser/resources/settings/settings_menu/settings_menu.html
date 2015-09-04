@@ -14,7 +14,7 @@
   <link rel="import" type="css" href="settings_menu.css">
   <template>
     <paper-menu name="root-menu">
-      <paper-submenu data-page="basic">
+      <paper-submenu data-page="basic" on-tap="openPage_">
         <paper-icon-item class="menu-trigger">
           <iron-icon icon="expand-more" item-icon></iron-icon>
           <span i18n-content="basicPageTitle"></span>
@@ -42,7 +42,7 @@
 </if>
         </paper-menu>
       </paper-submenu>
-      <paper-submenu data-page="advanced">
+      <paper-submenu data-page="advanced" on-tap="openPage_">
         <paper-icon-item class="menu-trigger">
           <iron-icon icon="expand-more" item-icon></iron-icon>
           <span i18n-content="advancedPageTitle"></span>

@@ -27,8 +27,12 @@
     </cr-settings-section>
 
     <cr-settings-section route="privacy" icon="lock"
-        i18n-values="page-title:privacyPageTitle">
-      <cr-settings-privacy-page prefs="{{prefs}}"></cr-settings-privacy-page>
+        i18n-values="page-title:privacyPageTitle"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="privacy">
+      <cr-settings-privacy-page prefs="{{prefs}}"
+        current-route="{{currentRoute}}">
+      </cr-settings-privacy-page>
     </cr-settings-section>
 
     <cr-settings-section route="languages" icon="language"

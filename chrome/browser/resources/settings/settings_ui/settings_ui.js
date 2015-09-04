@@ -22,16 +22,5 @@ Polymer({
      * @type {?CrSettingsPrefsElement}
      */
     prefs: Object,
-
-    /**
-     * Ordered list of settings pages available to the user. Do not edit
-     * this variable directly.
-     * @type {!Array<!HTMLElement>}
-     */
-    pages: {
-      type: Array,
-      value: function() { return []; },
-      notify: true,
-    },
   },
 });

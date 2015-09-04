@@ -19,27 +19,32 @@ Polymer({
 
   properties: {
     /**
-     * ID of the currently selected page.
+     * The current active route.
      */
-    selectedPageId: {
-      type: String,
+    currentRoute: {
+      type: Object,
       notify: true,
-      observer: 'selectedPageIdChanged_',
+      observer: 'currentRouteChanged_',
     },
   },
 
-  ready: function() {
-    this.addEventListener('paper-submenu-open', function(event) {
-      this.selectedPageId = event.path[0].dataset.page;
-    });
+  /** @private */
+  currentRouteChanged_: function() {
+    var submenu = this.shadowRoot.querySelector(
+        'paper-submenu[data-page="' + this.currentRoute.page + '"]');
+    if (submenu)
+      submenu.opened = true;
   },
 
   /** @private */
-  selectedPageIdChanged_: function() {
-    var submenus = this.shadowRoot.querySelectorAll('paper-submenu');
-    for (var i = 0; i < submenus.length; ++i) {
-      var node = submenus[i];
-      node.opened = node.dataset.page == this.selectedPageId;
+  openPage_: function(event) {
+    var submenuRoute = event.currentTarget.dataset.page;
+    if (submenuRoute) {
+      this.currentRoute = {
+        page: submenuRoute,
+        section: '',
+        subpage: [],
+      };
     }
-  },
+  }
 });

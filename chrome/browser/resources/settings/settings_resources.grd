@@ -184,8 +184,11 @@
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_JS"
                  file="privacy_page/privacy_page.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_ROUTES_HTML"
-                 file="routes.html"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_HTML"
+                 file="settings_page/settings_router.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_JS"
+                 file="settings_page/settings_router.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_CSS"
                  file="site_settings_page/site_settings_page.css"

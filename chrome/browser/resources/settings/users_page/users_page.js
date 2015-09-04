@@ -34,48 +34,6 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * Route for the page.
-     */
-    route: String,
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: false,
-      readOnly: true,
-    },
-
-    /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'users',
-      readOnly: true,
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() {
-        return loadTimeData.getString('usersPageTitle');
-      },
-    },
-
-    /**
-     * Name of the 'iron-icon' to show.
-     */
-    icon: {
-      type: String,
-      value: 'person',
-      readOnly: true,
-    },
-
     /** @override */
     keyEventTarget: {
       type: Object,

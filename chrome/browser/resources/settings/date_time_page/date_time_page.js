@@ -29,48 +29,5 @@ Polymer({
       type: Object,
       notify: true
     },
-
-    /**
-     * Route for the page.
-     */
-    route: {
-      type: String,
-      value: ''
-    },
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: false,
-      readOnly: true
-    },
-
-    /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'date-time',
-      readOnly: true
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() { return loadTimeData.getString('dateTimePageTitle'); }
-    },
-
-    /**
-     * Name of the 'core-icon' to show.
-     */
-    icon: {
-      type: String,
-      value: 'device:access-time',
-      readOnly: true
-    },
   },
 });

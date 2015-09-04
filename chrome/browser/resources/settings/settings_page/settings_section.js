@@ -25,6 +25,22 @@ Polymer({
 
   properties: {
     /**
+     * The current active route.
+     */
+    currentRoute: {
+      type: Object,
+      observer: 'currentRouteChanged_',
+    },
+
+    /**
+     * The section is expanded to a full-page view when this property matches
+     * currentRoute.section.
+     */
+    section: {
+      type: String,
+    },
+
+    /**
      * Title for the page header and navigation menu.
      */
     pageTitle: String,
@@ -33,16 +49,6 @@ Polymer({
      * Name of the 'iron-icon' to show.
      */
     icon: String,
-
-    /**
-     * True if the section should be expanded to take up the full height of
-     * the page (except the toolbar). The title and icon of the section will be
-     * hidden, and the section contents is expected to provide its own subtitle.
-     */
-    expanded: {
-      type: Boolean,
-      observer: 'expandedChanged',
-    },
 
     /**
      * Container that determines the sizing of expanded sections.
@@ -68,12 +74,18 @@ Polymer({
     },
   },
 
-  expandedChanged: function() {
-    if (this.expanded) {
-      this.playAnimation('expand');
-    } else {
-      this.playAnimation('collapse');
-    }
+  /** @private */
+  expanded_: false,
+
+  /** @private */
+  currentRouteChanged_: function() {
+    var expanded = this.currentRoute.section == this.section;
+
+    if (expanded == this.expanded_)
+      return;
+
+    this.expanded_ = expanded;
+    this.playAnimation(expanded ? 'expand' : 'collapse');
   },
 });
 

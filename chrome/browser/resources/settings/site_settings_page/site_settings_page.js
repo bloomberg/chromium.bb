@@ -29,51 +29,5 @@ Polymer({
       type: Object,
       notify: true,
     },
-
-    /**
-     * Route for the page.
-     */
-    route: {
-      type: String,
-      value: '',
-    },
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: true,
-      readOnly: true,
-    },
-
-    /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'site-settings',
-      readOnly: true,
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() {
-        return loadTimeData.getString('siteSettingsPageTitle');
-      },
-      readOnly: true
-    },
-
-    /**
-     * Name of the 'iron-icon' to show.
-     */
-    icon: {
-      type: String,
-      value: 'lock',
-      readOnly: true,
-    },
   },
 });

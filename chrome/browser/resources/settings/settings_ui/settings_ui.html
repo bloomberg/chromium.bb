@@ -7,19 +7,19 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://md-settings/settings_main/settings_main.html">
 <link rel="import" href="chrome://md-settings/settings_menu/settings_menu.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_router.html">
 
 <dom-module id="cr-settings-ui">
   <link rel="import" type="css" href="settings_ui.css">
   <template>
+    <settings-router current-route="{{currentRoute}}"></settings-router>
     <paper-toolbar>
       <div class="title">Settings</div>
     </paper-toolbar>
     <paper-drawer-panel drawer-width="256px">
-      <cr-settings-menu drawer class="flex"
-          selected-page-id="{{selectedPageId}}" pages="[[pages]]">
+      <cr-settings-menu drawer class="flex" current-route="{{currentRoute}}">
       </cr-settings-menu>
-      <cr-settings-main main pages="{{pages}}" prefs="{{prefs}}"
-          selected-page-id="{{selectedPageId}}">
+      <cr-settings-main main prefs="{{prefs}}" current-route="{{currentRoute}}">
         <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
       </cr-settings-main>
     </paper-drawer-panel>

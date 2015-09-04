@@ -29,43 +29,11 @@ Polymer({
     },
 
     /**
-     * Route for the page.
+     * The current active route.
      */
-    route: String,
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: false,
-      readOnly: true,
-    },
-
-    /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'basic',
-      readOnly: true,
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() { return loadTimeData.getString('basicPageTitle'); },
-    },
-
-    /**
-     * Name of the 'iron-icon' to show.
-     */
-    icon: {
-      type: String,
-      value: 'menu',
-      readOnly: true,
+    currentRoute: {
+      type: Array,
+      notify: true,
     },
   },
 });

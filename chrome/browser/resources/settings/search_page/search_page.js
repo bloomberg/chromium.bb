@@ -21,40 +21,11 @@ Polymer({
 
   properties: {
     /**
-     * Route for the page.
+     * The current active route.
      */
-    route: String,
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'search',
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() { return loadTimeData.getString('searchPageTitle'); },
-    },
-
-    /**
-     * Name of the 'iron-icon' to be shown in the settings-page-header.
-     */
-    icon: {
-      type: Boolean,
-      value: 'search',
+    currentRoute: {
+      type: Array,
+      notify: true,
     },
 
     /**
@@ -64,11 +35,6 @@ Polymer({
     searchEngines: {
       type: Array,
       value: function() { return []; },
-    },
-
-    inSubpage: {
-      type: Boolean,
-      notify: true,
     },
   },
 
@@ -119,11 +85,11 @@ Polymer({
 
   /** @private */
   onSearchEnginesTap_: function() {
-    this.$.pages.navigateTo('search-engines');
+    this.$.pages.setSubpageChain(['search-engines']);
   },
 
   /** @private */
-  onSearchEnginesSubpageTap_: function() {
-    this.$.pages.navigateTo('search-engines-subpage');
+  onSearchEnginesAdvancedTap_: function() {
+    this.$.pages.setSubpageChain(['search-engines', 'search-engines-advanced']);
   },
 });

@@ -24,8 +24,9 @@
 
     <cr-settings-section route="search" icon="search"
         i18n-values="page-title:searchPageTitle"
-        expanded="{{searchExpanded}}" expand-container="{{expandContainer}}">
-      <cr-settings-search-page in-subpage="{{searchExpanded}}">
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="search">
+      <cr-settings-search-page current-route="{{currentRoute}}">
       </cr-settings-search-page>
     </cr-settings-section>
 
