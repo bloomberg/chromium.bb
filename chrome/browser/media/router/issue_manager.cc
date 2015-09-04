@@ -87,13 +87,17 @@ void IssueManager::UnregisterObserver(IssuesObserver* observer) {
 }
 
 void IssueManager::MaybeUpdateTopIssue() {
+  Issue* new_top_issue = nullptr;
+
   if (issues_.empty()) {
+    FOR_EACH_OBSERVER(IssuesObserver, issues_observers_,
+                      OnIssueUpdated(new_top_issue));
     return;
   }
 
   // Select the first blocking issue in the list of issues.
   // If there are none, simply select the first issue in the list.
-  Issue* new_top_issue = &(issues_.front());
+  new_top_issue = &(issues_.front());
   for (auto it = issues_.begin(); it != issues_.end(); ++it) {
     // The first blocking issue is of higher priority than the first issue.
     if (it->is_blocking()) {

@@ -295,6 +295,7 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer1));
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer2));
 
+  EXPECT_CALL(issue_observer2, OnIssueUpdated(nullptr));
   router()->ClearIssue(issue->id());
   router()->UnregisterIssuesObserver(&issue_observer1);
   interfaces::IssuePtr mojo_issue2 = CreateMojoIssue("title 2");
