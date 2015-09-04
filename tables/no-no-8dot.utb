@@ -262,4 +262,5 @@ sign \x00FD 12346      # LATIN SMALL LETTER Y WITH ACUTE (ý - Liten latinsk bok
 sign \x00FE 12468      # LATIN SMALL LETTER THORN (þ - Liten latinsk bokstav thorn)
 sign \x00FF 12568      # LATIN SMALL LETTER Y WITH DIAERESIS (ÿ - Liten latinsk bokstav y med trema)
 
-#include no-no-g0.utb
+# If character not defined in 8-dot standard; follow 6-dot standard instead
+include no-no-chardefs6.uti
