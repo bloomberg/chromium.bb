@@ -901,6 +901,11 @@ crbug.com/522797 [ Retina ] compositing/squashing/invalidation-for-subpixel-offs
 crbug.com/522797 [ Retina ] css3/flexbox/repaint-rtl-column.html [ NeedsRebaseline ]
 crbug.com/522797 [ Retina ] media/video-paint-invalidation.html [ NeedsRebaseline ]
 
+crbug.com/528110 [ Debug ] screen_orientation/screenorientation-detached-notify-no-crash.html [ Crash Pass ]
+crbug.com/528110 [ Debug ] fast/dom/Window/property-access-on-cached-window-after-frame-navigated.html [ Crash Pass ]
+crbug.com/528120 imported/web-platform-tests/webrtc/datachannel-emptystring.html [ Failure Pass Timeout ]
+crbug.com/528122 [ Mac ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
+
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
@@ -1139,7 +1144,7 @@ crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/compositing
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-navigated.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed-and-gced.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-window-after-frame-navigated.html [ Failure ]
+crbug.com/521730 [ Win10 Release ] fast/dom/Window/property-access-on-cached-window-after-frame-navigated.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-window-after-frame-removed-and-gced.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-window-after-frame-removed.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/window-appendages-cleared.html [ Failure ]
@@ -1159,7 +1164,7 @@ crbug.com/521730 [ Win10 ] inspector/screen-orientation-override.html [ Failure 
 crbug.com/521730 [ Win10 ] screen_orientation/lockOrientation-basic.html [ Failure ]
 crbug.com/521730 [ Win10 ] screen_orientation/orientation-reading.html [ Failure ]
 crbug.com/521730 [ Win10 ] screen_orientation/screenorientation-api.html [ Failure ]
-crbug.com/521730 [ Win10 ] screen_orientation/screenorientation-detached-notify-no-crash.html [ Failure ]
+crbug.com/521730 [ Win10 Release ] screen_orientation/screenorientation-detached-notify-no-crash.html [ Failure ]
 crbug.com/521730 [ Win10 ] svg/custom/svg-fonts-in-text-controls.html [ Failure ]
 crbug.com/521730 [ Win10 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
 crbug.com/521730 [ Win10 ] virtual/stable/webexposed/global-interface-listing.html [ Failure ]
