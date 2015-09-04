@@ -142,8 +142,6 @@ public:
     virtual void clearViewportLayers() { }
 
     // Used to update the active selection bounds.
-    // FIXME: Remove this overload when downstream consumers have been updated to use WebSelection, crbug.com/466672.
-    virtual void registerSelection(const WebSelectionBound& start, const WebSelectionBound& end) { }
     virtual void registerSelection(const WebSelection&) { }
     virtual void clearSelection() { }
 

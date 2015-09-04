@@ -1974,11 +1974,8 @@ void WebViewImpl::clearCompositedSelection()
 
 void WebViewImpl::updateCompositedSelection(const WebSelection& selection)
 {
-    if (m_layerTreeView) {
+    if (m_layerTreeView)
         m_layerTreeView->registerSelection(selection);
-        // TODO(jdduke): Remove this overload when downstream consumers have been updated, crbug.com/466672.
-        m_layerTreeView->registerSelection(selection.start(), selection.end());
-    }
 }
 
 bool WebViewImpl::hasHorizontalScrollbar()
