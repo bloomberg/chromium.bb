@@ -23,8 +23,9 @@
 #include "modules/webgl/WebGLTransformFeedback.h"
 #include "modules/webgl/WebGLUniformLocation.h"
 #include "modules/webgl/WebGLVertexArrayObject.h"
-
 #include "platform/NotImplemented.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -176,7 +177,7 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
             if (length <= 0)
                 return WebGLAny(scriptState, DOMInt32Array::create(0));
 
-            scoped_ptr<GLint[]> values(new GLint[length]);
+            OwnPtr<GLint[]> values = adoptArrayPtr(new GLint[length]);
             for (GLint ii = 0; ii < length; ++ii)
                 values[ii] = 0;
             webContext()->getInternalformativ(target, internalformat, GL_SAMPLES, length, values.get());
@@ -1783,7 +1784,7 @@ String WebGL2RenderingContextBase::getActiveUniformBlockName(WebGLProgram* progr
         synthesizeGLError(GL_INVALID_VALUE, "getActiveUniformBlockName", "invalid uniform block index");
         return String();
     }
-    scoped_ptr<GLchar[]> name(new GLchar[maxNameLength]);
+    OwnPtr<GLchar[]> name = adoptArrayPtr(new GLchar[maxNameLength]);
     GLsizei length;
     webContext()->getActiveUniformBlockName(objectOrZero(program), uniformBlockIndex, maxNameLength, &length, name.get());
     return String(name.get(), length);
