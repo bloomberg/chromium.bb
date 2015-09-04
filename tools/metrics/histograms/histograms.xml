@@ -61828,6 +61828,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="12" label="prflx_host"/>
   <int value="13" label="prflx_srflx"/>
   <int value="14" label="prflx_relay"/>
+  <int value="15" label="host(private)_host(private)"/>
+  <int value="16" label="host(private)_host(public)"/>
+  <int value="17" label="host(public)_host(private)"/>
+  <int value="18" label="host(public)_host(public)"/>
 </enum>
 
 <enum name="IceConnectionStates" type="int">
