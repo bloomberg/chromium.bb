@@ -28,6 +28,7 @@
 #include "ios/net/cookies/system_cookie_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/parsed_cookie.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -262,6 +263,13 @@ void OnlyCookiesWithName(const net::CookieList& cookies,
   }
 }
 
+// Returns whether the specified cookie line has an explicit Domain attribute or
+// not.
+bool HasExplicitDomain(const std::string& cookie_line) {
+  ParsedCookie cookie(cookie_line);
+  return cookie.HasDomain();
+}
+
 }  // namespace
 
 #pragma mark -
@@ -382,18 +390,25 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
           << "Could not create cookie for line: " << cookie_line;
 
       // On iOS, [cookie domain] is not empty when the cookie domain is not
-      // specified: it is inferred from the URL instead.
-      // That is why two specific cases are tested here:
-      // - url_host == domain_string, happens when the cookie has no domain
-      // - domain_string.empty(), happens when the domain is not formatted
-      //   correctly
+      // specified: it is inferred from the URL instead. The only case when it
+      // is empty is when the domain attribute is incorrectly formatted.
       std::string domain_string(base::SysNSStringToUTF8([cookie domain]));
       const std::string url_host(url.host());
       std::string dummy;
+      bool has_explicit_domain = HasExplicitDomain(cookie_line);
+      bool has_valid_domain =
+          net::cookie_util::GetCookieDomainWithString(
+              url, domain_string, &dummy);
+      // A cookie can be set if all of:
+      //   a) The cookie line is well-formed
+      //   b) The Domain attribute, if present, was not malformed
+      //   c) At least one of:
+      //       1) The cookie had no explicit Domain, so the Domain was inferred
+      //          from the URL, or
+      //       2) The cookie had an explicit Domain for which the URL is allowed
+      //          to set cookies.
       bool success = (cookie != nil) && !domain_string.empty() &&
-                     (url_host == domain_string ||
-                      net::cookie_util::GetCookieDomainWithString(
-                          url, domain_string, &dummy));
+                     (!has_explicit_domain || has_valid_domain);
 
       if (success) {
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:cookie];
