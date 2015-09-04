@@ -455,10 +455,11 @@ class RenderWidgetHostMouseEventMonitor {
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // based on coordinates.
-#if defined(OS_ANDROID) || defined(THREAD_SANITIZER)
+#if defined(OS_ANDROID) || defined(THREAD_SANITIZER) || defined(OS_LINUX)
 // Browser process hit testing is not implemented on Android.
 // https://crbug.com/491334
 // Test fails under TSAN, see https://crbug.com/527618
+// Test is flaky under Linux, see https://crbug.com/528189
 #define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
 #else
 #define MAYBE_SurfaceHitTestTest SurfaceHitTestTest
