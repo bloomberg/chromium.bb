@@ -1024,6 +1024,8 @@
       'browser/chrome_device_client.h',
       'browser/chrome_process_singleton.cc',
       'browser/chrome_process_singleton.h',
+      'browser/chrome_webusb_browser_client.cc',
+      'browser/chrome_webusb_browser_client.h',
       'browser/component_updater/widevine_cdm_component_installer.cc',
       'browser/component_updater/widevine_cdm_component_installer.h',
       'browser/custom_home_pages_table_model.cc',
@@ -3643,6 +3645,7 @@
           'sources': [ '<@(chrome_browser_non_mobile_sources)' ],
           'dependencies': [
             '../components/components.gyp:feedback_component',
+            '../components/components.gyp:webusb',
             '../device/core/core.gyp:device_core',
             '../device/devices_app/devices_app.gyp:devices_app_public_cpp',
             '../device/devices_app/devices_app.gyp:devices_app_public_cpp_factory',

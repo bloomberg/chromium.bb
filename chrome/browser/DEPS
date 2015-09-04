@@ -108,6 +108,7 @@ include_rules = [
   "+components/web_resource",
   "+components/webdata/common",
   "+components/webdata_services",
+  "+components/webusb",
   "+content/public/browser",
   "+content/test/net",
   "+courgette",

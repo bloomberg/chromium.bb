@@ -2067,6 +2067,13 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePushApiBackgroundMode,
                                switches::kDisablePushApiBackgroundMode)},
 #endif  // defined(ENABLE_BACKGROUND)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+     {"enable-webusb-notifications",
+      IDS_FLAGS_ENABLE_WEBUSB_NOTIFICATIONS_NAME,
+      IDS_FLAGS_ENABLE_WEBUSB_NOTIFICATIONS_DESCRIPTION,
+      kOsDesktop,
+      SINGLE_VALUE_TYPE(switches::kEnableWebUsbNotifications)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

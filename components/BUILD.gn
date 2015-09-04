@@ -145,6 +145,7 @@ group("all_components") {
       "//components/audio_modem",
       "//components/proximity_auth",
       "//components/proximity_auth/cryptauth",
+      "//components/webusb",
     ]
   }
 

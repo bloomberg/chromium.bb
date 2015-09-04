@@ -660,6 +660,7 @@ source_set("browser") {
                            "//chrome")
     deps += [
       "//components/feedback",
+      "//components/webusb",
       "//device/core",
       "//device/devices_app/public/cpp",
       "//device/devices_app/public/cpp:factory",

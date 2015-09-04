@@ -15314,6 +15314,24 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
     </if>
 
+    <if expr="not is_android and not is_ios">
+      <!-- WebUsb Notifications Flag -->
+      <message name="IDS_FLAGS_ENABLE_WEBUSB_NOTIFICATIONS_NAME" desc="Title for the flag which enables WebUsb notifications.">
+        WebUsb notifications.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBUSB_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag which enables WebUsb notifications.">
+        Experimental WebUsb notifications.
+      </message>
+
+      <!-- WebUsb Notification -->
+      <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION" desc="Content for notification shown to the user when a USB device gets plugged in.">
+        Click here to visit this page
+      </message>
+      <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a USB device gets plugged in.">
+        <ph name="USB_DEVICE_NAME">$1</ph>
+      </message>
+    </if>
+
     </messages>
   </release>
 </grit>

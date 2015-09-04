@@ -237,6 +237,11 @@
 #include "ui/aura/env.h"
 #endif  // defined(USE_AURA)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/chrome_webusb_browser_client.h"
+#include "components/webusb/webusb_detector.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -1179,6 +1184,15 @@ void ChromeBrowserMainParts::PostBrowserStart() {
       base::TimeDelta::FromMinutes(1));
 #endif  // defined(ENABLE_WEBRTC)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebUsbNotifications)) {
+    webusb_browser_client_.reset(new ChromeWebUsbBrowserClient());
+    webusb_detector_.reset(
+        new webusb::WebUsbDetector(webusb_browser_client_.get()));
+  }
+#endif
+
   // At this point, StartupBrowserCreator::Start has run creating initial
   // browser windows and tabs, but no progress has been made in loading
   // content as the main message loop hasn't started processing tasks yet.
@@ -1774,6 +1788,11 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Remove observers attached to D-Bus clients before DbusThreadManager is
   // shut down.
   process_power_collector_.reset();
+
+#if !defined(OS_IOS)
+  webusb_browser_client_.reset();
+  webusb_detector_.reset();
+#endif
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopRun();

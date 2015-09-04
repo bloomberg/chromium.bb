@@ -127,6 +127,7 @@
         'feedback.gypi',
         'proximity_auth.gypi',
         'storage_monitor.gypi',
+        'webusb.gypi',
       ]
     }],
     ['chromeos == 1', {

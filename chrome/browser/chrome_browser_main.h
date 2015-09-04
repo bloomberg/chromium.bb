@@ -45,6 +45,11 @@ namespace metrics {
 class TrackingSynchronizer;
 }
 
+namespace webusb {
+class WebUsbBrowserClient;
+class WebUsbDetector;
+}
+
 class ChromeBrowserMainParts : public content::BrowserMainParts {
  public:
   ~ChromeBrowserMainParts() override;
@@ -138,6 +143,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // A monitor for attributing power consumption to origins.
   scoped_ptr<ProcessPowerCollector> process_power_collector_;
+
+  scoped_ptr<webusb::WebUsbBrowserClient> webusb_browser_client_;
+  scoped_ptr<webusb::WebUsbDetector> webusb_detector_;
 #endif
 
   // Vector of additional ChromeBrowserMainExtraParts.
