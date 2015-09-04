@@ -13,10 +13,9 @@ import os
 import sys
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
@@ -26,11 +25,6 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
 
-MASK_CHANGES_ERROR_SNIPPET = 'The following mask changes are necessary'
-CHROMEPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
-                                   constants.CHROMIUMOS_OVERLAY_DIR,
-                                   'profiles', 'default', 'linux',
-                                   'package.mask', 'chromepin')
 
 class SyncChromeStage(generic_stages.BuilderStage,
                       generic_stages.ArchivingStageMixin):
@@ -73,27 +67,10 @@ class SyncChromeStage(generic_stages.BuilderStage,
                        self.chrome_version)
 
       # Perform chrome uprev.
-      try:
-        chrome_atom_to_build = commands.MarkChromeAsStable(
-            self._build_root, self._run.manifest_branch,
-            self._chrome_rev, self._boards,
-            chrome_version=self.chrome_version)
-      except cros_build_lib.RunCommandError as e:
-        # If uprev failed due to a chrome pin, record that failure (so that the
-        # build ultimately fails) but try again without the pin, to allow the
-        # slave to test the newer chrome anyway).
-        if MASK_CHANGES_ERROR_SNIPPET in str(e):
-          results_lib.Results.Record(self.name, e)
-          logging.error('Chrome is pinned. Deleting pin file at %s and '
-                        'proceeding anyway, but recording failure.',
-                        CHROMEPIN_MASK_PATH)
-          osutils.SafeUnlink(CHROMEPIN_MASK_PATH)
-          chrome_atom_to_build = commands.MarkChromeAsStable(
-              self._build_root, self._run.manifest_branch,
-              self._chrome_rev, self._boards,
-              chrome_version=self.chrome_version)
-        else:
-          raise
+      chrome_atom_to_build = commands.MarkChromeAsStable(
+          self._build_root, self._run.manifest_branch,
+          self._chrome_rev, self._boards,
+          chrome_version=self.chrome_version)
 
     kwargs = {}
     if self._chrome_rev == constants.CHROME_REV_SPEC:
