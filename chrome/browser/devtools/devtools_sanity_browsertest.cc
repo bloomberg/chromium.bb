@@ -813,8 +813,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
-// https://crbug.com/397889
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestDeviceEmulation) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDeviceEmulation) {
   RunTest("testDeviceMetricsOverrides", "about:blank");
 }
 
