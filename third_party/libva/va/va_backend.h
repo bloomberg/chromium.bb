@@ -48,6 +48,8 @@ enum {
     VA_DISPLAY_ANDROID  = 0x20,
     /** \brief VA/DRM API is used, through vaGetDisplayDRM() entry-point. */
     VA_DISPLAY_DRM      = 0x30,
+    /** \brief VA/DRM API is used, with a render-node device path */
+    VA_DISPLAY_DRM_RENDERNODES = (VA_DISPLAY_DRM | (1 << 0)),
     /** \brief VA/Wayland API is used, through vaGetDisplayWl() entry-point. */
     VA_DISPLAY_WAYLAND  = 0x40,
 };
@@ -420,6 +422,19 @@ struct VADriverVTable
             VASurfaceAttrib    *attrib_list,
             unsigned int       *num_attribs
         );
+
+        VAStatus
+        (*vaAcquireBufferHandle)(
+            VADriverContextP    ctx,
+            VABufferID          buf_id,         /* in */
+            VABufferInfo *      buf_info        /* in/out */
+        );
+
+        VAStatus
+        (*vaReleaseBufferHandle)(
+            VADriverContextP    ctx,
+            VABufferID          buf_id          /* in */
+        );
 };
 
 struct VADriverContext
@@ -509,7 +524,9 @@ struct VADriverContext
      */
     struct VADriverVTableVPP *vtable_vpp;
 
-    unsigned long reserved[42];         /* reserve for future add-ins, decrease the subscript accordingly */
+    char *override_driver_name;
+
+    unsigned long reserved[41];         /* reserve for future add-ins, decrease the subscript accordingly */
 };
 
 #define VA_DISPLAY_MAGIC 0x56414430 /* VAD0 */

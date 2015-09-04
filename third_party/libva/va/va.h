@@ -78,6 +78,7 @@
 #ifndef _VA_H_
 #define _VA_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <va/va_version.h>
 
@@ -178,7 +179,9 @@ typedef int VAStatus;	/** Return status type from functions */
 /** \brief An invalid filter chain was supplied. */
 #define VA_STATUS_ERROR_INVALID_FILTER_CHAIN    0x00000021
 /** \brief Indicate HW busy (e.g. run multiple encoding simultaneously). */
-#define VA_STATUS_ERROR_HW_BUSY                 0x00000022
+#define VA_STATUS_ERROR_HW_BUSY	                0x00000022
+/** \brief An unsupported memory type was supplied. */
+#define VA_STATUS_ERROR_UNSUPPORTED_MEMORY_TYPE 0x00000024
 #define VA_STATUS_ERROR_UNKNOWN			0xFFFFFFFF
 
 /** De-interlacing flags for vaPutSurface() */
@@ -202,6 +205,7 @@ typedef int VAStatus;	/** Return status type from functions */
 #define VA_CLEAR_DRAWABLE       0x00000008
 
 /** Color space conversion flags for vaPutSurface() */
+#define VA_SRC_COLOR_MASK       0x000000f0
 #define VA_SRC_BT601            0x00000010
 #define VA_SRC_BT709            0x00000020
 #define VA_SRC_SMPTE_240        0x00000040
@@ -228,7 +232,14 @@ const char *vaErrorStr(VAStatus error_status);
 typedef void* VANativeDisplay;	/* window system dependent */
 
 int vaDisplayIsValid(VADisplay dpy);
-    
+
+/**
+ *  Set the override driver name instead of queried driver driver.
+ */
+VAStatus vaSetDriverName(VADisplay dpy,
+                         char *driver_name
+);
+
 /**
  * Initialize the library 
  */
@@ -287,7 +298,12 @@ typedef enum
     VAProfileH263Baseline		= 11,
     VAProfileJPEGBaseline               = 12,
     VAProfileH264ConstrainedBaseline    = 13,
-    VAProfileVP8Version0_3              = 14
+    VAProfileVP8Version0_3              = 14,
+    VAProfileH264MultiviewHigh          = 15,
+    VAProfileH264StereoHigh             = 16,
+    VAProfileHEVCMain                   = 17,
+    VAProfileHEVCMain10                 = 18,
+    VAProfileVP9Profile0                = 19
 } VAProfile;
 
 /**
@@ -314,6 +330,21 @@ typedef enum
     VAConfigAttribIntraResidual		= 3,
     VAConfigAttribEncryption		= 4,
     VAConfigAttribRateControl		= 5,
+
+    /** @name Attributes for decoding */
+    /**@{*/
+    /**
+     * \brief Slice Decoding mode. Read/write.
+     *
+     * This attribute determines what mode the driver supports for slice
+     * decoding, through vaGetConfigAttributes(); and what mode the user
+     * will be providing to the driver, through vaCreateConfig(), if the
+     * driver supports those. If this attribute is not set by the user then
+     * it is assumed that VA_DEC_SLICE_MODE_NORMAL mode is used.
+     *
+     * See \c VA_DEC_SLICE_MODE_xxx for the list of slice decoding modes.
+     */
+    VAConfigAttribDecSliceMode		= 6,
 
     /** @name Attributes for encoding */
     /**@{*/
@@ -384,6 +415,31 @@ typedef enum
      * through VAEncSliceParameterBufferH264::macroblock_info.
      */
     VAConfigAttribEncMacroblockInfo     = 16,
+    /**
+     * \brief JPEG encoding attribute. Read-only.
+     *
+     * This attribute exposes a number of capabilities of the underlying
+     * JPEG implementation. The attribute value is partitioned into fields as defined in the 
+     * VAConfigAttribValEncJPEG union.
+     */
+    VAConfigAttribEncJPEG             = 20,
+    /**
+     * \brief Encoding quality range attribute. Read-only.
+     *
+     * This attribute conveys whether the driver supports different quality level settings
+     * for encoding. A value less than or equal to 1 means that the encoder only has a single
+     * quality setting, and a value greater than 1 represents the number of quality levels 
+     * that can be configured. e.g. a value of 2 means there are two distinct quality levels. 
+     */
+    VAConfigAttribEncQualityRange     = 21,
+    /**
+     * \brief Encoding skip frame attribute. Read-only.
+     *
+     * This attribute conveys whether the driver supports sending skip frame parameters 
+     * (VAEncMiscParameterTypeSkipFrame) to the encoder's rate control, when the user has 
+     * externally skipped frames. 
+     */
+    VAConfigAttribEncSkipFrame        = 24,
     /**@}*/
     VAConfigAttribTypeMax
 } VAConfigAttribType;
@@ -427,6 +483,14 @@ typedef struct _VAConfigAttrib {
 #define VA_RC_VBR_CONSTRAINED           0x00000020
 /**@}*/
 
+/** @name Attribute values for VAConfigAttribDecSliceMode */
+/**@{*/
+/** \brief Driver supports normal mode for slice decoding */
+#define VA_DEC_SLICE_MODE_NORMAL       0x00000001
+/** \brief Driver supports base mode for slice decoding */
+#define VA_DEC_SLICE_MODE_BASE         0x00000002
+/**@}*/
+
 /** @name Attribute values for VAConfigAttribEncPackedHeaders */
 /**@{*/
 /** \brief Driver does not support any packed headers mode. */
@@ -466,6 +530,25 @@ typedef struct _VAConfigAttrib {
 /** \brief Driver supports an arbitrary number of rows per slice. */
 #define VA_ENC_SLICE_STRUCTURE_ARBITRARY_MACROBLOCKS    0x00000002
 /**@}*/
+
+/** \brief Attribute value for VAConfigAttribEncJPEG */
+typedef union _VAConfigAttribValEncJPEG {
+    struct {
+        /** \brief set to 1 for arithmatic coding. */
+        unsigned int arithmatic_coding_mode : 1;
+        /** \brief set to 1 for progressive dct. */
+        unsigned int progressive_dct_mode : 1;
+        /** \brief set to 1 for non-interleaved. */
+        unsigned int non_interleaved_mode : 1;
+        /** \brief set to 1 for differential. */
+        unsigned int differential_mode : 1;
+        unsigned int max_num_components : 3;
+        unsigned int max_num_scans : 4;
+        unsigned int max_num_huffman_tables : 3;
+        unsigned int max_num_quantization_tables : 3;
+    } bits;
+    unsigned int value;
+} VAConfigAttribValEncJPEG;
 
 /**
  * if an attribute is not applicable for a given
@@ -661,6 +744,9 @@ typedef enum {
     VASurfaceAttribMemoryType,
     /** \brief External buffer descriptor (pointer, write). */
     VASurfaceAttribExternalBufferDescriptor,
+    /** \brief Surface usage hint, gives the driver a hint of intended usage 
+     *  to optimize allocation (e.g. tiling) (int, read/write). */
+    VASurfaceAttribUsageHint,
     /** \brief Number of surface attributes. */
     VASurfaceAttribCount
 } VASurfaceAttribType;
@@ -731,6 +817,21 @@ typedef struct _VASurfaceAttribExternalBuffers {
 #define VA_SURFACE_EXTBUF_DESC_WC		0x00000008
 /** \brief Memory is protected */
 #define VA_SURFACE_EXTBUF_DESC_PROTECTED        0x80000000
+
+/** @name VASurfaceAttribUsageHint attribute usage hint flags */
+/**@{*/
+/** \brief Surface usage not indicated. */
+#define VA_SURFACE_ATTRIB_USAGE_HINT_GENERIC 	0x00000000
+/** \brief Surface used by video decoder. */
+#define VA_SURFACE_ATTRIB_USAGE_HINT_DECODER 	0x00000001
+/** \brief Surface used by video encoder. */
+#define VA_SURFACE_ATTRIB_USAGE_HINT_ENCODER 	0x00000002
+/** \brief Surface read by video post-processing. */
+#define VA_SURFACE_ATTRIB_USAGE_HINT_VPP_READ 	0x00000004
+/** \brief Surface written by video post-processing. */
+#define VA_SURFACE_ATTRIB_USAGE_HINT_VPP_WRITE 	0x00000008
+/** \brief Surface used for display. */
+#define VA_SURFACE_ATTRIB_USAGE_HINT_DISPLAY 	0x00000010
 
 /**@}*/
 
@@ -884,6 +985,7 @@ typedef enum
     VAEncPackedHeaderDataBufferType     = 26,
     VAEncMiscParameterBufferType	= 27,
     VAEncMacroblockParameterBufferType	= 28,
+    VAEncMacroblockMapBufferType        = 29,
 /* Following are video processing buffer types */
     /**
      * \brief Video processing pipeline parameter buffer.
@@ -918,6 +1020,10 @@ typedef enum
     VAEncMiscParameterTypeMaxFrameSize  = 4,
     /** \brief Buffer type used for HRD parameters. */
     VAEncMiscParameterTypeHRD           = 5,
+    VAEncMiscParameterTypeQualityLevel  = 6,
+    /** \brief Buffer type used for sending skip frame parameters to the encoder's
+      * rate control, when the user has externally skipped frames. */
+    VAEncMiscParameterTypeSkipFrame     = 9
 } VAEncMiscParameterType;
 
 /** \brief Packed header type. */
@@ -1050,6 +1156,48 @@ typedef struct _VAEncMiscParameterBufferMaxFrameSize {
 } VAEncMiscParameterBufferMaxFrameSize;
 
 /**
+ * \brief Encoding quality level.
+ *
+ * The encoding quality could be set through this structure, if the implementation  
+ * supports multiple quality levels. The quality level set through this structure is 
+ * persistent over the entire coded sequence, or until a new structure is being sent.
+ * The quality level range can be queried through the VAConfigAttribEncQualityRange 
+ * attribute. A lower value means higher quality, and a value of 1 represents the highest 
+ * quality. The quality level setting is used as a trade-off between quality and speed/power 
+ * consumption, with higher quality corresponds to lower speed and higher power consumption. 
+ */
+typedef struct _VAEncMiscParameterBufferQualityLevel {
+    /** \brief Encoding quality level setting. When set to 0, default quality
+     * level is used.
+     */
+    unsigned int                quality_level;
+} VAEncMiscParameterBufferQualityLevel;
+
+/**
+ * \brief Encoding skip frame.
+ *
+ * The application may choose to skip frames externally to the encoder (e.g. drop completely or 
+ * code as all skip's). For rate control purposes the encoder will need to know the size and number 
+ * of skipped frames.  Skip frame(s) indicated through this structure is applicable only to the 
+ * current frame.  It is allowed for the application to still send in packed headers for the driver to 
+ * pack, although no frame will be encoded (e.g. for HW to encrypt the frame).  
+ */
+typedef struct _VAEncMiscParameterSkipFrame {
+    /** \brief Indicates skip frames as below.
+      * 0: Encode as normal, no skip.
+      * 1: One or more frames were skipped prior to the current frame, encode the current frame as normal.  
+      * 2: The current frame is to be skipped, do not encode it but pack/encrypt the packed header contents
+      *    (all except VAEncPackedHeaderSlice) which could contain actual frame contents (e.g. pack the frame 
+      *    in VAEncPackedHeaderPicture).  */
+    unsigned char               skip_frame_flag;
+    /** \brief The number of frames skipped prior to the current frame.  Valid when skip_frame_flag = 1. */
+    unsigned char               num_skip_frames;
+    /** \brief When skip_frame_flag = 1, the size of the skipped frames in bits.   When skip_frame_flag = 2, 
+      * the size of the current skipped frame that is to be packed/encrypted in bits. */
+    unsigned int                size_skip_frames;
+} VAEncMiscParameterSkipFrame;
+
+/* 
  * There will be cases where the bitstream buffer will not have enough room to hold
  * the data for the entire slice, and the following flags will be used in the slice
  * parameter to signal to the server for the possible cases.
@@ -1070,27 +1218,44 @@ typedef struct _VASliceParameterBufferBase
     unsigned int slice_data_flag;	/* see VA_SLICE_DATA_FLAG_XXX definitions */
 } VASliceParameterBufferBase;
 
-
-/****************************
- * JEPG data structure
- ***************************/
-typedef struct _VAQMatrixBufferJPEG
-{
-    int load_lum_quantiser_matrix;
-    int load_chroma_quantiser_matrix;
-    unsigned char lum_quantiser_matrix[64];
-    unsigned char chroma_quantiser_matrix[64];
-} VAQMatrixBufferJPEG;
-
-typedef struct _VAEncPictureParameterBufferJPEG
-{
-    VASurfaceID reconstructed_picture;
-    unsigned short picture_width;
-    unsigned short picture_height;
-    VABufferID coded_buf;
-} VAEncPictureParameterBufferJPEG;
-
-#include <va/va_dec_jpeg.h>
+/**********************************
+ * JPEG common  data structures
+ **********************************/
+/**
+ * \brief Huffman table for JPEG decoding.
+ *
+ * This structure holds the complete Huffman tables. This is an
+ * aggregation of all Huffman table (DHT) segments maintained by the
+ * application. i.e. up to 2 Huffman tables are stored in there for
+ * baseline profile.
+ *
+ * The #load_huffman_table array can be used as a hint to notify the
+ * VA driver implementation about which table(s) actually changed
+ * since the last submission of this buffer.
+ */
+typedef struct _VAHuffmanTableBufferJPEGBaseline {
+    /** \brief Specifies which #huffman_table is valid. */
+    unsigned char       load_huffman_table[2];
+    /** \brief Huffman tables indexed by table identifier (Th). */
+    struct {
+        /** @name DC table (up to 12 categories) */
+        /**@{*/
+        /** \brief Number of Huffman codes of length i + 1 (Li). */
+        unsigned char   num_dc_codes[16];
+        /** \brief Value associated with each Huffman code (Vij). */
+        unsigned char   dc_values[12];
+        /**@}*/
+        /** @name AC table (2 special codes + up to 16 * 10 codes) */
+        /**@{*/
+        /** \brief Number of Huffman codes of length i + 1 (Li). */
+        unsigned char   num_ac_codes[16];
+        /** \brief Value associated with each Huffman code (Vij). */
+        unsigned char   ac_values[162];
+        /** \brief Padding to 4-byte boundaries. Must be set to zero. */
+        unsigned char   pad[2];
+        /**@}*/
+    }                   huffman_table[2];
+} VAHuffmanTableBufferJPEGBaseline;
 
 /****************************
  * MPEG-2 data structures
@@ -1133,13 +1298,21 @@ typedef struct _VAPictureParameterBufferMPEG2
 /** MPEG-2 Inverse Quantization Matrix Buffer */
 typedef struct _VAIQMatrixBufferMPEG2
 {
+    /** \brief Same as the MPEG-2 bitstream syntax element. */
     int load_intra_quantiser_matrix;
+    /** \brief Same as the MPEG-2 bitstream syntax element. */
     int load_non_intra_quantiser_matrix;
+    /** \brief Same as the MPEG-2 bitstream syntax element. */
     int load_chroma_intra_quantiser_matrix;
+    /** \brief Same as the MPEG-2 bitstream syntax element. */
     int load_chroma_non_intra_quantiser_matrix;
+    /** \brief Luminance intra matrix, in zig-zag scan order. */
     unsigned char intra_quantiser_matrix[64];
+    /** \brief Luminance non-intra matrix, in zig-zag scan order. */
     unsigned char non_intra_quantiser_matrix[64];
+    /** \brief Chroma intra matrix, in zig-zag scan order. */
     unsigned char chroma_intra_quantiser_matrix[64];
+    /** \brief Chroma non-intra matrix, in zig-zag scan order. */
     unsigned char chroma_non_intra_quantiser_matrix[64];
 } VAIQMatrixBufferMPEG2;
 
@@ -1269,9 +1442,13 @@ typedef struct _VAPictureParameterBufferMPEG4
 /** MPEG-4 Inverse Quantization Matrix Buffer */
 typedef struct _VAIQMatrixBufferMPEG4
 {
+    /** Same as the MPEG-4:2 bitstream syntax element. */
     int load_intra_quant_mat;
+    /** Same as the MPEG-4:2 bitstream syntax element. */
     int load_non_intra_quant_mat;
+    /** The matrix for intra blocks, in zig-zag scan order. */
     unsigned char intra_quant_mat[64];
+    /** The matrix for non-intra blocks, in zig-zag scan order. */
     unsigned char non_intra_quant_mat[64];
 } VAIQMatrixBufferMPEG4;
 
@@ -1568,7 +1745,9 @@ typedef struct _VAPictureParameterBufferH264
 /** H.264 Inverse Quantization Matrix Buffer */
 typedef struct _VAIQMatrixBufferH264
 {
+    /** \brief 4x4 scaling list, in raster scan order. */
     unsigned char ScalingList4x4[6][16];
+    /** \brief 8x8 scaling list, in raster scan order. */
     unsigned char ScalingList8x8[2][64];
 } VAIQMatrixBufferH264;
 
@@ -1850,6 +2029,108 @@ VAStatus vaDestroyBuffer (
     VADisplay dpy,
     VABufferID buffer_id
 );
+
+/** \brief VA buffer information */
+typedef struct {
+    /** \brief Buffer handle */
+    uintptr_t           handle;
+    /** \brief Buffer type (See \ref VABufferType). */
+    uint32_t            type;
+    /**
+     * \brief Buffer memory type (See \ref VASurfaceAttribMemoryType).
+     *
+     * On input to vaAcquireBufferHandle(), this field can serve as a hint
+     * to specify the set of memory types the caller is interested in.
+     * On successful return from vaAcquireBufferHandle(), the field is
+     * updated with the best matching memory type.
+     */
+    uint32_t            mem_type;
+    /** \brief Size of the underlying buffer. */
+    size_t              mem_size;
+} VABufferInfo;
+
+/**
+ * \brief Acquires buffer handle for external API usage
+ *
+ * Locks the VA buffer object \ref buf_id for external API usage like
+ * EGL or OpenCL (OCL). This function is a synchronization point. This
+ * means that any pending operation is guaranteed to be completed
+ * prior to returning from the function.
+ *
+ * If the referenced VA buffer object is the backing store of a VA
+ * surface, then this function acts as if vaSyncSurface() on the
+ * parent surface was called first.
+ *
+ * The \ref VABufferInfo argument shall be zero'ed on input. On
+ * successful output, the data structure is filled in with all the
+ * necessary buffer level implementation details like handle, type,
+ * memory type and memory size.
+ *
+ * Note: the external API implementation, or the application, can
+ * express the memory types it is interested in by filling in the \ref
+ * mem_type field accordingly. On successful output, the memory type
+ * that fits best the request and that was used is updated in the \ref
+ * VABufferInfo data structure. If none of the supplied memory types
+ * is supported, then a \ref VA_STATUS_ERROR_UNSUPPORTED_MEMORY_TYPE
+ * error is returned.
+ *
+ * The \ref VABufferInfo data is valid until vaReleaseBufferHandle()
+ * is called. Besides, no additional operation is allowed on any of
+ * the buffer parent object until vaReleaseBufferHandle() is called.
+ * e.g. decoding into a VA surface backed with the supplied VA buffer
+ * object \ref buf_id would fail with a \ref VA_STATUS_ERROR_SURFACE_BUSY
+ * error.
+ *
+ * Possible errors:
+ * - \ref VA_STATUS_ERROR_UNIMPLEMENTED: the VA driver implementation
+ *   does not support this interface
+ * - \ref VA_STATUS_ERROR_INVALID_DISPLAY: an invalid display was supplied
+ * - \ref VA_STATUS_ERROR_INVALID_BUFFER: an invalid buffer was supplied
+ * - \ref VA_STATUS_ERROR_UNSUPPORTED_BUFFERTYPE: the implementation
+ *   does not support exporting buffers of the specified type
+ * - \ref VA_STATUS_ERROR_UNSUPPORTED_MEMORY_TYPE: none of the requested
+ *   memory types in \ref VABufferInfo.mem_type was supported
+ *
+ * @param[in] dpy               the VA display
+ * @param[in] buf_id            the VA buffer
+ * @param[in,out] buf_info      the associated VA buffer information
+ * @return VA_STATUS_SUCCESS if successful
+ */
+VAStatus
+vaAcquireBufferHandle(VADisplay dpy, VABufferID buf_id, VABufferInfo *buf_info);
+
+/**
+ * \brief Releases buffer after usage from external API
+ *
+ * Unlocks the VA buffer object \ref buf_id from external API usage like
+ * EGL or OpenCL (OCL). This function is a synchronization point. This
+ * means that any pending operation is guaranteed to be completed
+ * prior to returning from the function.
+ *
+ * The \ref VABufferInfo argument shall point to the original data
+ * structure that was obtained from vaAcquireBufferHandle(), unaltered.
+ * This is necessary so that the VA driver implementation could
+ * deallocate any resources that were needed.
+ *
+ * In any case, returning from this function invalidates any contents
+ * in \ref VABufferInfo. i.e. the underlyng buffer handle is no longer
+ * valid. Therefore, VA driver implementations are free to reset this
+ * data structure to safe defaults.
+ *
+ * Possible errors:
+ * - \ref VA_STATUS_ERROR_UNIMPLEMENTED: the VA driver implementation
+ *   does not support this interface
+ * - \ref VA_STATUS_ERROR_INVALID_DISPLAY: an invalid display was supplied
+ * - \ref VA_STATUS_ERROR_INVALID_BUFFER: an invalid buffer was supplied
+ * - \ref VA_STATUS_ERROR_UNSUPPORTED_BUFFERTYPE: the implementation
+ *   does not support exporting buffers of the specified type
+ *
+ * @param[in] dpy               the VA display
+ * @param[in] buf_id            the VA buffer
+ * @return VA_STATUS_SUCCESS if successful
+ */
+VAStatus
+vaReleaseBufferHandle(VADisplay dpy, VABufferID buf_id);
 
 /*
 Render (Decode) Pictures
@@ -2488,6 +2769,83 @@ VAStatus vaSetDisplayAttributes (
     VADisplayAttribute *attr_list,
     int num_attributes
 );
+
+/****************************
+ * HEVC data structures
+ ****************************/
+/** 
+ * \brief Description of picture properties of those in DPB surfaces.
+ *
+ * If only progressive scan is supported, each surface contains one whole 
+ * frame picture.
+ * Otherwise, each surface contains two fields of whole picture.
+ * In this case, two entries of ReferenceFrames[] may share same picture_id
+ * value.
+ */
+typedef struct _VAPictureHEVC
+{
+    /** \brief reconstructed picture buffer surface index 
+     * invalid when taking value VA_INVALID_SURFACE.
+     */
+    VASurfaceID             picture_id;
+    /** \brief picture order count. 
+     * in HEVC, POCs for top and bottom fields of same picture should
+     * take different values.
+     */
+    int32_t                 pic_order_cnt;
+    /* described below */
+    uint32_t                flags;
+} VAPictureHEVC;
+
+/* flags in VAPictureHEVC could be OR of the following */
+#define VA_PICTURE_HEVC_INVALID                 0x00000001
+/** \brief indication of interlace scan picture. 
+ * should take same value for all the pictures in sequence.
+ */ 
+#define VA_PICTURE_HEVC_FIELD_PIC               0x00000002
+/** \brief polarity of the field picture.
+ * top field takes even lines of buffer surface.
+ * bottom field takes odd lines of buffer surface.
+ */
+#define VA_PICTURE_HEVC_BOTTOM_FIELD            0x00000004
+/** \brief Long term reference picture */
+#define VA_PICTURE_HEVC_LONG_TERM_REFERENCE     0x00000008
+/**
+ * VA_PICTURE_HEVC_RPS_ST_CURR_BEFORE, VA_PICTURE_HEVC_RPS_ST_CURR_AFTER
+ * and VA_PICTURE_HEVC_RPS_LT_CURR of any picture in ReferenceFrames[] should 
+ * be exclusive. No more than one of them can be set for any picture.
+ * Sum of NumPocStCurrBefore, NumPocStCurrAfter and NumPocLtCurr
+ * equals NumPocTotalCurr, which should be equal to or smaller than 8.
+ * Application should provide valid values for both short format and long format.
+ * The pictures in DPB with any of these three flags turned on are referred by
+ * the current picture.
+ */
+/** \brief RefPicSetStCurrBefore of HEVC spec variable 
+ * Number of ReferenceFrames[] entries with this bit set equals 
+ * NumPocStCurrBefore.
+ */
+#define VA_PICTURE_HEVC_RPS_ST_CURR_BEFORE      0x00000010
+/** \brief RefPicSetStCurrAfter of HEVC spec variable
+ * Number of ReferenceFrames[] entries with this bit set equals 
+ * NumPocStCurrAfter.
+ */
+#define VA_PICTURE_HEVC_RPS_ST_CURR_AFTER       0x00000020
+/** \brief RefPicSetLtCurr of HEVC spec variable
+ * Number of ReferenceFrames[] entries with this bit set equals 
+ * NumPocLtCurr.
+ */
+#define VA_PICTURE_HEVC_RPS_LT_CURR             0x00000040
+
+#include <va/va_dec_hevc.h>
+#include <va/va_dec_jpeg.h>
+#include <va/va_dec_vp8.h>
+#include <va/va_dec_vp9.h>
+#include <va/va_enc_hevc.h>
+#include <va/va_enc_h264.h>
+#include <va/va_enc_jpeg.h>
+#include <va/va_enc_mpeg2.h>
+#include <va/va_enc_vp8.h>
+#include <va/va_vpp.h>
 
 /**@}*/
 
