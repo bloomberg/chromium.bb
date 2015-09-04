@@ -5,16 +5,15 @@
 #include "config.h"
 #include "core/workers/WorkerThread.h"
 
+#include "bindings/core/v8/V8GCController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/NotImplemented.h"
-#include "platform/heap/Heap.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebWaitableEvent.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <v8.h>
 
 using testing::_;
 using testing::AtMost;
@@ -114,8 +113,7 @@ public:
     }
     void willDestroyIsolate() override
     {
-        v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
-        Heap::collectAllGarbage();
+        V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
         WorkerThread::willDestroyIsolate();
     }
 

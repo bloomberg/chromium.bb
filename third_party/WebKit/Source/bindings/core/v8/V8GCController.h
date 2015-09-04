@@ -47,6 +47,11 @@ public:
     static void gcEpilogue(v8::GCType, v8::GCCallbackFlags);
 
     static void collectGarbage(v8::Isolate*);
+    // You should use collectAllGarbageForTesting() when you want to collect all
+    // V8 & Blink objects. It runs multiple V8 GCs to collect references
+    // that cross the binding boundary. collectAllGarbage() also runs multipe
+    // Oilpan GCs to collect a chain of persistent handles.
+    static void collectAllGarbageForTesting(v8::Isolate*);
 
     static Node* opaqueRootForGC(v8::Isolate*, Node*);
 

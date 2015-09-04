@@ -151,7 +151,7 @@ public:
         }
     }
 
-    void gc() { V8GCController::collectGarbage(v8::Isolate::GetCurrent()); }
+    void gc() { V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent()); }
 
     v8::Local<v8::Function> notReached(ScriptState* scriptState) { return NotReached::createFunction(scriptState); }
     v8::Local<v8::Function> stub(ScriptState* scriptState, ScriptValue& value, size_t& callCount) { return StubFunction::createFunction(scriptState, value, callCount); }

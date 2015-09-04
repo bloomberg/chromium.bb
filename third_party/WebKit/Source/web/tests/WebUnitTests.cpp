@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/tests/WebUnitTests.h"
 
-#include "platform/heap/Handle.h"
+#include "bindings/core/v8/V8GCController.h"
 #include <base/bind.h>
 #include <base/message_loop/message_loop.h>
 #include <base/run_loop.h>
@@ -55,8 +55,7 @@ int runHelper(base::TestSuite* testSuite, void (*preTestHook)(void), void (*post
 
     // Collect garbage in order to release mock objects referred from v8 or
     // Oilpan heap. Otherwise false mock leaks will be reported.
-    v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
-    Heap::collectAllGarbage();
+    V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
 
     postTestHook();
 

@@ -482,6 +482,12 @@ void V8GCController::collectGarbage(v8::Isolate* isolate)
     scriptState->disposePerContextData();
 }
 
+void V8GCController::collectAllGarbageForTesting(v8::Isolate* isolate)
+{
+    for (unsigned i = 0; i < 5; i++)
+        isolate->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
+}
+
 void V8GCController::reportDOMMemoryUsageToV8(v8::Isolate* isolate)
 {
     if (!isMainThread())

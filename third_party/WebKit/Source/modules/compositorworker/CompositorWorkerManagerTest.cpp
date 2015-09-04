@@ -6,6 +6,7 @@
 #include "modules/compositorworker/CompositorWorkerManager.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8GCController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -14,12 +15,11 @@
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "platform/NotImplemented.h"
 #include "platform/ThreadSafeFunctional.h"
-#include "platform/heap/Heap.h"
+#include "platform/heap/Handle.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include <gtest/gtest.h>
-#include <v8.h>
 
 namespace blink {
 namespace {
@@ -53,8 +53,7 @@ private:
     }
     void willDestroyIsolate() override
     {
-        v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
-        Heap::collectAllGarbage();
+        V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
         CompositorWorkerThread::willDestroyIsolate();
     }
 

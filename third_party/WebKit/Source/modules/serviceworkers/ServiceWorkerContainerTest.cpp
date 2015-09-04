@@ -156,7 +156,7 @@ protected:
     ~ServiceWorkerContainerTest()
     {
         m_page.clear();
-        V8GCController::collectGarbage(isolate());
+        V8GCController::collectAllGarbageForTesting(isolate());
     }
 
     ExecutionContext* executionContext() { return &(m_page->document()); }

@@ -51,10 +51,6 @@ namespace blink {
 
 namespace {
 
-// FIXME: Oilpan: It may take multiple GC to collect on-heap objects referenced from off-heap objects.
-// Please see comment in Heap::collectAllGarbage()
-static const int kNumberOfGCsToClaimChains = 5;
-
 class WebLeakDetectorImpl final : public WebLeakDetector {
 WTF_MAKE_NONCOPYABLE(WebLeakDetectorImpl);
 public:
@@ -104,8 +100,7 @@ void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
 
     // FIXME: HTML5 Notification should be closed because notification affects the result of number of DOM objects.
 
-    for (int i = 0; i < kNumberOfGCsToClaimChains; ++i)
-        V8GCController::collectGarbage(isolate);
+    V8GCController::collectAllGarbageForTesting(isolate);
     // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
     // Task queue may contain delayed object destruction tasks.
@@ -122,8 +117,7 @@ void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
     // The second GC is necessary as Resource GC may have postponed clean-up tasks to next event loop.
     // The third GC is necessary for cleaning up Document after worker object died.
 
-    for (int i = 0; i < kNumberOfGCsToClaimChains; ++i)
-        V8GCController::collectGarbage(V8PerIsolateData::mainThreadIsolate());
+    V8GCController::collectAllGarbageForTesting(V8PerIsolateData::mainThreadIsolate());
     // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
     // Inspect counters on the next event loop.
