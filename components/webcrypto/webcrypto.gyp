@@ -9,17 +9,11 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../tracing.gyp:tracing',
-        '../../skia/skia.gyp:skia',
-        '../../ui/base/ui_base.gyp:ui_base',
-        '../../ui/events/events.gyp:gestures_blink',
-        '../../url/url.gyp:url_lib',
+        '../../crypto/crypto.gyp:crypto',
+        '../../third_party/WebKit/public/blink.gyp:blink',
       ],
       'include_dirs': [
         '..',
-      ],
-      'export_dependent_settings': [
-        '../../base/base.gyp:base',
       ],
       'variables': {
         'webcrypto_sources': [
@@ -94,11 +88,6 @@
         '<@(webcrypto_sources)',
       ],
       'conditions': [
-        ['OS=="android"', {
-          'dependencies': [
-            '../../build/android/ndk.gyp:cpu_features',
-          ],
-        }],
         ['use_openssl==1', {
           'sources': [
             '<@(webcrypto_openssl_sources)',
