@@ -208,7 +208,8 @@ class RegisterAppTaskTest : public testing::Test {
     return files.size();
   }
 
-  bool HasRemoteAppRoot(const std::string& app_id) {
+  bool GetAppRootFolderID(const std::string& app_id,
+                          std::string* app_root_folder_id) {
     TrackerIDSet files;
     if (!context_->GetMetadataDatabase()->FindTrackersByParentAndTitle(
             kSyncRootTrackerID, app_id, &files) ||
@@ -218,13 +219,37 @@ class RegisterAppTaskTest : public testing::Test {
     FileTracker app_root_tracker;
     EXPECT_TRUE(context_->GetMetadataDatabase()->FindTrackerByTrackerID(
         files.active_tracker(), &app_root_tracker));
-    std::string app_root_folder_id = app_root_tracker.file_id();
+    *app_root_folder_id = app_root_tracker.file_id();
+    return true;
+  }
+
+  bool HasRemoteAppRoot(const std::string& app_id) {
+    std::string app_root_folder_id;
+    if (!GetAppRootFolderID(app_id, &app_root_folder_id))
+      return false;
+
     scoped_ptr<google_apis::FileResource> entry;
     if (google_apis::HTTP_SUCCESS !=
         fake_drive_service_helper_->GetFileResource(app_root_folder_id, &entry))
       return false;
 
     return !entry->labels().is_trashed();
+  }
+
+  bool VerifyRemoteAppRootVisibility(const std::string& app_id) {
+    std::string app_root_folder_id;
+    if (!GetAppRootFolderID(app_id, &app_root_folder_id))
+      return false;
+
+    google_apis::drive::FileVisibility visibility;
+    if (google_apis::HTTP_SUCCESS !=
+        fake_drive_service_helper_->GetFileVisibility(
+            app_root_folder_id, &visibility))
+      return false;
+    if (visibility != google_apis::drive::FILE_VISIBILITY_PRIVATE)
+      return false;
+
+    return true;
   }
 
  private:
@@ -277,6 +302,7 @@ TEST_F(RegisterAppTaskTest, CreateAppFolder) {
 
   EXPECT_EQ(1u, CountRemoteFileInSyncRoot());
   EXPECT_TRUE(HasRemoteAppRoot(kAppID));
+  EXPECT_TRUE(VerifyRemoteAppRootVisibility(kAppID));
 }
 
 TEST_F(RegisterAppTaskTest, RegisterExistingFolder) {

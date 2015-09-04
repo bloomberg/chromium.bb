@@ -33,8 +33,10 @@ FolderCreator::~FolderCreator() {
 }
 
 void FolderCreator::Run(const FileIDCallback& callback) {
+  drive::AddNewDirectoryOptions options;
+  options.visibility = google_apis::drive::FILE_VISIBILITY_PRIVATE;
   drive_service_->AddNewDirectory(
-      parent_folder_id_, title_, drive::AddNewDirectoryOptions(),
+      parent_folder_id_, title_, options,
       base::Bind(&FolderCreator::DidCreateFolder,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

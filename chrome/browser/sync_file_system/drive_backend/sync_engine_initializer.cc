@@ -223,8 +223,10 @@ void SyncEngineInitializer::DidFindSyncRoot(
 void SyncEngineInitializer::CreateSyncRoot(scoped_ptr<SyncTaskToken> token) {
   DCHECK(!sync_root_folder_);
   set_used_network(true);
+  drive::AddNewDirectoryOptions options;
+  options.visibility = google_apis::drive::FILE_VISIBILITY_PRIVATE;
   cancel_callback_ = sync_context_->GetDriveService()->AddNewDirectory(
-      root_folder_id_, kSyncRootFolderTitle, drive::AddNewDirectoryOptions(),
+      root_folder_id_, kSyncRootFolderTitle, options,
       base::Bind(&SyncEngineInitializer::DidCreateSyncRoot,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }

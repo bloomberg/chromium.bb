@@ -48,8 +48,9 @@ class SyncEngineInitializerTest : public testing::Test {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    scoped_ptr<drive::DriveServiceInterface>
+    scoped_ptr<drive::FakeDriveService>
         fake_drive_service(new drive::FakeDriveService);
+    fake_drive_service_ = fake_drive_service.get();
 
     sync_context_.reset(new SyncEngineContext(
         fake_drive_service.Pass(),
@@ -133,8 +134,10 @@ class SyncEngineInitializerTest : public testing::Test {
       const std::string& title) {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
+    drive::AddNewDirectoryOptions options;
+    options.visibility = google_apis::drive::FILE_VISIBILITY_PRIVATE;
     sync_context_->GetDriveService()->AddNewDirectory(
-        parent_folder_id, title, drive::AddNewDirectoryOptions(),
+        parent_folder_id, title, options,
         CreateResultReceiver(&error, &entry));
     base::RunLoop().RunUntilIdle();
 
@@ -165,6 +168,17 @@ class SyncEngineInitializerTest : public testing::Test {
     EXPECT_TRUE(metadata_database_->FindTrackerByTrackerID(
         sync_root_tracker_id, &sync_root_tracker));
     return sync_root_tracker.file_id();
+  }
+
+  bool VerifyFolderVisibility(const std::string& folder_id) {
+    google_apis::drive::FileVisibility visibility;
+    if (google_apis::HTTP_SUCCESS !=
+        fake_drive_service_->GetFileVisibility(
+            folder_id, &visibility))
+      return false;
+    if (visibility != google_apis::drive::FILE_VISIBILITY_PRIVATE)
+      return false;
+    return true;
   }
 
   size_t CountTrackersForFile(const std::string& file_id) {
@@ -217,6 +231,7 @@ class SyncEngineInitializerTest : public testing::Test {
   scoped_ptr<MetadataDatabase> metadata_database_;
   scoped_ptr<SyncTaskManager> sync_task_manager_;
   scoped_ptr<SyncEngineContext> sync_context_;
+  drive::FakeDriveService* fake_drive_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineInitializerTest);
 };
@@ -231,6 +246,7 @@ TEST_F(SyncEngineInitializerTest, EmptyDatabase_NoRemoteSyncRoot) {
 
   EXPECT_EQ(1u, CountFileMetadata());
   EXPECT_EQ(1u, CountFileTracker());
+  EXPECT_TRUE(VerifyFolderVisibility(sync_root_folder_id));
 }
 
 TEST_F(SyncEngineInitializerTest, EmptyDatabase_RemoteSyncRootExists) {

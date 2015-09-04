@@ -318,6 +318,13 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& resource_id,
       google_apis::drive::PermissionRole user_permission);
 
+  google_apis::DriveApiErrorCode SetFileVisibility(
+      const std::string& resource_id,
+      google_apis::drive::FileVisibility visibility);
+  google_apis::DriveApiErrorCode GetFileVisibility(
+      const std::string& resource_id,
+      google_apis::drive::FileVisibility* visibility);
+
   void AddChangeObserver(ChangeObserver* observer);
   void RemoveChangeObserver(ChangeObserver* observer);
 

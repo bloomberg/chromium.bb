@@ -85,8 +85,9 @@ DriveApiErrorCode FakeDriveServiceHelper::AddFolder(
     std::string* folder_id) {
   DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> folder;
-  fake_drive_service_->AddNewDirectory(parent_folder_id, title,
-                                       drive::AddNewDirectoryOptions(),
+  drive::AddNewDirectoryOptions options;
+  options.visibility = google_apis::drive::FILE_VISIBILITY_PRIVATE;
+  fake_drive_service_->AddNewDirectory(parent_folder_id, title, options,
                                        CreateResultReceiver(&error, &folder));
   base::RunLoop().RunUntilIdle();
 
@@ -266,6 +267,14 @@ DriveApiErrorCode FakeDriveServiceHelper::GetFileResource(
       CreateResultReceiver(&error, entry));
   base::RunLoop().RunUntilIdle();
   return error;
+}
+
+DriveApiErrorCode FakeDriveServiceHelper::GetFileVisibility(
+    const std::string& file_id,
+    google_apis::drive::FileVisibility* visibility) {
+  return fake_drive_service_->GetFileVisibility(
+      file_id,
+      visibility);
 }
 
 DriveApiErrorCode FakeDriveServiceHelper::ReadFile(

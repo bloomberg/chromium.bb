@@ -69,6 +69,9 @@ class FakeDriveServiceHelper {
   google_apis::DriveApiErrorCode GetFileResource(
       const std::string& file_id,
       scoped_ptr<google_apis::FileResource>* entry);
+  google_apis::DriveApiErrorCode GetFileVisibility(
+      const std::string& file_id,
+      google_apis::drive::FileVisibility* visiblity);
   google_apis::DriveApiErrorCode ReadFile(
       const std::string& file_id,
       std::string* file_content);

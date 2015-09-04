@@ -180,7 +180,9 @@ struct CallResumeUpload {
 }  // namespace
 
 struct FakeDriveService::EntryInfo {
-  EntryInfo() : user_permission(google_apis::drive::PERMISSION_ROLE_OWNER) {}
+  EntryInfo()
+      : user_permission(google_apis::drive::PERMISSION_ROLE_OWNER),
+        visibility(google_apis::drive::FILE_VISIBILITY_DEFAULT) {}
 
   google_apis::ChangeResource change_resource;
   GURL share_url;
@@ -189,6 +191,8 @@ struct FakeDriveService::EntryInfo {
   // Behaves in the same way as "userPermission" described in
   // https://developers.google.com/drive/v2/reference/files
   google_apis::drive::PermissionRole user_permission;
+
+  google_apis::drive::FileVisibility visibility;
 };
 
 struct FakeDriveService::UploadSession {
@@ -1457,6 +1461,11 @@ CancelCallback FakeDriveService::AddNewDirectoryWithResourceId(
     return CancelCallback();
   }
 
+  const google_apis::DriveApiErrorCode result =
+      SetFileVisibility(new_entry->change_resource.file_id(),
+                        options.visibility);
+  DCHECK_EQ(HTTP_SUCCESS, result);
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_CREATED,
@@ -1514,6 +1523,33 @@ google_apis::DriveApiErrorCode FakeDriveService::SetUserPermission(
     return HTTP_NOT_FOUND;
 
   entry->user_permission = user_permission;
+  return HTTP_SUCCESS;
+}
+
+google_apis::DriveApiErrorCode FakeDriveService::SetFileVisibility(
+    const std::string& resource_id,
+    google_apis::drive::FileVisibility visibility) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
+  if (!entry)
+    return HTTP_NOT_FOUND;
+
+  entry->visibility = visibility;
+  return HTTP_SUCCESS;
+}
+
+google_apis::DriveApiErrorCode FakeDriveService::GetFileVisibility(
+    const std::string& resource_id,
+    google_apis::drive::FileVisibility* visibility) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(visibility);
+
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
+  if (!entry)
+    return HTTP_NOT_FOUND;
+
+  *visibility = entry->visibility;
   return HTTP_SUCCESS;
 }
 
