@@ -254,7 +254,7 @@ void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
 }
 
 bool AccountTrackerService::IsMigratable() {
-#if !defined(OS_IOS) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   for (std::map<std::string, AccountState>::const_iterator it =
            accounts_.begin();
        it != accounts_.end(); ++it) {
