@@ -7815,32 +7815,6 @@ TEST_P(ParameterizedWebFrameTest, SendBeaconFromChildWithRemoteMainFrame)
     view->close();
 }
 
-// See https://crbug.com/525285.
-TEST_P(ParameterizedWebFrameTest, RemoteToLocalSwapOnMainFrameInitializesCoreFrame)
-{
-    FrameTestHelpers::TestWebViewClient viewClient;
-    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
-    view->setMainFrame(remoteClient.frame());
-    WebRemoteFrame* remoteRoot = view->mainFrame()->toWebRemoteFrame();
-    remoteRoot->setReplicatedOrigin(SecurityOrigin::createUnique());
-
-    FrameTestHelpers::TestWebFrameClient localFrameClient;
-    remoteRoot->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr);
-
-    // Do a remote-to-local swap of the top frame.
-    FrameTestHelpers::TestWebFrameClient localClient;
-    WebLocalFrame* localRoot = WebLocalFrame::create(WebTreeScopeType::Document, &localClient);
-    localRoot->initializeToReplaceRemoteFrame(remoteRoot, "", WebSandboxFlags::None);
-    remoteRoot->swap(localRoot);
-
-    // Load a page with a child frame in the new root to make sure this doesn't
-    // crash when the child frame invokes setCoreFrame.
-    FrameTestHelpers::loadFrame(localRoot, "data:text/html,<iframe></iframe>");
-
-    view->close();
-}
-
 class OverscrollWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     MOCK_METHOD4(didOverscroll, void(const WebFloatSize&, const WebFloatSize&, const WebFloatPoint&, const WebFloatSize&));
