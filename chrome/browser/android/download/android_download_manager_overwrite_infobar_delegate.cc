@@ -53,14 +53,16 @@ AndroidDownloadManagerOverwriteInfoBarDelegate::
   download_info_.Reset(env, download_info);
 }
 
-void AndroidDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
-  ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
+bool AndroidDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
+  bool tab_closed = ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
       chrome_download_delegate_.obj(), true, download_info_.obj());
+  return !tab_closed;
 }
 
-void AndroidDownloadManagerOverwriteInfoBarDelegate::CreateNewFile() {
-  ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
+bool AndroidDownloadManagerOverwriteInfoBarDelegate::CreateNewFile() {
+  bool tab_closed = ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
       chrome_download_delegate_.obj(), false, download_info_.obj());
+  return !tab_closed;
 }
 
 std::string AndroidDownloadManagerOverwriteInfoBarDelegate::GetFileName()

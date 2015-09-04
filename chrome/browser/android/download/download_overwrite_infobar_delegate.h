@@ -31,10 +31,14 @@ namespace android {
 class DownloadOverwriteInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
   // This is called when the user chooses to overwrite the existing file.
-  virtual void OverwriteExistingFile() = 0;
+  // If handling the operation results in dismissing the infobar, returns false
+  // (i.e. the caller must not dismiss the infobar).
+  virtual bool OverwriteExistingFile() = 0;
 
   // This is called when the user chooses to create a new file.
-  virtual void CreateNewFile() = 0;
+  // If handling the operation results in dismissing the infobar, returns false
+  // (i.e. the caller must not dismiss the infobar).
+  virtual bool CreateNewFile() = 0;
 
   // Gets the file name to be downloaded.
   virtual std::string GetFileName() const = 0;

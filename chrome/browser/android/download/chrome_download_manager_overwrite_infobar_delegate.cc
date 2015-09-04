@@ -41,16 +41,18 @@ ChromeDownloadManagerOverwriteInfoBarDelegate::
       file_selected_callback_(file_selected_callback) {
 }
 
-void ChromeDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
+bool ChromeDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
   file_selected_callback_.Run(suggested_download_path_);
+  return true;
 }
 
-void ChromeDownloadManagerOverwriteInfoBarDelegate::CreateNewFile() {
+bool ChromeDownloadManagerOverwriteInfoBarDelegate::CreateNewFile() {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(
           &ChromeDownloadManagerOverwriteInfoBarDelegate::CreateNewFileInternal,
           suggested_download_path_, file_selected_callback_));
+  return true;
 }
 
 std::string ChromeDownloadManagerOverwriteInfoBarDelegate::GetFileName() const {

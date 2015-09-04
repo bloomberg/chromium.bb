@@ -312,14 +312,15 @@ public class ChromeDownloadDelegate
      *
      * @param overwrite Whether or not we will overwrite the file.
      * @param downloadInfo The download info.
+     * @return true iff this request resulted in the tab creating the download to close.
      */
     @CalledByNative
-    private void enqueueDownloadManagerRequestFromNative(
+    private boolean enqueueDownloadManagerRequestFromNative(
             boolean overwrite, DownloadInfo downloadInfo) {
         // Android DownloadManager does not have an overwriting option.
         // We remove the file here instead.
         if (overwrite) deleteFileForOverwrite(downloadInfo);
-        enqueueDownloadManagerRequestInternal(downloadInfo);
+        return enqueueDownloadManagerRequestInternal(downloadInfo);
     }
 
     private void deleteFileForOverwrite(DownloadInfo info) {
@@ -331,10 +332,10 @@ public class ChromeDownloadDelegate
         }
     }
 
-    private void enqueueDownloadManagerRequestInternal(final DownloadInfo info) {
+    private boolean enqueueDownloadManagerRequestInternal(final DownloadInfo info) {
         DownloadManagerService.getDownloadManagerService(
                 mContext.getApplicationContext()).enqueueDownloadManagerRequest(info, true);
-        closeBlankTab();
+        return closeBlankTab();
     }
 
     /**
@@ -478,15 +479,17 @@ public class ChromeDownloadDelegate
 
     /**
      * Close a blank tab just opened for the download purpose.
+     * @return true iff the tab was closed.
      */
-    private void closeBlankTab() {
+    private boolean closeBlankTab() {
         WebContents contents = mTab.getWebContents();
         boolean isInitialNavigation = contents == null
                 || contents.getNavigationController().isInitialNavigation();
         if (isInitialNavigation) {
             // Tab is created just for download, close it.
-            mTabModelSelector.closeTab(mTab);
+            return mTabModelSelector.closeTab(mTab);
         }
+        return false;
     }
 
     /**

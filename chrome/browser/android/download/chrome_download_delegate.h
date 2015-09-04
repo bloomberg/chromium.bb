@@ -11,7 +11,9 @@
 
 class ChromeDownloadDelegate {
  public:
-  static void EnqueueDownloadManagerRequest(jobject chrome_download_delegate,
+  // Returns true iff this request resulted in the tab creating the download
+  // to close.
+  static bool EnqueueDownloadManagerRequest(jobject chrome_download_delegate,
                                             bool overwrite,
                                             jobject download_info);
 };

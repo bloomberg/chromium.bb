@@ -50,14 +50,15 @@ void DownloadOverwriteInfoBar::ProcessButton(int action,
     return;  // We're closing; don't call anything, it might access the owner.
 
   DownloadOverwriteInfoBarDelegate* delegate = GetDelegate();
-  if (action == InfoBarAndroid::ACTION_OVERWRITE)
-    delegate->OverwriteExistingFile();
-  else if (action == InfoBarAndroid::ACTION_CREATE_NEW_FILE)
-    delegate->CreateNewFile();
-  else
-    DCHECK(false);
-
-  RemoveSelf();
+  if (action == InfoBarAndroid::ACTION_OVERWRITE) {
+    if (delegate->OverwriteExistingFile())
+      RemoveSelf();
+  } else if (action == InfoBarAndroid::ACTION_CREATE_NEW_FILE) {
+    if (delegate->CreateNewFile())
+      RemoveSelf();
+  } else {
+    CHECK(false);
+  }
 }
 
 DownloadOverwriteInfoBarDelegate* DownloadOverwriteInfoBar::GetDelegate() {
