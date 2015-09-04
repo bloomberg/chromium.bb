@@ -7,7 +7,6 @@
 #include <iostream>
 
 #include "base/base64.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -25,7 +24,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -513,12 +511,8 @@ void BlinkTestController::OnTestFinished() {
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
   main_window_->web_contents()->ExitFullscreen();
-
-  ShellBrowserContext* browser_context =
-      ShellContentBrowserClient::Get()->browser_context();
-  StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(browser_context, nullptr);
-  storage_partition->GetServiceWorkerContext()->ClearAllServiceWorkersForTest(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
       base::Bind(base::IgnoreResult(&BlinkTestController::Send),
                  base::Unretained(this),
                  new ShellViewMsg_Reset(render_view_host->GetRoutingID())));

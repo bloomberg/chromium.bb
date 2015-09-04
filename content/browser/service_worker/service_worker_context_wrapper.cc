@@ -446,22 +446,6 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
                  this, net::SimplifyUrlForRequest(other_url), callback));
 }
 
-void ServiceWorkerContextWrapper::ClearAllServiceWorkersForTest(
-    const base::Closure& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ServiceWorkerContextWrapper::ClearAllServiceWorkersForTest,
-                   this, callback));
-    return;
-  }
-  if (!context_core_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-    return;
-  }
-  context_core_->ClearAllServiceWorkersForTest(callback);
-}
-
 ServiceWorkerRegistration* ServiceWorkerContextWrapper::GetLiveRegistration(
     int64_t registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

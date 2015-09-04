@@ -90,7 +90,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& url,
       const GURL& other_url,
       const CheckHasServiceWorkerCallback& callback) override;
-  void ClearAllServiceWorkersForTest(const base::Closure& callback) override;
 
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
   ServiceWorkerVersion* GetLiveVersion(int64_t version_id);
