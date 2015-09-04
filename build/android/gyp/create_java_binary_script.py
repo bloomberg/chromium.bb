@@ -30,6 +30,7 @@ import sys
 
 self_dir = os.path.dirname(__file__)
 classpath = [{classpath}]
+extra_args = {extra_args}
 if os.getcwd() != self_dir:
   offset = os.path.relpath(self_dir, os.getcwd())
   classpath = [os.path.join(offset, p) for p in classpath]
@@ -37,7 +38,7 @@ java_args = [
   "java",
   "-classpath", ":".join(classpath),
   "-enableassertions",
-  \"{main_class}\"] + sys.argv[1:]
+  \"{main_class}\"] + extra_args + sys.argv[1:]
 os.execvp("java", java_args)
 """
 
@@ -51,7 +52,7 @@ def main(argv):
       help='Name of the java class with the "main" entry point.')
   parser.add_option('--classpath', action='append',
       help='Classpath for running the jar.')
-  options, _ = parser.parse_args(argv)
+  options, extra_args = parser.parse_args(argv)
 
   classpath = [options.jar_path]
   for cp_arg in options.classpath:
@@ -63,7 +64,8 @@ def main(argv):
   with open(options.output, 'w') as script:
     script.write(script_template.format(
       classpath=('"%s"' % '", "'.join(classpath)),
-      main_class=options.main_class))
+      main_class=options.main_class,
+      extra_args=repr(extra_args)))
 
   os.chmod(options.output, 0750)
 

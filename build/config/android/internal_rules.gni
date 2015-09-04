@@ -121,6 +121,14 @@ template("findbugs") {
 }
 
 # Generates a script in the output bin.java directory to run a java binary.
+#
+# Variables
+#   main_class: The class containing the progam entry point.
+#   jar_path: The path to the jar to run.
+#   script_name: Name of the script to generate.
+#   build_config: Path to .build_config for the jar (contains classpath).
+#   wrapper_script_args: List of extra arguments to pass to the executable.
+#
 template("java_binary_script") {
   set_sources_assignment_filter([])
   forward_variables_from(invoker, [ "testonly" ])
@@ -154,6 +162,9 @@ template("java_binary_script") {
       "--main-class",
       _main_class,
     ]
+    if (defined(invoker.wrapper_script_args)) {
+      args += [ "--" ] + invoker.wrapper_script_args
+    }
   }
 }
 
@@ -1272,9 +1283,13 @@ template("java_library_impl") {
   if (defined(invoker.main_class)) {
     _final_datadeps += [ ":${_template_name}__java_binary_script" ]
     java_binary_script("${_template_name}__java_binary_script") {
+      forward_variables_from(invoker,
+                             [
+                               "main_class",
+                               "wrapper_script_args",
+                             ])
       build_config = _build_config
       jar_path = _jar_path
-      main_class = invoker.main_class
       script_name = _template_name
       deps = build_config_deps
     }

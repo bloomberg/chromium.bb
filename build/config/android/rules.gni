@@ -796,19 +796,20 @@ template("java_strings_grd_prebuilt") {
 # Variables
 #   deps: Specifies the dependencies of this target. Java targets in this list
 #     will be included in the executable (and the javac classpath).
-#
 #   java_files: List of .java files included in this library.
 #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
 #     will be added to java_files and be included in this library.
 #   srcjars: List of srcjars to be included in this library, together with the
 #     ones obtained from srcjar_deps.
-#
 #   bypass_platform_checks: Disables checks about cross-platform (Java/Android)
 #     dependencies for this target. This will allow depending on an
 #     android_library target, for example.
-#
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   enable_errorprone: If true, enables the errorprone compiler.
+#   main_class: When specified, a wrapper script is created within
+#     $target_out_dir/bin to launch the binary with the given class as the
+#     entrypoint.
+#   wrapper_script_args: List of additional arguments for the wrapper script.
 #
 #   data_deps, testonly
 #
@@ -860,6 +861,10 @@ template("junit_binary") {
     forward_variables_from(invoker, "*")
     bypass_platform_checks = true
     main_class = "org.chromium.testing.local.JunitTestMain"
+    wrapper_script_args = [
+      "-test-jars",
+      "$target_name.jar",
+    ]
     testonly = true
 
     deps += [
