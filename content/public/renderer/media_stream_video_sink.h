@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_sink.h"
 #include "media/base/video_capturer_source.h"
 
@@ -18,9 +19,6 @@ class WebMediaStreamTrack;
 }
 
 namespace content {
-
-typedef media::VideoCapturerSource::VideoCaptureDeliverFrameCB
-    VideoCaptureDeliverFrameCB;
 
 // MediaStreamVideoSink is an interface used for receiving video frames from a
 // Video Stream Track or a Video Source.

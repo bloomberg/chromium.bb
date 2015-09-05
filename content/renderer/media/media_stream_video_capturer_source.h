@@ -11,103 +11,48 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/media_stream_video_source.h"
-#include "media/base/video_capturer_source.h"
+
+namespace media{
+class VideoCapturerSource;
+}  // namespace media
 
 namespace content {
 
-// VideoCapturerDelegate is a delegate used by MediaStreamVideoCapturerSource
-// for local video capturer. It uses VideoCaptureImplManager to start / stop
-// and receive I420 frames from Chrome's video capture implementation.
-//
-// This is a render thread only object.
-
-class CONTENT_EXPORT VideoCapturerDelegate : public media::VideoCapturerSource {
- public:
-  explicit VideoCapturerDelegate(const StreamDeviceInfo& device_info);
-  ~VideoCapturerDelegate() override;
-
-  // Allows the user to Override default power line frequency.
-  static const char kPowerLineFrequency[];
-
-  // VideoCaptureDelegate Implementation.
-  void GetCurrentSupportedFormats(
-      int max_requested_width,
-      int max_requested_height,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) override;
-
-  void StartCapture(
-      const media::VideoCaptureParams& params,
-      const VideoCaptureDeliverFrameCB& new_frame_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> frame_callback_task_runner,
-      const RunningCallback& running_callback) override;
-
-  void StopCapture() override;
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest, Ended);
-  friend class MockVideoCapturerDelegate;
-
-  void OnStateUpdate(VideoCaptureState state);
-  void OnDeviceFormatsInUseReceived(const media::VideoCaptureFormats& formats);
-  void OnDeviceSupportedFormatsEnumerated(
-      const media::VideoCaptureFormats& formats);
-
-  // The id identifies which video capture device is used for this video
-  // capture session.
-  const media::VideoCaptureSessionId session_id_;
-  base::Closure release_device_cb_;
-  base::Closure stop_capture_cb_;
-
-  const bool is_screen_cast_;
-
-  // |running_callback| is provided to this class in StartCapture and must be
-  // valid until StopCapture is called.
-  RunningCallback running_callback_;
-
-  VideoCaptureDeviceFormatsCB source_formats_callback_;
-
-  // Bound to the render thread.
-  base::ThreadChecker thread_checker_;
-
-  base::WeakPtrFactory<VideoCapturerDelegate> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoCapturerDelegate);
-};
-
-// Owned by WebMediaStreamSource in Blink as a representation of a video
-// stream coming from a camera.
-// This is a render thread only object. All methods must be called on the
-// render thread.
+// Representation of a video stream coming from a camera, owned by Blink as
+// WebMediaStreamSource. Objects of this class are created and live on main
+// Render thread. Objects can be constructed either by indicating a |device| to
+// look for, or by plugging in a |source| constructed elsewhere.
 class CONTENT_EXPORT MediaStreamVideoCapturerSource
     : public MediaStreamVideoSource {
  public:
-  MediaStreamVideoCapturerSource(
-      const SourceStoppedCallback& stop_callback,
-      scoped_ptr<media::VideoCapturerSource> delegate);
+  MediaStreamVideoCapturerSource(const SourceStoppedCallback& stop_callback,
+                                 scoped_ptr<media::VideoCapturerSource> source);
+  MediaStreamVideoCapturerSource(const SourceStoppedCallback& stop_callback,
+                                 const StreamDeviceInfo& device_info);
   virtual ~MediaStreamVideoCapturerSource();
 
-  void SetDeviceInfo(const StreamDeviceInfo& device_info);
+ private:
+  friend class MediaStreamVideoCapturerSourceTest;
 
- protected:
   // Implements MediaStreamVideoSource.
   void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
       double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) override;
-
   void StartSourceImpl(
       const media::VideoCaptureFormat& format,
       const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) override;
-
   void StopSourceImpl() override;
 
- private:
+  // Method to bind as RunningCallback in VideoCapturerSource::StartCapture().
   void OnStarted(bool result);
-  // The delegate that provides video frames.
-  const scoped_ptr<media::VideoCapturerSource> delegate_;
+
+  const char* GetPowerLineFrequencyForTesting() const;
+
+  // The source that provides video frames.
+  const scoped_ptr<media::VideoCapturerSource> source_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoCapturerSource);
 };

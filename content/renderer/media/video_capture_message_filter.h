@@ -18,6 +18,7 @@
 #include "content/common/media/video_capture.h"
 #include "ipc/message_filter.h"
 #include "media/base/video_capture_types.h"
+#include "media/base/video_frame.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 struct VideoCaptureMsg_BufferReady_Params;

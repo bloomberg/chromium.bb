@@ -19,6 +19,10 @@
 
 class GURL;
 
+namespace media {
+class VideoFrame;
+}  // namespace media
+
 namespace content {
 class PepperMediaDeviceManager;
 class PepperVideoCaptureHost;

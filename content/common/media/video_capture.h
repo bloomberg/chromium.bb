@@ -7,16 +7,21 @@
 #ifndef CONTENT_COMMON_MEDIA_VIDEO_CAPTURE_H_
 #define CONTENT_COMMON_MEDIA_VIDEO_CAPTURE_H_
 
-#include "base/time/time.h"
+#include "base/callback.h"
 #include "media/base/video_capture_types.h"
-#include "media/base/video_frame.h"
+#include "media/base/video_capturer_source.h"
 
 namespace content {
 
-// Current status of the video capture device. It's used by multiple classes
-// in browser process and renderer process.
-// Browser process sends information about the current capture state and
-// error to the renderer process using this type.
+using VideoCaptureDeviceFormatsCB =
+    media::VideoCapturerSource::VideoCaptureDeviceFormatsCB;
+
+using VideoCaptureDeliverFrameCB =
+    media::VideoCapturerSource::VideoCaptureDeliverFrameCB;
+
+// Current status of the video capture device. It's used by multiple classes in
+// browser process and renderer process. Browser process sends information about
+// the current capture state and error to the renderer process using this type.
 enum VideoCaptureState {
   VIDEO_CAPTURE_STATE_STARTED,
   VIDEO_CAPTURE_STATE_PAUSED,
@@ -26,10 +31,7 @@ enum VideoCaptureState {
   VIDEO_CAPTURE_STATE_LAST = VIDEO_CAPTURE_STATE_ENDED
 };
 
-typedef base::Callback<void(VideoCaptureState)>
-    VideoCaptureStateUpdateCB;
-typedef base::Callback<void(const media::VideoCaptureFormats&)>
-    VideoCaptureDeviceFormatsCB;
+using VideoCaptureStateUpdateCB = base::Callback<void(VideoCaptureState)>;
 
 }  // namespace content
 

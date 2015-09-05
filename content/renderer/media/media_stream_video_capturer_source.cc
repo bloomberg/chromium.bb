@@ -14,13 +14,10 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
+#include "media/base/video_capturer_source.h"
 #include "media/base/video_frame.h"
 
 namespace content {
-
-// Allows the user to Override default power line frequency.
-const char VideoCapturerDelegate::kPowerLineFrequency[] =
-    "googPowerLineFrequency";
 
 namespace {
 
@@ -41,6 +38,9 @@ const int kVideoFrameRates[] = {30, 60};
 
 // Hard upper-bound frame rate for tab/desktop capture.
 const double kMaxScreenCastFrameRate = 120.0;
+
+// Allows the user to Override default power line frequency.
+const char kPowerLineFrequency[] = "googPowerLineFrequency";
 
 // Returns true if the value for width or height is reasonable.
 bool DimensionValueIsValid(int x) {
@@ -63,9 +63,15 @@ bool AreNearlyEquivalentInAspectRatio(const gfx::Size& a, const gfx::Size& b) {
   return aspect_ratio_a == aspect_ratio_b;
 }
 
+// Checks if |device_info|s type is a generated content, e.g. Tab or Desktop.
+bool IsContentVideoCaptureDevice(const StreamDeviceInfo& device_info) {
+  return device_info.device.type == MEDIA_TAB_VIDEO_CAPTURE ||
+         device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
+}
+
 // Interprets the properties in |constraints| to override values in |params| and
 // determine the resolution change policy.
-void SetScreenCastParamsFromConstraints(
+void SetContentCaptureParamsFromConstraints(
     const blink::WebMediaConstraints& constraints,
     MediaStreamType type,
     media::VideoCaptureParams* params) {
@@ -164,7 +170,7 @@ void SetScreenCastParamsFromConstraints(
     }
   }
 
-  DVLOG(1) << "SetScreenCastParamsFromConstraints: "
+  DVLOG(1) << __FUNCTION__ << " "
            << media::VideoCaptureFormat::ToString(params->requested_format)
            << " with resolution change policy "
            << params->resolution_change_policy;
@@ -177,8 +183,8 @@ void SetPowerLineFrequencyParamFromConstraints(
     media::VideoCaptureParams* params) {
   int freq;
   params->power_line_frequency = media::PowerLineFrequency::FREQUENCY_DEFAULT;
-  if (!GetOptionalConstraintValueAsInteger(
-          constraints, VideoCapturerDelegate::kPowerLineFrequency, &freq)) {
+  if (!GetOptionalConstraintValueAsInteger(constraints, kPowerLineFrequency,
+                                           &freq)) {
     return;
   }
   if (freq == static_cast<int>(media::PowerLineFrequency::FREQUENCY_50HZ))
@@ -187,46 +193,87 @@ void SetPowerLineFrequencyParamFromConstraints(
     params->power_line_frequency = media::PowerLineFrequency::FREQUENCY_60HZ;
 }
 
+// LocalVideoCapturerSource is a delegate used by MediaStreamVideoCapturerSource
+// for local video capture. It uses the Render singleton VideoCaptureImplManager
+// to start / stop and receive I420 frames from Chrome's video capture
+// implementation. This is a main Render thread only object.
+class LocalVideoCapturerSource final : public media::VideoCapturerSource {
+ public:
+  explicit LocalVideoCapturerSource(const StreamDeviceInfo& device_info);
+  ~LocalVideoCapturerSource() override;
+
+  // VideoCaptureDelegate Implementation.
+  void GetCurrentSupportedFormats(
+      int max_requested_width,
+      int max_requested_height,
+      double max_requested_frame_rate,
+      const VideoCaptureDeviceFormatsCB& callback) override;
+  void StartCapture(const media::VideoCaptureParams& params,
+                    const VideoCaptureDeliverFrameCB& new_frame_callback,
+                    const RunningCallback& running_callback) override;
+  void StopCapture() override;
+
+ private:
+  void OnStateUpdate(VideoCaptureState state);
+  void OnDeviceFormatsInUseReceived(const media::VideoCaptureFormats& formats);
+  void OnDeviceSupportedFormatsEnumerated(
+      const media::VideoCaptureFormats& formats);
+
+  // |session_id_| identifies the capture device used for this capture session.
+  const media::VideoCaptureSessionId session_id_;
+
+  VideoCaptureImplManager* const manager_;
+
+  const base::Closure release_device_cb_;
+
+  // Indicates if we are capturing generated content, e.g. Tab or Desktop.
+  const bool is_content_capture_;
+
+  // These two are valid between StartCapture() and StopCapture().
+  base::Closure stop_capture_cb_;
+  RunningCallback running_callback_;
+
+  // Placeholder keeping the callback between asynchronous device enumeration
+  // calls.
+  VideoCaptureDeviceFormatsCB formats_enumerated_callback_;
+
+  // Bound to the main render thread.
+  base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<LocalVideoCapturerSource> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalVideoCapturerSource);
+};
+
 }  // namespace
 
-VideoCapturerDelegate::VideoCapturerDelegate(
+LocalVideoCapturerSource::LocalVideoCapturerSource(
     const StreamDeviceInfo& device_info)
     : session_id_(device_info.session_id),
-      is_screen_cast_(device_info.device.type == MEDIA_TAB_VIDEO_CAPTURE ||
-                      device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE),
+      manager_(RenderThreadImpl::current()->video_capture_impl_manager()),
+      release_device_cb_(manager_->UseDevice(session_id_)),
+      is_content_capture_(IsContentVideoCaptureDevice(device_info)),
       weak_factory_(this) {
-  DVLOG(3) << "VideoCapturerDelegate::ctor";
-
-  // NULL in unit test.
-  if (RenderThreadImpl::current()) {
-    VideoCaptureImplManager* manager =
-        RenderThreadImpl::current()->video_capture_impl_manager();
-    if (manager)
-      release_device_cb_ = manager->UseDevice(session_id_);
-  }
+  DCHECK(RenderThreadImpl::current());
 }
 
-VideoCapturerDelegate::~VideoCapturerDelegate() {
+LocalVideoCapturerSource::~LocalVideoCapturerSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(3) << "VideoCapturerDelegate::dtor";
-  if (!release_device_cb_.is_null())
-    release_device_cb_.Run();
+  release_device_cb_.Run();
 }
 
-void VideoCapturerDelegate::GetCurrentSupportedFormats(
+void LocalVideoCapturerSource::GetCurrentSupportedFormats(
     int max_requested_width,
     int max_requested_height,
     double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
-  DVLOG(3)
-      << "GetCurrentSupportedFormats("
-      << " { max_requested_height = " << max_requested_height << "})"
-      << " { max_requested_width = " << max_requested_width << "})"
-      << " { max_requested_frame_rate = " << max_requested_frame_rate << "})";
+  DVLOG(3) << "GetCurrentSupportedFormats({ max_requested_height = "
+           << max_requested_height << "}) { max_requested_width = "
+           << max_requested_width << "}) { max_requested_frame_rate = "
+           << max_requested_frame_rate << "})";
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  // RenderThreadImpl will be NULL in unit test, but should still behave
-  // reasonably even if |is_screen_cast_| is not set.
-  if (is_screen_cast_ || !RenderThreadImpl::current()) {
+  if (is_content_capture_) {
     const int width = max_requested_width ?
         max_requested_width : MediaStreamVideoSource::kDefaultWidth;
     const int height = max_requested_height ?
@@ -240,148 +287,116 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
     return;
   }
 
-  VideoCaptureImplManager* const manager =
-      RenderThreadImpl::current()->video_capture_impl_manager();
-  if (!manager)
-    return;
-  DCHECK(source_formats_callback_.is_null());
-  source_formats_callback_ = callback;
-  manager->GetDeviceFormatsInUse(
-      session_id_,
-      media::BindToCurrentLoop(
-          base::Bind(
-              &VideoCapturerDelegate::OnDeviceFormatsInUseReceived,
-              weak_factory_.GetWeakPtr())));
+  DCHECK(formats_enumerated_callback_.is_null());
+  formats_enumerated_callback_ = callback;
+  manager_->GetDeviceFormatsInUse(
+      session_id_, media::BindToCurrentLoop(base::Bind(
+                       &LocalVideoCapturerSource::OnDeviceFormatsInUseReceived,
+                       weak_factory_.GetWeakPtr())));
 }
 
-void VideoCapturerDelegate::StartCapture(
+void LocalVideoCapturerSource::StartCapture(
     const media::VideoCaptureParams& params,
     const VideoCaptureDeliverFrameCB& new_frame_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> frame_callback_task_runner,
     const RunningCallback& running_callback) {
   DCHECK(params.requested_format.IsValid());
   DCHECK(thread_checker_.CalledOnValidThread());
   running_callback_ = running_callback;
 
-  // NULL in unit test.
-  if (!RenderThreadImpl::current())
-    return;
-  VideoCaptureImplManager* const manager =
-      RenderThreadImpl::current()->video_capture_impl_manager();
-  if (!manager)
-    return;
-  if (frame_callback_task_runner !=
-      RenderThreadImpl::current()->GetIOMessageLoopProxy()) {
-    DCHECK(false) << "Only IO thread supported right now.";
-    running_callback.Run(false);
-    return;
-  }
-
-  stop_capture_cb_ =
-      manager->StartCapture(
-          session_id_,
-    params,
-    media::BindToCurrentLoop(base::Bind(
-              &VideoCapturerDelegate::OnStateUpdate,
-        weak_factory_.GetWeakPtr())),
-          new_frame_callback);
+  stop_capture_cb_ = manager_->StartCapture(
+      session_id_, params, media::BindToCurrentLoop(base::Bind(
+                               &LocalVideoCapturerSource::OnStateUpdate,
+                               weak_factory_.GetWeakPtr())),
+      new_frame_callback);
 }
 
-void VideoCapturerDelegate::StopCapture() {
+void LocalVideoCapturerSource::StopCapture() {
+  DVLOG(3) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Immediately make sure we don't provide more frames.
-  DVLOG(3) << "VideoCapturerDelegate::StopCapture()";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!stop_capture_cb_.is_null()) {
+  if (!stop_capture_cb_.is_null())
     base::ResetAndReturn(&stop_capture_cb_).Run();
-  }
   running_callback_.Reset();
-  source_formats_callback_.Reset();
+  // Invalidate any potential format enumerations going on.
+  formats_enumerated_callback_.Reset();
 }
 
-void VideoCapturerDelegate::OnStateUpdate(
-    VideoCaptureState state) {
+void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
+  DVLOG(3) << __FUNCTION__ << " state = " << state;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(3) << "OnStateUpdate state = " << state;
-  if (state == VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
-    running_callback_.Run(true);
+  if (running_callback_.is_null())
     return;
-  }
-  if (state > VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
-    base::ResetAndReturn(&running_callback_).Run(false);
-  }
+  const bool is_started_ok = state == VIDEO_CAPTURE_STATE_STARTED;
+  running_callback_.Run(is_started_ok);
+  if (!is_started_ok)
+    running_callback_.Reset();
 }
 
-void VideoCapturerDelegate::OnDeviceFormatsInUseReceived(
+void LocalVideoCapturerSource::OnDeviceFormatsInUseReceived(
     const media::VideoCaptureFormats& formats_in_use) {
-  DVLOG(3) << "OnDeviceFormatsInUseReceived: " << formats_in_use.size();
+  DVLOG(3) << __FUNCTION__ << ", #formats received: " << formats_in_use.size();
   DCHECK(thread_checker_.CalledOnValidThread());
-  // StopCapture() might have destroyed |source_formats_callback_| before
+  // StopCapture() might have destroyed |formats_enumerated_callback_| before
   // arriving here.
-  if (source_formats_callback_.is_null())
+  if (formats_enumerated_callback_.is_null())
     return;
-  // If there are no formats in use, try to retrieve the whole list of
-  // supported form.
-  if (!formats_in_use.empty()) {
-    source_formats_callback_.Run(formats_in_use);
-    source_formats_callback_.Reset();
+  if (formats_in_use.size()) {
+    base::ResetAndReturn(&formats_enumerated_callback_).Run(formats_in_use);
     return;
   }
 
-  // NULL in unit test.
-  if (!RenderThreadImpl::current())
-    return;
-  VideoCaptureImplManager* const manager =
-      RenderThreadImpl::current()->video_capture_impl_manager();
-  if (!manager)
-    return;
-
-  manager->GetDeviceSupportedFormats(
+  // The device doesn't seem to have formats in use so try and retrieve the
+  // whole list of supported ones.
+  manager_->GetDeviceSupportedFormats(
       session_id_,
       media::BindToCurrentLoop(
           base::Bind(
-              &VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated,
+              &LocalVideoCapturerSource::OnDeviceSupportedFormatsEnumerated,
               weak_factory_.GetWeakPtr())));
 }
 
-void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
+void LocalVideoCapturerSource::OnDeviceSupportedFormatsEnumerated(
     const media::VideoCaptureFormats& formats) {
-  DVLOG(3) << "OnDeviceSupportedFormatsEnumerated: " << formats.size()
-           << " received";
+  DVLOG(3) << __FUNCTION__ << ", #formats received: " << formats.size();
   DCHECK(thread_checker_.CalledOnValidThread());
-  // StopCapture() might have destroyed |source_formats_callback_| before
+  // StopCapture() might have destroyed |formats_enumerated_callback_| before
   // arriving here.
-  if (source_formats_callback_.is_null())
+  if (formats_enumerated_callback_.is_null())
     return;
   if (formats.size()) {
-    base::ResetAndReturn(&source_formats_callback_).Run(formats);
-  } else {
-    // The capture device doesn't seem to support capability enumeration,
-    // compose a fallback list of capabilities.
-    media::VideoCaptureFormats default_formats;
-    for (const auto& resolution : kVideoResolutions) {
-      for (const auto frame_rate : kVideoFrameRates) {
-        default_formats.push_back(media::VideoCaptureFormat(
-            gfx::Size(resolution.width, resolution.height), frame_rate,
-            media::PIXEL_FORMAT_I420));
-      }
-    }
-    base::ResetAndReturn(&source_formats_callback_).Run(default_formats);
+    base::ResetAndReturn(&formats_enumerated_callback_).Run(formats);
+    return;
   }
+
+  // The capture device doesn't seem to support capability enumeration, compose
+  // a fallback list of capabilities.
+  media::VideoCaptureFormats default_formats;
+  for (const auto& resolution : kVideoResolutions) {
+    for (const auto frame_rate : kVideoFrameRates) {
+      default_formats.push_back(media::VideoCaptureFormat(
+          gfx::Size(resolution.width, resolution.height), frame_rate,
+          media::PIXEL_FORMAT_I420));
+    }
+  }
+  base::ResetAndReturn(&formats_enumerated_callback_).Run(default_formats);
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
-    scoped_ptr<media::VideoCapturerSource> delegate)
-    : delegate_(delegate.Pass()) {
+    scoped_ptr<media::VideoCapturerSource> source)
+    : source_(source.Pass()) {
   SetStopCallback(stop_callback);
 }
 
-MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
+MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
+    const SourceStoppedCallback& stop_callback,
+    const StreamDeviceInfo& device_info)
+    : source_(new LocalVideoCapturerSource(device_info)) {
+  SetStopCallback(stop_callback);
+  SetDeviceInfo(device_info);
 }
 
-void MediaStreamVideoCapturerSource::SetDeviceInfo(
-    const StreamDeviceInfo& device_info) {
-  MediaStreamVideoSource::SetDeviceInfo(device_info);
+MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
 }
 
 void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
@@ -389,7 +404,7 @@ void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
     int max_requested_height,
     double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
-  delegate_->GetCurrentSupportedFormats(
+  source_->GetCurrentSupportedFormats(
       max_requested_width,
       max_requested_height,
       max_requested_frame_rate,
@@ -402,30 +417,30 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
   media::VideoCaptureParams new_params;
   new_params.requested_format = format;
-  if (device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
-      device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    SetScreenCastParamsFromConstraints(
+  if (IsContentVideoCaptureDevice(device_info())) {
+    SetContentCaptureParamsFromConstraints(
         constraints, device_info().device.type, &new_params);
   } else if (device_info().device.type == MEDIA_DEVICE_VIDEO_CAPTURE) {
     SetPowerLineFrequencyParamFromConstraints(constraints, &new_params);
   }
 
-  delegate_->StartCapture(
-      new_params,
-      frame_callback,
-      RenderThreadImpl::current() ?
-      RenderThreadImpl::current()->GetIOMessageLoopProxy() :
-      nullptr,
-      base::Bind(&MediaStreamVideoCapturerSource::OnStarted,
-                 base::Unretained(this)));
+  source_->StartCapture(new_params,
+                          frame_callback,
+                          base::Bind(&MediaStreamVideoCapturerSource::OnStarted,
+                                     base::Unretained(this)));
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
-  delegate_->StopCapture();
+  source_->StopCapture();
 }
 
 void MediaStreamVideoCapturerSource::OnStarted(bool result) {
   OnStartDone(result ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE);
+}
+
+const char*
+MediaStreamVideoCapturerSource::GetPowerLineFrequencyForTesting() const {
+  return kPowerLineFrequency;
 }
 
 }  // namespace content
