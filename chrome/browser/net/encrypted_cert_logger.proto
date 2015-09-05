@@ -5,7 +5,7 @@
 
 syntax = "proto2";
 
-package certificate_reporting;
+package chrome_browser_net;
 
 // Chrome requires this.
 option optimize_for = LITE_RUNTIME;

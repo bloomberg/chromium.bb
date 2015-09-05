@@ -16,7 +16,6 @@
     'bookmarks.gypi',
     'bubble.gypi',
     'captive_portal.gypi',
-    'certificate_reporting.gypi',
     'cloud_devices.gypi',
     'component_updater.gypi',
     'compression.gypi',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/certificate_reporting/error_reporter.h"
+#include "chrome/browser/net/certificate_error_reporter.h"
 
 #include <set>
 #include <string>
@@ -10,12 +10,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "components/certificate_reporting/encrypted_cert_logger.pb.h"
+#include "chrome/browser/net/encrypted_cert_logger.pb.h"
+#include "chrome/common/chrome_paths.h"
 #include "crypto/curve25519.h"
 #include "net/url_request/certificate_report_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace certificate_reporting {
+using chrome_browser_net::CertificateErrorReporter;
 
 namespace {
 
@@ -48,56 +49,57 @@ class MockCertificateReportSender : public net::CertificateReportSender {
   DISALLOW_COPY_AND_ASSIGN(MockCertificateReportSender);
 };
 
-class ErrorReporterTest : public ::testing::Test {
+class CertificateErrorReporterTest : public ::testing::Test {
  public:
-  ErrorReporterTest() {
+  CertificateErrorReporterTest() {
     memset(server_private_key_, 1, sizeof(server_private_key_));
     crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
   }
 
-  ~ErrorReporterTest() override {}
+  ~CertificateErrorReporterTest() override {}
 
  protected:
   uint8_t server_public_key_[32];
   uint8_t server_private_key_[32];
 };
 
-// Test that ErrorReporter::SendExtendedReportingReport sends
+// Test that CertificateErrorReporter::SendExtendedReportingReport sends
 // an encrypted or plaintext extended reporting report as appropriate.
-TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
+TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReport) {
   // Data should not be encrypted when sent to an HTTPS URL.
   MockCertificateReportSender* mock_report_sender =
       new MockCertificateReportSender();
   GURL https_url(kDummyHttpsReportUri);
-  ErrorReporter https_reporter(https_url, server_public_key_,
-                               kServerPublicKeyTestVersion,
-                               make_scoped_ptr(mock_report_sender));
+  CertificateErrorReporter https_reporter(https_url, server_public_key_,
+                                          kServerPublicKeyTestVersion,
+                                          make_scoped_ptr(mock_report_sender));
   https_reporter.SendExtendedReportingReport(kDummyReport);
   EXPECT_EQ(mock_report_sender->latest_report_uri(), https_url);
   EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
 
   // Data should be encrypted when sent to an HTTP URL.
-  if (ErrorReporter::IsHttpUploadUrlSupported()) {
+  if (CertificateErrorReporter::IsHttpUploadUrlSupported()) {
     MockCertificateReportSender* http_mock_report_sender =
         new MockCertificateReportSender();
     GURL http_url(kDummyHttpReportUri);
-    ErrorReporter http_reporter(http_url, server_public_key_,
-                                kServerPublicKeyTestVersion,
-                                make_scoped_ptr(http_mock_report_sender));
+    CertificateErrorReporter http_reporter(
+        http_url, server_public_key_, kServerPublicKeyTestVersion,
+        make_scoped_ptr(http_mock_report_sender));
     http_reporter.SendExtendedReportingReport(kDummyReport);
 
     EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
 
     std::string uploaded_report;
 #if defined(USE_OPENSSL)
-    EncryptedCertLoggerRequest encrypted_request;
+    chrome_browser_net::EncryptedCertLoggerRequest encrypted_request;
     ASSERT_TRUE(encrypted_request.ParseFromString(
         http_mock_report_sender->latest_report()));
     EXPECT_EQ(kServerPublicKeyTestVersion,
               encrypted_request.server_public_key_version());
-    EXPECT_EQ(EncryptedCertLoggerRequest::AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
+    EXPECT_EQ(chrome_browser_net::EncryptedCertLoggerRequest::
+                  AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
               encrypted_request.algorithm());
-    ASSERT_TRUE(ErrorReporter::DecryptErrorReport(
+    ASSERT_TRUE(CertificateErrorReporter::DecryptCertificateErrorReport(
         server_private_key_, encrypted_request, &uploaded_report));
 #else
     ADD_FAILURE() << "Only supported in OpenSSL ports";
@@ -112,7 +114,7 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
 // in order to catch changes in report encryption that could cause the
 // server to no longer be able to decrypt reports that it receives from
 // Chrome.
-TEST_F(ErrorReporterTest, DecryptExampleReport) {
+TEST_F(CertificateErrorReporterTest, DecryptExampleReport) {
   // This data should not be changed without also changing the
   // corresponding server-side test.
   const unsigned char kSerializedEncryptedReport[] = {
@@ -259,16 +261,16 @@ TEST_F(ErrorReporterTest, DecryptExampleReport) {
       0xA6, 0x2D, 0x00, 0xCC, 0xB5, 0x3B, 0x31, 0x2E, 0xB4, 0x30, 0xA5, 0x08,
       0x1A, 0x7D, 0x19, 0x81, 0xF0, 0x4D, 0x20, 0x01};
 
-  EncryptedCertLoggerRequest encrypted_request;
+  chrome_browser_net::EncryptedCertLoggerRequest encrypted_request;
   std::string decrypted_serialized_report;
   ASSERT_TRUE(encrypted_request.ParseFromString(
       std::string(reinterpret_cast<const char*>(kSerializedEncryptedReport),
                   sizeof(kSerializedEncryptedReport))));
-  ASSERT_TRUE(ErrorReporter::DecryptErrorReport(
-      server_private_key_, encrypted_request, &decrypted_serialized_report));
+  ASSERT_TRUE(
+      chrome_browser_net::CertificateErrorReporter::
+          DecryptCertificateErrorReport(server_private_key_, encrypted_request,
+                                        &decrypted_serialized_report));
 }
 #endif
 
 }  // namespace
-
-}  // namespace certificate_reporting

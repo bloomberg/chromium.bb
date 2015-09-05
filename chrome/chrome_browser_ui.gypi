@@ -2720,6 +2720,7 @@
       'dependencies': [
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
+        'cert_logger_proto',
         'chrome_browser_ui_views.gyp:browser_ui_views',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
@@ -2727,8 +2728,8 @@
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
         'common',
+        'encrypted_cert_logger_proto',
         '../components/components.gyp:auto_login_parser',
-        '../components/components.gyp:certificate_reporting',
         '../components/components.gyp:device_event_log_component',
         '../components/components.gyp:dom_distiller_core',
         '../components/components.gyp:dom_distiller_webui',

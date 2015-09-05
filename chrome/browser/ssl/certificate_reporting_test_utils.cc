@@ -16,22 +16,22 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
-#include "components/certificate_reporting/error_report.h"
-#include "components/certificate_reporting/error_reporter.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/url_request/certificate_report_sender.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using chrome_browser_net::CertificateErrorReporter;
+
 namespace {
 
-void SetMockReporter(
-    SafeBrowsingService* safe_browsing_service,
-    scoped_ptr<certificate_reporting::ErrorReporter> reporter) {
+void SetMockReporter(SafeBrowsingService* safe_browsing_service,
+                     scoped_ptr<CertificateErrorReporter> reporter) {
   safe_browsing_service->ping_manager()->SetCertificateErrorReporterForTesting(
       reporter.Pass());
 }
@@ -80,14 +80,14 @@ namespace certificate_reporting_test_utils {
 // most recent hostname for which an extended reporting report would
 // have been sent over the network.
 class CertificateReportingTest::MockReporter
-    : public certificate_reporting::ErrorReporter {
+    : public chrome_browser_net::CertificateErrorReporter {
  public:
   MockReporter(
       net::URLRequestContext* request_context,
       const GURL& upload_url,
       net::CertificateReportSender::CookiesPreference cookies_preference);
 
-  // ErrorReporter implementation.
+  // CertificateErrorReporter implementation.
   void SendExtendedReportingReport(
       const std::string& serialized_report) override;
 
@@ -107,13 +107,13 @@ CertificateReportingTest::MockReporter::MockReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
     net::CertificateReportSender::CookiesPreference cookies_preference)
-    : certificate_reporting::ErrorReporter(request_context,
-                                           upload_url,
-                                           cookies_preference) {}
+    : CertificateErrorReporter(request_context,
+                               upload_url,
+                               cookies_preference) {}
 
 void CertificateReportingTest::MockReporter::SendExtendedReportingReport(
     const std::string& serialized_report) {
-  certificate_reporting::ErrorReport report;
+  CertificateErrorReport report;
   ASSERT_TRUE(report.InitializeFromString(serialized_report));
   latest_hostname_reported_ = report.hostname();
 }
@@ -134,9 +134,9 @@ void CertificateReportingTest::SetUpMockReporter() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(SetMockReporter, safe_browsing_service,
-                 base::Passed(scoped_ptr<certificate_reporting::ErrorReporter>(
-                     reporter_))));
+      base::Bind(
+          SetMockReporter, safe_browsing_service,
+          base::Passed(scoped_ptr<CertificateErrorReporter>(reporter_))));
 }
 
 const std::string& CertificateReportingTest::GetLatestHostnameReported() const {

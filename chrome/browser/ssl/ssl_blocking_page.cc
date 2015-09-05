@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -149,10 +150,10 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
   metrics_helper()->RecordUserInteraction(
       security_interstitials::MetricsHelper::TOTAL_VISITS);
 
-  cert_report_helper_.reset(new CertReportHelper(
-      ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
-      certificate_reporting::ErrorReport::INTERSTITIAL_SSL, overridable_,
-      metrics_helper()));
+  cert_report_helper_.reset(
+      new CertReportHelper(ssl_cert_reporter.Pass(), web_contents, request_url,
+                           ssl_info, CertificateErrorReport::INTERSTITIAL_SSL,
+                           overridable_, metrics_helper()));
 
   ssl_error_classification_.reset(new SSLErrorClassification(
       web_contents,
@@ -383,7 +384,7 @@ void SSLBlockingPage::OnProceed() {
   // Finish collecting information about invalid certificates, if the
   // user opted in to.
   cert_report_helper_->FinishCertCollection(
-      certificate_reporting::ErrorReport::USER_PROCEEDED);
+      CertificateErrorReport::USER_PROCEEDED);
 
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed_, true, overridable_);
@@ -398,7 +399,7 @@ void SSLBlockingPage::OnDontProceed() {
   // Finish collecting information about invalid certificates, if the
   // user opted in to.
   cert_report_helper_->FinishCertCollection(
-      certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED);
+      CertificateErrorReport::USER_DID_NOT_PROCEED);
 
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed_, false, overridable_);

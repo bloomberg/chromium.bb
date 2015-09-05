@@ -1079,6 +1079,7 @@
         'attestation_proto',
         'browser/extensions/api/api_registration.gyp:chrome_api_registration',
         'browser_extensions',
+        'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:platform_locale_settings',
@@ -1088,6 +1089,7 @@
         'common_net',
         'debugger',
         'device_policy_proto',
+        'encrypted_cert_logger_proto',
         'installer_util',
         'safe_browsing_chunk_proto',
         'safe_browsing_proto',
@@ -1101,7 +1103,6 @@
         # browser_chromeos #includes power_supply_properties.pb.h directly.
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',
-        '../components/components.gyp:certificate_reporting',
         '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:drive',
         '../components/components.gyp:login',

@@ -8,8 +8,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/net/certificate_error_reporter.h"
 #include "chrome/common/env_vars.h"
-#include "components/certificate_reporting/error_reporter.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -21,6 +21,7 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
+using chrome_browser_net::CertificateErrorReporter;
 using content::BrowserThread;
 
 namespace {
@@ -56,7 +57,7 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
     // Set the upload URL and whether or not to send cookies with
     // certificate reports sent to Safe Browsing servers.
     bool use_insecure_certificate_upload_url =
-        certificate_reporting::ErrorReporter::IsHttpUploadUrlSupported();
+        CertificateErrorReporter::IsHttpUploadUrlSupported();
 
     net::CertificateReportSender::CookiesPreference cookies_preference;
     GURL certificate_upload_url;
@@ -68,7 +69,7 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
       certificate_upload_url = GURL(kExtendedReportingUploadUrlSecure);
     }
 
-    certificate_error_reporter_.reset(new certificate_reporting::ErrorReporter(
+    certificate_error_reporter_.reset(new CertificateErrorReporter(
         request_context_getter->GetURLRequestContext(), certificate_upload_url,
         cookies_preference));
   }
@@ -141,8 +142,7 @@ void SafeBrowsingPingManager::ReportInvalidCertificateChain(
 }
 
 void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(
-    scoped_ptr<certificate_reporting::ErrorReporter>
-        certificate_error_reporter) {
+    scoped_ptr<CertificateErrorReporter> certificate_error_reporter) {
   certificate_error_reporter_ = certificate_error_reporter.Pass();
 }
 

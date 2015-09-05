@@ -18,8 +18,8 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace certificate_reporting {
-class ErrorReporter;
+namespace chrome_browser_net {
+class CertificateErrorReporter;
 }
 
 namespace net {
@@ -59,9 +59,8 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   // certificate chains.
   void ReportInvalidCertificateChain(const std::string& serialized_report);
 
-  void SetCertificateErrorReporterForTesting(
-      scoped_ptr<certificate_reporting::ErrorReporter>
-          certificate_error_reporter);
+  void SetCertificateErrorReporterForTesting(scoped_ptr<
+      chrome_browser_net::CertificateErrorReporter> certificate_error_reporter);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest,
@@ -105,7 +104,8 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   Reports safebrowsing_reports_;
 
   // Sends reports of invalid SSL certificate chains.
-  scoped_ptr<certificate_reporting::ErrorReporter> certificate_error_reporter_;
+  scoped_ptr<chrome_browser_net::CertificateErrorReporter>
+      certificate_error_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPingManager);
 };
