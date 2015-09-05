@@ -4826,8 +4826,14 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_ESTONIA" desc="In the language menu button, this shows the input mode [Estonian keyboard].">
     Estonian
   </message>
+  <message name="IDS_STATUSBAR_LAYOUT_FAROESE" desc="In the language menu button, this shows the input mode [Faroese keyboard].">
+    Faroese
+  </message>
   <message name="IDS_STATUSBAR_LAYOUT_HUNGARY" desc="In the language menu button, this shows the input mode [Hungarian keyboard].">
     Hungarian
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_HUNGARY_QWERTY" desc="In the language menu button, this shows the input mode [Hungarian QWERTY keyboard].">
+    Hungarian QWERTY
   </message>
   <message name="IDS_STATUSBAR_LAYOUT_POLAND" desc="In the language menu button, this shows the input mode [Polish keyboard].">
     Polish
@@ -4927,6 +4933,9 @@ Battery full
   </message>
   <message name="IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN" desc="In the language menu button, this shows the input mode [Catalan keyboard].">
     Catalan
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_FRANCE_BEPO" desc="In the language menu button, this shows the input mode [French Bepo keyboard].">
+    French Bepo
   </message>
   <message name="IDS_STATUSBAR_LAYOUT_FRANCE" desc="In the language menu button, this shows the input mode [French keyboard].">
     French
@@ -5028,8 +5037,14 @@ Battery full
   <message name="IDS_IME_NAME_KEYBOARD_ESTONIAN" desc="The input method name shows in system tray menu, this shows [Estonian keyboard].">
     Estonian keyboard
   </message>
+  <message name="IDS_IME_NAME_KEYBOARD_FAROESE" desc="The input method name shows in system tray menu, this shows [Faroese keyboard].">
+    Faroese keyboard
+  </message>
   <message name="IDS_IME_NAME_KEYBOARD_FINNISH" desc="The input method name shows in system tray menu, this shows [Finnish keyboard].">
     Finnish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_FRENCH_BEPO" desc="The input method name shows in system tray menu, this shows [French Bepo keyboard].">
+    French Bepo keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_FRENCH" desc="The input method name shows in system tray menu, this shows [French keyboard].">
     French keyboard
@@ -5051,6 +5066,9 @@ Battery full
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_HUNGARIAN" desc="The input method name shows in system tray menu, this shows [Hungarian keyboard].">
     Hungarian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_HUNGARIAN_QWERTY" desc="The input method name shows in system tray menu, this shows [Hungarian QWERTY keyboard].">
+    Hungarian QWERTY keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_ICELANDIC" desc="The input method name shows in system tray menu, this shows [Icelandic keyboard].">
     Icelandic keyboard

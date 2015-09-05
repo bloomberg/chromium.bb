@@ -237,6 +237,21 @@
       "options_page": "hmm_options.html?code=xkb:fr::fra"
     },
     {
+      "name": "__MSG_keyboard_french_bepo__",
+      "type": "ime",
+      "id": "xkb:fr:bepo:fra",
+      "description": "",
+      "language": [
+        "fr",
+        "fr-FR"
+      ],
+      "layouts": [
+        "fr(bepo)"
+      ],
+      "input_view": "inputview.html#id=fr-bepo&language=fr&passwordLayout=fr-bepo&name=keyboard_french_bepo",
+      "options_page": "hmm_options.html?code=xkb:fr:bepo:fra"
+    },
+    {
       "name": "__MSG_keyboard_belgian__",
       "type": "ime",
       "id": "xkb:be::fra",
@@ -249,6 +264,20 @@
       ],
       "input_view": "inputview.html#id=be&language=fr&passwordLayout=be&name=keyboard_belgian",
       "options_page": "hmm_options.html?code=xkb:be::fra"
+    },
+    {
+      "name": "__MSG_keyboard_faroese__",
+      "type": "ime",
+      "id": "xkb:fo::fao",
+      "description": "",
+      "language": [
+        "fo"
+      ],
+      "layouts": [
+        "fo"
+      ],
+      "input_view": "inputview.html#id=fo&language=fo&passwordLayout=fo&name=keyboard_faroese",
+      "options_page": "hmm_options.html?code=xkb:fo::fao"
     },
     {
       "name": "__MSG_keyboard_canadian_french__",
@@ -686,6 +715,20 @@
       ],
       "input_view": "inputview.html#id=hu&language=hu&passwordLayout=hu&name=keyboard_hungarian",
       "options_page": "hmm_options.html?code=xkb:hu::hun"
+    },
+    {
+      "name": "__MSG_keyboard_hungarian_qwerty__",
+      "type": "ime",
+      "id": "xkb:hu:qwerty:hun",
+      "description": "",
+      "language": [
+        "hu"
+      ],
+      "layouts": [
+        "hu(qwerty)"
+      ],
+      "input_view": "inputview.html#id=hu-qwerty&language=hu&passwordLayout=hu-qwerty&name=keyboard_hungarian_qwerty",
+      "options_page": "hmm_options.html?code=xkb:hu:qwerty:hun"
     },
     {
       "name": "__MSG_keyboard_italian__",

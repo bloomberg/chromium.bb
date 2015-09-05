@@ -62558,6 +62558,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-69316526" label="fa-t-i0-und">Persian transliteration</int>
   <int value="2215666" label="xkb:jp::jpn">Japanese keyboard</int>
   <int value="28549849" label="xkb:pt::por">Portuguese keyboard</int>
+  <int value="60054916" label="xkb:fo::fao">Faroese keyboard</int>
   <int value="87135772" label="xkb:fr::fra">French keyboard</int>
   <int value="150803493" label="vkd_ta_phone">Tamil keyboard (Phonetic)</int>
   <int value="193122406" label="xkb:gr::gre">Greek keyboard</int>
@@ -62608,6 +62609,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1391164751" label="vkd_ne_phone">Nepali keyboard (Phonetic)</int>
   <int value="1409029247" label="xkb:ca::fra">Canadian French keyboard</int>
   <int value="1486336701" label="zh-hant-t-i0-und">Zhuyin input method</int>
+  <int value="1643737979" label="xkb:fr:bepo:fra">French Bepo keyboard</int>
   <int value="1683010298" label="xkb:is::ice">Icelandic keyboard</int>
   <int value="1698488657" label="ar-t-i0-und">Arabic transliteration</int>
   <int value="1718072990" label="xkb:us::eng">US keyboard</int>
@@ -62617,6 +62619,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1763643144" label="xkb:lt::lit">Lithuanian keyboard</int>
   <int value="1772226972" label="ur-t-i0-und">Urdu transliteration</int>
   <int value="1847701260" label="xkb:pl::pol">Polish keyboard</int>
+  <int value="1851658441" label="xkb:hu:qwerty:hun">
+    Hungarian QWERTY keyboard
+  </int>
   <int value="1882667893" label="xkb:us:colemak:eng">US Colemak keyboard</int>
   <int value="1925299009" label="xkb:br::por">Brazilian keyboard</int>
   <int value="1934249765" label="vkd_th_pattajoti">
