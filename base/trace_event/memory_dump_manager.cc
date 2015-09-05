@@ -38,23 +38,27 @@ namespace trace_event {
 
 namespace {
 
-// Throttle mmaps at a rate of once every kHeavyMmapsDumpsRate standard dumps.
-const int kHeavyDumpsRate = 8;  // 250 ms * 8 = 2000 ms.
-const int kDumpIntervalMs = 250;
 const int kTraceEventNumArgs = 1;
 const char* kTraceEventArgNames[] = {"dumps"};
 const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
 
 StaticAtomicSequenceNumber g_next_guid;
 uint32 g_periodic_dumps_count = 0;
+uint32 g_heavy_dumps_rate = 0;
 MemoryDumpManager* g_instance_for_testing = nullptr;
 
 void RequestPeriodicGlobalDump() {
-  MemoryDumpArgs::LevelOfDetail dump_level_of_detail =
-      g_periodic_dumps_count == 0 ? MemoryDumpArgs::LevelOfDetail::HIGH
-                                  : MemoryDumpArgs::LevelOfDetail::LOW;
-  if (++g_periodic_dumps_count == kHeavyDumpsRate)
-    g_periodic_dumps_count = 0;
+  MemoryDumpArgs::LevelOfDetail dump_level_of_detail;
+  if (g_heavy_dumps_rate == 0) {
+    dump_level_of_detail = MemoryDumpArgs::LevelOfDetail::LOW;
+  } else {
+    dump_level_of_detail = g_periodic_dumps_count == 0
+                               ? MemoryDumpArgs::LevelOfDetail::HIGH
+                               : MemoryDumpArgs::LevelOfDetail::LOW;
+
+    if (++g_periodic_dumps_count == g_heavy_dumps_rate)
+      g_periodic_dumps_count = 0;
+  }
 
   MemoryDumpArgs dump_args = {dump_level_of_detail};
   MemoryDumpManager::GetInstance()->RequestGlobalDump(
@@ -412,18 +416,44 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
   // TODO(primiano): This is a temporary hack to disable periodic memory dumps
-  // when running memory benchmarks until they can be enabled/disabled in
-  // base::trace_event::TraceConfig. See https://goo.gl/5Hj3o0.
+  // when running memory benchmarks until telemetry uses TraceConfig to
+  // enable/disable periodic dumps.
   // The same mechanism should be used to disable periodic dumps in tests.
-  if (delegate_->IsCoordinatorProcess() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          "enable-memory-benchmarking") &&
-      !disable_periodic_dumps_for_testing_) {
-    g_periodic_dumps_count = 0;
-    periodic_dump_timer_.Start(FROM_HERE,
-                               TimeDelta::FromMilliseconds(kDumpIntervalMs),
-                               base::Bind(&RequestPeriodicGlobalDump));
+  if (!delegate_->IsCoordinatorProcess() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          "enable-memory-benchmarking") ||
+      disable_periodic_dumps_for_testing_) {
+    return;
   }
+
+  // Enable periodic dumps. At the moment the periodic support is limited to at
+  // most one low-detail periodic dump and at most one high-detail periodic
+  // dump. If both are specified the high-detail period must be an integer
+  // multiple of the low-level one.
+  g_periodic_dumps_count = 0;
+  const TraceConfig trace_config =
+      TraceLog::GetInstance()->GetCurrentTraceConfig();
+  const TraceConfig::MemoryDumpConfig& config_list =
+      trace_config.memory_dump_config();
+  if (config_list.empty())
+    return;
+
+  uint32 min_timer_period_ms = std::numeric_limits<uint32>::max();
+  uint32 heavy_dump_period_ms = 0;
+  DCHECK_LE(config_list.size(), 2u);
+  for (const TraceConfig::MemoryDumpTriggerConfig& config : config_list) {
+    DCHECK(config.periodic_interval_ms);
+    if (config.level_of_detail == MemoryDumpArgs::LevelOfDetail::HIGH)
+      heavy_dump_period_ms = config.periodic_interval_ms;
+    min_timer_period_ms =
+        std::min(min_timer_period_ms, config.periodic_interval_ms);
+  }
+  DCHECK_EQ(0u, heavy_dump_period_ms % min_timer_period_ms);
+  g_heavy_dumps_rate = heavy_dump_period_ms / min_timer_period_ms;
+
+  periodic_dump_timer_.Start(FROM_HERE,
+                             TimeDelta::FromMilliseconds(min_timer_period_ms),
+                             base::Bind(&RequestPeriodicGlobalDump));
 }
 
 void MemoryDumpManager::OnTraceLogDisabled() {
