@@ -703,6 +703,9 @@ rpir_view_compute_rects(struct rpir_view *view,
 		struct weston_buffer *buffer =
 			view->surface->egl_front->buffer_ref.buffer;
 
+		if (!buffer)
+			return -1;
+
 		src_width = buffer->width << 16;
 		src_height = buffer->height << 16;
 	} else {
