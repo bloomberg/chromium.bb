@@ -6,7 +6,7 @@ import("//build/config/chrome_build.gni")
 
 # Meta-target that forwards to the installer of the correct type (if any).
 group("installer") {
-  if (is_linux && is_chrome_branded) {
+  if (is_desktop_linux && is_chrome_branded) {
     deps = [
       "//chrome/installer/linux",
     ]
