@@ -653,13 +653,20 @@ bool Node::needsDistributionRecalc() const
 
 void Node::updateDistribution()
 {
+    // Extra early out to avoid spamming traces.
+    if (inDocument() && !document().childNeedsDistributionRecalc())
+        return;
     TRACE_EVENT0("blink", "Node::updateDistribution");
     ScriptForbiddenScope forbidScript;
-    rootInTreeOfTrees(*this).recalcDistribution();
+    Node& root = rootInTreeOfTrees(*this);
+    if (root.childNeedsDistributionRecalc())
+        root.recalcDistribution();
 }
 
 void Node::recalcDistribution()
 {
+    ASSERT(childNeedsDistributionRecalc());
+
     if (isElementNode()) {
         if (ElementShadow* shadow = toElement(this)->shadow())
             shadow->distributeIfNeeded();

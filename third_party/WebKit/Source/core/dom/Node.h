@@ -384,7 +384,6 @@ public:
     void setNeedsStyleInvalidation();
 
     void updateDistribution();
-    void recalcDistribution();
 
     bool svgFilterNeedsLayerUpdate() const { return getFlag(SVGFilterNeedsLayerUpdateFlag); }
     void setSVGFilterNeedsLayerUpdate() { setFlag(SVGFilterNeedsLayerUpdateFlag); }
@@ -798,6 +797,8 @@ private:
     bool isUserActionElementInActiveChain() const;
     bool isUserActionElementHovered() const;
     bool isUserActionElementFocused() const;
+
+    void recalcDistribution();
 
     void setStyleChange(StyleChangeType);
 

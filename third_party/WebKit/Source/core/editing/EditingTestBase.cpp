@@ -47,7 +47,7 @@ void EditingTestBase::setBodyContent(const char* bodyContent)
 PassRefPtrWillBeRawPtr<ShadowRoot> EditingTestBase::setShadowContent(const char* shadowContent, const char* host)
 {
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), host, shadowContent);
-    document().recalcDistribution();
+    document().updateDistribution();
     return shadowRoot.release();
 }
 
