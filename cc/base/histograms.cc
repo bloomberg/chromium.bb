@@ -6,11 +6,50 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <limits>
 
+#include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/synchronization/lock.h"
 
 namespace cc {
+
+// Global data tracking the client name that was set.
+// Both of these variables are protected by the lock.
+static base::LazyInstance<base::Lock>::Leaky g_client_name_lock =
+    LAZY_INSTANCE_INITIALIZER;
+static const char* g_client_name = nullptr;
+static bool g_multiple_client_names_set = false;
+
+void SetClientNameForMetrics(const char* client_name) {
+  base::AutoLock auto_lock(g_client_name_lock.Get());
+
+  // Only warn once.
+  if (g_multiple_client_names_set)
+    return;
+
+  // If a different name is set, return nullptr from now on and log a warning.
+  const char* old_client_name = g_client_name;
+  if (old_client_name && strcmp(old_client_name, client_name)) {
+    g_client_name = nullptr;
+    g_multiple_client_names_set = true;
+    LOG(WARNING) << "Started multiple compositor clients (" << old_client_name
+                 << ", " << client_name
+                 << ") in one process. Some metrics will be disabled.";
+    return;
+  }
+
+  // If the client name is being set for the first time, store it.
+  if (!old_client_name)
+    g_client_name = client_name;
+}
+
+const char* GetClientNameForMetrics() {
+  base::AutoLock auto_lock(g_client_name_lock.Get());
+  return g_client_name;
+}
 
 // Minimum elapsed time of 1us to limit weighting of fast calls.
 static const int64 kMinimumTimeMicroseconds = 1;

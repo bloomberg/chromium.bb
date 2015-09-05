@@ -32,6 +32,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "cc/base/histograms.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
@@ -647,6 +648,7 @@ void RenderThreadImpl::Init() {
   if (command_line.HasSwitch(switches::kEnableCompositorAnimationTimelines))
     layer_settings.use_compositor_animation_timelines = true;
   cc_blink::WebLayerImpl::SetLayerSettings(layer_settings);
+  cc::SetClientNameForMetrics("Renderer");
 
   is_threaded_animation_enabled_ =
       !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);

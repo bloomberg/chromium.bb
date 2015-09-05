@@ -149,8 +149,8 @@ const bool kDefaultClearCanvasSetting = true;
 
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     ScopedPicturePileUpdateTimer,
-    "Compositing.PicturePile.UpdateUs",
-    "Compositing.PicturePile.UpdateInvalidatedAreaPerMs");
+    "Compositing.%s.PicturePile.UpdateUs",
+    "Compositing.%s.PicturePile.UpdateInvalidatedAreaPerMs");
 
 }  // namespace
 

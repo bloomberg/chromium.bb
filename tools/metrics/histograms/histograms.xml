@@ -4267,6 +4267,69 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of tries before successful ping. 99 means giving up.</summary>
 </histogram>
 
+<histogram
+    name="Compositing.Browser.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
+    units="pixels/ms">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Area of invalidated content, in pixels, divided by update (i.e. record), in
+    milliseconds. Recorded when display list recording source is updated (in a
+    browser process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Browser.DisplayListRecordingSource.UpdateUs"
+    units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent updating (i.e. recording) a display list, in microseconds.
+    Recorded when display list is updated (in a browser process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Browser.PictureMemoryUsageKb" units="KB">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Total estimated memory used by SkPictures in the layer tree, in kilobytes.
+    Recorded once per frame, before the frame is drawn (in a browser process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Browser.PicturePile.UpdateInvalidatedAreaPerMs"
+    units="pixels/ms">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Area of invalidated content, in pixels, divided by update (i.e. record), in
+    milliseconds. Recorded when picture pile is updated (in a browser process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Browser.PicturePile.UpdateUs" units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent updating (i.e. recording) a picture pile, in microseconds.
+    Recorded when picture pile is updated (in a browser process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Browser.RasterTask.RasterPixelsPerMs"
+    units="pixels/ms">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Rasterized area, in pixels, divided by rasterization time, in milliseconds,
+    of a compositor rasterization task. Recorded after the task finishes (in a
+    browser process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Browser.RasterTask.RasterUs" units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent completing a compositor rasterization task, in microseconds.
+    Recorded after the task finishes (in a browser process).
+  </summary>
+</histogram>
+
 <histogram name="Compositing.CopyFromSurfaceTime" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -4285,6 +4348,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="Compositing.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
+  <obsolete>
+    Deprecated 09/2015, replaced by similar metrics under Compositing.Renderer
+    and Compositing.Browser, depending on which process it occurs in.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Area of invalidated content, in pixels, divided by update (i.e. record), in
@@ -4294,6 +4361,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Compositing.DisplayListRecordingSource.UpdateUs"
     units="microseconds">
+  <obsolete>
+    Deprecated 09/2015, replaced by similar metrics under Compositing.Renderer
+    and Compositing.Browser, depending on which process it occurs in.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent updating (i.e. recording) a display list, in microseconds.
@@ -4310,6 +4381,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Compositing.PictureMemoryUsageKb" units="KB">
+  <obsolete>
+    Deprecated 09/2015, replaced by similar metrics under Compositing.Renderer
+    and Compositing.Browser, depending on which process it occurs in.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Total estimated memory used by SkPictures in the layer tree, in kilobytes.
@@ -4319,6 +4394,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Compositing.PicturePile.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
+  <obsolete>
+    Deprecated 09/2015, replaced by similar metrics under Compositing.Renderer
+    and Compositing.Browser, depending on which process it occurs in.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Area of invalidated content, in pixels, divided by update (i.e. record), in
@@ -4327,6 +4406,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Compositing.PicturePile.UpdateUs" units="microseconds">
+  <obsolete>
+    Deprecated 09/2015, replaced by similar metrics under Compositing.Renderer
+    and Compositing.Browser, depending on which process it occurs in.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent updating (i.e. recording) a picture pile, in microseconds.
@@ -4335,6 +4418,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Compositing.RasterTask.RasterPixelsPerMs" units="pixels/ms">
+  <obsolete>
+    Deprecated 09/2015, replaced by similar metrics under Compositing.Renderer
+    and Compositing.Browser, depending on which process it occurs in.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Rasterized area, in pixels, divided by rasterization time, in milliseconds,
@@ -4343,10 +4430,78 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Compositing.RasterTask.RasterUs" units="microseconds">
+  <obsolete>
+    Deprecated 09/2015, replaced by similar metrics under Compositing.Renderer
+    and Compositing.Browser, depending on which process it occurs in.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent completing a compositor rasterization task, in microseconds.
     Recorded after the task finishes.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Renderer.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
+    units="pixels/ms">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Area of invalidated content, in pixels, divided by update (i.e. record), in
+    milliseconds. Recorded when display list recording source is updated (in a
+    renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.DisplayListRecordingSource.UpdateUs"
+    units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent updating (i.e. recording) a display list, in microseconds.
+    Recorded when display list is updated (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.PictureMemoryUsageKb" units="KB">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Total estimated memory used by SkPictures in the layer tree, in kilobytes.
+    Recorded once per frame, before the frame is drawn (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.PicturePile.UpdateInvalidatedAreaPerMs"
+    units="pixels/ms">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Area of invalidated content, in pixels, divided by update (i.e. record), in
+    milliseconds. Recorded when picture pile is updated (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.PicturePile.UpdateUs"
+    units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent updating (i.e. recording) a picture pile, in microseconds.
+    Recorded when picture pile is updated (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.RasterTask.RasterPixelsPerMs"
+    units="pixels/ms">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Rasterized area, in pixels, divided by rasterization time, in milliseconds,
+    of a compositor rasterization task. Recorded after the task finishes (in a
+    renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.RasterTask.RasterUs" units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent completing a compositor rasterization task, in microseconds.
+    Recorded after the task finishes (in a renderer process).
   </summary>
 </histogram>
 

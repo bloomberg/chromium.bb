@@ -14,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "cc/base/histograms.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
 #include "cc/raster/task_graph_runner.h"
@@ -106,6 +107,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
       task_graph_runner_(new cc::TaskGraphRunner),
       callback_factory_(this) {
   ui::Layer::InitializeUILayerSettings();
+  cc::SetClientNameForMetrics("Browser");
 
   if (UseSurfacesEnabled())
     surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);

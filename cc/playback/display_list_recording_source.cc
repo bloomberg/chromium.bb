@@ -34,8 +34,8 @@ const bool kDefaultClearCanvasSetting = true;
 
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     ScopedDisplayListRecordingSourceUpdateTimer,
-    "Compositing.DisplayListRecordingSource.UpdateUs",
-    "Compositing.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs");
+    "Compositing.%s.DisplayListRecordingSource.UpdateUs",
+    "Compositing.%s.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs");
 
 }  // namespace
 

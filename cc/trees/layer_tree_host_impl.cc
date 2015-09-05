@@ -23,6 +23,7 @@
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/timing_function.h"
+#include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/debug_rect_history.h"
@@ -1022,13 +1023,18 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
       "Compositing.NumActiveLayers",
       base::saturated_cast<int>(active_tree_->NumLayers()), 1, 400, 20);
 
-  size_t total_picture_memory = 0;
-  for (const PictureLayerImpl* layer : active_tree()->picture_layers())
-    total_picture_memory += layer->GetRasterSource()->GetPictureMemoryUsage();
-  if (total_picture_memory != 0) {
-    UMA_HISTOGRAM_COUNTS(
-        "Compositing.PictureMemoryUsageKb",
-        base::saturated_cast<int>(total_picture_memory / 1024));
+  if (const char* client_name = GetClientNameForMetrics()) {
+    size_t total_picture_memory = 0;
+    for (const PictureLayerImpl* layer : active_tree()->picture_layers())
+      total_picture_memory += layer->GetRasterSource()->GetPictureMemoryUsage();
+    if (total_picture_memory != 0) {
+      // GetClientNameForMetrics only returns one non-null value over the
+      // lifetime of the process, so this histogram name is runtime constant.
+      UMA_HISTOGRAM_COUNTS(
+          base::StringPrintf("Compositing.%s.PictureMemoryUsageKb",
+                             client_name),
+          base::saturated_cast<int>(total_picture_memory / 1024));
+    }
   }
 
   bool update_lcd_text = false;

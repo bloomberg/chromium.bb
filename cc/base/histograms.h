@@ -9,38 +9,63 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
 
+// Supplies a client name to be inserted into histogram names.
+// These are known so far: Renderer, Browser
+//
+// We currently assume that there is only one distinct client per process.
+// Not thread-safe. If called multiple times, warns and skips metrics.
+CC_EXPORT void SetClientNameForMetrics(const char* client_name);
+
+// Returns the client name, for use by applicable cc metrics code.
+// May return null, in which case no clients, or at least two clients, set the
+// client name, and these metrics should be omitted.
+//
+// This method guarantees that it will never return two distinct non-null
+// values over the lifetime of the process.
+const char* GetClientNameForMetrics();
+
 // Emits UMA histogram trackers for time spent as well as area (in pixels)
 // processed per unit time. Time is measured in microseconds, and work in
-// pixels per millisecond.
+// pixels per millisecond. Histogram name should include a %s to grab the client
+// name.
 //
 // Usage:
 //   // Outside of a method, perhaps in a namespace.
-//   DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(ScopedReticulateSplinesTimer,
-//                                          "ReticulateSplinesUs",
-//                                          "ReticulateSplinesPixelsPerMs");
+//   DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
+//       ScopedReticulateSplinesTimer,
+//       "Compositing.%s.ReticulateSplinesUs",
+//       "Compositing.%s.ReticulateSplinesPixelsPerMs");
 //
 //   // Inside a method.
 //   ScopedReticulateSplinesTimer timer;
 //   timer.AddArea(some_rect.size().GetArea());
-#define DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(class_name, time_histogram, \
-                                               area_histogram)             \
-  class class_name : public ::cc::ScopedUMAHistogramAreaTimerBase {        \
-   public:                                                                 \
-    ~class_name();                                                         \
-  };                                                                       \
-  class_name::~class_name() {                                              \
-    Sample time_sample;                                                    \
-    Sample area_sample;                                                    \
-    if (GetHistogramValues(&time_sample, &area_sample)) {                  \
-      UMA_HISTOGRAM_COUNTS(time_histogram, time_sample);                   \
-      UMA_HISTOGRAM_COUNTS(area_histogram, area_sample);                   \
-    }                                                                      \
+//
+#define DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(class_name, time_histogram,  \
+                                               area_histogram)              \
+  class class_name : public ::cc::ScopedUMAHistogramAreaTimerBase {         \
+   public:                                                                  \
+    ~class_name();                                                          \
+  };                                                                        \
+  class_name::~class_name() {                                               \
+    Sample time_sample;                                                     \
+    Sample area_sample;                                                     \
+    const char* client_name = ::cc::GetClientNameForMetrics();              \
+    if (client_name && GetHistogramValues(&time_sample, &area_sample)) {    \
+      /* GetClientNameForMetrics only returns one non-null value over */    \
+      /* the lifetime of the process, so these histogram names are */       \
+      /* runtime constant. */                                               \
+      UMA_HISTOGRAM_COUNTS(base::StringPrintf(time_histogram, client_name), \
+                           time_sample);                                    \
+      UMA_HISTOGRAM_COUNTS(base::StringPrintf(area_histogram, client_name), \
+                           area_sample);                                    \
+    }                                                                       \
   }
 
 class CC_EXPORT ScopedUMAHistogramAreaTimerBase {

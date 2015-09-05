@@ -33,8 +33,8 @@ const bool kUseColorEstimator = true;
 
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     ScopedRasterTaskTimer,
-    "Compositing.RasterTask.RasterUs",
-    "Compositing.RasterTask.RasterPixelsPerMs");
+    "Compositing.%s.RasterTask.RasterUs",
+    "Compositing.%s.RasterTask.RasterPixelsPerMs");
 
 class RasterTaskImpl : public RasterTask {
  public:
