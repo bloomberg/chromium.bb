@@ -22,17 +22,19 @@ rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 # speed-over-size optimization for official builds on Windows only. The GN's
 # build optimize_max config applies this optimization on all platforms, so
 # compute how to modify the config list to duplicate the GYP behavior.
-if (is_debug) {
-  core_config_remove = [ "//build/config/compiler:no_optimize" ]
-  core_config_add = core_config_remove  # NOP
+if (is_debug || !is_win || !is_official_build) {
+  # NOP.
+  core_config_add = []
+  core_config_remove = []
 } else {
-  core_config_remove = [ "//build/config/compiler:optimize" ]
-
-  if (is_win && is_official_build) {
-    core_config_add = [ "//build/config/compiler:optimize_max" ]
+  if (using_new_global_compiler_configs) {
+    # GN build is moving to a single default optimization config that prevents
+    # us from having to break out the debug/release conditions to override.
+    core_config_remove = [ "//build/config/compiler:default_optimization" ]
   } else {
-    core_config_add = core_config_remove  # NOP
+    core_config_remove = [ "//build/config/compiler:optimize" ]
   }
+  core_config_add = [ "//build/config/compiler:optimize_max" ]
 }
 
 # Core targets also get wexit time destructors.
