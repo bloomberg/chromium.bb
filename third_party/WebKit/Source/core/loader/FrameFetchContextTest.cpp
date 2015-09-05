@@ -431,7 +431,6 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForExperiments)
     settings->setFEtchIncreaseFontPriority(false);
     settings->setFEtchDeferLateScripts(false);
     settings->setFEtchIncreasePriorities(false);
-    settings->setLowPriorityIframes(false);
 
     // Base case, no priority change. Note that this triggers m_imageFetched, which will matter for setFetchDeferLateScripts() case below.
     EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityLow, Resource::Image, request));
@@ -479,18 +478,29 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForExperiments)
     settings->setFEtchIncreaseAsyncScriptPriority(true);
     EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, deferredRequest));
 
-    // Set up a child frame, test main resource load with and without setLowPriorityIframes()
-    FrameFetchContext* childFetchContext = createChildFrame();
-    EXPECT_EQ(ResourceLoadPriorityVeryHigh, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::MainResource, request));
-    settings->setLowPriorityIframes(true);
-    EXPECT_EQ(ResourceLoadPriorityVeryLow, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::MainResource, request));
-
     // Ensure we don't go out of bounds
     settings->setFEtchIncreasePriorities(true);
     EXPECT_EQ(ResourceLoadPriorityVeryHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::Script, request));
     settings->setFEtchIncreasePriorities(false);
     settings->setFEtchDeferLateScripts(true);
     EXPECT_EQ(ResourceLoadPriorityVeryLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Script, preloadRequest));
+}
+
+TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes)
+{
+    Settings* settings = document->frame()->settings();
+    settings->setLowPriorityIframes(false);
+    FetchRequest request(ResourceRequest("http://www.example.com"), FetchInitiatorInfo());
+    FrameFetchContext* childFetchContext = createChildFrame();
+
+    // No low priority iframes, expect default values.
+    EXPECT_EQ(ResourceLoadPriorityVeryHigh, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::MainResource, request));
+    EXPECT_EQ(ResourceLoadPriorityMedium, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request));
+
+    // Low priority iframes enabled, everything should be low priority
+    settings->setLowPriorityIframes(true);
+    EXPECT_EQ(ResourceLoadPriorityVeryLow, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryHigh, Resource::MainResource, request));
+    EXPECT_EQ(ResourceLoadPriorityVeryLow, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request));
 }
 
 } // namespace

@@ -689,7 +689,8 @@ ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(ResourceLoa
     if (!frame()->settings())
         return priority;
 
-    if (!frame()->isMainFrame() && frame()->settings()->lowPriorityIframes() && type == Resource::MainResource)
+    // If enabled, drop the priority of all resources in a subframe.
+    if (frame()->settings()->lowPriorityIframes() && !frame()->isMainFrame())
         return ResourceLoadPriorityVeryLow;
 
     // Async/Defer scripts.
