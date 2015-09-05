@@ -92,25 +92,57 @@ Polymer({
   ],
 
   /**
+   * Sets up a history popstate observer.
+   */
+  created: function() {
+    window.addEventListener('popstate', function(event) {
+      if (event.state && event.state.page)
+        this.currentRoute = event.state;
+    }.bind(this));
+  },
+
+  /**
    * @private
    * Is called when another element modifies the route. This observer validates
    * the route change against the pre-defined list of routes, and updates the
    * URL appropriately.
    */
-  currentRouteChanged_: function() {
+  currentRouteChanged_: function(newRoute, oldRoute) {
+    // If we are currently restoring a state from history, don't push it again.
+    if (newRoute.inHistory)
+      return;
+
     for (var i = 0; i < this.routes_.length; ++i) {
       var route = this.routes_[i];
-      if (route.page == this.currentRoute.page &&
-          route.section == this.currentRoute.section &&
-          route.subpage.length == this.currentRoute.subpage.length &&
-          this.currentRoute.subpage.every(function(value, index) {
+      if (route.page == newRoute.page && route.section == newRoute.section &&
+          route.subpage.length == newRoute.subpage.length &&
+          newRoute.subpage.every(function(value, index) {
             return value == route.subpage[index];
           })) {
-        history.pushState(null, null, route.url);
+
+        // Mark routes persisted in history as already stored in history.
+        var historicState = {
+          inHistory: true,
+          page: newRoute.page,
+          section: newRoute.section,
+          subpage: newRoute.subpage,
+        };
+
+        // Push the current route to the history state, so when the user
+        // navigates with the browser back button, we can recall the route.
+        if (oldRoute) {
+          history.pushState(historicState, null, route.url);
+        } else {
+          // For the very first route (oldRoute will be undefined), we replace
+          // the existing state instead of pushing a new one. This is to allow
+          // the user to use the browser back button to exit Settings entirely.
+          history.replaceState(historicState, null);
+        }
+
         return;
       }
     }
 
-    assertNotReached('Route not found: ' + JSON.stringify(this.currentRoute));
+    assertNotReached('Route not found: ' + JSON.stringify(newRoute));
   },
 });
