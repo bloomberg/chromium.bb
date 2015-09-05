@@ -531,6 +531,8 @@ rpi_backend_create(struct weston_compositor *compositor,
 		goto out_launcher;
 	}
 
+	compositor->backend = &backend->base;
+
 	return backend;
 
 out_launcher:
