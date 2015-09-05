@@ -251,7 +251,11 @@ def UserActSearch(opts, query):
 def UserActMine(opts):
   """List your CLs with review statuses"""
   _, _, owners = _MyUserInfo()
-  UserActSearch(opts, '( %s ) status:new' % (' OR '.join(owners),))
+  if opts.draft:
+    rule = 'is:draft'
+  else:
+    rule = 'status:new'
+  UserActSearch(opts, '( %s ) %s' % (' OR '.join(owners), rule))
 
 
 def _BreadthFirstSearch(to_visit, children, visited_key=lambda x: x):
@@ -483,6 +487,8 @@ Actions:"""
                       help='Be more verbose in output')
   parser.add_argument('-b', '--branch',
                       help='Limit output to the specific branch')
+  parser.add_argument('--draft', default=False, action='store_true',
+                      help="Show draft changes (applicable to 'mine' only)")
   parser.add_argument('-p', '--project',
                       help='Limit output to the specific project')
   parser.add_argument('-t', '--topic',
