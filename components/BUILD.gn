@@ -28,6 +28,7 @@ group("all_components") {
     "//components/cdm/browser",
     "//components/cdm/common",
     "//components/cdm/renderer",
+    "//components/certificate_reporting",
     "//components/cloud_devices/common",
     "//components/chrome_apps",
     "//components/component_updater",

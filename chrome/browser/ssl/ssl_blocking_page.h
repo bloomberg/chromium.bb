@@ -14,8 +14,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "components/certificate_reporting/error_report.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 

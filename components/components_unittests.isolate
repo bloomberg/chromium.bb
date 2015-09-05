@@ -37,6 +37,7 @@
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
+          '../net/data/',
           'test/data/',
           '<(PRODUCT_DIR)/components_tests_resources.pak',
           '<(PRODUCT_DIR)/ui_test.pak',

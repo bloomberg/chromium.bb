@@ -24,6 +24,7 @@ include_rules = [
   "+components/browser_watcher",
   "+components/browsing_data",
   "+components/cdm/browser",
+  "+components/certificate_reporting",
   "+components/cloud_devices/common",
   "+components/component_updater",
   "+components/compression",

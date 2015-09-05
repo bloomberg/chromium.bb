@@ -87,6 +87,10 @@
     'captive_portal_unittest_sources': [
       'captive_portal/captive_portal_detector_unittest.cc',
     ],
+    'certificate_reporting_unittest_sources': [
+      'certificate_reporting/error_report_unittest.cc',
+      'certificate_reporting/error_reporter_unittest.cc',
+    ],
     'certificate_transparency_unittest_sources': [
       'certificate_transparency/log_proof_fetcher_unittest.cc',
     ],
@@ -774,6 +778,7 @@
         '<@(browser_watcher_unittest_sources)',
         '<@(bubble_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
+        '<@(certificate_reporting_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
         '<@(component_updater_unittest_sources)',
         '<@(compression_unittest_sources)',
@@ -868,6 +873,7 @@
         'components.gyp:bookmarks_test_support',
         'components.gyp:bubble',
         'components.gyp:captive_portal_test_support',
+        'components.gyp:certificate_reporting',
         'components.gyp:cloud_devices_common',
         'components.gyp:component_updater',
         'components.gyp:compression',
@@ -1117,6 +1123,7 @@
               'action_name': 'copy_test_data',
               'variables': {
                 'test_data_files': [
+                  '../net/data',
                   'test/data',
                 ],
                 'test_data_prefix': 'components',

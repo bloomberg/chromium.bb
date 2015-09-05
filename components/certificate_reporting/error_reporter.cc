@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/certificate_error_reporter.h"
+#include "components/certificate_reporting/error_reporter.h"
 
 #include <set>
 
 #include "base/logging.h"
-#include "chrome/browser/net/encrypted_cert_logger.pb.h"
+#include "components/certificate_reporting/encrypted_cert_logger.pb.h"
 
 #if defined(USE_OPENSSL)
 #include "crypto/aead_openssl.h"
@@ -17,6 +17,8 @@
 #include "crypto/hkdf.h"
 #include "crypto/random.h"
 #include "net/url_request/certificate_report_sender.h"
+
+namespace certificate_reporting {
 
 namespace {
 
@@ -56,11 +58,10 @@ std::string GetHkdfSubkeySecret(size_t subkey_length,
   return hkdf.subkey_secret().as_string();
 }
 
-bool EncryptSerializedReport(
-    const uint8* server_public_key,
-    uint32 server_public_key_version,
-    const std::string& report,
-    chrome_browser_net::EncryptedCertLoggerRequest* encrypted_report) {
+bool EncryptSerializedReport(const uint8* server_public_key,
+                             uint32 server_public_key_version,
+                             const std::string& report,
+                             EncryptedCertLoggerRequest* encrypted_report) {
   // Generate an ephemeral key pair to generate a shared secret.
   uint8 public_key[crypto::curve25519::kBytes];
   uint8 private_key[crypto::curve25519::kScalarBytes];
@@ -88,28 +89,25 @@ bool EncryptSerializedReport(
   encrypted_report->set_client_public_key(reinterpret_cast<char*>(public_key),
                                           sizeof(public_key));
   encrypted_report->set_algorithm(
-      chrome_browser_net::EncryptedCertLoggerRequest::
-          AEAD_ECDH_AES_128_CTR_HMAC_SHA256);
+      EncryptedCertLoggerRequest::AEAD_ECDH_AES_128_CTR_HMAC_SHA256);
   return true;
 }
 #endif
 
 }  // namespace
 
-namespace chrome_browser_net {
-
-CertificateErrorReporter::CertificateErrorReporter(
+ErrorReporter::ErrorReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
     net::CertificateReportSender::CookiesPreference cookies_preference)
-    : CertificateErrorReporter(upload_url,
-                               kServerPublicKey,
-                               kServerPublicKeyVersion,
-                               make_scoped_ptr(new net::CertificateReportSender(
-                                   request_context,
-                                   cookies_preference))) {}
+    : ErrorReporter(upload_url,
+                    kServerPublicKey,
+                    kServerPublicKeyVersion,
+                    make_scoped_ptr(new net::CertificateReportSender(
+                        request_context,
+                        cookies_preference))) {}
 
-CertificateErrorReporter::CertificateErrorReporter(
+ErrorReporter::ErrorReporter(
     const GURL& upload_url,
     const uint8 server_public_key[/* 32 */],
     const uint32 server_public_key_version,
@@ -122,10 +120,9 @@ CertificateErrorReporter::CertificateErrorReporter(
   DCHECK(!upload_url.is_empty());
 }
 
-CertificateErrorReporter::~CertificateErrorReporter() {
-}
+ErrorReporter::~ErrorReporter() {}
 
-void CertificateErrorReporter::SendExtendedReportingReport(
+void ErrorReporter::SendExtendedReportingReport(
     const std::string& serialized_report) {
   if (upload_url_.SchemeIsCryptographic()) {
     certificate_report_sender_->Send(upload_url_, serialized_report);
@@ -145,7 +142,7 @@ void CertificateErrorReporter::SendExtendedReportingReport(
   }
 }
 
-bool CertificateErrorReporter::IsHttpUploadUrlSupported() {
+bool ErrorReporter::IsHttpUploadUrlSupported() {
 #if defined(USE_OPENSSL)
   return true;
 #else
@@ -155,7 +152,7 @@ bool CertificateErrorReporter::IsHttpUploadUrlSupported() {
 
 // Used only by tests.
 #if defined(USE_OPENSSL)
-bool CertificateErrorReporter::DecryptCertificateErrorReport(
+bool ErrorReporter::DecryptErrorReport(
     const uint8 server_private_key[32],
     const EncryptedCertLoggerRequest& encrypted_report,
     std::string* decrypted_serialized_report) {
@@ -174,4 +171,4 @@ bool CertificateErrorReporter::DecryptCertificateErrorReport(
 }
 #endif
 
-}  // namespace chrome_browser_net
+}  // namespace certificate_reporting

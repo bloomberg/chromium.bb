@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/certificate_error_report.h"
+#include "components/certificate_reporting/error_report.h"
 
 #include <vector>
 
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/ssl/cert_logger.pb.h"
+#include "components/certificate_reporting/cert_logger.pb.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
+
+namespace certificate_reporting {
 
 namespace {
 
@@ -53,12 +55,10 @@ bool CertificateChainToString(scoped_refptr<net::X509Certificate> cert,
 
 }  // namespace
 
-CertificateErrorReport::CertificateErrorReport()
-    : cert_report_(new CertLoggerRequest()) {
-}
+ErrorReport::ErrorReport() : cert_report_(new CertLoggerRequest()) {}
 
-CertificateErrorReport::CertificateErrorReport(const std::string& hostname,
-                                               const net::SSLInfo& ssl_info)
+ErrorReport::ErrorReport(const std::string& hostname,
+                         const net::SSLInfo& ssl_info)
     : cert_report_(new CertLoggerRequest()) {
   base::Time now = base::Time::Now();
   cert_report_->set_time_usec(now.ToInternalValue());
@@ -81,19 +81,17 @@ CertificateErrorReport::CertificateErrorReport(const std::string& hostname,
   AddCertStatusToReportErrors(ssl_info.cert_status, cert_report_.get());
 }
 
-CertificateErrorReport::~CertificateErrorReport() {
-}
+ErrorReport::~ErrorReport() {}
 
-bool CertificateErrorReport::InitializeFromString(
-    const std::string& serialized_report) {
+bool ErrorReport::InitializeFromString(const std::string& serialized_report) {
   return cert_report_->ParseFromString(serialized_report);
 }
 
-bool CertificateErrorReport::Serialize(std::string* output) const {
+bool ErrorReport::Serialize(std::string* output) const {
   return cert_report_->SerializeToString(output);
 }
 
-void CertificateErrorReport::SetInterstitialInfo(
+void ErrorReport::SetInterstitialInfo(
     const InterstitialReason& interstitial_reason,
     const ProceedDecision& proceed_decision,
     const Overridable& overridable) {
@@ -119,6 +117,8 @@ void CertificateErrorReport::SetInterstitialInfo(
   interstitial_info->set_overridable(overridable == INTERSTITIAL_OVERRIDABLE);
 }
 
-const std::string& CertificateErrorReport::hostname() const {
+const std::string& ErrorReport::hostname() const {
   return cert_report_->hostname();
 }
+
+}  // namespace certificate_reporting
