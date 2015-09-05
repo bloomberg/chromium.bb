@@ -35,10 +35,8 @@ bool SkiaMemoryDumpProvider::OnMemoryDump(
                       base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                       SkGraphics::GetFontCacheCountUsed());
 
-  if (args.level_of_detail ==
-      base::trace_event::MemoryDumpArgs::LevelOfDetail::LOW)
-    return true;
-
+  // TODO(ssid): Use MemoryDumpArgs to create light dumps when requested
+  // (crbug.com/499731).
   SkTraceMemoryDump_Chrome skia_dumper(process_memory_dump);
   SkGraphics::DumpMemoryStatistics(&skia_dumper);
 
