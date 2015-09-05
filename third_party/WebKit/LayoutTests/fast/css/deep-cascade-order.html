@@ -18,7 +18,12 @@
     var green = "rgb(0, 128, 0)";
 
     shouldBe("getComputedStyle(root1.querySelector('div')).color", "green");
+
+    debug("TODO(rune@opera.com): Currently fails because style attributes are added to the end, not in its element's scope's cascade order");
     shouldBe("getComputedStyle(root1.querySelector('div + div')).color", "green");
+
     shouldBe("getComputedStyle(root2.querySelector('div')).color", "green");
+
+    debug("TODO(rune@opera.com): Currently fails because style attributes are added to the end, not in its element's scope's cascade order");
     shouldBe("getComputedStyle(root2.querySelector('div + div')).color", "green");
 </script>
