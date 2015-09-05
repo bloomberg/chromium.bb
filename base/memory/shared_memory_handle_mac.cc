@@ -8,7 +8,6 @@
 
 #include "base/posix/eintr_wrapper.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
 namespace base {
 
 static_assert(sizeof(SharedMemoryHandle::Type) <=
@@ -87,4 +86,3 @@ SharedMemoryHandle SharedMemoryHandle::Duplicate() const {
 }
 
 }  // namespace base
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)

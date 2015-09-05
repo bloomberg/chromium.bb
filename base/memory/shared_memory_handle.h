@@ -9,7 +9,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MACOSX)
 #include <sys/types.h>
 #include "base/base_export.h"
 #include "base/file_descriptor_posix.h"
@@ -27,7 +27,7 @@ class Pickle;
 // the underlying OS handle to a shared memory segment.
 #if defined(OS_WIN)
 typedef HANDLE SharedMemoryHandle;
-#elif defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
 typedef FileDescriptor SharedMemoryHandle;
 #else
 class BASE_EXPORT SharedMemoryHandle {
