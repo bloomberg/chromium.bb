@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
 
 #include "base/lazy_instance.h"
 

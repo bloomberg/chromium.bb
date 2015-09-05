@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_BLUETOOTH_LOW_ENERGY_UTILS_H_
-#define EXTENSIONS_BROWSER_API_BLUETOOTH_LOW_ENERGY_UTILS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_UTILS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_UTILS_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "extensions/common/api/bluetooth_low_energy.h"
+#include "chrome/common/extensions/api/bluetooth_low_energy.h"
 
 namespace extensions {
 namespace api {
@@ -31,4 +31,4 @@ scoped_ptr<base::DictionaryValue> DescriptorToValue(Descriptor* from);
 }  // namespace api
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_LOW_ENERGY_UTILS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_UTILS_H_

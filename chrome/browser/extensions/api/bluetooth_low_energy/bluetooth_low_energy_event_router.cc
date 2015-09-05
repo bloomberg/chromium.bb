@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
-#include "extensions/browser/api/bluetooth_low_energy/utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"

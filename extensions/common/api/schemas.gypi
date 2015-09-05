@@ -16,7 +16,6 @@
       'app_window.idl',
       'audio.idl',
       'bluetooth.idl',
-      'bluetooth_low_energy.idl',
       'bluetooth_private.json',
       'bluetooth_socket.idl',
       'cast_channel.idl',

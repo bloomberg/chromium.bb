@@ -9,7 +9,6 @@
 #include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/api/bluetooth/bluetooth_api.h"
 #include "extensions/browser/api/bluetooth/bluetooth_private_api.h"
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/api/idle/idle_manager_factory.h"
@@ -53,7 +52,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ApiResourceManager<UsbDeviceResource>::GetFactoryInstance();
   AudioAPI::GetFactoryInstance();
   BluetoothAPI::GetFactoryInstance();
-  BluetoothLowEnergyAPI::GetFactoryInstance();
   BluetoothPrivateAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   chromeos::VpnServiceFactory::GetInstance();

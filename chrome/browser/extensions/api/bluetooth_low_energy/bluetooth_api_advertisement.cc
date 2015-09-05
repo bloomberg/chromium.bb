@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
 
 #include "base/lazy_instance.h"
 #include "device/bluetooth/bluetooth_advertisement.h"

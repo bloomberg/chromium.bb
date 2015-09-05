@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -11,8 +13,6 @@
 #include "device/bluetooth/test/mock_bluetooth_gatt_descriptor.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "extensions/common/test_util.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
+#include "chrome/common/extensions/api/bluetooth_low_energy.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
-#include "extensions/browser/api/bluetooth_low_energy/utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
-#include "extensions/common/api/bluetooth_low_energy.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 using content::BrowserContext;
