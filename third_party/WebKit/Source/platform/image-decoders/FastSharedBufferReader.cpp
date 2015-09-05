@@ -51,7 +51,7 @@ void FastSharedBufferReader::setData(PassRefPtr<SharedBuffer> data)
     m_dataPosition = 0;
 }
 
-const char* FastSharedBufferReader::getConsecutiveData(size_t dataPosition, size_t length, char* buffer)
+const char* FastSharedBufferReader::getConsecutiveData(size_t dataPosition, size_t length, char* buffer) const
 {
     RELEASE_ASSERT(dataPosition + length <= m_data->size());
 
@@ -77,14 +77,14 @@ const char* FastSharedBufferReader::getConsecutiveData(size_t dataPosition, size
     }
 }
 
-size_t FastSharedBufferReader::getSomeData(const char*& someData, size_t dataPosition)
+size_t FastSharedBufferReader::getSomeData(const char*& someData, size_t dataPosition) const
 {
     getSomeDataInternal(dataPosition);
     someData = m_segment;
     return m_segmentLength;
 }
 
-void FastSharedBufferReader::getSomeDataInternal(unsigned dataPosition)
+void FastSharedBufferReader::getSomeDataInternal(unsigned dataPosition) const
 {
     m_dataPosition = dataPosition;
     m_segmentLength = m_data->getSomeData(m_segment, dataPosition);

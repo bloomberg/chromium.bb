@@ -54,14 +54,14 @@ public:
     // |m_data| if such a consecutive buffer can be found.
     // Otherwise copies into |buffer| and returns it.
     // Caller must ensure there are enough bytes in |m_data| and |buffer|.
-    const char* getConsecutiveData(size_t dataPosition, size_t length, char* buffer);
+    const char* getConsecutiveData(size_t dataPosition, size_t length, char* buffer) const;
 
     // Wraps SharedBuffer::getSomeData().
-    size_t getSomeData(const char*& someData, size_t dataPosition);
+    size_t getSomeData(const char*& someData, size_t dataPosition) const;
 
     // Returns a byte at |dataPosition|.
     // Caller must ensure there are enough bytes in |m_data|.
-    inline char getOneByte(size_t dataPosition)
+    inline char getOneByte(size_t dataPosition) const
     {
         return *getConsecutiveData(dataPosition, 1, 0);
     }
@@ -72,17 +72,17 @@ public:
     }
 
 private:
-    void getSomeDataInternal(unsigned dataPosition);
+    void getSomeDataInternal(unsigned dataPosition) const;
 
     RefPtr<SharedBuffer> m_data;
 
     // Caches the last segment of |m_data| accessed, since subsequent reads are
     // likely to re-access it.
-    const char* m_segment;
-    size_t m_segmentLength;
+    mutable const char* m_segment;
+    mutable size_t m_segmentLength;
 
     // Data position in |m_data| pointed to by |m_segment|.
-    size_t m_dataPosition;
+    mutable size_t m_dataPosition;
 };
 
 } // namespace blink

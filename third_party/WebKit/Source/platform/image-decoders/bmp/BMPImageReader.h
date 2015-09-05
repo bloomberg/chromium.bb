@@ -119,19 +119,19 @@ private:
         uint8_t rgbRed;
     };
 
-    inline uint8_t readUint8(size_t offset)
+    inline uint8_t readUint8(size_t offset) const
     {
         return m_fastReader.getOneByte(m_decodedOffset + offset);
     }
 
-    inline uint16_t readUint16(int offset)
+    inline uint16_t readUint16(int offset) const
     {
         char buffer[2];
         const char* data = m_fastReader.getConsecutiveData(m_decodedOffset + offset, 2, buffer);
         return readUint16(data);
     }
 
-    inline uint32_t readUint32(int offset)
+    inline uint32_t readUint32(int offset) const
     {
         char buffer[4];
         const char* data = m_fastReader.getConsecutiveData(m_decodedOffset + offset, 4, buffer);
@@ -200,7 +200,7 @@ private:
     // row.
     // NOTE: Only as many bytes of the return value as are needed to hold
     // the pixel data will actually be set.
-    inline uint32_t readCurrentPixel(int bytesPerPixel)
+    inline uint32_t readCurrentPixel(int bytesPerPixel) const
     {
         // We need at most 4 bytes, starting at m_decodedOffset + offset.
         char buffer[4];
