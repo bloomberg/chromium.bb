@@ -2117,7 +2117,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
       GetTaskRunner(), task_graph_runner, context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
       settings_.use_persistent_map_for_gpu_memory_buffers,
-      settings_.max_staging_buffers);
+      settings_.max_staging_buffer_usage_in_bytes);
 }
 
 void LayerTreeHostImpl::RecordMainFrameTiming(

@@ -461,10 +461,10 @@ void RenderWidgetCompositor::Initialize() {
     settings.use_external_begin_frame_source = false;
   }
 
-  settings.max_staging_buffers = 32;
+  settings.max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;  // 32MB
   // Use 1/4th of staging buffers on low-end devices.
   if (base::SysInfo::IsLowEndDevice())
-    settings.max_staging_buffers /= 4;
+    settings.max_staging_buffer_usage_in_bytes /= 4;
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
       compositor_deps_->GetCompositorImplThreadTaskRunner();

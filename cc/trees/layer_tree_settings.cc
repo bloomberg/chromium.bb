@@ -72,7 +72,7 @@ LayerTreeSettings::LayerTreeSettings()
       use_compositor_animation_timelines(false),
       invert_viewport_scroll_order(false),
       wait_for_beginframe_interval(true),
-      max_staging_buffers(32) {}
+      max_staging_buffer_usage_in_bytes(32 * 1024 * 1024) {}
 
 LayerTreeSettings::~LayerTreeSettings() {}
 

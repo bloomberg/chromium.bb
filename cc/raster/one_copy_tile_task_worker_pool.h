@@ -49,7 +49,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
       ResourceProvider* resource_provider,
       int max_copy_texture_chromium_size,
       bool use_persistent_gpu_memory_buffers,
-      int max_staging_buffers);
+      int max_staging_buffer_usage_in_bytes);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -91,7 +91,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
                             ResourceProvider* resource_provider,
                             int max_copy_texture_chromium_size,
                             bool use_persistent_gpu_memory_buffers,
-                            int max_staging_buffers);
+                            int max_staging_buffer_usage_in_bytes);
 
  private:
   struct StagingBuffer {
@@ -112,6 +112,10 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
     uint64_t content_id;
   };
 
+  void AddStagingBuffer(const StagingBuffer* staging_buffer);
+  void RemoveStagingBuffer(const StagingBuffer* staging_buffer);
+  void MarkStagingBufferAsFree(const StagingBuffer* staging_buffer);
+  void MarkStagingBufferAsBusy(const StagingBuffer* staging_buffer);
   scoped_ptr<StagingBuffer> AcquireStagingBuffer(const Resource* resource,
                                                  uint64_t previous_content_id);
   base::TimeTicks GetUsageTimeForLRUBuffer();
@@ -142,13 +146,15 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
 
   mutable base::Lock lock_;
   // |lock_| must be acquired when accessing the following members.
-  using StagingBufferSet = std::set<StagingBuffer*>;
+  using StagingBufferSet = std::set<const StagingBuffer*>;
   StagingBufferSet buffers_;
   using StagingBufferDeque = ScopedPtrDeque<StagingBuffer>;
   StagingBufferDeque free_buffers_;
   StagingBufferDeque busy_buffers_;
   int bytes_scheduled_since_last_flush_;
-  size_t max_staging_buffers_;
+  const int max_staging_buffer_usage_in_bytes_;
+  int staging_buffer_usage_in_bytes_;
+  int free_staging_buffer_usage_in_bytes_;
   const base::TimeDelta staging_buffer_expiration_delay_;
   bool reduce_memory_usage_pending_;
   base::Closure reduce_memory_usage_callback_;
