@@ -544,8 +544,8 @@ LogMessage::LogMessage(const char* file, int line, LogSeverity severity,
 
 LogMessage::~LogMessage() {
 #if !defined(OFFICIAL_BUILD) && !defined(OS_NACL) && !defined(__UCLIBC__)
-  if (severity_ == LOG_FATAL) {
-    // Include a stack trace on a fatal.
+  if (severity_ == LOG_FATAL && !base::debug::BeingDebugged()) {
+    // Include a stack trace on a fatal, unless a debugger is attached.
     base::debug::StackTrace trace;
     stream_ << std::endl;  // Newline to separate from log message.
     trace.OutputToStream(&stream_);
@@ -639,7 +639,11 @@ LogMessage::~LogMessage() {
       // information, and displaying message boxes when the application is
       // hosed can cause additional problems.
 #ifndef NDEBUG
-      DisplayDebugMessageInDialog(stream_.str());
+      if (!base::debug::BeingDebugged()) {
+        // Displaying a dialog is unnecessary when debugging and can complicate
+        // debugging.
+        DisplayDebugMessageInDialog(stream_.str());
+      }
 #endif
       // Crash the process to generate a dump.
       base::debug::BreakDebugger();
