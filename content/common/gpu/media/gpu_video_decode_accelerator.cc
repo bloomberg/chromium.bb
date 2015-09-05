@@ -358,7 +358,9 @@ scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateVTVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_MACOSX)
-  decoder.reset(new VTVideoDecodeAccelerator(make_context_current_));
+  decoder.reset(new VTVideoDecodeAccelerator(
+      make_context_current_, base::Bind(&GpuVideoDecodeAccelerator::BindImage,
+                                        base::Unretained(this))));
 #endif
   return decoder.Pass();
 }

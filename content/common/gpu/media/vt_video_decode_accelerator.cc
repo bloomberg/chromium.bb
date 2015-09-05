@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/limits.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image_io_surface.h"
 #include "ui/gl/scoped_binders.h"
 
 using content_common_gpu_media::kModuleVt;
@@ -274,6 +275,16 @@ VTVideoDecodeAccelerator::Frame::Frame(int32_t bitstream_id)
 VTVideoDecodeAccelerator::Frame::~Frame() {
 }
 
+VTVideoDecodeAccelerator::PictureInfo::PictureInfo(uint32_t client_texture_id,
+                                                   uint32_t service_texture_id)
+    : client_texture_id(client_texture_id),
+      service_texture_id(service_texture_id) {}
+
+VTVideoDecodeAccelerator::PictureInfo::~PictureInfo() {
+  if (gl_image)
+    gl_image->Destroy(false);
+}
+
 bool VTVideoDecodeAccelerator::FrameOrder::operator()(
     const linked_ptr<Frame>& lhs,
     const linked_ptr<Frame>& rhs) const {
@@ -287,8 +298,11 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
-    const base::Callback<bool(void)>& make_context_current)
+    const base::Callback<bool(void)>& make_context_current,
+    const base::Callback<void(uint32, uint32, scoped_refptr<gfx::GLImage>)>&
+        bind_image)
     : make_context_current_(make_context_current),
+      bind_image_(bind_image),
       client_(nullptr),
       state_(STATE_DECODING),
       format_(nullptr),
@@ -305,6 +319,7 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
 }
 
 VTVideoDecodeAccelerator::~VTVideoDecodeAccelerator() {
+  DCHECK(gpu_thread_checker_.CalledOnValidThread());
 }
 
 bool VTVideoDecodeAccelerator::Initialize(
@@ -810,10 +825,12 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
 
   for (const media::PictureBuffer& picture : pictures) {
-    DCHECK(!texture_ids_.count(picture.id()));
+    DCHECK(!picture_info_map_.count(picture.id()));
     assigned_picture_ids_.insert(picture.id());
     available_picture_ids_.push_back(picture.id());
-    texture_ids_[picture.id()] = picture.texture_id();
+    picture_info_map_.insert(picture.id(), make_scoped_ptr(new PictureInfo(
+                                               picture.internal_texture_id(),
+                                               picture.texture_id())));
   }
 
   // Pictures are not marked as uncleared until after this method returns, and
@@ -825,8 +842,13 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
 
 void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(CFGetRetainCount(picture_bindings_[picture_id]), 1);
-  picture_bindings_.erase(picture_id);
+  DCHECK(picture_info_map_.count(picture_id));
+  PictureInfo* picture_info = picture_info_map_.find(picture_id)->second;
+  DCHECK_EQ(CFGetRetainCount(picture_info->cv_image), 1);
+  picture_info->cv_image.reset();
+  picture_info->gl_image->Destroy(false);
+  picture_info->gl_image = nullptr;
+
   if (assigned_picture_ids_.count(picture_id) != 0) {
     available_picture_ids_.push_back(picture_id);
     ProcessWorkQueues();
@@ -985,7 +1007,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     return false;
 
   int32_t picture_id = available_picture_ids_.back();
-  IOSurfaceRef surface = CVPixelBufferGetIOSurface(frame.image.get());
+  DCHECK(picture_info_map_.count(picture_id));
+  PictureInfo* picture_info = picture_info_map_.find(picture_id)->second;
+  DCHECK(!picture_info->cv_image);
+  DCHECK(!picture_info->gl_image);
 
   if (!make_context_current_.Run()) {
     DLOG(ERROR) << "Failed to make GL context current";
@@ -993,9 +1018,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     return false;
   }
 
+  IOSurfaceRef surface = CVPixelBufferGetIOSurface(frame.image.get());
   glEnable(GL_TEXTURE_RECTANGLE_ARB);
-  gfx::ScopedTextureBinder
-      texture_binder(GL_TEXTURE_RECTANGLE_ARB, texture_ids_[picture_id]);
+  gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_RECTANGLE_ARB,
+                                          picture_info->service_texture_id);
   CGLContextObj cgl_context =
       static_cast<CGLContextObj>(gfx::GLContext::GetCurrent()->GetHandle());
   CGLError status = CGLTexImageIOSurface2D(
@@ -1014,15 +1040,30 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     return false;
   }
 
+  bool allow_overlay = false;
+  scoped_refptr<gfx::GLImageIOSurface> gl_image(new gfx::GLImageIOSurface(
+      gfx::GenericSharedMemoryId(), frame.coded_size, GL_BGRA_EXT));
+  if (gl_image->Initialize(surface, gfx::BufferFormat::BGRA_8888)) {
+    allow_overlay = true;
+  } else {
+    gl_image = nullptr;
+  }
+  bind_image_.Run(picture_info->client_texture_id, GL_TEXTURE_RECTANGLE_ARB,
+                  gl_image);
+
+  // Assign the new image(s) to the the picture info.
+  picture_info->gl_image = gl_image;
+  picture_info->cv_image = frame.image;
   available_picture_ids_.pop_back();
-  picture_bindings_[picture_id] = frame.image;
+
   // TODO(sandersd): Currently, the size got from
   // CMVideoFormatDescriptionGetDimensions is visible size. We pass it to
   // GpuVideoDecoder so that GpuVideoDecoder can use correct visible size in
   // resolution changed. We should find the correct API to get the real
   // coded size and fix it.
   client_->PictureReady(media::Picture(picture_id, frame.bitstream_id,
-                                       gfx::Rect(frame.coded_size), false));
+                                       gfx::Rect(frame.coded_size),
+                                       allow_overlay));
   return true;
 }
 

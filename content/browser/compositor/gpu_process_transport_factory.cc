@@ -314,12 +314,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
               CreateOverlayCandidateValidator(compositor->widget()), target,
               format, BrowserGpuMemoryBufferManager::current()));
     } else {
-      if (!surface) {
-        surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
-            context_provider, shared_worker_context_provider_,
-            compositor->vsync_manager(),
-            CreateOverlayCandidateValidator(compositor->widget())));
-      }
+      scoped_ptr<BrowserCompositorOverlayCandidateValidator> validator;
+#if !defined(OS_MACOSX)
+      // Overlays are only supported on surfaceless output surfaces on Mac.
+      validator = CreateOverlayCandidateValidator(compositor->widget());
+#endif
+      surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
+          context_provider, shared_worker_context_provider_,
+          compositor->vsync_manager(), validator.Pass()));
     }
   }
 
