@@ -564,8 +564,8 @@
       # For CLD2, the size of the tables that should be included in the build
       # Only evaluated if cld_version == 2.
       # See third_party/cld_2/cld_2.gyp for more information.
-      #   0: Small tables, lower accuracy
-      #   2: Large tables, high accuracy
+      #   0: Small tables, high accuracy
+      #   2: Large tables, higher accuracy
       'cld2_table_size%': 2,
 
       # Enable spell checker.
