@@ -109,10 +109,11 @@ Polymer({
     var newHeight = containerRect.height + headerHeight;
 
     node.style.position = 'fixed';
+    node.style.zIndex = '1';
 
     this._effect = new KeyframeEffect(node, [
-      {'top': nodeRect.top, 'height': nodeRect.height},
-      {'top': newTop, 'height': newHeight},
+      {'top': nodeRect.top + 'px', 'height': nodeRect.height + 'px'},
+      {'top': newTop + 'px', 'height': newHeight + 'px'},
     ], this.timingFromConfig(config));
     return this._effect;
   },
@@ -140,18 +141,23 @@ Polymer({
     // Temporarily set position to static to determine new height.
     node.style.position = '';
     var newTop = node.getBoundingClientRect().top;
-    var newHeight = node.unexpandedHeight;
+
+    // TODO(tommycli): This value is undefined when the user navigates to a
+    // subpage directly by URL instead of from the settings root. Find a better
+    // method than using 200 as a dummy height.
+    var newHeight = node.unexpandedHeight || 200;
 
     node.style.position = 'fixed';
 
     this._effect = new KeyframeEffect(node, [
-      {'top': oldRect.top, 'height': oldRect.height},
-      {'top': newTop, 'height': newHeight},
+      {'top': oldRect.top + 'px', 'height': oldRect.height + 'px'},
+      {'top': newTop + 'px', 'height': newHeight + 'px'},
     ], this.timingFromConfig(config));
     return this._effect;
   },
 
   complete: function(config) {
     config.node.style.position = '';
+    config.node.style.zIndex = '0';
   }
 });

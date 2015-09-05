@@ -89,6 +89,18 @@ Polymer({
       section: 'search',
       subpage: ['search-engines', 'search-engines-advanced'],
     },
+    {
+      url: '/certificates',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['manage-certificates'],
+    },
+    {
+      url: '/content',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings'],
+    },
   ],
 
   /**
