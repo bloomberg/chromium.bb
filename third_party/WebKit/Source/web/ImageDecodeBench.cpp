@@ -15,11 +15,6 @@ during image decoding on supported platforms (default off). Usage:
 FIXME: Consider adding md5 checksum support to WTF. Use it to compute the
 decoded image frame md5 and output that value.
 
-FIXME: Consider adding an input data packetization option. Break the input
-into network-sized packets, pump the packets into the image decoder until
-the input data is complete (allDataReceived). This to include any internal
-SharedBuffer costs, such as buffer coalescing, in the reported results.
-
 FIXME: Consider integrating this tool in Chrome telemetry for realz, using
 the image corpii used to assess Blink image decode performance. Refer to
 http://crbug.com/398235#c103 and http://crbug.com/258324#c5
@@ -270,19 +265,46 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
     return SharedBuffer::create(buffer.get(), fileSize);
 }
 
-bool decodeImageData(SharedBuffer* data, bool colorCorrection)
+bool decodeImageData(SharedBuffer* data, bool colorCorrection, size_t packetSize)
 {
     OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data,
         ImageDecoder::AlphaPremultiplied, colorCorrection ?
             ImageDecoder::GammaAndColorProfileApplied : ImageDecoder::GammaAndColorProfileIgnored);
 
-    bool allDataReceived = true;
-    decoder->setData(data, allDataReceived);
+    if (!packetSize) {
+        bool allDataReceived = true;
+        decoder->setData(data, allDataReceived);
 
-    int frameCount = decoder->frameCount();
-    for (int i = 0; i < frameCount; ++i) {
-        if (!decoder->frameBufferAtIndex(i))
-            return false;
+        int frameCount = decoder->frameCount();
+        for (int i = 0; i < frameCount; ++i) {
+            if (!decoder->frameBufferAtIndex(i))
+                return false;
+        }
+
+        return !decoder->failed();
+    }
+
+    RefPtr<SharedBuffer> packetData = SharedBuffer::create();
+    unsigned position = 0;
+    while (true) {
+        const char* packet;
+        unsigned length = data->getSomeData(packet, position);
+
+        length = std::min(static_cast<size_t>(length), packetSize);
+        packetData->append(packet, length);
+        position += length;
+
+        bool allDataReceived = position == data->size();
+        decoder->setData(packetData.get(), allDataReceived);
+
+        int frameCount = decoder->frameCount();
+        for (int i = 0; i < frameCount; ++i) {
+            if (!decoder->frameBufferAtIndex(i))
+                break;
+        }
+
+        if (allDataReceived || decoder->failed())
+            break;
     }
 
     return !decoder->failed();
@@ -301,17 +323,17 @@ int main(int argc, char* argv[])
         applyColorCorrection = (--argc, ++argv, true);
 
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s [--color-correct] file [iterations]\n", name);
+        fprintf(stderr, "Usage: %s [--color-correct] file [iterations] [packetSize]\n", name);
         exit(1);
     }
 #else
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s file [iterations]\n", name);
+        fprintf(stderr, "Usage: %s file [iterations] [packetSize]\n", name);
         exit(1);
     }
 #endif
 
-    // Control decode bench iterations.
+    // Control decode bench iterations and packet size.
 
     size_t iterations = 1;
     if (argc >= 3) {
@@ -320,6 +342,18 @@ int main(int argc, char* argv[])
         if (*end != '\0' || !iterations) {
             fprintf(stderr, "Second argument should be number of iterations. "
                 "The default is 1. You supplied %s\n", argv[2]);
+            exit(1);
+        }
+    }
+
+    size_t packetSize = 0;
+    if (argc >= 4) {
+        char* end = 0;
+        packetSize = strtol(argv[3], &end, 10);
+        if (*end != '\0') {
+            fprintf(stderr, "Third argument should be packet size. Default is "
+                "0, meaning to decode the entire image in one packet. You "
+                "supplied %s\n", argv[3]);
             exit(1);
         }
     }
@@ -360,13 +394,16 @@ int main(int argc, char* argv[])
         exit(2);
     }
 
+    // Consolidate the SharedBuffer data segments into one, contiguous block of memory.
+    data->data();
+
     // Image decode bench for iterations.
 
     double totalTime = 0.0;
 
     for (size_t i = 0; i < iterations; ++i) {
         double startTime = getCurrentTime();
-        bool decoded = decodeImageData(data.get(), applyColorCorrection);
+        bool decoded = decodeImageData(data.get(), applyColorCorrection, packetSize);
         double elapsedTime = getCurrentTime() - startTime;
         totalTime += elapsedTime;
         if (!decoded) {
