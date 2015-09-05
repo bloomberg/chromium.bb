@@ -346,14 +346,6 @@ public class NotificationMediaPlaybackControls {
         return title.startsWith("\u25B6") ? title.substring(1).trim() : title;
     }
 
-    private String getStatus() {
-        if (mMediaNotificationInfo.origin != null) {
-            return mContext.getString(R.string.media_notification_link_text,
-                                      mMediaNotificationInfo.origin);
-        }
-        return mContext.getString(R.string.media_notification_text_no_link);
-    }
-
     private PendingIntent createContentIntent() {
         int tabId = mMediaNotificationInfo.tabId;
         return PendingIntent.getActivity(
@@ -411,7 +403,7 @@ public class NotificationMediaPlaybackControls {
         RemoteViews contentView = createContentView();
 
         contentView.setTextViewText(R.id.title, mMediaNotificationInfo.title);
-        contentView.setTextViewText(R.id.status, getStatus());
+        contentView.setTextViewText(R.id.status, mMediaNotificationInfo.origin);
         if (mNotificationIcon != null) {
             contentView.setImageViewBitmap(R.id.icon, mNotificationIcon);
         } else {
