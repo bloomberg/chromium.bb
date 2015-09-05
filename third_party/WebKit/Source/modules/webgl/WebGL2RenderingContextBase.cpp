@@ -85,6 +85,17 @@ void WebGL2RenderingContextBase::initializeNewContext()
     m_samplerUnits.clear();
     m_samplerUnits.resize(numCombinedTextureImageUnits);
 
+    GLint maxTransformFeedbackSeparateAttribs = 0;
+    webContext()->getIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, &maxTransformFeedbackSeparateAttribs);
+    m_boundIndexedTransformFeedbackBuffers.clear();
+    m_boundIndexedTransformFeedbackBuffers.resize(maxTransformFeedbackSeparateAttribs);
+
+    GLint maxUniformBufferBindings = 0;
+    webContext()->getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformBufferBindings);
+    m_boundIndexedUniformBuffers.clear();
+    m_boundIndexedUniformBuffers.resize(maxUniformBufferBindings);
+    m_maxBoundUniformBufferIndex = 0;
+
     WebGLRenderingContextBase::initializeNewContext();
 }
 
@@ -1651,18 +1662,27 @@ void WebGL2RenderingContextBase::bindBufferBase(GLenum target, GLuint index, Web
         return;
     if (deleted)
         buffer = 0;
+    if (!validateAndUpdateBufferBindBaseTarget("bindBufferBase", target, index, buffer))
+        return;
     webContext()->bindBufferBase(target, index, objectOrZero(buffer));
 }
 
 void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, WebGLBuffer* buffer, long long offset, long long size)
 {
-    if (isContextLost() || !validateWebGLObject("bindBufferRange", buffer))
+    if (isContextLost())
         return;
-
+    bool deleted;
+    if (!checkObjectToBeBound("bindBufferRange", buffer, deleted))
+        return;
+    if (deleted)
+        buffer = 0;
     if (!validateValueFitNonNegInt32("bindBufferRange", "offset", offset)
         || !validateValueFitNonNegInt32("bindBufferRange", "size", size)) {
         return;
     }
+
+    if (!validateAndUpdateBufferBindBaseTarget("bindBufferRange", target, index, buffer))
+        return;
 
     webContext()->bindBufferRange(target, index, objectOrZero(buffer), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size));
 }
@@ -1674,9 +1694,17 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(ScriptState* scriptS
 
     switch (target) {
     case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
+        if (index >= m_boundIndexedTransformFeedbackBuffers.size()) {
+            synthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter", "index out of range");
+            return ScriptValue::createNull(scriptState);
+        }
+        return WebGLAny(scriptState, m_boundIndexedTransformFeedbackBuffers[index].get());
     case GL_UNIFORM_BUFFER_BINDING:
-        notImplemented();
-        return ScriptValue::createNull(scriptState);
+        if (index >= m_boundIndexedUniformBuffers.size()) {
+            synthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter", "index out of range");
+            return ScriptValue::createNull(scriptState);
+        }
+        return WebGLAny(scriptState, m_boundIndexedUniformBuffers[index].get());
     case GL_TRANSFORM_FEEDBACK_BUFFER_SIZE:
     case GL_TRANSFORM_FEEDBACK_BUFFER_START:
     case GL_UNIFORM_BUFFER_SIZE:
@@ -2056,6 +2084,95 @@ bool WebGL2RenderingContextBase::validateCapability(const char* functionName, GL
     }
 }
 
+bool WebGL2RenderingContextBase::isBufferBoundToTransformFeedback(WebGLBuffer* buffer)
+{
+    ASSERT(buffer);
+
+    if (m_boundTransformFeedbackBuffer == buffer)
+        return true;
+
+    for (size_t i = 0; i < m_boundIndexedTransformFeedbackBuffers.size(); ++i) {
+        if (m_boundIndexedTransformFeedbackBuffers[i] == buffer)
+            return true;
+    }
+
+    return false;
+}
+
+bool WebGL2RenderingContextBase::isBufferBoundToNonTransformFeedback(WebGLBuffer* buffer)
+{
+    ASSERT(buffer);
+
+    if (m_boundArrayBuffer == buffer
+        || m_boundVertexArrayObject->boundElementArrayBuffer() == buffer
+        || m_boundCopyReadBuffer == buffer
+        || m_boundCopyWriteBuffer == buffer
+        || m_boundPixelPackBuffer == buffer
+        || m_boundPixelUnpackBuffer == buffer
+        || m_boundUniformBuffer == buffer) {
+        return true;
+    }
+
+    for (size_t i = 0; i <= m_maxBoundUniformBufferIndex; ++i) {
+        if (m_boundIndexedUniformBuffers[i] == buffer)
+            return true;
+    }
+
+    return false;
+}
+
+bool WebGL2RenderingContextBase::validateBufferTargetCompatibility(const char* functionName, GLenum target, WebGLBuffer* buffer)
+{
+    ASSERT(buffer);
+
+    switch (buffer->getInitialTarget()) {
+    case GL_ELEMENT_ARRAY_BUFFER:
+        switch (target) {
+        case GL_ARRAY_BUFFER:
+        case GL_PIXEL_PACK_BUFFER:
+        case GL_PIXEL_UNPACK_BUFFER:
+        case GL_TRANSFORM_FEEDBACK_BUFFER:
+        case GL_UNIFORM_BUFFER:
+            synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                "element array buffers can not be bound to a different target");
+
+            return false;
+        default:
+            break;
+        }
+        break;
+    case GL_ARRAY_BUFFER:
+    case GL_COPY_READ_BUFFER:
+    case GL_COPY_WRITE_BUFFER:
+    case GL_PIXEL_PACK_BUFFER:
+    case GL_PIXEL_UNPACK_BUFFER:
+    case GL_UNIFORM_BUFFER:
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+        if (target == GL_ELEMENT_ARRAY_BUFFER) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                "buffers bound to non ELEMENT_ARRAY_BUFFER targets can not be bound to ELEMENT_ARRAY_BUFFER target");
+            return false;
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
+        if (isBufferBoundToNonTransformFeedback(buffer)) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                "a buffer bound to TRANSFORM_FEEDBACK_BUFFER can not be bound to any other targets");
+            return false;
+        }
+    } else if (isBufferBoundToTransformFeedback(buffer)) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName,
+            "a buffer bound to TRANSFORM_FEEDBACK_BUFFER can not be bound to any other targets");
+        return false;
+    }
+
+    return true;
+}
+
 bool WebGL2RenderingContextBase::validateBufferTarget(const char* functionName, GLenum target)
 {
     switch (target) {
@@ -2079,57 +2196,8 @@ bool WebGL2RenderingContextBase::validateAndUpdateBufferBindTarget(const char* f
     if (!validateBufferTarget(functionName, target))
         return false;
 
-    if (buffer) {
-        switch (buffer->getInitialTarget()) {
-        case GL_ELEMENT_ARRAY_BUFFER:
-            switch (target) {
-            case GL_ARRAY_BUFFER:
-            case GL_PIXEL_PACK_BUFFER:
-            case GL_PIXEL_UNPACK_BUFFER:
-            case GL_TRANSFORM_FEEDBACK_BUFFER:
-            case GL_UNIFORM_BUFFER:
-                synthesizeGLError(GL_INVALID_OPERATION, functionName,
-                    "element array buffers can not be bound to a different target");
-
-                return false;
-            default:
-                break;
-            }
-            break;
-        case GL_ARRAY_BUFFER:
-        case GL_COPY_READ_BUFFER:
-        case GL_COPY_WRITE_BUFFER:
-        case GL_PIXEL_PACK_BUFFER:
-        case GL_PIXEL_UNPACK_BUFFER:
-        case GL_UNIFORM_BUFFER:
-        case GL_TRANSFORM_FEEDBACK_BUFFER:
-            if (target == GL_ELEMENT_ARRAY_BUFFER) {
-                synthesizeGLError(GL_INVALID_OPERATION, functionName,
-                    "buffers bound to non ELEMENT_ARRAY_BUFFER targets can not be bound to ELEMENT_ARRAY_BUFFER target");
-                return false;
-            }
-            break;
-        default:
-            break;
-        }
-        if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
-            if (m_boundArrayBuffer == buffer
-                || m_boundVertexArrayObject->boundElementArrayBuffer() == buffer
-                || m_boundCopyReadBuffer == buffer
-                || m_boundCopyWriteBuffer == buffer
-                || m_boundPixelPackBuffer == buffer
-                || m_boundPixelUnpackBuffer == buffer
-                || m_boundUniformBuffer == buffer) {
-                synthesizeGLError(GL_INVALID_OPERATION, functionName,
-                    "a buffer bound to TRANSFORM_FEEDBACK_BUFFER can not be bound to any other targets");
-                return false;
-            }
-        } else if (m_boundTransformFeedbackBuffer == buffer) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName,
-                "a buffer bound to TRANSFORM_FEEDBACK_BUFFER can not be bound to any other targets");
-            return false;
-        }
-    }
+    if (buffer && !validateBufferTargetCompatibility(functionName, target, buffer))
+        return false;
 
     switch (target) {
     case GL_ARRAY_BUFFER:
@@ -2155,6 +2223,66 @@ bool WebGL2RenderingContextBase::validateAndUpdateBufferBindTarget(const char* f
         break;
     case GL_UNIFORM_BUFFER:
         m_boundUniformBuffer = buffer;
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+
+    if (buffer && !buffer->getInitialTarget())
+        buffer->setInitialTarget(target);
+    return true;
+}
+
+bool WebGL2RenderingContextBase::validateBufferBaseTarget(const char* functionName, GLenum target)
+{
+    switch (target) {
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+    case GL_UNIFORM_BUFFER:
+        return true;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
+}
+
+bool WebGL2RenderingContextBase::validateAndUpdateBufferBindBaseTarget(const char* functionName, GLenum target, GLuint index, WebGLBuffer* buffer)
+{
+    if (!validateBufferBaseTarget(functionName, target))
+        return false;
+
+    if (buffer && !validateBufferTargetCompatibility(functionName, target, buffer))
+        return false;
+
+    switch (target) {
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+        if (index >= m_boundIndexedTransformFeedbackBuffers.size()) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "index out of range");
+            return false;
+        }
+        m_boundIndexedTransformFeedbackBuffers[index] = buffer;
+        m_boundTransformFeedbackBuffer = buffer;
+        break;
+    case GL_UNIFORM_BUFFER:
+        if (index >= m_boundIndexedUniformBuffers.size()) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "index out of range");
+            return false;
+        }
+        m_boundIndexedUniformBuffers[index] = buffer;
+        m_boundUniformBuffer = buffer;
+
+        // Keep track of what the maximum bound uniform buffer index is
+        if (buffer) {
+            if (index > m_maxBoundUniformBufferIndex)
+                m_maxBoundUniformBufferIndex = index;
+        } else if (m_maxBoundUniformBufferIndex > 0 && index == m_maxBoundUniformBufferIndex) {
+            size_t i = m_maxBoundUniformBufferIndex - 1;
+            for (; i > 0; --i) {
+                if (m_boundIndexedUniformBuffers[i].get())
+                    break;
+            }
+            m_maxBoundUniformBufferIndex = i;
+        }
         break;
     default:
         ASSERT_NOT_REACHED();

@@ -195,6 +195,13 @@ protected:
     void texSubImage3DImpl(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, Image*, WebGLImageConversion::ImageHtmlDomSource, bool, bool);
     void samplerParameter(WebGLSampler*, GLenum, GLfloat, GLint, bool);
 
+    bool isBufferBoundToTransformFeedback(WebGLBuffer*);
+    bool isBufferBoundToNonTransformFeedback(WebGLBuffer*);
+    bool validateBufferTargetCompatibility(const char*, GLenum, WebGLBuffer*);
+
+    bool validateBufferBaseTarget(const char* functionName, GLenum target);
+    bool validateAndUpdateBufferBindBaseTarget(const char* functionName, GLenum, GLuint, WebGLBuffer*);
+
     /* WebGLRenderingContextBase overrides */
     unsigned getMaxWebGLLocationLength() const override { return 1024; };
     bool validateCapability(const char* functionName, GLenum) override;
@@ -225,6 +232,10 @@ protected:
     PersistentWillBeMember<WebGLBuffer> m_boundPixelUnpackBuffer;
     PersistentWillBeMember<WebGLBuffer> m_boundTransformFeedbackBuffer;
     PersistentWillBeMember<WebGLBuffer> m_boundUniformBuffer;
+
+    PersistentHeapVectorWillBeHeapVector<Member<WebGLBuffer>> m_boundIndexedTransformFeedbackBuffers;
+    PersistentHeapVectorWillBeHeapVector<Member<WebGLBuffer>> m_boundIndexedUniformBuffers;
+    size_t m_maxBoundUniformBufferIndex;
 
     PersistentWillBeMember<WebGLQuery> m_currentBooleanOcclusionQuery;
     PersistentWillBeMember<WebGLQuery> m_currentTransformFeedbackPrimitivesWrittenQuery;
