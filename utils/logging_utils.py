@@ -153,6 +153,10 @@ def prepare_logging(filename, root=None):
   # It is a requirement that the root logger is set to DEBUG, so the messages
   # are not lost. It defaults to WARNING otherwise.
   logger = root or logging.getLogger()
+  if not logger:
+    # Better print insanity than crash.
+    print >> sys.stderr, 'OMG NO ROOT'
+    return
   logger.setLevel(logging.DEBUG)
 
   stderr = logging.StreamHandler()
@@ -181,6 +185,10 @@ def prepare_logging(filename, root=None):
 def set_console_level(level, root=None):
   """Reset the console (stderr) logging level."""
   handler = find_stderr(root)
+  if not handler:
+    # Better print insanity than crash.
+    print >> sys.stderr, 'OMG NO STDERR'
+    return
   handler.setLevel(level)
 
 
