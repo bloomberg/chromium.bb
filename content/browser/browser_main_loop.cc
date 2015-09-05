@@ -469,10 +469,10 @@ void BrowserMainLoop::EarlyInitialization() {
   net::EnsureWinsockInit();
 #endif
 
-#if !defined(USE_OPENSSL)
+#if defined(USE_NSS_CERTS)
   // We want to be sure to init NSPR on the main thread.
   crypto::EnsureNSPRInit();
-#endif  // !defined(USE_OPENSSL)
+#endif  // defined(USE_NSS_CERTS)
 
 #if !defined(OS_IOS)
   if (parsed_command_line_.HasSwitch(switches::kRendererProcessLimit)) {
