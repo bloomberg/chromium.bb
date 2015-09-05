@@ -6123,7 +6123,7 @@ class LayerTreeHostImplTestWithDelegatingRenderer
     return FakeOutputSurface::CreateDelegating3d();
   }
 
-  void DrawFrameAndTestDamage(const gfx::RectF& expected_damage) {
+  void DrawFrameAndTestDamage(const gfx::Rect& expected_damage) {
     bool expect_to_draw = !expected_damage.IsEmpty();
 
     LayerTreeHostImpl::FrameData frame;
@@ -6144,12 +6144,12 @@ class LayerTreeHostImplTestWithDelegatingRenderer
       ASSERT_EQ(2u, root_render_pass->quad_list.size());
 
       LayerImpl* child = host_impl_->active_tree()->root_layer()->children()[0];
-      gfx::RectF expected_child_visible_rect(child->bounds());
+      gfx::Rect expected_child_visible_rect(child->bounds());
       EXPECT_EQ(expected_child_visible_rect,
                 root_render_pass->quad_list.front()->visible_rect);
 
       LayerImpl* root = host_impl_->active_tree()->root_layer();
-      gfx::RectF expected_root_visible_rect(root->bounds());
+      gfx::Rect expected_root_visible_rect(root->bounds());
       EXPECT_EQ(expected_root_visible_rect,
                 root_render_pass->quad_list.ElementAt(1)->visible_rect);
     }
@@ -6284,7 +6284,8 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   bool clipped = false, force_aa = false;
   gfx::QuadF device_layer_quad = MathUtil::MapQuad(
       quad->shared_quad_state->quad_to_target_transform,
-      gfx::QuadF(quad->shared_quad_state->visible_quad_layer_rect), &clipped);
+      gfx::QuadF(gfx::RectF(quad->shared_quad_state->visible_quad_layer_rect)),
+      &clipped);
   EXPECT_FALSE(clipped);
   bool antialiased =
       GLRendererWithSetupQuadForAntialiasing::ShouldAntialiasQuad(

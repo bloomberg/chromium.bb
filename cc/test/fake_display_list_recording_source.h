@@ -62,12 +62,20 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
                                 recorded_viewport_, 0, RECORD_NORMALLY);
   }
 
-  void add_draw_rect(const gfx::RectF& rect) {
+  void add_draw_rect(const gfx::Rect& rect) {
     client_.add_draw_rect(rect, default_paint_);
   }
 
-  void add_draw_rect_with_paint(const gfx::RectF& rect, const SkPaint& paint) {
+  void add_draw_rect_with_paint(const gfx::Rect& rect, const SkPaint& paint) {
     client_.add_draw_rect(rect, paint);
+  }
+
+  void add_draw_rectf(const gfx::RectF& rect) {
+    client_.add_draw_rectf(rect, default_paint_);
+  }
+
+  void add_draw_rectf_with_paint(const gfx::RectF& rect, const SkPaint& paint) {
+    client_.add_draw_rectf(rect, paint);
   }
 
   void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {

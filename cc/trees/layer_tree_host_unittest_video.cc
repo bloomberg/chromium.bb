@@ -49,19 +49,17 @@ class LayerTreeHostVideoTestSetNeedsDisplay
                                    DrawResult draw_result) override {
     LayerImpl* root_layer = host_impl->active_tree()->root_layer();
     RenderSurfaceImpl* root_surface = root_layer->render_surface();
-    gfx::RectF damage_rect =
+    gfx::Rect damage_rect =
         root_surface->damage_tracker()->current_damage_rect();
 
     switch (num_draws_) {
       case 0:
         // First frame the whole viewport is damaged.
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 20.f, 20.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 20, 20), damage_rect);
         break;
       case 1:
         // Second frame the video layer is damaged.
-        EXPECT_EQ(gfx::RectF(6.f, 6.f, 8.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(6, 6, 8, 10), damage_rect);
         EndTest();
         break;
     }

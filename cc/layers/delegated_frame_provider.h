@@ -12,7 +12,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/return_callback.h"
 #include "cc/resources/returned_resource.h"
-#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
@@ -41,7 +41,7 @@ class CC_EXPORT DelegatedFrameProvider
   // lose track of damage.
   DelegatedFrameData* GetFrameDataAndRefResources(
       DelegatedRendererLayer* observer,
-      gfx::RectF* damage);
+      gfx::Rect* damage);
 
   ReturnCallback GetReturnResourcesCallbackForImplThread();
   void UnrefResourcesOnMainThread(const ReturnedResourceArray& unused);
@@ -58,9 +58,9 @@ class CC_EXPORT DelegatedFrameProvider
 
   struct Observer {
     DelegatedRendererLayer* layer;
-    gfx::RectF damage;
+    gfx::Rect damage;
 
-    Observer(DelegatedRendererLayer* layer, const gfx::RectF& damage)
+    Observer(DelegatedRendererLayer* layer, const gfx::Rect& damage)
         : layer(layer), damage(damage) {}
   };
   std::vector<Observer> observers_;

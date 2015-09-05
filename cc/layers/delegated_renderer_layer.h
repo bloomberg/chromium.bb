@@ -44,7 +44,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   bool should_collect_new_frame_;
 
   DelegatedFrameData* frame_data_;
-  gfx::RectF frame_damage_;
+  gfx::Rect frame_damage_;
 
   base::WeakPtrFactory<DelegatedRendererLayer> weak_ptrs_;
 

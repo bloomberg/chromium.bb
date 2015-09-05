@@ -1741,7 +1741,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
   // Verify that the test transform and test rect actually do cause the clipped
   // flag to trigger. Otherwise we are not testing the intended scenario.
   bool clipped = false;
-  MathUtil::MapQuad(transform_preventing_aa, gfx::QuadF(child_rect), &clipped);
+  MathUtil::MapQuad(transform_preventing_aa, gfx::QuadF(gfx::RectF(child_rect)),
+                    &clipped);
   ASSERT_TRUE(clipped);
 
   child_pass = AddRenderPass(&render_passes_in_draw_order_,

@@ -10,6 +10,11 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/client/context_support.h"
 
+namespace gfx {
+class Rect;
+class RectF;
+}
+
 namespace cc {
 
 class TestContextSupport : public gpu::ContextSupport {

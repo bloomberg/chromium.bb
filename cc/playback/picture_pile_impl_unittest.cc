@@ -30,8 +30,7 @@ TEST(PicturePileImplTest, AnalyzeIsSolidUnscaled) {
   SkPaint non_solid_paint;
   non_solid_paint.setColor(non_solid_color);
 
-  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 400, 400),
-                                             solid_paint);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(400, 400), solid_paint);
   recording_source->Rerecord();
 
   scoped_refptr<FakePicturePileImpl> pile =
@@ -95,8 +94,7 @@ TEST(PicturePileImplTest, AnalyzeIsSolidScaled) {
   SkPaint non_solid_paint;
   non_solid_paint.setColor(non_solid_color);
 
-  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 400, 400),
-                                             solid_paint);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(400, 400), solid_paint);
   recording_source->Rerecord();
 
   scoped_refptr<FakePicturePileImpl> pile =
@@ -397,7 +395,7 @@ TEST_P(OverlapTest, NoOverlap) {
   color_paint.setXfermodeMode(SkXfermode::kPlus_Mode);
   // Paint outside the layer to make sure that blending works.
   recording_source->add_draw_rect_with_paint(
-      gfx::RectF(bigger_than_layer_bounds), color_paint);
+      gfx::Rect(bigger_than_layer_bounds), color_paint);
   recording_source->Rerecord();
 
   scoped_refptr<FakePicturePileImpl> pile =

@@ -33,7 +33,7 @@ void DelegatedFrameProvider::AddObserver(DelegatedRendererLayer* layer) {
     DCHECK(observers_[i].layer != layer);
 #endif
 
-  observers_.push_back(Observer(layer, gfx::RectF(frame_size_)));
+  observers_.push_back(Observer(layer, gfx::Rect(frame_size_)));
 
   DCHECK(frame_) << "Must have a frame when given to a DelegatedRendererLayer.";
 }
@@ -80,15 +80,14 @@ void DelegatedFrameProvider::SetFrameData(
 
 DelegatedFrameData* DelegatedFrameProvider::GetFrameDataAndRefResources(
     DelegatedRendererLayer* observer,
-    gfx::RectF* damage) {
-
+    gfx::Rect* damage) {
   bool found_observer = false;
   for (size_t i = 0; i < observers_.size(); ++i) {
     if (observers_[i].layer != observer)
       continue;
     *damage = observers_[i].damage;
     // The observer is now responsible for the damage.
-    observers_[i].damage = gfx::RectF();
+    observers_[i].damage = gfx::Rect();
     found_observer = true;
   }
   DCHECK(found_observer);

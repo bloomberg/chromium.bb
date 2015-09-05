@@ -417,8 +417,8 @@ void UpdateAccumulatedSurfaceState(
     DCHECK_IMPLIES(current_target->num_unclipped_descendants(),
                    current_draw_transform.IsIdentityOrTranslation());
 
-    target_rect = gfx::ToEnclosingRect(
-        MathUtil::MapClippedRect(current_draw_transform, target_rect));
+    target_rect =
+        MathUtil::MapEnclosingClippedRect(current_draw_transform, target_rect);
   }
 
   // It is an error to not reach |render_target|. If this happens, it means that

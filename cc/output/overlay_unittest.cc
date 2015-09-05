@@ -69,7 +69,7 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
 
     OverlayCandidate& candidate = surfaces->back();
     if (candidate.display_rect.width() == 64) {
-      EXPECT_EQ(kOverlayBottomRightRect, candidate.display_rect);
+      EXPECT_EQ(gfx::RectF(kOverlayBottomRightRect), candidate.display_rect);
     } else {
       EXPECT_NEAR(kOverlayRect.x(), candidate.display_rect.x(), 0.01f);
       EXPECT_NEAR(kOverlayRect.y(), candidate.display_rect.y(), 0.01f);
@@ -77,8 +77,8 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
       EXPECT_NEAR(kOverlayRect.height(), candidate.display_rect.height(),
                   0.01f);
     }
-    EXPECT_EQ(BoundingRect(kUVTopLeft, kUVBottomRight).ToString(),
-              candidate.uv_rect.ToString());
+    EXPECT_FLOAT_RECT_EQ(BoundingRect(kUVTopLeft, kUVBottomRight),
+                         candidate.uv_rect);
     candidate.overlay_handled = true;
   }
 };
@@ -469,10 +469,10 @@ TEST_F(SandwichTest, SuccessfulSandwichOverlay) {
 
   EXPECT_FALSE(candidate_list[0].use_output_surface_for_resource);
   EXPECT_EQ(candidate_id, candidate_list[1].resource_id);
-  EXPECT_EQ(gfx::Rect(32, 32, 32, 32), candidate_list[1].display_rect);
+  EXPECT_EQ(gfx::RectF(32.f, 32.f, 32.f, 32.f), candidate_list[1].display_rect);
   EXPECT_TRUE(candidate_list[2].use_output_surface_for_resource);
-  EXPECT_EQ(gfx::Rect(32, 32, 16, 16), candidate_list[2].display_rect);
-  EXPECT_EQ(gfx::RectF(32. / 256, 32. / 256, 16. / 256, 16. / 256),
+  EXPECT_EQ(gfx::RectF(32.f, 32.f, 16.f, 16.f), candidate_list[2].display_rect);
+  EXPECT_EQ(gfx::RectF(32.f / 256.f, 32.f / 256.f, 16.f / 256.f, 16.f / 256.f),
             candidate_list[2].uv_rect);
 }
 
@@ -514,10 +514,10 @@ TEST_F(SandwichTest, GrowTopOverlayForToAlignWithDIP) {
 
   EXPECT_FALSE(candidate_list[0].use_output_surface_for_resource);
   EXPECT_EQ(candidate_id, candidate_list[1].resource_id);
-  EXPECT_EQ(gfx::Rect(32, 32, 32, 32), candidate_list[1].display_rect);
+  EXPECT_EQ(gfx::RectF(32.f, 32.f, 32.f, 32.f), candidate_list[1].display_rect);
   EXPECT_TRUE(candidate_list[2].use_output_surface_for_resource);
-  EXPECT_EQ(gfx::Rect(32, 32, 18, 18), candidate_list[2].display_rect);
-  EXPECT_EQ(gfx::RectF(32. / 256, 32. / 256, 18. / 256, 18. / 256),
+  EXPECT_EQ(gfx::RectF(32.f, 32.f, 18.f, 18.f), candidate_list[2].display_rect);
+  EXPECT_EQ(gfx::RectF(32.f / 256.f, 32.f / 256.f, 18.f / 256.f, 18.f / 256.f),
             candidate_list[2].uv_rect);
 }
 
@@ -601,7 +601,7 @@ TEST_F(SandwichTest, MultiQuadOverlay) {
   // Check that overlays cover the same region that the quads covered.
   EXPECT_FALSE(candidate_list[0].use_output_surface_for_resource);
   EXPECT_EQ(candidate_id, candidate_list[1].resource_id);
-  EXPECT_EQ(gfx::Rect(0, 0, 64, 64), candidate_list[1].display_rect);
+  EXPECT_EQ(gfx::RectF(64.f, 64.f), candidate_list[1].display_rect);
   EXPECT_TRUE(candidate_list[2].use_output_surface_for_resource);
   EXPECT_TRUE(candidate_list[3].use_output_surface_for_resource);
   Region overlay_region;

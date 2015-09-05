@@ -60,7 +60,7 @@ void RasterSourceHelper::PrepareForPlaybackToCanvas(
     // texel (since the recording won't cover it) and outside the last texel
     // (due to linear filtering when using this texture).
     gfx::Rect content_rect =
-        gfx::ToEnclosingRect(gfx::ScaleRect(source_rect, contents_scale));
+        gfx::ScaleToEnclosingRect(source_rect, contents_scale);
 
     // The final texel of content may only be partially covered by a
     // rasterization; this rect represents the content rect that is fully

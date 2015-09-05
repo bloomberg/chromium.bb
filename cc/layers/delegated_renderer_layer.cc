@@ -72,7 +72,7 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
   if (frame_data_)
     delegated_impl->SetFrameData(frame_data_, frame_damage_);
   frame_data_ = nullptr;
-  frame_damage_ = gfx::RectF();
+  frame_damage_ = gfx::Rect();
 }
 
 void DelegatedRendererLayer::ProviderHasNewFrame() {

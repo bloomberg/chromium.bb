@@ -210,8 +210,8 @@ void PicturePileImpl::RasterCommon(SkCanvas* canvas,
   DCHECK(contents_scale >= min_contents_scale_);
 
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
-  gfx::Rect content_tiling_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(gfx::Rect(tiling_.tiling_size()), contents_scale));
+  gfx::Rect content_tiling_rect = gfx::ScaleToEnclosingRect(
+      gfx::Rect(tiling_.tiling_size()), contents_scale);
   content_tiling_rect.Intersect(canvas_rect);
 
   canvas->clipRect(gfx::RectToSkRect(content_tiling_rect),

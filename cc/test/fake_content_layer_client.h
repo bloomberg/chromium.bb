@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -50,7 +51,11 @@ class FakeContentLayerClient : public ContentLayerClient {
     fill_with_nonsolid_color_ = nonsolid;
   }
 
-  void add_draw_rect(const gfx::RectF& rect, const SkPaint& paint) {
+  void add_draw_rect(const gfx::Rect& rect, const SkPaint& paint) {
+    draw_rects_.push_back(std::make_pair(gfx::RectF(rect), paint));
+  }
+
+  void add_draw_rectf(const gfx::RectF& rect, const SkPaint& paint) {
     draw_rects_.push_back(std::make_pair(rect, paint));
   }
 

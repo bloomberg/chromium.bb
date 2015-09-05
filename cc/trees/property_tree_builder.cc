@@ -493,7 +493,7 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.sequence_number = property_trees->sequence_number;
 
   ClipNode root_clip;
-  root_clip.data.clip = viewport;
+  root_clip.data.clip = gfx::RectF(viewport);
   root_clip.data.transform_id = kRootPropertyTreeNodeId;
   data_for_recursion.clip_tree_parent = data_for_recursion.clip_tree->Insert(
       root_clip, kUnclippedRootClipTreeNodeId);

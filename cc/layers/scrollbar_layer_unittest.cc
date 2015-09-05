@@ -599,9 +599,9 @@ TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbVerticalAdjust) {
   layers[0]->SetBounds(gfx::Size(100, 3));
   layers[1]->SetBounds(gfx::Size(3, 100));
 
-  EXPECT_EQ(gfx::RectF(20.f, 0.f, 20.f, 3.f),
+  EXPECT_EQ(gfx::Rect(20, 0, 20, 3),
             horizontal_scrollbar_layer_->ComputeThumbQuadRect());
-  EXPECT_EQ(gfx::RectF(0.f, 20.f, 3.f, 20.f),
+  EXPECT_EQ(gfx::Rect(0, 20, 3, 20),
             vertical_scrollbar_layer_->ComputeThumbQuadRect());
 
   horizontal_scrollbar_layer_->SetVerticalAdjust(10.f);

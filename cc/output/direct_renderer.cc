@@ -17,6 +17,7 @@
 #include "cc/output/bsp_walk_action.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/draw_quad.h"
+#include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -445,7 +446,7 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
     const DrawQuad& quad = **it;
-    gfx::QuadF send_quad(quad.visible_rect);
+    gfx::QuadF send_quad(gfx::RectF(quad.visible_rect));
 
     if (render_pass_is_clipped &&
         ShouldSkipQuad(quad, render_pass_scissor_in_draw_space)) {
@@ -462,7 +463,7 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
     // polygons to go into the BSP tree.
     if (quad.shared_quad_state->sorting_context_id != 0) {
       scoped_ptr<DrawPolygon> new_polygon(new DrawPolygon(
-          *it, quad.visible_rect,
+          *it, gfx::RectF(quad.visible_rect),
           quad.shared_quad_state->quad_to_target_transform, next_polygon_id++));
       if (new_polygon->points().size() > 2u) {
         poly_list.push_back(new_polygon.Pass());

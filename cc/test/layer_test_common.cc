@@ -84,10 +84,11 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
                  .IsPositiveScaleOrTranslation())
           << quad->shared_quad_state->quad_to_target_transform.ToString();
       gfx::RectF target_rectf = MathUtil::MapClippedRect(
-          quad->shared_quad_state->quad_to_target_transform, quad->rect);
+          quad->shared_quad_state->quad_to_target_transform,
+          gfx::RectF(quad->rect));
       // Scale transforms allowed, as long as the final transformed rect
       // ends up on integer boundaries for ease of testing.
-      DCHECK_EQ(target_rectf.ToString(), gfx::RectF(target_rect).ToString());
+      ASSERT_EQ(target_rectf, gfx::RectF(target_rect));
     }
     gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
         quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);

@@ -77,16 +77,24 @@ class FakePicturePile : public PicturePile {
 
   void SetPixelRecordDistance(int d) { pixel_record_distance_ = d; }
 
-  void add_draw_rect(const gfx::RectF& rect) {
+  void add_draw_rect(const gfx::Rect& rect) {
     client_.add_draw_rect(rect, default_paint_);
   }
 
-  void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {
-    client_.add_draw_bitmap(bitmap, point, default_paint_);
+  void add_draw_rect_with_paint(const gfx::Rect& rect, const SkPaint& paint) {
+    client_.add_draw_rect(rect, paint);
   }
 
-  void add_draw_rect_with_paint(const gfx::RectF& rect, const SkPaint& paint) {
-    client_.add_draw_rect(rect, paint);
+  void add_draw_rectf(const gfx::RectF& rect) {
+    client_.add_draw_rectf(rect, default_paint_);
+  }
+
+  void add_draw_rectf_with_paint(const gfx::RectF& rect, const SkPaint& paint) {
+    client_.add_draw_rectf(rect, paint);
+  }
+
+  void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {
+    add_draw_bitmap_with_paint(bitmap, point, default_paint_);
   }
 
   void add_draw_bitmap_with_paint(const SkBitmap& bitmap,

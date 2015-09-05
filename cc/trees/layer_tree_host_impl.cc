@@ -1378,8 +1378,8 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
     if (transform_for_tile_priority.GetInverse(&screen_to_view)) {
       // Convert from screen space to view space.
       viewport_rect_for_tile_priority_in_view_space =
-          gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-              screen_to_view, viewport_rect_for_tile_priority));
+          MathUtil::ProjectEnclosingClippedRect(
+              screen_to_view, viewport_rect_for_tile_priority);
     }
   }
 
@@ -2808,8 +2808,7 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
   gfx::Rect layer_impl_bounds(layer_impl->bounds());
 
   gfx::RectF device_viewport_layer_impl_bounds = MathUtil::MapClippedRect(
-      layer_impl->screen_space_transform(),
-      layer_impl_bounds);
+      layer_impl->screen_space_transform(), gfx::RectF(layer_impl_bounds));
 
   return device_viewport_layer_impl_bounds.ManhattanDistanceToPoint(
       device_viewport_point);

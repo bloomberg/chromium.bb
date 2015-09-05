@@ -143,7 +143,7 @@ bool OverlayStrategyCommon::GetIOSurfaceQuadInfo(const IOSurfaceDrawQuad& quad,
   quad_info->resource_id = quad.io_surface_resource_id();
   quad_info->resource_size_in_pixels = quad.io_surface_size;
   quad_info->transform = overlay_transform;
-  quad_info->uv_rect = gfx::Rect(0, 0, 1, 1);
+  quad_info->uv_rect = gfx::RectF(1.f, 1.f);
   return true;
 }
 

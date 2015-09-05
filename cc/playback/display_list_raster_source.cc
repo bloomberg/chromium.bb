@@ -108,7 +108,7 @@ void DisplayListRasterSource::RasterCommon(
     float contents_scale) const {
   canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
   gfx::Rect content_rect =
-      gfx::ToEnclosingRect(gfx::ScaleRect(gfx::Rect(size_), contents_scale));
+      gfx::ScaleToEnclosingRect(gfx::Rect(size_), contents_scale);
   content_rect.Intersect(canvas_playback_rect);
 
   canvas->clipRect(gfx::RectToSkRect(content_rect), SkRegion::kIntersect_Op);

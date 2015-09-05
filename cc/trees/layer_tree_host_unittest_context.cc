@@ -561,7 +561,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     // Paint non-solid color.
     SkPaint paint;
     paint.setColor(SkColorSetARGB(100, 80, 200, 200));
-    client_.add_draw_rect(gfx::Rect(0, 0, 5, 5), paint);
+    client_.add_draw_rect(gfx::Rect(5, 5), paint);
 
     layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     layer_->SetBounds(gfx::Size(10, 10));
@@ -639,7 +639,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
     // Paint non-solid color.
     SkPaint paint;
     paint.setColor(SkColorSetARGB(100, 80, 200, 200));
-    client_.add_draw_rect(gfx::Rect(0, 0, 5, 5), paint);
+    client_.add_draw_rect(gfx::Rect(5, 5), paint);
 
     scoped_refptr<FakePictureLayer> picture_layer =
         FakePictureLayer::Create(layer_settings(), &client_);

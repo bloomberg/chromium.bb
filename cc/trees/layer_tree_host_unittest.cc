@@ -735,7 +735,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
-    gfx::RectF root_damage_rect;
+    gfx::Rect root_damage_rect;
     if (!frame_data->render_passes.empty())
       root_damage_rect = frame_data->render_passes.back()->damage_rect;
 
@@ -981,7 +981,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
-    gfx::RectF root_damage_rect;
+    gfx::Rect root_damage_rect;
     if (!frame_data->render_passes.empty())
       root_damage_rect = frame_data->render_passes.back()->damage_rect;
 
@@ -1081,7 +1081,7 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
-    gfx::RectF root_damage_rect;
+    gfx::Rect root_damage_rect;
     if (!frame_data->render_passes.empty())
       root_damage_rect = frame_data->render_passes.back()->damage_rect;
 
@@ -1185,7 +1185,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
-    gfx::RectF root_damage_rect;
+    gfx::Rect root_damage_rect;
     if (!frame_data->render_passes.empty())
       root_damage_rect = frame_data->render_passes.back()->damage_rect;
 

@@ -4,6 +4,7 @@
 
 #include "cc/output/overlay_strategy_sandwich.h"
 
+#include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/quads/draw_quad.h"
@@ -15,9 +16,8 @@ namespace {
 
 gfx::Rect AlignPixelRectToDIP(float scale_factor, const gfx::Rect& pixel_rect) {
   gfx::Rect dip_rect =
-      gfx::ToEnclosingRect(gfx::ScaleRect(pixel_rect, 1.0f / scale_factor));
-  gfx::Rect new_pixel_rect =
-      gfx::ToEnclosingRect(gfx::ScaleRect(dip_rect, scale_factor));
+      gfx::ScaleToEnclosingRect(pixel_rect, 1.0f / scale_factor);
+  gfx::Rect new_pixel_rect = gfx::ScaleToEnclosingRect(dip_rect, scale_factor);
   return new_pixel_rect;
 }
 
@@ -51,12 +51,12 @@ bool OverlayStrategySandwich::TryOverlay(
 
   // Compute the candidate's rect in display space (pixels on the screen). The
   // rect needs to be DIP-aligned, or we cannot use it.
-  gfx::RectF candidate_pixel_rect_float = candidate_quad->rect;
-  candidate_transform.TransformRect(&candidate_pixel_rect_float);
-  gfx::Rect candidate_pixel_rect;
-  candidate_pixel_rect = gfx::ToEnclosingRect(candidate_pixel_rect_float);
-  if (candidate_pixel_rect != candidate_pixel_rect_float)
+  gfx::RectF candidate_pixel_rect_float = MathUtil::MapClippedRect(
+      candidate_transform, gfx::RectF(candidate_quad->rect));
+  if (!candidate_pixel_rect_float.IsExpressibleAsRect())
     return false;
+  gfx::Rect candidate_pixel_rect =
+      gfx::ToNearestRect(candidate_pixel_rect_float);
   if (!IsPixelRectAlignedToDIP(device_scale_factor, candidate_pixel_rect))
     return false;
 
@@ -69,11 +69,11 @@ bool OverlayStrategySandwich::TryOverlay(
       continue;
     // Compute the quad's bounds in display space, and ensure that it is rounded
     // up to be DIP-aligned.
-    gfx::RectF pixel_covered_rect_float = overlap_iter->rect;
-    overlap_iter->shared_quad_state->quad_to_target_transform.TransformRect(
-        &pixel_covered_rect_float);
-    gfx::Rect pixel_covered_rect = AlignPixelRectToDIP(
-        device_scale_factor, gfx::ToEnclosingRect(pixel_covered_rect_float));
+    gfx::Rect unaligned_pixel_covered_rect = MathUtil::MapEnclosingClippedRect(
+        overlap_iter->shared_quad_state->quad_to_target_transform,
+        overlap_iter->rect);
+    gfx::Rect pixel_covered_rect =
+        AlignPixelRectToDIP(device_scale_factor, unaligned_pixel_covered_rect);
 
     // Include the intersection of that quad with the candidate's quad in the
     // covered region.
@@ -84,7 +84,7 @@ bool OverlayStrategySandwich::TryOverlay(
   // Add our primary surface.
   OverlayCandidateList new_candidate_list;
   OverlayCandidate main_image;
-  main_image.display_rect = pixel_bounds;
+  main_image.display_rect = gfx::RectF(pixel_bounds);
   new_candidate_list.push_back(main_image);
 
   // Add the candidate's overlay.
@@ -101,8 +101,8 @@ bool OverlayStrategySandwich::TryOverlay(
   }
   for (const gfx::Rect& pixel_covered_rect : pixel_covered_rects) {
     OverlayCandidate main_image_on_top;
-    main_image_on_top.display_rect = pixel_covered_rect;
-    main_image_on_top.uv_rect = pixel_covered_rect;
+    main_image_on_top.display_rect = gfx::RectF(pixel_covered_rect);
+    main_image_on_top.uv_rect = gfx::RectF(pixel_covered_rect);
     main_image_on_top.uv_rect.Scale(1.f / pixel_bounds.width(),
                                     1.f / pixel_bounds.height());
     main_image_on_top.plane_z_order = 2;
@@ -138,10 +138,8 @@ bool OverlayStrategySandwich::TryOverlay(
 
     // Cover the region with transparent quads.
     for (const gfx::Rect& pixel_covered_rect : pixel_covered_rects) {
-      gfx::RectF quad_space_covered_rect_float = pixel_covered_rect;
-      candidate_inverse_transform.TransformRect(&quad_space_covered_rect_float);
-      gfx::Rect quad_space_covered_rect =
-          gfx::ToEnclosingRect(quad_space_covered_rect_float);
+      gfx::Rect quad_space_covered_rect = MathUtil::MapEnclosingClippedRect(
+          candidate_inverse_transform, pixel_covered_rect);
       quad_space_covered_rect.Intersect(candidate_rect);
 
       SolidColorDrawQuad* transparent_quad =

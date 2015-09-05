@@ -87,7 +87,7 @@ void DelegatedRendererLayerImpl::CreateChildIdIfNeeded(
 
 void DelegatedRendererLayerImpl::SetFrameData(
     const DelegatedFrameData* frame_data,
-    const gfx::RectF& damage_in_frame) {
+    const gfx::Rect& damage_in_frame) {
   DCHECK(child_id_) << "CreateChildIdIfNeeded must be called first.";
   DCHECK(frame_data);
   DCHECK(!frame_data->render_pass_list.empty());
@@ -153,11 +153,10 @@ void DelegatedRendererLayerImpl::SetFrameData(
   // the frame, so intersect the damage to the layer's bounds.
   RenderPass* new_root_pass = render_pass_list.back();
   gfx::Size frame_size = new_root_pass->output_rect.size();
-  gfx::RectF damage_in_layer = damage_in_frame;
-  damage_in_layer.Scale(inverse_device_scale_factor_);
+  gfx::Rect damage_in_layer =
+      gfx::ScaleToEnclosingRect(damage_in_frame, inverse_device_scale_factor_);
   SetUpdateRect(gfx::IntersectRects(
-      gfx::UnionRects(update_rect(), gfx::ToEnclosingRect(damage_in_layer)),
-      gfx::Rect(bounds())));
+      gfx::UnionRects(update_rect(), damage_in_layer), gfx::Rect(bounds())));
 
   SetRenderPasses(&render_pass_list);
   have_render_passes_to_push_ = true;

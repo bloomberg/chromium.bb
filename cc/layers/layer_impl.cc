@@ -1761,8 +1761,9 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   MathUtil::AddToTracedValue("transform_origin", transform_origin_, state);
 
   bool clipped;
-  gfx::QuadF layer_quad = MathUtil::MapQuad(
-      screen_space_transform(), gfx::QuadF(gfx::Rect(bounds())), &clipped);
+  gfx::QuadF layer_quad =
+      MathUtil::MapQuad(screen_space_transform(),
+                        gfx::QuadF(gfx::RectF(gfx::Rect(bounds()))), &clipped);
   MathUtil::AddToTracedValue("layer_quad", layer_quad, state);
   if (!touch_event_handler_region_.IsEmpty()) {
     state->BeginArray("touch_event_handler_region");

@@ -45,7 +45,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   void CreateChildIdIfNeeded(const ReturnCallback& return_callback);
 
   void SetFrameData(const DelegatedFrameData* frame_data,
-                    const gfx::RectF& damage_in_frame);
+                    const gfx::Rect& damage_in_frame);
 
   float inverse_device_scale_factor() const {
     return inverse_device_scale_factor_;

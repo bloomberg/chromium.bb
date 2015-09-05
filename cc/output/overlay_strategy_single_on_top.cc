@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "cc/base/math_util.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/quads/draw_quad.h"
 
@@ -23,15 +24,16 @@ bool OverlayStrategySingleOnTop::TryOverlay(
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
   QuadList& quad_list = root_render_pass->quad_list;
   const DrawQuad* draw_quad = *candidate_iterator;
-  gfx::RectF rect = draw_quad->rect;
-  draw_quad->shared_quad_state->quad_to_target_transform.TransformRect(&rect);
+  gfx::RectF rect = MathUtil::MapClippedRect(
+      draw_quad->shared_quad_state->quad_to_target_transform,
+      gfx::RectF(draw_quad->rect));
 
   // Check that no prior quads overlap it.
   for (auto overlap_iter = quad_list.cbegin();
        overlap_iter != candidate_iterator; ++overlap_iter) {
-    gfx::RectF overlap_rect = overlap_iter->rect;
-    overlap_iter->shared_quad_state->quad_to_target_transform.TransformRect(
-        &overlap_rect);
+    gfx::RectF overlap_rect = MathUtil::MapClippedRect(
+        overlap_iter->shared_quad_state->quad_to_target_transform,
+        gfx::RectF(overlap_iter->rect));
     if (rect.Intersects(overlap_rect) &&
         !OverlayStrategyCommon::IsInvisibleQuad(*overlap_iter))
       return false;
@@ -40,7 +42,7 @@ bool OverlayStrategySingleOnTop::TryOverlay(
   // Add our primary surface.
   OverlayCandidateList candidates;
   OverlayCandidate main_image;
-  main_image.display_rect = root_render_pass->output_rect;
+  main_image.display_rect = gfx::RectF(root_render_pass->output_rect);
   candidates.push_back(main_image);
 
   // Add the overlay.

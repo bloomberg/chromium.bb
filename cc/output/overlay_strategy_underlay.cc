@@ -25,7 +25,7 @@ bool OverlayStrategyUnderlay::TryOverlay(
   // Add our primary surface.
   OverlayCandidateList candidates;
   OverlayCandidate main_image;
-  main_image.display_rect = root_render_pass->output_rect;
+  main_image.display_rect = gfx::RectF(root_render_pass->output_rect);
   candidates.push_back(main_image);
 
   // Add the overlay.

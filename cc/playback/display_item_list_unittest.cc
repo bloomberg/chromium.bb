@@ -421,7 +421,7 @@ TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   SkPictureRecorder recorder;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
-  SkCanvas* canvas = recorder.beginRecording(gfx::RectFToSkRect(layer_rect));
+  SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(layer_rect));
   for (int i = 0; i < kNumCommandsInTestSkPicture; i++)
     canvas->drawPaint(blue_paint);
   skia::RefPtr<SkPicture> picture =

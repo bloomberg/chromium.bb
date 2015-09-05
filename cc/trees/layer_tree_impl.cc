@@ -1245,7 +1245,7 @@ static inline bool LayerClipsSubtree(LayerType* layer) {
 static bool PointHitsRect(
     const gfx::PointF& screen_space_point,
     const gfx::Transform& local_space_to_screen_space_transform,
-    const gfx::RectF& local_space_rect,
+    const gfx::Rect& local_space_rect,
     float* distance_to_camera) {
   // If the transform is not invertible, then assume that this point doesn't hit
   // this rect.
@@ -1268,7 +1268,7 @@ static bool PointHitsRect(
   if (clipped)
     return false;
 
-  if (!local_space_rect.Contains(hit_test_point_in_local_space))
+  if (!gfx::RectF(local_space_rect).Contains(hit_test_point_in_local_space))
     return false;
 
   if (distance_to_camera) {
@@ -1344,7 +1344,7 @@ static bool PointIsClippedBySurfaceOrClipRect(
 static bool PointHitsLayer(const LayerImpl* layer,
                            const gfx::PointF& screen_space_point,
                            float* distance_to_intersection) {
-  gfx::RectF content_rect(layer->bounds());
+  gfx::Rect content_rect(layer->bounds());
   if (!PointHitsRect(screen_space_point,
                      layer->screen_space_transform(),
                      content_rect,

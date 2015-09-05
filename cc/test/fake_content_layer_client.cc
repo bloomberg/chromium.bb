@@ -49,11 +49,7 @@ void FakeContentLayerClient::PaintContents(
       it != draw_rects_.end(); ++it) {
     const gfx::RectF& draw_rect = it->first;
     const SkPaint& paint = it->second;
-    canvas->drawRectCoords(draw_rect.x(),
-                           draw_rect.y(),
-                           draw_rect.right(),
-                           draw_rect.bottom(),
-                           paint);
+    canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
   }
 
   for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
@@ -62,12 +58,12 @@ void FakeContentLayerClient::PaintContents(
   }
 
   if (fill_with_nonsolid_color_) {
-    gfx::RectF draw_rect = paint_rect;
+    gfx::Rect draw_rect = paint_rect;
     bool red = true;
     while (!draw_rect.IsEmpty()) {
       SkPaint paint;
       paint.setColor(red ? SK_ColorRED : SK_ColorBLUE);
-      canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
+      canvas->drawIRect(gfx::RectToSkIRect(draw_rect), paint);
       draw_rect.Inset(1, 1);
     }
   }
@@ -94,8 +90,7 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     const SkPaint& paint = it->second;
     canvas =
         skia::SharePtr(recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
-    canvas->drawRectCoords(draw_rect.x(), draw_rect.y(), draw_rect.width(),
-                           draw_rect.height(), paint);
+    canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
     picture = skia::AdoptRef(recorder.endRecordingAsPicture());
     auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
     item->SetNew(picture.Pass());
@@ -119,14 +114,14 @@ FakeContentLayerClient::PaintContentsToDisplayList(
   }
 
   if (fill_with_nonsolid_color_) {
-    gfx::RectF draw_rect = clip;
+    gfx::Rect draw_rect = clip;
     bool red = true;
     while (!draw_rect.IsEmpty()) {
       SkPaint paint;
       paint.setColor(red ? SK_ColorRED : SK_ColorBLUE);
-      canvas = skia::SharePtr(
-          recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
-      canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
+      canvas =
+          skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(draw_rect)));
+      canvas->drawIRect(gfx::RectToSkIRect(draw_rect), paint);
       picture = skia::AdoptRef(recorder.endRecordingAsPicture());
       auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
       item->SetNew(picture.Pass());

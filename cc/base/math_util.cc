@@ -202,7 +202,7 @@ gfx::Rect MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
   if (transform.IsIdentityOrTranslation()) {
     gfx::Vector2dF offset(transform.matrix().getFloat(0, 3),
                           transform.matrix().getFloat(1, 3));
-    return gfx::ToEnclosedRect(rect + offset);
+    return gfx::ToEnclosedRect(gfx::RectF(rect) + offset);
   }
 
   SkMScalar quad[2 * 2];  // input: 2 x 2D points

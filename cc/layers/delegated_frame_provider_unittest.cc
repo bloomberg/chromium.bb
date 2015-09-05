@@ -159,20 +159,20 @@ TEST_F(DelegatedFrameProviderTest, RefResources) {
   scoped_refptr<DelegatedRendererLayer> observer2 =
       DelegatedRendererLayer::Create(layer_settings_, frame_provider_);
 
-  gfx::RectF damage;
+  gfx::Rect damage;
 
   // Both observers get a full frame of damage on the first request.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
-  EXPECT_EQ(gfx::RectF(5.f, 5.f).ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(5, 5), damage);
   frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
-  EXPECT_EQ(gfx::RectF(5.f, 5.f).ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(5, 5), damage);
 
   // And both get no damage on the 2nd request. This adds a second ref to the
   // resources.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
-  EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(), damage);
   frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
-  EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(), damage);
 
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
 
@@ -217,7 +217,7 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProvider) {
   scoped_refptr<DelegatedRendererLayer> observer2 =
       DelegatedRendererLayer::Create(layer_settings_, frame_provider_);
 
-  gfx::RectF damage;
+  gfx::Rect damage;
 
   // Take a ref on each observer.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
@@ -259,7 +259,7 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProviderUntilDestroy) {
   scoped_refptr<DelegatedRendererLayer> observer2 =
       DelegatedRendererLayer::Create(layer_settings_, frame_provider_);
 
-  gfx::RectF damage;
+  gfx::Rect damage;
 
   // Take a ref on each observer.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
@@ -303,19 +303,19 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
   scoped_refptr<DelegatedRendererLayer> observer2 =
       DelegatedRendererLayer::Create(layer_settings_, frame_provider_);
 
-  gfx::RectF damage;
+  gfx::Rect damage;
 
   // Both observers get a full frame of damage on the first request.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
-  EXPECT_EQ(gfx::RectF(5.f, 5.f).ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(5, 5), damage);
   frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
-  EXPECT_EQ(gfx::RectF(5.f, 5.f).ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(5, 5), damage);
 
   // And both get no damage on the 2nd request.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
-  EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(), damage);
   frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
-  EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(), damage);
 
   frame = CreateFrameData(gfx::Rect(5, 5), gfx::Rect(2, 2));
   AddTextureQuad(frame.get(), 555);
@@ -324,15 +324,15 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
 
   // Both observers get the damage for the new frame.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
-  EXPECT_EQ(gfx::RectF(2.f, 2.f).ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(2, 2), damage);
   frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
-  EXPECT_EQ(gfx::RectF(2.f, 2.f).ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(2, 2), damage);
 
   // And both get no damage on the 2nd request.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
-  EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(), damage);
   frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
-  EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
+  EXPECT_EQ(gfx::Rect(), damage);
 }
 
 TEST_F(DelegatedFrameProviderTest, LostNothing) {

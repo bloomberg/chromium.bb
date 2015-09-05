@@ -749,11 +749,11 @@ TYPED_TEST(IntersectingQuadPixelTest, TexturedQuads) {
 
 TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
   this->SetupQuadStateAndRenderPass();
-  gfx::RectF outer_rect(this->quad_rect_);
-  gfx::RectF inner_rect(this->quad_rect_.x() + (this->quad_rect_.width() / 4),
-                        this->quad_rect_.y() + (this->quad_rect_.height() / 4),
-                        this->quad_rect_.width() / 2,
-                        this->quad_rect_.height() / 2);
+  gfx::Rect outer_rect(this->quad_rect_);
+  gfx::Rect inner_rect(this->quad_rect_.x() + (this->quad_rect_.width() / 4),
+                       this->quad_rect_.y() + (this->quad_rect_.height() / 4),
+                       this->quad_rect_.width() / 2,
+                       this->quad_rect_.height() / 2);
 
   SkPaint black_paint;
   black_paint.setColor(SK_ColorBLACK);
@@ -775,8 +775,9 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
       this->render_pass_->template CreateAndAppendDrawQuad<PictureDrawQuad>();
 
   blue_quad->SetNew(this->front_quad_state_, this->quad_rect_, gfx::Rect(),
-                    this->quad_rect_, this->quad_rect_, this->quad_rect_.size(),
-                    false, RGBA_8888, this->quad_rect_, 1.f, blue_pile);
+                    this->quad_rect_, gfx::RectF(this->quad_rect_),
+                    this->quad_rect_.size(), false, RGBA_8888, this->quad_rect_,
+                    1.f, blue_pile);
 
   scoped_ptr<FakePicturePile> green_recording =
       FakePicturePile::CreateFilledPile(this->quad_rect_.size(),
@@ -790,7 +791,7 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
   PictureDrawQuad* green_quad =
       this->render_pass_->template CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad->SetNew(this->back_quad_state_, this->quad_rect_, gfx::Rect(),
-                     this->quad_rect_, this->quad_rect_,
+                     this->quad_rect_, gfx::RectF(this->quad_rect_),
                      this->quad_rect_.size(), false, RGBA_8888,
                      this->quad_rect_, 1.f, green_pile);
   SCOPED_TRACE("IntersectingPictureQuadsPass");
@@ -2198,14 +2199,14 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   scoped_refptr<FakePicturePileImpl> blue_pile =
       FakePicturePileImpl::CreateFromPile(blue_recording.get(), nullptr);
 
-  gfx::Transform blue_quad_to_target_transform;
   gfx::Vector2d offset(viewport.bottom_right() - blue_rect.bottom_right());
+  gfx::Transform blue_quad_to_target_transform;
   blue_quad_to_target_transform.Translate(offset.x(), offset.y());
-  gfx::RectF blue_scissor_rect = blue_clip_rect;
-  blue_quad_to_target_transform.TransformRect(&blue_scissor_rect);
-  SharedQuadState* blue_shared_state = CreateTestSharedQuadStateClipped(
-      blue_quad_to_target_transform, blue_rect,
-      gfx::ToEnclosingRect(blue_scissor_rect), pass.get());
+  gfx::Rect blue_target_clip_rect = MathUtil::MapEnclosingClippedRect(
+      blue_quad_to_target_transform, blue_clip_rect);
+  SharedQuadState* blue_shared_state =
+      CreateTestSharedQuadStateClipped(blue_quad_to_target_transform, blue_rect,
+                                       blue_target_clip_rect, pass.get());
 
   PictureDrawQuad* blue_quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
 
@@ -2468,7 +2469,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
 
   TileDrawQuad* quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource,
-               gfx::Rect(tile_size), tile_size, swizzle_contents,
+               gfx::RectF(gfx::Rect(tile_size)), tile_size, swizzle_contents,
                nearest_neighbor);
 
   RenderPassList pass_list;
@@ -2682,8 +2683,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
 
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
-  recording->add_draw_rect_with_paint(blue_layer_rect1, blue_paint);
-  recording->add_draw_rect_with_paint(blue_layer_rect2, blue_paint);
+  recording->add_draw_rectf_with_paint(blue_layer_rect1, blue_paint);
+  recording->add_draw_rectf_with_paint(blue_layer_rect2, blue_paint);
   recording->Rerecord();
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);

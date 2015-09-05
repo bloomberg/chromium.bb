@@ -56,6 +56,6 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
   }
 
   CreateChildIdIfNeeded(base::Bind(&NoopReturnCallback));
-  SetFrameData(delegated_frame.get(), gfx::RectF());
+  SetFrameData(delegated_frame.get(), gfx::Rect());
 }
 }  // namespace cc

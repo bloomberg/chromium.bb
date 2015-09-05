@@ -9,9 +9,14 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_format.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace cc {
 

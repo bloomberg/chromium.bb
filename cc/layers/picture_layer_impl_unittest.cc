@@ -524,8 +524,8 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
   // bounds, then tile priorities will end up being incorrect in cases of fully
   // offscreen layer.
   viewport_rect_for_tile_priority_in_view_space =
-      gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-          screen_to_view, viewport_rect_for_tile_priority));
+      MathUtil::ProjectEnclosingClippedRect(screen_to_view,
+                                            viewport_rect_for_tile_priority);
 
   EXPECT_EQ(viewport_rect_for_tile_priority_in_view_space,
             active_layer_->viewport_rect_for_tile_priority_in_content_space());

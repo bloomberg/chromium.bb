@@ -477,9 +477,8 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
     gfx::Transform view_to_layer(gfx::Transform::kSkipInitialization);
     if (screen_space_transform().GetInverse(&view_to_layer)) {
       // Transform from view space to content space.
-      visible_rect_in_content_space =
-          gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-              view_to_layer, viewport_rect_for_tile_priority));
+      visible_rect_in_content_space = MathUtil::ProjectEnclosingClippedRect(
+          view_to_layer, viewport_rect_for_tile_priority);
 
       // We have to allow for a viewport that is outside of the layer bounds in
       // order to compute tile priorities correctly for offscreen content that
