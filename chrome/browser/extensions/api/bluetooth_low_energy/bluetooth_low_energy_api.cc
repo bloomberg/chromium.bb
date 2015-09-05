@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
@@ -16,6 +17,11 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#endif
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -864,12 +870,38 @@ void BluetoothLowEnergyAdvertisementFunction::Initialize() {
       ApiResourceManager<BluetoothApiAdvertisement>::Get(browser_context());
 }
 
+static bool IsAutoLaunchedKioskApp(const ExtensionId& id) {
+#if defined(OS_CHROMEOS)
+  chromeos::KioskAppManager::App app_info;
+  return chromeos::KioskAppManager::Get()->GetApp(id, &app_info) &&
+         app_info.was_auto_launched_with_zero_delay;
+#else
+  return false;
+#endif
+}
+
+static bool IsPeripheralFlagEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBLEAdvertising);
+}
+
 // RegisterAdvertisement:
 
 bool BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Check permissions in manifest.
   if (!BluetoothManifestData::CheckPeripheralPermitted(extension())) {
+    error_ = kErrorPermissionDenied;
+    SendResponse(false);
+    return false;
+  }
+
+  // For this API to be available the app has to be either auto
+  // launched in Kiosk Mode or the enable-ble-advertisement-in-apps
+  // should be set.
+  if (!(IsAutoLaunchedKioskApp(extension()->id()) ||
+        IsPeripheralFlagEnabled())) {
     error_ = kErrorPermissionDenied;
     SendResponse(false);
     return false;
@@ -954,7 +986,18 @@ void BluetoothLowEnergyRegisterAdvertisementFunction::ErrorCallback(
 bool BluetoothLowEnergyUnregisterAdvertisementFunction::DoWork() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Check permission in the manifest.
   if (!BluetoothManifestData::CheckPeripheralPermitted(extension())) {
+    error_ = kErrorPermissionDenied;
+    SendResponse(false);
+    return false;
+  }
+
+  // For this API to be available the app has to be either auto
+  // launched in Kiosk Mode or the enable-ble-advertisement-in-apps
+  // should be set.
+  if (!(IsAutoLaunchedKioskApp(extension()->id()) ||
+        IsPeripheralFlagEnabled())) {
     error_ = kErrorPermissionDenied;
     SendResponse(false);
     return false;

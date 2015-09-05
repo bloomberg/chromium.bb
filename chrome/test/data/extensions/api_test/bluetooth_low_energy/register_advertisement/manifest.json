@@ -7,6 +7,8 @@
       "scripts": ["runtest.js"]
     }
   },
+  "kiosk_only": true,
+  "kiosk_enabled": true,
   "bluetooth": {
     "low_energy": true,
     "peripheral": true,

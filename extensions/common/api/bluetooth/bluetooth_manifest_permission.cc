@@ -118,11 +118,6 @@ bool BluetoothManifestPermission::CheckLowEnergyPermitted(
 
 bool BluetoothManifestPermission::CheckPeripheralPermitted(
     const Extension* extension) const {
-  if (!FeatureProvider::GetBehaviorFeature(
-           BehaviorFeature::kBluetoothPeripheral)
-           ->IsAvailableToExtension(extension)
-           .is_available())
-    return false;
   return peripheral_;
 }
 

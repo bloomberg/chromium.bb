@@ -801,6 +801,13 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebBluetooth)},
+#if defined(ENABLE_EXTENSIONS)
+    {"enable-ble-advertising-in-apps",
+     IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_NAME,
+     IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_DESCRIPTION,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(extensions::switches::kEnableBLEAdvertising)},
+#endif
     {"enable-devtools-experiments",
      IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME,
      IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION,

@@ -6,9 +6,6 @@
 
 namespace extensions {
 
-const char* const BehaviorFeature::kBluetoothPeripheral =
-    "bluetooth.peripheral";
-
 const char* const BehaviorFeature::kServiceWorker = "service_worker";
 
 const char* const BehaviorFeature::kWhitelistedForIncognito =

@@ -121,6 +121,7 @@
       'browser/extensions/api/automation/automation_apitest.cc',
       'browser/extensions/api/autotest_private/autotest_private_apitest.cc',
       'browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc',
+      'browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest_chromeos.cc',
       'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_apitest.cc',
       'browser/extensions/api/bookmarks/bookmark_apitest.cc',
       'browser/extensions/api/braille_display_private/braille_display_private_apitest.cc',

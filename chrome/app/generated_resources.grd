@@ -5850,6 +5850,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION" desc="Description for the flag to enable Web Bluetooth.">
         Enables Web Bluetooth which could allow websites to connect to and control Bluetooth devices around you. Including keyboards, cameras, microphones, etc.
       </message>
+      <message name="IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_NAME" desc="Name for the flag to enable BLE Advertising">
+        Enable BLE Advertising in Chrome Apps.
+      </message>
+      <message name="IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_DESCRIPTION" desc="Description of the flag to enable BLE Advertising">
+        Enables BLE Advertising in Chrome Apps. BLE Advertising might interfere with regular use of Bluetooth Low Energy features.
+      </message>
       <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME" desc="Name for the flag to enable experiments in Developer Tools">
         Enable Developer Tools experiments.
       </message>
