@@ -184,6 +184,7 @@ rpi_flippipe_handler(int fd, uint32_t mask, void *data)
 static int
 rpi_flippipe_init(struct rpi_flippipe *flippipe, struct rpi_output *output)
 {
+	struct weston_compositor *compositor = output->backend->compositor;
 	struct wl_event_loop *loop;
 	int fd[2];
 
@@ -192,9 +193,9 @@ rpi_flippipe_init(struct rpi_flippipe *flippipe, struct rpi_output *output)
 
 	flippipe->readfd = fd[0];
 	flippipe->writefd = fd[1];
-	flippipe->clk_id = output->base.compositor->presentation_clock;
+	flippipe->clk_id = compositor->presentation_clock;
 
-	loop = wl_display_get_event_loop(output->base.compositor->wl_display);
+	loop = wl_display_get_event_loop(compositor->wl_display);
 	flippipe->source = wl_event_loop_add_fd(loop, flippipe->readfd,
 						WL_EVENT_READABLE,
 						rpi_flippipe_handler, output);
@@ -498,6 +499,7 @@ rpi_backend_create(struct weston_compositor *compositor,
 	backend->base.destroy = rpi_backend_destroy;
 	backend->base.restore = rpi_restore;
 
+	backend->compositor = compositor;
 	backend->prev_state = WESTON_COMPOSITOR_ACTIVE;
 	backend->single_buffer = param->renderer.single_buffer;
 
