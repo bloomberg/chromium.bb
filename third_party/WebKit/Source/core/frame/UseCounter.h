@@ -837,6 +837,8 @@ public:
         WebkitTextInClipProperty = 941,
         WebkitTextInColorProperty = 942,
         HeaderValueNotMatchingRFC7230 = 943,
+        ClipPathOfPositionedElement = 944,
+        ClipCssOfPositionedElement = 945,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

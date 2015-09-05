@@ -591,6 +591,7 @@ bool HTMLCanvasElement::originClean() const
 
 bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
 {
+    fprintf(stderr, "shouldAccelerate?\n");
     if (m_context && !m_context->is2d())
         return false;
 

@@ -120,7 +120,7 @@ void DeprecatedPaintLayerPainter::paintLayerContentsAndReflection(GraphicsContex
 
 class ClipPathHelper {
 public:
-    ClipPathHelper(GraphicsContext* context, const DeprecatedPaintLayer& paintLayer, const DeprecatedPaintLayerPaintingInfo& paintingInfo, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed,
+    ClipPathHelper(GraphicsContext* context, const DeprecatedPaintLayer& paintLayer, DeprecatedPaintLayerPaintingInfo& paintingInfo, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed,
         const LayoutPoint& offsetFromRoot, PaintLayerFlags paintFlags)
         : m_resourceClipper(0), m_paintLayer(paintLayer), m_context(context)
     {
@@ -133,6 +133,8 @@ public:
             return;
 
         m_clipperState = SVGClipPainter::ClipperNotApplied;
+
+        paintingInfo.ancestorHasClipPathClipping = true;
 
         ASSERT(style.clipPath());
         if (style.clipPath()->type() == ClipPathOperation::SHAPE) {
@@ -178,7 +180,7 @@ private:
     GraphicsContext* m_context;
 };
 
-void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, const DeprecatedPaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
+void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, const DeprecatedPaintLayerPaintingInfo& paintingInfoArg, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
 {
     ASSERT(m_paintLayer.isSelfPaintingLayer() || m_paintLayer.hasSelfPaintingLayerDescendant());
     ASSERT(!(paintFlags & PaintLayerAppliedTransform));
@@ -203,6 +205,8 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
     if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_paintLayer.layoutObject()->isLayoutView() && !m_paintLayer.layoutObject()->isDocumentElement())
         return;
 
+    DeprecatedPaintLayerPaintingInfo paintingInfo = paintingInfoArg;
+
     // Ensure our lists are up-to-date.
     m_paintLayer.stackingNode()->updateLayerListsIfNeeded();
 
@@ -216,6 +220,9 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
 
     LayoutRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;
+
+    if (paintingInfo.ancestorHasClipPathClipping && m_paintLayer.layoutObject()->style()->position() != StaticPosition)
+        UseCounter::count(m_paintLayer.layoutObject()->document(), UseCounter::ClipPathOfPositionedElement);
 
     // These helpers output clip and compositing operations using a RAII pattern. Stack-allocated-varibles are destructed in the reverse order of construction,
     // so they are nested properly.
@@ -384,8 +391,11 @@ void DeprecatedPaintLayerPainter::paintLayerWithTransform(GraphicsContext* conte
             clipRectForFragment.intersect(fragment.backgroundRect);
             if (clipRectForFragment.isEmpty())
                 continue;
-            if (needsToClip(paintingInfo, clipRectForFragment))
+            if (needsToClip(paintingInfo, clipRectForFragment)) {
+                if (m_paintLayer.layoutObject()->style()->position() != StaticPosition && clipRectForFragment.isClippedByClipCss())
+                    UseCounter::count(m_paintLayer.layoutObject()->document(), UseCounter::ClipCssOfPositionedElement);
                 clipRecorder.emplace(*context, *parentLayer->layoutObject(), DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags);
+            }
         }
 
         paintFragmentByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset);
@@ -409,6 +419,7 @@ void DeprecatedPaintLayerPainter::paintFragmentByApplyingTransform(GraphicsConte
     // Now do a paint with the root layer shifted to be us.
     DeprecatedPaintLayerPaintingInfo transformedPaintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.globalPaintFlags(),
         adjustedSubPixelAccumulation, paintingInfo.paintingRoot);
+    transformedPaintingInfo.ancestorHasClipPathClipping = paintingInfo.ancestorHasClipPathClipping;
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags, ForceSingleFragment);
 }
 

@@ -65,6 +65,7 @@ static void adjustClipRectsForChildren(const LayoutObject& layoutObject, ClipRec
         clipRects.setOverflowClipRect(clipRects.posClipRect());
     }
 }
+
 static void applyClipRects(const ClipRectsContext& context, LayoutObject& layoutObject, LayoutPoint offset, ClipRects& clipRects)
 {
     ASSERT(layoutObject.hasOverflowClip() || layoutObject.hasClip());
@@ -83,9 +84,10 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& layout
     }
     if (layoutObject.hasClip()) {
         LayoutRect newClip = toLayoutBox(layoutObject).clipRect(offset);
-        clipRects.setPosClipRect(intersection(newClip, clipRects.posClipRect()));
-        clipRects.setOverflowClipRect(intersection(newClip, clipRects.overflowClipRect()));
-        clipRects.setFixedClipRect(intersection(newClip, clipRects.fixedClipRect()));
+        clipRects.setPosClipRect(intersection(newClip, clipRects.posClipRect()).setIsClippedByClipCss());
+        clipRects.setOverflowClipRect(intersection(newClip, clipRects.overflowClipRect()).setIsClippedByClipCss());
+        clipRects.setFixedClipRect(intersection(newClip, clipRects.fixedClipRect()).setIsClippedByClipCss());
+
     }
 }
 
@@ -260,8 +262,11 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
         // Clip applies to *us* as well, so go ahead and update the damageRect.
         LayoutRect newPosClip = toLayoutBox(m_layoutObject).clipRect(offset);
         backgroundRect.intersect(newPosClip);
+        backgroundRect.setIsClippedByClipCss();
         foregroundRect.intersect(newPosClip);
+        foregroundRect.setIsClippedByClipCss();
         outlineRect.intersect(newPosClip);
+        outlineRect.setIsClippedByClipCss();
     }
 }
 

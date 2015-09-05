@@ -85,6 +85,7 @@ struct DeprecatedPaintLayerPaintingInfo {
         , paintDirtyRect(inDirtyRect)
         , subPixelAccumulation(inSubPixelAccumulation)
         , clipToDirtyRect(true)
+        , ancestorHasClipPathClipping(false)
         , m_globalPaintFlags(globalPaintFlags)
     { }
 
@@ -97,6 +98,7 @@ struct DeprecatedPaintLayerPaintingInfo {
     LayoutSize subPixelAccumulation;
     IntSize scrollOffsetAccumulation;
     bool clipToDirtyRect;
+    bool ancestorHasClipPathClipping;
 
 private:
     const GlobalPaintFlags m_globalPaintFlags;
