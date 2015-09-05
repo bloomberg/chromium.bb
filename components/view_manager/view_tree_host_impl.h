@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/display_manager.h"
+#include "components/view_manager/event_dispatcher.h"
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
@@ -80,6 +81,9 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   void UpdateTextInputState(ServerView* view, const ui::TextInputState& state);
   void SetImeVisibility(ServerView* view, bool visible);
 
+  void OnAccelerator(uint32_t accelerator_id, mojo::EventPtr event);
+  void DispatchInputEventToView(const ServerView* target, mojo::EventPtr event);
+
   // ViewTreeHost:
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;
@@ -106,6 +110,7 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   ViewTreeHostDelegate* delegate_;
   ConnectionManager* const connection_manager_;
   mojo::ViewTreeHostClientPtr client_;
+  EventDispatcher event_dispatcher_;
   scoped_ptr<ServerView> root_;
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<FocusController> focus_controller_;

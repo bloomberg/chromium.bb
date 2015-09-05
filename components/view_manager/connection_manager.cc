@@ -45,7 +45,6 @@ ConnectionManager::ConnectionManager(
       surfaces_state_(surfaces_state),
       next_connection_id_(1),
       next_host_id_(0),
-      event_dispatcher_(this),
       current_change_(nullptr),
       in_destructor_(false) {
 }
@@ -162,17 +161,6 @@ ViewTreeImpl* ConnectionManager::EmbedAtView(
   return client_connection->service();
 }
 
-void ConnectionManager::OnAccelerator(ServerView* root,
-                                      uint32 id,
-                                      mojo::EventPtr event) {
-  for (auto& pair : host_connection_map_) {
-    if (root == pair.first->root_view()) {
-      pair.first->client()->OnAccelerator(id, event.Pass());
-      return;
-    }
-  }
-}
-
 ViewTreeImpl* ConnectionManager::GetConnection(
     ConnectionSpecificId connection_id) {
   ConnectionMap::iterator i = connection_map_.find(connection_id);
@@ -266,34 +254,6 @@ ViewTreeImpl* ConnectionManager::GetEmbedRoot(ViewTreeImpl* service) {
       return service;
   }
   return nullptr;
-}
-
-void ConnectionManager::DispatchInputEventToView(const ServerView* view,
-                                                 mojo::EventPtr event) {
-  // If the view is an embed root, forward to the embedded view, not the owner.
-  ViewTreeImpl* connection = GetConnectionWithRoot(view->id());
-  if (!connection)
-    connection = GetConnection(view->id().connection_id);
-  CHECK(connection);
-  connection->client()->OnViewInputEvent(ViewIdToTransportId(view->id()),
-                                         event.Pass(),
-                                         base::Bind(&base::DoNothing));
-}
-
-void ConnectionManager::OnEvent(ViewTreeHostImpl* host,
-                                mojo::EventPtr event) {
-  event_dispatcher_.OnEvent(host->root_view(), event.Pass());
-}
-
-void ConnectionManager::AddAccelerator(ViewTreeHostImpl* host,
-                                       uint32_t id,
-                                       mojo::KeyboardCode keyboard_code,
-                                       mojo::EventFlags flags) {
-  event_dispatcher_.AddAccelerator(id, keyboard_code, flags);
-}
-
-void ConnectionManager::RemoveAccelerator(ViewTreeHostImpl* host, uint32_t id) {
-  event_dispatcher_.RemoveAccelerator(id);
 }
 
 void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,

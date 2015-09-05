@@ -14,13 +14,13 @@
 
 namespace view_manager {
 
-class ConnectionManager;
 class ServerView;
+class ViewTreeHostImpl;
 
 // Handles dispatching events to the right location as well as updating focus.
 class EventDispatcher {
  public:
-  explicit EventDispatcher(ConnectionManager* connection_manager);
+  explicit EventDispatcher(ViewTreeHostImpl* view_tree_host);
   ~EventDispatcher();
 
   void AddAccelerator(uint32_t id,
@@ -28,7 +28,7 @@ class EventDispatcher {
                       mojo::EventFlags flags);
   void RemoveAccelerator(uint32_t id);
 
-  void OnEvent(ServerView* root, mojo::EventPtr event);
+  void OnEvent(mojo::EventPtr event);
 
  private:
   struct Accelerator {
@@ -50,11 +50,14 @@ class EventDispatcher {
   // If there is one, sets |accelerator_id| to the id of the accelerator invoked
   // and returns true. If there is none, returns false so normal key event
   // processing can continue.
-  bool HandleAccelerator(mojo::KeyboardCode keyboard_code,
-                         mojo::EventFlags flags,
-                         uint32_t* accelerator_id);
+  bool FindAccelerator(const mojo::Event& event, uint32_t* accelerator_id);
 
-  ConnectionManager* connection_manager_;
+  // Returns the ServerView that should receive |event|. If |event| is a
+  // pointer-type event, then this function also updates the event location to
+  // make sure it is in the returned target's coordinate space.
+  ServerView* FindEventTarget(mojo::Event* event);
+
+  ViewTreeHostImpl* view_tree_host_;
 
   using Entry = std::pair<uint32_t, Accelerator>;
   std::map<uint32_t, Accelerator> accelerators_;

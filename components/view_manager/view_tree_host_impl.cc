@@ -26,6 +26,7 @@ ViewTreeHostImpl::ViewTreeHostImpl(
     : delegate_(nullptr),
       connection_manager_(connection_manager),
       client_(client.Pass()),
+      event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(is_headless,
                                  app_impl,
@@ -103,6 +104,18 @@ void ViewTreeHostImpl::SetImeVisibility(ServerView* view, bool visible) {
   display_manager_->SetImeVisibility(visible);
 }
 
+void ViewTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
+                                     mojo::EventPtr event) {
+  client()->OnAccelerator(accelerator_id, event.Pass());
+}
+
+void ViewTreeHostImpl::DispatchInputEventToView(const ServerView* target,
+                                                mojo::EventPtr event) {
+  GetViewTree()->client()->OnViewInputEvent(ViewIdToTransportId(target->id()),
+                                            event.Pass(),
+                                            base::Bind(&base::DoNothing));
+}
+
 void ViewTreeHostImpl::SetSize(mojo::SizePtr size) {
   display_manager_->SetViewportSize(size.To<gfx::Size>());
 }
@@ -114,11 +127,11 @@ void ViewTreeHostImpl::SetTitle(const mojo::String& title) {
 void ViewTreeHostImpl::AddAccelerator(uint32_t id,
                                       mojo::KeyboardCode keyboard_code,
                                       mojo::EventFlags flags) {
-  connection_manager_->AddAccelerator(this, id, keyboard_code, flags);
+  event_dispatcher_.AddAccelerator(id, keyboard_code, flags);
 }
 
 void ViewTreeHostImpl::RemoveAccelerator(uint32_t id) {
-  connection_manager_->RemoveAccelerator(this, id);
+  event_dispatcher_.RemoveAccelerator(id);
 }
 
 void ViewTreeHostImpl::OnClientClosed() {
@@ -135,7 +148,7 @@ ServerView* ViewTreeHostImpl::GetRootView() {
 }
 
 void ViewTreeHostImpl::OnEvent(mojo::EventPtr event) {
-  connection_manager_->OnEvent(this, event.Pass());
+  event_dispatcher_.OnEvent(event.Pass());
 }
 
 void ViewTreeHostImpl::OnDisplayClosed() {

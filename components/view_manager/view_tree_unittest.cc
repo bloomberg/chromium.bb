@@ -292,6 +292,9 @@ class ViewTreeTest : public testing::Test {
   TestViewTreeClient* wm_client() { return wm_client_; }
 
   TestViewTreeHostConnection* host_connection() { return host_connection_; }
+  DisplayManagerDelegate* display_manager_delegate() {
+    return host_connection()->view_tree_host();
+  }
 
  protected:
   // testing::Test:
@@ -357,8 +360,7 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
-  connection_manager()->OnEvent(host_connection()->view_tree_host(),
-                                CreatePointerDownEvent(21, 22));
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
   // Focus should go to child1. This result in notifying both the window
   // manager and client connection being notified.
   EXPECT_EQ(v1, connection1->GetHost()->GetFocusedView());
@@ -370,16 +372,14 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
       "Focused id=2,1",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  connection_manager()->OnEvent(host_connection()->view_tree_host(),
-                                CreatePointerUpEvent(21, 22));
+  display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press outside of the embedded view. Focus should go to the root. Notice
   // the client1 doesn't see who has focus as the focused view (root) isn't
   // visible to it.
-  connection_manager()->OnEvent(host_connection()->view_tree_host(),
-                                CreatePointerDownEvent(61, 22));
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(host_connection()->view_tree_host()->root_view(),
             host_connection()->view_tree_host()->GetFocusedView());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
@@ -390,15 +390,13 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
       "Focused id=null",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  connection_manager()->OnEvent(host_connection()->view_tree_host(),
-                                CreatePointerUpEvent(21, 22));
+  display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press in the same location. Should not get a focus change event (only input
   // event).
-  connection_manager()->OnEvent(host_connection()->view_tree_host(),
-                                CreatePointerDownEvent(61, 22));
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(host_connection()->view_tree_host()->root_view(),
             host_connection()->view_tree_host()->GetFocusedView());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u);

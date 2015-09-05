@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
-#include "components/view_manager/event_dispatcher.h"
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
@@ -105,10 +104,6 @@ class ConnectionManager : public ServerViewDelegate,
                             const ViewId& view_id,
                             mojo::ViewTreeClientPtr client);
 
-  // Invoked when an accelerator has been triggered on a view tree with the
-  // provided |root|.
-  void OnAccelerator(ServerView* root, uint32 id, mojo::EventPtr event);
-
   // Returns the connection by id.
   ViewTreeImpl* GetConnection(
       mojo::ConnectionSpecificId connection_id);
@@ -160,14 +155,6 @@ class ConnectionManager : public ServerViewDelegate,
 
   // Dispatches |event| directly to the appropriate connection for |view|.
   void DispatchInputEventToView(const ServerView* view, mojo::EventPtr event);
-
-  void OnEvent(ViewTreeHostImpl* host, mojo::EventPtr event);
-
-  void AddAccelerator(ViewTreeHostImpl* host,
-                      uint32_t id,
-                      mojo::KeyboardCode keyboard_code,
-                      mojo::EventFlags flags);
-  void RemoveAccelerator(ViewTreeHostImpl* host, uint32_t id);
 
   // These functions trivially delegate to all ViewTreeImpls, which in
   // term notify their clients.
@@ -257,8 +244,6 @@ class ConnectionManager : public ServerViewDelegate,
 
   // ID to use for next ViewTreeHostImpl.
   uint16_t next_host_id_;
-
-  EventDispatcher event_dispatcher_;
 
   // Set of ViewTreeImpls.
   ConnectionMap connection_map_;
