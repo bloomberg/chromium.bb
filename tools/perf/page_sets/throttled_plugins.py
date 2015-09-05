@@ -12,7 +12,7 @@ class ThrottledPluginsPageSet(story.StorySet):
         archive_data_file='data/throttled_plugins.json',
         cloud_storage_bucket=story.PUBLIC_BUCKET)
     urls_with_throttled_plugins = [
-        'http://cnn.com',
+        #'http://cnn.com',  crbug.com/528463
         'http://techcrunch.com',
         'http://wsj.com',
         'http://youtube.com'
