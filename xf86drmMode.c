@@ -1189,6 +1189,9 @@ drmModeAtomicReqPtr drmModeAtomicDuplicate(drmModeAtomicReqPtr old)
 {
 	drmModeAtomicReqPtr new;
 
+	if (!old)
+		return NULL;
+
 	new = drmMalloc(sizeof *new);
 	if (!new)
 		return NULL;
@@ -1213,6 +1216,9 @@ drmModeAtomicReqPtr drmModeAtomicDuplicate(drmModeAtomicReqPtr old)
 
 int drmModeAtomicMerge(drmModeAtomicReqPtr base, drmModeAtomicReqPtr augment)
 {
+	if (!base)
+		return -EINVAL;
+
 	if (!augment || augment->cursor == 0)
 		return 0;
 
@@ -1239,12 +1245,15 @@ int drmModeAtomicMerge(drmModeAtomicReqPtr base, drmModeAtomicReqPtr augment)
 
 int drmModeAtomicGetCursor(drmModeAtomicReqPtr req)
 {
+	if (!req)
+		return -EINVAL;
 	return req->cursor;
 }
 
 void drmModeAtomicSetCursor(drmModeAtomicReqPtr req, int cursor)
 {
-	req->cursor = cursor;
+	if (req)
+		req->cursor = cursor;
 }
 
 int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
@@ -1252,6 +1261,9 @@ int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
 			     uint32_t property_id,
 			     uint64_t value)
 {
+	if (!req)
+		return -EINVAL;
+
 	if (req->cursor >= req->size_items) {
 		drmModeAtomicReqItemPtr new;
 
@@ -1308,6 +1320,9 @@ int drmModeAtomicCommit(int fd, drmModeAtomicReqPtr req, uint32_t flags,
 	uint32_t i;
 	int obj_idx = -1;
 	int ret = -1;
+
+	if (!req)
+		return -EINVAL;
 
 	if (req->cursor == 0)
 		return 0;
