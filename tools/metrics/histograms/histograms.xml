@@ -22300,7 +22300,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bengr@chromium.org</owner>
   <summary>
     The difference between the size specified in the X-Original-Content-Length
-    header and the size of teh response body. This is zero if the
+    header and the size of the response body. This is zero if the
     X-Original-Content-Length header is not present in the response.
   </summary>
 </histogram>
@@ -38932,6 +38932,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The percentage of incidents pruned from a safe browsing incident report on
     account of having been previously reported.
   </summary>
+</histogram>
+
+<histogram name="SBIRS.PSSDataStoreSize" units="bytes">
+  <owner>grt@google.com</owner>
+  <summary>
+    The size, in bytes, of a profile's platform state store. This hisogram is
+    logged on each write, which always replaces any previous contents.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.PSSLoadResult" enum="PlatformStateStoreLoadResult">
+  <owner>grt@google.com</owner>
+  <summary>The result of loading data from the platform state store.</summary>
 </histogram>
 
 <histogram name="SBIRS.ReceivedIncident" enum="IncidentType">
@@ -67942,6 +67955,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Service Worker error"/>
   <int value="3" label="event.waitUntil promise rejected"/>
   <int value="4" label="Database error"/>
+</enum>
+
+<enum name="PlatformStateStoreLoadResult" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="CLEARED_DATA">
+    Platform data cleared for new profile.
+  </int>
+  <int value="2" label="CLEARED_NO_DATA">
+    Empty platform data cleared for new profile.
+  </int>
+  <int value="3" label="DATA_CLEAR_FAILED">
+    Failed to clear data for new profile.
+  </int>
+  <int value="4" label="OPEN_FAILED">Failed to open data store.</int>
+  <int value="5" label="READ_FAILED">Failed to read from data store.</int>
+  <int value="6" label="PARSE_ERROR">Data could not be parsed.</int>
 </enum>
 
 <enum name="PluginAvailabilityStatus" type="int">

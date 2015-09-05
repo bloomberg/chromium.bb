@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
+#include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 #include "chrome/common/pref_names.h"
 
 namespace safe_browsing {
@@ -26,6 +27,8 @@ StateStore::Transaction::~Transaction() {
 #if DCHECK_IS_ON()
   store_->has_transaction_ = false;
 #endif
+  if (pref_update_)
+    platform_state_store::Store(store_->profile_, store_->incidents_sent_);
 }
 
 void StateStore::Transaction::MarkAsReported(IncidentType type,
@@ -59,6 +62,15 @@ void StateStore::Transaction::ClearForType(IncidentType type) {
   }
 }
 
+void StateStore::Transaction::ClearAll() {
+  if (pref_update_)
+    pref_update_.reset();
+  if (store_->incidents_sent_) {
+    store_->incidents_sent_ = nullptr;
+    store_->profile_->GetPrefs()->ClearPref(prefs::kSafeBrowsingIncidentsSent);
+  }
+}
+
 base::DictionaryValue* StateStore::Transaction::GetPrefDict() {
   if (!pref_update_) {
     pref_update_.reset(new DictionaryPrefUpdate(
@@ -69,6 +81,11 @@ base::DictionaryValue* StateStore::Transaction::GetPrefDict() {
     store_->incidents_sent_ = pref_update_->Get();
   }
   return pref_update_->Get();
+}
+
+void StateStore::Transaction::ReplacePrefDict(
+    scoped_ptr<base::DictionaryValue> pref_dict) {
+  GetPrefDict()->Swap(pref_dict.get());
 }
 
 
@@ -88,8 +105,19 @@ StateStore::StateStore(Profile* profile)
   if (value)
     value->GetAsDictionary(&incidents_sent_);
 
+  // Apply the platform data.
   Transaction transaction(this);
-  CleanLegacyValues(&transaction);
+  scoped_ptr<base::DictionaryValue> value_dict(
+      platform_state_store::Load(profile_));
+  if (value_dict) {
+    if (value_dict->empty())
+      transaction.ClearAll();
+    else if (!incidents_sent_ || !incidents_sent_->Equals(value_dict.get()))
+      transaction.ReplacePrefDict(value_dict.Pass());
+  }
+
+  if (incidents_sent_)
+    CleanLegacyValues(&transaction);
 }
 
 StateStore::~StateStore() {

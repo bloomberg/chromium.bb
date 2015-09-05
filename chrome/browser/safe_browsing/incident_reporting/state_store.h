@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_STATE_STORE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_STATE_STORE_H_
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -39,12 +41,20 @@ class StateStore {
     // Clears all data associated with an incident type.
     void ClearForType(IncidentType type);
 
+    // Clears all data in the store.
+    void ClearAll();
+
    private:
+    friend class StateStore;
+
     // Returns a writable view on the incidents_sent preference. The act of
     // obtaining this view will cause a serialize-and-write operation to be
     // scheduled when the transaction terminates. Use the store's
     // |incidents_sent_| member directly to simply query the preference.
     base::DictionaryValue* GetPrefDict();
+
+    // Replaces the contents of the underlying dictionary value.
+    void ReplacePrefDict(scoped_ptr<base::DictionaryValue> pref_dict);
 
     // The store corresponding to this transaction.
     StateStore* store_;

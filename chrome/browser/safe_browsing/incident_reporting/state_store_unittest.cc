@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
+#include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -23,11 +24,41 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "base/test/test_reg_util_win.h"
+#endif
+
 namespace safe_browsing {
+
+#if defined(OS_WIN)
+
+// A base test fixture that redirects HKCU for testing the platform state store
+// backed by the Windows registry to prevent interference with existing Chrome
+// installs or other tests.
+class PlatformStateStoreTestBase : public ::testing::Test {
+ protected:
+  PlatformStateStoreTestBase() {}
+
+  void SetUp() override {
+    ::testing::Test::SetUp();
+    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+  }
+
+ private:
+  registry_util::RegistryOverrideManager registry_override_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformStateStoreTestBase);
+};
+
+#else  // OS_WIN
+
+using PlatformStateStoreTestBase = ::testing::Test;
+
+#endif  // !OS_WIN
 
 // A test fixture with a testing profile that writes its user prefs to a json
 // file.
-class StateStoreTest : public ::testing::Test {
+class StateStoreTest : public PlatformStateStoreTestBase {
  protected:
   struct TestData {
     IncidentType type;
@@ -42,7 +73,7 @@ class StateStoreTest : public ::testing::Test {
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
-    testing::Test::SetUp();
+    PlatformStateStoreTestBase::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(profile_manager_.SetUp());
     CreateProfile();
@@ -199,10 +230,16 @@ TEST_F(StateStoreTest, PersistenceWithStoreDelete) {
   // Recreate the profile.
   CreateProfile();
 
-  // Verify that the state did not survive.
   StateStore state_store(profile_);
-  for (const auto& data : kTestData_)
+  for (const auto& data : kTestData_) {
+#if defined(USE_PLATFORM_STATE_STORE)
+    // Verify that the state survived.
+    ASSERT_TRUE(state_store.HasBeenReported(data.type, data.key, data.digest));
+#else
+    // Verify that the state did not survive.
     ASSERT_FALSE(state_store.HasBeenReported(data.type, data.key, data.digest));
+#endif
+  }
 }
 
 }  // namespace safe_browsing

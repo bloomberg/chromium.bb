@@ -30,6 +30,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "base/test/test_reg_util_win.h"
+#endif
+
 // A test fixture that sets up a test task runner and makes it the thread's
 // runner. The fixture implements a fake envrionment data collector and a fake
 // report uploader.
@@ -180,6 +184,11 @@ class IncidentReportingServiceTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
+#if defined(OS_WIN)
+    // Redirect HKCU so that the platform state store used by the test doesn't
+    // collide with existing Chrome installs or other tests running in parallel.
+    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+#endif
     ASSERT_TRUE(profile_manager_.SetUp());
   }
 
@@ -470,6 +479,10 @@ class IncidentReportingServiceTest : public testing::Test {
     if (on_delayed_analysis_action_ == ON_DELAYED_ANALYSIS_ADD_INCIDENT)
       receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
   }
+
+#if defined(OS_WIN)
+  registry_util::RegistryOverrideManager registry_override_manager_;
+#endif
 
   // A mapping of profile name to its corresponding properties.
   std::map<std::string, ProfileProperties> profile_properties_;

@@ -2514,6 +2514,9 @@
       'browser/safe_browsing/incident_reporting/module_integrity_verifier_win.h',
       'browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.cc',
       'browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h',
+      'browser/safe_browsing/incident_reporting/platform_state_store.cc',
+      'browser/safe_browsing/incident_reporting/platform_state_store.h',
+      'browser/safe_browsing/incident_reporting/platform_state_store_win.cc',
       'browser/safe_browsing/incident_reporting/preference_validation_delegate.cc',
       'browser/safe_browsing/incident_reporting/preference_validation_delegate.h',
       'browser/safe_browsing/incident_reporting/resource_request_detector.cc',
@@ -3497,6 +3500,13 @@
               'dependencies': [
                 'safe_browsing_proto',
               ],
+              'conditions': [
+                ['OS=="win"', {
+                  'dependencies': [
+                    'incident_reporting_state_store_data_proto',
+                  ],
+                }],
+              ],
             }],
             ['safe_browsing == 3', {
               'sources': [ '<@(chrome_browser_safe_browsing_mobile_extended_sources)' ],
@@ -3959,6 +3969,19 @@
         'proto_out_dir': 'chrome/browser/safe_browsing',
       },
       'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for the safebrowsing incident reporting
+      # service state store data protocol buffer.
+      # GN version: //chrome/browser/safe_browsing/incident_reporting:state_store_data_proto
+      'target_name': 'incident_reporting_state_store_data_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/safe_browsing/incident_reporting/state_store_data.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/safe_browsing/incident_reporting',
+        'proto_out_dir': 'chrome/browser/safe_browsing/incident_reporting',
+      },
+      'includes': [ '../build/protoc.gypi' ],
     },
   ],
   'conditions': [

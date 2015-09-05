@@ -999,6 +999,8 @@
       'browser/safe_browsing/incident_reporting/module_integrity_unittest_util_win.h',
       'browser/safe_browsing/incident_reporting/module_integrity_verifier_win_unittest.cc',
       'browser/safe_browsing/incident_reporting/off_domain_inclusion_detector_unittest.cc',
+      'browser/safe_browsing/incident_reporting/platform_state_store_unittest.cc',
+      'browser/safe_browsing/incident_reporting/platform_state_store_win_unittest.cc',
       'browser/safe_browsing/incident_reporting/preference_validation_delegate_unittest.cc',
       'browser/safe_browsing/incident_reporting/resource_request_detector_unittest.cc',
       'browser/safe_browsing/incident_reporting/state_store_unittest.cc',
