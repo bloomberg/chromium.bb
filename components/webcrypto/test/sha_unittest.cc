@@ -18,7 +18,9 @@ namespace webcrypto {
 
 namespace {
 
-TEST(WebCryptoShaTest, DigestSampleSets) {
+class WebCryptoShaTest : public WebCryptoTestBase {};
+
+TEST_F(WebCryptoShaTest, DigestSampleSets) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("sha.json", &tests));
 
@@ -39,7 +41,7 @@ TEST(WebCryptoShaTest, DigestSampleSets) {
   }
 }
 
-TEST(WebCryptoShaTest, DigestSampleSetsInChunks) {
+TEST_F(WebCryptoShaTest, DigestSampleSetsInChunks) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("sha.json", &tests));
 

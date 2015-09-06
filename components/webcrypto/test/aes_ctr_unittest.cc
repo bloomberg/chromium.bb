@@ -34,7 +34,9 @@ blink::WebCryptoAlgorithm CreateAesCtrAlgorithm(
           static_cast<unsigned int>(counter.size())));
 }
 
-TEST(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
+class WebCryptoAesCtrTest : public WebCryptoTestBase {};
+
+TEST_F(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
   if (!SupportsAesCtr()) {
     LOG(WARNING) << "Skipping test because AES-CTR is not supported";
     return;
@@ -81,7 +83,7 @@ TEST(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
 }
 
 // The counter block must be exactly 16 bytes.
-TEST(WebCryptoAesCtrTest, InvalidCounterBlockLength) {
+TEST_F(WebCryptoAesCtrTest, InvalidCounterBlockLength) {
   if (!SupportsAesCtr()) {
     LOG(WARNING) << "Skipping test because AES-CTR is not supported";
     return;
@@ -111,7 +113,7 @@ TEST(WebCryptoAesCtrTest, InvalidCounterBlockLength) {
 }
 
 // The counter length cannot be less than 1 or greater than 128.
-TEST(WebCryptoAesCtrTest, InvalidCounterLength) {
+TEST_F(WebCryptoAesCtrTest, InvalidCounterLength) {
   if (!SupportsAesCtr()) {
     LOG(WARNING) << "Skipping test because AES-CTR is not supported";
     return;
@@ -148,7 +150,7 @@ TEST(WebCryptoAesCtrTest, InvalidCounterLength) {
 //
 // Using a 4-bit counter it is possible to encrypt 16 blocks. However the 17th
 // block would end up wrapping back to the starting value.
-TEST(WebCryptoAesCtrTest, OverflowAndRepeatCounter) {
+TEST_F(WebCryptoAesCtrTest, OverflowAndRepeatCounter) {
   if (!SupportsAesCtr()) {
     LOG(WARNING) << "Skipping test because AES-CTR is not supported";
     return;

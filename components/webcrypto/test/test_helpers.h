@@ -32,6 +32,15 @@ class WebCryptoAlgorithm;
 
 namespace webcrypto {
 
+// Base class for WebCrypto tests. All WebCrypto tests must derive from this
+// to ensure that Blink has been properly initialized. In particular,
+// the WebCrypto tests use blink::WebCryptoAlgorithm, which in turn relies on
+// PartitionAlloc.
+class WebCryptoTestBase : public testing::Test {
+ protected:
+  static void SetUpTestCase();
+};
+
 class Status;
 class CryptoData;
 

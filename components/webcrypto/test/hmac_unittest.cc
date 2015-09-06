@@ -41,7 +41,9 @@ blink::WebCryptoAlgorithm CreateHmacImportAlgorithmWithLength(
                                            length_bits));
 }
 
-TEST(WebCryptoHmacTest, HMACSampleSets) {
+class WebCryptoHmacTest : public WebCryptoTestBase {};
+
+TEST_F(WebCryptoHmacTest, HMACSampleSets) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("hmac.json", &tests));
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
@@ -111,7 +113,7 @@ TEST(WebCryptoHmacTest, HMACSampleSets) {
   }
 }
 
-TEST(WebCryptoHmacTest, GenerateKeyIsRandom) {
+TEST_F(WebCryptoHmacTest, GenerateKeyIsRandom) {
   // Generate a small sample of HMAC keys.
   std::vector<std::vector<uint8_t>> keys;
   for (int i = 0; i < 16; ++i) {
@@ -142,7 +144,7 @@ TEST(WebCryptoHmacTest, GenerateKeyIsRandom) {
 }
 
 // If the key length is not provided, then the block size is used.
-TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha1) {
+TEST_F(WebCryptoHmacTest, GenerateKeyNoLengthSha1) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 0);
@@ -162,7 +164,7 @@ TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha1) {
 }
 
 // If the key length is not provided, then the block size is used.
-TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha512) {
+TEST_F(WebCryptoHmacTest, GenerateKeyNoLengthSha512) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha512, 0);
@@ -179,7 +181,7 @@ TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha512) {
   EXPECT_EQ(128U, raw_key.size());
 }
 
-TEST(WebCryptoHmacTest, GenerateKeyEmptyUsage) {
+TEST_F(WebCryptoHmacTest, GenerateKeyEmptyUsage) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha512, 0);
@@ -189,7 +191,7 @@ TEST(WebCryptoHmacTest, GenerateKeyEmptyUsage) {
 
 // Generate a 1 bit key. The exported key is 1 byte long, and 7 of the bits are
 // guaranteed to be zero.
-TEST(WebCryptoHmacTest, Generate1BitKey) {
+TEST_F(WebCryptoHmacTest, Generate1BitKey) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 1);
@@ -207,7 +209,7 @@ TEST(WebCryptoHmacTest, Generate1BitKey) {
   EXPECT_FALSE(raw_key[0] & 0x7F);
 }
 
-TEST(WebCryptoHmacTest, ImportKeyEmptyUsage) {
+TEST_F(WebCryptoHmacTest, ImportKeyEmptyUsage) {
   blink::WebCryptoKey key;
   std::string key_raw_hex_in = "025a8cf3f08b4f6c5f33bbc76a471939";
   EXPECT_EQ(Status::ErrorCreateKeyEmptyUsages(),
@@ -218,7 +220,7 @@ TEST(WebCryptoHmacTest, ImportKeyEmptyUsage) {
                       true, 0, &key));
 }
 
-TEST(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
+TEST_F(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -246,7 +248,7 @@ TEST(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
 }
 
 // Test 'use' inconsistent with 'key_ops'.
-TEST(WebCryptoHmacTest, ImportKeyJwkUseInconsisteWithKeyOps) {
+TEST_F(WebCryptoHmacTest, ImportKeyJwkUseInconsisteWithKeyOps) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -269,7 +271,7 @@ TEST(WebCryptoHmacTest, ImportKeyJwkUseInconsisteWithKeyOps) {
 }
 
 // Test JWK composite 'sig' use
-TEST(WebCryptoHmacTest, ImportKeyJwkUseSig) {
+TEST_F(WebCryptoHmacTest, ImportKeyJwkUseSig) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -288,7 +290,7 @@ TEST(WebCryptoHmacTest, ImportKeyJwkUseSig) {
             key.usages());
 }
 
-TEST(WebCryptoHmacTest, ImportJwkInputConsistency) {
+TEST_F(WebCryptoHmacTest, ImportJwkInputConsistency) {
   // The Web Crypto spec says that if a JWK value is present, but is
   // inconsistent with the input value, the operation must fail.
 
@@ -406,7 +408,7 @@ TEST(WebCryptoHmacTest, ImportJwkInputConsistency) {
   // TODO(padolph): key_ops consistency tests
 }
 
-TEST(WebCryptoHmacTest, ImportJwkHappy) {
+TEST_F(WebCryptoHmacTest, ImportJwkHappy) {
   // This test verifies the happy path of JWK import, including the application
   // of the imported key material.
 
@@ -452,7 +454,7 @@ TEST(WebCryptoHmacTest, ImportJwkHappy) {
   // TODO(padolph): Import an RSA public key JWK and use it
 }
 
-TEST(WebCryptoHmacTest, ImportExportJwk) {
+TEST_F(WebCryptoHmacTest, ImportExportJwk) {
   // HMAC SHA-1
   ImportExportJwkSymmetricKey(
       256, CreateHmacImportAlgorithmNoLength(blink::WebCryptoAlgorithmIdSha1),
@@ -469,7 +471,7 @@ TEST(WebCryptoHmacTest, ImportExportJwk) {
       blink::WebCryptoKeyUsageVerify, "HS512");
 }
 
-TEST(WebCryptoHmacTest, ExportJwkEmptyKey) {
+TEST_F(WebCryptoHmacTest, ExportJwkEmptyKey) {
   blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageSign;
 
   // Importing empty HMAC key is no longer allowed. However such a key can be
@@ -496,7 +498,7 @@ TEST(WebCryptoHmacTest, ExportJwkEmptyKey) {
 }
 
 // Imports an HMAC key contaning no byte data.
-TEST(WebCryptoHmacTest, ImportRawEmptyKey) {
+TEST_F(WebCryptoHmacTest, ImportRawEmptyKey) {
   const blink::WebCryptoAlgorithm import_algorithm =
       CreateHmacImportAlgorithmNoLength(blink::WebCryptoAlgorithmIdSha1);
 
@@ -509,7 +511,7 @@ TEST(WebCryptoHmacTest, ImportRawEmptyKey) {
 }
 
 // Imports an HMAC key contaning 1 byte data, however the length was set to 0.
-TEST(WebCryptoHmacTest, ImportRawKeyWithZeroLength) {
+TEST_F(WebCryptoHmacTest, ImportRawKeyWithZeroLength) {
   const blink::WebCryptoAlgorithm import_algorithm =
       CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha1, 0);
 
@@ -524,7 +526,7 @@ TEST(WebCryptoHmacTest, ImportRawKeyWithZeroLength) {
 
 // Import a huge hmac key (UINT_MAX bytes). This will fail before actually
 // reading the bytes, as the key is too large.
-TEST(WebCryptoHmacTest, ImportRawKeyTooLarge) {
+TEST_F(WebCryptoHmacTest, ImportRawKeyTooLarge) {
   CryptoData big_data(NULL, UINT_MAX);  // Invalid data of big length.
 
   blink::WebCryptoKey key;
@@ -536,7 +538,7 @@ TEST(WebCryptoHmacTest, ImportRawKeyTooLarge) {
 }
 
 // Import an HMAC key with 120 bits of data, however request 128 bits worth.
-TEST(WebCryptoHmacTest, ImportRawKeyLengthTooLarge) {
+TEST_F(WebCryptoHmacTest, ImportRawKeyLengthTooLarge) {
   blink::WebCryptoKey key;
   EXPECT_EQ(Status::ErrorHmacImportBadLength(),
             ImportKey(blink::WebCryptoKeyFormatRaw,
@@ -547,7 +549,7 @@ TEST(WebCryptoHmacTest, ImportRawKeyLengthTooLarge) {
 }
 
 // Import an HMAC key with 128 bits of data, however request 120 bits worth.
-TEST(WebCryptoHmacTest, ImportRawKeyLengthTooSmall) {
+TEST_F(WebCryptoHmacTest, ImportRawKeyLengthTooSmall) {
   blink::WebCryptoKey key;
   EXPECT_EQ(Status::ErrorHmacImportBadLength(),
             ImportKey(blink::WebCryptoKeyFormatRaw,
@@ -559,7 +561,7 @@ TEST(WebCryptoHmacTest, ImportRawKeyLengthTooSmall) {
 
 // Import an HMAC key with 16 bits of data and request a 12 bit key, using the
 // "raw" format.
-TEST(WebCryptoHmacTest, ImportRawKeyTruncation) {
+TEST_F(WebCryptoHmacTest, ImportRawKeyTruncation) {
   const std::vector<uint8_t> data = HexStringToBytes("b1ff");
 
   blink::WebCryptoKey key;
@@ -577,7 +579,7 @@ TEST(WebCryptoHmacTest, ImportRawKeyTruncation) {
 }
 
 // The same test as above, but using the JWK format.
-TEST(WebCryptoHmacTest, ImportJwkKeyTruncation) {
+TEST_F(WebCryptoHmacTest, ImportJwkKeyTruncation) {
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "sf8");  // 0xB1FF

@@ -44,11 +44,13 @@ blink::WebCryptoAlgorithm CreateEcdsaAlgorithm(
       new blink::WebCryptoEcdsaParams(CreateAlgorithm(hash_id)));
 }
 
+class WebCryptoEcdsaTest : public WebCryptoTestBase {};
+
 // Generates some ECDSA key pairs. Validates basic properties on the keys, and
 // ensures the serialized key (as JWK) is unique. This test does nothing to
 // ensure that the keys are otherwise usable (by trying to sign/verify with
 // them).
-TEST(WebCryptoEcdsaTest, GenerateKeyIsRandom) {
+TEST_F(WebCryptoEcdsaTest, GenerateKeyIsRandom) {
   if (!SupportsEcdsa())
     return;
 
@@ -88,7 +90,7 @@ TEST(WebCryptoEcdsaTest, GenerateKeyIsRandom) {
   EXPECT_FALSE(CopiesExist(serialized_keys));
 }
 
-TEST(WebCryptoEcdsaTest, GenerateKeyEmptyUsage) {
+TEST_F(WebCryptoEcdsaTest, GenerateKeyEmptyUsage) {
   if (!SupportsEcdsa())
     return;
 
@@ -103,7 +105,7 @@ TEST(WebCryptoEcdsaTest, GenerateKeyEmptyUsage) {
 // Verify that ECDSA signatures are probabilistic. Signing the same message two
 // times should yield different signatures. However both signatures should
 // verify correctly.
-TEST(WebCryptoEcdsaTest, SignatureIsRandom) {
+TEST_F(WebCryptoEcdsaTest, SignatureIsRandom) {
   if (!SupportsEcdsa())
     return;
 
@@ -164,7 +166,7 @@ TEST(WebCryptoEcdsaTest, SignatureIsRandom) {
 
 // Tests verify() for ECDSA using an assortment of keys, curves and hashes.
 // These tests also include expected failures for bad signatures and keys.
-TEST(WebCryptoEcdsaTest, VerifyKnownAnswer) {
+TEST_F(WebCryptoEcdsaTest, VerifyKnownAnswer) {
   if (!SupportsEcdsa())
     return;
 
@@ -249,7 +251,7 @@ blink::WebCryptoKeyUsageMask GetExpectedUsagesForKeyImport(
 }
 
 // Tests importing bad public/private keys in a variety of formats.
-TEST(WebCryptoEcdsaTest, ImportBadKeys) {
+TEST_F(WebCryptoEcdsaTest, ImportBadKeys) {
   if (!SupportsEcdsa())
     return;
 
@@ -282,7 +284,7 @@ TEST(WebCryptoEcdsaTest, ImportBadKeys) {
 //
 // The test imports a key first using JWK, and then exporting it to JWK and
 // PKCS8. It does the same thing using PKCS8 as the original source of truth.
-TEST(WebCryptoEcdsaTest, ImportExportPrivateKey) {
+TEST_F(WebCryptoEcdsaTest, ImportExportPrivateKey) {
   if (!SupportsEcdsa())
     return;
 

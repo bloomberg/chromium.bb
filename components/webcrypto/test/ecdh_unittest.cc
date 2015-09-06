@@ -80,7 +80,9 @@ bool ImportKeysFromTest(const base::DictionaryValue* test,
   return status.IsSuccess();
 }
 
-TEST(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
+class WebCryptoEcdhTest : public WebCryptoTestBase {};
+
+TEST_F(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
   if (!SupportsEcdh())
     return;
 
@@ -153,7 +155,7 @@ TEST(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
 }
 
 // Try deriving an AES key of length 129 bits.
-TEST(WebCryptoEcdhTest, DeriveKeyBadAesLength) {
+TEST_F(WebCryptoEcdhTest, DeriveKeyBadAesLength) {
   if (!SupportsEcdh())
     return;
 
@@ -171,7 +173,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyBadAesLength) {
 }
 
 // Try deriving an AES key of length 192 bits.
-TEST(WebCryptoEcdhTest, DeriveKeyUnsupportedAesLength) {
+TEST_F(WebCryptoEcdhTest, DeriveKeyUnsupportedAesLength) {
   if (!SupportsEcdh())
     return;
 
@@ -189,7 +191,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyUnsupportedAesLength) {
 }
 
 // Try deriving an HMAC key of length 0 bits.
-TEST(WebCryptoEcdhTest, DeriveKeyZeroLengthHmac) {
+TEST_F(WebCryptoEcdhTest, DeriveKeyZeroLengthHmac) {
   if (!SupportsEcdh())
     return;
 
@@ -209,7 +211,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyZeroLengthHmac) {
 }
 
 // Derive an HMAC key of length 19 bits.
-TEST(WebCryptoEcdhTest, DeriveKeyHmac19Bits) {
+TEST_F(WebCryptoEcdhTest, DeriveKeyHmac19Bits) {
   if (!SupportsEcdh())
     return;
 
@@ -242,7 +244,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyHmac19Bits) {
 }
 
 // Derive an HMAC key with no specified length (just the hash of SHA-256).
-TEST(WebCryptoEcdhTest, DeriveKeyHmacSha256NoLength) {
+TEST_F(WebCryptoEcdhTest, DeriveKeyHmacSha256NoLength) {
   if (!SupportsEcdh())
     return;
 
@@ -281,7 +283,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyHmacSha256NoLength) {
 // schemes, as that is frequently insecure, and instead be using KDFs to expand
 // and generate keys. For simplicity of testing, however, test using an HMAC
 // key.
-TEST(WebCryptoEcdhTest, DeriveKeyHmacSha512NoLength) {
+TEST_F(WebCryptoEcdhTest, DeriveKeyHmacSha512NoLength) {
   if (!SupportsEcdh())
     return;
 
@@ -301,7 +303,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyHmacSha512NoLength) {
 }
 
 // Try deriving an AES key of length 128 bits.
-TEST(WebCryptoEcdhTest, DeriveKeyAes128) {
+TEST_F(WebCryptoEcdhTest, DeriveKeyAes128) {
   if (!SupportsEcdh())
     return;
 
@@ -327,7 +329,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyAes128) {
   EXPECT_EQ(16u, raw_key.size());
 }
 
-TEST(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
+TEST_F(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
   if (!SupportsEcdh())
     return;
 

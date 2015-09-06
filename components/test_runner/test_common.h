@@ -21,6 +21,10 @@ inline bool IsNotASCIIAlpha(char ch) {
 
 TEST_RUNNER_EXPORT std::string NormalizeLayoutTestURL(const std::string& url);
 
+// Tests which depend on Blink must call this function on the main thread
+// before creating/calling any Blink objects/APIs.
+TEST_RUNNER_EXPORT void EnsureBlinkInitialized();
+
 }  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_TEST_COMMON_H_

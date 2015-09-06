@@ -98,7 +98,9 @@ Status AesGcmDecrypt(const blink::WebCryptoKey& key,
   return Decrypt(algorithm, key, CryptoData(cipher_text_with_tag), plain_text);
 }
 
-TEST(WebCryptoAesGcmTest, GenerateKeyBadLength) {
+class WebCryptoAesGcmTest : public WebCryptoTestBase {};
+
+TEST_F(WebCryptoAesGcmTest, GenerateKeyBadLength) {
   if (!SupportsAesGcm()) {
     LOG(WARNING) << "AES GCM not supported, skipping tests";
     return;
@@ -114,7 +116,7 @@ TEST(WebCryptoAesGcmTest, GenerateKeyBadLength) {
   }
 }
 
-TEST(WebCryptoAesGcmTest, GenerateKeyEmptyUsage) {
+TEST_F(WebCryptoAesGcmTest, GenerateKeyEmptyUsage) {
   if (!SupportsAesGcm()) {
     LOG(WARNING) << "AES GCM not supported, skipping tests";
     return;
@@ -125,7 +127,7 @@ TEST(WebCryptoAesGcmTest, GenerateKeyEmptyUsage) {
             GenerateSecretKey(CreateAesGcmKeyGenAlgorithm(256), true, 0, &key));
 }
 
-TEST(WebCryptoAesGcmTest, ImportExportJwk) {
+TEST_F(WebCryptoAesGcmTest, ImportExportJwk) {
   // Some Linux test runners may not have a new enough version of NSS.
   if (!SupportsAesGcm()) {
     LOG(WARNING) << "AES GCM not supported, skipping tests";
@@ -150,7 +152,7 @@ TEST(WebCryptoAesGcmTest, ImportExportJwk) {
 //   * Test decryption when the tag length exceeds input size
 //   * Test decryption with empty input
 //   * Test decryption with tag length of 0.
-TEST(WebCryptoAesGcmTest, SampleSets) {
+TEST_F(WebCryptoAesGcmTest, SampleSets) {
   // Some Linux test runners may not have a new enough version of NSS.
   if (!SupportsAesGcm()) {
     LOG(WARNING) << "AES GCM not supported, skipping tests";

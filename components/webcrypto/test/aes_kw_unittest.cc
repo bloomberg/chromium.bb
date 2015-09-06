@@ -21,7 +21,9 @@ blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(
                                   key_length_bits);
 }
 
-TEST(WebCryptoAesKwTest, GenerateKeyBadLength) {
+class WebCryptoAesKwTest : public WebCryptoTestBase {};
+
+TEST_F(WebCryptoAesKwTest, GenerateKeyBadLength) {
   const unsigned short kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key;
   for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
@@ -32,13 +34,13 @@ TEST(WebCryptoAesKwTest, GenerateKeyBadLength) {
   }
 }
 
-TEST(WebCryptoAesKwTest, GenerateKeyEmptyUsage) {
+TEST_F(WebCryptoAesKwTest, GenerateKeyEmptyUsage) {
   blink::WebCryptoKey key;
   EXPECT_EQ(Status::ErrorCreateKeyEmptyUsages(),
             GenerateSecretKey(CreateAesKwKeyGenAlgorithm(256), true, 0, &key));
 }
 
-TEST(WebCryptoAesKwTest, ImportKeyEmptyUsage) {
+TEST_F(WebCryptoAesKwTest, ImportKeyEmptyUsage) {
   blink::WebCryptoKey key;
   EXPECT_EQ(Status::ErrorCreateKeyEmptyUsages(),
             ImportKey(blink::WebCryptoKeyFormatRaw,
@@ -47,7 +49,7 @@ TEST(WebCryptoAesKwTest, ImportKeyEmptyUsage) {
                       0, &key));
 }
 
-TEST(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {
+TEST_F(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -74,7 +76,7 @@ TEST(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {
   EXPECT_EQ(blink::WebCryptoKeyUsageUnwrapKey, key.usages());
 }
 
-TEST(WebCryptoAesKwTest, ImportExportJwk) {
+TEST_F(WebCryptoAesKwTest, ImportExportJwk) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
 
@@ -91,7 +93,7 @@ TEST(WebCryptoAesKwTest, ImportExportJwk) {
       "A256KW");
 }
 
-TEST(WebCryptoAesKwTest, AesKwKeyImport) {
+TEST_F(WebCryptoAesKwTest, AesKwKeyImport) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
@@ -154,7 +156,7 @@ TEST(WebCryptoAesKwTest, AesKwKeyImport) {
                       true, blink::WebCryptoKeyUsageWrapKey, &key));
 }
 
-TEST(WebCryptoAesKwTest, UnwrapFailures) {
+TEST_F(WebCryptoAesKwTest, UnwrapFailures) {
   // This test exercises the code path common to all unwrap operations.
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
@@ -179,7 +181,7 @@ TEST(WebCryptoAesKwTest, UnwrapFailures) {
                       blink::WebCryptoKeyUsageEncrypt, &unwrapped_key));
 }
 
-TEST(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapKnownAnswer) {
+TEST_F(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapKnownAnswer) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
 
@@ -238,7 +240,7 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapKnownAnswer) {
 
 // Unwrap a HMAC key using AES-KW, and then try doing a sign/verify with the
 // unwrapped key
-TEST(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapSignVerifyHmac) {
+TEST_F(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapSignVerifyHmac) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
 
@@ -288,7 +290,7 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapSignVerifyHmac) {
              CryptoData(signature), CryptoData(test_message), &verify_result));
 }
 
-TEST(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapErrors) {
+TEST_F(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapErrors) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
   base::DictionaryValue* test;
@@ -329,7 +331,7 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapErrors) {
                       blink::WebCryptoKeyUsageEncrypt, &unwrapped_key));
 }
 
-TEST(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapCorruptData) {
+TEST_F(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapCorruptData) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
   base::DictionaryValue* test;
@@ -358,7 +360,7 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapCorruptData) {
                       blink::WebCryptoKeyUsageEncrypt, &unwrapped_key));
 }
 
-TEST(WebCryptoAesKwTest, AesKwJwkSymkeyUnwrapKnownData) {
+TEST_F(WebCryptoAesKwTest, AesKwJwkSymkeyUnwrapKnownData) {
   // The following data lists a known HMAC SHA-256 key, then a JWK
   // representation of this key which was encrypted ("wrapped") using AES-KW and
   // the following wrapping key.
@@ -413,7 +415,7 @@ TEST(WebCryptoAesKwTest, AesKwJwkSymkeyUnwrapKnownData) {
 // Try importing an AES-KW key with unsupported key usages using raw
 // format. AES-KW keys support the following usages:
 //   'wrapKey', 'unwrapKey'
-TEST(WebCryptoAesKwTest, ImportKeyBadUsage_Raw) {
+TEST_F(WebCryptoAesKwTest, ImportKeyBadUsage_Raw) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
 
@@ -441,7 +443,7 @@ TEST(WebCryptoAesKwTest, ImportKeyBadUsage_Raw) {
 // Try unwrapping an HMAC key with unsupported usages using JWK format and
 // AES-KW. HMAC keys support the following usages:
 //   'sign', 'verify'
-TEST(WebCryptoAesKwTest, UnwrapHmacKeyBadUsage_JWK) {
+TEST_F(WebCryptoAesKwTest, UnwrapHmacKeyBadUsage_JWK) {
   const blink::WebCryptoAlgorithm unwrap_algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
 
@@ -484,7 +486,7 @@ TEST(WebCryptoAesKwTest, UnwrapHmacKeyBadUsage_JWK) {
 // Try unwrapping an RSA-SSA public key with unsupported usages using JWK format
 // and AES-KW. RSA-SSA public keys support the following usages:
 //   'verify'
-TEST(WebCryptoAesKwTest, UnwrapRsaSsaPublicKeyBadUsage_JWK) {
+TEST_F(WebCryptoAesKwTest, UnwrapRsaSsaPublicKeyBadUsage_JWK) {
   const blink::WebCryptoAlgorithm unwrap_algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
 

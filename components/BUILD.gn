@@ -134,7 +134,6 @@ group("all_components") {
     "//components/web_cache/renderer",
     "//components/web_modal",
     "//components/web_resource",
-    "//components/webcrypto",
     "//components/webdata/common",
     "//components/wifi",
     "//components/wifi_sync",
@@ -257,6 +256,7 @@ group("all_components") {
       "//components/safe_json",
       "//components/scheduler",
       "//components/test_runner",
+      "//components/webcrypto",
     ]
   }
 
@@ -459,6 +459,7 @@ test("components_unittests") {
       "//components/power:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/scheduler:unit_tests",
+      "//components/test_runner:test_runner",
       "//components/ui/zoom:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/web_cache/browser:unit_tests",

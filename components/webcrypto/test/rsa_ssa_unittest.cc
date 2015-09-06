@@ -34,7 +34,9 @@ void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
   dict->SetString("e", "AQAB");
 }
 
-TEST(WebCryptoRsaSsaTest, ImportExportSpki) {
+class WebCryptoRsaSsaTest : public WebCryptoTestBase {};
+
+TEST_F(WebCryptoRsaSsaTest, ImportExportSpki) {
   // Passing case: Import a valid RSA key in SPKI format.
   blink::WebCryptoKey key;
   ASSERT_EQ(Status::Success(),
@@ -94,7 +96,7 @@ TEST(WebCryptoRsaSsaTest, ImportExportSpki) {
   // as OAEP/PSS
 }
 
-TEST(WebCryptoRsaSsaTest, ImportExportPkcs8) {
+TEST_F(WebCryptoRsaSsaTest, ImportExportPkcs8) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 
@@ -139,7 +141,7 @@ TEST(WebCryptoRsaSsaTest, ImportExportPkcs8) {
 // it was lossless:
 //
 //   PKCS8 --> JWK --> PKCS8
-TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
+TEST_F(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 
@@ -202,7 +204,7 @@ TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
 // a sequence of keys from JWK could yield the wrong key. The first key would
 // be imported correctly, however every key after that would actually import
 // the first key.
-TEST(WebCryptoRsaSsaTest, ImportMultipleRSAPrivateKeysJwk) {
+TEST_F(WebCryptoRsaSsaTest, ImportMultipleRSAPrivateKeysJwk) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 
@@ -262,7 +264,7 @@ TEST(WebCryptoRsaSsaTest, ImportMultipleRSAPrivateKeysJwk) {
 // modulus, but mismatched parameters for the rest. It should NOT be possible
 // that the second import retrieves the first key. See http://crbug.com/378315
 // for how that could happen.
-TEST(WebCryptoRsaSsaTest, ImportJwkExistingModulusAndInvalid) {
+TEST_F(WebCryptoRsaSsaTest, ImportJwkExistingModulusAndInvalid) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 
@@ -306,7 +308,7 @@ TEST(WebCryptoRsaSsaTest, ImportJwkExistingModulusAndInvalid) {
                                  true, blink::WebCryptoKeyUsageSign, &key2));
 }
 
-TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
+TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
   // Note: using unrealistic short key lengths here to avoid bogging down tests.
 
   // Successful WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 key generation (sha256)
@@ -471,7 +473,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
             ExportKey(blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
 
-TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadModulusLength) {
+TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadModulusLength) {
   const unsigned int kBadModulusBits[] = {
       0,
       248,         // Too small.
@@ -504,7 +506,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadModulusLength) {
 // exponents of 3 and 65537 are supported. While both OpenSSL and NSS can
 // support other values, OpenSSL hangs when given invalid exponents, so use a
 // whitelist to validate the parameters.
-TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadExponent) {
+TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadExponent) {
   const unsigned int modulus_length = 1024;
 
   const char* const kPublicExponents[] = {
@@ -531,7 +533,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadExponent) {
   }
 }
 
-TEST(WebCryptoRsaSsaTest, SignVerifyFailures) {
+TEST_F(WebCryptoRsaSsaTest, SignVerifyFailures) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 
@@ -639,7 +641,7 @@ TEST(WebCryptoRsaSsaTest, SignVerifyFailures) {
   EXPECT_FALSE(is_match);
 }
 
-TEST(WebCryptoRsaSsaTest, SignVerifyKnownAnswer) {
+TEST_F(WebCryptoRsaSsaTest, SignVerifyKnownAnswer) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 
@@ -689,7 +691,7 @@ TEST(WebCryptoRsaSsaTest, SignVerifyKnownAnswer) {
 
 // Try importing an RSA-SSA public key with unsupported key usages using SPKI
 // format. RSA-SSA public keys only support the 'verify' usage.
-TEST(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_SPKI) {
+TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_SPKI) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha256);
@@ -714,7 +716,7 @@ TEST(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_SPKI) {
 
 // Try importing an RSA-SSA public key with unsupported key usages using JWK
 // format. RSA-SSA public keys only support the 'verify' usage.
-TEST(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_JWK) {
+TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_JWK) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha256);
@@ -743,7 +745,7 @@ TEST(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_JWK) {
 
 // Generate an RSA-SSA key pair with invalid usages. RSA-SSA supports:
 //   'sign', 'verify'
-TEST(WebCryptoRsaSsaTest, GenerateKeyBadUsages) {
+TEST_F(WebCryptoRsaSsaTest, GenerateKeyBadUsages) {
   blink::WebCryptoKeyUsageMask bad_usages[] = {
       blink::WebCryptoKeyUsageDecrypt,
       blink::WebCryptoKeyUsageVerify | blink::WebCryptoKeyUsageDecrypt,
@@ -771,7 +773,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyBadUsages) {
 // Generate an RSA-SSA key pair. The public and private keys should select the
 // key usages which are applicable, and not have the exact same usages as was
 // specified to GenerateKey
-TEST(WebCryptoRsaSsaTest, GenerateKeyPairIntersectUsages) {
+TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairIntersectUsages) {
   const unsigned int modulus_length = 256;
   const std::vector<uint8_t> public_exponent = HexStringToBytes("010001");
 
@@ -803,7 +805,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairIntersectUsages) {
   EXPECT_EQ(blink::WebCryptoKeyUsageSign, private_key.usages());
 }
 
-TEST(WebCryptoRsaSsaTest, GenerateKeyPairEmptyUsages) {
+TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairEmptyUsages) {
   const unsigned int modulus_length = 256;
   const std::vector<uint8_t> public_exponent = HexStringToBytes("010001");
 
@@ -818,7 +820,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairEmptyUsages) {
                             true, 0, &public_key, &private_key));
 }
 
-TEST(WebCryptoRsaSsaTest, ImportKeyEmptyUsages) {
+TEST_F(WebCryptoRsaSsaTest, ImportKeyEmptyUsages) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 
@@ -876,7 +878,7 @@ TEST(WebCryptoRsaSsaTest, ImportKeyEmptyUsages) {
                       true, 0, &private_key));
 }
 
-TEST(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
+TEST_F(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
   struct TestCase {
     const blink::WebCryptoAlgorithmId hash;
     const blink::WebCryptoKeyUsageMask usage;
@@ -934,7 +936,7 @@ TEST(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
   }
 }
 
-TEST(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
+TEST_F(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
   base::DictionaryValue dict;
   RestoreJwkRsaDictionary(&dict);
   blink::WebCryptoAlgorithm algorithm =
@@ -992,7 +994,7 @@ TEST(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
 //
 // If the implementation does not fail fast, this test will crash dereferencing
 // invalid memory.
-TEST(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageFailFast) {
+TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageFailFast) {
   CryptoData bad_data(NULL, 128);  // Invalid buffer of length 128.
 
   blink::WebCryptoKey key;
@@ -1007,7 +1009,7 @@ TEST(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageFailFast) {
 }
 
 // Imports invalid JWK/SPKI/PKCS8 data and verifies that it fails as expected.
-TEST(WebCryptoRsaSsaTest, ImportInvalidKeyData) {
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidKeyData) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 

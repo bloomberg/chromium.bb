@@ -1056,6 +1056,7 @@
             'components.gyp:web_modal',
             'components.gyp:web_modal_test_support',
             'scheduler/scheduler.gyp:scheduler',
+            'test_runner/test_runner.gyp:test_runner',
             'webcrypto/webcrypto.gyp:webcrypto',
             '../third_party/re2/re2.gyp:re2',
           ],

@@ -45,7 +45,9 @@ blink::WebCryptoKey GetTestAesCbcKey() {
   return key;
 }
 
-TEST(WebCryptoAesCbcTest, InputTooLarge) {
+class WebCryptoAesCbcTest : public WebCryptoTestBase {};
+
+TEST_F(WebCryptoAesCbcTest, InputTooLarge) {
   std::vector<uint8_t> output;
 
   // Give an input that is too large (would cause integer overflow when
@@ -66,7 +68,7 @@ TEST(WebCryptoAesCbcTest, InputTooLarge) {
       Decrypt(CreateAesCbcAlgorithm(iv), GetTestAesCbcKey(), input, &output));
 }
 
-TEST(WebCryptoAesCbcTest, ExportKeyUnsupportedFormat) {
+TEST_F(WebCryptoAesCbcTest, ExportKeyUnsupportedFormat) {
   std::vector<uint8_t> output;
 
   // Fail exporting the key in SPKI and PKCS#8 formats (not allowed for secret
@@ -81,7 +83,7 @@ TEST(WebCryptoAesCbcTest, ExportKeyUnsupportedFormat) {
 
 // Tests importing of keys (in a variety of formats), errors during import,
 // encryption, and decryption, using known answers.
-TEST(WebCryptoAesCbcTest, KnownAnswerEncryptDecrypt) {
+TEST_F(WebCryptoAesCbcTest, KnownAnswerEncryptDecrypt) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_cbc.json", &tests));
 
@@ -156,7 +158,7 @@ TEST(WebCryptoAesCbcTest, KnownAnswerEncryptDecrypt) {
 }
 
 // TODO(eroman): Do this same test for AES-GCM, AES-KW, AES-CTR ?
-TEST(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
+TEST_F(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
   // Check key generation for each allowed key length.
   std::vector<blink::WebCryptoAlgorithm> algorithm;
   const unsigned short kKeyLength[] = {128, 256};
@@ -187,7 +189,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
   }
 }
 
-TEST(WebCryptoAesCbcTest, GenerateKeyBadLength) {
+TEST_F(WebCryptoAesCbcTest, GenerateKeyBadLength) {
   const unsigned short kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key;
   for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
@@ -198,7 +200,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyBadLength) {
   }
 }
 
-TEST(WebCryptoAesCbcTest, ImportKeyEmptyUsage) {
+TEST_F(WebCryptoAesCbcTest, ImportKeyEmptyUsage) {
   blink::WebCryptoKey key;
   ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
             ImportKey(blink::WebCryptoKeyFormatRaw,
@@ -208,7 +210,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyEmptyUsage) {
 }
 
 // If key_ops is specified but empty, no key usages are allowed for the key.
-TEST(WebCryptoAesCbcTest, ImportKeyJwkEmptyKeyOps) {
+TEST_F(WebCryptoAesCbcTest, ImportKeyJwkEmptyKeyOps) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -230,7 +232,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkEmptyKeyOps) {
 }
 
 // If key_ops is missing, then any key usages can be specified.
-TEST(WebCryptoAesCbcTest, ImportKeyJwkNoKeyOps) {
+TEST_F(WebCryptoAesCbcTest, ImportKeyJwkNoKeyOps) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -250,7 +252,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkNoKeyOps) {
                 blink::WebCryptoKeyUsageVerify, &key));
 }
 
-TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsEncryptDecrypt) {
+TEST_F(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsEncryptDecrypt) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -288,7 +290,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsEncryptDecrypt) {
 }
 
 // Test failure if input usage is NOT a strict subset of the JWK usage.
-TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsNotSuperset) {
+TEST_F(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsNotSuperset) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -306,7 +308,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsNotSuperset) {
           &key));
 }
 
-TEST(WebCryptoAesCbcTest, ImportKeyJwkUseEnc) {
+TEST_F(WebCryptoAesCbcTest, ImportKeyJwkUseEnc) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -329,7 +331,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkUseEnc) {
             key.usages());
 }
 
-TEST(WebCryptoAesCbcTest, ImportJwkInvalidJson) {
+TEST_F(WebCryptoAesCbcTest, ImportJwkInvalidJson) {
   blink::WebCryptoKey key;
   // Fail on empty JSON.
   EXPECT_EQ(
@@ -352,7 +354,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkInvalidJson) {
 
 // Fail on inconsistent key_ops - asking for "encrypt" however JWK contains
 // only "foo".
-TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsLacksUsages) {
+TEST_F(WebCryptoAesCbcTest, ImportJwkKeyOpsLacksUsages) {
   blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
@@ -369,7 +371,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsLacksUsages) {
                 blink::WebCryptoKeyUsageEncrypt, &key));
 }
 
-TEST(WebCryptoAesCbcTest, ImportExportJwk) {
+TEST_F(WebCryptoAesCbcTest, ImportExportJwk) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
 
@@ -392,7 +394,7 @@ TEST(WebCryptoAesCbcTest, ImportExportJwk) {
 }
 
 // AES 192-bit is not allowed: http://crbug.com/381829
-TEST(WebCryptoAesCbcTest, GenerateAesCbc192) {
+TEST_F(WebCryptoAesCbcTest, GenerateAesCbc192) {
   blink::WebCryptoKey key;
   Status status = GenerateSecretKey(CreateAesCbcKeyGenAlgorithm(192), true,
                                     blink::WebCryptoKeyUsageEncrypt, &key);
@@ -400,7 +402,7 @@ TEST(WebCryptoAesCbcTest, GenerateAesCbc192) {
 }
 
 // AES 192-bit is not allowed: http://crbug.com/381829
-TEST(WebCryptoAesCbcTest, UnwrapAesCbc192) {
+TEST_F(WebCryptoAesCbcTest, UnwrapAesCbc192) {
   std::vector<uint8_t> wrapping_key_data(16, 0);
   std::vector<uint8_t> wrapped_key = HexStringToBytes(
       "1A07ACAB6C906E50883173C29441DB1DE91D34F45C435B5F99C822867FB3956F");
@@ -421,7 +423,7 @@ TEST(WebCryptoAesCbcTest, UnwrapAesCbc192) {
 // Try importing an AES-CBC key with unsupported key usages using raw
 // format. AES-CBC keys support the following usages:
 //   'encrypt', 'decrypt', 'wrapKey', 'unwrapKey'
-TEST(WebCryptoAesCbcTest, ImportKeyBadUsage_Raw) {
+TEST_F(WebCryptoAesCbcTest, ImportKeyBadUsage_Raw) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
 
@@ -446,7 +448,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyBadUsage_Raw) {
 
 // Generate an AES-CBC key with invalid usages. AES-CBC supports:
 //   'encrypt', 'decrypt', 'wrapKey', 'unwrapKey'
-TEST(WebCryptoAesCbcTest, GenerateKeyBadUsages) {
+TEST_F(WebCryptoAesCbcTest, GenerateKeyBadUsages) {
   blink::WebCryptoKeyUsageMask bad_usages[] = {
       blink::WebCryptoKeyUsageSign,
       blink::WebCryptoKeyUsageVerify,
@@ -465,7 +467,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyBadUsages) {
 }
 
 // Generate an AES-CBC key with no usages.
-TEST(WebCryptoAesCbcTest, GenerateKeyEmptyUsages) {
+TEST_F(WebCryptoAesCbcTest, GenerateKeyEmptyUsages) {
   blink::WebCryptoKey key;
 
   ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
@@ -475,7 +477,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyEmptyUsages) {
 // Generate an AES-CBC key and an RSA key pair. Use the AES-CBC key to wrap the
 // key pair (using SPKI format for public key, PKCS8 format for private key).
 // Then unwrap the wrapped key pair and verify that the key data is the same.
-TEST(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
+TEST_F(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
   if (!SupportsRsaPrivateKeyImport())
     return;
 

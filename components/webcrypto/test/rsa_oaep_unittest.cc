@@ -38,9 +38,11 @@ scoped_ptr<base::DictionaryValue> CreatePublicKeyJwkDict() {
   return jwk.Pass();
 }
 
+class WebCryptoRsaOaepTest : public WebCryptoTestBase {};
+
 // Import a PKCS#8 private key that uses RSAPrivateKey with the
 // id-rsaEncryption OID.
-TEST(WebCryptoRsaOaepTest, ImportPkcs8WithRsaEncryption) {
+TEST_F(WebCryptoRsaOaepTest, ImportPkcs8WithRsaEncryption) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -56,7 +58,7 @@ TEST(WebCryptoRsaOaepTest, ImportPkcs8WithRsaEncryption) {
                       true, blink::WebCryptoKeyUsageDecrypt, &private_key));
 }
 
-TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
+TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -73,7 +75,7 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
                            true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 }
 
-TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
+TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -91,7 +93,7 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
                            true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 }
 
-TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
+TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -109,7 +111,7 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
                            true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 }
 
-TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
+TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -128,7 +130,7 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
                            true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 }
 
-TEST(WebCryptoRsaOaepTest, ExportPublicJwk) {
+TEST_F(WebCryptoRsaOaepTest, ExportPublicJwk) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -167,7 +169,7 @@ TEST(WebCryptoRsaOaepTest, ExportPublicJwk) {
   }
 }
 
-TEST(WebCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
+TEST_F(WebCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -221,7 +223,7 @@ TEST(WebCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
   }
 }
 
-TEST(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
+TEST_F(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -282,7 +284,7 @@ TEST(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
 // For example, a 1024-bit RSA key is too small to accomodate a message that
 // uses OAEP with SHA-512, since it requires 1040 bits to encode
 // (2 * hash size + 2 padding bytes).
-TEST(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
+TEST_F(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -313,7 +315,7 @@ TEST(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
                     &ciphertext));
 }
 
-TEST(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
+TEST_F(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -341,7 +343,7 @@ TEST(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
                     &plaintext));
 }
 
-TEST(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
+TEST_F(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -398,7 +400,7 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
   EXPECT_BYTES_EQ_HEX(key_hex, raw_key);
 }
 
-TEST(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
+TEST_F(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -503,7 +505,7 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
   EXPECT_BYTES_EQ_HEX(key_hex, raw_key);
 }
 
-TEST(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
+TEST_F(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;

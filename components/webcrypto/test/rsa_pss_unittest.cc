@@ -34,9 +34,11 @@ blink::WebCryptoAlgorithm CreateRsaPssAlgorithm(
       new blink::WebCryptoRsaPssParams(salt_length_bytes));
 }
 
+class WebCryptoRsaPssTest : public WebCryptoTestBase {};
+
 // Test that no two RSA-PSS signatures are identical, when using a non-zero
 // lengthed salt.
-TEST(WebCryptoRsaPssTest, SignIsRandom) {
+TEST_F(WebCryptoRsaPssTest, SignIsRandom) {
   if (!SupportsRsaPss()) {
     LOG(WARNING) << "Skipping test because RSA-PSS is not supported";
     return;
@@ -94,7 +96,7 @@ TEST(WebCryptoRsaPssTest, SignIsRandom) {
 
 // Try signing and verifying when the salt length is 0. The signature in this
 // case is not random.
-TEST(WebCryptoRsaPssTest, SignVerifyNoSalt) {
+TEST_F(WebCryptoRsaPssTest, SignVerifyNoSalt) {
   if (!SupportsRsaPss()) {
     LOG(WARNING) << "Skipping test because RSA-PSS is not supported";
     return;
@@ -144,7 +146,7 @@ TEST(WebCryptoRsaPssTest, SignVerifyNoSalt) {
   EXPECT_FALSE(is_match);
 }
 
-TEST(WebCryptoRsaPssTest, SignEmptyMessage) {
+TEST_F(WebCryptoRsaPssTest, SignEmptyMessage) {
   if (!SupportsRsaPss()) {
     LOG(WARNING) << "Skipping test because RSA-PSS is not supported";
     return;
@@ -186,7 +188,7 @@ TEST(WebCryptoRsaPssTest, SignEmptyMessage) {
 //   * Verify over original message should succeed
 //   * Verify over corrupted message should fail
 //   * Verification with corrupted signature should fail
-TEST(WebCryptoRsaPssTest, VerifyKnownAnswer) {
+TEST_F(WebCryptoRsaPssTest, VerifyKnownAnswer) {
   if (!SupportsRsaPss()) {
     LOG(WARNING) << "Skipping test because RSA-PSS is not supported";
     return;
