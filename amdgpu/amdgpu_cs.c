@@ -32,6 +32,9 @@
 #include <pthread.h>
 #include <sched.h>
 #include <sys/ioctl.h>
+#ifdef HAVE_ALLOCA_H
+# include <alloca.h>
+#endif
 
 #include "xf86drm.h"
 #include "amdgpu_drm.h"

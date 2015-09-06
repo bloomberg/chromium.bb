@@ -28,6 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef HAVE_ALLOCA_H
+# include <alloca.h>
+#endif
 
 #include "CUnit/Basic.h"
 
