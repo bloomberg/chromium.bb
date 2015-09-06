@@ -78,8 +78,6 @@ IDBDatabase* IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDat
 IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> backend, IDBDatabaseCallbacks* callbacks)
     : ActiveDOMObject(context)
     , m_backend(backend)
-    , m_closePending(false)
-    , m_contextStopped(false)
     , m_databaseCallbacks(callbacks)
 {
     m_databaseCallbacks->connect(this);
@@ -166,8 +164,8 @@ void IDBDatabase::onComplete(int64_t transactionId)
 PassRefPtrWillBeRawPtr<DOMStringList> IDBDatabase::objectStoreNames() const
 {
     RefPtrWillBeRawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
-    for (IDBDatabaseMetadata::ObjectStoreMap::const_iterator it = m_metadata.objectStores.begin(); it != m_metadata.objectStores.end(); ++it)
-        objectStoreNames->append(it->value.name);
+    for (const auto& it : m_metadata.objectStores)
+        objectStoreNames->append(it.value.name);
     objectStoreNames->sort();
     return objectStoreNames.release();
 }
@@ -328,8 +326,8 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
 
 void IDBDatabase::forceClose()
 {
-    for (TransactionMap::const_iterator::Values it = m_transactions.begin().values(), end = m_transactions.end().values(); it != end; ++it)
-        (*it)->abort(IGNORE_EXCEPTION);
+    for (const auto& it : m_transactions)
+        it.value->abort(IGNORE_EXCEPTION);
     this->close();
     enqueueEvent(Event::create(EventTypeNames::close));
 }
@@ -417,10 +415,10 @@ bool IDBDatabase::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 
 int64_t IDBDatabase::findObjectStoreId(const String& name) const
 {
-    for (IDBDatabaseMetadata::ObjectStoreMap::const_iterator it = m_metadata.objectStores.begin(); it != m_metadata.objectStores.end(); ++it) {
-        if (it->value.name == name) {
-            ASSERT(it->key != IDBObjectStoreMetadata::InvalidId);
-            return it->key;
+    for (const auto& it : m_metadata.objectStores) {
+        if (it.value.name == name) {
+            ASSERT(it.key != IDBObjectStoreMetadata::InvalidId);
+            return it.key;
         }
     }
     return IDBObjectStoreMetadata::InvalidId;

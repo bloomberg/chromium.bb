@@ -120,7 +120,7 @@ private:
 
     IDBObjectStoreMetadata m_metadata;
     Member<IDBTransaction> m_transaction;
-    bool m_deleted;
+    bool m_deleted = false;
 
     typedef HeapHashMap<String, Member<IDBIndex>> IDBIndexMap;
     IDBIndexMap m_indexMap;

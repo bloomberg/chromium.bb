@@ -79,8 +79,8 @@ private:
 
     Member<IDBKey> m_lower;
     Member<IDBKey> m_upper;
-    LowerBoundType m_lowerType;
-    UpperBoundType m_upperType;
+    const LowerBoundType m_lowerType;
+    const UpperBoundType m_upperType;
 };
 
 } // namespace blink

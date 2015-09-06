@@ -87,7 +87,7 @@ private:
     IDBIndexMetadata m_metadata;
     Member<IDBObjectStore> m_objectStore;
     Member<IDBTransaction> m_transaction;
-    bool m_deleted;
+    bool m_deleted = false;
 };
 
 } // namespace blink

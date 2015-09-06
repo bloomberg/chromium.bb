@@ -61,10 +61,6 @@ IDBCursor::IDBCursor(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection dir
     , m_direction(direction)
     , m_source(source)
     , m_transaction(transaction)
-    , m_gotValue(false)
-    , m_keyDirty(true)
-    , m_primaryKeyDirty(true)
-    , m_valueDirty(true)
 {
     ASSERT(m_backend);
     ASSERT(m_request);

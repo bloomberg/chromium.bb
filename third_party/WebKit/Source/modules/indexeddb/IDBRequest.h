@@ -136,10 +136,10 @@ protected:
     // EventTarget
     bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
-    bool m_contextStopped;
+    bool m_contextStopped = false;
     Member<IDBTransaction> m_transaction;
-    ReadyState m_readyState;
-    bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
+    ReadyState m_readyState = PENDING;
+    bool m_requestAborted = false; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
     void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
@@ -151,12 +151,12 @@ private:
     Member<IDBAny> m_result;
     Member<DOMError> m_error;
 
-    bool m_hasPendingActivity;
+    bool m_hasPendingActivity = true;
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_enqueuedEvents;
 
     // Only used if the result type will be a cursor.
-    IndexedDB::CursorType m_cursorType;
-    WebIDBCursorDirection m_cursorDirection;
+    IndexedDB::CursorType m_cursorType = IndexedDB::CursorKeyAndValue;
+    WebIDBCursorDirection m_cursorDirection = WebIDBCursorDirectionNext;
     // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
     Member<IDBCursor> m_pendingCursor;
     // New state is not applied to the cursor object until the event is dispatched.
@@ -164,9 +164,9 @@ private:
     Member<IDBKey> m_cursorPrimaryKey;
     RefPtr<IDBValue> m_cursorValue;
 
-    bool m_didFireUpgradeNeededEvent;
-    bool m_preventPropagation;
-    bool m_resultDirty;
+    bool m_didFireUpgradeNeededEvent = false;
+    bool m_preventPropagation = false;
+    bool m_resultDirty = true;
 };
 
 } // namespace blink

@@ -60,7 +60,6 @@ namespace blink {
 IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransaction* transaction)
     : m_metadata(metadata)
     , m_transaction(transaction)
-    , m_deleted(false)
 {
     ASSERT(m_transaction);
 }
@@ -80,8 +79,8 @@ PassRefPtrWillBeRawPtr<DOMStringList> IDBObjectStore::indexNames() const
 {
     IDB_TRACE("IDBObjectStore::indexNames");
     RefPtrWillBeRawPtr<DOMStringList> indexNames = DOMStringList::create(DOMStringList::IndexedDB);
-    for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it)
-        indexNames->append(it->value.name);
+    for (const auto& it : m_metadata.indexes)
+        indexNames->append(it.value.name);
     indexNames->sort();
     return indexNames.release();
 }
@@ -167,22 +166,22 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* scriptState, const ScriptVal
 
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished() || m_transaction->isFinishing()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     IDBKeyRange* range = IDBKeyRange::fromScriptValue(scriptState->executionContext(), keyRange, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
     if (!backendDB()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
@@ -325,12 +324,12 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode,
 
     Vector<int64_t> indexIds;
     HeapVector<IndexKeys> indexKeys;
-    for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it) {
+    for (const auto& it : m_metadata.indexes) {
         if (clone.isEmpty())
             clone = deserializeScriptValue(scriptState, serializedValue.get(), &blobInfo);
         IndexKeys keys;
-        generateIndexKeysForValue(scriptState->isolate(), it->value, clone, &keys);
-        indexIds.append(it->key);
+        generateIndexKeysForValue(scriptState->isolate(), it.value, clone, &keys);
+        indexIds.append(it.key);
         indexKeys.append(keys);
     }
 
@@ -575,9 +574,9 @@ IDBIndex* IDBObjectStore::index(const String& name, ExceptionState& exceptionSta
     }
 
     const IDBIndexMetadata* indexMetadata(nullptr);
-    for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it) {
-        if (it->value.name == name) {
-            indexMetadata = &it->value;
+    for (const auto& it : m_metadata.indexes) {
+        if (it.value.name == name) {
+            indexMetadata = &it.value;
             break;
         }
     }
@@ -740,10 +739,10 @@ void IDBObjectStore::transactionFinished()
 
 int64_t IDBObjectStore::findIndexId(const String& name) const
 {
-    for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it) {
-        if (it->value.name == name) {
-            ASSERT(it->key != IDBIndexMetadata::InvalidId);
-            return it->key;
+    for (const auto& it : m_metadata.indexes) {
+        if (it.value.name == name) {
+            ASSERT(it.key != IDBIndexMetadata::InvalidId);
+            return it.key;
         }
     }
     return IDBIndexMetadata::InvalidId;

@@ -60,19 +60,9 @@ IDBRequest* IDBRequest::create(ScriptState* scriptState, IDBAny* source, IDBTran
 
 IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction* transaction)
     : ActiveDOMObject(scriptState->executionContext())
-    , m_contextStopped(false)
     , m_transaction(transaction)
-    , m_readyState(PENDING)
-    , m_requestAborted(false)
     , m_scriptState(scriptState)
     , m_source(source)
-    , m_hasPendingActivity(true)
-    , m_cursorType(IndexedDB::CursorKeyAndValue)
-    , m_cursorDirection(WebIDBCursorDirectionNext)
-    , m_pendingCursor(nullptr)
-    , m_didFireUpgradeNeededEvent(false)
-    , m_preventPropagation(false)
-    , m_resultDirty(true)
 {
 }
 

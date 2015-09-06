@@ -49,7 +49,6 @@ IDBIndex::IDBIndex(const IDBIndexMetadata& metadata, IDBObjectStore* objectStore
     : m_metadata(metadata)
     , m_objectStore(objectStore)
     , m_transaction(transaction)
-    , m_deleted(false)
 {
     ASSERT(m_objectStore);
     ASSERT(m_transaction);

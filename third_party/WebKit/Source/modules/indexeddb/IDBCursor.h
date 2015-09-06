@@ -93,10 +93,10 @@ private:
     const WebIDBCursorDirection m_direction;
     Member<IDBAny> m_source;
     Member<IDBTransaction> m_transaction;
-    bool m_gotValue;
-    bool m_keyDirty;
-    bool m_primaryKeyDirty;
-    bool m_valueDirty;
+    bool m_gotValue = false;
+    bool m_keyDirty = true;
+    bool m_primaryKeyDirty = true;
+    bool m_valueDirty = true;
     Member<IDBKey> m_key;
     Member<IDBKey> m_primaryKey;
     RefPtr<IDBValue> m_value;

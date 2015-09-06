@@ -142,11 +142,10 @@ private:
     IDBDatabaseMetadata m_metadata;
     OwnPtr<WebIDBDatabase> m_backend;
     Member<IDBTransaction> m_versionChangeTransaction;
-    typedef HeapHashMap<int64_t, Member<IDBTransaction>> TransactionMap;
-    TransactionMap m_transactions;
+    HeapHashMap<int64_t, Member<IDBTransaction>> m_transactions;
 
-    bool m_closePending;
-    bool m_contextStopped;
+    bool m_closePending = false;
+    bool m_contextStopped = false;
 
     // Keep track of the versionchange events waiting to be fired on this
     // database so that we can cancel them if the database closes.
