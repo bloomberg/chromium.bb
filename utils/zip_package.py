@@ -333,16 +333,13 @@ def generate_version():
   level, order in which the files were specified, etc.
   """
   assert is_zipped_module(sys.modules['__main__'])
-  result = hashlib.sha1()
-  # TODO(maruel): This function still has to be compatible with python 2.6. Use
-  # a with statement once every bots are upgraded to 2.7.
-  z = zipfile.ZipFile(get_main_script_path(), 'r')
-  for item in sorted(z.namelist()):
-    f = z.open(item)
-    result.update(item)
-    result.update('\x00')
-    result.update(f.read())
-    result.update('\x00')
-    f.close()
-  z.close()
-  return result.hexdigest()
+  h = hashlib.sha1()
+  with zipfile.ZipFile(get_main_script_path(), 'r') as z:
+    for name in sorted(z.namelist()):
+      with z.open(name) as f:
+        h.update(str(len(name)))
+        h.update(name)
+        content = f.read()
+        h.update(str(len(content)))
+        h.update(content)
+  return h.hexdigest()
