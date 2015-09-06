@@ -244,7 +244,6 @@ crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
-crbug.com/463023 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Failure Pass ]
 
 crbug.com/524009 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
 

@@ -21,16 +21,20 @@ function test()
     function checkMapping(compiledLineNumber, compiledColumnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, mapping)
     {
         var entry = mapping.findEntry(compiledLineNumber, compiledColumnNumber);
-        InspectorTest.addResult(sourceURL + " === " + entry[2]);
-        InspectorTest.addResult(sourceLineNumber + " === " + entry[3]);
-        InspectorTest.addResult(sourceColumnNumber + " === " + entry[4]);
+        InspectorTest.addResult(sourceURL + " === " + entry.sourceURL);
+        InspectorTest.addResult(sourceLineNumber + " === " + entry.sourceLineNumber);
+        InspectorTest.addResult(sourceColumnNumber + " === " + entry.sourceColumnNumber);
     }
 
     function checkReverseMapping(compiledLineNumber, compiledColumnNumber, sourceURL, sourceLineNumber, mapping)
     {
-        var entry = mapping.findEntryReversed(sourceURL, sourceLineNumber, 5);
-        InspectorTest.addResult(compiledLineNumber + " === " + entry[0]);
-        InspectorTest.addResult(compiledColumnNumber + " === " + entry[1]);
+        var entry = mapping.firstSourceLineMapping(sourceURL, sourceLineNumber);
+        if (!entry) {
+            InspectorTest.addResult("source line " + sourceLineNumber + " has no mappings.");
+            return;
+        }
+        InspectorTest.addResult(compiledLineNumber + " === " + entry.lineNumber);
+        InspectorTest.addResult(compiledColumnNumber + " === " + entry.columnNumber);
     }
 
     function uiLocation(script, line, column)
@@ -111,7 +115,7 @@ function test()
             var mapping = new WebInspector.SourceMap("source-map.json", mappingPayload);
             checkMapping(0, 0, "example.js", 0, 0, mapping);
             var entry = mapping.findEntry(0, 1);
-            InspectorTest.assertEquals(2, entry.length);
+            InspectorTest.assertTrue(!entry.sourceURL);
             checkMapping(0, 2, "example.js", 0, 2, mapping);
             next();
         },
@@ -280,7 +284,7 @@ function test()
                 InspectorTest.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
 
                 InspectorTest.checkRawLocation(script, 0, 42, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode1, 3, 10));
-                InspectorTest.checkRawLocation(script, 1, 85, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 0, 0));
+                InspectorTest.checkRawLocation(script, 1, 85, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 1, 0));
                 InspectorTest.checkRawLocation(script, 1, 110, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 5, 2));
 
                 uiSourceCode1.requestContent(didRequestContent1);
@@ -345,7 +349,7 @@ function test()
                 InspectorTest.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
 
                 InspectorTest.checkRawLocation(script, 0, 42, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode1, 3, 10));
-                InspectorTest.checkRawLocation(script, 1, 85, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 0, 0));
+                InspectorTest.checkRawLocation(script, 1, 85, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 1, 0));
                 InspectorTest.checkRawLocation(script, 1, 110, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 5, 2));
 
                 uiSourceCode1.requestContent(didRequestContent1);

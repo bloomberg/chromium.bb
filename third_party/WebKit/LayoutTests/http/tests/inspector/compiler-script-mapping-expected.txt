@@ -29,8 +29,7 @@ undefined === undefined
 17 === 17
 0 === 0
 18 === 18
-0 === 0
-29 === 29
+source line 4 has no mappings.
 0 === 0
 29 === 29
 

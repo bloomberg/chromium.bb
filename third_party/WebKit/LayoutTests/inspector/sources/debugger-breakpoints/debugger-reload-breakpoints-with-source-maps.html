@@ -30,13 +30,30 @@ var test = function()
                 //Both breakpoints are resolved before reload
                 InspectorTest.dumpBreakpointSidebarPane("Breakpoints before reload:");
                 InspectorTest.addSniffer(WebInspector.CompilerScriptMapping.prototype, "_sourceMapLoaded", onSourceMapLoaded);
-                InspectorTest.reloadPage();
+                InspectorTest.reloadPage(onPageReloaded);
             }
         }
     }
 
+    var sourceMapLoaded = false;
+    var pageReloaded = false;
+
+    function onPageReloaded()
+    {
+        pageReloaded = true;
+        maybeCompleteTest();
+    }
+
     function onSourceMapLoaded()
     {
+        sourceMapLoaded = true;
+        maybeCompleteTest();
+    }
+
+    function maybeCompleteTest()
+    {
+        if (!pageReloaded || !sourceMapLoaded)
+            return;
         InspectorTest.dumpBreakpointSidebarPane("Breakpoints after reload:");
         InspectorTest.completeDebuggerTest();
     }
