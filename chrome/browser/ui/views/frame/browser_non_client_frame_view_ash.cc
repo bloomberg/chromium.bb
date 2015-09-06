@@ -661,7 +661,15 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
       x, bottom_y,
       w, theme_toolbar->height());
 
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // Draw the content/toolbar separator.
+    toolbar_bounds.Inset(kClientEdgeThickness, 0);
+    BrowserView::Paint1pxHorizontalLine(
+        canvas,
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
+        toolbar_bounds);
+  } else {
     // The pre-material design content area line has a shadow that extends a
     // couple of pixels above the toolbar bounds.
     const int kContentShadowHeight = 2;
@@ -686,16 +694,16 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
                          w - toolbar_right->width() - 2 * kClientEdgeThickness,
                          y + kClientEdgeThickness + kContentShadowHeight,
                          toolbar_right->width(), theme_toolbar->height());
-  }
 
-  // Draw the content/toolbar separator.
-  canvas->FillRect(
-      gfx::Rect(x + kClientEdgeThickness,
-                toolbar_bounds.bottom() - kClientEdgeThickness,
-                w - (2 * kClientEdgeThickness),
-                kClientEdgeThickness),
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+    // Draw the content/toolbar separator.
+    canvas->FillRect(
+        gfx::Rect(x + kClientEdgeThickness,
+                  toolbar_bounds.bottom() - kClientEdgeThickness,
+                  w - (2 * kClientEdgeThickness),
+                  kClientEdgeThickness),
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  }
 }
 
 void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {

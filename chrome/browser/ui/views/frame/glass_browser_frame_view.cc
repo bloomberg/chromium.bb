@@ -21,6 +21,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -418,13 +419,22 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   }
 
   // Draw the content/toolbar separator.
-  canvas->FillRect(
-      gfx::Rect(x + kClientEdgeThickness,
-                toolbar_bounds.bottom() - kClientEdgeThickness,
-                w - (2 * kClientEdgeThickness),
-                kClientEdgeThickness),
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    toolbar_bounds.Inset(kClientEdgeThickness, 0);
+    BrowserView::Paint1pxHorizontalLine(
+        canvas,
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
+        toolbar_bounds);
+  } else {
+    canvas->FillRect(
+        gfx::Rect(x + kClientEdgeThickness,
+                  toolbar_bounds.bottom() - kClientEdgeThickness,
+                  w - (2 * kClientEdgeThickness),
+                  kClientEdgeThickness),
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  }
 }
 
 void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {

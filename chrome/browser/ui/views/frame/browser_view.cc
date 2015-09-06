@@ -210,24 +210,19 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
   // if animating, these are fading in/out.
   SkColor separator_color =
       chrome::GetDetachedBookmarkBarSeparatorColor(theme_service);
-  PaintHorizontalBorder(canvas, view, true, separator_color);
-  // The bottom border needs to be 1-px thick in both regular and retina
-  // displays, so we can't use PaintHorizontalBorder which paints a 2-px thick
-  // border in retina display.
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  // Sets border to 1-px thick regardless of scale factor.
-  paint.setStrokeWidth(0);
-  // Bottom border is at 50% opacity of top border.
-  paint.setColor(SkColorSetA(separator_color,
-                             SkColorGetA(separator_color) / 2));
-  // Calculate thickness of bottom border as per current scale factor to
-  // determine where to draw the 1-px thick border.
-  float thickness = views::NonClientFrameView::kClientEdgeThickness /
-                    canvas->image_scale();
-  SkScalar y = SkIntToScalar(view->height()) - SkFloatToScalar(thickness);
-  canvas->sk_canvas()->drawLine(SkIntToScalar(0), y,
-                                SkIntToScalar(view->width()), y, paint);
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    BrowserView::Paint1pxHorizontalLine(
+        canvas, separator_color, gfx::RectF(0, 0, view->width(),
+        views::NonClientFrameView::kClientEdgeThickness));
+  } else {
+    PaintHorizontalBorder(canvas, view, true, separator_color);
+  }
+
+  BrowserView::Paint1pxHorizontalLine(
+      canvas,
+      SkColorSetA(separator_color, SkColorGetA(separator_color) / 2),
+      view->GetLocalBounds());
 }
 
 // Paints the background (including the theme image behind content area) for
@@ -285,11 +280,19 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
                               host_desktop_type);
   if (view->height() >= toolbar_overlap) {
     // Draw the separator below the Bookmarks Bar; this is fading in/out.
-    PaintHorizontalBorder(canvas,
-                          view,
-                          false,
-                          ThemeProperties::GetDefaultColor(
-                              ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      BrowserView::Paint1pxHorizontalLine(
+          canvas,
+          ThemeProperties::GetDefaultColor(
+              ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
+          view->GetLocalBounds());
+    } else {
+      PaintHorizontalBorder(canvas,
+                            view,
+                            false,
+                            ThemeProperties::GetDefaultColor(
+                                ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+    }
   }
 }
 
@@ -540,6 +543,24 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
 // static
 BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
   return static_cast<BrowserView*>(browser->window());
+}
+
+// static
+void BrowserView::Paint1pxHorizontalLine(
+    gfx::Canvas* canvas,
+    SkColor color,
+    gfx::RectF bounds) {
+  canvas->Save();
+  SkScalar scale_factor = 1.0f / canvas->image_scale();
+  canvas->sk_canvas()->scale(scale_factor, scale_factor);
+
+  bounds.Scale(canvas->image_scale(), canvas->image_scale());
+  bounds.Inset(0, bounds.height() - 1, 0, 0);
+
+  SkPaint paint;
+  paint.setColor(color);
+  canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(bounds), paint);
+  canvas->Restore();
 }
 
 void BrowserView::InitStatusBubble() {
