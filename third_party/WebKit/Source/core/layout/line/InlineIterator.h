@@ -532,6 +532,7 @@ static inline LineLayoutItem highestContainingIsolateWithinRoot(LineLayoutItem o
             containingIsolateObj = object;
 
         object = object.parent();
+        ASSERT(object);
     }
     return containingIsolateObj;
 }
