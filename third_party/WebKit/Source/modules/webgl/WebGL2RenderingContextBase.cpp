@@ -118,6 +118,11 @@ void WebGL2RenderingContextBase::copyBufferSubData(GLenum readTarget, GLenum wri
     if (!writeBuffer)
         return;
 
+    if (readOffset + size > readBuffer->getSize() || writeOffset + size > writeBuffer->getSize()) {
+        synthesizeGLError(GL_INVALID_VALUE, "copyBufferSubData", "buffer overflow");
+        return;
+    }
+
     if ((writeBuffer->getInitialTarget() == GL_ELEMENT_ARRAY_BUFFER && readBuffer->getInitialTarget() != GL_ELEMENT_ARRAY_BUFFER)
         || (writeBuffer->getInitialTarget() != GL_ELEMENT_ARRAY_BUFFER && readBuffer->getInitialTarget() == GL_ELEMENT_ARRAY_BUFFER)) {
         synthesizeGLError(GL_INVALID_OPERATION, "copyBufferSubData", "Cannot copy into an element buffer destination from a non-element buffer source");
@@ -141,6 +146,14 @@ void WebGL2RenderingContextBase::getBufferSubData(GLenum target, long long offse
     }
 
     if (!validateValueFitNonNegInt32("getBufferSubData", "offset", offset)) {
+        return;
+    }
+
+    WebGLBuffer* buffer = validateBufferDataTarget("getBufferSubData", target);
+    if (!buffer)
+        return;
+    if (offset + returnedData->byteLength() > buffer->getSize()) {
+        synthesizeGLError(GL_INVALID_VALUE, "getBufferSubData", "buffer overflow");
         return;
     }
 
@@ -509,10 +522,16 @@ bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName,
     if (!validateTexFuncLevel(functionName, target, level))
         return false;
 
-    if (width - xoffset > tex->getWidth(target, level)
-        || height - yoffset > tex->getHeight(target, level)
-        || depth - zoffset > tex->getDepth(target, level)) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "dimensions out of range");
+    // Before checking if it is in the range, check if overflow happens first.
+    Checked<GLint, RecordOverflow> maxX = xoffset, maxY = yoffset, maxZ = zoffset;
+    maxX += width;
+    maxY += height;
+    maxZ += depth;
+    if (maxX.hasOverflowed() || maxY.hasOverflowed() || maxZ.hasOverflowed()
+        || maxX.unsafeGet() > tex->getWidth(target, level)
+        || maxY.unsafeGet() > tex->getHeight(target, level)
+        || maxZ.unsafeGet() > tex->getDepth(target, level)) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
         return false;
     }
 
@@ -609,10 +628,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !image || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, image->width(), image->height(), 1))
-        return;
-
-    if (isContextLost() || !validateHTMLImageElement("texSubImage3D", image, exceptionState))
+    if (isContextLost() || !image || !validateHTMLImageElement("texSubImage3D", image, exceptionState))
         return;
 
     RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
@@ -1681,8 +1697,10 @@ void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, We
         return;
     }
 
-    if (!validateAndUpdateBufferBindBaseTarget("bindBufferRange", target, index, buffer))
+    if (buffer && (offset + size > buffer->getSize())) {
+        synthesizeGLError(GL_INVALID_VALUE, "bindBufferRange", "buffer overflow");
         return;
+    }
 
     webContext()->bindBufferRange(target, index, objectOrZero(buffer), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size));
 }

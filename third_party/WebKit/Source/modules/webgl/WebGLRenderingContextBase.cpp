@@ -1625,6 +1625,10 @@ void WebGLRenderingContextBase::bufferSubDataImpl(GLenum target, long long offse
         return;
     if (!data)
         return;
+    if (offset + static_cast<long long>(size) > buffer->getSize()) {
+        synthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "buffer overflow");
+        return;
+    }
 
     webContext()->bufferSubData(target, static_cast<GLintptr>(offset), size, data);
 }
@@ -5897,9 +5901,13 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "xoffset or yoffset not multiple of 4");
             return false;
         }
-        if (width - xoffset > tex->getWidth(target, level)
-            || height - yoffset > tex->getHeight(target, level)) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "dimensions out of range");
+        // Before checking if it is in the range, check if overflow happens first.
+        Checked<GLint, RecordOverflow> maxX = xoffset, maxY = yoffset;
+        maxX += width;
+        maxY += height;
+        if (maxX.hasOverflowed() || maxY.hasOverflowed() || maxX.unsafeGet() > tex->getWidth(target, level)
+            || maxY.unsafeGet() > tex->getHeight(target, level)) {
+            synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
             return false;
         }
         return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, format);
