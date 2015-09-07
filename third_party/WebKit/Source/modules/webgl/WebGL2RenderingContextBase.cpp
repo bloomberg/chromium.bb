@@ -2583,6 +2583,8 @@ DEFINE_TRACE(WebGL2RenderingContextBase)
     visitor->trace(m_boundPixelUnpackBuffer);
     visitor->trace(m_boundTransformFeedbackBuffer);
     visitor->trace(m_boundUniformBuffer);
+    visitor->trace(m_boundIndexedTransformFeedbackBuffers);
+    visitor->trace(m_boundIndexedUniformBuffers);
     visitor->trace(m_currentBooleanOcclusionQuery);
     visitor->trace(m_currentTransformFeedbackPrimitivesWrittenQuery);
     visitor->trace(m_samplerUnits);
