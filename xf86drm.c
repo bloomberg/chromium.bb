@@ -2893,20 +2893,22 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
     return 0;
 }
 
-static int drmSameDevice(drmDevicePtr a, drmDevicePtr b)
+static int drmCompareBusInfo(drmDevicePtr a, drmDevicePtr b)
 {
+    if (a == NULL || b == NULL)
+        return -1;
+
     if (a->bustype != b->bustype)
-        return 0;
+        return -1;
 
     switch (a->bustype) {
     case DRM_BUS_PCI:
-        if (memcmp(a->businfo.pci, b->businfo.pci, sizeof(drmPciBusInfo)) == 0)
-            return 1;
+        return memcmp(a->businfo.pci, b->businfo.pci, sizeof(drmPciBusInfo));
     default:
         break;
     }
 
-    return 0;
+    return -1;
 }
 
 static int drmGetNodeType(const char *name)
@@ -3104,7 +3106,7 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
         for (j = i+1; j < node_count; j++) {
             if (duplicated[i] || duplicated[j])
                 continue;
-            if (drmSameDevice(&devs[i], &devs[j])) {
+            if (drmCompareBusInfo(&devs[i], &devs[j]) == 0) {
                 duplicated[j] = 1;
                 devs[i].available_nodes |= devs[j].available_nodes;
                 node_type = log2(devs[j].available_nodes);
