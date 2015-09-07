@@ -729,8 +729,19 @@ void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
   // VaapiVideoDecodeAccelerator::FinishReset()).
   ++num_done_bitstream_buffers_;
   --outstanding_decodes_;
-  if (decode_calls_per_second_ == 0)
+
+  // Flush decoder after all BitstreamBuffers are processed.
+  if (encoded_data_next_pos_to_decode_ == encoded_data_.size()) {
+    // TODO(owenlin): We should not have to check the number of
+    // |outstanding_decodes_|. |decoder_| should be able to accept Flush()
+    // before it's done with outstanding decodes. (crbug.com/528183)
+    if (outstanding_decodes_ == 0) {
+      decoder_->Flush();
+      SetState(CS_FLUSHING);
+    }
+  } else if (decode_calls_per_second_ == 0) {
     DecodeNextFragment();
+  }
 }
 
 void GLRenderingVDAClient::NotifyFlushDone() {
@@ -922,13 +933,8 @@ static bool FragmentHasConfigInfo(const uint8* data, size_t size,
 void GLRenderingVDAClient::DecodeNextFragment() {
   if (decoder_deleted())
     return;
-  if (encoded_data_next_pos_to_decode_ == encoded_data_.size()) {
-    if (outstanding_decodes_ == 0) {
-      decoder_->Flush();
-      SetState(CS_FLUSHING);
-    }
+  if (encoded_data_next_pos_to_decode_ == encoded_data_.size())
     return;
-  }
   size_t end_pos;
   std::string next_fragment_bytes;
   if (encoded_data_next_pos_to_decode_ == 0) {
