@@ -6,11 +6,14 @@
 
 #include <WebKit/WebKit.h>
 
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/public/web_view_creation_util.h"
 #include "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
@@ -22,6 +25,81 @@ namespace {
 NSString* const kXChromeConnectedCookieTemplate =
     @"<html><script>document.cookie=\"X-CHROME-CONNECTED=%@; path=/; domain=%@;"
      " expires=\" + new Date(%f).toGMTString();</script></html>";
+
+// WebStatePolicyDecider that monitors the HTTP headers on Gaia responses,
+// reacting on the X-Chrome-Manage-Accounts header and notifying its delegate.
+class AccountConsistencyHandler : public web::WebStatePolicyDecider {
+ public:
+  AccountConsistencyHandler(web::WebState* web_state,
+                            AccountConsistencyService* service,
+                            id<ManageAccountsDelegate> delegate);
+
+ private:
+  // web::WebStatePolicyDecider override
+  bool ShouldAllowResponse(NSURLResponse* response) override;
+  void WebStateDestroyed() override;
+
+  AccountConsistencyService* account_consistency_service_;  // Weak.
+  base::WeakNSProtocol<id<ManageAccountsDelegate>> delegate_;
+};
+}
+
+AccountConsistencyHandler::AccountConsistencyHandler(
+    web::WebState* web_state,
+    AccountConsistencyService* service,
+    id<ManageAccountsDelegate> delegate)
+    : web::WebStatePolicyDecider(web_state),
+      account_consistency_service_(service),
+      delegate_(delegate) {}
+
+bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response) {
+  NSHTTPURLResponse* http_response =
+      base::mac::ObjCCast<NSHTTPURLResponse>(response);
+  if (!http_response)
+    return true;
+  if (!gaia::IsGaiaSignonRealm(
+          net::GURLWithNSURL(http_response.URL).GetOrigin()))
+    return true;
+  NSString* manage_accounts_header = [[http_response allHeaderFields]
+      objectForKey:@"X-Chrome-Manage-Accounts"];
+  if (!manage_accounts_header)
+    return true;
+
+  signin::ManageAccountsParams params = signin::BuildManageAccountsParams(
+      base::SysNSStringToUTF8(manage_accounts_header));
+
+  switch (params.service_type) {
+    case signin::GAIA_SERVICE_TYPE_INCOGNITO: {
+      GURL continue_url = GURL(params.continue_url);
+      DLOG_IF(ERROR, !params.continue_url.empty() && !continue_url.is_valid())
+          << "Invalid continuation URL: \"" << continue_url << "\"";
+      [delegate_ onGoIncognito:continue_url];
+      break;
+    }
+    case signin::GAIA_SERVICE_TYPE_SIGNOUT:
+    case signin::GAIA_SERVICE_TYPE_ADDSESSION:
+    case signin::GAIA_SERVICE_TYPE_REAUTH:
+    case signin::GAIA_SERVICE_TYPE_SIGNUP:
+    case signin::GAIA_SERVICE_TYPE_DEFAULT:
+      [delegate_ onManageAccounts];
+      break;
+    case signin::GAIA_SERVICE_TYPE_NONE:
+      NOTREACHED();
+      break;
+  }
+
+  // WKWebView loads a blank page even if the response code is 204
+  // ("No Content"). http://crbug.com/368717
+  //
+  // Manage accounts responses are handled via native UI. Abort this request
+  // for the following reasons:
+  // * Avoid loading a blank page in WKWebView.
+  // * Avoid adding this request to history.
+  return false;
+}
+
+void AccountConsistencyHandler::WebStateDestroyed() {
+  account_consistency_service_->RemoveWebStateHandler(web_state());
 }
 
 // WKWebView navigation delegate that calls its callback every time a navigation
@@ -102,12 +180,27 @@ AccountConsistencyService::~AccountConsistencyService() {
   DCHECK(!navigation_delegate_);
 }
 
+void AccountConsistencyService::SetWebStateHandler(
+    web::WebState* web_state,
+    id<ManageAccountsDelegate> delegate) {
+  DCHECK_EQ(0u, web_state_handlers_.count(web_state));
+  web_state_handlers_[web_state].reset(
+      new AccountConsistencyHandler(web_state, this, delegate));
+}
+
+void AccountConsistencyService::RemoveWebStateHandler(
+    web::WebState* web_state) {
+  DCHECK_LT(0u, web_state_handlers_.count(web_state));
+  web_state_handlers_.erase(web_state);
+}
+
 void AccountConsistencyService::Shutdown() {
   gaia_cookie_manager_service_->RemoveObserver(this);
   signin_manager_->RemoveObserver(this);
   web::BrowserState::GetActiveStateManager(browser_state_)
       ->RemoveObserver(this);
   ResetWKWebView();
+  web_state_handlers_.clear();
 }
 
 void AccountConsistencyService::ApplyCookieRequests() {

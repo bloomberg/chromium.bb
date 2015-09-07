@@ -92,6 +92,10 @@ bool AppendMirrorRequestHeaderIfPossible(
 
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response
 // header.
+ManageAccountsParams BuildManageAccountsParams(const std::string& header_value);
+
+// Returns the parameters contained in the X-Chrome-Manage-Accounts response
+// header.
 // If the request does not have a response header or if the header contains
 // garbage, then |service_type| is set to |GAIA_SERVICE_TYPE_NONE|.
 ManageAccountsParams BuildManageAccountsParamsIfExists(net::URLRequest* request,

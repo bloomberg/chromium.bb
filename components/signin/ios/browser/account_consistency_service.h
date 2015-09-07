@@ -6,19 +6,24 @@
 #define COMPONENTS_SIGNIN_IOS_BROWSER_ACCOUNT_CONSISTENCY_SERVICE_H_
 
 #include <deque>
+#include <map>
 #include <string>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#import "components/signin/ios/browser/manage_accounts_delegate.h"
 #include "ios/web/public/active_state_manager.h"
 
 namespace web {
 class BrowserState;
+class WebState;
+class WebStatePolicyDecider;
 }
 
 @class AccountConsistencyNavigationDelegate;
@@ -40,6 +45,13 @@ class AccountConsistencyService : public KeyedService,
       GaiaCookieManagerService* gaia_cookie_manager_service,
       SigninManager* signin_manager);
   ~AccountConsistencyService() override;
+
+  // Sets the handler for |web_state| that reacts on Gaia responses with the
+  // X-Chrome-Manage-Accounts header and notifies |delegate|.
+  void SetWebStateHandler(web::WebState* web_state,
+                          id<ManageAccountsDelegate> delegate);
+  // Removes the handler associated with |web_state|.
+  void RemoveWebStateHandler(web::WebState* web_state);
 
  private:
   friend class AccountConsistencyServiceTest;
@@ -119,6 +131,11 @@ class AccountConsistencyService : public KeyedService,
   // request has been applied.
   base::scoped_nsobject<AccountConsistencyNavigationDelegate>
       navigation_delegate_;
+
+  // Handlers reacting on GAIA responses with the X-Chrome-Manage-Accounts
+  // header set.
+  std::map<web::WebState*, scoped_ptr<web::WebStatePolicyDecider>>
+      web_state_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountConsistencyService);
 };

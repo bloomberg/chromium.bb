@@ -196,6 +196,7 @@
             # Note: file list duplicated in GN build.
             'signin/ios/browser/account_consistency_service.h',
             'signin/ios/browser/account_consistency_service.mm',
+            'signin/ios/browser/manage_accounts_delegate.h',
             'signin/ios/browser/merge_session_observer_bridge.h',
             'signin/ios/browser/merge_session_observer_bridge.mm',
             'signin/ios/browser/oauth2_token_service_observer_bridge.h',

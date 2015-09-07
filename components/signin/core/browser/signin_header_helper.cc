@@ -123,34 +123,6 @@ std::string BuildMirrorRequestIfPossible(
                             is_enable_account_consistency ? "true" : "false");
 }
 
-// Returns the parameters contained in the X-Chrome-Manage-Accounts response
-// header.
-signin::ManageAccountsParams BuildManageAccountsParams(
-    const std::string& header_value) {
-  signin::ManageAccountsParams params;
-  MirrorResponseHeaderDictionary header_dictionary =
-      ParseMirrorResponseHeader(header_value);
-  MirrorResponseHeaderDictionary::const_iterator it = header_dictionary.begin();
-  for (; it != header_dictionary.end(); ++it) {
-    const std::string key_name(it->first);
-    if (key_name == kServiceTypeAttrName) {
-      params.service_type =
-          GetGAIAServiceTypeFromHeader(header_dictionary[kServiceTypeAttrName]);
-    } else if (key_name == kEmailAttrName) {
-      params.email = header_dictionary[kEmailAttrName];
-    } else if (key_name == kIsSamlAttrName) {
-      params.is_saml = header_dictionary[kIsSamlAttrName] == "true";
-    } else if (key_name == kContinueUrlAttrName) {
-      params.continue_url = header_dictionary[kContinueUrlAttrName];
-    } else if (key_name == kIsSameTabAttrName) {
-      params.is_same_tab = header_dictionary[kIsSameTabAttrName] == "true";
-    } else {
-      DLOG(WARNING) << "Unexpected GAIA header attribute '" << key_name << "'.";
-    }
-  }
-  return params;
-}
-
 }  // namespace
 
 namespace signin {
@@ -199,6 +171,32 @@ bool AppendMirrorRequestHeaderIfPossible(
   request->SetExtraRequestHeaderByName(kChromeConnectedHeader, header_value,
                                        false);
   return true;
+}
+
+ManageAccountsParams BuildManageAccountsParams(
+    const std::string& header_value) {
+  signin::ManageAccountsParams params;
+  MirrorResponseHeaderDictionary header_dictionary =
+      ParseMirrorResponseHeader(header_value);
+  MirrorResponseHeaderDictionary::const_iterator it = header_dictionary.begin();
+  for (; it != header_dictionary.end(); ++it) {
+    const std::string key_name(it->first);
+    if (key_name == kServiceTypeAttrName) {
+      params.service_type =
+          GetGAIAServiceTypeFromHeader(header_dictionary[kServiceTypeAttrName]);
+    } else if (key_name == kEmailAttrName) {
+      params.email = header_dictionary[kEmailAttrName];
+    } else if (key_name == kIsSamlAttrName) {
+      params.is_saml = header_dictionary[kIsSamlAttrName] == "true";
+    } else if (key_name == kContinueUrlAttrName) {
+      params.continue_url = header_dictionary[kContinueUrlAttrName];
+    } else if (key_name == kIsSameTabAttrName) {
+      params.is_same_tab = header_dictionary[kIsSameTabAttrName] == "true";
+    } else {
+      DLOG(WARNING) << "Unexpected GAIA header attribute '" << key_name << "'.";
+    }
+  }
+  return params;
 }
 
 ManageAccountsParams BuildManageAccountsParamsIfExists(net::URLRequest* request,

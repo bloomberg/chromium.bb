@@ -13,8 +13,10 @@
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/test/web_test_util.h"
+#include "ios/web/public/web_state/web_state_policy_decider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -52,6 +54,32 @@ class FakeAccountConsistencyService : public AccountConsistencyService {
   }
   id mock_web_view_;
 };
+
+// TestWebState that allows control over its policy decider.
+class TestWebState : public web::TestWebState {
+ public:
+  TestWebState() : web::TestWebState(), decider_(nullptr) {}
+  void AddPolicyDecider(web::WebStatePolicyDecider* decider) override {
+    EXPECT_FALSE(decider_);
+    decider_ = decider;
+  }
+  void RemovePolicyDecider(web::WebStatePolicyDecider* decider) override {
+    EXPECT_EQ(decider_, decider);
+    decider_ = nullptr;
+  }
+  bool ShouldAllowResponse(NSURLResponse* response) {
+    return decider_ ? decider_->ShouldAllowResponse(response) : true;
+  }
+  void WebStateDestroyed() {
+    if (!decider_)
+      return;
+    decider_->WebStateDestroyed();
+  }
+
+ private:
+  web::WebStatePolicyDecider* decider_;
+};
+
 }  // namespace
 
 class AccountConsistencyServiceTest : public PlatformTest {
@@ -93,6 +121,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   web::TestWebThreadBundle thread_bundle_;
   AccountTrackerService account_tracker_service_;
   web::TestBrowserState browser_state_;
+  TestWebState web_state_;
   // AccountConsistencyService being tested. Actually a
   // FakeAccountConsistencyService to be able to use a mock web view.
   scoped_ptr<AccountConsistencyService> account_consistency_service_;
@@ -199,4 +228,68 @@ TEST_F(AccountConsistencyServiceTest, CancelOnInactiveReApplyOnActive) {
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
+}
+
+// Tests that the X-Chrome-Manage-Accounts header is ignored unless it comes
+// from Gaia signon realm.
+TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsNotOnGaia) {
+  id delegate =
+      [OCMockObject mockForProtocol:@protocol(ManageAccountsDelegate)];
+
+  NSDictionary* headers =
+      [NSDictionary dictionaryWithObject:@"action=DEFAULT"
+                                  forKey:@"X-Chrome-Manage-Accounts"];
+  base::scoped_nsobject<NSHTTPURLResponse> response([[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@"https://google.com"]
+        statusCode:200
+       HTTPVersion:@"HTTP/1.1"
+      headerFields:headers]);
+  account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
+  EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
+  web_state_.WebStateDestroyed();
+
+  EXPECT_OCMOCK_VERIFY(delegate);
+}
+
+// Tests that navigation to Gaia signon realm with no X-Chrome-Manage-Accounts
+// header in the response are simply untouched.
+TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsNoHeader) {
+  id delegate =
+      [OCMockObject mockForProtocol:@protocol(ManageAccountsDelegate)];
+
+  NSDictionary* headers = [NSDictionary dictionary];
+  base::scoped_nsobject<NSHTTPURLResponse> response([[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@"https://accounts.google.com/"]
+        statusCode:200
+       HTTPVersion:@"HTTP/1.1"
+      headerFields:headers]);
+  account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
+  EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
+  web_state_.WebStateDestroyed();
+
+  EXPECT_OCMOCK_VERIFY(delegate);
+}
+
+// Tests that the ManageAccountsDelegate is notified when a navigation on Gaia
+// signon realm returns with a X-Chrome-Manage-Accounts header with action
+// DEFAULT.
+TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsDefault) {
+  id delegate =
+      [OCMockObject mockForProtocol:@protocol(ManageAccountsDelegate)];
+  // Default action is |onManageAccounts|.
+  [[delegate expect] onManageAccounts];
+
+  NSDictionary* headers =
+      [NSDictionary dictionaryWithObject:@"action=DEFAULT"
+                                  forKey:@"X-Chrome-Manage-Accounts"];
+  base::scoped_nsobject<NSHTTPURLResponse> response([[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@"https://accounts.google.com/"]
+        statusCode:200
+       HTTPVersion:@"HTTP/1.1"
+      headerFields:headers]);
+  account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
+  EXPECT_FALSE(web_state_.ShouldAllowResponse(response));
+  web_state_.WebStateDestroyed();
+
+  EXPECT_OCMOCK_VERIFY(delegate);
 }

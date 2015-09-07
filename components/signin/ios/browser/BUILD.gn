@@ -6,6 +6,7 @@ source_set("browser") {
   sources = [
     "account_consistency_service.h",
     "account_consistency_service.mm",
+    "manage_accounts_delegate.h",
     "merge_session_observer_bridge.h",
     "merge_session_observer_bridge.mm",
     "oauth2_token_service_observer_bridge.h",
