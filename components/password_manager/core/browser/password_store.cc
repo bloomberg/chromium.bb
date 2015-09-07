@@ -86,10 +86,6 @@ void PasswordStore::SetAffiliatedMatchHelper(
   affiliated_match_helper_ = helper.Pass();
 }
 
-bool PasswordStore::HasAffiliatedMatchHelper() const {
-  return affiliated_match_helper_;
-}
-
 void PasswordStore::AddLogin(const PasswordForm& form) {
   CheckForEmptyUsernameAndPassword(form);
   ScheduleTask(base::Bind(&PasswordStore::AddLoginInternal, this, form));

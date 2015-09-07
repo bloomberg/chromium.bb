@@ -77,15 +77,15 @@ class PasswordStore : protected PasswordStoreSync,
   // affiliation-based matching is disabled. The passed |helper| must already be
   // initialized if it is non-null.
   void SetAffiliatedMatchHelper(scoped_ptr<AffiliatedMatchHelper> helper);
+  AffiliatedMatchHelper* affiliated_match_helper() const {
+    return affiliated_match_helper_.get();
+  }
 
   // Toggles whether or not to propagate password changes in Android credentials
   // to the affiliated Web credentials.
   void enable_propagating_password_changes_to_web_credentials(bool enabled) {
     is_propagating_password_changes_to_web_credentials_enabled_ = enabled;
   }
-
-  // Returns whether or not an affiliation-based match helper is set.
-  bool HasAffiliatedMatchHelper() const;
 
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const autofill::PasswordForm& form);

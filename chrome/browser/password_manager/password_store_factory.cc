@@ -167,10 +167,10 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
     return;
 
   if (ShouldAffiliationBasedMatchingBeActive(profile) &&
-      !password_store->HasAffiliatedMatchHelper()) {
+      !password_store->affiliated_match_helper()) {
     ActivateAffiliationBasedMatching(password_store.get(), profile);
   } else if (!ShouldAffiliationBasedMatchingBeActive(profile) &&
-             password_store->HasAffiliatedMatchHelper()) {
+             password_store->affiliated_match_helper()) {
     password_store->SetAffiliatedMatchHelper(
         make_scoped_ptr<password_manager::AffiliatedMatchHelper>(nullptr));
   }
@@ -180,7 +180,7 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
 void PasswordStoreFactory::TrimOrDeleteAffiliationCache(Profile* profile) {
   scoped_refptr<PasswordStore> password_store =
       GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
-  if (password_store && password_store->HasAffiliatedMatchHelper()) {
+  if (password_store && password_store->affiliated_match_helper()) {
     password_store->TrimAffiliationCache();
   } else {
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
