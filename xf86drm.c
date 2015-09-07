@@ -65,6 +65,8 @@
 #include "xf86drm.h"
 #include "libdrm_macros.h"
 
+#include "util_math.h"
+
 #ifdef __OpenBSD__
 #define DRM_PRIMARY_MINOR_NAME	"drm"
 #define DRM_CONTROL_MINOR_NAME	"drmC"
@@ -2928,6 +2930,15 @@ static int drmGetNodeType(const char *name)
     return -EINVAL;
 }
 
+static int drmGetMaxNodeName(void)
+{
+    return sizeof(DRM_DIR_NAME) +
+           MAX3(sizeof(DRM_PRIMARY_MINOR_NAME),
+                sizeof(DRM_CONTROL_MINOR_NAME),
+                sizeof(DRM_RENDER_MINOR_NAME)) +
+           3 /* lenght of the node number */;
+}
+
 static int drmParsePciDeviceInfo(const char *d_name,
                                  drmPciDeviceInfoPtr device)
 {
@@ -2954,20 +2965,13 @@ static int drmParsePciDeviceInfo(const char *d_name,
     return 0;
 }
 
-static void drmFreeDevice(drmDevicePtr device)
+static void drmFreeDevice(drmDevicePtr *device)
 {
-    int i;
-
     if (device == NULL)
         return;
 
-    if (device->nodes != NULL)
-        for (i = 0; i < DRM_NODE_MAX; i++)
-            free(device->nodes[i]);
-
-    free(device->nodes);
-    free(device->businfo.pci);
-    free(device->deviceinfo.pci);
+    free(*device);
+    *device = NULL;
 }
 
 void drmFreeDevices(drmDevicePtr devices[], int count)
@@ -2977,11 +2981,8 @@ void drmFreeDevices(drmDevicePtr devices[], int count)
     if (devices == NULL)
         return;
 
-    for (i = 0; i < count; i++) {
-        drmFreeDevice(devices[i]);
-        free(devices[i]);
-        devices[i] = NULL;
-    }
+    for (i = 0; i < count && devices[i] != NULL; i++)
+        drmFreeDevice(&devices[i]);
 }
 
 /**
@@ -2998,29 +2999,30 @@ void drmFreeDevices(drmDevicePtr devices[], int count)
  */
 int drmGetDevices(drmDevicePtr devices[], int max_devices)
 {
-    drmDevicePtr devs = NULL;
-    drmPciBusInfoPtr pcibus = NULL;
-    drmPciDeviceInfoPtr pcidevice = NULL;
-    DIR *sysdir = NULL;
-    struct dirent *dent = NULL;
-    struct stat sbuf = {0};
-    char node[PATH_MAX + 1] = "";
+    drmDevicePtr *local_devices;
+    drmDevicePtr device;
+    DIR *sysdir;
+    struct dirent *dent;
+    struct stat sbuf;
+    char node[PATH_MAX + 1];
+    const int max_node_str = drmGetMaxNodeName();
     int node_type, subsystem_type;
     int maj, min;
-    int ret, i = 0, j, node_count, device_count = 0;
+    int ret, i, j, node_count, device_count;
     int max_count = 16;
-    int *duplicated = NULL;
+    void *addr;
 
-    devs = calloc(max_count, sizeof(*devs));
-    if (devs == NULL)
+    local_devices = calloc(max_count, sizeof(drmDevicePtr));
+    if (local_devices == NULL)
         return -ENOMEM;
 
     sysdir = opendir(DRM_DIR_NAME);
     if (!sysdir) {
         ret = -errno;
-        goto free_locals;
+        goto close_sysdir;
     }
 
+    i = 0;
     while ((dent = readdir(sysdir))) {
         node_type = drmGetNodeType(dent->d_name);
         if (node_type < 0)
@@ -3043,115 +3045,97 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
 
         switch (subsystem_type) {
         case DRM_BUS_PCI:
-            pcibus = calloc(1, sizeof(*pcibus));
-            if (pcibus == NULL) {
-                ret = -ENOMEM;
-                goto free_locals;
-            }
+            addr = device = calloc(1, sizeof(drmDevice) +
+                                      (DRM_NODE_MAX *
+                                       (sizeof(void *) + max_node_str)) +
+                                      sizeof(drmPciBusInfo) +
+                                      sizeof(drmPciDeviceInfo));
+            if (!device)
+                goto free_devices;
 
-            ret = drmParsePciBusInfo(maj, min, pcibus);
+            device->bustype = subsystem_type;
+            device->available_nodes = 1 << node_type;
+
+            addr += sizeof(drmDevice);
+            device->nodes = addr;
+
+            addr += DRM_NODE_MAX * sizeof(void *);
+            for (j = 0; j < DRM_NODE_MAX; j++) {
+                device->nodes[j] = addr;
+                addr += max_node_str;
+            }
+            memcpy(device->nodes[node_type], node, max_node_str);
+
+            device->businfo.pci = addr;
+
+            ret = drmParsePciBusInfo(maj, min, device->businfo.pci);
             if (ret)
-                goto free_locals;
+                goto free_devices;
 
-            if (i >= max_count) {
-                max_count += 16;
-                devs = realloc(devs, max_count * sizeof(*devs));
-            }
-
-            devs[i].businfo.pci = pcibus;
-            devs[i].bustype = subsystem_type;
-            devs[i].nodes = calloc(DRM_NODE_MAX, sizeof(char *));
-            if (devs[i].nodes == NULL) {
-                ret = -ENOMEM;
-                goto free_locals;
-            }
-            devs[i].nodes[node_type] = strdup(node);
-            if (devs[i].nodes[node_type] == NULL) {
-                ret = -ENOMEM;
-                goto free_locals;
-            }
-            devs[i].available_nodes = 1 << node_type;
-
+            // Fetch the device info if the user has requested it
             if (devices != NULL) {
-                pcidevice = calloc(1, sizeof(*pcidevice));
-                if (pcidevice == NULL) {
-                    ret = -ENOMEM;
-                    goto free_locals;
-                }
+                addr += sizeof(drmPciBusInfo);
+                device->deviceinfo.pci = addr;
 
-                ret = drmParsePciDeviceInfo(dent->d_name, pcidevice);
+                ret = drmParsePciDeviceInfo(dent->d_name,
+                                            device->deviceinfo.pci);
                 if (ret)
-                    goto free_locals;
-
-                devs[i].deviceinfo.pci = pcidevice;
+                    goto free_devices;
             }
+
             break;
         default:
             fprintf(stderr, "The subsystem type is not supported yet\n");
             break;
         }
+
+        if (i >= max_count) {
+            drmDevicePtr *temp;
+
+            max_count += 16;
+            temp = realloc(local_devices, max_count * sizeof(drmDevicePtr));
+            if (!temp)
+                goto free_devices;
+            local_devices = temp;
+        }
+
+        local_devices[i] = device;
         i++;
     }
-
     node_count = i;
 
-    /* merge duplicated devices with same domain/bus/device/func IDs */
-    duplicated = calloc(node_count, sizeof(*duplicated));
-    if (duplicated == NULL) {
-        ret = -ENOMEM;
-        goto free_locals;
-    }
-
+    /* Fold nodes into a single device if they share the same bus info */
     for (i = 0; i < node_count; i++) {
-        for (j = i+1; j < node_count; j++) {
-            if (duplicated[i] || duplicated[j])
-                continue;
-            if (drmCompareBusInfo(&devs[i], &devs[j]) == 0) {
-                duplicated[j] = 1;
-                devs[i].available_nodes |= devs[j].available_nodes;
-                node_type = log2(devs[j].available_nodes);
-                devs[i].nodes[node_type] = devs[j].nodes[node_type];
-                free(devs[j].nodes);
-                free(devs[j].businfo.pci);
-                free(devs[j].deviceinfo.pci);
+        for (j = i + 1; j < node_count; j++) {
+            if (drmCompareBusInfo(local_devices[i], local_devices[j]) == 0) {
+                local_devices[i]->available_nodes |= local_devices[j]->available_nodes;
+                node_type = log2(local_devices[j]->available_nodes);
+                memcpy(local_devices[i]->nodes[node_type],
+                       local_devices[j]->nodes[node_type], max_node_str);
+                drmFreeDevice(&local_devices[j]);
             }
         }
     }
 
-    for (i = 0; i < node_count; i++) {
-        if(duplicated[i] == 0) {
-            if ((devices != NULL) && (device_count < max_devices)) {
-                devices[device_count] = calloc(1, sizeof(drmDevice));
-                if (devices[device_count] == NULL) {
-                    ret = -ENOMEM;
-                    break;
-                }
-                memcpy(devices[device_count], &devs[i], sizeof(drmDevice));
-            } else
-                drmFreeDevice(&devs[i]);
-            device_count++;
-        }
+    device_count = 0;
+    for (i = 0; i < node_count && local_devices[i]; i++) {
+        if ((devices != NULL) && (device_count < max_devices))
+            devices[device_count] = local_devices[i];
+        else
+            drmFreeDevice(&local_devices[i]);
+
+        device_count++;
     }
 
-    if (i < node_count) {
-        drmFreeDevices(devices, device_count);
-        for ( ; i < node_count; i++)
-            if(duplicated[i] == 0)
-                drmFreeDevice(&devs[i]);
-    } else
-        ret = device_count;
-
-    free(duplicated);
-    free(devs);
+    free(local_devices);
     closedir(sysdir);
-    return ret;
+    return device_count;
 
-free_locals:
-    for (j = 0; j < i; j++)
-        drmFreeDevice(&devs[j]);
-    free(pcidevice);
-    free(pcibus);
-    free(devs);
+free_devices:
+    drmFreeDevices(local_devices, i);
+    free(local_devices);
+
+close_sysdir:
     closedir(sysdir);
     return ret;
 }
