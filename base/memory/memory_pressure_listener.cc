@@ -32,6 +32,10 @@ LazyInstance<
     ObserverListThreadSafe<MemoryPressureListener>,
     LeakyLazyObserverListTraits> g_observers = LAZY_INSTANCE_INITIALIZER;
 
+// All memory pressure notifications within this process will be suppressed if
+// this variable is set to 1.
+subtle::Atomic32 g_notifications_suppressed = 0;
+
 }  // namespace
 
 MemoryPressureListener::MemoryPressureListener(
@@ -54,8 +58,20 @@ void MemoryPressureListener::NotifyMemoryPressure(
   DCHECK_NE(memory_pressure_level, MEMORY_PRESSURE_LEVEL_NONE);
   TRACE_EVENT1("memory", "MemoryPressureListener::NotifyMemoryPressure",
       "level", memory_pressure_level);
+  if (AreNotificationsSuppressed())
+    return;
   g_observers.Get().Notify(FROM_HERE, &MemoryPressureListener::Notify,
                            memory_pressure_level);
+}
+
+// static
+bool MemoryPressureListener::AreNotificationsSuppressed() {
+  return subtle::Acquire_Load(&g_notifications_suppressed) == 1;
+}
+
+// static
+void MemoryPressureListener::SetNotificationsSuppressed(bool suppress) {
+  subtle::Release_Store(&g_notifications_suppressed, suppress ? 1 : 0);
 }
 
 }  // namespace base

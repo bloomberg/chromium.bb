@@ -519,6 +519,7 @@
         'memory/aligned_memory_unittest.cc',
         'memory/discardable_shared_memory_unittest.cc',
         'memory/linked_ptr_unittest.cc',
+        'memory/memory_pressure_listener_unittest.cc',
         'memory/memory_pressure_monitor_chromeos_unittest.cc',
         'memory/memory_pressure_monitor_mac_unittest.cc',
         'memory/memory_pressure_monitor_win_unittest.cc',

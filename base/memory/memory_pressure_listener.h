@@ -72,6 +72,12 @@ class BASE_EXPORT MemoryPressureListener {
   // Intended for use by the platform specific implementation.
   static void NotifyMemoryPressure(MemoryPressureLevel memory_pressure_level);
 
+  // These methods should not be used anywhere else but in memory measurement
+  // code, where they are intended to maintain stable conditions across
+  // measurements.
+  static bool AreNotificationsSuppressed();
+  static void SetNotificationsSuppressed(bool suppressed);
+
  private:
   void Notify(MemoryPressureLevel memory_pressure_level);
 
