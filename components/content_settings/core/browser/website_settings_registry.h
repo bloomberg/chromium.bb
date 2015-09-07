@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include "base/containers/scoped_ptr_map.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -23,7 +23,34 @@ namespace content_settings {
 // methods called from from any thread because all of its public methods are
 // const.
 class WebsiteSettingsRegistry {
+ private:
+  // Helper class to iterate over only the values in a map.
+  template <typename IteratorType, typename ReferenceType>
+  class MapValueIterator {
+   public:
+    explicit MapValueIterator(IteratorType iterator) : iterator_(iterator) {}
+
+    bool operator!=(const MapValueIterator& other) const {
+      return iterator_ != other.iterator_;
+    }
+
+    MapValueIterator& operator++() {
+      ++iterator_;
+      return *this;
+    }
+
+    ReferenceType operator*() { return iterator_->second; }
+
+   private:
+    IteratorType iterator_;
+  };
+
  public:
+  typedef base::ScopedPtrMap<ContentSettingsType,
+                             scoped_ptr<WebsiteSettingsInfo>> Map;
+  typedef MapValueIterator<typename Map::const_iterator,
+                           const WebsiteSettingsInfo*> const_iterator;
+
   static WebsiteSettingsRegistry* GetInstance();
 
   // Reset the instance for use inside tests.
@@ -42,6 +69,9 @@ class WebsiteSettingsRegistry {
       WebsiteSettingsInfo::SyncStatus sync_status,
       WebsiteSettingsInfo::LossyStatus lossy_status);
 
+  const_iterator begin() const;
+  const_iterator end() const;
+
  private:
   friend class ContentSettingsRegistryTest;
   friend class WebsiteSettingsRegistryTest;
@@ -52,7 +82,7 @@ class WebsiteSettingsRegistry {
 
   void Init();
 
-  ScopedVector<WebsiteSettingsInfo> website_settings_info_;
+  Map website_settings_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsRegistry);
 };

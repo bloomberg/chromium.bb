@@ -28,6 +28,8 @@
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
+#include "components/content_settings/core/browser/content_settings_info.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
@@ -249,7 +251,9 @@ bool TabSpecificContentSettings::IsContentBlocked(
       content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
       content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS ||
       content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-    return content_blocked_[content_type];
+    const auto& it = content_settings_status_.find(content_type);
+    if (it != content_settings_status_.end())
+      return it->second.blocked;
   }
 
   return false;
@@ -257,12 +261,15 @@ bool TabSpecificContentSettings::IsContentBlocked(
 
 bool TabSpecificContentSettings::IsBlockageIndicated(
     ContentSettingsType content_type) const {
-  return content_blockage_indicated_to_user_[content_type];
+  const auto& it = content_settings_status_.find(content_type);
+  if (it != content_settings_status_.end())
+    return it->second.blockage_indicated_to_user;
+  return false;
 }
 
 void TabSpecificContentSettings::SetBlockageHasBeenIndicated(
     ContentSettingsType content_type) {
-  content_blockage_indicated_to_user_[content_type] = true;
+  content_settings_status_[content_type].blockage_indicated_to_user = true;
 }
 
 bool TabSpecificContentSettings::IsContentAllowed(
@@ -279,7 +286,10 @@ bool TabSpecificContentSettings::IsContentAllowed(
     return false;
   }
 
-  return content_allowed_[content_type];
+  const auto& it = content_settings_status_.find(content_type);
+  if (it != content_settings_status_.end())
+    return it->second.allowed;
+  return false;
 }
 
 void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
@@ -294,17 +304,19 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
   DCHECK(type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
          type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
       << "Media stream settings handled by OnMediaStreamPermissionSet";
-  if (type < 0 || type >= CONTENT_SETTINGS_NUM_TYPES)
+  if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(type))
     return;
 
   // TODO(robwu): Should this be restricted to cookies only?
-  // In the past, content_allowed_ was set to false, but this logic was inverted
-  // in https://codereview.chromium.org/13375004 to fix an issue with the cookie
-  // permission UI. This unconditional assignment seems incorrect, because the
-  // flag will now always be true after calling either OnContentBlocked or
-  // OnContentAllowed. Consequently IsContentAllowed will always return true
-  // for every supported setting that is not handled elsewhere.
-  content_allowed_[type] = true;
+  // In the past, content_settings_status_[type].allowed was set to false, but
+  // this logic was inverted in https://codereview.chromium.org/13375004 to
+  // fix an issue with the cookie permission UI. This unconditional assignment
+  // seems incorrect, because the flag will now always be true after calling
+  // either OnContentBlocked or OnContentAllowed. Consequently IsContentAllowed
+  // will always return true for every supported setting that is not handled
+  // elsewhere.
+  ContentSettingsStatus& status = content_settings_status_[type];
+  status.allowed = true;
 
 #if defined(OS_ANDROID)
   if (type == CONTENT_SETTINGS_TYPE_POPUPS) {
@@ -312,8 +324,8 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
     // visible for blocked popups.  Instead we have info bars which could be
     // dismissed.  Have to clear the blocked state so we properly notify the
     // relevant pieces again.
-    content_blocked_[type] = false;
-    content_blockage_indicated_to_user_[type] = false;
+    status.blocked = false;
+    status.blockage_indicated_to_user = false;
   }
 #endif
 
@@ -323,8 +335,8 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
     blocked_plugin_names_.push_back(details);
   }
 
-  if (!content_blocked_[type]) {
-    content_blocked_[type] = true;
+  if (!status.blocked) {
+    status.blocked = true;
     // TODO: it would be nice to have a way of mocking this in tests.
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
@@ -348,19 +360,21 @@ void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
          type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
       << "Media stream settings handled by OnMediaStreamPermissionSet";
   bool access_changed = false;
+  ContentSettingsStatus& status = content_settings_status_[type];
 #if defined(OS_ANDROID)
   if (type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER &&
-    content_blocked_[type]) {
-    // content_allowed_[type] is always set to true in OnContentBlocked, so we
-    // have to use content_blocked_ to detect whether the protected media
-    // setting has changed.
-    content_blocked_[type] = false;
+      status.blocked) {
+    // content_settings_status_[type].allowed is always set to true in
+    // OnContentBlocked, so we have to use
+    // content_settings_status_[type].blocked to detect whether the protected
+    // media setting has changed.
+    status.blocked = false;
     access_changed = true;
   }
 #endif
 
-  if (!content_allowed_[type]) {
-    content_allowed_[type] = true;
+  if (!status.allowed) {
+    status.allowed = true;
     access_changed = true;
   }
 
@@ -582,16 +596,20 @@ void TabSpecificContentSettings::OnMediaStreamPermissionSet(
     media_stream_requested_audio_device_ = media_stream_requested_audio_device;
     media_stream_selected_audio_device_ = media_stream_selected_audio_device;
     bool mic_blocked = (new_microphone_camera_state & MICROPHONE_BLOCKED) != 0;
-    content_allowed_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] = !mic_blocked;
-    content_blocked_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] = mic_blocked;
+    ContentSettingsStatus& status =
+        content_settings_status_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC];
+    status.allowed = !mic_blocked;
+    status.blocked = mic_blocked;
   }
 
   if (new_microphone_camera_state & CAMERA_ACCESSED) {
     media_stream_requested_video_device_ = media_stream_requested_video_device;
     media_stream_selected_video_device_ = media_stream_selected_video_device;
     bool cam_blocked = (new_microphone_camera_state & CAMERA_BLOCKED) != 0;
-    content_allowed_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = !cam_blocked;
-    content_blocked_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = cam_blocked;
+    ContentSettingsStatus& status =
+        content_settings_status_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA];
+    status.allowed = !cam_blocked;
+    status.blocked = cam_blocked;
   }
 
   if (microphone_camera_state_ != new_microphone_camera_state) {
@@ -616,12 +634,12 @@ void TabSpecificContentSettings::OnMidiSysExAccessBlocked(
 }
 
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
-  for (size_t i = 0; i < arraysize(content_blocked_); ++i) {
-    if (i == CONTENT_SETTINGS_TYPE_COOKIES)
+  for (auto& status : content_settings_status_) {
+    if (status.first == CONTENT_SETTINGS_TYPE_COOKIES)
       continue;
-    content_blocked_[i] = false;
-    content_allowed_[i] = false;
-    content_blockage_indicated_to_user_[i] = false;
+    status.second.blocked = false;
+    status.second.blockage_indicated_to_user = false;
+    status.second.allowed = false;
   }
   microphone_camera_state_ = MICROPHONE_CAMERA_NOT_ACCESSED;
   load_plugins_link_enabled_ = true;
@@ -634,9 +652,11 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
 void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   blocked_local_shared_objects_.Reset();
   allowed_local_shared_objects_.Reset();
-  content_blocked_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
-  content_allowed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
-  content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
+  ContentSettingsStatus& status =
+      content_settings_status_[CONTENT_SETTINGS_TYPE_COOKIES];
+  status.blocked = false;
+  status.blockage_indicated_to_user = false;
+  status.allowed = false;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(web_contents()),
@@ -644,10 +664,11 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
 }
 
 void TabSpecificContentSettings::SetDownloadsBlocked(bool blocked) {
-  content_blocked_[CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS] = blocked;
-  content_allowed_[CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS] = !blocked;
-  content_blockage_indicated_to_user_[
-    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS] = false;
+  ContentSettingsStatus& status =
+      content_settings_status_[CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS];
+  status.blocked = blocked;
+  status.allowed = !blocked;
+  status.blockage_indicated_to_user = false;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(web_contents()),
@@ -655,8 +676,10 @@ void TabSpecificContentSettings::SetDownloadsBlocked(bool blocked) {
 }
 
 void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
-  content_blocked_[CONTENT_SETTINGS_TYPE_POPUPS] = blocked;
-  content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_POPUPS] = false;
+  ContentSettingsStatus& status =
+      content_settings_status_[CONTENT_SETTINGS_TYPE_POPUPS];
+  status.blocked = blocked;
+  status.blockage_indicated_to_user = false;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(web_contents()),
@@ -698,8 +721,9 @@ void TabSpecificContentSettings::OnContentSettingChanged(
                                                       media_origin,
                                                       content_type,
                                                       std::string());
-      content_allowed_[content_type] = setting == CONTENT_SETTING_ALLOW;
-      content_blocked_[content_type] = setting == CONTENT_SETTING_BLOCK;
+      ContentSettingsStatus& status = content_settings_status_[content_type];
+      status.allowed = setting == CONTENT_SETTING_ALLOW;
+      status.blocked = setting == CONTENT_SETTING_BLOCK;
     }
     RendererContentSettingRules rules;
     GetRendererContentSettingRules(map, &rules);

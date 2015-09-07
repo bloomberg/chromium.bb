@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -404,14 +405,13 @@ class TabSpecificContentSettings
   // All currently registered |SiteDataObserver|s.
   base::ObserverList<SiteDataObserver> observer_list_;
 
+  struct ContentSettingsStatus {
+    bool blocked;
+    bool blockage_indicated_to_user;
+    bool allowed;
+  };
   // Stores which content setting types actually have blocked content.
-  bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
-
-  // Stores if the blocked content was messaged to the user.
-  bool content_blockage_indicated_to_user_[CONTENT_SETTINGS_NUM_TYPES];
-
-  // Stores which content setting types actually were allowed.
-  bool content_allowed_[CONTENT_SETTINGS_NUM_TYPES];
+  std::map<ContentSettingsType, ContentSettingsStatus> content_settings_status_;
 
   // Stores the blocked/allowed cookies.
   LocalSharedObjectsContainer allowed_local_shared_objects_;

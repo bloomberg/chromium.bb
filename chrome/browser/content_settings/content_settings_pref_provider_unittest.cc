@@ -65,13 +65,12 @@ class DeadlockCheckerObserver {
       : provider_(provider),
       notification_received_(false) {
     pref_change_registrar_.Init(prefs);
-    for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    for (ContentSettingsPref* pref : provider_->content_settings_prefs_) {
       pref_change_registrar_.Add(
-          provider_->content_settings_prefs_[i]->pref_name_,
+          pref->pref_name_,
           base::Bind(
               &DeadlockCheckerObserver::OnContentSettingsPatternPairsChanged,
-              base::Unretained(this),
-              base::Unretained(provider_->content_settings_prefs_[i])));
+              base::Unretained(this), base::Unretained(pref)));
     }
   }
   virtual ~DeadlockCheckerObserver() {}

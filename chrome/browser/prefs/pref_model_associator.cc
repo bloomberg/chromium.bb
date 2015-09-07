@@ -325,9 +325,8 @@ scoped_ptr<base::Value> PrefModelAssociator::MergePreference(
 
   content_settings::WebsiteSettingsRegistry* registry =
       content_settings::WebsiteSettingsRegistry::GetInstance();
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    if (registry->Get(type)->pref_name() == name)
+  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
+    if (info->pref_name() == name)
       return make_scoped_ptr(MergeDictionaryValues(local_value, server_value));
   }
 

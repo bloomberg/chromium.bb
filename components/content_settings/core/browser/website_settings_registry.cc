@@ -34,16 +34,17 @@ void WebsiteSettingsRegistry::ResetForTest() {
 
 const WebsiteSettingsInfo* WebsiteSettingsRegistry::Get(
     ContentSettingsType type) const {
-  DCHECK_GE(type, 0);
-  DCHECK_LT(type, static_cast<int>(website_settings_info_.size()));
-  return website_settings_info_[type];
+  const auto& it = website_settings_info_.find(type);
+  if (it != website_settings_info_.end())
+    return it->second;
+  return nullptr;
 }
 
 const WebsiteSettingsInfo* WebsiteSettingsRegistry::GetByName(
     const std::string& name) const {
-  for (const WebsiteSettingsInfo* info : website_settings_info_) {
-    if (info && info->name() == name)
-      return info;
+  for (const auto& entry : website_settings_info_) {
+    if (entry.second->name() == name)
+      return entry.second;
   }
   return nullptr;
 }
@@ -56,15 +57,19 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::Register(
     WebsiteSettingsInfo::LossyStatus lossy_status) {
   WebsiteSettingsInfo* info = new WebsiteSettingsInfo(
       type, name, initial_default_value.Pass(), sync_status, lossy_status);
-  DCHECK_GE(info->type(), 0);
-  DCHECK_LT(info->type(), static_cast<int>(website_settings_info_.size()));
-  website_settings_info_[info->type()] = info;
+  website_settings_info_.set(info->type(), make_scoped_ptr(info));
   return info;
 }
 
-void WebsiteSettingsRegistry::Init() {
-  website_settings_info_.resize(CONTENT_SETTINGS_NUM_TYPES);
+WebsiteSettingsRegistry::const_iterator WebsiteSettingsRegistry::begin() const {
+  return const_iterator(website_settings_info_.begin());
+}
 
+WebsiteSettingsRegistry::const_iterator WebsiteSettingsRegistry::end() const {
+  return const_iterator(website_settings_info_.end());
+}
+
+void WebsiteSettingsRegistry::Init() {
   // TODO(raymes): This registration code should not have to be in a single
   // location. It should be possible to register a setting from the code
   // associated with it.

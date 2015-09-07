@@ -25,6 +25,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
 #include "content/public/browser/web_contents.h"
@@ -486,8 +488,12 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
       ContentSettingsPattern::FromString("[*.]example.org");
   std::map<ContentSettingsType, ContentSetting> default_settings;
 
-  for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    ContentSettingsType content_type = static_cast<ContentSettingsType>(type);
+  // TODO(raymes): Clean up this test so that we don't have such ugly iteration
+  // over the content settings.
+  content_settings::WebsiteSettingsRegistry* registry =
+      content_settings::WebsiteSettingsRegistry::GetInstance();
+  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
+    ContentSettingsType content_type = info->type();
     if (content_type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
         content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
         content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
@@ -528,8 +534,8 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
 
   ResetAndWait(ProfileResetter::CONTENT_SETTINGS);
 
-  for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    ContentSettingsType content_type = static_cast<ContentSettingsType>(type);
+  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
+    ContentSettingsType content_type = info->type();
     if (HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) ||
         content_type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
         content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||

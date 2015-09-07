@@ -21,6 +21,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -218,14 +220,16 @@ void ProfileResetter::ResetContentSettings() {
   PrefService* prefs = profile_->GetPrefs();
   HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
 
-  for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    map->ClearSettingsForOneType(static_cast<ContentSettingsType>(type));
+  content_settings::WebsiteSettingsRegistry* registry =
+      content_settings::WebsiteSettingsRegistry::GetInstance();
+  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
+    map->ClearSettingsForOneType(info->type());
     if (HostContentSettingsMap::IsSettingAllowedForType(
-            prefs,
-            CONTENT_SETTING_DEFAULT,
-            static_cast<ContentSettingsType>(type)))
-      map->SetDefaultContentSetting(static_cast<ContentSettingsType>(type),
-                                    CONTENT_SETTING_DEFAULT);
+            prefs, CONTENT_SETTING_DEFAULT, info->type())) {
+      // TODO(raymes): Why don't we just set this to
+      // info->intial_default_value().
+      map->SetDefaultContentSetting(info->type(), CONTENT_SETTING_DEFAULT);
+    }
   }
   MarkAsDone(CONTENT_SETTINGS);
 }

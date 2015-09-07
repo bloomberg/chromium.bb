@@ -83,4 +83,22 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
             info->GetPrefRegistrationFlags());
 }
 
+TEST_F(WebsiteSettingsRegistryTest, Iteration) {
+  registry()->Register(static_cast<ContentSettingsType>(10), "test",
+                       make_scoped_ptr(new base::FundamentalValue(999)),
+                       WebsiteSettingsInfo::SYNCABLE,
+                       WebsiteSettingsInfo::LOSSY);
+
+  bool found = false;
+  for (const WebsiteSettingsInfo* info : *registry()) {
+    EXPECT_EQ(registry()->Get(info->type()), info);
+    if (info->type() == 10) {
+      EXPECT_FALSE(found);
+      found = true;
+    }
+  }
+
+  EXPECT_TRUE(found);
+}
+
 }  // namespace content_settings
