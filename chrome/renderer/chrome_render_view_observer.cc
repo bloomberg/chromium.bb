@@ -79,9 +79,9 @@ using blink::WebURLRequest;
 using blink::WebView;
 using blink::WebVector;
 using blink::WebWindowFeatures;
+using content::RenderFrame;
 
-// Delay in milliseconds that we'll wait before capturing the page contents
-// and thumbnail.
+// Delay in milliseconds that we'll wait before capturing the page contents.
 static const int kDelayForCaptureMs = 500;
 
 // Typically, we capture the page data once the page is loaded.
@@ -90,10 +90,6 @@ static const int kDelayForCaptureMs = 500;
 // delay.
 static const int kDelayForForcedCaptureMs = 6000;
 
-// define to write the time necessary for thumbnail/DOM text retrieval,
-// respectively, into the system debug log
-// #define TIME_TEXT_RETRIEVAL
-
 // maximum number of characters in the document to index, any text beyond this
 // point will be clipped
 static const size_t kMaxIndexChars = 65535;
@@ -101,19 +97,86 @@ static const size_t kMaxIndexChars = 65535;
 // Constants for UMA statistic collection.
 static const char kTranslateCaptureText[] = "Translate.CaptureText";
 
+PageInfo::PageInfo(PageInfoReceiver* context)
+    : context_(context), capture_timer_(false, false) {
+  DCHECK(context_);
+}
+
+void PageInfo::CapturePageInfoLater(CaptureType capture_type,
+                                    RenderFrame* render_frame,
+                                    base::TimeDelta delay) {
+  capture_timer_.Start(
+      FROM_HERE, delay,
+      base::Bind(&PageInfo::CapturePageInfo, base::Unretained(this),
+                 render_frame, capture_type));
+}
+
+void PageInfo::CapturePageInfo(RenderFrame* render_frame,
+                               CaptureType capture_type) {
+  if (!render_frame)
+    return;
+
+  WebLocalFrame* frame = render_frame->GetWebFrame();
+  if (!frame)
+    return;
+
+  // Don't index/capture pages that are in view source mode.
+  if (frame->isViewSourceModeEnabled())
+    return;
+
+  // Don't index/capture pages that failed to load.  This only checks the top
+  // level frame so the thumbnail may contain a frame that failed to load.
+  // TODO(dglazkov): Verify that this is actually necessary.
+  WebDataSource* ds = frame->dataSource();
+  if (ds && ds->hasUnreachableURL())
+    return;
+
+  // Don't index/capture pages that are being prerendered.
+  if (prerender::PrerenderHelper::IsPrerendering(render_frame)) {
+    return;
+  }
+
+  // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
+  // translate helper for language detection and possible translation.
+  base::string16 contents;
+  base::TimeTicks capture_begin_time = base::TimeTicks::Now();
+  CaptureText(frame, &contents);
+  UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
+                      base::TimeTicks::Now() - capture_begin_time);
+  context_->PageCaptured(&contents, capture_type);
+}
+
+void PageInfo::CaptureText(WebLocalFrame* frame, base::string16* content) {
+  content->clear();
+  if (!frame)
+    return;
+
+  // get the contents of the frame
+  *content = frame->contentAsText(kMaxIndexChars);
+
+  // When the contents are clipped to the maximum, we don't want to have a
+  // partial word indexed at the end that might have been clipped. Therefore,
+  // terminate the string at the last space to ensure no words are clipped.
+  if (content->size() == kMaxIndexChars) {
+    size_t last_space_index = content->find_last_of(base::kWhitespaceUTF16);
+    if (last_space_index != base::string16::npos)
+      content->resize(last_space_index);
+  }
+}
+
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     content::RenderView* render_view,
     web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer)
     : content::RenderViewObserver(render_view),
       web_cache_render_process_observer_(web_cache_render_process_observer),
-      translate_helper_(new translate::TranslateHelper(
-          render_view,
-          chrome::ISOLATED_WORLD_ID_TRANSLATE,
-          0,
-          extensions::kExtensionScheme)),
+      translate_helper_(
+          new translate::TranslateHelper(render_view,
+                                         chrome::ISOLATED_WORLD_ID_TRANSLATE,
+                                         0,
+                                         extensions::kExtensionScheme)),
       phishing_classifier_(NULL),
       webview_visually_deemphasized_(false),
-      capture_timer_(false, false) {
+      page_info_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
@@ -276,11 +339,11 @@ void ChromeRenderViewObserver::DidStopLoading() {
   if (HasRefreshMetaTag(main_frame))
     return;
 
-  CapturePageInfoLater(
-      false,  // preliminary_capture
+  page_info_.CapturePageInfoLater(
+      FINAL_CAPTURE, render_view()->GetMainRenderFrame(),
       base::TimeDelta::FromMilliseconds(
-          render_view()->GetContentStateImmediately() ?
-              0 : kDelayForCaptureMs));
+          render_view()->GetContentStateImmediately() ? 0
+                                                      : kDelayForCaptureMs));
 }
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
@@ -293,100 +356,9 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
       crash_keys::kViewCount,
       base::SizeTToString(content::RenderView::GetRenderViewCount()));
 
-  CapturePageInfoLater(
-      true,  // preliminary_capture
+  page_info_.CapturePageInfoLater(
+      PRELIMINARY_CAPTURE, render_view()->GetMainRenderFrame(),
       base::TimeDelta::FromMilliseconds(kDelayForForcedCaptureMs));
-}
-
-void ChromeRenderViewObserver::CapturePageInfoLater(bool preliminary_capture,
-                                                    base::TimeDelta delay) {
-  capture_timer_.Start(
-      FROM_HERE,
-      delay,
-      base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
-                 base::Unretained(this),
-                 preliminary_capture));
-}
-
-void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
-  if (!render_view()->GetWebView())
-    return;
-
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-  if (!main_frame)
-    return;
-
-  // TODO(creis): Refactor WebFrame::contentAsText to handle RemoteFrames,
-  // likely by moving it to the browser process.  For now, only capture page
-  // info from main frames that are LocalFrames, and ignore their RemoteFrame
-  // children.
-  if (main_frame->isWebRemoteFrame())
-    return;
-
-  // Don't index/capture pages that are in view source mode.
-  if (main_frame->isViewSourceModeEnabled())
-    return;
-
-  // Don't index/capture pages that failed to load.  This only checks the top
-  // level frame so the thumbnail may contain a frame that failed to load.
-  WebDataSource* ds = main_frame->dataSource();
-  if (ds && ds->hasUnreachableURL())
-    return;
-
-  // Don't index/capture pages that are being prerendered.
-  if (prerender::PrerenderHelper::IsPrerendering(
-          render_view()->GetMainRenderFrame())) {
-    return;
-  }
-
-  // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
-  // translate helper for language detection and possible translation.
-  base::string16 contents;
-  base::TimeTicks capture_begin_time = base::TimeTicks::Now();
-  CaptureText(main_frame, &contents);
-  UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
-                      base::TimeTicks::Now() - capture_begin_time);
-  if (translate_helper_)
-    translate_helper_->PageCaptured(contents);
-
-  TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CapturePageInfo");
-
-#if defined(FULL_SAFE_BROWSING)
-  // Will swap out the string.
-  if (phishing_classifier_)
-    phishing_classifier_->PageCaptured(&contents, preliminary_capture);
-#endif
-}
-
-void ChromeRenderViewObserver::CaptureText(WebFrame* frame,
-                                           base::string16* contents) {
-  contents->clear();
-  if (!frame)
-    return;
-
-#ifdef TIME_TEXT_RETRIEVAL
-  double begin = time_util::GetHighResolutionTimeNow();
-#endif
-
-  // get the contents of the frame
-  *contents = frame->contentAsText(kMaxIndexChars);
-
-#ifdef TIME_TEXT_RETRIEVAL
-  double end = time_util::GetHighResolutionTimeNow();
-  char buf[128];
-  sprintf_s(buf, "%d chars retrieved for indexing in %gms\n",
-            contents.size(), (end - begin)*1000);
-  OutputDebugStringA(buf);
-#endif
-
-  // When the contents are clipped to the maximum, we don't want to have a
-  // partial word indexed at the end that might have been clipped. Therefore,
-  // terminate the string at the last space to ensure no words are clipped.
-  if (contents->size() == kMaxIndexChars) {
-    size_t last_space_index = contents->find_last_of(base::kWhitespaceUTF16);
-    if (last_space_index != base::string16::npos)
-      contents->resize(last_space_index);
-  }
 }
 
 bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {
@@ -414,4 +386,19 @@ bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {
     return true;
   }
   return false;
+}
+
+void ChromeRenderViewObserver::PageCaptured(base::string16* content,
+                                            CaptureType capture_type) {
+  if (translate_helper_)
+    translate_helper_->PageCaptured(*content);
+
+  TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CapturePageInfo");
+
+#if defined(FULL_SAFE_BROWSING)
+  // Will swap out the string.
+  if (phishing_classifier_)
+    phishing_classifier_->PageCaptured(content,
+                                       capture_type == PRELIMINARY_CAPTURE);
+#endif
 }

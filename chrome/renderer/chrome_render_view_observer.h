@@ -26,6 +26,10 @@ class WebView;
 struct WebWindowFeatures;
 }
 
+namespace content {
+class RenderFrame;
+}
+
 namespace safe_browsing {
 class PhishingClassifierDelegate;
 }
@@ -38,9 +42,50 @@ namespace web_cache {
 class WebCacheRenderProcessObserver;
 }
 
+// Receives page information that was captured by PageInfo instance.
+class PageInfoReceiver {
+ public:
+  enum CaptureType { PRELIMINARY_CAPTURE, FINAL_CAPTURE };
+  virtual void PageCaptured(base::string16* content,
+                            CaptureType capture_type) = 0;
+};
+
+// Captures page information using the top (main) frame of a frame tree.
+// Currently, this page information is just the text content of the all frames,
+// collected and concatenated until a certain limit (kMaxIndexChars) is reached.
+class PageInfo {
+ public:
+  using CaptureType = PageInfoReceiver::CaptureType;
+
+  explicit PageInfo(PageInfoReceiver* context);
+  ~PageInfo() {}
+
+  void CapturePageInfoLater(CaptureType capture_type,
+                            content::RenderFrame* render_frame,
+                            base::TimeDelta delay);
+
+ private:
+  // Captures the thumbnail and text contents for indexing for the given load
+  // ID.  Kicks off analysis of the captured text.
+  void CapturePageInfo(content::RenderFrame* render_frame,
+                       CaptureType capture_type);
+
+  // Retrieves the text from the given frame contents, the page text up to the
+  // maximum amount kMaxIndexChars will be placed into the given buffer.
+  void CaptureText(blink::WebLocalFrame* frame, base::string16* contents);
+
+  PageInfoReceiver* context_;
+
+  // Used to delay calling CapturePageInfo.
+  base::Timer capture_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageInfo);
+};
+
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
-class ChromeRenderViewObserver : public content::RenderViewObserver {
+class ChromeRenderViewObserver : public content::RenderViewObserver,
+                                 public PageInfoReceiver {
  public:
   // translate_helper can be NULL.
   ChromeRenderViewObserver(
@@ -73,22 +118,14 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetWindowFeatures(const blink::WebWindowFeatures& window_features);
 
-  void CapturePageInfoLater(bool preliminary_capture,
-                            base::TimeDelta delay);
-
-  // Captures the thumbnail and text contents for indexing for the given load
-  // ID.  Kicks off analysis of the captured text.
-  void CapturePageInfo(bool preliminary_capture);
-
-  // Retrieves the text from the given frame contents, the page text up to the
-  // maximum amount kMaxIndexChars will be placed into the given buffer.
-  void CaptureText(blink::WebFrame* frame, base::string16* contents);
-
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
 
   // Checks if a page contains <meta http-equiv="refresh" ...> tag.
   bool HasRefreshMetaTag(blink::WebFrame* frame);
+
+  // PageInfoReceiver implementation.
+  void PageCaptured(base::string16* content, CaptureType capture_type) override;
 
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
   std::vector<base::string16> webui_javascript_;
@@ -103,8 +140,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   // true if webview is overlayed with grey color.
   bool webview_visually_deemphasized_;
 
-  // Used to delay calling CapturePageInfo.
-  base::Timer capture_timer_;
+  PageInfo page_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderViewObserver);
 };
