@@ -22,7 +22,7 @@ AecDumpMessageFilter::AecDumpMessageFilter(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
     : sender_(NULL),
-      delegate_id_counter_(0),
+      delegate_id_counter_(1),
       io_task_runner_(io_task_runner),
       main_task_runner_(main_task_runner) {
   DCHECK(!g_filter);

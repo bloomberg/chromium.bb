@@ -282,7 +282,7 @@
       'shell/android/browsertests_apk/content_browser_tests_jni_onload.cc',
     ],
     'content_browsertests_webrtc_sources': [
-      'browser/media/webrtc_aecdump_browsertest.cc',
+      'browser/media/webrtc_audio_debug_recordings_browsertest.cc',
       'browser/media/webrtc_browsertest.cc',
       'browser/media/webrtc_getusermedia_browsertest.cc',
       'browser/media/webrtc_internals_browsertest.cc',

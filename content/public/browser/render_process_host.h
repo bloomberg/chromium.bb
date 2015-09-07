@@ -206,8 +206,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void FilterURL(bool empty_allowed, GURL* url) = 0;
 
 #if defined(ENABLE_WEBRTC)
-  virtual void EnableAecDump(const base::FilePath& file) = 0;
-  virtual void DisableAecDump() = 0;
+  virtual void EnableAudioDebugRecordings(const base::FilePath& file) = 0;
+  virtual void DisableAudioDebugRecordings() = 0;
 
   // When set, |callback| receives log messages regarding, for example, media
   // devices (webcams, mics, etc) that were initially requested in the render

@@ -287,10 +287,11 @@ void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
 }
 
 #if defined(ENABLE_WEBRTC)
-void MockRenderProcessHost::EnableAecDump(const base::FilePath& file) {
+void MockRenderProcessHost::EnableAudioDebugRecordings(
+    const base::FilePath& file) {
 }
 
-void MockRenderProcessHost::DisableAecDump() {
+void MockRenderProcessHost::DisableAudioDebugRecordings() {
 }
 
 void MockRenderProcessHost::SetWebRtcLogMessageCallback(

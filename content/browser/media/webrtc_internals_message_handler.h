@@ -32,7 +32,8 @@ class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
  private:
   // Javascript message handler.
   void OnGetAllStats(const base::ListValue* list);
-  void OnSetAecRecordingEnabled(bool enable, const base::ListValue* list);
+  void OnSetAudioDebugRecordingsEnabled(bool enable,
+                                        const base::ListValue* list);
   void OnDOMLoadDone(const base::ListValue* list);
 
   DISALLOW_COPY_AND_ASSIGN(WebRTCInternalsMessageHandler);

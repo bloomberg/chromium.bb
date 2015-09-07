@@ -37,21 +37,22 @@ static base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
 }  // namespace
 
 WebRTCInternals::WebRTCInternals()
-    : aec_dump_enabled_(false) {
+    : audio_debug_recordings_(false) {
 // TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
 // build if WebRTC is disabled?
 #if defined(ENABLE_WEBRTC)
-  aec_dump_file_path_ =
+  audio_debug_recordings_file_path_ =
       GetContentClient()->browser()->GetDefaultDownloadDirectory();
-  if (aec_dump_file_path_.empty()) {
-    // In this case the default path (|aec_dump_file_path_|) will be empty and
-    // the platform default path will be used in the file dialog (with no
-    // default file name). See SelectFileDialog::SelectFile. On Android where
-    // there's no dialog we'll fail to open the file.
+  if (audio_debug_recordings_file_path_.empty()) {
+    // In this case the default path (|audio_debug_recordings_file_path_|) will
+    // be empty and the platform default path will be used in the file dialog
+    // (with no default file name). See SelectFileDialog::SelectFile. On Android
+    // where there's no dialog we'll fail to open the file.
     VLOG(1) << "Could not get the download directory.";
   } else {
-    aec_dump_file_path_ =
-        aec_dump_file_path_.Append(FILE_PATH_LITERAL("audio.aecdump"));
+    audio_debug_recordings_file_path_ =
+        audio_debug_recordings_file_path_.Append(
+            FILE_PATH_LITERAL("audio_debug"));
   }
 #endif  // defined(ENABLE_WEBRTC)
 }
@@ -221,10 +222,10 @@ void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver *observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 
-  // Disables the AEC recording if it is enabled and the last webrtc-internals
-  // page is going away.
-  if (aec_dump_enabled_ && !observers_.might_have_observers())
-    DisableAecDump();
+  // Disables audio debug recordings if it is enabled and the last
+  // webrtc-internals page is going away.
+  if (audio_debug_recordings_ && !observers_.might_have_observers())
+    DisableAudioDebugRecordings();
 }
 
 void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
@@ -239,16 +240,18 @@ void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
   }
 }
 
-void WebRTCInternals::EnableAecDump(content::WebContents* web_contents) {
+void WebRTCInternals::EnableAudioDebugRecordings(
+    content::WebContents* web_contents) {
 #if defined(ENABLE_WEBRTC)
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_ANDROID)
-  EnableAecDumpOnAllRenderProcessHosts();
+  EnableAudioDebugRecordingsOnAllRenderProcessHosts();
 #else
   select_file_dialog_ = ui::SelectFileDialog::Create(this, NULL);
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       base::string16(),
-      aec_dump_file_path_,
+      audio_debug_recordings_file_path_,
       NULL,
       0,
       FILE_PATH_LITERAL(""),
@@ -258,19 +261,31 @@ void WebRTCInternals::EnableAecDump(content::WebContents* web_contents) {
 #endif
 }
 
-void WebRTCInternals::DisableAecDump() {
+void WebRTCInternals::DisableAudioDebugRecordings() {
 #if defined(ENABLE_WEBRTC)
-  aec_dump_enabled_ = false;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  audio_debug_recordings_ = false;
 
-  // Tear down the dialog since the user has unchecked the AEC dump box.
+  // Tear down the dialog since the user has unchecked the audio debug
+  // recordings box.
   select_file_dialog_ = NULL;
 
   for (RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->DisableAecDump();
+    i.GetCurrentValue()->DisableAudioDebugRecordings();
   }
 #endif
+}
+
+bool WebRTCInternals::IsAudioDebugRecordingsEnabled() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return audio_debug_recordings_;
+}
+
+const base::FilePath& WebRTCInternals::GetAudioDebugRecordingsFilePath() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return audio_debug_recordings_file_path_;
 }
 
 void WebRTCInternals::ResetForTesting() {
@@ -279,7 +294,7 @@ void WebRTCInternals::ResetForTesting() {
   peer_connection_data_.Clear();
   CreateOrReleasePowerSaveBlocker();
   get_user_media_requests_.Clear();
-  aec_dump_enabled_ = false;
+  audio_debug_recordings_ = false;
 }
 
 void WebRTCInternals::SendUpdate(const string& command, base::Value* value) {
@@ -302,14 +317,16 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
                                    int /* unused_index */,
                                    void* /*unused_params */) {
 #if defined(ENABLE_WEBRTC)
-  aec_dump_file_path_ = path;
-  EnableAecDumpOnAllRenderProcessHosts();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  audio_debug_recordings_file_path_ = path;
+  EnableAudioDebugRecordingsOnAllRenderProcessHosts();
 #endif
 }
 
 void WebRTCInternals::FileSelectionCanceled(void* params) {
 #if defined(ENABLE_WEBRTC)
-  SendUpdate("aecRecordingFileSelectionCancelled", NULL);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  SendUpdate("audioDebugRecordingsFileSelectionCancelled", NULL);
 #endif
 }
 
@@ -365,12 +382,15 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
 }
 
 #if defined(ENABLE_WEBRTC)
-void WebRTCInternals::EnableAecDumpOnAllRenderProcessHosts() {
-  aec_dump_enabled_ = true;
+void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  audio_debug_recordings_ = true;
   for (RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->EnableAecDump(aec_dump_file_path_);
+    i.GetCurrentValue()->EnableAudioDebugRecordings(
+        audio_debug_recordings_file_path_);
   }
 }
 #endif

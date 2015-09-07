@@ -213,10 +213,21 @@
 #include "content/common/media/media_stream_messages.h"
 #endif
 
+#if defined(OS_WIN)
+#define IntToStringType base::IntToString16
+#else
+#define IntToStringType base::IntToString
+#endif
+
 namespace content {
 namespace {
 
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
+
+#ifdef ENABLE_WEBRTC
+const base::FilePath::CharType kAecDumpFileNameAddition[] =
+    FILE_PATH_LITERAL("aec_dump");
+#endif
 
 void CacheShaderInfo(int32 id, base::FilePath path) {
   ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
@@ -794,14 +805,16 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(resource_message_filter);
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
-  AddFilter(new AudioInputRendererHost(
+  // The AudioInputRendererHost and AudioRendererHost needs to be available for
+  // lookup, so it's stashed in a member variable.
+  audio_input_renderer_host_ = new AudioInputRendererHost(
       GetID(),
+      base::GetProcId(GetHandle()),
       audio_manager,
       media_stream_manager,
       AudioMirroringManager::GetInstance(),
-      BrowserMainLoop::GetInstance()->user_input_monitor()));
-  // The AudioRendererHost needs to be available for lookup, so it's
-  // stashed in a member variable.
+      BrowserMainLoop::GetInstance()->user_input_monitor());
+  AddFilter(audio_input_renderer_host_.get());
   audio_renderer_host_ = new AudioRendererHost(
       GetID(),
       audio_manager,
@@ -1603,11 +1616,21 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
           GetID());
   Send(new ChildProcessMsg_SetIOSurfaceManagerToken(io_surface_manager_token_));
 #endif
+
 #if defined(USE_OZONE)
   Send(new ChildProcessMsg_InitializeClientNativePixmapFactory(
       base::FileDescriptor(
           ui::OzonePlatform::GetInstance()->OpenClientNativePixmapDevice())));
 #endif
+
+  // Inform AudioInputRendererHost about the new render process PID.
+  // AudioInputRendererHost is reference counted, so it's lifetime is
+  // guarantueed during the lifetime of the closure.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AudioInputRendererHost::set_renderer_pid,
+                 audio_input_renderer_host_,
+                 peer_pid));
 }
 
 void RenderProcessHostImpl::OnChannelError() {
@@ -1762,17 +1785,30 @@ void RenderProcessHostImpl::FilterURL(bool empty_allowed, GURL* url) {
 }
 
 #if defined(ENABLE_WEBRTC)
-void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
+void RenderProcessHostImpl::EnableAudioDebugRecordings(
+    const base::FilePath& file) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // Enable AEC dump for each registered consumer.
+  base::FilePath file_with_extensions =
+      GetAecDumpFilePathWithExtensions(file);
   for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
        it != aec_dump_consumers_.end(); ++it) {
-    EnableAecDumpForId(file, *it);
+    EnableAecDumpForId(file_with_extensions, *it);
   }
+
+  // Enable mic input recording. AudioInputRendererHost is reference counted, so
+  // it's lifetime is guarantueed during the lifetime of the closure.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AudioInputRendererHost::EnableDebugRecording,
+                 audio_input_renderer_host_,
+                 file));
 }
 
-void RenderProcessHostImpl::DisableAecDump() {
+void RenderProcessHostImpl::DisableAudioDebugRecordings() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // Posting on the FILE thread and then replying back on the UI thread is only
   // for avoiding races between enable and disable. Nothing is done on the FILE
   // thread.
@@ -1781,6 +1817,14 @@ void RenderProcessHostImpl::DisableAecDump() {
       base::Bind(&DisableAecDumpOnFileThread),
       base::Bind(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
                  weak_factory_.GetWeakPtr()));
+
+  // AudioInputRendererHost is reference counted, so it's lifetime is
+  // guaranteed during the lifetime of the closure.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &AudioInputRendererHost::DisableDebugRecording,
+          audio_input_renderer_host_));
 }
 
 void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
@@ -2383,8 +2427,10 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   tracked_objects::ScopedTracker tracking_profile7(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "465841 RenderProcessHostImpl::OnProcessLaunched::EnableAec"));
-  if (WebRTCInternals::GetInstance()->aec_dump_enabled())
-    EnableAecDump(WebRTCInternals::GetInstance()->aec_dump_file_path());
+  if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
+    EnableAudioDebugRecordings(
+        WebRTCInternals::GetInstance()->GetAudioDebugRecordingsFilePath());
+  }
 #endif
 }
 
@@ -2464,9 +2510,11 @@ void RenderProcessHostImpl::OnUnregisterAecDumpConsumer(int id) {
 void RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread(int id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   aec_dump_consumers_.push_back(id);
-  if (WebRTCInternals::GetInstance()->aec_dump_enabled()) {
-    EnableAecDumpForId(WebRTCInternals::GetInstance()->aec_dump_file_path(),
-                       id);
+
+  if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
+    base::FilePath file_with_extensions = GetAecDumpFilePathWithExtensions(
+        WebRTCInternals::GetInstance()->GetAudioDebugRecordingsFilePath());
+    EnableAecDumpForId(file_with_extensions, id);
   }
 }
 
@@ -2481,27 +2529,18 @@ void RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread(int id) {
   }
 }
 
-#if defined(OS_WIN)
-#define IntToStringType base::IntToString16
-#else
-#define IntToStringType base::IntToString
-#endif
-
 void RenderProcessHostImpl::EnableAecDumpForId(const base::FilePath& file,
                                                int id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::FilePath unique_file =
-      file.AddExtension(IntToStringType(base::GetProcId(GetHandle())))
-          .AddExtension(IntToStringType(id));
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateAecDumpFileForProcess, unique_file, GetHandle()),
+      base::Bind(&CreateAecDumpFileForProcess,
+                 file.AddExtension(IntToStringType(id)),
+                 GetHandle()),
       base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
                  weak_factory_.GetWeakPtr(),
                  id));
 }
-
-#undef IntToStringType
 
 void RenderProcessHostImpl::SendAecDumpFileToRenderer(
     int id,
@@ -2514,7 +2553,13 @@ void RenderProcessHostImpl::SendAecDumpFileToRenderer(
 void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
   Send(new AecDumpMsg_DisableAecDump());
 }
-#endif
+
+base::FilePath RenderProcessHostImpl::GetAecDumpFilePathWithExtensions(
+    const base::FilePath& file) {
+  return file.AddExtension(IntToStringType(base::GetProcId(GetHandle())))
+             .AddExtension(kAecDumpFileNameAddition);
+}
+#endif  // defined(ENABLE_WEBRTC)
 
 void RenderProcessHostImpl::IncrementWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

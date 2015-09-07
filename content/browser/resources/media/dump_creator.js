@@ -57,17 +57,17 @@ var DumpCreator = (function() {
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
     content.getElementsByTagName('input')[0].addEventListener(
-        'click', this.onAecRecordingChanged_.bind(this));
+        'click', this.onAudioDebugRecordingsChanged_.bind(this));
   }
 
   DumpCreator.prototype = {
-    // Mark the AEC recording checkbox checked.
-    enableAecRecording: function() {
+    // Mark the diagnostic audio recording checkbox checked.
+    enableAudioDebugRecordings: function() {
       this.root_.getElementsByTagName('input')[0].checked = true;
     },
 
-    // Mark the AEC recording checkbox unchecked.
-    disableAecRecording: function() {
+    // Mark the diagnostic audio recording checkbox unchecked.
+    disableAudioDebugRecordings: function() {
       this.root_.getElementsByTagName('input')[0].checked = false;
     },
 
@@ -93,16 +93,16 @@ var DumpCreator = (function() {
     },
 
     /**
-     * Handles the event of toggling the AEC recording state.
+     * Handles the event of toggling the audio debug recordings state.
      *
      * @private
      */
-    onAecRecordingChanged_: function() {
+    onAudioDebugRecordingsChanged_: function() {
       var enabled = this.root_.getElementsByTagName('input')[0].checked;
       if (enabled) {
-        chrome.send('enableAecRecording');
+        chrome.send('enableAudioDebugRecordings');
       } else {
-        chrome.send('disableAecRecording');
+        chrome.send('disableAudioDebugRecordings');
       }
     },
   };

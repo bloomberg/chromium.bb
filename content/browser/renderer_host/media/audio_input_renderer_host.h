@@ -32,6 +32,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/media/audio_messages.h"
@@ -51,6 +52,7 @@ class UserInputMonitor;
 namespace content {
 class AudioMirroringManager;
 class MediaStreamManager;
+class RenderProcessHost;
 
 class CONTENT_EXPORT AudioInputRendererHost
     : public BrowserMessageFilter,
@@ -102,10 +104,17 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Called from UI thread from the owner of this object.
   // |user_input_monitor| is used for typing detection and can be NULL.
   AudioInputRendererHost(int render_process_id,
+                         int32 renderer_pid,
                          media::AudioManager* audio_manager,
                          MediaStreamManager* media_stream_manager,
                          AudioMirroringManager* audio_mirroring_manager,
                          media::UserInputMonitor* user_input_monitor);
+
+#if defined(ENABLE_WEBRTC)
+  // Enable and disable debug recording of input on all audio entries.
+  void EnableDebugRecording(const base::FilePath& file);
+  void DisableDebugRecording();
+#endif
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -121,6 +130,10 @@ class CONTENT_EXPORT AudioInputRendererHost
               const media::AudioBus* data) override;
   void OnLog(media::AudioInputController* controller,
              const std::string& message) override;
+
+  // Sets the PID renderer. This is used for constructing the debug recording
+  // filename.
+  void set_renderer_pid(int32 renderer_pid);
 
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
@@ -210,8 +223,27 @@ class CONTENT_EXPORT AudioInputRendererHost
   void MaybeUnregisterKeyboardMicStream(
       const AudioInputHostMsg_CreateStream_Config& config);
 
+#if defined(ENABLE_WEBRTC)
+  void MaybeEnableDebugRecordingForId(int stream_id);
+
+  base::FilePath GetDebugRecordingFilePathWithExtensions(
+      const base::FilePath& file);
+
+  void EnableDebugRecordingForId(const base::FilePath& file, int stream_id);
+
+  void DoEnableDebugRecording(int stream_id, base::File file);
+  void DoDisableDebugRecording(int stream_id);
+
+  // Delete the debug writer used for debug recordings for |stream_id|.
+  void DeleteDebugWriter(int stream_id);
+#endif
+
   // ID of the RenderProcessHost that owns this instance.
   const int render_process_id_;
+
+  // PID of the render process connected to the RenderProcessHost that owns this
+  // instance.
+  int32 renderer_pid_;
 
   // Used to create an AudioInputController.
   media::AudioManager* audio_manager_;
@@ -228,6 +260,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   media::UserInputMonitor* user_input_monitor_;
 
   scoped_ptr<media::AudioLog> audio_log_;
+
+  base::WeakPtrFactory<AudioInputRendererHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };

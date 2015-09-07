@@ -72,8 +72,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void ResumeRequestsForView(int route_id) override;
   void FilterURL(bool empty_allowed, GURL* url) override;
 #if defined(ENABLE_WEBRTC)
-  void EnableAecDump(const base::FilePath& file) override;
-  void DisableAecDump() override;
+  void EnableAudioDebugRecordings(const base::FilePath& file) override;
+  void DisableAudioDebugRecordings() override;
   void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) override;
   WebRtcStopRtpDumpCallback StartRtpDump(

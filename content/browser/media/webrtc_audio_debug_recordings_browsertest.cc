@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,16 @@
 #include "media/audio/audio_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#if defined(OS_WIN)
+#define IntToStringType base::IntToString16
+#else
+#define IntToStringType base::IntToString
+#endif
+
 namespace {
 
-const int kExpectedConsumerId = 0;
+const int kExpectedConsumerId = 1;
+const int kExpectedStreamId = 1;
 
 // Get the ID for the render process host when there should only be one.
 bool GetRenderProcessHostId(base::ProcessId* id) {
@@ -31,30 +38,45 @@ bool GetRenderProcessHostId(base::ProcessId* id) {
   return it.IsAtEnd();
 }
 
+// Get the expected AEC dump file name. The name will be
+// <temporary path>.<render process id>.aec_dump.<consumer id>, for example
+// "/tmp/.com.google.Chrome.Z6UC3P.12345.aec_dump.1".
+base::FilePath GetExpectedAecDumpFileName(const base::FilePath& base_file,
+                                          int render_process_id) {
+  return base_file.AddExtension(IntToStringType(render_process_id))
+                  .AddExtension(FILE_PATH_LITERAL("aec_dump"))
+                  .AddExtension(IntToStringType(kExpectedConsumerId));
+}
+
+// Get the expected input audio file name. The name will be
+// <temporary path>.<render process id>.source_input.<stream id>.pcm, for
+// example "/tmp/.com.google.Chrome.Z6UC3P.12345.source_input.1.pcm".
+base::FilePath GetExpectedInputAudioFileName(const base::FilePath& base_file,
+                                             int render_process_id) {
+  return base_file.AddExtension(IntToStringType(render_process_id))
+                  .AddExtension(FILE_PATH_LITERAL("source_input"))
+                  .AddExtension(IntToStringType(kExpectedStreamId))
+                  .AddExtension(FILE_PATH_LITERAL("pcm"));
+}
+
 }  // namespace
 
 namespace content {
 
-class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
+class WebRtcAudioDebugRecordingsBrowserTest : public WebRtcContentBrowserTest {
  public:
-  WebRtcAecDumpBrowserTest() {}
-  ~WebRtcAecDumpBrowserTest() override {}
+  WebRtcAudioDebugRecordingsBrowserTest() {}
+  ~WebRtcAudioDebugRecordingsBrowserTest() override {}
 };
-
-#if defined(OS_WIN)
-#define IntToStringType base::IntToString16
-#else
-#define IntToStringType base::IntToString
-#endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_CallWithAecDump DISABLED_CallWithAecDump
+#define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_CallWithAecDump DISABLED_CallWithAecDump
+#define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #else
-#define MAYBE_CallWithAecDump CallWithAecDump
+#define MAYBE_CallWithAudioDebugRecordings CallWithAudioDebugRecordings
 #endif
 
 // This tests will make a complete PeerConnection-based call, verify that
@@ -63,7 +85,8 @@ class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
 // Javascript is bypassed since it would trigger a file picker dialog. Instead,
 // the dialog callback FileSelected() is invoked directly. In fact, there's
 // never a webrtc-internals page opened at all since that's not needed.
-IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
+IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
+                       MAYBE_CallWithAudioDebugRecordings) {
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
@@ -74,34 +97,43 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
   // We must navigate somewhere first so that the render process is created.
   NavigateToURL(shell(), GURL(""));
 
-  base::FilePath dump_file;
-  ASSERT_TRUE(CreateTemporaryFile(&dump_file));
-  base::DeleteFile(dump_file, false);
+  base::FilePath base_file;
+  ASSERT_TRUE(CreateTemporaryFile(&base_file));
+  base::DeleteFile(base_file, false);
 
   // This fakes the behavior of another open tab with webrtc-internals, and
   // enabling AEC dump in that tab.
-  WebRTCInternals::GetInstance()->FileSelected(dump_file, -1, NULL);
+  WebRTCInternals::GetInstance()->FileSelected(base_file, -1, NULL);
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
-  EXPECT_FALSE(base::PathExists(dump_file));
+  EXPECT_FALSE(base::PathExists(base_file));
 
-  // Add file extensions that we expect to be added. The dump name will be
-  // <temporary path>.<render process id>.<consumer id>, for example
-  // "/tmp/.com.google.Chrome.Z6UC3P.12345.0".
+  // Verify that the expected AEC dump file exists and contains some data.
   base::ProcessId render_process_id = base::kNullProcessId;
   EXPECT_TRUE(GetRenderProcessHostId(&render_process_id));
-  dump_file = dump_file.AddExtension(IntToStringType(render_process_id))
-                       .AddExtension(IntToStringType(kExpectedConsumerId));
+  base::FilePath aec_dump_file = GetExpectedAecDumpFileName(base_file,
+                                                            render_process_id);
 
-  EXPECT_TRUE(base::PathExists(dump_file));
+  EXPECT_TRUE(base::PathExists(aec_dump_file));
   int64 file_size = 0;
-  EXPECT_TRUE(base::GetFileSize(dump_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(aec_dump_file, &file_size));
   EXPECT_GT(file_size, 0);
 
-  base::DeleteFile(dump_file, false);
+  base::DeleteFile(aec_dump_file, false);
+
+  // Verify that the expected input audio file exists and contains some data.
+  base::FilePath input_audio_file =
+      GetExpectedInputAudioFileName(base_file, render_process_id);
+
+  EXPECT_TRUE(base::PathExists(input_audio_file));
+  file_size = 0;
+  EXPECT_TRUE(base::GetFileSize(input_audio_file, &file_size));
+  EXPECT_GT(file_size, 0);
+
+  base::DeleteFile(input_audio_file, false);
 }
 
 // TODO(grunell): Add test for multiple dumps when re-use of
@@ -109,18 +141,18 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_CallWithAecDumpEnabledThenDisabled DISABLED_CallWithAecDumpEnabledThenDisabled
+#define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_CallWithAecDumpEnabledThenDisabled DISABLED_CallWithAecDumpEnabledThenDisabled
+#define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
 #else
-#define MAYBE_CallWithAecDumpEnabledThenDisabled CallWithAecDumpEnabledThenDisabled
+#define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled CallWithAudioDebugRecordingsEnabledThenDisabled
 #endif
 
 // As above, but enable and disable dump before starting a call. The file should
 // be created, but should be empty.
-IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest,
-                       MAYBE_CallWithAecDumpEnabledThenDisabled) {
+IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
+                       MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled) {
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
@@ -131,34 +163,39 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest,
   // We must navigate somewhere first so that the render process is created.
   NavigateToURL(shell(), GURL(""));
 
-  base::FilePath dump_file;
-  ASSERT_TRUE(CreateTemporaryFile(&dump_file));
-  base::DeleteFile(dump_file, false);
+  base::FilePath base_file;
+  ASSERT_TRUE(CreateTemporaryFile(&base_file));
+  base::DeleteFile(base_file, false);
 
   // This fakes the behavior of another open tab with webrtc-internals, and
   // enabling AEC dump in that tab, then disabling it.
-  WebRTCInternals::GetInstance()->FileSelected(dump_file, -1, NULL);
-  WebRTCInternals::GetInstance()->DisableAecDump();
+  WebRTCInternals::GetInstance()->FileSelected(base_file, -1, NULL);
+  WebRTCInternals::GetInstance()->DisableAudioDebugRecordings();
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
-  // Add file extensions that we expect to be added.
+  // Verify that the expected AEC dump file doesn't exist.
   base::ProcessId render_process_id = base::kNullProcessId;
   EXPECT_TRUE(GetRenderProcessHostId(&render_process_id));
-  dump_file = dump_file.AddExtension(IntToStringType(render_process_id))
-                       .AddExtension(IntToStringType(kExpectedConsumerId));
+  base::FilePath aec_dump_file = GetExpectedAecDumpFileName(base_file,
+                                                            render_process_id);
+  EXPECT_FALSE(base::PathExists(aec_dump_file));
+  base::DeleteFile(aec_dump_file, false);
 
-  EXPECT_FALSE(base::PathExists(dump_file));
-
-  base::DeleteFile(dump_file, false);
+  // Verify that the expected input audio file doesn't exist.
+  base::FilePath input_audio_file =
+      GetExpectedInputAudioFileName(base_file, render_process_id);
+  EXPECT_FALSE(base::PathExists(input_audio_file));
+  base::DeleteFile(input_audio_file, false);
 }
 
 // Timing out on ARM linux bot: http://crbug.com/238490
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 // Flaky on XP and Mac: http://crbug.com/425034.
-IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, DISABLED_TwoCallsWithAecDump) {
+IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
+                       DISABLED_TwoCallsWithAudioDebugRecordings) {
   if (OnWinXp()) {
     LOG(INFO) << "Disabled on Win XP: skipping test...";
     return;
@@ -177,13 +214,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, DISABLED_TwoCallsWithAecDump) {
   Shell* shell2 = CreateBrowser();
   NavigateToURL(shell2, GURL(""));
 
-  base::FilePath dump_file;
-  ASSERT_TRUE(CreateTemporaryFile(&dump_file));
-  base::DeleteFile(dump_file, false);
+  base::FilePath base_file;
+  ASSERT_TRUE(CreateTemporaryFile(&base_file));
+  base::DeleteFile(base_file, false);
 
   // This fakes the behavior of another open tab with webrtc-internals, and
   // enabling AEC dump in that tab.
-  WebRTCInternals::GetInstance()->FileSelected(dump_file, -1, NULL);
+  WebRTCInternals::GetInstance()->FileSelected(base_file, -1, NULL);
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
 
@@ -197,26 +234,37 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, DISABLED_TwoCallsWithAecDump) {
       &result));
   ASSERT_STREQ("OK", result.c_str());
 
-  EXPECT_FALSE(base::PathExists(dump_file));
+  EXPECT_FALSE(base::PathExists(base_file));
 
   RenderProcessHost::iterator it =
       content::RenderProcessHost::AllHostsIterator();
+
   for (; !it.IsAtEnd(); it.Advance()) {
     base::ProcessId render_process_id =
         base::GetProcId(it.GetCurrentValue()->GetHandle());
     EXPECT_NE(base::kNullProcessId, render_process_id);
 
-    // Add file extensions that we expect to be added.
-    base::FilePath unique_dump_file =
-        dump_file.AddExtension(IntToStringType(render_process_id))
-                 .AddExtension(IntToStringType(kExpectedConsumerId));
+    // Verify that the expected AEC dump file exists and contains some data.
+    base::FilePath aec_dump_file =
+        GetExpectedAecDumpFileName(base_file, render_process_id);
 
-    EXPECT_TRUE(base::PathExists(unique_dump_file));
+    EXPECT_TRUE(base::PathExists(aec_dump_file));
     int64 file_size = 0;
-    EXPECT_TRUE(base::GetFileSize(unique_dump_file, &file_size));
+    EXPECT_TRUE(base::GetFileSize(aec_dump_file, &file_size));
     EXPECT_GT(file_size, 0);
 
-    base::DeleteFile(unique_dump_file, false);
+    base::DeleteFile(aec_dump_file, false);
+
+    // Verify that the expected input audio file exists and contains some data.
+    base::FilePath input_audio_file =
+        GetExpectedInputAudioFileName(base_file, render_process_id);
+
+    EXPECT_TRUE(base::PathExists(input_audio_file));
+    file_size = 0;
+    EXPECT_TRUE(base::GetFileSize(input_audio_file, &file_size));
+    EXPECT_GT(file_size, 0);
+
+    base::DeleteFile(input_audio_file, false);
   }
 }
 

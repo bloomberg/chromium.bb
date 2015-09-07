@@ -277,11 +277,11 @@ TEST_F(WebRtcInternalsTest, OnAddStats) {
   VerifyList(dict, "reports", list);
 }
 
-TEST_F(WebRtcInternalsTest, AecRecordingFileSelectionCanceled) {
+TEST_F(WebRtcInternalsTest, AudioDebugRecordingsFileSelectionCanceled) {
   scoped_ptr<MockWebRtcInternalsProxy> observer(new MockWebRtcInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->FileSelectionCanceled(NULL);
-  EXPECT_EQ("aecRecordingFileSelectionCancelled", observer->command());
+  EXPECT_EQ("audioDebugRecordingsFileSelectionCancelled", observer->command());
   EXPECT_EQ(NULL, observer->value());
 }
 

@@ -27,13 +27,17 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
       base::Bind(&WebRTCInternalsMessageHandler::OnGetAllStats,
                  base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("enableAecRecording",
-      base::Bind(&WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled,
-                 base::Unretained(this), true));
+  web_ui()->RegisterMessageCallback("enableAudioDebugRecordings",
+      base::Bind(
+          &WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled,
+          base::Unretained(this),
+          true));
 
-  web_ui()->RegisterMessageCallback("disableAecRecording",
-      base::Bind(&WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled,
-                 base::Unretained(this), false));
+  web_ui()->RegisterMessageCallback("disableAudioDebugRecordings",
+      base::Bind(
+          &WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled,
+          base::Unretained(this),
+          false));
 
   web_ui()->RegisterMessageCallback("finishedDOMLoad",
       base::Bind(&WebRTCInternalsMessageHandler::OnDOMLoadDone,
@@ -49,22 +53,24 @@ void WebRTCInternalsMessageHandler::OnGetAllStats(
   }
 }
 
-void WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled(
+void WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled(
     bool enable, const base::ListValue* /* unused_list */) {
-  if (enable)
-    WebRTCInternals::GetInstance()->EnableAecDump(web_ui()->GetWebContents());
-  else
-    WebRTCInternals::GetInstance()->DisableAecDump();
+  if (enable) {
+    WebRTCInternals::GetInstance()->EnableAudioDebugRecordings(
+        web_ui()->GetWebContents());
+  } else {
+    WebRTCInternals::GetInstance()->DisableAudioDebugRecordings();
+  }
 }
 
 void WebRTCInternalsMessageHandler::OnDOMLoadDone(
     const base::ListValue* /* unused_list */) {
   WebRTCInternals::GetInstance()->UpdateObserver(this);
 
-  if (WebRTCInternals::GetInstance()->aec_dump_enabled()) {
+  if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
     std::vector<const base::Value*> args_vector;
-    base::string16 script = WebUI::GetJavascriptCall("setAecRecordingEnabled",
-                                                     args_vector);
+    base::string16 script =
+        WebUI::GetJavascriptCall("setAudioDebugRecordingsEnabled", args_vector);
     RenderFrameHost* host = web_ui()->GetWebContents()->GetMainFrame();
     if (host)
       host->ExecuteJavaScript(script);
