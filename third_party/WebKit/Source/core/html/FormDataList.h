@@ -34,6 +34,7 @@ namespace blink {
 
 class CORE_EXPORT FormDataList : public GarbageCollected<FormDataList> {
 public:
+    // TODO(tkent): Merge Entry and Item.
     class Entry final {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
@@ -63,10 +64,11 @@ public:
     class Item {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
-        Item() { }
-        Item(const WTF::CString& data) : m_data(data) { }
-        Item(Blob* blob, const String& filename) : m_blob(blob), m_filename(filename) { }
+        Item(const CString& key) : m_key(key) { }
+        Item(const CString& key, const CString& data) : m_key(key), m_data(data) { }
+        Item(const CString& key, Blob* blob, const String& filename) : m_key(key), m_blob(blob), m_filename(filename) { }
 
+        const CString& key() const { return m_key; }
         const WTF::CString& data() const { return m_data; }
         Blob* blob() const { return m_blob.get(); }
         const String& filename() const { return m_filename; }
@@ -74,6 +76,7 @@ public:
         DECLARE_TRACE();
 
     private:
+        CString m_key;
         WTF::CString m_data;
         Member<Blob> m_blob;
         String m_filename;
@@ -88,23 +91,19 @@ public:
 
     void appendData(const String& key, const String& value)
     {
-        appendString(key);
-        appendString(value);
+        appendItem(Item(encodeAndNormalize(key), encodeAndNormalize(value)));
     }
     void appendData(const String& key, const CString& value)
     {
-        appendString(key);
-        appendString(value);
+        appendItem(Item(encodeAndNormalize(key), value));
     }
     void appendData(const String& key, int value)
     {
-        appendString(key);
-        appendString(String::number(value));
+        appendItem(Item(encodeAndNormalize(key), encodeAndNormalize(String::number(value))));
     }
     void appendBlob(const String& key, Blob* blob, const String& filename = String())
     {
-        appendString(key);
-        appendBlob(blob, filename);
+        appendItem(Item(encodeAndNormalize(key), blob, filename));
     }
 
     void deleteEntry(const String& key);
@@ -114,7 +113,7 @@ public:
     bool hasEntry(const String& key) const;
     void setBlob(const String& key, Blob*, const String& filename);
     void setData(const String& key, const String& value);
-    size_t size() const { return m_items.size() / 2; }
+    size_t size() const { return m_items.size(); }
 
     const FormDataListItems& items() const { return m_items; }
     const WTF::TextEncoding& encoding() const { return m_encoding; }
@@ -130,11 +129,9 @@ protected:
 private:
     void appendKeyValuePairItemsTo(FormData*, const WTF::TextEncoding&, bool isMultiPartForm, FormData::EncodingType = FormData::FormURLEncoded);
 
-    void appendString(const CString&);
-    void appendString(const String&);
-    void appendBlob(Blob*, const String& filename);
-    void setEntry(const String& key, const Item&);
-    Entry itemsToEntry(const Item& key, const Item& value) const;
+    void appendItem(const Item&);
+    void setEntry(const Item&);
+    Entry itemsToEntry(const Item&) const;
     CString encodeAndNormalize(const String& key) const;
 
     WTF::TextEncoding m_encoding;

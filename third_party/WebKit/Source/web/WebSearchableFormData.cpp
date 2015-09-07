@@ -214,18 +214,17 @@ bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString,
         if (!control->appendFormData(*dataList, false))
             continue;
 
-        const FormDataList::FormDataListItems& items = dataList->items();
-        for (FormDataList::FormDataListItems::const_iterator j(items.begin()); j != items.end(); ++j) {
+        for (const FormDataList::Item& item : dataList->items()) {
             if (!encodedString->isEmpty())
                 encodedString->append('&');
-            FormDataBuilder::encodeStringAsFormData(*encodedString, j->data());
+            FormDataBuilder::encodeStringAsFormData(*encodedString, item.key());
             encodedString->append('=');
-            ++j;
             if (control == textElement) {
                 encodedString->append("{searchTerms}", 13);
                 isElementFound = true;
-            } else
-                FormDataBuilder::encodeStringAsFormData(*encodedString, j->data());
+            } else {
+                FormDataBuilder::encodeStringAsFormData(*encodedString, item.data());
+            }
         }
     }
     return isElementFound;
