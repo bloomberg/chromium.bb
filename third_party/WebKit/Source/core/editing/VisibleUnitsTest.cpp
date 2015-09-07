@@ -27,6 +27,24 @@ PositionInComposedTreeWithAffinity positionWithAffinityInComposedTree(Node& anch
 class VisibleUnitsTest : public EditingTestBase {
 };
 
+TEST_F(VisibleUnitsTest, absoluteCaretBoundsOf)
+{
+    const char* bodyContent = "<p id='host'><b id='one'>11</b><b id='two'>22</b></p>";
+    const char* shadowContent = "<div><content select=#two></content><content select=#one></content></div>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    RefPtrWillBeRawPtr<Element> body = document().body();
+    RefPtrWillBeRawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
+
+    IntRect boundsInDOMTree = absoluteCaretBoundsOf(createVisiblePosition(Position(one.get(), 0)));
+    IntRect boundsInComposedTree = absoluteCaretBoundsOf(createVisiblePosition(PositionInComposedTree(one.get(), 0)));
+
+    EXPECT_FALSE(boundsInDOMTree.isEmpty());
+    EXPECT_EQ(boundsInDOMTree, boundsInComposedTree);
+}
+
 TEST_F(VisibleUnitsTest, inSameLine)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";

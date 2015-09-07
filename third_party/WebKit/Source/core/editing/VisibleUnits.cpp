@@ -2500,7 +2500,8 @@ bool isVisuallyEquivalentCandidate(const PositionInComposedTree& position)
     return isVisuallyEquivalentCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
-IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
+template <typename Strategy>
+static IntRect absoluteCaretBoundsOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
     LayoutObject* layoutObject;
     LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
@@ -2508,6 +2509,16 @@ IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
         return IntRect();
 
     return layoutObject->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
+}
+
+IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
+{
+    return absoluteCaretBoundsOfAlgorithm<EditingStrategy>(visiblePosition);
+}
+
+IntRect absoluteCaretBoundsOf(const VisiblePositionInComposedTree& visiblePosition)
+{
+    return absoluteCaretBoundsOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
 }
 
 static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)
