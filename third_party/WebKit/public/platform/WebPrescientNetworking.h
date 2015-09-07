@@ -45,8 +45,6 @@ public:
     // the host resolution latency.
     virtual void prefetchDNS(const WebString& hostname) { }
 
-    virtual void preconnect(const WebURL& url) { }
-
     virtual void preconnect(const WebURL& url, const bool allowCredentials) { }
 };
 
