@@ -8,12 +8,17 @@
 
 #include <windows.h>
 
+#include <algorithm>
+#include <iterator>
+#include <set>
+
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
@@ -476,6 +481,152 @@ base::string16 GetRegistrationDataCommandKey(
       .append(1, base::FilePath::kSeparators[0])
       .append(name);
   return cmd_key;
+}
+
+void DeleteRegistryKeyPartial(
+    HKEY root,
+    const base::string16& path,
+    const std::vector<base::string16>& keys_to_preserve) {
+  // Downcase the list of keys to preserve (all must be ASCII strings).
+  std::set<base::string16> lowered_keys_to_preserve;
+  std::transform(
+      keys_to_preserve.begin(), keys_to_preserve.end(),
+      std::inserter(lowered_keys_to_preserve, lowered_keys_to_preserve.begin()),
+      [](const base::string16& str) {
+        DCHECK(!str.empty());
+        DCHECK(base::IsStringASCII(str));
+        return base::ToLowerASCII(str);
+      });
+  base::win::RegKey key;
+  LONG result = key.Open(root, path.c_str(), (KEY_ENUMERATE_SUB_KEYS |
+                                              KEY_QUERY_VALUE | KEY_SET_VALUE));
+  if (result != ERROR_SUCCESS) {
+    LOG_IF(ERROR, result != ERROR_FILE_NOT_FOUND) << "Failed to open " << path
+                                                  << "; result = " << result;
+    return;
+  }
+
+  // Repeatedly iterate over all subkeys deleting those that should not be
+  // preserved until only those remain. Multiple passes are needed since
+  // deleting one key may change the enumeration order of all remaining keys.
+
+  // Subkeys or values to be skipped on subsequent passes.
+  std::set<base::string16> to_skip;
+  DWORD index = 0;
+  const size_t kMaxKeyNameLength = 256;  // MSDN says 255; +1 for terminator.
+  base::string16 name(kMaxKeyNameLength, base::char16());
+  bool did_delete = false;  // True if at least one item was deleted.
+  while (true) {
+    DWORD name_length = base::saturated_cast<DWORD>(name.capacity());
+    name.resize(name_length);
+    result = ::RegEnumKeyEx(key.Handle(), index, &name[0], &name_length,
+                            nullptr, nullptr, nullptr, nullptr);
+    if (result == ERROR_MORE_DATA) {
+      // Unexpected, but perhaps the max key name length was raised. MSDN
+      // doesn't clearly say that name_length will contain the necessary
+      // length in this case, so double the buffer and try again.
+      name.reserve(name.capacity() * 2);
+      continue;
+    }
+    if (result == ERROR_NO_MORE_ITEMS) {
+      if (!did_delete)
+        break;  // All subkeys were deleted. The job is done.
+      // Otherwise, loop again.
+      did_delete = false;
+      index = 0;
+      continue;
+    }
+    if (result != ERROR_SUCCESS)
+      break;
+    // Shrink the string to the actual length of the name.
+    name.resize(name_length);
+
+    // Skip over this key if it couldn't be deleted on a previous iteration.
+    if (to_skip.count(name)) {
+      ++index;
+      continue;
+    }
+
+    // Skip over this key if it is one of the keys to preserve.
+    if (base::IsStringASCII(name) &&
+        lowered_keys_to_preserve.count(base::ToLowerASCII(name))) {
+      // Add the true name of the key to the list of keys to skip for subsequent
+      // iterations.
+      to_skip.insert(name);
+      ++index;
+      continue;
+    }
+
+    // Delete this key.
+    result = key.DeleteKey(name.c_str());
+    if (result != ERROR_SUCCESS) {
+      LOG(ERROR) << "Failed to delete subkey " << name << " under path "
+                 << path;
+      // Skip over this key on subsequent iterations.
+      to_skip.insert(name);
+      ++index;
+      continue;
+    }
+    did_delete = true;
+  }
+
+  // Delete the key if it no longer has any subkeys.
+  if (to_skip.empty()) {
+    result = key.DeleteEmptyKey(L"");
+    LOG_IF(ERROR, result != ERROR_SUCCESS) << "Failed to delete empty key "
+                                           << path << "; result: " << result;
+    return;
+  }
+
+  // Delete all values since subkeys are being preserved.
+  to_skip.clear();
+  did_delete = false;
+  index = 0;
+  while (true) {
+    DWORD name_length = base::saturated_cast<int16_t>(name.capacity());
+    name.resize(name_length);
+    result = ::RegEnumValue(key.Handle(), index, &name[0], &name_length,
+                            nullptr, nullptr, nullptr, nullptr);
+    if (result == ERROR_MORE_DATA) {
+      if (name_length <
+          static_cast<DWORD>(std::numeric_limits<int16_t>::max())) {
+        // Double the space to hold the value name and try again.
+        name.reserve(name.capacity() * 2);
+        continue;
+      }
+      // Otherwise, the max has been exceeded. Nothing more to be done.
+      break;
+    }
+    if (result == ERROR_NO_MORE_ITEMS) {
+      if (!did_delete)
+        break;  // All values were deleted. The job is done.
+      // Otherwise, loop again.
+      did_delete = false;
+      index = 0;
+      continue;
+    }
+    if (result != ERROR_SUCCESS)
+      break;
+    // Shrink the string to the actual length of the name.
+    name.resize(name_length);
+
+    // Skip over this value if it couldn't be deleted on a previous iteration.
+    if (to_skip.count(name)) {
+      ++index;
+      continue;
+    }
+
+    // Delete this value.
+    result = key.DeleteValue(name.c_str());
+    if (result != ERROR_SUCCESS) {
+      LOG(ERROR) << "Failed to delete value " << name << " in key " << path;
+      // Skip over this value on subsequent iterations.
+      to_skip.insert(name);
+      ++index;
+      continue;
+    }
+    did_delete = true;
+  }
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

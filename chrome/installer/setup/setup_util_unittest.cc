@@ -516,3 +516,118 @@ TEST(SetupUtilTest, GetRegistrationDataCommandKey) {
   EXPECT_TRUE(base::EndsWith(key, app_guid + L"\\Commands\\test_name",
                              base::CompareCase::SENSITIVE));
 }
+
+namespace installer {
+
+class DeleteRegistryKeyPartialTest : public ::testing::Test {
+ protected:
+  using RegKey = base::win::RegKey;
+
+  void SetUp() override {
+    _registry_override_manager.OverrideRegistry(root_);
+    to_preserve_.push_back(L"preSERve1");
+    to_preserve_.push_back(L"1evRESerp");
+  }
+
+  void CreateSubKeys(bool with_preserves) {
+    ASSERT_FALSE(RegKey(root_, path_.c_str(), KEY_READ).Valid());
+    // These subkeys are added such that 1) keys to preserve are intermixed with
+    // other keys, and 2) the case of the keys to preserve doesn't match the
+    // values in |to_preserve_|.
+    ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
+                                 .CreateKey(L"0sub", KEY_WRITE));
+    if (with_preserves) {
+      ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
+                                   .CreateKey(L"1evreserp", KEY_WRITE));
+    }
+    ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
+                                 .CreateKey(L"asub", KEY_WRITE));
+    if (with_preserves) {
+      ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
+                                   .CreateKey(L"preserve1", KEY_WRITE));
+    }
+    ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
+                                 .CreateKey(L"sub1", KEY_WRITE));
+  }
+
+  const HKEY root_ = HKEY_CURRENT_USER;
+  base::string16 path_ = L"key_path";
+  std::vector<base::string16> to_preserve_;
+
+ private:
+  registry_util::RegistryOverrideManager _registry_override_manager;
+};
+
+TEST_F(DeleteRegistryKeyPartialTest, NoKey) {
+  DeleteRegistryKeyPartial(root_, L"does_not_exist",
+                           std::vector<base::string16>());
+  DeleteRegistryKeyPartial(root_, L"does_not_exist", to_preserve_);
+}
+
+TEST_F(DeleteRegistryKeyPartialTest, EmptyKey) {
+  ASSERT_FALSE(RegKey(root_, path_.c_str(), KEY_READ).Valid());
+  ASSERT_TRUE(RegKey(root_, path_.c_str(), KEY_WRITE).Valid());
+  DeleteRegistryKeyPartial(root_, path_.c_str(), std::vector<base::string16>());
+  ASSERT_FALSE(RegKey(root_, path_.c_str(), KEY_READ).Valid());
+
+  ASSERT_TRUE(RegKey(root_, path_.c_str(), KEY_WRITE).Valid());
+  DeleteRegistryKeyPartial(root_, path_.c_str(), to_preserve_);
+  ASSERT_FALSE(RegKey(root_, path_.c_str(), KEY_READ).Valid());
+}
+
+TEST_F(DeleteRegistryKeyPartialTest, NonEmptyKey) {
+  CreateSubKeys(false); /* !with_preserves */
+  DeleteRegistryKeyPartial(root_, path_.c_str(), std::vector<base::string16>());
+  ASSERT_FALSE(RegKey(root_, path_.c_str(), KEY_READ).Valid());
+
+  CreateSubKeys(false); /* !with_preserves */
+  ASSERT_TRUE(RegKey(root_, path_.c_str(), KEY_WRITE).Valid());
+  DeleteRegistryKeyPartial(root_, path_.c_str(), to_preserve_);
+  ASSERT_FALSE(RegKey(root_, path_.c_str(), KEY_READ).Valid());
+}
+
+TEST_F(DeleteRegistryKeyPartialTest, NonEmptyKeyWithPreserve) {
+  CreateSubKeys(true); /* with_preserves */
+
+  // Put some values into the main key.
+  {
+    RegKey key(root_, path_.c_str(), KEY_SET_VALUE);
+    ASSERT_TRUE(key.Valid());
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(nullptr, 5U));
+    ASSERT_EQ(
+        1, base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"foo", L"bar"));
+    ASSERT_EQ(
+        2, base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"baz", L"huh"));
+    ASSERT_EQ(
+        3, base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+  }
+
+  ASSERT_TRUE(RegKey(root_, path_.c_str(), KEY_WRITE).Valid());
+  DeleteRegistryKeyPartial(root_, path_.c_str(), to_preserve_);
+  ASSERT_TRUE(RegKey(root_, path_.c_str(), KEY_READ).Valid());
+
+  // Ensure that the preserved subkeys are still present.
+  {
+    base::win::RegistryKeyIterator it(root_, path_.c_str());
+    ASSERT_EQ(to_preserve_.size(), it.SubkeyCount());
+    for (it; it.Valid(); ++it) {
+      ASSERT_NE(to_preserve_.end(),
+                std::find_if(to_preserve_.begin(), to_preserve_.end(),
+                             [&it](const base::string16& key_name) {
+                               return base::ToLowerASCII(it.Name()) ==
+                                      base::ToLowerASCII(key_name);
+                             }))
+          << it.Name();
+    }
+  }
+
+  // Ensure that all values are absent.
+  {
+    base::win::RegistryValueIterator it(root_, path_.c_str());
+    ASSERT_EQ(0, it.ValueCount());
+  }
+}
+
+}  // namespace installer

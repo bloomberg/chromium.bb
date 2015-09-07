@@ -837,7 +837,7 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
 }
 
 // Removes the persistent blacklist state for the current user.  Note: this will
-// not remove the state for users other than the one uninstalling chrome on a
+// not remove the state for users other than the one uninstalling Chrome on a
 // system-level install (http://crbug.com/388725). Doing so would require
 // extracting the per-user registry hive iteration from
 // UninstallActiveSetupEntries so that it could service multiple tasks.
@@ -848,6 +848,25 @@ void RemoveBlacklistState() {
   InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER,
                                  blacklist::kRegistryFinchListPath,
                                  0);  // wow64_access
+}
+
+// Removes the persistent state for |distribution| for the current user. Note:
+// this will not remove the state for users other than the one uninstalling
+// Chrome on a system-level install; see RemoveBlacklistState for details.
+void RemoveDistributionRegistryState(BrowserDistribution* distribution) {
+  static const base::char16* const kKeysToPreserve[] = {
+      L"Extensions",
+      L"NativeMessagingHosts",
+  };
+  base::string16 key_name(L"Software\\");
+  key_name += distribution->GetInstallSubDir();
+  // Delete the contents of the distribution key except for those parts used by
+  // outsiders to configure Chrome.
+  DeleteRegistryKeyPartial(
+      HKEY_CURRENT_USER, key_name,
+      std::vector<base::string16>(
+          &kKeysToPreserve[0],
+          &kKeysToPreserve[arraysize(kKeysToPreserve) - 1]));
 }
 
 }  // namespace
@@ -1339,8 +1358,10 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     }
   }
 
-  if (delete_profile)
+  if (delete_profile) {
     DeleteUserDataDir(user_data_dir, product.is_chrome_frame());
+    RemoveDistributionRegistryState(browser_dist);
+  }
 
   if (!force_uninstall) {
     VLOG(1) << "Uninstallation complete. Launching post-uninstall operations.";

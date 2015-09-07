@@ -11,6 +11,8 @@
 
 #include <windows.h>
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
@@ -123,6 +125,14 @@ bool IsProcessorSupported();
 base::string16 GetRegistrationDataCommandKey(
     const AppRegistrationData& reg_data,
     const wchar_t* name);
+
+// Deletes all values and subkeys of the key |path| under |root|, preserving
+// the keys named in |keys_to_preserve| (each of which must be an ASCII string).
+// The key itself is deleted if no subkeys are preserved.
+void DeleteRegistryKeyPartial(
+    HKEY root,
+    const base::string16& path,
+    const std::vector<base::string16>& keys_to_preserve);
 
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
