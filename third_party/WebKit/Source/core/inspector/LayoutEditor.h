@@ -61,7 +61,7 @@ private:
     CSSPrimitiveValue::UnitType m_valueUnitType;
     bool m_isDirty;
 
-    RefPtrWillBeRawPtr<CSSRuleList> m_matchedRules;
+    RefPtrWillBeMember<CSSRuleList> m_matchedRules;
     // When m_currentRuleIndex == m_matchedRules.length(), current style is inline style.
     unsigned m_currentRuleIndex;
 };
