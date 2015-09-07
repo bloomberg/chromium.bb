@@ -3,25 +3,26 @@
   <head>
    <title>CSS Writing Modes Test: vertical-align - 'bottom' and vertical-rl writing-mode</title>
    <link rel="author" title="Hajime Shiozawa" href="mailto:hajime.shiozawa@gmail.com" />
+   <link rel="reviewer" title="G?rard Talbot" href="http://www.gtalbot.org/BrowserBugsSection/css21testsuite/" /> <!--  2015-09-03  -->
    <link rel="help" title="7.5 Line-Relative Mappings" href="http://www.w3.org/TR/css-writing-modes-3/#line-mappings" />
    <link rel="help" title="10.8.1 Leading and half-leading" href="http://www.w3.org/TR/2011/REC-CSS2-20110607/visudet.html#leading" />
    <meta name="assert" content="This test checks the position of inline non-replaced box with vertical align property. When 'writing-mode' is 'vertical-rl', 'vertical-align' is 'bottom', the physical left (logical bottom) edge of an inline non-replaced box is aligned with the physical left (logical bottom) edge of its line box." />
-    <link rel="match" href="vertical-alignment-new-008-ref.xht" />
+    <link rel="match" href="vertical-alignment-008-ref.xht" />
     <meta name="flags" content="ahem" />
     <style type="text/css"><![CDATA[
     div#rl
     {
-      border-left: blue solid 2em;
       -webkit-writing-mode: vertical-rl;
       font: 3.75em/3 Ahem; /* computes to 60px/180px */
-      color: white;
+      color: blue;
     }
 
     span#orange
     {
+      font-size: 0.5em;
       color: orange;
       vertical-align: bottom;
-      line-height: 1;
+      margin-top: -1em;
     }
 
     ]]></style>
@@ -30,7 +31,7 @@
 
   <body>
 
-  <p>Test passes if the left edge of an orange square touches the right edge of a blue square.</p>
+  <p>Test passes if the left edge of an blue square is aligned with the right edge of a orange square.</p>
 
   <div id="rl">A<span id="orange">O</span></div>
 
