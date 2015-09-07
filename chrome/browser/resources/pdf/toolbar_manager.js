@@ -62,7 +62,6 @@ function ToolbarManager(window, toolbar, zoomToolbar) {
   this.sideToolbarAllowedOnlyTimer_ = null;
 
   this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
-  this.resizeDropdowns_();
 }
 
 ToolbarManager.prototype = {
@@ -74,6 +73,7 @@ ToolbarManager.prototype = {
   enableToolbars: function() {
     this.toolbar_.hidden = false;
     this.zoomToolbar_.hidden = false;
+    this.resizeDropdowns_();
   },
 
   showToolbarsForMouseMove: function(e) {

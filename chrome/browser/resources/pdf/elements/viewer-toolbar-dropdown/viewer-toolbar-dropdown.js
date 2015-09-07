@@ -12,7 +12,7 @@
   var DROPDOWN_OUTER_PADDING = 2;
 
   /** Minimum height of toolbar dropdowns (px). */
-  var MIN_DROPDOWN_HEIGHT = 300;
+  var MIN_DROPDOWN_HEIGHT = 200;
 
   Polymer({
     is: 'viewer-toolbar-dropdown',

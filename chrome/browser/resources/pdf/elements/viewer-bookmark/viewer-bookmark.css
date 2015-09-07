@@ -9,14 +9,18 @@
   cursor: pointer;
   font-size: 77.8%;
   height: 30px;
-  overflow: hidden;
   position: relative;
-  white-space: nowrap;
 }
 
 #item:hover {
   background-color: rgb(237, 237, 237);
   color: rgb(20, 20, 20);
+}
+
+#title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #expand {

@@ -77,11 +77,12 @@ var tests = [
 
     var toolbarManager =
         new ToolbarManager(mockWindow, toolbar, mockZoomToolbar);
+    toolbarManager.enableToolbars();
 
-    chrome.test.assertTrue(bookmarksDropdown.lowerBound == 680);
+    chrome.test.assertEq(680, bookmarksDropdown.lowerBound);
 
     mockWindow.setSize(1920, 480);
-    chrome.test.assertTrue(bookmarksDropdown.lowerBound == 80);
+    chrome.test.assertEq(80, bookmarksDropdown.lowerBound);
 
     chrome.test.succeed();
   },

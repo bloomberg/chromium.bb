@@ -9,7 +9,7 @@
       <paper-ripple></paper-ripple>
       <iron-icon id="expand" icon="chevron-right" on-click="toggleChildren">
       </iron-icon>
-      <span>{{bookmark.title}}</span>
+      <span id="title">{{bookmark.title}}</span>
     </div>
     <div class="sub-bookmark" hidden$="{{!childrenShown_}}">
       <!-- The sub-bookmarks will only be created after the parent bookmark has
