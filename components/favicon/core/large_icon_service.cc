@@ -5,6 +5,7 @@
 #include "components/favicon/core/large_icon_service.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,7 +14,6 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
-#include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
@@ -162,8 +162,11 @@ void LargeIconWorker::OnIconProcessingComplete() {
 
 namespace favicon {
 
-LargeIconService::LargeIconService(FaviconService* favicon_service)
-    : favicon_service_(favicon_service) {
+LargeIconService::LargeIconService(
+    FaviconService* favicon_service,
+    const scoped_refptr<base::TaskRunner>& background_task_runner)
+    : favicon_service_(favicon_service),
+      background_task_runner_(background_task_runner) {
   large_icon_types_.push_back(favicon_base::IconType::FAVICON);
   large_icon_types_.push_back(favicon_base::IconType::TOUCH_ICON);
   large_icon_types_.push_back(favicon_base::IconType::TOUCH_PRECOMPOSED_ICON);
@@ -183,8 +186,8 @@ base::CancelableTaskTracker::TaskId
   DCHECK_LE(0, desired_size_in_pixel);
 
   scoped_refptr<LargeIconWorker> worker =
-      new LargeIconWorker(min_source_size_in_pixel,
-          desired_size_in_pixel, callback, GetBackgroundTaskRunner(), tracker);
+      new LargeIconWorker(min_source_size_in_pixel, desired_size_in_pixel,
+                          callback, background_task_runner_, tracker);
 
   // TODO(beaudoin): For now this is just a wrapper around
   //   GetLargestRawFaviconForPageURL. Add the logic required to select the best
@@ -194,13 +197,6 @@ base::CancelableTaskTracker::TaskId
       page_url, large_icon_types_, min_source_size_in_pixel,
       base::Bind(&LargeIconWorker::OnIconLookupComplete, worker),
       tracker);
-}
-
-// Returns TaskRunner used to execute background task.
-scoped_refptr<base::TaskRunner> LargeIconService::GetBackgroundTaskRunner() {
-  return content::BrowserThread::GetBlockingPool()
-      ->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
 }  // namespace favicon

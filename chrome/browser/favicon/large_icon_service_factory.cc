@@ -11,6 +11,7 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 
 // static
 favicon::LargeIconService* LargeIconServiceFactory::GetForBrowserContext(
@@ -38,7 +39,10 @@ KeyedService* LargeIconServiceFactory::BuildServiceInstanceFor(
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(Profile::FromBrowserContext(context),
                                            ServiceAccessType::EXPLICIT_ACCESS);
-  return new favicon::LargeIconService(favicon_service);
+  return new favicon::LargeIconService(
+      favicon_service, content::BrowserThread::GetBlockingPool()
+                           ->GetTaskRunnerWithShutdownBehavior(
+                               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 }
 
 bool LargeIconServiceFactory::ServiceIsNULLWhileTesting() const {

@@ -31,7 +31,6 @@ source_set("core") {
     "//components/favicon_base",
     "//components/history/core/browser",
     "//components/keyed_service/core",
-    "//content/public/browser",
     "//skia",
     "//ui/base",
     "//ui/gfx",

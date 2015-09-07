@@ -25,8 +25,9 @@ class FaviconService;
 // the favicon service.
 class LargeIconService : public KeyedService {
  public:
-  explicit LargeIconService(FaviconService* favicon_service);
-
+  LargeIconService(
+      FaviconService* favicon_service,
+      const scoped_refptr<base::TaskRunner>& background_task_runner);
   ~LargeIconService() override;
 
   // Requests the best large icon for the page at |page_url|.
@@ -47,14 +48,12 @@ class LargeIconService : public KeyedService {
     const favicon_base::LargeIconCallback& callback,
     base::CancelableTaskTracker* tracker);
 
-  // Returns TaskRunner used to execute background task.
-  virtual scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner();
-
  private:
   // For testing.
   friend class TestLargeIconService;
 
   FaviconService* favicon_service_;
+  scoped_refptr<base::TaskRunner> background_task_runner_;
 
   // A pre-populated list of icon types to consider when looking for large
   // icons. This is an optimization over populating an icon type vector on each
