@@ -30,6 +30,7 @@
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
+#include "core/css/TreeBoundaryCrossingRules.h"
 #include "core/css/resolver/CSSPropertyPriority.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/StyleBuilder.h"
@@ -199,10 +200,7 @@ private:
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchRuleSet(ElementRuleCollector&, RuleSet*);
     void matchUARules(ElementRuleCollector&);
-    void matchAuthorRules(const Element&, ElementRuleCollector&, bool includeEmptyRules);
-    void matchHostRules(const Element&, ElementRuleCollector&, bool includeEmptyRules);
-    void matchElementScopeRules(ScopedStyleResolver&, ElementRuleCollector&, bool includeEmptyRules);
-    void matchScopedRules(const Element&, ElementRuleCollector&, bool includeEmptyRules);
+    void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void collectFeatures();
     void resetRuleFeatures();
@@ -248,7 +246,7 @@ private:
     OwnPtrWillBeMember<RuleSet> m_siblingRuleSet;
     OwnPtrWillBeMember<RuleSet> m_uncommonAttributeRuleSet;
     OwnPtrWillBeMember<RuleSet> m_watchedSelectorsRules;
-    DocumentOrderedList m_treeBoundaryCrossingScopes;
+    TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
 
     bool m_needCollectFeatures;
     bool m_printMediaType;
