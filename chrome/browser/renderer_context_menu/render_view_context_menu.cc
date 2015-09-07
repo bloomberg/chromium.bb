@@ -1146,7 +1146,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_VIEW_SOURCE:
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
-      return embedder_web_contents_->GetController().CanViewSource();
+      return (params_.media_type != WebContextMenuData::MediaTypePlugin) &&
+             embedder_web_contents_->GetController().CanViewSource();
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
     case IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE:
