@@ -2836,9 +2836,9 @@ char *drmGetRenderDeviceNameFromFd(int fd)
 	return drmGetMinorNameForFD(fd, DRM_NODE_RENDER);
 }
 
-#ifdef __linux__
 static int drmParseSubsystemType(int maj, int min)
 {
+#ifdef __linux__
     char path[PATH_MAX + 1];
     char link[PATH_MAX + 1] = "";
     char *name;
@@ -2857,10 +2857,15 @@ static int drmParseSubsystemType(int maj, int min)
         return DRM_BUS_PCI;
 
     return -EINVAL;
+#else
+#warning "Missing implementation of drmParseSubsystemType"
+    return -EINVAL;
+#endif
 }
 
 static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
 {
+#ifdef __linux__
     char path[PATH_MAX + 1];
     char data[128];
     char *str;
@@ -2893,6 +2898,10 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
     info->func = func;
 
     return 0;
+#else
+#warning "Missing implementation of drmParsePciBusInfo"
+    return -EINVAL;
+#endif
 }
 
 static int drmCompareBusInfo(drmDevicePtr a, drmDevicePtr b)
@@ -2942,6 +2951,7 @@ static int drmGetMaxNodeName(void)
 static int drmParsePciDeviceInfo(const char *d_name,
                                  drmPciDeviceInfoPtr device)
 {
+#ifdef __linux__
     char path[PATH_MAX + 1];
     unsigned char config[64];
     int fd, ret;
@@ -2963,6 +2973,10 @@ static int drmParsePciDeviceInfo(const char *d_name,
     device->subdevice_id = config[46] | (config[47] << 8);
 
     return 0;
+#else
+#warning "Missing implementation of drmParsePciDeviceInfo"
+    return -EINVAL;
+#endif
 }
 
 static void drmFreeDevice(drmDevicePtr *device)
@@ -3139,20 +3153,3 @@ close_sysdir:
     closedir(sysdir);
     return ret;
 }
-#else
-void drmFreeDevices(drmDevicePtr devices[], int count)
-{
-    (void)devices;
-    (void)count;
-}
-
-int drmGetDevices(drmDevicePtr devices[], int max_devices)
-{
-    (void)devices;
-    (void)max_devices;
-    return -EINVAL;
-}
-
-#warning "Missing implementation of drmGetDevices/drmFreeDevices"
-
-#endif
