@@ -30,6 +30,7 @@ namespace blink {
 
 class Document;
 class FrameSelection;
+class LayoutView;
 
 class PendingSelection final : public NoBaseWillBeGarbageCollected<PendingSelection> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PendingSelection);
@@ -41,10 +42,7 @@ public:
 
     bool hasPendingSelection() const { return m_hasPendingSelection; }
     void setSelection(const FrameSelection&);
-    void clear();
-
-    bool isInDocument(const Document&) const;
-    VisibleSelection calcVisibleSelection() const;
+    void commit(LayoutView&);
 
     DECLARE_TRACE();
 
@@ -56,6 +54,10 @@ private:
 
     template <typename Strategy>
     VisibleSelection calcVisibleSelectionAlgorithm() const;
+    void clear();
+    template <typename Strategy>
+    void commitAlgorithm(LayoutView&);
+    bool isInDocument(const Document&) const;
 
     VisibleSelection m_selection;
     bool m_hasPendingSelection : 1;

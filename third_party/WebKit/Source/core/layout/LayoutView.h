@@ -24,7 +24,6 @@
 
 #include "core/CoreExport.h"
 #include "core/compositing/DisplayListCompositingBuilder.h"
-#include "core/editing/Position.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/HitTestCache.h"
 #include "core/layout/HitTestResult.h"
@@ -191,9 +190,6 @@ public:
 
 private:
     void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
-
-    template <typename Strategy>
-    void commitPendingSelectionAlgorithm();
 
     const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
     void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
