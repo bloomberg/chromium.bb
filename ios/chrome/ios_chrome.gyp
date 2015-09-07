@@ -285,6 +285,8 @@
         'browser/net/http_server_properties_manager_factory.h',
         'browser/net/image_fetcher.h',
         'browser/net/image_fetcher.mm',
+        'browser/net/ios_chrome_http_user_agent_settings.cc',
+        'browser/net/ios_chrome_http_user_agent_settings.h',
         'browser/net/metrics_network_client.h',
         'browser/net/metrics_network_client.mm',
         'browser/net/metrics_network_client_manager.h',
