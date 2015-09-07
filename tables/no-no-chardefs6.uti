@@ -16,6 +16,18 @@ space \x000D 0               # \r
 space \x000A 0               # \n
 space \x00A0 a               # NO-BREAK SPACE <noBreak> 0020 NON-BREAKING SPACE # dec 160
 
+# Unicode space characters
+space \x2000 0               # En Quad
+space \x2001 0               # Em Quad
+space \x2002 0               # En Space
+space \x2003 0               # Em Space
+space \x2004 0               # Three-Per-Em Space
+space \x2005 0               # Four-Per-Em Space
+space \x2006 0               # Six-Per-Em Space
+space \x2007 0               # Figure Space
+space \x2008 0               # Punctuation Space
+space \x2009 0               # Thin Space
+
 punctuation ! 235            # exclamation mark x0021
 punctuation " 256            # double quote x0022
 punctuation ' 5              # apostrophe x0027
@@ -107,8 +119,6 @@ uplow Φφ 124                 # fi
 uplow Χχ 12346               # khi
 uplow Ψψ 13456               # psi
 uplow Ωω 2456                # omega
-
-
 
 uplow \x00C8\x00E8 2346      # e with grave è x00C8 / 00E8
 uplow \x00C9\x00E9 123456    # e with acute é x00C9 / 00E9

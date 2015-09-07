@@ -3133,6 +3133,16 @@
           "output": "⠼⠃ ⠠⠋⠗⠁ ⠑⠝⠛⠑⠇⠎⠅ ⠆⠞⠁⠉⠅⠇⠑ ⠁ ⠏⠗⠕⠃⠇⠑⠍⠰⠄"
         }
       ]
-    }
+    },
+    { "data": [ { "comment": "U+2000 (En Quad)           ", "input": "\u2000", "output": " " } ] },
+    { "data": [ { "comment": "U+2001 (Em Quad)           ", "input": "\u2001", "output": " " } ] },
+    { "data": [ { "comment": "U+2002 (En Space)          ", "input": "\u2002", "output": " " } ] },
+    { "data": [ { "comment": "U+2003 (Em Space)          ", "input": "\u2003", "output": " " } ] },
+    { "data": [ { "comment": "U+2004 (Three-Per-Em Space)", "input": "\u2004", "output": " " } ] },
+    { "data": [ { "comment": "U+2005 (Four-Per-Em Space) ", "input": "\u2005", "output": " " } ] },
+    { "data": [ { "comment": "U+2006 (Six-Per-Em Space)  ", "input": "\u2006", "output": " " } ] },
+    { "data": [ { "comment": "U+2007 (Figure Space)      ", "input": "\u2007", "output": " " } ] },
+    { "data": [ { "comment": "U+2008 (Punctuation Space) ", "input": "\u2008", "output": " " } ] },
+    { "data": [ { "comment": "U+2009 (Thin Space)        ", "input": "\u2009", "output": " " } ] }
   ]
 }
