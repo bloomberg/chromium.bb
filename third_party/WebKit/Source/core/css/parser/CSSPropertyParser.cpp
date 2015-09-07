@@ -998,15 +998,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBoxShadow:
         if (id == CSSValueNone)
             validPrimitive = true;
-        else {
-            RefPtrWillBeRawPtr<CSSValueList> shadowValueList = parseShadow(m_valueList, propId);
-            if (shadowValueList) {
-                addProperty(propId, shadowValueList.release(), important);
-                m_valueList->next();
-                return true;
-            }
-            return false;
-        }
+        else
+            parsedValue = parseShadow(m_valueList, propId);
         break;
     case CSSPropertyWebkitBoxReflect:
         if (id == CSSValueNone)
@@ -5116,175 +5109,87 @@ bool CSSPropertyParser::parseColorFromValue(const CSSParserValue* value, RGBA32&
     return true;
 }
 
-// This class tracks parsing state for shadow values.  If it goes out of scope (e.g., due to an early return)
-// without the allowBreak bit being set, then it will clean up all of the objects and destroy them.
-class ShadowParseContext {
-    STACK_ALLOCATED();
-public:
-    ShadowParseContext(CSSPropertyID prop)
-        : property(prop)
-        , allowX(true)
-        , allowY(false)
-        , allowBlur(false)
-        , allowSpread(false)
-        , allowColor(true)
-        , allowStyle(prop == CSSPropertyBoxShadow)
-        , allowBreak(true)
-    {
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserValueList* valueList, CSSPropertyID propID)
+{
+    RefPtrWillBeRawPtr<CSSValueList> shadowValueList = CSSValueList::createCommaSeparated();
+    const bool isBoxShadowProperty = propID == CSSPropertyBoxShadow;
+    while (RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = parseSingleShadow(valueList, isBoxShadowProperty, isBoxShadowProperty)) {
+        shadowValueList->append(shadowValue);
+        if (!valueList->current())
+            break;
+        if (!consumeComma(valueList))
+            return nullptr;
     }
+    if (shadowValueList->length() == 0)
+        return nullptr;
+    return shadowValueList;
+}
 
-    bool allowLength() { return allowX || allowY || allowBlur || allowSpread; }
-
-    void commitValue()
-    {
-        // Handle the ,, case gracefully by doing nothing.
-        if (x || y || blur || spread || color || style) {
-            if (!values)
-                values = CSSValueList::createCommaSeparated();
-
-            // Construct the current shadow value and add it to the list.
-            values->append(CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), style.release(), color.release()));
-        }
-
-        // Now reset for the next shadow value.
-        x = nullptr;
-        y = nullptr;
-        blur = nullptr;
-        spread = nullptr;
-        style = nullptr;
-        color = nullptr;
-
-        allowX = true;
-        allowColor = true;
-        allowBreak = true;
-        allowY = false;
-        allowBlur = false;
-        allowSpread = false;
-        allowStyle = property == CSSPropertyBoxShadow;
-    }
-
-    void commitLength(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val)
-    {
-        if (allowX) {
-            x = val;
-            allowX = false;
-            allowY = true;
-            allowColor = false;
-            allowStyle = false;
-            allowBreak = false;
-        } else if (allowY) {
-            y = val;
-            allowY = false;
-            allowBlur = true;
-            allowColor = true;
-            allowStyle = property == CSSPropertyBoxShadow;
-            allowBreak = true;
-        } else if (allowBlur) {
-            blur = val;
-            allowBlur = false;
-            allowSpread = property == CSSPropertyBoxShadow;
-        } else if (allowSpread) {
-            spread = val;
-            allowSpread = false;
-        }
-    }
-
-    void commitColor(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val)
-    {
-        color = val;
-        allowColor = false;
-        if (allowX) {
-            allowStyle = false;
-            allowBreak = false;
-        } else {
-            allowBlur = false;
-            allowSpread = false;
-            allowStyle = property == CSSPropertyBoxShadow;
-        }
-    }
-
-    void commitStyle(CSSParserValue* v)
-    {
-        style = cssValuePool().createIdentifierValue(v->id);
-        allowStyle = false;
-        if (allowX)
-            allowBreak = false;
-        else {
-            allowBlur = false;
-            allowSpread = false;
-            allowColor = false;
-        }
-    }
-
-    CSSPropertyID property;
-
-    RefPtrWillBeMember<CSSValueList> values;
-    RefPtrWillBeMember<CSSPrimitiveValue> x;
-    RefPtrWillBeMember<CSSPrimitiveValue> y;
-    RefPtrWillBeMember<CSSPrimitiveValue> blur;
-    RefPtrWillBeMember<CSSPrimitiveValue> spread;
+PassRefPtrWillBeRawPtr<CSSShadowValue> CSSPropertyParser::parseSingleShadow(CSSParserValueList* valueList, bool allowInset, bool allowSpread)
+{
     RefPtrWillBeMember<CSSPrimitiveValue> style;
     RefPtrWillBeMember<CSSPrimitiveValue> color;
+    Vector<RefPtrWillBeRawPtr<CSSPrimitiveValue>, 4> lengths;
 
-    bool allowX;
-    bool allowY;
-    bool allowBlur;
-    bool allowSpread;
-    bool allowColor;
-    bool allowStyle; // inset or not.
-    bool allowBreak;
-};
+    CSSParserValue* val = valueList->current();
+    if (!val)
+        return nullptr;
+    if (val->id == CSSValueInset) {
+        if (!allowInset)
+            return nullptr;
+        style = cssValuePool().createIdentifierValue(val->id);
+        val = valueList->next();
+        if (!val)
+            return nullptr;
+    }
+    if ((color = parseColor(val)))
+        val = valueList->next();
 
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserValueList* valueList, CSSPropertyID propId)
-{
-    ShadowParseContext context(propId);
-    for (CSSParserValue* val = valueList->current(); val; val = valueList->next()) {
-        // Check for a comma break first.
-        if (val->m_unit == CSSParserValue::Operator) {
-            if (val->iValue != ',' || !context.allowBreak) {
-                // Other operators aren't legal or we aren't done with the current shadow
-                // value.  Treat as invalid.
+    if (!val || !validUnit(val, FLength, HTMLStandardMode))
+        return nullptr;
+    lengths.append(createPrimitiveNumericValue(val));
+    val = valueList->next();
+
+    if (!val || !validUnit(val, FLength, HTMLStandardMode))
+        return nullptr;
+    lengths.append(createPrimitiveNumericValue(val));
+    val = valueList->next();
+
+    if (val && validUnit(val, FLength, HTMLStandardMode)) {
+        // Blur radius must be non-negative.
+        if (m_parsedCalculation ? m_parsedCalculation->isNegative() : !validUnit(val, FLength | FNonNeg, HTMLStandardMode)) {
+            m_parsedCalculation.release();
+            return nullptr;
+        }
+        lengths.append(createPrimitiveNumericValue(val));
+        val = valueList->next();
+        if (val && validUnit(val, FLength, HTMLStandardMode)) {
+            if (!allowSpread)
                 return nullptr;
-            }
-            // The value is good.  Commit it.
-            context.commitValue();
-        } else if (validUnit(val, FLength, HTMLStandardMode)) {
-            // We required a length and didn't get one. Invalid.
-            if (!context.allowLength())
-                return nullptr;
-
-            // Blur radius must be non-negative.
-            if (context.allowBlur && (m_parsedCalculation ? m_parsedCalculation->isNegative() : !validUnit(val, FLength | FNonNeg, HTMLStandardMode)))
-                return nullptr;
-
-            // A length is allowed here.  Construct the value and add it.
-            RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(val);
-            context.commitLength(length.release());
-        } else if (val->id == CSSValueInset) {
-            if (!context.allowStyle)
-                return nullptr;
-
-            context.commitStyle(val);
-        } else {
-            if (!context.allowColor)
-                return nullptr;
-
-            // The only other type of value that's ok is a color value.
-            RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedColor = parseColor(val);
-            if (!parsedColor)
-                return nullptr;
-
-            context.commitColor(parsedColor.release());
+            lengths.append(createPrimitiveNumericValue(val));
+            val = valueList->next();
         }
     }
 
-    if (context.allowBreak) {
-        context.commitValue();
-        if (context.values && context.values->length())
-            return context.values.release();
+    if (val) {
+        if (RefPtrWillBeMember<CSSPrimitiveValue> colorValue = parseColor(val)) {
+            if (color)
+                return nullptr;
+            color = colorValue;
+            val = valueList->next();
+        }
+        if (val && val->id == CSSValueInset) {
+            if (!allowInset || style)
+                return nullptr;
+            style = cssValuePool().createIdentifierValue(val->id);
+            val = valueList->next();
+        }
     }
-
-    return nullptr;
+    unsigned lengthsSeen = lengths.size();
+    return CSSShadowValue::create(lengths.at(0), lengths.at(1),
+        lengthsSeen > 2 ? lengths.at(2) : nullptr,
+        lengthsSeen > 3 ? lengths.at(3) : nullptr,
+        style.release(), color.release());
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseReflect()
@@ -6932,11 +6837,10 @@ PassRefPtrWillBeRawPtr<CSSFunctionValue> CSSPropertyParser::parseBuiltinFilterAr
     }
     case CSSValueDropShadow: {
         // drop-shadow() takes a single shadow.
-        RefPtrWillBeRawPtr<CSSValueList> shadowValueList = parseShadow(args, CSSPropertyWebkitFilter);
-        if (!shadowValueList || shadowValueList->length() != 1)
+        RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = parseSingleShadow(args, false, true);
+        if (!shadowValue)
             return nullptr;
-
-        filterValue->append((shadowValueList.release())->item(0));
+        filterValue->append(shadowValue.release());
         break;
     }
     default:
