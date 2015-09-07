@@ -2855,23 +2855,33 @@ static int drmParseSubsystemType(const char *str)
     return -EINVAL;
 }
 
-static int drmParsePciBusInfo(const char *str, drmPciBusInfoPtr info)
+static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
 {
+    char path[PATH_MAX + 1];
+    char data[128];
+    char *str;
     int domain, bus, dev, func;
-    char *value;
+    int fd, ret;
 
+    snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/uevent", maj, min);
+    fd = open(path, O_RDONLY);
+    if (fd < 0)
+        return -errno;
+
+    ret = read(fd, data, sizeof(data));
+    close(fd);
+    if (ret < 0)
+        return -errno;
+
+#define TAG "PCI_SLOT_NAME="
+    str = strstr(data, TAG);
     if (str == NULL)
         return -EINVAL;
 
-    value = strstr(str, "PCI_SLOT_NAME=");
-    if (value == NULL)
-        return -EINVAL;
-
-    value += strlen("PCI_SLOT_NAME=");
-
-    if (sscanf(value, "%04x:%02x:%02x.%1u",
+    if (sscanf(str, TAG "%04x:%02x:%02x.%1u",
                &domain, &bus, &dev, &func) != 4)
         return -EINVAL;
+#undef TAG
 
     info->domain = domain;
     info->bus = bus;
@@ -2981,7 +2991,6 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     struct stat sbuf = {0};
     char node[PATH_MAX + 1] = "";
     char path[PATH_MAX + 1] = "";
-    char data[128] = "";
     unsigned char config[64] = "";
     int node_type, subsystem_type;
     int maj, min;
@@ -3030,22 +3039,7 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
                 goto free_locals;
             }
 
-            snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/uevent",
-                     maj, min);
-            fd = open(path, O_RDONLY);
-            if (fd < 0) {
-                ret = -errno;
-                goto free_locals;
-            }
-            ret = read(fd, data, sizeof(data));
-            if (ret < 0) {
-                ret = -errno;
-                close(fd);
-                goto free_locals;
-            }
-
-            ret = drmParsePciBusInfo(data, pcibus);
-            close(fd);
+            ret = drmParsePciBusInfo(maj, min, pcibus);
             if (ret)
                 goto free_locals;
 
