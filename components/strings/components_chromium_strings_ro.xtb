@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ro">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ro">
+<translation id="4404275227760602850">Accesează meniul Chromium &gt; Setări &gt; (Avansate) Confidențialitate
+          și dezactivează „Preia în avans resursele paginii.”
+          Dacă această acțiune nu rezolvă problema, îți recomandăm să reactivezi
+          această opțiune pentru îmbunătățirea performanței.</translation>
+<translation id="7861509383340276692">Accesează
+          meniul Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          și debifează „<ph name="NO_PREFETCH_DESCRIPTION" />”.
+          Dacă această acțiune nu rezolvă problema, îți recomandăm să selectezi din nou
+          această opțiune pentru performanță îmbunătățită.</translation>
 </translationbundle>

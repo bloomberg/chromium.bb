@@ -1006,7 +1006,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2440443888409942524">Pinyin-invoermethode (voor Amerikaans Dvorak-toetsenbord)</translation>
 <translation id="2440604414813129000">Br&amp;on weergeven</translation>
 <translation id="2441392884867482684">Deze pagina wordt nu op volledig scherm weergegeven en wil je muisaanwijzer uitschakelen.</translation>
-<translation id="2444664589142010199">Je hebt oegang tot je wachtwoorden op elk apparaat via <ph name="LINK_TEXT" /></translation>
+<translation id="2444664589142010199">Je hebt toegang tot je wachtwoorden op elk apparaat via <ph name="LINK_TEXT" /></translation>
 <translation id="2445081178310039857">Hoofddirectory van extensie is vereist.</translation>
 <translation id="2448046586580826824">Veilige HTTP-proxy</translation>
 <translation id="2448312741937722512">Type</translation>
@@ -4225,7 +4225,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="699220179437400583">Automatisch informatie over mogelijke beveiligingsincidenten aan Google melden</translation>
 <translation id="6993929801679678186">Voorspellingen van Automatisch aanvullen weergeven</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappen geselecteerd</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{De volgende pagina reageert niet meer. Je kunt wachten tot de pagina reageert of de pagina sluiten.}other{De volgende pagina's reageren niet meer. Je kunt wachten tot ze reageren of de pagina's sluiten.}}</translation>
 <translation id="7002055706763150362">Als je Smart Lock voor Chromebook wilt instellen, moet Google eerst controleren of je de juiste gebruiker bent. Typ je wachtwoord om aan de slag te gaan.</translation>
 <translation id="7002454948392136538">De beheerder voor deze gebruiker met beperkte rechten kiezen</translation>
 <translation id="7003257528951459794">Frequentie:</translation>

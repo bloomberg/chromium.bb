@@ -1,2 +1,15 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="gu">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="gu">
+<translation id="5423788048750135178">Chrome મેનૂ &gt; સેટિંગ્સ &gt; (વિગતવાર) ગોપનીયતા પર જાઓ 
+          અને "પૃષ્ઠ સંસાધનોનું પૂર્વ આનયન કરો" ને અક્ષમ કરો.
+          જો આનાથી સમસ્યા ઉકેલાતી નથી, તો અમે સુધારેલ પ્રદર્શન માટે ફરીથી આ વિકલ્પને પસંદ કરવાની
+        ભલામણ કરીએ છીએ.</translation>
+<translation id="6341737370356890233">Chrome મેનૂ &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        પર જાઓ અને "<ph name="NO_PREFETCH_DESCRIPTION" />" પસંદગીને હટાવો.
+        જો આનાથી સમસ્યા ઉકેલાતી નથી, તો અમે સુધારેલ પ્રદર્શન માટે ફરીથી આ વિકલ્પને પસંદ કરવાની 
+        ભલામણ કરીએ છીએ.</translation>
 </translationbundle>

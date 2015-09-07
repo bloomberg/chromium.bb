@@ -1,2 +1,17 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="lt">
+<translation id="5423788048750135178">Eikite į „Chrome“ meniu &gt; Nustatymai &gt; (Išplėstiniai) Privatumas
+          ir išjunkite parinktį „Iš anksto iškviesti puslapio išteklius“.
+          Jei tai atlikus problema išlieka, rekomenduojame iš naujo įgalinti šią parinktį,
+          kad pagerėtų našumas.</translation>
+<translation id="6341737370356890233">Eikite į
+
+        „Chrome“ meniu &gt;
+        „<ph name="SETTINGS_TITLE" />“
+        &gt;
+        „<ph name="ADVANCED_TITLE" />“
+        ir panaikinkite „<ph name="NO_PREFETCH_DESCRIPTION" />“ pasirinkimą.
+        Jei tai atlikus problema išlieka, rekomenduojame vėl pasirinkti šią parinktį,
+        kad pagerėtų našumas.</translation>
 </translationbundle>

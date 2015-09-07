@@ -4228,7 +4228,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="699220179437400583">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildir</translation>
 <translation id="6993929801679678186">Otomatik Doldur tahminlerini göster</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> klasör seçildi</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Aşağıdaki sayfa yanıt vermiyor. Bu sayfanın tekrar yanıt vermesini bekleyebilir veya sayfayı sonlandırabilirsiniz.}other{Aşağıdaki sayfalar yanıt vermiyor. Bu sayfaların tekrar yanıt vermesini bekleyebilir veya sayfaları sonlandırabilirsiniz.}}</translation>
 <translation id="7002055706763150362">Google'ın, Chromebook için Smart Lock özelliğini kurmak amacıyla, bunu talep eden kullanıcının siz olduğunuzdan emin olması gerekir. Başlamak için şifrenizi girin.</translation>
 <translation id="7002454948392136538">Bu denetlenen kullanıcı için yönetici seçin</translation>
 <translation id="7003257528951459794">Sıklık:</translation>

@@ -1,2 +1,14 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="tr">
+<translation id="4404275227760602850">Chromium menüsü &gt; Ayarlar &gt; (Gelişmiş) Gizlilik'e gidin
+          ve "Sayfa kaynaklarını ön getir"in işaretini kaldırın.
+          Bu işlem sorunu çözmezse performansın iyileşmesi için bu seçeneği tekrar 
+          etkinleştirmenizi öneririz.</translation>
+<translation id="7861509383340276692">Chromium menüsü &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" /> öğesine gidin
+          ve "<ph name="NO_PREFETCH_DESCRIPTION" />" seçeneğinin işaretini kaldırın.
+          Bu işlem sorunu çözmezse performansın iyileşmesi için bu seçeneği tekrar işaretlemenizi öneririz.</translation>
 </translationbundle>

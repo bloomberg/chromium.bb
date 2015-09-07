@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="uk">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="uk">
+<translation id="5423788048750135178">Перейдіть у меню Chrome &gt; Налаштування &gt; (Розширені) Конфіденційність
+          і вимкніть опцію "Заздалегідь отримувати ресурси сторінки".
+          Якщо проблема не зникне, радимо знову ввімкнути цю опцію,
+          щоб покращити стабільність.</translation>
+<translation id="6341737370356890233">Перейдіть у
+          меню Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          і зніміть прапорець біля опції "<ph name="NO_PREFETCH_DESCRIPTION" />".
+          Якщо проблема не зникне, радимо знову вибрати цю опцію,
+          щоб покращити стабільність.</translation>
 </translationbundle>

@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fil">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fil">
+<translation id="4404275227760602850">Pumunta sa menu ng Chromium &gt; Mga Setting &gt; (Advanced) Privacy
+          at i-disable ang "I-prefetch ang mga mapagkukunan ng page."
+          Kung hindi nito malutas ang isyu, inirerekomenda naming muling
+          i-enable ang opsyong ito para sa mas mahusay na pagganap.</translation>
+<translation id="7861509383340276692">Pumunta
+          sa menu ng Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          at alisin sa pagkakapili ang "<ph name="NO_PREFETCH_DESCRIPTION" />."
+          Kung hindi nito malulutas ang isyu, inirerekomenda naming piliing muli ang opsyong ito
+          para sa pinahusay na pagganap.</translation>
 </translationbundle>

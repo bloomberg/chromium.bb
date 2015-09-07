@@ -1,2 +1,15 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="am">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="am">
+<translation id="5423788048750135178">ወደ Chrome ምናሌ &gt; ቅንብሮች &gt; (የላቁ) ግላዊነት ይሂዱ
+          እና «የገጽ ንብረቶችን ቅድሚያ አስመጣ»ን ያሰናክሉ።
+          ይሄ ችግሩን ካልፈታው ለተሻሻለ አፈጻጸም ይህን አማራጭ 
+          ዳግም ማንቃት እንመክራለን።</translation>
+<translation id="6341737370356890233">ወደ
+       የChrome ምናሌ &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        ይሂዱና «<ph name="NO_PREFETCH_DESCRIPTION" />»ን አይምረጡ።
+        ይሄ ችግሩን ካልፈታው ለተሻሻለ አፈጻጸም ይህን አማራጭ እንደገና መምረጥ እንመክራለን።</translation>
 </translationbundle>

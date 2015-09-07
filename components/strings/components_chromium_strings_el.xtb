@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="el">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="el">
+<translation id="4404275227760602850">Μεταβείτε στο μενού του Chromium &gt; Ρυθμίσεις &gt; (Για προχωρημένους) Απόρρητο
+          και απενεργοποιήστε την "Πρόωρη λήψη πόρων."
+          Αν δεν επιλυθεί το πρόβλημά σας με αυτόν τον τρόπο, σάς συνιστούμε να ενεργοποιήσετε ξανά αυτή την επιλογή
+          για βελτιωμένες επιδόσεις.</translation>
+<translation id="7861509383340276692">Μεταβείτε
+        στο μενού του Chromium &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        και καταργήστε την επιλογή "<ph name="NO_PREFETCH_DESCRIPTION" />".
+        Εάν με αυτόν τον τρόπο δεν επιλύεται το ζήτημά σας, συνιστούμε
+        να ενεργοποιήσετε ξανά αυτήν την επιλογή για βελτιωμένη απόδοση.</translation>
 </translationbundle>

@@ -1,2 +1,15 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ja">
+<translation id="5423788048750135178">Chrome メニュー &gt; [設定] &gt; [（詳細）プライバシー] の順に移動して、
+          [ページリソースのプリフェッチ] を無効にします。
+          上記を行っても問題が解決しない場合は、パフォーマンス向上のため
+          このオプションを再び有効にすることをおすすめします。</translation>
+<translation id="6341737370356890233">Chrome メニュー &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          の順に移動して、[<ph name="NO_PREFETCH_DESCRIPTION" />] をオフにします。
+          上記を行っても問題が解決しない場合は、パフォーマンス向上のため
+          このオプションを再びオンにすることをおすすめします。</translation>
 </translationbundle>

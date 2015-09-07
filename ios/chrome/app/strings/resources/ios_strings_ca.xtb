@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ca">
 <translation id="1008557486741366299">Ara no</translation>
+<translation id="1047726139967079566">Afegeix aquesta pàgina a les adreces d'interès...</translation>
+<translation id="1172898394251786223">Camp següent</translation>
+<translation id="2320166752086256636">Amaga el teclat</translation>
 <translation id="2704606927547763573">Copiada</translation>
+<translation id="2747003861858887689">Camp anterior</translation>
 <translation id="3244271242291266297">MM</translation>
-<translation id="415767770115540173">Si compartiu la ubicació, millorareu la vostra experiència a Chrome.</translation>
+<translation id="3335947283844343239">Torna a obrir la pestanya tancada</translation>
+<translation id="385051799172605136">Enrere</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6600954340915313787">Copiada de Chrome</translation>
+<translation id="7456847797759667638">Obre la ubicació...</translation>
+<translation id="7481312909269577407">Endavant</translation>
 </translationbundle>

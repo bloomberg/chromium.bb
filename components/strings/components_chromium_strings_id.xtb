@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="id">
+<translation id="4404275227760602850">Buka menu Chromium &gt; Setelan &gt; (Lanjutan) Privasi
+          dan nonaktifkan "Ambil sumber daya laman lebih dahulu".
+          Jika hal ini tidak menyelesaikan masalah, sebaiknya aktifkan opsi ini
+          lagi untuk kinerja yang ditingkatkan.</translation>
+<translation id="7861509383340276692">Buka
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          dan batalkan pilihan "<ph name="NO_PREFETCH_DESCRIPTION" />."
+          Jika hal ini tidak menyelesaikan masalah, sebaiknya pilih lagi opsi ini
+          untuk meningkatkan kinerja.</translation>
 </translationbundle>

@@ -1,2 +1,13 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="nl">
+<translation id="5423788048750135178">Ga naar het Chrome-menu &gt; Instellingen &gt; (Geavanceerd) Privacy en schakel 'Paginabronnen prefetchen' uit. Als het probleem hiermee niet wordt opgelost, raden we je aan deze optie weer in te schakelen voor verbeterde prestaties.</translation>
+<translation id="6341737370356890233">Ga naar
+          het Chrome-menu &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          en verwijder het vinkje bij '<ph name="NO_PREFETCH_DESCRIPTION" />'.
+          Als het probleem aanhoudt, adviseren we deze optie weer aan te vinken
+          voor betere prestaties.</translation>
 </translationbundle>

@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="lv">
+<translation id="4404275227760602850">Atveriet Chromium izvēlni &gt; Iestatījumi &gt; (Papildu) Konfidencialitāte
+          un atspējojiet opciju “Sākotnēji iegūt lapu resursus”.
+          Ja problēma netiek novērsta, ieteicams atkārtoti iespējot šo opciju,
+          lai uzlabotu veiktspēju.</translation>
+<translation id="7861509383340276692">Atveriet
+        Chromium izvēlni &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        un noņemiet atzīmi no izvēles rūtiņas “<ph name="NO_PREFETCH_DESCRIPTION" />”.
+        Ja problēmu neizdodas novērst, ieteicams atkal atlasīt šo opciju,
+        lai uzlabotu veiktspēju.</translation>
 </translationbundle>

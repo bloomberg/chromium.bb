@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="uk">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="uk">
 <translation id="1008557486741366299">Не зараз</translation>
+<translation id="1047726139967079566">Додати цю сторінку до закладок...</translation>
+<translation id="1172898394251786223">Наступне поле</translation>
+<translation id="2320166752086256636">Сховати клавіатуру</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
+<translation id="2747003861858887689">Попереднє поле</translation>
 <translation id="3244271242291266297">ММ</translation>
-<translation id="415767770115540173">Знаючи ваше місцезнаходження, Google зможе створити для вас зручніші умови роботи в Chrome.</translation>
+<translation id="3335947283844343239">Знову відкрити закриту вкладку</translation>
+<translation id="385051799172605136">Назад</translation>
 <translation id="605721222689873409">РР</translation>
-<translation id="6600954340915313787">Скопійовано в Chrome</translation>
+<translation id="7456847797759667638">Відкрити розташування...</translation>
+<translation id="7481312909269577407">Переслати</translation>
 </translationbundle>

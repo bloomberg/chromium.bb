@@ -1,2 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="cs">
+<translation id="5423788048750135178">Přejděte do nabídky Chrome &gt; Nastavení &gt; (Rozšířené) Ochrana soukromí a zrušte výběr možnosti Předvídání síťových akcí. Pokud to však problém nevyřeší, doporučujeme vám tuto možnost znovu vybrat (za účelem zlepšení výkonu).</translation>
+<translation id="6341737370356890233">Přejděte do nabídky Chrome &gt; <ph name="SETTINGS_TITLE" /> &gt; <ph name="ADVANCED_TITLE" /> a zrušte výběr možnosti <ph name="NO_PREFETCH_DESCRIPTION" />. Pokud to však problém nevyřeší, doporučujeme vám tuto možnost znovu vybrat (za účelem zlepšení výkonu).</translation>
 </translationbundle>

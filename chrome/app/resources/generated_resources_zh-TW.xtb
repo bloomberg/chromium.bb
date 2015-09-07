@@ -865,7 +865,7 @@
  • 檢閱受監管的使用者造訪過哪些網站
  • 管理其他設定
 
-建立受監管的使用者並不會一併建立 Google 帳戶，且受監管的使用者無法使用 Chrome 同步功能將自己的書籤、瀏覽紀錄和其他偏好設定同步到其他裝置。
+當您建立受監管的使用者時，系統並不會同時為該使用者建立 Google 帳戶，且受監管的使用者無法使用 Chrome 同步功能將自己的書籤、瀏覽紀錄和其他偏好設定同步到其他裝置。
 
 建立新的受監管使用者後，您隨時可以透過任何裝置前往 <ph name="DISPLAY_LINK" /> 管理受監管使用者的設定。<ph name="BEGIN_LINK" />進一步瞭解受監管的使用者<ph name="END_LINK" /></translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
@@ -2460,7 +2460,7 @@
 <translation id="441468701424154954">視窗可擴展到其他螢幕上。</translation>
 <translation id="4416628180566102937">註冊並重新啟動</translation>
 <translation id="4419409365248380979">一律允許 <ph name="HOST" /> 設定 Coockie</translation>
-<translation id="4421823557207751899">目前登入的帳戶是：<ph name="USERNAME" /></translation>
+<translation id="4421823557207751899">目前登入的帳戶：<ph name="USERNAME" /></translation>
 <translation id="4421932782753506458">毛毛</translation>
 <translation id="4422347585044846479">編輯此網頁的書籤</translation>
 <translation id="4422428420715047158">網域：</translation>
@@ -3890,9 +3890,9 @@
 <translation id="6514565641373682518">這個網頁已停用滑鼠游標。</translation>
 <translation id="6516193643535292276">無法連線至網際網路</translation>
 <translation id="6518014396551869914">複製影像(&amp;Y)</translation>
-<translation id="6518066513180887959">已建立名稱為「<ph name="NEW_PROFILE_NAME" />」的受監管使用者。如要設定受監管的使用者可瀏覽哪些網站，您可以前往 <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> 修改限制與設定。如果您未變更預設設定，「<ph name="NEW_PROFILE_NAME" />」將可瀏覽網路上的所有網站。
+<translation id="6518066513180887959">已建立名稱為「<ph name="NEW_PROFILE_NAME" />」的受監管使用者。如要設定受監管的使用者可瀏覽哪些網站，您可以前往 <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> 調整限制與設定。如果您未變更預設設定，「<ph name="NEW_PROFILE_NAME" />」將可瀏覽網路上的所有網站。
 
-  如需相關及更進一步的操作說明，請前往 <ph name="ACCOUNT_EMAIL" /> 查看電子郵件內容。</translation>
+  如需其他相關或更進一步的操作說明，請前往 <ph name="ACCOUNT_EMAIL" /> 查看電子郵件內容。</translation>
 <translation id="6518133107902771759">確認</translation>
 <translation id="651942933739530207">您想讓 <ph name="APP_NAME" /> 共用您的畫面和音訊輸入嗎？</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
@@ -4201,7 +4201,6 @@
 <translation id="699220179437400583">自動將疑似安全性事件的詳細資料回報給 Google</translation>
 <translation id="6993929801679678186">顯示自動填入建議</translation>
 <translation id="6998711733709403587">已選取 <ph name="SELCTED_FOLDERS_COUNT" /> 個資料夾</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{以下這個網頁無回應。您可以等待網頁回應，也可以關閉網頁。}other{以下這些網頁無回應。您可以等待網頁回應，也可以關閉網頁。}}</translation>
 <translation id="7002055706763150362">如要設定 Chromebook 專用 Smart Lock，請先輸入您的密碼，讓 Google 確認操作者是您本人。</translation>
 <translation id="7002454948392136538">選擇這位受監管使用者的管理員</translation>
 <translation id="7003257528951459794">頻率：</translation>
@@ -5278,7 +5277,7 @@
 <translation id="8528962588711550376">登入中。</translation>
 <translation id="8535005006684281994">Netscape 憑證更新網址</translation>
 <translation id="8539727552378197395">否 (限 Http)</translation>
-<translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />回報偵測問題<ph name="END_ERROR_LINK" />。或者，在您瞭解安全性風險後，您可以<ph name="BEGIN_LINK" />造訪這個不安全的網站<ph name="END_LINK" />。</translation>
+<translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />回報偵測問題<ph name="END_ERROR_LINK" />。或者在您瞭解安全性風險後，仍然可以<ph name="BEGIN_LINK" />前往這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="8545107379349809705">隱藏資訊...</translation>
 <translation id="8545211332741562162">讓網頁使用實驗性 JavaScript 功能。</translation>
 <translation id="8545575359873600875">很抱歉，系統無法驗證您的密碼。這位受監管使用者的管理員最近可能變更了密碼。如果是這樣的話，您下次登入時就必須使用新密碼。現在請嘗試使用您的舊密碼。</translation>

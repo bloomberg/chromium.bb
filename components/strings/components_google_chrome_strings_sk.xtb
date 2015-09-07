@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sk">
+<translation id="5423788048750135178">Prejdite do Ponuky Chrome &gt; Nastavenia &gt; (Rozšírené) Ochrana osobných údajov
+          a zakážte možnosť Predbežne vyvolať zdroje stránky.
+          Ak týmto postupom daný problém nevyriešite, odporúčame vám túto možnosť
+          znova povoliť, aby ste získali lepšiu výkonnosť.</translation>
+<translation id="6341737370356890233">Prejdite do
+        ponuky Chrome &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        a zrušte výber položky <ph name="NO_PREFETCH_DESCRIPTION" />.
+         Ak to problém nevyrieši, odporúčame túto možnosť znova vybrať,
+        aby ste získali lepšiu výkonnosť.</translation>
 </translationbundle>

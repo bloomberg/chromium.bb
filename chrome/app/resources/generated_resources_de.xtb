@@ -4193,7 +4193,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="699220179437400583">Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden</translation>
 <translation id="6993929801679678186">AutoFill-Vorschläge anzeigen</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> Ordner ausgewählt</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Die folgende Seite reagiert nicht mehr. Sie können warten, bis die Seite wieder reagiert, oder sie schließen.}other{Die folgenden Seiten reagieren nicht mehr. Sie können warten, bis die Seiten wieder reagieren, oder sie schließen.}}</translation>
 <translation id="7002055706763150362">Zum Einrichten von Smart Lock für Chromebooks müssen wir Sie authentifizieren. Geben Sie bitte Ihr Passwort ein.</translation>
 <translation id="7002454948392136538">Manager für diesen betreuten Nutzer auswählen</translation>
 <translation id="7003257528951459794">Frequenz:</translation>

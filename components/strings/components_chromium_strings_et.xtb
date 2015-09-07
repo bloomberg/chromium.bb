@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="et">
+<translation id="4404275227760602850">Avage Chromiumi menüü &gt; Seaded &gt; (Täpsem) Privaatsus
+          ja keelake valik „Lehe ressursside eellaadimine”.
+          Kui see probleemi ei lahenda, soovitame selle valiku toimivuse
+          parandamiseks uuesti lubada.</translation>
+<translation id="7861509383340276692">Avage
+        Chromiumi menüü &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        ja tühistage valik „<ph name="NO_PREFETCH_DESCRIPTION" />”.
+        Kui see probleemi ei lahenda, soovitame selle valiku
+        toimivuse parandamiseks uuesti teha.</translation>
 </translationbundle>

@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="th">
+<translation id="4404275227760602850">ไปที่เมนู Chromium &gt; การตั้งค่า &gt; ความเป็นส่วนตัว (ขั้นสูง)
+          และปิดใช้ "ดึงทรัพยากรบนหน้าล่วงหน้า"
+          หากวิธีนี้ไม่ช่วยแก้ปัญหา เราขอแนะนำให้เปิดใช้ตัวเลือกนี้
+          อีกครั้งเพื่อให้ประสิทธิภาพการทำงานดียิ่งขึ้น</translation>
+<translation id="7861509383340276692">ไปที่
+          เมนู Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          และยกเลิกการเลือก "<ph name="NO_PREFETCH_DESCRIPTION" />"
+          หากวิธีนี้ไม่ช่วยแก้ปัญหา เราขอแนะนำให้เลือกตัวเลือกนี้
+          อีกครั้งเพื่อให้ประสิทธิภาพการทำงานดียิ่งขึ้น</translation>
 </translationbundle>

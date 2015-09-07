@@ -1,2 +1,15 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="te">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="te">
+<translation id="5423788048750135178">Chrome మెను &gt; సెట్టింగ్‌లు &gt; (అధునాతనం) గోప్యతకి వెళ్లి,
+          "పేజీ వనరులను ముందుగానే పొందండి" ఎంపిక నిలిపివేయండి.
+          దీని వలన సమస్య పరిష్కారం కాకపోతే, మెరుగైన పనితీరు కోసం ఈ ఎంపికను
+          మీరు మళ్లీ ప్రారంభించాలని మేము సిఫార్సు చేస్తున్నాము.</translation>
+<translation id="6341737370356890233">Chrome మెను &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />కి వెళ్లండి,
+          ఆపై "<ph name="NO_PREFETCH_DESCRIPTION" />" ఎంపికను తీసివేయండి.
+          దీని వల్ల సమస్య పరిష్కారం కాకుంటే, మెరుగైన పనితీరు కోసం మీరు
+          ఈ ఎంపికను మళ్లీ ఎంచుకోవాలని మేము సిఫార్సు చేస్తున్నాము.</translation>
 </translationbundle>

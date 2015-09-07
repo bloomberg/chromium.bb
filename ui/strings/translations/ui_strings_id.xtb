@@ -42,7 +42,7 @@
 <translation id="3183922693828471536">Gulir ke Sini</translation>
 <translation id="3234408098842461169">Panah Bawah</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 hari}other{# hari}}</translation>
-<translation id="3600566671520689681">{DAYS,plural, =1{Tersisa 1 hari}other{Tersisa # hari}}</translation>
+<translation id="3600566671520689681">{DAYS,plural, =1{1 hari lagi}other{# hari lagi}}</translation>
 <translation id="364720409959344976">Pilih Folder untuk Diunggah</translation>
 <translation id="3660179305079774227">Panah Atas</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/dtk</translation>
@@ -75,7 +75,7 @@
 <translation id="566737009157135450">Hapus dari Belakang Per Kata</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 mnt}other{# mnt}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 hari dan }other{# hari dan }}</translation>
-<translation id="5906667377645263094">{SECONDS,plural, =1{Tersisa 1 detik}other{Tersisa # detik}}</translation>
+<translation id="5906667377645263094">{SECONDS,plural, =1{1 detik lagi}other{# detik lagi}}</translation>
 <translation id="5941711191222866238">Perkecil</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 jam}other{# jam}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
@@ -97,7 +97,7 @@
 <translation id="6808150112686056157">Hentikan Media</translation>
 <translation id="6829324100069873704">Kembali ke pemberitahuan</translation>
 <translation id="6845383723252244143">Pilih Folder</translation>
-<translation id="6863590663815976734">{HOURS,plural, =1{Tersisa 1 jam}other{Tersisa # jam}}</translation>
+<translation id="6863590663815976734">{HOURS,plural, =1{1 jam lagi}other{# jam lagi}}</translation>
 <translation id="688711909580084195">Laman Web Tanpa Judul</translation>
 <translation id="6903282483217634857">Pindah ke Kanan</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/dtk</translation>
@@ -108,9 +108,9 @@
 <translation id="7135556860107312402">Izinkan pemberitahuan dari yang berikut:</translation>
 <translation id="7139614227326422685">Pindahkan ke Kanan Kata</translation>
 <translation id="7222373446505536781">F11</translation>
-<translation id="7238427729722629793">{MINUTES,plural, =1{Tersisa 1 mnt}other{Tersisa # mnt}}</translation>
+<translation id="7238427729722629793">{MINUTES,plural, =1{1 mnt lagi}other{# mnt lagi}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 mnt yang lalu}other{# mnt yang lalu}}</translation>
-<translation id="7410957453383678442">{MINUTES,plural, =1{Tersisa 1 menit}other{Tersisa # menit}}</translation>
+<translation id="7410957453383678442">{MINUTES,plural, =1{1 menit lagi}other{# menit lagi}}</translation>
 <translation id="7457942297256758195">Hapus Semua</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7649070708921625228">Bantuan</translation>
@@ -121,7 +121,7 @@
 <translation id="7907591526440419938">Buka File</translation>
 <translation id="7960078400008666149">Jangan ganggu selama satu jam</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 jam yang lalu}other{# jam yang lalu}}</translation>
-<translation id="8131263257437993507">{SECONDS,plural, =1{Tersisa 1 dtk}other{Tersisa # dtk}}</translation>
+<translation id="8131263257437993507">{SECONDS,plural, =1{1 dtk lagi}other{# dtk lagi}}</translation>
 <translation id="815598010540052116">Gulir ke Bawah</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Page Down</translation>

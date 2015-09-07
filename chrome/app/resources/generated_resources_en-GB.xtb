@@ -4232,7 +4232,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="699220179437400583">Automatically report details of possible security incidents to Google</translation>
 <translation id="6993929801679678186">Show Auto-fill predictions</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{The following page has become unresponsive. You can wait for it to become responsive or kill it.}other{The following pages have become unresponsive. You can wait for them to become responsive or kill them.}}</translation>
 <translation id="7002055706763150362">To set up Smart Lock for Chromebook, Google needs to make sure that it’s you – type your password to get started.</translation>
 <translation id="7002454948392136538">Choose the manager for this supervised user</translation>
 <translation id="7003257528951459794">Frequency:</translation>

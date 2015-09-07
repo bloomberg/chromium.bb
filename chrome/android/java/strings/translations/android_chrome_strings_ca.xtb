@@ -93,7 +93,7 @@
 <translation id="2414886740292270097">Fosc</translation>
 <translation id="2433507940547922241">Aparença</translation>
 <translation id="2440823041667407902">Accés a la ubicació</translation>
-<translation id="2470327855284432041">Pàgina desada sense connexió (mida: <ph name="PAGE_SIZE_STRING" />)</translation>
+<translation id="2470327855284432041">Pàgina desada sense connexió (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="2476578072172137802">Configuració del lloc</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2496180316473517155">Historial de navegació</translation>
@@ -516,6 +516,7 @@ Premeu el botó Enrere per sortir-ne.</translation>
 
 Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingut que tingueu baixat.</translation>
 <translation id="8660471606262461360">De Google Payments</translation>
+<translation id="8670737526251003256">S'estan cercant dispositius...</translation>
 <translation id="8676374126336081632">Esborra l'entrada</translation>
 <translation id="869891660844655955">Data de caducitat</translation>
 <translation id="8719023831149562936">La pestanya actual no es pot compartir.</translation>

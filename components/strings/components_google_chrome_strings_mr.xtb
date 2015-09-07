@@ -1,2 +1,15 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="mr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="mr">
+<translation id="5423788048750135178">Chrome मेनू &gt; सेटिंग्ज &gt; (प्रगत) गोपनीयता वर जा
+          आणि "पृष्ठ संसाधने अगोदर आणा" अक्षम करा.
+          यामुळे समस्येचे निराकरण होत नसल्यास, सुधारित कार्यप्रदर्शनासाठी हा पुन्हा या 
+          पर्यायास पुन्हा-सक्षम करण्याची आम्ही शिफारस करतो.</translation>
+<translation id="6341737370356890233">Chrome मेनू &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          वर जा आणि "<ph name="NO_PREFETCH_DESCRIPTION" />" ची निवड रद्द करा.
+         हे समस्‍येचे निराकरण करीत नसल्‍यास, आम्‍ही सुधारित सुधारित कार्यप्रदर्शनासाठी पुन्हा
+          हा पर्याय निवडण्याची शिफारस करतो.</translation>
 </translationbundle>

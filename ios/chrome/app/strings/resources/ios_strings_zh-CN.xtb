@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="zh-CN">
 <translation id="1008557486741366299">以后再说</translation>
+<translation id="1047726139967079566">为此页添加书签...</translation>
+<translation id="1172898394251786223">下一个字段</translation>
+<translation id="2320166752086256636">隐藏键盘</translation>
 <translation id="2704606927547763573">已复制</translation>
+<translation id="2747003861858887689">上一个字段</translation>
 <translation id="3244271242291266297">MM</translation>
-<translation id="415767770115540173">要在 Chrome 中获得更好的 Google 使用体验，需要用到您的位置信息。</translation>
+<translation id="3335947283844343239">重新打开关闭的标签页</translation>
+<translation id="385051799172605136">后退</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6600954340915313787">已复制到 Chrome</translation>
+<translation id="7456847797759667638">打开位置...</translation>
+<translation id="7481312909269577407">前进</translation>
 </translationbundle>

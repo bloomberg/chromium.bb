@@ -4193,7 +4193,6 @@ suojaamattomia yhteyksiä.<ph name="PRODUCT_NAME" /></translation>
 <translation id="699220179437400583">Ilmoita mahdollisista turvallisuusongelmista Googlelle automaattisesti</translation>
 <translation id="6993929801679678186">Näytä automaattisen täytön ennusteet</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> kansiota valittu</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Seuraava sivu ei vastaa. Voit odottaa sen vastausta tai sulkea sen.}other{Seuraavat sivut eivät vastaa. Voit odottaa niiden vastausta tai sulkea ne.}}</translation>
 <translation id="7002055706763150362">Jotta Smart Lock Chromebookille voidaan ottaa käyttöön, Googlen täytyy vahvistaa henkilöllisyytesi. Aloita antamalla salasanasi.</translation>
 <translation id="7002454948392136538">Valitse tämän valvotun käyttäjän hallinnoija</translation>
 <translation id="7003257528951459794">Taajuus:</translation>

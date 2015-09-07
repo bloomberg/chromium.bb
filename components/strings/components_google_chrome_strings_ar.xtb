@@ -1,2 +1,19 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ar">
+<translation id="5423788048750135178">‏انتقل إلى قائمة Chrome &gt; الإعدادات&gt; خصوصية (متقدمة)
+
+          وعطّل "موارد صفحة الجلب المسبق."
+
+          إذا لم يعمل هذا على حل المشكلة، نوصي بإعادة تمكين هذا الخيار
+
+          مرة أخرى من أجل أداء أفضل.</translation>
+<translation id="6341737370356890233">‏انتقل إلى
+        قائمة Chrome &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        وألغ تحديد <ph name="NO_PREFETCH_DESCRIPTION" />
+        إذا لم يعمل ذلك على حل المشكلة، نوصي بتحديد هذا الخيار
+        مرة من أجل أداء أفضل.</translation>
 </translationbundle>

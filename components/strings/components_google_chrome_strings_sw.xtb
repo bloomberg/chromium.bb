@@ -1,2 +1,15 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sw">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sw">
+<translation id="5423788048750135178">Nenda kwenye menyu ya Chrome &gt; Mipangilio &gt; Faragha (Iliyoboreshwa)
+          na uzime "Leta mapema rasilimali za kurasa."
+          Ikiwa hili halitatui tatizo, tunapendekeza uwashe chaguo hili
+          tena kwa utendaji ulioimarishwa.</translation>
+<translation id="6341737370356890233">Nenda kwenye
+        menyu ya Chrome &gt;
+       <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        na uondoe tiki kwenye "<ph name="NO_PREFETCH_DESCRIPTION" />."
+        Ikiwa hili halitatatua tatizo, tunapendekeza uchague tena chaguo hili kwa utendaji ulioboreshwa.</translation>
 </translationbundle>

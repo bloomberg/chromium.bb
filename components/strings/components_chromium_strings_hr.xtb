@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="hr">
+<translation id="4404275227760602850">Otvorite izbornik Chromiuma &gt; Postavke &gt; (Napredno) Privatnost
+          i onemogućite "Unaprijed dohvati resurse stranice".
+          Ako se time ne riješi poteškoća, preporučujemo da ponovo omogućite tu opciju
+          radi bolje izvedbe.</translation>
+<translation id="7861509383340276692">Otvorite
+        izbornik Chromiuma &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        pa poništite odabir stavke "<ph name="NO_PREFETCH_DESCRIPTION" />".
+        Ako se time ne riješi poteškoća, preporučujemo da ponovo odaberete tu opciju
+        radi bolje izvedbe.</translation>
 </translationbundle>

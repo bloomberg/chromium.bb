@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ar">
+<translation id="4404275227760602850">‏انتقل إلى قائمة Chromium &gt; الإعدادات&gt; خصوصية (متقدمة)
+          وعطّل "موارد صفحة الجلب المسبق."
+          إذا لم يعمل هذا على حل المشكلة، نوصي بإعادة تمكين هذا الخيار
+          مرة أخرى من أجل أداء أفضل.</translation>
+<translation id="7861509383340276692">‏انتقل إلى
+        قائمة Chromium &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        وألغ تحديد "<ph name="NO_PREFETCH_DESCRIPTION" />"
+        في حالة ما إذا لم يؤد ذلك إلى حل المشكلة، نوصي بتحديد هذا الخيار
+        مرة أخرى من أجل أداء أفضل.</translation>
 </translationbundle>

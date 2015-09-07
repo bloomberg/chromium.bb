@@ -857,13 +857,13 @@
 <translation id="2242603986093373032">No hi ha cap dispositiu</translation>
 <translation id="2242687258748107519">Informació del fitxer</translation>
 <translation id="2246340272688122454">S'està baixant la imatge de recuperació...</translation>
-<translation id="2249499294612408921">Un usuari supervisat pot explorar el web seguint les vostres indicacions. Com a gestor d'un usuari supervisat a Chrome, podeu fer el següent:
+<translation id="2249499294612408921">Un usuari supervisat pot explorar el web sota la vostra supervisió. Com a gestor d'un usuari supervisat a Chrome, podeu fer el següent:
 
  • permetre o prohibir determinats llocs web
  • consultar els llocs web visitats per l'usuari supervisat
  • gestionar altres configuracions
 
-En crear un usuari supervisat no es crea automàticament un compte de Google, i les adreces d'interès, l'historial de navegació i altres preferències no s'aplicaran en altres dispositius amb la sincronització de Chrome.
+En crear un usuari supervisat no es crea automàticament un compte de Google, i les adreces d'interès, l'historial de navegació i altres preferències no estaran disponibles en altres dispositius amb la sincronització de Chrome.
 
 Quan hàgiu creat un usuari supervisat, podeu gestionar-ne la configuració en qualsevol moment i des de qualsevol dispositiu a <ph name="DISPLAY_LINK" />. <ph name="BEGIN_LINK" />Més informació sobre els usuaris supervisats<ph name="END_LINK" /></translation>
 <translation id="2249605167705922988">p. ex. 1-5, 8, 11-13</translation>
@@ -2455,7 +2455,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4409697491990005945">Marges</translation>
 <translation id="4411578466613447185">Signant del codi</translation>
 <translation id="4414232939543644979">F&amp;inestra d'incògnit nova</translation>
-<translation id="441468701424154954">Les finestres poden ocupar pantalles.</translation>
+<translation id="441468701424154954">Les finestres poden ocupar diverses pantalles.</translation>
 <translation id="4416628180566102937">Inscriu i reinicia</translation>
 <translation id="4419409365248380979">Permet sempre que <ph name="HOST" /> pugui emmagatzemar galetes</translation>
 <translation id="4421823557207751899">Sessió iniciada com a <ph name="USERNAME" /></translation>
@@ -2476,7 +2476,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="444134486829715816">Amplia...</translation>
 <translation id="444267095790823769">Excepcions de contingut protegit</translation>
 <translation id="4443536555189480885">&amp;Ajuda</translation>
-<translation id="4446933390699670756">Projectat</translation>
+<translation id="4446933390699670756">Duplicat</translation>
 <translation id="4447465454292850432">Bateria:</translation>
 <translation id="4448186133363537200">No permet que JavaScript bloquegi l'orientació de la pantalla.</translation>
 <translation id="4449935293120761385">Quant a la funció Emplenament automàtic</translation>
@@ -4214,7 +4214,6 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="699220179437400583">Informa automàticament Google dels detalls sobre possibles incidents de seguretat</translation>
 <translation id="6993929801679678186">Mostra les prediccions d'emplenament automàtic</translation>
 <translation id="6998711733709403587">S'han seleccionat <ph name="SELCTED_FOLDERS_COUNT" /> carpetes</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{La pàgina que es mostra a continuació no respon. Podeu esperar que respongui o finalitzar-la.}other{Les pàgines que es mostren a continuació no responen. Podeu esperar que responguin o finalitzar-les.}}</translation>
 <translation id="7002055706763150362">Per configurar Smart Lock per a Chromebook, Google ha de comprovar la vostra identitat. Escriviu la contrasenya per començar.</translation>
 <translation id="7002454948392136538">Selecció de l'administrador d'aquest usuari supervisat</translation>
 <translation id="7003257528951459794">Freqüència:</translation>
@@ -4400,7 +4399,7 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="7273110280511444812">darrera connexió el <ph name="DATE" /></translation>
 <translation id="7273774418879988007">Fa que l'emissió de sortida d'àudio comprovi si hi ha altres canals per emetre que no siguin el maquinari predeterminat. Si s'activa aquesta funció el sistema operatiu podrà millorar el so d'estèreo a envoltant, si s'admet. Pot fer que apareguin errors als controladors de tercers i, per tant, s'ha d'utilitzar amb precaució.</translation>
 <translation id="7274090186291031608">Pantalla <ph name="SCREEN_INDEX" /></translation>
-<translation id="727441411541283857"><ph name="PERCENTAGE" />% - Temps restant fins a la càrrega completa: <ph name="TIME" /></translation>
+<translation id="727441411541283857"><ph name="PERCENTAGE" />% - Temps restant fins que es completi càrrega: <ph name="TIME" /></translation>
 <translation id="7278870042769914968">Utilitza el tema GTK+</translation>
 <translation id="727952162645687754">Error de baixada</translation>
 <translation id="7279701417129455881">Gestiona el bloqueig de galetes...</translation>
@@ -5286,7 +5285,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8528962588711550376">S'està iniciant la sessió.</translation>
 <translation id="8535005006684281994">URL de renovació de certificat de Netscape</translation>
 <translation id="8539727552378197395">No (Només HTTP)</translation>
-<translation id="8543181531796978784">Podeu <ph name="BEGIN_ERROR_LINK" />informar d'un problema de detecció<ph name="END_ERROR_LINK" /> o, si enteneu els riscos que això comporta per a la vostra seguretat, podeu <ph name="BEGIN_LINK" />visitar aquest lloc no segur<ph name="END_LINK" />.</translation>
+<translation id="8543181531796978784">Podeu <ph name="BEGIN_ERROR_LINK" />informar d'un problema de detecció<ph name="END_ERROR_LINK" /> o, si enteneu els riscos que això comporta per a la vostra seguretat, <ph name="BEGIN_LINK" />visiteu aquest lloc no segur<ph name="END_LINK" />.</translation>
 <translation id="8545107379349809705">Amaga la informació...</translation>
 <translation id="8545211332741562162">Permet que les pàgines web facin servir funcions JavaScript experimentals.</translation>
 <translation id="8545575359873600875">No s'ha pogut verificar la vostra contrasenya. Pot ser que l'administrador d'aquest usuari supervisat l'hagi canviat recentment. Si és així, la contrasenya nova s'aplicarà la propera vegada que inicieu la sessió. Proveu d'utilitzar la contrasenya anterior.</translation>

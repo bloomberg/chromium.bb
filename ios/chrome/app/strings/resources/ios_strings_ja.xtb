@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ja">
 <translation id="1008557486741366299">後で</translation>
+<translation id="1047726139967079566">ブックマークに追加...</translation>
+<translation id="1172898394251786223">次の項目</translation>
+<translation id="2320166752086256636">キーボードを非表示</translation>
 <translation id="2704606927547763573">コピーしました</translation>
+<translation id="2747003861858887689">前の項目</translation>
 <translation id="3244271242291266297">MM</translation>
-<translation id="415767770115540173">ユーザーの場所に基づいてChromeでGoogleを使いやすくします。</translation>
+<translation id="3335947283844343239">閉じたタブを開く</translation>
+<translation id="385051799172605136">戻る</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6600954340915313787">Chrome にコピー済み</translation>
+<translation id="7456847797759667638">場所を開く...</translation>
+<translation id="7481312909269577407">進む</translation>
 </translationbundle>

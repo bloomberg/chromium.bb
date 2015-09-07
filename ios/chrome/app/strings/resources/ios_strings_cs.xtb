@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="cs">
 <translation id="1008557486741366299">Nyní ne</translation>
+<translation id="1047726139967079566">Přidat stránku do záložek...</translation>
+<translation id="1172898394251786223">Další pole</translation>
+<translation id="2320166752086256636">Skrýt klávesnici</translation>
 <translation id="2704606927547763573">Zkopírováno</translation>
+<translation id="2747003861858887689">Předchozí pole</translation>
 <translation id="3244271242291266297">MM</translation>
-<translation id="415767770115540173">Služby Google mohou v prohlížeči Chrome díky údajům o poloze fungovat lépe.</translation>
+<translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
+<translation id="385051799172605136">Zpět</translation>
 <translation id="605721222689873409">RR</translation>
-<translation id="6600954340915313787">Zkopírováno do Chromu</translation>
+<translation id="7456847797759667638">Otevřít umístění...</translation>
+<translation id="7481312909269577407">Vpřed</translation>
 </translationbundle>

@@ -1,2 +1,14 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ml">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ml">
+<translation id="5423788048750135178">Chrome മെനു &gt; ക്രമീകരണം &gt; (വിപുലീകരിച്ചത്) സ്വകാര്യത എന്നതിലേക്ക് പോയി
+          ''പ്രീഫെച്ച് പേജ് ഉറവിടങ്ങൾ''പ്രവർത്തനരഹിതമാക്കുക.
+          ഇത് പ്രശ്‌നം പരിഹരിച്ചില്ലെങ്കിൽ, മെച്ചപ്പെട്ട പ്രവർത്തനത്തിനായി ഈ
+          ഓപ്‌ഷൻ വീണ്ടും പ്രവർത്തനക്ഷമമാക്കാൻ ഞങ്ങൾ ശുപാർശചെയ്യുന്നു.</translation>
+<translation id="6341737370356890233">Chrome മെനു &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" /> എന്നതിലേക്ക് പോയി
+          "<ph name="NO_PREFETCH_DESCRIPTION" />" തിരഞ്ഞെടുത്തത് മാറ്റുക.
+          ഇത് പ്രശ്‌നം പരിഹരിക്കുന്നില്ലെങ്കിൽ, മെച്ചപ്പെട്ട പ്രകടനത്തിനായി ഈ ഓപ്‌ഷൻ വീണ്ടും തിരഞ്ഞെടുക്കുന്നതിനായി ഞങ്ങൾ ശുപാർശചെയ്യുന്നു.</translation>
 </translationbundle>

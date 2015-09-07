@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="zh-TW">
+<translation id="5423788048750135178">前往 Chrome 選單 &gt; [設定] &gt; (進階) [隱私權]
+          停用 [預先擷取網頁資源]。
+          如果仍然無法解決問題，建議您重新啟用這個選項，
+          讓 Chrome 的效能更優異。</translation>
+<translation id="6341737370356890233">前往
+        Chrome 選單 &gt;
+        [<ph name="SETTINGS_TITLE" />]
+        &gt;
+        [<ph name="ADVANCED_TITLE" />]
+        然後取消勾選 [<ph name="NO_PREFETCH_DESCRIPTION" />]。
+        如果仍然無法解決問題，建議您重新勾選這個選項
+        以增進效能。</translation>
 </translationbundle>

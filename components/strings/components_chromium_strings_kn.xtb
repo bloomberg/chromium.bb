@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="kn">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="kn">
+<translation id="4404275227760602850">Chromium ಮೆನು &gt; ಸೆಟ್ಟಿಂಗ್‌ಗಳು &gt; (ಸುಧಾರಿತ) ಗೌಪ್ಯತೆಗೆ ಹೋಗಿ
+          ಮತ್ತು "ಪುಟ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಪೂರ್ವಪಡೆಯುವಿಕೆ" ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ
+          ಒಂದು ವೇಳೆ ಇದು ಈ ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸದಿದ್ದರೆ, ಸುಧಾರಿತ ಕಾರ್ಯಾಚರಣೆಗಾಗಿ ಮತ್ತೊಮ್ಮೆ
+          ಈ ಆಯ್ಕೆಯನ್ನು ಮರುಸಕ್ರಿಯಗೊಳಿಸುವಂತೆ ನಾವು ಶಿಫಾರಸು ಮಾಡುತ್ತೇವೆ.</translation>
+<translation id="7861509383340276692">ಇದಕ್ಕೆ ಹೋಗಿ
+        Chromium ಮೆನು &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        ಮತ್ತು "<ph name="NO_PREFETCH_DESCRIPTION" />" ಆಯ್ಕೆ ರದ್ದುಮಾಡಿ.
+        ಒಂದು ವೇಳೆ ಇದು ಈ ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸದಿದ್ದರೆ, ಸುಧಾರಿತ ಕಾರ್ಯಾಚರಣೆಗಾಗಿ ಮತ್ತೊಮ್ಮೆ
+        ಈ ಆಯ್ಕೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡುವಂತೆ ನಾವು ಶಿಫಾರಸು ಮಾಡುತ್ತೇವೆ.</translation>
 </translationbundle>

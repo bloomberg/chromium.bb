@@ -2407,7 +2407,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4326952458285403282">Deaktiverer brugen af det eksperimenterende DirectWrite-system til gengivelse af skrifttyper.</translation>
 <translation id="4326999707196471878">Toolkit-View-baserede browserdialogbokse.</translation>
 <translation id="4330406155931244378">Aktivér flersproget stavekontrol</translation>
-<translation id="4330523403413375536">Aktivér tests for Udviklerværktøjer. Brug panelet Indstillinger i Udviklerværktøjer for at skifte mellem de forskellige tests.</translation>
+<translation id="4330523403413375536">Aktivér eksperimenter for Udviklerværktøjer. Brug panelet Indstillinger i Udviklerværktøjer for at skifte mellem de forskellige eksperimenter.</translation>
 <translation id="4332213577120623185">Der skal angives flere oplysninger, før dette køb kan gennemføres.</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 med RSA-kryptering</translation>
 <translation id="4335713051520279344">Denne computer nulstilles om ét sekund.
@@ -3843,7 +3843,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6423731501149634044">Vil du have Adobe Reader som dit standard visningsprogram for PDF'er?</translation>
 <translation id="6425092077175753609">Material</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
-<translation id="6426993025560594914">Alle tests er tilgængelige på din platform.</translation>
+<translation id="6426993025560594914">Alle eksperimenter er tilgængelige på din platform.</translation>
 <translation id="642870617012116879">Dette website har forsøgt at downloade flere filer automatisk.</translation>
 <translation id="6430814529589430811">Base64-kodet ASCII, enkeltcertifikat</translation>
 <translation id="6431217872648827691">Alle data blev krypteret med din Google-adgangskode den
@@ -4206,7 +4206,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6978121630131642226">Søgemaskiner</translation>
 <translation id="6978611942794658017">Denne fil er designet til en pc, der kører Windows-software. Den er ikke kompatibel med din enhed, der kører Chrome OS. Søg på Chrome Webshop efter en passende app.</translation>
 <translation id="6979158407327259162">Google Drev</translation>
-<translation id="6980604578217046176">Aktivér testet proxy til datareduktion</translation>
+<translation id="6980604578217046176">Aktivér eksperimentet proxy til datareduktion</translation>
 <translation id="6980956047710795611">Overfør alle Chrome OS-data til den nye adgangskode (kræver forrige adgangskode)</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="6982896539684144327">En printer fra <ph name="VENDOR_NAME" /> blev fundet</translation>
@@ -4223,7 +4223,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="699220179437400583">Rapportér automatisk oplysninger om mulige sikkerhedshændelser til Google.</translation>
 <translation id="6993929801679678186">Vis forudsigelser fra Autofyld</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> filer er valgt</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Den følgende side svarer ikke. Du kan afvente svar fra den eller lukke den.}one{De følgende sider svarer ikke. Du kan afvente svar fra dem eller lukke dem.}other{De følgende sider svarer ikke. Du kan afvente svar fra dem eller lukke dem.}}</translation>
 <translation id="7002055706763150362">For at konfigurere Smart Lock til Chromebook skal Google først kontrollere, at du er den, du udgiver dig for at være. Indtast din adgangskode for at komme i gang.</translation>
 <translation id="7002454948392136538">Vælg administrator for den administrerede bruger</translation>
 <translation id="7003257528951459794">Frekvens:</translation>
@@ -5552,7 +5551,7 @@ Beregner resterende tid</translation>
 <translation id="8895908457475309889">Dine oplysninger fjernes, når du logger ud.</translation>
 <translation id="88986195241502842">Gå en side ned</translation>
 <translation id="8898786835233784856">Vælg næste fane</translation>
-<translation id="889901481107108152">Denne test er ikke tilgængeligt på din platform.</translation>
+<translation id="889901481107108152">Dette eksperiment er ikke tilgængeligt på din platform.</translation>
 <translation id="8899285681604219177">Ikke-understøttede udvidelser deaktiveret</translation>
 <translation id="8899388739470541164">Vietnamesisk</translation>
 <translation id="8899851313684471736">Åbn link i nyt &amp;vindue</translation>

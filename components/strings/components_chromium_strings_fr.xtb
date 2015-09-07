@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fr">
+<translation id="4404275227760602850">Accédez au menu Chromium &gt; Paramètres &gt; (Avancés) Confidendialité,
+          puis désactivez "Prélire les ressources de pages".
+          Si le problème persiste, nous vous conseillons de réactiver cette option
+          pour des performances optimales.</translation>
+<translation id="7861509383340276692">Accédez
+          au menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />,
+          puis désélectionnez "<ph name="NO_PREFETCH_DESCRIPTION" />".
+          Si le problème persiste, nous vous conseillons de
+          réactiver cette option pour des performances optimales.</translation>
 </translationbundle>

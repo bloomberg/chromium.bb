@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="th">
 <translation id="1008557486741366299">ไม่ใช่ตอนนี้</translation>
+<translation id="1047726139967079566">บุ๊กมาร์กหน้านี้...</translation>
+<translation id="1172898394251786223">ช่องถัดไป</translation>
+<translation id="2320166752086256636">ซ่อนแป้นพิมพ์</translation>
 <translation id="2704606927547763573">คัดลอกแล้ว</translation>
+<translation id="2747003861858887689">ช่องก่อนหน้า</translation>
 <translation id="3244271242291266297">ดด</translation>
-<translation id="415767770115540173">รับประสบการณ์การใช้งาน Google ที่ดีขึ้นใน Chrome โดยอิงตามตำแหน่งของคุณ</translation>
+<translation id="3335947283844343239">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
+<translation id="385051799172605136">กลับ</translation>
 <translation id="605721222689873409">ปป</translation>
-<translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
+<translation id="7456847797759667638">เปิดตำแหน่ง...</translation>
+<translation id="7481312909269577407">ส่งต่อ</translation>
 </translationbundle>

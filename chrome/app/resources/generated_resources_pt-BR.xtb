@@ -4218,7 +4218,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="699220179437400583">Informar automaticamente ao Google detalhes de possíveis incidentes de segurança.</translation>
 <translation id="6993929801679678186">Mostrar previsões de preenchimento automático</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{A página a seguir parou de responder. Aguarde até que ela volte a responder ou elimine-a.}one{As páginas a seguir pararam de responder. Aguarde até que voltem a responder ou elimine-as.}other{As páginas a seguir pararam de responder. Aguarde até que voltem a responder ou elimine-as.}}</translation>
 <translation id="7002055706763150362">Para configurar o Smart Lock para Chromebook, o Google precisa confirmar que é você: digite sua senha para começar.</translation>
 <translation id="7002454948392136538">Escolha o gerente para este usuário supervisionado</translation>
 <translation id="7003257528951459794">Frequência:</translation>

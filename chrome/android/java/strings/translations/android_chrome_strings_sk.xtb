@@ -473,7 +473,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="8007176423574883786">Vypnuté v tomto zariadení</translation>
 <translation id="8026334261755873520">Vymazať údaje prehliadania</translation>
 <translation id="8035133914807600019">Nový priečinok…</translation>
-<translation id="8050319187894766337">Stránka bola uložená offline. Úložisko je takmer plné.</translation>
+<translation id="8050319187894766337">Uložené offline. Úložisko je takmer plné.</translation>
 <translation id="8069239273282989646">Po kompresii</translation>
 <translation id="8073388330009372546">Otvoriť obrázok na novej karte</translation>
 <translation id="8084156870963450514">Prihláste sa a získajte prístup k všetkým svojim položkám na webe z ľubovoľného zariadenia</translation>
@@ -514,6 +514,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="8627706565932943526">Chyba synchronizácie</translation>
 <translation id="862875433388403934">Obsah (filmy, hudba atď.) stiahnutý v iných aplikáciách sa nemusí dať prehrať, pokiaľ aplikácie opätovne nezískajú licencie na základe nových poverení zariadenia. Ak chcete získať nové licencie, pripojte sa k internetu a prehrajte stiahnutý obsah.</translation>
 <translation id="8660471606262461360">Zo služby Google Payments</translation>
+<translation id="8670737526251003256">Vyhľadávanie zariadení...</translation>
 <translation id="8676374126336081632">Vymazať vstup</translation>
 <translation id="869891660844655955">Koniec platnosti</translation>
 <translation id="8719023831149562936">Aktuálna karta sa nedá preniesť</translation>

@@ -4231,7 +4231,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="699220179437400583">Automaticky hlásiť podrobnosti o možných problémoch so zabezpečením spoločnosti Google</translation>
 <translation id="6993929801679678186">Zobraziť predpovede Automatického dopĺňania</translation>
 <translation id="6998711733709403587">Počet vybratých priečinkov: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Nasledujúca stránka prestala reagovať. Môžete počkať, kým začne reagovať, alebo ju nútene ukončiť.}few{Nasledujúce stránky prestali reagovať. Môžete počkať, kým začnú reagovať, alebo ich nútene ukončiť.}many{Nasledujúce stránky prestali reagovať. Môžete počkať, kým začnú reagovať, alebo ich nútene ukončiť.}other{Nasledujúce stránky prestali reagovať. Môžete počkať, kým začnú reagovať, alebo ich nútene ukončiť.}}</translation>
 <translation id="7002055706763150362">Ak chcete nastaviť funkciu Smart Lock pre Chromebook, Google musí najprv overiť, že ste to vy. Musíte preto zadať heslo.</translation>
 <translation id="7002454948392136538">Vyberte správcu pre tohto kontrolovaného používateľa</translation>
 <translation id="7003257528951459794">Frekvencia:</translation>

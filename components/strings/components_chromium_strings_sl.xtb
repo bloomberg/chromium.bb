@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sl">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sl">
+<translation id="4404275227760602850">Odprite Chromiumov meni &gt; Nastavitve &gt; (Dodatno) Zasebnost
+          in onemogočite »Vnaprej prenesi sredstva strani«.
+          Če s tem ne odpravite težave, priporočamo, da možnost znova
+          omogočite zaradi izboljšanega delovanja.</translation>
+<translation id="7861509383340276692">Odprite
+        meni Chromiuma &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        in počistite polje »<ph name="NO_PREFETCH_DESCRIPTION" />«.
+        Če s tem težave ne odpravite, priporočamo, da to možnost
+        zaradi izboljšanja delovanja znova izberete.</translation>
 </translationbundle>

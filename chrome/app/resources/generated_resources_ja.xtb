@@ -2461,7 +2461,7 @@
 <translation id="4409697491990005945">余白</translation>
 <translation id="4411578466613447185">コードの署名者</translation>
 <translation id="4414232939543644979">新しいシークレット ウインドウ(&amp;I)</translation>
-<translation id="441468701424154954">複数のディスプレイをまたいでウィンドウを表示できます。</translation>
+<translation id="441468701424154954">複数のディスプレイにわたってウィンドウを表示できます。</translation>
 <translation id="4416628180566102937">登録して再起動</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> による Cookie 設定を常に許可する</translation>
 <translation id="4421823557207751899"><ph name="USERNAME" /> としてログインしています</translation>
@@ -3909,7 +3909,7 @@
 <translation id="6514565641373682518">このページではマウス カーソルが無効になります。</translation>
 <translation id="6516193643535292276">インターネットに接続できません</translation>
 <translation id="6518014396551869914">画像をコピー(&amp;Y)</translation>
-<translation id="6518066513180887959"><ph name="NEW_PROFILE_NAME" /> という名前の監視対象ユーザーを作成しました。この監視対象ユーザーに閲覧を許可するウェブサイトを指定するには、<ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> で制限と設定を指定できます。デフォルト設定を変更しない場合、<ph name="NEW_PROFILE_NAME" /> さんはウェブ上のすべてのサイトを閲覧できます。
+<translation id="6518066513180887959"><ph name="NEW_PROFILE_NAME" /> という名前の監視対象ユーザーを作成しました。この監視対象ユーザーに閲覧を許可するウェブサイトを指定するには、<ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> で制限と設定を行ってください。デフォルト設定を変更しない場合、<ph name="NEW_PROFILE_NAME" /> さんはウェブ上のすべてのサイトを閲覧できます。
 
 上記の内容と詳しい説明を記載したメールを <ph name="ACCOUNT_EMAIL" /> 宛にお送りしましたのでご確認ください。</translation>
 <translation id="6518133107902771759">確認</translation>
@@ -4226,7 +4226,6 @@
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
 <translation id="6993929801679678186">自動入力の予測候補を表示</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{次のページは応答していません。応答があるまで待つか、強制終了することができます。}other{次のページは応答していません。応答があるまで待つか、強制終了することができます。}}</translation>
 <translation id="7002055706763150362">Smart Lock for Chromebook を設定するには、Google に対する本人確認が必要です。開始するにはパスワードを入力してください。</translation>
 <translation id="7002454948392136538">この監視対象ユーザーの管理者を選択</translation>
 <translation id="7003257528951459794">周波数:</translation>

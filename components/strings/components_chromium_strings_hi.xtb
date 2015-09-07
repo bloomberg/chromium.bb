@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hi">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="hi">
+<translation id="4404275227760602850">क्रोमियम मेनू &gt; सेटिंग &gt; (उन्‍नत) गोपनीयता पर जाएं
+          और "पृष्‍ठ संसाधनों को प्रीफ़ेच करें" को अक्षम करें.
+          यदि इससे समस्‍या हल नहीं होती, तो बेहतर प्रदर्शन के लिए हम इस विकल्‍प को पुन:
+          सक्षम करने की अनुशंसा करते हैं.</translation>
+<translation id="7861509383340276692">क्रोमियम
+          मेनू &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          पर जाएं और "<ph name="NO_PREFETCH_DESCRIPTION" />" का चयन हटाएं.
+          यदि इससे समस्‍या हल नहीं होती, तो बेहतर प्रदर्शन के लिए हम इस विकल्‍प को पुन: चुनने की
+          अनुशंसा करते हैं.</translation>
 </translationbundle>

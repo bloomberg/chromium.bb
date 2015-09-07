@@ -156,7 +156,7 @@
 您即將登入受管理的帳戶，並且讓帳戶管理員控制您的 Chrome 設定檔。您的 Chrome 資料將與這個帳戶建立永久連結。如果與這個帳戶解除連結，本機 Chrome 資料將會遭到刪除。</translation>
 <translation id="3410346880900521918">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
 <translation id="3414952576877147120">空間大小：</translation>
-<translation id="3455798674391346847">讓 Google 對您造訪的網頁進行最佳化處理，藉此減少數據用量。透過 HTTPS 或無痕模式存取網頁時，Google 不會進行最佳化處理，也不會偵測到這些網頁。</translation>
+<translation id="3455798674391346847">讓 Google 對您造訪的網頁進行最佳化處理，以減少數據用量。透過 HTTPS 或無痕模式存取網頁時，Google 不會進行最佳化處理，也不會偵測到這些網頁。</translation>
 <translation id="346339498574870680">複製圖片網址</translation>
 <translation id="3485544713029068372">密碼專用 Smart Lock</translation>
 <translation id="3492207499832628349">新無痕式分頁</translation>
@@ -385,7 +385,7 @@
 <translation id="6784675033504223784">搜尋「<ph name="SEARCH_TERM" />」</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="6792460226655139786">儲存的網頁</translation>
-<translation id="6805056253035393346">造訪</translation>
+<translation id="6805056253035393346">前往</translation>
 <translation id="6820607729870073286">您沒有已儲存的網站設定。</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻譯</translation>
@@ -449,7 +449,7 @@
 點選返回按鈕即可結束全螢幕模式。</translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="7765158879357617694">移動</translation>
-<translation id="7767746238359002192">造訪要離線儲存的網頁</translation>
+<translation id="7767746238359002192">前往您要離線儲存的網頁</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="7788788617745289808">Chrome 需要存取攝影機，才能與這個網站分享。</translation>
 <translation id="7791543448312431591">新增</translation>
@@ -516,6 +516,7 @@
 
 如要取得新授權，請先連線至網際網路，然後再播放您已下載的內容。</translation>
 <translation id="8660471606262461360">來自 Google Payments</translation>
+<translation id="8670737526251003256">正在搜尋裝置...</translation>
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="869891660844655955">到期日</translation>
 <translation id="8719023831149562936">無法傳輸目前的分頁</translation>

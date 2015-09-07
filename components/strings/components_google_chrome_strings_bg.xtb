@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="bg">
+<translation id="5423788048750135178">Отворете менюто на Chrome &gt; „Настройки“ &gt; „Поверителност“ (под „Разширени“)
+и деактивирайте опцията за предварително зареждане на ресурсите на страниците.
+Ако това не реши проблема, препоръчваме ви да я активирате отново,
+за да подобрите ефективността.</translation>
+<translation id="6341737370356890233">Отворете
+менюто на Chrome &gt;
+„<ph name="SETTINGS_TITLE" />“
+&gt;
+„<ph name="ADVANCED_TITLE" />“
+и премахнете отметката от „<ph name="NO_PREFETCH_DESCRIPTION" />“.
+Ако това не реши проблема, препоръчваме ви да изберете отново тази опция,
+за да подобрите ефективността.</translation>
 </translationbundle>

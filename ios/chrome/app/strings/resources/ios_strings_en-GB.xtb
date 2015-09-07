@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="en-GB">
 <translation id="1008557486741366299">Not Now</translation>
+<translation id="1047726139967079566">Bookmark This Page...</translation>
+<translation id="1172898394251786223">Next field</translation>
+<translation id="2320166752086256636">Hide keyboard</translation>
 <translation id="2704606927547763573">Copied</translation>
+<translation id="2747003861858887689">Previous field</translation>
 <translation id="3244271242291266297">MM</translation>
-<translation id="415767770115540173">Get a better Google experience in Chrome based on your location.</translation>
+<translation id="3335947283844343239">Re-open Closed Tab</translation>
+<translation id="385051799172605136">Back</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6600954340915313787">Copied to Chrome</translation>
+<translation id="7456847797759667638">Open Location...</translation>
+<translation id="7481312909269577407">Forward</translation>
 </translationbundle>

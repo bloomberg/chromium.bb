@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es-419">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="es-419">
+<translation id="4404275227760602850">Ve al menú de Chromium &gt; Configuración &gt; (Avanzada) Privacidad
+          e inhabilita la opción para solicitar los recursos de la página previamente.
+          Si el problema persiste, vuelve a habilitar esta opción
+          para obtener un mejor rendimiento.</translation>
+<translation id="7861509383340276692">Ve
+          al menú de Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          y anula la selección de "<ph name="NO_PREFETCH_DESCRIPTION" />."
+          Si esto no resuelve el problema, vuelve a habilitar esta opción
+          para obtener un mejor desempeño.</translation>
 </translationbundle>

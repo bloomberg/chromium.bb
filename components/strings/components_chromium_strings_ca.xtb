@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ca">
+<translation id="4404275227760602850">Aneu al Menú de Chromium &gt; Configuració &gt; (Avançada) Privadesa
+          i desmarqueu "Baixa prèviament els recursos de la pàgina".
+          Si el problema no es resol, us recomanem que torneu a activar
+          aquesta opció per obtenir un millor rendiment.</translation>
+<translation id="7861509383340276692">Aneu al
+        menú de Chromium &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        i desmarqueu <ph name="NO_PREFETCH_DESCRIPTION" />.
+        Si això no resol el problema, us recomanem que torneu a seleccionar
+        aquesta opció per obtenir un rendiment millorat.</translation>
 </translationbundle>

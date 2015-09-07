@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="iw">
+<translation id="5423788048750135178">‏עבור אל תפריט Chrome &gt; הגדרות &gt; (מתקדם) פרטיות
+          והשבת את 'בצע אחזור מוקדם למשאבי דף'.
+          אם פעולה זו אינה פותרת את הבעיה, מומלץ להפעיל שוב את האפשרות הזו
+          כדי לשפר את הביצועים.</translation>
+<translation id="6341737370356890233">‏עבור אל
+        תפריט Chrome‏ &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        ובטל את הבחירה באפשרות '<ph name="NO_PREFETCH_DESCRIPTION" />'.
+        אם פעולה זו אינה פותרת את הבעיה, מומלץ לבחור שוב באפשרות זו
+        לקבלת ביצועים משופרים.</translation>
 </translationbundle>

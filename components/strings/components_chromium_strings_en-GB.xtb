@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="en-GB">
+<translation id="4404275227760602850">Go to the Chromium menu &gt; Settings &gt; (Advanced) Privacy
+          and disable "Prefetch page resources".
+          If this does not resolve the issue, we recommend re-enabling this option
+          again for improved performance.</translation>
+<translation id="7861509383340276692">Go to
+          the Chromium menu &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          and deselect "<ph name="NO_PREFETCH_DESCRIPTION" />".
+          If this does not resolve the issue, we recommend selecting this option
+          again for improved performance.</translation>
 </translationbundle>

@@ -1,2 +1,7 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="zh-CN">
+<translation id="4404275227760602850">前往 Chromium 菜单 &gt;“设置”&gt;“隐私设置”（高级设置）部分，然后停用“预提取网页资源”。
+          如果这无法解决该问题，我们建议您重新启用此选项，以便改善性能。</translation>
+<translation id="7861509383340276692">前往 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE" />”&gt;“<ph name="ADVANCED_TITLE" />”部分，然后取消选中“<ph name="NO_PREFETCH_DESCRIPTION" />”。如果这无法解决该问题，我们建议您重新选中此选项，以便改善性能。</translation>
 </translationbundle>

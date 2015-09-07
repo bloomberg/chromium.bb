@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hu">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="hu">
+<translation id="5423788048750135178">Nyissa meg a Chrome-menü &gt; Beállítások &gt; (Speciális) Adatvédelem menüelemet,
+          és tiltsa le az „Oldalforrások előzetes lehívása” beállítást.
+          Ha ettől nem szűnik meg a probléma, javasoljuk, hogy engedélyezze újra ezt a lehetőséget
+          a jobb teljesítmény érdekében.</translation>
+<translation id="6341737370356890233">Lépjen ide:
+        Chrome menü &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />,
+        és törölje a jelet a(z) „<ph name="NO_PREFETCH_DESCRIPTION" />” jelölőnégyzetből.
+        Ha ettől nem szűnik meg a probléma, javasoljuk, hogy jelölje be ismét
+        ezt a lehetőséget a jobb teljesítmény érdekében.</translation>
 </translationbundle>

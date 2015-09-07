@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="no">
+<translation id="5423788048750135178">Gå til Chrome-menyen &gt; Innstillinger &gt; (Avansert) Personvern,
+          og slå av alternativet for henting av sideressurser på forhånd.
+          Hvis ikke dette løser problemet, bør du slå på dette alternativet
+          igjen for å bedre ytelsen.</translation>
+<translation id="6341737370356890233">Gå til
+        Chrome-menyen &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        og fjern avmerkingen for «<ph name="NO_PREFETCH_DESCRIPTION" />».
+        Hvis dette ikke løser problemet, bør du velge dette alternativet
+        på nytt for bedre ytelse.</translation>
 </translationbundle>

@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fi">
 <translation id="1008557486741366299">Ei nyt</translation>
+<translation id="1047726139967079566">Aseta tämä sivu kirjanmerkiksi...</translation>
+<translation id="1172898394251786223">Seuraava kenttä</translation>
+<translation id="2320166752086256636">Piilota näppäimistö</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
+<translation id="2747003861858887689">Edellinen kenttä</translation>
 <translation id="3244271242291266297">KK</translation>
-<translation id="415767770115540173">Saat paremman Googlen käyttökokemuksen Chromessa sijaintisi perusteella.</translation>
+<translation id="3335947283844343239">Avaa suljettu välilehti uudelleen</translation>
+<translation id="385051799172605136">Edellinen</translation>
 <translation id="605721222689873409">VV</translation>
-<translation id="6600954340915313787">Kopioitiin Chromeen.</translation>
+<translation id="7456847797759667638">Avaa sijainti...</translation>
+<translation id="7481312909269577407">Seuraava</translation>
 </translationbundle>

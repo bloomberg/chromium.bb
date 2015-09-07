@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ms">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ms">
+<translation id="4404275227760602850">Pergi ke menu Chromium &gt; Tetapan &gt; (Lanjutan) Privasi
+          dan lumpuhkan "Praambil sumber halaman."
+          Jika tindakan ini tidak menyelesaikan isu ini, kami cadangkan agar mendayakan semula pilihan ini
+          sekali lagi untuk prestasi yang lebih baik.</translation>
+<translation id="7861509383340276692">Pergi ke
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          dan nyahpilih "<ph name="NO_PREFETCH_DESCRIPTION" />."
+          Jika tindakan ini tidak menyelesaikan isu ini, kami cadangkan agar memilih pilihan ini
+          sekali lagi untuk prestasi yang dipertingkatkan.</translation>
 </translationbundle>

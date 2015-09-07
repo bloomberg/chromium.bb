@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ko">
 <translation id="1008557486741366299">나중에 하기</translation>
+<translation id="1047726139967079566">페이지 북마크...</translation>
+<translation id="1172898394251786223">다음 필드</translation>
+<translation id="2320166752086256636">키보드 숨기기</translation>
 <translation id="2704606927547763573">복사됨</translation>
+<translation id="2747003861858887689">이전 필드</translation>
 <translation id="3244271242291266297">MM</translation>
-<translation id="415767770115540173">위치 정보를 기반으로 Chrome에서 더 나은 Google 환경을 이용할 수 있습니다.</translation>
+<translation id="3335947283844343239">닫은 탭 다시 열기</translation>
+<translation id="385051799172605136">뒤로</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6600954340915313787">Chrome에 복사됨</translation>
+<translation id="7456847797759667638">위치 열기...</translation>
+<translation id="7481312909269577407">앞으로</translation>
 </translationbundle>

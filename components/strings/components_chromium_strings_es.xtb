@@ -1,2 +1,13 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="es">
+<translation id="4404275227760602850">Accede al menú de Chromium, selecciona Ajustes, haz clic en Privacidad (Avanzados) e inhabilita la opción de cargar previamente recursos de página. Si esto no soluciona el problema, te recomendamos que vuelvas a habilitar esta opción para mejorar el rendimiento.</translation>
+<translation id="7861509383340276692">Accede al
+          menú de Chromium &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          y desactiva la opción "<ph name="NO_PREFETCH_DESCRIPTION" />".
+          Si esto no soluciona el problema, te recomendamos que vuelvas a seleccionar esta opción
+          para conseguir un mejor rendimiento.</translation>
 </translationbundle>

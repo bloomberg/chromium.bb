@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="pt-PT">
+<translation id="4404275227760602850">Aceda ao menu do Chromium &gt; Definições &gt; Privacidade (avançada)
+          e desative "Registar previamente os recursos da página".
+                    Se esta ação não resolver o problema, recomendamos que reative esta opção
+          novamente para melhorar o desempenho.</translation>
+<translation id="7861509383340276692">Aceda ao
+        menu Chromium &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        e desmarque "<ph name="NO_PREFETCH_DESCRIPTION" />".
+        Se isso não resolver o problema, recomendamos que selecione esta opção
+        novamente para um desempenho melhorado.</translation>
 </translationbundle>

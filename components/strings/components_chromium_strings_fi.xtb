@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fi">
+<translation id="4404275227760602850">Avaa Chromium-valikko &gt; Asetukset &gt; Tietosuoja (Lisäasetukset)
+          ja poista valinta kohdasta Hae valmiiksi sivun resurssit.
+          Jos ongelma ei ratkea, valitse tämä vaihtoehto uudelleen suorituskyvyn 
+          parantamiseksi.</translation>
+<translation id="7861509383340276692">Avaa
+        Chromium-valikko &gt;
+       <ph name="SETTINGS_TITLE" />
+        &gt;
+       <ph name="ADVANCED_TITLE" />
+        ja poista valinta kohdasta <ph name="NO_PREFETCH_DESCRIPTION" />.
+        Jos ongelma ei ratkea, valitse tämä vaihtoehto
+        uudelleen suorituskyvyn parantamiseksi.</translation>
 </translationbundle>

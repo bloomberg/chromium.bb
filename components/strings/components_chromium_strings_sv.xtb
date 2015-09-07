@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sv">
+<translation id="4404275227760602850">Öppna Chromium-menyn &gt; Inställningar &gt; (Avancerat) Sekretess
+          och inaktivera Förhandshämta sidresurser.
+          Om det inte hjälper rekommenderar vi att du aktiverar alternativet
+          igen vilket ger bättre prestanda.</translation>
+<translation id="7861509383340276692">Öppna
+        Chromium-menyn &gt;
+        <ph name="SETTINGS_TITLE" />
+        &gt;
+        <ph name="ADVANCED_TITLE" />
+        och avmarkera <ph name="NO_PREFETCH_DESCRIPTION" />.
+        Om det inte hjälper rekommenderar vi att du markerar det
+        här alternativet igen så att funktionaliteten förbättras.</translation>
 </translationbundle>

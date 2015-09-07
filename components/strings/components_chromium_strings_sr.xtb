@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sr">
+<translation id="4404275227760602850">Отворите Chromium мени &gt; Подешавања &gt; (Напредне опције) Приватност
+          и онемогућите „Припреми учитавање ресурса странице“.
+          Ако вам то не реши проблем, препоручујемо да поново омогућите
+          ову опцију ради бољих перформанси.</translation>
+<translation id="7861509383340276692">Отворите
+          Chromium мени &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          и опозовите избор опције „<ph name="NO_PREFETCH_DESCRIPTION" />“.
+          Ако вам то не реши проблем, препоручујемо да поново изаберете
+          ову опцију ради бољих перформанси.</translation>
 </translationbundle>

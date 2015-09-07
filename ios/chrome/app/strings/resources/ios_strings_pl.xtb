@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="pl">
 <translation id="1008557486741366299">Nie teraz</translation>
+<translation id="1047726139967079566">Dodaj stronę do zakładek...</translation>
+<translation id="1172898394251786223">Następne pole</translation>
+<translation id="2320166752086256636">Ukryj klawiaturę</translation>
 <translation id="2704606927547763573">Skopiowane</translation>
+<translation id="2747003861858887689">Poprzednie pole</translation>
 <translation id="3244271242291266297">MM</translation>
-<translation id="415767770115540173">Włączenie udostępniania lokalizacji w Chrome pozwala w pełni korzystać z usług Google.</translation>
+<translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
+<translation id="385051799172605136">Wstecz</translation>
 <translation id="605721222689873409">RR</translation>
-<translation id="6600954340915313787">Skopiowana do Chrome</translation>
+<translation id="7456847797759667638">Otwórz lokalizację...</translation>
+<translation id="7481312909269577407">Dalej</translation>
 </translationbundle>

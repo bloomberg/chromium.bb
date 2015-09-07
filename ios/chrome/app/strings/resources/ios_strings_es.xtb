@@ -1,8 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="es">
 <translation id="1008557486741366299">Ahora no</translation>
+<translation id="1047726139967079566">Añadir esta página a marcadores...</translation>
+<translation id="1172898394251786223">Siguiente campo</translation>
+<translation id="2320166752086256636">Ocultar teclado</translation>
 <translation id="2704606927547763573">Copiado</translation>
+<translation id="2747003861858887689">Campo anterior</translation>
 <translation id="3244271242291266297">MM</translation>
-<translation id="415767770115540173">Disfruta de una mejor experiencia en Chrome compartiendo tu ubicación.</translation>
+<translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
+<translation id="385051799172605136">Atrás</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6600954340915313787">Copiada a Chrome</translation>
+<translation id="7456847797759667638">Abrir ubicación...</translation>
+<translation id="7481312909269577407">Adelante</translation>
 </translationbundle>

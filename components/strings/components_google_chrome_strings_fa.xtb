@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fa">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fa">
+<translation id="5423788048750135178">‏به منوی Chrome &gt; تنظیمات &gt; (پیشرفته) حریم خصوصی
+          بروید و «واکشی منابع صفحه» را غیرفعال کنید.
+          درصورتی‌که با این کار مشکل حل نشد، توصیه می‌کنیم برای عملکرد بهبودیافته،
+          این گزینه را دوباره فعال کنید.</translation>
+<translation id="6341737370356890233">‏به
+          منوی Chrome &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          بروید و علامت «<ph name="NO_PREFETCH_DESCRIPTION" />» را بردارید.
+          درصورتی‌که با این کار مشکل حل نشد، توصیه می‌کنیم برای عملکرد پیشرفته،
+          این گزینه را دوباره انتخاب کنید.</translation>
 </translationbundle>

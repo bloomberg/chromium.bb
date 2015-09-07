@@ -4233,7 +4233,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="699220179437400583">Rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt</translation>
 <translation id="6993929801679678186">Visa förslag från Autofyll</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappar har valts</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Följande sida svarar inte. Du kan vänta på att den svarar eller stänga den.}other{Följande sidor svarar inte. Du kan vänta tills de svarar eller stänga dem.}}</translation>
 <translation id="7002055706763150362">Om du vill konfigurera Smart Lock för Chrome måste Google vara säker på att det är du som gör ändringen, så du måste först ange ditt lösenord.</translation>
 <translation id="7002454948392136538">Välj ansvarig för den här övervakade användaren</translation>
 <translation id="7003257528951459794">Frekvens:</translation>

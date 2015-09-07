@@ -4216,7 +4216,6 @@ Accede a tu dirección de correo electrónico <ph name="ACCOUNT_EMAIL" /> para c
 <translation id="699220179437400583">Enviar a Google automáticamente información sobre posibles incidentes de seguridad</translation>
 <translation id="6993929801679678186">Mostrar predicciones de Autocompletar</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{La página siguiente no responde. Puedes cerrarla o esperar a que responda.}other{Las páginas siguientes no responden. Puedes cerrarlas o esperar a que respondan.}}</translation>
 <translation id="7002055706763150362">Para configurar Smart Lock para Chromebook, Google necesita asegurarse de que eres el usuario legítimo. Escribe tu contraseña para empezar.</translation>
 <translation id="7002454948392136538">Selecciona el administrador de este usuario supervisado</translation>
 <translation id="7003257528951459794">Frecuencia:</translation>

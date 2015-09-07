@@ -1,2 +1,16 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="de">
+<translation id="4404275227760602850">Öffnen Sie das Chromium-Menü &gt; Einstellungen &gt; (Erweitert) Datenschutz
+          und deaktivieren Sie die Option "Vorabruf von Seitenressourcen".
+          Falls das Problem hierdurch nicht behoben wird, empfehlen wir,
+          diese Option für eine verbesserte Leistung wieder zu aktivieren.</translation>
+<translation id="7861509383340276692">Öffnen Sie
+          das Chromium-Menü &gt;
+          <ph name="SETTINGS_TITLE" />
+          &gt;
+          <ph name="ADVANCED_TITLE" />
+          und deaktivieren Sie "<ph name="NO_PREFETCH_DESCRIPTION" />".
+          Falls das Problem nicht dadurch verursacht wurde, empfehlen wir,
+          diese Option für eine verbesserte Leistung wieder zu aktivieren.</translation>
 </translationbundle>
