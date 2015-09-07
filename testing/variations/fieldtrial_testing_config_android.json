@@ -285,6 +285,11 @@
             "group_name": "Enabled"
         }
     ],
+    "MobileModerateBinding": [
+        {
+            "group_name": "Ratio_25_50"
+        }
+    ],
     "InvalidationsGCMUpstream": [
         {
             "group_name": "Enabled"
