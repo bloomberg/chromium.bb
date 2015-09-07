@@ -32,9 +32,9 @@ TEST_F(VisiblePositionTest, ShadowDistributedNodes)
     EXPECT_EQ(Position(one->firstChild(), 2), createVisiblePosition(Position(two.get(), 0)).deepEquivalent());
 
     EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2), canonicalPositionOf(PositionInComposedTree(one.get(), 0)));
-    EXPECT_EQ(Position(five->firstChild(), 2), createVisiblePosition(PositionInComposedTree(one.get(), 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2), createVisiblePosition(PositionInComposedTree(one.get(), 0)).deepEquivalent());
     EXPECT_EQ(PositionInComposedTree(four->firstChild(), 2), canonicalPositionOf(PositionInComposedTree(two.get(), 0)));
-    EXPECT_EQ(Position(four->firstChild(), 2), createVisiblePosition(PositionInComposedTree(two.get(), 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four->firstChild(), 2), createVisiblePosition(PositionInComposedTree(two.get(), 0)).deepEquivalent());
 }
 
 } // namespace blink

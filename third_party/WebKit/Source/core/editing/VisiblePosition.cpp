@@ -60,42 +60,48 @@ VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(const PositionWithAff
 {
 }
 
-template <typename Strategy>
-VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::createWithoutCanonicalization(const PositionWithAffinityTemplate<Strategy>& canonicalized)
-{
-    return VisiblePositionTemplate<Strategy>(canonicalized);
-}
-
 template<typename Strategy>
-static PositionWithAffinityTemplate<Strategy> createVisiblePositionAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(const PositionWithAffinityTemplate<Strategy>& positionWithAffinity)
 {
-    const PositionAlgorithm<Strategy> deepPosition = canonicalPositionOf(position);
+    const PositionAlgorithm<Strategy> deepPosition = canonicalPositionOf(positionWithAffinity.position());
     if (deepPosition.isNull())
-        return PositionWithAffinityTemplate<Strategy>();
-    if (affinity == TextAffinity::Downstream)
-        return PositionWithAffinityTemplate<Strategy>(deepPosition);
+        return VisiblePositionTemplate<Strategy>();
+    const PositionWithAffinityTemplate<Strategy> downstreamPosition(deepPosition);
+    if (positionWithAffinity.affinity() == TextAffinity::Downstream)
+        return VisiblePositionTemplate<Strategy>(downstreamPosition);
 
     // When not at a line wrap, make sure to end up with
     // |TextAffinity::Downstream| affinity.
-    if (inSameLine(PositionWithAffinityTemplate<Strategy>(deepPosition), PositionWithAffinityTemplate<Strategy>(deepPosition, TextAffinity::Upstream)))
-        return PositionWithAffinityTemplate<Strategy>(deepPosition);
-    return PositionWithAffinityTemplate<Strategy>(deepPosition, TextAffinity::Upstream);
+    const PositionWithAffinityTemplate<Strategy> upstreamPosition(deepPosition, TextAffinity::Upstream);
+    if (inSameLine(downstreamPosition, upstreamPosition))
+        return VisiblePositionTemplate<Strategy>(downstreamPosition);
+    return VisiblePositionTemplate<Strategy>(upstreamPosition);
 }
 
 VisiblePosition createVisiblePosition(const Position& position, TextAffinity affinity)
 {
-    return VisiblePosition::createWithoutCanonicalization(createVisiblePositionAlgorithm<EditingStrategy>(position, affinity));
+    return createVisiblePosition(PositionWithAffinity(position, affinity));
 }
 
 VisiblePosition createVisiblePosition(const PositionWithAffinity& positionWithAffinity)
 {
-    return createVisiblePosition(positionWithAffinity.position(), positionWithAffinity.affinity());
+    return VisiblePosition::create(positionWithAffinity);
 }
 
-VisiblePosition createVisiblePosition(const PositionInComposedTree& position, TextAffinity affinity)
+VisiblePositionInComposedTree createVisiblePosition(const PositionInComposedTree& position, TextAffinity affinity)
 {
-    PositionInComposedTreeWithAffinity canonicalized = createVisiblePositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity);
-    return VisiblePosition::createWithoutCanonicalization(PositionWithAffinity(toPositionInDOMTree(canonicalized.position()), canonicalized.affinity()));
+    return VisiblePositionInComposedTree::create(PositionInComposedTreeWithAffinity(position, affinity));
+}
+
+VisiblePosition createVisiblePositionInDOMTree(const Position& position, TextAffinity affinity)
+{
+    return createVisiblePosition(position, affinity);
+}
+
+VisiblePosition createVisiblePositionInDOMTree(const PositionInComposedTree& position, TextAffinity affinity)
+{
+    const VisiblePositionInComposedTree visiblePosition = createVisiblePosition(position);
+    return createVisiblePosition(toPositionInDOMTree(visiblePosition.deepEquivalent()), affinity);
 }
 
 #ifndef NDEBUG
@@ -125,6 +131,7 @@ void VisiblePositionTemplate<Strategy>::showTreeForThis() const
 #endif
 
 template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingInComposedTreeStrategy>;
 
 } // namespace blink
 

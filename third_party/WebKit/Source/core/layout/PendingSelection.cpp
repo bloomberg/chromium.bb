@@ -86,7 +86,7 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
     SelectionType selectionType = Strategy::selectionType(m_selection);
     TextAffinity affinity = m_selection.affinity();
 
-    bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePosition(end, affinity));
+    bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePositionInDOMTree(end, affinity));
     VisibleSelection selection;
     if (enclosingTextFormControl(start.computeContainerNode())) {
         // TODO(yosin) We should use |PositionMoveType::Character| to avoid
@@ -96,13 +96,13 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
         return selection;
     }
 
-    VisiblePosition visibleStart = createVisiblePosition(start, selectionType == SelectionType::RangeSelection ? TextAffinity::Downstream : affinity);
+    VisiblePosition visibleStart = createVisiblePositionInDOMTree(start, selectionType == SelectionType::RangeSelection ? TextAffinity::Downstream : affinity);
     if (paintBlockCursor) {
-        VisiblePosition visibleExtent = createVisiblePosition(end, affinity);
+        VisiblePosition visibleExtent = createVisiblePositionInDOMTree(end, affinity);
         visibleExtent = nextPositionOf(visibleExtent, CanSkipOverEditingBoundary);
         return VisibleSelection(visibleStart, visibleExtent);
     }
-    VisiblePosition visibleEnd = createVisiblePosition(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);
+    VisiblePosition visibleEnd = createVisiblePositionInDOMTree(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);
     return VisibleSelection(visibleStart, visibleEnd);
 }
 

@@ -74,8 +74,8 @@ public:
     VisiblePositionTemplate();
 
     // Node: Other than |createVisiblePosition()|, we should not use
-    // |createWithoutCanonicalization()|.
-    static VisiblePositionTemplate createWithoutCanonicalization(const PositionWithAffinityTemplate<Strategy>& canonicalized);
+    // |create()|.
+    static VisiblePositionTemplate create(const PositionWithAffinityTemplate<Strategy>&);
 
     // Intentionally delete |operator==()| and |operator!=()| for reducing
     // compilation error message.
@@ -111,12 +111,19 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingInComposedTreeStrategy>;
 
 using VisiblePosition = VisiblePositionTemplate<EditingStrategy>;
+using VisiblePositionInComposedTree = VisiblePositionTemplate<EditingInComposedTreeStrategy>;
 
 CORE_EXPORT VisiblePosition createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
-CORE_EXPORT VisiblePosition createVisiblePosition(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePositionInComposedTree createVisiblePosition(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
+
+// TODO(yosin) Once we have composed tree version of VisibleUnits, we should not
+// use |createVisiblePositionInDOMTree()|.
+VisiblePosition createVisiblePositionInDOMTree(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
+VisiblePosition createVisiblePositionInDOMTree(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
 
 } // namespace blink
 

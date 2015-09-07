@@ -155,7 +155,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     }
 
     PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
-    VisiblePosition visiblePos = createVisiblePosition(Strategy::toPositionType(eventPos.position()), eventPos.affinity());
+    VisiblePosition visiblePos = createVisiblePositionInDOMTree(Strategy::toPositionType(eventPos.position()), eventPos.affinity());
     if (visiblePos.isNull())
         visiblePos = createVisiblePosition(firstPositionInOrBeforeNode(innerNode));
     PositionType pos = Strategy::toPositionType(visiblePos.deepEquivalent());
@@ -164,7 +164,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     TextGranularity granularity = CharacterGranularity;
 
     if (extendSelection && newSelection.isCaretOrRange()) {
-        VisibleSelection selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(createVisiblePosition(pos))));
+        VisibleSelection selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(createVisiblePositionInDOMTree(pos))));
         if (selectionInUserSelectAll.isRange()) {
             if (Strategy::selectionStart(selectionInUserSelectAll).compareTo(Strategy::selectionStart(newSelection)) < 0)
                 pos = Strategy::selectionStart(selectionInUserSelectAll);
@@ -215,7 +215,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         return;
 
     PositionWithAffinity rawTargetPosition = selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
-    VisiblePosition targetPosition = createVisiblePosition(Strategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
+    VisiblePosition targetPosition = createVisiblePositionInDOMTree(Strategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
         return;
