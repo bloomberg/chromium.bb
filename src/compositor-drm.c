@@ -3075,12 +3075,12 @@ drm_backend_create(struct weston_compositor *compositor,
 	 * without nuclear page flip. Without nuclear/atomic, hw plane
 	 * and cursor plane updates would either tear or cause extra
 	 * waits for vblanks which means dropping the compositor framerate
-	 * to a fraction.
+	 * to a fraction. For cursors, it's not so bad, so they are
+	 * enabled.
 	 *
 	 * These can be enabled again when nuclear/atomic support lands.
 	 */
 	b->sprites_are_broken = 1;
-	b->cursors_are_broken = 1;
 	b->compositor = compositor;
 
 	section = weston_config_get_section(config, "core", NULL, NULL);
