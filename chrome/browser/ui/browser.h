@@ -620,6 +620,8 @@ class Browser : public TabStripModelObserver,
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const override;
+  blink::WebDisplayMode GetDisplayMode(
+      const content::WebContents* web_contents) const override;
   void RegisterProtocolHandler(content::WebContents* web_contents,
                                const std::string& protocol,
                                const GURL& url,

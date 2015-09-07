@@ -3132,3 +3132,67 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
 }
+
+namespace {
+class JSBooleanResultGetter {
+ public:
+  JSBooleanResultGetter() = default;
+  void OnJsExecutionDone(base::Closure callback, const base::Value* value) {
+    js_result_.reset(value->DeepCopy());
+    callback.Run();
+  }
+  bool GetResult() const {
+    bool res;
+    CHECK(js_result_);
+    CHECK(js_result_->GetAsBoolean(&res));
+    return res;
+  }
+
+ private:
+  scoped_ptr<base::Value> js_result_;
+  DISALLOW_COPY_AND_ASSIGN(JSBooleanResultGetter);
+};
+
+void CheckDisplayModeMQ(
+    const base::string16& display_mode,
+    content::WebContents* web_contents) {
+  base::string16 funtcion =
+      ASCIIToUTF16("(function() {return window.matchMedia('(display-mode: ") +
+      display_mode + ASCIIToUTF16(")').matches;})();");
+  JSBooleanResultGetter js_result_getter;
+  // Execute the JS to run the tests, and wait until it has finished.
+  base::RunLoop run_loop;
+  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      funtcion,
+      base::Bind(&JSBooleanResultGetter::OnJsExecutionDone,
+          base::Unretained(&js_result_getter), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_TRUE(js_result_getter.GetResult());
+}
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, ChangeDisplayMode) {
+  CheckDisplayModeMQ(
+      ASCIIToUTF16("browser"),
+      browser()->tab_strip_model()->GetActiveWebContents());
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  Browser* app_browser = CreateBrowserForApp("blah", profile);
+  browser_added_observer.WaitForSingleNewBrowser();
+  auto app_contents = app_browser->tab_strip_model()->GetActiveWebContents();
+  CheckDisplayModeMQ(ASCIIToUTF16("standalone"), app_contents);
+
+  app_browser->window()->EnterFullscreen(
+      GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION,
+      false);
+
+  // Sync navigation just to make sure IPC has passed (updated
+  // display mode is delivered to RP).
+  content::TestNavigationObserver observer(app_contents, 1);
+  ui_test_utils::NavigateToURL(app_browser, GURL(url::kAboutBlankURL));
+  observer.Wait();
+
+  CheckDisplayModeMQ(ASCIIToUTF16("fullscreen"), app_contents);
+}
+
