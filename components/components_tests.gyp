@@ -407,6 +407,7 @@
       'password_manager/core/browser/password_form_manager_unittest.cc',
       'password_manager/core/browser/password_generation_manager_unittest.cc',
       'password_manager/core/browser/password_manager_metrics_util_unittest.cc',
+      'password_manager/core/browser/password_manager_settings_migration_experiment_unittest.cc',
       'password_manager/core/browser/password_manager_unittest.cc',
       'password_manager/core/browser/password_store_default_unittest.cc',
       'password_manager/core/browser/password_store_unittest.cc',

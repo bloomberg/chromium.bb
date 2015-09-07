@@ -88,6 +88,8 @@
         'password_manager/core/browser/password_manager_internals_service.h',
         'password_manager/core/browser/password_manager_metrics_util.cc',
         'password_manager/core/browser/password_manager_metrics_util.h',
+        'password_manager/core/browser/password_manager_settings_migration_experiment.cc',
+        'password_manager/core/browser/password_manager_settings_migration_experiment.h',
         'password_manager/core/browser/password_manager_util.cc',
         'password_manager/core/browser/password_manager_util.h',
         'password_manager/core/browser/password_store.cc',
