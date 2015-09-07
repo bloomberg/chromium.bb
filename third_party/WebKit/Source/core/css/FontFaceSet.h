@@ -55,7 +55,6 @@ class ExceptionState;
 class Font;
 class FontFaceCache;
 class FontResource;
-class FontsReadyPromiseResolver;
 class ExecutionContext;
 
 #if ENABLE(OILPAN)
@@ -145,11 +144,14 @@ private:
     void handlePendingEventsAndPromises();
     const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>& cssConnectedFontFaceList() const;
     bool isCSSConnectedFontFace(FontFace*) const;
+    bool shouldSignalReady() const;
+
+    typedef ScriptPromiseProperty<RawPtrWillBeMember<FontFaceSet>, RawPtrWillBeMember<FontFaceSet>, Member<DOMException>> ReadyProperty;
 
     WillBeHeapHashSet<RefPtrWillBeMember<FontFace>> m_loadingFonts;
     bool m_shouldFireLoadingEvent;
     bool m_isLoading;
-    PersistentHeapVectorWillBeHeapVector<Member<FontsReadyPromiseResolver>> m_readyResolvers;
+    PersistentWillBeMember<ReadyProperty> m_ready;
     FontFaceArray m_loadedFonts;
     FontFaceArray m_failedFonts;
     WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>> m_nonCSSConnectedFaces;
