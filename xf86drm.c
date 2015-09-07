@@ -2924,11 +2924,22 @@ static int drmGetNodeType(const char *name)
     return -EINVAL;
 }
 
-static int drmParsePciDeviceInfo(const unsigned char *config,
+static int drmParsePciDeviceInfo(const char *d_name,
                                  drmPciDeviceInfoPtr device)
 {
-    if (config == NULL)
-        return -EINVAL;
+    char path[PATH_MAX + 1];
+    unsigned char config[64];
+    int fd, ret;
+
+    snprintf(path, PATH_MAX, "/sys/class/drm/%s/device/config", d_name);
+    fd = open(path, O_RDONLY);
+    if (fd < 0)
+        return -errno;
+
+    ret = read(fd, config, sizeof(config));
+    close(fd);
+    if (ret < 0)
+        return -errno;
 
     device->vendor_id = config[0] | (config[1] << 8);
     device->device_id = config[2] | (config[3] << 8);
@@ -2991,10 +3002,8 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     struct stat sbuf = {0};
     char node[PATH_MAX + 1] = "";
     char path[PATH_MAX + 1] = "";
-    unsigned char config[64] = "";
     int node_type, subsystem_type;
     int maj, min;
-    int fd;
     int ret, i = 0, j, node_count, device_count = 0;
     int max_count = 16;
     int *duplicated = NULL;
@@ -3063,32 +3072,17 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
             devs[i].available_nodes = 1 << node_type;
 
             if (devices != NULL) {
-                snprintf(path, PATH_MAX, "/sys/class/drm/%s/device/config",
-                         dent->d_name);
-                fd = open(path, O_RDONLY);
-                if (fd < 0) {
-                     ret = -errno;
-                     goto free_locals;
-                }
-                ret = read(fd, config, 64);
-                if (ret < 0) {
-                    ret = -errno;
-                    close(fd);
-                    goto free_locals;
-                }
-
                 pcidevice = calloc(1, sizeof(*pcidevice));
                 if (pcidevice == NULL) {
                     ret = -ENOMEM;
                     goto free_locals;
                 }
 
-                ret = drmParsePciDeviceInfo(config, pcidevice);
+                ret = drmParsePciDeviceInfo(dent->d_name, pcidevice);
                 if (ret)
                     goto free_locals;
 
                 devs[i].deviceinfo.pci = pcidevice;
-                close(fd);
             }
             break;
         default:
