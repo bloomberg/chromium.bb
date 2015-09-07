@@ -2835,21 +2835,23 @@ char *drmGetRenderDeviceNameFromFd(int fd)
 }
 
 #ifdef __linux__
-static int drmParseSubsystemType(const char *str)
+static int drmParseSubsystemType(int maj, int min)
 {
+    char path[PATH_MAX + 1];
     char link[PATH_MAX + 1] = "";
     char *name;
 
-    if (readlink(str, link, PATH_MAX) < 0)
-        return -EINVAL;
+    snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/subsystem",
+             maj, min);
+
+    if (readlink(path, link, PATH_MAX) < 0)
+        return -errno;
 
     name = strrchr(link, '/');
     if (!name)
         return -EINVAL;
 
-    name++;
-
-    if (strncmp(name, "pci", 3) == 0)
+    if (strncmp(name, "/pci", 4) == 0)
         return DRM_BUS_PCI;
 
     return -EINVAL;
@@ -3001,7 +3003,6 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     struct dirent *dent = NULL;
     struct stat sbuf = {0};
     char node[PATH_MAX + 1] = "";
-    char path[PATH_MAX + 1] = "";
     int node_type, subsystem_type;
     int maj, min;
     int ret, i = 0, j, node_count, device_count = 0;
@@ -3033,9 +3034,7 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
         if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
             continue;
 
-        snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/subsystem",
-                 maj, min);
-        subsystem_type = drmParseSubsystemType(path);
+        subsystem_type = drmParseSubsystemType(maj, min);
 
         if (subsystem_type < 0)
             continue;
