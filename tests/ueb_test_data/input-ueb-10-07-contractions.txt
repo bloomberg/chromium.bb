@@ -704,6 +704,8 @@ stinging
 brown(ing)
 br{n"<+">
 
+~italic
+     +
 browning
 br{n.2+
 
@@ -728,6 +730,8 @@ ingrown
 to-ing and fro-ing
 to-9g & fro-9g
 
+~italics
+      +++
 brown-ing
 br{n-.19g
 

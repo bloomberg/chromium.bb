@@ -1114,6 +1114,279 @@ inSequence()
 	return 1;
 }
 
+static int pattern_check_chars(const widechar input, const widechar *expr)
+{
+	int rcrs, rcnt, i;
+
+	rcrs = 0;
+	rcnt = expr[0] + 1;
+	rcrs++;
+
+	for(i = rcrs; i < rcnt; i++)
+	if(input == expr[i])
+		break;
+
+	if(i == rcnt)
+		return 0;
+	return 1;
+}
+
+static int pattern_check(const widechar *input, const widechar *expr, const int off, const int max)
+{
+	int icrs, ibgn;
+	int rcrs, rnxt;
+	int attrs;
+	int check;
+	int not;
+
+	icrs = ibgn = off;
+	rcrs = 1;
+	rnxt = not = 0;
+	while(expr[rnxt] != PTN_LAST)
+	{
+		if(expr[rcrs] == PTN_NOT)
+		{
+			not = 1;
+			rcrs++;
+		}
+
+		if(expr[rcrs] == PTN_END_OF_INPUT)
+		if(icrs >= max)
+			return !not;
+		else if(input[icrs] == 0)
+			return !not;
+		else
+			return not;
+
+		if(icrs >= max)
+		{
+			/*   there could be CTC_EndOfInput   */
+			if(expr[rcrs] == PTN_ATTRIBUTES)
+			{
+					attrs = expr[rcrs + 1] << 16;
+					if(attrs & CTC_EndOfInput)
+						return !not;
+			}
+
+			/*   there could still be ZERO_OR_MORE   */
+			else if(expr[rcrs] == PTN_ZERO_MORE)
+			{
+				rcrs = rnxt + expr[rnxt];
+				rnxt = rcrs;
+				rcrs++;
+				not = 0;
+				continue;
+			}
+			return 0;
+		}
+
+		switch(expr[rcrs])
+		{
+		case PTN_ZERO_MORE:
+		case PTN_ONE_MORE:
+
+			/*   match as much as possible   */
+			ibgn = icrs;
+			while(icrs < max)
+			{
+				switch(expr[rcrs + 1])
+				{
+				case PTN_ATTRIBUTES:
+
+					attrs = ((expr[rcrs + 2] << 16) | expr[rcrs + 3]) & ~CTC_EndOfInput;
+					check = checkAttr(input[icrs], attrs, 0);
+					break;
+
+				case PTN_CHARS:
+
+					check = pattern_check_chars(input[icrs], &expr[rcrs + 2]);
+					break;
+				}
+				if(check && not)
+					break;
+				if(!check && !not)
+					break;
+				icrs++;
+			}
+
+			/*   check next expression   */
+			while(icrs > ibgn)
+			{
+				check = pattern_check(input, &expr[rnxt + expr[rnxt]], icrs, max);
+				if(check)
+					return 1;
+				icrs--;
+			}
+
+			/*   check if nothing succeeds   */
+			if(expr[rcrs] == PTN_ZERO_MORE)
+			{
+				check = pattern_check(input, &expr[rnxt + expr[rnxt]], icrs, max);
+				if(check)
+					return 1;
+			}
+
+			return 0;
+
+		case PTN_ATTRIBUTES:
+
+			attrs = ((expr[rcrs + 1] << 16) | expr[rcrs + 2]) & ~CTC_EndOfInput;
+			check = checkAttr(input[icrs], attrs, 0);
+			if(check && not)
+				return 0;
+			if(!check && !not)
+				return 0;
+			icrs++;
+			break;
+
+		case PTN_CHARS:
+
+			check = pattern_check_chars(input[icrs], &expr[rcrs + 1]);
+			if(check && not)
+				return 0;
+			if(!check && !not)
+				return 0;
+			icrs++;
+			break;
+		}
+
+		rcrs = rnxt + expr[rnxt];
+		rnxt = rcrs;
+		rcrs++;
+		not = 0;
+	}
+
+	return 1;
+}
+
+static int pattern_check_reverse(const widechar *input, const widechar *expr, const int off, const int min)
+{
+	int icrs, ibgn;
+	int rcrs, rnxt;
+	int attrs;
+	int check;
+	int not;
+	
+	icrs = ibgn = off;
+	rcrs = 1;
+	rnxt = not = 0;
+	while(expr[rnxt] != PTN_LAST)
+	{
+		if(expr[rcrs] == PTN_NOT)
+		{
+			not = 1;
+			rcrs++;
+		}
+
+		if(expr[rcrs] == PTN_END_OF_INPUT)
+		if(icrs <= min)
+			return !not;
+		else if(input[icrs] == 0)
+			return !not;
+		else
+			return not;
+
+		if(icrs <= min)
+		{
+			/*   there could be CTC_EndOfInput   */
+			if(expr[rcrs] == PTN_ATTRIBUTES)
+			{
+					attrs = expr[rcrs + 1] << 16;
+					if(attrs & CTC_EndOfInput)
+						return !not;
+			}
+
+			/*   there could still be ZERO_OR_MORE   */
+			else if(expr[rcrs] == PTN_ZERO_MORE)
+			{
+				rcrs = rnxt + expr[rnxt];
+				rnxt = rcrs;
+				rcrs++;
+				not = 0;
+				continue;
+			}
+			return 0;
+		}
+
+		switch(expr[rcrs])
+		{
+		case PTN_ZERO_MORE:
+		case PTN_ONE_MORE:
+
+			/*   match as much as possible   */
+			ibgn = icrs;
+			while(icrs > min)
+			{
+				switch(expr[rcrs + 1])
+				{
+				case PTN_ATTRIBUTES:
+
+					attrs = ((expr[rcrs + 2] << 16) | expr[rcrs + 3]) & ~CTC_EndOfInput;
+					check = checkAttr(input[icrs], attrs, 0);
+					break;
+
+				case PTN_CHARS:
+
+					check = pattern_check_chars(input[icrs], &expr[rcrs + 2]);
+					break;
+				}
+				if(check && not)
+					break;
+				if(!check && !not)
+					break;
+				icrs--;
+			}
+
+			/*   check next expression   */
+			while(icrs < ibgn)
+			{
+				check = pattern_check_reverse(input, &expr[rnxt + expr[rnxt]], icrs, min);
+				if(check)
+					return 1;
+				icrs++;
+			}
+
+			/*   check if nothing succeeds   */
+			if(expr[rcrs] == PTN_ZERO_MORE)
+			{
+				check = pattern_check_reverse(input, &expr[rnxt + expr[rnxt]], icrs, min);
+				if(check)
+					return 1;
+			}
+
+			return 0;
+
+		case PTN_ATTRIBUTES:
+
+			attrs = ((expr[rcrs + 1] << 16) | expr[rcrs + 2]) & ~CTC_EndOfInput;
+			check = checkAttr(input[icrs], attrs, 0);
+			if(check && not)
+				return 0;
+			if(!check && !not)
+				return 0;
+			icrs--;
+			break;
+
+		case PTN_CHARS:
+
+			check = pattern_check_chars(input[icrs], &expr[rcrs + 1]);
+			if(check && not)
+				return 0;
+			if(!check && !not)
+				return 0;
+			icrs--;
+			break;
+		}
+
+		rcrs = rnxt + expr[rnxt];
+		rnxt = rcrs;
+		rcrs++;
+		not = 0;
+	}
+
+	return 1;
+}
+
 static void
 for_selectRule ()
 {
@@ -1396,6 +1669,26 @@ for_selectRule ()
 			  break;
 		      }
 		    break;
+		    
+				case CTO_Match:
+				{
+					widechar *patterns, *pattern;
+					
+					patterns = (widechar*)&table->ruleArea[transRule->patterns];
+					
+					/*   check before pattern   */
+					pattern = &patterns[1];
+					if(!pattern_check_reverse(currentInput, pattern, src - 1, -1))
+						break;
+					
+					/*   check after pattern   */
+					pattern = &patterns[patterns[0]];
+					if(!pattern_check(currentInput, pattern, src + transRule->charslen, srcmax))
+						break;
+					
+					return;
+				}
+				
 		  default:
 		    break;
 		  }
@@ -2160,9 +2453,8 @@ markEmphases()
 			caps_cnt = 0;
 		}
 			
-		if(typebuf[i] & word_reset
-		)//   || checkAttr(currentInput[i], CTC_WordReset, 0))
-			wordBuffer[i] |= WORD_RESET;		
+		if(typebuf[i] & word_reset)
+			wordBuffer[i] |= WORD_RESET;
 	
 		if(checkAttr(currentInput[i], CTC_UpperCase, 0))
 		{
