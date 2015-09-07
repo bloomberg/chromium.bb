@@ -393,13 +393,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
 
   bool GetBitmapFromPaint(const SkPaint& paint, SkBitmap* bm) {
     SkShader* shader = paint.getShader();
-    if (shader) {
-      // Check whether the shader is a gradient in order to prevent generation
-      // of bitmaps from gradient shaders, which implement asABitmap.
-      if (SkShader::kNone_GradientType == shader->asAGradient(NULL))
-        return shader->asABitmap(bm, NULL, NULL);
-    }
-    return false;
+    return shader && shader->isABitmap(bm, NULL, NULL);
   }
 
   void DrawImageInternal(const SkDraw& draw,
