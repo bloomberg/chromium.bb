@@ -1,5 +1,44 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 2.6.4 (2015-08-31)
+This is a minor release in terms of features. But in terms of test
+coverage and stability it is a vast improvement over previous versions
+of Liblouis. The new YAML based test suite contains more than a
+million of validated translations. Every change in Liblouis is tested
+against this corpus ensuring the change doesn't break anything.
+
+** New features
+- YAML based harness tests. Harness tests can now be written in simple
+  YAML notation and they are integrated with the normal `make check`
+  command. They can be used for both ucs2 and ucs4 and no Python is
+  required.
+
+** Bug fixes
+- Use a separate gnulib instance for the library and the tools. Use
+  the strndup module to avoid build problems on windows.
+- Fix a problem with the nocross opcode when used in combination with
+  the opcodes nocont and compbrl, thanks to Bue Vester-Andersen.
+- Fix a problem with the decoding of the harness test files. Thanks to
+  Bert Frees.
+- Fix numerous problems in the way braille indicators are handled.
+  There is now a safe version of the checkAttr function which makes
+  sure that no attributes are checked beyond the boundaries of the
+  currentInput. This fixes the random behavior with tests where the
+  emphasis extends to the end of the input string. Thanks to Christian
+  Egli.
+
+** Other changes
+- if found use texi2any to build the documentation, thanks to Martin
+  Michlmayr.
+- Fix permissions of Korean tables, thanks to Peter Lundblad.
+- Update the windows build instructions, thanks to Bue
+  Vester-Andersen.
+
+** Braille table improvements
+- Improvements to Hungarian, thanks to Attila Hammer
+- Improvements to Hungarian 8 dot and Serbian grade 1, thanks to
+  Zvonimir Stanecic
+
 * Noteworthy changes in release 2.6.3 (2015-06-01)
 Given the release number you might think this is only a minor release.
 However looking at the number of developers who contributed to it and

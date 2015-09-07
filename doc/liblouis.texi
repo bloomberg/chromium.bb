@@ -1,6 +1,7 @@
 \input texinfo
 @c %**start of header
 @setfilename liblouis.info
+@documentencoding UTF-8
 @include version.texi
 @settitle Liblouis User's and Programmer's Manual
 
@@ -139,8 +140,9 @@ Testing Translation Tables interactively
 
 Automated Testing of Translation Tables
 
-* Translation Table Test Harness::
-* Translation Table Doctests::
+* YAML Tests::
+* Test Harness::
+* Doctests::
 
 Programming with liblouis
 
@@ -1875,81 +1877,232 @@ There are a number of automated tests for liblouis and they are
 proving to be of tremendous value. When changing the code the
 developers can run the tests to see if anything broke.
 
-For testing the translation tables there are basically two approaches:
-there are the harness tests and the doctests. They were created at
-roughly the same time using different technologies, have influenced
-each other and have gone through improvements and technology changes.
-For now they are both based on Python so you need to have that
-installed. The philosophies of the two are slightly different:
+The easiest way to test the translation tables is to write a YAML file
+where you define the table that is to be tested and any number of
+words or phrases to translate together with their respective expected
+translation.
+
+The YAML based tests replace the two older methods for testing the
+translation tables which only work with Python and when compiled with
+UCS4: the harness tests and the doctests. They are deprecated and will
+be removed in a future release.
 
 @table @asis
+@item YAML tests
+The YAML tests are data driven, i.e. you give the test data, a string
+to translate and the expected output. The data is in a standard format
+namely YAML. If you have @file{libyaml} installed they will
+automatically be invoked as part of the standard @command{make check}
+command.
+
 @item Harness tests
-The harness tests are data driven, i.e. you give the test data, i.e. a
-string to translate and the expected output. The data is in a standard
-format, i.e. json. They work with both Python2 and Python3, however
-since the format is json it is perceivable that somebody would write
-some C code which takes the data in the harness file and runs it through
-liblouis so they could also run without Python and without ucs4.
+The harness tests are also data driven like the YAML tests. However
+the data is given in JSON and quite a bit more verbose than the YAML
+tests. They work with both Python2 and Python3 but not from plain C,
+so you need Python and you will have to compile with UCS4.
 
 @item Doctests
-The doctests on the other hand are based on a technology used in Python
-where you define your tests as if you were sitting at a terminal session
-with a Python interpreter. So the tests look like you typed a command
-and got some output, e.g.
-
-@example
->>> translate(['table.ctb'], "Hello", mode=compbrlLeftCursor)
-("HELLO", [0,1,2,3], [0,1,2,3], 0)
-@end example
-
-There is a convenience wrapper which hides away much of the complexity
-of above example so you can write stuff like 
-
-@example
->>> t.braille('the cat sat on the mat')
-u'! cat sat on ! mat'
-@end example
-
-But essentially you are writing code, so the doctests allow you to do
-more flexible tests that are much closer to the raw iron. For technical
-reasons the doctests will probably only ever work in either Python2 or
-Python3 but not both and they will never run from C.
+The doctests are based on a technology used in Python where you define
+your tests as if you were sitting at a terminal session with a Python
+interpreter. Again they only work with either Python2 and Python3 but
+not from plain C, so you need Python and you will have to compile with
+UCS4.
 @end table
 
-To sum it up, the recommendation is that for normal table testing you
-should use the test harness. It has a lot of momentum and the format
-is a standard. If you want to be closer to the raw Python API of
-liblouis, if you want to test some more intricate scenarios (involving
-inpos, modes, etc) then the doctests are for you.
-
 @menu
-* Translation Table Test Harness::
-* Translation Table Doctests::
+* YAML Tests::
+* Test Harness::
+* Doctests::
 @end menu
 
-@node Translation Table Test Harness
-@section Translation Table Test Harness
+@node YAML Tests
+@section YAML Tests
 
-Each harness file is a simple UTF8 encoded json file, which has two entries.
+@url{http://yaml.org/,YAML} is a human readable data serialization
+format that allows for an easy and compact way to define tests.
+
+A YAML file first defines which tables are to be used for the tests.
+Then it optionally defines flags such as the @samp{testmode}. Finally
+all the tests are defined.
+
+Let's just look at a simple example how tests could be defined:
+
+@iftex
+@emph{(For technical reasons the unicode braille in the expected
+translation in the following YAML examples is not displayed correctly.
+Please refer to the example YAML file @file{example_test.yaml} in the
+@file{tests} directory of the source distribution or read these
+examples in another version of the documentation such as HTML)}
+@end iftex
+
+@example
+# comments start with '#' anywhere on a line
+# first define which tables will be used for your tests
+tables: [unicode.dis, en-ueb-g1.ctb]
+
+# then optionally define flags such as testmode. If no flags are
+# defined forward translation is assumed
+
+# now define the tests
+tests:
+  - # each test is a list.
+    # The first item is the string to translate. Quoting of strings is
+    # optional
+    - hello
+    # The second item is the expected translation
+    - ⠓⠑⠇⠇⠕
+  - # optionally you can define additional parameters in a third
+    # item such as typeform or expected failure, etc
+    - Hello
+    - ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄
+    - @{typeform: '11110', xfail: true@}
+  - # a simple, no-frills test
+    - Good bye
+    - ⠠⠛⠕⠕⠙ ⠃⠽⠑
+  # same as above using "flow style" notation
+  - [Good bye,  ⠠⠛⠕⠕⠙ ⠃⠽⠑]
+@end example
+
+The three basic components of a test file are as follows:
+
+@table @samp
+@item tables
+A list containing table names, which the tests should be run against.
+This is usually just one table, but for some situations more than one
+table can be required.
+
+To test the @file{en-ueb-g1.ctb} table using unicode braille you could
+use the following definition:
+
+@example
+tables: [unicode.dis, en-ueb-g1.ctb]
+@end example
+
+If you wanted to test the @file{eo-g1.ctb} table using brf notation
+then you would use the following definition:
+
+@example
+tables: [en-us-brf.dis, eo-g1.ctb]
+@end example
+
+@item flags
+The flags that apply for all tests in this file. At the moment only
+the @samp{testmode} flag is supported. It can have three possible
+values:
+
+@table @samp
+@item forward
+This indicates that the tests are for forward translation
+@item backward
+This indicates that the tests are for backward translation
+@item hyphenate
+This indicates that the tests are for hyphenation
+@end table
+
+If no flags are defined forward translation is assumed.
+
+@item tests
+A list of tests. Each test consists of a list of two or three items.
+The first item is the unicode text to be tested. The second item is
+the expected braille output. This can be either unicode braille or an
+ASCII-braille like encoding. Quoting strings is optional. Comments can
+be inserted almost anywhere using the @samp{#} sign. A simple test
+would look at follows:
+
+@example
+  - # a simple, no-frills test
+    - Good bye
+    - ⠠⠛⠕⠕⠙ ⠃⠽⠑
+@end example
+
+Using the more compact ``flow style'' notation it would look like the
+following:
+
+@example
+  - [Good bye, ⠠⠛⠕⠕⠙ ⠃⠽⠑]
+@end example
+
+An optional third item can contain additional options for a test such
+as the typeform, or whether a test is expected to fail. The following
+shows a typical example:
+
+@example
+  -
+    - Hello
+    - ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄
+    - @{typeform: '11110', xfail: true@}
+  # same test more compact
+  - [Hello, ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄, @{typeform: '11110', xfail: true@}]
+@end example
+
+The valid additional options for a test are as follows:
+
+@table @samp
+@item xfail
+Whether a test is expected to fail. Valid options are @samp{true},
+@samp{Y}, @samp{Yes} or @samp{ON}. Anything else is considered false.
+
+@item typeform
+The typeform used for a translation. The typeform is passed in the
+form of a string.
+
+@item cursorPos
+A list of cursor positions for each input position. Useful when
+simulating screenreader interaction, to debug contraction and cursor
+behavior as in the following example from the @file{en-GB-g2.ctb}
+test. Also note that in this example the additional options are not
+passed in using the ``flow style'' notation.
+
+@example
+  -
+    - you went to
+    - ⠽ ⠺⠑⠝⠞ ⠞⠕
+    - mode: [compbrlAtCursor]
+      cursorPos: [0,1,2,3,4,5,6,7,8,9,10]
+@end example
+
+@item mode
+A list of translation modes that should be used for this test. If not
+defined defaults to 0. Valid mode values are @samp{noContractions},
+@samp{compbrlAtCursor}, @samp{dotsIO}, @samp{comp8Dots},
+@samp{pass1Only}, @samp{compbrlLeftCursor}, @samp{otherTrans}or
+@samp{ucBrl}.
+@end table
+
+@end table
+
+For more examples and inspiration please see the YAML tests
+(@file{*.yaml}) in the @file{tests} directory of the source
+distribution.
+
+@node Test Harness
+@section Test Harness
+
+Each harness file is a simple UTF8 encoded JSON file, which has two entries.
 @table @code
 @item tables 
 A list containing table names, which the tests should be run against.
-This is usually just one table, but for some situations more than one table is required.
+This is usually just one table, but for some situations more than one
+table is required.
 @item tests
 A list of sections of tests, which should be processed independently.
 Each test section is a dictionary of two items.
 @item flags
-The flags that apply for all the test cases in this section.
-For example, they could all be forward translation tests, or they should all be run as computer braille tests.
+The flags that apply for all the test cases in this section. For
+example, they could all be forward translation tests, or they should
+all be run as computer braille tests.
 
 @item data
-A list of test cases, each one containing the specific test data needed to perform a test.
+A list of test cases, each one containing the specific test data
+needed to perform a test.
 @end table
 
 These are the valid fields for the flags section:
 @table @code
 @item comment
-A field describing the reason for the tests, the transformation rule or any useful info that might be needed in case the test breaks (optional).
+A field describing the reason for the tests, the transformation rule
+or any useful info that might be needed in case the test breaks
+(optional).
 @item cursorPos
 The position of the cursor within the given text (optional). Useful
 when simulating screenreader interaction, to debug contraction and
@@ -1958,11 +2111,13 @@ cursor behavior.
 The liblouis translation mode that should be used for this test
 (optional). If not defined defaults to 0.
 @item outputUniBrl
-For a forward translation test, the output should be in Unicode braille.
-For a backward translation test, the input is in Unicode braille.
+For a forward translation test, the output should be in Unicode
+braille. For a backward translation test, the input is in Unicode
+braille.
 @item testmode
-The optional testmode field can have three values: "translate" (default if undeclared), "backtranslate" or "hyphenate".
-Declares what tests should be performed on the test data.
+The optional testmode field can have three values: "translate"
+(default if undeclared), "backtranslate" or "hyphenate". Declares what
+tests should be performed on the test data.
 @end table
 
 
@@ -1980,14 +2135,36 @@ The expected position of the braille cursor in the braille output
 contraction and cursor behavior.
 @end table
 
-Variables defined in the flags section can be overridden by individual test cases, but if several tests need the same options, they should 
-ideally be split into their own section, complete with their own flags and data.
+Variables defined in the flags section can be overridden by individual
+test cases, but if several tests need the same options, they should
+ideally be split into their own section, complete with their own flags
+and data.
 
-For examples please see @file{*_harness.txt} in the
-harness directory in the source distribution.
+For examples please see @file{*_harness.txt} in the harness directory
+in the source distribution.
 
-@node Translation Table Doctests
-@section Translation Table Doctests
+@node Doctests
+@section Doctests
+A doctest looks like you typed a command at the Python command line
+and got some output, e.g.
+
+@example
+>>> translate(['table.ctb'], "Hello", mode=compbrlLeftCursor)
+("HELLO", [0,1,2,3], [0,1,2,3], 0)
+@end example
+
+There is a convenience wrapper which hides away much of the complexity
+of above example so you can write stuff like 
+
+@example
+>>> t.braille('the cat sat on the mat')
+u'! cat sat on ! mat'
+@end example
+
+Essentially you are writing code, so the doctests allow you to do more
+flexible tests that are much closer to the raw iron than any of the
+other tests. However the doctests will only work in either Python2 or
+Python3.
 
 For examples on how to create doctests please see @file{*_test.txt} in
 the doctest directory in the source distribution.
@@ -2683,4 +2860,5 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  inlen compbrlAtCursor compbrlLeftCursor trantab stderr endian
 @c  LocalWords:  tablelist fileName printindex deprecatedopcode setDataPath
 @c  LocalWords:  getDataPath MathML suboperands logEnd liblouisutdml whitespace
-@c  LocalWords:  xhhhh yhhhhh zhhhhhhhh OpenOffice
+@c  LocalWords:  xhhhh yhhhhh zhhhhhhhh OpenOffice documentencoding
+@c  LocalWords:  YAML Doctests JSON logLevels

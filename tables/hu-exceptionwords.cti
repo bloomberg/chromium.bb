@@ -1312,7 +1312,7 @@ begword biomassz 12-24-135-134-1-156-156
 partword verésszer 1236-15-1235-16-234-156-15-1235	For example hullámverésszerűen word
 partword késszúrássz 13-16-234-156-346-1235-4-234-156	For example késszúrásszerű word
 begword pénissz 1234-16-1345-24-156-156
-begword sasszám 234-1-234-156-4-13	For example sasszámlálás, sasszámlálók words
+begword sasszám 234-1-234-156-4-134	For example sasszámlálás, sasszámlálók words
 partword mocskosszá 134-135-146-13-135-234-156-4	For example mocskosszájú word
 begword szarosszá 156-1-1235-135-234-156-4
 partword politikus =	For example politikusszakszervezetet word

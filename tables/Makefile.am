@@ -238,7 +238,6 @@ table_files = \
 	spaces.ctb \
 	sr-chardefs.cti \
 	sr-g1.ctb \
-	sr-translation.cti \
 	sv-1989.ctb \
 	sv-1996.ctb \
 	ta.ctb \

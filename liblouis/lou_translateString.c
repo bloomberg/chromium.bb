@@ -783,7 +783,7 @@ insertBrailleIndicators (int finish)
 	case checkNumber:
 //	  if (brailleIndicatorDefined
 //	      (table->numberSign) &&
-//	      checkAttr (currentInput[src], CTC_Digit, 0) &&
+//	      checkAttr_safe (currentInput, src, CTC_Digit, 0) &&
 //	      (prevTransOpcode == CTO_ExactDots
 //	       || !(beforeAttributes & CTC_Digit))
 //	      && prevTransOpcode != CTO_MidNum)
@@ -807,9 +807,9 @@ insertBrailleIndicators (int finish)
 	      checkWhat = checkBeginMultCaps;
 	      break;
 	    }
-	  if ((checkAttr (currentInput[src], CTC_Letter, 0)
+	    if ((checkAttr_safe (currentInput, src, CTC_Letter, 0)
 	       && !(beforeAttributes & CTC_Letter))
-	      && (!checkAttr (currentInput[src + 1], CTC_Letter, 0)
+	      && (!checkAttr_safe (currentInput, src + 1, CTC_Letter, 0)
 		))//  || (beforeAttributes & CTC_Digit)))
 	    {
 	      ok = 1;
@@ -1482,7 +1482,9 @@ for_selectRule ()
 		  case CTO_ExactDots:
 		    return;
 		  case CTO_NoCross:
-		    if (syllableBreak ())
+if (dontContract || (mode & noContractions))
+		      break;
+		    		    if (syllableBreak ())
 		      break;
 		    return;
 		  case CTO_Context:

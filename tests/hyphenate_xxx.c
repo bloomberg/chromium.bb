@@ -21,5 +21,6 @@ int main(int argc, char **argv)
   assert(hyphens[3] == '\0');
   assert(hyphens[4] == '\0');
   free(hyphens);
+  lou_free();
   return ret;
 }

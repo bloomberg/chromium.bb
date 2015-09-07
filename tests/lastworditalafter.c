@@ -33,5 +33,7 @@ main(int argc, char **argv)
 
   result |= check_translation("de-ch-g1.ctb", str, typeform2, expected);
 
+  lou_free();
+
   return result;
 }

@@ -49,5 +49,7 @@ main(int argc, char **argv)
   expected = ".\"t .& ._s";
 
   result |= check_translation(TRANSLATION_TABLE, str, convert_typeform(typeform), expected);
+
+  lou_free();
   return result;
 }

@@ -28,6 +28,7 @@ Please see the liblouis documentation for information of how to add a new harnes
 @author: Bert Frees <bertfrees@gmail.com>
 """
 
+import codecs
 import argparse
 import json
 import os
@@ -254,9 +255,9 @@ def test_allCases():
         # Process all *_harness.txt files in the harness directory.
         testfiles=iglob(os.path.join(harness_dir, '*_harness.txt'))
     for harness in testfiles:
-        f = open(harness, 'r')
+        f = codecs.open(harness, 'r', encoding='utf-8')
         try:
-            harnessModule = json.load(f, encoding="UTF-8")
+            harnessModule = json.load(f)
         except ValueError as e:
             raise ValueError("%s doesn't look like a harness file, %s" %(harness, e.message))
         f.close()

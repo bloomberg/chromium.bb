@@ -17,6 +17,7 @@ int
 main(int argc, char **argv)
 {
     int i;
+    int result = 0;
 
     char* table = "pass0_typebuf.ctb";
     char* text = "foo baz";
@@ -27,8 +28,9 @@ main(int argc, char **argv)
     for (i = 4; i < 7; i++)
       typeform[i] = 1;
 
-    if (!check_translation(table, text, typeform, expected))
-      return 0;
+    result = check_translation(table, text, typeform, expected);
 
-    return 1;
+    lou_free();
+
+    return result;
 }

@@ -35,7 +35,9 @@ harness_TESTS =					\
 	pl-pl-comp8_harness.txt		\
 	fr-bfu-g2_harness.txt		\
 	en-ueb-g1_harness.txt.bak		\
-	en-ueb-g1_harness.txt
+	en-ueb-g1_harness.txt		\
+	hr-8dots_harness.txt		\
+	sr-g1_harness.txt
 
 EXTRA_DIST = $(harness_TESTS)			\
 	     runHarness.py

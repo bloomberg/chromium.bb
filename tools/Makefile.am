@@ -1,10 +1,13 @@
-AM_CPPFLAGS = \
-	-I$(top_srcdir)/liblouis \
-	-I$(top_srcdir)/gnulib
+SUBDIRS = gnulib
 
-LDADD = \
-	$(top_builddir)/liblouis/liblouis.la \
-	$(top_builddir)/gnulib/libgnu.la \
+AM_CPPFLAGS =					\
+	-I$(top_srcdir)/liblouis		\
+	-I$(top_srcdir)/tools/gnulib		\
+	-I$(top_builddir)/tools/gnulib
+
+LDADD =							\
+	$(top_builddir)/liblouis/liblouis.la		\
+	$(top_builddir)/tools/gnulib/libgnutools.la	\
 	$(LTLIBINTL)
 
 bin_PROGRAMS=			\

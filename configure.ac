@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.68)
-AC_INIT([Liblouis], [2.6.3], [liblouis-liblouisxml@freelists.org], [liblouis], [http://www.liblouis.org])
+AC_INIT([Liblouis], [2.6.4], [liblouis-liblouisxml@freelists.org], [liblouis], [http://www.liblouis.org])
 AC_CONFIG_SRCDIR([liblouis/lou_backTranslateString.c])
 AM_CONFIG_HEADER(liblouis/config.h)
 
@@ -12,22 +12,13 @@ AM_INIT_AUTOMAKE
 # Checks for programs.
 AC_PROG_CC
 
-# gnulib
+# gnulib for the library
 gl_EARLY
+# gnulib for the tools
+gl_tools_EARLY
+
 gl_INIT
-
-# make sure we have a decent malloc and realloc
-gl_FUNC_MALLOC_GNU
-if test $REPLACE_MALLOC = 1; then
-AC_LIBOBJ([malloc])
-fi
-gl_MODULE_INDICATOR([malloc-gnu])
-
-gl_FUNC_REALLOC_GNU
-if test $REPLACE_REALLOC = 1; then
-AC_LIBOBJ([realloc])
-fi
-gl_MODULE_INDICATOR([realloc-gnu])
+gl_tools_INIT
 
 # Checks for more programs.
 AC_PROG_INSTALL
@@ -35,6 +26,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
+AC_CHECK_LIB([yaml], [yaml_parser_initialize])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -59,16 +51,16 @@ AH_BOTTOM([
 ])
 
 # increment if the interface has additions, changes, removals.
-LIBLOUIS_CURRENT=7
+LIBLOUIS_CURRENT=9
 
 # increment any time the source changes; set to 0 if you increment
 # CURRENT
-LIBLOUIS_REVISION=2
+LIBLOUIS_REVISION=0
 
 # increment if any interfaces have been added; set to 0 if any
 # interfaces have been changed or removed. removal has precedence over
 # adding, so set to 0 if both happened.
-LIBLOUIS_AGE=5
+LIBLOUIS_AGE=0
 
 AC_SUBST(LIBLOUIS_CURRENT)
 AC_SUBST(LIBLOUIS_REVISION)
@@ -98,7 +90,7 @@ if test x"${MAKEINFO_FOUND}" = xyes
 then
   MAKEINFO_VERSION_REQ=5
   AC_MSG_CHECKING([for makeinfo version >= $MAKEINFO_VERSION_REQ])
-  MAKEINFO_VERSION=`makeinfo --version | sed -ne 's/^makeinfo .* \([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*$/\1/p'`
+  MAKEINFO_VERSION=`makeinfo --version | sed -ne 's/^\(makeinfo\|texi2any\) .* \([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*$/\2/p'`
   if test x$MAKEINFO_VERSION = x -o 0$MAKEINFO_VERSION -lt $MAKEINFO_VERSION_REQ
   then
     AC_MSG_RESULT([no])
@@ -165,6 +157,7 @@ AC_CONFIG_FILES([
 	python/Makefile
 	python/louis/Makefile
         tools/Makefile
+        tools/gnulib/Makefile
 	gnulib/Makefile
 	m4/Makefile])
 AC_OUTPUT

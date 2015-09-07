@@ -138,6 +138,11 @@ logging_SOURCES =				\
 findTable_SOURCES =				\
 	findTable.c
 
+check_yaml_SOURCES = 				\
+	brl_checks.c				\
+	brl_checks.h				\
+	check_yaml.c
+
 # Note that this is not currently included in check_programs below
 # otherwise make check would never complete.
 infiniteTranslationLoop_SOURCES =				\
@@ -145,7 +150,7 @@ infiniteTranslationLoop_SOURCES =				\
 	brl_checks.h				\
 	infiniteTranslationLoop.c
 
-check_PROGRAMS =				\
+program_TESTS =					\
 	capitalization                          \
 	pass2					\
 	pass2_inpos				\
@@ -172,10 +177,11 @@ check_PROGRAMS =				\
 	typeform				\
 	pass0_typebuf				\
 	hash_collision                          \
-	resolve_table                          \
-	logging                          \
+	resolve_table                          	\
+	logging                          	\
 	findTable
 
+check_PROGRAMS = $(program_TESTS) check_yaml
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\
@@ -201,14 +207,55 @@ XFAIL_TESTS =					\
 	en_gb_g1_italics			\
 	squash_space
 
-# The hash_collision currently fails. The first translation works but subsequent ones fail. 
-XFAIL_TESTS += hash_collision
+dist_yaml_TESTS =				\
+	ar-ar-g1_harness.yaml			\
+	ar-fa_harness.yaml			\
+	chr-us-g1_harness.yaml			\
+	da-dk-g16-dictionary_harness.yaml	\
+	da-dk-g18-dictionary_harness.yaml	\
+	da-dk-g26-dictionary_harness.yaml	\
+	da-dk-g28-dictionary_harness.yaml	\
+	en-GB-g2_backward.yaml			\
+	en-GB-g2_harness.yaml			\
+	en-gb-g1_harness.yaml			\
+	en-ueb-g1_harness.yaml			\
+	en-ueb-g2-dictionary_harness.yaml	\
+	en-us-g2-dictionary_harness.yaml	\
+	en-us-g2-end-emphasis_harness.yaml	\
+	eo-g1_harness.yaml			\
+	ethio-g1_harness.yaml			\
+	example_test.yaml			\
+	fi_harness.yaml				\
+	foo.yaml				\
+	fr-bfu-g2_harness.yaml			\
+	ga-g1_harness.yaml			\
+	ga-g2_harness.yaml			\
+	hr-8dots_harness.yaml			\
+	hu-hu-comp8_backward.yaml		\
+	hu-hu-comp8_harness.yaml		\
+	hu-hu-g1_backward.yaml			\
+	hu-hu-g1_harness.yaml			\
+	iu-ca-g1_harness.yaml			\
+	ko-2006-g2_harness.yaml			\
+	ko-g2_harness.yaml			\
+	letterDefTest_harness.yaml		\
+	nl-BE-g1_harness.yaml			\
+	nocross_harness.yaml			\
+	pl-pl-comp8_harness.yaml		\
+	sr-g1_harness.yaml			\
+	ta-ta-g1_harness.yaml
+
+TEST_EXTENSIONS = .yaml
+YAML_LOG_COMPILER = ./check_yaml
+
+EXTRA_DIST = $(dist_yaml_TESTS)
 
 XFAIL_TESTS += ueb_test_data.pl
 
 TESTS =				\
-	$(check_PROGRAMS)	\
-	$(dist_check_SCRIPTS)
+	$(program_TESTS)	\
+	$(dist_check_SCRIPTS)   \
+	$(dist_yaml_TESTS)
 
 TESTS_ENVIRONMENT =																	\
 	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables,$(top_srcdir)/tests/tablesWithMetadata,	\
