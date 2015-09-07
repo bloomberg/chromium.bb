@@ -415,6 +415,7 @@ const char kEmailField[] = "${LOGIN_EMAIL}";
 namespace global_network_config {
 const char kAllowOnlyPolicyNetworksToAutoconnect[] =
     "AllowOnlyPolicyNetworksToAutoconnect";
+const char kDisableNetworkTypes[] = "DisableNetworkTypes";
 }  // global_network_config
 
 namespace device_state {

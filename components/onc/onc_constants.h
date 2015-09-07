@@ -432,6 +432,7 @@ ONC_EXPORT extern const char kWPAD[];
 
 namespace global_network_config {
 ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToAutoconnect[];
+ONC_EXPORT extern const char kDisableNetworkTypes[];
 }  // global_network_config
 
 namespace device_state {

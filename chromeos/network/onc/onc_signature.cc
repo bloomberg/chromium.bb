@@ -341,6 +341,7 @@ const OncFieldSignature network_with_state_fields[] = {
 const OncFieldSignature global_network_configuration_fields[] = {
     {::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
      &kBoolSignature},
+    {::onc::global_network_config::kDisableNetworkTypes, &kStringListSignature},
     {NULL}};
 
 const OncFieldSignature certificate_fields[] = {

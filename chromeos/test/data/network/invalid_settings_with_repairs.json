@@ -1,4 +1,7 @@
 {
+    "global-disabled-technologies": {
+         "DisableNetworkTypes": ["WiMAX"]
+    },
     "duplicate-network-guid": {
           "NetworkConfigurations": [
              {
