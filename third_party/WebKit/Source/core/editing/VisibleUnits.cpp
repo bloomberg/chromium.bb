@@ -1121,6 +1121,11 @@ bool inSameLine(const VisiblePosition& position1, const VisiblePosition& positio
     return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
 }
 
+bool inSameLine(const VisiblePositionInComposedTree& position1, const VisiblePositionInComposedTree& position2)
+{
+    return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
+}
+
 bool isStartOfLine(const VisiblePosition& p)
 {
     return p.isNotNull() && p.deepEquivalent() == startOfLine(p).deepEquivalent();

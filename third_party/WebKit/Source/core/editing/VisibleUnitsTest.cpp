@@ -17,9 +17,19 @@ PositionWithAffinity positionWithAffinityInDOMTree(Node& anchor, int offset, Tex
     return PositionWithAffinity(canonicalPositionOf(Position(&anchor, offset)), affinity);
 }
 
+VisiblePosition createVisiblePositionInDOMTree(Node& anchor, int offset, TextAffinity affinity = TextAffinity::Downstream)
+{
+    return createVisiblePosition(Position(&anchor, offset), affinity);
+}
+
 PositionInComposedTreeWithAffinity positionWithAffinityInComposedTree(Node& anchor, int offset, TextAffinity affinity = TextAffinity::Downstream)
 {
     return PositionInComposedTreeWithAffinity(canonicalPositionOf(PositionInComposedTree(&anchor, offset)), affinity);
+}
+
+VisiblePositionInComposedTree createVisiblePositionInComposedTree(Node& anchor, int offset, TextAffinity affinity = TextAffinity::Downstream)
+{
+    return createVisiblePosition(PositionInComposedTree(&anchor, offset), affinity);
 }
 
 } // namespace
@@ -64,10 +74,20 @@ TEST_F(VisibleUnitsTest, inSameLine)
     EXPECT_FALSE(inSameLine(positionWithAffinityInDOMTree(*one->firstChild(), 0), positionWithAffinityInDOMTree(*five->firstChild(), 0)));
     EXPECT_FALSE(inSameLine(positionWithAffinityInDOMTree(*two->firstChild(), 0), positionWithAffinityInDOMTree(*four->firstChild(), 0)));
 
+    EXPECT_TRUE(inSameLine(createVisiblePositionInDOMTree(*one, 0), createVisiblePositionInDOMTree(*two, 0)));
+    EXPECT_TRUE(inSameLine(createVisiblePositionInDOMTree(*one->firstChild(), 0), createVisiblePositionInDOMTree(*two->firstChild(), 0)));
+    EXPECT_FALSE(inSameLine(createVisiblePositionInDOMTree(*one->firstChild(), 0), createVisiblePositionInDOMTree(*five->firstChild(), 0)));
+    EXPECT_FALSE(inSameLine(createVisiblePositionInDOMTree(*two->firstChild(), 0), createVisiblePositionInDOMTree(*four->firstChild(), 0)));
+
     EXPECT_FALSE(inSameLine(positionWithAffinityInComposedTree(*one, 0), positionWithAffinityInComposedTree(*two, 0)));
     EXPECT_FALSE(inSameLine(positionWithAffinityInComposedTree(*one->firstChild(), 0), positionWithAffinityInComposedTree(*two->firstChild(), 0)));
     EXPECT_FALSE(inSameLine(positionWithAffinityInComposedTree(*one->firstChild(), 0), positionWithAffinityInComposedTree(*five->firstChild(), 0)));
     EXPECT_TRUE(inSameLine(positionWithAffinityInComposedTree(*two->firstChild(), 0), positionWithAffinityInComposedTree(*four->firstChild(), 0)));
+
+    EXPECT_FALSE(inSameLine(createVisiblePositionInComposedTree(*one, 0), createVisiblePositionInComposedTree(*two, 0)));
+    EXPECT_FALSE(inSameLine(createVisiblePositionInComposedTree(*one->firstChild(), 0), createVisiblePositionInComposedTree(*two->firstChild(), 0)));
+    EXPECT_FALSE(inSameLine(createVisiblePositionInComposedTree(*one->firstChild(), 0), createVisiblePositionInComposedTree(*five->firstChild(), 0)));
+    EXPECT_TRUE(inSameLine(createVisiblePositionInComposedTree(*two->firstChild(), 0), createVisiblePositionInComposedTree(*four->firstChild(), 0)));
 }
 
 TEST_F(VisibleUnitsTest, localCaretRectOfPosition)
