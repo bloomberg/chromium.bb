@@ -34,5 +34,8 @@ const char kPasswordManagerSavingEnabled[] = "profile.password_manager_enabled";
 const char kPasswordManagerGroupsForDomains[] =
     "profile.password_manager_groups_for_domains";
 
+const char kWasSavePrompFirstRunExperienceShown[] =
+    "profile.was_save_prompt_first_run_experience_shown";
+
 }  // namespace prefs
 }  // namespace password_manager

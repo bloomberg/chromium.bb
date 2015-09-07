@@ -64,6 +64,10 @@ extern const char kPasswordManagerSavingEnabled[];
 // used for reporting that domain.
 extern const char kPasswordManagerGroupsForDomains[];
 
+// Boolean that indicated whether first run experience for the save prompt was
+// shown or not.
+extern const char kWasSavePrompFirstRunExperienceShown[];
+
 }  // namespace prefs
 }  // namespace password_manager
 
