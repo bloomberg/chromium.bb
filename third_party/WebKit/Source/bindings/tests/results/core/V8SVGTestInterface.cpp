@@ -75,7 +75,7 @@ static void typeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value
 
 } // namespace SVGTestInterfaceV8Internal
 
-static const V8DOMConfiguration::AccessorConfiguration V8SVGTestInterfaceAccessors[] = {
+const V8DOMConfiguration::AccessorConfiguration V8SVGTestInterfaceAccessors[] = {
     {"type", SVGTestInterfaceV8Internal::typeAttributeGetterCallback, SVGTestInterfaceV8Internal::typeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 

@@ -607,7 +607,7 @@ void V8TestInterface2::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* sc
     }
 }
 
-static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
+const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
     {"item", TestInterface2V8Internal::itemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"setItem", TestInterface2V8Internal::setItemMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"deleteItem", TestInterface2V8Internal::deleteItemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
@@ -655,7 +655,7 @@ static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> func
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::ConstantConfiguration constantConstValue1Configuration = {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
+        const V8DOMConfiguration::ConstantConfiguration constantConstValue1Configuration = {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
         V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantConstValue1Configuration);
     }
     static_assert(1 == TestInterface2::CONST_VALUE_1, "the value of TestInterface2_CONST_VALUE_1 does not match with implementation");
@@ -669,7 +669,7 @@ static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> func
         v8::NamedPropertyHandlerConfiguration config(TestInterface2V8Internal::namedPropertyGetterCallback, TestInterface2V8Internal::namedPropertySetterCallback, TestInterface2V8Internal::namedPropertyQueryCallback, TestInterface2V8Internal::namedPropertyDeleterCallback, TestInterface2V8Internal::namedPropertyEnumeratorCallback, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
-    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface2V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface2V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
 
     // Custom toString template

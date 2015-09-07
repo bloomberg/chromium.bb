@@ -225,7 +225,7 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
+const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
     {% for attribute in attributes
        if not (attribute.exposed_test or
                attribute.runtime_enabled_function) and
@@ -246,7 +246,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 {% block install_accessors %}
 {% from 'attributes.cpp' import attribute_configuration with context %}
 {% if has_accessor_configuration %}
-static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
+const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for attribute in attributes
        if not (attribute.exposed_test or
                attribute.runtime_enabled_function) and
@@ -264,7 +264,7 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
 {% block install_methods %}
 {% from 'methods.cpp' import method_configuration with context %}
 {% if method_configuration_methods %}
-static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
+const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in method_configuration_methods %}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
@@ -352,11 +352,11 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function}}()) {
         {% if attribute.is_data_type_property %}
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = \
+        const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = \
         {{attribute_configuration(attribute)}};
         V8DOMConfiguration::installAttribute(isolate, instanceTemplate, prototypeTemplate, attributeConfiguration);
         {% else %}
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {{attribute_configuration(attribute)}};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
         {% endif %}
@@ -427,7 +427,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% if iterator_method %}
     {% filter exposed(iterator_method.exposed_test) %}
     {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
-    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
     {% endfilter %}{# runtime_enabled() #}
     {% endfilter %}{# exposed() #}

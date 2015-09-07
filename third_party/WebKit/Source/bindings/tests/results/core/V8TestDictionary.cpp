@@ -206,7 +206,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             V8StringResource<> enumMember = enumMemberValue;
             if (!enumMember.prepare(exceptionState))
                 return;
-            static const char* validValues[] = {
+            const char* validValues[] = {
                 "",
                 "EnumValue1",
                 "EnumValue2",
@@ -230,7 +230,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             Vector<String> enumSequenceMember = toImplArray<Vector<String>>(enumSequenceMemberValue, 0, isolate, exceptionState);
             if (exceptionState.hadException())
                 return;
-            static const char* validValues[] = {
+            const char* validValues[] = {
                 "",
                 "EnumValue1",
                 "EnumValue2",

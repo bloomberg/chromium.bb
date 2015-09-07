@@ -920,7 +920,7 @@ void TestEnumOrDouble::setTestEnum(String value)
 {
     ASSERT(isNull());
     NonThrowableExceptionState exceptionState;
-    static const char* validValues[] = {
+    const char* validValues[] = {
         "",
         "EnumValue1",
         "EnumValue2",
@@ -986,7 +986,7 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
         V8StringResource<> cppValue = v8Value;
         if (!cppValue.prepare(exceptionState))
             return;
-        static const char* validValues[] = {
+        const char* validValues[] = {
             "",
             "EnumValue1",
             "EnumValue2",

@@ -160,7 +160,7 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestSpecialOperationsV8Internal
 
-static const V8DOMConfiguration::MethodConfiguration V8TestSpecialOperationsMethods[] = {
+const V8DOMConfiguration::MethodConfiguration V8TestSpecialOperationsMethods[] = {
     {"namedItem", TestSpecialOperationsV8Internal::namedItemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
 };
 

@@ -333,7 +333,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCall
 
 } // namespace TestInterfaceNodeV8Internal
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceNodeAccessors[] = {
+const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceNodeAccessors[] = {
     {"nodeName", TestInterfaceNodeV8Internal::nodeNameAttributeGetterCallback, TestInterfaceNodeV8Internal::nodeNameAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"stringAttribute", TestInterfaceNodeV8Internal::stringAttributeAttributeGetterCallback, TestInterfaceNodeV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"readonlyTestInterfaceEmptyAttribute", TestInterfaceNodeV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -343,7 +343,7 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceNodeAccess
     {"reflectUrlStringAttribute", TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeGetterCallback, TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
-static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceNodeMethods[] = {
+const V8DOMConfiguration::MethodConfiguration V8TestInterfaceNodeMethods[] = {
     {"testInterfaceEmptyMethod", TestInterfaceNodeV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"perWorldBindingsTestInterfaceEmptyMethod", TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodMethodCallback, TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodMethodCallbackForMainWorld, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg", TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallback, TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallbackForMainWorld, 0, V8DOMConfiguration::ExposedToAllScripts},

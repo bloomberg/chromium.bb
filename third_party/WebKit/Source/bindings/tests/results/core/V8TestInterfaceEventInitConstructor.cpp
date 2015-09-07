@@ -98,7 +98,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 } // namespace TestInterfaceEventInitConstructorV8Internal
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitConstructorAccessors[] = {
+const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitConstructorAccessors[] = {
     {"readonlyStringAttribute", TestInterfaceEventInitConstructorV8Internal::readonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
@@ -134,7 +134,7 @@ static void installV8TestInterfaceEventInitConstructorTemplate(v8::Local<v8::Fun
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     if (RuntimeEnabledFeatures::trustedEventsEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"isTrusted", TestInterfaceEventInitConstructorV8Internal::isTrustedAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }

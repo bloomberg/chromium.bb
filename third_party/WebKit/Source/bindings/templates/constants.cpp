@@ -27,7 +27,7 @@ static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v
 {% macro install_constants() %}
 {% if constant_configuration_constants %}
 {# Normal constants #}
-static const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] = {
+const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] = {
     {% for constant in constant_configuration_constants %}
     {{constant_configuration(constant)}},
     {% endfor %}
@@ -39,7 +39,7 @@ V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplat
 {% filter runtime_enabled(constant_tuple[0]) %}
 {% for constant in constant_tuple[1] %}
 {% set constant_name = constant.name.title().replace('_', '') %}
-static const V8DOMConfiguration::ConstantConfiguration constant{{constant_name}}Configuration = {{constant_configuration(constant)}};
+const V8DOMConfiguration::ConstantConfiguration constant{{constant_name}}Configuration = {{constant_configuration(constant)}};
 V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constant{{constant_name}}Configuration);
 {% endfor %}
 {% endfilter %}

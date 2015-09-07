@@ -80,7 +80,7 @@ static void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::V
 
 } // namespace TestInterfaceDocumentV8Internal
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceDocumentAccessors[] = {
+const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceDocumentAccessors[] = {
     {"location", TestInterfaceDocumentV8Internal::locationAttributeGetterCallback, TestInterfaceDocumentV8Internal::locationAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 

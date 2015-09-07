@@ -340,11 +340,11 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 } // namespace TestInterfaceGarbageCollectedV8Internal
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceGarbageCollectedAccessors[] = {
+const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceGarbageCollectedAccessors[] = {
     {"attr1", TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetterCallback, TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
-static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceGarbageCollectedMethods[] = {
+const V8DOMConfiguration::MethodConfiguration V8TestInterfaceGarbageCollectedMethods[] = {
     {"func", TestInterfaceGarbageCollectedV8Internal::funcMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"keys", TestInterfaceGarbageCollectedV8Internal::keysMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"values", TestInterfaceGarbageCollectedV8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
@@ -387,7 +387,7 @@ static void installV8TestInterfaceGarbageCollectedTemplate(v8::Local<v8::Functio
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
-    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceGarbageCollectedV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceGarbageCollectedV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
 
     // Custom toString template

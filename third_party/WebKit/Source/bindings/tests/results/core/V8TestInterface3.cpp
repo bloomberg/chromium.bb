@@ -272,7 +272,7 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterface3V8Internal
 
-static const V8DOMConfiguration::MethodConfiguration V8TestInterface3Methods[] = {
+const V8DOMConfiguration::MethodConfiguration V8TestInterface3Methods[] = {
     {"voidMethodDocument", TestInterface3V8Internal::voidMethodDocumentMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
 };
 
@@ -302,7 +302,7 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> func
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface3V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+        const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface3V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
         V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {

@@ -295,7 +295,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
-    static const char* validValues[] = {
+    const char* validValues[] = {
         "",
         "EnumValue1",
         "EnumValue2",
@@ -1128,7 +1128,7 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
-    static const char* validValues[] = {
+    const char* validValues[] = {
         "foo",
         "bar",
     };
@@ -1353,7 +1353,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
         testEnumArg = info[0];
         if (!testEnumArg.prepare())
             return;
-        static const char* validValues[] = {
+        const char* validValues[] = {
             "",
             "EnumValue1",
             "EnumValue2",
@@ -2326,7 +2326,7 @@ void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scr
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
+const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
     {"testInterfaceConstructorAttribute", v8ConstructorAttributeGetter, TestInterfaceImplementationV8Internal::testInterfaceConstructorAttributeAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
     {"TestInterface", v8ConstructorAttributeGetter, TestInterfaceImplementationV8Internal::TestInterfaceImplementationConstructorAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
     {"TestInterface2", v8ConstructorAttributeGetter, TestInterfaceImplementationV8Internal::TestInterfaceImplementationConstructorAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface2::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
@@ -2335,7 +2335,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttribute
 #pragma clang diagnostic pop
 #endif
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceAccessors[] = {
+const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceAccessors[] = {
     {"testInterfaceAttribute", TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"doubleAttribute", TestInterfaceImplementationV8Internal::doubleAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::doubleAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"floatAttribute", TestInterfaceImplementationV8Internal::floatAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::floatAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -2362,7 +2362,7 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceAccessors[
     {"partial2StaticLongAttribute", TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
 };
 
-static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
+const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
     {"voidMethodTestInterfaceEmptyArg", TestInterfaceImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDoubleArgFloatArg", TestInterfaceImplementationV8Internal::voidMethodDoubleArgFloatArgMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
@@ -2398,71 +2398,71 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
     ExecutionContext* context = currentExecutionContext(isolate);
     ALLOW_UNUSED_LOCAL(context);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"conditionalLongAttribute", TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"conditionalReadOnlyLongAttribute", TestInterfaceImplementationV8Internal::conditionalReadOnlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"staticConditionalReadOnlyLongAttribute", TestInterfaceImplementationV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
     if (RuntimeEnabledFeatures::implementsFeatureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"implementsRuntimeEnabledNodeAttribute", TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
     if (RuntimeEnabledFeatures::implements2FeatureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"implements2StaticStringAttribute", TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
     if (RuntimeEnabledFeatures::implements2FeatureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"implements2StringAttribute", TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"partialLongAttribute", TestInterfaceImplementationV8Internal::partialLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"partialStaticLongAttribute", TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"partialCallWithExecutionContextLongAttribute", TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"partialPartialEnumTypeAttribute", TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
         {"stringAttribute", TestInterfaceImplementationV8Internal::stringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
-    static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+    const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
         {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
         {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
         {"IMPLEMENTS_CONSTANT_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
@@ -2471,9 +2471,9 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
     };
     V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::ConstantConfiguration constantPartialUnsignedShortConfiguration = {"PARTIAL_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
+        const V8DOMConfiguration::ConstantConfiguration constantPartialUnsignedShortConfiguration = {"PARTIAL_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
         V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantPartialUnsignedShortConfiguration);
-        static const V8DOMConfiguration::ConstantConfiguration constantPartialDoubleConfiguration = {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::ConstantTypeDouble};
+        const V8DOMConfiguration::ConstantConfiguration constantPartialDoubleConfiguration = {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::ConstantTypeDouble};
         V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantPartialDoubleConfiguration);
     }
     {
@@ -2488,7 +2488,7 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
         v8::NamedPropertyHandlerConfiguration config(TestInterfaceImplementationV8Internal::namedPropertyGetterCallback, TestInterfaceImplementationV8Internal::namedPropertySetterCallback, TestInterfaceImplementationV8Internal::namedPropertyQueryCallback, TestInterfaceImplementationV8Internal::namedPropertyDeleterCallback, TestInterfaceImplementationV8Internal::namedPropertyEnumeratorCallback, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
-    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceImplementationV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceImplementationV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
     const V8DOMConfiguration::MethodConfiguration alwaysExposedStaticMethodMethodConfiguration = {
@@ -2624,11 +2624,11 @@ void V8TestInterface::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8:
     ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
     if (context && (context->isWorkerGlobalScope())) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"workerExposedAttribute", TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"workerExposedAttribute", TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, v8::Local<v8::Function>(), signature, accessorConfiguration);
     }
     if (context && (context->isDocument())) {
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"windowExposedAttribute", TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"windowExposedAttribute", TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, v8::Local<v8::Function>(), signature, accessorConfiguration);
     }
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));

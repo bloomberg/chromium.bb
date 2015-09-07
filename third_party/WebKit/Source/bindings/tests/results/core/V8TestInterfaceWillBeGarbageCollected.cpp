@@ -110,7 +110,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 } // namespace TestInterfaceWillBeGarbageCollectedV8Internal
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceWillBeGarbageCollectedAccessors[] = {
+const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceWillBeGarbageCollectedAccessors[] = {
     {"attr1", TestInterfaceWillBeGarbageCollectedV8Internal::attr1AttributeGetterCallback, TestInterfaceWillBeGarbageCollectedV8Internal::attr1AttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 

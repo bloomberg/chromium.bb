@@ -636,7 +636,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
     'static_cast<v8::PropertyAttribute>(%s)' %
     ' | '.join(method.property_attributes or ['v8::DontDelete']) %}
 {% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
+const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
     "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, V8DOMConfiguration::OnInstance,
 };
 V8DOMConfiguration::installAttribute(isolate, {{method.function_template}}, v8::Local<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration);
@@ -838,7 +838,7 @@ ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext(
 v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
 {% for attribute in attributes if attribute.exposed_test and attribute.on_prototype %}
 {% filter exposed(attribute.exposed_test) %}
-static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
+const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
 V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, v8::Local<v8::Function>(), signature, accessorConfiguration);
 {% endfilter %}
 {% endfor %}

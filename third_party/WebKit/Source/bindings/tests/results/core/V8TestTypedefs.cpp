@@ -321,18 +321,18 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
+const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
     {"tAttribute", v8ConstructorAttributeGetter, TestTypedefsV8Internal::tAttributeAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[] = {
+const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[] = {
     {"uLongLongAttribute", TestTypedefsV8Internal::uLongLongAttributeAttributeGetterCallback, TestTypedefsV8Internal::uLongLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
-static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
+const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
     {"voidMethodArrayOfLongsArg", TestTypedefsV8Internal::voidMethodArrayOfLongsArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodFloatArgStringArg", TestTypedefsV8Internal::voidMethodFloatArgStringArgMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodTestCallbackInterfaceTypeArg", TestTypedefsV8Internal::voidMethodTestCallbackInterfaceTypeArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

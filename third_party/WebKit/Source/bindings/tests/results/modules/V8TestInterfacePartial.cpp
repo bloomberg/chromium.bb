@@ -231,7 +231,7 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
         arg = info[0];
         if (!arg.prepare())
             return;
-        static const char* validValues[] = {
+        const char* validValues[] = {
             "EnumModulesValue1",
             "EnumModulesValue2",
         };
@@ -296,7 +296,7 @@ static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 
 } // namespace TestInterfaceImplementationPartialV8Internal
 
-static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
+const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
     {"partialVoidTestEnumModulesArgMethod", TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"unscopeableVoidMethod", TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
@@ -317,7 +317,7 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::Functi
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
-    static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+    const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
         {"PARTIAL3_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
     };
     V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
