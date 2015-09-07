@@ -77,8 +77,6 @@ class ExtensionSyncData {
   syncer::SyncChange GetSyncChange(
       syncer::SyncChange::SyncChangeType change_type) const;
 
-  void set_uninstalled(bool uninstalled);
-
   bool is_app() const { return is_app_; }
 
   const std::string& id() const { return id_; }
@@ -96,7 +94,8 @@ class ExtensionSyncData {
 
   // Version-dependent properties (i.e., should be used only when the
   // version of the currently-installed extension matches |version|).
-  const Version& version() const { return version_; }
+  const base::Version& version() const { return version_; }
+  void set_version(const base::Version& version) { version_ = version; }
   const GURL& update_url() const { return update_url_; }
   // Used only for debugging.
   const std::string& name() const { return name_; }
@@ -154,7 +153,7 @@ class ExtensionSyncData {
   bool remote_install_;
   OptionalBoolean all_urls_enabled_;
   bool installed_by_custodian_;
-  Version version_;
+  base::Version version_;
   GURL update_url_;
   std::string name_;
 

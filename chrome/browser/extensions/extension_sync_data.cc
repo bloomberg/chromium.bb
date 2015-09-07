@@ -153,8 +153,8 @@ scoped_ptr<ExtensionSyncData> ExtensionSyncData::CreateFromSyncChange(
   if (!data.get())
     return nullptr;
 
-  data->set_uninstalled(sync_change.change_type() ==
-                        syncer::SyncChange::ACTION_DELETE);
+  if (sync_change.change_type() == syncer::SyncChange::ACTION_DELETE)
+    data->uninstalled_ = true;
   return data.Pass();
 }
 
@@ -315,10 +315,6 @@ bool ExtensionSyncData::PopulateFromAppSpecifics(
   }
 
   return true;
-}
-
-void ExtensionSyncData::set_uninstalled(bool uninstalled) {
-  uninstalled_ = uninstalled;
 }
 
 bool ExtensionSyncData::PopulateFromSyncData(

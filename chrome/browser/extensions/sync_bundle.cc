@@ -63,7 +63,7 @@ void SyncBundle::PushSyncAddOrUpdate(const std::string& extension_id,
   PushSyncChanges(syncer::SyncChangeList(
       1, CreateSyncChange(extension_id, sync_data)));
   AddSyncedExtension(extension_id);
-  // Now sync and local state agree. If we had any pending change from sync,
+  // Now sync and local state agree. If we had a pending install from sync,
   // clear it now.
   pending_sync_data_.erase(extension_id);
 }
@@ -75,17 +75,17 @@ void SyncBundle::ApplySyncData(const ExtensionSyncData& extension_sync_data) {
     AddSyncedExtension(extension_sync_data.id());
 }
 
-bool SyncBundle::HasPendingExtensionId(const std::string& id) const {
+bool SyncBundle::HasPendingExtensionData(const std::string& id) const {
   return pending_sync_data_.find(id) != pending_sync_data_.end();
 }
 
-void SyncBundle::AddPendingExtension(
+void SyncBundle::AddPendingExtensionData(
     const std::string& id,
     const ExtensionSyncData& extension_sync_data) {
   pending_sync_data_.insert(std::make_pair(id, extension_sync_data));
 }
 
-std::vector<ExtensionSyncData> SyncBundle::GetPendingData() const {
+std::vector<ExtensionSyncData> SyncBundle::GetPendingExtensionData() const {
   std::vector<ExtensionSyncData> pending_extensions;
   for (const auto& data : pending_sync_data_)
     pending_extensions.push_back(data.second);

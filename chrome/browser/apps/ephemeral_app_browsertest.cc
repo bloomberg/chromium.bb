@@ -495,8 +495,10 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     std::string app_id = app->id();
     app = NULL;
 
-    ExtensionSyncService* sync_service = ExtensionSyncService::Get(profile());
-    sync_service->ApplySyncData(app_sync_data);
+    ExtensionSyncService::Get(profile())->ProcessSyncChanges(
+        FROM_HERE,
+        syncer::SyncChangeList(
+            1, app_sync_data.GetSyncChange(syncer::SyncChange::ACTION_ADD)));
 
     // Verify the installation.
     VerifyPromotedApp(app_id, expected_set);

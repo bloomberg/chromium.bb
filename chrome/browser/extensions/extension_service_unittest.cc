@@ -6647,24 +6647,32 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   ext_specifics->set_id(good_crx);
   ext_specifics->set_enabled(true);
 
+  const base::Version installed_version =
+      *service()->GetInstalledExtension(good_crx)->version();
+
   {
-    ext_specifics->set_version(
-        service()->GetInstalledExtension(good_crx)->version()->GetString());
+    ext_specifics->set_version(installed_version.GetString());
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
     syncer::SyncChange sync_change(FROM_HERE,
                                    syncer::SyncChange::ACTION_UPDATE,
                                    sync_data);
-    syncer::SyncChangeList list(1);
-    list[0] = sync_change;
+    syncer::SyncChangeList list(1, sync_change);
 
     // Should do nothing if extension version == sync version.
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_FALSE(service()->updater()->WillCheckSoon());
+    // Make sure the version we'll send back to sync didn't change.
+    syncer::SyncDataList data =
+        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+    ASSERT_EQ(1u, data.size());
+    scoped_ptr<ExtensionSyncData> extension_data =
+        ExtensionSyncData::CreateFromSyncData(data[0]);
+    ASSERT_TRUE(extension_data);
+    EXPECT_TRUE(installed_version.Equals(extension_data->version()));
   }
 
-  // Should do nothing if extension version > sync version (but see
-  // the TODO in ProcessExtensionSyncData).
+  // Should do nothing if extension version > sync version.
   {
     ext_specifics->set_version("0.0.0.0");
     syncer::SyncData sync_data =
@@ -6672,26 +6680,43 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
     syncer::SyncChange sync_change(FROM_HERE,
                                    syncer::SyncChange::ACTION_UPDATE,
                                    sync_data);
-    syncer::SyncChangeList list(1);
-    list[0] = sync_change;
+    syncer::SyncChangeList list(1, sync_change);
 
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_FALSE(service()->updater()->WillCheckSoon());
+    // Make sure the version we'll send back to sync didn't change.
+    syncer::SyncDataList data =
+        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+    ASSERT_EQ(1u, data.size());
+    scoped_ptr<ExtensionSyncData> extension_data =
+        ExtensionSyncData::CreateFromSyncData(data[0]);
+    ASSERT_TRUE(extension_data);
+    EXPECT_TRUE(installed_version.Equals(extension_data->version()));
   }
 
   // Should kick off an update if extension version < sync version.
   {
-    ext_specifics->set_version("9.9.9.9");
+    const base::Version new_version("9.9.9.9");
+    ext_specifics->set_version(new_version.GetString());
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
     syncer::SyncChange sync_change(FROM_HERE,
                                    syncer::SyncChange::ACTION_UPDATE,
                                    sync_data);
-    syncer::SyncChangeList list(1);
-    list[0] = sync_change;
+    syncer::SyncChangeList list(1, sync_change);
 
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_TRUE(service()->updater()->WillCheckSoon());
+    // Make sure that we'll send the NEW version back to sync, even though we
+    // haven't actually updated yet. This is to prevent the data in sync from
+    // flip-flopping back and forth until all clients are up to date.
+    syncer::SyncDataList data =
+        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+    ASSERT_EQ(1u, data.size());
+    scoped_ptr<ExtensionSyncData> extension_data =
+        ExtensionSyncData::CreateFromSyncData(data[0]);
+    ASSERT_TRUE(extension_data);
+    EXPECT_TRUE(new_version.Equals(extension_data->version()));
   }
 
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
