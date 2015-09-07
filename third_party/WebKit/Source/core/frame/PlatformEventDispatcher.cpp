@@ -19,9 +19,13 @@ PlatformEventDispatcher::PlatformEventDispatcher()
 void PlatformEventDispatcher::addController(PlatformEventController* controller)
 {
     ASSERT(controller);
-    ASSERT(!m_controllers.contains(controller));
+    // TODO: If we can avoid to register a same controller twice, we can change
+    // this 'if' to ASSERT.
+    if (m_controllers.contains(controller))
+        return;
 
     m_controllers.add(controller);
+
     if (!m_isListening) {
         startListening();
         m_isListening = true;
