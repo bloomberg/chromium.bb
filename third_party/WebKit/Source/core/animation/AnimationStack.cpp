@@ -32,8 +32,9 @@
 #include "core/animation/AnimationStack.h"
 
 #include "core/animation/CompositorAnimations.h"
-#include "core/animation/StyleInterpolation.h"
+#include "core/animation/InvalidatableStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"
 #include "wtf/NonCopyingSort.h"
 #include <algorithm>
@@ -42,10 +43,19 @@ namespace blink {
 
 namespace {
 
-void copyToActiveInterpolationMap(const Vector<RefPtr<Interpolation>>& source, ActiveInterpolationMap& target)
+void copyToActiveInterpolationsMap(const Vector<RefPtr<Interpolation>>& source, ActiveInterpolationsMap& target)
 {
     for (const auto& interpolation : source) {
-        target.set(interpolation->property(), interpolation.get());
+        ActiveInterpolationsMap::AddResult entry = target.add(interpolation->property(), ActiveInterpolations(1));
+        ActiveInterpolations& activeInterpolations = entry.storedValue->value;
+        if (!entry.isNewEntry
+            && RuntimeEnabledFeatures::stackedCSSPropertyAnimationsEnabled()
+            && interpolation->isInvalidatableStyleInterpolation()
+            && toInvalidatableStyleInterpolation(*interpolation).dependsOnUnderlyingValue()) {
+            activeInterpolations.append(interpolation.get());
+        } else {
+            activeInterpolations.at(0) = interpolation.get();
+        }
     }
 }
 
@@ -55,13 +65,13 @@ bool compareEffects(const Member<SampledEffect>& effect1, const Member<SampledEf
     return effect1->sequenceNumber() < effect2->sequenceNumber();
 }
 
-void copyNewAnimationsToActiveInterpolationMap(const HeapVector<Member<InertEffect>>& newAnimations, ActiveInterpolationMap& result)
+void copyNewAnimationsToActiveInterpolationsMap(const HeapVector<Member<InertEffect>>& newAnimations, ActiveInterpolationsMap& result)
 {
     for (const auto& newAnimation : newAnimations) {
         OwnPtr<Vector<RefPtr<Interpolation>>> sample;
         newAnimation->sample(sample);
         if (sample)
-            copyToActiveInterpolationMap(*sample, result);
+            copyToActiveInterpolationsMap(*sample, result);
     }
 }
 
@@ -81,11 +91,11 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority priority, double timelineCurrentTime)
+ActiveInterpolationsMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority priority, double timelineCurrentTime)
 {
     // We don't exactly know when new animations will start, but timelineCurrentTime is a good estimate.
 
-    ActiveInterpolationMap result;
+    ActiveInterpolationsMap result;
 
     if (animationStack) {
         HeapVector<Member<SampledEffect>>& effects = animationStack->m_effects;
@@ -95,12 +105,12 @@ ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* anim
         for (const auto& effect : effects) {
             if (effect->priority() != priority || (suppressedAnimations && effect->effect() && suppressedAnimations->contains(effect->effect()->animation())))
                 continue;
-            copyToActiveInterpolationMap(effect->interpolations(), result);
+            copyToActiveInterpolationsMap(effect->interpolations(), result);
         }
     }
 
     if (newAnimations)
-        copyNewAnimationsToActiveInterpolationMap(*newAnimations, result);
+        copyNewAnimationsToActiveInterpolationsMap(*newAnimations, result);
 
     return result;
 }

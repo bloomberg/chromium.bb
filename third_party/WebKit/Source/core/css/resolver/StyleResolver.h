@@ -75,6 +75,7 @@ enum RuleMatchingBehavior {
 const unsigned styleSharingListSize = 15;
 const unsigned styleSharingMaxDepth = 32;
 typedef WillBeHeapDeque<RawPtrWillBeMember<Element>, styleSharingListSize> StyleSharingList;
+using ActiveInterpolationsMap = HashMap<PropertyHandle, Vector<RefPtr<Interpolation>, 1>>;
 
 // This class selects a ComputedStyle for a given element based on a collection of stylesheets.
 class CORE_EXPORT StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
@@ -215,7 +216,7 @@ private:
     template <CSSPropertyPriority priority>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <CSSPropertyPriority priority>
-    void applyAnimatedProperties(StyleResolverState&, const HashMap<PropertyHandle, RefPtr<Interpolation>>&);
+    void applyAnimatedProperties(StyleResolverState&, const ActiveInterpolationsMap&);
     template <CSSPropertyPriority priority>
     void applyAllProperty(StyleResolverState&, CSSValue*, bool inheritedOnly, PropertyWhitelistType);
 

@@ -244,11 +244,11 @@ public:
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
     const HashSet<CSSPropertyID>& finishedTransitions() const { return m_finishedTransitions; }
 
-    void adoptActiveInterpolationsForAnimations(ActiveInterpolationMap& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
-    void adoptActiveInterpolationsForTransitions(ActiveInterpolationMap& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
-    const ActiveInterpolationMap& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
-    const ActiveInterpolationMap& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
-    ActiveInterpolationMap& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
+    void adoptActiveInterpolationsForAnimations(ActiveInterpolationsMap& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
+    void adoptActiveInterpolationsForTransitions(ActiveInterpolationsMap& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
+    const ActiveInterpolationsMap& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
+    const ActiveInterpolationsMap& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
+    ActiveInterpolationsMap& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
 
     bool isEmpty() const
     {
@@ -290,8 +290,8 @@ private:
     HashSet<CSSPropertyID> m_cancelledTransitions;
     HashSet<CSSPropertyID> m_finishedTransitions;
 
-    ActiveInterpolationMap m_activeInterpolationsForAnimations;
-    ActiveInterpolationMap m_activeInterpolationsForTransitions;
+    ActiveInterpolationsMap m_activeInterpolationsForAnimations;
+    ActiveInterpolationsMap m_activeInterpolationsForTransitions;
 
     friend class PendingAnimationUpdate;
 };

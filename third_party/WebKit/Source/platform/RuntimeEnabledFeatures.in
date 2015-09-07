@@ -153,6 +153,7 @@ SlimmingPaint status=stable
 SlimmingPaintV2 depends_on=SlimmingPaint
 SlimmingPaintUnderInvalidationChecking depends_on=SlimmingPaint
 SlimmingPaintStrictCullRectClipping depends_on=SlimmingPaint
+StackedCSSPropertyAnimations status=experimental
 // Do not turn this flag into stable, because many interfaces that should not
 // be shipped would be enabled. Instead, remove the flag from the shipping
 // interface.

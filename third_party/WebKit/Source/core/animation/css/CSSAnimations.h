@@ -129,7 +129,7 @@ private:
 
     CSSAnimationUpdate m_pendingUpdate;
 
-    ActiveInterpolationMap m_previousActiveInterpolationsForAnimations;
+    ActiveInterpolationsMap m_previousActiveInterpolationsForAnimations;
 
     static void calculateAnimationUpdate(CSSAnimationUpdate&, const Element* animatingElement, Element&, const ComputedStyle&, ComputedStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate&, const Element* animatingElement, const ComputedStyle&);

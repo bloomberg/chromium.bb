@@ -97,10 +97,10 @@ bool InvalidatableStyleInterpolation::isCacheValid(const StyleResolverState& sta
     return true;
 }
 
-void InvalidatableStyleInterpolation::ensureValidInterpolation(const StyleResolverState& state, const InterpolationValue* underlyingValue) const
+const InterpolationValue* InvalidatableStyleInterpolation::ensureValidInterpolation(const StyleResolverState& state, const InterpolationValue* underlyingValue) const
 {
     if (m_cachedConversion && isCacheValid(state, underlyingValue))
-        return;
+        return m_cachedValue.get();
     m_conversionCheckers.clear();
     if (!maybeCachePairwiseConversion(&state, underlyingValue)) {
         m_cachedConversion = FlipPrimitiveInterpolation::create(
@@ -108,6 +108,7 @@ void InvalidatableStyleInterpolation::ensureValidInterpolation(const StyleResolv
             convertSingleKeyframe(*m_endKeyframe, state, underlyingValue));
     }
     m_cachedConversion->interpolateValue(m_currentFraction, m_cachedValue);
+    return m_cachedValue.get();
 }
 
 void InvalidatableStyleInterpolation::setFlagIfInheritUsed(StyleResolverState& state) const
@@ -120,20 +121,97 @@ void InvalidatableStyleInterpolation::setFlagIfInheritUsed(StyleResolverState& s
     }
 }
 
-void InvalidatableStyleInterpolation::apply(StyleResolverState& state) const
-{
-    OwnPtr<InterpolationValue> underlyingValue = dependsOnUnderlyingValue() ? maybeConvertUnderlyingValue(state) : nullptr;
-    ensureValidInterpolation(state, underlyingValue.get());
-    if (!m_cachedValue)
-        return;
-    const InterpolableValue* appliedInterpolableValue = &m_cachedValue->interpolableValue();
-    if (underlyingValue && m_cachedValue->type() == underlyingValue->type()) {
-        double underlyingFraction = m_cachedConversion->interpolateUnderlyingFraction(m_startKeyframe->underlyingFraction(), m_endKeyframe->underlyingFraction(), m_currentFraction);
-        underlyingValue->interpolableValue().scaleAndAdd(underlyingFraction, m_cachedValue->interpolableValue());
-        appliedInterpolableValue = &underlyingValue->interpolableValue();
+// Handles memory management of underlying InterpolationValues in applyStack()
+// Ensures we perform copy on write if we are not the owner of an underlying InterpolationValue.
+// This functions similar to a DataRef except on OwnPtr'd objects.
+class UnderlyingValue {
+    STACK_ALLOCATED();
+public:
+    UnderlyingValue()
+        : m_owner()
+        , m_pointer(nullptr)
+    { }
+
+    void set(const InterpolationValue* interpolationValue)
+    {
+        // By clearing m_owner we will perform a copy when attempting to access()
+        // m_pointer as a mutable reference, thus upholding the const contract for
+        // this instance of interpolationValue despite the const_cast.
+        m_owner.clear();
+        m_pointer = const_cast<InterpolationValue*>(interpolationValue);
     }
-    m_cachedValue->type().apply(*appliedInterpolableValue, m_cachedValue->nonInterpolableValue(), state);
-    setFlagIfInheritUsed(state);
+    void set(PassOwnPtr<InterpolationValue> interpolationValue)
+    {
+        m_owner = interpolationValue;
+        m_pointer = m_owner.get();
+    }
+    InterpolationValue& access()
+    {
+        ASSERT(m_pointer);
+        if (!m_owner)
+            set(m_pointer->clone());
+        return *m_pointer;
+    }
+    const InterpolationValue* get() const { return m_pointer; }
+    operator bool() const { return m_pointer; }
+    const InterpolationValue* operator->() const
+    {
+        ASSERT(m_pointer);
+        return m_pointer;
+    }
+
+private:
+    OwnPtr<InterpolationValue> m_owner;
+    InterpolationValue* m_pointer;
+};
+
+void InvalidatableStyleInterpolation::applyStack(const ActiveInterpolations& interpolations, StyleResolverState& state)
+{
+    ASSERT(!interpolations.isEmpty());
+    size_t startingIndex = 0;
+
+    // Compute the underlying value to composite onto.
+    UnderlyingValue underlyingValue;
+    const InvalidatableStyleInterpolation& firstInterpolation = toInvalidatableStyleInterpolation(*interpolations.at(startingIndex));
+    if (firstInterpolation.dependsOnUnderlyingValue()) {
+        underlyingValue.set(firstInterpolation.maybeConvertUnderlyingValue(state));
+    } else {
+        const InterpolationValue* firstValue = firstInterpolation.ensureValidInterpolation(state, nullptr);
+        // Fast path for replace interpolations that are the only one to apply.
+        if (interpolations.size() == 1) {
+            if (firstValue) {
+                firstInterpolation.setFlagIfInheritUsed(state);
+                firstValue->type().apply(firstValue->interpolableValue(), firstValue->nonInterpolableValue(), state);
+            }
+            return;
+        }
+        underlyingValue.set(firstValue);
+        startingIndex++;
+    }
+
+    // Composite interpolations onto the underlying value.
+    bool shouldApply = false;
+    for (size_t i = startingIndex; i < interpolations.size(); i++) {
+        const InvalidatableStyleInterpolation& currentInterpolation = toInvalidatableStyleInterpolation(*interpolations.at(i));
+        ASSERT(currentInterpolation.dependsOnUnderlyingValue());
+        const InterpolationValue* currentValue = currentInterpolation.ensureValidInterpolation(state, underlyingValue.get());
+        if (!currentValue)
+            continue;
+        shouldApply = true;
+        currentInterpolation.setFlagIfInheritUsed(state);
+        if (!underlyingValue || underlyingValue->type() != currentValue->type()) {
+            underlyingValue.set(currentValue);
+        } else {
+            double underlyingFraction = currentInterpolation.m_cachedConversion->interpolateUnderlyingFraction(
+                currentInterpolation.m_startKeyframe->underlyingFraction(),
+                currentInterpolation.m_endKeyframe->underlyingFraction(),
+                currentInterpolation.m_currentFraction);
+            underlyingValue.access().interpolableValue().scaleAndAdd(underlyingFraction, currentInterpolation.m_cachedValue->interpolableValue());
+        }
+    }
+
+    if (shouldApply && underlyingValue)
+        underlyingValue->type().apply(underlyingValue->interpolableValue(), underlyingValue->nonInterpolableValue(), state);
 }
 
 } // namespace blink

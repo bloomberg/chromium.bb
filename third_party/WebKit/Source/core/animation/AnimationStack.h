@@ -43,7 +43,7 @@
 
 namespace blink {
 
-using ActiveInterpolationMap = HashMap<PropertyHandle, RefPtr<Interpolation>>;
+using ActiveInterpolationsMap = HashMap<PropertyHandle, ActiveInterpolations>;
 
 class InertEffect;
 
@@ -56,7 +56,7 @@ public:
     void add(SampledEffect* effect) { m_effects.append(effect); }
     bool isEmpty() const { return m_effects.isEmpty(); }
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
-    static ActiveInterpolationMap activeInterpolations(AnimationStack*, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, double timelineCurrentTime);
+    static ActiveInterpolationsMap activeInterpolations(AnimationStack*, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, double timelineCurrentTime);
 
     bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
     DECLARE_TRACE();

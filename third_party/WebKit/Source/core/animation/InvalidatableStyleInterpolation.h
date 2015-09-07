@@ -26,7 +26,9 @@ public:
     }
 
     virtual void interpolate(int iteration, double fraction);
-    virtual void apply(StyleResolverState&) const;
+    bool dependsOnUnderlyingValue() const;
+    virtual void apply(StyleResolverState&) const { ASSERT_NOT_REACHED(); }
+    static void applyStack(const ActiveInterpolations&, StyleResolverState&);
 
     virtual bool isInvalidatableStyleInterpolation() const { return true; }
 
@@ -37,8 +39,7 @@ private:
         const CSSPropertySpecificKeyframe& endKeyframe);
 
     PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const;
-    void ensureValidInterpolation(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
-    bool dependsOnUnderlyingValue() const;
+    const InterpolationValue* ensureValidInterpolation(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
     bool isCacheValid(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
     bool isNeutralKeyframeActive() const;
     bool maybeCachePairwiseConversion(const StyleResolverState*, const InterpolationValue* underlyingValue) const;

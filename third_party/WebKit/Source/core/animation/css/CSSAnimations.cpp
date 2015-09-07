@@ -612,7 +612,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate& u
     AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
 
     if (update.newAnimations().isEmpty() && update.suppressedAnimations().isEmpty()) {
-        ActiveInterpolationMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, KeyframeEffect::DefaultPriority, timelineCurrentTime));
+        ActiveInterpolationsMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, KeyframeEffect::DefaultPriority, timelineCurrentTime));
         update.adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
         return;
     }
@@ -623,7 +623,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate& u
     for (const auto& updatedAnimation : update.animationsWithUpdates())
         newEffects.append(updatedAnimation.effect.get()); // Animations with updates use a temporary InertEffect for the current frame.
 
-    ActiveInterpolationMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newEffects, &update.suppressedAnimations(), KeyframeEffect::DefaultPriority, timelineCurrentTime));
+    ActiveInterpolationsMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newEffects, &update.suppressedAnimations(), KeyframeEffect::DefaultPriority, timelineCurrentTime));
     update.adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
 }
 
@@ -632,7 +632,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate& 
     ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
     AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
 
-    ActiveInterpolationMap activeInterpolationsForTransitions;
+    ActiveInterpolationsMap activeInterpolationsForTransitions;
     if (update.newTransitions().isEmpty() && update.cancelledTransitions().isEmpty()) {
         activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, 0, 0, KeyframeEffect::TransitionPriority, timelineCurrentTime);
     } else {

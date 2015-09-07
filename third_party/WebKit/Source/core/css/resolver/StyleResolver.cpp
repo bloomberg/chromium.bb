@@ -35,6 +35,7 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/ElementAnimations.h"
+#include "core/animation/InvalidatableStyleInterpolation.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/animation/animatable/AnimatableValue.h"
@@ -962,15 +963,15 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
         state.setApplyPropertyToVisitedLinkStyle(true);
     }
 
-    const ActiveInterpolationMap& activeInterpolationsForAnimations = state.animationUpdate().activeInterpolationsForAnimations();
-    const ActiveInterpolationMap& activeInterpolationsForTransitions = state.animationUpdate().activeInterpolationsForTransitions();
-    applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForAnimations);
-    applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForTransitions);
+    const ActiveInterpolationsMap& activeInterpolationsMapForAnimations = state.animationUpdate().activeInterpolationsForAnimations();
+    const ActiveInterpolationsMap& activeInterpolationsMapForTransitions = state.animationUpdate().activeInterpolationsForTransitions();
+    applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsMapForAnimations);
+    applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsMapForTransitions);
 
     updateFont(state);
 
-    applyAnimatedProperties<LowPropertyPriority>(state, activeInterpolationsForAnimations);
-    applyAnimatedProperties<LowPropertyPriority>(state, activeInterpolationsForTransitions);
+    applyAnimatedProperties<LowPropertyPriority>(state, activeInterpolationsMapForAnimations);
+    applyAnimatedProperties<LowPropertyPriority>(state, activeInterpolationsMapForTransitions);
 
     // Start loading resources used by animations.
     loadPendingResources(state);
@@ -1012,16 +1013,21 @@ StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, con
 }
 
 template <CSSPropertyPriority priority>
-void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const HashMap<PropertyHandle, RefPtr<Interpolation>>& activeInterpolations)
+void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const ActiveInterpolationsMap& activeInterpolationsMap)
 {
-    for (const auto& interpolationEntry : activeInterpolations) {
-        if (!interpolationEntry.key.isCSSProperty())
+    for (const auto& interpolationsVectorEntry : activeInterpolationsMap) {
+        if (!interpolationsVectorEntry.key.isCSSProperty())
             continue;
-        CSSPropertyID property = interpolationEntry.key.cssProperty();
+        CSSPropertyID property = interpolationsVectorEntry.key.cssProperty();
         if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
             continue;
-        const StyleInterpolation* interpolation = toStyleInterpolation(interpolationEntry.value.get());
-        interpolation->apply(state);
+        const Interpolation& interpolation = *interpolationsVectorEntry.value.first();
+        if (interpolation.isInvalidatableStyleInterpolation()) {
+            InvalidatableStyleInterpolation::applyStack(interpolationsVectorEntry.value, state);
+        } else {
+            // TODO(alancutter): Remove this old code path once animations have completely migrated to InterpolationTypes.
+            toStyleInterpolation(interpolation).apply(state);
+        }
     }
 }
 

@@ -48,6 +48,8 @@ private:
     friend class AnimationSVGStrokeDasharrayStyleInterpolationTest;
 };
 
+using ActiveInterpolations = Vector<RefPtr<Interpolation>, 1>;
+
 } // namespace blink
 
 #endif // Interpolation_h
