@@ -6,6 +6,7 @@ package com.android.webview.chromium;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -162,7 +163,26 @@ class WebViewDelegateFactory {
 
         @Override
         public void addWebViewAssetPath(Context context) {
-            mDelegate.addWebViewAssetPath(context);
+            // In the Android framework (<= API level 23)
+            // ContextThemeWrapper provides an implementation of
+            // getResources() that may proxy to either the wrapped
+            // context or a newly constructed context, but it does not
+            // provide an implementation of getAssets() that overrides
+            // the ContextWrapper implementation that always proxies
+            // to the wrapped context. This means that getAssets() and
+            // getResources().getAssets() may potentially return
+            // different AssetManagers, confusing WebView.
+            //
+            // To work around this problem, we provide an additional
+            // wrapper here here to avoid calling the getAssets()
+            // proxy chain (which we cannot change because it is in
+            // WebView framework code).
+            mDelegate.addWebViewAssetPath(new ContextWrapper(context) {
+                @Override
+                public AssetManager getAssets() {
+                    return getResources().getAssets();
+                }
+            });
         }
     }
 
@@ -334,7 +354,10 @@ class WebViewDelegateFactory {
         public void addWebViewAssetPath(Context context) {
             try {
                 PackageInfo info = (PackageInfo) mGetLoadedPackageInfoMethod.invoke(null);
-                mAddAssetPathMethod.invoke(context.getAssets(), info.applicationInfo.sourceDir);
+                // Avoid calling the ContextWrapper.getAssets() proxy
+                // chain, which can return an unexpected AssetManager.
+                mAddAssetPathMethod.invoke(
+                        context.getResources().getAssets(), info.applicationInfo.sourceDir);
             } catch (Exception e) {
                 throw new RuntimeException("Invalid reflection", e);
             }
