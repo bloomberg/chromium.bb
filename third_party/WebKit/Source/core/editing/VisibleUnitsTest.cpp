@@ -43,6 +43,7 @@ TEST_F(VisibleUnitsTest, absoluteCaretBoundsOf)
     const char* shadowContent = "<div><content select=#two></content><content select=#one></content></div>";
     setBodyContent(bodyContent);
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ASSERT_UNUSED(shadowRoot, shadowRoot);
     updateLayoutAndStyleForPainting();
 
     RefPtrWillBeRawPtr<Element> body = document().body();
