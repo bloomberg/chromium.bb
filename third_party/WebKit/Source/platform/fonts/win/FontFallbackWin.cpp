@@ -35,13 +35,35 @@
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
 #include "wtf/HashMap.h"
+#include "wtf/StringExtras.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 #include <limits>
-#include <unicode/locid.h>
 #include <unicode/uchar.h>
 
 namespace blink {
+
+UScriptCode scriptCodeForUnifiedHanFromLocale(const icu::Locale& locale)
+{
+    // ICU default locale may have country as an empty string or differently.
+    // Avoid fullName comparisons for Japanese and Korean where language()
+    // can safely disambiguate.
+    if (strcasecmp(locale.getLanguage(), icu::Locale::getJapanese().getLanguage()) == 0)
+        return USCRIPT_HIRAGANA;
+    if (strcasecmp(locale.getLanguage(), icu::Locale::getKorean().getLanguage()) == 0)
+        return USCRIPT_HANGUL;
+
+    const icu::Locale& traditionalChinese = icu::Locale::getTraditionalChinese();
+    if (strcasecmp(locale.getLanguage(), traditionalChinese.getLanguage()) == 0
+        && (strcasecmp(locale.getCountry(), traditionalChinese.getCountry()) == 0
+            || strcasecmp(locale.getCountry(), "HK") == 0
+            || strcasecmp(locale.getScript(), "Hant") == 0)) {
+        return USCRIPT_TRADITIONAL_HAN;
+    }
+
+    // For other locales, use the simplified Chinese font for Han.
+    return USCRIPT_SIMPLIFIED_HAN;
+}
 
 namespace {
 
@@ -218,18 +240,8 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     // Initialize the locale-dependent mapping.
     // Since Chrome synchronizes the ICU default locale with its UI locale,
     // this ICU locale tells the current UI locale of Chrome.
-    icu::Locale locale = icu::Locale::getDefault();
-    const UChar* localeFamily = 0;
-    if (locale == icu::Locale::getJapanese()) {
-        localeFamily = scriptFontMap[USCRIPT_HIRAGANA];
-    } else if (locale == icu::Locale::getKorean()) {
-        localeFamily = scriptFontMap[USCRIPT_HANGUL];
-    } else if (locale == icu::Locale::getTraditionalChinese()) {
-        localeFamily = scriptFontMap[USCRIPT_TRADITIONAL_HAN];
-    } else {
-        // For other locales, use the simplified Chinese font for Han.
-        localeFamily = scriptFontMap[USCRIPT_SIMPLIFIED_HAN];
-    }
+    const UChar* localeFamily = scriptFontMap[scriptCodeForUnifiedHanFromLocale(
+        icu::Locale::getDefault())];
     if (localeFamily)
         scriptFontMap[USCRIPT_HAN] = localeFamily;
 }

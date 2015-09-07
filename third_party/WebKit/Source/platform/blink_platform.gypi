@@ -968,6 +968,7 @@
       'fonts/mac/FontFamilyMatcherMacTest.mm',
       'fonts/shaping/CachingWordShaperTest.cpp',
       'fonts/shaping/HarfBuzzShaperTest.cpp',
+      'fonts/win/FontFallbackWinTest.cpp',
       'geometry/FloatBoxTest.cpp',
       'geometry/FloatBoxTestHelpers.cpp',
       'geometry/FloatPointTest.cpp',

@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontDescription.h"
+#include <unicode/locid.h>
 #include <unicode/uscript.h>
 #include <usp10.h>
 #include <wchar.h>
@@ -50,6 +51,7 @@ PLATFORM_EXPORT const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType,
     UScriptCode* scriptChecked,
     SkFontMgr* fontManager);
+PLATFORM_EXPORT UScriptCode scriptCodeForUnifiedHanFromLocale(const icu::Locale&);
 
 } // namespace blink
 
