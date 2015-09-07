@@ -33,6 +33,8 @@ check_PROGRAMS = \
 	dristat \
 	drmstat
 
+dristat_LDADD = -lm
+
 if HAVE_NOUVEAU
 SUBDIRS += nouveau
 endif
