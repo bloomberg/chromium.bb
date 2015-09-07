@@ -254,6 +254,7 @@
       { "data": [ { "comment": "\u00fd (LATIN SMALL LETTER Y WITH ACUTE)            become ⠯", "input": "\u00fd", "output": "⠯" } ] },
       { "data": [ { "comment": "\u00fe (LATIN SMALL LETTER THORN)                   become ⢫", "input": "\u00fe", "output": "⢫" } ] },
       { "data": [ { "comment": "\u00ff (LATIN SMALL LETTER Y WITH DIAERESIS)        become ⢳", "input": "\u00ff", "output": "⢳" } ] },
-      { "data": [ { "comment": "If character not defined in 8-dot standard; follow 6-dot standard instead", "input": "Ờ", "output": "⢳" } ] }
+      { "data": [ { "comment": "If character not defined in 8-dot standard; follow 6-dot standard instead (lower case diacritic)", "input": "ờ", "output": "⠈⠕" } ] },
+      { "data": [ { "comment": "If character not defined in 8-dot standard; follow 6-dot standard instead (upper case diacritic)", "input": "Ờ", "output": "⠠⠈⠕" } ] }
   ]										
 }
