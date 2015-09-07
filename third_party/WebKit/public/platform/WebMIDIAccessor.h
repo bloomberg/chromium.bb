@@ -40,8 +40,11 @@ public:
     virtual ~WebMIDIAccessor() { }
 
     virtual void startSession() { }
+    virtual void open(unsigned portIndex) { }
     // |timeStamp| is measured in milliseconds as Web MIDI spec defines.
     virtual void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) { }
+    virtual void clear(unsigned portIndex) { }
+    virtual void close(unsigned portIndex) { }
 };
 
 } // namespace blink
