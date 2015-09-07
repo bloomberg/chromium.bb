@@ -22,9 +22,12 @@ of the following structure:
   # will be run.
   test_cases_to_run=<test names to run, comma delimited>
   [logging]
-  # |save-only-failures| is oprional, the default is false.
+  # |save-only-failures| is optional, the default is false.
   save-only-failures=<Boolean parameter which enforces saving results of only
                       failed tests>
+  |permanent-log-file| is a file name of file, where test run results will be
+  saved in irder to compare them with a next run. Should be specified if it's
+  expected that mail will be send.
 
 The script uses the Python's logging library to report the test results,
 as well as debugging information. It emits three levels of logs (in
@@ -43,11 +46,11 @@ import multiprocessing
 import os
 import shutil
 import stopit
+import simplejson as json
 import tempfile
 import time
 
 from threading import Thread
-from collections import defaultdict
 
 import tests
 
@@ -61,6 +64,7 @@ class Config:
   save_only_fails = False
   tests_to_run = tests.all_tests.keys()
   max_tests_in_parallel = 1
+  permanent_log_file = ""
 
   def __init__(self, config_path):
     config = ConfigParser.ConfigParser()
@@ -79,9 +83,11 @@ class Config:
     if config.has_option("run_options", "test_cases_to_run"):
       self.test_cases_to_run = config.get(
           "run_options", "test_cases_to_run").split(",")
-    if (config.has_option("logging", "save-only-fails")):
+    if config.has_option("logging", "save-only-fails"):
       self.save_only_fails = config.getboolean("logging", "save-only-fails")
 
+    if config.has_option("logging", "permanent-log-file"):
+      self.permanent_log_file = config.get("logging", "permanent-log-file")
 
 def LogResultsOfTestRun(config, results):
   """ Logs |results| of a test run. """
@@ -99,10 +105,24 @@ def LogResultsOfTestRun(config, results):
       failed_tests.append("%s.%s" % (website, test_case))
       failed_tests_num += 1
 
+  failed_tests = sorted([name for name in failed_tests])
   logger.info("%d failed test cases out of %d, failing test cases: %s",
-              failed_tests_num, len(results),
-              sorted([name for name in failed_tests]))
-
+              failed_tests_num, len(results), failed_tests)
+  if not config.permanent_log_file:
+    return
+  diff_failed = []
+  with open(config.permanent_log_file, "r+") as log:
+    try:
+      runs_data = json.load(log)
+    except ValueError:
+      runs_data = {}
+    prev_run_failed = runs_data.get("previous_run", [])
+    diff_failed = list(set(failed_tests) - set(prev_run_failed))
+    log.seek(0)
+    log.truncate()
+    runs_data["previous_run"] = failed_tests
+    runs_data["new_failures"] = diff_failed
+    json.dump(runs_data, log)
 
 def RunTestCaseOnWebsite((website, test_case, config)):
   """ Runs a |test_case| on a |website|. In case when |test_case| has
