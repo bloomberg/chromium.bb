@@ -421,7 +421,7 @@ void NavigationScheduler::startTimer()
         return;
 
     Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postDelayedTask(
-        FROM_HERE, m_navigateTaskFactory->cancelAndCreate(), m_redirect->delay());
+        FROM_HERE, m_navigateTaskFactory->cancelAndCreate(), m_redirect->delay() * 1000.0);
 
     InspectorInstrumentation::frameScheduledNavigation(m_frame, m_redirect->delay());
 }
