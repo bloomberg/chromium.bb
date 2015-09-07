@@ -75,10 +75,10 @@ class Preferences : public PrefServiceSyncableObserver,
   // Callback method for preference changes.
   void OnPreferenceChanged(const std::string& pref_name);
 
-  // This will set the OS settings when the preference changed or user owning
-  // these preferences became active. Also this method is called on
-  // initialization. The reason of call is stored in |reason| parameter.
-  // |pref_name| keeps name of changed preference in |reason| is
+  // This will set the OS settings when the preference changed or the user
+  // owning these preferences became active. Also this method is called on
+  // initialization. The reason of the call is stored as the |reason| parameter.
+  // |pref_name| is the name of the changed preference if the |reason| is
   // |REASON_PREF_CHANGED|, otherwise it is empty.
   void ApplyPreferences(ApplyReason reason,
                         const std::string& pref_name);
