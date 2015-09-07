@@ -149,6 +149,9 @@ scoped_ptr<base::DictionaryValue> Load(Profile* profile) {
       // Return null for all error cases.
       value_dict.reset();
       break;
+    case PlatformStateStoreLoadResult::NUM_RESULTS:
+      NOTREACHED();
+      break;
   }
   UMA_HISTOGRAM_ENUMERATION(
       "SBIRS.PSSLoadResult", static_cast<uint32_t>(result),
