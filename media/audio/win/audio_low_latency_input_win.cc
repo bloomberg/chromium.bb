@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -292,12 +293,15 @@ void WASAPIAudioInputStream::Run() {
       2 * packet_size_frames_ * frame_size_);
   scoped_ptr<uint8[]> capture_buffer(new uint8[capture_buffer_size]);
 
-  LARGE_INTEGER now_count;
+  LARGE_INTEGER now_count = {};
   bool recording = true;
   bool error = false;
   double volume = GetVolume();
   HANDLE wait_array[2] =
       { stop_capture_event_.Get(), audio_samples_ready_event_.Get() };
+
+  base::win::ScopedComPtr<IAudioClock> audio_clock;
+  audio_client_->GetService(__uuidof(IAudioClock), audio_clock.ReceiveVoid());
 
   while (recording && !error) {
     HRESULT hr = S_FALSE;
@@ -314,6 +318,7 @@ void WASAPIAudioInputStream::Run() {
         break;
       case WAIT_OBJECT_0 + 1:
         {
+          TRACE_EVENT0("audio", "WASAPIAudioInputStream::Run_0");
           // |audio_samples_ready_event_| has been set.
           BYTE* data_ptr = NULL;
           UINT32 num_frames_to_read = 0;
@@ -333,6 +338,16 @@ void WASAPIAudioInputStream::Run() {
             DLOG(ERROR) << "Failed to get data from the capture buffer";
             continue;
           }
+
+          if (audio_clock) {
+            // The reported timestamp from GetBuffer is not as reliable as the
+            // clock from the client.  We've seen timestamps reported for
+            // USB audio devices, be off by several days.  Furthermore we've
+            // seen them jump back in time every 2 seconds or so.
+            audio_clock->GetPosition(
+                &device_position, &first_audio_frame_timestamp);
+          }
+
 
           if (num_frames_to_read != 0) {
             size_t pos = buffer_frame_index * frame_size_;
@@ -358,7 +373,9 @@ void WASAPIAudioInputStream::Run() {
           // first audio frame in the packet and B is the extra delay
           // contained in any stored data. Unit is in audio frames.
           QueryPerformanceCounter(&now_count);
-          double audio_delay_frames =
+          // first_audio_frame_timestamp will be 0 if we didn't get a timestamp.
+          double audio_delay_frames = first_audio_frame_timestamp == 0 ?
+              num_frames_to_read :
               ((perf_count_to_100ns_units_ * now_count.QuadPart -
                 first_audio_frame_timestamp) / 10000.0) * ms_to_frame_count_ +
                 buffer_frame_index - num_frames_to_read;
@@ -386,12 +403,21 @@ void WASAPIAudioInputStream::Run() {
             // using the current packet size. The stored section will be used
             // either in the next while-loop iteration or in the next
             // capture event.
+            // TODO(tommi): If this data will be used in the next capture
+            // event, we will report incorrect delay estimates because
+            // we'll use the one for the captured data that time around
+            // (i.e. in the future).
             memmove(&capture_buffer[0],
                     &capture_buffer[packet_size_bytes_],
                     (buffer_frame_index - packet_size_frames_) * frame_size_);
 
+            DCHECK_GE(buffer_frame_index, packet_size_frames_);
             buffer_frame_index -= packet_size_frames_;
-            delay_frames -= packet_size_frames_;
+            if (delay_frames > packet_size_frames_) {
+              delay_frames -= packet_size_frames_;
+            } else {
+              delay_frames = 0;
+            }
           }
         }
         break;
