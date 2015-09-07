@@ -15,6 +15,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
@@ -30,6 +32,7 @@ import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -161,16 +164,7 @@ public class WebappActivity extends FullScreenActivity {
 
     @Override
     public void postInflationStartup() {
-        ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-        mSplashScreen = (ViewGroup) LayoutInflater.from(this)
-                .inflate(R.layout.webapp_splashscreen, contentView, false);
-
-        if (mWebappInfo.backgroundColor() == ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING) {
-            mSplashScreen.setBackgroundResource(R.color.webapp_default_bg);
-        } else {
-            mSplashScreen.setBackgroundColor((int) mWebappInfo.backgroundColor());
-        }
-        contentView.addView(mSplashScreen);
+        initializeSplashScreen();
 
         super.postInflationStartup();
         WebappControlContainer controlContainer =
@@ -183,6 +177,45 @@ public class WebappActivity extends FullScreenActivity {
      */
     WebappInfo getWebappInfo() {
         return mWebappInfo;
+    }
+
+    private void initializeSplashScreen() {
+        ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
+        mSplashScreen = (ViewGroup) LayoutInflater.from(this)
+                .inflate(R.layout.webapp_splash_screen, contentView, false);
+
+        final int backgroundColor;
+        if (mWebappInfo.backgroundColor() == ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING) {
+            backgroundColor = getResources().getColor(R.color.webapp_default_bg);
+        } else {
+            backgroundColor = (int) mWebappInfo.backgroundColor();
+        }
+        mSplashScreen.setBackgroundColor(backgroundColor);
+
+        contentView.addView(mSplashScreen);
+
+        WebappDataStorage.open(this, mWebappInfo.id())
+                .getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
+                    @Override
+                    public void onDataRetrieved(Bitmap splashIcon) {
+                        if (mSplashScreen == null || splashIcon == null) return;
+                        setSplashScreenIconAndText(splashIcon, backgroundColor);
+                    }
+                });
+    }
+
+    private void setSplashScreenIconAndText(Bitmap splashIcon, int backgroundColor) {
+        TextView appNameView = (TextView) mSplashScreen.findViewById(
+                R.id.webapp_splash_screen_name);
+        ImageView splashIconView = (ImageView) mSplashScreen.findViewById(
+                R.id.webapp_splash_screen_icon);
+        appNameView.setText(mWebappInfo.name());
+        splashIconView.setImageBitmap(splashIcon);
+
+        if (ColorUtils.shoudUseLightForegroundOnBackground(backgroundColor)) {
+            appNameView.setTextColor(getResources().getColor(
+                    R.color.webapp_splash_title_light));
+        }
     }
 
     private void updateUrlBar() {

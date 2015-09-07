@@ -36,6 +36,11 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     protected void setUp() throws Exception {
         super.setUp();
 
+        // Register the webapp so when the data storage is opened, the test doesn't crash. There is
+        // no race condition with the retrival as AsyncTasks are run sequentially on the background
+        // thread.
+        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_ID);
+
         // Default to a webapp that just loads about:blank to avoid a network load.  This results
         // in the URL bar showing since {@link UrlUtils} cannot parse this type of URL.
         Intent intent = new Intent(getInstrumentation().getTargetContext(), WebappActivity0.class);
