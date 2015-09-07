@@ -449,7 +449,7 @@ TEST_F(CredentialManagerDispatcherTest,
 }
 
 TEST_F(CredentialManagerDispatcherTest,
-       OnRequestCredentialWithZeroClickOnlyOnePasswordStore) {
+       OnRequestCredentialWithZeroClickOnlyAndSkipZeroClickPasswordStore) {
   form_.skip_zero_click = true;
   store_->AddLogin(form_);
   store_->AddLogin(origin_path_form_);
@@ -457,7 +457,7 @@ TEST_F(CredentialManagerDispatcherTest,
   std::vector<GURL> federations;
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
       .Times(testing::Exactly(0));
-  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(1));
+  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
   dispatcher()->OnRequestCredential(kRequestId, true, federations);
 
@@ -470,14 +470,10 @@ TEST_F(CredentialManagerDispatcherTest,
   CredentialManagerMsg_SendCredential::Param send_param;
   CredentialManagerMsg_SendCredential::Read(message, &send_param);
 
-  // We should get |origin_path_form_| back, as |form_| is marked as skipping
-  // zero-click.
-  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD,
+  // With two items in the password store, we shouldn't get credentials back,
+  // even though only one item has |skip_zero_click| set |false|.
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY,
             base::get<1>(send_param).type);
-  EXPECT_EQ(origin_path_form_.username_value, base::get<1>(send_param).id);
-  EXPECT_EQ(origin_path_form_.display_name, base::get<1>(send_param).name);
-  EXPECT_EQ(origin_path_form_.password_value,
-            base::get<1>(send_param).password);
 }
 
 TEST_F(CredentialManagerDispatcherTest,

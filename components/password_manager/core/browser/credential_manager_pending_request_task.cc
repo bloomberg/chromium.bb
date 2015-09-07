@@ -38,7 +38,6 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   ScopedVector<autofill::PasswordForm> local_results;
   ScopedVector<autofill::PasswordForm> federated_results;
   const autofill::PasswordForm* zero_click_form_to_return = nullptr;
-  bool found_zero_clickable_credential = false;
   for (auto& form : results) {
     // PasswordFrom and GURL have different definition of origin.
     // PasswordForm definition: scheme, host, port and path.
@@ -47,16 +46,13 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     if (form->origin.GetOrigin() == origin_.GetOrigin()) {
       local_results.push_back(form);
 
-      // If this is a zero-clickable PasswordForm, and we haven't found any
-      // other zero-clickable PasswordForms, then store this one for later.
-      // If we have found other zero-clickable PasswordForms, then clear
-      // the stored form (we return zero-click forms iff there is a single,
+      // Store the first zero-clickable PasswordForm we find. We'll check
+      // later to determine whether this form can actually be returned without
+      // user mediation (we return zero-click forms iff there is a single,
       // unambigious choice).
-      if (!form->skip_zero_click) {
-        zero_click_form_to_return =
-            found_zero_clickable_credential ? nullptr : form;
-        found_zero_clickable_credential = true;
-      }
+      if (!form->skip_zero_click && !zero_click_form_to_return)
+        zero_click_form_to_return = form;
+
       form = nullptr;
     }
 
@@ -72,6 +68,12 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     delegate_->SendCredential(id_, CredentialInfo());
     return;
   }
+
+  // We only perform zero-click sign-in when the result is completely
+  // unambigious. If the user could theoretically choose from more than one
+  // option, cancel zero-click.
+  if (local_results.size() > 1u)
+    zero_click_form_to_return = nullptr;
 
   if (zero_click_form_to_return && delegate_->IsZeroClickAllowed()) {
     auto it = std::find(local_results.begin(), local_results.end(),
