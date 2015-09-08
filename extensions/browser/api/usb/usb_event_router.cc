@@ -8,6 +8,7 @@
 #include "device/usb/usb_device.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/usb/usb_guid_map.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -124,6 +125,7 @@ template <>
 void BrowserContextKeyedAPIFactory<
     UsbEventRouter>::DeclareFactoryDependencies() {
   DependsOn(DevicePermissionsManagerFactory::GetInstance());
+  DependsOn(EventRouterFactory::GetInstance());
   DependsOn(UsbGuidMap::GetFactoryInstance());
 }
 
