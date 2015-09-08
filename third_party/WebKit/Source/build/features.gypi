@@ -49,7 +49,10 @@
     'variables': {
       # Enables the Oilpan garbage-collection infrastructure.
       'enable_oilpan%': 0,
+      # TODO(haraken): Remove blink_gc_profiling. It's replaced with
+      # detailed_memory_infra.
       'blink_gc_profiling%': 0,
+      'detailed_memory_infra%': 0,
       'blink_logging_always_on%': 0,
       'link_core_modules_separately%': 1,
     },
@@ -99,6 +102,11 @@
       ['blink_gc_profiling==1', {
         'feature_defines': [
           'ENABLE_GC_PROFILING=1',
+        ],
+      }],
+      ['detailed_memory_infra==1', {
+        'feature_defines': [
+          'ENABLE_DETAILED_MEMORY_INFRA=1',
         ],
       }],
       ['blink_logging_always_on==1', {

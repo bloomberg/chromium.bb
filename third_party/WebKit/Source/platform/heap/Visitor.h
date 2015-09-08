@@ -384,7 +384,7 @@ private:
     bool m_isGlobalMarkingVisitor;
 };
 
-#if ENABLE(GC_PROFILING)
+#if ENABLE(DETAILED_MEMORY_INFRA)
 template<typename T>
 struct TypenameStringTrait {
     static const String get()

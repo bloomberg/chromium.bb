@@ -1491,7 +1491,7 @@ void ThreadState::takeSnapshot(SnapshotType type)
     size_t totalDeadSize = 0;
     for (size_t gcInfoIndex = 1; gcInfoIndex <= GCInfoTable::gcInfoIndex(); ++gcInfoIndex) {
         String dumpName = classesDumpName + String::format("/%lu_", static_cast<unsigned long>(gcInfoIndex));
-#if ENABLE(GC_PROFILING)
+#if ENABLE(DETAILED_MEMORY_INFRA)
         dumpName.append(Heap::gcInfo(gcInfoIndex)->className());
 #endif
         WebMemoryAllocatorDump* classDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);

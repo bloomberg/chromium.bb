@@ -34,7 +34,7 @@ namespace WTF {
 class String;
 WTF_EXPORT String dumpRefCountedInstanceCounts();
 
-#if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_PROFILING)
+#if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_PROFILING) || ENABLE(DETAILED_MEMORY_INFRA)
 WTF_EXPORT void incrementInstanceCount(const char* extractNameFunctionName, void* ptr);
 WTF_EXPORT void decrementInstanceCount(const char* extractNameFunctionName, void* ptr);
 
