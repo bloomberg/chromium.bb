@@ -80,6 +80,7 @@ public:
 private:
     explicit DOMFormData(const WTF::TextEncoding&);
     explicit DOMFormData(HTMLFormElement*);
+    void setEntry(const Item&);
 
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
     bool m_opaque;

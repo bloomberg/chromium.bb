@@ -165,12 +165,33 @@ bool DOMFormData::has(const String& name)
 
 void DOMFormData::set(const String& name, const String& value)
 {
-    setData(name, value);
+    setEntry(Item(encodeAndNormalize(name), encodeAndNormalize(value)));
 }
 
 void DOMFormData::set(const String& name, Blob* blob, const String& filename)
 {
-    setBlob(name, blob, filename);
+    setEntry(Item(encodeAndNormalize(name), blob, filename));
+}
+
+void DOMFormData::setEntry(const Item& item)
+{
+    const CString keyData = item.key();
+    bool found = false;
+    size_t i = 0;
+    while (i < m_items.size()) {
+        if (m_items[i].key() != keyData) {
+            ++i;
+        } else if (found) {
+            m_items.remove(i);
+        } else {
+            found = true;
+            m_items[i] = item;
+            ++i;
+        }
+    }
+    if (!found)
+        m_items.append(item);
+    return;
 }
 
 PairIterable<String, FormDataEntryValue>::IterationSource* DOMFormData::startIteration(ScriptState*, ExceptionState&)

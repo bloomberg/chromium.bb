@@ -107,8 +107,6 @@ public:
     Entry getEntry(size_t index) const;
     HeapVector<Entry> getAll(const String& key) const;
     bool hasEntry(const String& key) const;
-    void setBlob(const String& key, Blob*, const String& filename);
-    void setData(const String& key, const String& value);
     size_t size() const { return m_items.size(); }
 
     const FormDataListItems& items() const { return m_items; }
@@ -121,17 +119,17 @@ public:
 
 protected:
     explicit FormDataList(const WTF::TextEncoding&);
+    CString encodeAndNormalize(const String& key) const;
+
+    FormDataListItems m_items;
 
 private:
     void appendKeyValuePairItemsTo(FormData*, const WTF::TextEncoding&, bool isMultiPartForm, FormData::EncodingType = FormData::FormURLEncoded);
 
     void appendItem(const Item&);
-    void setEntry(const Item&);
     Entry itemsToEntry(const Item&) const;
-    CString encodeAndNormalize(const String& key) const;
 
     WTF::TextEncoding m_encoding;
-    FormDataListItems m_items;
 };
 
 } // namespace blink
