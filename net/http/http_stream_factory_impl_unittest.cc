@@ -614,10 +614,9 @@ TEST_P(HttpStreamFactoryTest, JobNotifiesProxy) {
 }
 
 TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
-  for (int i = 1; i <= 2; i++) {
-    int mock_error =
-        i == 1 ? ERR_QUIC_PROTOCOL_ERROR : ERR_QUIC_HANDSHAKE_FAILED;
-
+  const int mock_error[] = {ERR_QUIC_PROTOCOL_ERROR, ERR_QUIC_HANDSHAKE_FAILED,
+                            ERR_MSG_TOO_BIG};
+  for (size_t i = 0; i < arraysize(mock_error); ++i) {
     scoped_ptr<ProxyService> proxy_service;
     proxy_service.reset(
         ProxyService::CreateFixedFromPacResult("QUIC bad:99; DIRECT"));
@@ -643,7 +642,7 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
     session->quic_stream_factory()->set_require_confirmation(false);
 
     StaticSocketDataProvider socket_data1;
-    socket_data1.set_connect_data(MockConnect(ASYNC, mock_error));
+    socket_data1.set_connect_data(MockConnect(ASYNC, mock_error[i]));
     socket_factory.AddSocketDataProvider(&socket_data1);
 
     // Second connection attempt succeeds.
@@ -668,11 +667,11 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
     // The proxy that failed should now be known to the proxy_service as bad.
     const ProxyRetryInfoMap& retry_info =
         session->proxy_service()->proxy_retry_info();
-    EXPECT_EQ(1u, retry_info.size()) << i;
+    EXPECT_EQ(1u, retry_info.size()) << mock_error[i];
     EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 
     ProxyRetryInfoMap::const_iterator iter = retry_info.find("quic://bad:99");
-    EXPECT_TRUE(iter != retry_info.end()) << i;
+    EXPECT_TRUE(iter != retry_info.end()) << mock_error[i];
   }
 }
 

@@ -977,7 +977,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
 
   if (proxy_info_.is_quic() && using_quic_) {
     if (result == ERR_QUIC_PROTOCOL_ERROR ||
-        result == ERR_QUIC_HANDSHAKE_FAILED) {
+        result == ERR_QUIC_HANDSHAKE_FAILED || result == ERR_MSG_TOO_BIG) {
       using_quic_ = false;
       return ReconsiderProxyAfterError(result);
     }
@@ -1386,6 +1386,7 @@ int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
     // captive portal).
     case ERR_QUIC_PROTOCOL_ERROR:
     case ERR_QUIC_HANDSHAKE_FAILED:
+    case ERR_MSG_TOO_BIG:
     case ERR_SSL_PROTOCOL_ERROR:
       break;
     case ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
@@ -1402,9 +1403,12 @@ int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
       return error;
   }
 
-  if (request_info_.load_flags & LOAD_BYPASS_PROXY) {
+  // Do not bypass non-QUIC proxy on ERR_MSG_TOO_BIG.
+  if (!proxy_info_.is_quic() && error == ERR_MSG_TOO_BIG)
     return error;
-  }
+
+  if (request_info_.load_flags & LOAD_BYPASS_PROXY)
+    return error;
 
   if (proxy_info_.is_https() && proxy_ssl_config_.send_client_cert) {
     session_->ssl_client_auth_cache()->Remove(
