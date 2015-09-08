@@ -75,13 +75,6 @@ def method_context(interface, method, is_visible=True):
 
     this_cpp_value = cpp_value(interface, method, len(arguments))
 
-    def function_template():
-        if is_static:
-            return 'functionTemplate'
-        if is_unforgeable(interface, method):
-            return 'instanceTemplate'
-        return 'prototypeTemplate'
-
     is_implemented_in_private_script = 'ImplementedInPrivateScript' in extended_attributes
     if is_implemented_in_private_script:
         includes.add('bindings/core/v8/PrivateScriptRunner.h')
@@ -144,7 +137,8 @@ def method_context(interface, method, is_visible=True):
                 extended_attributes.iterkeys()),
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'exposed_test': v8_utilities.exposed(method, interface),  # [Exposed]
-        'function_template': function_template(),
+        # TODO(yukishiino): Retire has_custom_registration flag.  Should be
+        # replaced with V8DOMConfiguration::PropertyLocationConfiguration.
         'has_custom_registration':
             is_static or
             is_unforgeable(interface, method) or
@@ -201,7 +195,6 @@ def method_context(interface, method, is_visible=True):
         'returns_promise': method.returns_promise,
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
-        'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'use_local_result': use_local_result(method),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),

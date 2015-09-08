@@ -489,6 +489,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
 
 {##############################################################################}
 {% macro attribute_configuration(attribute) %}
+{% from 'conversions.cpp' import property_location %}
 {% if attribute.constructor_type %}
 {% set getter_callback =
        '%sV8Internal::%sConstructorGetterCallback' % (cpp_class_or_partial, attribute.name)
@@ -527,17 +528,6 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
        'V8DOMConfiguration::OnlyExposedToPrivateScript'
        if attribute.only_exposed_to_private_script else
        'V8DOMConfiguration::ExposedToAllScripts' %}
-{% set property_location_list = [] %}
-{% if attribute.on_instance %}
-{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnInstance'] %}
-{% endif %}
-{% if attribute.on_prototype %}
-{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnPrototype'] %}
-{% endif %}
-{% if attribute.on_interface %}
-{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnInterface'] %}
-{% endif %}
-{% set property_location = property_location_list | join(' | ') %}
 {% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder'
        if attribute.is_lenient_this else 'V8DOMConfiguration::CheckHolder' %}
 {% set attribute_configuration_list = [
@@ -550,7 +540,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
        access_control,
        property_attribute,
        only_exposed_to_private_script,
-       property_location,
+       property_location(attribute),
        holder_check,
    ] %}
 {{'{'}}{{attribute_configuration_list | join(', ')}}{{'}'}}

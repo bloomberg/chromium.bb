@@ -650,30 +650,24 @@ v8SetReturnValue(info, wrapper);
 
 {##############################################################################}
 {% macro method_configuration(method) %}
+{% from 'conversions.cpp' import property_location %}
 {% set method_callback =
    '%sV8Internal::%sMethodCallback' % (cpp_class_or_partial, method.name) %}
 {% set method_callback_for_main_world =
    '%sV8Internal::%sMethodCallbackForMainWorld' % (cpp_class_or_partial, method.name)
    if method.is_per_world_bindings else '0' %}
 {% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}}}
+{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}}, {{property_location(method)}}}
 {%- endmacro %}
 
 
 {######################################}
-{% macro install_custom_signature(method) %}
-{% set method_callback = '%sV8Internal::%sMethodCallback' % (cpp_class_or_partial, method.name) %}
-{% set method_callback_for_main_world = '%sForMainWorld' % method_callback
-  if method.is_per_world_bindings else '0' %}
-{% set method_length = method.overloads.length if method.overloads else method.length %}
+{% macro install_custom_signature(method, instance_template, prototype_template, interface_template, signature) %}
 {% set property_attribute =
-  'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
-  if method.property_attributes else 'v8::None' %}
-{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
-    "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method_length}}, {{only_exposed_to_private_script}},
-};
-V8DOMConfiguration::installMethod(isolate, {{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration);
+       'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
+       if method.property_attributes else 'v8::None' %}
+const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {{method_configuration(method)}};
+V8DOMConfiguration::installMethod(isolate, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration);
 {%- endmacro %}
 
 {######################################}

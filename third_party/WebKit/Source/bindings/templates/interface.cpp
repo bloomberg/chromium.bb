@@ -612,8 +612,9 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 {% endblock %}
 
 
-{######################################}
-{% macro install_do_not_check_security_signature(method, world_suffix) %}
+{##############################################################################}
+{% macro install_do_not_check_security_method(method, world_suffix, instance_template, prototype_template) %}
+{% from 'conversions.cpp' import property_location %}
 {# Methods that are [DoNotCheckSecurity] are always readable, but if they are
    changed and then accessed from a different origin, we do not return the
    underlying value, but instead return a new copy of the original function.
@@ -622,24 +623,25 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
        '%sV8Internal::%sOriginSafeMethodGetterCallback%s' %
        (cpp_class, method.name, world_suffix) %}
 {% set setter_callback =
-    '{0}V8Internal::{0}OriginSafeMethodSetterCallback'.format(cpp_class)
-    if not method.is_read_only else '0' %}
+       '{0}V8Internal::{0}OriginSafeMethodSetterCallback'.format(cpp_class)
+       if not method.is_read_only else '0' %}
 {% if method.is_per_world_bindings %}
 {% set getter_callback_for_main_world = '%sForMainWorld' % getter_callback %}
 {% set setter_callback_for_main_world = '%sForMainWorld' % setter_callback
-   if not method.is_read_only else '0' %}
+       if not method.is_read_only else '0' %}
 {% else %}
 {% set getter_callback_for_main_world = '0' %}
 {% set setter_callback_for_main_world = '0' %}
 {% endif %}
 {% set property_attribute =
-    'static_cast<v8::PropertyAttribute>(%s)' %
-    ' | '.join(method.property_attributes or ['v8::DontDelete']) %}
+       'static_cast<v8::PropertyAttribute>(%s)' %
+       ' | '.join(method.property_attributes or ['v8::DontDelete']) %}
 {% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
+{% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder' if method.is_do_not_check_signature else 'V8DOMConfiguration::CheckHolder' %}
 const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
-    "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, V8DOMConfiguration::OnInstance,
+    "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, {{property_location(method)}}, {{holder_check}},
 };
-V8DOMConfiguration::installAttribute(isolate, {{method.function_template}}, v8::Local<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration);
+V8DOMConfiguration::installAttribute(isolate, {{instance_template}}, {{prototype_template}}, {{method.name}}OriginSafeAttributeConfiguration);
 {%- endmacro %}
 
 

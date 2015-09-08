@@ -35,7 +35,7 @@ import re
 
 from idl_types import IdlTypeBase
 import idl_types
-from idl_definitions import Exposure, IdlInterface
+from idl_definitions import Exposure, IdlInterface, IdlAttribute, IdlOperation
 from v8_globals import includes
 
 ACRONYMS = [
@@ -228,7 +228,8 @@ def conditional_string(definition_or_member):
 # [Constructor], [NamedConstructor]
 def is_constructor_attribute(member):
     # TODO(yukishiino): replace this with [Constructor] and [NamedConstructor] extended attribute
-    return member.idl_type.name.endswith('Constructor')
+    return (type(member) == IdlAttribute and
+            member.idl_type.name.endswith('Constructor'))
 
 
 # [DeprecateAs]
@@ -449,7 +450,8 @@ def on_prototype(interface, member):
     # TODO(yukishiino): We should handle [Global] and [PrimaryGlobal] instead of
     # Window.
     if (interface.name == 'Window'):
-        return member.idl_type.name == 'EventHandler'
+        return (member.idl_type.name == 'EventHandler' or
+                type(member) == IdlOperation)
 
     return True
 

@@ -160,7 +160,8 @@ public:
         v8::FunctionCallback callback;
         v8::FunctionCallback callbackForMainWorld;
         int length;
-        ExposeConfiguration exposeConfiguration;
+        unsigned exposeConfiguration : 1; // ExposeConfiguration
+        unsigned propertyLocationConfiguration : 3; // PropertyLocationConfiguration
     };
 
     struct SymbolKeyedMethodConfiguration {
@@ -176,21 +177,20 @@ public:
         v8::FunctionCallback callback;
         // SymbolKeyedMethodConfiguration doesn't support per-world bindings.
         int length;
-        ExposeConfiguration exposeConfiguration;
+        unsigned exposeConfiguration : 1; // ExposeConfiguration
+        unsigned propertyLocationConfiguration : 3; // PropertyLocationConfiguration
     };
 
-    static void installMethods(v8::Isolate*, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount);
+    static void installMethods(v8::Isolate*, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t methodCount);
 
-    static void installMethod(v8::Isolate*, v8::Local<v8::FunctionTemplate>, v8::Local<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration&);
-
-    static void installMethod(v8::Isolate*, v8::Local<v8::ObjectTemplate>, v8::Local<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration&);
+    static void installMethod(v8::Isolate*, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration&);
 
     static void installMethod(v8::Isolate*, v8::Local<v8::ObjectTemplate>, v8::Local<v8::Signature>, v8::PropertyAttribute, const SymbolKeyedMethodConfiguration&);
 
     static v8::Local<v8::Signature> installDOMClassTemplate(v8::Isolate*, v8::Local<v8::FunctionTemplate>, const char* interfaceName, v8::Local<v8::FunctionTemplate> parentClass, size_t fieldCount,
         const AttributeConfiguration*, size_t attributeCount,
         const AccessorConfiguration*, size_t accessorCount,
-        const MethodConfiguration*, size_t callbackCount);
+        const MethodConfiguration*, size_t methodCount);
 
     static v8::Local<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Local<v8::FunctionTemplate>, v8::Isolate*));
 };

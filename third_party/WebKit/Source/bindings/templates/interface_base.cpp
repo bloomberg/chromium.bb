@@ -427,7 +427,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% if iterator_method %}
     {% filter exposed(iterator_method.exposed_test) %}
     {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
-    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
     {% endfilter %}{# runtime_enabled() #}
     {% endfilter %}{# exposed() #}
@@ -450,9 +450,10 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
                               if method.overloads else
                               method.runtime_enabled_function) %}
     {% if method.is_do_not_check_security %}
-    {{install_do_not_check_security_signature(method) | indent}}
+    {{install_do_not_check_security_method(method, '', 'instanceTemplate', 'prototypeTemplate') | indent}}
     {% else %}{# is_do_not_check_security #}
-    {{install_custom_signature(method) | indent}}
+    {% set signature = 'v8::Local<v8::Signature>()' if method.is_do_not_check_signature else 'defaultSignature' %}
+    {{install_custom_signature(method, 'instanceTemplate', 'prototypeTemplate', 'functionTemplate', signature) | indent}}
     {% endif %}{# is_do_not_check_security #}
     {% endfilter %}{# runtime_enabled() #}
     {% endfilter %}{# exposed() #}
