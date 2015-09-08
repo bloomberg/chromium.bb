@@ -118,8 +118,11 @@ class IfThenResultExprImpl : public internal::ResultExprImpl {
       : cond_(cond), then_result_(then_result), else_result_(else_result) {}
 
   CodeGen::Node Compile(PolicyCompiler* pc) const override {
-    return cond_->Compile(
-        pc, then_result_->Compile(pc), else_result_->Compile(pc));
+    // We compile the "then" and "else" expressions in separate statements so
+    // they have a defined sequencing.  See https://crbug.com/529480.
+    CodeGen::Node then_node = then_result_->Compile(pc);
+    CodeGen::Node else_node = else_result_->Compile(pc);
+    return cond_->Compile(pc, then_node, else_node);
   }
 
   bool HasUnsafeTraps() const override {
