@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "chrome/browser/net/certificate_error_reporter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 class Browser;

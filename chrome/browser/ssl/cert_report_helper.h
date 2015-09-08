@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/interstitials/security_interstitial_page.h"
-#include "chrome/browser/ssl/certificate_error_report.h"
+#include "components/certificate_reporting/error_report.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
@@ -36,14 +36,14 @@ class CertReportHelper {
   static const char kFinchGroupDontShowDontSend[];
   static const char kFinchParamName[];
 
-  CertReportHelper(
-      scoped_ptr<SSLCertReporter> ssl_cert_reporter,
-      content::WebContents* web_contents,
-      const GURL& request_url,
-      const net::SSLInfo& ssl_info,
-      CertificateErrorReport::InterstitialReason interstitial_reason,
-      bool overridable,
-      security_interstitials::MetricsHelper* metrics_helper);
+  CertReportHelper(scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+                   content::WebContents* web_contents,
+                   const GURL& request_url,
+                   const net::SSLInfo& ssl_info,
+                   certificate_reporting::ErrorReport::InterstitialReason
+                       interstitial_reason,
+                   bool overridable,
+                   security_interstitials::MetricsHelper* metrics_helper);
 
   virtual ~CertReportHelper();
 
@@ -55,7 +55,7 @@ class CertReportHelper {
   // server. |user_proceeded| indicates whether the user clicked through
   // the interstitial or not, and will be included in the report.
   void FinishCertCollection(
-      CertificateErrorReport::ProceedDecision user_proceeded);
+      certificate_reporting::ErrorReport::ProceedDecision user_proceeded);
 
   // Allows tests to inject a mock reporter.
   void SetSSLCertReporterForTesting(
@@ -83,7 +83,7 @@ class CertReportHelper {
   // The SSLInfo used in this helper's report.
   const net::SSLInfo ssl_info_;
   // The reason for the interstitial, included in this helper's report.
-  CertificateErrorReport::InterstitialReason interstitial_reason_;
+  certificate_reporting::ErrorReport::InterstitialReason interstitial_reason_;
   // True if the user was given the option to proceed through the
   // certificate chain error being reported.
   bool overridable_;

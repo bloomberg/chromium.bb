@@ -17,6 +17,7 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_detector.h"
+#include "components/certificate_reporting/error_reporter.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/web_contents.h"
@@ -62,7 +63,8 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
   if (ssl_cert_reporter) {
     cert_report_helper_.reset(new CertReportHelper(
         ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
-        CertificateErrorReport::INTERSTITIAL_CAPTIVE_PORTAL, false, nullptr));
+        certificate_reporting::ErrorReport::INTERSTITIAL_CAPTIVE_PORTAL, false,
+        nullptr));
   }
 
   RecordUMA(SHOW_ALL);
@@ -203,7 +205,7 @@ void CaptivePortalBlockingPage::OnProceed() {
     // Finish collecting information about invalid certificates, if the
     // user opted in to.
     cert_report_helper_->FinishCertCollection(
-        CertificateErrorReport::USER_PROCEEDED);
+        certificate_reporting::ErrorReport::USER_PROCEEDED);
   }
 }
 
@@ -212,7 +214,7 @@ void CaptivePortalBlockingPage::OnDontProceed() {
     // Finish collecting information about invalid certificates, if the
     // user opted in to.
     cert_report_helper_->FinishCertCollection(
-        CertificateErrorReport::USER_DID_NOT_PROCEED);
+        certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED);
   }
 
   // Need to explicity deny the certificate via the callback, otherwise memory

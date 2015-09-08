@@ -1901,8 +1901,6 @@
     'chrome_browser_net_sources': [
       'browser/net/async_dns_field_trial.cc',
       'browser/net/async_dns_field_trial.h',
-      'browser/net/certificate_error_reporter.cc',
-      'browser/net/certificate_error_reporter.h',
       'browser/net/chrome_cookie_notification_details.h',
       'browser/net/chrome_extensions_network_delegate.cc',
       'browser/net/chrome_extensions_network_delegate.h',
@@ -2741,8 +2739,6 @@
       'browser/ssl/bad_clock_blocking_page.h',
       'browser/ssl/cert_report_helper.cc',
       'browser/ssl/cert_report_helper.h',
-      'browser/ssl/certificate_error_report.cc',
-      'browser/ssl/certificate_error_report.h',
       'browser/ssl/chrome_ssl_host_state_delegate.cc',
       'browser/ssl/chrome_ssl_host_state_delegate.h',
       'browser/ssl/chrome_ssl_host_state_delegate_factory.cc',
@@ -3100,7 +3096,6 @@
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
         'browser_ui',
-        'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -3108,7 +3103,6 @@
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
         'common',
-        'encrypted_cert_logger_proto',
         'probe_message_proto',
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:bookmarks_browser',
@@ -3236,6 +3230,7 @@
             '../components/components.gyp:about_handler',
             '../components/components.gyp:autofill_content_browser',
             '../components/components.gyp:browsing_data',
+            '../components/components.gyp:certificate_reporting',
             '../components/components.gyp:data_reduction_proxy_content_browser',
             '../components/components.gyp:devtools_discovery',
             '../components/components.gyp:devtools_http_handler',
@@ -3892,32 +3887,6 @@
           ]
         }],
       ],
-    },
-    {
-      # Protobuf compiler / generator for the certificate error reporting
-      # protocol buffer.
-      # GN version: //chrome/browser/ssl:cert_logger_proto
-      'target_name': 'cert_logger_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/ssl/cert_logger.proto', ],
-      'variables': {
-        'proto_in_dir': 'browser/ssl',
-        'proto_out_dir': 'chrome/browser/ssl',
-      },
-      'includes': [ '../build/protoc.gypi', ],
-    },
-    {
-      # Protobuf compiler / generator for the encrypted certificate
-      #  reports protocol buffer.
-      # GN version: //chrome/browser/net:encrypted_cert_logger_proto
-      'target_name': 'encrypted_cert_logger_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/net/encrypted_cert_logger.proto', ],
-      'variables': {
-        'proto_in_dir': 'browser/net',
-        'proto_out_dir': 'chrome/browser/net',
-      },
-      'includes': [ '../build/protoc.gypi', ],
     },
     {
       # Protobuf compiler / generator for Probe Message.

@@ -10,10 +10,3 @@ proto_library("probe_message_proto") {
     "probe_message.proto",
   ]
 }
-
-# GYP version: chrome/chrome_browser.gypi:encrypted_cert_logger_proto
-proto_library("encrypted_cert_logger_proto") {
-  sources = [
-    "encrypted_cert_logger.proto",
-  ]
-}
