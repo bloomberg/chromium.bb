@@ -9,11 +9,17 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/file_downloader.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/google/core/browser/google_util.h"
+#include "components/search_engines/search_engine_type.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -21,21 +27,62 @@ using content::BrowserThread;
 namespace {
 
 const char kPopularSitesURLFormat[] = "https://www.gstatic.com/chrome/ntp/%s";
-const char kPopularSitesDefaultFilename[] = "suggested_sites_IN_1.json";
+const char kPopularSitesFilenameFormat[] = "suggested_sites_%s_1.json";
+const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 
-std::string GetPopularSitesFilename(const std::string& filename) {
-  return filename.empty() ? kPopularSitesDefaultFilename : filename.c_str();
+
+// Find out the country code of the user by using the Google country code if
+// Google is the default search engine set. Fallback to a default if we can't
+// make an educated guess.
+std::string GetCountryCode(Profile* profile) {
+  DCHECK(profile);
+
+  const TemplateURLService* template_url_service =
+     TemplateURLServiceFactory::GetForProfile(profile);
+  DCHECK(template_url_service);
+
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  // It's possible to not have a default provider in the case that the default
+  // search engine is defined by policy.
+  if (!default_provider)
+      return kPopularSitesDefaultCountryCode;
+
+  bool is_google_search_engine = TemplateURLPrepopulateData::GetEngineType(
+      *default_provider, template_url_service->search_terms_data()) ==
+          SearchEngineType::SEARCH_ENGINE_GOOGLE;
+
+  if (!is_google_search_engine)
+      return kPopularSitesDefaultCountryCode;
+
+  GURL search_url = default_provider->GenerateSearchURL(
+      template_url_service->search_terms_data());
+
+  std::string country_code =
+      base::ToUpperASCII(google_util::GetGoogleCountryCode(search_url));
+
+  return country_code;
 }
 
-base::FilePath GetPopularSitesPath(const std::string& filename) {
+std::string GetPopularSitesFilename(Profile* profile,
+                                    const std::string& filename) {
+  if (!filename.empty())
+    return filename;
+
+  return base::StringPrintf(kPopularSitesFilenameFormat,
+                            GetCountryCode(profile).c_str());
+}
+
+base::FilePath GetPopularSitesPath(Profile* profile,
+                                   const std::string& filename) {
   base::FilePath dir;
   PathService::Get(chrome::DIR_USER_DATA, &dir);
-  return dir.AppendASCII(GetPopularSitesFilename(filename));
+  return dir.AppendASCII(GetPopularSitesFilename(profile, filename));
 }
 
-GURL GetPopularSitesURL(const std::string& filename) {
+GURL GetPopularSitesURL(Profile* profile, const std::string& filename) {
   return GURL(base::StringPrintf(kPopularSitesURLFormat,
-                                 GetPopularSitesFilename(filename).c_str()));
+      GetPopularSitesFilename(profile, filename).c_str()));
 }
 
 scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
@@ -79,13 +126,14 @@ PopularSites::Site::Site(const base::string16& title,
                          const GURL& favicon_url)
     : title(title), url(url), favicon_url(favicon_url) {}
 
-PopularSites::PopularSites(const std::string& filename,
+PopularSites::PopularSites(Profile* profile,
+                           const std::string& filename,
                            net::URLRequestContextGetter* request_context,
                            const FinishedCallback& callback)
     : callback_(callback), weak_ptr_factory_(this) {
-  base::FilePath path = GetPopularSitesPath(filename);
+  base::FilePath path = GetPopularSitesPath(profile, filename);
   downloader_.reset(new FileDownloader(
-      GetPopularSitesURL(filename), path, request_context,
+      GetPopularSitesURL(profile, filename), path, request_context,
       base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this), path)));
 }
 

@@ -152,6 +152,7 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
 
   if (ShouldShowPopularSites()) {
     popular_sites_.reset(new PopularSites(
+        profile,
         GetPopularSitesFilename(),
         profile_->GetRequestContext(),
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
