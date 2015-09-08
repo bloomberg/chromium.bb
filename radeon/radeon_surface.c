@@ -163,7 +163,7 @@ static void surf_minify(struct radeon_surface *surf,
                         struct radeon_surface_level *surflevel,
                         unsigned bpe, unsigned level,
                         uint32_t xalign, uint32_t yalign, uint32_t zalign,
-                        unsigned offset)
+                        uint64_t offset)
 {
     surflevel->npix_x = mip_minify(surf->npix_x, level);
     surflevel->npix_y = mip_minify(surf->npix_y, level);
@@ -184,7 +184,7 @@ static void surf_minify(struct radeon_surface *surf,
 
     surflevel->offset = offset;
     surflevel->pitch_bytes = surflevel->nblk_x * bpe * surf->nsamples;
-    surflevel->slice_size = surflevel->pitch_bytes * surflevel->nblk_y;
+    surflevel->slice_size = (uint64_t)surflevel->pitch_bytes * surflevel->nblk_y;
 
     surf->bo_size = offset + surflevel->slice_size * surflevel->nblk_z * surf->array_size;
 }
@@ -570,7 +570,7 @@ static void eg_surf_minify(struct radeon_surface *surf,
                            unsigned mtilew,
                            unsigned mtileh,
                            unsigned mtileb,
-                           unsigned offset)
+                           uint64_t offset)
 {
     unsigned mtile_pr, mtile_ps;
 
@@ -598,7 +598,7 @@ static void eg_surf_minify(struct radeon_surface *surf,
 
     surflevel->offset = offset;
     surflevel->pitch_bytes = surflevel->nblk_x * bpe * surf->nsamples;
-    surflevel->slice_size = mtile_ps * mtileb * slice_pt;
+    surflevel->slice_size = (uint64_t)mtile_ps * mtileb * slice_pt;
 
     surf->bo_size = offset + surflevel->slice_size * surflevel->nblk_z * surf->array_size;
 }
@@ -1415,7 +1415,7 @@ static void si_surf_minify(struct radeon_surface *surf,
                            struct radeon_surface_level *surflevel,
                            unsigned bpe, unsigned level,
                            uint32_t xalign, uint32_t yalign, uint32_t zalign,
-                           uint32_t slice_align, unsigned offset)
+                           uint32_t slice_align, uint64_t offset)
 {
     if (level == 0) {
         surflevel->npix_x = surf->npix_x;
@@ -1453,7 +1453,8 @@ static void si_surf_minify(struct radeon_surface *surf,
 
     surflevel->offset = offset;
     surflevel->pitch_bytes = surflevel->nblk_x * bpe * surf->nsamples;
-    surflevel->slice_size = ALIGN(surflevel->pitch_bytes * surflevel->nblk_y, slice_align);
+    surflevel->slice_size = ALIGN((uint64_t)surflevel->pitch_bytes * surflevel->nblk_y,
+				  (uint64_t)slice_align);
 
     surf->bo_size = offset + surflevel->slice_size * surflevel->nblk_z * surf->array_size;
 }
@@ -1462,7 +1463,7 @@ static void si_surf_minify_2d(struct radeon_surface *surf,
                               struct radeon_surface_level *surflevel,
                               unsigned bpe, unsigned level, unsigned slice_pt,
                               uint32_t xalign, uint32_t yalign, uint32_t zalign,
-                              unsigned mtileb, unsigned offset)
+                              unsigned mtileb, uint64_t offset)
 {
     unsigned mtile_pr, mtile_ps;
 
@@ -1501,7 +1502,7 @@ static void si_surf_minify_2d(struct radeon_surface *surf,
     mtile_ps = (mtile_pr * surflevel->nblk_y) / yalign;
     surflevel->offset = offset;
     surflevel->pitch_bytes = surflevel->nblk_x * bpe * surf->nsamples;
-    surflevel->slice_size = mtile_ps * mtileb * slice_pt;
+    surflevel->slice_size = (uint64_t)mtile_ps * mtileb * slice_pt;
 
     surf->bo_size = offset + surflevel->slice_size * surflevel->nblk_z * surf->array_size;
 }
