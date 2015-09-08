@@ -647,33 +647,18 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
     const blink::WebInputElement& element) {
   // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
   blink::WebInputElement mutable_element = element;  // We need a non-const.
+  mutable_element.setAutofilled(false);
 
   LoginToPasswordInfoMap::iterator iter = login_to_password_info_.find(element);
-  if (iter == login_to_password_info_.end())
-    return false;
-
-  mutable_element.setAutofilled(false);
-  iter->second.password_was_edited_last = false;
-
-  // If wait_for_username is true we will fill when the username loses focus.
-  if (iter->second.fill_data.wait_for_username)
-    return false;
-
-  if (!element.isText() || !IsElementAutocompletable(element) ||
-      !IsElementAutocompletable(iter->second.password_field)) {
-    return false;
+  if (iter != login_to_password_info_.end()) {
+    iter->second.password_was_edited_last = false;
+    // If wait_for_username is true we will fill when the username loses focus.
+    if (iter->second.fill_data.wait_for_username)
+      return false;
   }
 
-  if (element.nameForAutofill().isEmpty())
-    return false;  // If the field has no name, then we won't have values.
-
-  // Don't attempt to autofill with values that are too large.
-  if (element.value().length() > kMaximumTextSizeForAutocomplete)
-    return false;
-
   // Show the popup with the list of available usernames.
-  ShowSuggestionPopup(iter->second.fill_data, element, false, false);
-  return true;
+  return ShowSuggestions(element, false, false);
 }
 
 void PasswordAutofillAgent::UpdateStateForTextChange(
@@ -826,9 +811,16 @@ bool PasswordAutofillAgent::ShowSuggestions(
   // should be shown. However, return |true| to indicate that this is a known
   // password form and that the request to show suggestions has been handled (as
   // a no-op).
-  if (!IsElementAutocompletable(element) ||
+  if (!element.isTextField() || !IsElementAutocompletable(element) ||
       !IsElementAutocompletable(password_info->password_field))
     return true;
+
+  if (element.nameForAutofill().isEmpty())
+    return false;  // If the field has no name, then we won't have values.
+
+  // Don't attempt to autofill with values that are too large.
+  if (element.value().length() > kMaximumTextSizeForAutocomplete)
+    return false;
 
   bool username_is_available =
       !username_element->isNull() && IsElementEditable(*username_element);
@@ -1314,6 +1306,12 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   blink::WebView* webview = frame->view();
   if (!webview)
     return false;
+
+  if (user_input.isPasswordField() && !user_input.isAutofilled() &&
+      !user_input.value().isEmpty()) {
+    Send(new AutofillHostMsg_HidePopup(routing_id()));
+    return false;
+  }
 
   FormData form;
   FormFieldData field;
