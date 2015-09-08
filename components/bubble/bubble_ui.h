@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_UI_H_
 #define COMPONENTS_BUBBLE_BUBBLE_UI_H_
 
+#include "components/bubble/bubble_reference.h"
+
 class BubbleUI {
  public:
   virtual ~BubbleUI() {}
 
-  // Should display the bubble UI.
-  virtual void Show() = 0;
+  // Should display the bubble UI. BubbleReference is passed in so that the
+  // bubble UI can notify the BubbleManager if it needs to close.
+  virtual void Show(BubbleReference bubble_reference) = 0;
 
   // Should close the bubble UI.
   virtual void Close() = 0;

@@ -7,14 +7,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/bubble/bubble_close_reason.h"
+#include "components/bubble/bubble_reference.h"
 
-class BubbleController;
 class BubbleDelegate;
-
-typedef base::WeakPtr<BubbleController> BubbleReference;
 
 // Inherit from BubbleManager to show, update, and close bubbles.
 // Any class that inherits from BubbleManager should capture any events that

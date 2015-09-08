@@ -20,6 +20,7 @@
         'bubble/bubble_delegate.h',
         'bubble/bubble_manager.cc',
         'bubble/bubble_manager.h',
+        'bubble/bubble_reference.h',
         'bubble/bubble_ui.h',
       ],
     },

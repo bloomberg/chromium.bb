@@ -17,7 +17,7 @@ class MockBubbleUI : public BubbleUI {
   MockBubbleUI() {}
   ~MockBubbleUI() override { Destroyed(); }
 
-  MOCK_METHOD0(Show, void());
+  MOCK_METHOD1(Show, void(BubbleReference));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(UpdateAnchorPosition, void());
 
@@ -118,7 +118,7 @@ TEST_F(BubbleManagerTest, ManagerShowsBubbleUI) {
   // Manager will delete bubble_ui.
   MockBubbleUI* bubble_ui = new MockBubbleUI;
   EXPECT_CALL(*bubble_ui, Destroyed());
-  EXPECT_CALL(*bubble_ui, Show());
+  EXPECT_CALL(*bubble_ui, Show(testing::_));
   EXPECT_CALL(*bubble_ui, Close());
   EXPECT_CALL(*bubble_ui, UpdateAnchorPosition()).Times(0);
 
@@ -137,7 +137,7 @@ TEST_F(BubbleManagerTest, ManagerUpdatesBubbleUI) {
   // Manager will delete bubble_ui.
   MockBubbleUI* bubble_ui = new MockBubbleUI;
   EXPECT_CALL(*bubble_ui, Destroyed());
-  EXPECT_CALL(*bubble_ui, Show());
+  EXPECT_CALL(*bubble_ui, Show(testing::_));
   EXPECT_CALL(*bubble_ui, Close());
   EXPECT_CALL(*bubble_ui, UpdateAnchorPosition());
 

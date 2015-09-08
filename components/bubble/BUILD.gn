@@ -11,6 +11,7 @@ source_set("bubble") {
     "bubble_delegate.h",
     "bubble_manager.cc",
     "bubble_manager.h",
+    "bubble_reference.h",
     "bubble_ui.h",
   ]
 }

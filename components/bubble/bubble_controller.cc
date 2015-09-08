@@ -28,7 +28,7 @@ void BubbleController::Show() {
   DCHECK(!bubble_ui_);
   bubble_ui_ = delegate_->BuildBubbleUI();
   DCHECK(bubble_ui_);
-  bubble_ui_->Show();
+  bubble_ui_->Show(AsWeakPtr());
   // TODO(hcarmona): log that bubble was shown.
 }
 
