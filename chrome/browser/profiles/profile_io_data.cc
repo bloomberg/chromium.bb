@@ -953,11 +953,11 @@ ProfileIOData::ResourceContext::CreateClientCertStore() {
   return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
 #elif defined(OS_MACOSX)
   return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
-#elif defined(USE_OPENSSL)
-  // OpenSSL does not use the ClientCertStore infrastructure. On Android client
+#elif defined(OS_ANDROID)
+  // Android does not use the ClientCertStore infrastructure. On Android client
   // cert matching is done by the OS as part of the call to show the cert
   // selection dialog.
-  return scoped_ptr<net::ClientCertStore>();
+  return nullptr;
 #else
 #error Unknown platform.
 #endif
