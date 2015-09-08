@@ -49,9 +49,8 @@ tests:
   - [5 € $20, ⠼⠑ ⠈⠑ ⠮⠼⠃⠚] # Currencies, p. 57.
   - [ó Ó òÒ ï î, ⠘⠕ ⠠⠘⠕ ⠘⠕⠠⠘⠕ ⠘⠊ ⠘⠊] # (Some) uncommon foreign letters, p. 38.
   - # URLs and email addresses, p. 45.
-    - http://www.hel.fi/linkitnvkirja@nvkirjasto.fi
+    - http://www.hel.fi/linkit nvkirja@nvkirjasto.fi
     - ⠓⠞⠞⠏⠒⠌⠌⠺⠺⠺⠄⠓⠑⠇⠄⠋⠊⠌⠇⠊⠝⠅⠊⠞ ⠝⠧⠅⠊⠗⠚⠁⠈⠝⠧⠅⠊⠗⠚⠁⠎⠞⠕⠄⠋⠊
-    - {xfail: true}
   - # Underlines, p. 39
     - Tietoa saa Näkövammaisten Keskusliitosta.
     - ⠠⠞⠊⠑⠞⠕⠁ ⠎⠁⠁ ⠬⠠⠝⠜⠅⠪⠧⠁⠍⠍⠁⠊⠎⠞⠑⠝ ⠬⠠⠅⠑⠎⠅⠥⠎⠇⠊⠊⠞⠕⠎⠞⠁⠄
