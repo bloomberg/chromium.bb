@@ -5,6 +5,8 @@
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 
 #include "base/strings/stringprintf.h"
+#include "content/browser/devtools/devtools_protocol_handler.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -54,7 +56,10 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     WorkerId worker_id,
     const ServiceWorkerIdentifier& service_worker)
     : WorkerDevToolsAgentHost(worker_id),
-      service_worker_(new ServiceWorkerIdentifier(service_worker)) {
+      service_worker_(new ServiceWorkerIdentifier(service_worker)),
+      network_handler_(new devtools::network::NetworkHandler()) {
+  DevToolsProtocolDispatcher* dispatcher = protocol_handler()->dispatcher();
+  dispatcher->SetNetworkHandler(network_handler_.get());
 }
 
 DevToolsAgentHost::Type ServiceWorkerDevToolsAgentHost::GetType() {

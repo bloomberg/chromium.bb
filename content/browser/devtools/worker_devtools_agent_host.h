@@ -52,6 +52,9 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
 
   virtual void OnAttachedStateChanged(bool attached);
   const WorkerId& worker_id() const { return worker_id_; }
+  DevToolsProtocolHandler* protocol_handler() {
+    return protocol_handler_.get();
+  }
 
  private:
   friend class SharedWorkerDevToolsManagerTest;
