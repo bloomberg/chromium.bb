@@ -23,9 +23,9 @@ namespace {
 #if defined(OS_CHROMEOS)
 // Used for theme fallback colors.
 const SkColor kDefaultColorFrame[] = {
-    SkColorSetRGB(109, 109, 109), SkColorSetRGB(217, 217, 217)};
+    SkColorSetRGB(109, 109, 109), SkColorSetRGB(204, 204, 204)};
 const SkColor kDefaultColorFrameInactive[] = {
-    SkColorSetRGB(176, 176, 176), SkColorSetRGB(230, 230, 230)};
+    SkColorSetRGB(176, 176, 176), SkColorSetRGB(220, 220, 220)};
 #elif defined(OS_MACOSX)
 const SkColor kDefaultColorFrame = SkColorSetRGB(224, 224, 224);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(246, 246, 246);
@@ -34,9 +34,10 @@ const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 #endif  // OS_CHROMEOS
 
-const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(83, 106, 139);
-const SkColor kDefaultColorFrameIncognitoInactive =
-    SkColorSetRGB(126, 139, 156);
+const SkColor kDefaultColorFrameIncognito[] = {
+    SkColorSetRGB(83, 106, 139), SkColorSetRGB(160, 160, 162)};
+const SkColor kDefaultColorFrameIncognitoInactive[] = {
+    SkColorSetRGB(126, 139, 156), SkColorSetRGB(120, 120, 122)};
 
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
@@ -328,9 +329,9 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
       return kDefaultColorFrameInactive;
 #endif  // OS_CHROMEOS
     case COLOR_FRAME_INCOGNITO:
-      return kDefaultColorFrameIncognito;
+      return kDefaultColorFrameIncognito[mode];
     case COLOR_FRAME_INCOGNITO_INACTIVE:
-      return kDefaultColorFrameIncognitoInactive;
+      return kDefaultColorFrameIncognitoInactive[mode];
     case COLOR_TOOLBAR:
 #if defined(OS_MACOSX)
       return kDefaultColorToolbar;
