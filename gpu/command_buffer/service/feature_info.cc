@@ -171,8 +171,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       chromium_image_ycbcr_422(false),
       enable_subscribe_uniform(false),
       emulate_primitive_restart_fixed_index(false),
-      ext_render_buffer_format_bgra8888(false),
-      ext_multisample_compatibility(false) {}
+      ext_render_buffer_format_bgra8888(false) {}
 
 FeatureInfo::Workarounds::Workarounds() :
 #define GPU_OP(type, name) name(false),
@@ -695,32 +694,26 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Check for multisample support
-  bool ext_has_multisample =
-      !workarounds_.disable_chromium_framebuffer_multisample &&
-      (extensions.Contains("GL_EXT_framebuffer_multisample") ||
-       gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||
-       (gl_version_info_->is_angle &&
-        extensions.Contains("GL_ANGLE_framebuffer_multisample")));
-
-  if (ext_has_multisample) {
+  if (!workarounds_.disable_chromium_framebuffer_multisample) {
+    bool ext_has_multisample =
+        extensions.Contains("GL_EXT_framebuffer_multisample") ||
+        gl_version_info_->is_es3 ||
+        gl_version_info_->is_desktop_core_profile;
+    if (gl_version_info_->is_angle) {
+      ext_has_multisample |=
+          extensions.Contains("GL_ANGLE_framebuffer_multisample");
+    }
     feature_flags_.use_core_framebuffer_multisample =
         gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile;
-    feature_flags_.chromium_framebuffer_multisample = true;
-    validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
-    validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
-    validators_.g_l_state.AddValue(GL_READ_FRAMEBUFFER_BINDING_EXT);
-    validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
-    validators_.render_buffer_parameter.AddValue(GL_RENDERBUFFER_SAMPLES_EXT);
-    AddExtensionString("GL_CHROMIUM_framebuffer_multisample");
-  }
-
-  if (ext_has_multisample &&
-      (!gl_version_info_->is_es ||
-       extensions.Contains("GL_EXT_multisample_compatibility"))) {
-    AddExtensionString("GL_EXT_multisample_compatibility");
-    feature_flags_.ext_multisample_compatibility = true;
-    validators_.capability.AddValue(GL_MULTISAMPLE_EXT);
-    validators_.capability.AddValue(GL_SAMPLE_ALPHA_TO_ONE_EXT);
+    if (ext_has_multisample) {
+      feature_flags_.chromium_framebuffer_multisample = true;
+      validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
+      validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
+      validators_.g_l_state.AddValue(GL_READ_FRAMEBUFFER_BINDING_EXT);
+      validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
+      validators_.render_buffer_parameter.AddValue(GL_RENDERBUFFER_SAMPLES_EXT);
+      AddExtensionString("GL_CHROMIUM_framebuffer_multisample");
+    }
   }
 
   if (!workarounds_.disable_multisampled_render_to_texture) {

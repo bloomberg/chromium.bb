@@ -185,27 +185,6 @@ INSTANTIATE_TEST_CASE_P(Service,
                         GLES2DecoderTestWithBlendEquationAdvanced,
                         ::testing::Bool());
 
-class GLES2DecoderTestWithEXTMultisampleCompatibility
-    : public GLES2DecoderTest {
- public:
-  GLES2DecoderTestWithEXTMultisampleCompatibility() {}
-
-  void SetUp() override {
-    InitState init;
-    init.gl_version = "opengl es 3.1";
-    init.has_alpha = true;
-    init.has_depth = true;
-    init.request_alpha = true;
-    init.request_depth = true;
-    init.bind_generates_resource = true;
-    init.extensions = "GL_EXT_multisample_compatibility ";
-    InitDecoder(init);
-  }
-};
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithEXTMultisampleCompatibility,
-                        ::testing::Bool());
-
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, GenDeletePaths) {
   static GLuint kFirstClientID = client_path_id_ + 88;
   static GLsizei kPathCount = 58;
@@ -1018,3 +997,4 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
 }  // namespace gles2
 }  // namespace gpu
+

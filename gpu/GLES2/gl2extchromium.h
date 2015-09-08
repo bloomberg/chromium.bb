@@ -987,12 +987,6 @@ typedef void(GL_APIENTRYP* PFNGLSTENCILTHENCOVERSTROKEPATHCHROMIUMPROC)(
 
 #endif /* GL_CHROMIUM_path_rendering */
 
-#ifndef GL_EXT_multisample_compatibility
-#define GL_EXT_multisample_compatibility 1
-#define GL_MULTISAMPLE_EXT 0x809D
-#define GL_SAMPLE_ALPHA_TO_ONE_EXT 0x809F
-#endif /* GL_EXT_multisample_compatiblity */
-
 #ifdef __cplusplus
 }
 #endif
