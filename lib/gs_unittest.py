@@ -1120,8 +1120,7 @@ class StatTest(AbstractGSContextTest):
       """
 
   # When stat throws an error.  It's a special snow flake.
-  STAT_ERROR_OUTPUT = ('INFO 0713 05:58:12.451810 stat.py] '
-                       'No URLs matched gs://abc/1')
+  STAT_ERROR_OUTPUT = 'No URLs matched gs://abc/1'
 
   def testStat(self):
     """Test ability to get the generation of a file."""
