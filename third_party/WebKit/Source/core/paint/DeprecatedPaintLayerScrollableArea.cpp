@@ -251,6 +251,8 @@ void DeprecatedPaintLayerScrollableArea::invalidateScrollCornerRect(const IntRec
     ASSERT(!layerForScrollCorner());
 
     if (m_scrollCorner) {
+        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+        DisablePaintInvalidationStateAsserts disabler;
         m_scrollCorner->invalidatePaintRectangle(LayoutRect(rect));
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             box().invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
