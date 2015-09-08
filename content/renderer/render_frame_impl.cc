@@ -4021,7 +4021,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     // the same zoom settings.
     HostZoomLevels::iterator host_zoom =
         render_view_->host_zoom_levels_.find(GURL(request.url()));
-    if (render_view_->webview()->mainFrame()->document().isPluginDocument()) {
+    if (render_view_->webview()->mainFrame()->isWebLocalFrame() &&
+        render_view_->webview()->mainFrame()->document().isPluginDocument()) {
       // Reset the zoom levels for plugins.
       render_view_->webview()->setZoomLevel(0);
     } else {

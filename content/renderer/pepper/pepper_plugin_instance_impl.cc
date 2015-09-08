@@ -3014,7 +3014,8 @@ void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
 
 bool PepperPluginInstanceImpl::IsFullPagePlugin() {
   WebLocalFrame* frame = container()->element().document().frame();
-  return frame->view()->mainFrame()->document().isPluginDocument();
+  return frame->view()->mainFrame()->isWebLocalFrame() &&
+         frame->view()->mainFrame()->document().isPluginDocument();
 }
 
 bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,

@@ -158,6 +158,7 @@ void BrowserPlugin::Attach() {
   if (container()) {
     blink::WebLocalFrame* frame = container()->element().document().frame();
     attach_params.is_full_page_plugin =
+        frame->view()->mainFrame()->isWebLocalFrame() &&
         frame->view()->mainFrame()->document().isPluginDocument();
   }
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_Attach(
