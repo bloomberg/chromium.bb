@@ -380,15 +380,12 @@ g2d_solid_fill(struct g2d_context *ctx, struct g2d_image *img,
 	if (y + h > img->height)
 		h = img->height - y;
 
-	pt.val = 0;
 	pt.data.x = x;
 	pt.data.y = y;
 	g2d_add_cmd(ctx, DST_LEFT_TOP_REG, pt.val);
 
-	pt.val = 0;
 	pt.data.x = x + w;
 	pt.data.y = y + h;
-
 	g2d_add_cmd(ctx, DST_RIGHT_BOTTOM_REG, pt.val);
 
 	g2d_add_cmd(ctx, SF_COLOR_REG, img->color);
@@ -460,20 +457,16 @@ g2d_copy(struct g2d_context *ctx, struct g2d_image *src,
 	g2d_add_base_addr(ctx, src, g2d_src);
 	g2d_add_cmd(ctx, SRC_STRIDE_REG, src->stride);
 
-	pt.val = 0;
 	pt.data.x = src_x;
 	pt.data.y = src_y;
 	g2d_add_cmd(ctx, SRC_LEFT_TOP_REG, pt.val);
-	pt.val = 0;
 	pt.data.x = src_x + w;
 	pt.data.y = src_y + h;
 	g2d_add_cmd(ctx, SRC_RIGHT_BOTTOM_REG, pt.val);
 
-	pt.val = 0;
 	pt.data.x = dst_x;
 	pt.data.y = dst_y;
 	g2d_add_cmd(ctx, DST_LEFT_TOP_REG, pt.val);
-	pt.val = 0;
 	pt.data.x = dst_x + w;
 	pt.data.y = dst_y + h;
 	g2d_add_cmd(ctx, DST_RIGHT_BOTTOM_REG, pt.val);
@@ -581,20 +574,16 @@ g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 		g2d_add_cmd(ctx, SRC_YSCALE_REG, scale_y);
 	}
 
-	pt.val = 0;
 	pt.data.x = src_x;
 	pt.data.y = src_y;
 	g2d_add_cmd(ctx, SRC_LEFT_TOP_REG, pt.val);
-	pt.val = 0;
 	pt.data.x = src_x + src_w;
 	pt.data.y = src_y + src_h;
 	g2d_add_cmd(ctx, SRC_RIGHT_BOTTOM_REG, pt.val);
 
-	pt.val = 0;
 	pt.data.x = dst_x;
 	pt.data.y = dst_y;
 	g2d_add_cmd(ctx, DST_LEFT_TOP_REG, pt.val);
-	pt.val = 0;
 	pt.data.x = dst_x + dst_w;
 	pt.data.y = dst_y + dst_h;
 	g2d_add_cmd(ctx, DST_RIGHT_BOTTOM_REG, pt.val);
@@ -700,20 +689,16 @@ g2d_blend(struct g2d_context *ctx, struct g2d_image *src,
 	g2d_add_cmd(ctx, BITBLT_COMMAND_REG, bitblt.val);
 	g2d_add_cmd(ctx, BLEND_FUNCTION_REG, blend.val);
 
-	pt.val = 0;
 	pt.data.x = src_x;
 	pt.data.y = src_y;
 	g2d_add_cmd(ctx, SRC_LEFT_TOP_REG, pt.val);
-	pt.val = 0;
 	pt.data.x = src_x + w;
 	pt.data.y = src_y + h;
 	g2d_add_cmd(ctx, SRC_RIGHT_BOTTOM_REG, pt.val);
 
-	pt.val = 0;
 	pt.data.x = dst_x;
 	pt.data.y = dst_y;
 	g2d_add_cmd(ctx, DST_LEFT_TOP_REG, pt.val);
-	pt.val = 0;
 	pt.data.x = dst_x + w;
 	pt.data.y = dst_y + h;
 	g2d_add_cmd(ctx, DST_RIGHT_BOTTOM_REG, pt.val);
@@ -829,20 +814,16 @@ g2d_scale_and_blend(struct g2d_context *ctx, struct g2d_image *src,
 	g2d_add_cmd(ctx, BITBLT_COMMAND_REG, bitblt.val);
 	g2d_add_cmd(ctx, BLEND_FUNCTION_REG, blend.val);
 
-	pt.val = 0;
 	pt.data.x = src_x;
 	pt.data.y = src_y;
 	g2d_add_cmd(ctx, SRC_LEFT_TOP_REG, pt.val);
-	pt.val = 0;
 	pt.data.x = src_x + src_w;
 	pt.data.y = src_y + src_h;
 	g2d_add_cmd(ctx, SRC_RIGHT_BOTTOM_REG, pt.val);
 
-	pt.val = 0;
 	pt.data.x = dst_x;
 	pt.data.y = dst_y;
 	g2d_add_cmd(ctx, DST_LEFT_TOP_REG, pt.val);
-	pt.val = 0;
 	pt.data.x = dst_x + dst_w;
 	pt.data.y = dst_y + dst_h;
 	g2d_add_cmd(ctx, DST_RIGHT_BOTTOM_REG, pt.val);
