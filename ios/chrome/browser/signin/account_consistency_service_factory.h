@@ -39,6 +39,8 @@ class AccountConsistencyServiceFactory
   ~AccountConsistencyServiceFactory() override;
 
   // BrowserStateKeyedServiceFactory:
+  void RegisterBrowserStatePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
   scoped_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
   bool ServiceIsCreatedWithBrowserState() const override;

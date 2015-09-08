@@ -6,10 +6,12 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "ios/web/public/test/test_browser_state.h"
@@ -28,6 +30,9 @@ namespace {
 NSURL* const kGoogleUrl = [NSURL URLWithString:@"https://google.com/"];
 // URL of the Youtube domain where the X-CHROME-CONNECTED cookie is set/removed.
 NSURL* const kYoutubeUrl = [NSURL URLWithString:@"https://youtube.com/"];
+// URL of a country Google domain where the X-CHROME-CONNECTED cookie is
+// set/removed.
+NSURL* const kCountryGoogleUrl = [NSURL URLWithString:@"https://google.de/"];
 
 // AccountConsistencyService specialization that fakes the creation of the
 // WKWebView in order to mock it. This allows tests to intercept the calls to
@@ -38,10 +43,12 @@ class FakeAccountConsistencyService : public AccountConsistencyService {
       web::BrowserState* browser_state,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       GaiaCookieManagerService* gaia_cookie_manager_service,
+      SigninClient* signin_client,
       SigninManager* signin_manager)
       : AccountConsistencyService(browser_state,
                                   cookie_settings,
                                   gaia_cookie_manager_service,
+                                  signin_client,
                                   signin_manager),
         mock_web_view_(nil) {}
 
@@ -87,31 +94,64 @@ class AccountConsistencyServiceTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
+    AccountConsistencyService::RegisterPrefs(prefs_.registry());
+    AccountTrackerService::RegisterPrefs(prefs_.registry());
+    content_settings::CookieSettings::RegisterProfilePrefs(prefs_.registry());
+    HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
+    SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
+
     gaia_cookie_manager_service_.reset(new GaiaCookieManagerService(
         nullptr, GaiaConstants::kChromeSource, nullptr));
-    signin_client_.reset(new TestSigninClient(nullptr));
+    signin_client_.reset(new TestSigninClient(&prefs_));
     signin_manager_.reset(new FakeSigninManager(
         signin_client_.get(), nullptr, &account_tracker_service_, nullptr));
-    account_consistency_service_.reset(new FakeAccountConsistencyService(
-        &browser_state_, nullptr, gaia_cookie_manager_service_.get(),
-        signin_manager_.get()));
+    account_tracker_service_.Initialize(signin_client_.get());
+    settings_map_ = new HostContentSettingsMap(&prefs_, false);
+    cookie_settings_ =
+        new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");
+    ResetAccountConsistencyService();
   }
 
   void TearDown() override {
     account_consistency_service_->Shutdown();
+    settings_map_->ShutdownOnUIThread();
     web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
     PlatformTest::TearDown();
   }
 
-  void FireGoogleSigninSucceeded() {
-    account_consistency_service_->GoogleSigninSucceeded("", "", "");
+  // Adds an expectation for |url| to be loaded in the web view of
+  // |account_consistency_service_|.
+  // |continue_navigation| controls whether navigation will continue or be
+  // stopped on page load.
+  void AddPageLoadedExpectation(NSURL* url, bool continue_navigation) {
+    void (^continueBlock)(NSInvocation*) = ^(NSInvocation* invocation) {
+      if (!continue_navigation)
+        return;
+      WKWebView* web_view = nil;
+      [invocation getArgument:&web_view atIndex:0];
+      [GetNavigationDelegate() webView:web_view didFinishNavigation:nil];
+    };
+    [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:continueBlock])
+        loadHTMLString:[OCMArg any]
+               baseURL:url];
   }
 
-  void FireGoogleSignedOut() {
-    account_consistency_service_->GoogleSignedOut("", "");
+  void ResetAccountConsistencyService() {
+    if (account_consistency_service_) {
+      account_consistency_service_->Shutdown();
+    }
+    account_consistency_service_.reset(new FakeAccountConsistencyService(
+        &browser_state_, cookie_settings_, gaia_cookie_manager_service_.get(),
+        signin_client_.get(), signin_manager_.get()));
   }
 
-  id GetMockWKWebView() { return account_consistency_service_->web_view_; }
+  void SignIn() {
+    signin_manager_->SignIn("12345", "user@gmail.com", "password");
+  }
+
+  void SignOut() { signin_manager_->ForceSignOut(); }
+
+  id GetMockWKWebView() { return account_consistency_service_->GetWKWebView(); }
   id GetNavigationDelegate() {
     return account_consistency_service_->navigation_delegate_;
   }
@@ -121,6 +161,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   web::TestWebThreadBundle thread_bundle_;
   AccountTrackerService account_tracker_service_;
   web::TestBrowserState browser_state_;
+  user_prefs::TestingPrefServiceSyncable prefs_;
   TestWebState web_state_;
   // AccountConsistencyService being tested. Actually a
   // FakeAccountConsistencyService to be able to use a mock web view.
@@ -128,6 +169,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
   scoped_ptr<TestSigninClient> signin_client_;
   scoped_ptr<FakeSigninManager> signin_manager_;
   scoped_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
+  scoped_refptr<HostContentSettingsMap> settings_map_;
+  scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 };
 
 // Tests whether the WKWebView is actually stopped when the browser state is
@@ -139,40 +182,35 @@ TEST_F(AccountConsistencyServiceTest, OnInactive) {
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
 
-// Tests that cookies are set on the main Google domain after signin.
-TEST_F(AccountConsistencyServiceTest, GoogleSigninSucceeded) {
+// Tests that cookies that are added during SignIn and subsequent navigations
+// are correctly removed during the SignOut.
+TEST_F(AccountConsistencyServiceTest, SignInSignOut) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
-  void (^finishNavigation)(NSInvocation*) = ^(NSInvocation* invocation) {
-    WKWebView* web_view = nil;
-    [invocation getArgument:&web_view atIndex:0];
-    [GetNavigationDelegate() webView:web_view didFinishNavigation:nil];
-  };
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:finishNavigation])
-      loadHTMLString:[OCMArg any]
-             baseURL:kGoogleUrl];
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:finishNavigation])
-      loadHTMLString:[OCMArg any]
-             baseURL:kYoutubeUrl];
-  FireGoogleSigninSucceeded();
-  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
-}
 
-// Tests that cookies are removed from the domains they were set on after
-// signout.
-TEST_F(AccountConsistencyServiceTest, GoogleSignedOut) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-  void (^finishNavigation)(NSInvocation*) = ^(NSInvocation* invocation) {
-    WKWebView* web_view = nil;
-    [invocation getArgument:&web_view atIndex:0];
-    [GetNavigationDelegate() webView:web_view didFinishNavigation:nil];
-  };
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:finishNavigation])
-      loadHTMLString:[OCMArg any]
-             baseURL:kGoogleUrl];
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:finishNavigation])
-      loadHTMLString:[OCMArg any]
-             baseURL:kYoutubeUrl];
-  FireGoogleSignedOut();
+  // Check that main Google domains are added.
+  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
+  SignIn();
+  // Check that other Google domains are added on navigation.
+  AddPageLoadedExpectation(kCountryGoogleUrl, true /* continue_navigation */);
+
+  id delegate =
+      [OCMockObject mockForProtocol:@protocol(ManageAccountsDelegate)];
+  NSDictionary* headers = [NSDictionary dictionary];
+  base::scoped_nsobject<NSHTTPURLResponse> response([[NSHTTPURLResponse alloc]
+       initWithURL:kCountryGoogleUrl
+        statusCode:200
+       HTTPVersion:@"HTTP/1.1"
+      headerFields:headers]);
+  account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
+  EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
+  web_state_.WebStateDestroyed();
+
+  // Check that all domains are removed.
+  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kCountryGoogleUrl, true /* continue_navigation */);
+  SignOut();
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
 
@@ -180,23 +218,14 @@ TEST_F(AccountConsistencyServiceTest, GoogleSignedOut) {
 // state becomes active.
 TEST_F(AccountConsistencyServiceTest, ApplyOnActive) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
-  void (^finishNavigation)(NSInvocation*) = ^(NSInvocation* invocation) {
-    WKWebView* web_view = nil;
-    [invocation getArgument:&web_view atIndex:0];
-    [GetNavigationDelegate() webView:web_view didFinishNavigation:nil];
-  };
 
   // No request is made until the browser state is active, then a WKWebView and
   // its navigation delegate are created, and the requests are processed.
   [[GetMockWKWebView() expect] setNavigationDelegate:[OCMArg isNotNil]];
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:finishNavigation])
-      loadHTMLString:[OCMArg any]
-             baseURL:kGoogleUrl];
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:finishNavigation])
-      loadHTMLString:[OCMArg any]
-             baseURL:kYoutubeUrl];
+  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
-  FireGoogleSigninSucceeded();
+  SignIn();
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
@@ -206,25 +235,14 @@ TEST_F(AccountConsistencyServiceTest, ApplyOnActive) {
 // browser state becomes active.
 TEST_F(AccountConsistencyServiceTest, CancelOnInactiveReApplyOnActive) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
-  void (^finishNavigation)(NSInvocation*) = ^(NSInvocation* invocation) {
-    WKWebView* web_view = nil;
-    [invocation getArgument:&web_view atIndex:0];
-    [GetNavigationDelegate() webView:web_view didFinishNavigation:nil];
-  };
 
   // The first request starts to get applied and get cancelled as the browser
   // state becomes inactive. It is resumed after the browser state becomes
   // active again.
-  [static_cast<WKWebView*>([GetMockWKWebView() expect])
-      loadHTMLString:[OCMArg any]
-             baseURL:kGoogleUrl];
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:finishNavigation])
-      loadHTMLString:[OCMArg any]
-             baseURL:kGoogleUrl];
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:finishNavigation])
-      loadHTMLString:[OCMArg any]
-             baseURL:kYoutubeUrl];
-  FireGoogleSigninSucceeded();
+  AddPageLoadedExpectation(kGoogleUrl, false /* continue_navigation */);
+  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
+  SignIn();
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
@@ -292,4 +310,39 @@ TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsDefault) {
   web_state_.WebStateDestroyed();
 
   EXPECT_OCMOCK_VERIFY(delegate);
+}
+
+// Tests that domains with cookie are added to the prefs only after the request
+// has been applied.
+TEST_F(AccountConsistencyServiceTest, DomainsWithCookiePrefsOnApplied) {
+  CR_TEST_REQUIRES_WK_WEB_VIEW();
+
+  // Second request is not completely applied. Ensure prefs reflect that.
+  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kYoutubeUrl, false /* continue_navigation */);
+  SignIn();
+  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
+
+  const base::DictionaryValue* dict =
+      prefs_.GetDictionary(AccountConsistencyService::kDomainsWithCookiePref);
+  EXPECT_EQ(1u, dict->size());
+  EXPECT_TRUE(dict->GetBooleanWithoutPathExpansion("google.com", nullptr));
+  EXPECT_FALSE(dict->GetBooleanWithoutPathExpansion("youtube.com", nullptr));
+}
+
+// Tests that domains with cookie are correctly loaded from the prefs on service
+// startup.
+TEST_F(AccountConsistencyServiceTest, DomainsWithCookieLoadedFromPrefs) {
+  CR_TEST_REQUIRES_WK_WEB_VIEW();
+
+  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
+  SignIn();
+  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
+
+  ResetAccountConsistencyService();
+  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
+  SignOut();
+  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }

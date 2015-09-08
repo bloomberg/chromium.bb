@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 
@@ -21,6 +22,7 @@ AccountConsistencyServiceFactory::AccountConsistencyServiceFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::CookieSettingsFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
+  DependsOn(SigninClientFactory::GetInstance());
   DependsOn(ios::SigninManagerFactory::GetInstance());
 }
 
@@ -42,6 +44,11 @@ AccountConsistencyServiceFactory::GetInstance() {
   return Singleton<AccountConsistencyServiceFactory>::get();
 }
 
+void AccountConsistencyServiceFactory::RegisterBrowserStatePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  AccountConsistencyService::RegisterPrefs(registry);
+}
+
 scoped_ptr<KeyedService>
 AccountConsistencyServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
@@ -51,6 +58,7 @@ AccountConsistencyServiceFactory::BuildServiceInstanceFor(
       chrome_browser_state,
       ios::CookieSettingsFactory::GetForBrowserState(chrome_browser_state),
       GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
+      SigninClientFactory::GetForBrowserState(chrome_browser_state),
       ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state)));
 }
 
