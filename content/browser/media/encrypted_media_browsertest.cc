@@ -14,7 +14,7 @@
 #endif
 
 // Available key systems.
-const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+const char kClearKeyKeySystem[] = "org.w3.clearkey";
 
 // Supported media types.
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
@@ -83,7 +83,6 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runEncrypted", "1"));
-    query_params.push_back(std::make_pair("usePrefixedEME", "1"));
     RunMediaTestPage("mse_config_change.html", query_params, kEnded, true);
   }
 
@@ -104,7 +103,6 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
     query_params.push_back(std::make_pair("keySystem", key_system));
     if (src_type == MSE)
       query_params.push_back(std::make_pair("useMSE", "1"));
-    query_params.push_back(std::make_pair("usePrefixedEME", "1"));
     RunMediaTestPage(html_page, query_params, expectation, true);
   }
 
