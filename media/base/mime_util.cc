@@ -36,6 +36,7 @@ class MimeUtil {
     H264_BASELINE,
     H264_MAIN,
     H264_HIGH,
+    HEVC_MAIN,
     VP8,
     VP9,
     THEORA
@@ -201,6 +202,15 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
     case MimeUtil::VORBIS:
       return true;
 
+    case MimeUtil::HEVC_MAIN:
+#if defined(ENABLE_HEVC_DEMUXING)
+      // HEVC/H.265 is supported in Lollipop+ (API Level 21), according to
+      // http://developer.android.com/reference/android/media/MediaFormat.html
+      return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
+#else
+      return false;
+#endif
+
     case MimeUtil::MPEG2_AAC_LC:
     case MimeUtil::MPEG2_AAC_MAIN:
     case MimeUtil::MPEG2_AAC_SSR:
@@ -255,6 +265,11 @@ static const char kMP4VideoCodecsExpression[] =
     // kUnambiguousCodecStringMap/kAmbiguousCodecStringMap should be the only
     // mapping from strings to codecs. See crbug.com/461009.
     "avc1.42E00A,avc1.4D400A,avc1.64000A,"
+#if defined(ENABLE_HEVC_DEMUXING)
+    // Any valid unambiguous HEVC codec id will work here, since these strings
+    // are parsed and mapped to MimeUtil::Codec enum values.
+    "hev1.1.6.L93.B0,"
+#endif
     "mp4a.66,mp4a.67,mp4a.68,mp4a.69,mp4a.6B,mp4a.40.2,mp4a.40.02,mp4a.40.5,"
     "mp4a.40.05,mp4a.40.29";
 
@@ -548,6 +563,42 @@ static bool ParseH264CodecID(const std::string& codec_id,
   return true;
 }
 
+#if defined(ENABLE_HEVC_DEMUXING)
+// ISO/IEC FDIS 14496-15 standard section E.3 describes the syntax of codec ids
+// reserved for HEVC. According to that spec HEVC codec id must start with
+// either "hev1." or "hvc1.". We don't yet support full parsing of HEVC codec
+// ids, but since no other codec id starts with those string we'll just treat
+// any string starting with "hev1." or "hvc1." as valid HEVC codec ids.
+// crbug.com/482761
+static bool ParseHEVCCodecID(const std::string& codec_id,
+                             MimeUtil::Codec* codec,
+                             bool* is_ambiguous) {
+  if (base::StartsWith(codec_id, "hev1.", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(codec_id, "hvc1.", base::CompareCase::SENSITIVE)) {
+    *codec = MimeUtil::HEVC_MAIN;
+
+    // TODO(servolk): Full HEVC codec id parsing is not implemented yet (see
+    // crbug.com/482761). So treat HEVC codec ids as ambiguous for now.
+    *is_ambiguous = true;
+
+    // TODO(servolk): Most HEVC codec ids are treated as ambiguous (see above),
+    // but we need to recognize at least one valid unambiguous HEVC codec id,
+    // which is added into kMP4VideoCodecsExpression. We need it to be
+    // unambiguous to avoid DCHECK(!is_ambiguous) in InitializeMimeTypeMaps. We
+    // also use these in unit tests (see
+    // content/browser/media/media_canplaytype_browsertest.cc).
+    // Remove this workaround after crbug.com/482761 is fixed.
+    if (codec_id == "hev1.1.6.L93.B0" || codec_id == "hvc1.1.6.L93.B0") {
+      *is_ambiguous = false;
+    }
+
+    return true;
+  }
+
+  return false;
+}
+#endif
+
 bool MimeUtil::StringToCodec(const std::string& codec_id,
                              Codec* codec,
                              bool* is_ambiguous) const {
@@ -560,8 +611,13 @@ bool MimeUtil::StringToCodec(const std::string& codec_id,
   }
 
   // If |codec_id| is not in |string_to_codec_map_|, then we assume that it is
-  // an H.264 codec ID because currently those are the only ones that can't be
-  // stored in the |string_to_codec_map_| and require parsing.
+  // either H.264 or HEVC/H.265 codec ID because currently those are the only
+  // ones that are not added to the |string_to_codec_map_| and require parsing.
+#if defined(ENABLE_HEVC_DEMUXING)
+  if (ParseHEVCCodecID(codec_id, codec, is_ambiguous)) {
+    return true;
+  }
+#endif
   return ParseH264CodecID(codec_id, codec, is_ambiguous);
 }
 
@@ -589,6 +645,7 @@ bool MimeUtil::IsCodecProprietary(Codec codec) const {
     case H264_BASELINE:
     case H264_MAIN:
     case H264_HIGH:
+    case HEVC_MAIN:
       return true;
 
     case PCM:

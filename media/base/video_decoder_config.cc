@@ -127,6 +127,8 @@ std::string VideoDecoderConfig::GetHumanReadableCodecName() const {
       return "unknown";
     case kCodecH264:
       return "h264";
+    case kCodecHEVC:
+      return "hevc";
     case kCodecVC1:
       return "vc1";
     case kCodecMPEG2:

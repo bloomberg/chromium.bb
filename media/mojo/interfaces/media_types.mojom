@@ -130,7 +130,8 @@ enum VideoCodec {
   Theora,
   VP8,
   VP9,
-  Max = VP9,
+  HEVC,
+  Max = HEVC,
 };
 
 // See media/base/video_decoder_config.h for descriptions.

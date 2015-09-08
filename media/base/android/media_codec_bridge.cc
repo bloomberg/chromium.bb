@@ -53,6 +53,8 @@ static const std::string VideoCodecToAndroidMimeType(const VideoCodec& codec) {
   switch (codec) {
     case kCodecH264:
       return "video/avc";
+    case kCodecHEVC:
+      return "video/hevc";
     case kCodecVP8:
       return "video/x-vnd.on2.vp8";
     case kCodecVP9:
@@ -66,6 +68,8 @@ static const std::string CodecTypeToAndroidMimeType(const std::string& codec) {
   // TODO(xhwang): Shall we handle more detailed strings like "mp4a.40.2"?
   if (codec == "avc1")
     return "video/avc";
+  if (codec == "hvc1")
+    return "video/hevc";
   if (codec == "mp4a")
     return "audio/mp4a-latm";
   if (codec == "vp8" || codec == "vp8.0")
@@ -85,6 +89,8 @@ static const std::string AndroidMimeTypeToCodecType(const std::string& mime) {
     return "mp4v";
   if (mime == "video/avc")
     return "avc1";
+  if (mime == "video/hevc")
+    return "hvc1";
   if (mime == "video/x-vnd.on2.vp8")
     return "vp8";
   if (mime == "video/x-vnd.on2.vp9")

@@ -33,6 +33,13 @@
       }, {
         'use_low_memory_buffer%': 0,
       }],
+      ['chromecast==1', {
+        # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
+        # platform.
+        'enable_hevc_demuxing%': 1,
+      }, {
+        'enable_hevc_demuxing%': 0,
+      }],
     ],
   },
   'includes': [
@@ -1096,6 +1103,23 @@
             'formats/mpeg/mpeg_audio_stream_parser_base.h',
           ],
         }],
+        ['proprietary_codecs==1 and enable_hevc_demuxing==1', {
+          'defines': [
+            'ENABLE_HEVC_DEMUXING'
+          ],
+          'sources': [
+            'filters/h265_parser.cc',
+            'filters/h265_parser.h',
+            'formats/mp4/hevc.cc',
+            'formats/mp4/hevc.h',
+          ],
+        }],
+        ['proprietary_codecs==1 and enable_hevc_demuxing==1 and media_use_ffmpeg==1', {
+          'sources': [
+            'filters/ffmpeg_h265_to_annex_b_bitstream_converter.cc',
+            'filters/ffmpeg_h265_to_annex_b_bitstream_converter.h',
+          ],
+        }],
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             'media_asm',
@@ -1302,6 +1326,14 @@
         ['arm_neon==1', {
           'defines': [
             'USE_NEON'
+          ],
+        }],
+        ['proprietary_codecs==1 and enable_hevc_demuxing==1', {
+          'defines': [
+            'ENABLE_HEVC_DEMUXING'
+          ],
+          'sources': [
+            'filters/h265_parser_unittest.cc',
           ],
         }],
         ['media_use_ffmpeg==1', {

@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
+#include "media/base/video_decoder_config.h"
 #include "media/formats/mp4/aac.h"
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/box_reader.h"
@@ -206,6 +207,9 @@ struct MEDIA_EXPORT VideoSampleEntry : Box {
 
   PixelAspectRatioBox pixel_aspect;
   ProtectionSchemeInfo sinf;
+
+  VideoCodec video_codec;
+  VideoCodecProfile video_codec_profile;
 
   bool IsFormatValid() const;
 

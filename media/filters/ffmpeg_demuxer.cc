@@ -34,6 +34,10 @@
 #include "media/filters/webvtt_util.h"
 #include "media/formats/webm/webm_crypto_helpers.h"
 
+#if defined(ENABLE_HEVC_DEMUXING)
+#include "media/filters/ffmpeg_h265_to_annex_b_bitstream_converter.h"
+#endif
+
 namespace media {
 
 static base::Time ExtractTimelineOffset(AVFormatContext* format_context) {
@@ -548,6 +552,11 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
   if (stream_->codec->codec_id == AV_CODEC_ID_H264) {
     bitstream_converter_.reset(
         new FFmpegH264ToAnnexBBitstreamConverter(stream_->codec));
+#if defined(ENABLE_HEVC_DEMUXING)
+  } else if (stream_->codec->codec_id == AV_CODEC_ID_HEVC) {
+    bitstream_converter_.reset(
+        new FFmpegH265ToAnnexBBitstreamConverter(stream_->codec));
+#endif
   } else if (stream_->codec->codec_id == AV_CODEC_ID_AAC) {
     bitstream_converter_.reset(
         new FFmpegAACBitstreamConverter(stream_->codec));
@@ -996,6 +1005,28 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       if (video_stream)
         continue;
 
+
+#if defined(ENABLE_HEVC_DEMUXING)
+      if (stream->codec->codec_id == AV_CODEC_ID_HEVC) {
+        // If ffmpeg is built without HEVC parser/decoder support, it will be
+        // able to demux HEVC based solely on container-provided information,
+        // but unable to get some of the parameters without parsing the stream
+        // (e.g. coded size needs to be read from SPS, pixel format is typically
+        // deduced from decoder config in hvcC box). These are not really needed
+        // when using external decoder (e.g. hardware decoder), so override them
+        // here, to make sure this translates into a valid VideoDecoderConfig.
+        if (stream->codec->coded_width == 0 &&
+            stream->codec->coded_height == 0) {
+          DCHECK(stream->codec->width > 0);
+          DCHECK(stream->codec->height > 0);
+          stream->codec->coded_width = stream->codec->width;
+          stream->codec->coded_height = stream->codec->height;
+        }
+        if (stream->codec->pix_fmt == AV_PIX_FMT_NONE) {
+          stream->codec->pix_fmt = PIX_FMT_YUV420P;
+        }
+      }
+#endif
       // Log the codec detected, whether it is supported or not.
       UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedVideoCodec",
                                   codec_context->codec_id);

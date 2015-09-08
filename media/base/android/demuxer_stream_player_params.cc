@@ -77,6 +77,7 @@ const char* AsString(VideoCodec codec) {
   switch (codec) {
     RETURN_STRING(kUnknownVideoCodec);
     RETURN_STRING(kCodecH264);
+    RETURN_STRING(kCodecHEVC);
     RETURN_STRING(kCodecVC1);
     RETURN_STRING(kCodecMPEG2);
     RETURN_STRING(kCodecMPEG4);

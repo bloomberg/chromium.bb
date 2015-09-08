@@ -305,9 +305,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
       is_video_track_encrypted_ = entry.sinf.info.track_encryption.is_encrypted;
       DVLOG(1) << "is_video_track_encrypted_: " << is_video_track_encrypted_;
-      video_config.Initialize(kCodecH264, H264PROFILE_MAIN, PIXEL_FORMAT_YV12,
-                              COLOR_SPACE_HD_REC709, coded_size, visible_rect,
-                              natural_size,
+      video_config.Initialize(entry.video_codec, entry.video_codec_profile,
+                              PIXEL_FORMAT_YV12, COLOR_SPACE_HD_REC709,
+                              coded_size, visible_rect, natural_size,
                               // No decoder-specific buffer needed for AVC;
                               // SPS/PPS are embedded in the video stream
                               NULL, 0, is_video_track_encrypted_);
@@ -478,7 +478,8 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
     DCHECK(runs_->video_description().frame_bitstream_converter);
     if (!runs_->video_description().frame_bitstream_converter->ConvertFrame(
         &frame_buf, runs_->is_keyframe(), &subsamples)) {
-      MEDIA_LOG(ERROR, media_log_) << "Failed to prepare AVC sample for decode";
+      MEDIA_LOG(ERROR, media_log_)
+          << "Failed to prepare video sample for decode";
       *err = true;
       return false;
     }

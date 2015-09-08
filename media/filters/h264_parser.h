@@ -341,6 +341,12 @@ class MEDIA_EXPORT H264Parser {
   static bool FindStartCode(const uint8* data, off_t data_size,
                             off_t* offset, off_t* start_code_size);
 
+  // Wrapper for FindStartCode() that skips over start codes that
+  // may appear inside of |encrypted_ranges_|.
+  // Returns true if a start code was found. Otherwise returns false.
+  static bool FindStartCodeInClearRanges(const uint8* data, off_t data_size,
+                                         const Ranges<const uint8*>& ranges,
+                                         off_t* offset, off_t* start_code_size);
   H264Parser();
   ~H264Parser();
 
@@ -405,12 +411,6 @@ class MEDIA_EXPORT H264Parser {
   //   the start code as well as the trailing zero bits.
   // - the size in bytes of the start code is returned in |*start_code_size|.
   bool LocateNALU(off_t* nalu_size, off_t* start_code_size);
-
-  // Wrapper for FindStartCode() that skips over start codes that
-  // may appear inside of |encrypted_ranges_|.
-  // Returns true if a start code was found. Otherwise returns false.
-  bool FindStartCodeInClearRanges(const uint8* data, off_t data_size,
-                                  off_t* offset, off_t* start_code_size);
 
   // Exp-Golomb code parsing as specified in chapter 9.1 of the spec.
   // Read one unsigned exp-Golomb code from the stream and return in |*val|.

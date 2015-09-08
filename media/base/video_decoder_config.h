@@ -28,12 +28,13 @@ enum VideoCodec {
   kCodecTheora,
   kCodecVP8,
   kCodecVP9,
+  kCodecHEVC,
   // DO NOT ADD RANDOM VIDEO CODECS!
   //
   // The only acceptable time to add a new codec is if there is production code
   // that uses said codec in the same CL.
 
-  kVideoCodecMax = kCodecVP9  // Must equal the last "real" codec above.
+  kVideoCodecMax = kCodecHEVC  // Must equal the last "real" codec above.
 };
 
 // Video stream profile.  This *must* match PP_VideoDecoder_Profile.

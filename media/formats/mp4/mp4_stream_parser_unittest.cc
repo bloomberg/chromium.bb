@@ -294,6 +294,15 @@ TEST_F(MP4StreamParserTest, VideoSamplesStartWithAUDs) {
   ParseMP4File("bear-1280x720-av_with-aud-nalus_frag.mp4", 512);
 }
 
+#if defined(ENABLE_HEVC_DEMUXING)
+TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
+  InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
+  scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-hevc-frag.mp4");
+  EXPECT_MEDIA_LOG(VideoCodecLog("hevc"));
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+#endif
+
 TEST_F(MP4StreamParserTest, CENC) {
   // Encrypted test mp4 files have non-zero duration and are treated as
   // recorded streams.

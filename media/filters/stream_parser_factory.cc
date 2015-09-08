@@ -52,7 +52,8 @@ struct CodecInfo {
     HISTOGRAM_EAC3,
     HISTOGRAM_MP3,
     HISTOGRAM_OPUS,
-    HISTOGRAM_MAX = HISTOGRAM_OPUS  // Must be equal to largest logged entry.
+    HISTOGRAM_HEVC,
+    HISTOGRAM_MAX = HISTOGRAM_HEVC  // Must be equal to largest logged entry.
   };
 
   const char* pattern;
@@ -148,6 +149,12 @@ static const CodecInfo kH264AVC1CodecInfo = { "avc1.*", CodecInfo::VIDEO, NULL,
                                               CodecInfo::HISTOGRAM_H264 };
 static const CodecInfo kH264AVC3CodecInfo = { "avc3.*", CodecInfo::VIDEO, NULL,
                                               CodecInfo::HISTOGRAM_H264 };
+#if defined(ENABLE_HEVC_DEMUXING)
+static const CodecInfo kHEVCHEV1CodecInfo = { "hev1.*", CodecInfo::VIDEO, NULL,
+                                              CodecInfo::HISTOGRAM_HEVC };
+static const CodecInfo kHEVCHVC1CodecInfo = { "hvc1.*", CodecInfo::VIDEO, NULL,
+                                              CodecInfo::HISTOGRAM_HEVC };
+#endif
 static const CodecInfo kMPEG4AACCodecInfo = { "mp4a.40.*", CodecInfo::AUDIO,
                                               &ValidateMP4ACodecID,
                                               CodecInfo::HISTOGRAM_MPEG4AAC };
@@ -158,6 +165,10 @@ static const CodecInfo kMPEG2AACLCCodecInfo = { "mp4a.67", CodecInfo::AUDIO,
 static const CodecInfo* kVideoMP4Codecs[] = {
   &kH264AVC1CodecInfo,
   &kH264AVC3CodecInfo,
+#if defined(ENABLE_HEVC_DEMUXING)
+  &kHEVCHEV1CodecInfo,
+  &kHEVCHVC1CodecInfo,
+#endif
   &kMPEG4AACCodecInfo,
   &kMPEG2AACLCCodecInfo,
   NULL

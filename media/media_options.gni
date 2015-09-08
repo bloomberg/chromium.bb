@@ -49,6 +49,10 @@ declare_args() {
   # default since it's not available on the normal Web Platform and costs money.
   enable_mpeg2ts_stream_parser = false
 
+  # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
+  # platform.
+  enable_hevc_demuxing = false
+
   # Experiment to enable mojo media application: http://crbug.com/431776
   # Valid options are:
   # - "none": Do not use mojo media application.
