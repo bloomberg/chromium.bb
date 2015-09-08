@@ -9,7 +9,7 @@
 TestToolbarModel::TestToolbarModel()
     : ChromeToolbarModel(),
       perform_search_term_replacement_(false),
-      security_level_(connection_security::NONE),
+      security_level_(SecurityStateModel::NONE),
       icon_(IDR_LOCATION_BAR_HTTP),
       should_display_url_(true) {}
 
@@ -36,7 +36,7 @@ bool TestToolbarModel::WouldPerformSearchTermReplacement(
   return perform_search_term_replacement_;
 }
 
-connection_security::SecurityLevel TestToolbarModel::GetSecurityLevel(
+SecurityStateModel::SecurityLevel TestToolbarModel::GetSecurityLevel(
     bool ignore_editing) const {
   return security_level_;
 }
@@ -46,8 +46,8 @@ int TestToolbarModel::GetIcon() const {
 }
 
 base::string16 TestToolbarModel::GetEVCertName() const {
-  return (security_level_ == connection_security::EV_SECURE) ? ev_cert_name_
-                                                             : base::string16();
+  return (security_level_ == SecurityStateModel::EV_SECURE) ? ev_cert_name_
+                                                            : base::string16();
 }
 
 bool TestToolbarModel::ShouldDisplayURL() const {

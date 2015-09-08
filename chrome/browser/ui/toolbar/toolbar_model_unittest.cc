@@ -11,6 +11,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -132,6 +133,15 @@ struct TestItem {
   },
 };
 
+void SetSecurityStyle(content::NavigationController* controller,
+                      content::SecurityStyle new_style) {
+  controller->GetVisibleEntry()->GetSSL().security_style = new_style;
+  SecurityStateModel* model =
+      SecurityStateModel::FromWebContents(controller->GetWebContents());
+  ASSERT_TRUE(model);
+  model->SecurityStateChanged();
+}
+
 }  // namespace
 
 
@@ -205,8 +215,8 @@ void ToolbarModelTest::NavigateAndCheckText(
   // Fake a secure connection for HTTPS URLs, or the toolbar will refuse to
   // extract search terms.
   if (url.SchemeIsCryptographic()) {
-    controller->GetVisibleEntry()->GetSSL().security_style =
-        content::SECURITY_STYLE_AUTHENTICATED;
+    ASSERT_NO_FATAL_FAILURE(
+        SetSecurityStyle(controller, content::SECURITY_STYLE_AUTHENTICATED));
   }
   EXPECT_EQ(expected_text, toolbar_model->GetText());
   EXPECT_EQ(would_perform_search_term_replacement,
@@ -291,15 +301,15 @@ TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
                       content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
-  controller->GetVisibleEntry()->GetSSL().security_style =
-      content::SECURITY_STYLE_UNKNOWN;
+  ASSERT_NO_FATAL_FAILURE(
+      SetSecurityStyle(controller, content::SECURITY_STYLE_UNKNOWN));
   EXPECT_TRUE(toolbar_model->WouldPerformSearchTermReplacement(false));
 
   // When done loading, we shouldn't extract search terms if we didn't get an
   // authenticated connection.
   CommitPendingLoad(controller);
-  controller->GetVisibleEntry()->GetSSL().security_style =
-      content::SECURITY_STYLE_UNKNOWN;
+  ASSERT_NO_FATAL_FAILURE(
+      SetSecurityStyle(controller, content::SECURITY_STYLE_UNKNOWN));
   EXPECT_FALSE(toolbar_model->WouldPerformSearchTermReplacement(false));
 }
 

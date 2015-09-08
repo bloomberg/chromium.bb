@@ -311,6 +311,8 @@ void InterstitialPageImpl::Hide() {
         INVALIDATE_TYPE_TITLE);
   }
 
+  static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSSLState();
+
   InterstitialPageMap::iterator iter =
       g_web_contents_to_interstitial_page->find(web_contents_);
   DCHECK(iter != g_web_contents_to_interstitial_page->end());

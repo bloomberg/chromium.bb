@@ -575,7 +575,7 @@
             'chrome_resources.gyp:chrome_strings',
             'chrome_strings_grd',
             'chrome_version_java',
-            'connection_security_security_levels_java',
+            'connection_security_levels_java',
             'connectivity_check_result_java',
             'document_tab_model_info_proto_java',
             'infobar_action_type_java',
