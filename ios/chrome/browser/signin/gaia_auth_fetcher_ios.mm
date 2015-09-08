@@ -6,6 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
@@ -32,21 +33,21 @@ bool g_should_use_gaia_auth_fetcher_ios = true;
 // response are correctly set).
 //
 // The template takes three arguments (in order):
-// * The URL to send a POST request to.
+// * The quoted and escaped URL to send a POST request to.
 // * The HTTP headers of the request. They should be written as valid JavaScript
 //   statements, adding headers to the XMLHttpRequest variable named 'req'
 //   (e.g. 'req.setRequestHeader("Foo", "Bar");').
-// * The body of the POST request.
+// * The quoted and escaped body of the POST request.
 NSString* const kPostRequestTemplate =
     @"<html><script>"
      "function __gCrWebDoPostRequest() {"
      "  function createAndSendPostRequest() {"
      "    var req = new XMLHttpRequest();"
-     "    req.open(\"POST\", \"%@\", false);"
+     "    req.open(\"POST\", %@, false);"
      "    req.setRequestHeader(\"Content-Type\","
      "\"application/x-www-form-urlencoded\");"
      "%@"
-     "    req.send(\"%@\");"
+     "    req.send(%@);"
      "    if (req.status != 200) {"
      "      throw req.status;"
      "    }"
@@ -101,6 +102,11 @@ NSURLRequest* GetRequest(const std::string& body,
   return request.autorelease();
 }
 
+// Escapes and quotes |value| and converts the result to an NSString.
+NSString* EscapeAndQuoteToNSString(const std::string& value) {
+  return base::SysUTF8ToNSString(base::GetQuotedJSONString(value));
+}
+
 // Simulates a POST request on |web_view| using a XMLHttpRequest in
 // JavaScript.
 // This is needed because WKWebView ignores the HTTPBody in a POST request.
@@ -121,16 +127,16 @@ void DoPostRequest(WKWebView* web_view,
       origin_url = GURL(it.value());
       continue;
     }
-    // The value doesn't need to be escaped here, as it is already handled by
-    // net::HttpRequestHeaders.
-    [header_data appendFormat:@"req.setRequestHeader(\"%@\", \"%@\");",
-                              base::SysUTF8ToNSString(it.name()),
-                              base::SysUTF8ToNSString(it.value())];
+    // net::HttpRequestHeaders escapes the name and value for a header. Some
+    // escaping might still be necessary for the JavaScript layer.
+    [header_data appendFormat:@"req.setRequestHeader(%@, %@);",
+                              EscapeAndQuoteToNSString(it.name()),
+                              EscapeAndQuoteToNSString(it.value())];
   }
   NSString* html_string =
       [NSString stringWithFormat:kPostRequestTemplate,
-                                 base::SysUTF8ToNSString(url.spec()),
-                                 header_data, base::SysUTF8ToNSString(body)];
+                                 EscapeAndQuoteToNSString(url.spec()),
+                                 header_data, EscapeAndQuoteToNSString(body)];
   [web_view loadHTMLString:html_string baseURL:net::NSURLWithGURL(origin_url)];
 }
 }  // namespace

@@ -94,7 +94,8 @@ TEST_F(GaiaAuthFetcherIOSTest, StartOAuthLoginCancelled) {
   EXPECT_CALL(consumer_, OnClientLoginFailure(expected_error)).Times(1);
 
   [static_cast<WKWebView*>([GetMockWKWebView() expect])
-      loadRequest:[OCMArg any]];
+      loadHTMLString:[OCMArg any]
+             baseURL:[OCMArg any]];
   [[GetMockWKWebView() expect] stopLoading];
 
   gaia_auth_fetcher_->StartOAuthLogin("fake_token", "gaia");
@@ -114,7 +115,8 @@ TEST_F(GaiaAuthFetcherIOSTest, StartMergeSession) {
 
   [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:^(NSInvocation*) {
     GetBridge()->URLFetchSuccess("data");
-  }]) loadRequest:[OCMArg any]];
+  }]) loadHTMLString:[OCMArg any]
+             baseURL:[OCMArg any]];
 
   gaia_auth_fetcher_->StartMergeSession("uber_token", "");
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
@@ -181,7 +183,8 @@ TEST_F(GaiaAuthFetcherIOSTest, FetchOnActive) {
   [[GetMockWKWebView() expect] setNavigationDelegate:[OCMArg isNotNil]];
   [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:^(NSInvocation*) {
     GetBridge()->URLFetchSuccess("data");
-  }]) loadRequest:[OCMArg any]];
+  }]) loadHTMLString:[OCMArg any]
+             baseURL:[OCMArg any]];
 
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
   gaia_auth_fetcher_->StartMergeSession("uber_token", "");
@@ -199,12 +202,14 @@ TEST_F(GaiaAuthFetcherIOSTest, StopOnInactiveReFetchOnActive) {
   EXPECT_CALL(consumer_, OnMergeSessionSuccess("data")).Times(1);
 
   [static_cast<WKWebView*>([GetMockWKWebView() expect])
-      loadRequest:[OCMArg any]];
+      loadHTMLString:[OCMArg any]
+             baseURL:[OCMArg any]];
   [[GetMockWKWebView() expect] setNavigationDelegate:[OCMArg isNil]];
   [[GetMockWKWebView() expect] setNavigationDelegate:[OCMArg isNotNil]];
   [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:^(NSInvocation*) {
     GetBridge()->URLFetchSuccess("data");
-  }]) loadRequest:[OCMArg any]];
+  }]) loadHTMLString:[OCMArg any]
+             baseURL:[OCMArg any]];
 
   gaia_auth_fetcher_->StartMergeSession("uber_token", "");
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
