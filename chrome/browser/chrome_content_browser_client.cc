@@ -508,7 +508,7 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 void SetApplicationLocaleOnIOThread(const std::string& locale) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   g_io_thread_application_locale.Get() = locale;
 }
 
@@ -662,7 +662,7 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
 // static
 void ChromeContentBrowserClient::SetApplicationLocale(
     const std::string& locale) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This object is guaranteed to outlive all threads so we don't have to
   // worry about the lack of refcounting and can just post as Unretained.
@@ -1607,7 +1607,7 @@ bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
     const GURL& first_party,
     content::ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   return io_data->GetCookieSettings()->
       IsSettingCookieAllowed(manifest_url, first_party);
@@ -1619,7 +1619,7 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
     content::ResourceContext* context,
     int render_process_id,
     int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   bool allow = io_data->GetCookieSettings()->IsSettingCookieAllowed(
       scope, first_party_url);
@@ -1639,7 +1639,7 @@ bool ChromeContentBrowserClient::AllowGetCookie(
     content::ResourceContext* context,
     int render_process_id,
     int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   bool allow = io_data->GetCookieSettings()->
       IsReadingCookieAllowed(url, first_party);
@@ -1659,7 +1659,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
     int render_process_id,
     int render_frame_id,
     net::CookieOptions* options) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
@@ -1675,7 +1675,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
 
 bool ChromeContentBrowserClient::AllowSaveLocalState(
     content::ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
@@ -1693,7 +1693,7 @@ bool ChromeContentBrowserClient::AllowWorkerDatabase(
     unsigned long estimated_size,
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
@@ -1716,7 +1716,7 @@ void ChromeContentBrowserClient::AllowWorkerFileSystem(
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames,
     base::Callback<void(bool)> callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
@@ -1735,7 +1735,7 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
     const std::vector<std::pair<int, int> >& render_frames,
     base::Callback<void(bool)> callback,
     bool allow) {
-  DCHECK(BrowserThread:: CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<std::pair<int, int> >::const_iterator i;
   std::map<int, int> process_map;
   std::map<int, int>::const_iterator it;
@@ -1778,7 +1778,7 @@ void ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread(
     const GURL& url,
     bool allowed_by_default,
     const base::Callback<void(bool)>& callback) {
-  DCHECK(BrowserThread:: CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   extensions::WebViewPermissionHelper* web_view_permission_helper =
       extensions::WebViewPermissionHelper::FromFrameID(
           render_process_id, render_frame_id);
@@ -1810,7 +1810,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
     const base::string16& name,
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
@@ -1845,7 +1845,7 @@ bool ChromeContentBrowserClient::AllowWebRTCIdentityCache(
 net::URLRequestContext*
 ChromeContentBrowserClient::OverrideRequestContextForURL(
     const GURL& url, content::ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 #if defined(ENABLE_EXTENSIONS)
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
@@ -2010,7 +2010,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     int opener_render_view_id,
     int opener_render_frame_id,
     bool* no_javascript_access) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   *no_javascript_access = false;
 
@@ -2090,7 +2090,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 }
 
 void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return g_browser_process->ResourceDispatcherHostCreated();
 }
 
@@ -2611,7 +2611,7 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
 void ChromeContentBrowserClient::OverridePageVisibilityState(
       RenderFrameHost* render_frame_host,
       blink::WebPageVisibilityState* visibility_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);

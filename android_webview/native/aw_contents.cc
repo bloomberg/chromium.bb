@@ -120,7 +120,7 @@ const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
 
 class AwContentsUserData : public base::SupportsUserData::Data {
  public:
-  AwContentsUserData(AwContents* ptr) : contents_(ptr) {}
+  explicit AwContentsUserData(AwContents* ptr) : contents_(ptr) {}
 
   static AwContents* GetContents(WebContents* web_contents) {
     if (!web_contents)
@@ -989,7 +989,7 @@ void AwContents::SetBackgroundColor(JNIEnv* env, jobject obj, jint color) {
 void AwContents::OnComputeScroll(JNIEnv* env,
                                  jobject obj,
                                  jlong animation_time_millis) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.OnComputeScroll(
       base::TimeTicks() +
       base::TimeDelta::FromMilliseconds(animation_time_millis));

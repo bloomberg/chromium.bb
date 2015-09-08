@@ -386,7 +386,7 @@ void AwContentsIoThreadClientImpl::NewLoginRequest(const string& realm,
 
 void AwContentsIoThreadClientImpl::OnReceivedError(
     const net::URLRequest* request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return;
 

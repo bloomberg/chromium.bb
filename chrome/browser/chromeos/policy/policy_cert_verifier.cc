@@ -46,12 +46,12 @@ PolicyCertVerifier::PolicyCertVerifier(
 }
 
 PolicyCertVerifier::~PolicyCertVerifier() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 void PolicyCertVerifier::InitializeOnIOThread(
     const scoped_refptr<net::CertVerifyProc>& verify_proc) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!verify_proc->SupportsAdditionalTrustAnchors()) {
     LOG(WARNING)
         << "Additional trust anchors not supported on the current platform!";
@@ -64,7 +64,7 @@ void PolicyCertVerifier::InitializeOnIOThread(
 
 void PolicyCertVerifier::SetTrustAnchors(
     const net::CertificateList& trust_anchors) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   trust_anchors_ = trust_anchors;
 }
 
@@ -78,7 +78,7 @@ int PolicyCertVerifier::Verify(
     const net::CompletionCallback& completion_callback,
     scoped_ptr<Request>* out_req,
     const net::BoundNetLog& net_log) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(delegate_);
   net::CompletionCallback wrapped_callback =
       base::Bind(&CompleteAndSignalAnchorUse,
@@ -93,12 +93,12 @@ int PolicyCertVerifier::Verify(
 }
 
 bool PolicyCertVerifier::SupportsOCSPStapling() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return delegate_->SupportsOCSPStapling();
 }
 
 const net::CertificateList& PolicyCertVerifier::GetAdditionalTrustAnchors() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return trust_anchors_;
 }
 

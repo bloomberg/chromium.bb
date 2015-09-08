@@ -132,7 +132,7 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
 
 prerender::PrerenderManager* GetPrerenderManager(int render_process_id,
                                                  int render_view_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
@@ -153,7 +153,7 @@ prerender::PrerenderManager* GetPrerenderManager(int render_process_id,
 void UpdatePrerenderNetworkBytesCallback(int render_process_id,
                                          int render_view_id,
                                          int64 bytes) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
@@ -178,7 +178,7 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
                                      const std::string& extension_id,
                                      const std::string& view_id,
                                      bool embedded) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByFrameID(render_process_id, render_frame_id);
@@ -296,7 +296,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
     const GURL& url,
     ResourceType resource_type,
     content::ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Handle a PREFETCH resource type. If prefetch is disabled, squelch the
   // request.  Otherwise, do a normal request to warm the cache.

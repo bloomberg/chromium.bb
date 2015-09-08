@@ -1250,7 +1250,7 @@ void TaskManagerModel::NotifyVideoMemoryUsageStats(
 
 void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
                                        int64_t byte_count) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!is_updating_byte_count_)
     return;
 
@@ -1282,7 +1282,7 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
 
 // This is called on the UI thread.
 void TaskManagerModel::NotifyDataReady() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < on_data_ready_callbacks_.size(); ++i) {
     if (!on_data_ready_callbacks_[i].is_null())
         on_data_ready_callbacks_[i].Run();
@@ -1380,7 +1380,7 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
 
 void TaskManagerModel::MultipleBytesRead(
     const std::vector<BytesReadParam>* params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (std::vector<BytesReadParam>::const_iterator it = params->begin();
        it != params->end(); ++it) {
     BytesRead(*it);
@@ -1388,7 +1388,7 @@ void TaskManagerModel::MultipleBytesRead(
 }
 
 void TaskManagerModel::NotifyMultipleBytesRead() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!bytes_read_buffer_.empty());
 
   std::vector<BytesReadParam>* bytes_read_buffer =
@@ -1401,7 +1401,7 @@ void TaskManagerModel::NotifyMultipleBytesRead() {
 }
 
 void TaskManagerModel::SetUpdatingByteCount(bool is_updating) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   is_updating_byte_count_ = is_updating;
 }
 

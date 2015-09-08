@@ -37,7 +37,7 @@ bool RegisterHistoryReportJniBridge(JNIEnv* env) {
 
 HistoryReportJniBridge::HistoryReportJniBridge(JNIEnv* env, jobject obj)
     : weak_java_provider_(env, obj) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Profile* profile = g_browser_process->profile_manager()->
       GetLastUsedProfile()->GetOriginalProfile();
 

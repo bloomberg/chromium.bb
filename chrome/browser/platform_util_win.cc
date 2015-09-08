@@ -43,7 +43,7 @@ namespace {
 // TODO(asanka): Move this to ui/base/win/shell.{h,cc} and invoke it from the
 // utility process.
 void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath dir = full_path.DirName().AsEndingWithSeparator();
   // ParseDisplayName will fail if the directory is "C:", it must be "C:\\".
   if (dir.empty())
@@ -227,7 +227,7 @@ void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
 }  // namespace internal
 
 void OpenExternal(Profile* profile, const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH &&
       !url.SchemeIsHTTPOrHTTPS())

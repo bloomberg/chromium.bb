@@ -180,7 +180,7 @@ void ShellIntegration::DefaultWebClientWorker::StartSetAsDefault() {
 void ShellIntegration::DefaultWebClientWorker::ObserverDestroyed() {
   // Our associated view has gone away, so we shouldn't call back to it if
   // our worker thread returns after the view is dead.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observer_ = NULL;
 }
 
@@ -188,7 +188,7 @@ void ShellIntegration::DefaultWebClientWorker::ObserverDestroyed() {
 // DefaultWebClientWorker, private:
 
 void ShellIntegration::DefaultWebClientWorker::ExecuteCheckIsDefault() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DefaultWebClientState state = CheckIsDefault();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -198,7 +198,7 @@ void ShellIntegration::DefaultWebClientWorker::ExecuteCheckIsDefault() {
 
 void ShellIntegration::DefaultWebClientWorker::CompleteCheckIsDefault(
     DefaultWebClientState state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UpdateUI(state);
   // The worker has finished everything it needs to do, so free the observer
   // if we own it.
@@ -210,7 +210,7 @@ void ShellIntegration::DefaultWebClientWorker::CompleteCheckIsDefault(
 
 void ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault(
     bool interactive_permitted) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   bool result = SetAsDefault(interactive_permitted);
   BrowserThread::PostTask(
@@ -220,7 +220,7 @@ void ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault(
 
 void ShellIntegration::DefaultWebClientWorker::CompleteSetAsDefault(
     bool succeeded) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // First tell the observer what the SetAsDefault call has returned.
   if (observer_)
     observer_->OnSetAsDefaultConcluded(succeeded);

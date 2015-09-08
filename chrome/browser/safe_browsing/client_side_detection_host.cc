@@ -356,7 +356,7 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // TODO(noelutz): move this DCHECK to WebContents and fix all the unit tests
   // that don't call this method on the UI thread.
-  // DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (details.is_in_page) {
     // If the navigation is within the same page, the user isn't really
     // navigating away.  We don't need to cancel a pending callback or

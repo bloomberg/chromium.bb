@@ -217,21 +217,21 @@ PepperFlashSettingsManager::Core::Core(
       browser_context_path_(browser_context->GetPath()),
       plugin_prefs_(PluginPrefs::GetForProfile(
           Profile::FromBrowserContext(browser_context))) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 PepperFlashSettingsManager::Core::~Core() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 void PepperFlashSettingsManager::Core::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&Core::InitializeOnIOThread, this));
 }
 
 void PepperFlashSettingsManager::Core::Detach() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This call guarantees that one ref is retained until we get to the DETACHED
   // state. This is important. Otherwise, if the ref count drops to zero on the
@@ -244,7 +244,7 @@ void PepperFlashSettingsManager::Core::Detach() {
 
 void PepperFlashSettingsManager::Core::DeauthorizeContentLicenses(
     uint32 request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -255,7 +255,7 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicenses(
 void PepperFlashSettingsManager::Core::GetPermissionSettings(
     uint32 request_id,
     PP_Flash_BrowserOperations_SettingType setting_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -268,7 +268,7 @@ void PepperFlashSettingsManager::Core::SetDefaultPermission(
     PP_Flash_BrowserOperations_SettingType setting_type,
     PP_Flash_BrowserOperations_Permission permission,
     bool clear_site_specific) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -280,7 +280,7 @@ void PepperFlashSettingsManager::Core::SetSitePermission(
     uint32 request_id,
     PP_Flash_BrowserOperations_SettingType setting_type,
     const ppapi::FlashSiteSettings& sites) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -289,7 +289,7 @@ void PepperFlashSettingsManager::Core::SetSitePermission(
 }
 
 void PepperFlashSettingsManager::Core::GetSitesWithData(uint32 request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -300,7 +300,7 @@ void PepperFlashSettingsManager::Core::ClearSiteData(uint32 request_id,
                                                      const std::string& site,
                                                      uint64 flags,
                                                      uint64 max_age) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -330,7 +330,7 @@ bool PepperFlashSettingsManager::Core::OnMessageReceived(
 }
 
 void PepperFlashSettingsManager::Core::OnChannelError() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -340,7 +340,7 @@ void PepperFlashSettingsManager::Core::OnChannelError() {
 void PepperFlashSettingsManager::Core::ConnectToChannel(
     bool success,
     const IPC::ChannelHandle& handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -397,7 +397,7 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
 }
 
 void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(STATE_UNINITIALIZED, state_);
 
   content::WebPluginInfo plugin_info;
@@ -423,7 +423,7 @@ void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
 
 void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
     uint32 request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(STATE_DETACHED, state_);
 
   if (state_ == STATE_UNINITIALIZED) {
@@ -471,7 +471,7 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnBlockingPool(
 void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesInPlugin(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!success) {
     NotifyErrorFromIOThread();
     return;
@@ -489,7 +489,7 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesInPlugin(
 void PepperFlashSettingsManager::Core::GetPermissionSettingsOnIOThread(
     uint32 request_id,
     PP_Flash_BrowserOperations_SettingType setting_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(STATE_DETACHED, state_);
 
   if (state_ == STATE_UNINITIALIZED) {
@@ -523,7 +523,7 @@ void PepperFlashSettingsManager::Core::SetDefaultPermissionOnIOThread(
     PP_Flash_BrowserOperations_SettingType setting_type,
     PP_Flash_BrowserOperations_Permission permission,
     bool clear_site_specific) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(STATE_DETACHED, state_);
 
   if (state_ == STATE_UNINITIALIZED) {
@@ -558,7 +558,7 @@ void PepperFlashSettingsManager::Core::SetSitePermissionOnIOThread(
     uint32 request_id,
     PP_Flash_BrowserOperations_SettingType setting_type,
     const ppapi::FlashSiteSettings& sites) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(STATE_DETACHED, state_);
 
   if (state_ == STATE_UNINITIALIZED) {
@@ -589,7 +589,7 @@ void PepperFlashSettingsManager::Core::SetSitePermissionOnIOThread(
 
 void PepperFlashSettingsManager::Core::GetSitesWithDataOnIOThread(
     uint32 request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(STATE_DETACHED, state_);
 
   if (state_ == STATE_UNINITIALIZED) {
@@ -621,7 +621,7 @@ void PepperFlashSettingsManager::Core::ClearSiteDataOnIOThread(
     const std::string& site,
     uint64 flags,
     uint64 max_age) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(STATE_DETACHED, state_);
 
   if (state_ == STATE_UNINITIALIZED) {
@@ -656,7 +656,7 @@ void PepperFlashSettingsManager::Core::DetachOnIOThread() {
 }
 
 void PepperFlashSettingsManager::Core::NotifyErrorFromIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -680,7 +680,7 @@ void
 PepperFlashSettingsManager::Core::NotifyDeauthorizeContentLicensesCompleted(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (manager_.get()) {
     manager_->client_->OnDeauthorizeContentLicensesCompleted(
@@ -693,7 +693,7 @@ void PepperFlashSettingsManager::Core::NotifyGetPermissionSettingsCompleted(
     bool success,
     PP_Flash_BrowserOperations_Permission default_permission,
     const ppapi::FlashSiteSettings& sites) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (manager_.get()) {
     manager_->client_->OnGetPermissionSettingsCompleted(
@@ -704,7 +704,7 @@ void PepperFlashSettingsManager::Core::NotifyGetPermissionSettingsCompleted(
 void PepperFlashSettingsManager::Core::NotifySetDefaultPermissionCompleted(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (manager_.get()) {
     manager_->client_->OnSetDefaultPermissionCompleted(
@@ -715,7 +715,7 @@ void PepperFlashSettingsManager::Core::NotifySetDefaultPermissionCompleted(
 void PepperFlashSettingsManager::Core::NotifySetSitePermissionCompleted(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (manager_.get()) {
     manager_->client_->OnSetSitePermissionCompleted(
@@ -726,7 +726,7 @@ void PepperFlashSettingsManager::Core::NotifySetSitePermissionCompleted(
 void PepperFlashSettingsManager::Core::NotifyGetSitesWithDataCompleted(
     uint32 request_id,
     const std::vector<std::string>& sites) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (manager_.get()) {
     manager_->client_->OnGetSitesWithDataCompleted(
@@ -737,7 +737,7 @@ void PepperFlashSettingsManager::Core::NotifyGetSitesWithDataCompleted(
 void PepperFlashSettingsManager::Core::NotifyClearSiteDataCompleted(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (manager_.get())
     manager_->client_->OnClearSiteDataCompleted(request_id, success);
@@ -745,7 +745,7 @@ void PepperFlashSettingsManager::Core::NotifyClearSiteDataCompleted(
 
 void PepperFlashSettingsManager::Core::NotifyError(
     const std::vector<std::pair<uint32, RequestType> >& notifications) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<Core> protector(this);
   for (std::vector<std::pair<uint32, RequestType> >::const_iterator iter =
@@ -792,7 +792,7 @@ void PepperFlashSettingsManager::Core::NotifyError(
 void PepperFlashSettingsManager::Core::OnDeauthorizeContentLicensesResult(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -817,7 +817,7 @@ void PepperFlashSettingsManager::Core::OnGetPermissionSettingsResult(
     bool success,
     PP_Flash_BrowserOperations_Permission default_permission,
     const ppapi::FlashSiteSettings& sites) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -840,7 +840,7 @@ void PepperFlashSettingsManager::Core::OnGetPermissionSettingsResult(
 void PepperFlashSettingsManager::Core::OnSetDefaultPermissionResult(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -863,7 +863,7 @@ void PepperFlashSettingsManager::Core::OnSetDefaultPermissionResult(
 void PepperFlashSettingsManager::Core::OnSetSitePermissionResult(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -886,7 +886,7 @@ void PepperFlashSettingsManager::Core::OnSetSitePermissionResult(
 void PepperFlashSettingsManager::Core::OnGetSitesWithDataResult(
     uint32 request_id,
     const std::vector<std::string>& sites) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -907,7 +907,7 @@ void PepperFlashSettingsManager::Core::OnGetSitesWithDataResult(
 void PepperFlashSettingsManager::Core::OnClearSiteDataResult(
     uint32 request_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == STATE_DETACHED)
     return;
 
@@ -977,7 +977,7 @@ void PepperFlashSettingsManager::RegisterProfilePrefs(
 
 uint32 PepperFlashSettingsManager::DeauthorizeContentLicenses(
     PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Clear the device ID salt which has the effect of regenerating a device
   // ID. Since this happens synchronously (and on the UI thread), we don't have
@@ -992,7 +992,7 @@ uint32 PepperFlashSettingsManager::DeauthorizeContentLicenses(
 
 uint32 PepperFlashSettingsManager::GetPermissionSettings(
     PP_Flash_BrowserOperations_SettingType setting_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   EnsureCoreExists();
   uint32 id = GetNextRequestId();
@@ -1004,7 +1004,7 @@ uint32 PepperFlashSettingsManager::SetDefaultPermission(
     PP_Flash_BrowserOperations_SettingType setting_type,
     PP_Flash_BrowserOperations_Permission permission,
     bool clear_site_specific) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   EnsureCoreExists();
   uint32 id = GetNextRequestId();
@@ -1016,7 +1016,7 @@ uint32 PepperFlashSettingsManager::SetDefaultPermission(
 uint32 PepperFlashSettingsManager::SetSitePermission(
     PP_Flash_BrowserOperations_SettingType setting_type,
     const ppapi::FlashSiteSettings& sites) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   EnsureCoreExists();
   uint32 id = GetNextRequestId();
@@ -1025,7 +1025,7 @@ uint32 PepperFlashSettingsManager::SetSitePermission(
 }
 
 uint32 PepperFlashSettingsManager::GetSitesWithData() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   EnsureCoreExists();
   uint32 id = GetNextRequestId();
@@ -1036,7 +1036,7 @@ uint32 PepperFlashSettingsManager::GetSitesWithData() {
 uint32 PepperFlashSettingsManager::ClearSiteData(const std::string& site,
                                                  uint64 flags,
                                                  uint64 max_age) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   EnsureCoreExists();
   uint32 id = GetNextRequestId();

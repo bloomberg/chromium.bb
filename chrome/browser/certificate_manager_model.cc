@@ -52,7 +52,7 @@ void CertificateManagerModel::Create(
     content::BrowserContext* browser_context,
     CertificateManagerModel::Observer* observer,
     const CreationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -71,7 +71,7 @@ CertificateManagerModel::CertificateManagerModel(
       is_user_db_available_(is_user_db_available),
       is_tpm_available_(is_tpm_available),
       observer_(observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 CertificateManagerModel::~CertificateManagerModel() {
@@ -213,7 +213,7 @@ void CertificateManagerModel::DidGetCertDBOnUIThread(
     bool is_tpm_available,
     CertificateManagerModel::Observer* observer,
     const CreationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<CertificateManagerModel> model(new CertificateManagerModel(
       cert_db, is_user_db_available, is_tpm_available, observer));
@@ -225,7 +225,7 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
     CertificateManagerModel::Observer* observer,
     const CreationCallback& callback,
     net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   bool is_user_db_available = cert_db->GetPublicSlot();
   bool is_tpm_available = false;
@@ -248,7 +248,7 @@ void CertificateManagerModel::GetCertDBOnIOThread(
     content::ResourceContext* context,
     CertificateManagerModel::Observer* observer,
     const CreationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
       context,
       base::Bind(&CertificateManagerModel::DidGetCertDBOnIOThread,

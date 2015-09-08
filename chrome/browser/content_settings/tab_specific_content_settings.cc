@@ -139,7 +139,7 @@ void TabSpecificContentSettings::CookiesRead(int render_process_id,
                                              const GURL& frame_url,
                                              const net::CookieList& cookie_list,
                                              bool blocked_by_policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings =
       GetForFrame(render_process_id, render_frame_id);
   if (settings) {
@@ -157,7 +157,7 @@ void TabSpecificContentSettings::CookieChanged(
     const std::string& cookie_line,
     const net::CookieOptions& options,
     bool blocked_by_policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings =
       GetForFrame(render_process_id, render_frame_id);
   if (settings)
@@ -173,7 +173,7 @@ void TabSpecificContentSettings::WebDatabaseAccessed(
     const base::string16& name,
     const base::string16& display_name,
     bool blocked_by_policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
   if (settings)
@@ -186,7 +186,7 @@ void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
                                                     const GURL& url,
                                                     bool local,
                                                     bool blocked_by_policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
   if (settings)
@@ -200,7 +200,7 @@ void TabSpecificContentSettings::IndexedDBAccessed(
     const GURL& url,
     const base::string16& description,
     bool blocked_by_policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
   if (settings)
@@ -212,7 +212,7 @@ void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
                                                     int render_frame_id,
                                                     const GURL& url,
                                                     bool blocked_by_policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
   if (settings)

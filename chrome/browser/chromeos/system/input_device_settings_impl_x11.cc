@@ -224,7 +224,7 @@ void InputDeviceSettingsImplX11::SetTapDragging(bool enabled) {
 
 void InputDeviceSettingsImplX11::MouseExists(
     const DeviceExistsCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DeviceExists(kDeviceTypeMouse, callback);
 }
 

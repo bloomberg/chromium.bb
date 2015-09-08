@@ -134,7 +134,7 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
 
 void MigrateChromiumShortcutsCallback() {
   // This should run on the file thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Get full path of chrome.
   base::FilePath chrome_exe;

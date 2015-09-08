@@ -278,7 +278,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
 void ReadLastShutdownFile(ShutdownType type,
                           int num_procs,
                           int num_procs_slow) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   base::FilePath shutdown_ms_file = GetShutdownMsPath();
   std::string shutdown_ms_str;

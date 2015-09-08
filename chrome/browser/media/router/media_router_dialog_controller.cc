@@ -62,7 +62,7 @@ class MediaRouterDialogController::InitiatorWebContentsObserver
 MediaRouterDialogController::MediaRouterDialogController(
     content::WebContents* initiator)
     : initiator_(initiator) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(initiator_);
   initiator_observer_.reset(new InitiatorWebContentsObserver(initiator_, this));
 }

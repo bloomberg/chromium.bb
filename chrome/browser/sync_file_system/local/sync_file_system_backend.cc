@@ -269,7 +269,7 @@ void SyncFileSystemBackend::InitializeSyncFileSystemService(
     const SyncStatusCallback& callback) {
   // Repost to switch from IO thread to UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // It is safe to pass Unretained(this) (see comments in OpenFileSystem()).
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -299,7 +299,7 @@ void SyncFileSystemBackend::DidInitializeSyncFileSystemService(
     SyncStatusCode status) {
   // Repost to switch from UI thread to IO thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // It is safe to pass Unretained(this) since |context| owns it.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

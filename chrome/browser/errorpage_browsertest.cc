@@ -61,11 +61,8 @@
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_types.h"
-#include "content/public/test/browser_test_utils.h"
-#include "ui/base/l10n/l10n_util.h"
 #endif
 
 using content::BrowserThread;
@@ -173,7 +170,7 @@ std::string GetShowSavedButtonLabel() {
 void AddInterceptorForURL(
     const GURL& url,
     scoped_ptr<net::URLRequestInterceptor> handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url, handler.Pass());
 }
@@ -190,7 +187,7 @@ class FailFirstNRequestsInterceptor : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     requests_++;
     if (failures_ < requests_to_fail_) {
       failures_++;
@@ -236,7 +233,7 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -254,7 +251,7 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
   }
 
   void WaitForRequests(int requests_to_wait_for) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(-1, requests_to_wait_for_);
     DCHECK(!run_loop_);
 
@@ -273,13 +270,13 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
   // created, either through calling WaitForRequests or some other manner,
   // before calling this method.
   int num_requests() const {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return num_requests_;
   }
 
  private:
   void RequestCreated() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     num_requests_++;
     if (num_requests_ == requests_to_wait_for_)
@@ -529,7 +526,7 @@ class TestFailProvisionalLoadObserver : public content::WebContentsObserver {
 
 void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
                                   net::Error error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::HttpCache* cache(
       getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
   DCHECK(cache);
@@ -1113,7 +1110,7 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
   //
   // Also adds the net::URLRequestFailedJob filter.
   static void AddFilters() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     URLRequestFailedJob::AddUrlHandler();
 
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
@@ -1123,7 +1120,7 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
   }
 
   static void RemoveFilters() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 };
@@ -1266,12 +1263,12 @@ class ErrorPageForIDNTest : public InProcessBrowserTest {
 
  private:
   static void AddFilters() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     URLRequestFailedJob::AddUrlHandlerForHostname(kHostname);
   }
 
   static void RemoveFilters() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 };

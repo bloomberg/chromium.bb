@@ -479,7 +479,7 @@ class ProcessSingleton::LinuxWatcher
           ui_message_loop_(ui_message_loop),
           fd_(fd),
           bytes_read_(0) {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+      DCHECK_CURRENTLY_ON(BrowserThread::IO);
       // Wait for reads.
       base::MessageLoopForIO::current()->WatchFileDescriptor(
           fd, true, base::MessageLoopForIO::WATCH_READ, &fd_reader_, this);
@@ -503,7 +503,7 @@ class ProcessSingleton::LinuxWatcher
 
    private:
     void CleanupAndDeleteSelf() {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+      DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
       parent_->RemoveSocketReader(this);
       // We're deleted beyond this point.
@@ -566,7 +566,7 @@ class ProcessSingleton::LinuxWatcher
   friend class base::DeleteHelper<ProcessSingleton::LinuxWatcher>;
 
   ~LinuxWatcher() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     STLDeleteElements(&readers_);
 
     base::MessageLoopForIO* ml = base::MessageLoopForIO::current();
@@ -591,7 +591,7 @@ class ProcessSingleton::LinuxWatcher
 };
 
 void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Accepting incoming client.
   sockaddr_un from;
   socklen_t from_len = sizeof(from);
@@ -610,7 +610,7 @@ void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void ProcessSingleton::LinuxWatcher::StartListening(int socket) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Watch for client connections on this socket.
   base::MessageLoopForIO* ml = base::MessageLoopForIO::current();
   ml->AddDestructionObserver(this);
@@ -639,7 +639,7 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
 }
 
 void ProcessSingleton::LinuxWatcher::RemoveSocketReader(SocketReader* reader) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(reader);
   readers_.erase(reader);
   delete reader;
@@ -651,7 +651,7 @@ void ProcessSingleton::LinuxWatcher::RemoveSocketReader(SocketReader* reader) {
 
 void ProcessSingleton::LinuxWatcher::SocketReader::OnFileCanReadWithoutBlocking(
     int fd) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(fd, fd_);
   while (bytes_read_ < sizeof(buf_)) {
     ssize_t rv = HANDLE_EINTR(

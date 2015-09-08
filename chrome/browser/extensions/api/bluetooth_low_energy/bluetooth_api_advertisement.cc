@@ -26,7 +26,7 @@ BluetoothApiAdvertisement::BluetoothApiAdvertisement(
     const std::string& owner_extension_id,
     scoped_refptr<device::BluetoothAdvertisement> advertisement)
     : ApiResource(owner_extension_id), advertisement_(advertisement) {
-  DCHECK(content::BrowserThread::CurrentlyOn(kThreadId));
+  DCHECK_CURRENTLY_ON(kThreadId);
 }
 
 BluetoothApiAdvertisement::~BluetoothApiAdvertisement() {

@@ -93,7 +93,7 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     bool display_notification,
     const base::string16& application_title,
     const base::string16& registered_extension_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<content::MediaStreamUI> ui;
 
   // Add selected desktop source to the list.

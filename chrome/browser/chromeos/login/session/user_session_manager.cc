@@ -1452,7 +1452,7 @@ void UserSessionManager::RestorePendingUserSessions() {
 }
 
 void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   user_sessions_restored_ = true;
   user_sessions_restore_in_progress_ = false;
   FOR_EACH_OBSERVER(chromeos::UserSessionStateObserver,

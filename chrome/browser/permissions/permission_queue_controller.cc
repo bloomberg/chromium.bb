@@ -169,7 +169,7 @@ void PermissionQueueController::CreateInfoBarRequest(
     const GURL& requesting_frame,
     const GURL& embedder,
     const PermissionDecidedCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (requesting_frame.SchemeIs(content::kChromeUIScheme) ||
       embedder.SchemeIs(content::kChromeUIScheme))
@@ -183,7 +183,7 @@ void PermissionQueueController::CreateInfoBarRequest(
 
 void PermissionQueueController::CancelInfoBarRequest(
     const PermissionRequestID& id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   for (PendingInfobarRequests::iterator i(pending_infobar_requests_.begin());
        i != pending_infobar_requests_.end(); ++i) {
@@ -205,7 +205,7 @@ void PermissionQueueController::OnPermissionSet(
     const GURL& embedder,
     bool update_content_setting,
     bool allowed) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // TODO(miguelg): move the permission persistence to
   // PermissionContextBase once all the types are moved there.

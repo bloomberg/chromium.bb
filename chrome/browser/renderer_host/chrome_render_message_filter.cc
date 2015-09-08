@@ -171,7 +171,7 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
     const GURL& origin_url,
     const GURL& top_origin_url,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::Callback<void(bool)> callback =
       base::Bind(&ChromeRenderMessageFilter::
                  OnRequestFileSystemAccessSyncResponse,
@@ -198,7 +198,7 @@ void ChromeRenderMessageFilter::FileSystemAccessedSyncOnUIThread(
     const GURL& url,
     bool blocked_by_policy,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   extensions::WebViewPermissionHelper* web_view_permission_helper =
       extensions::WebViewPermissionHelper::FromFrameID(
           render_process_id, render_frame_id);
@@ -216,7 +216,7 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
     int request_id,
     const GURL& origin_url,
     const GURL& top_origin_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::Callback<void(bool)> callback =
       base::Bind(&ChromeRenderMessageFilter::
                  OnRequestFileSystemAccessAsyncResponse,
@@ -242,7 +242,7 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccess(
     const GURL& origin_url,
     const GURL& top_origin_url,
     base::Callback<void(bool)> callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   bool allowed =
       cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
@@ -283,7 +283,7 @@ void ChromeRenderMessageFilter::FileSystemAccessedOnUIThread(
     const GURL& url,
     bool allowed,
     base::Callback<void(bool)> callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   extensions::WebViewPermissionHelper* web_view_permission_helper =
       extensions::WebViewPermissionHelper::FromFrameID(
           render_process_id, render_frame_id);

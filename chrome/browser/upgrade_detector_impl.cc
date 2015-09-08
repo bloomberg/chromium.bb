@@ -98,7 +98,7 @@ bool IsUnstableChannel() {
   // this. On Windows, the file thread used to be required for registry access
   // but no anymore. But other platform may still need the file thread.
   // crbug.com/366647.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   version_info::Channel channel = chrome::GetChannel();
   return channel == version_info::Channel::DEV ||
          channel == version_info::Channel::CANARY;
@@ -136,7 +136,7 @@ bool IsSystemInstall() {
 void DetectUpdatability(const base::Closure& callback_task,
                         bool* is_unstable_channel,
                         bool* is_auto_update_enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Don't try to turn on autoupdate when we failed previously.
   if (is_auto_update_enabled) {
@@ -311,7 +311,7 @@ base::Version UpgradeDetectorImpl::GetCurrentlyInstalledVersion() {
 // be interrupted from the UI thread.
 void UpgradeDetectorImpl::DetectUpgradeTask(
     base::WeakPtr<UpgradeDetectorImpl> upgrade_detector) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   Version critical_update;
   Version installed_version =
@@ -439,7 +439,7 @@ void UpgradeDetectorImpl::OnExperimentChangesDetected(Severity severity) {
 }
 
 void UpgradeDetectorImpl::UpgradeDetected(UpgradeAvailable upgrade_available) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   set_upgrade_available(upgrade_available);
 
   // Stop the recurring timer (that is checking for changes).

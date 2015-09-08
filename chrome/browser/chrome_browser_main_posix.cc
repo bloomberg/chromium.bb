@@ -114,7 +114,7 @@ class ExitHandler {
 
 // static
 void ExitHandler::ExitWhenPossibleOnUIThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (SessionRestore::IsRestoringSynchronously()) {
     // ExitHandler takes care of deleting itself.
     new ExitHandler();

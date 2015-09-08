@@ -23,7 +23,7 @@ SiteDetails::~SiteDetails() {}
 
 void SiteDetails::CollectSiteInfo(WebContents* contents,
                                   SiteData* site_data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::BrowserContext* browser_context = contents->GetBrowserContext();
 
   // Find the BrowsingInstance this WebContents belongs to by iterating over

@@ -183,7 +183,7 @@ const CanonicalNameDisplayNameMapType*
 // A static map object which contains all resourceid-nonsequenced canonical
 // encoding names.
 CanonicalEncodingMap* CanonicalEncodingMapSingleton() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static CanonicalEncodingMap* singleton = new CanonicalEncodingMap;
   return singleton;
 }

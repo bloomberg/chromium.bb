@@ -78,7 +78,7 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RequestsQueue& queue = pending_requests_[web_contents];
   queue.push_back(PendingAccessRequest(request, callback));
@@ -90,7 +90,7 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
 
 void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
     content::WebContents* web_contents) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::map<content::WebContents*, RequestsQueue>::iterator it =
       pending_requests_.find(web_contents);
@@ -159,7 +159,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     const content::MediaStreamDevices& devices,
     content::MediaStreamRequestResult result,
     scoped_ptr<content::MediaStreamUI> ui) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::map<content::WebContents*, RequestsQueue>::iterator it =
       pending_requests_.find(web_contents);

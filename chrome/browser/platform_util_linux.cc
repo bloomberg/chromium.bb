@@ -80,7 +80,7 @@ void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
 }  // namespace internal
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(estade): It would be nice to be able to select the file in the file
   // manager, but that probably requires extending xdg-open. For now just show
   // the folder.
@@ -88,7 +88,7 @@ void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
 }
 
 void OpenExternal(Profile* profile, const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (url.SchemeIs("mailto"))
     XDGEmail(url.spec());
   else

@@ -131,7 +131,7 @@ AttestationPolicyObserver::~AttestationPolicyObserver() {
 }
 
 void AttestationPolicyObserver::AttestationSettingChanged() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   num_retries_ = 0;
   Start();
 }

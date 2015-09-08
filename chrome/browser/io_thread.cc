@@ -151,7 +151,7 @@ const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::CertDatabase::GetInstance()->SetMessageLoopForKeychainEvents();
 }
 #endif
@@ -382,7 +382,7 @@ SystemURLRequestContextGetter::SystemURLRequestContextGetter(
 SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
 net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(io_thread_->globals()->system_request_context.get());
 
   return io_thread_->globals()->system_request_context.get();
@@ -499,12 +499,12 @@ IOThread::~IOThread() {
 }
 
 IOThread::Globals* IOThread::globals() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return globals_;
 }
 
 void IOThread::SetGlobalsForTesting(Globals* globals) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!globals || !globals_);
   globals_ = globals;
 }
@@ -514,7 +514,7 @@ ChromeNetLog* IOThread::net_log() {
 }
 
 void IOThread::ChangedToOnTheRecord() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -523,7 +523,7 @@ void IOThread::ChangedToOnTheRecord() {
 }
 
 net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!system_url_request_context_getter_.get()) {
     InitSystemRequestContext();
   }
@@ -536,7 +536,7 @@ void IOThread::Init() {
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("466432 IOThread::InitAsync::Start"));
   TRACE_EVENT0("startup", "IOThread::InitAsync");
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
 #if defined(USE_NSS_CERTS) || defined(OS_IOS)
   net::SetMessageLoopForNSSHttpIO();
@@ -969,7 +969,7 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
 }
 
 void IOThread::ClearHostCache() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::HostCache* host_cache = globals_->host_resolver->GetHostCache();
   if (host_cache)
@@ -1056,7 +1056,7 @@ net::SSLConfigService* IOThread::GetSSLConfigService() {
 }
 
 void IOThread::ChangedToOnTheRecordOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
@@ -1084,7 +1084,7 @@ void IOThread::InitSystemRequestContext() {
 }
 
 void IOThread::InitSystemRequestContextOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!globals_->system_proxy_service.get());
   DCHECK(system_proxy_config_service_.get());
 

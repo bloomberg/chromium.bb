@@ -62,7 +62,7 @@ void BrowserThreadModelWorker::CallDoWorkAndSignalTask(
     const syncer::WorkCallback& work,
     WaitableEvent* done,
     syncer::SyncerError* error) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_));
+  DCHECK_CURRENTLY_ON(thread_);
   if (!IsStopped())
     *error = work.Run();
   done->Signal();

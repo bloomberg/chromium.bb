@@ -114,7 +114,7 @@ void DataReductionProxyResourceThrottle::StartDisplayingBlockingPage(
     const base::WeakPtr<DataReductionProxyResourceThrottle>& throttle,
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
     const SafeBrowsingUIManager::UnsafeResource& resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::RenderViewHost* rvh = content::RenderViewHost::FromID(
       resource.render_process_host_id, resource.render_view_id);

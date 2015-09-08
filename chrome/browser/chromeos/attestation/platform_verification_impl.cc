@@ -16,7 +16,7 @@ void PlatformVerificationImpl::Create(
     content::RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<PlatformVerification> request) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(render_frame_host);
 
   // The created object is strongly bound to (and owned by) the pipe.
@@ -40,7 +40,7 @@ void PlatformVerificationImpl::ChallengePlatform(
     const mojo::String& challenge,
     const ChallengePlatformCallback& callback) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!platform_verification_flow_.get())
     platform_verification_flow_ = new PlatformVerificationFlow();
@@ -58,7 +58,7 @@ void PlatformVerificationImpl::OnPlatformChallenged(
     const std::string& signature,
     const std::string& platform_key_certificate) {
   DVLOG(2) << __FUNCTION__ << ": " << result;
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (result != PlatformVerificationFlow::SUCCESS) {
     DCHECK(signed_data.empty());

@@ -99,7 +99,7 @@ void DebugDaemonLogSource::OnGetNetworkStatus(bool succeeded,
 
 void DebugDaemonLogSource::OnGetModemStatus(bool succeeded,
                                             const std::string& status) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (succeeded)
     (*response_)[kModemStatusKeyName] = status;
@@ -110,18 +110,15 @@ void DebugDaemonLogSource::OnGetModemStatus(bool succeeded,
 
 void DebugDaemonLogSource::OnGetWiMaxStatus(bool succeeded,
                                             const std::string& status) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (succeeded)
-    (*response_)[kWiMaxStatusKeyName] = status;
-  else
-    (*response_)[kWiMaxStatusKeyName] = kNotAvailable;
+  (*response_)[kWiMaxStatusKeyName] = succeeded ? status : kNotAvailable;
   RequestCompleted();
 }
 
 void DebugDaemonLogSource::OnGetLogs(bool /* succeeded */,
                                      const KeyValueMap& logs) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // We ignore 'succeeded' for this callback - we want to display as much of the
   // debug info as we can even if we failed partway through parsing, and if we
@@ -133,7 +130,7 @@ void DebugDaemonLogSource::OnGetLogs(bool /* succeeded */,
 void DebugDaemonLogSource::OnGetUserLogFiles(
     bool succeeded,
     const KeyValueMap& user_log_files) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (succeeded) {
     SystemLogsResponse* response = new SystemLogsResponse;
 
@@ -195,7 +192,7 @@ void DebugDaemonLogSource::MergeResponse(SystemLogsResponse* response) {
 }
 
 void DebugDaemonLogSource::RequestCompleted() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback_.is_null());
 
   --num_pending_requests_;

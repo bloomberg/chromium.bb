@@ -161,7 +161,7 @@ SQLiteCursor::~SQLiteCursor() {
 void SQLiteCursor::DestroyOnUIThread() {
   // Consumer requests were set in the UI thread. They must be cancelled
   // using the same thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.reset();
   service_->CloseStatement(statement_);
   delete this;
@@ -198,7 +198,7 @@ bool SQLiteCursor::GetFavicon(favicon_base::FaviconID id,
 void SQLiteCursor::GetFaviconForIDInUIThread(
     favicon_base::FaviconID id,
     const favicon_base::FaviconRawBitmapCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!tracker_.get())
     tracker_.reset(new base::CancelableTaskTracker());
   service_->GetLargestRawFaviconForID(id, callback, tracker_.get());
@@ -228,7 +228,7 @@ SQLiteCursor::JavaColumnType SQLiteCursor::GetColumnTypeInternal(int column) {
 }
 
 void SQLiteCursor::RunMoveStatementOnUIThread(int pos) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!tracker_.get())
     tracker_.reset(new base::CancelableTaskTracker());
   service_->MoveStatement(

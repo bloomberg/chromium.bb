@@ -96,7 +96,7 @@ void PermissionContextBase::DecidePermission(
     const GURL& embedding_origin,
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!requesting_origin.is_valid() || !embedding_origin.is_valid()) {
     std::string type_name =
@@ -215,7 +215,7 @@ void PermissionContextBase::NotifyPermissionSet(
     const BrowserPermissionCallback& callback,
     bool persist,
     ContentSetting content_setting) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (persist)
     UpdateContentSetting(requesting_origin, embedding_origin, content_setting);
