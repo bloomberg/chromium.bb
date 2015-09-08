@@ -79,6 +79,32 @@ TEST_F(EditingUtilitiesTest, enclosingNodeOfType)
     EXPECT_EQ(three, enclosingNodeOfType(PositionInComposedTree(one, 0), isEnclosingBlock));
 }
 
+TEST_F(EditingUtilitiesTest, isFirstPositionAfterTable)
+{
+    const char* bodyContent = "<div contenteditable id=host><table id=table><tr><td>1</td></tr></table><b id=two>22</b></div>";
+    const char* shadowContent = "<content select=#two></content><content select=#table></content>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+    Node* host = document().getElementById("host");
+    Node* table = document().getElementById("table");
+
+    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(Position::afterNode(table))));
+    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInComposedTree::afterNode(table))));
+
+    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(Position::lastPositionInNode(table))));
+    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInComposedTree::lastPositionInNode(table))));
+
+    EXPECT_EQ(nullptr, isFirstPositionAfterTable(createVisiblePosition(Position(host, 2))));
+    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInComposedTree(host, 2))));
+
+    EXPECT_EQ(nullptr, isFirstPositionAfterTable(createVisiblePosition(Position::afterNode(host))));
+    EXPECT_EQ(nullptr, isFirstPositionAfterTable(createVisiblePosition(PositionInComposedTree::afterNode(host))));
+
+    EXPECT_EQ(nullptr, isFirstPositionAfterTable(createVisiblePosition(Position::lastPositionInNode(host))));
+    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInComposedTree::lastPositionInNode(host))));
+}
+
 TEST_F(EditingUtilitiesTest, NextNodeIndex)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";

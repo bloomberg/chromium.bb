@@ -862,13 +862,24 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
     return result;
 }
 
-Element* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
+template <typename Strategy>
+static Element* isFirstPositionAfterTableAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    Position upstream(mostBackwardCaretPosition(visiblePosition.deepEquivalent()));
+    const PositionAlgorithm<Strategy> upstream(mostBackwardCaretPosition(visiblePosition.deepEquivalent()));
     if (isRenderedTableElement(upstream.anchorNode()) && upstream.atLastEditingPositionForNode())
         return toElement(upstream.anchorNode());
 
-    return 0;
+    return nullptr;
+}
+
+Element* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
+{
+    return isFirstPositionAfterTableAlgorithm<EditingStrategy>(visiblePosition);
+}
+
+Element* isFirstPositionAfterTable(const VisiblePositionInComposedTree& visiblePosition)
+{
+    return isFirstPositionAfterTableAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
 }
 
 Element* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)

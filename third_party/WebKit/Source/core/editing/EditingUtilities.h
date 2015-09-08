@@ -85,7 +85,8 @@ CORE_EXPORT Node* enclosingNodeOfType(const PositionInComposedTree&, bool (*node
 
 HTMLSpanElement* tabSpanElement(const Node*);
 Element* isLastPositionBeforeTable(const VisiblePosition&);
-Element* isFirstPositionAfterTable(const VisiblePosition&);
+CORE_EXPORT Element* isFirstPositionAfterTable(const VisiblePosition&);
+CORE_EXPORT Element* isFirstPositionAfterTable(const VisiblePositionInComposedTree&);
 
 // Returns the next leaf node or nullptr if there are no more.
 // Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
