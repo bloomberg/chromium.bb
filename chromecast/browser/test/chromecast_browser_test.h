@@ -15,9 +15,8 @@ class WebContents;
 }
 
 namespace chromecast {
-class CastContentWindow;
-
 namespace shell {
+class CastContentWindow;
 
 // This test allows for running an entire browser-process lifecycle per unit
 // test, using Chromecast's cast_shell. This starts up the shell, runs a test

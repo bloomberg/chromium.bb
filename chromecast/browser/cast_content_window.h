@@ -23,6 +23,7 @@ class Size;
 }
 
 namespace chromecast {
+namespace shell {
 
 class CastContentWindow : public content::WebContentsObserver {
  public:
@@ -58,6 +59,7 @@ class CastContentWindow : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(CastContentWindow);
 };
 
+}  // namespace shell
 }  // namespace chromecast
 
 #endif  // CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_H_

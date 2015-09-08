@@ -13,6 +13,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace chromecast {
+namespace shell {
 
 namespace {
 
@@ -68,4 +69,5 @@ void CastServiceSimple::StopInternal() {
   window_.reset();
 }
 
+}  // namespace shell
 }  // namespace chromecast

@@ -33,8 +33,8 @@ class WebContents;
 }  // namespace content
 
 namespace chromecast {
-class CastContentWindow;
 namespace shell {
+class CastContentWindow;
 
 class CastWindowAndroid : public content::WebContentsDelegate,
                           public content::WebContentsObserver {

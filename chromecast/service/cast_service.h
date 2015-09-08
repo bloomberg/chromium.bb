@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_SERVICE_CAST_SERVICE_H_
-#define CHROMECAST_BROWSER_SERVICE_CAST_SERVICE_H_
+#ifndef CHROMECAST_SERVICE_CAST_SERVICE_H_
+#define CHROMECAST_SERVICE_CAST_SERVICE_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -74,4 +74,4 @@ class CastService {
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_SERVICE_CAST_SERVICE_H_
+#endif  // CHROMECAST_SERVICE_CAST_SERVICE_H_

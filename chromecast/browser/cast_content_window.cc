@@ -21,6 +21,7 @@
 #endif
 
 namespace chromecast {
+namespace shell {
 
 #if defined(USE_AURA)
 class CastFillLayout : public aura::LayoutManager {
@@ -133,4 +134,5 @@ void CastContentWindow::RenderViewCreated(
                                           : SK_ColorBLACK);
 }
 
+}  // namespace shell
 }  // namespace chromecast

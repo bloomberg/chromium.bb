@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/service/cast_service.h"
+#include "chromecast/service/cast_service.h"
 
 #include "base/logging.h"
 #include "base/run_loop.h"

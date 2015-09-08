@@ -375,8 +375,6 @@
         'browser/metrics/cast_stability_metrics_provider.h',
         'browser/pref_service_helper.cc',
         'browser/pref_service_helper.h',
-        'browser/service/cast_service.cc',
-        'browser/service/cast_service.h',
         'browser/service/cast_service_simple.cc',
         'browser/service/cast_service_simple.h',
         'browser/url_request_context_factory.cc',
@@ -399,6 +397,8 @@
         'renderer/key_systems_cast.h',
         'renderer/media/capabilities_message_filter.cc',
         'renderer/media/capabilities_message_filter.h',
+        'service/cast_service.cc',
+        'service/cast_service.h',
       ],
       'conditions': [
         ['chromecast_branding!="public"', {
