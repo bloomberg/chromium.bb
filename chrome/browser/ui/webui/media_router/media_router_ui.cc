@@ -67,23 +67,25 @@ class MediaRouterUI::UIIssuesObserver : public IssuesObserver {
   DISALLOW_COPY_AND_ASSIGN(UIIssuesObserver);
 };
 
-class MediaRouterUI::UIMediaRoutesObserver : public MediaRoutesObserver {
- public:
-  UIMediaRoutesObserver(MediaRouter* router, MediaRouterUI* ui)
-      : MediaRoutesObserver(router), ui_(ui) {
-    DCHECK(ui_);
+MediaRouterUI::UIMediaRoutesObserver::UIMediaRoutesObserver(
+    MediaRouter* router,
+    const RoutesUpdatedCallback& callback)
+    : MediaRoutesObserver(router), callback_(callback) {
+  DCHECK(!callback_.is_null());
+}
+
+MediaRouterUI::UIMediaRoutesObserver::~UIMediaRoutesObserver() {}
+
+void MediaRouterUI::UIMediaRoutesObserver::OnRoutesUpdated(
+    const std::vector<MediaRoute>& routes) {
+  std::vector<MediaRoute> routes_for_display;
+  for (const MediaRoute& route : routes) {
+    if (route.for_display())
+      routes_for_display.push_back(route);
   }
 
-  void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override {
-    ui_->OnRoutesUpdated(routes);
-  }
-
- private:
-  // Reference back to the owning MediaRouterUI instance.
-  MediaRouterUI* ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(UIMediaRoutesObserver);
-};
+  callback_.Run(routes_for_display);
+}
 
 MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
@@ -170,7 +172,9 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator,
 
   // Register for Issue and MediaRoute updates.
   issues_observer_.reset(new UIIssuesObserver(router_, this));
-  routes_observer_.reset(new UIMediaRoutesObserver(router_, this));
+  routes_observer_.reset(new UIMediaRoutesObserver(
+      router_,
+      base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
 
   query_result_manager_.reset(new QueryResultManager(router_));
   query_result_manager_->AddObserver(this);

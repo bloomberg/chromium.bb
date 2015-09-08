@@ -1460,6 +1460,7 @@
       'browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc',
       'browser/ui/webui/media_router/media_router_test.cc',
       'browser/ui/webui/media_router/media_router_test.h',
+      'browser/ui/webui/media_router/media_router_ui_unittest.cc',
       'browser/ui/webui/media_router/media_router_webui_message_handler_unittest.cc',
       'browser/ui/webui/media_router/query_result_manager_unittest.cc',
     ],

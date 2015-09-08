@@ -129,8 +129,27 @@ class MediaRouterUI
   virtual const std::string& GetRouteProviderExtensionId() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+                           UIMediaRoutesObserverFiltersNonDisplayRoutes);
+
   class UIIssuesObserver;
-  class UIMediaRoutesObserver;
+  class UIMediaRoutesObserver : public MediaRoutesObserver {
+   public:
+    using RoutesUpdatedCallback =
+        base::Callback<void(const std::vector<MediaRoute>&)>;
+    UIMediaRoutesObserver(MediaRouter* router,
+                          const RoutesUpdatedCallback& callback);
+    ~UIMediaRoutesObserver() override;
+
+    // MediaRoutesObserver
+    void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override;
+
+   private:
+    // Callback to the owning MediaRouterUI instance.
+    RoutesUpdatedCallback callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(UIMediaRoutesObserver);
+  };
 
   // QueryResultManager::Observer
   void OnResultsUpdated(
