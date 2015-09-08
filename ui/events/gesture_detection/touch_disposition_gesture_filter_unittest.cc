@@ -243,7 +243,7 @@ class TouchDispositionGestureFilterTest
     return last_sent_gesture().flags;
   }
 
-  const gfx::RectF& ShowPressBoundingBox() const {
+  const gfx::Rect& ShowPressBoundingBox() const {
     return show_press_bounding_box_;
   }
 
@@ -275,7 +275,7 @@ class TouchDispositionGestureFilterTest
   GestureList sent_gestures_;
   gfx::Vector2dF raw_offset_;
   scoped_ptr<GestureEventData> last_sent_gesture_;
-  gfx::RectF show_press_bounding_box_;
+  gfx::Rect show_press_bounding_box_;
   uint32 last_sent_touch_event_id_;
 };
 
@@ -1061,7 +1061,7 @@ TEST_F(TouchDispositionGestureFilterTest, ShowPressBoundingBox) {
   SendTouchNotConsumedAckForLastTouch();
   EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SHOW_PRESS, ET_GESTURE_TAP),
                             GetAndResetSentGestures()));
-  EXPECT_EQ(gfx::RectF(5, 5, 10, 10), ShowPressBoundingBox());
+  EXPECT_EQ(gfx::Rect(5, 5, 10, 10), ShowPressBoundingBox());
 }
 
 TEST_F(TouchDispositionGestureFilterTest, TapCancelledBeforeGestureEnd) {
