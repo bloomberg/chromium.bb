@@ -15,13 +15,7 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, ImageEncoderTest) {
       FILE_PATH_LITERAL("image_editor/image_encoder_unittest.html")));
 }
 
-// TODO(yawano): This test fails on Debug build and this is a temporary fix.
-#if defined(NDEBUG)
-#define MAYBE_ExifEncoderTest ExifEncoderTest
-#else
-#define MAYBE_ExifEncoderTest DISABLED_ExifEncoderTest
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryJsTest, MAYBE_ExifEncoderTest) {
+IN_PROC_BROWSER_TEST_F(GalleryJsTest, ExifEncoderTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("image_editor/exif_encoder_unittest.html")));
 }

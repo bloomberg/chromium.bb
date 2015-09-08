@@ -60,6 +60,8 @@ ImageEncoder.createMetadataEncoder = function(metadata) {
  * @param {!HTMLCanvasElement} canvas Canvas to use for metadata.
  * @param {number} thumbnailQuality Encoding quality of a thumbnail.
  * @return {!ImageEncoder.MetadataEncoder} Encoder with encoded metadata.
+ *
+ * TODO(yawano): rename to a better name, e.g. prepareMetadataEncoder.
  */
 ImageEncoder.encodeMetadata = function(metadata, canvas, thumbnailQuality) {
   var encoder = ImageEncoder.createMetadataEncoder(metadata);
