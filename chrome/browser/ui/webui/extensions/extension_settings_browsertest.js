@@ -406,6 +406,34 @@ TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'testChromeSendHandler',
   this.nextStep();
 });
 
+TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'extensionSettingsUri',
+    function() {
+  var closeCommandOverlay = function() {
+    assertTrue($('extension-commands-overlay').classList.contains('showing'));
+    assertEquals(window.location.href,
+                 'chrome://extensions-frame/configureCommands');
+
+    // Close command overlay.
+    $('extension-commands-dismiss').click();
+
+    assertFalse($('extension-commands-overlay').classList.contains('showing'));
+    this.nextStep();
+  };
+
+  var checkExtensionsUrl = function() {
+    // After closing the overlay, the URL shouldn't include commands overlay
+    // reference.
+    assertEquals(window.location.href, 'chrome://extensions-frame/');
+    this.nextStep();
+  };
+
+  this.steps = [this.waitForPageLoad,
+                closeCommandOverlay,
+                checkExtensionsUrl,
+                testDone];
+  this.nextStep();
+});
+
 /**
  * @constructor
  * @extends {ExtensionSettingsWebUITest}

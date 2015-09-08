@@ -409,6 +409,7 @@ cr.define('extensions', function() {
           lastFocused.focus();
 
         $('overlay').removeEventListener('cancelOverlay', f);
+        uber.replaceState({}, '');
       });
       node.classList.add('showing');
     }
