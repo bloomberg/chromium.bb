@@ -64,6 +64,11 @@ static unsigned int g2d_get_blend_op(enum e_g2d_op op)
 
 	val.val = 0;
 
+	/*
+	 * The switch statement is missing the default branch since
+	 * we assume that the caller checks the blending operation
+	 * via g2d_validate_blending_op() first.
+	 */
 	switch (op) {
 	case G2D_OP_CLEAR:
 	case G2D_OP_DISJOINT_CLEAR:
@@ -90,11 +95,6 @@ static unsigned int g2d_get_blend_op(enum e_g2d_op op)
 	case G2D_OP_INTERPOLATE:
 		SET_BF(val, G2D_COEFF_MODE_SRC_ALPHA, 0, 0, 0,
 				G2D_COEFF_MODE_SRC_ALPHA, 1, 0, 0);
-		break;
-	default:
-		fprintf(stderr, "Not support operation(%d).\n", op);
-		SET_BF(val, G2D_COEFF_MODE_ONE, 0, 0, 0, G2D_COEFF_MODE_ZERO,
-				0, 0, 0);
 		break;
 	}
 
