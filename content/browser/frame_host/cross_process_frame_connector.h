@@ -94,6 +94,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
                                     const cc::SurfaceSequence& sequence);
 
   gfx::Rect ChildFrameRect();
+  float device_scale_factor() const { return device_scale_factor_; }
   void GetScreenInfo(blink::WebScreenInfo* results);
 
  private:

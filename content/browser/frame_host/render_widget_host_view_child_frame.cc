@@ -21,6 +21,8 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/browser_plugin_guest_mode.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace content {
 
@@ -127,8 +129,11 @@ void RenderWidgetHostViewChildFrame::SetBackgroundColor(SkColor color) {
 
 gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {
   gfx::Size size;
-  if (frame_connector_)
-    size = frame_connector_->ChildFrameRect().size();
+  if (frame_connector_) {
+    size = gfx::ToCeiledSize(
+        gfx::ScaleSize(frame_connector_->ChildFrameRect().size(),
+                       frame_connector_->device_scale_factor()));
+  }
   return size;
 }
 
