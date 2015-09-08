@@ -183,10 +183,11 @@ void ValidateWebApplicationInfo(base::Closure callback,
   callback.Run();
 }
 
-void ValidateOnlyGenerateIconsWhenNoLargerExists(
+void ValidateIconsGeneratedAndResizedCorrectly(
     std::vector<BookmarkAppHelper::BitmapAndSource> downloaded,
     std::map<int, BookmarkAppHelper::BitmapAndSource> size_map,
-    std::set<int> sizes_to_generate, int expected_generated) {
+    std::set<int> sizes_to_generate,
+    int expected_generated) {
   GURL empty_url("");
   int number_generated = 0;
 
@@ -203,16 +204,15 @@ void ValidateOnlyGenerateIconsWhenNoLargerExists(
         EXPECT_EQ(icon_resized->second.bitmap.height(), size);
         EXPECT_EQ(icon_resized->second.source_url, empty_url);
         ++number_generated;
-      } else {
+      } else if (icon_resized != size_map.end()) {
         // There is a larger downloaded icon. Expect no icon to be generated.
-        // However, an existing icon may be resized down to fit this size.
-        // If this is the case, the |source_url| will be non-empty.
-        if (icon_resized != size_map.end()) {
-          EXPECT_EQ(icon_resized->second.bitmap.width(), size);
-          EXPECT_EQ(icon_resized->second.bitmap.height(), size);
-          EXPECT_EQ(icon_resized->second.bitmap.height(), size);
-          EXPECT_EQ(icon_resized->second.source_url, icon_larger->source_url);
-        }
+        // However, an existing icon *may* be resized down to fit this size.
+        // If this is the case, icon_resized will be valid and the |source_url|
+        // will be equal to that of the larger icon.
+        EXPECT_EQ(icon_resized->second.bitmap.width(), size);
+        EXPECT_EQ(icon_resized->second.bitmap.height(), size);
+        EXPECT_EQ(icon_resized->second.bitmap.height(), size);
+        EXPECT_EQ(icon_resized->second.source_url, icon_larger->source_url);
       }
     } else {
       // There is an icon of exactly this size downloaded. Expect no icon to be
@@ -241,17 +241,14 @@ void TestIconGeneration(int icon_size, int expected_generated) {
   downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
         icon_info.url, icon_info.data));
 
-  // Now run the resizing and generation.
+  // Now run the resizing/generation and validation
   WebApplicationInfo new_web_app_info;
   std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
-      BookmarkAppHelper::ResizeIconsAndGenerateMissing(downloaded,
-                                                       TestSizesToGenerate(),
-                                                       &new_web_app_info);
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &new_web_app_info);
 
-  // Test that we end up with the expected number of generated icons.
-  ValidateOnlyGenerateIconsWhenNoLargerExists(downloaded, size_map,
-                                              TestSizesToGenerate(),
-                                              expected_generated);
+  ValidateIconsGeneratedAndResizedCorrectly(
+      downloaded, size_map, TestSizesToGenerate(), expected_generated);
 }
 
 }  // namespace
@@ -495,9 +492,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, LinkedAppIconsAreNotChanged) {
   // Now run the resizing and generation into a new web app info.
   WebApplicationInfo new_web_app_info;
   std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
-      BookmarkAppHelper::ResizeIconsAndGenerateMissing(downloaded,
-                                                       TestSizesToGenerate(),
-                                                       &new_web_app_info);
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &new_web_app_info);
 
   // Now check that the linked app icons (i.e. those with URLs) are matching in
   // both lists.
@@ -549,6 +545,8 @@ TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {
   std::set<int> desired_sizes;
   desired_sizes.insert(16);
   desired_sizes.insert(32);
+  desired_sizes.insert(48);
+  desired_sizes.insert(96);
   desired_sizes.insert(128);
   desired_sizes.insert(256);
 
@@ -556,7 +554,6 @@ TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {
     std::vector<BookmarkAppHelper::BitmapAndSource> bitmaps;
     bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(16, SK_ColorRED));
     bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(32, SK_ColorGREEN));
-    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(48, SK_ColorBLUE));
     bitmaps.push_back(
         CreateSquareBitmapAndSourceWithColor(144, SK_ColorYELLOW));
 
@@ -634,15 +631,14 @@ TEST_F(BookmarkAppHelperTest, IconsGeneratedOnlyWhenNoneLarger) {
   // Now run the resizing and generation.
   WebApplicationInfo new_web_app_info;
   std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
-      BookmarkAppHelper::ResizeIconsAndGenerateMissing(downloaded,
-                                                       TestSizesToGenerate(),
-                                                       &new_web_app_info);
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &new_web_app_info);
 
   // Test that icons are only generated when necessary. The largest icon
   // downloaded is smaller than EXTENSION_ICON_LARGE, so one icon should be
   // generated.
-  ValidateOnlyGenerateIconsWhenNoLargerExists(downloaded, size_map,
-                                              TestSizesToGenerate(), 1);
+  ValidateIconsGeneratedAndResizedCorrectly(
+      downloaded, size_map, TestSizesToGenerate(), 1);
 }
 
 TEST_F(BookmarkAppHelperTest, AllIconsGeneratedWhenOnlyASmallOneIsProvided) {

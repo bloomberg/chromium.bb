@@ -65,6 +65,12 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // |sizes| and resizes it to that size. This returns a map of sizes to bitmaps
   // which contains only bitmaps of a size in |sizes| and at most one bitmap of
   // each size.
+  //
+  // Only allow each provided bitmap to be resized at most once, down to the
+  // next smallest size. This reduces the size of the app and makes icons
+  // simpler to reason about.
+  // TODO(dominickn): remove this one-resize-step behaviour to simplify icon
+  // handling.
   static std::map<int, BitmapAndSource> ConstrainBitmapsToSizes(
       const std::vector<BitmapAndSource>& bitmaps,
       const std::set<int>& sizes);
@@ -84,6 +90,11 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   // Resize icons to the accepted sizes, and generate any that are missing. Does
   // not update |web_app_info| except to update |generated_icon_color|.
+  //
+  // For efficiency and clarity, existing icons are only allowed to be resized
+  // once, down to the next smallest allowable extension icon size.
+  // TODO(dominickn): remove this one-resize-step behaviour to simplify icon
+  // handling.
   static std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(
       std::vector<BitmapAndSource> icons,
       std::set<int> sizes_to_generate,
@@ -156,7 +167,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 };
 
 // Creates or updates a bookmark app from the given |web_app_info|. Icons will
-// not be downloaded so only supplied icon data will be used.
+// be downloaded from the icon URLs provided in |web_app_info|.
 void CreateOrUpdateBookmarkApp(ExtensionService* service,
                                WebApplicationInfo* web_app_info);
 

@@ -184,3 +184,36 @@ TEST_F(FaviconDownloaderTest, DownloadMultipleUrls) {
   EXPECT_EQ(1u, downloader.favicon_map()[favicon_url_1].size());
   EXPECT_EQ(2u, downloader.favicon_map()[favicon_url_2].size());
 }
+
+TEST_F(FaviconDownloaderTest, SkipPageFavicons) {
+  const GURL favicon_url_1("http://www.google.com/favicon.ico");
+  const GURL favicon_url_2("http://www.google.com/favicon2.ico");
+
+  std::vector<GURL> extra_urls;
+  extra_urls.push_back(favicon_url_1);
+
+  TestFaviconDownloader downloader(web_contents(), extra_urls);
+
+  // This favicon URL should be ignored.
+  std::vector<content::FaviconURL> favicon_urls;
+  favicon_urls.push_back(content::FaviconURL(
+      favicon_url_2, content::FaviconURL::FAVICON, std::vector<gfx::Size>()));
+  downloader.set_initial_favicon_urls(favicon_urls);
+  downloader.SkipPageFavicons();
+  downloader.Start();
+  EXPECT_EQ(1u, downloader.pending_requests());
+
+  std::vector<gfx::Size> sizes_1(1, gfx::Size(16, 16));
+  downloader.CompleteImageDownload(0, favicon_url_1, sizes_1);
+
+  // This download should not be finished and inserted into the map.
+  std::vector<gfx::Size> sizes_2;
+  sizes_2.push_back(gfx::Size(32, 32));
+  sizes_2.push_back(gfx::Size(64, 64));
+  downloader.CompleteImageDownload(1, favicon_url_2, sizes_2);
+  EXPECT_EQ(0u, downloader.pending_requests());
+
+  EXPECT_EQ(1u, downloader.favicon_map().size());
+  EXPECT_EQ(1u, downloader.favicon_map()[favicon_url_1].size());
+  EXPECT_EQ(0u, downloader.favicon_map()[favicon_url_2].size());
+}

@@ -16,7 +16,7 @@ FaviconDownloader::FaviconDownloader(
   const std::vector<GURL>& extra_favicon_urls,
   FaviconDownloaderCallback callback)
   : content::WebContentsObserver(web_contents),
-    got_favicon_urls_(false),
+    need_favicon_urls_(true),
     extra_favicon_urls_(extra_favicon_urls),
     callback_(callback),
     weak_ptr_factory_(this) {
@@ -25,15 +25,22 @@ FaviconDownloader::FaviconDownloader(
 FaviconDownloader::~FaviconDownloader() {
 }
 
+void FaviconDownloader::SkipPageFavicons() {
+  need_favicon_urls_ = false;
+}
+
 void FaviconDownloader::Start() {
   FetchIcons(extra_favicon_urls_);
   // If the candidates aren't loaded, icons will be fetched when
   // DidUpdateFaviconURL() is called.
-  std::vector<content::FaviconURL> favicon_tab_helper_urls =
-      GetFaviconURLsFromWebContents();
-  if (!favicon_tab_helper_urls.empty()) {
-    got_favicon_urls_ = true;
-    FetchIcons(favicon_tab_helper_urls);
+
+  if (need_favicon_urls_) {
+    std::vector<content::FaviconURL> favicon_tab_helper_urls =
+        GetFaviconURLsFromWebContents();
+    if (!favicon_tab_helper_urls.empty()) {
+      need_favicon_urls_ = false;
+      FetchIcons(favicon_tab_helper_urls);
+    }
   }
 }
 
@@ -83,7 +90,7 @@ void FaviconDownloader::FetchIcons(const std::vector<GURL>& urls) {
 
   // If no downloads were initiated, we can proceed directly to running the
   // callback.
-  if (in_progress_requests_.empty() && got_favicon_urls_)
+  if (in_progress_requests_.empty() && !need_favicon_urls_)
     callback_.Run(true, favicon_map_);
 }
 
@@ -100,7 +107,7 @@ void FaviconDownloader::DidDownloadFavicon(
   favicon_map_[image_url] = bitmaps;
 
   // Once all requests have been resolved, perform post-download tasks.
-  if (in_progress_requests_.empty() && got_favicon_urls_)
+  if (in_progress_requests_.empty() && !need_favicon_urls_)
     callback_.Run(true, favicon_map_);
 }
 
@@ -118,9 +125,9 @@ void FaviconDownloader::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
   // Only consider the first candidates we are given. This prevents pages that
   // change their favicon from spamming us.
-  if (got_favicon_urls_)
+  if (!need_favicon_urls_)
     return;
 
-  got_favicon_urls_ = true;
+  need_favicon_urls_ = false;
   FetchIcons(candidates);
 }

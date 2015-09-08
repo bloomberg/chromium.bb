@@ -33,11 +33,16 @@ class FaviconDownloader : public content::WebContentsObserver {
           const FaviconMap&)>
       FaviconDownloaderCallback;
   // |extra_favicon_urls| allows callers to provide icon urls that aren't
-  // |provided by the renderer (e.g touch icons on non-android environments).
+  // provided by the renderer (e.g touch icons on non-android environments).
+  // |skip_page_favicons| instructs the downloader to not query the page
+  // for favicons (e.g. when a favicon URL has already been provided in
+  // |extra_favicon_urls|).
   FaviconDownloader(content::WebContents* web_contents,
                     const std::vector<GURL>& extra_favicon_urls,
                     FaviconDownloaderCallback callback);
   ~FaviconDownloader() override;
+
+  void SkipPageFavicons();
 
   void Start();
 
@@ -71,8 +76,8 @@ class FaviconDownloader : public content::WebContentsObserver {
   void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
 
-  // Whether we have received favicons from the renderer.
-  bool got_favicon_urls_;
+  // Whether we need to fetch favicons from the renderer.
+  bool need_favicon_urls_;
 
   // URLs that aren't given by WebContentsObserver::DidUpdateFaviconURL() that
   // should be used for this favicon. This is necessary in order to get touch
