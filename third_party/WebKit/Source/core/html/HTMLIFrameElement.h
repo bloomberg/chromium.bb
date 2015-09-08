@@ -58,9 +58,13 @@ private:
 
     void valueChanged() override;
 
+    ReferrerPolicy referrerPolicyAttribute() override;
+
     AtomicString m_name;
     bool m_didLoadNonEmptyDocument;
     RefPtrWillBeMember<DOMSettableTokenList> m_sandbox;
+
+    ReferrerPolicy m_referrerPolicy;
 };
 
 } // namespace blink

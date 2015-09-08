@@ -41,6 +41,7 @@ inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     : HTMLFrameElementBase(iframeTag, document)
     , m_didLoadNonEmptyDocument(false)
     , m_sandbox(DOMSettableTokenList::create(this))
+    , m_referrerPolicy(ReferrerPolicyDefault)
 {
 }
 
@@ -120,6 +121,10 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == sandboxAttr) {
         m_sandbox->setValue(value);
         UseCounter::count(document(), UseCounter::SandboxViaIFrame);
+    } else if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled() && name == referrerpolicyAttr) {
+        m_referrerPolicy = ReferrerPolicyDefault;
+        if (!value.isNull())
+            SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
     } else {
         HTMLFrameElementBase::parseAttribute(name, value);
     }
@@ -173,4 +178,8 @@ void HTMLIFrameElement::valueChanged()
     setSynchronizedLazyAttribute(sandboxAttr, m_sandbox->value());
 }
 
+ReferrerPolicy HTMLIFrameElement::referrerPolicyAttribute()
+{
+    return m_referrerPolicy;
+}
 }

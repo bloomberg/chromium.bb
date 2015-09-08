@@ -540,6 +540,7 @@ html element iframe
     property marginHeight
     property marginWidth
     property name
+    property referrerpolicy
     property sandbox
     property scrolling
     property src

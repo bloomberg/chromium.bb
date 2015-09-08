@@ -2057,6 +2057,7 @@ interface HTMLIFrameElement
     getter marginHeight
     getter marginWidth
     getter name
+    getter referrerpolicy
     getter sandbox
     getter scrolling
     getter src
@@ -2072,6 +2073,7 @@ interface HTMLIFrameElement
     setter marginHeight
     setter marginWidth
     setter name
+    setter referrerpolicy
     setter sandbox
     setter scrolling
     setter src

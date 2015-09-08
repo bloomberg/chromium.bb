@@ -34,6 +34,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/plugins/PluginView.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
@@ -261,7 +262,15 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     if (document().frame()->host()->subframeCount() >= FrameHost::maxNumberOfFrames)
         return false;
 
-    return parentFrame->loader().client()->createFrame(FrameLoadRequest(&document(), url, "_self", CheckContentSecurityPolicy), frameName, this);
+    FrameLoadRequest frameLoadRequest(&document(), url, "_self", CheckContentSecurityPolicy);
+
+    if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled()) {
+        ReferrerPolicy policy = referrerPolicyAttribute();
+        if (policy != ReferrerPolicyDefault)
+            frameLoadRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(policy, url, document().outgoingReferrer()));
+    }
+
+    return parentFrame->loader().client()->createFrame(frameLoadRequest, frameName, this);
 }
 
 DEFINE_TRACE(HTMLFrameOwnerElement)

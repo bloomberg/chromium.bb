@@ -32,6 +32,8 @@ interface HTMLIFrameElement : HTMLElement {
     [CheckSecurity=Node] readonly attribute Document? contentDocument;
     readonly attribute Window? contentWindow;
     [CheckSecurity=Node, RaisesException] Document? getSVGDocument();
+    [RuntimeEnabled=ReferrerPolicyAttribute, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
+
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLIFrameElement-partial
