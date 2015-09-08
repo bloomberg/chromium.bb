@@ -1580,22 +1580,30 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   if (historyMenuBridge_)
     historyMenuBridge_->ResetMenu();
 
-  // Rebuild the menus with the new profile.
+  // Rebuild the menus with the new profile. The bookmarks submenu is cached to
+  // avoid slowdowns when switching between profiles with large numbers of
+  // bookmarks. Before caching, store whether it is hidden, make the menu item
+  // visible, and restore its original hidden state after resetting the submenu.
+  // This works around an apparent AppKit bug where setting a *different* NSMenu
+  // submenu on a *hidden* menu item forces the item to become visible.
+  // See https://crbug.com/497813 for more details.
+  NSMenuItem* bookmarkItem = [[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU];
+  BOOL hidden = [bookmarkItem isHidden];
+  [bookmarkItem setHidden:NO];
   lastProfile_ = profile;
 
   auto it = profileBookmarkMenuBridgeMap_.find(profile->GetPath());
   if (it == profileBookmarkMenuBridgeMap_.end()) {
-    base::scoped_nsobject<NSMenu> submenu(
-        [[[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu] copy]);
+    base::scoped_nsobject<NSMenu> submenu([[bookmarkItem submenu] copy]);
     bookmarkMenuBridge_ = new BookmarkMenuBridge(profile, submenu);
     profileBookmarkMenuBridgeMap_[profile->GetPath()] = bookmarkMenuBridge_;
   } else {
     bookmarkMenuBridge_ = it->second;
   }
 
-  [[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] setSubmenu:
-      bookmarkMenuBridge_->BookmarkMenu()];
   // No need to |BuildMenu| here.  It is done lazily upon menu access.
+  [bookmarkItem setSubmenu:bookmarkMenuBridge_->BookmarkMenu()];
+  [bookmarkItem setHidden:hidden];
 
   historyMenuBridge_.reset(new HistoryMenuBridge(lastProfile_));
   historyMenuBridge_->BuildMenu();
