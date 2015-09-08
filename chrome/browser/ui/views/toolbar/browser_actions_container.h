@@ -248,8 +248,6 @@ class BrowserActionsContainer
   bool IsAnimating() const override;
   void StopAnimating() override;
   int GetChevronWidth() const override;
-  void OnOverflowedActionWantsToRunChanged(
-      bool overflowed_action_wants_to_run) override;
   void ShowExtensionMessageBubble(
       scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
       ToolbarActionViewController* anchor_action) override;

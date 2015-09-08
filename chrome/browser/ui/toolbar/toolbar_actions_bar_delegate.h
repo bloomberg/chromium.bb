@@ -57,11 +57,6 @@ class ToolbarActionsBarDelegate {
   // Returns the width (including padding) for the overflow chevron.
   virtual int GetChevronWidth() const = 0;
 
-  // Notifies the delegate that the value of whether or not any overflowed
-  // action wants to run has changed.
-  virtual void OnOverflowedActionWantsToRunChanged(
-      bool overflowed_action_wants_to_run) = 0;
-
   // Displays the bubble for the passed ExtensionMessageBubbleController,
   // anchored to |anchor_action|. If |anchor_action| is null, it should be
   // anchored to the hotdog menu.

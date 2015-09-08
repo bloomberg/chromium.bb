@@ -86,10 +86,6 @@ class BrowserActionTestUtil {
   // to run.
   bool ActionButtonWantsToRun(size_t index);
 
-  // Tests that the overflow button is displaying an overflowed action wants
-  // to run.
-  bool OverflowedActionButtonWantsToRun();
-
   // Returns the ToolbarActionsBar.
   ToolbarActionsBar* GetToolbarActionsBar();
 

@@ -195,8 +195,6 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     [controller_ prefChanged:pref_name];
   }
 
-  WrenchMenuBadgeController* badge_controller() { return &badge_controller_; }
-
  private:
   ToolbarController* controller_;  // weak, owns us
 
@@ -574,16 +572,6 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 
 - (void)setTranslateIconLit:(BOOL)on {
   locationBarView_->SetTranslateIconLit(on);
-}
-
-- (void)setOverflowedToolbarActionWantsToRun:(BOOL)overflowedActionWantsToRun {
-  notificationBridge_->badge_controller()->SetOverflowedToolbarActionWantsToRun(
-      overflowedActionWantsToRun);
-}
-
-- (BOOL)overflowedToolbarActionWantsToRun {
-  return notificationBridge_->badge_controller()->
-      overflowed_toolbar_action_wants_to_run();
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {

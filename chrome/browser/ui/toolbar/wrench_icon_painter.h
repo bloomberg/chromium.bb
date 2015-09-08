@@ -32,7 +32,6 @@ class WrenchIconPainter : gfx::AnimationDelegate {
 
   enum Severity {
     SEVERITY_NONE,
-    SEVERITY_INFO,
     SEVERITY_LOW,
     SEVERITY_MEDIUM,
     SEVERITY_HIGH,

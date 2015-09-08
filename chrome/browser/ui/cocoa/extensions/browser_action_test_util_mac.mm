@@ -182,12 +182,6 @@ bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
   return [GetButton(browser_, test_helper_.get(), index) wantsToRunForTesting];
 }
 
-bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {
-  return [[[BrowserWindowController browserWindowControllerForWindow:
-      browser_->window()->GetNativeWindow()] toolbarController]
-          overflowedToolbarActionWantsToRun];
-}
-
 ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {
   return [GetController(browser_, test_helper_.get()) toolbarActionsBar];
 }

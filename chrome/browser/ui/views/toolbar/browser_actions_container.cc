@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_badge_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
@@ -320,14 +319,6 @@ void BrowserActionsContainer::StopAnimating() {
 
 int BrowserActionsContainer::GetChevronWidth() const {
   return chevron_ ? chevron_->GetPreferredSize().width() + kChevronSpacing : 0;
-}
-
-void BrowserActionsContainer::OnOverflowedActionWantsToRunChanged(
-    bool overflowed_action_wants_to_run) {
-  DCHECK(!in_overflow_mode());
-  BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->
-      wrench_menu_badge_controller()->SetOverflowedToolbarActionWantsToRun(
-          overflowed_action_wants_to_run);
 }
 
 void BrowserActionsContainer::ShowExtensionMessageBubble(

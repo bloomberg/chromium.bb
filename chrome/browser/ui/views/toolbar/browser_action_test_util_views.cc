@@ -174,11 +174,6 @@ bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
       ->wants_to_run_for_testing();
 }
 
-bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {
-  return BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->
-      wrench_menu_badge_controller()->overflowed_toolbar_action_wants_to_run();
-}
-
 ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {
   return GetContainer(browser_, test_helper_.get())->toolbar_actions_bar();
 }

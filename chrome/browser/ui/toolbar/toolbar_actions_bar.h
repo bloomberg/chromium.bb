@@ -197,11 +197,6 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
 
-  static void set_send_overflowed_action_changes_for_testing(
-      bool send_overflowed_action_changes) {
-    send_overflowed_action_changes_ = send_overflowed_action_changes;
-  }
-
   // During testing we can disable animations by setting this flag to true,
   // so that the bar resizes instantly, instead of having to poll it while it
   // animates to open/closed status.
@@ -233,9 +228,6 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // "pop out" any overflowed actions that want to run (depending on the
   // value of |pop_out_actions_to_run|.
   void ReorderActions();
-
-  // Sets |overflowed_action_wants_to_run_| to the proper value.
-  void SetOverflowedActionWantsToRun();
 
   // Shows an extension message bubble, if any should be shown.
   void MaybeShowExtensionBubble(
@@ -279,14 +271,6 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // action) will pop out of overflow to draw more attention.
   // See also TabOrderHelper in the .cc file.
   static bool pop_out_actions_to_run_;
-
-  // If set to false, notifications for OnOverflowedActionWantsToRunChanged()
-  // will not be sent. Used because in unit tests there is no wrench menu to
-  // alter.
-  static bool send_overflowed_action_changes_;
-
-  // True if an action in the overflow menu wants to run.
-  bool overflowed_action_wants_to_run_;
 
   // True if we have checked to see if there is an extension bubble that should
   // be displayed, and, if there is, shown that bubble.

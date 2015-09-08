@@ -103,9 +103,6 @@ void SortContainer(std::vector<Type1>* to_sort,
 // static
 bool ToolbarActionsBar::disable_animations_for_testing_ = false;
 
-// static
-bool ToolbarActionsBar::send_overflowed_action_changes_ = true;
-
 ToolbarActionsBar::PlatformSettings::PlatformSettings(bool in_overflow_mode)
     : left_padding(in_overflow_mode ? kOverflowLeftPadding : kLeftPadding),
       right_padding(in_overflow_mode ? kOverflowRightPadding : kRightPadding),
@@ -127,7 +124,6 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       model_observer_(this),
       suppress_layout_(false),
       suppress_animation_(true),
-      overflowed_action_wants_to_run_(false),
       checked_extension_bubble_(false),
       popped_out_action_(nullptr),
       weak_ptr_factory_(this) {
@@ -617,8 +613,6 @@ void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
       ResizeDelegate(gfx::Tween::EASE_OUT, false);
     }
   }
-
-  SetOverflowedActionWantsToRun();
 }
 
 void ToolbarActionsBar::OnToolbarActionMoved(const std::string& action_id,
@@ -634,15 +628,12 @@ void ToolbarActionsBar::OnToolbarActionUpdated(const std::string& action_id) {
   ToolbarActionViewController* action = GetActionForId(action_id);
   // There might not be a view in cases where we are highlighting or if we
   // haven't fully initialized the actions.
-  if (action) {
+  if (action)
     action->UpdateState();
-    SetOverflowedActionWantsToRun();
-  }
 }
 
 void ToolbarActionsBar::OnToolbarVisibleCountChanged() {
   ResizeDelegate(gfx::Tween::EASE_OUT, false);
-  SetOverflowedActionWantsToRun();
 }
 
 void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
@@ -708,28 +699,6 @@ void ToolbarActionsBar::ReorderActions() {
   if (!suppress_layout_) {
     ResizeDelegate(gfx::Tween::EASE_OUT, false);
     delegate_->Redraw(true);
-  }
-
-  SetOverflowedActionWantsToRun();
-}
-
-void ToolbarActionsBar::SetOverflowedActionWantsToRun() {
-  if (in_overflow_mode())
-    return;
-  bool overflowed_action_wants_to_run = false;
-  content::WebContents* web_contents = GetCurrentWebContents();
-  for (size_t i = GetIconCount(); i < toolbar_actions_.size(); ++i) {
-    if (toolbar_actions_[i]->WantsToRun(web_contents)) {
-      overflowed_action_wants_to_run = true;
-      break;
-    }
-  }
-
-  if (overflowed_action_wants_to_run_ != overflowed_action_wants_to_run) {
-    overflowed_action_wants_to_run_ = overflowed_action_wants_to_run;
-    if (send_overflowed_action_changes_)
-      delegate_->OnOverflowedActionWantsToRunChanged(
-          overflowed_action_wants_to_run_);
   }
 }
 

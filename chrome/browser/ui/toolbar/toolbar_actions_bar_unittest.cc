@@ -114,7 +114,6 @@ void ToolbarActionsBarUnitTest::SetUp() {
           profile());
 
   ToolbarActionsBar::disable_animations_for_testing_ = true;
-  ToolbarActionsBar::set_send_overflowed_action_changes_for_testing(false);
   browser_action_test_util_.reset(new BrowserActionTestUtil(browser(), false));
 
   if (use_redesign_) {

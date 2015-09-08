@@ -146,8 +146,6 @@ int WrenchIconPainter::GetCurrentSeverityImageID() const {
   switch (severity_) {
     case SEVERITY_NONE:
       return 0;
-    case SEVERITY_INFO:
-      return IDR_TOOLS_BAR_INFO;
     case SEVERITY_LOW:
       return IDR_TOOLS_BAR_LOW;
     case SEVERITY_MEDIUM:
