@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/blink/skcanvas_video_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 using media::VideoFrame;
@@ -76,7 +80,7 @@ class SkCanvasVideoRendererTest : public testing::Test {
   // Standard canvas.
   SkCanvas* target_canvas() { return &target_canvas_; }
 
- private:
+ protected:
   SkCanvasVideoRenderer renderer_;
 
   scoped_refptr<VideoFrame> natural_frame_;
@@ -486,4 +490,39 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_270) {
   EXPECT_EQ(SK_ColorBLACK, GetColorAt(&canvas, kWidth / 2, kHeight - 1));
 }
 
+namespace {
+class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
+ public:
+  void GenTextures(GLsizei n, GLuint* textures) override {
+    DCHECK_EQ(1, n);
+    *textures = 1;
+  }
+};
+void MailboxHoldersReleased(uint32 sync_point) {}
+}  // namespace
+
+// Test that SkCanvasVideoRendererTest::Paint doesn't crash when GrContext is
+// abandoned.
+TEST_F(SkCanvasVideoRendererTest, ContextLost) {
+  skia::RefPtr<const GrGLInterface> null_interface =
+      skia::AdoptRef(GrGLCreateNullInterface());
+  auto gr_context = skia::AdoptRef(GrContext::Create(
+      kOpenGL_GrBackend,
+      reinterpret_cast<GrBackendContext>(null_interface.get())));
+  gr_context->abandonContext();
+
+  SkCanvas canvas(AllocBitmap(kWidth, kHeight));
+
+  TestGLES2Interface gles2;
+  Context3D context_3d(&gles2, gr_context.get());
+  gfx::Size size(kWidth, kHeight);
+  gpu::MailboxHolder mailbox(gpu::Mailbox::Generate(), GL_TEXTURE_RECTANGLE_ARB,
+                             0);
+  auto video_frame = VideoFrame::WrapNativeTexture(
+      PIXEL_FORMAT_UYVY, mailbox, base::Bind(MailboxHoldersReleased), size,
+      gfx::Rect(size), size, kNoTimestamp());
+
+  renderer_.Paint(video_frame, &canvas, kNaturalRect, 0xFF,
+                  SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_90, context_3d);
+}
 }  // namespace media

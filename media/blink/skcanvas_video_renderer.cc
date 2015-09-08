@@ -125,7 +125,6 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
   SkImage* img = SkImage::NewFromYUVTexturesCopy(context_3d.gr_context,
                                                  color_space, handles, yuvSizes,
                                                  kTopLeft_GrSurfaceOrigin);
-  DCHECK(img);
   gl->DeleteTextures(3, source_textures);
   return skia::AdoptRef(img);
 }
@@ -334,6 +333,8 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
       auto video_generator = new VideoImageGenerator(video_frame);
       last_image_ = skia::AdoptRef(SkImage::NewFromGenerator(video_generator));
     }
+    if (!last_image_)  // Couldn't create the SkImage.
+      return;
     last_timestamp_ = video_frame->timestamp();
   }
   last_image_deleting_timer_.Reset();
