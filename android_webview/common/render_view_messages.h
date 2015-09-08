@@ -77,6 +77,12 @@ IPC_MESSAGE_ROUTED1(AwViewMsg_SetBackgroundColor,
 IPC_MESSAGE_CONTROL1(AwViewMsg_SetJsOnlineProperty,
                      bool /* network_up */)
 
+// Tells blink to smooth scroll to the specified location within |duration_ms|.
+IPC_MESSAGE_ROUTED3(AwViewMsg_SmoothScroll,
+                    int /* target_x */,
+                    int /* target_y */,
+                    long /* duration_ms */);
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.

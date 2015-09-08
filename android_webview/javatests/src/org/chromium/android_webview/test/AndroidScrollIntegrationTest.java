@@ -8,7 +8,6 @@ import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
-import android.widget.OverScroller;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwScrollOffsetManager;
@@ -129,8 +128,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         return new TestDependencyFactory() {
             @Override
             public AwScrollOffsetManager createScrollOffsetManager(
-                    AwScrollOffsetManager.Delegate delegate, OverScroller overScroller) {
-                return new AwScrollOffsetManager(delegate, overScroller);
+                    AwScrollOffsetManager.Delegate delegate) {
+                return new AwScrollOffsetManager(delegate);
             }
             @Override
             public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity,
@@ -730,10 +729,6 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         @Override
         public void onFlingStartGesture(
                 int velocityX, int velocityY, int scrollOffsetY, int scrollExtentY) {
-        }
-
-        @Override
-        public void onFlingCancelGesture() {
         }
 
         @Override

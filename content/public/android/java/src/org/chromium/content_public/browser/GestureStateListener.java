@@ -25,11 +25,6 @@ public class GestureStateListener {
     public void onFlingStartGesture(int vx, int vy, int scrollOffsetY, int scrollExtentY) {}
 
     /**
-     * Called when a fling is cancelled.
-     */
-    public void onFlingCancelGesture() {}
-
-    /**
      * Called when a fling has ended.
      */
     public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {}

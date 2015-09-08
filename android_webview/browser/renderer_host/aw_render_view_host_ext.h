@@ -80,6 +80,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   void SetBackgroundColor(SkColor c);
   void SetJsOnlineProperty(bool network_up);
 
+  void SmoothScroll(int target_x, int target_y, long duration_ms);
+
  private:
   // content::WebContentsObserver implementation.
   void RenderViewCreated(content::RenderViewHost* view_host) override;

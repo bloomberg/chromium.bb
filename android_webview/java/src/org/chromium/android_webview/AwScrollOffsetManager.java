@@ -5,7 +5,6 @@
 package org.chromium.android_webview;
 
 import android.graphics.Rect;
-import android.widget.OverScroller;
 
 import org.chromium.base.VisibleForTesting;
 
@@ -42,6 +41,14 @@ public class AwScrollOffsetManager {
         // this call.
         void scrollNativeTo(int x, int y);
 
+        /**
+         * Smooth scrolls the view to targetX, targetY, within durationMs.
+         * @param targetX x-coordinate of target scroll position.
+         * @param targetY y-coordinate of target scroll position.
+         * @param durationMs the animation duration in milliseconds.
+         */
+        void smoothScroll(int targetX, int targetY, long durationMs);
+
         int getContainerViewScrollX();
         int getContainerViewScrollY();
 
@@ -73,11 +80,8 @@ public class AwScrollOffsetManager {
     private int mDeferredNativeScrollX;
     private int mDeferredNativeScrollY;
 
-    private OverScroller mScroller;
-
-    public AwScrollOffsetManager(Delegate delegate, OverScroller overScroller) {
+    public AwScrollOffsetManager(Delegate delegate) {
         mDelegate = delegate;
-        mScroller = overScroller;
     }
 
     //----- Scroll range and extent calculation methods -------------------------------------------
@@ -162,12 +166,6 @@ public class AwScrollOffsetManager {
                 scrollRangeX, scrollRangeY, mProcessingTouchEvent);
     }
 
-    // This is used temporarily until animateScrollTo path of Android WebView (pageUp, pageDown)
-    // is unified with Chrome smooth scrolling.
-    public boolean isSmoothScrollingActive() {
-        return !mScroller.isFinished();
-    }
-
     // Called by the native side to over-scroll the container view.
     public void overScrollBy(int deltaX, int deltaY) {
         // TODO(mkosiba): Once http://crbug.com/260663 and http://crbug.com/261239 are fixed it
@@ -250,37 +248,6 @@ public class AwScrollOffsetManager {
         mDelegate.scrollNativeTo(x, y);
     }
 
-    // Called whenever some other touch interaction requires the fling gesture to be canceled.
-    public void finishScroll() {
-        // TODO(mkosiba): Support speeding up a fling by flinging again.
-        // http://crbug.com/265841
-        mScroller.forceFinished(true);
-    }
-
-    // Called immediately before the draw to update the scroll offset.
-    public void computeScrollAndAbsorbGlow(OverScrollGlow overScrollGlow) {
-        assert isSmoothScrollingActive();
-        mScroller.computeScrollOffset();
-        final int oldX = mDelegate.getContainerViewScrollX();
-        final int oldY = mDelegate.getContainerViewScrollY();
-        int x = mScroller.getCurrX();
-        int y = mScroller.getCurrY();
-
-        final int scrollRangeX = computeMaximumHorizontalScrollOffset();
-        final int scrollRangeY = computeMaximumVerticalScrollOffset();
-
-        if (overScrollGlow != null) {
-            overScrollGlow.absorbGlow(x, y, oldX, oldY, scrollRangeX, scrollRangeY,
-                    mScroller.getCurrVelocity());
-        }
-
-        // The mScroller is configured not to go outside of the scrollable range, so this call
-        // should never result in attempting to scroll outside of the scrollable region.
-        scrollBy(x - oldX, y - oldY);
-
-        mDelegate.invalidate();
-    }
-
     private static int computeDurationInMilliSec(int dx, int dy) {
         int distance = Math.max(Math.abs(dx), Math.abs(dy));
         int duration = distance * 1000 / STD_SCROLL_ANIMATION_SPEED_PIX_PER_SEC;
@@ -299,10 +266,7 @@ public class AwScrollOffsetManager {
 
         if (dx == 0 && dy == 0) return false;
 
-        // The scroll will be handled by AwScrollOffsetManager instead of the compositor.
-        // So stop the current fling (either by flingScroll() or by user finger).
-        mDelegate.cancelFling();
-        mScroller.startScroll(scrollX, scrollY, dx, dy, computeDurationInMilliSec(dx, dy));
+        mDelegate.smoothScroll(scrollX + dx, scrollY + dy, computeDurationInMilliSec(dx, dy));
         mDelegate.invalidate();
 
         return true;

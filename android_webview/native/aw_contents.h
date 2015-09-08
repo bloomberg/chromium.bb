@@ -222,6 +222,11 @@ class AwContents : public FindHelper::Listener,
   jlong ReleasePopupAwContents(JNIEnv* env, jobject obj);
 
   void ScrollTo(JNIEnv* env, jobject obj, jint x, jint y);
+  void SmoothScroll(JNIEnv* env,
+                    jobject obj,
+                    jint target_x,
+                    jint target_y,
+                    jlong duration_ms);
   void SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale);
   void SetSaveFormData(bool enabled);
 

@@ -54,6 +54,8 @@ class AwRenderViewExt : public content::RenderViewObserver {
 
   void OnSetBackgroundColor(SkColor c);
 
+  void OnSmoothScroll(int target_x, int target_y, long duration_ms);
+
   void UpdatePageScaleFactor();
 
   void CheckContentsSize();

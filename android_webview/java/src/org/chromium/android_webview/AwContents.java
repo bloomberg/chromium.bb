@@ -39,7 +39,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
-import android.widget.OverScroller;
 
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
@@ -193,8 +192,8 @@ public class AwContents implements SmartClipProvider,
         }
 
         public AwScrollOffsetManager createScrollOffsetManager(
-                AwScrollOffsetManager.Delegate delegate, OverScroller overScroller) {
-            return new AwScrollOffsetManager(delegate, overScroller);
+                AwScrollOffsetManager.Delegate delegate) {
+            return new AwScrollOffsetManager(delegate);
         }
     }
 
@@ -572,6 +571,11 @@ public class AwContents implements SmartClipProvider,
         }
 
         @Override
+        public void smoothScroll(int targetX, int targetY, long durationMs) {
+            if (!isDestroyed()) nativeSmoothScroll(mNativeAwContents, targetX, targetY, durationMs);
+        }
+
+        @Override
         public int getContainerViewScrollX() {
             return mContainerView.getScrollX();
         }
@@ -608,11 +612,6 @@ public class AwContents implements SmartClipProvider,
         @Override
         public void onPinchEnded() {
             mLayoutSizer.unfreezeLayoutRequests();
-        }
-
-        @Override
-        public void onFlingCancelGesture() {
-            mScrollOffsetManager.finishScroll();
         }
 
         @Override
@@ -719,8 +718,8 @@ public class AwContents implements SmartClipProvider,
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
         mSettings.setDIPScale(mDIPScale);
-        mScrollOffsetManager = dependencyFactory.createScrollOffsetManager(
-                new AwScrollOffsetManagerDelegate(), new OverScroller(mContext));
+        mScrollOffsetManager =
+                dependencyFactory.createScrollOffsetManager(new AwScrollOffsetManagerDelegate());
         mScrollAccessibilityHelper = new ScrollAccessibilityHelper(mContainerView);
         mEnablePageVisibility = CommandLine.getInstance().hasSwitch(ENABLE_PAGE_VISIBILITY);
 
@@ -1975,13 +1974,6 @@ public class AwContents implements SmartClipProvider,
      */
     public void flingScroll(int velocityX, int velocityY) {
         if (TRACE) Log.d(TAG, "flingScroll");
-        // Cancel the current smooth scroll, if there is one.
-        mScrollOffsetManager.finishScroll();
-        // TODO(hush): crbug.com/493765. A hit test at 0, 0 may not
-        // target the scroll at root scrolling layer.  Instead, we
-        // should add a method flingRootLayer to ContentViewCore
-        // and call it here to specifically target the scroll at
-        // the root layer.
         mContentViewCore.flingViewport(SystemClock.uptimeMillis(), -velocityX, -velocityY);
     }
 
@@ -2619,10 +2611,6 @@ public class AwContents implements SmartClipProvider,
         mScrollOffsetManager.scrollContainerViewTo(x, y);
     }
 
-    public boolean isSmoothScrollingActive() {
-        return mScrollOffsetManager.isSmoothScrollingActive();
-    }
-
     @CalledByNative
     private void updateScrollState(int maxContainerViewScrollOffsetX,
             int maxContainerViewScrollOffsetY, int contentWidthDip, int contentHeightDip,
@@ -3068,13 +3056,8 @@ public class AwContents implements SmartClipProvider,
 
         @Override
         public void computeScroll() {
-            if (mScrollOffsetManager.isSmoothScrollingActive()) {
-                mScrollOffsetManager.computeScrollAndAbsorbGlow(mOverScrollGlow);
-            } else {
-                if (isDestroyed()) return;
-                nativeOnComputeScroll(
-                        mNativeAwContents, AnimationUtils.currentAnimationTimeMillis());
-            }
+            if (isDestroyed()) return;
+            nativeOnComputeScroll(mNativeAwContents, AnimationUtils.currentAnimationTimeMillis());
         }
     }
 
@@ -3132,6 +3115,8 @@ public class AwContents implements SmartClipProvider,
 
     private native void nativeOnSizeChanged(long nativeAwContents, int w, int h, int ow, int oh);
     private native void nativeScrollTo(long nativeAwContents, int x, int y);
+    private native void nativeSmoothScroll(
+            long nativeAwContents, int targetX, int targetY, long durationMs);
     private native void nativeSetViewVisibility(long nativeAwContents, boolean visible);
     private native void nativeSetWindowVisibility(long nativeAwContents, boolean visible);
     private native void nativeSetIsPaused(long nativeAwContents, boolean paused);

@@ -167,6 +167,7 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
                         OnResetScrollAndScaleState)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetBackgroundColor, OnSetBackgroundColor)
+    IPC_MESSAGE_HANDLER(AwViewMsg_SmoothScroll, OnSmoothScroll)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -318,6 +319,15 @@ void AwRenderViewExt::OnSetBackgroundColor(SkColor c) {
   if (!render_view() || !render_view()->GetWebView())
     return;
   render_view()->GetWebView()->setBaseBackgroundColor(c);
+}
+
+void AwRenderViewExt::OnSmoothScroll(int target_x,
+                                     int target_y,
+                                     long duration_ms) {
+  if (!render_view() || !render_view()->GetWebView())
+    return;
+
+  render_view()->GetWebView()->smoothScroll(target_x, target_y, duration_ms);
 }
 
 }  // namespace android_webview

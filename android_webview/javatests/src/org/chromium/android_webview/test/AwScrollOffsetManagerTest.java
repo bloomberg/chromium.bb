@@ -8,7 +8,6 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.widget.OverScroller;
 
 import org.chromium.android_webview.AwScrollOffsetManager;
 import org.chromium.base.test.util.Feature;
@@ -99,6 +98,9 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         @Override
         public void cancelFling() {
         }
+
+        @Override
+        public void smoothScroll(int targetX, int targetY, long durationMs) {}
     }
 
     private void simulateScrolling(AwScrollOffsetManager offsetManager,
@@ -127,8 +129,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testWhenContentSizeMatchesView() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         final int width = 132;
         final int height = 212;
@@ -180,8 +181,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testScrollRangeAndMaxOffset() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
@@ -238,8 +238,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
                 return overrideScrollY;
             }
         };
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
@@ -265,8 +264,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
                 return overrideScrollY;
             }
         };
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
@@ -280,8 +278,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testScrollContainerViewTo() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         final int scrollX = 31;
         final int scrollY = 41;
@@ -303,8 +300,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testOnContainerViewOverScrolled() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         final int scrollX = 31;
         final int scrollY = 41;
@@ -328,8 +324,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testDefersScrollUntilTouchEnd() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         final int scrollX = 31;
         final int scrollY = 41;
@@ -355,8 +350,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testRequestChildRectangleOnScreenDontScrollIfAlreadyThere() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
@@ -380,8 +374,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testRequestChildRectangleOnScreenScrollToBottom() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         final int rectWidth = 2;
         final int rectHeight = 3;
@@ -402,8 +395,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testRequestChildRectangleOnScreenScrollToBottomLargeRect() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         final int rectWidth = VIEW_WIDTH;
         final int rectHeight = VIEW_HEIGHT;
@@ -424,8 +416,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testRequestChildRectangleOnScreenScrollToTop() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
 
         final int rectWidth = 2;
         final int rectHeight = 3;
