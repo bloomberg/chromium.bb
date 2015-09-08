@@ -184,8 +184,21 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
                 result = childFrameResult;
             }
 
-            if (isInsideChildFrame)
-                return true;
+            // Don't trust |isInsideChildFrame|. For rect-based hit-test, returns
+            // true only when the hit test rect is totally within the iframe,
+            // i.e. nodeAtPointOverWidget() also returns true.
+            // Use a temporary HitTestResult because we don't want to collect the
+            // iframe element itself if the hit-test rect is totally within the iframe.
+            if (isInsideChildFrame) {
+                if (!locationInContainer.isRectBasedTest())
+                    return true;
+                HitTestResult pointOverWidgetResult = result;
+                bool pointOverWidget = nodeAtPointOverWidget(pointOverWidgetResult, locationInContainer, accumulatedOffset, action);
+                if (pointOverWidget)
+                    return true;
+                result = pointOverWidgetResult;
+                return false;
+            }
         }
     }
 
