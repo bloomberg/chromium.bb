@@ -17,9 +17,6 @@ class ExceptionState;
 class Credential : public GarbageCollected<Credential>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static Credential* create(const String& id, const String& name, const KURL& icon);
-    static Credential* create(const String& id, const String& name, const String& icon, ExceptionState&);
-
     // Credential.idl
     const String& id() const { return m_platformCredential->id(); }
     const String& name() const { return m_platformCredential->name(); }

@@ -10,19 +10,6 @@
 
 namespace blink {
 
-Credential* Credential::create(const String& id, const String& name, const KURL& icon)
-{
-    return new Credential(id, name, icon);
-}
-
-Credential* Credential::create(const String& id, const String& name, const String& icon, ExceptionState& exceptionState)
-{
-    KURL iconURL = parseStringAsURL(icon, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-    return new Credential(id, name, iconURL);
-}
-
 Credential::Credential(PlatformCredential* credential)
     : m_platformCredential(credential)
 {
