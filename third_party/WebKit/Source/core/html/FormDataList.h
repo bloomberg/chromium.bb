@@ -32,6 +32,7 @@
 
 namespace blink {
 
+// TODO(tkent): Merge FormDataList into DOMFormData.
 class CORE_EXPORT FormDataList : public GarbageCollected<FormDataList> {
 public:
     // TODO(tkent): Merge Entry and Item.
@@ -81,11 +82,6 @@ public:
         Member<Blob> m_blob;
         String m_filename;
     };
-
-    static FormDataList* create(const WTF::TextEncoding& encoding)
-    {
-        return new FormDataList(encoding);
-    }
 
     using FormDataListItems = HeapVector<FormDataList::Item>;
 
