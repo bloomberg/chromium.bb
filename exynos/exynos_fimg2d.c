@@ -44,6 +44,21 @@
 
 #define MSG_PREFIX "exynos/fimg2d: "
 
+#define G2D_MAX_CMD_NR		64
+#define G2D_MAX_GEM_CMD_NR	64
+#define G2D_MAX_CMD_LIST_NR	64
+
+struct g2d_context {
+	int				fd;
+	unsigned int			major;
+	unsigned int			minor;
+	struct drm_exynos_g2d_cmd	cmd[G2D_MAX_CMD_NR];
+	struct drm_exynos_g2d_cmd	cmd_buf[G2D_MAX_GEM_CMD_NR];
+	unsigned int			cmd_nr;
+	unsigned int			cmd_buf_nr;
+	unsigned int			cmdlist_nr;
+};
+
 enum g2d_base_addr_reg {
 	g2d_dst = 0,
 	g2d_src

@@ -13,9 +13,6 @@
 #ifndef _FIMG2D_H_
 #define _FIMG2D_H_
 
-#define G2D_MAX_CMD_NR		64
-#define G2D_MAX_GEM_CMD_NR	64
-#define G2D_MAX_CMD_LIST_NR	64
 #define G2D_PLANE_MAX_NR	2
 
 enum e_g2d_color_mode {
@@ -289,16 +286,7 @@ struct g2d_image {
 	void				*mapped_ptr[G2D_PLANE_MAX_NR];
 };
 
-struct g2d_context {
-	int				fd;
-	unsigned int			major;
-	unsigned int			minor;
-	struct drm_exynos_g2d_cmd	cmd[G2D_MAX_CMD_NR];
-	struct drm_exynos_g2d_cmd	cmd_buf[G2D_MAX_GEM_CMD_NR];
-	unsigned int			cmd_nr;
-	unsigned int			cmd_buf_nr;
-	unsigned int			cmdlist_nr;
-};
+struct g2d_context;
 
 struct g2d_context *g2d_init(int fd);
 void g2d_fini(struct g2d_context *ctx);
