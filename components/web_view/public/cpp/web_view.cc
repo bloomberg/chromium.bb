@@ -13,6 +13,8 @@ WebView::WebView(mojom::WebViewClient* client) : binding_(client) {}
 WebView::~WebView() {}
 
 void WebView::Init(mojo::ApplicationImpl* app, mojo::View* view) {
+  view->SetAccessPolicy(mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT);
+
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:web_view";
 

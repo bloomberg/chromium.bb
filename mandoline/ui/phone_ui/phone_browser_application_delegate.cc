@@ -78,7 +78,6 @@ void PhoneBrowserApplicationDelegate::OnEmbed(mojo::View* root) {
   root->AddObserver(this);
 
   host_->SetSize(mojo::Size::From(gfx::Size(320, 640)));
-  content_->SetAccessPolicy(mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT);
   web_view_.Init(app_, content_);
   LaunchURL(default_url_);
 }

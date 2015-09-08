@@ -138,8 +138,6 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
   root_->AddChild(content_);
   content_->SetVisible(true);
 
-  content_->SetAccessPolicy(mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT);
-
   web_view_.Init(app_, content_);
 
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::CLOSE),
