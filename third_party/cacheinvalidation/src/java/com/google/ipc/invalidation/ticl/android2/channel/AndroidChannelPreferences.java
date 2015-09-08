@@ -62,8 +62,8 @@ public class AndroidChannelPreferences {
   private static final String GCM_CHANNEL_TYPE_PREF = "gcm_channel_type";
 
   /**
-   * Preferences entry used to store the registration token returned for the sender id stored
-   * against {@code GCM_SENDER_ID}.
+   * Preferences entry used to store the GCM registration token used with
+   * {@code GcmChannelType#UPDATED} or {@code GcmChannelType#GCM_UPSTREAM}
    */
   private static final String GCM_REGISTRATION_TOKEN_PREF = "gcm_registration_token";
 
@@ -155,9 +155,10 @@ public class AndroidChannelPreferences {
   }
 
   /**
-   * Stores the sender id used for registering with GCM.
-   * If the sender id has changed from the current sender id stored then the registration token
-   * is cleared.
+   * Sets the GCM channel configuration used.
+   *
+   * @param context, the application context.
+   * @param type, the channel configuration type specified in {@code GcmChannelType}.
    */
   public static void setGcmChannelType(Context context, int type) {
     if (getGcmChannelType(context) == type) {
@@ -165,14 +166,13 @@ public class AndroidChannelPreferences {
     }
     SharedPreferences.Editor editor = getPreferences(context).edit();
     editor.putInt(GCM_CHANNEL_TYPE_PREF, type);
-    editor.putString(GCM_REGISTRATION_TOKEN_PREF, "");
     if (!editor.commit()) {
       logger.warning("Failed writing shared preferences for: setGcmChannelType");
     }
   }
 
   /**
-   * Returns the sender id stored or an empty string if no token is found.
+   * Returns the GCM channel configuration used.
    */
   static int getGcmChannelType(Context context) {
     return getPreferences(context).getInt(GCM_CHANNEL_TYPE_PREF, -1);

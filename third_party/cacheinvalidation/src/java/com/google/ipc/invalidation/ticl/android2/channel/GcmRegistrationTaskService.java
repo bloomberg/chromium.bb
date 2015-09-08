@@ -73,6 +73,11 @@ public class GcmRegistrationTaskService extends GcmTaskService {
     } catch (IOException exception) {
       logger.warning("Failed to get token for sender: %s. Exception : %s", senderId, exception);
       return GcmNetworkManager.RESULT_RESCHEDULE;
+    } catch (SecurityException exception) {
+      // InstanceID#getToken occasionally throws a security exception when trying send the
+      // registration intent to GMSCore. Catching the exception here to prevent crashes.
+      logger.warning("Security exception when fetching token: %s", exception);
+      return GcmNetworkManager.RESULT_RESCHEDULE;
     }
   }
 
