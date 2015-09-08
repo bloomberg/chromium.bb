@@ -26,7 +26,7 @@ public:
 
     virtual ~NavigatorServiceWorker();
 
-    static ServiceWorkerContainer* serviceWorker(Navigator&, ExceptionState&);
+    static ServiceWorkerContainer* serviceWorker(ExecutionContext*, Navigator&, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 

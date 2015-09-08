@@ -4,5 +4,5 @@
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#navigator-service-worker
 partial interface Navigator {
-    [RaisesException] readonly attribute ServiceWorkerContainer serviceWorker;
+    [RaisesException, CallWith=ExecutionContext] readonly attribute ServiceWorkerContainer serviceWorker;
 };
