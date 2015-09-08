@@ -5,10 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_
 
-#include <deque>
 #include <list>
 #include <map>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -44,19 +42,23 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
-struct AcceleratedSurfaceMsg_BufferPresented_Params;
-struct ViewHostMsg_BeginSmoothScroll_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_UpdateRect_Params;
 struct ViewMsg_Resize_Params;
 
-namespace base {
-class TimeTicks;
+namespace blink {
+class WebInputEvent;
+#if defined(OS_ANDROID)
+class WebLayer;
+#endif
+class WebMouseEvent;
+struct WebCompositionUnderline;
+struct WebScreenInfo;
+
 }
 
 namespace cc {
-class CompositorFrame;
 class CompositorFrameAck;
 }
 
@@ -64,24 +66,8 @@ namespace gfx {
 class Range;
 }
 
-namespace ui {
-class KeyEvent;
-}
-
-namespace blink {
-class WebInputEvent;
-class WebMouseEvent;
-struct WebCompositionUnderline;
-struct WebScreenInfo;
-}
-
-#if defined(OS_ANDROID)
-namespace blink {
-class WebLayer;
-}
-#endif
-
 namespace content {
+
 class BrowserAccessibilityManager;
 class InputRouter;
 class MockRenderWidgetHost;
@@ -108,13 +94,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // |delegate| goes away.
   RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                        RenderProcessHost* process,
-                       int32 routing_id,
-                       int32 surface_id,
+                       int32_t routing_id,
+                       int32_t surface_id,
                        bool hidden);
   ~RenderWidgetHostImpl() override;
 
   // Similar to RenderWidgetHost::FromID, but returning the Impl object.
-  static RenderWidgetHostImpl* FromID(int32 process_id, int32 routing_id);
+  static RenderWidgetHostImpl* FromID(int32_t process_id, int32_t routing_id);
 
   // Returns all RenderWidgetHosts including swapped out ones for
   // internal use. The public interface
@@ -170,8 +156,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Forces redraw in the renderer and when the update reaches the browser
   // grabs snapshot from the compositor. Returns PNG-encoded snapshot.
-  void GetSnapshotFromBrowser(
-      const base::Callback<void(const unsigned char*,size_t)> callback);
+  using GetSnapshotFromBrowserCallback =
+      base::Callback<void(const unsigned char*, size_t)>;
+  void GetSnapshotFromBrowser(const GetSnapshotFromBrowserCallback& callback);
 
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const;
 
@@ -389,14 +376,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Called by the view in response to OnSwapCompositorFrame.
   static void SendSwapCompositorFrameAck(
-      int32 route_id,
-      uint32 output_surface_id,
+      int32_t route_id,
+      uint32_t output_surface_id,
       int renderer_host_id,
       const cc::CompositorFrameAck& ack);
 
   // Called by the view to return resources to the compositor.
-  static void SendReclaimCompositorResources(int32 route_id,
-                                             uint32 output_surface_id,
+  static void SendReclaimCompositorResources(int32_t route_id,
+                                             uint32_t output_surface_id,
                                              int renderer_host_id,
                                              const cc::CompositorFrameAck& ack);
 
@@ -445,7 +432,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Returns the ID that uniquely describes this component to the latency
   // subsystem.
-  int64 GetLatencyComponentId() const;
+  int64_t GetLatencyComponentId() const;
 
   static void CompositorFrameDrawn(
       const std::vector<ui::LatencyInfo>& latency_info);
@@ -683,13 +670,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // It will remain non-NULL until DetachDelegate() is called.
   RenderWidgetHostDelegate* delegate_;
 
-  // Created during construction but initialized during Init*(). Therefore, it
-  // is guaranteed never to be NULL, but its channel may be NULL if the
-  // renderer crashed, so you must always check that.
-  RenderProcessHost* process_;
+  // Created during construction and guaranteed never to be NULL, but its
+  // channel may be NULL if the renderer crashed, so one must always check that.
+  RenderProcessHost* const process_;
 
   // The ID of the corresponding object in the Renderer Instance.
-  int routing_id_;
+  const int routing_id_;
 
   // The ID of the surface corresponding to this render widget.
   int surface_id_;
@@ -811,8 +797,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderWidgetHostLatencyTracker latency_tracker_;
 
   int next_browser_snapshot_id_;
-  typedef std::map<int,
-      base::Callback<void(const unsigned char*, size_t)> > PendingSnapshotMap;
+  using PendingSnapshotMap = std::map<int, GetSnapshotFromBrowserCallback>;
   PendingSnapshotMap pending_browser_snapshots_;
 
   // Indicates whether a RenderFramehost has ownership, in which case this

@@ -94,9 +94,10 @@ namespace {
 
 bool g_check_for_pending_resize_ack = true;
 
-typedef std::pair<int32, int32> RenderWidgetHostID;
-typedef base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>
-    RoutingIDWidgetMap;
+// <process id, routing id>
+using RenderWidgetHostID = std::pair<int32_t, int32_t>;
+using RoutingIDWidgetMap =
+    base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>;
 base::LazyInstance<RoutingIDWidgetMap> g_routing_id_widget_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -141,8 +142,8 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 
 RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            RenderProcessHost* process,
-                                           int32 routing_id,
-                                           int32 surface_id,
+                                           int32_t routing_id,
+                                           int32_t surface_id,
                                            bool hidden)
     : view_(NULL),
       hung_renderer_delay_(
@@ -227,15 +228,15 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
 
 // static
 RenderWidgetHost* RenderWidgetHost::FromID(
-    int32 process_id,
-    int32 routing_id) {
+    int32_t process_id,
+    int32_t routing_id) {
   return RenderWidgetHostImpl::FromID(process_id, routing_id);
 }
 
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
-    int32 process_id,
-    int32 routing_id) {
+    int32_t process_id,
+    int32_t routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
   RoutingIDWidgetMap::iterator it = widgets->find(
@@ -1115,7 +1116,7 @@ void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
   Send(new InputMsg_CursorVisibilityChange(GetRoutingID(), is_visible));
 }
 
-int64 RenderWidgetHostImpl::GetLatencyComponentId() const {
+int64_t RenderWidgetHostImpl::GetLatencyComponentId() const {
   return latency_tracker_.latency_component_id();
 }
 
@@ -1187,7 +1188,7 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
-    const base::Callback<void(const unsigned char*,size_t)> callback) {
+    const GetSnapshotFromBrowserCallback& callback) {
   int id = next_browser_snapshot_id_++;
   pending_browser_snapshots_.insert(std::make_pair(id, callback));
   Send(new ViewMsg_ForceRedraw(GetRoutingID(), id));
@@ -1255,7 +1256,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
     GpuSurfaceTracker::Get()->SetSurfaceHandle(surface_id_,
                                                gfx::GLSurfaceHandle());
     view_->RenderProcessGone(status, exit_code);
-    view_ = NULL; // The View should be deleted by RenderProcessGone.
+    view_ = nullptr;  // The View should be deleted by RenderProcessGone.
     view_weak_.reset();
   }
 
@@ -1468,7 +1469,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  uint32 output_surface_id = base::get<0>(param);
+  uint32_t output_surface_id = base::get<0>(param);
   base::get<1>(param).AssignTo(frame.get());
   std::vector<IPC::Message> messages_to_deliver_with_frame;
   messages_to_deliver_with_frame.swap(base::get<2>(param));
@@ -1667,11 +1668,11 @@ void RenderWidgetHostImpl::OnImeCancelComposition() {
 void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
                                        bool last_unlocked_by_target,
                                        bool privileged) {
-
   if (pending_mouse_lock_request_) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
     return;
-  } else if (IsMouseLocked()) {
+  }
+  if (IsMouseLocked()) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
     return;
   }
@@ -1954,28 +1955,28 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   if (!allowed) {
     RejectMouseLockOrUnlockIfNecessary();
     return false;
-  } else {
-    if (!pending_mouse_lock_request_) {
-      // This is possible, e.g., the plugin sends us an unlock request before
-      // the user allows to lock to mouse.
-      return false;
-    }
-
-    pending_mouse_lock_request_ = false;
-    if (!view_ || !view_->HasFocus()|| !view_->LockMouse()) {
-      Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
-      return false;
-    } else {
-      Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
-      return true;
-    }
   }
+
+  if (!pending_mouse_lock_request_) {
+    // This is possible, e.g., the plugin sends us an unlock request before
+    // the user allows to lock to mouse.
+    return false;
+  }
+
+  pending_mouse_lock_request_ = false;
+  if (!view_ || !view_->HasFocus()|| !view_->LockMouse()) {
+    Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
+    return false;
+  }
+
+  Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
+  return true;
 }
 
 // static
 void RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-    int32 route_id,
-    uint32 output_surface_id,
+    int32_t route_id,
+    uint32_t output_surface_id,
     int renderer_host_id,
     const cc::CompositorFrameAck& ack) {
   RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
@@ -1987,8 +1988,8 @@ void RenderWidgetHostImpl::SendSwapCompositorFrameAck(
 
 // static
 void RenderWidgetHostImpl::SendReclaimCompositorResources(
-    int32 route_id,
-    uint32 output_surface_id,
+    int32_t route_id,
+    uint32_t output_surface_id,
     int renderer_host_id,
     const cc::CompositorFrameAck& ack) {
   RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
@@ -2072,7 +2073,7 @@ void RenderWidgetHostImpl::OnSnapshotDataReceived(int snapshot_id,
   // Any pending snapshots with a lower ID than the one received are considered
   // to be implicitly complete, and returned the same snapshot data.
   PendingSnapshotMap::iterator it = pending_browser_snapshots_.begin();
-  while(it != pending_browser_snapshots_.end()) {
+  while (it != pending_browser_snapshots_.end()) {
       if (it->first <= snapshot_id) {
         it->second.Run(data, size);
         pending_browser_snapshots_.erase(it++);
