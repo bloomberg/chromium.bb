@@ -21,12 +21,20 @@ BubbleController::~BubbleController() {
 }
 
 bool BubbleController::CloseBubble(BubbleCloseReason reason) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return manager_->CloseBubble(this->AsWeakPtr(), reason);
+}
+
+bool BubbleController::UpdateBubbleUi() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!bubble_ui_)
+    return false;
+  return delegate_->UpdateBubbleUi(bubble_ui_.get());
 }
 
 void BubbleController::Show() {
   DCHECK(!bubble_ui_);
-  bubble_ui_ = delegate_->BuildBubbleUI();
+  bubble_ui_ = delegate_->BuildBubbleUi();
   DCHECK(bubble_ui_);
   bubble_ui_->Show(AsWeakPtr());
   // TODO(hcarmona): log that bubble was shown.

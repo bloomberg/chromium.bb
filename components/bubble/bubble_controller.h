@@ -7,11 +7,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "components/bubble/bubble_close_reason.h"
 
 class BubbleDelegate;
 class BubbleManager;
-class BubbleUI;
+class BubbleUi;
 
 // BubbleController is responsible for the lifetime of the delegate and its UI.
 class BubbleController : public base::SupportsWeakPtr<BubbleController> {
@@ -22,6 +23,10 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
 
   // Calls CloseBubble on the associated BubbleManager.
   bool CloseBubble(BubbleCloseReason reason);
+
+  // Calls UpdateBubbleUi on the associated BubbleManager.
+  // Returns true if the UI was updated.
+  bool UpdateBubbleUi();
 
  private:
   friend class BubbleManager;
@@ -39,7 +44,10 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
 
   BubbleManager* manager_;
   scoped_ptr<BubbleDelegate> delegate_;
-  scoped_ptr<BubbleUI> bubble_ui_;
+  scoped_ptr<BubbleUi> bubble_ui_;
+
+  // Verify that functions that affect the UI are done on the same thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleController);
 };

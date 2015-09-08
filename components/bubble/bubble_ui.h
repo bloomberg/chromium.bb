@@ -7,9 +7,9 @@
 
 #include "components/bubble/bubble_reference.h"
 
-class BubbleUI {
+class BubbleUi {
  public:
-  virtual ~BubbleUI() {}
+  virtual ~BubbleUi() {}
 
   // Should display the bubble UI. BubbleReference is passed in so that the
   // bubble UI can notify the BubbleManager if it needs to close.

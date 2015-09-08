@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/bubble/bubble_close_reason.h"
 
-class BubbleUI;
+class BubbleUi;
 
 // Inherit from this class to define a bubble. A bubble is a small transient UI
 // surface anchored to a parent window. Most bubbles are dismissed when they
@@ -25,7 +25,12 @@ class BubbleDelegate {
 
   // Called by BubbleController to build the UI that will represent this bubble.
   // BubbleDelegate should not keep a reference to this newly created UI.
-  virtual scoped_ptr<BubbleUI> BuildBubbleUI() = 0;
+  virtual scoped_ptr<BubbleUi> BuildBubbleUi() = 0;
+
+  // Called to update an existing UI. This is the same BubbleUi that was created
+  // in |BuildBubbleUi|.
+  // Return true to indicate the UI was updated.
+  virtual bool UpdateBubbleUi(BubbleUi* bubble_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BubbleDelegate);

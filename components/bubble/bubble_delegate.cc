@@ -11,3 +11,7 @@ BubbleDelegate::~BubbleDelegate() {}
 bool BubbleDelegate::ShouldClose(BubbleCloseReason reason) {
   return true;
 }
+
+bool BubbleDelegate::UpdateBubbleUi(BubbleUi* bubble_ui) {
+  return false;
+}
