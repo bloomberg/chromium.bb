@@ -193,9 +193,8 @@ class MediaCodecDecoder {
   bool IsCompleted() const;
   bool NotCompletedAndNeedsPreroll() const;
 
-  // Requests an A/V sync mechanism that is similar to preroll, but stops at the
-  // first available output frame rather than passing certain PTS.
-  void SetDecodingUntilOutputIsPresent();
+  // Sets preroll timestamp and requests preroll.
+  void SetPrerollTimestamp(base::TimeDelta preroll_ts);
 
   base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
 
@@ -207,8 +206,7 @@ class MediaCodecDecoder {
   ConfigStatus Configure();
 
   // Starts the decoder for prerolling. This method starts the decoder thread.
-  bool Preroll(base::TimeDelta preroll_timestamp,
-               const base::Closure& preroll_done_cb);
+  bool Preroll(const base::Closure& preroll_done_cb);
 
   // Starts the decoder after preroll is not needed, starting decoder thread
   // if it has not started yet.
@@ -348,12 +346,6 @@ class MediaCodecDecoder {
     kError,
   };
 
-  enum PrerollMode {
-    kNoPreroll = 0,
-    kPrerollTillOutputIsPresent,
-    kPrerollTillPTS,
-  };
-
   // Helper method that processes an error from MediaCodec.
   void OnCodecError();
 
@@ -420,9 +412,8 @@ class MediaCodecDecoder {
   // Preroll timestamp is set if we need preroll and cleared after we done it.
   base::TimeDelta preroll_timestamp_;
 
-  // The preroll mode. If not |kNoPreroll|, the playback should start with
-  // preroll.
-  PrerollMode preroll_mode_;
+  // Set to true when MediaCodec internal buffers are filled up.
+  bool is_prepared_;
 
   // Flag is set when the EOS is enqueued into MediaCodec. Reset by Flush.
   bool eos_enqueued_;
