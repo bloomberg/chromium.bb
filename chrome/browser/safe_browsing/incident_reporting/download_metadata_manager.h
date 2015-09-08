@@ -53,9 +53,8 @@ class DownloadMetadataManager : public content::DownloadManager::Observer {
   void AddDownloadManager(content::DownloadManager* download_manager);
 
   // Sets |request| as the relevant metadata to persist for |download| upon
-  // completion. If |request| is null, metadata for the download's
-  // BrowserContext are cleared. Otherwise, |request| will be persisted when the
-  // download completes, or discarded if the download is cancelled.
+  // completion. |request| will be persisted when the download completes, or
+  // discarded if the download is cancelled.
   virtual void SetRequest(content::DownloadItem* download,
                           const ClientDownloadRequest* request);
 

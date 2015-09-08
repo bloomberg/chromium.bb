@@ -480,27 +480,20 @@ TEST_P(SetRequestTest, SetRequest) {
   }
 
   static const char kNewUrl[] = "http://blorf";
-  scoped_ptr<ClientDownloadRequest> request;
   if (set_request_)
-    request = MakeTestRequest(kNewUrl).Pass();
-  else
-    request.reset();
-  manager_.SetRequest(test_item_.get(), request.get());
+    manager_.SetRequest(test_item_.get(), MakeTestRequest(kNewUrl).get());
 
   // Allow the write or remove task to run.
   RunAllTasks();
 
-  MockDownloadDetailsGetter details_getter;
   if (set_request_) {
+    MockDownloadDetailsGetter details_getter;
     // Expect that the callback is invoked with details for this item.
     EXPECT_CALL(
         details_getter,
         OnDownloadDetails(ResultOf(GetDetailsDownloadUrl, StrEq(kNewUrl))));
-  } else {
-    // Expect that the callback is invoked with null to clear stale metadata.
-    EXPECT_CALL(details_getter, OnDownloadDetails(IsNull()));
+    manager_.GetDownloadDetails(&profile_, details_getter.GetCallback());
   }
-  manager_.GetDownloadDetails(&profile_, details_getter.GetCallback());
 
   // In http://crbug.com/433928, open after SetRequest(nullpr) caused a crash.
   test_item_->NotifyObserversDownloadOpened();
@@ -513,6 +506,9 @@ TEST_P(SetRequestTest, SetRequest) {
     ASSERT_TRUE(metadata);
     EXPECT_EQ(kTestDownloadId, metadata->download_id());
     EXPECT_STREQ(kNewUrl, metadata->download().download().url().c_str());
+  } else if (metadata_file_present_) {
+    // Expect that the metadata file has not been overwritten.
+    ASSERT_TRUE(metadata);
   } else {
     // Expect that the file is not present.
     ASSERT_FALSE(metadata);
@@ -550,17 +546,12 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadNoRequest) {
   test_item_->NotifyObserversDownloadUpdated();
 
   RunAllTasks();
-
-  MockDownloadDetailsGetter details_getter;
-  // Expect that the callback is invoked with null to clear stale metadata.
-  EXPECT_CALL(details_getter, OnDownloadDetails(IsNull()));
-  manager_.GetDownloadDetails(&profile_, details_getter.GetCallback());
-
   ShutdownDownloadManager();
 
-  // Expect that the file is not present.
+  // Expect that the metadata file is still present.
   scoped_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
-  ASSERT_FALSE(metadata);
+  ASSERT_TRUE(metadata);
+  EXPECT_EQ(kOtherDownloadId, metadata->download_id());
 }
 
 TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadWithRequest) {
