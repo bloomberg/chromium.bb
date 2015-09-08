@@ -23,13 +23,13 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
 };
 
 TEST_F(GpuChannelManagerTest, EstablishChannel) {
-  const int kClientId = 1;
-  const uint64 kClientTracingId = 1;
+  int32 kClientId = 1;
+  uint64 kClientTracingId = 1;
 
   ASSERT_TRUE(channel_manager());
 
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(
-      GpuMsg_EstablishChannel(kClientId, kClientTracingId, false, false)));
+  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
+      kClientId, kClientTracingId, false, false, false)));
   EXPECT_EQ((size_t)1, sink()->message_count());
   const IPC::Message* msg =
       sink()->GetUniqueMessageMatching(GpuHostMsg_ChannelEstablished::ID);
@@ -45,10 +45,10 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
 }
 
 TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
-  const int kClientId1 = 111;
-  const uint64 kClientTracingId1 = 11111;
-  const int kClientId2 = 222;
-  const uint64 kClientTracingId2 = 22222;
+  int32 kClientId1 = 111;
+  uint64 kClientTracingId1 = 11111;
+  int32 kClientId2 = 222;
+  uint64 kClientTracingId2 = 22222;
   ValueState value_state1;
   value_state1.int_value[0] = 1111;
   value_state1.int_value[1] = 0;
@@ -63,13 +63,13 @@ TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
   ASSERT_TRUE(channel_manager());
 
   // Initialize gpu channels
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(
-      GpuMsg_EstablishChannel(kClientId1, kClientTracingId1, false, false)));
+  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
+      kClientId1, kClientTracingId1, false, false, false)));
   GpuChannel* channel1 = channel_manager()->LookupChannel(kClientId1);
   ASSERT_TRUE(channel1);
 
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(
-      GpuMsg_EstablishChannel(kClientId2, kClientTracingId2, false, false)));
+  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
+      kClientId2, kClientTracingId2, false, false, false)));
   GpuChannel* channel2 = channel_manager()->LookupChannel(kClientId2);
   ASSERT_TRUE(channel2);
 

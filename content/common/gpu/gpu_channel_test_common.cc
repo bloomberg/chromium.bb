@@ -42,11 +42,12 @@ scoped_ptr<GpuChannel> TestGpuChannelManager::CreateGpuChannel(
     gpu::gles2::MailboxManager* mailbox_manager,
     int client_id,
     uint64_t client_tracing_id,
-    bool allow_future_sync_points) {
-  return make_scoped_ptr(
-      new TestGpuChannel(sink_, this, share_group, mailbox_manager,
-                         task_runner_.get(), io_task_runner_.get(), client_id,
-                         client_tracing_id, allow_future_sync_points));
+    bool allow_future_sync_points,
+    bool allow_real_time_streams) {
+  return make_scoped_ptr(new TestGpuChannel(
+      sink_, this, share_group, mailbox_manager, task_runner_.get(),
+      io_task_runner_.get(), client_id, client_tracing_id,
+      allow_future_sync_points, allow_real_time_streams));
 }
 
 TestGpuChannel::TestGpuChannel(IPC::TestSink* sink,
@@ -57,7 +58,8 @@ TestGpuChannel::TestGpuChannel(IPC::TestSink* sink,
                                base::SingleThreadTaskRunner* io_task_runner,
                                int client_id,
                                uint64_t client_tracing_id,
-                               bool allow_future_sync_points)
+                               bool allow_future_sync_points,
+                               bool allow_real_time_streams)
     : GpuChannel(gpu_channel_manager,
                  nullptr,
                  share_group,
@@ -67,7 +69,8 @@ TestGpuChannel::TestGpuChannel(IPC::TestSink* sink,
                  client_id,
                  client_tracing_id,
                  false,
-                 allow_future_sync_points),
+                 allow_future_sync_points,
+                 allow_real_time_streams),
       sink_(sink) {}
 
 TestGpuChannel::~TestGpuChannel() {
@@ -83,6 +86,7 @@ base::ProcessId TestGpuChannel::GetClientPID() const {
 IPC::ChannelHandle TestGpuChannel::Init(
     base::WaitableEvent* shutdown_event,
     IPC::AttachmentBroker* attachment_broker) {
+  filter_->OnFilterAdded(sink_);
   return IPC::ChannelHandle(channel_id());
 }
 
@@ -90,10 +94,6 @@ bool TestGpuChannel::Send(IPC::Message* msg) {
   DCHECK(!msg->is_sync());
   return sink_->Send(msg);
 }
-
-void TestGpuChannel::AddFilter(IPC::MessageFilter* filter) {}
-
-void TestGpuChannel::RemoveFilter(IPC::MessageFilter* filter) {}
 
 // TODO(sunnyps): Use a mock memory buffer factory when necessary.
 GpuChannelTestCommon::GpuChannelTestCommon()

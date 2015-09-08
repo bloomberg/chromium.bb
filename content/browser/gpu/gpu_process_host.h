@@ -113,6 +113,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                            uint64_t client_tracing_id,
                            bool share_context,
                            bool allow_future_sync_points,
+                           bool allow_real_time_streams,
                            const EstablishChannelCallback& callback);
 
   // Tells the GPU process to create a new command buffer that draws into the

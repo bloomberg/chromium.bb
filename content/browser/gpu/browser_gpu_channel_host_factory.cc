@@ -149,10 +149,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
   }
 
   host->EstablishGpuChannel(
-      gpu_client_id_,
-      gpu_client_tracing_id_,
-      true,
-      true,
+      gpu_client_id_, gpu_client_tracing_id_, true, true, true,
       base::Bind(
           &BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO,
           this));

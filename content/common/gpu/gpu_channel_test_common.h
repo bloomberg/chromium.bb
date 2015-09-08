@@ -37,7 +37,8 @@ class TestGpuChannelManager : public GpuChannelManager {
       gpu::gles2::MailboxManager* mailbox_manager,
       int client_id,
       uint64_t client_tracing_id,
-      bool allow_future_sync_points) override;
+      bool allow_future_sync_points,
+      bool allow_real_time_streams) override;
 
  private:
   IPC::TestSink* const sink_;
@@ -53,7 +54,8 @@ class TestGpuChannel : public GpuChannel {
                  base::SingleThreadTaskRunner* io_task_runner,
                  int client_id,
                  uint64_t client_tracing_id,
-                 bool allow_future_sync_points);
+                 bool allow_future_sync_points,
+                 bool allow_real_time_streams);
   ~TestGpuChannel() override;
 
   base::ProcessId GetClientPID() const override;
@@ -63,9 +65,6 @@ class TestGpuChannel : public GpuChannel {
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
-
-  void AddFilter(IPC::MessageFilter* filter) override;
-  void RemoveFilter(IPC::MessageFilter* filter) override;
 
  private:
   IPC::TestSink* const sink_;
@@ -79,11 +78,12 @@ class GpuChannelTestCommon : public testing::Test {
  protected:
   IPC::TestSink* sink() { return sink_.get(); }
   GpuChannelManager* channel_manager() { return channel_manager_.get(); }
+  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
   scoped_ptr<IPC::TestSink> sink_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_ptr<GpuChannelManager> channel_manager_;
 };

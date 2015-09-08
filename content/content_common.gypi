@@ -331,6 +331,7 @@
       'common/gpu/gpu_messages.h',
       'common/gpu/gpu_process_launch_causes.h',
       'common/gpu/gpu_result_codes.h',
+      'common/gpu/gpu_stream_priority.h',
       'common/gpu/gpu_surface_lookup.cc',
       'common/gpu/gpu_surface_lookup.h',
       'common/gpu/gpu_watchdog.h',

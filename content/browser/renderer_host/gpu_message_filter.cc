@@ -136,7 +136,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
       render_process_id_,
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
           render_process_id_),
-      share_contexts, false,
+      share_contexts, false, false,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }

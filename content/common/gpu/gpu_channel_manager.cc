@@ -143,17 +143,19 @@ scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
     gpu::gles2::MailboxManager* mailbox_manager,
     int client_id,
     uint64_t client_tracing_id,
-    bool allow_future_sync_points) {
-  return make_scoped_ptr(
-      new GpuChannel(this, watchdog_, share_group, mailbox_manager,
-                     task_runner_.get(), io_task_runner_.get(), client_id,
-                     client_tracing_id, false, allow_future_sync_points));
+    bool allow_future_sync_points,
+    bool allow_real_time_streams) {
+  return make_scoped_ptr(new GpuChannel(
+      this, watchdog_, share_group, mailbox_manager, task_runner_.get(),
+      io_task_runner_.get(), client_id, client_tracing_id, false,
+      allow_future_sync_points, allow_real_time_streams));
 }
 
 void GpuChannelManager::OnEstablishChannel(int client_id,
                                            uint64_t client_tracing_id,
                                            bool share_context,
-                                           bool allow_future_sync_points) {
+                                           bool allow_future_sync_points,
+                                           bool allow_real_time_streams) {
   gfx::GLShareGroup* share_group = nullptr;
   gpu::gles2::MailboxManager* mailbox_manager = nullptr;
   if (share_context) {
@@ -166,9 +168,9 @@ void GpuChannelManager::OnEstablishChannel(int client_id,
     mailbox_manager = mailbox_manager_.get();
   }
 
-  scoped_ptr<GpuChannel> channel =
-      CreateGpuChannel(share_group, mailbox_manager, client_id,
-                       client_tracing_id, allow_future_sync_points);
+  scoped_ptr<GpuChannel> channel = CreateGpuChannel(
+      share_group, mailbox_manager, client_id, client_tracing_id,
+      allow_future_sync_points, allow_real_time_streams);
   IPC::ChannelHandle channel_handle =
       channel->Init(shutdown_event_, attachment_broker_);
 

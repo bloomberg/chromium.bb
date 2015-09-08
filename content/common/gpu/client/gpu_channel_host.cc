@@ -168,6 +168,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
     int32 surface_id,
     CommandBufferProxyImpl* share_group,
     int32 stream_id,
+    GpuStreamPriority stream_priority,
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
@@ -181,6 +182,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
   init_params.share_group_id =
       share_group ? share_group->route_id() : MSG_ROUTING_NONE;
   init_params.stream_id = stream_id;
+  init_params.stream_priority = stream_priority;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
@@ -218,6 +220,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateOffscreenCommandBuffer(
     const gfx::Size& size,
     CommandBufferProxyImpl* share_group,
     int32 stream_id,
+    GpuStreamPriority stream_priority,
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
@@ -228,6 +231,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateOffscreenCommandBuffer(
   init_params.share_group_id =
       share_group ? share_group->route_id() : MSG_ROUTING_NONE;
   init_params.stream_id = stream_id;
+  init_params.stream_priority = stream_priority;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;

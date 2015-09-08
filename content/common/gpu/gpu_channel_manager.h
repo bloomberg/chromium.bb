@@ -115,7 +115,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
       gpu::gles2::MailboxManager* mailbox_manager,
       int client_id,
       uint64_t client_tracing_id,
-      bool allow_future_sync_points);
+      bool allow_future_sync_points,
+      bool allow_real_time_streams);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -131,7 +132,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   void OnEstablishChannel(int client_id,
                           uint64_t client_tracing_id,
                           bool share_context,
-                          bool allow_future_sync_points);
+                          bool allow_future_sync_points,
+                          bool allow_real_time_streams);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnVisibilityChanged(
       int32 render_view_id, int32 client_id, bool visible);
