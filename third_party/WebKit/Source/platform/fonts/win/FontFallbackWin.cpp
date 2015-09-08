@@ -297,13 +297,21 @@ UScriptCode getScript(int ucs4)
 const UChar* getFontBasedOnUnicodeBlock(int ucs4, SkFontMgr* fontManager)
 {
     static const UChar* emojiFonts[] = {L"Segoe UI Emoji", L"Segoe UI Symbol"};
+    static const UChar* mathFonts[] = {L"Cambria Math", L"Segoe UI Symbol", L"Code2000"};
     static const UChar* symbolFont = L"Segoe UI Symbol";
     static const UChar* emojiFont = 0;
+    static const UChar* mathFont = 0;
     static bool initialized = false;
     if (!initialized) {
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(emojiFonts); i++) {
             if (isFontPresent(emojiFonts[i], fontManager)) {
                 emojiFont = emojiFonts[i];
+                break;
+            }
+        }
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(mathFonts); i++) {
+            if (isFontPresent(mathFonts[i], fontManager)) {
+                mathFont = mathFonts[i];
                 break;
             }
         }
@@ -313,17 +321,31 @@ const UChar* getFontBasedOnUnicodeBlock(int ucs4, SkFontMgr* fontManager)
     UBlockCode block = ublock_getCode(ucs4);
     switch (block) {
     case UBLOCK_EMOTICONS:
+    case UBLOCK_ENCLOSED_ALPHANUMERIC_SUPPLEMENT:
         return emojiFont;
     case UBLOCK_PLAYING_CARDS:
     case UBLOCK_MISCELLANEOUS_SYMBOLS:
+    case UBLOCK_MISCELLANEOUS_SYMBOLS_AND_ARROWS:
     case UBLOCK_MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS:
-    case UBLOCK_MISCELLANEOUS_TECHNICAL:
     case UBLOCK_TRANSPORT_AND_MAP_SYMBOLS:
     case UBLOCK_ALCHEMICAL_SYMBOLS:
     case UBLOCK_RUNIC:
-    case UBLOCK_SUPPLEMENTAL_MATHEMATICAL_OPERATORS:
     case UBLOCK_DINGBATS:
+    case UBLOCK_GOTHIC:
         return symbolFont;
+    case UBLOCK_ARROWS:
+    case UBLOCK_MATHEMATICAL_OPERATORS:
+    case UBLOCK_MISCELLANEOUS_TECHNICAL:
+    case UBLOCK_GEOMETRIC_SHAPES:
+    case UBLOCK_MISCELLANEOUS_MATHEMATICAL_SYMBOLS_A:
+    case UBLOCK_SUPPLEMENTAL_ARROWS_A:
+    case UBLOCK_SUPPLEMENTAL_ARROWS_B:
+    case UBLOCK_MISCELLANEOUS_MATHEMATICAL_SYMBOLS_B:
+    case UBLOCK_SUPPLEMENTAL_MATHEMATICAL_OPERATORS:
+    case UBLOCK_MATHEMATICAL_ALPHANUMERIC_SYMBOLS:
+    case UBLOCK_ARABIC_MATHEMATICAL_ALPHABETIC_SYMBOLS:
+    case UBLOCK_GEOMETRIC_SHAPES_EXTENDED:
+        return mathFont;
     default:
         return 0;
     };
