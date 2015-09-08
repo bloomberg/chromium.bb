@@ -569,9 +569,6 @@ public:
     // Extensions3D.h in WebCore/platform/graphics).
     virtual void didLoseWebGLContext(WebLocalFrame*, int) { }
 
-    // Send initial drawing parameters to a child frame that is being rendered out of process.
-    virtual void initializeChildFrame(const WebRect& frameRect, float scaleFactor) { }
-
 
     // Screen Orientation --------------------------------------------------
 
