@@ -16,6 +16,7 @@
 
 namespace syncer {
 class SyncableService;
+struct UserShare;
 }
 
 namespace sync_driver {
@@ -125,6 +126,10 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   void DisableImpl(const syncer::SyncError& error);
 
   SyncClient* const sync_client_;
+
+  // UserShare is stored in StartAssociating while on UI thread and
+  // passed to SharedChangeProcessor::Connect on the model thread.
+  syncer::UserShare* user_share_;
 
   // State of this datatype controller.
   State state_;

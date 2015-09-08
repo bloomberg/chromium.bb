@@ -209,6 +209,12 @@ class SyncNonUIDataTypeControllerTest : public testing::Test,
     base::MessageLoop::current()->RunUntilIdle();
   }
 
+  SyncService* GetSyncService() override {
+    // Make sure this isn't called on backend_thread.
+    EXPECT_FALSE(backend_thread_.task_runner()->BelongsToCurrentThread());
+    return FakeSyncClient::GetSyncService();
+  }
+
  protected:
   void SetStartExpectations() {
     EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(true));

@@ -87,6 +87,11 @@ void NonUIDataTypeController::StartAssociating(
   DCHECK_EQ(state_, MODEL_LOADED);
   state_ = ASSOCIATING;
 
+  // Store UserShare now while on UI thread to avoid potential race
+  // condition in StartAssociationWithSharedChangeProcessor.
+  DCHECK(sync_client_->GetSyncService());
+  user_share_ = sync_client_->GetSyncService()->GetUserShare();
+
   start_callback_ = start_callback;
   if (!StartAssociationAsync()) {
     syncer::SyncError error(
@@ -297,6 +302,7 @@ void NonUIDataTypeController::
         const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
   DCHECK(!ui_thread_->BelongsToCurrentThread());
   DCHECK(shared_change_processor.get());
+  DCHECK(user_share_);
   syncer::SyncMergeResult local_merge_result(type());
   syncer::SyncMergeResult syncer_merge_result(type());
   base::WeakPtrFactory<syncer::SyncMergeResult> weak_ptr_factory(
@@ -308,10 +314,9 @@ void NonUIDataTypeController::
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
   GenericChangeProcessorFactory factory;
-  DCHECK(sync_client_->GetSyncService());
   local_service_ = shared_change_processor->Connect(
-      sync_client_, &factory, sync_client_->GetSyncService()->GetUserShare(),
-      this, type(), weak_ptr_factory.GetWeakPtr());
+      sync_client_, &factory, user_share_, this, type(),
+      weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
     syncer::SyncError error(FROM_HERE,
                             syncer::SyncError::DATATYPE_ERROR,
