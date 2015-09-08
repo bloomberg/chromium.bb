@@ -22,8 +22,8 @@ from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
 
 _DEVICE_OFFLINE_RE = re.compile('error: device not found')
-_LONG_MSG_RE = re.compile('longMsg=')
-_SHORT_MSG_RE = re.compile('shortMsg=')
+_LONG_MSG_RE = re.compile('longMsg=(.*)$')
+_SHORT_MSG_RE = re.compile('shortMsg=(.*)$')
 
 class RemoteDeviceTestRun(test_run.TestRun):
   """Run tests on a remote device."""
@@ -364,24 +364,27 @@ class RemoteDeviceTestRun(test_run.TestRun):
 
   def _DetectPlatformErrors(self, results):
     if not self._results['results']['pass']:
-      if any(_SHORT_MSG_RE.search(l)
-          for l in self._results['results']['output'].splitlines()):
+      crash_msg = None
+      for line in self._results['results']['output'].splitlines():
+        m = _LONG_MSG_RE.search(line)
+        if m:
+          crash_msg = m.group(1)
+          break
+        m = _SHORT_MSG_RE.search(line)
+        if m:
+          crash_msg = m.group(1)
+      if crash_msg:
         self._LogLogcat()
-        for line in self._results['results']['output'].splitlines():
-          if _LONG_MSG_RE.search(line):
-            results.AddResult(base_test_result.BaseTestResult(
-                line.split('=')[1], base_test_result.ResultType.CRASH))
-            break
-        else:
-          results.AddResult(base_test_result.BaseTestResult(
-              'Unknown platform error detected.',
-              base_test_result.ResultType.UNKNOWN))
+        results.AddResult(base_test_result.BaseTestResult(
+            crash_msg, base_test_result.ResultType.CRASH))
       elif self._DidDeviceGoOffline():
         self._LogLogcat()
         self._LogAdbTraceLog()
         raise remote_device_helper.RemoteDeviceError(
             'Remote service unable to reach device.', is_infra_error=True)
       else:
-        results.AddResult(base_test_result.BaseTestResult(
-            'Remote Service detected error.',
-            base_test_result.ResultType.UNKNOWN))
+        # Remote service is reporting a failure, but no failure in results obj.
+        if results.DidRunPass():
+          results.AddResult(base_test_result.BaseTestResult(
+              'Remote Service detected error.',
+              base_test_result.ResultType.UNKNOWN))
