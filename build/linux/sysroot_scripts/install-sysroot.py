@@ -100,7 +100,7 @@ def UsingSysroot(target_arch, gyp_defines):
     return False
 
   # When cross-compiling we always use a sysroot
-  if target_arch in ('arm', 'mips', 'ia32'):
+  if target_arch in ('arm', 'mips', 'i386'):
     return True
 
   # Setting use_sysroot=1 GYP_DEFINES forces the use of the sysroot even
