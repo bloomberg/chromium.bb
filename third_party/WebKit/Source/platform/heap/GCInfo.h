@@ -119,7 +119,7 @@ struct GCInfo {
     FinalizationCallback m_finalize;
     bool m_nonTrivialFinalizer;
     bool m_hasVTable;
-#if ENABLE(DETAILED_MEMORY_INFRA)
+#if ENABLE(GC_PROFILING) || ENABLE(DETAILED_MEMORY_INFRA)
     const String className() const { return m_className(); }
     GetClassNameCallback m_className;
 #endif
@@ -174,7 +174,7 @@ struct GCInfoAtBase {
             FinalizerTrait<T>::finalize,
             FinalizerTrait<T>::nonTrivialFinalizer,
             WTF::IsPolymorphic<T>::value,
-#if ENABLE(DETAILED_MEMORY_INFRA)
+#if ENABLE(GC_PROFILING) || ENABLE(DETAILED_MEMORY_INFRA)
             TypenameStringTrait<T>::get
 #endif
         };
