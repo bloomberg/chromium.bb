@@ -15,6 +15,10 @@ ifdef TSAN
 CLANG = 1
 endif
 
+ifdef MSAN
+CLANG = 1
+endif
+
 #
 # Macros for TOOLS
 #
@@ -67,6 +71,11 @@ endif
 ifdef TSAN
 HOST_CFLAGS += -fsanitize=thread
 HOST_LDFLAGS += -pie -fsanitize=thread
+endif
+
+ifdef MSAN
+HOST_CFLAGS += -fsanitize=memory
+HOST_LDFLAGS += -pie -fsanitize=memory
 endif
 
 #

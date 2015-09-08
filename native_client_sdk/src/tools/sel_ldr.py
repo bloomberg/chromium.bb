@@ -60,8 +60,10 @@ def main(argv):
   parser.add_argument('-p', '--passthrough-environment', action='store_true',
                       help='Pass environment of host through to nexe')
   parser.add_argument('--debug-libs', action='store_true',
-                      help='For dynamic executables, reference debug '
-                           'libraries rather then release')
+                      help='Legacy option, do not use')
+  parser.add_argument('--config', default='Release',
+                      help='Use a particular library configuration (normally '
+                           'Debug or Release)')
   parser.add_argument('executable', help='executable (.nexe) to run')
   parser.add_argument('args', nargs='*', help='argument to pass to exectuable')
   parser.add_argument('--library-path',
@@ -149,11 +151,11 @@ def main(argv):
 
   if dynamic:
     if options.debug_libs:
-      sdk_lib_dir = os.path.join(NACL_SDK_ROOT, 'lib',
-                                 'glibc_%s' % arch_suffix, 'Debug')
-    else:
-      sdk_lib_dir = os.path.join(NACL_SDK_ROOT, 'lib',
-                                 'glibc_%s' % arch_suffix, 'Release')
+      sys.stderr.write('warning: --debug-libs is deprecated (use --config).\n')
+      options.config = 'Debug'
+
+    sdk_lib_dir = os.path.join(NACL_SDK_ROOT, 'lib',
+                               'glibc_%s' % arch_suffix, options.config)
 
     if elf_arch == 'x86-64':
       lib_subdir = 'lib'
@@ -180,6 +182,14 @@ def main(argv):
     usr_lib_dir = os.path.join(toolchain_dir, usr_arch + '-nacl', 'usr', 'lib')
 
     libpath = [usr_lib_dir, sdk_lib_dir, lib_dir]
+
+    if options.config not in ['Debug', 'Release']:
+      config_fallback = 'Release'
+      if 'Debug' in options.config:
+        config_fallback = 'Debug'
+      libpath.append(os.path.join(NACL_SDK_ROOT, 'lib',
+                     'glibc_%s' % arch_suffix, config_fallback))
+
     if options.library_path:
       libpath.extend([os.path.abspath(p) for p
                       in options.library_path.split(':')])

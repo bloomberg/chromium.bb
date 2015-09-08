@@ -570,7 +570,7 @@ def main(args):
                       help='Legacy option, do not use')
   parser.add_argument('--config', default='Release',
                       help='Use a particular library configuration (normally '
-                           'Debug or Release')
+                           'Debug or Release)')
   parser.add_argument('-L', '--library-path', dest='lib_path',
                       action='append', default=[],
                       help='Add DIRECTORY to library search path',
@@ -632,8 +632,7 @@ def main(args):
   if options.debug_libs:
     sys.stderr.write('warning: --debug-libs is deprecated (use --config).\n')
     # Implement legacy behavior
-    if not options.config:
-      options.config = 'Debug'
+    options.config = 'Debug'
 
   canonicalized = ParseExtraFiles(options.extra_files, sys.stderr)
   if canonicalized is None:
