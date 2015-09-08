@@ -169,6 +169,7 @@ public:
         , m_queueLeadPosition(0)
         , m_queueTailPosition(0)
         , m_bookmarkPosition(0)
+        , m_lengthOfBOM(0)
     {
     }
 
@@ -201,7 +202,7 @@ public:
     {
         ASSERT(!isMainThread());
         m_bookmarkPosition = m_queueLeadPosition;
-        return m_bookmarkPosition != 0; // Don't mess with BOM.
+        return true;
     }
 
     // Called by V8 on background thread.
@@ -211,7 +212,9 @@ public:
         {
             MutexLocker locker(m_mutex);
             m_queueLeadPosition = m_bookmarkPosition;
-            m_queueTailPosition = m_bookmarkPosition;
+            // See comments at m_lengthOfBOM declaration below for why
+            // we need this here.
+            m_queueTailPosition = m_bookmarkPosition + m_lengthOfBOM;
             m_dataQueue.clear();
         }
 
@@ -308,6 +311,11 @@ private:
             }
         }
 
+        if (lengthOfBOM > 0) {
+            ASSERT(!m_lengthOfBOM); // There should be only one BOM.
+            m_lengthOfBOM = lengthOfBOM;
+        }
+
         // Copy the data chunks into a new buffer, since we're going to give the
         // data to a background thread.
         if (dataLength > lengthOfBOM) {
@@ -346,6 +354,22 @@ private:
     unsigned m_queueLeadPosition; // Only used by v8 thread.
     unsigned m_queueTailPosition; // Used by both threads; guarded by m_mutex.
     unsigned m_bookmarkPosition; // Only used by v8 thread.
+
+    // BOM (Unicode Byte Order Mark) handling:
+    // This class is responsible for stripping out the BOM, since Chrome
+    // delivers the input stream potentially with BOM, but V8 doesn't want
+    // to see the BOM. This is mostly easy to do, except for a funky edge
+    // condition with bookmarking:
+    // - m_queueLeadPosition counts the bytes that V8 has received
+    //   (i.e., without BOM)
+    // - m_queueTailPosition counts the bytes that Chrome has sent
+    //   (i.e., with BOM)
+    // So when resetting the bookmark, we have to adjust the lead position
+    // to account for the BOM (which happens implicitly in the regular
+    // streaming case).
+    // We store this separately, to avoid having to guard all
+    // m_queueLeadPosition references with a mutex.
+    unsigned m_lengthOfBOM; // Used by both threads; guarded by m_mutex.
 };
 
 size_t ScriptStreamer::kSmallScriptThreshold = 30 * 1024;
