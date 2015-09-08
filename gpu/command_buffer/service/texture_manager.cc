@@ -586,21 +586,25 @@ bool Texture::CanGenerateMipmaps(
     return false;
   }
 
+  if (static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size()) {
+    return false;
+  }
+
   // Can't generate mips for depth or stencil textures.
-  const Texture::LevelInfo& first = face_infos_[0].level_infos[0];
-  uint32 channels = GLES2Util::GetChannelsForFormat(first.format);
+  const Texture::LevelInfo& base = face_infos_[0].level_infos[base_level_];
+  uint32 channels = GLES2Util::GetChannelsForFormat(base.format);
   if (channels & (GLES2Util::kDepth | GLES2Util::kStencil)) {
     return false;
   }
 
   // TODO(gman): Check internal_format, format and type.
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
-    const LevelInfo& info = face_infos_[ii].level_infos[0];
-    if ((info.target == 0) || (info.width != first.width) ||
-        (info.height != first.height) || (info.depth != 1) ||
-        (info.format != first.format) ||
-        (info.internal_format != first.internal_format) ||
-        (info.type != first.type) ||
+    const LevelInfo& info = face_infos_[ii].level_infos[base_level_];
+    if ((info.target == 0) || (info.width != base.width) ||
+        (info.height != base.height) || (info.depth != 1) ||
+        (info.format != base.format) ||
+        (info.internal_format != base.internal_format) ||
+        (info.type != base.type) ||
         feature_info->validators()->compressed_texture_format.IsValid(
             info.internal_format) ||
         info.image.get()) {
