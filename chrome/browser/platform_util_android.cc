@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <jni.h>
+
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "chrome/browser/platform_util.h"
+#include "jni/PlatformUtil_jni.h"
 #include "ui/android/view_android.h"
+#include "url/gurl.h"
 
 namespace platform_util {
 
@@ -22,7 +28,10 @@ void OpenItem(Profile* profile,
 }
 
 void OpenExternal(Profile* profile, const GURL& url) {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_url =
+      base::android::ConvertUTF8ToJavaString(env, url.spec());
+  Java_PlatformUtil_launchExternalProtocol(env, j_url.obj());
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
@@ -47,6 +56,10 @@ void ActivateWindow(gfx::NativeWindow window) {
 bool IsVisible(gfx::NativeView view) {
   NOTIMPLEMENTED();
   return true;
+}
+
+bool RegisterPlatformUtil(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 } // namespace platform_util

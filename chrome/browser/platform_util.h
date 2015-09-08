@@ -98,6 +98,9 @@ bool IsVisible(gfx::NativeView view);
 bool IsSwipeTrackingFromScrollEventsEnabled();
 #endif
 
+#if defined(OS_ANDROID)
+bool RegisterPlatformUtil(JNIEnv* env);
+#endif
 }  // namespace platform_util
 
 #endif  // CHROME_BROWSER_PLATFORM_UTIL_H_

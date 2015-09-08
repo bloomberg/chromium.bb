@@ -1785,6 +1785,7 @@
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxPrerender.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxUrlEmphasizer.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxViewUtil.java',
+      'android/java/src/org/chromium/chrome/browser/PlatformUtil.java',
       'android/java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksReader.java',
       'android/java/src/org/chromium/chrome/browser/password_manager/Credential.java',
       'android/java/src/org/chromium/chrome/browser/PasswordUIView.java',
