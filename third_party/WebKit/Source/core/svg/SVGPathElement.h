@@ -96,8 +96,6 @@ public:
 
     void pathSegListChanged(ListModification = ListModificationUnknown);
 
-    FloatRect getBBox() override;
-
     DECLARE_VIRTUAL_TRACE();
 
 private:

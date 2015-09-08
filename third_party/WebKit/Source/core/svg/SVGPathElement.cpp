@@ -270,19 +270,4 @@ void SVGPathElement::pathSegListChanged(ListModification listModification)
     markForLayoutAndParentResourceInvalidation(layoutObject);
 }
 
-FloatRect SVGPathElement::getBBox()
-{
-    // By default, getBBox() returns objectBoundingBox but that will include
-    // markers so we override it to return just the path's bounding rect.
-
-    document().updateLayoutIgnorePendingStylesheets();
-
-    // FIXME: Eventually we should support getBBox for detached elements.
-    if (!layoutObject())
-        return FloatRect();
-
-    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
-    return layoutObject->path().boundingRect();
-}
-
 } // namespace blink
