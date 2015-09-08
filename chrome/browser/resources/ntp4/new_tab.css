@@ -128,19 +128,13 @@ html[dir='rtl'] #notification-container {
 
 #attribution {
   bottom: 0;
-  left: auto;
   margin-left: 8px;
   /* Leave room for the scrollbar. */
   margin-right: 13px;
   position: absolute;
-  right: 0;
-  text-align: left;
   z-index: -5;
 }
 
-/* For themes that right-align their images, we flip the attribution to the
- * left to avoid conflicts. */
-html[themegravity='right'] #attribution,
 html[dir='rtl'] #attribution {
   left: 0;
   right: auto;

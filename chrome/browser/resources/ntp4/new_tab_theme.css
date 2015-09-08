@@ -10,6 +10,12 @@ html {
   background-repeat: ${backgroundTiling};
 }
 
+#attribution {
+  left: ${leftAlignAttribution};
+  right: ${rightAlignAttribution};
+  text-align: ${textAlignAttribution};
+}
+
 #attribution-img {
   content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?${themeId});
 }

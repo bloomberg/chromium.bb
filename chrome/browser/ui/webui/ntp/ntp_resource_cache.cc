@@ -496,12 +496,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("anim",
                             gfx::Animation::ShouldRenderRichAnimation());
 
-  ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
-  int alignment = tp->GetDisplayProperty(
-      ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
-  load_time_data.SetString("themegravity",
-      (alignment & ThemeProperties::ALIGN_RIGHT) ? "right" : "");
-
   // Disable the promo if this is the first run, otherwise set the promo string
   // for display if there is a valid outstanding promo.
   if (first_run::IsChromeFirstRun()) {
@@ -653,6 +647,20 @@ void NTPResourceCache::CreateNewTabCSS() {
   substitutions["colorSectionBorder"] =
       SkColorToRGBComponents(color_section_border);
   substitutions["colorText"] = SkColorToRGBComponents(color_text);
+
+  // For themes that right-align the background, we flip the attribution to the
+  // left to avoid conflicts.
+  int alignment = tp->GetDisplayProperty(
+      ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
+  if (alignment & ThemeProperties::ALIGN_RIGHT) {
+    substitutions["leftAlignAttribution"] = "0";
+    substitutions["rightAlignAttribution"] = "auto";
+    substitutions["textAlignAttribution"] = "right";
+  } else {
+    substitutions["leftAlignAttribution"] = "auto";
+    substitutions["rightAlignAttribution"] = "0";
+    substitutions["textAlignAttribution"] = "left";
+  }
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
