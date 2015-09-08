@@ -560,8 +560,8 @@ void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* script
 {
     {{cpp_class}}* impl = scriptWrappable->toImpl<{{cpp_class}}>();
     {% if set_wrapper_reference_to %}
-    v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
-    V8WrapperInstantiationScope scope(creationContext, isolate);
+    v8::Local<v8::Object> context = v8::Local<v8::Object>::New(isolate, wrapper);
+    v8::Context::Scope scope(context->CreationContext());
     {{set_wrapper_reference_to.cpp_type}} {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
     if ({{set_wrapper_reference_to.name}}) {
         if (DOMDataStore::containsWrapper({{set_wrapper_reference_to.name}}, isolate))

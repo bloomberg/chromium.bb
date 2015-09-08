@@ -2311,8 +2311,8 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
     TestInterfaceImplementation* impl = scriptWrappable->toImpl<TestInterfaceImplementation>();
-    v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
-    V8WrapperInstantiationScope scope(creationContext, isolate);
+    v8::Local<v8::Object> context = v8::Local<v8::Object>::New(isolate, wrapper);
+    v8::Context::Scope scope(context->CreationContext());
     TestInterfaceImplementation* referencedName = impl->referencedName();
     if (referencedName) {
         if (DOMDataStore::containsWrapper(referencedName, isolate))
