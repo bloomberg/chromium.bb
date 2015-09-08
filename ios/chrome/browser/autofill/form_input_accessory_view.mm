@@ -266,7 +266,7 @@ UIImage* ButtonImage(NSString* name) {
                                 height:CGRectGetHeight(frame)];
   [previousButton
       setAccessibilityLabel:l10n_util::GetNSString(
-                                IDS_AUTOFILL_ACCNAME_PREVIOUS_FIELD)];
+                                IDS_IOS_AUTOFILL_ACCNAME_PREVIOUS_FIELD)];
   [navView addSubview:previousButton];
   currentX += kNavigationButtonWidth;
 
@@ -290,7 +290,7 @@ UIImage* ButtonImage(NSString* name) {
                                originY:firstRow
                                 height:CGRectGetHeight(frame)];
   [nextButton setAccessibilityLabel:l10n_util::GetNSString(
-                                        IDS_AUTOFILL_ACCNAME_NEXT_FIELD)];
+                                        IDS_IOS_AUTOFILL_ACCNAME_NEXT_FIELD)];
   [navView addSubview:nextButton];
   currentX += kNavigationButtonWidth;
 
@@ -319,8 +319,9 @@ UIImage* ButtonImage(NSString* name) {
                                  originX:currentX
                                  originY:firstRow
                                   height:CGRectGetHeight(frame)];
-    [closeButton setAccessibilityLabel:l10n_util::GetNSString(
-                                           IDS_AUTOFILL_ACCNAME_HIDE_KEYBOARD)];
+    [closeButton
+        setAccessibilityLabel:l10n_util::GetNSString(
+                                  IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD)];
     [navView addSubview:closeButton];
     currentX += kNavigationButtonWidth;
   }
