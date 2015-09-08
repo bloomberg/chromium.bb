@@ -21,6 +21,10 @@
 #include "ui/compositor/clip_transform_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -218,13 +222,23 @@ void InfoBarView::ViewHierarchyChanged(
     }
 
     close_button_ = new views::ImageButton(this);
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                            rb.GetImageNamed(IDR_CLOSE_1).ToImageSkia());
-    close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-                            rb.GetImageNamed(IDR_CLOSE_1_H).ToImageSkia());
-    close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-                            rb.GetImageNamed(IDR_CLOSE_1_P).ToImageSkia());
+
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      SkColor grey;
+      ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
+                                    &grey);
+      gfx::ImageSkia image =
+          gfx::CreateVectorIcon(gfx::VectorIconId::BAR_CLOSE, 16, grey);
+      close_button_->SetImage(views::CustomButton::STATE_NORMAL, &image);
+    } else {
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+                              rb.GetImageNamed(IDR_CLOSE_1).ToImageSkia());
+      close_button_->SetImage(views::CustomButton::STATE_HOVERED,
+                              rb.GetImageNamed(IDR_CLOSE_1_H).ToImageSkia());
+      close_button_->SetImage(views::CustomButton::STATE_PRESSED,
+                              rb.GetImageNamed(IDR_CLOSE_1_P).ToImageSkia());
+    }
     close_button_->SizeToPreferredSize();
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));

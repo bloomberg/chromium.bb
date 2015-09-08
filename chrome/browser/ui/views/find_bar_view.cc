@@ -543,7 +543,7 @@ void FindBarView::InitViewsForMaterial() {
   } button_images[] = {
       {find_previous_button_, gfx::VectorIconId::FIND_PREV},
       {find_next_button_, gfx::VectorIconId::FIND_NEXT},
-      {close_button_, gfx::VectorIconId::FIND_CLOSE},
+      {close_button_, gfx::VectorIconId::BAR_CLOSE},
   };
 
   SkColor grey;
