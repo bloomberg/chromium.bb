@@ -296,6 +296,7 @@ class BASE_EXPORT Pickle {
   }
   inline void WriteBytesCommon(const void* data, size_t length);
 
+  FRIEND_TEST_ALL_PREFIXES(PickleTest, DeepCopyResize);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, Resize);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, FindNext);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, FindNextWithIncompleteHeader);

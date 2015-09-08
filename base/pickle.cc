@@ -254,9 +254,8 @@ Pickle::Pickle(const Pickle& other)
       header_size_(other.header_size_),
       capacity_after_header_(0),
       write_offset_(other.write_offset_) {
-  size_t payload_size = header_size_ + other.header_->payload_size;
-  Resize(payload_size);
-  memcpy(header_, other.header_, payload_size);
+  Resize(other.header_->payload_size);
+  memcpy(header_, other.header_, header_size_ + other.header_->payload_size);
 }
 
 Pickle::~Pickle() {

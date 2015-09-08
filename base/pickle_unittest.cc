@@ -428,4 +428,18 @@ TEST(PickleTest, ReadBytes) {
   EXPECT_EQ(data, outdata);
 }
 
+// Checks that when a pickle is deep-copied, the result is not larger than
+// needed.
+TEST(PickleTest, DeepCopyResize) {
+  Pickle pickle;
+  while (pickle.capacity_after_header() != pickle.payload_size())
+    pickle.WriteBool(true);
+
+  // Make a deep copy.
+  Pickle pickle2(pickle);
+
+  // Check that there isn't any extraneous capacity.
+  EXPECT_EQ(pickle.capacity_after_header(), pickle2.capacity_after_header());
+}
+
 }  // namespace base
