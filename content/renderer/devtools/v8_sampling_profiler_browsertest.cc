@@ -54,9 +54,9 @@ class V8SamplingProfilerTest : public RenderViewTest {
     trace_buffer_.Finish();
 
     scoped_ptr<Value> root;
-    root.reset(base::JSONReader::DeprecatedRead(
+    root = base::JSONReader::Read(
         json_output_.json_output,
-        base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN));
+        base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN);
 
     if (!root.get()) {
       LOG(ERROR) << json_output_.json_output;

@@ -113,7 +113,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override {
     scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
-        base::JSONReader::DeprecatedRead(message)));
+        base::JSONReader::Read(message).release()));
     int id;
     if (root->GetInteger("id", &id)) {
       result_ids_.push_back(id);

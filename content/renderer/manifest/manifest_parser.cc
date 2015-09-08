@@ -104,8 +104,8 @@ ManifestParser::~ManifestParser() {
 
 void ManifestParser::Parse() {
   std::string parse_error;
-  scoped_ptr<base::Value> value(base::JSONReader::DeprecatedReadAndReturnError(
-      data_, base::JSON_PARSE_RFC, nullptr, &parse_error));
+  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+      data_, base::JSON_PARSE_RFC, nullptr, &parse_error);
 
   if (!value) {
     errors_.push_back(GetErrorPrefix() + parse_error);
