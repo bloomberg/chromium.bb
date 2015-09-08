@@ -142,12 +142,12 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
 
   web_view_.Init(app_, content_);
 
-  host_->AddAccelerator(BrowserCommand_Close, mojo::KEYBOARD_CODE_W,
-                        mojo::EVENT_FLAGS_CONTROL_DOWN);
-  host_->AddAccelerator(BrowserCommand_FocusOmnibox, mojo::KEYBOARD_CODE_L,
-                        mojo::EVENT_FLAGS_CONTROL_DOWN);
-  host_->AddAccelerator(BrowserCommand_NewWindow, mojo::KEYBOARD_CODE_N,
-                        mojo::EVENT_FLAGS_CONTROL_DOWN);
+  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::CLOSE),
+                        mojo::KEYBOARD_CODE_W, mojo::EVENT_FLAGS_CONTROL_DOWN);
+  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::FOCUS_OMNIBOX),
+                        mojo::KEYBOARD_CODE_L, mojo::EVENT_FLAGS_CONTROL_DOWN);
+  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::NEW_WINDOW),
+                        mojo::KEYBOARD_CODE_N, mojo::EVENT_FLAGS_CONTROL_DOWN);
 
   // Now that we're ready, load the default url.
   LoadURL(default_url_);
@@ -181,14 +181,14 @@ void BrowserWindow::OnConnectionLost(mojo::ViewTreeConnection* connection) {
 // BrowserWindow, mojo::ViewTreeHostClient implementation:
 
 void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
-  switch (id) {
-    case BrowserCommand_Close:
+  switch (static_cast<BrowserCommand>(id)) {
+    case BrowserCommand::CLOSE:
       Close();
       break;
-    case BrowserCommand_NewWindow:
+    case BrowserCommand::NEW_WINDOW:
       manager_->CreateBrowser(GURL());
       break;
-    case BrowserCommand_FocusOmnibox:
+    case BrowserCommand::FOCUS_OMNIBOX:
       ShowOmnibox();
       break;
     default:
