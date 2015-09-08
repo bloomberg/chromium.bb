@@ -405,4 +405,47 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   EXPECT_TRUE(connection1_client->tracker()->changes()->empty());
 }
 
+TEST_F(ViewTreeTest, BasicInputEventTarget) {
+  const ViewId embed_view_id(wm_connection()->id(), 1);
+  EXPECT_EQ(ERROR_CODE_NONE, wm_connection()->CreateView(embed_view_id));
+  EXPECT_TRUE(wm_connection()->SetViewVisibility(embed_view_id, true));
+  EXPECT_TRUE(
+      wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
+  host_connection()->view_tree_host()->root_view()->SetBounds(
+      gfx::Rect(0, 0, 100, 100));
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  wm_connection()->Embed(embed_view_id, request.Pass());
+  ViewTreeImpl* connection1 =
+      connection_manager()->GetConnectionWithRoot(embed_view_id);
+  ASSERT_TRUE(connection1 != nullptr);
+  ASSERT_NE(connection1, wm_connection());
+
+  connection_manager()
+      ->GetView(embed_view_id)
+      ->SetBounds(gfx::Rect(0, 0, 50, 50));
+
+  const ViewId child1(connection1->id(), 1);
+  EXPECT_EQ(ERROR_CODE_NONE, connection1->CreateView(child1));
+  EXPECT_TRUE(connection1->AddView(embed_view_id, child1));
+  ServerView* v1 = connection1->GetView(child1);
+  v1->SetVisible(true);
+  v1->SetBounds(gfx::Rect(20, 20, 20, 20));
+
+  TestViewTreeClient* embed_connection = last_view_tree_client();
+  embed_connection->tracker()->changes()->clear();
+  wm_client()->tracker()->changes()->clear();
+
+  // Send an event to |v1|. |embed_connection| should get the event, not
+  // |wm_client|, since |v1| lives inside an embedded view.
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
+  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
+  EXPECT_EQ("Focused id=2,1",
+            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
+  ASSERT_EQ(2u, embed_connection->tracker()->changes()->size());
+  EXPECT_EQ("Focused id=2,1",
+            ChangesToDescription1(*embed_connection->tracker()->changes())[0]);
+  EXPECT_EQ("InputEvent view=2,1 event_action=4",
+            ChangesToDescription1(*embed_connection->tracker()->changes())[1]);
+}
+
 }  // namespace view_manager

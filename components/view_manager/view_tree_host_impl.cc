@@ -111,9 +111,15 @@ void ViewTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
 
 void ViewTreeHostImpl::DispatchInputEventToView(const ServerView* target,
                                                 mojo::EventPtr event) {
-  GetViewTree()->client()->OnViewInputEvent(ViewIdToTransportId(target->id()),
-                                            event.Pass(),
-                                            base::Bind(&base::DoNothing));
+  // If the view is an embed root, forward to the embedded view, not the owner.
+  ViewTreeImpl* connection =
+      connection_manager_->GetConnectionWithRoot(target->id());
+  if (!connection)
+    connection = connection_manager_->GetConnection(target->id().connection_id);
+  DCHECK_EQ(this, connection->GetHost());
+  connection->client()->OnViewInputEvent(ViewIdToTransportId(target->id()),
+                                         event.Pass(),
+                                         base::Bind(&base::DoNothing));
 }
 
 void ViewTreeHostImpl::SetSize(mojo::SizePtr size) {
