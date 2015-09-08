@@ -148,19 +148,20 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Search Provider Icon
   // ---------------------------------------------------------------------------
-  float search_provider_icon_left;
-  float search_provider_icon_top;
   // Positions the Search Provider Icon at the start of the Search Bar.
+  float search_provider_icon_left;
   if (is_rtl) {
     search_provider_icon_left = search_panel_width -
         search_provider_icon_resource->size.width() - search_bar_margin_side;
   } else {
     search_provider_icon_left = search_bar_margin_side;
   }
+
   // Centers the Search Provider Icon vertically in the Search Bar.
-  search_provider_icon_top =
+  float search_provider_icon_top =
       search_bar_height / 2 -
       search_provider_icon_resource->size.height() / 2;
+
   search_provider_icon_->SetUIResourceId(
       search_provider_icon_resource->ui_resource->id());
   search_provider_icon_->SetBounds(search_provider_icon_resource->size);

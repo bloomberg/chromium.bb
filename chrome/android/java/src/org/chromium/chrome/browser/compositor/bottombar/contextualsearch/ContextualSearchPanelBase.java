@@ -31,7 +31,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     /**
      * The side padding of Search Bar icons in dps.
      */
-    private static final float SEARCH_BAR_ICON_SIDE_PADDING_DP = 16.f;
+    private static final float SEARCH_BAR_ICON_SIDE_PADDING_DP = 12.f;
 
     /**
      * The height of the Search Bar's border in dps.
