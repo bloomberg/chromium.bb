@@ -104,4 +104,7 @@ Still reading?
   <issue id="UnusedAttribute" severity="ignore"/>
   <issue id="ViewConstructor" severity="ignore"/>
   <issue id="WrongCall" severity="ignore"/>
+  <issue id="UselessParent">
+    <ignore path="chrome/android/java/res/layout/data_reduction_promo_screen.xml" />
+  </issue>
 </lint>
