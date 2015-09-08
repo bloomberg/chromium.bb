@@ -157,6 +157,26 @@ TEST(VideoFrame, CreateFrame) {
       frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 }
 
+TEST(VideoFrame, CreateZeroInitializedFrame) {
+  const int kWidth = 2;
+  const int kHeight = 2;
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1337);
+
+  // Create a YV12 Video Frame.
+  gfx::Size size(kWidth, kHeight);
+  scoped_refptr<media::VideoFrame> frame =
+      VideoFrame::CreateZeroInitializedFrame(media::PIXEL_FORMAT_YV12, size,
+                                             gfx::Rect(size), size, kTimestamp);
+  ASSERT_TRUE(frame.get());
+  EXPECT_TRUE(frame->IsMappable());
+
+  // Verify that frame is initialized with zeros.
+  // TODO(emircan): Check all the contents when we know the exact size of the
+  // allocated buffer.
+  for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i)
+    EXPECT_EQ(0, frame->data(i)[0]);
+}
+
 TEST(VideoFrame, CreateBlackFrame) {
   const int kWidth = 2;
   const int kHeight = 2;

@@ -63,7 +63,6 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
   DCHECK(!is_shutdown_);
 
   scoped_refptr<VideoFrame> frame;
-
   while (!frame.get() && !frames_.empty()) {
       scoped_refptr<VideoFrame> pool_frame = frames_.front();
       frames_.pop_front();
@@ -79,18 +78,8 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
   }
 
   if (!frame.get()) {
-    frame = VideoFrame::CreateFrame(format, coded_size, visible_rect,
-                                    natural_size, timestamp);
-
-    // Zero-initialize each plane of the buffer.
-    const size_t num_planes = VideoFrame::NumPlanes(frame->format());
-    for (size_t i = 0; i < num_planes; ++i) {
-      memset(frame->data(i),
-             0,
-             VideoFrame::PlaneSize(frame->format(),
-                                   i,
-                                   frame->coded_size()).GetArea());
-    }
+    frame = VideoFrame::CreateZeroInitializedFrame(
+        format, coded_size, visible_rect, natural_size, timestamp);
   }
 
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(

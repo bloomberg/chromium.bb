@@ -112,6 +112,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                                                const gfx::Size& natural_size,
                                                base::TimeDelta timestamp);
 
+  // Offers the same functionality as CreateFrame, and additionally zeroes out
+  // the initial allocated buffers.
+  static scoped_refptr<VideoFrame> CreateZeroInitializedFrame(
+      VideoPixelFormat format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp);
+
   // Wraps a native texture of the given parameters with a VideoFrame.
   // The backing of the VideoFrame is held in the mailbox held by
   // |mailbox_holder|, and |mailbox_holder_release_cb| will be called with
@@ -414,7 +423,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              base::TimeDelta timestamp);
   virtual ~VideoFrame();
 
-  void AllocateYUV();
+  static scoped_refptr<VideoFrame> CreateFrameInternal(
+      VideoPixelFormat format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp,
+      bool zero_initialize_memory);
+
+  void AllocateYUV(bool zero_initialize_memory);
 
   // Frame format.
   const VideoPixelFormat format_;
