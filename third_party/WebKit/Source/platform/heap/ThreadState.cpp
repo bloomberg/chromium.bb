@@ -569,67 +569,64 @@ void ThreadState::updatePersistentCounters()
     m_persistentFreed = 0;
 }
 
-size_t ThreadState::currentObjectSize()
+size_t ThreadState::totalMemorySize()
 {
     return Heap::allocatedObjectSize() + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
 }
 
-size_t ThreadState::estimatedLiveObjectSize()
+size_t ThreadState::estimatedLiveSize(size_t estimationBaseSize, size_t sizeAtLastGC)
 {
     if (Heap::persistentCountAtLastGC() == 0) {
         // We'll reach here only before hitting the first GC.
         return 0;
     }
 
-    // We estimate the live object size with the following equations.
-    //
-    //   heapSizePerPersistent = (marked(t0, t1) + partitionAlloc(t0)) / persistentCount(t0)
-    //   estimatedLiveObjectSize = marked(t0, t) + allocated(t0, t) + partitionAlloc(t) - heapSizePerPersistent * collectedPersistentCount(t0, t)
-    //
-    // t0:                 The time when the last collectGarbage runs.
-    // t1:                 The time when the last completeSweep runs.
-    // t:                  The current time.
-    // marked(t0, t):      The size of marked objects between t0 and t.
-    // allocated(t0, t):   The size of newly allocated objects between t0 and t.
-    // persistentCount(t): The number of existing persistent handles at t.
-    // collectedPersistentCount(t0, t):
-    //                     The number of persistent handles collected between
-    //                     t0 and t.
-    // partitionAlloc(t):  The size of allocated memory in PartitionAlloc at t.
-    size_t heapSizeRetainedByCollectedPersistents = static_cast<size_t>(1.0 * (Heap::markedObjectSizeAtLastCompleteSweep() + Heap::partitionAllocSizeAtLastGC()) / Heap::persistentCountAtLastGC() * Heap::collectedPersistentCount());
-    size_t currentHeapSize = currentObjectSize();
-    if (currentHeapSize < heapSizeRetainedByCollectedPersistents)
+    // (estimated size) = (estimation base size) - (heap size at the last GC) / (# of persistent handles at the last GC) * (# of persistent handles collected since the last GC);
+    size_t sizeRetainedByCollectedPersistents = static_cast<size_t>(1.0 * sizeAtLastGC / Heap::persistentCountAtLastGC() * Heap::collectedPersistentCount());
+    if (estimationBaseSize < sizeRetainedByCollectedPersistents)
         return 0;
-    return currentHeapSize - heapSizeRetainedByCollectedPersistents;
+    return estimationBaseSize - sizeRetainedByCollectedPersistents;
 }
 
 double ThreadState::heapGrowingRate()
 {
-    size_t currentSize = currentObjectSize();
-    size_t estimatedSize = estimatedLiveObjectSize();
-    // If the estimatedSize is 0, we set a very high growing rate
-    // to trigger a GC.
+    size_t currentSize = Heap::allocatedObjectSize() + Heap::markedObjectSize();
+    size_t estimatedSize = estimatedLiveSize(Heap::markedObjectSizeAtLastCompleteSweep(), Heap::markedObjectSizeAtLastCompleteSweep());
+
+    // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
     double growingRate = estimatedSize > 0 ? 1.0 * currentSize / estimatedSize : 100;
-    TRACE_COUNTER1("blink_gc", "ThreadState::currentHeapSizeKB", std::min(currentSize / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "ThreadState::estimatedLiveObjectSizeKB", std::min(estimatedSize / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "ThreadState::heapEstimatedSizeKB", std::min(estimatedSize / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "ThreadState::heapGrowingRate", static_cast<int>(100 * growingRate));
     return growingRate;
 }
 
-// TODO(haraken): We should improve the GC heuristics.
-// The heuristics affect performance significantly.
+double ThreadState::partitionAllocGrowingRate()
+{
+    size_t currentSize = WTF::Partitions::totalSizeOfCommittedPages();
+    size_t estimatedSize = estimatedLiveSize(currentSize, Heap::partitionAllocSizeAtLastGC());
+
+    // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
+    double growingRate = estimatedSize > 0 ? 1.0 * currentSize / estimatedSize : 100;
+    TRACE_COUNTER1("blink_gc", "ThreadState::partitionAllocEstimatedSizeKB", std::min(estimatedSize / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "ThreadState::partitionAllocGrowingRate", static_cast<int>(100 * growingRate));
+    return growingRate;
+}
+
+// TODO(haraken): We should improve the GC heuristics. The heuristics affect
+// performance significantly.
 bool ThreadState::judgeGCThreshold(size_t allocatedObjectSizeThreshold, double heapGrowingRateThreshold)
 {
     // If the allocated object size is small enough, don't trigger a GC.
     if (Heap::allocatedObjectSize() < allocatedObjectSizeThreshold)
         return false;
-    // If the heap growing rate is large enough, trigger a GC.
-    return heapGrowingRate() >= heapGrowingRateThreshold;
+    // If the growing rate of Oilpan's heap or PartitionAlloc is high enough,
+    // trigger a GC.
+    return heapGrowingRate() >= heapGrowingRateThreshold || partitionAllocGrowingRate() >= heapGrowingRateThreshold;
 }
 
 bool ThreadState::shouldForceMemoryPressureGC()
 {
-    if (currentObjectSize() < 300 * 1024 * 1024)
+    if (totalMemorySize() < 300 * 1024 * 1024)
         return false;
 
     // If we're consuming too much memory, trigger a conservative GC

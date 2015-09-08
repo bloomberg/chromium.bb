@@ -702,9 +702,10 @@ private:
     // Internal helper for GC policy handling code. Returns true if
     // an urgent conservative GC is now needed due to memory pressure.
     bool shouldForceMemoryPressureGC();
-    size_t estimatedLiveObjectSize();
-    size_t currentObjectSize();
+    size_t estimatedLiveSize(size_t currentSize, size_t sizeAtLastGC);
+    size_t totalMemorySize();
     double heapGrowingRate();
+    double partitionAllocGrowingRate();
     bool judgeGCThreshold(size_t allocatedObjectSizeThreshold, double heapGrowingRateThreshold);
 
     void runScheduledGC(StackState);
