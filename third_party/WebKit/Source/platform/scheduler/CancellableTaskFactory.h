@@ -48,13 +48,6 @@ public:
         return adoptPtr(new CancellableTaskFactory(WTF::bind(method, thisObject)));
     }
 
-    // Only intended used by unit tests. Please use leak safe create() factory method, if possible.
-    explicit CancellableTaskFactory(PassOwnPtr<Closure> closure)
-        : m_closure(closure)
-        , m_weakPtrFactory(this)
-    {
-    }
-
     bool isPending() const
     {
         return m_weakPtrFactory.hasWeakPtrs();
@@ -65,6 +58,15 @@ public:
     // Returns a task that can be disabled by calling cancel().  The user takes
     // ownership of the task.  Creating a new task cancels any previous ones.
     WebTaskRunner::Task* cancelAndCreate();
+
+protected:
+    // Only intended used by unit tests wanting to stack allocate and/or pass in a closure value.
+    // Please use the create() factory method elsewhere.
+    explicit CancellableTaskFactory(PassOwnPtr<Closure> closure)
+        : m_closure(closure)
+        , m_weakPtrFactory(this)
+    {
+    }
 
 private:
     class CancellableTask : public WebTaskRunner::Task {
