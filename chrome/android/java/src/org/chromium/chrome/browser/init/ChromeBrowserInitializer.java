@@ -21,6 +21,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.content.app.ContentApplication;
@@ -271,7 +272,7 @@ public class ChromeBrowserInitializer {
     private static void configureStrictMode() {
         CommandLine commandLine = CommandLine.getInstance();
         if ("eng".equals(Build.TYPE)
-                || "userdebug".equals(Build.TYPE)
+                || ("userdebug".equals(Build.TYPE) && !ChromeVersionInfo.isStableBuild())
                 || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE)) {
             StrictMode.enableDefaults();
             StrictMode.ThreadPolicy.Builder threadPolicy =
