@@ -85,7 +85,8 @@ Polymer({
    */
   maybeLoadCustomController_: function() {
     this.activityStatus_ = this.route ?
-        loadTimeData.getStringF('castingActivityStatus', this.route.title) :
+        loadTimeData.getStringF('castingActivityStatus',
+                                this.route.description) :
         '';
 
     if (!this.route || !this.route.customControllerPath) {

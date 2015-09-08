@@ -143,7 +143,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   EXPECT_EQ(route_id, value);
   EXPECT_TRUE(route_value->GetString("sinkId", &value));
   EXPECT_EQ(sink_id, value);
-  EXPECT_TRUE(route_value->GetString("title", &value));
+  EXPECT_TRUE(route_value->GetString("description", &value));
   EXPECT_EQ(description, value);
 
   bool actual_is_local = false;
@@ -190,7 +190,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   EXPECT_EQ(route_id, value);
   EXPECT_TRUE(route_value->GetString("sinkId", &value));
   EXPECT_EQ(sink_id, value);
-  EXPECT_TRUE(route_value->GetString("title", &value));
+  EXPECT_TRUE(route_value->GetString("description", &value));
   EXPECT_EQ(description, value);
 
   bool actual_is_local = false;

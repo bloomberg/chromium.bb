@@ -136,7 +136,7 @@ cr.define('route_details', function() {
         details.route = fakeRouteOne;
         assertEquals(fakeRouteOne, details.route);
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
-            fakeRouteOne.title), 'route-information');
+            fakeRouteOne.description), 'route-information');
         assertEquals(null, details.sink);
         checkDefaultViewIsShown();
 
@@ -144,7 +144,7 @@ cr.define('route_details', function() {
         details.route = fakeRouteTwo;
         assertEquals(fakeRouteTwo, details.route);
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
-            fakeRouteTwo.title), 'route-information');
+            fakeRouteTwo.description), 'route-information');
         checkDefaultViewIsShown();
       });
 
@@ -177,7 +177,7 @@ cr.define('route_details', function() {
         assertEquals(fakeRouteOne, details.route);
         checkElementTextWithId(fakeSinkOne.name, 'sink-name');
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
-            fakeRouteOne.title), 'route-information');
+            fakeRouteOne.description), 'route-information');
       });
 
       // Tests when |route| and |sink| are both null.

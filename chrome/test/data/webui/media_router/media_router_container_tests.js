@@ -345,8 +345,8 @@ cr.define('media_router_container', function() {
           var routeList =
               container.$['sink-list'].querySelectorAll('.route');
 
-          checkElementText(fakeRouteList[0].title, routeList[0]);
-          checkElementText(fakeRouteList[1].title, routeList[1]);
+          checkElementText(fakeRouteList[0].description, routeList[0]);
+          checkElementText(fakeRouteList[1].description, routeList[1]);
           checkElementText('', routeList[2]);
           done();
         });

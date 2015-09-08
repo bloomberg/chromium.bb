@@ -329,12 +329,13 @@ Polymer({
 
   /**
    * @param {!string} sinkId A sink ID.
-   * @return {string} The title value of the route associated with |sinkId|.
+   * @return {string} The description value of the route associated with
+   *     |sinkId|.
    * @private
    */
   computeRouteInSinkListValue_: function(sinkId, sinkToRouteMap) {
     var route = sinkToRouteMap[sinkId];
-    return route ? route.title : '';
+    return route ? route.description : '';
   },
 
   /**

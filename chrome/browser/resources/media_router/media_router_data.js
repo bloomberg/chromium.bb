@@ -102,7 +102,7 @@ cr.define('media_router', function() {
   /**
    * @param {string} id The media route ID.
    * @param {string} sinkId The ID of the media sink running this route.
-   * @param {string} title The short description of this route.
+   * @param {string} description The short description of this route.
    * @param {?number} tabId The ID of the tab in which web app is running and
    *                  accessing the route.
    * @param {boolean} isLocal True if this is a locally created route.
@@ -111,7 +111,7 @@ cr.define('media_router', function() {
    * @constructor
    * @struct
    */
-  var Route = function(id, sinkId, title, tabId, isLocal,
+  var Route = function(id, sinkId, description, tabId, isLocal,
       customControllerPath) {
     /** @type {string} */
     this.id = id;
@@ -120,7 +120,7 @@ cr.define('media_router', function() {
     this.sinkId = sinkId;
 
     /** @type {string} */
-    this.title = title;
+    this.description = description;
 
     /** @type {?number} */
     this.tabId = tabId;

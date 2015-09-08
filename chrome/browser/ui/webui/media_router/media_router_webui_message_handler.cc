@@ -65,7 +65,7 @@ scoped_ptr<base::DictionaryValue> RouteToValue(
 
   dictionary->SetString("id", route.media_route_id());
   dictionary->SetString("sinkId", route.media_sink_id());
-  dictionary->SetString("title", route.description());
+  dictionary->SetString("description", route.description());
   dictionary->SetBoolean("isLocal", route.is_local());
 
   const std::string& custom_path = route.custom_controller_path();
