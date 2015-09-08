@@ -223,6 +223,8 @@ base::LazyInstance<ServiceWorkerScriptContextSet>
 
 }  // namespace
 
+// Note that we can't use Blink public APIs in the constructor becase Blink
+// is not initialized at the point we create Dispatcher.
 Dispatcher::Dispatcher(DispatcherDelegate* delegate)
     : delegate_(delegate),
       content_watcher_(new ContentWatcher()),
@@ -250,35 +252,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
   WakeEventPage::Get()->Init(content::RenderThread::Get());
-
-  // WebSecurityPolicy whitelists. They should be registered for both
-  // chrome-extension: and chrome-extension-resource.
-  using RegisterFunction = void (*)(const WebString&);
-  RegisterFunction register_functions[] = {
-      // Treat as secure because communication with them is entirely in the
-      // browser, so there is no danger of manipulation or eavesdropping on
-      // communication with them by third parties.
-      WebSecurityPolicy::registerURLSchemeAsSecure,
-      // As far as Blink is concerned, they should be allowed to receive CORS
-      // requests. At the Extensions layer, requests will actually be blocked
-      // unless overridden by the web_accessible_resources manifest key.
-      // TODO(kalman): See what happens with a service worker.
-      WebSecurityPolicy::registerURLSchemeAsCORSEnabled,
-      // Resources should bypass Content Security Policy checks when included in
-      // protected resources. TODO(kalman): What are "protected resources"?
-      WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy,
-      // Extension resources are HTTP-like and safe to expose to the fetch API.
-      // The rules for the fetch API are consistent with XHR.
-      WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI,
-  };
-
-  WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
-  WebString extension_resource_scheme(base::ASCIIToUTF16(
-      kExtensionResourceScheme));
-  for (RegisterFunction func : register_functions) {
-    func(extension_scheme);
-    func(extension_resource_scheme);
-  }
 }
 
 Dispatcher::~Dispatcher() {
@@ -865,6 +838,35 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
 
 void Dispatcher::WebKitInitialized() {
   RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
+
+  // WebSecurityPolicy whitelists. They should be registered for both
+  // chrome-extension: and chrome-extension-resource.
+  using RegisterFunction = void (*)(const WebString&);
+  RegisterFunction register_functions[] = {
+      // Treat as secure because communication with them is entirely in the
+      // browser, so there is no danger of manipulation or eavesdropping on
+      // communication with them by third parties.
+      WebSecurityPolicy::registerURLSchemeAsSecure,
+      // As far as Blink is concerned, they should be allowed to receive CORS
+      // requests. At the Extensions layer, requests will actually be blocked
+      // unless overridden by the web_accessible_resources manifest key.
+      // TODO(kalman): See what happens with a service worker.
+      WebSecurityPolicy::registerURLSchemeAsCORSEnabled,
+      // Resources should bypass Content Security Policy checks when included in
+      // protected resources. TODO(kalman): What are "protected resources"?
+      WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy,
+      // Extension resources are HTTP-like and safe to expose to the fetch API.
+      // The rules for the fetch API are consistent with XHR.
+      WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI,
+  };
+
+  WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
+  WebString extension_resource_scheme(base::ASCIIToUTF16(
+      kExtensionResourceScheme));
+  for (RegisterFunction func : register_functions) {
+    func(extension_scheme);
+    func(extension_resource_scheme);
+  }
 
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
