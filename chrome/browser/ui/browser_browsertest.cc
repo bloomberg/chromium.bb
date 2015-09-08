@@ -3171,7 +3171,8 @@ void CheckDisplayModeMQ(
 }
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, ChangeDisplayMode) {
+// flaky new test: http://crbug.com/471703
+IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
   CheckDisplayModeMQ(
       ASCIIToUTF16("browser"),
       browser()->tab_strip_model()->GetActiveWebContents());
