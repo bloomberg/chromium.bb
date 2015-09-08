@@ -1393,7 +1393,6 @@ crbug.com/521764 [ Win10 ] editing/selection/vertical-rl-ltr-extend-line-forward
 crbug.com/521764 [ Win10 ] fast/canvas/canvas-lose-restore-googol-size.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/canvas/canvas-lose-restore-max-int-size.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/canvas/webgl/texture-color-profile.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] fast/css/font-weight-1.html [ ImageOnlyFailure Timeout ]
 crbug.com/521764 [ Win10 ] fast/css/line-height-determined-by-primary-font.html [ ImageOnlyFailure Timeout ]
 crbug.com/521764 [ Win10 ] fast/dom/HTMLImageElement/image-srcset-in-iframe-external.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] fast/dom/HTMLLinkElement/subresource.html [ Failure Pass ]
@@ -1596,7 +1595,7 @@ crbug.com/505086 css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebasel
 
 crbug.com/516522 [ Yosemite ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ Failure ]
 
-crbug.com/521124 [ XP Win7 ] fast/css/font-weight-1.html [ ImageOnlyFailure ]
+crbug.com/521124 [ Win ] fast/css/font-weight-1.html [ NeedsRebaseline ]
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]

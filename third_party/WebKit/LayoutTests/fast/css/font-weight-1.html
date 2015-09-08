@@ -90,5 +90,12 @@
 <div class="w9">
     A
 </div>
+
+<script>
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        document.fonts.ready.then(function () { testRunner.notifyDone(); });
+    }
+</script>
 </body>
 </html>
