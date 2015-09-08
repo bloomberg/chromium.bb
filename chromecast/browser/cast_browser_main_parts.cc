@@ -190,6 +190,11 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // Needed to fix a bug where the raster thread doesn't get scheduled for a
   // substantial time (~5 seconds).  See https://crbug.com/441895.
   { switches::kUseNormalPriorityForTileTaskWorkerThreads, "" },
+  // Needed so that our call to GpuDataManager::SetGLStrings doesn't race
+  // against GPU process creation (which is otherwise triggered from
+  // BrowserThreadsStarted).  The GPU process will be created as soon as a
+  // renderer needs it, which always happens after main loop starts.
+  { switches::kDisableGpuEarlyInit, "" },
   { NULL, NULL },  // Termination
 };
 
@@ -279,7 +284,10 @@ int CastBrowserMainParts::PreCreateThreads() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                  cast_browser_process_->cast_screen());
 #endif
+  return 0;
+}
 
+void CastBrowserMainParts::PreMainMessageLoopRun() {
 #if !defined(OS_ANDROID)
   // Set GL strings so GPU config code can make correct feature blacklisting/
   // whitelisting decisions.
@@ -290,10 +298,6 @@ int CastBrowserMainParts::PreCreateThreads() {
       sys_info->GetGlVersion());
 #endif  // !defined(OS_ANDROID)
 
-  return 0;
-}
-
-void CastBrowserMainParts::PreMainMessageLoopRun() {
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
   metrics::RegisterPrefs(pref_registry.get());
   cast_browser_process_->SetPrefService(

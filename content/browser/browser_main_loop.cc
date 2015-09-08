@@ -659,14 +659,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 }
 
 int BrowserMainLoop::PreCreateThreads() {
-  // Need to initialize in-process GpuDataManager before creating threads.
-  // It's unsafe to append the gpu command line switches to the global
-  // CommandLine::ForCurrentProcess object after threads are created.
-  // Also need to initialize before BrowserMainParts::PreCreateThreads, so
-  // BrowserMainParts has a hook to set GpuDataManager strings before
-  // starting Gpu process.
-  GpuDataManagerImpl::GetInstance()->Initialize();
-
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreCreateThreads");
@@ -708,6 +700,12 @@ int BrowserMainLoop::PreCreateThreads() {
     AVFoundationGlue::InitializeAVFoundation();
   }
 #endif
+
+  // 1) Need to initialize in-process GpuDataManager before creating threads.
+  // It's unsafe to append the gpu command line switches to the global
+  // CommandLine::ForCurrentProcess object after threads are created.
+  // 2) Must be after parts_->PreCreateThreads to pick up chrome://flags.
+  GpuDataManagerImpl::GetInstance()->Initialize();
 
 #if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
   // Single-process is an unsupported and not fully tested mode, so
