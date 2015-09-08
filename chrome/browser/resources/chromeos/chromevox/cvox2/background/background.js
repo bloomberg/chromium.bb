@@ -84,7 +84,6 @@ Background = function() {
     loadComplete: this.onLoadComplete,
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
-    menuListValueChanged: this.onEventDefault,
     textChanged: this.onTextOrTextSelectionChanged,
     textSelectionChanged: this.onTextOrTextSelectionChanged,
     valueChanged: this.onValueChanged
