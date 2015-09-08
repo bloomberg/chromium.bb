@@ -159,9 +159,6 @@ public class MediaCaptureNotificationService extends Service {
             notificationIconId = R.drawable.webrtc_audio;
         }
 
-        Intent tabIntent = Tab.createBringTabToFrontIntent(notificationId);
-        PendingIntent contentIntent = PendingIntent.getActivity(
-                mContext, notificationId, tabIntent, 0);
         String contentText = mContext.getResources().getString(notificationContentTextId) + ". "
                 + mContext.getResources().getString(
                         R.string.media_notification_link_text, url);
@@ -169,11 +166,17 @@ public class MediaCaptureNotificationService extends Service {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
                 .setAutoCancel(false)
                 .setOngoing(true)
-                .setContentIntent(contentIntent)
                 .setContentTitle(mContext.getString(R.string.app_name))
                 .setContentText(contentText)
                 .setSmallIcon(notificationIconId)
                 .setLocalOnly(true);
+
+        Intent tabIntent = Tab.createBringTabToFrontIntent(notificationId);
+        if (tabIntent != null) {
+            PendingIntent contentIntent = PendingIntent.getActivity(
+                    mContext, notificationId, tabIntent, 0);
+            builder.setContentIntent(contentIntent);
+        }
 
         Notification notification = new NotificationCompat.BigTextStyle(builder)
                 .bigText(contentText).build();

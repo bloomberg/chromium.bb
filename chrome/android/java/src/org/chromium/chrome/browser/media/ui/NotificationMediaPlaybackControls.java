@@ -346,12 +346,6 @@ public class NotificationMediaPlaybackControls {
         return title.startsWith("\u25B6") ? title.substring(1).trim() : title;
     }
 
-    private PendingIntent createContentIntent() {
-        int tabId = mMediaNotificationInfo.tabId;
-        return PendingIntent.getActivity(
-                mContext, tabId, Tab.createBringTabToFrontIntent(tabId), 0);
-    }
-
     private MediaMetadataCompat createMetadata() {
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
 
@@ -398,10 +392,15 @@ public class NotificationMediaPlaybackControls {
                 .setDeleteIntent(mService.getPendingIntent(ListenerService.ACTION_STOP));
         }
         mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
-        mNotificationBuilder.setContentIntent(createContentIntent());
+
+        int tabId = mMediaNotificationInfo.tabId;
+        Intent tabIntent = Tab.createBringTabToFrontIntent(tabId);
+        if (tabIntent != null) {
+            mNotificationBuilder
+                    .setContentIntent(PendingIntent.getActivity(mContext, tabId, tabIntent, 0));
+        }
 
         RemoteViews contentView = createContentView();
-
         contentView.setTextViewText(R.id.title, mMediaNotificationInfo.title);
         contentView.setTextViewText(R.id.status, mMediaNotificationInfo.origin);
         if (mNotificationIcon != null) {
