@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.crash;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.preferences.privacy.CrashReportingPermissionManager;
@@ -38,13 +38,20 @@ import java.util.zip.GZIPOutputStream;
  * and false otherwise.
  */
 public class MinidumpUploadCallable implements Callable<Boolean> {
-    private static final String TAG = "MinidumpUploadCallable";
-    @VisibleForTesting protected static final int LOG_SIZE_LIMIT_BYTES = 1024 * 1024; // 1MB
+    private static final String TAG = "cr.MDUploadCallable";
+    @VisibleForTesting protected static final int LOG_SIZE_LIMIT_BYTES = 2 * 1024 * 1024; // 2MB
     @VisibleForTesting protected static final int LOG_UPLOAD_LIMIT_PER_DAY = 5;
+    @VisibleForTesting
+    protected static final int LOG_WEEKLY_SIZE_LIMIT_BYTES = 5 * 1024 * 1024; // 5MB
 
     @VisibleForTesting
+    protected static final String PREF_DAY_UPLOAD_COUNT = "crash_day_dump_upload_count";
+    @VisibleForTesting
     protected static final String PREF_LAST_UPLOAD_DAY = "crash_dump_last_upload_day";
-    @VisibleForTesting protected static final String PREF_UPLOAD_COUNT = "crash_dump_upload_count";
+    @VisibleForTesting
+    protected static final String PREF_LAST_UPLOAD_WEEK = "crash_dump_last_upload_week";
+    @VisibleForTesting
+    protected static final String PREF_WEEK_UPLOAD_SIZE = "crash_dump_week_upload_size";
 
     @VisibleForTesting
     protected static final String CRASH_URL_STRING = "https://clients2.google.com/cr/report";
@@ -82,8 +89,9 @@ public class MinidumpUploadCallable implements Callable<Boolean> {
         }
 
         boolean isLimited = mPermManager.isUploadLimited();
-        if (isLimited && !isUploadSizeAndFrequencyAllowed()) {
-            Log.i(TAG, "Minidump cannot currently be uploaded due to constraints");
+        long uploadFileSize = mFileToUpload.length();
+        if (isLimited && !isUploadSizeAndFrequencyAllowed(uploadFileSize)) {
+            Log.i(TAG, "Minidump cannot currently be uploaded due to constraints.");
             return false;
         }
 
@@ -100,10 +108,12 @@ public class MinidumpUploadCallable implements Callable<Boolean> {
             }
             minidumpInputStream = new FileInputStream(mFileToUpload);
             streamCopy(minidumpInputStream, new GZIPOutputStream(connection.getOutputStream()));
-            boolean status = handleExecutionResponse(connection);
+            boolean success = handleExecutionResponse(connection);
 
-            if (isLimited) updateUploadPrefs();
-            return status;
+            // Need to save file size beforehand as |handleExecutionResponse| deletes the file if
+            // the upload was successful.
+            if (success && isLimited) updateUploadPrefs(uploadFileSize);
+            return success;
         } catch (IOException e) {
             // For now just log the stack trace.
             Log.w(TAG, "Error while uploading " + mFileToUpload.getName(), e);
@@ -247,39 +257,85 @@ public class MinidumpUploadCallable implements Callable<Boolean> {
     /**
      * Checks whether crash upload satisfies the size and frequency constraints.
      *
+     * @param currentUploadSize The size of the file to be uploaded in bytes.
      * @return whether crash upload satisfies the size and frequency constraints.
      */
-    private boolean isUploadSizeAndFrequencyAllowed() {
+    private boolean isUploadSizeAndFrequencyAllowed(long currentUploadSize) {
         // Check upload size constraint.
-        if (mFileToUpload.length() > LOG_SIZE_LIMIT_BYTES) return false;
+        if (currentUploadSize > LOG_SIZE_LIMIT_BYTES) return false;
 
         // Check upload frequency constraint.
-        // If pref doesn't exist then in both cases default value 0 will be returned and comparison
-        // always would be true.
-        if (mSharedPreferences.getInt(PREF_LAST_UPLOAD_DAY, 0) != getCurrentDay()) return true;
-        return mSharedPreferences.getInt(PREF_UPLOAD_COUNT, 0) < LOG_UPLOAD_LIMIT_PER_DAY;
+        // If pref doesn't exist then for both prefs default value 0 will be returned and upload
+        // would be allowed.
+        if (mSharedPreferences.getInt(PREF_LAST_UPLOAD_DAY, 0) == getCurrentDay()
+                && mSharedPreferences.getInt(PREF_DAY_UPLOAD_COUNT, 0)
+                        >= LOG_UPLOAD_LIMIT_PER_DAY) {
+            return false;
+        }
+
+        // Check that user is not exceeding weekly total upload limit.
+        if (mSharedPreferences.getInt(PREF_LAST_UPLOAD_WEEK, 0) == getFirstDayOfCurrentWeek()
+                && mSharedPreferences.getLong(PREF_WEEK_UPLOAD_SIZE, 0) + currentUploadSize
+                        >= LOG_WEEKLY_SIZE_LIMIT_BYTES) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Updates preferences used for determining crash upload constraints.
+     *
+     * @param lastUploadSize The size of the uploaded file in bytes.
      */
-    private void updateUploadPrefs() {
+    private void updateUploadPrefs(long lastUploadSize) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
 
         int day = getCurrentDay();
-        int prevCount = mSharedPreferences.getInt(PREF_UPLOAD_COUNT, 0);
+        int week = getFirstDayOfCurrentWeek();
+        int dailyUploadCount = mSharedPreferences.getInt(PREF_DAY_UPLOAD_COUNT, 0);
         if (mSharedPreferences.getInt(PREF_LAST_UPLOAD_DAY, 0) != day) {
-            prevCount = 0;
+            dailyUploadCount = 0;
         }
-        editor.putInt(PREF_LAST_UPLOAD_DAY, day).putInt(PREF_UPLOAD_COUNT, prevCount + 1).apply();
+        long weeklyTotalSize = mSharedPreferences.getLong(PREF_WEEK_UPLOAD_SIZE, 0);
+        if (mSharedPreferences.getInt(PREF_LAST_UPLOAD_WEEK, 0) != week) {
+            weeklyTotalSize = 0;
+        }
+        editor.putInt(PREF_LAST_UPLOAD_DAY, day)
+                .putInt(PREF_DAY_UPLOAD_COUNT, dailyUploadCount + 1)
+                .putInt(PREF_LAST_UPLOAD_WEEK, week)
+                .putLong(PREF_WEEK_UPLOAD_SIZE, weeklyTotalSize + lastUploadSize)
+                .apply();
     }
 
     /**
-     * Returns number of current day in a year starting from 1. Overridden in tests.
+     * Returns a number corresponding to the current day. Overriden in
      */
     protected int getCurrentDay() {
-        return Calendar.getInstance().get(Calendar.YEAR) * 365
-                + Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+        return getCurrentDay(Calendar.getInstance());
+    }
+
+    /**
+     * Returns a number corresponding to the first day of the current week.
+     */
+    protected int getFirstDayOfCurrentWeek() {
+        return getFirstDayOfCurrentWeek(Calendar.getInstance());
+    }
+
+    /**
+     * Returns a number corresponding to the current day since epoch based on the provided calendar.
+     */
+    protected int getCurrentDay(Calendar calendar) {
+        long millisInDay = 86400000;
+        return (int) (calendar.getTimeInMillis() / millisInDay);
+    }
+
+    /**
+     * Returns a number corresponding to the first day of the current week based on the provided
+     * calendar.
+     */
+    protected int getFirstDayOfCurrentWeek(Calendar calendar) {
+        return getCurrentDay() - calendar.get(Calendar.DAY_OF_WEEK) + 1;
     }
 
     /**

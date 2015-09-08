@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Calendar;
 
 /**
  * Unittests for {@link MinidumpUploadCallable}.
@@ -31,7 +33,6 @@ import java.net.URL;
 public class MinidumpUploadCallableTest extends CrashTestCase {
     private static final String BOUNDARY = "TESTBOUNDARY";
     private static final String CRASH_ID = "IMACRASHID";
-    private static final int CURRENT_DAY = 14;
     private static final String LOG_FILE_NAME = "chromium_renderer-123_log.dmp224";
     private File mTestUpload;
     private File mUploadLog;
@@ -135,21 +136,31 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     }
 
     /**
-     * This class accesses member fields of |MinidumpUploadCallableTest| class and calls
-     * |getInstrumentation| which cannot be done in a static context.
+     * This class calls |getInstrumentation| which cannot be done in a static context.
      */
     private class MockMinidumpUploadCallable extends MinidumpUploadCallable {
+        private Calendar mCalendar;
+
         MockMinidumpUploadCallable(
                 HttpURLConnectionFactory httpURLConnectionFactory,
                 CrashReportingPermissionManager permManager) {
             super(mTestUpload, mUploadLog, httpURLConnectionFactory, permManager,
                     PreferenceManager.getDefaultSharedPreferences(
                             getInstrumentation().getTargetContext()));
+            mCalendar = Calendar.getInstance();
+            mCalendar.clear();
+            mCalendar.set(Calendar.YEAR, 2014);
+            mCalendar.set(Calendar.DAY_OF_YEAR, 14);
         }
 
         @Override
         protected int getCurrentDay() {
-            return CURRENT_DAY;
+            return super.getCurrentDay(mCalendar);
+        }
+
+        @Override
+        protected int getFirstDayOfCurrentWeek() {
+            return super.getFirstDayOfCurrentWeek(mCalendar);
         }
     }
 
@@ -215,20 +226,13 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager(true, true);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory();
-
-        FileOutputStream stream = null;
-        try {
-            stream = new FileOutputStream(mTestUpload, true);
-            byte[] buf = new byte[MinidumpUploadCallable.LOG_SIZE_LIMIT_BYTES];
-            stream.write(buf);
-            stream.flush();
-        } finally {
-            if (stream != null) stream.close();
-        }
+        extendUploadFile(MinidumpUploadCallable.LOG_SIZE_LIMIT_BYTES);
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        setUpCrashPreferences(CURRENT_DAY, MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1);
+        setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(),
+                MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1,
+                minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
         assertFalse(minidumpUploadCallable.call());
         assertFalse(mExpectedFileAfterUpload.exists());
     }
@@ -240,20 +244,13 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager(true, false);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory();
-
-        FileOutputStream stream = null;
-        try {
-            stream = new FileOutputStream(mTestUpload, true);
-            byte[] buf = new byte[MinidumpUploadCallable.LOG_SIZE_LIMIT_BYTES];
-            stream.write(buf);
-            stream.flush();
-        } finally {
-            if (stream != null) stream.close();
-        }
+        extendUploadFile(MinidumpUploadCallable.LOG_SIZE_LIMIT_BYTES);
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        setUpCrashPreferences(CURRENT_DAY, MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1);
+        setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(),
+                MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1,
+                minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
         assertTrue(minidumpUploadCallable.call());
         assertTrue(mExpectedFileAfterUpload.exists());
     }
@@ -268,28 +265,86 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        setUpCrashPreferences(CURRENT_DAY, MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY);
+        setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(),
+                MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY,
+                minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
         assertFalse(minidumpUploadCallable.call());
         assertFalse(mExpectedFileAfterUpload.exists());
 
-        setUpCrashPreferences(CURRENT_DAY, MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1);
+        setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(),
+                MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1,
+                minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
         assertTrue(minidumpUploadCallable.call());
         assertTrue(mExpectedFileAfterUpload.exists());
 
+        // After a successful upload we need to the create upload file again.
         createMinidumpFile();
 
-        setUpCrashPreferences(CURRENT_DAY - 1, MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY);
+        setUpCrashPreferences(minidumpUploadCallable.getCurrentDay() - 1,
+                MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY,
+                minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
         assertTrue(minidumpUploadCallable.call());
         assertTrue(mExpectedFileAfterUpload.exists());
     }
 
-    private void setUpCrashPreferences(int lastDay, int count) {
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testCrashUploadWeeklyConstraints() throws Exception {
+        CrashReportingPermissionManager testPermManager =
+                new MockCrashReportingPermissionManager(true, true);
+
+        HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory();
+
+        MinidumpUploadCallable minidumpUploadCallable =
+                new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
+        int fileSize = MinidumpUploadCallable.LOG_SIZE_LIMIT_BYTES / 10;
+        extendUploadFile(fileSize);
+        // This shouldn't work as weekly size cannot allow one more |fileSize| upload.
+        setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(), 2,
+                minidumpUploadCallable.getFirstDayOfCurrentWeek(),
+                MinidumpUploadCallable.LOG_WEEKLY_SIZE_LIMIT_BYTES - fileSize / 2);
+        assertFalse(minidumpUploadCallable.call());
+        assertFalse(mExpectedFileAfterUpload.exists());
+
+        // This upload should be allowed although there is not enough weekly limit left, because as
+        // the week changes the weekly limit should get reset.
+        setUpCrashPreferences(minidumpUploadCallable.getCurrentDay() - 1,
+                MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1,
+                minidumpUploadCallable.getFirstDayOfCurrentWeek() - 7,
+                MinidumpUploadCallable.LOG_WEEKLY_SIZE_LIMIT_BYTES - fileSize / 2);
+        assertTrue(minidumpUploadCallable.call());
+        assertTrue(mExpectedFileAfterUpload.exists());
+
+        // After a successful upload we need to create the upload file again.
+        createMinidumpFile();
+        extendUploadFile(fileSize);
+
+        // This upload should be allowed as there is enough weekly limit left.
+        assertTrue(minidumpUploadCallable.call());
+        assertTrue(mExpectedFileAfterUpload.exists());
+    }
+
+    private void setUpCrashPreferences(int lastDay, int count, int lastWeek, long totalSize) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(
                 getInstrumentation().getTargetContext());
         pref.edit()
                 .putInt(MinidumpUploadCallable.PREF_LAST_UPLOAD_DAY, lastDay)
-                .putInt(MinidumpUploadCallable.PREF_UPLOAD_COUNT, count)
+                .putInt(MinidumpUploadCallable.PREF_DAY_UPLOAD_COUNT, count)
+                .putInt(MinidumpUploadCallable.PREF_LAST_UPLOAD_WEEK, lastWeek)
+                .putLong(MinidumpUploadCallable.PREF_WEEK_UPLOAD_SIZE, totalSize)
                 .apply();
+    }
+
+    private void extendUploadFile(int numBytes) throws FileNotFoundException, IOException {
+        FileOutputStream stream = null;
+        try {
+            stream = new FileOutputStream(mTestUpload, true);
+            byte[] buf = new byte[numBytes];
+            stream.write(buf);
+            stream.flush();
+        } finally {
+            if (stream != null) stream.close();
+        }
     }
 
     private void assertValidUploadLogEntry() throws IOException {
