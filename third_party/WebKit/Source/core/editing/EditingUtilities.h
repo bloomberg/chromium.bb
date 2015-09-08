@@ -236,7 +236,12 @@ void updatePositionForNodeRemoval(Position&, Node&);
 
 // Functions returning VisiblePosition
 
-VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position&, ContainerNode*);
+// TODO(yosin) We should rename
+// |firstEditableVisiblePositionAfterPositionInRoot()| to a better name which
+// describes what this function returns, since it returns a position before
+// specified position due by canonicalization.
+CORE_EXPORT VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position&, ContainerNode*);
+CORE_EXPORT VisiblePositionInComposedTree firstEditableVisiblePositionAfterPositionInRoot(const PositionInComposedTree&, ContainerNode*);
 VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position&, ContainerNode*);
 VisiblePosition visiblePositionBeforeNode(Node&);
 VisiblePosition visiblePositionAfterNode(Node&);

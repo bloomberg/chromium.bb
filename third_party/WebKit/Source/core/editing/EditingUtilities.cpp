@@ -451,6 +451,11 @@ VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& 
     return createVisiblePosition(firstEditablePositionAfterPositionInRoot(position, highestRoot));
 }
 
+VisiblePositionInComposedTree firstEditableVisiblePositionAfterPositionInRoot(const PositionInComposedTree& position, ContainerNode* highestRoot)
+{
+    return createVisiblePosition(firstEditablePositionAfterPositionInRoot(position, highestRoot));
+}
+
 template <typename Strategy>
 PositionAlgorithm<Strategy> firstEditablePositionAfterPositionInRootAlgorithm(const PositionAlgorithm<Strategy>& position, Node* highestRoot)
 {
