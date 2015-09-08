@@ -10,6 +10,7 @@
 #include "cc/resources/ui_resource_client.h"
 #include "ui/android/resources/ui_resource_android.h"
 #include "ui/android/ui_android_export.h"
+#include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
