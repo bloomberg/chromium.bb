@@ -433,6 +433,70 @@ TEST_F(SandwichTest, SuccessfulSingleOverlay) {
   EXPECT_EQ(original_resource_id, candidate_list.back().resource_id);
 }
 
+TEST_F(SandwichTest, SuccessfulTwoOverlays) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+
+  // Add two non-overlapping candidates.
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayTopLeftRect);
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayBottomRightRect);
+
+  // Add something behind it.
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+
+  // Both candidates should become overlays.
+  EXPECT_EQ(1u, pass_list.size());
+  EXPECT_EQ(3u, candidate_list.size());
+  EXPECT_EQ(kOverlayTopLeftRect, candidate_list[1].display_rect);
+  EXPECT_EQ(kOverlayBottomRightRect, candidate_list[2].display_rect);
+
+  // The overlay quads should be gone.
+  const QuadList& quad_list = pass_list.back()->quad_list;
+  EXPECT_EQ(1u, quad_list.size());
+  EXPECT_EQ(DrawQuad::SOLID_COLOR, quad_list.front()->material);
+}
+
+TEST_F(SandwichTest, OverlappingOverlays) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+
+  // Add two overlapping candidates.
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayTopLeftRect);
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayRect);
+
+  // Add something behind it.
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+
+  // Only one of the candidates should become an overlay.
+  EXPECT_EQ(1u, pass_list.size());
+  EXPECT_EQ(2u, candidate_list.size());
+  EXPECT_EQ(kOverlayTopLeftRect, candidate_list[1].display_rect);
+
+  // One of the overlay quads should be gone.
+  const QuadList& quad_list = pass_list.back()->quad_list;
+  EXPECT_EQ(2u, quad_list.size());
+  EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, quad_list.front()->material);
+  EXPECT_EQ(DrawQuad::SOLID_COLOR, quad_list.back()->material);
+}
+
 TEST_F(SandwichTest, SuccessfulSandwichOverlay) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
 

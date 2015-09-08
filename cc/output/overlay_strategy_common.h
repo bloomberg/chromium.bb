@@ -16,15 +16,27 @@ class OverlayCandidateValidator;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 
+enum OverlayResult {
+  DID_NOT_CREATE_OVERLAY,
+  CREATED_OVERLAY_STOP_LOOKING,
+  CREATED_OVERLAY_KEEP_LOOKING,
+};
+
 class CC_EXPORT OverlayStrategyCommonDelegate {
  public:
   virtual ~OverlayStrategyCommonDelegate() {}
-  virtual bool TryOverlay(OverlayCandidateValidator* capability_checker,
-                          RenderPassList* render_passes_in_draw_order,
-                          OverlayCandidateList* candidate_list,
-                          const OverlayCandidate& candidate,
-                          QuadList::Iterator iter,
-                          float device_scale_factor) = 0;
+
+  // Check if |candidate| can be promoted into an overlay. If so, add it to
+  // |candidate_list| and update the quads in |render_passes_in_draw_order|
+  // as necessary. When returning CREATED_OVERLAY_KEEP_LOOKING, |iter| is
+  // updated to point to the next quad to evaluate.
+  virtual OverlayResult TryOverlay(
+      OverlayCandidateValidator* capability_checker,
+      RenderPassList* render_passes_in_draw_order,
+      OverlayCandidateList* candidate_list,
+      const OverlayCandidate& candidate,
+      QuadList::Iterator* iter,
+      float device_scale_factor) = 0;
 };
 
 class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
@@ -42,13 +54,10 @@ class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
   static bool IsInvisibleQuad(const DrawQuad* draw_quad);
 
  protected:
-  bool GetCandidateQuadInfo(const DrawQuad& draw_quad,
-                            OverlayCandidate* quad_info);
-
   // Returns true if |draw_quad| is of a known quad type and contains an
   // overlayable resource.
-  bool IsOverlayQuad(const DrawQuad* draw_quad);
-
+  bool GetCandidateQuadInfo(const DrawQuad& draw_quad,
+                            OverlayCandidate* quad_info);
   bool GetTextureQuadInfo(const TextureDrawQuad& quad,
                           OverlayCandidate* quad_info);
   bool GetVideoQuadInfo(const StreamVideoDrawQuad& quad,

@@ -31,40 +31,44 @@ namespace cc {
 
 OverlayStrategySandwich::~OverlayStrategySandwich() {}
 
-bool OverlayStrategySandwich::TryOverlay(
+OverlayResult OverlayStrategySandwich::TryOverlay(
     OverlayCandidateValidator* capability_checker,
     RenderPassList* render_passes_in_draw_order,
-    OverlayCandidateList* output_candidate_list,
+    OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
-    QuadList::Iterator candidate_iter_in_quad_list,
+    QuadList::Iterator* candidate_iter_in_quad_list,
     float device_scale_factor) {
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
   QuadList& quad_list = root_render_pass->quad_list;
   gfx::Rect pixel_bounds = root_render_pass->output_rect;
 
-  const DrawQuad* candidate_quad = *candidate_iter_in_quad_list;
+  const DrawQuad* candidate_quad = **candidate_iter_in_quad_list;
   const gfx::Transform& candidate_transform =
       candidate_quad->shared_quad_state->quad_to_target_transform;
   gfx::Transform candidate_inverse_transform;
   if (!candidate_transform.GetInverse(&candidate_inverse_transform))
-    return false;
+    return DID_NOT_CREATE_OVERLAY;
 
   // Compute the candidate's rect in display space (pixels on the screen). The
   // rect needs to be DIP-aligned, or we cannot use it.
-  gfx::RectF candidate_pixel_rect_float = MathUtil::MapClippedRect(
-      candidate_transform, gfx::RectF(candidate_quad->rect));
-  if (!candidate_pixel_rect_float.IsExpressibleAsRect())
-    return false;
-  gfx::Rect candidate_pixel_rect =
-      gfx::ToNearestRect(candidate_pixel_rect_float);
+  const gfx::Rect candidate_pixel_rect =
+      gfx::ToNearestRect(candidate.display_rect);
   if (!IsPixelRectAlignedToDIP(device_scale_factor, candidate_pixel_rect))
-    return false;
+    return DID_NOT_CREATE_OVERLAY;
 
-  // Iterate through the quads in front of |potential_candidate|, and compute
-  // the region of |potential_candidate| that is covered.
+  // Don't allow overlapping overlays for now.
+  for (const OverlayCandidate& other_candidate : *candidate_list) {
+    if (other_candidate.display_rect.Intersects(candidate.display_rect) &&
+        other_candidate.plane_z_order == 1) {
+      return DID_NOT_CREATE_OVERLAY;
+    }
+  }
+
+  // Iterate through the quads in front of |candidate|, and compute the region
+  // of |candidate| that is covered.
   Region pixel_covered_region;
   for (auto overlap_iter = quad_list.cbegin();
-       overlap_iter != candidate_iter_in_quad_list; ++overlap_iter) {
+       overlap_iter != *candidate_iter_in_quad_list; ++overlap_iter) {
     if (OverlayStrategyCommon::IsInvisibleQuad(*overlap_iter))
       continue;
     // Compute the quad's bounds in display space, and ensure that it is rounded
@@ -81,14 +85,9 @@ bool OverlayStrategySandwich::TryOverlay(
     pixel_covered_region.Union(pixel_covered_rect);
   }
 
-  // Add our primary surface.
-  OverlayCandidateList new_candidate_list;
-  OverlayCandidate main_image;
-  main_image.display_rect = gfx::RectF(pixel_bounds);
-  new_candidate_list.push_back(main_image);
-
   // Add the candidate's overlay.
   DCHECK(candidate.resource_id);
+  OverlayCandidateList new_candidate_list = *candidate_list;
   new_candidate_list.push_back(candidate);
   new_candidate_list.back().plane_z_order = 1;
 
@@ -115,13 +114,14 @@ bool OverlayStrategySandwich::TryOverlay(
   capability_checker->CheckOverlaySupport(&new_candidate_list);
   for (const OverlayCandidate& candidate : new_candidate_list) {
     if (candidate.plane_z_order > 0 && !candidate.overlay_handled)
-      return false;
+      return DID_NOT_CREATE_OVERLAY;
   }
 
   // Remove the quad for the overlay quad. Replace it with a transparent quad
   // if we're putting a new overlay on top.
   if (pixel_covered_rects.empty()) {
-    quad_list.EraseAndInvalidateAllPointers(candidate_iter_in_quad_list);
+    *candidate_iter_in_quad_list =
+        quad_list.EraseAndInvalidateAllPointers(*candidate_iter_in_quad_list);
   } else {
     // Cache the information from the candidate quad that we'll need to
     // construct the solid color quads.
@@ -131,10 +131,10 @@ bool OverlayStrategySandwich::TryOverlay(
 
     // Reserve space in the quad list for the transparent quads.
     quad_list.ReplaceExistingElement<SolidColorDrawQuad>(
-        candidate_iter_in_quad_list);
-    candidate_iter_in_quad_list =
+        *candidate_iter_in_quad_list);
+    *candidate_iter_in_quad_list =
         quad_list.InsertBeforeAndInvalidateAllPointers<SolidColorDrawQuad>(
-            candidate_iter_in_quad_list, pixel_covered_rects.size() - 1);
+            *candidate_iter_in_quad_list, pixel_covered_rects.size() - 1);
 
     // Cover the region with transparent quads.
     for (const gfx::Rect& pixel_covered_rect : pixel_covered_rects) {
@@ -143,17 +143,17 @@ bool OverlayStrategySandwich::TryOverlay(
       quad_space_covered_rect.Intersect(candidate_rect);
 
       SolidColorDrawQuad* transparent_quad =
-          static_cast<SolidColorDrawQuad*>(*candidate_iter_in_quad_list);
+          static_cast<SolidColorDrawQuad*>(**candidate_iter_in_quad_list);
       transparent_quad->SetAll(candidate_shared_quad_state,
                                quad_space_covered_rect, quad_space_covered_rect,
                                quad_space_covered_rect, false,
                                SK_ColorTRANSPARENT, true);
-      ++candidate_iter_in_quad_list;
+      ++(*candidate_iter_in_quad_list);
     }
   }
 
-  output_candidate_list->swap(new_candidate_list);
-  return true;
+  candidate_list->swap(new_candidate_list);
+  return CREATED_OVERLAY_KEEP_LOOKING;
 }
 
 }  // namespace cc

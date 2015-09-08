@@ -33,31 +33,42 @@ bool OverlayStrategyCommon::Attempt(RenderPassList* render_passes_in_draw_order,
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
   DCHECK(root_render_pass);
 
-  QuadList& quad_list = root_render_pass->quad_list;
-  for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
-    OverlayCandidate candidate;
-    const DrawQuad* draw_quad = *it;
-    if (IsOverlayQuad(draw_quad) &&
-        GetCandidateQuadInfo(*draw_quad, &candidate) &&
-        delegate_->TryOverlay(capability_checker_, render_passes_in_draw_order,
-                              candidate_list, candidate, it,
-                              device_scale_factor))
-      return true;
-  }
-  return false;
-}
+  // Add our primary surface.
+  OverlayCandidate main_image;
+  main_image.display_rect = gfx::RectF(root_render_pass->output_rect);
+  DCHECK(candidate_list->empty());
+  candidate_list->push_back(main_image);
 
-bool OverlayStrategyCommon::IsOverlayQuad(const DrawQuad* draw_quad) {
-  switch (draw_quad->material) {
-    case DrawQuad::TEXTURE_CONTENT:
-      return TextureDrawQuad::MaterialCast(draw_quad)->allow_overlay();
-    case DrawQuad::STREAM_VIDEO_CONTENT:
-      return StreamVideoDrawQuad::MaterialCast(draw_quad)->allow_overlay();
-    case DrawQuad::IO_SURFACE_CONTENT:
-      return IOSurfaceDrawQuad::MaterialCast(draw_quad)->allow_overlay;
-    default:
-      return false;
+  bool created_overlay = false;
+  QuadList& quad_list = root_render_pass->quad_list;
+  for (auto it = quad_list.begin(); it != quad_list.end();) {
+    OverlayCandidate candidate;
+    if (!GetCandidateQuadInfo(**it, &candidate)) {
+      ++it;
+      continue;
+    }
+
+    OverlayResult result = delegate_->TryOverlay(
+        capability_checker_, render_passes_in_draw_order, candidate_list,
+        candidate, &it, device_scale_factor);
+    switch (result) {
+      case DID_NOT_CREATE_OVERLAY:
+        ++it;
+        break;
+      case CREATED_OVERLAY_STOP_LOOKING:
+        return true;
+      case CREATED_OVERLAY_KEEP_LOOKING:
+        created_overlay = true;
+        break;
+    }
   }
+
+  if (!created_overlay) {
+    DCHECK_EQ(1u, candidate_list->size());
+    candidate_list->clear();
+  }
+
+  return created_overlay;
 }
 
 // static
@@ -76,6 +87,8 @@ bool OverlayStrategyCommon::IsInvisibleQuad(const DrawQuad* draw_quad) {
 
 bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
                                                OverlayCandidate* quad_info) {
+  if (!quad.allow_overlay())
+    return false;
   gfx::OverlayTransform overlay_transform =
       OverlayCandidate::GetOverlayTransform(
           quad.shared_quad_state->quad_to_target_transform, quad.y_flipped);
@@ -92,6 +105,8 @@ bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
 
 bool OverlayStrategyCommon::GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
                                              OverlayCandidate* quad_info) {
+  if (!quad.allow_overlay())
+    return false;
   gfx::OverlayTransform overlay_transform =
       OverlayCandidate::GetOverlayTransform(
           quad.shared_quad_state->quad_to_target_transform, false);
@@ -135,6 +150,8 @@ bool OverlayStrategyCommon::GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
 
 bool OverlayStrategyCommon::GetIOSurfaceQuadInfo(const IOSurfaceDrawQuad& quad,
                                                  OverlayCandidate* quad_info) {
+  if (!quad.allow_overlay)
+    return false;
   gfx::OverlayTransform overlay_transform =
       OverlayCandidate::GetOverlayTransform(
           quad.shared_quad_state->quad_to_target_transform, false);

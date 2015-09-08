@@ -14,51 +14,42 @@ namespace cc {
 
 OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
-bool OverlayStrategySingleOnTop::TryOverlay(
+OverlayResult OverlayStrategySingleOnTop::TryOverlay(
     OverlayCandidateValidator* capability_checker,
     RenderPassList* render_passes_in_draw_order,
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
-    QuadList::Iterator candidate_iterator,
+    QuadList::Iterator* candidate_iterator,
     float device_scale_factor) {
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
   QuadList& quad_list = root_render_pass->quad_list;
-  const DrawQuad* draw_quad = *candidate_iterator;
-  gfx::RectF rect = MathUtil::MapClippedRect(
-      draw_quad->shared_quad_state->quad_to_target_transform,
-      gfx::RectF(draw_quad->rect));
-
   // Check that no prior quads overlap it.
   for (auto overlap_iter = quad_list.cbegin();
-       overlap_iter != candidate_iterator; ++overlap_iter) {
+       overlap_iter != *candidate_iterator; ++overlap_iter) {
     gfx::RectF overlap_rect = MathUtil::MapClippedRect(
         overlap_iter->shared_quad_state->quad_to_target_transform,
         gfx::RectF(overlap_iter->rect));
-    if (rect.Intersects(overlap_rect) &&
+    if (candidate.display_rect.Intersects(overlap_rect) &&
         !OverlayStrategyCommon::IsInvisibleQuad(*overlap_iter))
-      return false;
+      return DID_NOT_CREATE_OVERLAY;
   }
-
-  // Add our primary surface.
-  OverlayCandidateList candidates;
-  OverlayCandidate main_image;
-  main_image.display_rect = gfx::RectF(root_render_pass->output_rect);
-  candidates.push_back(main_image);
 
   // Add the overlay.
-  candidates.push_back(candidate);
-  candidates.back().plane_z_order = 1;
+  OverlayCandidateList new_candidate_list = *candidate_list;
+  new_candidate_list.push_back(candidate);
+  new_candidate_list.back().plane_z_order = 1;
 
   // Check for support.
-  capability_checker->CheckOverlaySupport(&candidates);
+  capability_checker->CheckOverlaySupport(&new_candidate_list);
 
   // If the candidate can be handled by an overlay, create a pass for it.
-  if (candidates[1].overlay_handled) {
-    quad_list.EraseAndInvalidateAllPointers(candidate_iterator);
-    candidate_list->swap(candidates);
-    return true;
+  if (new_candidate_list.back().overlay_handled) {
+    quad_list.EraseAndInvalidateAllPointers(*candidate_iterator);
+    candidate_list->swap(new_candidate_list);
+    return CREATED_OVERLAY_STOP_LOOKING;
   }
-  return false;
+
+  return DID_NOT_CREATE_OVERLAY;
 }
 
 }  // namespace cc

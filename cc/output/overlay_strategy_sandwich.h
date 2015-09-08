@@ -18,12 +18,12 @@ class CC_EXPORT OverlayStrategySandwich : public OverlayStrategyCommonDelegate {
   OverlayStrategySandwich() {}
   ~OverlayStrategySandwich() override;
 
-  bool TryOverlay(OverlayCandidateValidator* capability_checker,
-                  RenderPassList* render_passes_in_draw_order,
-                  OverlayCandidateList* candidate_list,
-                  const OverlayCandidate& candidate,
-                  QuadList::Iterator candidate_iterator,
-                  float device_scale_factor) override;
+  OverlayResult TryOverlay(OverlayCandidateValidator* capability_checker,
+                           RenderPassList* render_passes_in_draw_order,
+                           OverlayCandidateList* candidate_list,
+                           const OverlayCandidate& candidate,
+                           QuadList::Iterator* candidate_iterator,
+                           float device_scale_factor) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategySandwich);
