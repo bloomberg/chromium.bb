@@ -479,6 +479,8 @@ class FocusChangeObserver : public ViewObserver {
  private:
   // Overridden from ViewObserver.
   void OnViewFocusChanged(View* gained_focus, View* lost_focus) override {
+    EXPECT_TRUE(!gained_focus || gained_focus->HasFocus());
+    EXPECT_FALSE(lost_focus && lost_focus->HasFocus());
     last_gained_focus_ = gained_focus;
     last_lost_focus_ = lost_focus;
     EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
@@ -522,6 +524,17 @@ TEST_F(ViewManagerTest, Focus) {
     ASSERT_NE(nullptr, observer.last_lost_focus());
     EXPECT_EQ(view11->id(), observer.last_gained_focus()->id());
     EXPECT_EQ(embedded->GetRoot()->id(), observer.last_lost_focus()->id());
+  }
+  {
+    // Add an observer on the View that loses focus, and make sure the observer
+    // sees the right values.
+    FocusChangeObserver observer(view11);
+    embedded->GetRoot()->SetFocus();
+    ASSERT_TRUE(DoRunLoopWithTimeout());
+    ASSERT_NE(nullptr, observer.last_gained_focus());
+    ASSERT_NE(nullptr, observer.last_lost_focus());
+    EXPECT_EQ(view11->id(), observer.last_lost_focus()->id());
+    EXPECT_EQ(embedded->GetRoot()->id(), observer.last_gained_focus()->id());
   }
 }
 

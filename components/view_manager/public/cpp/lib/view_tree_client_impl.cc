@@ -412,11 +412,14 @@ void ViewTreeClientImpl::OnViewInputEvent(
 void ViewTreeClientImpl::OnViewFocused(Id focused_view_id) {
   View* focused = GetViewById(focused_view_id);
   View* blurred = focused_view_;
+  // Update |focused_view_| before calling any of the observers, so that the
+  // observers get the correct result from calling |View::HasFocus()|,
+  // |ViewTreeConnection::GetFocusedView()| etc.
+  focused_view_ = focused;
   if (blurred) {
     FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(blurred).observers(),
                       OnViewFocusChanged(focused, blurred));
   }
-  focused_view_ = focused;
   if (focused) {
     FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(focused).observers(),
                       OnViewFocusChanged(focused, blurred));
