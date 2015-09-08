@@ -53,7 +53,7 @@ void OnKeepaliveOnUIThread(
 // Calls OnKeepaliveOnUIThread on UI thread.
 void OnKeepalive(const BrowserPpapiHost::OnKeepaliveInstanceData& instance_data,
                  const base::FilePath& profile_data_directory) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,

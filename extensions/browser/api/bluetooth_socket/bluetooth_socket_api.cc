@@ -191,7 +191,7 @@ bool BluetoothSocketCreateFunction::Prepare() {
 }
 
 void BluetoothSocketCreateFunction::Work() {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
 
   BluetoothApiSocket* socket = new BluetoothApiSocket(extension_id());
 
@@ -272,14 +272,14 @@ bool BluetoothSocketListenFunction::Prepare() {
 }
 
 void BluetoothSocketListenFunction::AsyncWorkStart() {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothSocketListenFunction::OnGetAdapter, this));
 }
 
 void BluetoothSocketListenFunction::OnGetAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   BluetoothApiSocket* socket = GetSocket(socket_id());
   if (!socket) {
     error_ = kSocketNotFoundError;
@@ -316,7 +316,7 @@ void BluetoothSocketListenFunction::OnGetAdapter(
 
 void BluetoothSocketListenFunction::OnCreateService(
     scoped_refptr<device::BluetoothSocket> socket) {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
 
   // Fetch the socket again since this is not a reference-counted object, and
   // it may have gone away in the meantime (we check earlier to avoid making
@@ -338,7 +338,7 @@ void BluetoothSocketListenFunction::OnCreateService(
 
 void BluetoothSocketListenFunction::OnCreateServiceError(
     const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   error_ = message;
   AsyncWorkCompleted();
 }
@@ -452,14 +452,14 @@ bool BluetoothSocketAbstractConnectFunction::Prepare() {
 }
 
 void BluetoothSocketAbstractConnectFunction::AsyncWorkStart() {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothSocketAbstractConnectFunction::OnGetAdapter, this));
 }
 
 void BluetoothSocketAbstractConnectFunction::OnGetAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   BluetoothApiSocket* socket = GetSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
@@ -493,7 +493,7 @@ void BluetoothSocketAbstractConnectFunction::OnGetAdapter(
 
 void BluetoothSocketAbstractConnectFunction::OnConnect(
     scoped_refptr<device::BluetoothSocket> socket) {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
 
   // Fetch the socket again since this is not a reference-counted object, and
   // it may have gone away in the meantime (we check earlier to avoid making
@@ -517,7 +517,7 @@ void BluetoothSocketAbstractConnectFunction::OnConnect(
 
 void BluetoothSocketAbstractConnectFunction::OnConnectError(
     const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   error_ = message;
   AsyncWorkCompleted();
 }
@@ -547,7 +547,7 @@ bool BluetoothSocketDisconnectFunction::Prepare() {
 }
 
 void BluetoothSocketDisconnectFunction::AsyncWorkStart() {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   BluetoothApiSocket* socket = GetSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
@@ -560,7 +560,7 @@ void BluetoothSocketDisconnectFunction::AsyncWorkStart() {
 }
 
 void BluetoothSocketDisconnectFunction::OnSuccess() {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   results_ = bluetooth_socket::Disconnect::Results::Create();
   AsyncWorkCompleted();
 }
@@ -602,7 +602,7 @@ bool BluetoothSocketSendFunction::Prepare() {
 }
 
 void BluetoothSocketSendFunction::AsyncWorkStart() {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   BluetoothApiSocket* socket = GetSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
@@ -616,7 +616,7 @@ void BluetoothSocketSendFunction::AsyncWorkStart() {
 }
 
 void BluetoothSocketSendFunction::OnSuccess(int bytes_sent) {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   results_ = bluetooth_socket::Send::Results::Create(bytes_sent);
   AsyncWorkCompleted();
 }
@@ -624,7 +624,7 @@ void BluetoothSocketSendFunction::OnSuccess(int bytes_sent) {
 void BluetoothSocketSendFunction::OnError(
     BluetoothApiSocket::ErrorReason reason,
     const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  DCHECK_CURRENTLY_ON(work_thread_id());
   error_ = message;
   AsyncWorkCompleted();
 }

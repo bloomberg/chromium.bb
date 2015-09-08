@@ -235,7 +235,7 @@ void BluetoothEventRouter::AdapterPresentChanged(
 void BluetoothEventRouter::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter,
     bool has_power) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (adapter != adapter_.get()) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
@@ -246,7 +246,7 @@ void BluetoothEventRouter::AdapterPoweredChanged(
 void BluetoothEventRouter::AdapterDiscoveringChanged(
     device::BluetoothAdapter* adapter,
     bool discovering) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (adapter != adapter_.get()) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
@@ -274,7 +274,7 @@ void BluetoothEventRouter::AdapterDiscoveringChanged(
 
 void BluetoothEventRouter::DeviceAdded(device::BluetoothAdapter* adapter,
                                        device::BluetoothDevice* device) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (adapter != adapter_.get()) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
@@ -286,7 +286,7 @@ void BluetoothEventRouter::DeviceAdded(device::BluetoothAdapter* adapter,
 
 void BluetoothEventRouter::DeviceChanged(device::BluetoothAdapter* adapter,
                                          device::BluetoothDevice* device) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (adapter != adapter_.get()) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
@@ -298,7 +298,7 @@ void BluetoothEventRouter::DeviceChanged(device::BluetoothAdapter* adapter,
 
 void BluetoothEventRouter::DeviceRemoved(device::BluetoothAdapter* adapter,
                                          device::BluetoothDevice* device) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (adapter != adapter_.get()) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
@@ -310,7 +310,7 @@ void BluetoothEventRouter::DeviceRemoved(device::BluetoothAdapter* adapter,
 
 void BluetoothEventRouter::OnListenerAdded() {
   num_event_listeners_++;
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!adapter_.get()) {
     GetAdapter(base::Bind(&BluetoothEventRouter::OnAdapterInitialized,
                           weak_ptr_factory_.GetWeakPtr(),
@@ -325,7 +325,7 @@ void BluetoothEventRouter::OnListenerRemoved() {
 }
 
 void BluetoothEventRouter::DispatchAdapterStateEvent() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   api::bluetooth::AdapterState state;
   PopulateAdapterState(*adapter_.get(), &state);
 
@@ -352,7 +352,7 @@ void BluetoothEventRouter::DispatchDeviceEvent(
 
 void BluetoothEventRouter::CleanUpForExtension(
     const std::string& extension_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   RemovePairingDelegate(extension_id);
 
   PreSetFilterMap::iterator pre_set_iter =
@@ -410,7 +410,7 @@ void BluetoothEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
   ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
   CleanUpForExtension(host->extension_id());
