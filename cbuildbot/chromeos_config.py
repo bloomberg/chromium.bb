@@ -973,6 +973,8 @@ def GetConfig():
       description='Preflight Chromium Uprev & Build (internal)',
       overlays=constants.BOTH_OVERLAYS,
       prebuilts=constants.PUBLIC,
+      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+          'TOC-Chrome-PFQ',
   )
 
   site_config.AddConfig(
