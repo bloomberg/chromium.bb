@@ -9,12 +9,13 @@ import subprocess
 import sys
 import tempfile
 
+from devil.android import device_temp_file
+from devil.android.perf import perf_control
+
 from profile_chrome import controllers
 from profile_chrome import ui
 
 from pylib import constants
-from pylib.perf import perf_control
-from pylib.utils import device_temp_file
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'tools',

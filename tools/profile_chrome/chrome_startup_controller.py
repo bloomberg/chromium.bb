@@ -6,9 +6,9 @@ import os
 import re
 import time
 
+from devil.android.perf import cache_control
+from devil.android.sdk import intent
 from pylib import flag_changer
-from pylib.device import intent
-from pylib.perf import cache_control
 
 from profile_chrome import controllers
 
