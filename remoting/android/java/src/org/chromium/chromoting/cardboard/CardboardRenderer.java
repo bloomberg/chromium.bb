@@ -29,7 +29,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     private static final int POSITION_DATA_SIZE = 3;
     private static final int TEXTURE_COORDINATE_DATA_SIZE = 2;
     private static final float Z_NEAR = 0.1f;
-    private static final float Z_FAR = 100.0f;
+    private static final float Z_FAR = 1000.0f;
     private static final float DESKTOP_POSITION_X = 0.0f;
     private static final float DESKTOP_POSITION_Y = 0.0f;
     private static final float DESKTOP_POSITION_Z = -2.0f;
@@ -63,7 +63,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     private float[] mDesktopCombinedMatrix;
     private float[] mEyePointModelMatrix;
     private float[] mEyePointCombinedMatrix;
-    private float[] mSkyboxCombinedMatrix;
+    private float[] mPhotosphereCombinedMatrix;
 
     // Direction that user is looking towards.
     private float[] mForwardVector;
@@ -76,8 +76,8 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
 
     private Desktop mDesktop;
     private EyePoint mEyePoint;
-    private Skybox mSkybox;
     private MenuBar mMenuBar;
+    private Photosphere mPhotosphere;
 
     // Lock for eye position related operations.
     // This protects access to mEyeDesktopPosition.
@@ -97,7 +97,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mDesktopCombinedMatrix = new float[16];
         mEyePointModelMatrix = new float[16];
         mEyePointCombinedMatrix = new float[16];
-        mSkyboxCombinedMatrix = new float[16];
+        mPhotosphereCombinedMatrix = new float[16];
 
         mForwardVector = new float[3];
     }
@@ -123,10 +123,10 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         // Enable depth testing.
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        mDesktop = new Desktop();
         mEyePoint = new EyePoint();
-        mSkybox = new Skybox(mActivity);
+        mDesktop = new Desktop();
         mMenuBar = new MenuBar(mActivity);
+        mPhotosphere = new Photosphere(mActivity);
 
         attachRedrawCallback();
     }
@@ -161,7 +161,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mEyeDesktopPosition = getLookingPosition(DESKTOP_POSITION_Z);
         mEyeMenuBarPosition = getLookingPosition(MENU_BAR_POSITION_Z);
         mDesktop.maybeLoadDesktopTexture();
-        mSkybox.maybeLoadTextureAndCleanImages();
+        mPhotosphere.maybeLoadTextureAndCleanImage();
     }
 
     @Override
@@ -173,22 +173,31 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
 
         mProjectionMatrix = eye.getPerspective(Z_NEAR, Z_FAR);
 
-        drawSkybox();
         drawDesktop();
-        drawMenuBar();
         drawEyePoint();
+        drawMenuBar();
+        drawPhotosphere();
     }
 
     @Override
     public void onRendererShutdown() {
         mDesktop.cleanup();
         mEyePoint.cleanup();
-        mSkybox.cleanup();
         mMenuBar.cleanup();
+        mPhotosphere.cleanup();
     }
 
     @Override
     public void onFinishFrame(Viewport viewport) {
+    }
+
+    private void drawPhotosphere() {
+        // Since we will always put the photosphere center in the origin, the
+        // model matrix will always be identity matrix which we can ignore.
+        Matrix.multiplyMM(mPhotosphereCombinedMatrix, 0, mProjectionMatrix,
+                0, mViewMatrix, 0);
+
+        mPhotosphere.draw(mPhotosphereCombinedMatrix);
     }
 
     private void drawDesktop() {
@@ -227,14 +236,6 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
                 0, mEyePointCombinedMatrix, 0);
 
         mEyePoint.draw(mEyePointCombinedMatrix);
-    }
-
-    private void drawSkybox() {
-        // Since we will always put the skybox center in the origin, so skybox
-        // model matrix will always be identity matrix which we could ignore.
-        Matrix.multiplyMM(mSkyboxCombinedMatrix, 0, mProjectionMatrix,
-                0, mViewMatrix, 0);
-        mSkybox.draw(mSkyboxCombinedMatrix);
     }
 
     private void drawMenuBar() {

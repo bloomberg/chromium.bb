@@ -135,6 +135,10 @@ public class Desktop {
         GLES20.glUniform1i(mTextureUniformHandle, 0);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, VERTICES_NUMBER);
+
+        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLES20.glDisableVertexAttribArray(mTextureCoordinateHandle);
     }
 
     /**

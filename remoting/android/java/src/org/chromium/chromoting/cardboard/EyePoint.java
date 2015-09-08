@@ -55,7 +55,8 @@ public class EyePoint {
         GLES20.glUseProgram(mProgramHandle);
 
         // Set the eye point in front of desktop.
-        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
+        // TODO(shichengfeng): In order to set the eye point in front of desktop, we
+        // need to use glDrawArrays(GLES20.GL_TRIANGLES), GL_POINTS won't work.
 
         GLES20.glUniformMatrix4fv(mCombinedMatrixHandle, 1, false, combinedMatrix, 0);
 

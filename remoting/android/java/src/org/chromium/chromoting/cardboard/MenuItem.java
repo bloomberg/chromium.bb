@@ -43,6 +43,7 @@ public class MenuItem {
             + "void main() {"
             + "  vec4 texture = texture2D(u_Texture, v_TexCoordinate);"
             + "  if (v_selected > 0.5) {"
+            // TODO(shichengfeng): Fix the red color value.
             + "    gl_FragColor = vec4(2.0, texture.g, texture.b, texture.a);"
             + "  } else {"
             + "    gl_FragColor = texture;"
@@ -163,6 +164,10 @@ public class MenuItem {
         GLES20.glUniform1i(mTextureUniformHandle, 0);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, VERTICES_NUMBER);
+
+        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLES20.glDisableVertexAttribArray(mTextureCoordinateHandle);
     }
 
     /*

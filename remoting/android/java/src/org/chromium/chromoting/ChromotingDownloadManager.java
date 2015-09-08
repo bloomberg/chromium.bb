@@ -54,6 +54,11 @@ public class ChromotingDownloadManager {
         mUnfinishedDownloadIds = new HashSet<Long>();
     }
 
+    public ChromotingDownloadManager(Activity activity, String name, String uri,
+            Callback callback) {
+        this(activity, new String[] {name}, new String[] {uri}, callback);
+    }
+
     /**
      * Download files according to given URIs and store them as given names.
      */

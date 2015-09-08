@@ -7,12 +7,14 @@ package org.chromium.chromoting.cardboard;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 /**
  * Utility class for Cardboard activity.
  */
 public class CardboardUtil {
-    private static final int BYTE_PER_FLOAT = 4;
+    private static final int BYTES_PER_FLOAT = 4;
+    private static final int BYTES_PER_SHORT = 2;
 
     /**
      * Create rectangular texture float buffer.
@@ -35,8 +37,19 @@ public class CardboardUtil {
      */
     public static FloatBuffer makeFloatBuffer(float[] data) {
         FloatBuffer result = ByteBuffer
-                .allocateDirect(data.length * BYTE_PER_FLOAT)
+                .allocateDirect(data.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
+        result.put(data).position(0);
+        return result;
+    }
+
+    /**
+     * Convert short array to a ShortBuffer for use in OpenGL calls.
+     */
+    public static ShortBuffer makeShortBuffer(short[] data) {
+        ShortBuffer result = ByteBuffer
+                .allocateDirect(data.length * BYTES_PER_SHORT)
+                .order(ByteOrder.nativeOrder()).asShortBuffer();
         result.put(data).position(0);
         return result;
     }
