@@ -50,7 +50,7 @@ class Dictionary;
 class ElementAnimation {
     STATIC_ONLY(ElementAnimation);
 public:
-    static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, double duration, ExceptionState& exceptionState)
+    static Animation* animate(Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
     {
         EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())
@@ -58,7 +58,7 @@ public:
         return animateInternal(element, effect, TimingInput::convert(duration));
     }
 
-    static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
+    static Animation* animate(Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
     {
         EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())
@@ -66,7 +66,7 @@ public:
         return animateInternal(element, effect, TimingInput::convert(timingInput));
     }
 
-    static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, ExceptionState& exceptionState)
+    static Animation* animate(Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
     {
         EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())

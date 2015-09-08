@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.target {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  background-color: black;
+}
+.expected {
+  background-color: green;
+}
+</style>
+<body>
+<script src="../interpolation/resources/interpolation-test.js"></script>
+<script>
+assertComposition({
+  property: 'left',
+  underlying: '50px',
+  addFrom: '100px',
+  addTo: '200px',
+}, [
+  {at: -0.3, is: '120px'},
+  {at: 0, is: '150px'},
+  {at: 0.5, is: '200px'},
+  {at: 1, is: '250px'},
+  {at: 1.5, is: '300px'},
+]);
+
+assertComposition({
+  property: 'left',
+  underlying: '50px',
+  addFrom: '100px',
+  replaceTo: '200px',
+}, [
+  {at: -0.3, is: '135px'},
+  {at: 0, is: '150px'},
+  {at: 0.5, is: '175px'},
+  {at: 1, is: '200px'},
+  {at: 1.5, is: '225px'},
+]);
+
+assertComposition({
+  property: 'left',
+  underlying: 'auto',
+  addFrom: '100px',
+  addTo: '200px',
+}, [
+  {at: -0.3, is: '70px'},
+  {at: 0, is: '100px'},
+  {at: 0.5, is: '150px'},
+  {at: 1, is: '200px'},
+  {at: 1.5, is: '250px'},
+]);
+</script>
+</body>

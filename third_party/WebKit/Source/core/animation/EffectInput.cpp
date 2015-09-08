@@ -241,6 +241,7 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
         DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
         if (compositeString == "add")
             keyframe->setComposite(EffectModel::CompositeAdd);
+        // TODO(alancutter): Support "accumulate" keyframe composition.
 
         String timingFunctionString;
         if (DictionaryHelper::get(keyframeDictionary, "easing", timingFunctionString)) {
@@ -277,25 +278,32 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
     }
 
     StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
-    if (keyframeEffectModel->hasSyntheticKeyframes()) {
-        exceptionState.throwDOMException(NotSupportedError, "Partial keyframes are not supported.");
-        return nullptr;
-    }
-    if (!keyframeEffectModel->isReplaceOnly()) {
-        exceptionState.throwDOMException(NotSupportedError, "Additive animations are not supported.");
-        return nullptr;
+    if (!RuntimeEnabledFeatures::additiveAnimationsEnabled()) {
+        if (keyframeEffectModel->hasSyntheticKeyframes()) {
+            exceptionState.throwDOMException(NotSupportedError, "Partial keyframes are not supported.");
+            return nullptr;
+        }
+        if (!keyframeEffectModel->isReplaceOnly()) {
+            exceptionState.throwDOMException(NotSupportedError, "Additive animations are not supported.");
+            return nullptr;
+        }
     }
     keyframeEffectModel->forceConversionsToAnimatableValues(*element, element->computedStyle());
 
     return keyframeEffectModel;
 }
 
-EffectModel* EffectInput::convert(Element* element, const EffectModelOrDictionarySequence& effectInput, ExceptionState& exceptionState)
+EffectModel* EffectInput::convert(Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
 {
     if (effectInput.isEffectModel())
         return effectInput.getAsEffectModel();
     if (effectInput.isDictionarySequence())
         return convert(element, effectInput.getAsDictionarySequence(), exceptionState);
+    if (effectInput.isDictionary()) {
+        Vector<Dictionary> keyframes;
+        keyframes.append(effectInput.getAsDictionary());
+        return convert(element, keyframes, exceptionState);
+    }
     return nullptr;
 }
 

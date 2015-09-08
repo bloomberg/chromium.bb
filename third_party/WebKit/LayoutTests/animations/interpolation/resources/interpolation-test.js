@@ -42,12 +42,19 @@
  *        This works in the same way as assertInterpolation with expectations auto
  *        generated according to each interpolation method's handling of values
  *        that don't interpolate.
+ *  - assertComposition({property, underlying, [addFrom], [addTo], [replaceFrom], [replaceTo]}, [{at: fraction, is: value}])
+ *        Similar to assertInterpolation() instead using only the Web Animations API
+ *        to animate composite specified keyframes (add or replace) on top of
+ *        an underlying value.
+ *        Exactly one of (addFrom, replaceFrom) must be specified.
+ *        Exactly one of (addTo, replaceTo) must be specified.
  *  - afterTest(callback)
  *        Calls callback after all the tests have executed.
  */
 'use strict';
 (function() {
   var interpolationTests = [];
+  var compositionTests = [];
   var cssAnimationsData = {
     sharedStyle: null,
     nextID: 0,
@@ -111,10 +118,13 @@
       return expectFlip(from, to, 0.5);
     },
     interpolate: function(property, from, to, at, target) {
-      var keyframes = [{}, {}];
-      keyframes[0][property] = from;
-      keyframes[1][property] = to;
-      var player = target.animate(keyframes, {
+      this.interpolateKeyframes([
+        {offset: 0, [property]: from},
+        {offset: 1, [property]: to},
+      ], at, target);
+    },
+    interpolateKeyframes: function(keyframes, at, target) {
+      target.animate(keyframes, {
         fill: 'forwards',
         duration: 1,
         easing: createEasing(at),
@@ -168,7 +178,7 @@
     });
   }
 
-  function createTargetContainer(parent) {
+  function createTargetContainer(parent, className) {
     var targetContainer = createElement(parent);
     targetContainer.classList.add('container');
     var template = document.querySelector('#target-template');
@@ -176,7 +186,7 @@
       targetContainer.appendChild(template.content.cloneNode(true));
     }
     var target = targetContainer.querySelector('.target') || targetContainer;
-    target.classList.add('target');
+    target.classList.add('target', className);
     target.parentElement.classList.add('parent');
     targetContainer.target = target;
     return targetContainer;
@@ -227,75 +237,140 @@
     if (options.to) {
       console.assert(CSS.supports(options.property, options.to));
     }
-    interpolationTests.push({
-      options: options,
-      expectations: expectations,
-    });
+    interpolationTests.push({options, expectations});
   }
 
-  function createTestTargets(interpolationMethods, interpolationTests, container, rebaselineContainer) {
-    var targets = [];
-    interpolationMethods.forEach(function(interpolationMethod, interpolationMethodIndex) {
-      var methodContainer = createElement(container);
-      interpolationTests.forEach(function(interpolationTest) {
-        var property = interpolationTest.options.property;
-        var from = interpolationTest.options.from;
-        var to = interpolationTest.options.to;
-        if ((interpolationTest.options.method && interpolationTest.options.method != interpolationMethod.name)
-          || !interpolationMethod.supportsProperty(property)
-          || !interpolationMethod.supportsValue(from)
-          || !interpolationMethod.supportsValue(to)) {
-          return;
-        }
-        if (interpolationMethod.rebaseline) {
-          var rebaseline = createElement(rebaselineContainer, 'pre');
-          rebaseline.appendChild(document.createTextNode(`\
+  function assertComposition(options, expectations) {
+    compositionTests.push({options, expectations});
+  }
+
+  function createInterpolationTestTargets(interpolationMethod, interpolationMethodContainer, interpolationTest, rebaselineContainer) {
+    var property = interpolationTest.options.property;
+    var from = interpolationTest.options.from;
+    var to = interpolationTest.options.to;
+    if ((interpolationTest.options.method && interpolationTest.options.method != interpolationMethod.name)
+      || !interpolationMethod.supportsProperty(property)
+      || !interpolationMethod.supportsValue(from)
+      || !interpolationMethod.supportsValue(to)) {
+      return;
+    }
+    if (interpolationMethod.rebaseline) {
+      var rebaseline = createElement(rebaselineContainer, 'pre');
+      rebaseline.appendChild(document.createTextNode(`\
 assertInterpolation({
   property: '${property}',
   from: '${from}',
   to: '${to}',
 }, [\n`));
-          var rebaselineExpectation;
-          rebaseline.appendChild(rebaselineExpectation = document.createTextNode(''));
-          rebaseline.appendChild(document.createTextNode(']);\n\n'));
+      var rebaselineExpectation;
+      rebaseline.appendChild(rebaselineExpectation = document.createTextNode(''));
+      rebaseline.appendChild(document.createTextNode(']);\n\n'));
+    }
+    var testText = `${interpolationMethod.name}: property <${property}> from [${from}] to [${to}]`;
+    var testContainer = createElement(interpolationMethodContainer, 'div', testText);
+    createElement(testContainer, 'br');
+    var expectations = interpolationTest.expectations;
+    if (expectations === expectNoInterpolation) {
+      expectations = interpolationMethod.nonInterpolationExpectations(from, to);
+    }
+    return expectations.map(function(expectation) {
+      var actualTargetContainer = createTargetContainer(testContainer, 'actual');
+      var expectedTargetContainer = createTargetContainer(testContainer, 'expected');
+      expectedTargetContainer.target.style[property] = expectation.is;
+      var target = actualTargetContainer.target;
+      interpolationMethod.setup(property, from, target);
+      target.interpolate = function() {
+        interpolationMethod.interpolate(property, from, to, expectation.at, target);
+      };
+      target.measure = function() {
+        var actualValue = getComputedStyle(target)[property];
+        test(function() {
+          assert_equals(
+            normalizeValue(actualValue),
+            normalizeValue(getComputedStyle(expectedTargetContainer.target)[property]));
+        }, `${testText} at (${expectation.at}) is [${sanitizeUrls(actualValue)}]`);
+        if (rebaselineExpectation) {
+          rebaselineExpectation.textContent += `  {at: ${expectation.at}, is: '${actualValue}'},\n`;
         }
-        var testText = interpolationMethod.name + ': property <' + property + '> from [' + from + '] to [' + to + ']';
-        var testContainer = createElement(methodContainer, 'div', testText);
-        createElement(testContainer, 'br');
-        var expectations = interpolationTest.expectations;
-        if (expectations === expectNoInterpolation) {
-          expectations = interpolationMethod.nonInterpolationExpectations(from, to);
-        }
-        expectations.forEach(function(expectation) {
-          var actualTargetContainer = createTargetContainer(testContainer);
-          var expectedTargetContainer = createTargetContainer(testContainer);
-          expectedTargetContainer.target.classList.add('expected');
-          expectedTargetContainer.target.style[property] = expectation.is;
-          var target = actualTargetContainer.target;
-          target.classList.add('actual');
-          interpolationMethod.setup(property, from, target);
-          target.interpolate = function() {
-            interpolationMethod.interpolate(property, from, to, expectation.at, target);
-          };
-          target.measure = function() {
-            var actualValue = getComputedStyle(target)[property];
-            test(function() {
-              assert_equals(
-                normalizeValue(actualValue),
-                normalizeValue(getComputedStyle(expectedTargetContainer.target)[property]));
-            }, testText + ' at (' + expectation.at + ') is [' + sanitizeUrls(actualValue) + ']');
-            if (interpolationMethod.rebaseline) {
-              rebaselineExpectation.textContent += `  {at: ${expectation.at}, is: '${actualValue}'},\n`;
-            }
-          };
-          targets.push(target);
-        });
-      });
+      };
+      return target;
     });
+  }
+
+  function createCompositionTestTargets(compositionContainer, compositionTest, rebaselineContainer) {
+    var options = compositionTest.options;
+    console.assert('addFrom' in options !== 'replaceFrom' in options);
+    console.assert('addTo' in options !== 'replaceTo' in options);
+    var property = options.property;
+    var underlying = options.underlying;
+    var from = options.addFrom || options.replaceFrom;
+    var to = options.addTo || options.replaceTo;
+    var fromComposite = 'addFrom' in options ? 'add' : 'replace';
+    var toComposite = 'addTo' in options ? 'add' : 'replace';
+    if (webAnimationsInterpolation.rebaseline) {
+      var rebaseline = createElement(rebaselineContainer, 'pre');
+      rebaseline.appendChild(document.createTextNode(`\
+assertComposition({
+  property: '${property}',
+  underlying: '${underlying}',
+  ${fromComposite}From: '${from}',
+  ${toComposite}To: '${to}',
+}, [\n`));
+      var rebaselineExpectation;
+      rebaseline.appendChild(rebaselineExpectation = document.createTextNode(''));
+      rebaseline.appendChild(document.createTextNode(']);\n\n'));
+    }
+    var testText = `Compositing: property <${property}> underlying [${underlying}] from ${fromComposite} [${from}] to ${toComposite} [${to}]`;
+    var testContainer = createElement(compositionContainer, 'div', testText);
+    createElement(testContainer, 'br');
+    return compositionTest.expectations.map(function(expectation) {
+      var actualTargetContainer = createTargetContainer(testContainer, 'actual');
+      var expectedTargetContainer = createTargetContainer(testContainer, 'expected');
+      expectedTargetContainer.target.style[property] = expectation.is;
+      var target = actualTargetContainer.target;
+      target.style[property] = underlying;
+      target.interpolate = function() {
+        webAnimationsInterpolation.interpolateKeyframes([{
+          offset: 0,
+          composite: fromComposite,
+          [property]: from,
+        }, {
+          offset: 1,
+          composite: toComposite,
+          [property]: to,
+        }], expectation.at, target);
+      };
+      target.measure = function() {
+        var actualValue = getComputedStyle(target)[property];
+        test(function() {
+          assert_equals(
+            normalizeValue(actualValue),
+            normalizeValue(getComputedStyle(expectedTargetContainer.target)[property]));
+        }, `${testText} at (${expectation.at}) is [${sanitizeUrls(actualValue)}]`);
+        if (rebaselineExpectation) {
+          rebaselineExpectation.textContent += `  {at: ${expectation.at}, is: '${actualValue}'},\n`;
+        }
+      };
+      return target;
+    });
+  }
+
+  function createTestTargets(interpolationMethods, interpolationTests, compositionTests, container, rebaselineContainer) {
+    var targets = [];
+    for (var interpolationMethod of interpolationMethods) {
+      var interpolationMethodContainer = createElement(container);
+      for (var interpolationTest of interpolationTests) {
+        [].push.apply(targets, createInterpolationTestTargets(interpolationMethod, interpolationMethodContainer, interpolationTest, rebaselineContainer));
+      }
+    }
+    var compositionContainer = createElement(container);
+    for (var compositionTest of compositionTests) {
+      [].push.apply(targets, createCompositionTestTargets(compositionContainer, compositionTest, rebaselineContainer));
+    }
     return targets;
   }
 
-  function runInterpolationTests() {
+  function runTests() {
     var interpolationMethods = [
       cssTransitionsInterpolation,
       cssAnimationsInterpolation,
@@ -305,7 +380,7 @@ assertInterpolation({
     }
     var rebaselineContainer = createElement(document.body);
     var container = createElement(document.body);
-    var targets = createTestTargets(interpolationMethods, interpolationTests, container, rebaselineContainer);
+    var targets = createTestTargets(interpolationMethods, interpolationTests, compositionTests, container, rebaselineContainer);
     getComputedStyle(document.documentElement).left; // Force a style recalc for transitions.
     // Separate interpolation and measurement into different phases to avoid O(n^2) of the number of targets.
     for (var target of targets) {
@@ -326,6 +401,7 @@ assertInterpolation({
 
   window.assertInterpolation = assertInterpolation;
   window.assertNoInterpolation = assertNoInterpolation;
+  window.assertComposition = assertComposition;
   window.afterTest = afterTest;
 
   loadScript('../../resources/testharness.js').then(function() {
@@ -333,7 +409,7 @@ assertInterpolation({
   }).then(function() {
     var asyncHandle = async_test('This test uses interpolation-test.js.')
     requestAnimationFrame(function() {
-      runInterpolationTests();
+      runTests();
       asyncHandle.done()
     });
   });

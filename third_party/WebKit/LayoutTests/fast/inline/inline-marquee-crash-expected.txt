@@ -1,2 +1,1 @@
-CONSOLE ERROR: line 358: Uncaught NotSupportedError: Failed to execute 'animate' on 'Element': Partial keyframes are not supported.
 No crash means PASS

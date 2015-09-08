@@ -37,8 +37,8 @@
 
 partial interface Element {
     // FIXME: Union types with dictionary type members doesn't work (yet).
-    // Animation animate((EffectModel or sequence<Dictionary>)? effect, optional (double or KeyframeEffectOptions) timing);
-    [Measure, RaisesException] Animation animate((EffectModel or sequence<Dictionary>)? effect, optional double timing);
-    [Measure, RaisesException] Animation animate((EffectModel or sequence<Dictionary>)? effect, KeyframeEffectOptions timing);
+    // Animation animate((EffectModel or sequence<Dictionary> or Dictionary)? effect, optional (double or KeyframeEffectOptions) timing);
+    [Measure, RaisesException] Animation animate((EffectModel or sequence<Dictionary> or Dictionary)? effect, optional double timing);
+    [Measure, RaisesException] Animation animate((EffectModel or sequence<Dictionary> or Dictionary)? effect, KeyframeEffectOptions timing);
     [RuntimeEnabled=WebAnimationsAPI] sequence<Animation> getAnimations();
 };
