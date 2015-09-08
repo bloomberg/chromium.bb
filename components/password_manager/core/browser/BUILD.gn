@@ -179,6 +179,8 @@ source_set("unit_tests") {
     "import/csv_reader_unittest.cc",
     "log_router_unittest.cc",
     "login_database_unittest.cc",
+    "mock_affiliated_match_helper.cc",
+    "mock_affiliated_match_helper.h",
     "password_autofill_manager_unittest.cc",
     "password_bubble_experiment_unittest.cc",
     "password_form_manager_unittest.cc",

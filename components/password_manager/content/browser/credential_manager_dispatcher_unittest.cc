@@ -14,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
+#include "components/password_manager/core/browser/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -34,6 +35,10 @@ namespace {
 
 // Chosen by fair dice roll. Guaranteed to be random.
 const int kRequestId = 4;
+
+const char kTestWebOrigin[] = "https://example.com/";
+const char kTestAndroidRealm1[] = "android://hash@com.example.one.android/";
+const char kTestAndroidRealm2[] = "android://hash@com.example.two.android/";
 
 class MockPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
@@ -177,6 +182,25 @@ class CredentialManagerDispatcherTest
     form_.signon_realm = form_.origin.spec();
     form_.scheme = autofill::PasswordForm::SCHEME_HTML;
     form_.skip_zero_click = false;
+    form_.ssl_valid = true;
+
+    affiliated_form1_.username_value = base::ASCIIToUTF16("Affiliated 1");
+    affiliated_form1_.display_name = base::ASCIIToUTF16("Display Name");
+    affiliated_form1_.password_value = base::ASCIIToUTF16("Password");
+    affiliated_form1_.origin = GURL();
+    affiliated_form1_.signon_realm = kTestAndroidRealm1;
+    affiliated_form1_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    affiliated_form1_.skip_zero_click = false;
+    affiliated_form1_.ssl_valid = true;
+
+    affiliated_form2_.username_value = base::ASCIIToUTF16("Affiliated 2");
+    affiliated_form2_.display_name = base::ASCIIToUTF16("Display Name");
+    affiliated_form2_.password_value = base::ASCIIToUTF16("Password");
+    affiliated_form2_.origin = GURL();
+    affiliated_form2_.signon_realm = kTestAndroidRealm2;
+    affiliated_form2_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    affiliated_form2_.skip_zero_click = false;
+    affiliated_form2_.ssl_valid = true;
 
     origin_path_form_.username_value = base::ASCIIToUTF16("Username 2");
     origin_path_form_.display_name = base::ASCIIToUTF16("Display Name 2");
@@ -203,10 +227,50 @@ class CredentialManagerDispatcherTest
     content::RenderViewHostTestHarness::TearDown();
   }
 
+  void ExpectZeroClickSignInFailure() {
+    EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
+        .Times(testing::Exactly(0));
+    EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_))
+        .Times(testing::Exactly(0));
+
+    RunAllPendingTasks();
+
+    const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(kMsgID);
+    EXPECT_TRUE(message);
+    CredentialManagerMsg_SendCredential::Param send_param;
+    CredentialManagerMsg_SendCredential::Read(message, &send_param);
+
+    EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY,
+              base::get<1>(send_param).type);
+  }
+
+  void ExpectZeroClickSignInSuccess() {
+    EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
+        .Times(testing::Exactly(0));
+    EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_))
+        .Times(testing::Exactly(1));
+
+    RunAllPendingTasks();
+
+    const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(kMsgID);
+    EXPECT_TRUE(message);
+    CredentialManagerMsg_SendCredential::Param send_param;
+    CredentialManagerMsg_SendCredential::Read(message, &send_param);
+
+    EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD,
+              base::get<1>(send_param).type);
+  }
+
   CredentialManagerDispatcher* dispatcher() { return dispatcher_.get(); }
 
  protected:
   autofill::PasswordForm form_;
+  autofill::PasswordForm affiliated_form1_;
+  autofill::PasswordForm affiliated_form2_;
   autofill::PasswordForm origin_path_form_;
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
@@ -612,6 +676,99 @@ TEST_F(CredentialManagerDispatcherTest, IncognitoZeroClickRequestCredential) {
   CredentialManagerMsg_SendCredential::Param param;
   CredentialManagerMsg_SendCredential::Read(message, &param);
   EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, base::get<1>(param).type);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       ZeroClickWithAffiliatedFormInPasswordStore) {
+  // Insert the affiliated form into the store, and mock out the association
+  // with the current origin. As it's the only form matching the origin, it
+  // ought to be returned automagically.
+  store_->AddLogin(affiliated_form1_);
+
+  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
+  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+
+  std::vector<GURL> federations;
+  std::vector<std::string> affiliated_realms;
+  affiliated_realms.push_back(kTestAndroidRealm1);
+  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
+      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  ExpectZeroClickSignInSuccess();
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       ZeroClickWithTwoAffiliatedFormsInPasswordStore) {
+  // Insert two affiliated forms into the store, and mock out the association
+  // with the current origin. Multiple forms === no zero-click sign in.
+  store_->AddLogin(affiliated_form1_);
+  store_->AddLogin(affiliated_form2_);
+
+  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
+  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+
+  std::vector<GURL> federations;
+  std::vector<std::string> affiliated_realms;
+  affiliated_realms.push_back(kTestAndroidRealm1);
+  affiliated_realms.push_back(kTestAndroidRealm2);
+  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
+      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  ExpectZeroClickSignInFailure();
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       ZeroClickWithUnaffiliatedFormsInPasswordStore) {
+  // Insert the affiliated form into the store, but don't mock out the
+  // association with the current origin. No association === no zero-click sign
+  // in.
+  store_->AddLogin(affiliated_form1_);
+
+  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
+  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+
+  std::vector<GURL> federations;
+  std::vector<std::string> affiliated_realms;
+  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
+      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  ExpectZeroClickSignInFailure();
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       ZeroClickWithFormAndUnaffiliatedFormsInPasswordStore) {
+  // Insert the affiliated form into the store, along with a real form for the
+  // origin, and don't mock out the association with the current origin. No
+  // association + existing form === zero-click sign in.
+  store_->AddLogin(form_);
+  store_->AddLogin(affiliated_form1_);
+
+  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
+  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+
+  std::vector<GURL> federations;
+  std::vector<std::string> affiliated_realms;
+  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
+      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  ExpectZeroClickSignInSuccess();
+}
+
+TEST_F(CredentialManagerDispatcherTest, GetSynthesizedFormForOrigin) {
+  autofill::PasswordForm synthesized =
+      dispatcher_->GetSynthesizedFormForOrigin();
+  EXPECT_EQ(kTestWebOrigin, synthesized.origin.spec());
+  EXPECT_EQ(kTestWebOrigin, synthesized.signon_realm);
+  EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, synthesized.scheme);
+  EXPECT_TRUE(synthesized.ssl_valid);
 }
 
 }  // namespace password_manager

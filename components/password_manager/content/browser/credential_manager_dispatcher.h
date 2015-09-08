@@ -71,6 +71,7 @@ class CredentialManagerDispatcher
   GURL GetOrigin() const override;
   void SendCredential(int request_id, const CredentialInfo& info) override;
   PasswordManagerClient* client() const override;
+  autofill::PasswordForm GetSynthesizedFormForOrigin() const override;
 
   // CredentialManagerPendingSignedOutTaskDelegate:
   PasswordStore* GetPasswordStore() override;
@@ -83,6 +84,14 @@ class CredentialManagerDispatcher
   // Returns the driver for the current main frame.
   // Virtual for testing.
   virtual base::WeakPtr<PasswordManagerDriver> GetDriver();
+
+  // Schedules a CredentiaManagerPendingRequestTask (during
+  // |OnRequestCredential()|) after the PasswordStore's AffiliationMatchHelper
+  // grabs a list of realms related to the current web origin.
+  void ScheduleRequestTask(int request_id,
+                           bool zero_click_only,
+                           const std::vector<GURL>& federations,
+                           const std::vector<std::string>& android_realms);
 
   PasswordManagerClient* client_;
   scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;
@@ -97,6 +106,8 @@ class CredentialManagerDispatcher
   scoped_ptr<CredentialManagerPendingRequestTask> pending_request_;
   scoped_ptr<CredentialManagerPendingRequireUserMediationTask>
       pending_require_user_mediation_;
+
+  base::WeakPtrFactory<CredentialManagerDispatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerDispatcher);
 };

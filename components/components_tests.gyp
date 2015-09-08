@@ -402,6 +402,8 @@
       'password_manager/core/browser/import/csv_reader_unittest.cc',
       'password_manager/core/browser/log_router_unittest.cc',
       'password_manager/core/browser/login_database_unittest.cc',
+      'password_manager/core/browser/mock_affiliated_match_helper.cc',
+      'password_manager/core/browser/mock_affiliated_match_helper.h',
       'password_manager/core/browser/password_autofill_manager_unittest.cc',
       'password_manager/core/browser/password_bubble_experiment_unittest.cc',
       'password_manager/core/browser/password_form_manager_unittest.cc',

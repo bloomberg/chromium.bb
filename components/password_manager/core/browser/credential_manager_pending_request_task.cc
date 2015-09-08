@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
 
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "url/gurl.h"
@@ -16,11 +17,13 @@ CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
     int request_id,
     bool request_zero_click_only,
     const GURL& request_origin,
-    const std::vector<GURL>& request_federations)
+    const std::vector<GURL>& request_federations,
+    const std::vector<std::string>& affiliated_realms)
     : delegate_(delegate),
       id_(request_id),
       zero_click_only_(request_zero_click_only),
-      origin_(request_origin) {
+      origin_(request_origin),
+      affiliated_realms_(affiliated_realms.begin(), affiliated_realms.end()) {
   for (const GURL& origin : request_federations)
     federations_.insert(origin.spec());
 }
@@ -36,6 +39,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   }
 
   ScopedVector<autofill::PasswordForm> local_results;
+  ScopedVector<autofill::PasswordForm> affiliated_results;
   ScopedVector<autofill::PasswordForm> federated_results;
   const autofill::PasswordForm* zero_click_form_to_return = nullptr;
   for (auto& form : results) {
@@ -45,14 +49,10 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     // So we can't compare them directly.
     if (form->origin.GetOrigin() == origin_.GetOrigin()) {
       local_results.push_back(form);
-
-      // Store the first zero-clickable PasswordForm we find. We'll check
-      // later to determine whether this form can actually be returned without
-      // user mediation (we return zero-click forms iff there is a single,
-      // unambigious choice).
-      if (!form->skip_zero_click && !zero_click_form_to_return)
-        zero_click_form_to_return = form;
-
+      form = nullptr;
+    } else if (affiliated_realms_.count(form->signon_realm) &&
+               AffiliatedMatchHelper::IsValidAndroidCredential(*form)) {
+      affiliated_results.push_back(form);
       form = nullptr;
     }
 
@@ -64,6 +64,19 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     // they will be safely deleted after this task executes.
   }
 
+  if (!affiliated_results.empty()) {
+    // TODO(mkwst): This doesn't create a PasswordForm that we can use to create
+    // a FederatedCredential (via CreatePasswordFormFromCredentialInfo). We need
+    // to fix that.
+    ScopedVector<autofill::PasswordForm> more_local_results(
+        AffiliatedMatchHelper::TransformAffiliatedAndroidCredentials(
+            delegate_->GetSynthesizedFormForOrigin(),
+            affiliated_results.Pass()));
+    local_results.insert(local_results.end(), more_local_results.begin(),
+                         more_local_results.end());
+    more_local_results.weak_clear();
+  }
+
   if ((local_results.empty() && federated_results.empty())) {
     delegate_->SendCredential(id_, CredentialInfo());
     return;
@@ -72,10 +85,13 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   // We only perform zero-click sign-in when the result is completely
   // unambigious. If the user could theoretically choose from more than one
   // option, cancel zero-click.
-  if (local_results.size() > 1u)
-    zero_click_form_to_return = nullptr;
+  if (local_results.size() == 1u && !local_results[0]->skip_zero_click)
+    zero_click_form_to_return = local_results[0];
 
   if (zero_click_form_to_return && delegate_->IsZeroClickAllowed()) {
+    // TODO(mkwst): This is all too complex now. We should just be able to check
+    // the first item in the list, since we're now only doing any of this work
+    // when there's only one item. Kill it all with fire in a future CL.
     auto it = std::find(local_results.begin(), local_results.end(),
                         zero_click_form_to_return);
     CredentialInfo info(*zero_click_form_to_return,

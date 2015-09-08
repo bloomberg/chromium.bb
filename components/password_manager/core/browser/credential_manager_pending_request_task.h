@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUEST_TASK_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUEST_TASK_H_
+
 #include <set>
 #include <string>
 #include <vector>
@@ -30,6 +33,9 @@ class CredentialManagerPendingRequestTaskDelegate {
   // Retrieves the current page origin.
   virtual GURL GetOrigin() const = 0;
 
+  // Retrieves a synthetic PasswordForm for the current page origin.
+  virtual autofill::PasswordForm GetSynthesizedFormForOrigin() const = 0;
+
   // Returns the PasswordManagerClient.
   virtual PasswordManagerClient* client() const = 0;
 
@@ -45,7 +51,8 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
       int request_id,
       bool request_zero_click_only,
       const GURL& request_origin,
-      const std::vector<GURL>& request_federations);
+      const std::vector<GURL>& request_federations,
+      const std::vector<std::string>& affiliated_realms);
   ~CredentialManagerPendingRequestTask() override;
 
   int id() const { return id_; }
@@ -61,8 +68,11 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
   const bool zero_click_only_;
   const GURL origin_;
   std::set<std::string> federations_;
+  std::set<std::string> affiliated_realms_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingRequestTask);
 };
 
 }  // namespace password_manager
+
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUEST_TASK_H_

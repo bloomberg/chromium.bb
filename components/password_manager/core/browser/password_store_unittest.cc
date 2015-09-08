@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation_service.h"
+#include "components/password_manager/core/browser/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -72,58 +73,6 @@ class MockPasswordStoreObserver
  public:
   MOCK_METHOD1(OnLoginsChanged,
                void(const password_manager::PasswordStoreChangeList& changes));
-};
-
-class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
- public:
-  MockAffiliatedMatchHelper()
-      : AffiliatedMatchHelper(nullptr,
-                              make_scoped_ptr<AffiliationService>(nullptr)) {}
-
-  // Expects GetAffiliatedAndroidRealms() to be called with the
-  // |expected_observed_form|, and will cause the result callback supplied to
-  // GetAffiliatedAndroidRealms() to be invoked with |results_to_return|.
-  void ExpectCallToGetAffiliatedAndroidRealms(
-      const autofill::PasswordForm& expected_observed_form,
-      const std::vector<std::string>& results_to_return) {
-    EXPECT_CALL(*this,
-                OnGetAffiliatedAndroidRealmsCalled(expected_observed_form))
-        .WillOnce(testing::Return(results_to_return));
-  }
-
-  // Expects GetAffiliatedWebRealms() to be called with the
-  // |expected_android_form|, and will cause the result callback supplied to
-  // GetAffiliatedWebRealms() to be invoked with |results_to_return|.
-  void ExpectCallToGetAffiliatedWebRealms(
-      const autofill::PasswordForm& expected_android_form,
-      const std::vector<std::string>& results_to_return) {
-    EXPECT_CALL(*this, OnGetAffiliatedWebRealmsCalled(expected_android_form))
-        .WillOnce(testing::Return(results_to_return));
-  }
-
- private:
-  MOCK_METHOD1(OnGetAffiliatedAndroidRealmsCalled,
-               std::vector<std::string>(const PasswordForm&));
-  MOCK_METHOD1(OnGetAffiliatedWebRealmsCalled,
-               std::vector<std::string>(const PasswordForm&));
-
-  void GetAffiliatedAndroidRealms(
-      const autofill::PasswordForm& observed_form,
-      const AffiliatedRealmsCallback& result_callback) override {
-    std::vector<std::string> affiliated_android_realms =
-        OnGetAffiliatedAndroidRealmsCalled(observed_form);
-    result_callback.Run(affiliated_android_realms);
-  }
-
-  void GetAffiliatedWebRealms(
-      const autofill::PasswordForm& android_form,
-      const AffiliatedRealmsCallback& result_callback) override {
-    std::vector<std::string> affiliated_web_realms =
-        OnGetAffiliatedWebRealmsCalled(android_form);
-    result_callback.Run(affiliated_web_realms);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(MockAffiliatedMatchHelper);
 };
 
 class StartSyncFlareMock {

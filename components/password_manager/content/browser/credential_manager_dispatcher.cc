@@ -11,6 +11,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
+#include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -26,7 +27,7 @@ namespace password_manager {
 CredentialManagerDispatcher::CredentialManagerDispatcher(
     content::WebContents* web_contents,
     PasswordManagerClient* client)
-    : WebContentsObserver(web_contents), client_(client) {
+    : WebContentsObserver(web_contents), client_(client), weak_factory_(this) {
   DCHECK(web_contents);
   auto_signin_enabled_.Init(prefs::kPasswordManagerAutoSignin,
                             client_->GetPrefs());
@@ -130,13 +131,33 @@ void CredentialManagerDispatcher::OnRequestCredential(
     return;
   }
 
+  if (store->affiliated_match_helper()) {
+    store->affiliated_match_helper()->GetAffiliatedAndroidRealms(
+        GetSynthesizedFormForOrigin(),
+        base::Bind(&CredentialManagerDispatcher::ScheduleRequestTask,
+                   weak_factory_.GetWeakPtr(), request_id, zero_click_only,
+                   federations));
+  } else {
+    std::vector<std::string> no_affiliated_realms;
+    ScheduleRequestTask(request_id, zero_click_only, federations,
+                        no_affiliated_realms);
+  }
+}
+
+void CredentialManagerDispatcher::ScheduleRequestTask(
+    int request_id,
+    bool zero_click_only,
+    const std::vector<GURL>& federations,
+    const std::vector<std::string>& android_realms) {
+  DCHECK(GetPasswordStore());
   pending_request_.reset(new CredentialManagerPendingRequestTask(
       this, request_id, zero_click_only,
-      web_contents()->GetLastCommittedURL().GetOrigin(), federations));
+      web_contents()->GetLastCommittedURL().GetOrigin(), federations,
+      android_realms));
 
   // This will result in a callback to
   // PendingRequestTask::OnGetPasswordStoreResults().
-  store->GetAutofillableLogins(pending_request_.get());
+  GetPasswordStore()->GetAutofillableLogins(pending_request_.get());
 }
 
 PasswordStore* CredentialManagerDispatcher::GetPasswordStore() {
@@ -185,6 +206,17 @@ void CredentialManagerDispatcher::SendCredential(int request_id,
 
 PasswordManagerClient* CredentialManagerDispatcher::client() const {
   return client_;
+}
+
+autofill::PasswordForm
+CredentialManagerDispatcher::GetSynthesizedFormForOrigin() const {
+  autofill::PasswordForm synthetic_form;
+  synthetic_form.origin = web_contents()->GetLastCommittedURL().GetOrigin();
+  synthetic_form.signon_realm = synthetic_form.origin.spec();
+  synthetic_form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  synthetic_form.ssl_valid = synthetic_form.origin.SchemeIsCryptographic() &&
+                             !client_->DidLastPageLoadEncounterSSLErrors();
+  return synthetic_form;
 }
 
 void CredentialManagerDispatcher::DoneRequiringUserMediation() {
