@@ -105,6 +105,30 @@ TEST_F(EditingUtilitiesTest, isFirstPositionAfterTable)
     EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInComposedTree::lastPositionInNode(host))));
 }
 
+TEST_F(EditingUtilitiesTest, lastEditablePositionBeforePositionInRoot)
+{
+    const char* bodyContent = "<p id='host' contenteditable><b id='one'>1</b><b id='two'>22</b></p>";
+    const char* shadowContent = "<content select=#two></content><content select=#one></content><b id='three'>333</b>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+    Element* host = document().getElementById("host");
+    Node* one = document().getElementById("one");
+    Node* two = document().getElementById("two");
+    Node* three = shadowRoot->getElementById("three");
+
+    EXPECT_EQ(Position(one, 0), lastEditablePositionBeforePositionInRoot(Position(one, 0), host));
+    EXPECT_EQ(Position(one->firstChild(), 0), lastEditableVisiblePositionBeforePositionInRoot(Position(one, 0), host).deepEquivalent());
+
+    EXPECT_EQ(PositionInComposedTree(one, 0), lastEditablePositionBeforePositionInRoot(PositionInComposedTree(one, 0), host));
+    EXPECT_EQ(PositionInComposedTree(two->firstChild(), 2), lastEditableVisiblePositionBeforePositionInRoot(PositionInComposedTree(one, 0), host).deepEquivalent());
+
+    EXPECT_EQ(Position::firstPositionInNode(host), lastEditablePositionBeforePositionInRoot(Position(three, 0), host));
+    EXPECT_EQ(Position(one->firstChild(), 0), lastEditableVisiblePositionBeforePositionInRoot(Position(three, 0), host).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree::firstPositionInNode(host), lastEditablePositionBeforePositionInRoot(PositionInComposedTree(three, 0), host));
+    EXPECT_EQ(PositionInComposedTree(two->firstChild(), 0), lastEditableVisiblePositionBeforePositionInRoot(PositionInComposedTree(three, 0), host).deepEquivalent());
+}
+
 TEST_F(EditingUtilitiesTest, NextNodeIndex)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";

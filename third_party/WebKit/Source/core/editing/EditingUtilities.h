@@ -185,9 +185,9 @@ inline Position lastPositionInOrAfterNode(Node* node)
 }
 
 CORE_EXPORT Position firstEditablePositionAfterPositionInRoot(const Position&, Node*);
-Position lastEditablePositionBeforePositionInRoot(const Position&, Node*);
+CORE_EXPORT Position lastEditablePositionBeforePositionInRoot(const Position&, Node*);
 CORE_EXPORT PositionInComposedTree firstEditablePositionAfterPositionInRoot(const PositionInComposedTree&, Node*);
-PositionInComposedTree lastEditablePositionBeforePositionInRoot(const PositionInComposedTree&, Node*);
+CORE_EXPORT PositionInComposedTree lastEditablePositionBeforePositionInRoot(const PositionInComposedTree&, Node*);
 
 // Move up or down the DOM by one position.
 // Offsets are computed using layout text for nodes that have layoutObjects -
@@ -243,7 +243,12 @@ void updatePositionForNodeRemoval(Position&, Node&);
 // specified position due by canonicalization.
 CORE_EXPORT VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position&, ContainerNode*);
 CORE_EXPORT VisiblePositionInComposedTree firstEditableVisiblePositionAfterPositionInRoot(const PositionInComposedTree&, ContainerNode*);
-VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position&, ContainerNode*);
+// TODO(yosin) We should rename
+// |lastEditableVisiblePositionBeforePositionInRoot()| to a better name which
+// describes what this function returns, since it returns a position after
+// specified position due by canonicalization.
+CORE_EXPORT VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position&, ContainerNode*);
+CORE_EXPORT VisiblePositionInComposedTree lastEditableVisiblePositionBeforePositionInRoot(const PositionInComposedTree&, ContainerNode*);
 VisiblePosition visiblePositionBeforeNode(Node&);
 VisiblePosition visiblePositionAfterNode(Node&);
 

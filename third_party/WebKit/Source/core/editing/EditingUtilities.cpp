@@ -497,6 +497,11 @@ VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position& 
     return createVisiblePosition(lastEditablePositionBeforePositionInRoot(position, highestRoot));
 }
 
+VisiblePositionInComposedTree lastEditableVisiblePositionBeforePositionInRoot(const PositionInComposedTree& position, ContainerNode* highestRoot)
+{
+    return createVisiblePosition(lastEditablePositionBeforePositionInRoot(position, highestRoot));
+}
+
 template <typename Strategy>
 PositionAlgorithm<Strategy> lastEditablePositionBeforePositionInRootAlgorithm(const PositionAlgorithm<Strategy>& position, Node* highestRoot)
 {
