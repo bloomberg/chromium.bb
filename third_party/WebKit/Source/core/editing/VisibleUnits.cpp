@@ -208,7 +208,8 @@ static VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition& pos
     return createVisiblePosition(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), anchor));
 }
 
-static VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos, const Position& anchor)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrAfter(const VisiblePositionTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -216,9 +217,9 @@ static VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos,
     ContainerNode* highestRoot = highestEditableRoot(anchor);
 
     // Return empty position if |pos| is not somewhere inside the editable
-    // region // containing this position
+    // region containing this position
     if (highestRoot && !pos.deepEquivalent().anchorNode()->isDescendantOf(highestRoot))
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
     // Return |pos| itself if the two are from the very same editable region, or
     // both are non-editable
@@ -229,10 +230,10 @@ static VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos,
         return pos;
 
     // Return empty position if this position is non-editable, but |pos| is
-    // editable
+    // editable.
     // TODO(yosin) Move to the next non-editable region.
     if (!highestRoot)
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
     // Return the next position after |pos| that is in the same editable region
     // as this position
@@ -2526,7 +2527,8 @@ IntRect absoluteCaretBoundsOf(const VisiblePositionInComposedTree& visiblePositi
     return absoluteCaretBoundsOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
 }
 
-static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> skipToEndOfEditingBoundary(const VisiblePositionTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -2534,14 +2536,14 @@ static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition& pos, co
     ContainerNode* highestRoot = highestEditableRoot(anchor);
     ContainerNode* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
 
-    // Return |pos| itself if the two are from the very same editable region, or
-    // both are non-editable.
+    // Return |pos| itself if the two are from the very same editable region,
+    // or both are non-editable.
     if (highestRootOfPos == highestRoot)
         return pos;
 
     // If this is not editable but |pos| has an editable root, skip to the end
     if (!highestRoot && highestRootOfPos)
-        return createVisiblePosition(Position(highestRootOfPos, PositionAnchorType::AfterAnchor).parentAnchoredEquivalent());
+        return createVisiblePosition(PositionAlgorithm<Strategy>(highestRootOfPos, PositionAnchorType::AfterAnchor).parentAnchoredEquivalent());
 
     // That must mean that |pos| is not editable. Return the next position after
     // |pos| that is in the same editable region as this position
@@ -2913,9 +2915,10 @@ VisiblePosition rightPositionOf(const VisiblePosition& visiblePosition)
     return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right, visiblePosition.deepEquivalent()) : honorEditingBoundaryAtOrBefore(right, visiblePosition.deepEquivalent());
 }
 
-VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> nextPositionOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition, EditingBoundaryCrossingRule rule)
 {
-    VisiblePosition next = createVisiblePosition(nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent()), visiblePosition.affinity());
+    const VisiblePositionTemplate<Strategy> next = createVisiblePosition(nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent()), visiblePosition.affinity());
 
     switch (rule) {
     case CanCrossEditingBoundary:
@@ -2927,6 +2930,16 @@ VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBo
     }
     ASSERT_NOT_REACHED();
     return honorEditingBoundaryAtOrAfter(next, visiblePosition.deepEquivalent());
+}
+
+VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
+{
+    return nextPositionOfAlgorithm<EditingStrategy>(visiblePosition, rule);
+}
+
+VisiblePositionInComposedTree nextPositionOf(const VisiblePositionInComposedTree& visiblePosition, EditingBoundaryCrossingRule rule)
+{
+    return nextPositionOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition, rule);
 }
 
 static VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)

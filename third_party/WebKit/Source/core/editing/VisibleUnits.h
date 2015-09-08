@@ -99,7 +99,8 @@ UChar32 characterBefore(const VisiblePosition&);
 VisiblePosition leftPositionOf(const VisiblePosition&);
 VisiblePosition rightPositionOf(const VisiblePosition&);
 
-VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+CORE_EXPORT VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+CORE_EXPORT VisiblePositionInComposedTree nextPositionOf(const VisiblePositionInComposedTree&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 
 // words

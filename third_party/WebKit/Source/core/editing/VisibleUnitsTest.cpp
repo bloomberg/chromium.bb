@@ -161,6 +161,34 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor)
     EXPECT_EQ(PositionInComposedTree(three->firstChild(), 3), mostBackwardCaretPosition(PositionInComposedTree::afterNode(host.get())));
 }
 
+TEST_F(VisibleUnitsTest, nextPositionOf)
+{
+    const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
+    const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>55555</b>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Element* zero = document().getElementById("zero");
+    Element* one = document().getElementById("one");
+    Element* two = document().getElementById("two");
+    Element* three = document().getElementById("three");
+    Element* four = shadowRoot->getElementById("four");
+    Element* five = shadowRoot->getElementById("five");
+
+    EXPECT_EQ(Position(one->firstChild(), 0), nextPositionOf(createVisiblePosition(Position(zero, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four->firstChild(), 0), nextPositionOf(createVisiblePosition(PositionInComposedTree(zero, 1))).deepEquivalent());
+
+    EXPECT_EQ(Position(one->firstChild(), 1), nextPositionOf(createVisiblePosition(Position(one, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 1), nextPositionOf(createVisiblePosition(PositionInComposedTree(one, 0))).deepEquivalent());
+
+    EXPECT_EQ(Position(two->firstChild(), 1), nextPositionOf(createVisiblePosition(Position(one, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 1), nextPositionOf(createVisiblePosition(PositionInComposedTree(one, 1))).deepEquivalent());
+
+    EXPECT_EQ(Position(three->firstChild(), 0), nextPositionOf(createVisiblePosition(Position(two, 2))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 1), nextPositionOf(createVisiblePosition(PositionInComposedTree(two, 2))).deepEquivalent());
+}
+
 TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
 {
     const char* bodyContent = "<p id='sample'>00</p>";
