@@ -228,9 +228,12 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   QuicServerId server_id(kServerHostname, kServerPort, is_https,
                          PRIVACY_MODE_DISABLED);
   if (!options.dont_verify_certs) {
-    // TODO(wtc): replace this with ProofVerifierForTesting() when we have
-    // a working ProofSourceForTesting().
+#if defined(USE_OPENSSL)
+    crypto_config.SetProofVerifier(ProofVerifierForTesting());
+#else
+    // TODO(rch): Implement a NSS proof source.
     crypto_config.SetProofVerifier(FakeProofVerifierForTesting());
+#endif
   }
   TestQuicSpdyClientSession client_session(client_conn, DefaultQuicConfig(),
                                            server_id, &crypto_config);

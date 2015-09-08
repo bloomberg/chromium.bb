@@ -69,10 +69,14 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
       : server_crypto_config_(QuicCryptoServerConfig::TESTING,
                               QuicRandom::GetInstance()),
         server_id_(kServerHostname, kServerPort, false, PRIVACY_MODE_DISABLED) {
-    // TODO(wtc): replace this with ProofSourceForTesting() when Chromium has
-    // a working ProofSourceForTesting().
+#if defined(USE_OPENSSL)
+    server_crypto_config_.SetProofSource(
+        CryptoTestUtils::ProofSourceForTesting());
+#else
+    // TODO(rch): Implement a NSS proof source.
     server_crypto_config_.SetProofSource(
         CryptoTestUtils::FakeProofSourceForTesting());
+#endif
     server_crypto_config_.set_strike_register_no_startup_period();
 
     InitializeServer();

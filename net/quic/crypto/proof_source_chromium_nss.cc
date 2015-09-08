@@ -9,7 +9,13 @@ using std::vector;
 
 namespace net {
 
-ProofSourceChromium::ProofSourceChromium() {
+ProofSourceChromium::ProofSourceChromium() {}
+
+ProofSourceChromium::~ProofSourceChromium() {}
+
+bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
+                                     const base::FilePath& key_path) {
+  return false;
 }
 
 bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,

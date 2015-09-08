@@ -1,0 +1,113 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "net/quic/crypto/proof_source_chromium.h"
+
+#include <openssl/digest.h>
+#include <openssl/evp.h>
+#include <openssl/rsa.h>
+
+#include "base/strings/string_number_conversions.h"
+#include "crypto/openssl_util.h"
+#include "net/quic/crypto/crypto_protocol.h"
+#include "net/ssl/scoped_openssl_types.h"
+
+using std::string;
+using std::vector;
+
+namespace net {
+
+ProofSourceChromium::ProofSourceChromium() {}
+
+ProofSourceChromium::~ProofSourceChromium() {}
+
+bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
+                                     const base::FilePath& key_path) {
+  crypto::EnsureOpenSSLInit();
+
+  std::string cert_data;
+  if (!base::ReadFileToString(cert_path, &cert_data)) {
+    DLOG(FATAL) << "Unable to read certificates.";
+    return false;
+  }
+
+  CertificateList certs_in_file =
+      X509Certificate::CreateCertificateListFromBytes(
+          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+
+  if (certs_in_file.empty()) {
+    DLOG(FATAL) << "No certificates.";
+    return false;
+  }
+
+  for (const scoped_refptr<X509Certificate>& cert : certs_in_file) {
+    std::string der_encoded_cert;
+    if (!X509Certificate::GetDEREncoded(cert->os_cert_handle(),
+                                        &der_encoded_cert)) {
+      return false;
+    }
+    certificates_.push_back(der_encoded_cert);
+  }
+
+  std::string key_data;
+  if (!base::ReadFileToString(key_path, &key_data)) {
+    DLOG(FATAL) << "Unable to read key.";
+    return false;
+  }
+
+  const uint8_t* p = reinterpret_cast<const uint8_t*>(key_data.data());
+  std::vector<uint8_t> input(p, p + key_data.size());
+  private_key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));
+  if (private_key_.get() == nullptr) {
+    DLOG(FATAL) << "Unable to create private key.";
+    return false;
+  }
+  return true;
+}
+
+bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,
+                                   const string& hostname,
+                                   const string& server_config,
+                                   bool ecdsa_ok,
+                                   const vector<string>** out_certs,
+                                   string* out_signature) {
+  DCHECK(private_key_.get()) << " this: " << this;
+
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  crypto::ScopedEVP_MD_CTX sign_context(EVP_MD_CTX_create());
+  EVP_PKEY_CTX* pkey_ctx;
+  if (!EVP_DigestSignInit(sign_context.get(), &pkey_ctx, EVP_sha256(), nullptr,
+                          private_key_->key()) ||
+      !EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, RSA_PKCS1_PSS_PADDING) ||
+      !EVP_PKEY_CTX_set_rsa_pss_saltlen(pkey_ctx, -1) ||
+      !EVP_DigestSignUpdate(sign_context.get(), reinterpret_cast<const uint8*>(
+                                                    kProofSignatureLabel),
+                            sizeof(kProofSignatureLabel)) ||
+      !EVP_DigestSignUpdate(sign_context.get(), reinterpret_cast<const uint8*>(
+                                                    server_config.data()),
+                            server_config.size())) {
+    return false;
+  }
+
+  // Determine the maximum length of the signature.
+  size_t len = 0;
+  if (!EVP_DigestSignFinal(sign_context.get(), nullptr, &len)) {
+    return false;
+  }
+  std::vector<uint8_t> signature(len);
+  // Sign it.
+  if (!EVP_DigestSignFinal(sign_context.get(), vector_as_array(&signature),
+                           &len)) {
+    return false;
+  }
+  signature.resize(len);
+  out_signature->assign(reinterpret_cast<const char*>(&signature[0]),
+                        signature.size());
+  *out_certs = &certificates_;
+  VLOG(1) << "signature: "
+          << base::HexEncode(out_signature->data(), out_signature->size());
+  return true;
+}
+
+}  // namespace net

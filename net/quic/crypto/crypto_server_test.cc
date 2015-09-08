@@ -93,7 +93,11 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
       : rand_(QuicRandom::GetInstance()),
         client_address_(Loopback4(), 1234),
         config_(QuicCryptoServerConfig::TESTING, rand_) {
+#if defined(USE_OPENSSL)
     config_.SetProofSource(CryptoTestUtils::ProofSourceForTesting());
+#else
+    config_.SetProofSource(CryptoTestUtils::FakeProofSourceForTesting());
+#endif
     supported_versions_ = QuicSupportedVersions();
     client_version_ = QuicUtils::TagToString(
         QuicVersionToQuicTag(supported_versions_.front()));
@@ -377,7 +381,7 @@ TEST_P(CryptoServerTest, BadSNI) {
 
 // TODO(rtenneti): Enable the DefaultCert test after implementing ProofSource.
 // See http://crbug.com/514472.
-TEST_F(CryptoServerTest, DISABLED_DefaultCert) {
+TEST_P(CryptoServerTest, DefaultCert) {
   // Check that the server replies with a default certificate when no SNI is
   // specified.
   // clang-format off
