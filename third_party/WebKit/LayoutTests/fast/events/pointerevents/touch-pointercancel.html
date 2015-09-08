@@ -80,6 +80,7 @@ function testMultiDrag(uncanceledMoveCausesScroll) {
   var x0 = rect.left + 30;
   var x1 = rect.left + 50;
   var x2 = rect.left + 70;
+  var x3 = rect.left + 55;
   var y = rect.top + 50;
 
   eventSender.addTouchPoint(x0, y);
@@ -102,14 +103,14 @@ function testMultiDrag(uncanceledMoveCausesScroll) {
   else
     eventSender.touchMove();
 
-  eventSender.addTouchPoint(x1+10, y);
+  eventSender.addTouchPoint(x3, y);
   eventSender.touchStart();
 
   y += 50;
   eventSender.updateTouchPoint(0, x0, y);
   eventSender.updateTouchPoint(1, x1, y);
   eventSender.updateTouchPoint(2, x2, y);
-  eventSender.updateTouchPoint(3, x2+10, y);
+  eventSender.updateTouchPoint(3, x3, y);
   eventSender.touchMove();
 
   eventSender.releaseTouchPoint(0);
@@ -117,6 +118,33 @@ function testMultiDrag(uncanceledMoveCausesScroll) {
   eventSender.releaseTouchPoint(2);
   eventSender.releaseTouchPoint(3);
   eventSender.touchEnd();
+}
+
+function testMultiCancel() {
+  var rect;
+
+  rect = document.getElementById("target").getBoundingClientRect();
+  var x0 = rect.left + 30;
+  var x1 = rect.left + 50;
+  var x2 = rect.left + 70;
+  var y = rect.top + 50;
+
+  eventSender.addTouchPoint(x0, y);
+  eventSender.addTouchPoint(x1, y);
+  eventSender.addTouchPoint(x2, y);
+  eventSender.touchStart();
+
+  eventSender.cancelTouchPoint(2);
+  eventSender.touchCancel();
+
+  y += 50;
+  eventSender.updateTouchPoint(0, x0, y);
+  eventSender.updateTouchPoint(1, x2, y);
+  eventSender.touchMove();
+
+  eventSender.cancelTouchPoint(0);
+  eventSender.cancelTouchPoint(1);
+  eventSender.touchCancel();
 }
 
 function runTests() {
@@ -166,6 +194,10 @@ function runTests() {
   testMultiDrag(true);
   debug("");
 
+  debug("--- multi cancel tests ---");
+  debug("");
+  testMultiCancel();
+  debug("");
 }
 
 

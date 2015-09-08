@@ -65,6 +65,13 @@ Received touchstart, touchIds=3
 Received touchmove, touchIds=0123
 Received touchend, touchIds=0123
 
+--- multi cancel tests ---
+
+Received touchstart, touchIds=012
+Received touchcancel, touchIds=2
+Received touchmove, touchIds=01
+Received touchcancel, touchIds=01
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
