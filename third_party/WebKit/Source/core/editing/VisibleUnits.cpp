@@ -1394,18 +1394,19 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
     return createVisiblePosition(Position(node, type));
 }
 
-VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithm(const VisiblePositionTemplate<Strategy>& c, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     if (c.isNull())
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
-    Position p = c.deepEquivalent();
+    const PositionAlgorithm<Strategy> p = c.deepEquivalent();
     Node* startNode = p.anchorNode();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
-        return createVisiblePosition(positionAfterNode(startNode));
+        return createVisiblePosition(PositionAlgorithm<Strategy>::afterNode(startNode));
 
-    Element* startBlock = enclosingBlock(startNode);
+    Element* startBlock = enclosingBlock(PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(startNode), CannotCrossEditingBoundary);
     Element* stayInsideBlock = startBlock;
 
     Node* node = startNode;
@@ -1420,19 +1421,19 @@ VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossing
             break;
         if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
             while (n && n->hasEditableStyle() != startNodeIsEditable)
-                n = NodeTraversal::next(*n, stayInsideBlock);
+                n = Strategy::next(*n, stayInsideBlock);
             if (!n || !n->isDescendantOf(highestRoot))
                 break;
         }
 
         LayoutObject* r = n->layoutObject();
         if (!r) {
-            n = NodeTraversal::next(*n, stayInsideBlock);
+            n = Strategy::next(*n, stayInsideBlock);
             continue;
         }
         const ComputedStyle& style = r->styleRef();
         if (style.visibility() != VISIBLE) {
-            n = NodeTraversal::next(*n, stayInsideBlock);
+            n = Strategy::next(*n, stayInsideBlock);
             continue;
         }
 
@@ -1449,25 +1450,35 @@ VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossing
                 int o = n == startNode ? offset : 0;
                 for (int i = o; i < length; ++i) {
                     if ((*text)[i] == '\n')
-                        return createVisiblePosition(Position(toText(n), i));
+                        return createVisiblePosition(PositionAlgorithm<Strategy>(toText(n), i));
                 }
             }
             node = n;
             offset = r->caretMaxOffset();
-            n = NodeTraversal::next(*n, stayInsideBlock);
-        } else if (editingIgnoresContent(n) || isRenderedTableElement(n)) {
+            n = Strategy::next(*n, stayInsideBlock);
+        } else if (Strategy::editingIgnoresContent(n) || isRenderedTableElement(n)) {
             node = n;
             type = PositionAnchorType::AfterAnchor;
-            n = NodeTraversal::nextSkippingChildren(*n, stayInsideBlock);
+            n = Strategy::nextSkippingChildren(*n, stayInsideBlock);
         } else {
-            n = NodeTraversal::next(*n, stayInsideBlock);
+            n = Strategy::next(*n, stayInsideBlock);
         }
     }
 
     if (type == PositionAnchorType::OffsetInAnchor)
-        return createVisiblePosition(Position(node, offset));
+        return createVisiblePosition(PositionAlgorithm<Strategy>(node, offset));
 
-    return createVisiblePosition(Position(node, type));
+    return createVisiblePosition(PositionAlgorithm<Strategy>(node, type));
+}
+
+VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
+{
+    return endOfParagraphAlgorithm<EditingStrategy>(c, boundaryCrossingRule);
+}
+
+VisiblePositionInComposedTree endOfParagraph(const VisiblePositionInComposedTree& c, EditingBoundaryCrossingRule boundaryCrossingRule)
+{
+    return endOfParagraphAlgorithm<EditingInComposedTreeStrategy>(c, boundaryCrossingRule);
 }
 
 // FIXME: isStartOfParagraph(startOfNextParagraph(pos)) is not always true
