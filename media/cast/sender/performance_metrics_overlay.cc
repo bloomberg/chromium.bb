@@ -217,6 +217,12 @@ void MaybeRenderPerformanceMetricsOverlay(int target_bitrate,
     return;
   }
 
+  // Can't render to unmappable memory (DmaBuf, CVPixelBuffer).
+  if (!frame->IsMappable()) {
+    DVLOG(2) << "Cannot render overlay: frame uses unmappable memory.";
+    return;
+  }
+
   // Compute the physical pixel top row for the bottom-most line of text.
   const int line_height = (kCharacterHeight + kLineSpacing) * kScale;
   int top = frame->visible_rect().height() - line_height;
