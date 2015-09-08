@@ -8,25 +8,20 @@
 
 void WebSiteSettingsUmaUtil::LogPermissionChange(ContentSettingsType type,
                                                  ContentSetting setting) {
-  ContentSettingsTypeHistogram histogram_value =
-      ContentSettingTypeToHistogramValue(type);
-  DCHECK_NE(histogram_value, CONTENT_SETTINGS_TYPE_HISTOGRAM_INVALID);
+  size_t num_values;
+  int histogram_value = ContentSettingTypeToHistogramValue(type, &num_values);
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Menu.PermissionChanged",
-                            histogram_value,
-                            CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+                            histogram_value, num_values);
 
   if (setting == ContentSetting::CONTENT_SETTING_ALLOW) {
     UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Menu.PermissionChanged.Allowed",
-                              histogram_value,
-                              CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+                              histogram_value, num_values);
   } else if (setting == ContentSetting::CONTENT_SETTING_BLOCK) {
     UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Menu.PermissionChanged.Blocked",
-                              histogram_value,
-                              CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+                              histogram_value, num_values);
   } else if (setting == ContentSetting::CONTENT_SETTING_DEFAULT) {
     UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Menu.PermissionChanged.Reset",
-                              histogram_value,
-                              CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+                              histogram_value, num_values);
   } else {
     NOTREACHED() << "Requested to log permission change " << type << " to "
                  << setting;

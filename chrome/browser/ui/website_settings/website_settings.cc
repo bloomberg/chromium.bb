@@ -233,22 +233,19 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
                                               ContentSetting setting) {
   // Count how often a permission for a specific content type is changed using
   // the Website Settings UI.
-  ContentSettingsTypeHistogram histogram_value =
-      ContentSettingTypeToHistogramValue(type);
-  DCHECK_NE(histogram_value, CONTENT_SETTINGS_TYPE_HISTOGRAM_INVALID)
-      << "Invalid content setting type specified.";
+  size_t num_values;
+  int histogram_value = ContentSettingTypeToHistogramValue(type, &num_values);
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.OriginInfo.PermissionChanged",
-                            histogram_value,
-                            CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+                            histogram_value, num_values);
 
   if (setting == ContentSetting::CONTENT_SETTING_ALLOW) {
     UMA_HISTOGRAM_ENUMERATION(
         "WebsiteSettings.OriginInfo.PermissionChanged.Allowed", histogram_value,
-        CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+        num_values);
   } else if (setting == ContentSetting::CONTENT_SETTING_BLOCK) {
     UMA_HISTOGRAM_ENUMERATION(
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,
-        CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+        num_values);
     // Trigger Rappor sampling if it is a permission revoke action.
     const std::string& rappor_metric = GetRapporMetric(type);
     if (!rappor_metric.empty()) {

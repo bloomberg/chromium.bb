@@ -31,8 +31,8 @@ ContentSetting IntToContentSetting(int content_setting);
 
 // Converts a given content setting to its histogram value, for use when saving
 // content settings types to a histogram.
-ContentSettingsTypeHistogram ContentSettingTypeToHistogramValue(
-    ContentSettingsType content_setting);
+int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
+                                       size_t* num_values);
 
 struct ContentSettingPatternSource {
   ContentSettingPatternSource(const ContentSettingsPattern& primary_pattern,
