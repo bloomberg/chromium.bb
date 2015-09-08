@@ -119,6 +119,54 @@ static unsigned int g2d_check_space(const struct g2d_context *ctx,
 }
 
 /*
+ * g2d_validate_select_mode - validate select mode.
+ *
+ * @mode: the mode to validate
+ *
+ * Returns zero for an invalid mode and one otherwise.
+ */
+static int g2d_validate_select_mode(
+	enum e_g2d_select_mode mode)
+{
+	switch (mode) {
+	case G2D_SELECT_MODE_NORMAL:
+	case G2D_SELECT_MODE_FGCOLOR:
+	case G2D_SELECT_MODE_BGCOLOR:
+		return 1;
+	}
+
+	return 0;
+}
+
+/*
+ * g2d_validate_blending_op - validate blending operation.
+ *
+ * @operation: the operation to validate
+ *
+ * Returns zero for an invalid mode and one otherwise.
+ */
+static int g2d_validate_blending_op(
+	enum e_g2d_op operation)
+{
+	switch (operation) {
+	case G2D_OP_CLEAR:
+	case G2D_OP_SRC:
+	case G2D_OP_DST:
+	case G2D_OP_OVER:
+	case G2D_OP_INTERPOLATE:
+	case G2D_OP_DISJOINT_CLEAR:
+	case G2D_OP_DISJOINT_SRC:
+	case G2D_OP_DISJOINT_DST:
+	case G2D_OP_CONJOINT_CLEAR:
+	case G2D_OP_CONJOINT_SRC:
+	case G2D_OP_CONJOINT_DST:
+		return 1;
+	}
+
+	return 0;
+}
+
+/*
  * g2d_add_cmd - set given command and value to user side command buffer.
  *
  * @ctx: a pointer to g2d_context structure.
@@ -579,7 +627,45 @@ g2d_blend(struct g2d_context *ctx, struct g2d_image *src,
 	union g2d_point_val pt;
 	union g2d_bitblt_cmd_val bitblt;
 	union g2d_blend_func_val blend;
-	unsigned int src_w = 0, src_h = 0, dst_w = 0, dst_h = 0;
+	unsigned int gem_space;
+	unsigned int src_w, src_h, dst_w, dst_h;
+
+	src_w = w;
+	src_h = h;
+	if (src_x + w > src->width)
+		src_w = src->width - src_x;
+	if (src_y + h > src->height)
+		src_h = src->height - src_y;
+
+	dst_w = w;
+	dst_h = h;
+	if (dst_x + w > dst->width)
+		dst_w = dst->width - dst_x;
+	if (dst_y + h > dst->height)
+		dst_h = dst->height - dst_y;
+
+	w = MIN(src_w, dst_w);
+	h = MIN(src_h, dst_h);
+
+	if (w <= 0 || h <= 0) {
+		fprintf(stderr, "invalid width or height.\n");
+		return -EINVAL;
+	}
+
+	if (!g2d_validate_select_mode(src->select_mode)) {
+		fprintf(stderr , "invalid select mode for source.\n");
+		return -EINVAL;
+	}
+
+	if (!g2d_validate_blending_op(op)) {
+		fprintf(stderr , "unsupported blending operation.\n");
+		return -EINVAL;
+	}
+
+	gem_space = src->select_mode == G2D_SELECT_MODE_NORMAL ? 2 : 1;
+
+	if (g2d_check_space(ctx, 12, gem_space))
+		return -ENOSPC;
 
 	bitblt.val = 0;
 	blend.val = 0;
@@ -607,32 +693,6 @@ g2d_blend(struct g2d_context *ctx, struct g2d_image *src,
 	case G2D_SELECT_MODE_BGCOLOR:
 		g2d_add_cmd(ctx, BG_COLOR_REG, src->color);
 		break;
-	default:
-		fprintf(stderr , "failed to set src.\n");
-		return -EINVAL;
-	}
-
-	src_w = w;
-	src_h = h;
-	if (src_x + w > src->width)
-		src_w = src->width - src_x;
-	if (src_y + h > src->height)
-		src_h = src->height - src_y;
-
-	dst_w = w;
-	dst_h = h;
-	if (dst_x + w > dst->width)
-		dst_w = dst->width - dst_x;
-	if (dst_y + h > dst->height)
-		dst_h = dst->height - dst_y;
-
-	w = MIN(src_w, dst_w);
-	h = MIN(src_h, dst_h);
-
-	if (w <= 0 || h <= 0) {
-		fprintf(stderr, "invalid width or height.\n");
-		g2d_reset(ctx);
-		return -EINVAL;
 	}
 
 	bitblt.data.alpha_blend_mode = G2D_ALPHA_BLEND_MODE_ENABLE;
@@ -689,8 +749,46 @@ g2d_scale_and_blend(struct g2d_context *ctx, struct g2d_image *src,
 	union g2d_point_val pt;
 	union g2d_bitblt_cmd_val bitblt;
 	union g2d_blend_func_val blend;
-	unsigned int scale;
+	unsigned int scale, gem_space;
 	unsigned int scale_x, scale_y;
+
+	if (src_w == dst_w && src_h == dst_h)
+		scale = 0;
+	else {
+		scale = 1;
+		scale_x = g2d_get_scaling(src_w, dst_w);
+		scale_y = g2d_get_scaling(src_h, dst_h);
+	}
+
+	if (src_x + src_w > src->width)
+		src_w = src->width - src_x;
+	if (src_y + src_h > src->height)
+		src_h = src->height - src_y;
+
+	if (dst_x + dst_w > dst->width)
+		dst_w = dst->width - dst_x;
+	if (dst_y + dst_h > dst->height)
+		dst_h = dst->height - dst_y;
+
+	if (src_w <= 0 || src_h <= 0 || dst_w <= 0 || dst_h <= 0) {
+		fprintf(stderr, "invalid width or height.\n");
+		return -EINVAL;
+	}
+
+	if (!g2d_validate_select_mode(src->select_mode)) {
+		fprintf(stderr , "invalid select mode for source.\n");
+		return -EINVAL;
+	}
+
+	if (!g2d_validate_blending_op(op)) {
+		fprintf(stderr , "unsupported blending operation.\n");
+		return -EINVAL;
+	}
+
+	gem_space = src->select_mode == G2D_SELECT_MODE_NORMAL ? 2 : 1;
+
+	if (g2d_check_space(ctx, 12 + scale * 3, gem_space))
+		return -ENOSPC;
 
 	bitblt.val = 0;
 	blend.val = 0;
@@ -718,33 +816,6 @@ g2d_scale_and_blend(struct g2d_context *ctx, struct g2d_image *src,
 	case G2D_SELECT_MODE_BGCOLOR:
 		g2d_add_cmd(ctx, BG_COLOR_REG, src->color);
 		break;
-	default:
-		fprintf(stderr , "failed to set src.\n");
-		return -EINVAL;
-	}
-
-	if (src_w == dst_w && src_h == dst_h)
-		scale = 0;
-	else {
-		scale = 1;
-		scale_x = g2d_get_scaling(src_w, dst_w);
-		scale_y = g2d_get_scaling(src_h, dst_h);
-	}
-
-	if (src_x + src_w > src->width)
-		src_w = src->width - src_x;
-	if (src_y + src_h > src->height)
-		src_h = src->height - src_y;
-
-	if (dst_x + dst_w > dst->width)
-		dst_w = dst->width - dst_x;
-	if (dst_y + dst_h > dst->height)
-		dst_h = dst->height - dst_y;
-
-	if (src_w <= 0 || src_h <= 0 || dst_w <= 0 || dst_h <= 0) {
-		fprintf(stderr, "invalid width or height.\n");
-		g2d_reset(ctx);
-		return -EINVAL;
 	}
 
 	if (scale) {
