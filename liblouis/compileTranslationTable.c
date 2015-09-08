@@ -356,7 +356,7 @@ static const char *opcodeNames[CTO_None] = {
 	"lentransnotephrase",
 
 	"capsmodechars",
-	"emphmodechars",
+	// "emphmodechars",
 	
   "begcomp",
   "compbegemph1",
