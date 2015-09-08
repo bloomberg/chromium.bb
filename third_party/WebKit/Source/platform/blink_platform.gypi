@@ -307,6 +307,7 @@
       'exported/WebPasswordCredential.cpp',
       'exported/WebPrerender.cpp',
       'exported/WebPrerenderingSupport.cpp',
+      'exported/WebPresentationAvailabilityObserver.cpp',
       'exported/WebPresentationController.cpp',
       'exported/WebProcessMemoryDump.cpp',
       'exported/WebRTCConfiguration.cpp',

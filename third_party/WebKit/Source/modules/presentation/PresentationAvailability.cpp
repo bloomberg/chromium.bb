@@ -103,6 +103,8 @@ void PresentationAvailability::stop()
 
 void PresentationAvailability::pageVisibilityChanged()
 {
+    if (m_state == State::Inactive)
+        return;
     updateListening();
 }
 
@@ -141,4 +143,4 @@ DEFINE_TRACE(PresentationAvailability)
     ActiveDOMObject::trace(visitor);
 }
 
-} // namespace
+} // blink namespace

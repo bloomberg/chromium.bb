@@ -8,6 +8,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/page/PageLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
@@ -21,7 +22,7 @@ class ScriptPromiseResolver;
 // object will be initialized with a default value passed via ::take() and will
 // then subscribe to receive callbacks if the status for |url| were to
 // change. The object will only listen to changes when required.
-class PresentationAvailability final
+class MODULES_EXPORT PresentationAvailability final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>
     , public ActiveDOMObject
     , public PageLifecycleObserver
@@ -30,9 +31,6 @@ class PresentationAvailability final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    // For CallbackPromiseAdapter.
-    using WebType = bool;
-
     static PresentationAvailability* take(ScriptPromiseResolver*, const KURL&, bool);
     ~PresentationAvailability() override;
 
