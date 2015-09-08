@@ -159,6 +159,21 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void GetPerfOutput(uint32_t duration,
+                     const std::vector<std::string>& perf_args,
+                     const GetPerfOutputCallback& callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetPerfOutput);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint32(duration);
+    writer.AppendArrayOfStrings(perf_args);
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetPerfOutput,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
   void GetScrubbedLogs(const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetFeedbackLogs);

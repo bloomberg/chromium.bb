@@ -41,6 +41,9 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
       const GetNetworkInterfacesCallback& callback) override;
   void GetPerfOutput(uint32_t duration,
                      const GetPerfOutputCallback& callback) override;
+  void GetPerfOutput(uint32_t duration,
+                     const std::vector<std::string>& perf_args,
+                     const GetPerfOutputCallback& callback) override;
   void GetScrubbedLogs(const GetLogsCallback& callback) override;
   void GetAllLogs(const GetLogsCallback& callback) override;
   void GetUserLogFiles(const GetLogsCallback& callback) override;
