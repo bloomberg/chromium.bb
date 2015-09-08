@@ -2429,9 +2429,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   }
 }
 
-- (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point {
-  // The PDF plugin does not support getting the attributed string at point.
-  // TODO: support GetStringAtPoint() for PDF. See crbug.com/152438.
+// This is invoked only on 10.8 or newer when the user taps a word using
+// three fingers.
+- (void)quickLookWithEvent:(NSEvent*)event {
+  NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       renderWidgetHostView_->render_widget_host_,
       gfx::Point(point.x, NSHeight([self frame]) - point.y),
@@ -2444,13 +2445,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
           }
       }
   );
-}
-
-// This is invoked only on 10.8 or newer when the user taps a word using
-// three fingers.
-- (void)quickLookWithEvent:(NSEvent*)event {
-  NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
-  [self showLookUpDictionaryOverlayAtPoint:point];
 }
 
 // This method handles 2 different types of hardware events.
