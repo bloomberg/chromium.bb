@@ -856,7 +856,7 @@ uint64 TracingControllerImpl::GetTracingProcessId() const {
 
 void TracingControllerImpl::AddTraceMessageFilterObserver(
     TraceMessageFilterObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   trace_message_filter_observers_.AddObserver(observer);
 
   for (auto& filter : trace_message_filters_)

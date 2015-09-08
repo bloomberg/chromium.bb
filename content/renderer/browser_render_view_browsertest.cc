@@ -79,7 +79,7 @@ class TestShellContentRendererClient : public ShellContentRendererClient {
 // Must be called on IO thread.
 void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
                                   net::Error error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::HttpCache* cache(
       getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
   DCHECK(cache);
@@ -112,7 +112,7 @@ void BackendClearCache(scoped_ptr<disk_cache::Backend*> backend,
 // completion of cache clearing on the UI thread.
 void ClearCache(net::URLRequestContextGetter* getter,
                 const base::Closure& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::HttpCache* cache(
       getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
   DCHECK(cache);

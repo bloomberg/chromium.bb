@@ -199,7 +199,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
   ~CompressedStringTraceDataSink() override {}
 
   bool OpenZStreamOnFileThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     if (stream_)
       return true;
 
@@ -223,7 +223,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
 
   void AddTraceChunkOnFileThread(
       const scoped_refptr<base::RefCountedString> chunk_ptr) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     std::string trace;
     if (compressed_trace_data_.empty())
       trace = "{\"traceEvents\":[";
@@ -235,7 +235,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
 
   void AddTraceChunkAndCompressOnFileThread(const std::string& chunk,
                                             bool finished) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     if (!OpenZStreamOnFileThread())
       return;
 
@@ -264,7 +264,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
   }
 
   void CloseOnFileThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     if (!OpenZStreamOnFileThread())
       return;
 

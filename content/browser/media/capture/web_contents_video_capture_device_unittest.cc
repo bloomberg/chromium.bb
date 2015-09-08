@@ -671,7 +671,7 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
   }
 
   void SimulateSourceSizeChange(const gfx::Size& size) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     CaptureTestView* test_view = static_cast<CaptureTestView*>(
         web_contents_->GetRenderViewHost()->GetView());
     test_view->SetSize(size);
