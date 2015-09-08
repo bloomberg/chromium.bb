@@ -14,6 +14,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/socket.h"
 #include "net/base/address_list.h"
+#include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/socket/tcp_client_socket.h"
 

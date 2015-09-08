@@ -13,7 +13,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
-#include "net/base/net_util.h"
 #include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
 

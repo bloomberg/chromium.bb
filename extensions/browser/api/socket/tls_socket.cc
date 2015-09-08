@@ -10,6 +10,7 @@
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/base/rand_callback.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"

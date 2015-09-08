@@ -12,7 +12,6 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
-#include "net/base/net_util.h"
 
 namespace net {
 

@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
-#include "net/base/net_util.h"
 #include "net/dns/dns_protocol.h"
 
 namespace net {
