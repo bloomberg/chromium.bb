@@ -243,7 +243,7 @@ def RecoverDevices(devices, blacklist):
   for serial in should_restart_usb:
     try:
       reset_usb.reset_android_usb(serial)
-    except device_errors.DeviceUnreachableError:
+    except (IOError, device_errors.DeviceUnreachableError):
       logging.exception('Unable to reset USB for %s.', serial)
       if blacklist:
         blacklist.Extend([serial])
@@ -348,7 +348,7 @@ def main():
         try:
           if status['adb_status'] == 'device':
             f.write('{serial} {adb_status} {build_product} {build_id} '
-                    '{temperature:.1f}C {level}%'.format(
+                    '{temperature:.1f}C {level}%\n'.format(
                 serial=status['serial'],
                 adb_status=status['adb_status'],
                 build_product=status['type'],
