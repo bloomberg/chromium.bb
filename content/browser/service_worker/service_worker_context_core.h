@@ -233,6 +233,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       int new_host_id,
       scoped_ptr<ServiceWorkerProviderHost> provider_host);
 
+  void ClearAllServiceWorkersForTest(const base::Closure& callback);
+
   base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -281,6 +283,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64, scoped_refptr<ServiceWorkerVersion>> protected_versions_;
   int next_handle_id_;
   int next_registration_handle_id_;
+  // Set in RegisterServiceWorker(), cleared in ClearAllServiceWorkersForTest().
+  // This is used to avoid unnecessary disk read operation in tests. This value
+  // is false if Chrome was relaunched after service workers were registered.
+  bool was_service_worker_registered_;
   scoped_refptr<base::ObserverListThreadSafe<ServiceWorkerContextObserver>>
       observer_list_;
   base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;

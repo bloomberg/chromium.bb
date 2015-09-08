@@ -1146,6 +1146,8 @@ ServiceWorkerVersion::PendingRequest<CallbackType>::~PendingRequest() {
 }
 
 void ServiceWorkerVersion::OnScriptLoaded() {
+  if (running_status() == STOPPING)
+    return;
   DCHECK_EQ(STARTING, running_status());
   // Activate ping/pong now that JavaScript execution will start.
   ping_controller_->Activate();

@@ -57,6 +57,51 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
          host->document_url().GetOrigin() == origin;
 }
 
+class ClearAllServiceWorkersHelper
+    : public base::RefCounted<ClearAllServiceWorkersHelper> {
+ public:
+  explicit ClearAllServiceWorkersHelper(const base::Closure& callback)
+      : callback_(callback) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  }
+
+  void OnResult(ServiceWorkerStatusCode) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    // We do nothing in this method. We use this class to wait for all callbacks
+    // to be called using the refcount.
+  }
+
+  void DidGetAllRegistrations(
+      const base::WeakPtr<ServiceWorkerContextCore>& context,
+      const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+    if (!context)
+      return;
+    for (const auto& version_itr : context->GetLiveVersions()) {
+      ServiceWorkerVersion* version(version_itr.second);
+      if (version->running_status() == ServiceWorkerVersion::STARTING ||
+          version->running_status() == ServiceWorkerVersion::RUNNING) {
+        version->StopWorker(
+            base::Bind(&ClearAllServiceWorkersHelper::OnResult, this));
+      }
+    }
+    for (const auto& registration_info : registrations) {
+      context->UnregisterServiceWorker(
+          registration_info.pattern,
+          base::Bind(&ClearAllServiceWorkersHelper::OnResult, this));
+    }
+  }
+
+ private:
+  friend class base::RefCounted<ClearAllServiceWorkersHelper>;
+  ~ClearAllServiceWorkersHelper() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
+  }
+
+  const base::Closure callback_;
+  DISALLOW_COPY_AND_ASSIGN(ClearAllServiceWorkersHelper);
+};
+
 }  // namespace
 
 const base::FilePath::CharType
@@ -141,6 +186,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       provider_by_uuid_(new ProviderByClientUUIDMap),
       next_handle_id_(0),
       next_registration_handle_id_(0),
+      was_service_worker_registered_(false),
       observer_list_(observer_list),
       weak_factory_(this) {
   // These get a WeakPtr from weak_factory_, so must be set after weak_factory_
@@ -163,6 +209,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       provider_by_uuid_(old_context->provider_by_uuid_.release()),
       next_handle_id_(old_context->next_handle_id_),
       next_registration_handle_id_(old_context->next_registration_handle_id_),
+      was_service_worker_registered_(
+          old_context->was_service_worker_registered_),
       observer_list_(old_context->observer_list_),
       weak_factory_(this) {
   // These get a WeakPtr from weak_factory_, so must be set after weak_factory_
@@ -255,6 +303,7 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
     ServiceWorkerProviderHost* provider_host,
     const RegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  was_service_worker_registered_ = true;
   if (storage()->IsDisabled()) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT, std::string(),
                  kInvalidServiceWorkerRegistrationId);
@@ -539,6 +588,20 @@ void ServiceWorkerContextCore::TransferProviderHostIn(
                                         temp->dispatcher_host());
   map->Replace(new_provider_id, transferee.release());
   delete temp;
+}
+
+void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
+    const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // |callback| will be called in the destructor of |helper| on the UI thread.
+  scoped_refptr<ClearAllServiceWorkersHelper> helper(
+      new ClearAllServiceWorkersHelper(callback));
+  if (!was_service_worker_registered_)
+    return;
+  was_service_worker_registered_ = false;
+  storage()->GetAllRegistrationsInfos(
+      base::Bind(&ClearAllServiceWorkersHelper::DidGetAllRegistrations, helper,
+                 AsWeakPtr()));
 }
 
 void ServiceWorkerContextCore::OnRunningStateChanged(
