@@ -263,29 +263,6 @@ define('media_router_bindings', [
   };
 
   /**
-   * Called by the Provider Manager when an error was encountered in response
-   * to a media route creation request.
-   * @param {!string} requestId The request id.
-   * @param {!string} error The error.
-   */
-  MediaRouter.prototype.onRouteResponseError =
-      function(requestId, error) {
-    this.service_.onRouteResponseError(requestId, error);
-  };
-
-  /**
-   * Called by the provider manager when a route was able to be created by a
-   * media route provider.
-   *
-   * @param {string} requestId The media route request id.
-   * @param {string} routeId The id of the media route that was created.
-   */
-  MediaRouter.prototype.onRouteResponseReceived =
-      function(requestId, routeId) {
-    this.service_.onRouteResponseReceived(requestId, routeId);
-  };
-
-  /**
    * Object containing callbacks set by the provider manager.
    * TODO(mfoltz): Better named ProviderManagerDelegate?
    *
