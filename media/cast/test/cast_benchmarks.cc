@@ -68,12 +68,7 @@ namespace cast {
 namespace {
 
 static const int64 kStartMillisecond = INT64_C(1245);
-static const int kAudioChannels = 2;
-static const int kTargetPlayoutDelayMs = 300;
-
-// The tests are commonly implemented with |kFrameTimerMs| RunTask function;
-// a normal video is 30 fps hence the 33 ms between frames.
-static const int kFrameTimerMs = 33;
+static const int kTargetPlayoutDelayMs = 400;
 
 void UpdateCastTransportStatus(CastTransportStatus status) {
   bool result = (status == TRANSPORT_AUDIO_INITIALIZED ||
@@ -81,10 +76,12 @@ void UpdateCastTransportStatus(CastTransportStatus status) {
   EXPECT_TRUE(result);
 }
 
-void ExpectSuccessAndRunCallback(const base::Closure& done_cb,
-                                 OperationalStatus status) {
+void ExpectVideoSuccess(OperationalStatus status) {
   EXPECT_EQ(STATUS_INITIALIZED, status);
-  done_cb.Run();
+}
+
+void ExpectAudioSuccess(OperationalStatus status) {
+  EXPECT_EQ(STATUS_INITIALIZED, status);
 }
 
 void IgnoreRawEvents(const std::vector<PacketEvent>& packet_events,
@@ -233,63 +230,33 @@ class RunOneBenchmark {
   }
 
   void Configure(Codec video_codec,
-                 Codec audio_codec,
-                 int audio_sampling_frequency,
-                 int max_number_of_video_buffers_used) {
-    audio_sender_config_.ssrc = 1;
-    audio_sender_config_.receiver_ssrc = 2;
-    audio_sender_config_.max_playout_delay =
-        base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
-    audio_sender_config_.rtp_payload_type = 96;
-    audio_sender_config_.use_external_encoder = false;
-    audio_sender_config_.frequency = audio_sampling_frequency;
-    audio_sender_config_.channels = kAudioChannels;
-    audio_sender_config_.bitrate = kDefaultAudioEncoderBitrate;
+                 Codec audio_codec) {
+    audio_sender_config_ = GetDefaultAudioSenderConfig();
+    audio_sender_config_.min_playout_delay =
+        audio_sender_config_.max_playout_delay =
+            base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
     audio_sender_config_.codec = audio_codec;
 
-    audio_receiver_config_.receiver_ssrc =
-        audio_sender_config_.receiver_ssrc;
-    audio_receiver_config_.sender_ssrc = audio_sender_config_.ssrc;
-    audio_receiver_config_.rtp_payload_type =
-        audio_sender_config_.rtp_payload_type;
-    audio_receiver_config_.rtp_timebase = audio_sender_config_.frequency;
-    audio_receiver_config_.channels = kAudioChannels;
-    audio_receiver_config_.target_frame_rate = 100;
-    audio_receiver_config_.codec = audio_sender_config_.codec;
-    audio_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
+    audio_receiver_config_ = GetDefaultAudioReceiverConfig();
+    audio_receiver_config_.rtp_max_delay_ms =
+        audio_sender_config_.max_playout_delay.InMicroseconds();
+    audio_receiver_config_.codec = audio_codec;
 
-    video_sender_config_.ssrc = 3;
-    video_sender_config_.receiver_ssrc = 4;
-    video_sender_config_.max_playout_delay =
-        base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
-    video_sender_config_.rtp_payload_type = 97;
-    video_sender_config_.use_external_encoder = false;
-#if 0
-    video_sender_config_.max_bitrate = 10000000;  // 10Mbit max
-    video_sender_config_.min_bitrate = 1000000;   // 1Mbit min
-    video_sender_config_.start_bitrate = 1000000; // 1Mbit start
-#else
-    video_sender_config_.max_bitrate = 4000000;  // 4Mbit all the time
+    video_sender_config_ = GetDefaultVideoSenderConfig();
+    video_sender_config_.min_playout_delay =
+        video_sender_config_.max_playout_delay =
+            base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
+    video_sender_config_.max_bitrate = 4000000;
     video_sender_config_.min_bitrate = 4000000;
     video_sender_config_.start_bitrate = 4000000;
-#endif
-    video_sender_config_.max_qp = 56;
-    video_sender_config_.min_qp = 4;
-    video_sender_config_.max_frame_rate = 30;
-    video_sender_config_.max_number_of_video_buffers_used =
-        max_number_of_video_buffers_used;
     video_sender_config_.codec = video_codec;
 
-    video_receiver_config_.receiver_ssrc =
-        video_sender_config_.receiver_ssrc;
-    video_receiver_config_.sender_ssrc = video_sender_config_.ssrc;
-    video_receiver_config_.rtp_payload_type =
-        video_sender_config_.rtp_payload_type;
-    video_receiver_config_.codec = video_sender_config_.codec;
-    video_receiver_config_.rtp_timebase = kVideoFrequency;
-    video_receiver_config_.channels = 1;
-    video_receiver_config_.target_frame_rate = 100;
+    video_receiver_config_ = GetDefaultVideoReceiverConfig();
     video_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
+    video_receiver_config_.codec = video_codec;
+
+    frame_duration_ = base::TimeDelta::FromSeconds(1) /
+        video_sender_config_.max_frame_rate;
   }
 
   void SetSenderClockSkew(double skew, base::TimeDelta offset) {
@@ -342,22 +309,14 @@ class RunOneBenchmark {
     cast_sender_ =
         CastSender::Create(cast_environment_sender_, &transport_sender_);
 
-    // Initializing audio and video senders.  The funny dance here is to
-    // synchronize on the asynchronous initialization process.
-    base::RunLoop run_loop;
-    base::WeakPtrFactory<RunOneBenchmark> weak_factory(this);
     cast_sender_->InitializeAudio(
         audio_sender_config_,
-        base::Bind(&ExpectSuccessAndRunCallback, run_loop.QuitClosure()));
-    run_loop.Run();  // Wait for quit closure to run.
-    weak_factory.InvalidateWeakPtrs();
+        base::Bind(&ExpectAudioSuccess));
     cast_sender_->InitializeVideo(
         video_sender_config_,
-        base::Bind(&ExpectSuccessAndRunCallback, run_loop.QuitClosure()),
+        base::Bind(&ExpectVideoSuccess),
         CreateDefaultVideoEncodeAcceleratorCallback(),
         CreateDefaultVideoEncodeMemoryCallback());
-    run_loop.Run();  // Wait for quit closure to run.
-    weak_factory.InvalidateWeakPtrs();
 
     receiver_to_sender_.Initialize(
         CreateSimplePipe(p).Pass(),
@@ -367,6 +326,8 @@ class RunOneBenchmark {
         CreateSimplePipe(p).Pass(),
         transport_receiver_->PacketReceiverForTesting(),
         task_runner_, &testing_clock_);
+
+    task_runner_->RunTasks();
   }
 
   void ReceivePacket(scoped_ptr<Packet> packet) {
@@ -379,15 +340,22 @@ class RunOneBenchmark {
     task_runner_->RunTasks();
   }
 
-  void SendFakeVideoFrame() {
-    frames_sent_++;
-    cast_sender_->video_frame_input()->InsertRawVideoFrame(
-        media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2)),
-        testing_clock_sender_->NowTicks());
+  base::TimeDelta VideoTimestamp(int frame_number) {
+    return (frame_number * base::TimeDelta::FromSeconds(1)) /
+        video_sender_config_.max_frame_rate;
   }
 
-  void RunTasks(int ms) {
-    task_runner_->Sleep(base::TimeDelta::FromMilliseconds(ms));
+  void SendFakeVideoFrame() {
+    // NB: Blackframe with timestamp
+    cast_sender_->video_frame_input()->InsertRawVideoFrame(
+        media::VideoFrame::CreateColorFrame(gfx::Size(2, 2),
+        0x00, 0x80, 0x80, VideoTimestamp(frames_sent_)),
+        testing_clock_sender_->NowTicks());
+    frames_sent_++;
+  }
+
+  void RunTasks(base::TimeDelta duration) {
+    task_runner_->Sleep(duration);
   }
 
   void BasicPlayerGotVideoFrame(
@@ -426,16 +394,15 @@ class RunOneBenchmark {
 
   void Run(const MeasuringPoint& p) {
     available_bitrate_ = p.bitrate;
-    Configure(
-        CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000, 1);
+    Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
     Create(p);
     StartBasicPlayer();
 
     for (int frame = 0; frame < 1000; frame++) {
       SendFakeVideoFrame();
-      RunTasks(kFrameTimerMs);
+      RunTasks(frame_duration_);
     }
-    RunTasks(100 * kFrameTimerMs);  // Empty the pipeline.
+    RunTasks(100 * frame_duration_);  // Empty the pipeline.
     VLOG(1) << "=============INPUTS============";
     VLOG(1) << "Bitrate: " << p.bitrate << " mbit/s";
     VLOG(1) << "Latency: " << p.latency << " ms";
@@ -474,14 +441,14 @@ class RunOneBenchmark {
 
   // Mbits per second
   double video_bandwidth() const {
-    double seconds = (kFrameTimerMs * frames_sent_ / 1000.0);
+    double seconds = (frame_duration_.InSecondsF() * frames_sent_);
     double megabits = video_bytes_encoded_ * 8 / 1000000.0;
     return megabits / seconds;
   }
 
   // Mbits per second
   double audio_bandwidth() const {
-    double seconds = (kFrameTimerMs * frames_sent_ / 1000.0);
+    double seconds = (frame_duration_.InSecondsF() * frames_sent_);
     double megabits = audio_bytes_encoded_ * 8 / 1000000.0;
     return megabits / seconds;
   }
@@ -531,6 +498,7 @@ class RunOneBenchmark {
   scoped_ptr<CastSender> cast_sender_;
 
   int frames_sent_;
+  base::TimeDelta frame_duration_;
   double available_bitrate_;
   std::vector<std::pair<base::TimeTicks, base::TimeTicks> > audio_ticks_;
   std::vector<std::pair<base::TimeTicks, base::TimeTicks> > video_ticks_;
