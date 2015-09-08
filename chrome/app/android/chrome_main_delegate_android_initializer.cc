@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/app/android/chrome_main_delegate_android.h"
-#include "chrome/browser/android/chrome_main_delegate_staging_android.h"
 
 ChromeMainDelegateAndroid* ChromeMainDelegateAndroid::Create() {
-  return new ChromeMainDelegateStagingAndroid();
+  return new ChromeMainDelegateAndroid();
 }

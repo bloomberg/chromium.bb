@@ -15,22 +15,6 @@ class ChromeMainDelegateStagingAndroid : public ChromeMainDelegateAndroid {
   ChromeMainDelegateStagingAndroid();
   ~ChromeMainDelegateStagingAndroid() override;
 
- protected:
-  int RunProcess(
-      const std::string& process_type,
-      const content::MainFunctionParams& main_function_params) override;
-#if defined(SAFE_BROWSING_DB_REMOTE)
-  virtual SafeBrowsingApiHandler* CreateSafeBrowsingApiHandler();
-#endif
-
- private:
-  bool BasicStartupComplete(int* exit_code) override;
-  void ProcessExiting(const std::string& process_type) override;
-
-#if defined(SAFE_BROWSING_DB_REMOTE)
-  scoped_ptr<SafeBrowsingApiHandler> safe_browsing_api_handler_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateStagingAndroid);
 };
 

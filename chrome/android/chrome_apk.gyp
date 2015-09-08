@@ -20,8 +20,8 @@
     # chrome-apk but not in the published static_library which is included in the
     # real chrome for android.
     'chrome_public_app_native_sources': [
+      '../app/android/chrome_main_delegate_android_initializer.cc',
       '../browser/android/chrome_entry_point.cc',
-      '../browser/android/chrome_main_delegate_staging_android_initializer.cc',
     ],
   },
   'targets': [

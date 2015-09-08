@@ -19,6 +19,6 @@ int ChromeSyncShellMainDelegate::RunProcess(
   if (process_type.empty()) {
     FakeServerHelperAndroid::Register(base::android::AttachCurrentThread());
   }
-  return ChromeMainDelegateStagingAndroid::RunProcess(
+  return ChromeMainDelegateAndroid::RunProcess(
       process_type, main_function_params);
 }

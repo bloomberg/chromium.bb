@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_CHROME_SYNC_SHELL_MAIN_DELEGATE_H_
 #define CHROME_BROWSER_ANDROID_CHROME_SYNC_SHELL_MAIN_DELEGATE_H_
 
-#include "chrome/browser/android/chrome_main_delegate_staging_android.h"
+#include "chrome/app/android/chrome_main_delegate_android.h"
 
-class ChromeSyncShellMainDelegate
-    : public ChromeMainDelegateStagingAndroid {
+class ChromeSyncShellMainDelegate : public ChromeMainDelegateAndroid {
  public:
   ChromeSyncShellMainDelegate();
   ~ChromeSyncShellMainDelegate() override;
