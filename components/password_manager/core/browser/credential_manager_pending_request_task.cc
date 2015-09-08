@@ -24,6 +24,7 @@ CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
       zero_click_only_(request_zero_click_only),
       origin_(request_origin),
       affiliated_realms_(affiliated_realms.begin(), affiliated_realms.end()) {
+  CHECK(!delegate_->client()->DidLastPageLoadEncounterSSLErrors());
   for (const GURL& origin : request_federations)
     federations_.insert(origin.spec());
 }

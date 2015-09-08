@@ -123,7 +123,10 @@ void CredentialManagerDispatcher::OnRequestCredential(
     return;
   }
 
-  if (zero_click_only && !IsZeroClickAllowed()) {
+  // Return an empty credential if zero-click is required but disabled, or if
+  // the current page has TLS errors.
+  if ((zero_click_only && !IsZeroClickAllowed()) ||
+      client_->DidLastPageLoadEncounterSSLErrors()) {
     web_contents()->GetRenderViewHost()->Send(
         new CredentialManagerMsg_SendCredential(
             web_contents()->GetRenderViewHost()->GetRoutingID(), request_id,

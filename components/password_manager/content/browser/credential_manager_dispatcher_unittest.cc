@@ -45,6 +45,7 @@ class MockPasswordManagerClient
  public:
   MOCK_CONST_METHOD0(IsSavingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
+  MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_METHOD1(NotifyUserAutoSigninPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms));
   MOCK_METHOD2(PromptUserToSavePasswordPtr,
@@ -172,6 +173,8 @@ class CredentialManagerDispatcherTest
     ON_CALL(*client_, IsSavingEnabledForCurrentPage())
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsOffTheRecord()).WillByDefault(testing::Return(false));
+    ON_CALL(*client_, DidLastPageLoadEncounterSSLErrors())
+        .WillByDefault(testing::Return(false));
 
     NavigateAndCommit(GURL("https://example.com/test.html"));
 
@@ -238,7 +241,7 @@ class CredentialManagerDispatcherTest
     const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
-    EXPECT_TRUE(message);
+    ASSERT_TRUE(message);
     CredentialManagerMsg_SendCredential::Param send_param;
     CredentialManagerMsg_SendCredential::Read(message, &send_param);
 
@@ -257,7 +260,7 @@ class CredentialManagerDispatcherTest
     const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
-    EXPECT_TRUE(message);
+    ASSERT_TRUE(message);
     CredentialManagerMsg_SendCredential::Param send_param;
     CredentialManagerMsg_SendCredential::Read(message, &send_param);
 
@@ -468,22 +471,22 @@ TEST_F(CredentialManagerDispatcherTest,
   store_->AddLogin(form_);
 
   std::vector<GURL> federations;
-  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
-      .Times(testing::Exactly(0));
-  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(1));
-
   dispatcher()->OnRequestCredential(kRequestId, true, federations);
 
-  RunAllPendingTasks();
+  ExpectZeroClickSignInSuccess();
+}
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(kMsgID);
-  EXPECT_TRUE(message);
-  CredentialManagerMsg_SendCredential::Param send_param;
-  CredentialManagerMsg_SendCredential::Read(message, &send_param);
-  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD,
-            base::get<1>(send_param).type);
+TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithTLSErrors) {
+  // If we encounter TLS errors, we won't return credentials.
+  EXPECT_CALL(*client_, DidLastPageLoadEncounterSSLErrors())
+      .WillRepeatedly(testing::Return(true));
+
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  ExpectZeroClickSignInFailure();
 }
 
 TEST_F(CredentialManagerDispatcherTest,
