@@ -102,7 +102,7 @@ void PasswordManagerHandler::GetLocalizedValues(
                                full_text.substr(0, offset));
   localized_strings->SetString("passwordsManagePasswordsLinkText",
                                full_text.substr(offset,
-                                                offset + link_text.size()));
+                                                link_text.size()));
   localized_strings->SetString("passwordsManagePasswordsAfterLinkText",
                                full_text.substr(offset + link_text.size()));
 
