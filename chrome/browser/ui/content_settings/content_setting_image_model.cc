@@ -356,8 +356,12 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
 ContentSettingRPHImageModel::ContentSettingRPHImageModel()
     : ContentSettingImageModel(
         CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-  // TODO(estade): get an MD icon for this one.
-  SetIconByResourceId(IDR_REGISTER_PROTOCOL_HANDLER);
+  if (!UseVectorGraphics())
+    SetIconByResourceId(IDR_REGISTER_PROTOCOL_HANDLER);
+#if !defined(OS_MACOSX)
+  else
+    SetIconByVectorId(gfx::VectorIconId::PROTOCOL_HANDLER, false);
+#endif
   set_tooltip(l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
 }
 
