@@ -864,19 +864,23 @@ __gCrWeb.autofill.combineAndCollapseWhitespace = function(
 /**
  * This is a helper function for the findChildText() function (see below).
  * Search depth is limited with the |depth| parameter.
- * Based on form_autofill_util::findChildTextInner().
+ *
+ * Based on form_autofill_util::FindChildTextInner().
+ *
  * @param {Node} node The node to fetch the text content from.
  * @param {number} depth The maximum depth to descend on the DOM.
+ * @param {Array<Node>} divsToSkip List of <div> tags to ignore if encountered.
  * @return {string} The discovered and adapted string.
  */
-__gCrWeb.autofill.findChildTextInner = function(node, depth) {
+__gCrWeb.autofill.findChildTextInner = function(node, depth, divsToSkip) {
   if (depth <= 0 || !node) {
     return '';
   }
 
   // Skip over comments.
   if (node.nodeType === Node.COMMENT_NODE) {
-    return __gCrWeb.autofill.findChildTextInner(node.nextSibling, depth - 1);
+    return __gCrWeb.autofill.findChildTextInner(node.nextSibling, depth - 1,
+                                                divsToSkip);
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.TEXT_NODE) {
@@ -898,18 +902,28 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth) {
     }
   }
 
+  if (node.tagName === 'DIV') {
+    for (var i = 0; i < divsToSkip.length; ++i) {
+      if (node === divsToSkip[i]) {
+        return '';
+      }
+    }
+  }
+
   // Extract the text exactly at this node.
   var nodeText = __gCrWeb.autofill.nodeValue(node);
   if (node.nodeType === Node.TEXT_NODE && !nodeText) {
     // In the C++ version, this text node would have been stripped completely.
     // Just pass the buck.
-    return __gCrWeb.autofill.findChildTextInner(node.nextSibling, depth);
+    return __gCrWeb.autofill.findChildTextInner(node.nextSibling, depth,
+                                                divsToSkip);
   }
 
   // Recursively compute the children's text.
   // Preserve inter-element whitespace separation.
-  var childText =
-      __gCrWeb.autofill.findChildTextInner(node.firstChild, depth - 1);
+  var childText = __gCrWeb.autofill.findChildTextInner(node.firstChild,
+                                                       depth - 1,
+                                                       divsToSkip);
   var addSpace = node.nodeType === Node.TEXT_NODE && !nodeText;
   // Emulate apparently incorrect Chromium behavior tracked in crbug 239819.
   addSpace = false;
@@ -918,14 +932,40 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth) {
 
   // Recursively compute the siblings' text.
   // Again, preserve inter-element whitespace separation.
-  var siblingText =
-      __gCrWeb.autofill.findChildTextInner(node.nextSibling, depth - 1);
+  var siblingText = __gCrWeb.autofill.findChildTextInner(node.nextSibling,
+                                                         depth - 1,
+                                                         divsToSkip);
   addSpace = node.nodeType === Node.TEXT_NODE && !nodeText;
   // Emulate apparently incorrect Chromium behavior tracked in crbug 239819.
   addSpace = false;
   nodeText = __gCrWeb.autofill.combineAndCollapseWhitespace(nodeText,
       siblingText, addSpace);
 
+  return nodeText;
+};
+
+/**
+ * Same as findChildText() below, but with a list of div nodes to skip.
+ *
+ * It is based on the logic in
+ *    string16 FindChildTextWithIgnoreList(
+ *        const WebNode& node,
+ *        const std::set<WebNode>& divs_to_skip)
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+ *
+ * @param {Node} node A node of which the child text will be return.
+ * @param {Array<Node>} divsToSkip List of <div> tags to ignore if encountered.
+ * @return {string} The child text.
+ */
+__gCrWeb.autofill.findChildTextWithIgnoreList = function(node, divsToSkip) {
+  if (node.nodeType === Node.TEXT_NODE)
+    return __gCrWeb.autofill.nodeValue(node);
+
+  var child = node.firstChild;
+  var kChildSearchDepth = 10;
+  var nodeText = __gCrWeb.autofill.findChildTextInner(child, kChildSearchDepth,
+                                                      divsToSkip);
+  nodeText = nodeText.trim();
   return nodeText;
 };
 
@@ -943,14 +983,7 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth) {
  * @return {string} The child text.
  */
 __gCrWeb.autofill.findChildText = function(node) {
-  if (node.nodeType === Node.TEXT_NODE)
-    return __gCrWeb.autofill.nodeValue(node);
-
-  var child = node.firstChild;
-  var kChildSearchDepth = 10;
-  var nodeText = __gCrWeb.autofill.findChildTextInner(child, kChildSearchDepth);
-  nodeText = nodeText.trim();
-  return nodeText;
+  return __gCrWeb.autofill.findChildTextWithIgnoreList(node, []);
 };
 
 /**
@@ -1299,10 +1332,38 @@ __gCrWeb.autofill.inferLabelFromTableRow = function(element) {
 };
 
 /**
+ * Returns true if |node| is an element and it is a container type that
+ * inferLabelForElement() can traverse.
+ *
+ * It is based on the logic in
+ *     bool IsTraversableContainerElement(const WebNode& node);
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+ *
+ * @param {!Node} node The node to be examined.
+ * @return {boolean} Whether it can be traversed.
+ */
+__gCrWeb.autofill.isTraversableContainerElement = function(node) {
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return false;
+  }
+
+  var tagName = /** @type {Element} */(node).tagName;
+  return (tagName === "DD" ||
+          tagName === "DIV" ||
+          tagName === "FIELDSET" ||
+          tagName === "LI" ||
+          tagName === "TD" ||
+          tagName === "TABLE");
+};
+
+/**
  * Helper for |InferLabelForElement()| that infers a label, if possible, from
  * a surrounding div table,
  * e.g. <div>Some Text<span><input ...></span></div>
  * e.g. <div>Some Text</div><div><input ...></div>
+ *
+ * Because this is already traversing the <div> structure, if it finds a <label>
+ * sibling along the way, infer from that <label>.
  *
  * It is based on the logic in
  *    string16 InferLabelFromDivTable(const WebFormControlElement& element)
@@ -1318,17 +1379,45 @@ __gCrWeb.autofill.inferLabelFromDivTable = function(element) {
 
   var node = element.parentNode;
   var lookingForParent = true;
+  var divsToSkip = [];
 
   // Search the sibling and parent <div>s until we find a candidate label.
   var inferredLabel = '';
   while (inferredLabel.length === 0 && node) {
     if (__gCrWeb.autofill.hasTagName(node, 'div')) {
+      if (lookingForParent) {
+        inferredLabel =
+            __gCrWeb.autofill.findChildTextWithIgnoreList(node, divsToSkip);
+      } else {
+        inferredLabel = __gCrWeb.autofill.findChildText(node);
+      }
+      // Avoid sibling DIVs that contain autofillable fields.
+      if (!lookingForParent && inferredLabel.length > 0) {
+        var resultElement = node.querySelector('input, select, textarea');
+        if (resultElement) {
+          inferredLabel = '';
+          var addDiv = true;
+          for (var i = 0; i < divsToSkip.length; ++i) {
+            if (node === divsToSkip[i]) {
+              addDiv = false;
+              break;
+            }
+          }
+          if (addDiv) {
+            divsToSkip.push(node);
+          }
+        }
+      }
+
       lookingForParent = false;
-      inferredLabel = __gCrWeb.autofill.findChildText(node);
+    } else if (!lookingForParent &&
+               __gCrWeb.autofill.hasTagName(node, 'label')) {
+      if (!node.control) {
+        inferredLabel = __gCrWeb.autofill.findChildText(node);
+      }
     } else if (lookingForParent &&
-        (__gCrWeb.autofill.hasTagName(node, 'table') ||
-            __gCrWeb.autofill.hasTagName(node, 'fieldset'))) {
-      // If the element is in a table or fieldset, its label most likely is too.
+               __gCrWeb.autofill.isTraversableContainerElement(node)) {
+      // If the element is in a non-div container, its label most likely is too.
       break;
     }
 
@@ -1390,31 +1479,26 @@ __gCrWeb.autofill.inferLabelFromDefinitionList = function(element) {
 };
 
 /**
- * Checks if the element's closest ancestor is a TD or DIV.
+ * Returns the element type for all ancestor nodes in CAPS, starting with the
+ * parent node.
  *
  * It is based on the logic in
- *    bool ClosestAncestorIsDivAndNotTD(const WebFormControlElement& element)
+ *    std::vector<std::string> AncestorTagNames(
+ *        const WebFormControlElement& element);
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
- * @return {boolean} true if the closest ancestor is a <div> and not a <td>.
- *     false if the closest ancestor is a <td> tag, or if there is no <div> or
- *     <td> ancestor.
+ * @param {FormControlElement} element An element to examine.
+ * @return {Array} The element types for all ancestors.
  */
-__gCrWeb.autofill.closestAncestorIsDivAndNotTD = function(element) {
+__gCrWeb.autofill.ancestorTagNames = function(element) {
+  var tagNames = [];
   var parentNode = element.parentNode;
   while (parentNode) {
-    if (parentNode.nodeType === Node.ELEMENT_NODE) {
-      if (__gCrWeb.autofill.hasTagName(parentNode, 'div')) {
-        return true;
-      }
-      if (__gCrWeb.autofill.hasTagName(parentNode, 'td')) {
-        return false;
-      }
-    }
+    if (parentNode.nodeType === Node.ELEMENT_NODE)
+      tagNames.push(parentNode.tagName);
     parentNode = parentNode.parentNode;
   }
-  return false;
+  return tagNames;
 }
 
 /**
@@ -1448,44 +1532,34 @@ __gCrWeb.autofill.inferLabelForElement = function(element) {
     return inferredLabel;
   }
 
-  // If we didn't find a label, check for list item case.
-  inferredLabel = __gCrWeb.autofill.inferLabelFromListItem(element);
-  if (inferredLabel.length > 0) {
-    return inferredLabel;
-  }
-
-  // If we didn't find a label, check for definition list case.
-  inferredLabel = __gCrWeb.autofill.inferLabelFromDefinitionList(element);
-  if (inferredLabel.length > 0) {
-    return inferredLabel;
-  }
-
-  var checkDivFirst = __gCrWeb.autofill.closestAncestorIsDivAndNotTD(element);
-  if (checkDivFirst) {
-    // If we didn't find a label, check for div table case first since it's the
-    // closest ancestor.
-    inferredLabel = __gCrWeb.autofill.inferLabelFromDivTable(element);
-    if (inferredLabel.length > 0) {
-      return inferredLabel;
+  // For all other searches that involve traversing up the tree, the search
+  // order is based on which tag is the closest ancestor to |element|.
+  var tagNames = __gCrWeb.autofill.ancestorTagNames(element);
+  var seenTagNames = {};
+  for (var index = 0; index < tagNames.length; ++index) {
+    var tagName = tagNames[index];
+    if (tagName in seenTagNames) {
+      continue;
     }
-  }
 
-  // If we didn't find a label, check for table cell case.
-  inferredLabel = __gCrWeb.autofill.inferLabelFromTableColumn(element);
-  if (inferredLabel.length > 0) {
-    return inferredLabel;
-  }
+    seenTagNames[tagName] = true;
+    if (tagName === "DIV") {
+      inferredLabel = __gCrWeb.autofill.inferLabelFromDivTable(element);
+    } else if (tagName === "TD") {
+      inferredLabel = __gCrWeb.autofill.inferLabelFromTableColumn(element);
+      if (inferredLabel.length === 0)
+        inferredLabel = __gCrWeb.autofill.inferLabelFromTableRow(element);
+    } else if (tagName === "DD") {
+      inferredLabel = __gCrWeb.autofill.inferLabelFromDefinitionList(element);
+    } else if (tagName === "LI") {
+      inferredLabel = __gCrWeb.autofill.inferLabelFromListItem(element);
+    } else if (tagName === "FIELDSET") {
+      break;
+    }
 
-  // If we didn't find a label, check for table row case.
-  inferredLabel = __gCrWeb.autofill.inferLabelFromTableRow(element);
-  if (inferredLabel.length > 0) {
-    return inferredLabel;
-  }
-
-  if (!checkDivFirst) {
-    // If we didn't find a label from the table, check for div table case if we
-    // haven't already.
-    inferredLabel = __gCrWeb.autofill.inferLabelFromDivTable(element);
+    if (inferredLabel.length > 0) {
+      break;
+    }
   }
 
   return inferredLabel;
