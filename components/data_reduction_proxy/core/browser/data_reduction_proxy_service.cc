@@ -76,8 +76,6 @@ void DataReductionProxyService::SetIOData(
               io_data_, config_value));
     }
   }
-
-  InitializeLoFiPrefs();
 }
 
 void DataReductionProxyService::Shutdown() {

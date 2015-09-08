@@ -84,6 +84,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   InitPrefMembers();
   UpdateConfigValues();
   RecordDataReductionInit();
+  data_reduction_proxy_service_->InitializeLoFiPrefs();
 }
 
 void DataReductionProxySettings::OnServiceInitialized() {
