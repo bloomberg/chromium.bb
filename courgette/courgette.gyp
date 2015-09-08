@@ -12,8 +12,6 @@
       'assembly_program.cc',
       'assembly_program.h',
       'courgette.h',
-      'courgette_config.cc',
-      'courgette_config.h',
       'crc.cc',
       'crc.h',
       'difference_estimator.cc',

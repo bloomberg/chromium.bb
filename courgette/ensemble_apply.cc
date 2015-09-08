@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "courgette/courgette_config.h"
 #include "courgette/crc.h"
 #include "courgette/patcher_x86_32.h"
 #include "courgette/region.h"
@@ -97,9 +96,7 @@ Status EnsemblePatchApplication::ReadHeader(SourceStream* header_stream) {
   if (!header_stream->ReadVarint32(&version))
     return C_BAD_ENSEMBLE_VERSION;
 
-  uint32 expected_ensemble_version =
-      CourgetteConfig::GetInstance()->ensemble_version();
-  if (version != expected_ensemble_version)
+  if (version != CourgettePatchFile::kVersion)
     return C_BAD_ENSEMBLE_VERSION;
 
   if (!header_stream->ReadVarint32(&source_checksum_))
@@ -429,4 +426,4 @@ Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
   return C_OK;
 }
 
-}  // namespace courgette
+}  // namespace

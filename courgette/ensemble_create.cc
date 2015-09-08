@@ -21,7 +21,6 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 
-#include "courgette/courgette_config.h"
 #include "courgette/crc.h"
 #include "courgette/difference_estimator.h"
 #include "courgette/region.h"
@@ -436,10 +435,8 @@ Status GenerateEnsemblePatch(SourceStream* base,
   //
   // Final output stream has a header followed by a StreamSet.
   //
-  uint32 ensemble_version =
-      CourgetteConfig::GetInstance()->ensemble_version();
   if (!final_patch->WriteVarint32(CourgettePatchFile::kMagic) ||
-      !final_patch->WriteVarint32(ensemble_version) ||
+      !final_patch->WriteVarint32(CourgettePatchFile::kVersion) ||
       !final_patch->WriteVarint32(CalculateCrc(old_region.start(),
                                                old_region.length())) ||
       !final_patch->WriteVarint32(CalculateCrc(new_region.start(),
@@ -455,4 +452,4 @@ Status GenerateEnsemblePatch(SourceStream* base,
   return C_OK;
 }
 
-}  // namespace courgette
+}  // namespace
