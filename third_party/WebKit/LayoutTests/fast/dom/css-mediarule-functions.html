@@ -66,6 +66,16 @@
 
                 // Test that insertRule raises an exception for illegally placed rules.
                 try {
+                    // NamespaceRule illegal inside a MediaRule.
+                    var index = mediaRule.insertRule("@namespace mynamespace url(http://www.w3.org/1999/xhtml);", mediaRule.cssRules.length);
+                    log("FAIL: an exception should have been thrown!");
+                } catch (e) {
+                    if (e.code == 3)
+                        log("PASS: Exception raised successfully. Type: " + e);
+                    else
+                        log("FAIL: wrong exception type thrown. " + e.code + " was thrown, should of been Error: HierarchyRequestError: DOM Exception 3!");
+                }
+                try {
                     // ImportRule illegal inside a MediaRule.
                     var index = mediaRule.insertRule("@import url(sheet.css);", mediaRule.cssRules.length);
                     log("FAIL: an exception should have been thrown!");

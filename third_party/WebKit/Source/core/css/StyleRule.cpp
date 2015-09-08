@@ -26,6 +26,7 @@
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
+#include "core/css/CSSNamespaceRule.h"
 #include "core/css/CSSPageRule.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSSupportsRule.h"
@@ -229,11 +230,13 @@ PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet*
     case Keyframes:
         rule = CSSKeyframesRule::create(toStyleRuleKeyframes(self), parentSheet);
         break;
+    case Namespace:
+        rule = CSSNamespaceRule::create(toStyleRuleNamespace(self), parentSheet);
+        break;
     case Viewport:
         rule = CSSViewportRule::create(toStyleRuleViewport(self), parentSheet);
         break;
     case Keyframe:
-    case Namespace:
     case Charset:
         ASSERT_NOT_REACHED();
         return nullptr;

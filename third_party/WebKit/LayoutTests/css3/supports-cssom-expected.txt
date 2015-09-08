@@ -37,7 +37,7 @@ PASS rules[0].cssRules.length is 2
 
 @charset, @namespace, @import rules are not allowed inside @supports.
 PASS rules[0].insertRule('@charset "UTF-8"', 2) threw exception SyntaxError: Failed to execute 'insertRule' on 'CSSSupportsRule': the rule '@charset "UTF-8"' is invalid and cannot be parsed..
-PASS rules[0].insertRule('@namespace ""', 2) threw exception SyntaxError: Failed to execute 'insertRule' on 'CSSSupportsRule': the rule '@namespace ""' is invalid and cannot be parsed..
+PASS rules[0].insertRule('@namespace ""', 2) threw exception HierarchyRequestError: Failed to execute 'insertRule' on 'CSSSupportsRule': '@namespace' rules cannot be inserted inside a group rule..
 PASS rules[0].insertRule('@import url("../fast/cssom/resources/import.css")', 2) threw exception HierarchyRequestError: Failed to execute 'insertRule' on 'CSSSupportsRule': '@import' rules cannot be inserted inside a group rule..
 
 Whitespace and formatting should be preserved within the condition, whitespace outside the condition should be trimmed.

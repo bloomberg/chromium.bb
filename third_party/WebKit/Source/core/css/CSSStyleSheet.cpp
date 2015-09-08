@@ -292,9 +292,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
     CSSParserContext context(m_contents->parserContext(), UseCounter::getFrom(this));
     RefPtrWillBeRawPtr<StyleRuleBase> rule = CSSParser::parseRule(context, m_contents.get(), ruleString);
 
-    // FIXME: @namespace rules have special handling in the CSSOM spec, but it
-    // mostly doesn't make sense since we don't support CSSNamespaceRule
-    if (!rule || rule->isNamespaceRule()) {
+    if (!rule) {
         exceptionState.throwDOMException(SyntaxError, "Failed to parse the rule '" + ruleString + "'.");
         return 0;
     }
@@ -302,7 +300,10 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
 
     bool success = m_contents->wrapperInsertRule(rule, index);
     if (!success) {
-        exceptionState.throwDOMException(HierarchyRequestError, "Failed to insert the rule.");
+        if (rule->isNamespaceRule())
+            exceptionState.throwDOMException(InvalidStateError, "Failed to insert the rule");
+        else
+            exceptionState.throwDOMException(HierarchyRequestError, "Failed to insert the rule.");
         return 0;
     }
     if (!m_childRuleCSSOMWrappers.isEmpty())
@@ -327,7 +328,11 @@ void CSSStyleSheet::deleteRule(unsigned index, ExceptionState& exceptionState)
     }
     RuleMutationScope mutationScope(this);
 
-    m_contents->wrapperDeleteRule(index);
+    bool success = m_contents->wrapperDeleteRule(index);
+    if (!success) {
+        exceptionState.throwDOMException(InvalidStateError, "Failed to delete rule");
+        return;
+    }
 
     if (!m_childRuleCSSOMWrappers.isEmpty()) {
         if (m_childRuleCSSOMWrappers[index])

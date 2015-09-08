@@ -71,10 +71,13 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     CSSStyleSheet* styleSheet = parentStyleSheet();
     CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
     RefPtrWillBeRawPtr<StyleRuleBase> newRule = CSSParser::parseRule(context, styleSheet ? styleSheet->contents() : nullptr, ruleString);
-    // FIXME: @namespace rules have special handling in the CSSOM spec, but it
-    // mostly doesn't make sense since we don't support CSSNamespaceRule
-    if (!newRule || newRule->isNamespaceRule()) {
+    if (!newRule) {
         exceptionState.throwDOMException(SyntaxError, "the rule '" + ruleString + "' is invalid and cannot be parsed.");
+        return 0;
+    }
+
+    if (newRule->isNamespaceRule()) {
+        exceptionState.throwDOMException(HierarchyRequestError, "'@namespace' rules cannot be inserted inside a group rule.");
         return 0;
     }
 

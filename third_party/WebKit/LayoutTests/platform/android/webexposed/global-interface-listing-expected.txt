@@ -372,6 +372,10 @@ interface CSSKeyframesRule
 interface CSSMediaRule
     getter media
     method constructor
+interface CSSNamespaceRule
+    getter namespaceURI
+    getter prefix
+    method constructor
 interface CSSPageRule
     getter selectorText
     getter style
@@ -384,6 +388,7 @@ interface CSSRule
     attribute KEYFRAMES_RULE
     attribute KEYFRAME_RULE
     attribute MEDIA_RULE
+    attribute NAMESPACE_RULE
     attribute PAGE_RULE
     attribute STYLE_RULE
     attribute SUPPORTS_RULE

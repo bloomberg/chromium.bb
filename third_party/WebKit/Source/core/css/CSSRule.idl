@@ -32,8 +32,7 @@
     const unsigned short PAGE_RULE = 6;
     // TODO(philipj): Implement CSSMarginRule.
     // const unsigned short MARGIN_RULE = 9;
-    // TODO(philipj): Implement CSSNamespaceRule. crbug.com/389549
-    // const unsigned short NAMESPACE_RULE = 10;
+    const unsigned short NAMESPACE_RULE = 10;
     readonly attribute unsigned short type;
     attribute DOMString cssText;
     readonly attribute CSSRule? parentRule;
