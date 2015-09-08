@@ -348,7 +348,8 @@ def _fetch_auth_service_url(urlhost):
   if not service_config:
     return None
   url = (service_config.primary_url or urlhost).rstrip('/')
-  assert url.startswith(('https://', 'http://localhost:')), url
+  assert url.startswith(
+      ('https://', 'http://127.0.0.1:', 'http://localhost:')), url
   return url
 
 
