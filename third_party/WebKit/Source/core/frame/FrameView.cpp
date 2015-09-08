@@ -207,7 +207,6 @@ void FrameView::reset()
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
     m_isTrackingPaintInvalidations = false;
-    m_trackedPaintInvalidationRects.clear();
     m_lastPaintTime = 0;
     m_isPainting = false;
     m_visuallyNonEmptyCharacterCount = 0;
@@ -1654,14 +1653,6 @@ void FrameView::contentRectangleForPaintInvalidation(const IntRect& rectInConten
 {
     ASSERT(!m_frame->ownerLayoutObject());
 
-    if (m_isTrackingPaintInvalidations) {
-        m_trackedPaintInvalidationRects.append(contentsToFrame(rectInContent));
-        // FIXME: http://crbug.com/368518. Eventually, invalidateContentRectangleForPaint
-        // is going away entirely once all layout tests are FCM. In the short
-        // term, no code should be tracking non-composited FrameView paint invalidations.
-        RELEASE_ASSERT_NOT_REACHED();
-    }
-
     IntRect paintRect = rectInContent;
     if (clipsPaintInvalidations())
         paintRect.intersect(visibleContentRect());
@@ -2836,21 +2827,8 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
 
 void FrameView::resetTrackedPaintInvalidations()
 {
-    m_trackedPaintInvalidationRects.clear();
     if (LayoutView* layoutView = this->layoutView())
         layoutView->compositor()->resetTrackedPaintInvalidationRects();
-}
-
-String FrameView::trackedPaintInvalidationRectsAsText() const
-{
-    TextStream ts;
-    if (!m_trackedPaintInvalidationRects.isEmpty()) {
-        ts << "(repaint rects\n";
-        for (size_t i = 0; i < m_trackedPaintInvalidationRects.size(); ++i)
-            ts << "  (rect " << m_trackedPaintInvalidationRects[i].x() << " " << m_trackedPaintInvalidationRects[i].y() << " " << m_trackedPaintInvalidationRects[i].width() << " " << m_trackedPaintInvalidationRects[i].height() << ")\n";
-        ts << ")\n";
-    }
-    return ts.release();
 }
 
 void FrameView::addResizerArea(LayoutBox& resizerBox)

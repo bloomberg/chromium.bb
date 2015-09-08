@@ -620,14 +620,7 @@ String DeprecatedPaintLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
     if (flags & LayerTreeIncludesRootLayer)
         rootLayer = rootGraphicsLayer();
 
-    String layerTreeText = rootLayer->layerTreeAsText(flags);
-
-    // The true root layer is not included in the dump, so if we want to report
-    // its paint invalidation rects, they must be included here.
-    if (flags & LayerTreeIncludesPaintInvalidationRects)
-        return m_layoutView.frameView()->trackedPaintInvalidationRectsAsText() + layerTreeText;
-
-    return layerTreeText;
+    return rootLayer->layerTreeAsText(flags);
 }
 
 DeprecatedPaintLayerCompositor* DeprecatedPaintLayerCompositor::frameContentsCompositor(LayoutPart* layoutObject)

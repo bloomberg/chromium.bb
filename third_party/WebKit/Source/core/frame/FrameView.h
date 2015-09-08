@@ -292,8 +292,6 @@ public:
     bool isTrackingPaintInvalidations() const { return m_isTrackingPaintInvalidations; }
     void resetTrackedPaintInvalidations();
 
-    String trackedPaintInvalidationRectsAsText() const;
-
     using ScrollableAreaSet = WillBeHeapHashSet<RawPtrWillBeMember<ScrollableArea>>;
     void addScrollableArea(ScrollableArea*);
     void removeScrollableArea(ScrollableArea*);
@@ -766,9 +764,6 @@ private:
     double m_lastPaintTime;
 
     bool m_isTrackingPaintInvalidations; // Used for testing.
-
-    // In frame coordinates.
-    Vector<IntRect> m_trackedPaintInvalidationRects;
 
     RefPtrWillBeMember<Node> m_nodeToDraw;
     bool m_isPainting;
