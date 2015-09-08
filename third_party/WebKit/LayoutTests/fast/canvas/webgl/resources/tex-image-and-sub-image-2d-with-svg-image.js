@@ -4,8 +4,12 @@ function generateTest(pixelFormat, pixelType, pathToTestRoot, prologue) {
     var textureLoc = null;
     var successfullyParsed = false;
     var imgCanvas;
-    var red = [255, 0, 0];
+    var black = [0, 0, 0];
     var green = [0, 255, 0];
+    var image = new Image();
+    var imageLoaded = false;
+    var poisonImage = new Image();
+    var poisonImageLoaded = false;
 
  var init = function()
  {
@@ -29,16 +33,25 @@ function generateTest(pixelFormat, pixelType, pathToTestRoot, prologue) {
 
      textureLoc = gl.getUniformLocation(program, "tex");
 
-     var image = new Image();
      image.width = 10;
      image.height = 10;
      image.onload = function () {
-       runTest(image);
+       imageLoaded = true;
+       runTest();
      }
-     image.src = pathToTestRoot + "/resources/red-green.svg";
+     image.src = pathToTestRoot + "/resources/transparent-green.svg";
+
+     poisonImage.width = 10;
+     poisonImage.height = 10;
+     poisonImage.onload = function () {
+       poisonImageLoaded = true;
+       runTest();
+     }
+     poisonImage.src = pathToTestRoot + "/resources/red-green.svg";
+
  }
 
- function runOneIteration(image, useTexSubImage2D, flipY, topColor, bottomColor)
+ function runOneIteration(useTexSubImage2D, flipY, topColor, bottomColor)
  {
      debug('Testing ' + (useTexSubImage2D ? 'texSubImage2D' : 'texImage2D') +
            ' with flipY=' + flipY);
@@ -60,9 +73,12 @@ function generateTest(pixelFormat, pixelType, pathToTestRoot, prologue) {
          // Initialize the texture to black first.
          gl.texImage2D(gl.TEXTURE_2D, 0, gl[pixelFormat], image.width, image.height, 0,
                        gl[pixelFormat], gl[pixelType], null);
+         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl[pixelFormat], gl[pixelType], poisonImage);
          gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl[pixelFormat], gl[pixelType], image);
-     } else
+     } else {
+         gl.texImage2D(gl.TEXTURE_2D, 0, gl[pixelFormat], gl[pixelFormat], gl[pixelType], poisonImage);
          gl.texImage2D(gl.TEXTURE_2D, 0, gl[pixelFormat], gl[pixelFormat], gl[pixelType], image);
+     }
 
      // Point the uniform sampler to texture unit 0.
      gl.uniform1i(textureLoc, 0);
@@ -78,12 +94,15 @@ function generateTest(pixelFormat, pixelType, pathToTestRoot, prologue) {
                          "shouldBe " + topColor);
  }
 
- function runTest(image)
+ function runTest()
  {
-     runOneIteration(image, false, true, red, green);
-     runOneIteration(image, false, false, green, red);
-     runOneIteration(image, true, true, red, green);
-     runOneIteration(image, true, false, green, red);
+     if (!imageLoaded || !poisonImageLoaded)
+       return;
+
+     runOneIteration(false, true, black, green);
+     runOneIteration(false, false, green, black);
+     runOneIteration(true, true, black, green);
+     runOneIteration(true, false, green, black);
      finishTest();
  }
 

@@ -4123,14 +4123,23 @@ bool WebGLRenderingContextBase::validateValueFitNonNegInt32(const char* function
     return true;
 }
 
-PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(Image* image, int width, int height, const char* functionName)
+// TODO(fmalita): figure why WebGLImageConversion::ImageExtractor can't handle SVG-backed images,
+// and get rid of this intermediate step.
+PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(PassRefPtr<Image> passImage,
+    int width, int height, const char* functionName)
 {
+    RefPtr<Image> image(passImage);
+    ASSERT(image);
+
     IntSize size(width, height);
     ImageBuffer* buf = m_generatedImageCache.imageBuffer(size);
     if (!buf) {
         synthesizeGLError(GL_OUT_OF_MEMORY, functionName, "out of memory");
         return nullptr;
     }
+
+    if (!image->currentFrameKnownToBeOpaque())
+        buf->canvas()->clear(SK_ColorTRANSPARENT);
 
     IntRect srcRect(IntPoint(), image->size());
     IntRect destRect(0, 0, size.width(), size.height());
@@ -4197,8 +4206,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         return;
 
     RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
-    if (imageForRender->isSVGImage())
-        imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texImage2D");
+    if (imageForRender && imageForRender->isSVGImage())
+        imageForRender = drawImageIntoBuffer(imageForRender.release(), image->width(), image->height(), "texImage2D");
 
     if (!imageForRender || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceHTMLImageElement, target, level, internalformat, imageForRender->width(), imageForRender->height(), 0, format, type, 0, 0))
         return;
@@ -4507,8 +4516,8 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         return;
 
     RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
-    if (imageForRender->isSVGImage())
-        imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texSubImage2D");
+    if (imageForRender && imageForRender->isSVGImage())
+        imageForRender = drawImageIntoBuffer(imageForRender.release(), image->width(), image->height(), "texSubImage2D");
 
     if (!imageForRender || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLImageElement, target, level, 0, imageForRender->width(), imageForRender->height(), 0, format, type, xoffset, yoffset))
         return;
