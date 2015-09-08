@@ -772,7 +772,7 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
   // TODO(dalecurtis): Old code rewrote != 1 channels to stereo, do we still
   // need to do the same thing?
   if (params->channels() != 1) {
-    params->Reset(params->format(), CHANNEL_LAYOUT_STEREO, 2,
+    params->Reset(params->format(), CHANNEL_LAYOUT_STEREO,
                   params->sample_rate(), params->bits_per_sample(),
                   params->frames_per_buffer());
   }

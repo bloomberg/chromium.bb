@@ -214,13 +214,11 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
     // Audio Environment setup.
     source_params_.Reset(kInputFormat,
                          kInputChannelLayout,
-                         kInputChannels,
                          input_sample_rate,
                          kInputBitsPerSample,
                          input_frames_per_buffer);
     sink_params_.Reset(kOutputFormat,
                        kOutputChannelLayout,
-                       kOutputChannels,
                        output_sample_rate,
                        kOutputBitsPerSample,
                        output_frames_per_buffer);

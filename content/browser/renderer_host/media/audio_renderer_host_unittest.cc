@@ -217,25 +217,15 @@ class AudioRendererHostTest : public testing::Test {
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
-    int session_id;
-    media::AudioParameters params;
+    media::AudioParameters params(
+        media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
+        media::AudioParameters::kAudioCDSampleRate, 16,
+        media::AudioParameters::kAudioCDSampleRate / 10);
+    int session_id = 0;
     if (unified_stream) {
       // Use AudioInputDeviceManager::kFakeOpenSessionId as the session id to
       // pass the permission check.
       session_id = AudioInputDeviceManager::kFakeOpenSessionId;
-      params = media::AudioParameters(
-          media::AudioParameters::AUDIO_FAKE,
-          media::CHANNEL_LAYOUT_STEREO,
-          media::AudioParameters::kAudioCDSampleRate, 16,
-          media::AudioParameters::kAudioCDSampleRate / 10,
-          media::AudioParameters::NO_EFFECTS);
-    } else {
-      session_id = 0;
-      params = media::AudioParameters(
-          media::AudioParameters::AUDIO_FAKE,
-          media::CHANNEL_LAYOUT_STEREO,
-          media::AudioParameters::kAudioCDSampleRate, 16,
-          media::AudioParameters::kAudioCDSampleRate / 10);
     }
     host_->OnCreateStream(kStreamId, kRenderFrameId, session_id, params);
 

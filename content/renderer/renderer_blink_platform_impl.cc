@@ -164,7 +164,7 @@ base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
 // not owned by us.
 blink::WebBatteryStatusListener* g_test_battery_status_listener = nullptr;
 
-} // namespace
+}  // namespace
 
 //------------------------------------------------------------------------------
 
@@ -738,10 +738,10 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
 
   // For CHANNEL_LAYOUT_DISCRETE, pass the explicit channel count along with
   // the channel layout when creating an |AudioParameters| object.
-  media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      layout, channels, static_cast<int>(sample_rate), 16, buffer_size,
-      media::AudioParameters::NO_EFFECTS);
+  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                layout, static_cast<int>(sample_rate), 16,
+                                buffer_size);
+  params.set_channels_for_discrete(channels);
 
   return new RendererWebAudioDeviceImpl(params, callback, session_id);
 }
@@ -991,7 +991,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
         break;
       default:
         NOTREACHED();
-    };
+    }
   }
 
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;

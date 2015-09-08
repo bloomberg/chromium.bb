@@ -134,11 +134,8 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
   // Different formats, bit depths, and buffer sizes should not result in a
   // different mixer.
   media::AudioParameters params2(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                 kChannelLayout,
-                                 kSampleRate,
-                                 kBitsPerChannel * 2,
-                                 kBufferSize * 2,
-                                 AudioParameters::NO_EFFECTS);
+                                 kChannelLayout, kSampleRate,
+                                 kBitsPerChannel * 2, kBufferSize * 2);
   EXPECT_EQ(mixer1, GetMixer(kRenderFrameId, params2));
   EXPECT_EQ(mixer_count(), 1);
   RemoveMixer(kRenderFrameId, params2);
@@ -146,11 +143,8 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
 
   // Modify some parameters that do matter.
   media::AudioParameters params3(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                 media::CHANNEL_LAYOUT_MONO,
-                                 kSampleRate * 2,
-                                 kBitsPerChannel,
-                                 kBufferSize,
-                                 AudioParameters::NO_EFFECTS);
+                                 media::CHANNEL_LAYOUT_MONO, kSampleRate * 2,
+                                 kBitsPerChannel, kBufferSize);
   ASSERT_NE(params3.channel_layout(), params1.channel_layout());
 
   EXPECT_NE(mixer1, GetMixer(kRenderFrameId, params3));

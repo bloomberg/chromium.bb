@@ -344,8 +344,6 @@ void AudioRendererImpl::Initialize(
     audio_parameters_.Reset(
         AudioParameters::AUDIO_PCM_LOW_LATENCY,
         stream->audio_decoder_config().channel_layout(),
-        ChannelLayoutToChannelCount(
-            stream->audio_decoder_config().channel_layout()),
         stream->audio_decoder_config().samples_per_second(),
         stream->audio_decoder_config().bits_per_channel(),
         buffer_size);
@@ -353,15 +351,11 @@ void AudioRendererImpl::Initialize(
   } else {
     audio_parameters_.Reset(
         hw_params.format(),
-        // Always use the source's channel layout and channel count to avoid
-        // premature downmixing (http://crbug.com/379288), platform specific
-        // issues around channel layouts (http://crbug.com/266674), and
-        // unnecessary upmixing overhead.
+        // Always use the source's channel layout to avoid premature downmixing
+        // (http://crbug.com/379288), platform specific issues around channel
+        // layouts (http://crbug.com/266674), and unnecessary upmixing overhead.
         stream->audio_decoder_config().channel_layout(),
-        ChannelLayoutToChannelCount(
-            stream->audio_decoder_config().channel_layout()),
-        hw_params.sample_rate(),
-        hw_params.bits_per_sample(),
+        hw_params.sample_rate(), hw_params.bits_per_sample(),
         hardware_config_.GetHighLatencyBufferSize());
   }
 

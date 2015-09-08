@@ -165,10 +165,11 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
       source_audio_params_.Reset(
           AudioParameters::AUDIO_PCM_LINEAR,
           layout,
-          av_codec_context->channels,
           av_codec_context->sample_rate,
           8 * av_get_bytes_per_sample(av_codec_context->sample_fmt),
           av_codec_context->sample_rate / kAudioPacketsPerSecond);
+      source_audio_params_.set_channels_for_discrete(
+          av_codec_context->channels);
       CHECK(source_audio_params_.IsValid());
       LOG(INFO) << "Source file has audio.";
     } else if (av_codec->type == AVMEDIA_TYPE_VIDEO) {
@@ -375,10 +376,12 @@ bool FakeMediaSource::SendNextTranscodedAudio(base::TimeDelta elapsed_time) {
 void FakeMediaSource::SendNextFrame() {
   // Send as much as possible. Audio is sent according to
   // system time.
-  while (SendNextTranscodedAudio(clock_->NowTicks() - start_time_));
+  while (SendNextTranscodedAudio(clock_->NowTicks() - start_time_)) {
+  }
 
   // Video is sync'ed to audio.
-  while (SendNextTranscodedVideo(audio_sent_ts_->GetTimestamp()));
+  while (SendNextTranscodedVideo(audio_sent_ts_->GetTimestamp())) {
+  }
 
   if (audio_bus_queue_.empty() && video_frame_queue_.empty()) {
     // Both queues are empty can only mean that we have reached

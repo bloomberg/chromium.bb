@@ -317,17 +317,14 @@ AudioParameters AudioManagerWin::GetInputStreamParameters(
 
   if (FAILED(hr) || !parameters.IsValid()) {
     // Windows Wave implementation is being used.
-    parameters = AudioParameters(
-        AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 48000, 16,
-        kFallbackBufferSize, AudioParameters::NO_EFFECTS);
+    parameters =
+        AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
+                        CHANNEL_LAYOUT_STEREO, 48000, 16, kFallbackBufferSize);
   }
 
   int user_buffer_size = GetUserBufferSize();
-  if (user_buffer_size) {
-    parameters.Reset(parameters.format(), parameters.channel_layout(),
-                     parameters.channels(), parameters.sample_rate(),
-                     parameters.bits_per_sample(), user_buffer_size);
-  }
+  if (user_buffer_size)
+    parameters.set_frames_per_buffer(user_buffer_size);
 
   return parameters;
 }
@@ -517,9 +514,10 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
   if (user_buffer_size)
     buffer_size = user_buffer_size;
 
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-      sample_rate, bits_per_sample, buffer_size, effects);
+  AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+                         sample_rate, bits_per_sample, buffer_size);
+  params.set_effects(effects);
+  return params;
 }
 
 AudioInputStream* AudioManagerWin::CreatePCMWaveInAudioInputStream(

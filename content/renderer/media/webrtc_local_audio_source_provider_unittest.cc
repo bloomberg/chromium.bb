@@ -21,10 +21,10 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
  protected:
   void SetUp() override {
     source_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         media::CHANNEL_LAYOUT_MONO, 1, 48000, 16, 480);
+                         media::CHANNEL_LAYOUT_MONO, 48000, 16, 480);
     sink_params_.Reset(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, 2, 44100, 16,
+        media::CHANNEL_LAYOUT_STEREO, 44100, 16,
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
     MockMediaConstraintFactory constraint_factory;
@@ -73,7 +73,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   // source_params_.frames_per_buffer() of zero into the resampler since there
   // no available data in the FIFO.
   source_provider_->provideInput(audio_data, sink_params_.frames_per_buffer());
-  EXPECT_TRUE(sink_bus_->channel(0)[0] == 0);
+  EXPECT_EQ(0, sink_bus_->channel(0)[0]);
 
   // Create a source AudioBus with channel data filled with non-zero values.
   const scoped_ptr<media::AudioBus> source_bus =

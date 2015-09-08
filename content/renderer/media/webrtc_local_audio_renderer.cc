@@ -262,14 +262,9 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
   // the new format.
 
   source_params_ = params;
-
-  sink_params_ = media::AudioParameters(source_params_.format(),
-      source_params_.channel_layout(), source_params_.sample_rate(),
-      source_params_.bits_per_sample(),
-      WebRtcAudioRenderer::GetOptimalBufferSize(source_params_.sample_rate(),
-                                                frames_per_buffer_),
-      source_params_.effects());
-
+  sink_params_ = source_params_;
+  sink_params_.set_frames_per_buffer(WebRtcAudioRenderer::GetOptimalBufferSize(
+      source_params_.sample_rate(), frames_per_buffer_));
   {
     // Note: The max buffer is fairly large, but will rarely be used.
     // Cast needs the buffer to hold at least one second of audio.

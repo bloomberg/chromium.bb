@@ -113,6 +113,7 @@ class MockCapturerSource : public media::AudioCapturerSource {
     audio_thread_.reset();
     OnStop();
   }
+
  protected:
   ~MockCapturerSource() override {}
 
@@ -152,7 +153,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
  protected:
   void SetUp() override {
     params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                  media::CHANNEL_LAYOUT_STEREO, 2, 48000, 16, 480);
+                  media::CHANNEL_LAYOUT_STEREO, 48000, 16, 480);
     MockMediaConstraintFactory constraint_factory;
     blink_source_.initialize("dummy", blink::WebMediaStreamSource::TypeAudio,
                              "dummy",

@@ -97,9 +97,11 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
 
   // TODO(hshi): Fine-tune audio parameters based on |device_id|. The optimal
   // parameters for the loopback stream may differ from the default.
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      kDefaultSampleRate, 16, buffer_size, effects);
+  AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                         CHANNEL_LAYOUT_STEREO, kDefaultSampleRate, 16,
+                         buffer_size);
+  params.set_effects(effects);
+  return params;
 }
 
 void AudioManagerCras::SetHasKeyboardMic() {
@@ -156,9 +158,8 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
   if (user_buffer_size)
     buffer_size = user_buffer_size;
 
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-      sample_rate, bits_per_sample, buffer_size, AudioParameters::NO_EFFECTS);
+  return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+                         sample_rate, bits_per_sample, buffer_size);
 }
 
 AudioOutputStream* AudioManagerCras::MakeOutputStream(

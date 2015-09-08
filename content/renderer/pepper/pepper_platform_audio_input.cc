@@ -168,7 +168,6 @@ bool PepperPlatformAudioInput::Initialize(
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
                 media::CHANNEL_LAYOUT_MONO,
-                ppapi::kAudioInputChannels,
                 sample_rate,
                 ppapi::kBitsPerAudioInputSample,
                 frames_per_buffer);

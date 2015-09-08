@@ -263,17 +263,11 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
                  << output_params.frames_per_buffer();
 
       // Tell the AudioManager to create a fake output device.
-      output_params = AudioParameters(
-          AudioParameters::AUDIO_FAKE, params.channel_layout(),
-          params.sample_rate(), params.bits_per_sample(),
-          params.frames_per_buffer(), params.effects());
+      output_params = params;
+      output_params.set_format(AudioParameters::AUDIO_FAKE);
     } else if (params.effects() != output_params.effects()) {
       // Turn off effects that weren't requested.
-      output_params = AudioParameters(
-          output_params.format(), output_params.channel_layout(),
-          output_params.channels(), output_params.sample_rate(),
-          output_params.bits_per_sample(), output_params.frames_per_buffer(),
-          params.effects() & output_params.effects());
+      output_params.set_effects(params.effects() & output_params.effects());
     }
   }
 

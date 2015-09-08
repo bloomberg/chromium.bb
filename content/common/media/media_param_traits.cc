@@ -44,8 +44,11 @@ bool ParamTraits<AudioParameters>::Read(const Message* m,
     return false;
   }
 
-  AudioParameters params(format, channel_layout, channels, sample_rate,
-                         bits_per_sample, frames_per_buffer, effects);
+  AudioParameters params(format, channel_layout, sample_rate, bits_per_sample,
+                         frames_per_buffer);
+  params.set_channels_for_discrete(channels);
+  params.set_effects(effects);
+
   *r = params;
   return r->IsValid();
 }
@@ -81,4 +84,4 @@ void ParamTraits<VideoCaptureFormat>::Log(const VideoCaptureFormat& p,
                                media::VideoCaptureFormat::ToString(p).c_str()));
 }
 
-}
+}  // namespace IPC

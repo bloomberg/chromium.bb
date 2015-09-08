@@ -207,13 +207,10 @@ TEST_F(AudioBufferConverterTest, ResetThenConvert) {
 }
 
 TEST_F(AudioBufferConverterTest, DiscreteChannelLayout) {
-  output_params_ = AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                   CHANNEL_LAYOUT_DISCRETE,
-                                   2,
-                                   kOutSampleRate,
-                                   16,
-                                   512,
-                                   0);
+  output_params_ =
+      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                      CHANNEL_LAYOUT_DISCRETE, kOutSampleRate, 16, 512);
+  output_params_.set_channels_for_discrete(2);
   audio_buffer_converter_.reset(new AudioBufferConverter(output_params_));
   AddInput(MakeTestBuffer(kOutSampleRate, CHANNEL_LAYOUT_STEREO, 2, 512));
   ConsumeAllOutput();

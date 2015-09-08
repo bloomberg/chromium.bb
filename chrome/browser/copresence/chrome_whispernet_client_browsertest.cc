@@ -103,8 +103,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
     coder_params_ = media::AudioParameters(
         default_params_.format(), audio_modem::kDefaultChannelLayout,
         audio_modem::kDefaultSampleRate, audio_modem::kDefaultBitsPerSample,
-        default_params_.frames_per_buffer(),
-        media::AudioParameters::NO_EFFECTS);
+        default_params_.frames_per_buffer());
 
     converter_.reset(new media::AudioConverter(
         coder_params_, default_params_,

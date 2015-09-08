@@ -343,11 +343,8 @@ void WebRtcAudioCapturer::SetCapturerSourceInternal(
   // which would normally be used by default.
   // bits_per_sample is always 16 for now.
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                channel_layout,
-                                sample_rate,
-                                16,
-                                buffer_size,
-                                device_info_.device.input.effects);
+                                channel_layout, sample_rate, 16, buffer_size);
+  params.set_effects(device_info_.device.input.effects);
 
   {
     base::AutoLock auto_lock(lock_);

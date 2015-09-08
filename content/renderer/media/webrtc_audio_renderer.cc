@@ -233,20 +233,18 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   // The WebRTC client only supports multiples of 10ms as buffer size where
   // 10ms is preferred for lowest possible delay.
-  media::AudioParameters source_params;
   const int frames_per_10ms = (sample_rate / 100);
   DVLOG(1) << "Using WebRTC output buffer size: " << frames_per_10ms;
-
-  source_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      sink_params_.channel_layout(), sink_params_.channels(),
-                      sample_rate, 16, frames_per_10ms);
+  media::AudioParameters source_params(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      sink_params_.channel_layout(), sample_rate, 16, frames_per_10ms);
+  source_params.set_channels_for_discrete(sink_params_.channels());
 
   const int frames_per_buffer =
       GetOptimalBufferSize(sample_rate, sink_params_.frames_per_buffer());
 
   sink_params_.Reset(sink_params_.format(), sink_params_.channel_layout(),
-                     sink_params_.channels(), sample_rate, 16,
-                     frames_per_buffer);
+                     sample_rate, 16, frames_per_buffer);
 
   // Create a FIFO if re-buffering is required to match the source input with
   // the sink request. The source acts as provider here and the sink as
@@ -440,7 +438,7 @@ void WebRtcAudioRenderer::OnRenderError() {
 // Called by AudioPullFifo when more data is necessary.
 void WebRtcAudioRenderer::SourceCallback(
     int fifo_frame_delay, media::AudioBus* audio_bus) {
-  base::TimeTicks start_time = base::TimeTicks::Now() ;
+  base::TimeTicks start_time = base::TimeTicks::Now();
   DVLOG(2) << "WebRtcAudioRenderer::SourceCallback("
            << fifo_frame_delay << ", "
            << audio_bus->frames() << ")";

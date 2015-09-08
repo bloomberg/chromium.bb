@@ -46,9 +46,8 @@ scoped_ptr<::media::Renderer> ChromecastMediaRendererFactory::CreateRenderer(
     int buffer_size = kDefaultSamplingRate * 20 * 2 * 2 / 1000;
     ::media::AudioParameters output_audio_params(
         ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        ::media::CHANNEL_LAYOUT_STEREO,
-        kDefaultSamplingRate, kDefaultBitsPerSample,
-        buffer_size, ::media::AudioParameters::NO_EFFECTS);
+        ::media::CHANNEL_LAYOUT_STEREO, kDefaultSamplingRate,
+        kDefaultBitsPerSample, buffer_size);
 
     audio_config_.reset(new ::media::AudioHardwareConfig(input_audio_params,
                                                          output_audio_params));

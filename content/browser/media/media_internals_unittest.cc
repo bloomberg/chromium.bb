@@ -227,18 +227,12 @@ class MediaInternalsAudioLogTest
     : public MediaInternalsTestBase,
       public testing::TestWithParam<media::AudioLogFactory::AudioComponent> {
  public:
-  MediaInternalsAudioLogTest() :
-      update_cb_(base::Bind(&MediaInternalsAudioLogTest::UpdateCallbackImpl,
-                            base::Unretained(this))),
-      test_params_(media::AudioParameters::AUDIO_PCM_LINEAR,
-                   media::CHANNEL_LAYOUT_MONO,
-                   48000,
-                   16,
-                   128,
-                   media::AudioParameters::ECHO_CANCELLER |
-                   media::AudioParameters::DUCKING),
-      test_component_(GetParam()),
-      audio_log_(media_internals_->CreateAudioLog(test_component_)) {
+  MediaInternalsAudioLogTest()
+      : update_cb_(base::Bind(&MediaInternalsAudioLogTest::UpdateCallbackImpl,
+                              base::Unretained(this))),
+        test_params_(MakeAudioParams()),
+        test_component_(GetParam()),
+        audio_log_(media_internals_->CreateAudioLog(test_component_)) {
     media_internals_->AddUpdateCallback(update_cb_);
   }
 
@@ -251,6 +245,15 @@ class MediaInternalsAudioLogTest
   const media::AudioParameters test_params_;
   const media::AudioLogFactory::AudioComponent test_component_;
   scoped_ptr<media::AudioLog> audio_log_;
+
+ private:
+  static media::AudioParameters MakeAudioParams() {
+    media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
+                                  media::CHANNEL_LAYOUT_MONO, 48000, 16, 128);
+    params.set_effects(media::AudioParameters::ECHO_CANCELLER |
+                       media::AudioParameters::DUCKING);
+    return params;
+  }
 };
 
 TEST_P(MediaInternalsAudioLogTest, AudioLogCreateStartStopErrorClose) {

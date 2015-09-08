@@ -241,10 +241,9 @@ bool AudioOutputResampler::OpenStream() {
               << "back to fake audio output.";
 
   // Finally fall back to a fake audio output device.
-  output_params_.Reset(
-      AudioParameters::AUDIO_FAKE, params_.channel_layout(),
-      params_.channels(), params_.sample_rate(),
-      params_.bits_per_sample(), params_.frames_per_buffer());
+  output_params_ = params_;
+  output_params_.set_format(AudioParameters::AUDIO_FAKE);
+
   Initialize();
   if (dispatcher_->OpenStream()) {
     streams_opened_ = true;

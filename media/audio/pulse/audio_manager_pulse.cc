@@ -189,9 +189,8 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
   if (user_buffer_size)
     buffer_size = user_buffer_size;
 
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-      sample_rate, bits_per_sample, buffer_size, AudioParameters::NO_EFFECTS);
+  return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+                         sample_rate, bits_per_sample, buffer_size);
 }
 
 AudioOutputStream* AudioManagerPulse::MakeOutputStream(

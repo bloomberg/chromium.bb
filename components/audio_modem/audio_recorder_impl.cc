@@ -102,12 +102,7 @@ void AudioRecorderImpl::InitializeOnAudioThread() {
   } else {
     params = media::AudioManager::Get()->GetInputStreamParameters(
         media::AudioManagerBase::kDefaultDeviceId);
-    params = media::AudioParameters(params.format(),
-                                    params.channel_layout(),
-                                    params.sample_rate(),
-                                    params.bits_per_sample(),
-                                    params.frames_per_buffer(),
-                                    media::AudioParameters::NO_EFFECTS);
+    params.set_effects(media::AudioParameters::NO_EFFECTS);
   }
 
   total_buffer_frames_ = kProcessIntervalMs * params.sample_rate() / 1000;

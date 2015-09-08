@@ -383,14 +383,9 @@ void AudioInputRendererHost::DoCreateStream(
   }
 
   media::AudioParameters audio_params(config.params);
-  if (media_stream_manager_->audio_input_device_manager()->
-      ShouldUseFakeDevice()) {
-    audio_params.Reset(
-        media::AudioParameters::AUDIO_FAKE,
-        config.params.channel_layout(), config.params.channels(),
-        config.params.sample_rate(), config.params.bits_per_sample(),
-        config.params.frames_per_buffer());
-  }
+  if (media_stream_manager_->audio_input_device_manager()
+          ->ShouldUseFakeDevice())
+    audio_params.set_format(media::AudioParameters::AUDIO_FAKE);
 
   // Check if we have the permission to open the device and which device to use.
   std::string device_name;

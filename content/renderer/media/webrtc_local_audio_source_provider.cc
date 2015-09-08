@@ -34,10 +34,9 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
     media::AudioHardwareConfig* hardware_config =
         RenderThreadImpl::current()->GetAudioHardwareConfig();
     int sample_rate = hardware_config->GetOutputSampleRate();
-    sink_params_.Reset(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, 2, sample_rate, 16,
-        kWebAudioRenderBufferSize);
+    sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                       media::CHANNEL_LAYOUT_STEREO, sample_rate, 16,
+                       kWebAudioRenderBufferSize);
   }
 
   // Connect the source provider to the track as a sink.

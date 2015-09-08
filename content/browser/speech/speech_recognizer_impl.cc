@@ -239,7 +239,7 @@ bool SpeechRecognizerImpl::IsActive() const {
 }
 
 bool SpeechRecognizerImpl::IsCapturingAudio() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO); // See IsActive().
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);  // See IsActive().
   const bool is_capturing_audio = state_ >= STATE_STARTING &&
                                   state_ <= STATE_RECOGNIZING;
   DCHECK((is_capturing_audio && (audio_controller_.get() != NULL)) ||
@@ -489,7 +489,7 @@ void SpeechRecognizerImpl::ProcessAudioPipeline(const AudioChunk& raw_audio) {
     endpointer_.ProcessAudio(raw_audio, &rms);
 
   if (route_to_vumeter) {
-    DCHECK(route_to_endpointer); // Depends on endpointer due to |rms|.
+    DCHECK(route_to_endpointer);  // Depends on endpointer due to |rms|.
     UpdateSignalAndNoiseLevels(rms, clip_detected);
   }
   if (route_to_sr_engine) {
@@ -561,12 +561,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
     // in_params.sample_rate()
     frames_per_buffer =
         ((in_params.sample_rate() * chunk_duration_ms) / 1000.0) + 0.5;
-    input_parameters.Reset(in_params.format(),
-                           in_params.channel_layout(),
-                           in_params.channels(),
-                           in_params.sample_rate(),
-                           in_params.bits_per_sample(),
-                           frames_per_buffer);
+    input_parameters.set_frames_per_buffer(frames_per_buffer);
     DVLOG(1) << "SRI::input_parameters: "
              << input_parameters.AsHumanReadableString();
   }

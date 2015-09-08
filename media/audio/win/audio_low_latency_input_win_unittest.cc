@@ -194,11 +194,10 @@ class AudioInputStreamWrapper {
 
  private:
   AudioInputStream* CreateInputStream() {
+    AudioParameters params = default_params_;
+    params.set_frames_per_buffer(frames_per_buffer_);
     AudioInputStream* ais = audio_man_->MakeAudioInputStream(
-        AudioParameters(format(), default_params_.channel_layout(),
-                        sample_rate(), bits_per_sample(), frames_per_buffer_,
-                        default_params_.effects()),
-        AudioManagerBase::kDefaultDeviceId);
+        params, AudioManagerBase::kDefaultDeviceId);
     EXPECT_TRUE(ais);
     return ais;
   }

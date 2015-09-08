@@ -672,9 +672,10 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
       channel_layout = CHANNEL_LAYOUT_DISCRETE;
   }
 
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, output_channels,
-      hardware_sample_rate, 16, buffer_size, AudioParameters::NO_EFFECTS);
+  AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+                         hardware_sample_rate, 16, buffer_size);
+  params.set_channels_for_discrete(output_channels);
+  return params;
 }
 
 void AudioManagerMac::InitializeOnAudioThread() {

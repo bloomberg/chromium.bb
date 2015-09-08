@@ -589,16 +589,11 @@ class AudioAndroidInputTest : public AudioAndroidOutputTest,
   AudioParameters GetInputStreamParameters() {
     GetDefaultInputStreamParametersOnAudioThread();
 
+    AudioParameters params = audio_input_parameters();
     // Override the platform effects setting to use the AudioRecord or OpenSLES
     // path as requested.
-    int effects = GetParam() ? AudioParameters::ECHO_CANCELLER :
-                               AudioParameters::NO_EFFECTS;
-    AudioParameters params(audio_input_parameters().format(),
-                           audio_input_parameters().channel_layout(),
-                           audio_input_parameters().sample_rate(),
-                           audio_input_parameters().bits_per_sample(),
-                           audio_input_parameters().frames_per_buffer(),
-                           effects);
+    params.set_effects(GetParam() ? AudioParameters::ECHO_CANCELLER
+                                  : AudioParameters::NO_EFFECTS);
     return params;
   }
 
@@ -796,13 +791,8 @@ TEST_P(AudioAndroidInputTest, DISABLED_StartInputStreamCallbacks) {
 // a 10ms buffer size instead of the default size.
 TEST_P(AudioAndroidInputTest,
        DISABLED_StartInputStreamCallbacksNonDefaultParameters) {
-  AudioParameters native_params = GetInputStreamParameters();
-  AudioParameters params(native_params.format(),
-                         native_params.channel_layout(),
-                         native_params.sample_rate(),
-                         native_params.bits_per_sample(),
-                         native_params.sample_rate() / 100,
-                         native_params.effects());
+  AudioParameters params = GetInputStreamParameters();
+  params.set_frames_per_buffer(params.sample_rate() / 100);
   StartInputStreamCallbacks(params);
 }
 
@@ -933,14 +923,8 @@ TEST_P(AudioAndroidInputTest,
   // parameters by selecting 10ms as buffer size. This will also ensure that
   // the output stream will be a mono stream since mono is default for input
   // audio on Android.
-  AudioParameters io_params(default_input_params.format(),
-                            default_input_params.channel_layout(),
-                            ChannelLayoutToChannelCount(
-                                default_input_params.channel_layout()),
-                            default_input_params.sample_rate(),
-                            default_input_params.bits_per_sample(),
-                            default_input_params.sample_rate() / 100,
-                            default_input_params.effects());
+  AudioParameters io_params = default_input_params;
+  default_input_params.set_frames_per_buffer(io_params.sample_rate() / 100);
   DVLOG(1) << io_params;
 
   // Create input and output streams using the common audio parameters.

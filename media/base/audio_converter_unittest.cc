@@ -198,13 +198,13 @@ TEST(AudioConverterTest, AudioDelayAndDiscreteChannelCount) {
   // Choose input and output parameters such that the transform must make
   // multiple calls to fill the buffer.
   AudioParameters input_parameters(AudioParameters::AUDIO_PCM_LINEAR,
-                                   CHANNEL_LAYOUT_DISCRETE, 10, kSampleRate,
-                                   kBitsPerChannel, kLowLatencyBufferSize,
-                                   AudioParameters::NO_EFFECTS);
+                                   CHANNEL_LAYOUT_DISCRETE, kSampleRate,
+                                   kBitsPerChannel, kLowLatencyBufferSize);
+  input_parameters.set_channels_for_discrete(10);
   AudioParameters output_parameters(AudioParameters::AUDIO_PCM_LINEAR,
-                                    CHANNEL_LAYOUT_DISCRETE, 5, kSampleRate * 2,
-                                    kBitsPerChannel, kHighLatencyBufferSize,
-                                    AudioParameters::NO_EFFECTS);
+                                    CHANNEL_LAYOUT_DISCRETE, kSampleRate * 2,
+                                    kBitsPerChannel, kHighLatencyBufferSize);
+  output_parameters.set_channels_for_discrete(5);
 
   AudioConverter converter(input_parameters, output_parameters, false);
   FakeAudioRenderCallback callback(0.2);

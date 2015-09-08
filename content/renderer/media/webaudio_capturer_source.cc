@@ -49,9 +49,8 @@ void WebAudioCapturerSource::setFormat(
   // Set the format used by this WebAudioCapturerSource. We are using 10ms data
   // as buffer size since that is the native buffer size of WebRtc packet
   // running on.
-  params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                channel_layout, number_of_channels, sample_rate, 16,
-                sample_rate / 100);
+  params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+                sample_rate, 16, sample_rate / 100);
   audio_format_changed_ = true;
 
   wrapper_bus_ = AudioBus::CreateWrapper(params_.channels());
