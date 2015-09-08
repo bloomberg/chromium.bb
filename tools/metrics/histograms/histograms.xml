@@ -3815,8 +3815,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.MemoryPressureLevel"
-    enum="ChromeOSMemoryPressureLevel">
+<histogram name="ChromeOS.MemoryPressureLevel" enum="MemoryPressureLevel">
   <owner>xdai@chromium.org</owner>
   <summary>
     The memory pressure level in ChromeOS, which is recorded periodically (once
@@ -18276,9 +18275,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Memory.PressureLevel" enum="MemoryPressureLevel">
   <owner>chrisha@chromium.org</owner>
   <summary>
-    The memory pressure level, which is recorded periodically (once per second).
-    This is used to show the relative time that systems spend in each of the
-    memory pressure states.
+    The memory pressure level, which is recorded periodically. This shows the
+    cumulative number of seconds that systems spend in each of the memory
+    pressure states.
+  </summary>
+</histogram>
+
+<histogram name="Memory.PressureLevelChanges" enum="MemoryPressureLevelChanges">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The number of pressure level state changes for each possible pairwise state
+    change.
   </summary>
 </histogram>
 
@@ -54324,12 +54331,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Periodic"/>
 </enum>
 
-<enum name="ChromeOSMemoryPressureLevel" type="int">
-  <int value="0" label="No memory pressure"/>
-  <int value="1" label="Medium memory pressure"/>
-  <int value="2" label="High memory pressure"/>
-</enum>
-
 <enum name="ChromeOSPlatformVerificationExpiryStatus" type="int">
   <summary>
     Possible results of a platform verification expiry check. See
@@ -65316,6 +65317,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="No memory pressure"/>
   <int value="1" label="Moderate memory pressure"/>
   <int value="2" label="Critical memory pressure"/>
+</enum>
+
+<enum name="MemoryPressureLevelChanges" type="int">
+  <int value="0" label="No pressure to moderate pressure"/>
+  <int value="1" label="No pressure to critical pressure"/>
+  <int value="2" label="Moderate pressure to critical pressure"/>
+  <int value="3" label="Critical pressure to moderate pressure"/>
+  <int value="4" label="Critical pressure to no pressure"/>
+  <int value="5" label="Moderate pressure to no pressure"/>
 </enum>
 
 <enum name="MetadataReadResult" type="int">

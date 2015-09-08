@@ -316,6 +316,7 @@
       'memory_pressure/filtered_memory_pressure_calculator_unittest.cc',
       'memory_pressure/test_memory_pressure_calculator.cc',
       'memory_pressure/test_memory_pressure_calculator.h',
+      'memory_pressure/memory_pressure_stats_collector_unittest.cc',
     ],
     'metrics_unittest_sources': [
       'metrics/call_stack_profile_metrics_provider_unittest.cc',
