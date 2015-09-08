@@ -101,6 +101,8 @@ base::string16 SRTGlobalError::MenuItemLabel() {
 }
 
 void SRTGlobalError::ExecuteMenuItem(Browser* browser) {
+  safe_browsing::RecordSRTPromptHistogram(
+      safe_browsing::SRT_PROMPT_SHOWN_FROM_MENU);
   show_dismiss_button_ = true;
   ShowBubbleView(browser);
 }
