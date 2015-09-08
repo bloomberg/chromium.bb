@@ -270,9 +270,9 @@ class TestFaviconDriver : public FaviconDriver {
 
   void SetActiveURL(GURL url) { url_ = url; }
 
-  const gfx::Image available_favicon() { return available_image_; }
+  const gfx::Image& available_favicon() { return available_image_; }
 
-  const GURL available_icon_url() { return available_icon_url_; }
+  const GURL& available_icon_url() { return available_icon_url_; }
 
   bool update_active_favicon() { return update_active_favicon_; }
 
