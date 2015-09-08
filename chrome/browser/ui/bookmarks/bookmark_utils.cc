@@ -45,6 +45,12 @@
 #include "ui/native_theme/native_theme.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/grit/theme_resources.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/resource/resource_bundle.h"
+#endif
+
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
@@ -499,14 +505,35 @@ bool IsValidBookmarkDropLocation(Profile* profile,
 
 #if defined(TOOLKIT_VIEWS)
 gfx::ImageSkia GetBookmarkFolderIcon() {
+#if defined(OS_WIN)
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_BOOKMARK_BAR_FOLDER);
+  }
+#endif
+
   return GetFolderIcon(gfx::VectorIconId::FOLDER);
 }
 
 gfx::ImageSkia GetBookmarkSupervisedFolderIcon() {
+#if defined(OS_WIN)
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_BOOKMARK_BAR_FOLDER_SUPERVISED);
+  }
+#endif
+
   return GetFolderIcon(gfx::VectorIconId::FOLDER_SUPERVISED);
 }
 
 gfx::ImageSkia GetBookmarkManagedFolderIcon() {
+#if defined(OS_WIN)
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_BOOKMARK_BAR_FOLDER_MANAGED);
+  }
+#endif
+
   return GetFolderIcon(gfx::VectorIconId::FOLDER_MANAGED);
 }
 #endif
