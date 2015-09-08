@@ -62,7 +62,7 @@ def AddPathToTrie(path, value, trie):
     trie[path] = value
     return
 
-  directory, _slash, rest = path.partition('/')
+  directory, _, rest = path.partition('/')
   if not directory in trie:
     trie[directory] = {}
   AddPathToTrie(rest, value, trie[directory])
@@ -237,8 +237,8 @@ class JSONResultsGeneratorBase(object):
 
     builder_name = self._builder_name
     if results_json and builder_name not in results_json:
-      _log.debug('Builder name (%s) is not in the results.json file.'
-                 % builder_name)
+      _log.debug('Builder name (%s) is not in the results.json file.',
+                 builder_name)
 
     self._ConvertJSONToCurrentVersion(results_json)
 
@@ -297,12 +297,11 @@ class JSONResultsGeneratorBase(object):
           _log.info('JSON uploaded.')
         else:
           _log.debug(
-              "JSON upload failed, %d: '%s'" %
-              (response.code, response.read()))
+              "JSON upload failed, %d: '%s'", response.code, response.read())
       else:
         _log.error('JSON upload failed; no response returned')
-    except Exception, err:
-      _log.error('Upload failed: %s' % err)
+    except Exception, err: # pylint: disable=broad-except
+      _log.error('Upload failed: %s', err)
       return
 
   def _GetTestTiming(self, test_name):
@@ -398,7 +397,7 @@ class JSONResultsGeneratorBase(object):
 
       try:
         results_json = json.loads(old_results)
-      except Exception:
+      except Exception: # pylint: disable=broad-except
         _log.debug('results.json was not valid JSON. Clobbering.')
         # The JSON file is not valid JSON. Just clobber the results.
         results_json = {}
@@ -645,7 +644,7 @@ class _FileUploader(object):
         return urllib2.urlopen(request)
       except urllib2.HTTPError as e:
         _log.warn("Received HTTP status %s loading \"%s\".  "
-                  'Retrying in 10 seconds...' % (e.code, e.filename))
+                  'Retrying in 10 seconds...', e.code, e.filename)
         time.sleep(10)
 
 

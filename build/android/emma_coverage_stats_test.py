@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# pylint: disable=protected-access
+
 import os
 import sys
 import unittest
@@ -13,7 +15,7 @@ from pylib import constants
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
-import mock  # pylint: disable=F0401
+import mock  # pylint: disable=import-error
 
 EMPTY_COVERAGE_STATS_DICT = {
   'files': {},

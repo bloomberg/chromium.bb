@@ -10,7 +10,7 @@
 import unittest
 import json
 
-from pylib.utils import json_results_generator
+from pylib.results.flakiness_dashboard import json_results_generator
 
 
 class JSONGeneratorTest(unittest.TestCase):

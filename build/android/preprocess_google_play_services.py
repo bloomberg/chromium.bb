@@ -78,14 +78,14 @@ from pylib import constants
 
 sys.path.append(
     os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android', 'gyp'))
-from util import build_utils
+from util import build_utils # pylint: disable=import-error
 
 
 M2_PKG_PATH = os.path.join('com', 'google', 'android', 'gms')
 OUTPUT_FORMAT_VERSION = 1
 VERSION_FILE_NAME = 'version_info.json'
 VERSION_NUMBER_PATTERN = re.compile(
-    '<integer name="google_play_services_version">(\d+)<\/integer>')
+    r'<integer name="google_play_services_version">(\d+)<\/integer>')
 
 def main():
   parser = argparse.ArgumentParser(description=("Prepares the Google Play "

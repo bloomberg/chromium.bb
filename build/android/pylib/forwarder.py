@@ -152,7 +152,7 @@ class Forwarder(object):
   def DevicePortForHostPort(host_port):
     """Returns the device port that corresponds to a given host port."""
     with _FileLock(Forwarder._LOCK_PATH):
-      (_device_serial, device_port) = Forwarder._GetInstanceLocked(
+      _, device_port = Forwarder._GetInstanceLocked(
           None)._host_to_device_port_map.get(host_port)
       return device_port
 
@@ -214,7 +214,7 @@ class Forwarder(object):
     serial = str(device)
     serial_with_port = (serial, device_port)
     if not serial_with_port in instance._device_to_host_port_map:
-      logging.error('Trying to unmap non-forwarded port %d' % device_port)
+      logging.error('Trying to unmap non-forwarded port %d', device_port)
       return
     redirection_command = ['--adb=' + constants.GetAdbPath(),
                            '--serial-id=' + serial,
@@ -223,8 +223,9 @@ class Forwarder(object):
     (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
         [instance._host_forwarder_path] + redirection_command)
     if exit_code != 0:
-      logging.error('%s exited with %d:\n%s' % (
-          instance._host_forwarder_path, exit_code, '\n'.join(output)))
+      logging.error(
+          '%s exited with %d:\n%s',
+          instance._host_forwarder_path, exit_code, '\n'.join(output))
     host_port = instance._device_to_host_port_map[serial_with_port]
     del instance._device_to_host_port_map[serial_with_port]
     del instance._host_to_device_port_map[host_port]

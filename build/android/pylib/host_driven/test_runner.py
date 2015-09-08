@@ -87,7 +87,7 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
 
     try:
       test.SetUp(self.device, self.shard_index)
-    except Exception:
+    except Exception: # pylint: disable=broad-except
       logging.exception(
           'Caught exception while trying to run SetUp() for test: ' +
           test.tagged_name)
@@ -101,7 +101,7 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
 
     try:
       results = test.Run()
-    except Exception:
+    except Exception: # pylint: disable=broad-except
       # Setting this lets TearDown() avoid stomping on our stack trace from
       # Run() should TearDown() also raise an exception.
       exception_raised = True
@@ -114,7 +114,7 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
 
     try:
       test.TearDown()
-    except Exception:
+    except Exception: # pylint: disable=broad-except
       logging.exception(
           'Caught exception while trying run TearDown() for test: ' +
           test.tagged_name)

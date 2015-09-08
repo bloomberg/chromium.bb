@@ -19,6 +19,7 @@ def CommonChecks(input_api, output_api):
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
+      pylintrc='pylintrc',
       black_list=[r'pylib/symbols/.*\.py$', r'gyp/.*\.py$', r'gn/.*\.py'],
       extra_paths_list=[J(), J('buildbot')]))
   output.extend(input_api.canned_checks.RunPylint(

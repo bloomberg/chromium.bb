@@ -6,6 +6,8 @@
 
 """Add all generated lint_result.xml files to suppressions.xml"""
 
+# pylint: disable=no-member
+
 
 import collections
 import optparse

@@ -25,7 +25,6 @@ _DEVICE_OFFLINE_RE = re.compile('error: device not found')
 _LONG_MSG_RE = re.compile('longMsg=')
 _SHORT_MSG_RE = re.compile('shortMsg=')
 
-
 class RemoteDeviceTestRun(test_run.TestRun):
   """Run tests on a remote device."""
 
@@ -81,7 +80,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
       remote_device_helper.TestHttpResponse(
         test_start_res, 'Unable to run test.')
       self._test_run_id = test_start_res.json()['response']['test_run_id']
-      logging.info('Test run id: %s' % self._test_run_id)
+      logging.info('Test run id: %s', self._test_run_id)
 
     if self._env.collect:
       current_status = ''
@@ -194,7 +193,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
 
     if self._results_temp_dir is None:
       self._results_temp_dir = tempfile.mkdtemp()
-      logging.info('Downloading results to %s.' % self._results_temp_dir)
+      logging.info('Downloading results to %s.', self._results_temp_dir)
       with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
                                               logging.WARNING):
         appurify_sanitized.utils.wget(self._results['results']['url'],
@@ -247,7 +246,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
               zip_utils.WriteToZipFile(zip_file, h, os.path.basename(h))
               sdcard_files.append(os.path.basename(h))
           for a in extra_apks or ():
-            zip_utils.WriteToZipFile(zip_file, a, os.path.basename(a));
+            zip_utils.WriteToZipFile(zip_file, a, os.path.basename(a))
             additional_apks.append(os.path.basename(a))
 
         config['sdcard_files'] = ','.join(sdcard_files)
@@ -259,7 +258,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
     else:
       self._test_id = self._UploadTestToDevice('robotium', test_path)
 
-    logging.info('Setting config: %s' % config)
+    logging.info('Setting config: %s', config)
     appurify_configs = {}
     if self._env.network_config:
       appurify_configs['network'] = self._env.network_config
@@ -283,7 +282,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
     Args:
       test_type: Type of test that is being uploaded. Ex. uirobot, gtest..
     """
-    logging.info('Uploading %s to remote service.' % test_path)
+    logging.info('Uploading %s to remote service.', test_path)
     with open(test_path, 'rb') as test_src:
       with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
                                               logging.WARNING):

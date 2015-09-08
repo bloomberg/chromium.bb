@@ -5,7 +5,6 @@
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
-from devil.android.sdk import adb_wrapper
 from devil.utils import parallelizer
 from pylib.base import environment
 

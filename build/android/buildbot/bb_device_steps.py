@@ -724,6 +724,7 @@ def main(argv):
 
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
 
+  # pylint: disable=global-statement
   if options.chrome_output_dir:
     global CHROME_OUT_DIR
     global LOGCAT_DIR

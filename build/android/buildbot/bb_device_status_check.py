@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 """A class to keep track of devices across builds and report state."""
+
 import argparse
 import json
 import logging
@@ -12,19 +13,7 @@ import os
 import psutil
 import re
 import signal
-import smtplib
-import subprocess
 import sys
-import time
-import urllib
-
-import bb_annotations
-import bb_utils
-
-sys.path.append(os.path.join(os.path.dirname(__file__),
-                             os.pardir, os.pardir, 'util', 'lib',
-                             'common'))
-import perf_tests_results_helper  # pylint: disable=F0401
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from devil.android import battery_utils
@@ -36,11 +25,9 @@ from devil.android.sdk import adb_wrapper
 from devil.utils import lsusb
 from devil.utils import reset_usb
 from devil.utils import run_tests_helper
-from devil.utils import timeout_retry
 from pylib import constants
-from pylib.cmd_helper import GetCmdOutput
 
-_RE_DEVICE_ID = re.compile('Device ID = (\d+)')
+_RE_DEVICE_ID = re.compile(r'Device ID = (\d+)')
 
 
 def KillAllAdb():
@@ -221,7 +208,7 @@ def RecoverDevices(devices, blacklist):
           or status['adb_status'] == 'unknown'))
   should_restart_adb = should_restart_usb.union(set(
       status['serial'] for status in statuses
-      if (status['adb_status'] in ('offline', 'unauthorized'))))
+      if status['adb_status'] in ('offline', 'unauthorized')))
   should_reboot_device = should_restart_adb.union(set(
       status['serial'] for status in statuses
       if status['blacklisted']))
@@ -361,7 +348,7 @@ def main():
                 serial=status['serial'],
                 adb_status=status['adb_status']
             ))
-        except Exception:
+        except Exception: # pylint: disable=broad-except
           pass
 
   # Dump the device statuses to JSON.

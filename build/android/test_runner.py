@@ -10,7 +10,6 @@ import argparse
 import collections
 import logging
 import os
-import shutil
 import signal
 import sys
 import threading
@@ -712,7 +711,7 @@ def _RunLinkerTests(args, devices):
 
 def _RunInstrumentationTests(args, devices):
   """Subcommand of RunTestsCommands which runs instrumentation tests."""
-  logging.info('_RunInstrumentationTests(%s, %s)' % (str(args), str(devices)))
+  logging.info('_RunInstrumentationTests(%s, %s)', str(args), str(devices))
 
   instrumentation_options = ProcessInstrumentationOptions(args)
 
@@ -917,7 +916,7 @@ def _GetAttachedDevices(blacklist_file, test_device):
     return sorted(attached_devices)
 
 
-def RunTestsCommand(args, parser):
+def RunTestsCommand(args, parser): # pylint: disable=too-many-return-statements
   """Checks test type and dispatches to the appropriate function.
 
   Args:

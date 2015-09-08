@@ -4,8 +4,6 @@
 
 import logging
 
-from devil.android import device_utils
-
 
 class OmapThrottlingDetector(object):
   """Class to detect and track thermal throttling on an OMAP 4."""

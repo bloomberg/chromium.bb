@@ -65,7 +65,7 @@ def GetAverageRunInfo(json_data, name):
 
   def EntryFilter(entry):
     return entry['cat'] == 'Java' and entry['name'] == name
-  filtered_entries = filter(EntryFilter, json_data)
+  filtered_entries = [j for j in json_data if EntryFilter(j)]
 
   result = {}
 

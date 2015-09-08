@@ -5,13 +5,9 @@
 """Defines TestPackageApk to help run APK-based native tests."""
 # pylint: disable=W0212
 
-import itertools
 import logging
 import os
-import posixpath
-import shlex
 import sys
-import tempfile
 import time
 
 from devil.android import device_errors
@@ -64,7 +60,7 @@ class TestPackageApk(TestPackage):
   def _WatchFifo(self, device, timeout, logfile=None):
     for i in range(100):
       if device.FileExists(self._GetFifo()):
-        logging.info('Fifo created. Slept for %f secs' % (i * 0.5))
+        logging.info('Fifo created. Slept for %f secs', i * 0.5)
         break
       time.sleep(0.5)
     else:

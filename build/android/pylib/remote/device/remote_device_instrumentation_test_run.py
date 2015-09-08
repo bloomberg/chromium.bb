@@ -8,8 +8,6 @@ import logging
 import os
 import tempfile
 
-from devil.android import apk_helper
-from pylib import constants
 from pylib.base import base_test_result
 from pylib.remote.device import remote_device_test_run
 
@@ -27,6 +25,7 @@ class RemoteDeviceInstrumentationTestRun(
     """Set up the triggering of a test run."""
     logging.info('Triggering test run.')
 
+    # pylint: disable=protected-access
     with tempfile.NamedTemporaryFile(suffix='.txt') as test_list_file:
       tests = self._test_instance.GetTests()
       logging.debug('preparing to run %d instrumentation tests remotely:',

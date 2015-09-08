@@ -13,7 +13,6 @@ import shutil
 from devil.android import device_list
 from devil.android import device_utils
 from pylib import constants
-from pylib import forwarder
 from pylib.perf import test_runner
 from pylib.utils import test_environment
 

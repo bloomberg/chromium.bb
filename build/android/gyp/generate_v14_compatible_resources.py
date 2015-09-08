@@ -69,7 +69,7 @@ def IterateXmlElements(node):
 def ParseAndReportErrors(filename):
   try:
     return minidom.parse(filename)
-  except Exception:
+  except Exception: # pylint: disable=broad-except
     import traceback
     traceback.print_exc()
     sys.stderr.write('Failed to parse XML file: %s\n' % filename)

@@ -196,6 +196,7 @@ class _EmmaHtmlParser(object):
 
     return package_to_emma
 
+  # pylint: disable=no-self-use
   def _FindElements(self, file_path, xpath_selector):
     """Reads a HTML file and performs an XPath match.
 
@@ -322,6 +323,7 @@ class _EmmaCoverageStats(object):
     }
     return file_coverage_stats
 
+  # pylint: disable=no-self-use
   def GetSummaryStatsForLines(self, line_coverage):
     """Gets summary stats for a given list of LineCoverage objects.
 

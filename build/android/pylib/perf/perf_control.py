@@ -6,7 +6,6 @@ import atexit
 import logging
 
 from devil.android import device_errors
-from devil.android import device_utils
 
 
 class PerfControl(object):

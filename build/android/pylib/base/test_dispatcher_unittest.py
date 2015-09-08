@@ -22,7 +22,7 @@ from pylib.base import test_dispatcher
 
 sys.path.append(
     os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
-import mock
+import mock # pylint: disable=import-error
 
 
 class TestException(Exception):

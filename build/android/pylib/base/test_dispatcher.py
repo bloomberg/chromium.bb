@@ -171,7 +171,7 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
   Returns:
     A tuple of (TestRunResults object, exit code)
   """
-  logging.warning('Running tests with %s test runners.' % (len(runners)))
+  logging.warning('Running tests with %s test runners.', len(runners))
   results = []
   exit_code = 0
   run_results = base_test_result.TestRunResults()
@@ -198,7 +198,7 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
     logging.exception('Device became unreachable.')
 
   if not all((len(tc) == 0 for tc in test_collections)):
-    logging.error('Only ran %d tests (all devices are likely offline).' %
+    logging.error('Only ran %d tests (all devices are likely offline).',
                   len(results))
     for tc in test_collections:
       run_results.AddResults(base_test_result.BaseTestResult(
@@ -226,7 +226,7 @@ def _CreateRunners(runner_factory, devices, timeout=None):
   Returns:
     A list of TestRunner objects.
   """
-  logging.warning('Creating %s test runners.' % len(devices))
+  logging.warning('Creating %s test runners.', len(devices))
   runners = []
   counter = _ThreadSafeCounter()
   threads = reraiser_thread.ReraiserThreadGroup(
@@ -331,5 +331,5 @@ def RunTests(tests, runner_factory, devices, shard=True,
       _TearDownRunners(runners, setup_timeout)
     except device_errors.DeviceUnreachableError as e:
       logging.warning('Device unresponsive during TearDown: [%s]', e)
-    except Exception as e:
-      logging.error('Unexpected exception caught during TearDown: %s' % str(e))
+    except Exception: # pylint: disable=broad-except
+      logging.exception('Unexpected exception caught during TearDown')

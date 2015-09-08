@@ -5,13 +5,13 @@
 import json
 import optparse
 import os
-import pipes
 import subprocess
 import sys
 
 import bb_annotations
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from devil.utils import cmd_helper
 from pylib import constants
 
 
@@ -33,7 +33,7 @@ GSUTIL_PATH = os.path.join(BB_BUILD_DIR, 'third_party', 'gsutil', 'gsutil')
 
 def CommandToString(command):
   """Returns quoted command that can be run in bash shell."""
-  return ' '.join(map(pipes.quote, command))
+  return ' '.join(cmd_helper.SingleQuote(c) for c in command)
 
 
 def SpawnCmd(command, stdout=None, cwd=CHROME_SRC):

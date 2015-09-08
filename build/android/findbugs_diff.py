@@ -29,7 +29,7 @@ _DEFAULT_BASE_DIR = os.path.join(
 
 sys.path.append(
     os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android', 'gyp'))
-from util import build_utils
+from util import build_utils # pylint: disable=import-error
 
 
 def main():

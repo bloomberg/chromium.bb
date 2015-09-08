@@ -127,7 +127,7 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
       else:
         try:
           num_issues = _ParseAndShowResultFile()
-        except Exception:
+        except Exception: # pylint: disable=broad-except
           print 'Lint created unparseable xml file...'
           print 'File contents:'
           with open(result_path) as f:

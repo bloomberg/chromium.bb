@@ -274,12 +274,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
       try:
         timeout_scale = int(annotations['TimeoutScale'])
       except ValueError:
-        logging.warning('Non-integer value of TimeoutScale ignored. (%s)'
-                        % annotations['TimeoutScale'])
+        logging.warning('Non-integer value of TimeoutScale ignored. (%s)',
+                        annotations['TimeoutScale'])
     if self.options.wait_for_debugger:
       timeout_scale *= 100
     return timeout_scale
 
+  # pylint: disable=too-many-return-statements
   def _GetIndividualTestTimeoutSecs(self, test):
     """Returns the timeout in seconds for the given |test|."""
     annotations = self.test_pkg.GetTestAnnotations(test)
@@ -298,8 +299,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
     if 'SmallTest' in annotations:
       return 1 * 60
 
-    logging.warn(("Test size not found in annotations for test '%s', using " +
-                  "1 minute for timeout.") % test)
+    logging.warn("Test size not found in annotations for test '%s', using " +
+                 "1 minute for timeout.", test)
     return 1 * 60
 
   def _RunTest(self, test, timeout):
@@ -318,6 +319,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
         '%s/%s' % (self.test_pkg.GetPackageName(), self.options.test_runner),
         raw=True, extras=extras, timeout=timeout, retries=3)
 
+  # pylint: disable=no-self-use
   def _GenerateTestResult(self, test, instr_result_code, instr_result_bundle,
                           statuses, start_ms, duration_ms):
     results = instrumentation_test_instance.GenerateTestResults(

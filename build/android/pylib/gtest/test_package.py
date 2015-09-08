@@ -15,6 +15,7 @@ class TestPackage(object):
   """
   def __init__(self, suite_name):
     self.suite_name = suite_name
+    self.tool = None
 
   def ClearApplicationState(self, device):
     """Clears the application state.

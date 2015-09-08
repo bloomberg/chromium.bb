@@ -3,12 +3,7 @@
 # found in the LICENSE file.
 
 import Queue
-import datetime
-import logging
-import re
 import threading
-
-from devil.android import device_utils
 
 
 # Log marker containing SurfaceTexture timestamps.

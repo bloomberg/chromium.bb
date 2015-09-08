@@ -19,7 +19,6 @@ import time
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
-from devil.android.sdk import adb_wrapper
 from devil.utils import run_tests_helper
 from pylib import constants
 from pylib import forwarder
@@ -50,7 +49,7 @@ def main(argv):
     sys.exit(1)
 
   try:
-    port_pairs = map(int, args[1:])
+    port_pairs = [int(a) for a in args[1:]]
     port_pairs = zip(port_pairs[::2], port_pairs[1::2])
   except ValueError:
     parser.error('Bad port number')

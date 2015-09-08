@@ -109,6 +109,7 @@ class LocalDeviceTestRun(test_run.TestRun):
   def _CreateShards(self, tests):
     raise NotImplementedError
 
+  # pylint: disable=no-self-use
   def _GetTestName(self, test):
     return test
 

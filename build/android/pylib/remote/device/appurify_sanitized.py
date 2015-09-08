@@ -15,8 +15,8 @@ sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'appurify-python', 'src'))
 handlers_before = list(logging.getLogger().handlers)
 
-import appurify.api
-import appurify.utils
+import appurify.api # pylint: disable=import-error
+import appurify.utils # pylint: disable=import-error
 
 handlers_after = list(logging.getLogger().handlers)
 new_handler = list(set(handlers_after) - set(handlers_before))

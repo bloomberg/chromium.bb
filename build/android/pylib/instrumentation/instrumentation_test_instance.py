@@ -10,9 +10,7 @@ import sys
 
 from devil.android import apk_helper
 from devil.android import md5sum
-from devil.utils import cmd_helper
 from pylib import constants
-from pylib import flag_changer
 from pylib.base import base_test_result
 from pylib.base import test_instance
 from pylib.instrumentation import test_result
@@ -21,7 +19,7 @@ from pylib.utils import proguard
 
 sys.path.append(
     os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
-import unittest_util
+import unittest_util # pylint: disable=import-error
 
 # Ref: http://developer.android.com/reference/android/app/Activity.html
 _ACTIVITY_RESULT_CANCELED = 0
@@ -359,7 +357,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     try:
       tests = self._GetTestsFromPickle(pickle_path, self.test_jar)
     except self.ProguardPickleException as e:
-      logging.info('Getting tests from JAR via proguard. (%s)' % str(e))
+      logging.info('Getting tests from JAR via proguard. (%s)', str(e))
       tests = self._GetTestsFromProguard(self.test_jar)
       self._SaveTestsToPickle(pickle_path, self.test_jar, tests)
     return self._InflateTests(self._FilterTests(tests))
@@ -388,6 +386,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       logging.error(pickle_data)
       raise self.ProguardPickleException(str(e))
 
+  # pylint: disable=no-self-use
   def _GetTestsFromProguard(self, jar_path):
     p = proguard.Dump(jar_path)
 

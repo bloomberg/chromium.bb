@@ -105,7 +105,7 @@ def _GetTests(test_options, test_package, devices):
         return results, None
     return TestListerRunner(test_options, device, test_package)
 
-  results, _no_retry = test_dispatcher.RunTests(
+  results, _ = test_dispatcher.RunTests(
       ['gtest_list_tests'], TestListerRunnerFactory, devices)
   tests = []
   for r in results.GetAll():

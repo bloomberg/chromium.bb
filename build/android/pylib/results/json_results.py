@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import json
-import logging
 
 from pylib.base import base_test_result
 

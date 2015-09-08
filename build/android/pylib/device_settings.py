@@ -4,8 +4,6 @@
 
 import logging
 
-from devil.android import device_errors
-from pylib import constants
 from pylib import content_settings
 
 _LOCK_SCREEN_SETTINGS_PATH = '/data/system/locksettings.db'

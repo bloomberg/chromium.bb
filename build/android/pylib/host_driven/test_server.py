@@ -117,11 +117,11 @@ class TestServer(object):
     while retries < 5:
       try:
         d = urllib2.urlopen(test_url).read()
-        logging.info('URL %s GOT: %s' % (test_url, d))
+        logging.info('URL %s GOT: %s', test_url, d)
         if d.startswith(expected_response):
           break
-      except Exception as e:
-        logging.info('URL %s GOT: %s' % (test_url, e))
+      except Exception as e: # pylint: disable=broad-except
+        logging.info('URL %s GOT: %s', test_url, e)
       time.sleep(retries * 0.1)
       retries += 1
 

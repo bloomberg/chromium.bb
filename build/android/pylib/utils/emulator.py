@@ -22,9 +22,6 @@ from pylib import constants
 from pylib import pexpect
 from pylib.utils import time_profile
 
-import errors
-import run_command
-
 # SD card size
 SDCARD_SIZE = '512M'
 
@@ -116,7 +113,7 @@ def DeleteAllTempAVDs():
     if 'run_tests_avd' in avd_name:
       cmd = ['android', '-s', 'delete', 'avd', '--name', avd_name]
       cmd_helper.RunCmd(cmd)
-      logging.info('Delete AVD %s' % avd_name)
+      logging.info('Delete AVD %s', avd_name)
 
 
 class PortPool(object):

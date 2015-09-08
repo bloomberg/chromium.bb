@@ -10,7 +10,6 @@
 # Assumes tombstone file was created with current symbols.
 
 import datetime
-import itertools
 import logging
 import multiprocessing
 import os
@@ -22,7 +21,6 @@ import optparse
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
-from devil.android.sdk import adb_wrapper
 from devil.utils import run_tests_helper
 
 

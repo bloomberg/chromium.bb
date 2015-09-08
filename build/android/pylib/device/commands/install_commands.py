@@ -5,6 +5,7 @@
 import os
 import posixpath
 
+from devil.android import device_errors
 from pylib import constants
 
 BIN_DIR = '%s/bin' % constants.TEST_EXECUTABLE_DIR
@@ -30,14 +31,17 @@ def Installed(device):
 
 def InstallCommands(device):
   if device.IsUserBuild():
-    raise Exception('chromium_commands currently requires a userdebug build.')
+    raise device_errors.CommandFailedError(
+        'chromium_commands currently requires a userdebug build.',
+        device_serial=device.GetDeviceSerial())
 
   chromium_commands_jar_path = os.path.join(
       constants.GetOutDirectory(), constants.SDK_BUILD_JAVALIB_DIR,
       'chromium_commands.dex.jar')
   if not os.path.exists(chromium_commands_jar_path):
-    raise Exception('%s not found. Please build chromium_commands.'
-                    % chromium_commands_jar_path)
+    raise device_errors.CommandFailedError(
+        '%s not found. Please build chromium_commands.'
+        % chromium_commands_jar_path)
 
   device.RunShellCommand(['mkdir', BIN_DIR, _FRAMEWORK_DIR])
   for command, main_class in _COMMANDS.iteritems():

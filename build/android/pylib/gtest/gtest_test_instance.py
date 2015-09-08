@@ -5,7 +5,6 @@
 import logging
 import os
 import re
-import shutil
 import sys
 import tempfile
 
@@ -16,7 +15,7 @@ from pylib.base import test_instance
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
-import unittest_util
+import unittest_util # pylint: disable=import-error
 
 
 BROWSER_TEST_SUITES = [
@@ -74,7 +73,7 @@ _DEPS_EXCLUSION_LIST = [
 _EXTRA_NATIVE_TEST_ACTIVITY = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
         'NativeTestActivity')
-_EXTRA_SHARD_SIZE_LIMIT =(
+_EXTRA_SHARD_SIZE_LIMIT = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
         'ShardSizeLimit')
 
@@ -177,7 +176,7 @@ class GtestTestInstance(test_instance.TestInstance):
       self._isolated_abs_path = os.path.join(
           constants.GetOutDirectory(), '%s.isolated' % self._suite)
     else:
-      logging.warning('No isolate file provided. No data deps will be pushed.');
+      logging.warning('No isolate file provided. No data deps will be pushed.')
       self._isolate_delegate = None
 
     if args.app_data_files:
@@ -259,6 +258,7 @@ class GtestTestInstance(test_instance.TestInstance):
 
     return '*-%s' % ':'.join(disabled_filter_items)
 
+  # pylint: disable=no-self-use
   def ParseGTestOutput(self, output):
     """Parses raw gtest output and returns a list of results.
 

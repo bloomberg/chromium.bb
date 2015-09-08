@@ -13,7 +13,6 @@ import sys
 
 from devil.utils import reraiser_thread
 from devil.utils import timeout_retry
-from pylib import constants
 from pylib.base import environment
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
@@ -280,7 +279,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     timeout_retry.WaitFor(self._FindDevice, wait_period=1)
 
   def _PrintAvailableDevices(self, device_list):
-    def compare_devices(a,b):
+    def compare_devices(a, b):
       for key in ('os_version', 'name'):
         c = cmp(a[key], b[key])
         if c:
@@ -331,7 +330,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     return self._network_config
 
   @property
-  def only_output_failures(self):
+  def only_output_failures(self): # pylint: disable=no-self-use
     # TODO(jbudorick): Remove this once b/18981674 is fixed.
     return True
 

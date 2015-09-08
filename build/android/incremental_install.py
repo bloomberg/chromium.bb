@@ -9,7 +9,6 @@
 import argparse
 import glob
 import logging
-import os
 import posixpath
 import sys
 import time
@@ -116,7 +115,7 @@ def main():
     do_push_libs()
   else:
     reraiser_thread.RunAsync((do_install, do_push_libs))
-  logging.info('Took %s seconds' % round(time.time() - start_time, 1))
+  logging.info('Took %s seconds', round(time.time() - start_time, 1))
 
 
 if __name__ == '__main__':

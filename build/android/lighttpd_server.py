@@ -140,7 +140,7 @@ class LighttpdServer(object):
       ix = self.process.expect([pexpect.TIMEOUT, pexpect.EOF, '.+'],
                                timeout=timeout)
       if ix == 2:  # stdout spew from the server
-        server_msg += self.process.match.group(0)
+        server_msg += self.process.match.group(0) # pylint: disable=no-member
       elif ix == 1:  # EOF -- server has quit so giveup.
         client_error = client_error or 'Server exited'
         break

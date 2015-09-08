@@ -50,6 +50,7 @@ def _TranslateLibPath(library, asan_libs):
   for asan_lib in asan_libs:
     if os.path.basename(library) == os.path.basename(asan_lib):
       return '/' + asan_lib
+  # pylint: disable=no-member
   return symbol.TranslateLibPath(library)
 
 
@@ -67,6 +68,7 @@ def _Symbolize(asan_input):
   for library, items in libraries.iteritems():
     libname = _TranslateLibPath(library, asan_libs)
     lib_relative_addrs = set([i['rel_address'] for i in items])
+    # pylint: disable=no-member
     info_dict = symbol.SymbolInformationForSet(libname,
                                                lib_relative_addrs,
                                                True)

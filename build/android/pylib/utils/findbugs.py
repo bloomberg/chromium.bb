@@ -2,12 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import argparse
 import logging
 import os
-import re
-import shlex
-import sys
 import xml.dom.minidom
 
 from devil.utils import cmd_helper

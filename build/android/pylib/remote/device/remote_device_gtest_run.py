@@ -11,7 +11,6 @@ import tempfile
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.remote.device import remote_device_test_run
-from pylib.remote.device import remote_device_helper
 
 
 _EXTRA_COMMAND_LINE_FILE = (
@@ -46,6 +45,8 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
 
     dummy_app_path = os.path.join(
         constants.GetOutDirectory(), 'apks', 'remote_device_dummy.apk')
+
+    # pylint: disable=protected-access
     with tempfile.NamedTemporaryFile(suffix='.flags.txt') as flag_file:
       env_vars = {}
       filter_string = self._test_instance._GenerateDisabledFilterString(None)

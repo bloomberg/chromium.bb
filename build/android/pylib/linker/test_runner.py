@@ -9,7 +9,6 @@ import os.path
 import sys
 import traceback
 
-from devil.android import apk_helper
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
@@ -84,7 +83,7 @@ class LinkerTestRunner(base_test_runner.BaseTestRunner):
 
     try:
       results = test.Run(self.device)
-    except Exception:
+    except Exception: # pylint: disable=broad-except
       logging.exception('Caught exception while trying to run test: ' +
                         test.tagged_name)
       exc_info = sys.exc_info()

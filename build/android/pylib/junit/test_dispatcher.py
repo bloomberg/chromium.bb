@@ -26,3 +26,4 @@ def RunTests(tests, runner_factory):
     if not passed:
       exit_code = constants.ERROR_EXIT_CODE
   return (test_run_results, exit_code)
+

@@ -8,7 +8,6 @@ import tempfile
 
 from devil.utils import cmd_helper
 from pylib import constants
-from pylib.base import base_test_result
 from pylib.results import json_results
 
 class JavaTestRunner(object):

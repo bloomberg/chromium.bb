@@ -180,7 +180,7 @@ def GetX86Image(api_level=DEFAULT_ANDROID_API_LEVEL):
     api_target = 'android-%d' % api_level
     sys_imgs = os.path.join(constants.EMULATOR_SDK_ROOT, 'sdk',
                             'system-images', api_target, 'x86')
-    logging.info('Deploying system image to %s' % sys_imgs)
+    logging.info('Deploying system image to %s', sys_imgs)
     shutil.move('/tmp/x86', sys_imgs)
   finally:
     os.unlink(temp_file)
@@ -211,7 +211,7 @@ def GetSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL):
       update_command = [android_binary,
                         'update', 'sdk', '--no-ui', '--filter', index]
       update_command_str = ' '.join(update_command)
-      logging.info('running update command: %s' % update_command_str)
+      logging.info('running update command: %s', update_command_str)
       update_process = pexpect.spawn(update_command_str)
       # TODO(andrewhayden): Do we need to bug the user about this?
       if update_process.expect('Do you accept the license') != 0:
@@ -252,16 +252,16 @@ def main(argv):
 
   # Check target. The target has to be installed in order to run the emulator.
   if CheckSDKPlatform(options.api_level):
-    logging.info('SDK platform android-%d already present, skipping.' %
+    logging.info('SDK platform android-%d already present, skipping.',
                  options.api_level)
   else:
-    logging.info('SDK platform android-%d not present, installing.' %
+    logging.info('SDK platform android-%d not present, installing.',
                  options.api_level)
     GetSDKPlatform(options.api_level)
 
   # Download the x86 system image only if needed.
   if CheckX86Image(options.api_level):
-    logging.info('x86 image for android-%d already present, skipping.' %
+    logging.info('x86 image for android-%d already present, skipping.',
                  options.api_level)
   else:
     GetX86Image(options.api_level)

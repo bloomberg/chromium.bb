@@ -55,6 +55,7 @@ class Symbolizer(object):
       # incorrect lookups when running this script on long-lived instances
       # (e.g., adb logcat) when doing incremental development. Consider clearing
       # the cache when modification timestamp of libraries change.
+      # pylint: disable=no-member
       sym = symbol.SymbolInformation(lib, addr, False)[0][0]
 
       if not sym:

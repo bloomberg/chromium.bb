@@ -258,7 +258,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       logging.warning('Unmapping device ports')
       forwarder.Forwarder.UnmapAllDevicePorts(self.device)
       self.device.RestartAdbd()
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-except
       logging.error('Exception when tearing down device %s', e)
 
     cmd = ('%s --device %s' %
@@ -330,7 +330,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       try:
         self.device.WaitUntilFullyBooted(timeout=120)
       except device_errors.CommandTimeoutError as e:
-        logging.error('Device failed to return after %s: %s' % (test_name, e))
+        logging.error('Device failed to return after %s: %s', test_name, e)
 
     actual_exit_code = exit_code
     if test_name in self._flaky_tests:

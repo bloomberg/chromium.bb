@@ -5,10 +5,7 @@
 """Run specific test on specific environment."""
 
 import logging
-import os
-import sys
 
-from pylib import constants
 from pylib.base import base_test_result
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_test_run

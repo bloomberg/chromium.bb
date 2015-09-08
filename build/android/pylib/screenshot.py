@@ -7,7 +7,6 @@ import os
 import tempfile
 import time
 
-from devil.android import device_errors
 from devil.android import device_signal
 from devil.utils import cmd_helper
 
