@@ -184,6 +184,18 @@ public class WebappInfo {
         return mBackgroundColor;
     }
 
+    /**
+     * Returns the background color specified by {@link #backgroundColor()} if the value is
+     * not ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING. Returns the specified fallback color
+     * otherwise.
+     */
+    public int backgroundColor(int fallback) {
+        if (mBackgroundColor == ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING) {
+            return fallback;
+        }
+        return (int) mBackgroundColor;
+    }
+
     // This is needed for clients that want to send the icon trough an intent.
     public String encodedIcon() {
         return mEncodedIcon;
