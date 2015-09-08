@@ -201,7 +201,7 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
   re2::RE2::GlobalReplace(&file_contents, re2::RE2("\\s*//.*"), "");
 
   // Parse the JSON to a dictionary.
-  value->reset(base::JSONReader::DeprecatedRead(file_contents));
+  *value = base::JSONReader::Read(file_contents);
   if (!value->get()) {
     return ::testing::AssertionFailure()
            << "Couldn't parse test file JSON: " << file_path.value();
@@ -428,11 +428,12 @@ scoped_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::vector<uint8_t>& json) {
   base::StringPiece json_string(
       reinterpret_cast<const char*>(vector_as_array(&json)), json.size());
-  base::Value* value = base::JSONReader::DeprecatedRead(json_string);
-  EXPECT_TRUE(value);
-  base::DictionaryValue* dict_value = NULL;
-  value->GetAsDictionary(&dict_value);
-  return scoped_ptr<base::DictionaryValue>(dict_value);
+  scoped_ptr<base::Value> value = base::JSONReader::Read(json_string);
+  EXPECT_TRUE(value.get());
+  EXPECT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
+
+  return scoped_ptr<base::DictionaryValue>(
+      static_cast<base::DictionaryValue*>(value.release()));
 }
 
 // Verifies the input dictionary contains the expected values. Exact matches are

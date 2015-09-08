@@ -111,8 +111,8 @@ void DistillerPageIOS::OnLoadURLDone(
 void DistillerPageIOS::HandleJavaScriptResultString(NSString* result) {
   scoped_ptr<base::Value> resultValue = base::Value::CreateNullValue();
   if (result.length) {
-    scoped_ptr<base::Value> dictionaryValue(
-        base::JSONReader::DeprecatedRead(base::SysNSStringToUTF8(result)));
+    scoped_ptr<base::Value> dictionaryValue =
+        base::JSONReader::Read(base::SysNSStringToUTF8(result));
     if (dictionaryValue &&
         dictionaryValue->IsType(base::Value::TYPE_DICTIONARY)) {
       resultValue = dictionaryValue.Pass();

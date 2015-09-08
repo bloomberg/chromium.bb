@@ -82,8 +82,8 @@ scoped_ptr<WireMessage> WireMessage::Deserialize(
   if (!ParseHeader(serialized_message, is_incomplete_message))
     return scoped_ptr<WireMessage>();
 
-  scoped_ptr<base::Value> body_value(base::JSONReader::DeprecatedRead(
-      serialized_message.substr(kHeaderLength)));
+  scoped_ptr<base::Value> body_value =
+      base::JSONReader::Read(serialized_message.substr(kHeaderLength));
   if (!body_value || !body_value->IsType(base::Value::TYPE_DICTIONARY)) {
     PA_LOG(WARNING) << "Error: Unable to parse message as JSON.";
     return scoped_ptr<WireMessage>();

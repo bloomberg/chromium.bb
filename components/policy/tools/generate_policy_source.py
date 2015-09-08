@@ -930,8 +930,8 @@ base::ListValue* DecodeStringList(const em::StringList& string_list) {
 }
 
 base::Value* DecodeJson(const std::string& json) {
-  scoped_ptr<base::Value> root(
-      base::JSONReader::DeprecatedRead(json, base::JSON_ALLOW_TRAILING_COMMAS));
+  scoped_ptr<base::Value> root =
+      base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
 
   if (!root)
     LOG(WARNING) << "Invalid JSON string, ignoring: " << json;

@@ -399,8 +399,8 @@ scoped_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
     int validator_options,
     std::string* error) {
   base::JSONParserOptions json_options = base::JSON_PARSE_RFC;
-  scoped_ptr<base::Value> json(base::JSONReader::DeprecatedReadAndReturnError(
-      schema, json_options, NULL, error));
+  scoped_ptr<base::Value> json =
+      base::JSONReader::ReadAndReturnError(schema, json_options, NULL, error);
   if (!json)
     return scoped_ptr<base::DictionaryValue>();
   base::DictionaryValue* dict = NULL;

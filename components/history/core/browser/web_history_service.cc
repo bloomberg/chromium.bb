@@ -312,10 +312,10 @@ scoped_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
   WebHistoryService::Request* request) {
   scoped_ptr<base::DictionaryValue> result;
   if (request->GetResponseCode() == net::HTTP_OK) {
-    base::Value* value =
-        base::JSONReader::DeprecatedRead(request->GetResponseBody());
-    if (value && value->IsType(base::Value::TYPE_DICTIONARY))
-      result.reset(static_cast<base::DictionaryValue*>(value));
+    scoped_ptr<base::Value> value =
+        base::JSONReader::Read(request->GetResponseBody());
+    if (value.get() && value.get()->IsType(base::Value::TYPE_DICTIONARY))
+      result.reset(static_cast<base::DictionaryValue*>(value.release()));
     else
       DLOG(WARNING) << "Non-JSON response received from history server.";
   }
