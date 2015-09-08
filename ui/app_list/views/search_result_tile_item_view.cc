@@ -76,6 +76,9 @@ void SearchResultTileItemView::OnIconChanged() {
 }
 
 void SearchResultTileItemView::OnResultDestroying() {
+  // The menu comes from |item_|. If we're showing a menu we need to cancel it.
+  context_menu_runner_.reset();
+
   if (item_)
     item_->RemoveObserver(this);
   item_ = NULL;
