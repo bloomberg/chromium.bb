@@ -63,9 +63,6 @@
 
   # Exclude all unused files in skia utils.gypi file
   'sources!': [
-  '../third_party/skia/src/utils/SkBitmapRegionCanvas.cpp',
-  '../third_party/skia/src/utils/SkBitmapRegionDecoderInterface.cpp',
-  '../third_party/skia/src/utils/SkBitmapRegionSampler.cpp',
   '../third_party/skia/src/utils/SkBitmapHasher.cpp',
   '../third_party/skia/src/utils/SkBoundaryPatch.cpp',
   '../third_party/skia/src/utils/SkFrontBufferedStream.cpp',
