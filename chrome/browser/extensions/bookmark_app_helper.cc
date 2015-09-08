@@ -368,19 +368,10 @@ BookmarkAppHelper::ConstrainBitmapsToSizes(
     ordered_bitmaps[it->bitmap.width()] = *it;
   }
 
-  std::set<int>::const_iterator sizes_it = sizes.begin();
-  std::map<int, BitmapAndSource>::const_iterator bitmaps_it =
-      ordered_bitmaps.begin();
-  while (sizes_it != sizes.end() && bitmaps_it != ordered_bitmaps.end()) {
-    int size = *sizes_it;
+  for (const auto& size : sizes) {
     // Find the closest not-smaller bitmap.
-    bitmaps_it = ordered_bitmaps.lower_bound(size);
-    ++sizes_it;
-    // Ensure the bitmap is valid and smaller than the next allowed size (if
-    // not, then skip this size).
-    if (bitmaps_it != ordered_bitmaps.end() &&
-        (sizes_it == sizes.end() ||
-         bitmaps_it->second.bitmap.width() < *sizes_it)) {
+    auto bitmaps_it = ordered_bitmaps.lower_bound(size);
+    if (bitmaps_it != ordered_bitmaps.end()) {
       output_bitmaps[size] = bitmaps_it->second;
       // Resize the bitmap if it does not exactly match the desired size.
       if (output_bitmaps[size].bitmap.width() != size) {
@@ -390,6 +381,7 @@ BookmarkAppHelper::ConstrainBitmapsToSizes(
       }
     }
   }
+
   return output_bitmaps;
 }
 
@@ -446,8 +438,7 @@ BookmarkAppHelper::ResizeIconsAndGenerateMissing(
                                   extension_misc::kNumExtensionIconSizes);
 
   // If there are icons that don't match the accepted icon sizes, find the
-  // closest bigger icon to the accepted sizes and resize the icon to it. An
-  // icon will be resized and used for at most one size.
+  // closest bigger icon to the accepted sizes and resize the icon to it.
   std::map<int, BitmapAndSource> resized_bitmaps(
       ConstrainBitmapsToSizes(icons, allowed_sizes));
 
@@ -460,13 +451,11 @@ BookmarkAppHelper::ResizeIconsAndGenerateMissing(
             resized_bitmaps.begin()->second.bitmap);
   }
 
-  // Work out what icons we need to generate here. Icons are only generated if:
-  // a. there is no icon in the required size, AND
-  // b. there is no icon LARGER than the required size.
-  // Larger icons will be scaled down and used at display time.
+  // Work out what icons we need to generate here. Icons are only generated if
+  // there is no icon in the required size.
   std::set<int> generate_sizes;
   for (int size : sizes_to_generate) {
-    if (resized_bitmaps.lower_bound(size) == resized_bitmaps.end())
+    if (resized_bitmaps.find(size) == resized_bitmaps.end())
       generate_sizes.insert(size);
   }
   GenerateIcons(generate_sizes, web_app_info->app_url,
@@ -633,7 +622,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
 
   // Ensure that the necessary-sized icons are available by resizing larger
   // icons down to smaller sizes, and generating icons for sizes where resizing
-  // is not possible or allowed.
+  // is not possible.
   web_app_info_.generated_icon_color = SK_ColorTRANSPARENT;
   std::map<int, BitmapAndSource> size_to_icons = ResizeIconsAndGenerateMissing(
       downloaded_icons, SizesToGenerate(), &web_app_info_);
