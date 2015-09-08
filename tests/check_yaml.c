@@ -212,7 +212,7 @@ read_cursorPos (yaml_parser_t *parser, int len) {
 void
 read_options (yaml_parser_t *parser, int len,
 	      int *xfail, translationModes *mode,
-	      char **typeform, int **cursorPos) {
+	      formtype **typeform, int **cursorPos) {
   yaml_event_t event;
   char *option_name;
   int parse_error = 1;
@@ -272,7 +272,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   char *translation;
   int xfail = 0;
   translationModes mode = 0;
-  char *typeform = NULL;
+  formtype *typeform = NULL;
   int *cursorPos = NULL;
 
   if (!yaml_parser_parse(parser, &event) ||
