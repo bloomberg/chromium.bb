@@ -1805,7 +1805,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
 {
     // If nameSources is non-null, nameObjects is used in filling it in, so it must be non-null as well.
     if (nameSources)
-        assert(nameObjects);
+        ASSERT(nameObjects);
 
     bool alreadyVisited = visited.contains(this);
     bool foundTextAlternative = false;
@@ -2516,7 +2516,7 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
 
     // If nameSources is non-null, nameObjects is used in filling it in, so it must be non-null as well.
     if (nameSources)
-        assert(nameObjects);
+        ASSERT(nameObjects);
 
     String textAlternative;
     AXObjectVector localNameObjects;
