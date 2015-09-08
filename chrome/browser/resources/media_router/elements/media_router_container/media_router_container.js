@@ -358,6 +358,30 @@ Polymer({
   },
 
   /**
+   * @param {!media_router.Sink} sink The sink to determine an icon for.
+   * @return {string} The Polymer <iron-icon> icon to use. The format is
+   *     <iconset>:<icon>, where <iconset> is the set ID and <icon> is the name
+   *     of the icon. <iconset>: may be ommitted if <icon> is from the default
+   *     set.
+   * @private
+   */
+  computeSinkIcon_: function(sink) {
+    switch (sink.iconType) {
+      case media_router.SinkIconType.CAST:
+        // TODO(apacible): Update icon after UX discussion.
+        return 'hardware:tv';
+      case media_router.SinkIconType.CAST_AUDIO:
+        return 'hardware:speaker';
+      case media_router.SinkIconType.GENERIC:
+        return 'hardware:tv';
+      case media_router.SinkIconType.HANGOUT:
+        return 'communication:message';
+      default:
+        return 'hardware:tv';
+    }
+  },
+
+  /**
    * @param {!string} sinkId A sink ID.
    * @param {!Object<!string, ?media_router.Route>} sinkToRouteMap
    *     Maps media_router.Sink.id to corresponding media_router.Route.

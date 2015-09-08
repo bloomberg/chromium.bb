@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
@@ -84,8 +85,8 @@
           <paper-item class="sink" on-click="onSinkClick_">
             <div class="sink-content">
               <div>
-                <!-- TODO(apacible): Show device icon based on device type. -->
-                <iron-icon icon="hardware:tv" hidden$="[[item.isLaunching]]"
+                <iron-icon icon="[[computeSinkIcon_(item)]]"
+                    hidden$="[[item.isLaunching]]"
                     class$="[[computeSinkIconClass_(item.id, sinkToRouteMap_)]]">
                 </iron-icon>
                 <template is="dom-if" if="[[item.isLaunching]]">
