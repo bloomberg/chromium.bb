@@ -52,6 +52,8 @@
 #include "base/cpu.h"
 #endif
 
+using std::min;
+
 namespace net {
 
 namespace {
@@ -394,10 +396,15 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
   // To mitigate the effects of disk cache taking too long to load QUIC server
   // information, set up a timer to cancel WaitForDataReady's callback.
   if (factory_->load_server_info_timeout_srtt_multiplier_ > 0) {
+    const int kMaxLoadServerInfoTimeoutMs = 50;
+    // Wait for DiskCache a maximum of 50ms.
     int64 load_server_info_timeout_ms =
-        (factory_->load_server_info_timeout_srtt_multiplier_ *
-         factory_->GetServerNetworkStatsSmoothedRttInMicroseconds(server_id_)) /
-        1000;
+        min(static_cast<int>(
+                (factory_->load_server_info_timeout_srtt_multiplier_ *
+                 factory_->GetServerNetworkStatsSmoothedRttInMicroseconds(
+                     server_id_)) /
+                1000),
+            kMaxLoadServerInfoTimeoutMs);
     if (load_server_info_timeout_ms > 0) {
       factory_->task_runner_->PostDelayedTask(
           FROM_HERE,
