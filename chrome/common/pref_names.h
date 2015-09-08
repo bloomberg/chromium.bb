@@ -448,7 +448,9 @@ extern const char kProfileResetPromptMementosInLocalState[];
 
 extern const char kStabilityPageLoadCount[];
 extern const char kStabilityRendererCrashCount[];
+extern const char kStabilityRendererFailedLaunchCount[];
 extern const char kStabilityExtensionRendererCrashCount[];
+extern const char kStabilityExtensionRendererFailedLaunchCount[];
 extern const char kStabilityRendererHangCount[];
 extern const char kStabilityChildProcessCrashCount[];
 extern const char kStabilityOtherUserCrashCount[];

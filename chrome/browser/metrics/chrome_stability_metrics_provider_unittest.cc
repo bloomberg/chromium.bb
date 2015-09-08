@@ -112,7 +112,7 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
       content::Details<content::RenderProcessHost::RendererClosedDetails>(
           &kill_details));
 
-  // Failed launch increments crash count.
+  // Failed launch increments failed launch count.
   content::RenderProcessHost::RendererClosedDetails failed_launch_details(
       base::TERMINATION_STATUS_LAUNCH_FAILED, 1);
   provider.Observe(
@@ -127,7 +127,8 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
   // be executed immediately.
   provider.ProvideStabilityMetrics(&system_profile);
 
-  EXPECT_EQ(3, system_profile.stability().renderer_crash_count());
+  EXPECT_EQ(2, system_profile.stability().renderer_crash_count());
+  EXPECT_EQ(1, system_profile.stability().renderer_failed_launch_count());
   EXPECT_EQ(0, system_profile.stability().extension_renderer_crash_count());
 
 #if defined(ENABLE_EXTENSIONS)
@@ -148,11 +149,20 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
       content::Details<content::RenderProcessHost::RendererClosedDetails>(
           &crash_details));
 
+  // Failed launch increments failed launch count.
+  provider.Observe(
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      content::Source<content::RenderProcessHost>(extension_host),
+      content::Details<content::RenderProcessHost::RendererClosedDetails>(
+          &failed_launch_details));
+
   system_profile.Clear();
   provider.ProvideStabilityMetrics(&system_profile);
 
   EXPECT_EQ(0, system_profile.stability().renderer_crash_count());
   EXPECT_EQ(1, system_profile.stability().extension_renderer_crash_count());
+  EXPECT_EQ(
+      1, system_profile.stability().extension_renderer_failed_launch_count());
 #endif
 
   profile_manager->DeleteAllTestingProfiles();

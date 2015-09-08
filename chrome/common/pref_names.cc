@@ -1268,9 +1268,18 @@ const char kStabilityPageLoadCount[] =
 const char kStabilityRendererCrashCount[] =
     "user_experience_metrics.stability.renderer_crash_count";
 
+// Number of times a renderer process failed to launch since the last report.
+const char kStabilityRendererFailedLaunchCount[] =
+    "user_experience_metrics.stability.renderer_failed_launch_count";
+
 // Number of times an extension renderer process crashed since the last report.
 const char kStabilityExtensionRendererCrashCount[] =
     "user_experience_metrics.stability.extension_renderer_crash_count";
+
+// Number of times an extension renderer process failed to launch since the last
+// report.
+const char kStabilityExtensionRendererFailedLaunchCount[] =
+    "user_experience_metrics.stability.extension_renderer_failed_launch_count";
 
 // This is the location of a list of dictionaries of plugin stability stats.
 const char kStabilityPluginStats[] =

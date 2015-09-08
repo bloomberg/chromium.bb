@@ -164,11 +164,25 @@ void ChromeStabilityMetricsProvider::ProvideStabilityMetrics(
     local_state_->SetInteger(prefs::kStabilityRendererCrashCount, 0);
   }
 
+  count = local_state_->GetInteger(prefs::kStabilityRendererFailedLaunchCount);
+  if (count) {
+    stability_proto->set_renderer_failed_launch_count(count);
+    local_state_->SetInteger(prefs::kStabilityRendererFailedLaunchCount, 0);
+  }
+
   count =
       local_state_->GetInteger(prefs::kStabilityExtensionRendererCrashCount);
   if (count) {
     stability_proto->set_extension_renderer_crash_count(count);
     local_state_->SetInteger(prefs::kStabilityExtensionRendererCrashCount, 0);
+  }
+
+  count = local_state_->GetInteger(
+      prefs::kStabilityExtensionRendererFailedLaunchCount);
+  if (count) {
+    stability_proto->set_extension_renderer_failed_launch_count(count);
+    local_state_->SetInteger(
+        prefs::kStabilityExtensionRendererFailedLaunchCount, 0);
   }
 
   count = local_state_->GetInteger(prefs::kStabilityRendererHangCount);
@@ -187,8 +201,11 @@ void ChromeStabilityMetricsProvider::ClearSavedStabilityMetrics() {
   // include |kUninstallMetricsPageLoadCount| as it's not sent up by UMA).
   local_state_->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityExtensionRendererCrashCount, 0);
+  local_state_->SetInteger(prefs::kStabilityExtensionRendererFailedLaunchCount,
+                           0);
   local_state_->SetInteger(prefs::kStabilityPageLoadCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererCrashCount, 0);
+  local_state_->SetInteger(prefs::kStabilityRendererFailedLaunchCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererHangCount, 0);
 }
 
@@ -198,8 +215,11 @@ void ChromeStabilityMetricsProvider::RegisterPrefs(
   registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityExtensionRendererCrashCount,
                                 0);
+  registry->RegisterIntegerPref(
+      prefs::kStabilityExtensionRendererFailedLaunchCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityRendererFailedLaunchCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
 
   registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
@@ -311,11 +331,10 @@ void ChromeStabilityMetricsProvider::LogRendererCrash(
   } else if (status == base::TERMINATION_STATUS_LAUNCH_FAILED) {
     UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildLaunchFailures",
                               histogram_type, RENDERER_TYPE_COUNT);
-    // Treat child process launch as a crash for now.
     if (was_extension_process)
-      IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
+      IncrementPrefValue(prefs::kStabilityExtensionRendererFailedLaunchCount);
     else
-      IncrementPrefValue(prefs::kStabilityRendererCrashCount);
+      IncrementPrefValue(prefs::kStabilityRendererFailedLaunchCount);
   }
 }
 
