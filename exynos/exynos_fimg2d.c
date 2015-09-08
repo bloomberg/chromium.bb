@@ -191,7 +191,7 @@ static int g2d_flush(struct g2d_context *ctx)
 	struct drm_exynos_g2d_set_cmdlist cmdlist = {0};
 
 	if (ctx->cmd_nr == 0 && ctx->cmd_buf_nr == 0)
-		return -1;
+		return 0;
 
 	if (ctx->cmdlist_nr >= G2D_MAX_CMD_LIST_NR) {
 		fprintf(stderr, "Overflow cmdlist.\n");
