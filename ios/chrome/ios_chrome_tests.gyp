@@ -57,6 +57,7 @@
         'browser/ui/native_content_controller_unittest.mm',
         'browser/ui/ui_util_unittest.mm',
         'browser/ui/uikit_ui_util_unittest.mm',
+        'browser/web_resource/web_resource_util_unittest.cc',
         'common/string_util_unittest.mm',
       ],
       'actions': [
