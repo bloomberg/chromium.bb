@@ -521,9 +521,8 @@ void NormalPageHeap::allocatePage()
 {
     threadState()->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = Heap::freePagePool()->takeFreePage(heapIndex());
-    // We continue allocating page memory until we succeed in committing one.
-    size_t numberOfTrials = 0;
-    while (!pageMemory) {
+
+    if (!pageMemory) {
         // Allocate a memory region for blinkPagesPerRegion pages that
         // will each have the following layout.
         //
@@ -537,20 +536,18 @@ void NormalPageHeap::allocatePage()
             // Take the first possible page ensuring that this thread actually
             // gets a page and add the rest to the page pool.
             if (!pageMemory) {
-                if (memory->commit())
-                    pageMemory = memory;
-                else
-                    delete memory;
+                bool result = memory->commit();
+                // If you hit the ASSERT, it will mean that you're hitting
+                // the limit of the number of mmapped regions OS can support
+                // (e.g., /proc/sys/vm/max_map_count in Linux).
+                RELEASE_ASSERT(result);
+                pageMemory = memory;
             } else {
                 Heap::freePagePool()->addFreePage(heapIndex(), memory);
             }
         }
-        ++numberOfTrials;
-        // If you hit the ASSERT, it means that you're hitting the limit of
-        // the number of mmapped regions OS can support
-        // (e.g., /proc/sys/vm/max_map_count in Linux).
-        RELEASE_ASSERT(numberOfTrials < 64);
     }
+
     NormalPage* page = new (pageMemory->writableStart()) NormalPage(pageMemory, this);
     page->link(&m_firstPage);
 
