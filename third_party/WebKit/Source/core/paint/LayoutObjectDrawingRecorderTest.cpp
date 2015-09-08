@@ -8,6 +8,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/DisplayItemListPaintTest.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -16,73 +17,8 @@
 
 namespace blink {
 
-class LayoutObjectDrawingRecorderTest : public RenderingTest {
-public:
-    LayoutObjectDrawingRecorderTest()
-        : m_layoutView(nullptr)
-        , m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
-
-protected:
-    LayoutView& layoutView() { return *m_layoutView; }
-    DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
-    const DisplayItems& newDisplayItemsBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
-
-private:
-    void SetUp() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
-
-        RenderingTest::SetUp();
-        enableCompositing();
-
-        m_layoutView = document().view()->layoutView();
-        ASSERT_TRUE(m_layoutView);
-    }
-
-    void TearDown() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
-    }
-
-    LayoutView* m_layoutView;
-    bool m_originalSlimmingPaintEnabled;
-};
-
-class LayoutObjectDrawingRecorderTestForSlimmingPaintV2 : public RenderingTest {
-public:
-    LayoutObjectDrawingRecorderTestForSlimmingPaintV2()
-        : m_layoutView(nullptr)
-        , m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled())
-        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
-
-protected:
-    LayoutView& layoutView() { return *m_layoutView; }
-    DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
-    const DisplayItems& newDisplayItemsBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
-
-private:
-    void SetUp() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-
-        RenderingTest::SetUp();
-        enableCompositing();
-
-        m_layoutView = document().view()->layoutView();
-        ASSERT_TRUE(m_layoutView);
-    }
-
-    void TearDown() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintV2Enabled);
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
-    }
-
-    LayoutView* m_layoutView;
-    bool m_originalSlimmingPaintEnabled;
-    bool m_originalSlimmingPaintV2Enabled;
-};
+using LayoutObjectDrawingRecorderTest = DisplayItemListPaintTest;
+using LayoutObjectDrawingRecorderTestForSlimmingPaintV2 = DisplayItemListPaintTestForSlimmingPaintV2;
 
 namespace {
 
@@ -103,16 +39,6 @@ void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase
     context.drawRect(rect);
 }
 
-bool isDrawing(const DisplayItem& item)
-{
-    return DisplayItem::isDrawingType(item.type());
-}
-
-bool isCached(const DisplayItem& item)
-{
-    return DisplayItem::isCachedType(item.type());
-}
-
 TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
     GraphicsContext context(&rootDisplayItemList());
@@ -121,10 +47,9 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    const auto& item = rootDisplayItemList().displayItems()[0];
-    ASSERT_TRUE(isDrawing(item));
-    EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(item).picture());
+    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
+    EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(rootDisplayItemList().displayItems()[0]).picture());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
@@ -133,8 +58,8 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
     LayoutRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
+    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
@@ -144,19 +69,23 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)2, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[1]));
+
+    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 2,
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
-    EXPECT_EQ((size_t)2, newDisplayItemsBeforeUpdate().size());
-    EXPECT_TRUE(isCached(newDisplayItemsBeforeUpdate()[0]));
-    EXPECT_TRUE(isCached(newDisplayItemsBeforeUpdate()[1]));
+
+    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().newDisplayItems(), 2,
+        TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground))),
+        TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground))));
+
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)2, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[1]));
+
+    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 2,
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
 template <typename T>
@@ -205,8 +134,8 @@ TEST_F(LayoutObjectDrawingRecorderTestForSlimmingPaintV2, PaintOffsetCache)
     }
 
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
+    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure we cannot use the cache with a new paint offset.
     LayoutPoint newPaintOffset(2, 3);
@@ -220,8 +149,8 @@ TEST_F(LayoutObjectDrawingRecorderTestForSlimmingPaintV2, PaintOffsetCache)
     }
 
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
+    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure the old paint offset cannot be used.
     EXPECT_FALSE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, paintOffset));
@@ -229,8 +158,8 @@ TEST_F(LayoutObjectDrawingRecorderTestForSlimmingPaintV2, PaintOffsetCache)
     // Ensure the new paint offset can be used.
     EXPECT_TRUE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, newPaintOffset));
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
+    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
 } // namespace

@@ -134,9 +134,9 @@ public:
     bool displayItemConstructionIsDisabled() const { return m_constructionDisabled; }
     void setDisplayItemConstructionIsDisabled(const bool disable) { m_constructionDisabled = disable; }
 
-#if ENABLE(ASSERT)
-    size_t newDisplayItemsSize() const { return m_newDisplayItems.size(); }
-#endif
+    // Returns displayItems added using createAndAppend() since beginning or the last
+    // commitNewDisplayItems(). Use with care.
+    DisplayItems& newDisplayItems() { return m_newDisplayItems; }
 
 #ifndef NDEBUG
     void showDebugData() const;
@@ -169,12 +169,6 @@ protected:
         , m_nextScope(1) { }
 
 private:
-    friend class DisplayItemListTest;
-    friend class DisplayItemListPaintTest;
-    friend class DisplayItemListPaintTestForSlimmingPaintV2;
-    friend class LayoutObjectDrawingRecorderTest;
-    friend class LayoutObjectDrawingRecorderTestForSlimmingPaintV2;
-
     // Set new item state (scopes, cache skipping, etc) for a new item.
     void processNewItem(DisplayItem&);
 

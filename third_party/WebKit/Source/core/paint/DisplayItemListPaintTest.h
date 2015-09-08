@@ -17,13 +17,11 @@ namespace blink {
 class DisplayItemListPaintTest : public RenderingTest {
 public:
     DisplayItemListPaintTest()
-        : m_layoutView(nullptr)
-        , m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
+        : m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
 
 protected:
-    LayoutView& layoutView() { return *m_layoutView; }
+    LayoutView& layoutView() { return *document().layoutView(); }
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
-    const DisplayItems& newDisplayItemsBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
 
 private:
     void SetUp() override
@@ -32,9 +30,6 @@ private:
 
         RenderingTest::SetUp();
         enableCompositing();
-
-        m_layoutView = document().view()->layoutView();
-        ASSERT_TRUE(m_layoutView);
     }
 
     void TearDown() override
@@ -42,7 +37,6 @@ private:
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
     }
 
-    LayoutView* m_layoutView;
     bool m_originalSlimmingPaintEnabled;
 };
 
@@ -51,13 +45,11 @@ private:
 class DisplayItemListPaintTestForSlimmingPaintV2 : public RenderingTest {
 public:
     DisplayItemListPaintTestForSlimmingPaintV2()
-        : m_layoutView(nullptr)
-        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
+        : m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
-    LayoutView& layoutView() { return *m_layoutView; }
+    LayoutView& layoutView() { return *document().layoutView(); }
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
-    const DisplayItems& newDisplayItemsBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
 
     // Expose some document lifecycle steps for checking new display items before commiting.
     void updateLifecyclePhasesToPaintForSlimmingPaintV2Clean()
@@ -76,9 +68,6 @@ private:
 
         RenderingTest::SetUp();
         enableCompositing();
-
-        m_layoutView = document().view()->layoutView();
-        ASSERT_TRUE(m_layoutView);
     }
 
     void TearDown() override
@@ -86,7 +75,6 @@ private:
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
-    LayoutView* m_layoutView;
     bool m_originalSlimmingPaintV2Enabled;
 };
 
@@ -123,12 +111,12 @@ public:
 #define EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(actual, expectedSizeWithoutFill, ...) \
     EXPECT_DISPLAY_LIST_BASE( \
         actual, expectedSizeWithoutFill + 1, \
-        TestDisplayItem(*document().layoutView()->layer()->graphicsLayerBacking(), DisplayItem::DebugRedFill), \
+        TestDisplayItem(*layoutView().layer()->graphicsLayerBacking(), DisplayItem::DebugRedFill), \
         __VA_ARGS__)
 #define EXPECT_DISPLAY_LIST_WITH_CACHED_RED_FILL_IN_DEBUG(actual, expectedSizeWithoutFill, ...) \
     EXPECT_DISPLAY_LIST_BASE( \
         actual, expectedSizeWithoutFill + 1, \
-        TestDisplayItem(*document().layoutView()->layer()->graphicsLayerBacking(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::DebugRedFill)), \
+        TestDisplayItem(*layoutView().layer()->graphicsLayerBacking(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::DebugRedFill)), \
         __VA_ARGS__)
 #else
 #define EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG EXPECT_DISPLAY_LIST_BASE

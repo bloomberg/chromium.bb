@@ -20,11 +20,11 @@ namespace blink {
 class DisplayItemListTest : public ::testing::Test {
 public:
     DisplayItemListTest()
-        : m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
+        : m_displayItemList(DisplayItemList::create())
+        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
-    DisplayItemList& displayItemList() { return m_displayItemList; }
-    const DisplayItems& newDisplayItemsBeforeUpdate() { return displayItemList().m_newDisplayItems; }
+    DisplayItemList& displayItemList() { return *m_displayItemList; }
 
 private:
     void SetUp() override
@@ -37,7 +37,7 @@ private:
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
-    DisplayItemList m_displayItemList;
+    OwnPtr<DisplayItemList> m_displayItemList;
     bool m_originalSlimmingPaintV2Enabled;
 };
 
@@ -494,7 +494,7 @@ TEST_F(DisplayItemListTest, CachedSubsequenceSwapOrder)
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
 
-    EXPECT_DISPLAY_LIST(newDisplayItemsBeforeUpdate(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().newDisplayItems(), 2,
         TestDisplayItem(container2, DisplayItem::CachedSubsequence),
         TestDisplayItem(container1, DisplayItem::CachedSubsequence));
 
@@ -608,7 +608,7 @@ TEST_F(DisplayItemListTest, CachedNestedSubsequenceUpdate)
         EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1));
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
-    EXPECT_DISPLAY_LIST(newDisplayItemsBeforeUpdate(), 7,
+    EXPECT_DISPLAY_LIST(displayItemList().newDisplayItems(), 7,
         TestDisplayItem(content2, DisplayItem::BeginSubsequence),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(content2, DisplayItem::EndSubsequence),
@@ -673,9 +673,11 @@ TEST_F(DisplayItemListTest, Scope)
     drawRect(context, content, foregroundDrawingType, rect2);
     displayItemList().endScope();
 
-    EXPECT_TRUE(newDisplayItemsBeforeUpdate()[0].isCachedDrawing());
-    EXPECT_TRUE(newDisplayItemsBeforeUpdate()[1].isDrawing());
-    EXPECT_TRUE(newDisplayItemsBeforeUpdate()[2].isDrawing());
+    EXPECT_DISPLAY_LIST(displayItemList().newDisplayItems(), 3,
+        TestDisplayItem(multicol, DisplayItem::drawingTypeToCachedDrawingType(backgroundDrawingType)),
+        TestDisplayItem(content, foregroundDrawingType),
+        TestDisplayItem(content, foregroundDrawingType));
+
     displayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
@@ -702,19 +704,15 @@ TEST_F(DisplayItemListTest, Scope)
     displayItemList().endScope();
 
     // We should repaint everything on invalidation of the scope container.
-    EXPECT_TRUE(newDisplayItemsBeforeUpdate()[0].isDrawing());
-    EXPECT_TRUE(newDisplayItemsBeforeUpdate()[1].isDrawing());
-    EXPECT_TRUE(newDisplayItemsBeforeUpdate()[2].isDrawing());
-    EXPECT_TRUE(newDisplayItemsBeforeUpdate()[3].isDrawing());
-    displayItemList().commitNewDisplayItems();
-
-    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 4,
+    EXPECT_DISPLAY_LIST(displayItemList().newDisplayItems(), 4,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[1]).picture());
-    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[2]).picture());
+    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(displayItemList().newDisplayItems()[1]).picture());
+    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(displayItemList().newDisplayItems()[2]).picture());
+
+    displayItemList().commitNewDisplayItems();
 }
 
 TEST_F(DisplayItemListTest, OptimizeNoopPairs)
