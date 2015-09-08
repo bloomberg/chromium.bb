@@ -144,6 +144,7 @@ class GtestTestInstance(test_instance.TestInstance):
       self._activity = helper.GetActivityName()
       self._package = helper.GetPackageName()
       self._runner = helper.GetInstrumentationName()
+      self._permissions = helper.GetPermissions()
       self._extras = {
         _EXTRA_NATIVE_TEST_ACTIVITY: self._activity,
       }
@@ -318,6 +319,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def package(self):
     return self._package
+
+  @property
+  def permissions(self):
+    return self._permissions
 
   @property
   def runner(self):

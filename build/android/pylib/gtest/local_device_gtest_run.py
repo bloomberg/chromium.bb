@@ -55,12 +55,13 @@ class _ApkDelegate(object):
     self._apk = test_instance.apk
     self._package = test_instance.package
     self._runner = test_instance.runner
+    self._permissions = test_instance.permissions
 
     self._component = '%s/%s' % (self._package, self._runner)
     self._extras = test_instance.extras
 
   def Install(self, device):
-    device.Install(self._apk)
+    device.Install(self._apk, permissions=self._permissions)
 
   def Run(self, test, device, flags=None, **kwargs):
     extras = dict(self._extras)

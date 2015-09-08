@@ -138,11 +138,13 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     super(InstrumentationTestInstance, self).__init__()
 
     self._apk_under_test = None
+    self._apk_under_test_permissions = None
     self._package_info = None
     self._suite = None
     self._test_apk = None
     self._test_jar = None
     self._test_package = None
+    self._test_permissions = None
     self._test_runner = None
     self._test_support_apk = None
     self._initializeApkAttributes(args, error_func)
@@ -178,6 +180,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if not os.path.exists(self._apk_under_test):
       error_func('Unable to find APK under test: %s' % self._apk_under_test)
 
+    apk = apk_helper.ApkHelper(self._apk_under_test)
+    self._apk_under_test_permissions = apk.GetPermissions()
+
     if args.test_apk.endswith('.apk'):
       self._suite = os.path.splitext(os.path.basename(args.test_apk))[0]
       self._test_apk = args.test_apk
@@ -201,6 +206,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     apk = apk_helper.ApkHelper(self.test_apk)
     self._test_package = apk.GetPackageName()
+    self._test_permissions = apk.GetPermissions()
     self._test_runner = apk.GetInstrumentationName()
 
     self._package_info = None
@@ -284,6 +290,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._apk_under_test
 
   @property
+  def apk_under_test_permissions(self):
+   return self._apk_under_test_permissions
+
+  @property
   def flags(self):
     return self._flags
 
@@ -322,6 +332,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def test_package(self):
     return self._test_package
+
+  @property
+  def test_permissions(self):
+    return self._test_permissions
 
   @property
   def test_runner(self):

@@ -64,8 +64,10 @@ class LocalDeviceInstrumentationTestRun(
         return d
 
     def individual_device_set_up(dev, host_device_tuples):
-      dev.Install(self._test_instance.apk_under_test)
-      dev.Install(self._test_instance.test_apk)
+      dev.Install(self._test_instance.apk_under_test,
+                  permissions=self._test_instance.apk_under_test_permissions)
+      dev.Install(self._test_instance.test_apk,
+                  permissions=self._test_instance.test_permissions)
 
       external_storage = dev.GetExternalStoragePath()
       host_device_tuples = [
