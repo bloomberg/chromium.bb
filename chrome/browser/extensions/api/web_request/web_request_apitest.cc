@@ -18,6 +18,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -386,4 +387,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
     EXPECT_EQ("Intercepted requests: ?contentscript, ?framescript",
               listener_result.message());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL hosted_app_url(
+      embedded_test_server()->GetURL(
+          "/extensions/api_test/webrequest_hosted_app/index.html"));
+  scoped_refptr<extensions::Extension> hosted_app =
+      extensions::ExtensionBuilder()
+      .SetManifest(extensions::DictionaryBuilder()
+          .Set("name", "Some hosted app")
+          .Set("version", "1")
+          .Set("manifest_version", 2)
+          .Set("app", extensions::DictionaryBuilder()
+              .Set("launch", extensions::DictionaryBuilder()
+                  .Set("web_url", hosted_app_url.spec()))))
+      .Build();
+  extensions::ExtensionSystem::Get(browser()->profile())->extension_service()
+      ->AddExtension(hosted_app.get());
+
+  ExtensionTestMessageListener listener1("main_frame", false);
+  ExtensionTestMessageListener listener2("xmlhttprequest", false);
+
+  ASSERT_TRUE(LoadExtension(
+          test_data_dir_.AppendASCII("webrequest_hosted_app")));
+
+  ui_test_utils::NavigateToURL(browser(), hosted_app_url);
+
+  EXPECT_TRUE(listener1.WaitUntilSatisfied());
+  EXPECT_TRUE(listener2.WaitUntilSatisfied());
 }

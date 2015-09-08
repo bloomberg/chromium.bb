@@ -159,7 +159,20 @@ bool IsRequestFromExtension(const net::URLRequest* request,
   if (!info)
     return false;
 
-  return extension_info_map->process_map().Contains(info->GetChildID());
+  const std::set<std::string> extension_ids =
+      extension_info_map->process_map().GetExtensionsInProcess(
+          info->GetChildID());
+  if (extension_ids.empty())
+    return false;
+
+  // Treat hosted apps as normal web pages (crbug.com/526413).
+  for (const std::string& extension_id : extension_ids) {
+    const Extension* extension =
+        extension_info_map->extensions().GetByID(extension_id);
+    if (extension && !extension->is_hosted_app())
+      return true;
+  }
+  return false;
 }
 
 void ExtractRequestRoutingInfo(const net::URLRequest* request,
