@@ -138,6 +138,10 @@ struct InstantMostVisitedItem {
 
   // The external URL of the favicon associated with this page.
   GURL favicon;
+
+  // The external URL that should be pinged when this item is suggested/clicked.
+  GURL impression_url;
+  GURL click_url;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.

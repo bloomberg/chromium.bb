@@ -143,8 +143,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Updates |scheduling_delay_| based on the success of the last request.
   void UpdateBlacklistDelay(bool last_request_successful);
 
-  // Adds favicon URLs to suggestions profile.
-  void PopulateFaviconUrls(SuggestionsProfile* suggestions);
+  // Adds extra data to suggestions profile.
+  void PopulateExtraData(SuggestionsProfile* suggestions);
 
   // Test seams.
   base::TimeDelta blacklist_delay() const { return scheduling_delay_; }

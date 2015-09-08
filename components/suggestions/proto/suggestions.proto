@@ -21,14 +21,19 @@ enum ProviderId {
 // The SuggestionsProfile is a protobuf response from the server that contains
 // the list of suggestions to be presented to the user.
 //
+// Notice that the tags on this proto must match the ones on the server side.
+//
 // Next tag: 2
 message SuggestionsProfile {
   repeated ChromeSuggestion suggestions = 1;
+
+  // Timestamp when the profile was generated (usec).
+  optional int64 timestamp = 16;
 }
 
 // The suggestions for this user, ordered from best to worst.
 //
-// Next tag: 6
+// Next tag: 15
 message ChromeSuggestion {
   // The URL of the suggestion.
   optional string url = 1;
@@ -47,6 +52,10 @@ message ChromeSuggestion {
 
   // The timestamp (usec) at which this suggestion ceases to be valid.
   optional int64 expiry_ts = 7;
+
+  // URL that should be pinged back when the suggestion is shown/clicked.
+  optional string impression_url = 13;
+  optional string click_url = 14;
 }
 
 // A list of URLs that should be filtered from the SuggestionsProfile.

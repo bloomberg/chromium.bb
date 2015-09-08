@@ -96,6 +96,11 @@ var tiles = null;
  */
 var queryArgs = {};
 
+/**
+ * Url to ping when suggestions have been shown.
+ */
+var impressionUrl = null;
+
 
 /**
  * Log an event on the NTP.
@@ -264,6 +269,19 @@ var showTiles = function() {
 
   // Make sure the tiles variable contain the next tileset we may use.
   tiles = document.createElement('div');
+
+  if (impressionUrl) {
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(impressionUrl);
+    } else {
+      // if sendBeacon is not enabled, we fallback to "a ping".
+      var a = document.createElement('a');
+      a.href = '#';
+      a.ping = impressionUrl;
+      a.click();
+    }
+    impressionUrl = null;
+  }
 };
 
 
@@ -338,6 +356,9 @@ var renderTile = function(data) {
 
   tile.href = data.url;
   tile.title = data.title;
+  if (data.impressionUrl) {
+    impressionUrl = data.impressionUrl;
+  }
   if (data.pingUrl) {
     tile.addEventListener('click', function(ev) {
       if (navigator.sendBeacon) {

@@ -325,6 +325,12 @@ void InstantService::OnSuggestionsAvailable(
     if (suggestion.has_favicon_url()) {
       item.favicon = GURL(suggestion.favicon_url());
     }
+    if (suggestion.has_impression_url()) {
+      item.impression_url = GURL(suggestion.impression_url());
+    }
+    if (suggestion.has_click_url()) {
+      item.click_url = GURL(suggestion.click_url());
+    }
     new_suggestions_items.push_back(item);
   }
   suggestions_items_ = new_suggestions_items;

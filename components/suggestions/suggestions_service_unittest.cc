@@ -39,6 +39,10 @@ const char kTestUrl[] = "http://go.com";
 const char kTestFaviconUrl[] =
     "https://s2.googleusercontent.com/s2/favicons?domain_url="
     "http://go.com&alt=s&sz=32";
+const char kTestImpressionUrl[] =
+    "https://www.google.com/chromesuggestions/click?q=123&cd=-1";
+const char kTestClickUrl[] =
+    "https://www.google.com/chromesuggestions/click?q=123&cd=0";
 const char kBlacklistUrl[] = "http://blacklist.com";
 const char kBlacklistUrlAlt[] = "http://blacklist-atl.com";
 const int64 kTestDefaultExpiry = 1402200000000000;
@@ -84,6 +88,7 @@ namespace suggestions {
 
 SuggestionsProfile CreateSuggestionsProfile() {
   SuggestionsProfile profile;
+  profile.set_timestamp(123);
   ChromeSuggestion* suggestion = profile.add_suggestions();
   suggestion->set_title(kTestTitle);
   suggestion->set_url(kTestUrl);
@@ -94,6 +99,7 @@ SuggestionsProfile CreateSuggestionsProfile() {
 // Creates one suggestion with expiry timestamp and one without.
 SuggestionsProfile CreateSuggestionsProfileWithExpiryTimestamps() {
   SuggestionsProfile profile;
+  profile.set_timestamp(123);
   ChromeSuggestion* suggestion = profile.add_suggestions();
   suggestion->set_title(kTestTitle);
   suggestion->set_url(kTestUrl);
@@ -164,6 +170,9 @@ class SuggestionsServiceTest : public testing::Test {
     EXPECT_EQ(kTestUrl, suggestions_profile.suggestions(0).url());
     EXPECT_EQ(kTestFaviconUrl,
               suggestions_profile.suggestions(0).favicon_url());
+    EXPECT_EQ(kTestImpressionUrl,
+              suggestions_profile.suggestions(0).impression_url());
+    EXPECT_EQ(kTestClickUrl, suggestions_profile.suggestions(0).click_url());
   }
 
   void SetBlacklistFailure() {
