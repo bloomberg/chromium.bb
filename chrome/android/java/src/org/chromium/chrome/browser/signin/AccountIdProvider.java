@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.app.Activity;
 import android.content.Context;
 
 import com.google.android.gms.auth.GoogleAuthException;
@@ -13,12 +12,8 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 
 import java.io.IOException;
-
-import javax.annotation.Nullable;
 
 /**
  * Returns a stable id that can be used to identify a Google Account.  This
@@ -35,7 +30,7 @@ public class AccountIdProvider {
 
     /**
      * Returns a stable id for the account associated with the given email address.
-     * If an account with the given email address is not installed on the device
+     * If an account wuth the given email address is not installed on the device
      * then null is returned.
      *
      * This method will throw IllegalStateException if called on the main thread.
@@ -49,21 +44,6 @@ public class AccountIdProvider {
             Log.e("cr.AccountIdProvider", "AccountIdProvider.getAccountId", ex);
             return null;
         }
-    }
-
-    /**
-     * Returns whether the AccountIdProvider can be used.
-     * Since the AccountIdProvider queries Google Play services, this basically checks whether
-     * Google Play services is available.
-     *
-     * @param activity If an activity is provided, it will be used to show a Modal Dialog notifying
-     * the user to update Google Play services, else a System notification is shown.
-     */
-    public boolean canBeUsed(Context ctx, @Nullable Activity activity) {
-        UserRecoverableErrorHandler errorHandler = activity != null
-                ? new UserRecoverableErrorHandler.ModalDialog(activity)
-                : new UserRecoverableErrorHandler.SystemNotification();
-        return ExternalAuthUtils.getInstance().canUseGooglePlayServices(ctx, errorHandler);
     }
 
     /**
