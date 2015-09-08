@@ -193,3 +193,48 @@ TEST_F(TaskManagerWindowControllerTest, EnsureNewPrimarySortColumn) {
   task_manager.RemoveResource(&resource1);
   task_manager.RemoveResource(&resource2);
 }
+
+TEST_F(TaskManagerWindowControllerTest, EnsureOneColumnVisible) {
+  TaskManager task_manager;
+
+  // Add a couple rows of data.
+  TestResource resource1(base::UTF8ToUTF16("yyy"), 1);
+  TestResource resource2(base::UTF8ToUTF16("aaa"), 2);
+
+  task_manager.AddResource(&resource1);
+  task_manager.AddResource(&resource2);
+
+  TaskManagerMac* bridge(new TaskManagerMac(&task_manager));
+  TaskManagerWindowController* controller = bridge->cocoa_controller();
+  NSTableView* table = [controller tableView];
+  ASSERT_EQ(2, [controller numberOfRowsInTableView:table]);
+
+  // Toggle each visible column so that it's not visible.
+  NSMenuItem* menuItem = [[[NSMenuItem alloc]
+                             initWithTitle:@"Temp"
+                                    action:@selector(toggleColumn:)
+                             keyEquivalent:@""] autorelease];
+  for (NSTableColumn* nextColumn in [table tableColumns]) {
+    if (![nextColumn isHidden]) {
+      [menuItem setState:NSOnState];
+      [menuItem setRepresentedObject:nextColumn];
+      [controller toggleColumn:menuItem];
+    }
+  }
+
+  // Locate the one column that should still be visible.
+  NSTableColumn* firstVisibleColumn = nil;
+  for (NSTableColumn* nextColumn in [table tableColumns]) {
+    if (![nextColumn isHidden]) {
+      firstVisibleColumn = nextColumn;
+      break;
+    }
+  }
+  EXPECT_TRUE(firstVisibleColumn != nil);
+
+  // Release the controller, which in turn deletes |bridge|.
+  [controller close];
+
+  task_manager.RemoveResource(&resource1);
+  task_manager.RemoveResource(&resource2);
+}

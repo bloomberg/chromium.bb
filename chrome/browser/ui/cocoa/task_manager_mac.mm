@@ -337,42 +337,51 @@ class SortHelper {
   DCHECK(column);
   NSInteger oldState = [item state];
   NSInteger newState = oldState == NSOnState ? NSOffState : NSOnState;
-  [column setHidden:newState == NSOffState];
-  [item setState:newState];
 
-  // If the user hid |column| and it was being used to sort the table (i.e. it
-  // was the primary sort column), make the first visible column the new primary
-  // sort column. If no columns were visible, the primarySortColumnId will be 0,
-  // in which case also make the first visible column the primary sort column.
-  int primarySortColumnId = [[currentSortDescriptor_.get() key] intValue];
-  int columnId = [[column identifier] intValue];
+  // If hiding the column, make sure at least one column will remain visible.
+  if (newState == NSOffState) {
+    // Find the first column that will be visible after hiding |column|.
+    NSTableColumn* firstRemainingVisibleColumn = nil;
 
-  if (([column isHidden] && primarySortColumnId == columnId) ||
-      primarySortColumnId == 0) {
-    NSTableColumn* firstVisibleColumn = nil;
     for (NSTableColumn* nextColumn in [tableView_ tableColumns]) {
-      if (![nextColumn isHidden]) {
-        firstVisibleColumn = nextColumn;
+      if (nextColumn != column && ![nextColumn isHidden]) {
+        firstRemainingVisibleColumn = nextColumn;
         break;
       }
     }
 
-    // Currently the user can hide all of the Task Manager's columns. If that
-    // happens it makes sense to call setSortDescriptors: on |tableView_| with
-    // a nil value, but that causes TaskManagerModel::CompareValues() to fall
-    // through to a NOTREACHED() statement. Calling setSortDescriptors: with an
-    // arbitrary column gets around this problem. Preventing the user from
-    // hiding all columns is addressed in crbug.com/518914, which includes a
-    // note about removing this workaround.
-    if (firstVisibleColumn == nil) {
-      firstVisibleColumn = [[tableView_ tableColumns] objectAtIndex:0];
+    // If no column will be visible, abort the toggle. This will basically cause
+    // the toggle operation to silently fail. The other way to ensure at least
+    // one visible column is to disable the menu item corresponding to the last
+    // remaining visible column. That would place the menu in a weird state to
+    // the user, where there's one item somewhere that's grayed out with no
+    // clear explanation of why. It will be rare for a user to try hiding all
+    // columns, but we still want to guard against it. If they are really intent
+    // on hiding the last visible column (perhaps they plan to choose another
+    // one after that to be visible), odds are they will try making another
+    // column visible and then hiding the one column that would not hide.
+    if (firstRemainingVisibleColumn == nil) {
+      return;
     }
 
-    NSSortDescriptor* newSortDescriptor =
-        [firstVisibleColumn sortDescriptorPrototype];
-    [tableView_ setSortDescriptors:
-        [NSArray arrayWithObject:newSortDescriptor]];
+    // If |column| is being used to sort the table (i.e. it's the primary sort
+    // column), make the first remaining visible column the new primary sort
+    // column.
+    int primarySortColumnId = [[currentSortDescriptor_.get() key] intValue];
+    DCHECK(primarySortColumnId);
+    int columnId = [[column identifier] intValue];
+
+    if (primarySortColumnId == columnId) {
+      NSSortDescriptor* newSortDescriptor =
+          [firstRemainingVisibleColumn sortDescriptorPrototype];
+      [tableView_ setSortDescriptors:
+          [NSArray arrayWithObject:newSortDescriptor]];
+    }
   }
+
+  // Make the change.
+  [column setHidden:newState == NSOffState];
+  [item setState:newState];
 
   [tableView_ sizeToFit];
   [tableView_ setNeedsDisplay];
