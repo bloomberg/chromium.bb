@@ -2548,12 +2548,13 @@ static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition& pos, co
     return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
-UChar32 characterAfter(const VisiblePosition& visiblePosition)
+template <typename Strategy>
+static UChar32 characterAfterAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
     // We canonicalize to the first of two equivalent candidates, but the second
     // of the two candidates is the one that will be inside the text node
     // containing the character after this visible position.
-    Position pos = mostForwardCaretPosition(visiblePosition.deepEquivalent());
+    const PositionAlgorithm<Strategy> pos = mostForwardCaretPosition(visiblePosition.deepEquivalent());
     if (!pos.isOffsetInAnchor())
         return 0;
     Node* containerNode = pos.computeContainerNode();
@@ -2566,6 +2567,16 @@ UChar32 characterAfter(const VisiblePosition& visiblePosition)
         return 0;
 
     return textNode->data().characterStartingAt(offset);
+}
+
+UChar32 characterAfter(const VisiblePosition& visiblePosition)
+{
+    return characterAfterAlgorithm<EditingStrategy>(visiblePosition);
+}
+
+UChar32 characterAfter(const VisiblePositionInComposedTree& visiblePosition)
+{
+    return characterAfterAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
 }
 
 UChar32 characterBefore(const VisiblePosition& visiblePosition)

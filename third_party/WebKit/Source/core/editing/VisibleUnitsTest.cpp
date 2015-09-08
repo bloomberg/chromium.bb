@@ -56,6 +56,24 @@ TEST_F(VisibleUnitsTest, absoluteCaretBoundsOf)
     EXPECT_EQ(boundsInDOMTree, boundsInComposedTree);
 }
 
+TEST_F(VisibleUnitsTest, characterAfter)
+{
+    const char* bodyContent = "<p id='host'><b id='one'>1</b><b id='two'>22</b></p><b id='three'>333</b>";
+    const char* shadowContent = "<b id='four'>4444</b><content select=#two></content><content select=#one></content><b id='five'>5555</b>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+    RefPtrWillBeRawPtr<Element> two = document().getElementById("two");
+
+    EXPECT_EQ('2', characterAfter(createVisiblePositionInDOMTree(*one->firstChild(), 1)));
+    EXPECT_EQ('5', characterAfter(createVisiblePositionInComposedTree(*one->firstChild(), 1)));
+
+    EXPECT_EQ(0, characterAfter(createVisiblePositionInDOMTree(*two->firstChild(), 2)));
+    EXPECT_EQ('1', characterAfter(createVisiblePositionInComposedTree(*two->firstChild(), 2)));
+}
+
 TEST_F(VisibleUnitsTest, inSameLine)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";

@@ -92,7 +92,8 @@ CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedT
 CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
 CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePositionInComposedTree&);
 
-UChar32 characterAfter(const VisiblePosition&);
+CORE_EXPORT UChar32 characterAfter(const VisiblePosition&);
+CORE_EXPORT UChar32 characterAfter(const VisiblePositionInComposedTree&);
 UChar32 characterBefore(const VisiblePosition&);
 
 VisiblePosition leftPositionOf(const VisiblePosition&);
