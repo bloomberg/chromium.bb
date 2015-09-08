@@ -15,6 +15,7 @@ public:
     SimLayerTreeView();
 
     void setNeedsAnimate() override { m_needsAnimate = true; }
+    void clearNeedsAnimate() { m_needsAnimate = false; }
     bool needsAnimate() const { return m_needsAnimate; }
 
     void setDeferCommits(bool deferCommits) override { m_deferCommits = deferCommits; }

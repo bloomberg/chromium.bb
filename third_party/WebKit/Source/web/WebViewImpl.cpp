@@ -3898,8 +3898,10 @@ void WebViewImpl::resumeTreeViewCommits()
 {
     if (!mainFrameImpl()->frame()->loader().stateMachine()->committedFirstRealDocumentLoad())
         return;
-    if (m_layerTreeView)
+    if (m_layerTreeView) {
         m_layerTreeView->setDeferCommits(false);
+        m_layerTreeView->setNeedsBeginFrame();
+    }
 }
 
 void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe)

@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include "core/dom/Document.h"
+#include "core/page/Page.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/sim/SimLayerTreeView.h"
@@ -36,6 +37,8 @@ protected:
         request.setURL(KURL(ParsedURLString, url));
         m_webViewHelper.webViewImpl()->mainFrameImpl()->loadRequest(request);
     }
+
+    Document& document() { return *toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame())->document(); }
 
     SimNetwork m_network;
     SimLayerTreeView m_layerTreeView;
@@ -158,6 +161,43 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterParsingSvg)
     // Finish the load and resume.
     mainResource.finish();
     EXPECT_FALSE(m_layerTreeView.deferCommits());
+}
+
+TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded)
+{
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest firstCssResource("https://example.com/first.css", "text/css");
+    SimRequest secondCssResource("https://example.com/second.css", "text/css");
+
+    loadURL("https://example.com/test.html");
+
+    mainResource.start();
+
+    // Load a stylesheet.
+    mainResource.write("<!DOCTYPE html><link id=link rel=stylesheet href=first.css>");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    firstCssResource.start();
+    firstCssResource.write("body { color: red; }");
+    mainResource.write("<body>");
+    firstCssResource.finish();
+
+    // Sheet finished and there's a body so resume.
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+
+    mainResource.finish();
+    m_layerTreeView.clearNeedsAnimate();
+
+    // Replace the stylesheet by changing href.
+    Element* element = document().getElementById("link");
+    EXPECT_NE(nullptr, element);
+    element->setAttribute(HTMLNames::hrefAttr, "second.css");
+    EXPECT_FALSE(m_layerTreeView.needsAnimate());
+
+    secondCssResource.start();
+    secondCssResource.write("body { color: red; }");
+    secondCssResource.finish();
+    EXPECT_TRUE(m_layerTreeView.needsAnimate());
 }
 
 } // namespace blink
