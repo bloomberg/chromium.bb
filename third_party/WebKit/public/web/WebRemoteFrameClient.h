@@ -34,7 +34,7 @@ public:
     // out of process.
     virtual void initializeChildFrame(
         const WebRect& frameRect,
-        float scaleFactor) { }
+        float deviceScaleFactor) { }
 
     // A remote frame was asked to start a navigation.
     virtual void navigate(const WebURLRequest& request, bool shouldReplaceCurrentEntry) { }

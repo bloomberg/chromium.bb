@@ -755,12 +755,9 @@ void WebRemoteFrameImpl::initializeFromFrame(WebLocalFrame* source) const
     ASSERT(source);
     WebLocalFrameImpl* localFrameImpl = toWebLocalFrameImpl(source);
 
-    // TODO(bokan): The scale_factor argument here used to be the now-removed
-    // FrameView::visibleContentScaleFactor but the callee uses this parameter
-    // to set the device scale factor. crbug.com/493262
     client()->initializeChildFrame(
         localFrameImpl->frame()->view()->frameRect(),
-        1);
+        localFrameImpl->frame()->page()->deviceScaleFactor());
 }
 
 void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) const
