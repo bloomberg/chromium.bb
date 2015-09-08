@@ -39,7 +39,6 @@ class SingleWebContentsDialogManagerCocoa
   web_modal::SingleWebContentsDialogManagerDelegate* delegate_;
   // Weak. Owned by parent window.
   web_modal::WebContentsModalDialogHost* host_;
-  bool shown_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleWebContentsDialogManagerCocoa);
 };

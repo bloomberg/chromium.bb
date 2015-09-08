@@ -50,10 +50,12 @@ class WebContentsModalDialogHostCocoa;
 // Find the sheet attached to the given overlay window.
 + (id<ConstrainedWindowSheet>)sheetForOverlayWindow:(NSWindow*)overlayWindow;
 
-// Shows the given sheet over |parentView|. If |parentView| is not the active
-// view then the sheet is not shown until the |parentView| becomes active.
+// Shows the given sheet over |parentView|.
 - (void)showSheet:(id<ConstrainedWindowSheet>)sheet
     forParentView:(NSView*)parentView;
+
+// Hides a sheet over the active view.
+- (void)hideSheet;
 
 // Calculates the position of the sheet for the given window size.
 - (NSPoint)originForSheet:(id<ConstrainedWindowSheet>)sheet
@@ -61,10 +63,6 @@ class WebContentsModalDialogHostCocoa;
 
 // Closes the given sheet.
 - (void)closeSheet:(id<ConstrainedWindowSheet>)sheet;
-
-// Make |parentView| the current active view. If |parentView| has an attached
-// sheet then the sheet is made visible.
-- (void)parentViewDidBecomeActive:(NSView*)parentView;
 
 // Run a pulse animation for the given sheet. This does nothing if the sheet
 // is not visible.

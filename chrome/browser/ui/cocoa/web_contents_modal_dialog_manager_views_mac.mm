@@ -116,9 +116,6 @@ SingleWebContentsDialogManagerViewsMac::
 }
 
 void SingleWebContentsDialogManagerViewsMac::Show() {
-  if (widget_->IsVisible())
-    return;  // Rely on the ConstrainedWindowSheetController to unhide instead.
-
   DCHECK(host_);
 
   NSView* parent_view = host_->GetHostView();
@@ -132,13 +129,13 @@ void SingleWebContentsDialogManagerViewsMac::Show() {
   [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
           showSheet:sheet_
       forParentView:parent_view];
-  widget_->Show();
 }
 
 void SingleWebContentsDialogManagerViewsMac::Hide() {
-  // Hide is called by WebContentsModalDialogManager when it observes the
-  // WebContents being hidden. The constrained window controller will just
-  // hide the native window, so nothing to do.
+  NSWindow* parent_window =
+      delegate_->GetWebContents()->GetTopLevelNativeWindow();
+  [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
+      hideSheet];
 }
 
 void SingleWebContentsDialogManagerViewsMac::Close() {

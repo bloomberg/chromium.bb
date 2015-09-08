@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
@@ -653,12 +652,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
   // It also restores content autoresizing properties.
   [controller ensureContentsVisible];
-
-  NSWindow* parentWindow = [switchView_ window];
-  ConstrainedWindowSheetController* sheetController =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:parentWindow];
-  [sheetController parentViewDidBecomeActive:newView];
 }
 
 // Create a new tab view and set its cell correctly so it draws the way we want

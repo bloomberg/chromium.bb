@@ -87,36 +87,48 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
       tab_view_parent_ = new_view.get();
     }
 
-    // Create two dummy tabs and make the first one active.
-    tab_views_.reset([[NSMutableArray alloc] init]);
-    for (int i = 0; i < 2; ++i) {
-      base::scoped_nsobject<NSView> view(
-          [[NSView alloc] initWithFrame:dummy_rect]);
-      [tab_views_ addObject:view];
-    }
-    tab0_ = [tab_views_ objectAtIndex:0];
-    tab1_ = [tab_views_ objectAtIndex:1];
-    ActivateTabView(tab0_);
-
-    // Create a test sheet.
-    sheet_window_.reset([[NSWindow alloc]
-        initWithContentRect:dummy_rect
-                  styleMask:NSTitledWindowMask
-                    backing:NSBackingStoreBuffered
-                      defer:NO]);
-    [sheet_window_ setReleasedWhenClosed:NO];
-    sheet_.reset([[CustomConstrainedWindowSheet alloc]
-        initWithCustomWindow:sheet_window_]);
-
     controller_.reset([[ConstrainedWindowSheetController
             controllerForParentWindow:test_window()] retain]);
     EXPECT_TRUE(controller_);
-    EXPECT_FALSE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
+
+    // Create two dummy tabs and make the first one active.
+    tab_views_.reset([[NSMutableArray alloc] init]);
+    sheet_windows_.reset([[NSMutableArray alloc] init]);
+    sheets_.reset([[NSMutableArray alloc] init]);
+    for (int i = 0; i < 2; ++i) {
+      base::scoped_nsobject<NSView> view(
+          [[NSView alloc] initWithFrame:dummy_rect]);
+      base::scoped_nsobject<NSWindow> sheet_window(
+          [[NSWindow alloc]
+            initWithContentRect:dummy_rect
+                      styleMask:NSTitledWindowMask
+                        backing:NSBackingStoreBuffered
+                          defer:NO]);
+      [sheet_window setReleasedWhenClosed:NO];
+      base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+          [[CustomConstrainedWindowSheet alloc]
+              initWithCustomWindow:sheet_window]);
+      EXPECT_FALSE([ConstrainedWindowSheetController controllerForSheet:sheet]);
+      [tab_views_ addObject:view];
+      [sheet_windows_ addObject:sheet_window];
+      [sheets_ addObject:sheet];
+    }
+    tab0_ = [tab_views_ objectAtIndex:0];
+    tab1_ = [tab_views_ objectAtIndex:1];
+    sheet_window0_ = [sheet_windows_ objectAtIndex:0];
+    sheet_window1_ = [sheet_windows_ objectAtIndex:1];
+    sheet_window_ = sheet_window0_;
+    sheet0_ = [sheets_ objectAtIndex:0];
+    sheet1_ = [sheets_ objectAtIndex:1];
+    sheet_ = sheet0_;
+
+    active_tab_view_ = tab0_;
+    [tab_view_parent_ addSubview:active_tab_view_];
   }
 
   void TearDown() override {
-    sheet_.reset();
-    sheet_window_.reset();
+    sheets_.reset();
+    sheet_windows_.reset();
     CocoaTest::TearDown();
   }
 
@@ -130,7 +142,12 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
         [ConstrainedWindowSheetController
             controllerForParentWindow:test_window()];
     EXPECT_TRUE(controller);
-    [controller parentViewDidBecomeActive:active_tab_view_];
+
+    [controller hideSheet];
+    CustomConstrainedWindowSheet* sheet =
+        [sheets_ objectAtIndex:[tab_views_ indexOfObject:active_tab_view_]];
+    EXPECT_TRUE(sheet);
+    [controller showSheet:sheet forParentView:active_tab_view_];
   }
 
   NSRect GetViewFrameInScreenCoordinates(NSView* view) {
@@ -151,8 +168,14 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
            NSMaxY(GetViewFrameInScreenCoordinates(parent_view));
   }
 
-  base::scoped_nsobject<NSWindow> sheet_window_;
-  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet_;
+  base::scoped_nsobject<NSMutableArray> sheet_windows_;
+  NSWindow* sheet_window0_;
+  NSWindow* sheet_window1_;
+  NSWindow* sheet_window_;
+  base::scoped_nsobject<NSMutableArray> sheets_;
+  CustomConstrainedWindowSheet* sheet0_;
+  CustomConstrainedWindowSheet* sheet1_;
+  CustomConstrainedWindowSheet* sheet_;
   base::scoped_nsobject<ConstrainedWindowSheetController> controller_;
   base::scoped_nsobject<NSMutableArray> tab_views_;
   NSView* tab_view_parent_;
@@ -185,17 +208,6 @@ TEST_F(ConstrainedWindowSheetControllerTest, SwitchTabs) {
   ActivateTabView([tab_views_ objectAtIndex:0]);
   EXPECT_TRUE([sheet_window_ isVisible]);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
-}
-
-// Test that adding a sheet to an inactive view doesn't show it.
-TEST_F(ConstrainedWindowSheetControllerTest, AddToInactiveTab) {
-  ActivateTabView(tab0_);
-  [controller_ showSheet:sheet_ forParentView:tab1_];
-  EXPECT_EQ(0.0, [sheet_window_ alphaValue]);
-
-  ActivateTabView(tab1_);
-  EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
-  VerifySheetXPosition([sheet_window_ frame], tab1_);
 }
 
 // Test that two parent windows with two sheet controllers don't conflict.
@@ -297,22 +309,4 @@ TEST_F(ConstrainedWindowSheetControllerTest, SystemSheet) {
   [controller_ closeSheet:system_sheet];
   EXPECT_FALSE([[alert window] isVisible]);
   EXPECT_EQ(kSystemSheetReturnCode, [system_sheet returnCode]);
-}
-
-// Test showing a system sheet on an inactive tab.
-TEST_F(ConstrainedWindowSheetControllerTest, SystemSheetAddToInactiveTab) {
-  base::scoped_nsobject<ConstrainedWindowSystemSheetTest> system_sheet(
-      [[ConstrainedWindowSystemSheetTest alloc] init]);
-  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
-  [system_sheet setAlert:alert];
-
-  EXPECT_FALSE([[alert window] isVisible]);
-  [controller_ showSheet:system_sheet forParentView:tab1_];
-  EXPECT_FALSE([[alert window] isVisible]);
-
-  ActivateTabView(tab1_);
-  EXPECT_TRUE([[alert window] isVisible]);
-  EXPECT_EQ(1.0, [[alert window] alphaValue]);
-
-  [controller_ closeSheet:system_sheet];
 }

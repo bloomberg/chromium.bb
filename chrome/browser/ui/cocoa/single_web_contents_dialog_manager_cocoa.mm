@@ -18,8 +18,7 @@ SingleWebContentsDialogManagerCocoa::SingleWebContentsDialogManagerCocoa(
     : client_(client),
       sheet_([sheet retain]),
       delegate_(delegate),
-      host_(nullptr),
-      shown_(false) {
+      host_(nullptr) {
   DCHECK(client);
   client->set_manager(this);
 }
@@ -28,9 +27,6 @@ SingleWebContentsDialogManagerCocoa::~SingleWebContentsDialogManagerCocoa() {
 }
 
 void SingleWebContentsDialogManagerCocoa::Show() {
-  if (shown_)
-    return;
-
   // If a dialog is initially shown on a hidden/background WebContents, the
   // |delegate_| will defer the Show() until the WebContents is shown. If the
   // defer happens during tab closure or tab dragging, a suspected data race or
@@ -47,12 +43,15 @@ void SingleWebContentsDialogManagerCocoa::Show() {
   NSWindow* parent_window =
       delegate_->GetWebContents()->GetTopLevelNativeWindow();
 
-  shown_ = true;
   [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
       showSheet:sheet_ forParentView:parent_view];
 }
 
 void SingleWebContentsDialogManagerCocoa::Hide() {
+  NSWindow* parent_window =
+      delegate_->GetWebContents()->GetTopLevelNativeWindow();
+  [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
+      hideSheet];
 }
 
 void SingleWebContentsDialogManagerCocoa::Close() {
