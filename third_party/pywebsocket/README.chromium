@@ -1,9 +1,9 @@
 Name: pywebsocket
 Short Name: pywebsocket
-URL: http://code.google.com/p/pywebsocket/
+URL: https://github.com/google/pywebsocket/
 Version: 0
-License: New BSD License
-License File: src/COPYING
+License: New BSD
+License File: src/LICENSE
 Security Critical: no
 
 Description:
