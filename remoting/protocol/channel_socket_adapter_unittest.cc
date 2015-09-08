@@ -49,8 +49,9 @@ class MockTransportChannel : public cricket::TransportChannel {
   MOCK_METHOD1(SetSrtpCiphers, bool(const std::vector<std::string>& ciphers));
   MOCK_METHOD1(GetSrtpCipher, bool(std::string* cipher));
   MOCK_METHOD1(GetSslCipher, bool(std::string* cipher));
-  MOCK_CONST_METHOD1(GetLocalIdentity, bool(rtc::SSLIdentity** identity));
-  MOCK_CONST_METHOD1(GetRemoteCertificate,
+  MOCK_CONST_METHOD0(GetLocalCertificate,
+                     rtc::scoped_refptr<rtc::RTCCertificate>());
+  MOCK_CONST_METHOD1(GetRemoteSSLCertificate,
                      bool(rtc::SSLCertificate** cert));
   MOCK_METHOD6(ExportKeyingMaterial, bool(const std::string& label,
                                           const uint8* context,
