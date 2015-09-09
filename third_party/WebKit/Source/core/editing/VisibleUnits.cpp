@@ -1029,58 +1029,59 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
     return createVisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
 }
 
-static bool inSameLogicalLine(const VisiblePosition& a, const VisiblePosition& b)
+// TODO(yosin) Rename this function to reflect the fact it ignores bidi levels.
+VisiblePosition endOfLine(const VisiblePosition& currentPosition)
 {
-    return a.isNotNull() && logicalStartOfLine(a).deepEquivalent() == logicalStartOfLine(b).deepEquivalent();
-}
-
-static VisiblePosition endOfLine(const VisiblePosition& c, LineEndpointComputationMode mode)
-{
-    // TODO: this is the current behavior that might need to be fixed.
+    // TODO(yosin) this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-    VisiblePosition visPos = endPositionForLine(c, mode);
+    VisiblePosition visPos = endPositionForLine(currentPosition, UseInlineBoxOrdering);
 
-    if (mode == UseLogicalOrdering) {
-        // Make sure the end of line is at the same line as the given input position. For a wrapping line, the logical end
-        // position for the not-last-2-lines might incorrectly hand back the logical beginning of the next line.
-        // For example, <div contenteditable dir="rtl" style="line-break:before-white-space">abcdefg abcdefg abcdefg
-        // a abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg </div>
-        // In this case, use the previous position of the computed logical end position.
-        if (!inSameLogicalLine(c, visPos))
-            visPos = previousPositionOf(visPos);
-
-        if (ContainerNode* editableRoot = highestEditableRoot(c.deepEquivalent())) {
-            if (!editableRoot->contains(visPos.deepEquivalent().computeContainerNode()))
-                return createVisiblePosition(lastPositionInNode(editableRoot));
-        }
-
-        return honorEditingBoundaryAtOrAfter(visPos, c.deepEquivalent());
-    }
-
-    // Make sure the end of line is at the same line as the given input position. Else use the previous position to
-    // obtain end of line. This condition happens when the input position is before the space character at the end
-    // of a soft-wrapped non-editable line. In this scenario, endPositionForLine would incorrectly hand back a position
-    // in the next line instead. This fix is to account for the discrepancy between lines with webkit-line-break:after-white-space style
-    // versus lines without that style, which would break before a space by default.
-    if (!inSameLine(c, visPos)) {
-        visPos = previousPositionOf(c);
+    // Make sure the end of line is at the same line as the given input
+    // position. Else use the previous position to obtain end of line. This
+    // condition happens when the input position is before the space character
+    // at the end of a soft-wrapped non-editable line. In this scenario,
+    // |endPositionForLine()| would incorrectly hand back a position in the next
+    // line instead. This fix is to account for the discrepancy between lines
+    // with "webkit-line-break:after-white-space" style versus lines without
+    // that style, which would break before a space by default.
+    if (!inSameLine(currentPosition, visPos)) {
+        visPos = previousPositionOf(currentPosition);
         if (visPos.isNull())
             return VisiblePosition();
         visPos = endPositionForLine(visPos, UseInlineBoxOrdering);
     }
 
-    return honorEditingBoundaryAtOrAfter(visPos, c.deepEquivalent());
+    return honorEditingBoundaryAtOrAfter(visPos, currentPosition.deepEquivalent());
 }
 
-// FIXME: Rename this function to reflect the fact it ignores bidi levels.
-VisiblePosition endOfLine(const VisiblePosition& currentPosition)
+static bool inSameLogicalLine(const VisiblePosition& a, const VisiblePosition& b)
 {
-    return endOfLine(currentPosition, UseInlineBoxOrdering);
+    return a.isNotNull() && logicalStartOfLine(a).deepEquivalent() == logicalStartOfLine(b).deepEquivalent();
 }
 
 VisiblePosition logicalEndOfLine(const VisiblePosition& currentPosition)
 {
-    return endOfLine(currentPosition, UseLogicalOrdering);
+    // TODO(yosin) this is the current behavior that might need to be fixed.
+    // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
+    VisiblePosition visPos = endPositionForLine(currentPosition, UseLogicalOrdering);
+
+    // Make sure the end of line is at the same line as the given input
+    // position. For a wrapping line, the logical end position for the
+    // not-last-2-lines might incorrectly hand back the logical beginning of the
+    // next line. For example,
+    // <div contenteditable dir="rtl" style="line-break:before-white-space">xyz
+    // a xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz </div>
+    // In this case, use the previous position of the computed logical end
+    // position.
+    if (!inSameLogicalLine(currentPosition, visPos))
+        visPos = previousPositionOf(visPos);
+
+    if (ContainerNode* editableRoot = highestEditableRoot(currentPosition.deepEquivalent())) {
+        if (!editableRoot->contains(visPos.deepEquivalent().computeContainerNode()))
+            return createVisiblePosition(lastPositionInNode(editableRoot));
+    }
+
+    return honorEditingBoundaryAtOrAfter(visPos, currentPosition.deepEquivalent());
 }
 
 template <typename Strategy>
