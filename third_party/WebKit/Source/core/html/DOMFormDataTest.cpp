@@ -63,15 +63,15 @@ TEST(DOMFormDataTest, opacityHas)
     fd->append("name1", "value1");
 
     EXPECT_TRUE(fd->has("name1"));
-    EXPECT_TRUE(fd->hasEntry("name1"));
+    EXPECT_EQ(1u, fd->size());
 
     fd->makeOpaque();
 
     // Web-exposed interface should be opaque.
     EXPECT_FALSE(fd->has("name1"));
 
-    // Internal interface should be uneffected.
-    EXPECT_TRUE(fd->hasEntry("name1"));
+    // Internal collection should be uneffected.
+    EXPECT_EQ(1u, fd->size());
 }
 
 } // namespace blink

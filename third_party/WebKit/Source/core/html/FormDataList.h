@@ -102,11 +102,9 @@ public:
         appendItem(Item(encodeAndNormalize(key), blob, filename));
     }
 
-    void deleteEntry(const String& key);
     Entry getEntry(const String& key) const;
     Entry getEntry(size_t index) const;
     HeapVector<Entry> getAll(const String& key) const;
-    bool hasEntry(const String& key) const;
     size_t size() const { return m_items.size(); }
 
     const FormDataListItems& items() const { return m_items; }

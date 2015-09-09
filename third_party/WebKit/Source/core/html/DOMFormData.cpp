@@ -120,6 +120,19 @@ void DOMFormData::append(ExecutionContext* context, const String& name, Blob* bl
     appendBlob(name, blob, filename);
 }
 
+void DOMFormData::deleteEntry(const String& name)
+{
+    const CString keyData = encodeAndNormalize(name);
+    size_t i = 0;
+    while (i < m_items.size()) {
+        if (m_items[i].key() == keyData) {
+            m_items.remove(i);
+        } else {
+            ++i;
+        }
+    }
+}
+
 void DOMFormData::get(const String& name, FormDataEntryValue& result)
 {
     if (m_opaque)
@@ -160,7 +173,12 @@ bool DOMFormData::has(const String& name)
 {
     if (m_opaque)
         return false;
-    return hasEntry(name);
+    const CString keyData = encodeAndNormalize(name);
+    for (const Item& item : items()) {
+        if (item.key() == keyData)
+            return true;
+    }
+    return false;
 }
 
 void DOMFormData::set(const String& name, const String& value)

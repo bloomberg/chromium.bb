@@ -68,6 +68,7 @@ public:
     // FormData interface.
     void append(const String& name, const String& value);
     void append(ExecutionContext*, const String& name, Blob*, const String& filename = String());
+    void deleteEntry(const String& name);
     void get(const String& name, FormDataEntryValue& result);
     HeapVector<FormDataEntryValue> getAll(const String& name);
     bool has(const String& name);

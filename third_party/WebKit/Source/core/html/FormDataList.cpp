@@ -38,20 +38,6 @@ void FormDataList::appendItem(const FormDataList::Item& item)
     m_items.append(item);
 }
 
-void FormDataList::deleteEntry(const String& key)
-{
-    const CString keyData = encodeAndNormalize(key);
-    size_t i = 0;
-    while (i < m_items.size()) {
-        if (m_items[i].key() == keyData) {
-            m_items.remove(i);
-        } else {
-            ++i;
-        }
-    }
-    return;
-}
-
 FormDataList::Entry FormDataList::getEntry(const String& key) const
 {
     const CString keyData = encodeAndNormalize(key);
@@ -109,16 +95,6 @@ FormDataList::Entry FormDataList::itemsToEntry(const FormDataList::Item& item) c
     if (filename.isNull())
         filename = "blob";
     return Entry(name, File::create(filename, currentTimeMS(), item.blob()->blobDataHandle()));
-}
-
-bool FormDataList::hasEntry(const String& key) const
-{
-    const CString keyData = encodeAndNormalize(key);
-    for (const Item& item : items()) {
-        if (item.key() == keyData)
-            return true;
-    }
-    return false;
 }
 
 PassRefPtr<FormData> FormDataList::createFormData(FormData::EncodingType encodingType)
