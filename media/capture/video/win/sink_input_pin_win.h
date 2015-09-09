@@ -28,7 +28,9 @@ class SinkInputPin : public PinBase {
                                const BITMAPINFOHEADER& info_header);
   // Returns the capability that is negotiated when this
   // pin is connected to a media filter.
-  const VideoCaptureFormat& ResultingFormat();
+  const VideoCaptureFormat& resulting_format() const {
+    return resulting_format_;
+  }
 
   // Implement PinBase.
   bool IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) override;
