@@ -157,6 +157,10 @@ void LayoutBox::styleWillChange(StyleDifference diff, const ComputedStyle& newSt
 {
     const ComputedStyle* oldStyle = style();
     if (oldStyle) {
+        LayoutFlowThread* flowThread = flowThreadContainingBlock();
+        if (flowThread && flowThread != this)
+            flowThread->flowThreadDescendantStyleWillChange(this, diff, newStyle);
+
         // The background of the root element or the body element could propagate up to
         // the canvas. Just dirty the entire canvas when our style changes substantially.
         if ((diff.needsPaintInvalidation() || diff.needsLayout()) && node()
@@ -251,6 +255,12 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
         placeholder->layoutObjectInFlowThreadStyleDidChange(oldStyle);
 
     updateSlowRepaintStatusAfterStyleChange();
+
+    if (oldStyle) {
+        LayoutFlowThread* flowThread = flowThreadContainingBlock();
+        if (flowThread && flowThread != this)
+            flowThread->flowThreadDescendantStyleDidChange(this, diff, *oldStyle);
+    }
 }
 
 void LayoutBox::updateSlowRepaintStatusAfterStyleChange()

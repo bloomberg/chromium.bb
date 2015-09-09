@@ -218,8 +218,8 @@ private:
     void skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) override;
     void flowThreadDescendantWasInserted(LayoutObject*) final;
     void flowThreadDescendantWillBeRemoved(LayoutObject*) final;
-    void flowThreadDescendantStyleWillChange(LayoutObject*, StyleDifference, const ComputedStyle& newStyle) override;
-    void flowThreadDescendantStyleDidChange(LayoutObject*, StyleDifference, const ComputedStyle& oldStyle) override;
+    void flowThreadDescendantStyleWillChange(LayoutBox*, StyleDifference, const ComputedStyle& newStyle) override;
+    void flowThreadDescendantStyleDidChange(LayoutBox*, StyleDifference, const ComputedStyle& oldStyle) override;
     void computePreferredLogicalWidths() override;
     void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     void updateLogicalWidth() override;

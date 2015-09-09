@@ -837,42 +837,28 @@ static inline bool needsToInsertIntoFlowThread(const ComputedStyle& oldStyle, co
     return (!newStyle.hasOutOfFlowPosition() && oldStyle.hasOutOfFlowPosition()) || needsToReinsertIntoFlowThread(oldStyle, newStyle);
 }
 
-void LayoutMultiColumnFlowThread::flowThreadDescendantStyleWillChange(LayoutObject* descendant, StyleDifference diff, const ComputedStyle& newStyle)
+void LayoutMultiColumnFlowThread::flowThreadDescendantStyleWillChange(LayoutBox* descendant, StyleDifference diff, const ComputedStyle& newStyle)
 {
-    if (descendant->isText()) {
-        // Text nodes inherit all properties from the parent node (including non-inheritable
-        // ones). We don't care what its 'position' is. In fact, we _must_ ignore it, since the
-        // parent may be the multicol container, and having that accidentally leaked into children
-        // of the multicol is bad.
-        return;
-    }
     if (needsToRemoveFromFlowThread(descendant->styleRef(), newStyle))
         flowThreadDescendantWillBeRemoved(descendant);
 }
 
-void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(LayoutObject* descendant, StyleDifference diff, const ComputedStyle& oldStyle)
+void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(LayoutBox* descendant, StyleDifference diff, const ComputedStyle& oldStyle)
 {
-    if (descendant->isText()) {
-        // Text nodes inherit all properties from the parent node (including non-inheritable
-        // ones). We don't care what its 'position' is. In fact, we _must_ ignore it, since the
-        // parent may be the multicol container, and having that accidentally leaked into children
-        // of the multicol is bad.
-        return;
-    }
     if (needsToInsertIntoFlowThread(oldStyle, descendant->styleRef())) {
         flowThreadDescendantWasInserted(descendant);
         return;
     }
     if (descendantIsValidColumnSpanner(descendant)) {
         // We went from being regular column content to becoming a spanner.
-        ASSERT(!toLayoutBox(descendant)->spannerPlaceholder());
+        ASSERT(!descendant->spannerPlaceholder());
 
         // First remove this as regular column content. Note that this will walk the entire subtree
         // of |descendant|. There might be spanners there (which won't be spanners anymore, since
         // we're not allowed to nest spanners), whose placeholders must die.
         flowThreadDescendantWillBeRemoved(descendant);
 
-        createAndInsertSpannerPlaceholder(toLayoutBox(descendant), nextInPreOrderAfterChildrenSkippingOutOfFlow(this, descendant));
+        createAndInsertSpannerPlaceholder(descendant, nextInPreOrderAfterChildrenSkippingOutOfFlow(this, descendant));
     }
 }
 

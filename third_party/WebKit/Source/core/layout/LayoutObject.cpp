@@ -1811,11 +1811,6 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
 
     diff = adjustStyleDifference(diff);
 
-    if (m_style) {
-        LayoutFlowThread* flowThread = flowThreadContainingBlock();
-        if (flowThread && flowThread != this)
-            flowThread->flowThreadDescendantStyleWillChange(this, diff, *style);
-    }
     styleWillChange(diff, *style);
 
     RefPtr<ComputedStyle> oldStyle = m_style.release();
@@ -1832,11 +1827,6 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
     bool doesNotNeedLayoutOrPaintInvalidation = !m_parent;
 
     styleDidChange(diff, oldStyle.get());
-    if (oldStyle.get()) {
-        LayoutFlowThread* flowThread = flowThreadContainingBlock();
-        if (flowThread && flowThread != this)
-            flowThread->flowThreadDescendantStyleDidChange(this, diff, *oldStyle.get());
-    }
 
     // FIXME: |this| might be destroyed here. This can currently happen for a LayoutTextFragment when
     // its first-letter block gets an update in LayoutTextFragment::styleDidChange. For LayoutTextFragment(s),
