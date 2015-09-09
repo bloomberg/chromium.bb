@@ -223,6 +223,12 @@ extern const char kQuickOfficeExtensionId[];
 // The extension id used for testing mimeHandlerPrivate.
 extern const char kMimeHandlerPrivateTestExtensionId[];
 
+// The extension id for the production version of Hangouts.
+extern const char kProdHangoutsExtensionId[];
+
+// Extension ids used by Hangouts.
+extern const char* const kHangoutsExtensionIds[6];
+
 }  // namespace extension_misc
 
 #endif  // EXTENSIONS_COMMON_CONSTANTS_H_

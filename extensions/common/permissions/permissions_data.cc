@@ -78,7 +78,7 @@ bool PermissionsData::ScriptsMayRequireActionForExtension(
 bool PermissionsData::ShouldSkipPermissionWarnings(
     const std::string& extension_id) {
   // See http://b/4946060 for more details.
-  return extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd");
+  return extension_id == extension_misc::kProdHangoutsExtensionId;
 }
 
 // static

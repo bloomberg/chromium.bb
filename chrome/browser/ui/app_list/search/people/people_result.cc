@@ -37,15 +37,6 @@ namespace {
 const char kImageSizePath[] = "s64-p/";
 const char kEmailUrlPrefix[] = "mailto:";
 
-const char* const kHangoutsExtensionIds[] = {
-  "nckgahadagoaajjgafhacjanaoiihapd",
-  "ljclpkphhpbpinifbeabbhlfddcpfdde",
-  "ppleadejekpmccmnpjdimmlfljlkdfej",
-  "eggnbpckecmjlblplehfpjjdhhidfdoj",
-  "jfjjdfefebklmdbmenmlehlopoocnoeh",
-  "knipolnnllmklapflnccelgolnpehhpl"
-};
-
 // Add a query parameter to specify the size to fetch the image in. The
 // original profile image can be of an arbitrary size, we ask the server to
 // crop it to a square 64x64 using its smart cropping algorithm.
@@ -188,12 +179,10 @@ void PeopleResult::SendEmail() {
 }
 
 void PeopleResult::RefreshHangoutsExtensionId() {
-  // TODO(rkc): Change this once we remove the hangoutsPrivate API.
-  // See crbug.com/306672
-  for (size_t i = 0; i < arraysize(kHangoutsExtensionIds); ++i) {
-    if (extensions::EventRouter::Get(profile_)->ExtensionHasEventListener(
-            kHangoutsExtensionIds[i], OnHangoutRequested::kEventName)) {
-      hangouts_extension_id_ = kHangoutsExtensionIds[i];
+  for (const char* id : extension_misc::kHangoutsExtensionIds) {
+    if (extensions::EventRouter::Get(profile_)
+            ->ExtensionHasEventListener(id, OnHangoutRequested::kEventName)) {
+      hangouts_extension_id_ = id;
       return;
     }
   }

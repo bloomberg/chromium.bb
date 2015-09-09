@@ -21,6 +21,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/constants.h"
 #include "ui/base/hit_test.h"
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
@@ -104,13 +105,13 @@ void PanelManager::SetDisplaySettingsProviderForTesting(
 
 // static
 bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-  // If --enable-panels is on, always use panels on Linux.
+  // If --enable-panels is on, always use panels.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePanels))
     return true;
 
-  // Otherwise, panels are only supported on tested window managers.
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  // On Linux, panels are only supported on tested window managers.
   ui::WindowManagerName wm_type = ui::GuessWindowManager();
   if (wm_type != ui::WM_COMPIZ &&
       wm_type != ui::WM_ICE_WM &&
@@ -123,18 +124,13 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
   }
 #endif  // USE_X11 && !OS_CHROMEOS
 
-  version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::STABLE ||
-      channel == version_info::Channel::BETA) {
-    return base::CommandLine::ForCurrentProcess()->HasSwitch(
-               switches::kEnablePanels) ||
-           extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd") ||
-           extension_id == std::string("ljclpkphhpbpinifbeabbhlfddcpfdde") ||
-           extension_id == std::string("ppleadejekpmccmnpjdimmlfljlkdfej") ||
-           extension_id == std::string("eggnbpckecmjlblplehfpjjdhhidfdoj");
+  // Without --enable-panels, only support Hangouts.
+  for (const char* id : extension_misc::kHangoutsExtensionIds) {
+    if (extension_id == id)
+      return true;
   }
 
-  return true;
+  return false;
 }
 
 // static

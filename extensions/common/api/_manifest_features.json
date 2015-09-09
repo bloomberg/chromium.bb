@@ -30,10 +30,13 @@
     "extension_types": ["platform_app"],
     "min_manifest_version": 2,
     "whitelist": [
-      "nckgahadagoaajjgafhacjanaoiihapd",  // Google Talk prod
-      "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Google Talk beta
-      "ppleadejekpmccmnpjdimmlfljlkdfej",  // Google Talk alpha
-      "ljclpkphhpbpinifbeabbhlfddcpfdde",   // Google Talk debug
+      // Keep this list in sync with extensions_misc::kHangoutsExtensionIds but
+      // omit the Packaged App ids.
+      "nckgahadagoaajjgafhacjanaoiihapd",  // Hangouts Production.
+      "ljclpkphhpbpinifbeabbhlfddcpfdde",  // Hangouts Debug.
+      "ppleadejekpmccmnpjdimmlfljlkdfej",  // Hangouts Alpha.
+      "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Hangouts Beta.
+
       "lphgohfeebnhcpiohjndkgbhhkoapkjc" // Apps Debugger
     ]
   },
@@ -179,7 +182,7 @@
     "channel": "stable",
     "extension_types": [
       "platform_app"
-    ]   
+    ]
   },
   "launcher_page": {
     "channel": "stable",

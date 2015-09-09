@@ -93,4 +93,15 @@ const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
 const char kMimeHandlerPrivateTestExtensionId[] =
     "oickdpebdnfbgkcaoklfcdhjniefkcji";
 
+const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";
+const char* const kHangoutsExtensionIds[6] = {
+    kProdHangoutsExtensionId,
+    "ljclpkphhpbpinifbeabbhlfddcpfdde",  // Debug.
+    "ppleadejekpmccmnpjdimmlfljlkdfej",  // Alpha.
+    "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Beta.
+    "jfjjdfefebklmdbmenmlehlopoocnoeh",  // Packaged App Debug.
+    "knipolnnllmklapflnccelgolnpehhpl"   // Packaged App Prod.
+    // Keep in sync with _api_features.json and _manifest_features.json.
+};
+
 }  // namespace extension_misc
