@@ -24,13 +24,17 @@ void UsbService::Observer::OnDeviceRemovedCleanup(
     scoped_refptr<UsbDevice> device) {
 }
 
+void UsbService::Observer::WillDestroyUsbService() {}
+
 // static
 scoped_ptr<UsbService> UsbService::Create(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
   return make_scoped_ptr(new UsbServiceImpl(blocking_task_runner));
 }
 
-UsbService::~UsbService() {}
+UsbService::~UsbService() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, WillDestroyUsbService());
+}
 
 UsbService::UsbService() {}
 

@@ -42,6 +42,9 @@ class UsbService : public base::NonThreadSafe {
     // For observers that need to process device removal after others have run.
     // Should not depend on any other service's knowledge of connected devices.
     virtual void OnDeviceRemovedCleanup(scoped_refptr<UsbDevice> device);
+
+    // Notifies the observer that the UsbService it depends on is shutting down.
+    virtual void WillDestroyUsbService();
   };
 
   // The file task runner reference is used for blocking I/O operations.

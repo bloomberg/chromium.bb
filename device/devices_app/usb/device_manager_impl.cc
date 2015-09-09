@@ -153,6 +153,8 @@ class DeviceManagerImpl::ServiceThreadHelper
                               device->guid()));
   }
 
+  void WillDestroyUsbService() override { observer_.RemoveAll(); }
+
   // base::MessageLoop::DestructionObserver
   void WillDestroyCurrentMessageLoop() override { delete this; }
 
