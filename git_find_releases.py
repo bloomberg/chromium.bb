@@ -19,7 +19,12 @@ import git_common as git
 
 
 def GetNameForCommit(sha1):
-  return re.sub(r'~.*$', '', git.run('name-rev', '--tags', '--name-only', sha1))
+  name = re.sub(r'~.*$', '', git.run('name-rev', '--tags', '--name-only', sha1))
+  if name == 'undefined':
+    name = git.run(
+        'name-rev', '--refs', 'remotes/branch-heads/*', '--name-only',
+        sha1) + ' [untagged]'
+  return name
 
 
 def GetMergesForCommit(sha1):
