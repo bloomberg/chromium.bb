@@ -7,6 +7,7 @@
 #include "base/test/test_timeouts.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/logging/init_logging.h"
 #include "mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle handle) {
@@ -15,6 +16,7 @@ MojoResult MojoMain(MojoHandle handle) {
 
   // Initialize the current process Commandline and test timeouts.
   mojo::ApplicationRunner::InitBaseCommandLine();
+  mojo::logging::InitLogging();
   TestTimeouts::Initialize();
 
   return mojo::test::RunAllTests(handle);

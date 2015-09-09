@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 #define COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "components/web_view/frame.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 
@@ -32,6 +33,7 @@ class FrameTree {
   // See Frame for details on app id's.
   FrameTree(uint32_t root_app_id,
             mojo::View* view,
+            mojo::ViewTreeClientPtr view_tree_client,
             FrameTreeDelegate* delegate,
             FrameTreeClient* root_client,
             scoped_ptr<FrameUserData> user_data,
@@ -56,10 +58,10 @@ class FrameTree {
   // that it is sharing the FrameTreeClient/FrameTreeServer of |parent|. There
   // may or may not be a View identified by |frame_id| yet. See Frame for
   // details.
-  void CreateSharedFrame(Frame* parent,
-                         uint32_t frame_id,
-                         uint32_t app_id,
-                         const Frame::ClientPropertyMap& client_properties);
+  Frame* CreateSharedFrame(Frame* parent,
+                           uint32_t frame_id,
+                           uint32_t app_id,
+                           const Frame::ClientPropertyMap& client_properties);
 
  private:
   friend class Frame;

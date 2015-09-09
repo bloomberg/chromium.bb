@@ -69,10 +69,9 @@ void WebViewImpl::OnLoad() {
 
   FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
   const uint32_t content_handler_id = frame_connection->GetContentHandlerID();
-  frame_tree_.reset(new FrameTree(content_handler_id, content_, this,
-                                  frame_tree_client, frame_connection.Pass(),
-                                  client_properties));
-  content_->Embed(view_tree_client.Pass());
+  frame_tree_.reset(new FrameTree(
+      content_handler_id, content_, view_tree_client.Pass(), this,
+      frame_tree_client, frame_connection.Pass(), client_properties));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

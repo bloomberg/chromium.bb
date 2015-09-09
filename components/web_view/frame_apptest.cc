@@ -175,8 +175,8 @@ class TestFrameTreeClient : public FrameTreeClient {
 TEST_F(FrameTest, RootGetsConnect) {
   TestFrameTreeDelegate tree_delegate;
   TestFrameTreeClient root_client;
-  FrameTree tree(0u, window_manager()->GetRoot(), &tree_delegate, &root_client,
-                 nullptr, Frame::ClientPropertyMap());
+  FrameTree tree(0u, window_manager()->GetRoot(), nullptr, &tree_delegate,
+                 &root_client, nullptr, Frame::ClientPropertyMap());
   ASSERT_EQ(1, root_client.connect_count());
   mojo::Array<FrameDataPtr> frames = root_client.connect_frames();
   ASSERT_EQ(1u, frames.size());
@@ -188,8 +188,8 @@ TEST_F(FrameTest, RootGetsConnect) {
 TEST_F(FrameTest, SingleChild) {
   TestFrameTreeDelegate tree_delegate;
   TestFrameTreeClient root_client;
-  FrameTree tree(0u, window_manager()->GetRoot(), &tree_delegate, &root_client,
-                 nullptr, Frame::ClientPropertyMap());
+  FrameTree tree(0u, window_manager()->GetRoot(), nullptr, &tree_delegate,
+                 &root_client, nullptr, Frame::ClientPropertyMap());
 
   View* child = window_manager()->CreateView();
   EXPECT_EQ(nullptr, Frame::FindFirstFrameAncestor(child));

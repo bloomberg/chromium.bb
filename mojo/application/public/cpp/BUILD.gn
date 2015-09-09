@@ -88,6 +88,7 @@ source_set("test_support") {
     "//base",
     "//base/test:test_support",
     "//mojo/application/public/interfaces:interfaces_cpp_sources",
+    "//mojo/logging",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",

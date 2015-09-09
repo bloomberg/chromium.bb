@@ -29,6 +29,7 @@ DEFINE_LOCAL_VIEW_PROPERTY_KEY(Frame*, kFrame, nullptr);
 namespace {
 
 const uint32_t kNoParentId = 0u;
+const mojo::ConnectionSpecificId kInvalidConnectionId = 0u;
 
 FrameDataPtr FrameToFrameData(const Frame* frame) {
   FrameDataPtr frame_data(FrameData::New());
@@ -57,6 +58,7 @@ Frame::Frame(FrameTree* tree,
              const ClientPropertyMap& client_properties)
     : tree_(tree),
       view_(nullptr),
+      embedded_connection_id_(kInvalidConnectionId),
       id_(frame_id),
       app_id_(app_id),
       parent_(nullptr),
@@ -66,7 +68,7 @@ Frame::Frame(FrameTree* tree,
       loading_(false),
       progress_(0.f),
       client_properties_(client_properties),
-      weak_factory_(this),
+      embed_weak_ptr_factory_(this),
       navigate_weak_ptr_factory_(this) {
   if (view)
     SetView(view);
@@ -86,7 +88,7 @@ Frame::~Frame() {
   }
 }
 
-void Frame::Init(Frame* parent) {
+void Frame::Init(Frame* parent, mojo::ViewTreeClientPtr view_tree_client) {
   {
     // Set the FrameTreeClient to null so that we don't notify the client of the
     // add before OnConnect().
@@ -96,7 +98,7 @@ void Frame::Init(Frame* parent) {
       parent->Add(this);
   }
 
-  InitClient(ClientType::NEW_APP, nullptr);
+  InitClient(ClientType::NEW_APP, nullptr, view_tree_client.Pass());
 }
 
 // static
@@ -145,7 +147,16 @@ double Frame::GatherProgress(int* frame_count) const {
 
 void Frame::InitClient(
     ClientType client_type,
-    scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding) {
+    scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding,
+    mojo::ViewTreeClientPtr view_tree_client) {
+  if (client_type == ClientType::NEW_APP && view_tree_client.get()) {
+    embedded_connection_id_ = kInvalidConnectionId;
+    embed_weak_ptr_factory_.InvalidateWeakPtrs();
+    view_->Embed(
+        view_tree_client.Pass(),
+        base::Bind(&Frame::OnEmbedAck, embed_weak_ptr_factory_.GetWeakPtr()));
+  }
+
   std::vector<const Frame*> frames;
   tree_->root()->BuildFrameTree(&frames);
 
@@ -199,10 +210,13 @@ void Frame::ChangeClient(FrameTreeClient* frame_tree_client,
   progress_ = 0.f;
   app_id_ = app_id;
 
-  if (client_type == ClientType::NEW_APP)
-    view_->Embed(view_tree_client.Pass());
+  InitClient(client_type, frame_tree_server_binding.Pass(),
+             view_tree_client.Pass());
+}
 
-  InitClient(client_type, frame_tree_server_binding.Pass());
+void Frame::OnEmbedAck(bool success, mojo::ConnectionSpecificId connection_id) {
+  if (success)
+    embedded_connection_id_ = connection_id;
 }
 
 void Frame::SetView(mojo::View* view) {
@@ -400,7 +414,6 @@ void Frame::OnViewDestroying(mojo::View* view) {
   // destructor.
   view_ownership_ = ViewOwnership::DOESNT_OWN_VIEW;
 
-  // TODO(sky): Change browser to create a child for each FrameTree.
   if (tree_->root() == this) {
     view_->RemoveObserver(this);
     view_ = nullptr;
@@ -463,29 +476,33 @@ void Frame::OnCreatedFrame(
     uint32_t parent_id,
     uint32_t frame_id,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties) {
-  // TODO(sky): I need a way to verify the frame_id. Unfortunately the code here
-  // doesn't know the connection id of the embedder, so it's not possible to
-  // do it.
+  if ((frame_id >> 16) != embedded_connection_id_) {
+    // TODO(sky): kill connection here?
+    // TODO(sky): there is a race in that there is no guarantee we received the
+    // connection id before the frame tries to create a new frame. Ideally we
+    // could pause the frame until we get the connection id, but bindings don't
+    // offer such an API.
+    DVLOG(1) << "OnCreatedFrame supplied invalid frame id, expecting"
+             << embedded_connection_id_;
+    return;
+  }
 
   if (FindFrame(frame_id)) {
     // TODO(sky): kill connection here?
-    DVLOG(1) << "OnCreatedLocalFrame supplied id of existing frame.";
+    DVLOG(1) << "OnCreatedFrame supplied id of existing frame.";
     return;
   }
 
   Frame* parent_frame = FindFrameWithIdFromSameApp(parent_id);
   if (!parent_frame) {
-    DVLOG(1) << "OnCreatedLocalFrame supplied invalid parent_id.";
+    DVLOG(1) << "OnCreatedFrame supplied invalid parent_id.";
     return;
   }
 
-  if (parent_frame != this && parent_frame->frame_tree_client_) {
-    DVLOG(1) << "OnCreatedLocalFrame supplied parent from another connection.";
-    return;
-  }
-
-  tree_->CreateSharedFrame(parent_frame, frame_id, app_id_,
-                           client_properties.To<ClientPropertyMap>());
+  Frame* child_frame =
+      tree_->CreateSharedFrame(parent_frame, frame_id, app_id_,
+                               client_properties.To<ClientPropertyMap>());
+  child_frame->embedded_connection_id_ = embedded_connection_id_;
 }
 
 void Frame::RequestNavigate(NavigationTargetType target_type,

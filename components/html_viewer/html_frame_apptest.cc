@@ -209,12 +209,11 @@ class HTMLFrameTest : public ViewManagerTestBase {
     FrameConnection* result = frame_connection.get();
     FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
     ViewTreeClientPtr tree_client = frame_connection->GetViewTreeClient();
-    frame_tree_.reset(new FrameTree(result->GetContentHandlerID(), view,
-                                    frame_tree_delegate_.get(),
-                                    frame_tree_client, frame_connection.Pass(),
-                                    Frame::ClientPropertyMap()));
+    frame_tree_.reset(
+        new FrameTree(result->GetContentHandlerID(), view, tree_client.Pass(),
+                      frame_tree_delegate_.get(), frame_tree_client,
+                      frame_connection.Pass(), Frame::ClientPropertyMap()));
     frame_tree_delegate_->set_frame_tree(frame_tree_.get());
-    view->Embed(tree_client.Pass());
     return result;
   }
 

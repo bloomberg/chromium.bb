@@ -13,6 +13,7 @@ namespace web_view {
 
 FrameTree::FrameTree(uint32_t root_app_id,
                      mojo::View* view,
+                     mojo::ViewTreeClientPtr view_tree_client,
                      FrameTreeDelegate* delegate,
                      FrameTreeClient* root_client,
                      scoped_ptr<FrameUserData> user_data,
@@ -29,7 +30,7 @@ FrameTree::FrameTree(uint32_t root_app_id,
             client_properties),
       progress_(0.f),
       change_id_(1u) {
-  root_.Init(nullptr);
+  root_.Init(nullptr, view_tree_client.Pass());
 }
 
 FrameTree::~FrameTree() {
@@ -50,7 +51,7 @@ Frame* FrameTree::CreateAndAddFrame(mojo::View* view,
                                user_data.Pass(), Frame::ClientPropertyMap());
 }
 
-void FrameTree::CreateSharedFrame(
+Frame* FrameTree::CreateSharedFrame(
     Frame* parent,
     uint32_t frame_id,
     uint32_t app_id,
@@ -58,8 +59,8 @@ void FrameTree::CreateSharedFrame(
   mojo::View* frame_view = root_.view()->GetChildById(frame_id);
   // |frame_view| may be null if the View hasn't been created yet. If this is
   // the case the View will be connected to the Frame in Frame::OnTreeChanged.
-  CreateAndAddFrameImpl(frame_view, frame_id, app_id, parent, nullptr, nullptr,
-                        client_properties);
+  return CreateAndAddFrameImpl(frame_view, frame_id, app_id, parent, nullptr,
+                               nullptr, client_properties);
 }
 
 uint32_t FrameTree::AdvanceChangeID() {
@@ -77,7 +78,7 @@ Frame* FrameTree::CreateAndAddFrameImpl(
   Frame* frame =
       new Frame(this, view, frame_id, app_id, ViewOwnership::OWNS_VIEW, client,
                 user_data.Pass(), client_properties);
-  frame->Init(parent);
+  frame->Init(parent, nullptr);
   return frame;
 }
 

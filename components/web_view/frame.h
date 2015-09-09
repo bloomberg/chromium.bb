@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -61,7 +62,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
         const ClientPropertyMap& client_properties);
   ~Frame() override;
 
-  void Init(Frame* parent);
+  void Init(Frame* parent, mojo::ViewTreeClientPtr view_tree_client);
 
   // Walks the View tree starting at |view| going up returning the first
   // Frame that is associated with |view|. For example, if |view|
@@ -124,13 +125,17 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   // connection lost (and assume the frame is being torn down) before the
   // OnConnect().
   void InitClient(ClientType client_type,
-                  scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding);
+                  scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding,
+                  mojo::ViewTreeClientPtr view_tree_client);
 
   // Callback from OnConnect(). This does nothing (other than destroying
   // |frame_tree_server_binding|). See InitClient() for details as to why
   // destruction of |frame_tree_server_binding| happens after OnConnect().
   static void OnConnectAck(
       scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding);
+
+  // Callback from OnEmbed().
+  void OnEmbedAck(bool success, mojo::ConnectionSpecificId connection_id);
 
   // Completes a navigation request; swapping the existing FrameTreeClient to
   // the supplied arguments.
@@ -212,6 +217,9 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   FrameTree* const tree_;
   // WARNING: this may be null. See class description for details.
   mojo::View* view_;
+  // The connection id returned from ViewManager::Embed(). Frames created by
+  // way of OnCreatedFrame() inherit the id from the parent.
+  mojo::ConnectionSpecificId embedded_connection_id_;
   // ID for the frame, which is the same as that of the view.
   const uint32_t id_;
   // ID of the app providing the FrameTreeClient and ViewTreeClient.
@@ -235,7 +243,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   scoped_ptr<mojo::Binding<FrameTreeServer>> frame_tree_server_binding_;
 
-  base::WeakPtrFactory<Frame> weak_factory_;
+  base::WeakPtrFactory<Frame> embed_weak_ptr_factory_;
 
   base::WeakPtrFactory<Frame> navigate_weak_ptr_factory_;
 
