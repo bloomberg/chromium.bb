@@ -151,10 +151,6 @@
   width: auto;
 }
 
-#content:not(.show-progress) #progress {
-  display: none;
-}
-
 .controls {
   -webkit-margin-start: -8px;
 }

@@ -35,19 +35,33 @@
 
         <div id="description"></div>
 
-        <paper-progress id="progress"></paper-progress>
+        <template is="dom-if" if="[[showProgress_]]">
+          <paper-progress id="progress"
+              indeterminate$="[[isIndeterminate_(data_.percent)]]"
+              value$="[[data_.percent]]"></paper-progress>
+        </template>
 
         <div id="safe" class="controls" hidden$="[[isDangerous_]]">
-          <paper-button id="show" on-click="onShowClick_"
-              i18n-content="controlShowInFolder" lowercase noink></paper-button>
-          <paper-button id="retry" on-click="onRetryClick_"
-              i18n-content="controlRetry"></paper-button>
-          <paper-button id="pause" on-click="onPauseClick_"
-              i18n-content="controlPause"></paper-button>
-          <paper-button id="resume" on-click="onResumeClick_"
-              i18n-content="controlResume"></paper-button>
-          <paper-button id="cancel" on-click="onCancelClick_"
-              i18n-content="controlCancel"></paper-button>
+          <template is="dom-if" if="[[completelyOnDisk_]]">
+            <paper-button id="show" on-click="onShowClick_"
+                lowercase noink>[[i18n_.show]]</paper-button>
+          </template>
+          <template is="dom-if" if="[[data_.retry]]">
+            <paper-button id="retry"
+                on-click="onRetryClick_">[[i18n_.retry]]</paper-button>
+          </template>
+          <template is="dom-if" if="[[isInProgress_]]">
+            <paper-button id="pause"
+                on-click="onPauseClick_">[[i18n_.pause]]</paper-button>
+          </template>
+          <template is="dom-if" if="[[data_.resume]]">
+            <paper-button id="resume"
+                on-click="onResumeClick_">[[i18n_.resume]]</paper-button>
+          </template>
+          <template is="dom-if" if="[[showCancel_]]">
+            <paper-button id="cancel"
+                on-click="onCancelClick_">[[i18n_.cancel]]</paper-button>
+          </template>
           <span id="controlled-by"
               i18n-values=".innerHTML:controlByExtension"></span>
         </div>

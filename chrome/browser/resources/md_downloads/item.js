@@ -40,9 +40,49 @@ cr.define('downloads', function() {
         observer: 'onScrollbarWidthChange_',
       },
 
+      completelyOnDisk_: {
+        type: Boolean,
+        value: true,
+        computed: 'computeCompletelyOnDisk_(' +
+            'data_.state, data_.file_externally_removed)',
+      },
+
+      i18n_: {
+        type: Object,
+        value: function() {
+          return {
+            cancel: loadTimeData.getString('controlCancel'),
+            pause: loadTimeData.getString('controlPause'),
+            resume: loadTimeData.getString('controlResume'),
+            retry: loadTimeData.getString('controlRetry'),
+            show: loadTimeData.getString('controlShowInFolder'),
+          };
+        },
+        readOnly: true,
+      },
+
       isDangerous_: {
         type: Boolean,
         value: false,
+        computed: 'computeIsDangerous_(data_.state)',
+      },
+
+      isInProgress_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeIsInProgress_(data_.state)',
+      },
+
+      showCancel_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShowCancel_(data_.state)',
+      },
+
+      showProgress_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShowProgress_(showCancel_, data_.percent)',
       },
 
       /** Only set when |isDangerous| is true. */
@@ -101,24 +141,15 @@ cr.define('downloads', function() {
       this.$.content.elevation = isActive ? 1 : 0;
 
       // Danger-dependent UI and controls.
-      var dangerText = this.getDangerText_(data);
-      this.isDangerous_ = !!dangerText;
       this.$.content.classList.toggle('dangerous', this.isDangerous_);
 
-      var description = dangerText || this.getStatusText_(data);
+      var description = this.getDangerText_(data) || this.getStatusText_(data);
 
       // Status goes in the "tag" (next to the file name) if there's no file.
       this.ensureTextIs_(this.$.description, isActive ? description : '');
       this.ensureTextIs_(this.$.tag, isActive ? '' : description);
 
-      /** @const */ var showProgress =
-          isFinite(data.percent) && !this.isDangerous_;
-      this.$.content.classList.toggle('show-progress', showProgress);
-
-      if (showProgress) {
-        this.$.progress.indeterminate = data.percent < 0;
-        this.$.progress.value = data.percent;
-      }
+      this.$.content.classList.toggle('show-progress', this.showProgress_);
 
       var hideRemove;
 
@@ -130,30 +161,13 @@ cr.define('downloads', function() {
             data.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED;
         hideRemove = true;
       } else {
-        /** @const */ var completelyOnDisk =
-            data.state == downloads.States.COMPLETE &&
-            !data.file_externally_removed;
-
         this.$['file-link'].href = data.url;
         this.ensureTextIs_(this.$['file-link'], data.file_name);
 
-        this.$['file-link'].hidden = !completelyOnDisk;
-        this.$.name.hidden = completelyOnDisk;
-        this.$.show.hidden = !completelyOnDisk;
+        this.$['file-link'].hidden = !this.completelyOnDisk_;
+        this.$.name.hidden = this.completelyOnDisk_;
 
-        this.$.retry.hidden = !data.retry;
-
-        /** @const */ var isInProgress =
-            data.state == downloads.States.IN_PROGRESS;
-        this.$.pause.hidden = !isInProgress;
-
-        this.$.resume.hidden = !data.resume;
-
-        /** @const */ var isPaused = data.state == downloads.States.PAUSED;
-        /** @const */ var showCancel = isPaused || isInProgress;
-        this.$.cancel.hidden = !showCancel;
-
-        hideRemove = showCancel ||
+        hideRemove = this.showCancel_ ||
             !loadTimeData.getBoolean('allowDeletingHistory');
 
         /** @const */ var controlledByExtension = data.by_ext_id &&
@@ -172,6 +186,39 @@ cr.define('downloads', function() {
       this.$.remove.style.visibility = hideRemove ? 'hidden' : '';
     },
 
+    /** @private */
+    computeCompletelyOnDisk_: function() {
+      return this.data_.state == downloads.States.COMPLETE &&
+             !this.data_.file_externally_removed;
+    },
+
+    /** @private */
+    computeDate_: function() {
+      assert(!this.hideDate);
+      return assert(this.data_.since_string || this.data_.date_string);
+    },
+
+    /** @private */
+    computeIsInProgress_: function() {
+      return this.data_.state == downloads.States.IN_PROGRESS;
+    },
+
+    /** @private */
+    computeIsDangerous_: function() {
+      return this.data_.state == downloads.States.DANGEROUS;
+    },
+
+    /** @private */
+    computeShowCancel_: function() {
+      return this.data_.state == downloads.States.IN_PROGRESS ||
+             this.data_.state == downloads.States.PAUSED;
+    },
+
+    /** @private */
+    computeShowProgress_: function() {
+      return this.showCancel_ && isFinite(this.data_.percent);
+    },
+
     /**
      * Overwrite |el|'s textContent if it differs from |text|. This is done
      * generally so quickly updating text can be copied via text selection.
@@ -182,12 +229,6 @@ cr.define('downloads', function() {
     ensureTextIs_: function(el, text) {
       if (el.textContent != text)
         el.textContent = text;
-    },
-
-    /** @private */
-    computeDate_: function() {
-      assert(!this.hideDate);
-      return assert(this.data_.since_string || this.data_.date_string);
     },
 
     /**
@@ -237,6 +278,12 @@ cr.define('downloads', function() {
       }
       assertNotReached();
       return '';
+    },
+
+    /** @private */
+    isIndeterminate_: function() {
+      assert(this.showProgress_);
+      return this.data_.percent == -1;
     },
 
     /** @private */

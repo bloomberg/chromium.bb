@@ -16,11 +16,11 @@ cr.define('downloads', function() {
                  '#content.is-active:not(.show-progress) #name');
     assert(this.addItem('name-file-link', '#file-link'));
     assert(this.addItem('url', '#url'));
-    assert(this.addItem('show-retry', '#show'));
-    assert(this.addItem('show-retry', '#retry'));
-    assert(this.addItem('pause-resume', '#pause'));
-    assert(this.addItem('pause-resume', '#resume'));
-    assert(this.addItem('cancel', '#cancel'));
+    this.addItem('show-retry', '#show');
+    this.addItem('show-retry', '#retry');
+    this.addItem('pause-resume', '#pause');
+    this.addItem('pause-resume', '#resume');
+    this.addItem('cancel', '#cancel');
     this.addItem('controlled-by', '#controlled-by a');
     assert(this.addItem('danger-remove-discard', '#discard'));
     assert(this.addItem('restore-save', '#save'));
