@@ -25,6 +25,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace ui {
 class MenuModel;
 }
@@ -155,6 +159,10 @@ class ASH_EXPORT ShellDelegate {
 
   // Get the product name.
   virtual base::string16 GetProductName() const = 0;
+
+  virtual void OpenKeyboardShortcutHelpPage() const {}
+
+  virtual gfx::Image GetDeprecatedAcceleratorImage() const = 0;
 };
 
 }  // namespace ash

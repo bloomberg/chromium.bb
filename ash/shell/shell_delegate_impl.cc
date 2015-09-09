@@ -24,6 +24,7 @@
 #include "components/user_manager/user_info_impl.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/image/image.h"
 
 namespace ash {
 namespace shell {
@@ -267,6 +268,10 @@ GPUSupport* ShellDelegateImpl::CreateGPUSupport() {
 
 base::string16 ShellDelegateImpl::GetProductName() const {
   return base::string16();
+}
+
+gfx::Image ShellDelegateImpl::GetDeprecatedAcceleratorImage() const {
+  return gfx::Image();
 }
 
 }  // namespace shell

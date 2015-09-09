@@ -60,6 +60,7 @@ class TestShellDelegate : public ShellDelegate {
                                    ash::ShelfItem* item) override;
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;
+  gfx::Image GetDeprecatedAcceleratorImage() const override;
 
   int num_exit_requests() const { return num_exit_requests_; }
 

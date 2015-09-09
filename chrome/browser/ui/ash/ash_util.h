@@ -7,6 +7,10 @@
 
 #include "ui/gfx/native_widget_types.h"
 
+namespace ui {
+class Accelerator;
+}  // namespace ui
+
 namespace chrome {
 
 // Returns true if Ash should be run at startup.
@@ -16,6 +20,10 @@ bool ShouldOpenAshOnStartup();
 // environment.
 bool IsNativeViewInAsh(gfx::NativeView native_view);
 bool IsNativeWindowInAsh(gfx::NativeWindow native_window);
+
+// Returns true if the given |accelerator| has been deprecated and hence can
+// be consumed by web contents if needed.
+bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator);
 
 }  // namespace chrome
 

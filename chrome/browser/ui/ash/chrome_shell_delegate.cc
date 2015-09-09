@@ -17,9 +17,14 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/prefs/pref_service.h"
@@ -31,6 +36,13 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
+
+namespace {
+
+const char kKeyboardShortcutHelpPageUrl[] =
+    "https://support.google.com/chromebook/answer/183101";
+
+}  // namespace
 
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
@@ -155,6 +167,29 @@ ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {
 
 base::string16 ChromeShellDelegate::GetProductName() const {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+}
+
+void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Browser* browser =
+      chrome::FindTabbedBrowser(profile, false, chrome::HOST_DESKTOP_TYPE_ASH);
+
+  if (!browser) {
+    browser = new Browser(
+        Browser::CreateParams(profile, chrome::HOST_DESKTOP_TYPE_ASH));
+    browser->window()->Activate();
+    browser->window()->Show();
+  }
+
+  chrome::NavigateParams params(browser, GURL(kKeyboardShortcutHelpPageUrl),
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.disposition = SINGLETON_TAB;
+  chrome::Navigate(&params);
+}
+
+gfx::Image ChromeShellDelegate::GetDeprecatedAcceleratorImage() const {
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_BLUETOOTH_KEYBOARD);
 }
 
 keyboard::KeyboardControllerProxy*

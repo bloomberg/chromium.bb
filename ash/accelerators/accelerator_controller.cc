@@ -36,6 +36,7 @@
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -53,16 +54,22 @@
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/env.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/screen.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notifier_settings.h"
 #include "ui/views/controls/webview/webview.h"
 
 #if defined(OS_CHROMEOS)
@@ -76,6 +83,61 @@ namespace ash {
 namespace {
 
 using base::UserMetricsAction;
+
+// The notification delegate that will be used to open the keyboard shortcut
+// help page when the notification is clicked.
+class DeprecatedAcceleratorNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  DeprecatedAcceleratorNotificationDelegate() {}
+
+  // message_center::NotificationDelegate:
+  bool HasClickedListener() override { return true; }
+
+  void Click() override {
+    Shell::GetInstance()->delegate()->OpenKeyboardShortcutHelpPage();
+  }
+
+ private:
+  // Private destructor since NotificationDelegate is ref-counted.
+  ~DeprecatedAcceleratorNotificationDelegate() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedAcceleratorNotificationDelegate);
+};
+
+ui::Accelerator CreateAccelerator(ui::KeyboardCode keycode,
+                                  int modifiers,
+                                  bool trigger_on_press) {
+  ui::Accelerator accelerator(keycode, modifiers);
+  accelerator.set_type(trigger_on_press ? ui::ET_KEY_PRESSED
+                                        : ui::ET_KEY_RELEASED);
+  return accelerator;
+}
+
+void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
+                                           int message_id) {
+  const base::string16 message = l10n_util::GetStringUTF16(message_id);
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+          base::string16(), message,
+          Shell::GetInstance()->delegate()->GetDeprecatedAcceleratorImage(),
+          base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              system_notifier::kNotifierDeprecatedAccelerator),
+          message_center::RichNotificationData(),
+          new DeprecatedAcceleratorNotificationDelegate));
+  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+}
+
+void RecordUmaHistogram(const char* histogram_name,
+                        DeprecatedAcceleratorUsage sample) {
+  auto histogram = base::LinearHistogram::FactoryGet(
+      histogram_name, 1, DEPRECATED_USAGE_COUNT, DEPRECATED_USAGE_COUNT + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(sample);
+}
 
 void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
@@ -692,6 +754,11 @@ bool AcceleratorController::IsReserved(
   return reserved_actions_.find(iter->second) != reserved_actions_.end();
 }
 
+bool AcceleratorController::IsDeprecated(
+    const ui::Accelerator& accelerator) const {
+  return deprecated_accelerators_.count(accelerator) != 0;
+}
+
 bool AcceleratorController::PerformActionIfEnabled(AcceleratorAction action) {
   if (CanPerformAction(action, ui::Accelerator())) {
     PerformAction(action, ui::Accelerator());
@@ -767,6 +834,8 @@ void AcceleratorController::Init() {
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
+  RegisterDeprecatedAccelerators();
+
   if (debug::DebugAcceleratorsEnabled()) {
     RegisterAccelerators(kDebugAcceleratorData, kDebugAcceleratorDataLength);
     // All debug accelerators are reserved.
@@ -784,14 +853,31 @@ void AcceleratorController::RegisterAccelerators(
     const AcceleratorData accelerators[],
     size_t accelerators_length) {
   for (size_t i = 0; i < accelerators_length; ++i) {
-    ui::Accelerator accelerator(accelerators[i].keycode,
-                                accelerators[i].modifiers);
-    accelerator.set_type(accelerators[i].trigger_on_press ?
-                         ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED);
+    ui::Accelerator accelerator =
+        CreateAccelerator(accelerators[i].keycode, accelerators[i].modifiers,
+                          accelerators[i].trigger_on_press);
     Register(accelerator, this);
     accelerators_.insert(
         std::make_pair(accelerator, accelerators[i].action));
   }
+}
+
+void AcceleratorController::RegisterDeprecatedAccelerators() {
+#if defined(OS_CHROMEOS)
+  for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
+    const DeprecatedAcceleratorData* data = &kDeprecatedAccelerators[i];
+    const AcceleratorAction action = data->deprecated_accelerator.action;
+    const ui::Accelerator deprecated_accelerator =
+        CreateAccelerator(data->deprecated_accelerator.keycode,
+                          data->deprecated_accelerator.modifiers,
+                          data->deprecated_accelerator.trigger_on_press);
+
+    Register(deprecated_accelerator, this);
+    actions_with_deprecations_[action] = data;
+    accelerators_[deprecated_accelerator] = action;
+    deprecated_accelerators_.insert(deprecated_accelerator);
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool AcceleratorController::CanPerformAction(
@@ -800,6 +886,30 @@ bool AcceleratorController::CanPerformAction(
   if (nonrepeatable_actions_.find(action) != nonrepeatable_actions_.end() &&
       accelerator.IsRepeat()) {
     return false;
+  }
+
+  // Handling the deprecated accelerators.
+  auto itr = actions_with_deprecations_.find(action);
+  if (itr != actions_with_deprecations_.end()) {
+    const DeprecatedAcceleratorData* data = itr->second;
+    if (deprecated_accelerators_.count(accelerator)) {
+      // This accelerator has been deprecated and should be treated according
+      // to its |DeprecatedAcceleratorData|.
+
+      // Record UMA stats.
+      RecordUmaHistogram(data->uma_histogram_name, DEPRECATED_USED);
+
+      // We always display the notification as long as this entry exists.
+      ShowDeprecatedAcceleratorNotification(data->uma_histogram_name,
+                                            data->notification_message_id);
+
+      if (!data->deprecated_enabled)
+        return false;
+    } else {
+      // This is a new accelerator replacing the old deprecated one.
+      // Record UMA stats and proceed normally.
+      RecordUmaHistogram(data->uma_histogram_name, NEW_USED);
+    }
   }
 
   AcceleratorProcessingRestriction restriction =

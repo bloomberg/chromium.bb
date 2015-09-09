@@ -436,4 +436,14 @@ Press Shift + Alt to switch.
   <message name="IDS_ASH_LOGOUT_CONFIRMATION_BUTTON" desc="The text for okay button of the logout confirmation dialog.">
     Sign out now
   </message>
+
+  <!-- Deprecated Accelerators Messages -->
+  <message name="IDS_DEPRECATED_LOCK_SCREEN_MSG"
+           desc="Notification message to tell users about the deprecation of Ctrl+Shift+L shortcut to lock the screen.">
+    The screen lock shortcut has changed. Please use Search+L instead of Ctrl+Shift+L.
+  </message>
+  <message name="IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG"
+           desc="Notification message to tell users about the deprecation of Shift+ESC shortcut to show the task manager.">
+    The task manager shortcut has changed. Please use Search+Esc instead of Shift+Esc.
+  </message>
 </grit-part>

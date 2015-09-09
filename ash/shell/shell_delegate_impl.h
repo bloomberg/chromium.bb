@@ -63,6 +63,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
                                    ash::ShelfItem* item) override;
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;
+  gfx::Image GetDeprecatedAcceleratorImage() const override;
 
  private:
   // Used to update Launcher. Owned by main.
