@@ -2570,20 +2570,6 @@ bool WebViewImpl::isSelectionAnchorFirst() const
     return toLocalFrame(frame)->selection().selection().isBaseFirst();
 }
 
-WebVector<WebCompositionUnderline> WebViewImpl::compositionUnderlines() const
-{
-    const LocalFrame* focused = toLocalFrame(focusedCoreFrame());
-    if (!focused)
-        return WebVector<WebCompositionUnderline>();
-    const Vector<CompositionUnderline>& underlines = focused->inputMethodController().customCompositionUnderlines();
-    WebVector<WebCompositionUnderline> results(underlines.size());
-    for (size_t index = 0; index < underlines.size(); ++index) {
-        CompositionUnderline underline = underlines[index];
-        results[index] = WebCompositionUnderline(underline.startOffset, underline.endOffset, static_cast<WebColor>(underline.color.rgb()), underline.thick, static_cast<WebColor>(underline.backgroundColor.rgb()));
-    }
-    return results;
-}
-
 WebColor WebViewImpl::backgroundColor() const
 {
     if (isTransparent())
