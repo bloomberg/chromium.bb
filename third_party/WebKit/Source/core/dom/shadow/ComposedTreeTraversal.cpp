@@ -191,6 +191,38 @@ Node* ComposedTreeTraversal::previousSkippingChildren(const Node& node)
     return traversePreviousAncestorSibling(node);
 }
 
+static Node* previousAncestorSiblingPostOrder(const Node& current, const Node* stayWithin)
+{
+    ASSERT(!ComposedTreeTraversal::previousSibling(current));
+    for (Node* parent = ComposedTreeTraversal::parent(current); parent; parent = ComposedTreeTraversal::parent(*parent)) {
+        if (parent == stayWithin)
+            return nullptr;
+        if (Node* previousSibling = ComposedTreeTraversal::previousSibling(*parent))
+            return previousSibling;
+    }
+    return nullptr;
+}
+
+// TODO(yosin) We should consider introducing template class to share code
+// between DOM tree traversal and composed tree tarversal.
+Node* ComposedTreeTraversal::previousPostOrder(const Node& current, const Node* stayWithin)
+{
+    assertPrecondition(current);
+    if (stayWithin)
+        assertPrecondition(*stayWithin);
+    if (Node* lastChild = traverseLastChild(current)) {
+        assertPostcondition(lastChild);
+        return lastChild;
+    }
+    if (current == stayWithin)
+        return nullptr;
+    if (Node* previousSibling = traversePreviousSibling(current)) {
+        assertPostcondition(previousSibling);
+        return previousSibling;
+    }
+    return previousAncestorSiblingPostOrder(current, stayWithin);
+}
+
 bool ComposedTreeTraversal::isDescendantOf(const Node& node, const Node& other)
 {
     assertPrecondition(node);

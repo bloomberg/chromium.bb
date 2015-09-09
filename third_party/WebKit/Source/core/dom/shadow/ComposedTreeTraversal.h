@@ -82,6 +82,9 @@ public:
     // similar to |previous()| but skipping child nodes of the specified node.
     static Node* previousSkippingChildren(const Node&);
 
+    // Like previous, but visits parents before their children.
+    static Node* previousPostOrder(const Node&, const Node* stayWithin = nullptr);
+
     // Composed tree version of |Node::isDescendantOf(other)|. This function
     // returns true if |other| contains |node|, otherwise returns
     // false. If |other| is |node|, this function returns false.
