@@ -4,18 +4,28 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.os.Environment;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
+
+import java.io.File;
 
 /**
  * Tests Chrome download feature by attempting to download some files.
@@ -240,6 +250,96 @@ public class DownloadTest extends DownloadTestBase {
         assertTrue("Missing first download", hasDownload("superbo.txt", SUPERBO_CONTENTS));
         assertTrue("Missing second download", hasDownload("superbo (1).txt", SUPERBO_CONTENTS));
         assertTrue("Missing third download", hasDownload("superbo (2).txt", SUPERBO_CONTENTS));
+    }
+
+    private void goToLastTab() throws Exception {
+        final TabModel model = getActivity().getCurrentTabModel();
+        final int count = model.getCount();
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                TabModelUtils.setIndex(model, count - 1);
+            }
+        });
+
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab() == model.getTabAt(count - 1)
+                        && getActivity().getActivityTab().isReady();
+            }
+        }));
+    }
+
+    private void waitForNewTabToStabilize(final int numTabsAfterNewTab)
+            throws InterruptedException {
+        // Wait until we have a new tab first. This should be called before checking the active
+        // layout because the active layout changes StaticLayout --> SimpleAnimationLayout
+        // --> (tab added) --> StaticLayout.
+        assertTrue("Actual tab count: " + getActivity().getCurrentTabModel().getCount(),
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return getActivity().getCurrentTabModel().getCount() >= numTabsAfterNewTab;
+                    }
+                }));
+
+        // Now wait until the new tab animation finishes. Something wonky happens
+        // if we try to go to the new tab before this.
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                CompositorViewHolder compositorViewHolder =
+                        (CompositorViewHolder) getActivity().findViewById(
+                                R.id.compositor_view_holder);
+                LayoutManager layoutManager = compositorViewHolder.getLayoutManager();
+
+                return layoutManager.getActiveLayout() instanceof StaticLayout;
+            }
+        }));
+    }
+
+    /*
+    Bug http://crbug/481758
+    */
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    @MediumTest
+    @Feature({"Downloads"})
+    public void testDuplicateHttpPostDownload_OpenNewTabAndReplace() throws Exception {
+        final String url =
+                TestHttpServerClient.getUrl("chrome/test/data/android/download/get.html");
+
+        // Create the file in advance so that duplicate download infobar can show up.
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        assertTrue(dir.isDirectory());
+        final File file = new File(dir, "test.gzip");
+        if (!file.exists()) {
+            assertTrue(file.createNewFile());
+        }
+
+        // Open in a new tab again.
+        loadUrl(url);
+        waitForFocus();
+
+        View currentView = getActivity().getActivityTab().getView();
+        TouchCommon.longPressView(
+                currentView, currentView.getWidth() / 2, currentView.getHeight() / 2);
+        getInstrumentation().invokeContextMenuAction(
+                getActivity(), R.id.contextmenu_open_in_new_tab, 0);
+        waitForNewTabToStabilize(2);
+
+        goToLastTab();
+        assertPollForInfoBarSize(1);
+
+        // Now create two new files by clicking on the infobars.
+        assertTrue("OVERWRITE button wasn't found",
+                InfoBarUtil.clickPrimaryButton(getInfoBars().get(0)));
+
+        // Try to wait for download to finish. This will fail if there is no external Internet
+        // connection. Android's DownloadManager will abort download request when there is
+        // no Internet connection, even though we are connecting to a local host.
+        waitForGetDownloadToFinish();
     }
 
     /*
