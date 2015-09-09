@@ -124,7 +124,7 @@ public:
         if (contextForWrapper == m_context)
             return;
         if (withSecurityCheck)
-            SecurityCheck(isolate, contextForWrapper);
+            securityCheck(isolate, contextForWrapper);
         m_context = v8::Local<v8::Context>::New(isolate, contextForWrapper);
         m_didEnterContext = true;
         m_context->Enter();
@@ -140,7 +140,7 @@ public:
     v8::Local<v8::Context> context() const { return m_context; }
 
 private:
-    void SecurityCheck(v8::Isolate*, v8::Local<v8::Context> contextForWrapper);
+    void securityCheck(v8::Isolate*, v8::Local<v8::Context> contextForWrapper);
 
     bool m_didEnterContext;
     v8::Local<v8::Context> m_context;

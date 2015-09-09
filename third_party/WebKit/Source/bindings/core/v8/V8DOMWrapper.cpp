@@ -130,13 +130,19 @@ bool V8DOMWrapper::hasInternalFieldsSet(v8::Local<v8::Value> value)
         && untrustedWrapperTypeInfo->ginEmbedder == gin::kEmbedderBlink;
 }
 
-void V8WrapperInstantiationScope::SecurityCheck(v8::Isolate* isolate, v8::Local<v8::Context> contextForWrapper)
+void V8WrapperInstantiationScope::securityCheck(v8::Isolate* isolate, v8::Local<v8::Context> contextForWrapper)
 {
-    if (!m_context.IsEmpty()) {
-        // If the context is different, we need to make sure that the current
-        // context has access to the creation context.
-        Frame* frame = toFrameIfNotDetached(contextForWrapper);
-        RELEASE_ASSERT(!frame || BindingSecurity::shouldAllowAccessToFrame(isolate, frame, DoNotReportSecurityError));
+    if (m_context.IsEmpty())
+        return;
+    // If the context is different, we need to make sure that the current
+    // context has access to the creation context.
+    Frame* frame = toFrameIfNotDetached(contextForWrapper);
+    if (!frame)
+        return;
+    const DOMWrapperWorld& currentWorld = DOMWrapperWorld::world(m_context);
+    RELEASE_ASSERT(currentWorld.worldId() == DOMWrapperWorld::world(contextForWrapper).worldId());
+    if (currentWorld.isMainWorld()) {
+        RELEASE_ASSERT(BindingSecurity::shouldAllowAccessToFrame(isolate, frame, DoNotReportSecurityError));
     }
 }
 
