@@ -8,8 +8,8 @@
 
 namespace ui {
 
-OverlayCandidatesOzone::OverlaySurfaceCandidate::OverlaySurfaceCandidate() {
-}
+OverlayCandidatesOzone::OverlaySurfaceCandidate::OverlaySurfaceCandidate()
+    : is_clipped(false) {}
 
 OverlayCandidatesOzone::OverlaySurfaceCandidate::~OverlaySurfaceCandidate() {
 }

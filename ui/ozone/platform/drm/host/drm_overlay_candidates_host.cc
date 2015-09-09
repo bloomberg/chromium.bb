@@ -79,6 +79,9 @@ void DrmOverlayCandidatesHost::CheckSingleOverlay(
     return;
   if (overlay->transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return;
+  if (overlay->is_clipped &&
+      !overlay->clip_rect.Contains(overlay->quad_rect_in_target_space))
+    return;
 
   OverlayCheck_Params lookup(*overlay);
   auto iter = cache_.Get(lookup);

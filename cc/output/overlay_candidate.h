@@ -9,6 +9,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_format.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/overlay_transform.h"
@@ -46,6 +47,12 @@ class CC_EXPORT OverlayCandidate {
   gfx::RectF display_rect;
   // Crop within the buffer to be placed inside |display_rect|.
   gfx::RectF uv_rect;
+  // Quad geometry rect after applying the quad_transform().
+  gfx::Rect quad_rect_in_target_space;
+  // Clip rect in the target content space after composition.
+  gfx::Rect clip_rect;
+  // If the quad is clipped after composition.
+  bool is_clipped;
   // True if the texture for this overlay should be the same one used by the
   // output surface's main overlay.
   bool use_output_surface_for_resource;

@@ -35,6 +35,12 @@ class OZONE_BASE_EXPORT OverlayCandidatesOzone {
     gfx::RectF display_rect;
     // Crop within the buffer to be placed inside |display_rect|.
     gfx::RectF crop_rect;
+    // Quad geometry rect after applying the quad_transform().
+    gfx::Rect quad_rect_in_target_space;
+    // Clip rect in the target content space after composition.
+    gfx::Rect clip_rect;
+    // If the quad is clipped after composition.
+    bool is_clipped;
     // Stacking order of the overlay plane relative to the main surface,
     // which is 0. Signed to allow for "underlays".
     int plane_z_order = 0;

@@ -38,6 +38,7 @@ const gfx::Size kDisplaySize(256, 256);
 const gfx::Rect kOverlayRect(0, 0, 128, 128);
 const gfx::Rect kOverlayTopLeftRect(0, 0, 64, 64);
 const gfx::Rect kOverlayBottomRightRect(64, 64, 64, 64);
+const gfx::Rect kOverlayClipRect(0, 0, 128, 128);
 const gfx::PointF kUVTopLeft(0.1f, 0.2f);
 const gfx::PointF kUVBottomRight(1.0f, 1.0f);
 const gfx::Transform kNormalTransform =
@@ -79,6 +80,10 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
     }
     EXPECT_FLOAT_RECT_EQ(BoundingRect(kUVTopLeft, kUVBottomRight),
                          candidate.uv_rect);
+    if (!candidate.clip_rect.IsEmpty()) {
+      EXPECT_EQ(true, candidate.is_clipped);
+      EXPECT_EQ(kOverlayClipRect, candidate.clip_rect);
+    }
     candidate.overlay_handled = true;
   }
 };
@@ -878,6 +883,22 @@ TEST_F(SingleOverlayOnTopTest, RejectNonAxisAlignedTransform) {
   overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
+}
+
+TEST_F(SingleOverlayOnTopTest, AllowClipped) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  CreateFullscreenCandidateQuad(resource_provider_.get(),
+                                pass->shared_quad_state_list.back(),
+                                pass.get());
+  pass->shared_quad_state_list.back()->is_clipped = true;
+  pass->shared_quad_state_list.back()->clip_rect = kOverlayClipRect;
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  ASSERT_EQ(1U, pass_list.size());
+  EXPECT_EQ(2U, candidate_list.size());
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowVerticalFlip) {
