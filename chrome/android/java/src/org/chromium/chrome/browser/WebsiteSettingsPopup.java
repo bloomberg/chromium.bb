@@ -49,8 +49,9 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ssl.ConnectionSecurity;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -254,11 +255,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
     // The security level of the page (a valid ConnectionSecurityLevel).
     private int mSecurityLevel;
 
-    // Whether the security level of the page was downgraded due to SHA-1.
+    // Whether the security level of the page was deprecated due to SHA-1.
     private boolean mDeprecatedSHA1Present;
-
-    // Whether the security level of the page was downgraded due to passive mixed content.
-    private boolean mPassiveMixedContentPresent;
 
     // Permissions available to be displayed in mPermissionsList.
     private List<PageInfoPermissionEntry> mDisplayedPermissions;
@@ -389,9 +387,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
             mParsedUrl = null;
             mIsInternalPage = false;
         }
-        mSecurityLevel = SecurityStateModel.getSecurityLevelForWebContents(mWebContents);
-        mDeprecatedSHA1Present = SecurityStateModel.isDeprecatedSHA1Present(mWebContents);
-        mPassiveMixedContentPresent = SecurityStateModel.isPassiveMixedContentPresent(mWebContents);
+        mSecurityLevel = ConnectionSecurity.getSecurityLevelForWebContents(mWebContents);
+        mDeprecatedSHA1Present = ToolbarModel.isDeprecatedSHA1Present(mWebContents);
 
         SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
         OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mProfile,
@@ -469,6 +466,9 @@ public class WebsiteSettingsPopup implements OnClickListener {
             case ConnectionSecurityLevel.SECURE:
             case ConnectionSecurityLevel.EV_SECURE:
                 return R.string.page_info_connection_https;
+            case ConnectionSecurityLevel.SECURITY_WARNING:
+            case ConnectionSecurityLevel.SECURITY_POLICY_WARNING:
+                return R.string.page_info_connection_mixed;
             default:
                 assert false : "Invalid security level specified: " + securityLevel;
                 return R.string.page_info_connection_http;
@@ -492,12 +492,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
         if (mDeprecatedSHA1Present) {
             messageBuilder.append(
                     mContext.getResources().getString(R.string.page_info_connection_sha1));
-        } else if (mPassiveMixedContentPresent) {
-            messageBuilder.append(
-                    mContext.getResources().getString(R.string.page_info_connection_mixed));
-        } else if (mSecurityLevel != ConnectionSecurityLevel.SECURITY_ERROR
-                && mSecurityLevel != ConnectionSecurityLevel.SECURITY_WARNING
-                && mSecurityLevel != ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
+        } else if (mSecurityLevel != ConnectionSecurityLevel.SECURITY_ERROR) {
             messageBuilder.append(mContext.getResources().getString(
                     getConnectionMessageId(mSecurityLevel, mIsInternalPage)));
         } else {

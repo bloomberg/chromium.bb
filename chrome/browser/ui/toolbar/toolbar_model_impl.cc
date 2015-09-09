@@ -10,7 +10,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ssl/security_state_model.h"
+#include "chrome/browser/ssl/connection_security.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -109,20 +109,13 @@ bool ToolbarModelImpl::WouldPerformSearchTermReplacement(
   return !GetSearchTerms(ignore_editing).empty();
 }
 
-SecurityStateModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
+connection_security::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
     bool ignore_editing) const {
-  const content::WebContents* web_contents = delegate_->GetActiveWebContents();
-  // If there is no active WebContents (which can happen during toolbar
-  // initialization), assume no security style.
-  if (!web_contents)
-    return SecurityStateModel::NONE;
-  const SecurityStateModel* model =
-      SecurityStateModel::FromWebContents(web_contents);
-
   // When editing, assume no security style.
   return (input_in_progress() && !ignore_editing)
-             ? SecurityStateModel::NONE
-             : model->security_info().security_level;
+             ? connection_security::NONE
+             : connection_security::GetSecurityLevelForWebContents(
+                   delegate_->GetActiveWebContents());
 }
 
 int ToolbarModelImpl::GetIcon() const {
@@ -133,19 +126,19 @@ int ToolbarModelImpl::GetIcon() const {
 }
 
 int ToolbarModelImpl::GetIconForSecurityLevel(
-    SecurityStateModel::SecurityLevel level) const {
+    connection_security::SecurityLevel level) const {
   switch (level) {
-    case SecurityStateModel::NONE:
+    case connection_security::NONE:
       return IDR_LOCATION_BAR_HTTP;
-    case SecurityStateModel::EV_SECURE:
-    case SecurityStateModel::SECURE:
+    case connection_security::EV_SECURE:
+    case connection_security::SECURE:
       return IDR_OMNIBOX_HTTPS_VALID;
-    case SecurityStateModel::SECURITY_WARNING:
+    case connection_security::SECURITY_WARNING:
       // Surface Dubious as Neutral.
       return IDR_LOCATION_BAR_HTTP;
-    case SecurityStateModel::SECURITY_POLICY_WARNING:
+    case connection_security::SECURITY_POLICY_WARNING:
       return IDR_OMNIBOX_HTTPS_POLICY_WARNING;
-    case SecurityStateModel::SECURITY_ERROR:
+    case connection_security::SECURITY_ERROR:
       return IDR_OMNIBOX_HTTPS_INVALID;
   }
 
@@ -154,7 +147,7 @@ int ToolbarModelImpl::GetIconForSecurityLevel(
 }
 
 base::string16 ToolbarModelImpl::GetEVCertName() const {
-  if (GetSecurityLevel(false) != SecurityStateModel::EV_SECURE)
+  if (GetSecurityLevel(false) != connection_security::EV_SECURE)
     return base::string16();
 
   // Note: Navigation controller and active entry are guaranteed non-NULL or
@@ -247,10 +240,10 @@ base::string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {
 
   // Otherwise, extract search terms for HTTPS pages that do not have a security
   // error.
-  SecurityStateModel::SecurityLevel security_level =
+  connection_security::SecurityLevel security_level =
       GetSecurityLevel(ignore_editing);
-  return ((security_level == SecurityStateModel::NONE) ||
-          (security_level == SecurityStateModel::SECURITY_ERROR))
+  return ((security_level == connection_security::NONE) ||
+          (security_level == connection_security::SECURITY_ERROR))
              ? base::string16()
              : search_terms;
 }

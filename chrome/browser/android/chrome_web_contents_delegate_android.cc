@@ -17,7 +17,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -113,17 +112,6 @@ ChromeWebContentsDelegateAndroid::RunBluetoothChooser(
     const GURL& origin) {
   return make_scoped_ptr(
       new BluetoothChooserAndroid(web_contents, event_handler, origin));
-}
-
-void ChromeWebContentsDelegateAndroid::VisibleSSLStateChanged(
-    content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  // Notify the model that the security state has changed, so that the
-  // URL bar updates with up-to-date data computed by the model.
-  SecurityStateModel* model = SecurityStateModel::FromWebContents(web_contents);
-  DCHECK(model);
-  model->SecurityStateChanged();
-  WebContentsDelegateAndroid::VisibleSSLStateChanged(web_contents);
 }
 
 void ChromeWebContentsDelegateAndroid::CloseContents(

@@ -46,8 +46,6 @@ class ChromeWebContentsDelegateAndroid
       content::WebContents* web_contents,
       const content::BluetoothChooser::EventHandler& event_handler,
       const GURL& origin) override;
-
-  void VisibleSSLStateChanged(content::WebContents* source) override;
   void CloseContents(content::WebContents* web_contents) override;
   blink::WebDisplayMode GetDisplayMode(
       const content::WebContents* web_contents) const override;
