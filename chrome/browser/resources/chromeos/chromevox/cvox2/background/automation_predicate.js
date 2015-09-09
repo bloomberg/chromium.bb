@@ -177,11 +177,15 @@ AutomationPredicate.linebreak = function(first, second) {
  * @return {boolean}
  */
 AutomationPredicate.shouldIgnoreLeaf = function(node) {
+  if (node.name || node.value)
+    return false;
+
   return AutomationPredicate.leaf(node) &&
       (node.role == RoleType.client ||
-      node.role == RoleType.div ||
-      (node.role == 'image' && node.name == '') ||
-      (node.role == 'staticText' && node.value == ''));
+       node.role == RoleType.div ||
+       node.role == RoleType.group ||
+       node.role == RoleType.image ||
+       node.role == RoleType.staticText);
 };
 
 });  // goog.scope
