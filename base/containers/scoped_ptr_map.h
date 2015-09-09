@@ -42,9 +42,9 @@ class ScopedPtrMap {
 
   ScopedPtrMap() {}
   ~ScopedPtrMap() { clear(); }
-  ScopedPtrMap(ScopedPtrMap<Key, ScopedPtr>&& other) { swap(other); }
+  ScopedPtrMap(ScopedPtrMap&& other) { swap(other); }
 
-  ScopedPtrMap& operator=(ScopedPtrMap<Key, ScopedPtr>&& rhs) {
+  ScopedPtrMap& operator=(ScopedPtrMap&& rhs) {
     swap(rhs);
     return *this;
   }
@@ -61,7 +61,7 @@ class ScopedPtrMap {
   const_iterator begin() const { return data_.begin(); }
   const_iterator end() const { return data_.end(); }
 
-  void swap(ScopedPtrMap<Key, ScopedPtr>& other) { data_.swap(other.data_); }
+  void swap(ScopedPtrMap& other) { data_.swap(other.data_); }
 
   void clear() { STLDeleteValues(&data_); }
 
