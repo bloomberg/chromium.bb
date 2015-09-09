@@ -369,6 +369,8 @@ void VideoCaptureImpl::OnBufferReceived(
         base::Bind(&VideoCaptureImpl::OnClientBufferFinished2,
                    weak_factory_.GetWeakPtr(), buffer_id, buffer));
   }
+  frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                                  timestamp);
   frame->AddDestructionObserver(
       base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame,
                  frame->metadata(), release_sync_point_storage,
