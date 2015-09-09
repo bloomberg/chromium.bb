@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.prerender;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -55,6 +58,7 @@ public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<Chr
 
     @MediumTest
     @UiThreadTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Prerender"})
     /**
      * Test adding a prerender and canceling that to add a new one.
@@ -76,6 +80,7 @@ public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<Chr
 
     @SmallTest
     @UiThreadTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Prerender"})
     /**
      * Test calling cancel without any added prerenders.
@@ -89,6 +94,7 @@ public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<Chr
 
     @MediumTest
     @UiThreadTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Prerender"})
     /**
      * Test adding two prerenders without canceling the first one.
