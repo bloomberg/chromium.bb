@@ -4,6 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Focused: AXDescription: 
+Focused: AXDescription: 
 Focused: AXDescription: January 2000
 PASS Received ActiveDescendantChanged
 Focused: AXDescription: February 2000
