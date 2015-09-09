@@ -205,7 +205,6 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
 
   AwAutofillClient* autofill_manager_delegate =
       AwAutofillClient::FromWebContents(web_contents_.get());
-  InitDataReductionProxyIfNecessary();
   if (autofill_manager_delegate)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -262,12 +261,6 @@ void AwContents::SetSaveFormData(bool enabled) {
   }
 }
 
-void AwContents::InitDataReductionProxyIfNecessary() {
-  AwBrowserContext* browser_context =
-      AwBrowserContext::FromWebContents(web_contents_.get());
-  browser_context->CreateUserPrefServiceIfNecessary();
-}
-
 void AwContents::InitAutofillIfNecessary(bool enabled) {
   // Do not initialize if the feature is not enabled.
   if (!enabled)
@@ -277,8 +270,6 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
   if (ContentAutofillDriverFactory::FromWebContents(web_contents))
     return;
 
-  AwBrowserContext::FromWebContents(web_contents)->
-      CreateUserPrefServiceIfNecessary();
   AwAutofillClient::CreateForWebContents(web_contents);
   ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents, AwAutofillClient::FromWebContents(web_contents),

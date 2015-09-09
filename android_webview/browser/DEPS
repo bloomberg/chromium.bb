@@ -15,8 +15,12 @@ include_rules = [
   "+components/cdm/browser",
   "+components/data_reduction_proxy/core/browser",
   "+components/navigation_interception",
+  "+components/policy/core/browser",
+  "+components/policy/core/common",
+  "+components/pref_registry",
   "+components/printing/browser",
   "+components/printing/common",
+  "+components/url_formatter",
   "+components/user_prefs",
   "+components/visitedlink/browser",
   "+components/webdata/common",
@@ -25,6 +29,8 @@ include_rules = [
   "+content/public/test",
 
   "+media/base/android",
+
+  "+policy/policy_constants.h",
 
   "+printing",
 

@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/android/java",
   "+components/navigation_interception/android/java",
+  "+components/policy/android/java",
   "+components/web_contents_delegate_android/android/java",
   "+media/base/android/java",
 ]

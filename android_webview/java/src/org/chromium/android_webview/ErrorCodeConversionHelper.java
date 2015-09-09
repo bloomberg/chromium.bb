@@ -84,6 +84,7 @@ public abstract class ErrorCodeConversionHelper {
             case NetError.ERR_OUT_OF_MEMORY:
                 return ERROR_TOO_MANY_REQUESTS;
 
+            case NetError.ERR_BLOCKED_BY_ADMINISTRATOR:
             case NetError.ERR_CONNECTION_CLOSED:
             case NetError.ERR_CONNECTION_RESET:
             case NetError.ERR_CONNECTION_REFUSED:

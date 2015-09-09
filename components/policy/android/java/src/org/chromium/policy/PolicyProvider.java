@@ -17,7 +17,7 @@ public abstract class PolicyProvider {
 
     protected PolicyProvider() {}
 
-    protected void notifySettingsAvailable(Bundle settings) {
+    public void notifySettingsAvailable(Bundle settings) {
         mCombinedPolicyProvider.onSettingsAvailable(mSource, settings);
     }
 

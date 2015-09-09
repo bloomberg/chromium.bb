@@ -41,6 +41,11 @@ namespace net {
 class CookieStore;
 }
 
+namespace policy {
+class URLBlacklistManager;
+class BrowserPolicyConnectorBase;
+}
+
 namespace visitedlink {
 class VisitedLinkMaster;
 }
@@ -98,9 +103,9 @@ class AwBrowserContext : public content::BrowserContext,
 
   AwURLRequestContextGetter* GetAwURLRequestContext();
 
-  void CreateUserPrefServiceIfNecessary();
-
   AwMessagePortService* GetMessagePortService();
+
+  policy::URLBlacklistManager* GetURLBlacklistManager();
 
   // content::BrowserContext implementation.
   scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -128,6 +133,7 @@ class AwBrowserContext : public content::BrowserContext,
   void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) override;
 
  private:
+  void InitUserPrefService();
   void CreateDataReductionProxyStatisticsIfNecessary();
   static bool data_reduction_proxy_enabled_;
 
@@ -151,6 +157,8 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_ptr<content::ResourceContext> resource_context_;
 
   scoped_ptr<PrefService> user_pref_service_;
+  scoped_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
+  scoped_ptr<policy::URLBlacklistManager> blacklist_manager_;
 
   scoped_ptr<data_reduction_proxy::DataReductionProxySettings>
       data_reduction_proxy_settings_;

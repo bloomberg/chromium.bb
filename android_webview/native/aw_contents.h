@@ -244,7 +244,6 @@ class AwContents : public FindHelper::Listener,
   void GrantFileSchemeAccesstoChildProcess(JNIEnv* env, jobject obj);
 
  private:
-  void InitDataReductionProxyIfNecessary();
   void InitAutofillIfNecessary(bool enabled);
 
   // Geolocation API support

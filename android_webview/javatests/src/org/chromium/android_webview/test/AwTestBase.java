@@ -44,12 +44,18 @@ public class AwTestBase
     public static final int CHECK_INTERVAL = 100;
     private static final String TAG = "AwTestBase";
 
+    // The browser context needs to be a process-wide singleton.
+    private AwBrowserContext mBrowserContext;
+
     public AwTestBase() {
         super(AwTestRunnerActivity.class);
     }
 
     @Override
     protected void setUp() throws Exception {
+        mBrowserContext = new AwBrowserContext(
+                new InMemorySharedPreferences(), getInstrumentation().getTargetContext());
+
         super.setUp();
         if (needsBrowserProcessStarted()) {
             startBrowserProcess();
@@ -371,10 +377,6 @@ public class AwTestBase
         testContainerView.requestFocus();
         return testContainerView;
     }
-
-    // The browser context needs to be a process-wide singleton.
-    private AwBrowserContext mBrowserContext =
-            new AwBrowserContext(new InMemorySharedPreferences());
 
     public AwBrowserContext getAwBrowserContext() {
         return mBrowserContext;

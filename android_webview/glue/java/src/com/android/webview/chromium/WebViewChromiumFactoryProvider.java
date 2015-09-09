@@ -305,7 +305,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         assert Thread.holdsLock(mLock);
         assert mStarted;
         if (mBrowserContext == null) {
-            mBrowserContext = new AwBrowserContext(mWebViewPrefs);
+            mBrowserContext =
+                    new AwBrowserContext(mWebViewPrefs, getWrappedCurrentApplicationContext());
         }
         return mBrowserContext;
     }

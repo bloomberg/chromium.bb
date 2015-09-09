@@ -7,8 +7,10 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.net.DefaultAndroidKeyStore;
+import org.chromium.policy.CombinedPolicyProvider;
 
 /**
  * Java side of the Browser Context: contains all the java side objects needed to host one
@@ -18,7 +20,6 @@ import org.chromium.net.DefaultAndroidKeyStore;
  * instance, so at this point the class mostly exists for conceptual clarity.
  */
 public class AwBrowserContext {
-
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
 
     private SharedPreferences mSharedPreferences;
@@ -30,8 +31,9 @@ public class AwBrowserContext {
     private DefaultAndroidKeyStore mLocalKeyStore;
     private AwMessagePortService mMessagePortService;
 
-    public AwBrowserContext(SharedPreferences sharedPreferences) {
+    public AwBrowserContext(SharedPreferences sharedPreferences, Context applicationContext) {
         mSharedPreferences = sharedPreferences;
+        CombinedPolicyProvider.get().registerProvider(new AwPolicyProvider(applicationContext));
     }
 
     public AwGeolocationPermissions getGeolocationPermissions() {
