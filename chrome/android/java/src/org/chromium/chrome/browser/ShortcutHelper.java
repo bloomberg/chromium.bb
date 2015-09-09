@@ -119,7 +119,7 @@ public class ShortcutHelper {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void addShortcut(Context context, String id, String url, String userTitle,
+    private static void addShortcut(Context context, String id, String url, final String userTitle,
             String name, String shortName, Bitmap icon, boolean isWebappCapable, int orientation,
             int source, long themeColor, long backgroundColor) {
         Intent shortcutIntent;
@@ -152,14 +152,13 @@ public class ShortcutHelper {
                 context, createAddToHomeIntent(url, userTitle, icon, shortcutIntent));
 
         // Alert the user about adding the shortcut.
-        final String shortUrl = UrlUtilities.getDomainAndRegistry(url, true);
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
             @Override
             public void run() {
                 Context applicationContext = ApplicationStatus.getApplicationContext();
                 String toastText =
-                        applicationContext.getString(R.string.added_to_homescreen, shortUrl);
+                        applicationContext.getString(R.string.added_to_homescreen, userTitle);
                 Toast toast = Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT);
                 toast.show();
             }
