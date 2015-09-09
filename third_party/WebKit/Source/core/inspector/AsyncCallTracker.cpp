@@ -269,7 +269,7 @@ void AsyncCallTracker::willHandleEvent(EventTarget* eventTarget, Event* event, E
     }
 }
 
-void AsyncCallTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
+void AsyncCallTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<EncodedFormData>, const HTTPHeaderMap&, bool)
 {
     ASSERT(xhr->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());

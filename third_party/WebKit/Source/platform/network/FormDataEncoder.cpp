@@ -23,13 +23,13 @@
  */
 
 #include "config.h"
-#include "platform/network/FormDataBuilder.h"
+#include "platform/network/FormDataEncoder.h"
 
-#include <limits>
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/HexNumber.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
+#include <limits>
 
 namespace blink {
 
@@ -59,7 +59,7 @@ static void appendQuotedString(Vector<char>& buffer, const CString& string)
         char c = string.data()[i];
 
         switch (c) {
-        case  0x0a:
+        case 0x0a:
             append(buffer, "%0A");
             break;
         case 0x0d:
@@ -74,7 +74,7 @@ static void appendQuotedString(Vector<char>& buffer, const CString& string)
     }
 }
 
-WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& acceptCharset, const String& charset, const String& defaultCharset)
+WTF::TextEncoding FormDataEncoder::encodingFromAcceptCharset(const String& acceptCharset, const String& charset, const String& defaultCharset)
 {
     String normalizedAcceptCharset = acceptCharset;
     normalizedAcceptCharset.replace(',', ' ');
@@ -100,7 +100,7 @@ WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& accep
     return charset;
 }
 
-Vector<char> FormDataBuilder::generateUniqueBoundaryString()
+Vector<char> FormDataEncoder::generateUniqueBoundaryString()
 {
     Vector<char> boundary;
 
@@ -141,7 +141,7 @@ Vector<char> FormDataBuilder::generateUniqueBoundaryString()
     return boundary;
 }
 
-void FormDataBuilder::beginMultiPartHeader(Vector<char>& buffer, const CString& boundary, const CString& name)
+void FormDataEncoder::beginMultiPartHeader(Vector<char>& buffer, const CString& boundary, const CString& name)
 {
     addBoundaryToMultiPartHeader(buffer, boundary);
 
@@ -152,7 +152,7 @@ void FormDataBuilder::beginMultiPartHeader(Vector<char>& buffer, const CString& 
     append(buffer, '"');
 }
 
-void FormDataBuilder::addBoundaryToMultiPartHeader(Vector<char>& buffer, const CString& boundary, bool isLastBoundary)
+void FormDataEncoder::addBoundaryToMultiPartHeader(Vector<char>& buffer, const CString& boundary, bool isLastBoundary)
 {
     append(buffer, "--");
     append(buffer, boundary);
@@ -163,7 +163,7 @@ void FormDataBuilder::addBoundaryToMultiPartHeader(Vector<char>& buffer, const C
     append(buffer, "\r\n");
 }
 
-void FormDataBuilder::addFilenameToMultiPartHeader(Vector<char>& buffer, const WTF::TextEncoding& encoding, const String& filename)
+void FormDataEncoder::addFilenameToMultiPartHeader(Vector<char>& buffer, const WTF::TextEncoding& encoding, const String& filename)
 {
     // FIXME: This loses data irreversibly if the filename includes characters you can't encode
     // in the website's character set.
@@ -172,20 +172,20 @@ void FormDataBuilder::addFilenameToMultiPartHeader(Vector<char>& buffer, const W
     append(buffer, '"');
 }
 
-void FormDataBuilder::addContentTypeToMultiPartHeader(Vector<char>& buffer, const CString& mimeType)
+void FormDataEncoder::addContentTypeToMultiPartHeader(Vector<char>& buffer, const CString& mimeType)
 {
     append(buffer, "\r\nContent-Type: ");
     append(buffer, mimeType);
 }
 
-void FormDataBuilder::finishMultiPartHeader(Vector<char>& buffer)
+void FormDataEncoder::finishMultiPartHeader(Vector<char>& buffer)
 {
     append(buffer, "\r\n\r\n");
 }
 
-void FormDataBuilder::addKeyValuePairAsFormData(Vector<char>& buffer, const CString& key, const CString& value, FormData::EncodingType encodingType)
+void FormDataEncoder::addKeyValuePairAsFormData(Vector<char>& buffer, const CString& key, const CString& value, EncodedFormData::EncodingType encodingType)
 {
-    if (encodingType == FormData::TextPlain) {
+    if (encodingType == EncodedFormData::TextPlain) {
         if (!buffer.isEmpty())
             append(buffer, "\r\n");
         append(buffer, key);
@@ -200,7 +200,7 @@ void FormDataBuilder::addKeyValuePairAsFormData(Vector<char>& buffer, const CStr
     }
 }
 
-void FormDataBuilder::encodeStringAsFormData(Vector<char>& buffer, const CString& string)
+void FormDataEncoder::encodeStringAsFormData(Vector<char>& buffer, const CString& string)
 {
     // Same safe characters as Netscape for compatibility.
     static const char safeCharacters[] = "-._*";
@@ -210,13 +210,13 @@ void FormDataBuilder::encodeStringAsFormData(Vector<char>& buffer, const CString
     for (unsigned i = 0; i < length; ++i) {
         unsigned char c = string.data()[i];
 
-        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || strchr(safeCharacters, c))
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || strchr(safeCharacters, c)) {
             append(buffer, c);
-        else if (c == ' ')
+        } else if (c == ' ') {
             append(buffer, '+');
-        else if (c == '\n' || (c == '\r' && (i + 1 >= length || string.data()[i + 1] != '\n')))
+        } else if (c == '\n' || (c == '\r' && (i + 1 >= length || string.data()[i + 1] != '\n'))) {
             append(buffer, "%0D%0A");
-        else if (c != '\r') {
+        } else if (c != '\r') {
             append(buffer, '%');
             appendByteAsHex(c, buffer);
         }

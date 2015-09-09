@@ -32,16 +32,16 @@
 #include "public/platform/WebHTTPBody.h"
 
 #include "platform/FileMetadata.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 
 namespace blink {
 
-class WebHTTPBodyPrivate : public FormData {
+class WebHTTPBodyPrivate : public EncodedFormData {
 };
 
 void WebHTTPBody::initialize()
 {
-    assign(static_cast<WebHTTPBodyPrivate*>(FormData::create().leakRef()));
+    assign(static_cast<WebHTTPBodyPrivate*>(EncodedFormData::create().leakRef()));
 }
 
 void WebHTTPBody::reset()
@@ -166,18 +166,18 @@ void WebHTTPBody::setContainsPasswordData(bool containsPasswordData)
     m_private->setContainsPasswordData(containsPasswordData);
 }
 
-WebHTTPBody::WebHTTPBody(const PassRefPtr<FormData>& data)
+WebHTTPBody::WebHTTPBody(const PassRefPtr<EncodedFormData>& data)
     : m_private(static_cast<WebHTTPBodyPrivate*>(data.leakRef()))
 {
 }
 
-WebHTTPBody& WebHTTPBody::operator=(const PassRefPtr<FormData>& data)
+WebHTTPBody& WebHTTPBody::operator=(const PassRefPtr<EncodedFormData>& data)
 {
     assign(static_cast<WebHTTPBodyPrivate*>(data.leakRef()));
     return *this;
 }
 
-WebHTTPBody::operator PassRefPtr<FormData>() const
+WebHTTPBody::operator PassRefPtr<EncodedFormData>() const
 {
     return m_private;
 }

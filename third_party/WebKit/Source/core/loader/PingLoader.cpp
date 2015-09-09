@@ -88,7 +88,7 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
     ResourceRequest request(pingURL);
     request.setHTTPMethod("POST");
     request.setHTTPContentType("text/ping");
-    request.setHTTPBody(FormData::create("PING"));
+    request.setHTTPBody(EncodedFormData::create("PING"));
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     finishPingRequestInitialization(request, frame);
 
@@ -110,7 +110,7 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
     PingLoader::start(frame, request, initiatorInfo);
 }
 
-void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType type)
+void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, PassRefPtr<EncodedFormData> report, ViolationReportType type)
 {
     ResourceRequest request(reportURL);
     request.setHTTPMethod("POST");

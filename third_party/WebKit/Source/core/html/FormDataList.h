@@ -25,7 +25,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
@@ -110,8 +110,8 @@ public:
     const FormDataListItems& items() const { return m_items; }
     const WTF::TextEncoding& encoding() const { return m_encoding; }
 
-    PassRefPtr<FormData> createFormData(FormData::EncodingType = FormData::FormURLEncoded);
-    PassRefPtr<FormData> createMultiPartFormData();
+    PassRefPtr<EncodedFormData> createFormData(EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
+    PassRefPtr<EncodedFormData> createMultiPartFormData();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -122,7 +122,7 @@ protected:
     FormDataListItems m_items;
 
 private:
-    void appendKeyValuePairItemsTo(FormData*, const WTF::TextEncoding&, bool isMultiPartForm, FormData::EncodingType = FormData::FormURLEncoded);
+    void appendKeyValuePairItemsTo(EncodedFormData*, const WTF::TextEncoding&, bool isMultiPartForm, EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
 
     void appendItem(const Item&);
     Entry itemsToEntry(const Item&) const;

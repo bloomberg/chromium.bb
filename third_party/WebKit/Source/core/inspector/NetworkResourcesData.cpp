@@ -45,7 +45,7 @@ static size_t maximumSingleResourceContentSize = 10 * 1000 * 1000;
 namespace blink {
 
 
-PassRefPtrWillBeRawPtr<XHRReplayData> XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, bool includeCredentials)
+PassRefPtrWillBeRawPtr<XHRReplayData> XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
 {
     return adoptRefWillBeNoop(new XHRReplayData(executionContext, method, url, async, formData, includeCredentials));
 }
@@ -55,7 +55,7 @@ void XHRReplayData::addHeader(const AtomicString& key, const AtomicString& value
     m_headers.set(key, value);
 }
 
-XHRReplayData::XHRReplayData(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, bool includeCredentials)
+XHRReplayData::XHRReplayData(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
     : ContextLifecycleObserver(executionContext)
     , m_method(method)
     , m_url(url)

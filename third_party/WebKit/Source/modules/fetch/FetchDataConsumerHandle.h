@@ -7,7 +7,7 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/blob/BlobData.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -54,10 +54,10 @@ public:
         // return a non-null blob handle with unspecified size.
         virtual PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy = DisallowBlobWithInvalidSize) { return nullptr; }
 
-        // Drains the data as a FormData.
+        // Drains the data as an EncodedFormData.
         // This function returns a non-null form data when the handle is made
-        // from a FormData-convertible value.
-        virtual PassRefPtr<FormData> drainAsFormData() { return nullptr; }
+        // from an EncodedFormData-convertible value.
+        virtual PassRefPtr<EncodedFormData> drainAsFormData() { return nullptr; }
     };
 
     // TODO(yhirano): obtainReader() is currently non-virtual override, and

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "ResourceRequest.h"
 
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebURLRequest.h"
@@ -34,7 +34,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     original.setHTTPHeaderField(AtomicString("Piyo"), AtomicString("Fuga"));
     original.setPriority(ResourceLoadPriorityLow, 20);
 
-    RefPtr<FormData> originalBody(FormData::create("Test Body"));
+    RefPtr<EncodedFormData> originalBody(EncodedFormData::create("Test Body"));
     original.setHTTPBody(originalBody);
     original.setAllowStoredCredentials(false);
     original.setReportUploadProgress(false);

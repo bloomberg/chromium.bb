@@ -43,7 +43,7 @@
 
 namespace blink {
 
-class FormData;
+class EncodedFormData;
 class LocalFrame;
 class KURL;
 class ResourceRequest;
@@ -71,7 +71,7 @@ public:
 
     static void loadImage(LocalFrame*, const KURL&);
     static void sendLinkAuditPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
-    static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
+    static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<EncodedFormData> report, ViolationReportType);
 
     DECLARE_VIRTUAL_TRACE();
 

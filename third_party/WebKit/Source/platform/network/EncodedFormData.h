@@ -17,8 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FormData_h
-#define FormData_h
+#ifndef EncodedFormData_h
+#define EncodedFormData_h
 
 #include "platform/blob/BlobData.h"
 #include "platform/weborigin/KURL.h"
@@ -31,7 +31,7 @@ namespace blink {
 
 class BlobDataHandle;
 
-class PLATFORM_EXPORT FormDataElement {
+class PLATFORM_EXPORT FormDataElement final {
 public:
     FormDataElement() : m_type(data) { }
     explicit FormDataElement(const Vector<char>& array) : m_type(data), m_data(array) { }
@@ -82,7 +82,7 @@ inline bool operator!=(const FormDataElement& a, const FormDataElement& b)
     return !(a == b);
 }
 
-class PLATFORM_EXPORT FormData : public RefCounted<FormData> {
+class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
 public:
     enum EncodingType {
         FormURLEncoded, // for application/x-www-form-urlencoded
@@ -90,13 +90,13 @@ public:
         MultipartFormData // for multipart/form-data
     };
 
-    static PassRefPtr<FormData> create();
-    static PassRefPtr<FormData> create(const void*, size_t);
-    static PassRefPtr<FormData> create(const CString&);
-    static PassRefPtr<FormData> create(const Vector<char>&);
-    PassRefPtr<FormData> copy() const;
-    PassRefPtr<FormData> deepCopy() const;
-    ~FormData();
+    static PassRefPtr<EncodedFormData> create();
+    static PassRefPtr<EncodedFormData> create(const void*, size_t);
+    static PassRefPtr<EncodedFormData> create(const CString&);
+    static PassRefPtr<EncodedFormData> create(const Vector<char>&);
+    PassRefPtr<EncodedFormData> copy() const;
+    PassRefPtr<EncodedFormData> deepCopy() const;
+    ~EncodedFormData();
 
     void appendData(const void* data, size_t);
     void appendFile(const String& filePath);
@@ -131,14 +131,14 @@ public:
         return FormURLEncoded;
     }
 
-    // Size of the elements making up the FormData.
+    // Size of the elements making up the EncodedFormData.
     unsigned long long sizeInBytes() const;
 
     bool isSafeToSendToAnotherThread() const;
 
 private:
-    FormData();
-    FormData(const FormData&);
+    EncodedFormData();
+    EncodedFormData(const EncodedFormData&);
 
     Vector<FormDataElement> m_elements;
 
@@ -147,12 +147,12 @@ private:
     bool m_containsPasswordData;
 };
 
-inline bool operator==(const FormData& a, const FormData& b)
+inline bool operator==(const EncodedFormData& a, const EncodedFormData& b)
 {
     return a.elements() == b.elements();
 }
 
-inline bool operator!=(const FormData& a, const FormData& b)
+inline bool operator!=(const EncodedFormData& a, const EncodedFormData& b)
 {
     return !(a == b);
 }

@@ -10,7 +10,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "platform/blob/BlobData.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 
 namespace blink {
 
@@ -118,13 +118,13 @@ PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(FetchDataCons
     return nullptr;
 }
 
-PassRefPtr<FormData> BodyStreamBuffer::drainAsFormData()
+PassRefPtr<EncodedFormData> BodyStreamBuffer::drainAsFormData()
 {
     ASSERT(!isLocked());
     if (ReadableStream::Closed == m_stream->stateInternal() || ReadableStream::Errored == m_stream->stateInternal())
         return nullptr;
 
-    RefPtr<FormData> formData = m_reader->drainAsFormData();
+    RefPtr<EncodedFormData> formData = m_reader->drainAsFormData();
     if (formData) {
         close();
         return formData.release();

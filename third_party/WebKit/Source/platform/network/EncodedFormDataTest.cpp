@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 
 #include <gtest/gtest.h>
 
@@ -11,7 +11,7 @@ namespace blink {
 
 namespace {
 
-class FormDataTest : public ::testing::Test {
+class EncodedFormDataTest : public ::testing::Test {
 public:
     void checkDeepCopied(const String& a, const String& b)
     {
@@ -37,9 +37,9 @@ public:
     }
 };
 
-TEST_F(FormDataTest, DeepCopy)
+TEST_F(EncodedFormDataTest, DeepCopy)
 {
-    RefPtr<FormData> original(FormData::create());
+    RefPtr<EncodedFormData> original(EncodedFormData::create());
     original->appendData("Foo", 3);
     original->appendFileRange("example.txt", 12345, 56789, 9999.0);
     original->appendBlob("originalUUID", nullptr);
@@ -51,7 +51,7 @@ TEST_F(FormDataTest, DeepCopy)
     original->setBoundary(boundaryVector);
     original->setContainsPasswordData(true);
 
-    RefPtr<FormData> copy = original->deepCopy();
+    RefPtr<EncodedFormData> copy = original->deepCopy();
 
     // Check that contents are copied (compare the copy with expected values).
     const Vector<FormDataElement>& originalElements = original->elements();

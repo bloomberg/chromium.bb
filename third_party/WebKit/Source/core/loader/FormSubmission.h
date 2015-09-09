@@ -38,8 +38,8 @@
 
 namespace blink {
 
+class EncodedFormData;
 class Event;
-class FormData;
 struct FrameLoadRequest;
 class HTMLFormElement;
 
@@ -101,13 +101,13 @@ public:
     const AtomicString& target() const { return m_target; }
     void clearTarget() { m_target = nullAtom; }
     HTMLFormElement* form() const { return m_form.get(); }
-    FormData* data() const { return m_formData.get(); }
+    EncodedFormData* data() const { return m_formData.get(); }
     Event* event() const { return m_event.get(); }
 
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<FormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
+    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<EncodedFormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 
@@ -117,7 +117,7 @@ private:
     AtomicString m_target;
     AtomicString m_contentType;
     RefPtrWillBeMember<HTMLFormElement> m_form;
-    RefPtr<FormData> m_formData;
+    RefPtr<EncodedFormData> m_formData;
     String m_boundary;
     RefPtrWillBeMember<Event> m_event;
     String m_result;

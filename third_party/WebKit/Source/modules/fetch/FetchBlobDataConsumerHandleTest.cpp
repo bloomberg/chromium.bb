@@ -365,7 +365,7 @@ TEST_F(FetchBlobDataConsumerHandleTest, DrainAsFormData)
     OwnPtr<FetchDataConsumerHandle> handle
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
 
-    RefPtr<FormData> formData = handle->obtainReader(nullptr)->drainAsFormData();
+    RefPtr<EncodedFormData> formData = handle->obtainReader(nullptr)->drainAsFormData();
     ASSERT_TRUE(formData);
     EXPECT_TRUE(formData->isSafeToSendToAnotherThread());
     ASSERT_EQ(1u, formData->elements().size());

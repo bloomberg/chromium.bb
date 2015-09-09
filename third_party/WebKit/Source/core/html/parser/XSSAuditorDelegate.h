@@ -37,7 +37,7 @@
 namespace blink {
 
 class Document;
-class FormData;
+class EncodedFormData;
 
 class XSSInfo {
     WTF_MAKE_FAST_ALLOCATED(XSSInfo);
@@ -77,7 +77,7 @@ public:
     void setReportURL(const KURL& url) { m_reportURL = url; }
 
 private:
-    PassRefPtr<FormData> generateViolationReport(const XSSInfo&);
+    PassRefPtr<EncodedFormData> generateViolationReport(const XSSInfo&);
 
     RawPtrWillBeMember<Document> m_document;
     bool m_didSendNotifications;

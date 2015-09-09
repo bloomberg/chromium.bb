@@ -44,7 +44,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "platform/JSONValues.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/MainThread.h"
@@ -360,7 +360,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         if (auditorDelegate)
             auditorDelegate->setReportURL(xssProtectionReportURL.copy());
 
-        FormData* httpBody = documentLoader->request().httpBody();
+        EncodedFormData* httpBody = documentLoader->request().httpBody();
         if (httpBody && !httpBody->isEmpty())
             m_httpBodyAsString = httpBody->flattenToString();
     }

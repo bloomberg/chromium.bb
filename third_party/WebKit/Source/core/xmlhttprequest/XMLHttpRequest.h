@@ -30,7 +30,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
@@ -134,7 +134,7 @@ public:
     String responseURL();
 
     // For Inspector.
-    void sendForInspectorXHRReplay(PassRefPtr<FormData>, ExceptionState&);
+    void sendForInspectorXHRReplay(PassRefPtr<EncodedFormData>, ExceptionState&);
 
     XMLHttpRequestUpload* upload();
 
@@ -231,7 +231,7 @@ private:
     void clearResponse();
     void clearRequest();
 
-    void createRequest(PassRefPtr<FormData>, ExceptionState&);
+    void createRequest(PassRefPtr<EncodedFormData>, ExceptionState&);
 
     // Dispatches a response ProgressEvent.
     void dispatchProgressEvent(const AtomicString&, long long, long long);

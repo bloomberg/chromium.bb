@@ -40,7 +40,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "platform/network/FormDataBuilder.h"
+#include "platform/network/FormDataEncoder.h"
 #include "public/web/WebFormElement.h"
 #include "public/web/WebInputElement.h"
 #include "wtf/text/TextEncoding.h"
@@ -52,7 +52,7 @@ using namespace HTMLNames;
 namespace {
 
 // Gets the encoding for the form.
-// TODO(tkent): Use FormDataBuilder::encodingFromAcceptCharset().
+// TODO(tkent): Use FormDataEncoder::encodingFromAcceptCharset().
 void getFormEncoding(const HTMLFormElement& form, WTF::TextEncoding* encoding)
 {
     String str(form.fastGetAttribute(HTMLNames::accept_charsetAttr));
@@ -217,13 +217,13 @@ bool buildSearchString(const HTMLFormElement& form, Vector<char>* encodedString,
         for (const FormDataList::Item& item : formData->items()) {
             if (!encodedString->isEmpty())
                 encodedString->append('&');
-            FormDataBuilder::encodeStringAsFormData(*encodedString, item.key());
+            FormDataEncoder::encodeStringAsFormData(*encodedString, item.key());
             encodedString->append('=');
             if (&control == textElement) {
                 encodedString->append("{searchTerms}", 13);
                 isElementFound = true;
             } else {
-                FormDataBuilder::encodeStringAsFormData(*encodedString, item.data());
+                FormDataEncoder::encodeStringAsFormData(*encodedString, item.data());
             }
         }
     }
@@ -282,7 +282,7 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
 
     String action(formElement->action());
     KURL url(formElement->document().completeURL(action.isNull() ? "" : action));
-    RefPtr<FormData> formData = FormData::create(encodedString);
+    RefPtr<EncodedFormData> formData = EncodedFormData::create(encodedString);
     url.setQuery(formData->flattenToString());
     m_url = url;
     m_encoding = String(encoding.name());

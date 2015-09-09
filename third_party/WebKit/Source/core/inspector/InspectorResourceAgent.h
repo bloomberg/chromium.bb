@@ -48,8 +48,8 @@ class Resource;
 struct FetchInitiatorInfo;
 class Document;
 class DocumentLoader;
+class EncodedFormData;
 class ExecutionContext;
-class FormData;
 class LocalFrame;
 class HTTPHeaderMap;
 class InspectorFrontend;
@@ -97,7 +97,7 @@ public:
     bool shouldForceCORSPreflight();
 
     void documentThreadableLoaderStartedLoadingForClient(unsigned long identifier, ThreadableLoaderClient*);
-    void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
+    void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<EncodedFormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
     void didFailXHRLoading(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&);
     void didFinishXHRLoading(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&);
 

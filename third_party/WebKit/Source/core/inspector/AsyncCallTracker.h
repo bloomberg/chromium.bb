@@ -40,12 +40,12 @@
 
 namespace blink {
 
+class EncodedFormData;
 class Event;
 class EventListener;
 class EventTarget;
 class ExecutionContext;
 class ExecutionContextTask;
-class FormData;
 class HTTPHeaderMap;
 class KURL;
 class MutationObserver;
@@ -79,7 +79,7 @@ public:
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
     void didHandleEvent() { didFireAsyncCall(); }
 
-    void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
+    void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<EncodedFormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
     void didDispatchXHRLoadendEvent(XMLHttpRequest*);
 
     void didEnqueueMutationRecord(ExecutionContext*, MutationObserver*);

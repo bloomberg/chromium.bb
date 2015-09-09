@@ -22,7 +22,7 @@ using Result = FetchDataConsumerHandle::Result;
 
 namespace {
 
-bool isSimple(const FormData* formData)
+bool isSimple(const EncodedFormData* formData)
 {
     for (const auto& element : formData->elements()) {
         if (element.m_type != FormDataElement::data)
@@ -48,7 +48,7 @@ class FetchFormDataConsumerHandle::SimpleContext final : public Context {
 public:
     static PassRefPtr<SimpleContext> create(const String& body) { return adoptRef(new SimpleContext(body)); }
     static PassRefPtr<SimpleContext> create(const void* data, size_t size) { return adoptRef(new SimpleContext(data, size)); }
-    static PassRefPtr<SimpleContext> create(PassRefPtr<FormData> body) { return adoptRef(new SimpleContext(body)); }
+    static PassRefPtr<SimpleContext> create(PassRefPtr<EncodedFormData> body) { return adoptRef(new SimpleContext(body)); }
 
     PassOwnPtr<Reader> obtainReader(Client* client) override
     {
@@ -58,7 +58,7 @@ public:
         return ReaderImpl::create(this, client);
     }
 
-    PassRefPtr<FormData> drainFormData()
+    PassRefPtr<EncodedFormData> drainFormData()
     {
         ASSERT(!m_formData || m_formData->isSafeToSendToAnotherThread());
         return m_formData.release();
@@ -124,7 +124,7 @@ private:
         {
             return m_context->endRead(read);
         }
-        PassRefPtr<FormData> drainAsFormData() override
+        PassRefPtr<EncodedFormData> drainAsFormData() override
         {
             return m_context->drainFormData();
         }
@@ -137,10 +137,10 @@ private:
     };
 
     explicit SimpleContext(const String& body)
-        : m_formData(FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables)))
+        : m_formData(EncodedFormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables)))
         , m_flattenFormDataOffset(0) {}
-    explicit SimpleContext(const void* data, size_t size) : m_formData(FormData::create(data, size)) , m_flattenFormDataOffset(0) {}
-    explicit SimpleContext(PassRefPtr<FormData> body) : m_formData(body->deepCopy()) , m_flattenFormDataOffset(0) {}
+    SimpleContext(const void* data, size_t size) : m_formData(EncodedFormData::create(data, size)) , m_flattenFormDataOffset(0) {}
+    explicit SimpleContext(PassRefPtr<EncodedFormData> body) : m_formData(body->deepCopy()) , m_flattenFormDataOffset(0) {}
 
     void flatten()
     {
@@ -154,7 +154,7 @@ private:
     }
 
     // either one of |m_formData| and |m_flattenFormData| is usable at a time.
-    RefPtr<FormData> m_formData;
+    RefPtr<EncodedFormData> m_formData;
     Vector<char> m_flattenFormData;
     size_t m_flattenFormDataOffset;
 };
@@ -163,7 +163,7 @@ class FetchFormDataConsumerHandle::ComplexContext final : public Context {
     class ReaderImpl;
 public:
     static PassRefPtr<ComplexContext> create(ExecutionContext* executionContext,
-        PassRefPtr<FormData> formData,
+        PassRefPtr<EncodedFormData> formData,
         FetchBlobDataConsumerHandle::LoaderFactory* factory)
     {
         return adoptRef(new ComplexContext(executionContext, formData, factory));
@@ -207,9 +207,9 @@ private:
             }
             return handle.release();
         }
-        PassRefPtr<FormData> drainAsFormData() override
+        PassRefPtr<EncodedFormData> drainAsFormData() override
         {
-            RefPtr<FormData> formData = m_context->drainFormData();
+            RefPtr<EncodedFormData> formData = m_context->drainFormData();
             if (formData) {
                 // Drain blob from the underlying handle to mark data as read.
                 RefPtr<BlobDataHandle> handle = m_reader->drainAsBlobDataHandle(AllowBlobWithInvalidSize);
@@ -227,7 +227,7 @@ private:
         OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
     };
 
-    explicit ComplexContext(ExecutionContext* executionContext, PassRefPtr<FormData> body, FetchBlobDataConsumerHandle::LoaderFactory* factory)
+    ComplexContext(ExecutionContext* executionContext, PassRefPtr<EncodedFormData> body, FetchBlobDataConsumerHandle::LoaderFactory* factory)
     {
         OwnPtr<BlobData> blobData = BlobData::create();
         for (const auto& element : body->elements()) {
@@ -248,7 +248,7 @@ private:
             }
         }
         // Here we handle body->boundary() as a C-style string. See
-        // FormDataBuilder::generateUniqueBoundaryString.
+        // FormDataEncoder::generateUniqueBoundaryString.
         blobData->setContentType(AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + body->boundary().data());
         auto size = blobData->length();
         if (factory) {
@@ -262,13 +262,13 @@ private:
         // ref-counting.
         m_formData = body->deepCopy();
     }
-    PassRefPtr<FormData> drainFormData()
+    PassRefPtr<EncodedFormData> drainFormData()
     {
         ASSERT(!m_formData || m_formData->isSafeToSendToAnotherThread());
         return m_formData.release();
     }
 
-    RefPtr<FormData> m_formData;
+    RefPtr<EncodedFormData> m_formData;
     OwnPtr<FetchDataConsumerHandle> m_handle;
 };
 
@@ -288,13 +288,13 @@ PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(const vo
 {
     return adoptPtr(new FetchFormDataConsumerHandle(data, size));
 }
-PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<FormData> body)
+PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<EncodedFormData> body)
 {
     return adoptPtr(new FetchFormDataConsumerHandle(executionContext, body));
 }
 PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::createForTest(
     ExecutionContext* executionContext,
-    PassRefPtr<FormData> body,
+    PassRefPtr<EncodedFormData> body,
     FetchBlobDataConsumerHandle::LoaderFactory* loaderFactory)
 {
     return adoptPtr(new FetchFormDataConsumerHandle(executionContext, body, loaderFactory));
@@ -303,7 +303,7 @@ PassOwnPtr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::createForTest(
 FetchFormDataConsumerHandle::FetchFormDataConsumerHandle(const String& body) : m_context(SimpleContext::create(body)) {}
 FetchFormDataConsumerHandle::FetchFormDataConsumerHandle(const void* data, size_t size) : m_context(SimpleContext::create(data, size)) {}
 FetchFormDataConsumerHandle::FetchFormDataConsumerHandle(ExecutionContext* executionContext,
-    PassRefPtr<FormData> body,
+    PassRefPtr<EncodedFormData> body,
     FetchBlobDataConsumerHandle::LoaderFactory* loaderFactory)
 {
     if (isSimple(body.get())) {

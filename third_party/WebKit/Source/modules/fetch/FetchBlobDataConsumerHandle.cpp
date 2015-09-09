@@ -225,12 +225,12 @@ public:
             return blobDataHandle.release();
         }
 
-        PassRefPtr<FormData> drainAsFormData() override
+        PassRefPtr<EncodedFormData> drainAsFormData() override
         {
             RefPtr<BlobDataHandle> handle = drainAsBlobDataHandle(AllowBlobWithInvalidSize);
             if (!handle)
                 return nullptr;
-            RefPtr<FormData> formData = FormData::create();
+            RefPtr<EncodedFormData> formData = EncodedFormData::create();
             formData->appendBlob(handle->uuid(), handle);
             return formData.release();
         }

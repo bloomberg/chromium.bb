@@ -43,9 +43,9 @@
 
 namespace blink {
 
+class EncodedFormData;
 class ExecutionContext;
 class Resource;
-class FormData;
 class ResourceResponse;
 class SharedBuffer;
 class TextResourceDecoder;
@@ -55,25 +55,25 @@ class XHRReplayData final
     , public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XHRReplayData);
 public:
-    static PassRefPtrWillBeRawPtr<XHRReplayData> create(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
+    static PassRefPtrWillBeRawPtr<XHRReplayData> create(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<EncodedFormData>, bool includeCredentials);
 
     void addHeader(const AtomicString& key, const AtomicString& value);
     const AtomicString& method() const { return m_method; }
     const KURL& url() const { return m_url; }
     bool async() const { return m_async; }
-    PassRefPtr<FormData> formData() const { return m_formData; }
+    PassRefPtr<EncodedFormData> formData() const { return m_formData; }
     const HTTPHeaderMap& headers() const { return m_headers; }
     bool includeCredentials() const { return m_includeCredentials; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    XHRReplayData(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
+    XHRReplayData(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<EncodedFormData>, bool includeCredentials);
 
     AtomicString m_method;
     KURL m_url;
     bool m_async;
-    RefPtr<FormData> m_formData;
+    RefPtr<EncodedFormData> m_formData;
     HTTPHeaderMap m_headers;
     bool m_includeCredentials;
 };

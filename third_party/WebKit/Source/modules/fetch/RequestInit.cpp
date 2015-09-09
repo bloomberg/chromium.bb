@@ -17,7 +17,7 @@
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/Headers.h"
 #include "platform/blob/BlobData.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 
 namespace blink {
 
@@ -54,9 +54,9 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         DOMFormData* domFormData = V8FormData::toImpl(v8::Local<v8::Object>::Cast(v8Body));
         opaque = domFormData->opaque();
 
-        RefPtr<FormData> formData = domFormData->createMultiPartFormData();
+        RefPtr<EncodedFormData> formData = domFormData->createMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
-        // FormDataBuilder::generateUniqueBoundaryString.
+        // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();
         body = FetchFormDataConsumerHandle::create(context, formData.release());
     } else if (v8Body->IsString()) {

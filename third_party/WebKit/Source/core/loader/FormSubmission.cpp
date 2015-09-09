@@ -43,8 +43,8 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/FormData.h"
-#include "platform/network/FormDataBuilder.h"
+#include "platform/network/EncodedFormData.h"
+#include "platform/network/FormDataEncoder.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
@@ -61,7 +61,7 @@ static int64_t generateFormDataIdentifier()
     return ++nextIdentifier;
 }
 
-static void appendMailtoPostFormDataToURL(KURL& url, const FormData& data, const String& encodingType)
+static void appendMailtoPostFormDataToURL(KURL& url, const EncodedFormData& data, const String& encodingType)
 {
     String body = data.flattenToString();
 
@@ -72,7 +72,7 @@ static void appendMailtoPostFormDataToURL(KURL& url, const FormData& data, const
 
     Vector<char> bodyData;
     bodyData.append("body=", 5);
-    FormDataBuilder::encodeStringAsFormData(bodyData, body.utf8());
+    FormDataEncoder::encodeStringAsFormData(bodyData, body.utf8());
     body = String(bodyData.data(), bodyData.size()).replaceWithLiteral('+', "%20");
 
     StringBuilder query;
@@ -143,7 +143,7 @@ void FormSubmission::Attributes::copyFrom(const Attributes& other)
     m_acceptCharset = other.m_acceptCharset;
 }
 
-inline FormSubmission::FormSubmission(Method method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement* form, PassRefPtr<FormData> data, const String& boundary, PassRefPtrWillBeRawPtr<Event> event)
+inline FormSubmission::FormSubmission(Method method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement* form, PassRefPtr<EncodedFormData> data, const String& boundary, PassRefPtrWillBeRawPtr<Event> event)
     : m_method(method)
     , m_action(action)
     , m_target(target)
@@ -208,7 +208,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
             isMultiPartForm = false;
         }
     }
-    WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataBuilder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.charset(), document.defaultCharset());
+    WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataEncoder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.charset(), document.defaultCharset());
     DOMFormData* domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
 
     bool containsPasswordData = false;
@@ -225,18 +225,18 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
         }
     }
 
-    RefPtr<FormData> formData;
+    RefPtr<EncodedFormData> formData;
     String boundary;
 
     if (isMultiPartForm) {
         formData = domFormData->createMultiPartFormData();
         boundary = formData->boundary().data();
     } else {
-        formData = domFormData->createFormData(attributes.method() == GetMethod ? FormData::FormURLEncoded : FormData::parseEncodingType(encodingType));
+        formData = domFormData->createFormData(attributes.method() == GetMethod ? EncodedFormData::FormURLEncoded : EncodedFormData::parseEncodingType(encodingType));
         if (copiedAttributes.method() == PostMethod && isMailtoForm) {
             // Convert the form data into a string that we put into the URL.
             appendMailtoPostFormDataToURL(actionURL, *formData, encodingType);
-            formData = FormData::create();
+            formData = EncodedFormData::create();
         }
     }
 

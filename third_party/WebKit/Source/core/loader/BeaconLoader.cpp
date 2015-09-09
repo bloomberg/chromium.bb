@@ -18,7 +18,7 @@
 #include "core/loader/MixedContentChecker.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
@@ -169,7 +169,7 @@ unsigned long long Beacon::beaconSize(const String& data)
 
 bool Beacon::serialize(const String& data, ResourceRequest& request, int, int&)
 {
-    RefPtr<FormData> entityBody = FormData::create(data.utf8());
+    RefPtr<EncodedFormData> entityBody = EncodedFormData::create(data.utf8());
     request.setHTTPBody(entityBody);
     request.setHTTPContentType("text/plain;charset=UTF-8");
     return true;
@@ -183,7 +183,7 @@ unsigned long long Beacon::beaconSize(Blob* data)
 bool Beacon::serialize(Blob* data, ResourceRequest& request, int, int&)
 {
     ASSERT(data);
-    RefPtr<FormData> entityBody = FormData::create();
+    RefPtr<EncodedFormData> entityBody = EncodedFormData::create();
     if (data->hasBackingFile())
         entityBody->appendFile(toFile(data)->path());
     else
@@ -206,7 +206,7 @@ unsigned long long Beacon::beaconSize(PassRefPtr<DOMArrayBufferView> data)
 bool Beacon::serialize(PassRefPtr<DOMArrayBufferView> data, ResourceRequest& request, int, int&)
 {
     ASSERT(data);
-    RefPtr<FormData> entityBody = FormData::create(data->baseAddress(), data->byteLength());
+    RefPtr<EncodedFormData> entityBody = EncodedFormData::create(data->baseAddress(), data->byteLength());
     request.setHTTPBody(entityBody.release());
 
     // FIXME: a reasonable choice, but not in the spec; should it give a default?
@@ -225,7 +225,7 @@ unsigned long long Beacon::beaconSize(DOMFormData* data)
 bool Beacon::serialize(DOMFormData* data, ResourceRequest& request, int allowance, int& payloadLength)
 {
     ASSERT(data);
-    RefPtr<FormData> entityBody = data->createMultiPartFormData();
+    RefPtr<EncodedFormData> entityBody = data->createMultiPartFormData();
     unsigned long long entitySize = entityBody->sizeInBytes();
     if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
         return false;

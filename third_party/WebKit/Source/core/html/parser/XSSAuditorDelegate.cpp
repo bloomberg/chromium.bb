@@ -35,7 +35,7 @@
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/PingLoader.h"
 #include "platform/JSONValues.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -80,14 +80,14 @@ DEFINE_TRACE(XSSAuditorDelegate)
     visitor->trace(m_document);
 }
 
-PassRefPtr<FormData> XSSAuditorDelegate::generateViolationReport(const XSSInfo& xssInfo)
+PassRefPtr<EncodedFormData> XSSAuditorDelegate::generateViolationReport(const XSSInfo& xssInfo)
 {
     ASSERT(isMainThread());
 
     FrameLoader& frameLoader = m_document->frame()->loader();
     String httpBody;
     if (frameLoader.documentLoader()) {
-        if (FormData* formData = frameLoader.documentLoader()->originalRequest().httpBody())
+        if (EncodedFormData* formData = frameLoader.documentLoader()->originalRequest().httpBody())
             httpBody = formData->flattenToString();
     }
 
@@ -98,7 +98,7 @@ PassRefPtr<FormData> XSSAuditorDelegate::generateViolationReport(const XSSInfo& 
     RefPtr<JSONObject> reportObject = JSONObject::create();
     reportObject->setObject("xss-report", reportDetails.release());
 
-    return FormData::create(reportObject->toJSONString().utf8().data());
+    return EncodedFormData::create(reportObject->toJSONString().utf8().data());
 }
 
 void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo)

@@ -11,7 +11,7 @@
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -22,8 +22,8 @@ namespace blink {
 
 class ExecutionContext;
 
-// FetchFormDataConsumerHandle is a handle made from a FormData. It provides
-// drainAsFormData in the associated Reader.
+// FetchFormDataConsumerHandle is a handle made from an EncodedFormData. It
+// provides drainAsFormData in the associated Reader.
 class MODULES_EXPORT FetchFormDataConsumerHandle final : public FetchDataConsumerHandle {
     WTF_MAKE_NONCOPYABLE(FetchFormDataConsumerHandle);
 public:
@@ -31,14 +31,14 @@ public:
     static PassOwnPtr<FetchDataConsumerHandle> create(PassRefPtr<DOMArrayBuffer> body);
     static PassOwnPtr<FetchDataConsumerHandle> create(PassRefPtr<DOMArrayBufferView> body);
     static PassOwnPtr<FetchDataConsumerHandle> create(const void* data, size_t);
-    static PassOwnPtr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<FormData> body);
+    static PassOwnPtr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<EncodedFormData> body);
     // Use FetchBlobDataConsumerHandle for blobs.
 
     ~FetchFormDataConsumerHandle() override;
 
     static PassOwnPtr<FetchDataConsumerHandle> createForTest(
         ExecutionContext*,
-        PassRefPtr<FormData> body,
+        PassRefPtr<EncodedFormData> body,
         FetchBlobDataConsumerHandle::LoaderFactory*);
 
 private:
@@ -49,7 +49,7 @@ private:
 
     explicit FetchFormDataConsumerHandle(const String& body);
     FetchFormDataConsumerHandle(const void*, size_t);
-    FetchFormDataConsumerHandle(ExecutionContext*, const PassRefPtr<FormData> body, FetchBlobDataConsumerHandle::LoaderFactory* = nullptr);
+    FetchFormDataConsumerHandle(ExecutionContext*, const PassRefPtr<EncodedFormData> body, FetchBlobDataConsumerHandle::LoaderFactory* = nullptr);
 
     Reader* obtainReaderInternal(Client*) override;
 

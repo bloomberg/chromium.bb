@@ -14,7 +14,7 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/ResponseInit.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 #include "wtf/RefPtr.h"
@@ -133,7 +133,7 @@ Response* Response::create(ExecutionContext* context, const BodyInit& body, cons
         DOMFormData* domFormData = body.getAsFormData();
         OwnPtr<BlobData> blobData = BlobData::create();
         // FIXME: the same code exist in RequestInit::RequestInit().
-        RefPtr<FormData> httpBody = domFormData->createMultiPartFormData();
+        RefPtr<EncodedFormData> httpBody = domFormData->createMultiPartFormData();
         for (size_t i = 0; i < httpBody->elements().size(); ++i) {
             const FormDataElement& element = httpBody->elements()[i];
             switch (element.m_type) {

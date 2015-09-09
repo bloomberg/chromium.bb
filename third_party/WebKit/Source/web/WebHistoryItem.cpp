@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/loader/HistoryItem.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebHTTPBody.h"
@@ -212,7 +212,7 @@ void WebHistoryItem::setHTTPBody(const WebHTTPBody& httpBody)
 WebVector<WebString> WebHistoryItem::getReferencedFilePaths() const
 {
     HashSet<String> filePaths;
-    const FormData* formData = m_private->formData();
+    const EncodedFormData* formData = m_private->formData();
     if (formData) {
         for (size_t i = 0; i < formData->elements().size(); ++i) {
             const FormDataElement& element = formData->elements()[i];

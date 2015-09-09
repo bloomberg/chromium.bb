@@ -706,7 +706,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
     if (!initSend(exceptionState))
         return;
 
-    RefPtr<FormData> httpBody;
+    RefPtr<EncodedFormData> httpBody;
 
     if (areMethodAndURLValidForSend()) {
         // FIXME: Per https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send the
@@ -717,7 +717,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
 
         String body = createMarkup(document);
 
-        httpBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
+        httpBody = EncodedFormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
     }
 
     createRequest(httpBody.release(), exceptionState);
@@ -730,7 +730,7 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
     if (!initSend(exceptionState))
         return;
 
-    RefPtr<FormData> httpBody;
+    RefPtr<EncodedFormData> httpBody;
 
     if (!body.isNull() && areMethodAndURLValidForSend()) {
         String contentType = getRequestHeader("Content-Type");
@@ -741,7 +741,7 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
             m_requestHeaders.set("Content-Type", AtomicString(contentType));
         }
 
-        httpBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
+        httpBody = EncodedFormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
     }
 
     createRequest(httpBody.release(), exceptionState);
@@ -754,7 +754,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
     if (!initSend(exceptionState))
         return;
 
-    RefPtr<FormData> httpBody;
+    RefPtr<EncodedFormData> httpBody;
 
     if (areMethodAndURLValidForSend()) {
         if (getRequestHeader("Content-Type").isEmpty()) {
@@ -765,7 +765,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
         }
 
         // FIXME: add support for uploading bundles.
-        httpBody = FormData::create();
+        httpBody = EncodedFormData::create();
         if (body->hasBackingFile()) {
             File* file = toFile(body);
             if (!file->path().isEmpty())
@@ -789,7 +789,7 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionState& exceptionState)
     if (!initSend(exceptionState))
         return;
 
-    RefPtr<FormData> httpBody;
+    RefPtr<EncodedFormData> httpBody;
 
     if (areMethodAndURLValidForSend()) {
         httpBody = body->createMultiPartFormData();
@@ -822,16 +822,16 @@ void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionSta
     if (!initSend(exceptionState))
         return;
 
-    RefPtr<FormData> httpBody;
+    RefPtr<EncodedFormData> httpBody;
 
     if (areMethodAndURLValidForSend()) {
-        httpBody = FormData::create(data, length);
+        httpBody = EncodedFormData::create(data, length);
     }
 
     createRequest(httpBody.release(), exceptionState);
 }
 
-void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<FormData> formData, ExceptionState& exceptionState)
+void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<EncodedFormData> formData, ExceptionState& exceptionState)
 {
     createRequest(formData ? formData->deepCopy() : nullptr, exceptionState);
     m_exceptionCode = exceptionState.code();
@@ -856,7 +856,7 @@ void XMLHttpRequest::throwForLoadFailureIfNeeded(ExceptionState& exceptionState,
     exceptionState.throwDOMException(m_exceptionCode, message);
 }
 
-void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState& exceptionState)
+void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, ExceptionState& exceptionState)
 {
     // Only GET request is supported for blob URL.
     if (m_url.protocolIs("blob") && m_method != "GET") {

@@ -114,7 +114,7 @@ static bool needsHistoryItemRestore(FrameLoadType type)
 ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item,
     ResourceRequestCachePolicy cachePolicy)
 {
-    RefPtr<FormData> formData = item->formData();
+    RefPtr<EncodedFormData> formData = item->formData();
     ResourceRequest request(item->url());
     request.setHTTPReferrer(item->referrer());
     request.setCachePolicy(cachePolicy);

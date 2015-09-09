@@ -50,7 +50,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
@@ -774,7 +774,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     if (!shouldSendViolationReport(stringifiedReport))
         return;
 
-    RefPtr<FormData> report = FormData::create(stringifiedReport.utf8());
+    RefPtr<EncodedFormData> report = EncodedFormData::create(stringifiedReport.utf8());
 
     for (const String& endpoint : reportEndpoints) {
         // If we have a context frame we're dealing with 'frame-ancestors' and we don't have our

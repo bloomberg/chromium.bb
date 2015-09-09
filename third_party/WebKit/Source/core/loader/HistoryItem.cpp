@@ -180,7 +180,7 @@ void HistoryItem::setFormInfoFromRequest(const ResourceRequest& request)
     }
 }
 
-void HistoryItem::setFormData(PassRefPtr<FormData> formData)
+void HistoryItem::setFormData(PassRefPtr<EncodedFormData> formData)
 {
     m_formData = formData;
 }
@@ -190,7 +190,7 @@ void HistoryItem::setFormContentType(const AtomicString& formContentType)
     m_formContentType = formContentType;
 }
 
-FormData* HistoryItem::formData()
+EncodedFormData* HistoryItem::formData()
 {
     return m_formData.get();
 }

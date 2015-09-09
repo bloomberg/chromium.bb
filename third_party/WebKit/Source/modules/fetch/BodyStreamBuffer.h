@@ -19,8 +19,8 @@
 
 namespace blink {
 
+class EncodedFormData;
 class ExecutionContext;
-class FormData;
 
 // A BodyStreamBuffer constructed with a null handle is said to have null body.
 // One can observe if a buffer has null body by calling |hasBody| function.
@@ -38,7 +38,7 @@ public:
 
     // Callable only when not locked.
     PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
-    PassRefPtr<FormData> drainAsFormData();
+    PassRefPtr<EncodedFormData> drainAsFormData();
 
     // Callable only when not locked. Returns a non-null handle even when
     // having null body.

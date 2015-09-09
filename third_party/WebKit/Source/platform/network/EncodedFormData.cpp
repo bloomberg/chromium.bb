@@ -20,10 +20,10 @@
  */
 
 #include "config.h"
-#include "platform/network/FormData.h"
+#include "platform/network/EncodedFormData.h"
 
 #include "platform/FileMetadata.h"
-#include "platform/network/FormDataBuilder.h"
+#include "platform/network/FormDataEncoder.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 
@@ -36,58 +36,58 @@ bool FormDataElement::isSafeToSendToAnotherThread() const
         && m_fileSystemURL.isSafeToSendToAnotherThread();
 }
 
-inline FormData::FormData()
+inline EncodedFormData::EncodedFormData()
     : m_identifier(0)
     , m_containsPasswordData(false)
 {
 }
 
-inline FormData::FormData(const FormData& data)
-    : RefCounted<FormData>()
+inline EncodedFormData::EncodedFormData(const EncodedFormData& data)
+    : RefCounted<EncodedFormData>()
     , m_elements(data.m_elements)
     , m_identifier(data.m_identifier)
     , m_containsPasswordData(data.m_containsPasswordData)
 {
 }
 
-FormData::~FormData()
+EncodedFormData::~EncodedFormData()
 {
 }
 
-PassRefPtr<FormData> FormData::create()
+PassRefPtr<EncodedFormData> EncodedFormData::create()
 {
-    return adoptRef(new FormData);
+    return adoptRef(new EncodedFormData);
 }
 
-PassRefPtr<FormData> FormData::create(const void* data, size_t size)
+PassRefPtr<EncodedFormData> EncodedFormData::create(const void* data, size_t size)
 {
-    RefPtr<FormData> result = create();
+    RefPtr<EncodedFormData> result = create();
     result->appendData(data, size);
     return result.release();
 }
 
-PassRefPtr<FormData> FormData::create(const CString& string)
+PassRefPtr<EncodedFormData> EncodedFormData::create(const CString& string)
 {
-    RefPtr<FormData> result = create();
+    RefPtr<EncodedFormData> result = create();
     result->appendData(string.data(), string.length());
     return result.release();
 }
 
-PassRefPtr<FormData> FormData::create(const Vector<char>& vector)
+PassRefPtr<EncodedFormData> EncodedFormData::create(const Vector<char>& vector)
 {
-    RefPtr<FormData> result = create();
+    RefPtr<EncodedFormData> result = create();
     result->appendData(vector.data(), vector.size());
     return result.release();
 }
 
-PassRefPtr<FormData> FormData::copy() const
+PassRefPtr<EncodedFormData> EncodedFormData::copy() const
 {
-    return adoptRef(new FormData(*this));
+    return adoptRef(new EncodedFormData(*this));
 }
 
-PassRefPtr<FormData> FormData::deepCopy() const
+PassRefPtr<EncodedFormData> EncodedFormData::deepCopy() const
 {
-    RefPtr<FormData> formData(create());
+    RefPtr<EncodedFormData> formData(create());
 
     formData->m_identifier = m_identifier;
     formData->m_boundary = m_boundary;
@@ -115,7 +115,7 @@ PassRefPtr<FormData> FormData::deepCopy() const
     return formData.release();
 }
 
-void FormData::appendData(const void* data, size_t size)
+void EncodedFormData::appendData(const void* data, size_t size)
 {
     if (m_elements.isEmpty() || m_elements.last().m_type != FormDataElement::data)
         m_elements.append(FormDataElement());
@@ -125,32 +125,32 @@ void FormData::appendData(const void* data, size_t size)
     memcpy(e.m_data.data() + oldSize, data, size);
 }
 
-void FormData::appendFile(const String& filename)
+void EncodedFormData::appendFile(const String& filename)
 {
     m_elements.append(FormDataElement(filename, 0, BlobDataItem::toEndOfFile, invalidFileTime()));
 }
 
-void FormData::appendFileRange(const String& filename, long long start, long long length, double expectedModificationTime)
+void EncodedFormData::appendFileRange(const String& filename, long long start, long long length, double expectedModificationTime)
 {
     m_elements.append(FormDataElement(filename, start, length, expectedModificationTime));
 }
 
-void FormData::appendBlob(const String& uuid, PassRefPtr<BlobDataHandle> optionalHandle)
+void EncodedFormData::appendBlob(const String& uuid, PassRefPtr<BlobDataHandle> optionalHandle)
 {
     m_elements.append(FormDataElement(uuid, optionalHandle));
 }
 
-void FormData::appendFileSystemURL(const KURL& url)
+void EncodedFormData::appendFileSystemURL(const KURL& url)
 {
     m_elements.append(FormDataElement(url, 0, BlobDataItem::toEndOfFile, invalidFileTime()));
 }
 
-void FormData::appendFileSystemURLRange(const KURL& url, long long start, long long length, double expectedModificationTime)
+void EncodedFormData::appendFileSystemURLRange(const KURL& url, long long start, long long length, double expectedModificationTime)
 {
     m_elements.append(FormDataElement(url, start, length, expectedModificationTime));
 }
 
-void FormData::flatten(Vector<char>& data) const
+void EncodedFormData::flatten(Vector<char>& data) const
 {
     // Concatenate all the byte arrays, but omit any files.
     data.clear();
@@ -162,14 +162,14 @@ void FormData::flatten(Vector<char>& data) const
     }
 }
 
-String FormData::flattenToString() const
+String EncodedFormData::flattenToString() const
 {
     Vector<char> bytes;
     flatten(bytes);
     return Latin1Encoding().decode(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 }
 
-unsigned long long FormData::sizeInBytes() const
+unsigned long long EncodedFormData::sizeInBytes() const
 {
     unsigned size = 0;
     size_t n = m_elements.size();
@@ -194,7 +194,7 @@ unsigned long long FormData::sizeInBytes() const
     return size;
 }
 
-bool FormData::isSafeToSendToAnotherThread() const
+bool EncodedFormData::isSafeToSendToAnotherThread() const
 {
     if (!hasOneRef())
         return false;

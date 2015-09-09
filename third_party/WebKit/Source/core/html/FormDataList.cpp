@@ -22,7 +22,7 @@
 #include "core/html/FormDataList.h"
 
 #include "core/fileapi/File.h"
-#include "platform/network/FormDataBuilder.h"
+#include "platform/network/FormDataEncoder.h"
 #include "platform/text/LineEnding.h"
 #include "wtf/CurrentTime.h"
 
@@ -97,31 +97,31 @@ FormDataList::Entry FormDataList::itemsToEntry(const FormDataList::Item& item) c
     return Entry(name, File::create(filename, currentTimeMS(), item.blob()->blobDataHandle()));
 }
 
-PassRefPtr<FormData> FormDataList::createFormData(FormData::EncodingType encodingType)
+PassRefPtr<EncodedFormData> FormDataList::createFormData(EncodedFormData::EncodingType encodingType)
 {
-    RefPtr<FormData> result = FormData::create();
+    RefPtr<EncodedFormData> result = EncodedFormData::create();
     appendKeyValuePairItemsTo(result.get(), m_encoding, false, encodingType);
     return result.release();
 }
 
-PassRefPtr<FormData> FormDataList::createMultiPartFormData()
+PassRefPtr<EncodedFormData> FormDataList::createMultiPartFormData()
 {
-    RefPtr<FormData> result = FormData::create();
+    RefPtr<EncodedFormData> result = EncodedFormData::create();
     appendKeyValuePairItemsTo(result.get(), m_encoding, true);
     return result.release();
 }
 
-void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::TextEncoding& encoding, bool isMultiPartForm, FormData::EncodingType encodingType)
+void FormDataList::appendKeyValuePairItemsTo(EncodedFormData* formData, const WTF::TextEncoding& encoding, bool isMultiPartForm, EncodedFormData::EncodingType encodingType)
 {
     if (isMultiPartForm)
-        formData->setBoundary(FormDataBuilder::generateUniqueBoundaryString());
+        formData->setBoundary(FormDataEncoder::generateUniqueBoundaryString());
 
     Vector<char> encodedData;
 
     for (const Item& item : items()) {
         if (isMultiPartForm) {
             Vector<char> header;
-            FormDataBuilder::beginMultiPartHeader(header, formData->boundary().data(), item.key());
+            FormDataEncoder::beginMultiPartHeader(header, formData->boundary().data(), item.key());
 
             // If the current type is blob, then we also need to include the filename
             if (item.blob()) {
@@ -131,11 +131,13 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
                     // For file blob, use the filename (or relative path if it is present) as the name.
                     name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
 
-                    // If a filename is passed in FormData.append(), use it instead of the file blob's name.
+                    // If a filename is passed in DOMFormData.append(), use it
+                    // instead of the file blob's name.
                     if (!item.filename().isNull())
                         name = item.filename();
                 } else {
-                    // For non-file blob, use the filename if it is passed in FormData.append().
+                    // For non-file blob, use the filename if it is passed in
+                    // DOMFormData.append().
                     if (!item.filename().isNull())
                         name = item.filename();
                     else
@@ -143,7 +145,7 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
                 }
 
                 // We have to include the filename=".." part in the header, even if the filename is empty
-                FormDataBuilder::addFilenameToMultiPartHeader(header, encoding, name);
+                FormDataEncoder::addFilenameToMultiPartHeader(header, encoding, name);
 
                 // Add the content type if available, or "application/octet-stream" otherwise (RFC 1867).
                 String contentType;
@@ -151,10 +153,10 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
                     contentType = "application/octet-stream";
                 else
                     contentType = item.blob()->type();
-                FormDataBuilder::addContentTypeToMultiPartHeader(header, contentType.latin1());
+                FormDataEncoder::addContentTypeToMultiPartHeader(header, contentType.latin1());
             }
 
-            FormDataBuilder::finishMultiPartHeader(header);
+            FormDataEncoder::finishMultiPartHeader(header);
 
             // Append body
             formData->appendData(header.data(), header.size());
@@ -174,12 +176,12 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
             }
             formData->appendData("\r\n", 2);
         } else {
-            FormDataBuilder::addKeyValuePairAsFormData(encodedData, item.key(), item.data(), encodingType);
+            FormDataEncoder::addKeyValuePairAsFormData(encodedData, item.key(), item.data(), encodingType);
         }
     }
 
     if (isMultiPartForm)
-        FormDataBuilder::addBoundaryToMultiPartHeader(encodedData, formData->boundary().data(), true);
+        FormDataEncoder::addBoundaryToMultiPartHeader(encodedData, formData->boundary().data(), true);
 
     formData->appendData(encodedData.data(), encodedData.size());
 }

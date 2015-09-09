@@ -269,12 +269,12 @@ void ResourceRequest::clearHTTPUserAgent()
     m_httpHeaderFields.remove("User-Agent");
 }
 
-FormData* ResourceRequest::httpBody() const
+EncodedFormData* ResourceRequest::httpBody() const
 {
     return m_httpBody.get();
 }
 
-void ResourceRequest::setHTTPBody(PassRefPtr<FormData> httpBody)
+void ResourceRequest::setHTTPBody(PassRefPtr<EncodedFormData> httpBody)
 {
     m_httpBody = httpBody;
 }
@@ -345,8 +345,8 @@ bool equalIgnoringHeaderFields(const ResourceRequest& a, const ResourceRequest& 
     if (a.referrerPolicy() != b.referrerPolicy())
         return false;
 
-    FormData* formDataA = a.httpBody();
-    FormData* formDataB = b.httpBody();
+    EncodedFormData* formDataA = a.httpBody();
+    EncodedFormData* formDataB = b.httpBody();
 
     if (!formDataA)
         return !formDataB;
