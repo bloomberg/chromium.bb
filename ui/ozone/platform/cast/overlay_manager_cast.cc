@@ -174,8 +174,9 @@ void OverlayCandidatesCast::CheckOverlaySupport(
 
     candidate.overlay_handled = true;
 
-    // Compositor requires all overlay rectangles to have integer coords
-    candidate.display_rect = gfx::ToEnclosedRect(candidate.display_rect);
+    // Compositor requires all overlay rectangles to have integer coords.
+    candidate.display_rect =
+        gfx::RectF(gfx::ToEnclosedRect(candidate.display_rect));
 
     chromecast::RectF display_rect(
         candidate.display_rect.x(), candidate.display_rect.y(),
