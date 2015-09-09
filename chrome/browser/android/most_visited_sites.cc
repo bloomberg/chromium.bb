@@ -230,15 +230,31 @@ void MostVisitedSites::OnLocalThumbnailFetched(
     scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
     if (top_sites)
       top_sites->AddForcedURL(url, base::Time::Now());
+    // Also fetch a remote thumbnail if possible. PopularSites or the
+    // SuggestionsService can supply a thumbnail download URL.
     SuggestionsService* suggestions_service =
-        (mv_source_ == SUGGESTIONS_SERVICE)
-            ? SuggestionsServiceFactory::GetForProfile(profile_)
-            : nullptr;
+        SuggestionsServiceFactory::GetForProfile(profile_);
     if (suggestions_service) {
-      return suggestions_service->GetPageThumbnail(
-          url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                          weak_ptr_factory_.GetWeakPtr(), false,
-                          base::Passed(&j_callback)));
+      if (popular_sites_) {
+        const std::vector<PopularSites::Site>& sites = popular_sites_->sites();
+        auto it = std::find_if(sites.begin(), sites.end(),
+                               [&url](const PopularSites::Site& site) {
+                                 return site.url == url;
+                               });
+        if (it != sites.end() && it->thumbnail_url.is_valid()) {
+          return suggestions_service->GetPageThumbnailWithURL(
+              url, it->thumbnail_url,
+              base::Bind(&MostVisitedSites::OnObtainedThumbnail,
+                         weak_ptr_factory_.GetWeakPtr(), false,
+                         base::Passed(&j_callback)));
+        }
+      }
+      if (mv_source_ == SUGGESTIONS_SERVICE) {
+        return suggestions_service->GetPageThumbnail(
+            url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
+                            weak_ptr_factory_.GetWeakPtr(), false,
+                            base::Passed(&j_callback)));
+      }
     }
   }
   OnObtainedThumbnail(true, j_callback.Pass(), url, bitmap.get());

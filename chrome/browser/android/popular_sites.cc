@@ -27,7 +27,7 @@ using content::BrowserThread;
 namespace {
 
 const char kPopularSitesURLFormat[] = "https://www.gstatic.com/chrome/ntp/%s";
-const char kPopularSitesFilenameFormat[] = "suggested_sites_%s_1.json";
+const char kPopularSitesFilenameFormat[] = "suggested_sites_%s_2.json";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 
 
@@ -113,7 +113,11 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
       continue;
     std::string favicon_url;
     item->GetString("favicon_url", &favicon_url);
-    sites->push_back(PopularSites::Site(title, GURL(url), GURL(favicon_url)));
+    std::string thumbnail_url;
+    item->GetString("thumbnail_url", &thumbnail_url);
+
+    sites->push_back(PopularSites::Site(title, GURL(url), GURL(favicon_url),
+                                        GURL(thumbnail_url)));
   }
 
   return sites.Pass();
@@ -123,8 +127,14 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
 
 PopularSites::Site::Site(const base::string16& title,
                          const GURL& url,
-                         const GURL& favicon_url)
-    : title(title), url(url), favicon_url(favicon_url) {}
+                         const GURL& favicon_url,
+                         const GURL& thumbnail_url)
+    : title(title),
+      url(url),
+      favicon_url(favicon_url),
+      thumbnail_url(thumbnail_url) {}
+
+PopularSites::Site::~Site() {}
 
 PopularSites::PopularSites(Profile* profile,
                            const std::string& filename,

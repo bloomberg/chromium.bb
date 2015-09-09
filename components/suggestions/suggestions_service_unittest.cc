@@ -141,6 +141,7 @@ class MockImageManager : public suggestions::ImageManager {
   MOCK_METHOD2(GetImageForURL,
                void(const GURL&,
                     base::Callback<void(const GURL&, const SkBitmap*)>));
+  MOCK_METHOD2(AddImageURL, void(const GURL&, const GURL&));
 };
 
 class MockBlacklistStore : public suggestions::BlacklistStore {
@@ -641,4 +642,24 @@ TEST_F(SuggestionsServiceTest, CheckDefaultTimeStamps) {
   EXPECT_EQ(kTestSetExpiry, suggestions.suggestions(0).expiry_ts());
   EXPECT_EQ(kTestDefaultExpiry, suggestions.suggestions(1).expiry_ts());
 }
+
+TEST_F(SuggestionsServiceTest, GetPageThumbnail) {
+  scoped_ptr<SuggestionsService> suggestions_service(
+      CreateSuggestionsServiceWithMocks());
+  ASSERT_TRUE(suggestions_service != NULL);
+
+  GURL test_url(kTestUrl);
+  GURL thumbnail_url("https://www.thumbnails.com/thumb.jpg");
+  base::Callback<void(const GURL&, const SkBitmap*)> dummy_callback;
+
+  EXPECT_CALL(*mock_thumbnail_manager_, GetImageForURL(test_url, _));
+  suggestions_service->GetPageThumbnail(test_url, dummy_callback);
+
+  EXPECT_CALL(*mock_thumbnail_manager_, AddImageURL(test_url, thumbnail_url));
+  EXPECT_CALL(*mock_thumbnail_manager_, GetImageForURL(test_url, _));
+  suggestions_service->GetPageThumbnailWithURL(test_url, thumbnail_url,
+                                               dummy_callback);
+
+}
+
 }  // namespace suggestions

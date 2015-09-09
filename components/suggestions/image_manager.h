@@ -48,6 +48,9 @@ class ImageManager : public ImageFetcherDelegate {
   virtual void Initialize(const SuggestionsProfile& suggestions);
 
   // Should be called from the UI thread.
+  virtual void AddImageURL(const GURL& url, const GURL& image_url);
+
+  // Should be called from the UI thread.
   virtual void GetImageForURL(
       const GURL& url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
@@ -60,6 +63,7 @@ class ImageManager : public ImageFetcherDelegate {
   friend class MockImageManager;
   friend class ImageManagerTest;
   FRIEND_TEST_ALL_PREFIXES(ImageManagerTest, InitializeTest);
+  FRIEND_TEST_ALL_PREFIXES(ImageManagerTest, AddImageURL);
   FRIEND_TEST_ALL_PREFIXES(ImageManagerTest, GetImageForURLNetworkCacheHit);
   FRIEND_TEST_ALL_PREFIXES(ImageManagerTest,
                            GetImageForURLNetworkCacheNotInitialized);

@@ -73,7 +73,15 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // |callback| with Bitmap pointer if found, and NULL otherwise.
   void GetPageThumbnail(
       const GURL& url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback);
+      const base::Callback<void(const GURL&, const SkBitmap*)>& callback);
+
+  // A version of |GetPageThumbnail| that explicitly supplies the download URL
+  // for the thumbnail. Replaces any pre-existing thumbnail URL with the
+  // supplied one.
+  void GetPageThumbnailWithURL(
+      const GURL& url,
+      const GURL& thumbnail_url,
+      const base::Callback<void(const GURL&, const SkBitmap*)>& callback);
 
   // Adds a URL to the blacklist cache, invoking |callback| on success or
   // |fail_callback| otherwise. The URL will eventually be uploaded to the

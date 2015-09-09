@@ -149,6 +149,19 @@ TEST_F(ImageManagerTest, InitializeTest) {
   EXPECT_FALSE(image_manager_->GetImageURL(GURL("http://b.com"), &output));
 }
 
+TEST_F(ImageManagerTest, AddImageURL) {
+  InitializeDefaultImageMapAndDatabase(image_manager_.get(), fake_db_);
+
+  GURL output;
+  // Try a URL the ImageManager doesn't know about.
+  ASSERT_FALSE(image_manager_->GetImageURL(GURL(kTestUrl2), &output));
+
+  // Explicitly add the URL and try again.
+  image_manager_->AddImageURL(GURL(kTestUrl2), GURL(kTestImagePath));
+  EXPECT_TRUE(image_manager_->GetImageURL(GURL(kTestUrl2), &output));
+  EXPECT_EQ(GURL(kTestImagePath), output);
+}
+
 TEST_F(ImageManagerTest, GetImageForURLNetwork) {
   InitializeDefaultImageMapAndDatabase(image_manager_.get(), fake_db_);
 

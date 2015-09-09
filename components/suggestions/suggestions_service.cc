@@ -150,8 +150,16 @@ void SuggestionsService::FetchSuggestionsData(
 
 void SuggestionsService::GetPageThumbnail(
     const GURL& url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+    const base::Callback<void(const GURL&, const SkBitmap*)>& callback) {
   thumbnail_manager_->GetImageForURL(url, callback);
+}
+
+void SuggestionsService::GetPageThumbnailWithURL(
+    const GURL& url,
+    const GURL& thumbnail_url,
+    const base::Callback<void(const GURL&, const SkBitmap*)>& callback) {
+  thumbnail_manager_->AddImageURL(url, thumbnail_url);
+  GetPageThumbnail(url, callback);
 }
 
 void SuggestionsService::BlacklistURL(

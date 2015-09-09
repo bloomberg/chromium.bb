@@ -57,6 +57,11 @@ void ImageManager::Initialize(const SuggestionsProfile& suggestions) {
   }
 }
 
+void ImageManager::AddImageURL(const GURL& url, const GURL& image_url) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  image_url_map_[url] = image_url;
+}
+
 void ImageManager::GetImageForURL(
     const GURL& url,
     base::Callback<void(const GURL&, const SkBitmap*)> callback) {

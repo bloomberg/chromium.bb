@@ -31,11 +31,16 @@ class Profile;
 class PopularSites {
  public:
   struct Site {
-    Site(const base::string16& title, const GURL& url, const GURL& favicon_url);
+    Site(const base::string16& title,
+         const GURL& url,
+         const GURL& favicon_url,
+         const GURL& thumbnail_url);
+    ~Site();
 
     base::string16 title;
     GURL url;
     GURL favicon_url;
+    GURL thumbnail_url;
   };
 
   using FinishedCallback = base::Callback<void(bool /* success */)>;
