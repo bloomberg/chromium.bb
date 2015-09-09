@@ -906,8 +906,6 @@ crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
-crbug.com/528110 [ Debug ] screen_orientation/screenorientation-detached-notify-no-crash.html [ Crash Pass ]
-crbug.com/528110 [ Debug ] fast/dom/Window/property-access-on-cached-window-after-frame-navigated.html [ Crash Pass ]
 crbug.com/528122 [ Mac ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
 
 # Significant Slimming Paint failure.
