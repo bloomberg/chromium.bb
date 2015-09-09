@@ -2976,7 +2976,8 @@ VisiblePositionInComposedTree nextPositionOf(const VisiblePositionInComposedTree
     return nextPositionOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition, rule);
 }
 
-static VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> skipToStartOfEditingBoundary(const VisiblePositionTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -2991,22 +2992,23 @@ static VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition& pos, 
 
     // If this is not editable but |pos| has an editable root, skip to the start
     if (!highestRoot && highestRootOfPos)
-        return createVisiblePosition(previousVisuallyDistinctCandidate(Position(highestRootOfPos, PositionAnchorType::BeforeAnchor).parentAnchoredEquivalent()));
+        return createVisiblePosition(previousVisuallyDistinctCandidate(PositionAlgorithm<Strategy>(highestRootOfPos, PositionAnchorType::BeforeAnchor).parentAnchoredEquivalent()));
 
     // That must mean that |pos| is not editable. Return the last position
     // before |pos| that is in the same editable region as this position
     return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
-VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> previousPositionOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition, EditingBoundaryCrossingRule rule)
 {
-    Position pos = previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
+    const PositionAlgorithm<Strategy> pos = previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
 
     // return null visible position if there is no previous visible position
     if (pos.atStartOfTree())
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
-    VisiblePosition prev = createVisiblePosition(pos);
+    const VisiblePositionTemplate<Strategy> prev = createVisiblePosition(pos);
     ASSERT(prev.deepEquivalent() != visiblePosition.deepEquivalent());
 
 #if ENABLE(ASSERT)
@@ -3015,7 +3017,7 @@ VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, Editi
     // never yield another |TextAffinity::Upstream position| (unless line wrap
     // length is 0!).
     if (prev.isNotNull() && visiblePosition.affinity() == TextAffinity::Upstream) {
-        ASSERT(inSameLine(PositionWithAffinity(prev.deepEquivalent()), PositionWithAffinity(prev.deepEquivalent(), TextAffinity::Upstream)));
+        ASSERT(inSameLine(PositionWithAffinityTemplate<Strategy>(prev.deepEquivalent()), PositionWithAffinityTemplate<Strategy>(prev.deepEquivalent(), TextAffinity::Upstream)));
     }
 #endif
 
@@ -3030,6 +3032,16 @@ VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, Editi
 
     ASSERT_NOT_REACHED();
     return honorEditingBoundaryAtOrBefore(prev, visiblePosition.deepEquivalent());
+}
+
+VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
+{
+    return previousPositionOfAlgorithm<EditingStrategy>(visiblePosition, rule);
+}
+
+VisiblePositionInComposedTree previousPositionOf(const VisiblePositionInComposedTree& visiblePosition, EditingBoundaryCrossingRule rule)
+{
+    return previousPositionOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition, rule);
 }
 
 } // namespace blink

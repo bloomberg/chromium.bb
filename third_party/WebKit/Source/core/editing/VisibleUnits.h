@@ -105,7 +105,8 @@ VisiblePosition rightPositionOf(const VisiblePosition&);
 
 CORE_EXPORT VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 CORE_EXPORT VisiblePositionInComposedTree nextPositionOf(const VisiblePositionInComposedTree&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
-VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+CORE_EXPORT VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+CORE_EXPORT VisiblePositionInComposedTree previousPositionOf(const VisiblePositionInComposedTree&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 
 // words
 CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition&, EWordSide = RightWordIfOnBoundary);

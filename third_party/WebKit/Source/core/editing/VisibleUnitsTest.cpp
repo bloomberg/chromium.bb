@@ -268,6 +268,47 @@ TEST_F(VisibleUnitsTest, nextPositionOf)
     EXPECT_EQ(PositionInComposedTree(one->firstChild(), 1), nextPositionOf(createVisiblePosition(PositionInComposedTree(two, 2))).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, previousPositionOf)
+{
+    const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
+    const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>55555</b>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* zero = document().getElementById("zero")->firstChild();
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+    Node* four = shadowRoot->getElementById("four")->firstChild();
+    Node* five = shadowRoot->getElementById("five")->firstChild();
+
+    EXPECT_EQ(Position(zero, 0), previousPositionOf(createVisiblePosition(Position(zero, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(zero, 0), previousPositionOf(createVisiblePosition(PositionInComposedTree(zero, 1))).deepEquivalent());
+
+    EXPECT_EQ(Position(zero, 1), previousPositionOf(createVisiblePosition(Position(one, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(two, 1), previousPositionOf(createVisiblePosition(PositionInComposedTree(one, 0))).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), previousPositionOf(createVisiblePosition(Position(one, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(two, 2), previousPositionOf(createVisiblePosition(PositionInComposedTree(one, 1))).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), previousPositionOf(createVisiblePosition(Position(two, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 3), previousPositionOf(createVisiblePosition(PositionInComposedTree(two, 0))).deepEquivalent());
+
+    // DOM tree to shadow tree
+    EXPECT_EQ(Position(two, 2), previousPositionOf(createVisiblePosition(Position(three, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(five, 5), previousPositionOf(createVisiblePosition(PositionInComposedTree(three, 0))).deepEquivalent());
+
+    // Shadow tree to DOM tree
+    EXPECT_EQ(Position(), previousPositionOf(createVisiblePosition(Position(four, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(zero, 1), previousPositionOf(createVisiblePosition(PositionInComposedTree(four, 0))).deepEquivalent());
+
+    // Note: Canonicalization maps (five, 0) to (four, 4) in DOM tree and
+    // (one, 1) in composed tree.
+    EXPECT_EQ(Position(four, 4), previousPositionOf(createVisiblePosition(Position(five, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one, 1), previousPositionOf(createVisiblePosition(PositionInComposedTree(five, 1))).deepEquivalent());
+}
+
 TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
 {
     const char* bodyContent = "<p id='sample'>00</p>";
