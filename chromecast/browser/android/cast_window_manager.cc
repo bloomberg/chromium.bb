@@ -55,8 +55,7 @@ bool RegisterCastWindowManager(JNIEnv* env) {
 void Init(JNIEnv* env,
           const JavaParamRef<jclass>& clazz,
           const JavaParamRef<jobject>& obj) {
-  g_window_manager.Get().Reset(
-      base::android::ScopedJavaLocalRef<jobject>(env, obj));
+  g_window_manager.Get().Reset(obj);
 }
 
 jlong LaunchCastWindow(JNIEnv* env,

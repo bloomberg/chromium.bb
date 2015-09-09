@@ -33,8 +33,7 @@ namespace android {
 static void InitApplicationContext(JNIEnv* env,
                                    const JavaParamRef<jobject>& jcaller,
                                    const JavaParamRef<jobject>& context) {
-  base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
-  base::android::InitApplicationContext(env, scoped_context);
+  base::android::InitApplicationContext(env, context);
   base::InitAndroidTestMessageLoop();
 }
 

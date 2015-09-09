@@ -52,8 +52,7 @@ bool RegisterShellManager(JNIEnv* env) {
 static void Init(JNIEnv* env,
                  const JavaParamRef<jclass>& clazz,
                  const JavaParamRef<jobject>& obj) {
-  g_global_state.Get().j_shell_manager.Reset(
-      base::android::ScopedJavaLocalRef<jobject>(env, obj));
+  g_global_state.Get().j_shell_manager.Reset(obj);
 }
 
 void LaunchShell(JNIEnv* env,

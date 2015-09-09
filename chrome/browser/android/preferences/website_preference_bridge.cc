@@ -697,8 +697,7 @@ class StorageDataDeleter :
 
 class LocalStorageInfoReadyCallback {
  public:
-  LocalStorageInfoReadyCallback(
-      const ScopedJavaLocalRef<jobject>& java_callback)
+  explicit LocalStorageInfoReadyCallback(const JavaRef<jobject>& java_callback)
       : env_(base::android::AttachCurrentThread()),
         java_callback_(java_callback) {
   }
@@ -755,8 +754,7 @@ static void FetchLocalStorageInfo(JNIEnv* env,
       new BrowsingDataLocalStorageHelper(profile));
   // local_storage_callback will delete itself when it is run.
   LocalStorageInfoReadyCallback* local_storage_callback =
-      new LocalStorageInfoReadyCallback(
-          ScopedJavaLocalRef<jobject>(env, java_callback));
+      new LocalStorageInfoReadyCallback(java_callback);
   local_storage_helper->StartFetching(
       base::Bind(&LocalStorageInfoReadyCallback::OnLocalStorageModelInfoLoaded,
                  base::Unretained(local_storage_callback)));
@@ -768,8 +766,7 @@ static void FetchStorageInfo(JNIEnv* env,
   Profile* profile = ProfileManager::GetActiveUserProfile();
   scoped_refptr<StorageInfoFetcher> storage_info_fetcher(new StorageInfoFetcher(
       content::BrowserContext::GetDefaultStoragePartition(
-          profile)->GetQuotaManager(),
-      ScopedJavaLocalRef<jobject>(env, java_callback)));
+          profile)->GetQuotaManager(), java_callback));
   storage_info_fetcher->Run();
 }
 
@@ -794,8 +791,7 @@ static void ClearStorageData(JNIEnv* env,
       content::BrowserContext::GetDefaultStoragePartition(
           profile)->GetQuotaManager(),
       host,
-      static_cast<storage::StorageType>(type),
-      ScopedJavaLocalRef<jobject>(env, java_callback)));
+      static_cast<storage::StorageType>(type), java_callback));
   storage_data_deleter->Run();
 }
 

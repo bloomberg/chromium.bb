@@ -40,8 +40,7 @@ bool RegisterChromotingJniRuntime(JNIEnv* env) {
 static void LoadNative(JNIEnv* env,
                        const JavaParamRef<jclass>& clazz,
                        const JavaParamRef<jobject>& context) {
-  base::android::ScopedJavaLocalRef<jobject> context_activity(env, context);
-  base::android::InitApplicationContext(env, context_activity);
+  base::android::InitApplicationContext(env, context);
 
   // The google_apis functions check the command-line arguments to make sure no
   // runtime API keys have been specified by the environment. Unfortunately, we

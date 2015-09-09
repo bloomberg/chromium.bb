@@ -114,8 +114,7 @@ static void Init(JNIEnv* env,
              base::android::ConvertJavaStringToUTF8(env, j_tmp_dir).c_str(), 1);
   DCHECK_EQ(return_value, 0);
 
-  base::android::ScopedJavaLocalRef<jobject> scoped_activity(env, activity);
-  base::android::InitApplicationContext(env, scoped_activity);
+  base::android::InitApplicationContext(env, activity);
 
   std::vector<std::string> parameters;
   parameters.push_back(

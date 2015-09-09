@@ -193,6 +193,13 @@ class ScopedJavaLocalRef : public JavaRef<T> {
   // This class is only good for use on the thread it was created on so
   // it's safe to cache the non-threadsafe JNIEnv* inside this object.
   JNIEnv* env_;
+
+  // Prevent ScopedJavaLocalRef(JNIEnv*, T obj) from being used to take
+  // ownership of a JavaParamRef's underlying object - parameters are not
+  // allowed to be deleted and so should not be owned by ScopedJavaLocalRef.
+  // TODO(torne): this can be removed once JavaParamRef no longer has an
+  // implicit conversion back to T.
+  ScopedJavaLocalRef(JNIEnv* env, const JavaParamRef<T>& other);
 };
 
 // Holds a global reference to a Java object. The global reference is scoped

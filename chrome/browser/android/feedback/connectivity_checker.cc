@@ -183,7 +183,7 @@ void CheckConnectivity(JNIEnv* env,
   // This object will be deleted when the connectivity check has completed.
   ConnectivityChecker* connectivity_checker = new ConnectivityChecker(
       profile, url, base::TimeDelta::FromMilliseconds(j_timeout_ms),
-      base::android::ScopedJavaLocalRef<jobject>(env, j_callback));
+      j_callback);
   connectivity_checker->StartAsyncCheck();
 }
 

@@ -90,9 +90,7 @@ void CronetInitApplicationContext(JNIEnv* env,
                                   const JavaParamRef<jclass>& jcaller,
                                   const JavaParamRef<jobject>& japp_context) {
   // Set application context.
-  base::android::ScopedJavaLocalRef<jobject> scoped_app_context(env,
-                                                                japp_context);
-  base::android::InitApplicationContext(env, scoped_app_context);
+  base::android::InitApplicationContext(env, japp_context);
 }
 
 void CronetInitOnMainThread(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
