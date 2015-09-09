@@ -1476,8 +1476,9 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   messages_to_deliver_with_frame.swap(base::get<2>(param));
 
   if (!ui::LatencyInfo::Verify(frame->metadata.latency_info,
-                               "RenderWidgetHostImpl::OnSwapCompositorFrame"))
-    return false;
+                               "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
+    std::vector<ui::LatencyInfo>().swap(frame->metadata.latency_info);
+  }
 
   latency_tracker_.OnSwapCompositorFrame(&frame->metadata.latency_info);
 
