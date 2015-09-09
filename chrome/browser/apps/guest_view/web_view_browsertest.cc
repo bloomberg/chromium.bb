@@ -2520,6 +2520,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
              "web_view/shim", NEEDS_TEST_SERVER);
 }
 
+// Tests that a WebView accessible resource can actually be loaded from a
+// webpage in a WebView.
+IN_PROC_BROWSER_TEST_F(WebViewTest, LoadWebviewAccessibleResource) {
+  TestHelper("testLoadWebviewAccessibleResource",
+             "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+}
+
 #if defined(USE_AURA)
 // TODO(wjmaclean): when WebViewTest is re-enabled on the site-isolation
 // bots, then re-enable this test class as well.

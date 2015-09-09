@@ -58,18 +58,20 @@ WebviewInfo::WebviewInfo(const std::string& extension_id)
 WebviewInfo::~WebviewInfo() {
 }
 
+// static
 bool WebviewInfo::IsResourceWebviewAccessible(
     const Extension* extension,
     const std::string& partition_id,
-    const std::string& relative_path) const {
-  if (!extension || extension->id() != extension_id_)
+    const std::string& relative_path) {
+  if (!extension)
     return false;
 
-  DCHECK_EQ(this,
-            extension->GetManifestData(keys::kWebviewAccessibleResources));
+  const WebviewInfo* webview_info = static_cast<const WebviewInfo*>(
+      extension->GetManifestData(keys::kWebviewAccessibleResources));
+  if (!webview_info)
+    return false;
 
-  for (size_t i = 0; i < partition_items_.size(); ++i) {
-    const PartitionItem* const item = partition_items_[i];
+  for (const PartitionItem* item : webview_info->partition_items_) {
     if (item->Matches(partition_id) &&
         extension->ResourceMatches(item->accessible_resources(),
                                    relative_path)) {

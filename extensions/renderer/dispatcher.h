@@ -79,6 +79,8 @@ class Dispatcher : public content::RenderProcessObserver,
 
   RequestSender* request_sender() { return request_sender_.get(); }
 
+  const std::string& webview_partition_id() { return webview_partition_id_; }
+
   void OnRenderFrameCreated(content::RenderFrame* render_frame);
 
   bool IsExtensionActive(const std::string& extension_id) const;
@@ -166,6 +168,7 @@ class Dispatcher : public content::RenderProcessObserver,
       const ExtensionsClient::ScriptingWhitelist& extension_ids);
   void OnSetSystemFont(const std::string& font_family,
                        const std::string& font_size);
+  void OnSetWebViewPartitionID(const std::string& partition_id);
   void OnShouldSuspend(const std::string& extension_id, uint64 sequence_id);
   void OnSuspend(const std::string& extension_id);
   void OnTransferBlobs(const std::vector<std::string>& blob_uuids);
@@ -296,6 +299,11 @@ class Dispatcher : public content::RenderProcessObserver,
 
   // Status of webrequest usage.
   bool webrequest_used_;
+
+  // The WebView partition ID associated with this process's storage partition,
+  // if this renderer is a WebView guest render process. Otherwise, this will be
+  // empty.
+  std::string webview_partition_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };

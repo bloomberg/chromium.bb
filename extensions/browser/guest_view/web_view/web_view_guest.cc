@@ -48,6 +48,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
@@ -58,6 +59,7 @@
 using base::UserMetricsAction;
 using content::GlobalRequestID;
 using content::RenderFrameHost;
+using content::RenderProcessHost;
 using content::ResourceType;
 using content::StoragePartition;
 using content::WebContents;
@@ -266,6 +268,18 @@ bool WebViewGuest::GetGuestPartitionConfigForSite(
 }
 
 // static
+std::string WebViewGuest::GetPartitionID(
+    const RenderProcessHost* render_process_host) {
+  WebViewRendererState* renderer_state = WebViewRendererState::GetInstance();
+  int process_id = render_process_host->GetID();
+  std::string partition_id;
+  if (renderer_state->IsGuest(process_id))
+    renderer_state->GetPartitionID(process_id, &partition_id);
+
+  return partition_id;
+}
+
+// static
 const char WebViewGuest::Type[] = "webview";
 
 // static
@@ -281,7 +295,7 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(
   if (it != web_view_key_to_id_map.Get().end())
     return it->second;
 
-  auto rph = content::RenderProcessHost::FromID(embedder_process_id);
+  auto rph = RenderProcessHost::FromID(embedder_process_id);
   int rules_registry_id =
       RulesRegistryService::Get(rph->GetBrowserContext())->
           GetNextRulesRegistryID();
@@ -296,7 +310,7 @@ bool WebViewGuest::CanRunInDetachedState() const {
 void WebViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
-  content::RenderProcessHost* owner_render_process_host =
+  RenderProcessHost* owner_render_process_host =
       owner_web_contents()->GetRenderProcessHost();
   std::string storage_partition_id;
   bool persist_storage = false;

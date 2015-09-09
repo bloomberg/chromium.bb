@@ -20,15 +20,15 @@ class PartitionItem;
 // "webview" key.
 class WebviewInfo : public Extension::ManifestData {
  public:
+  // Returns true if |extension|'s resource at |relative_path| is accessible
+  // from the WebView partition with ID |partition_id|.
+  static bool IsResourceWebviewAccessible(const Extension* extension,
+                                          const std::string& partition_id,
+                                          const std::string& relative_path);
+
   // Define out of line constructor/destructor to please Clang.
   WebviewInfo(const std::string& extension_id);
   ~WebviewInfo() override;
-
-  // Returns true if the specified resource is web accessible and the extension
-  // matches the manifest's extension.
-  bool IsResourceWebviewAccessible(const Extension* extension,
-                                   const std::string& partition_id,
-                                   const std::string& relative_path) const;
 
   void AddPartitionItem(scoped_ptr<PartitionItem> item);
 

@@ -24,8 +24,6 @@ namespace extensions {
 
 class WebViewGuest;
 
-// This class keeps track of <webview> renderer state for use on the IO thread.
-// All methods should be called on the IO thread.
 class WebViewRendererState {
  public:
   struct WebViewInfo {
@@ -42,23 +40,27 @@ class WebViewRendererState {
 
   static WebViewRendererState* GetInstance();
 
-  // Looks up the information for the embedder <webview> for a given render
-  // view, if one exists. Called on the IO thread.
+  // Looks up the information for the embedder WebView for a RenderViewHost,
+  // given its process and view ID. Returns true and writes the information to
+  // |web_view_info| if found, otherwise returns false.
   bool GetInfo(int guest_process_id,
                int guest_routing_id,
                WebViewInfo* web_view_info) const;
 
-  // Looks up the information for the owner for a given guest process in a
-  // <webview>. Called on the IO thread.
+  // Looks up the information for the owner of a WebView guest process, given
+  // its process ID. Returns true and writes the info to |owner_process_id| and
+  // |owner_host| if found, otherwise returns false.
   bool GetOwnerInfo(int guest_process_id,
                     int* owner_process_id,
                     std::string* owner_host) const;
 
-  // Looks up the partition info for the embedder <webview> for a given guest
-  // process. Called on the IO thread.
+  // Looks up the partition ID for a WebView guest process, given its
+  // process ID. Returns true and writes the partition ID to |partition_id| if
+  // found, otherwise returns false.
   bool GetPartitionID(int guest_process_id, std::string* partition_id) const;
 
-  // Returns true if the given renderer is used by webviews.
+  // Returns true if the renderer with process ID |render_process_id| is a
+  // WebView guest process.
   bool IsGuest(int render_process_id) const;
 
   void AddContentScriptIDs(int embedder_process_id,
@@ -89,7 +91,7 @@ class WebViewRendererState {
   WebViewRendererState();
   ~WebViewRendererState();
 
-  // Adds or removes a <webview> guest render process from the set.
+  // Adds/removes a WebView guest render process to/from the set.
   void AddGuest(int render_process_host_id, int routing_id,
                 const WebViewInfo& web_view_info);
   void RemoveGuest(int render_process_host_id, int routing_id);

@@ -45,6 +45,7 @@ class Extension;
 class ExtensionSet;
 class ExtensionsGuestViewContainerDispatcher;
 class RendererPermissionsPolicyDelegate;
+class ResourceRequestPolicy;
 }
 
 namespace prerender {
@@ -228,6 +229,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       permissions_policy_delegate_;
   scoped_ptr<extensions::ExtensionsGuestViewContainerDispatcher>
       guest_view_container_dispatcher_;
+  scoped_ptr<extensions::ResourceRequestPolicy> resource_request_policy_;
 #endif
 
   scoped_ptr<network_hints::PrescientNetworkingDispatcher>

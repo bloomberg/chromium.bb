@@ -387,7 +387,7 @@ IPC_STRUCT_BEGIN(ExtensionMsg_UpdatePermissions_Params)
   IPC_STRUCT_MEMBER(ExtensionMsg_PermissionSetStruct, withheld_permissions)
 IPC_STRUCT_END()
 
-// Messages sent from the browser to the renderer.
+// Messages sent from the browser to the renderer:
 
 // The browser sends this message in response to all extension api calls. The
 // response data (if any) is one of the base::Value subclasses, wrapped as the
@@ -574,7 +574,11 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_WatchPages,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_TransferBlobs,
                      std::vector<std::string> /* blob_uuids */)
 
-// Messages sent from the renderer to the browser.
+// Report the WebView partition ID to the WebView guest renderer process.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_SetWebViewPartitionID,
+                     std::string /* webview_partition_id */)
+
+// Messages sent from the renderer to the browser:
 
 // A renderer sends this message when an extension process starts an API
 // request. The browser will always respond with a ExtensionMsg_Response.

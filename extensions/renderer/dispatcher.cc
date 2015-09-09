@@ -833,6 +833,8 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                       OnSetScriptingWhitelist)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetSystemFont, OnSetSystemFont)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_SetWebViewPartitionID,
+                      OnSetWebViewPartitionID)
   IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldSuspend, OnShouldSuspend)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Suspend, OnSuspend)
   IPC_MESSAGE_HANDLER(ExtensionMsg_TransferBlobs, OnTransferBlobs)
@@ -1068,6 +1070,12 @@ void Dispatcher::OnSetSystemFont(const std::string& font_family,
                                  const std::string& font_size) {
   system_font_family_ = font_family;
   system_font_size_ = font_size;
+}
+
+void Dispatcher::OnSetWebViewPartitionID(const std::string& partition_id) {
+  // |webview_partition_id_| cannot be changed once set.
+  CHECK(webview_partition_id_.empty() || webview_partition_id_ == partition_id);
+  webview_partition_id_ = partition_id;
 }
 
 void Dispatcher::OnShouldSuspend(const std::string& extension_id,

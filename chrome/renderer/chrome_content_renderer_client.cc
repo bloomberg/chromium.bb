@@ -404,6 +404,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
           extension_dispatcher_.get()));
+  resource_request_policy_.reset(
+      new extensions::ResourceRequestPolicy(extension_dispatcher_.get()));
   guest_view_container_dispatcher_.reset(
       new extensions::ExtensionsGuestViewContainerDispatcher());
 #endif
@@ -1297,16 +1299,15 @@ bool ChromeContentRendererClient::WillSendRequest(
   // URL to something invalid to prevent the request and cause an error.
 #if defined(ENABLE_EXTENSIONS)
   if (url.SchemeIs(extensions::kExtensionScheme) &&
-      !extensions::ResourceRequestPolicy::CanRequestResource(url, frame,
-                                                             transition_type)) {
+      !resource_request_policy_->CanRequestResource(url, frame,
+                                                    transition_type)) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
     return true;
   }
 
   if (url.SchemeIs(extensions::kExtensionResourceScheme) &&
-      !extensions::ResourceRequestPolicy::CanRequestExtensionResourceScheme(
-          url,
-          frame)) {
+      !resource_request_policy_->CanRequestExtensionResourceScheme(url,
+                                                                   frame)) {
     *new_url = GURL(chrome::kExtensionResourceInvalidRequestURL);
     return true;
   }

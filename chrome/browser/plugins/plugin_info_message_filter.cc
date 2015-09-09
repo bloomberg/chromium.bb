@@ -39,7 +39,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
 #endif
 
@@ -169,17 +168,10 @@ bool IsPluginLoadingAccessibleResourceInWebView(
   }
 
   const std::string extension_id = resource.host();
-  const extensions::Extension* extension =
-      extension_registry->GetExtensionById(extension_id,
-                             extensions::ExtensionRegistry::ENABLED);
-  if (!extension)
-    return false;
-  const extensions::WebviewInfo* webview_info =
-      static_cast<const extensions::WebviewInfo*>(extension->GetManifestData(
-          extensions::manifest_keys::kWebviewAccessibleResources));
-  if (!webview_info ||
-      !webview_info->IsResourceWebviewAccessible(extension, partition_id,
-                                                 resource.path())) {
+  const extensions::Extension* extension = extension_registry->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+  if (!extension || !extensions::WebviewInfo::IsResourceWebviewAccessible(
+          extension, partition_id, resource.path())) {
     return false;
   }
 

@@ -12,6 +12,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
@@ -50,6 +51,14 @@ void RendererStartupHelper::Observe(
   // to renderers.
   process->Send(new ExtensionMsg_SetScriptingWhitelist(
       extensions::ExtensionsClient::Get()->GetScriptingWhitelist()));
+
+  // If the new render process is a WebView guest process, propagate the WebView
+  // partition ID to it.
+  std::string webview_partition_id = WebViewGuest::GetPartitionID(process);
+  if (!webview_partition_id.empty()) {
+    process->Send(new ExtensionMsg_SetWebViewPartitionID(
+        WebViewGuest::GetPartitionID(process)));
+  }
 
   // Loaded extensions.
   std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;

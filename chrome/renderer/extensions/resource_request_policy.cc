@@ -10,8 +10,11 @@
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
+#include "extensions/common/manifest_handlers/webview_info.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -22,18 +25,19 @@
 
 namespace extensions {
 
+ResourceRequestPolicy::ResourceRequestPolicy(Dispatcher* dispatcher)
+    : dispatcher_(dispatcher) {}
+
 // This method does a security check whether chrome-extension:// URLs can be
 // requested by the renderer. Since this is in an untrusted process, the browser
 // has a similar check to enforce the policy, in case this process is exploited.
 // If you are changing this function, ensure equivalent checks are added to
 // extension_protocols.cc's AllowExtensionResourceLoad.
-
-// static
 bool ResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,
     blink::WebFrame* frame,
     ui::PageTransition transition_type) {
-  CHECK(resource_url.SchemeIs(extensions::kExtensionScheme));
+  CHECK(resource_url.SchemeIs(kExtensionScheme));
 
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(resource_url);
@@ -49,7 +53,7 @@ bool ResourceRequestPolicy::CanRequestResource(
   // launchers.
   std::string resource_root_relative_path =
       resource_url.path().empty() ? std::string()
-                                  : resource_url.path().substr(1);
+      : resource_url.path().substr(1);
   if (extension->is_hosted_app() &&
       !IconsInfo::GetIcons(extension)
           .ContainsPath(resource_root_relative_path)) {
@@ -59,9 +63,12 @@ bool ResourceRequestPolicy::CanRequestResource(
   }
 
   // Disallow loading of extension resources which are not explicitly listed
-  // as web accessible if the manifest version is 2 or greater.
+  // as web or WebView accessible if the manifest version is 2 or greater.
   if (!WebAccessibleResourcesInfo::IsResourceWebAccessible(
-          extension, resource_url.path())) {
+          extension, resource_url.path()) &&
+      !WebviewInfo::IsResourceWebviewAccessible(
+          extension, dispatcher_->webview_partition_id(),
+          resource_url.path())) {
     GURL frame_url = frame->document().url();
 
     // The page_origin may be GURL("null") for unique origins like data URLs,
@@ -104,15 +111,13 @@ bool ResourceRequestPolicy::CanRequestResource(
   return true;
 }
 
-// static
 bool ResourceRequestPolicy::CanRequestExtensionResourceScheme(
     const GURL& resource_url,
     blink::WebFrame* frame) {
-  CHECK(resource_url.SchemeIs(extensions::kExtensionResourceScheme));
+  CHECK(resource_url.SchemeIs(kExtensionResourceScheme));
 
   GURL frame_url = frame->document().url();
-  if (!frame_url.is_empty() &&
-      !frame_url.SchemeIs(extensions::kExtensionScheme)) {
+  if (!frame_url.is_empty() && !frame_url.SchemeIs(kExtensionScheme)) {
     std::string message = base::StringPrintf(
         "Denying load of %s. chrome-extension-resources:// can only be "
         "loaded from extensions.",
@@ -124,9 +129,6 @@ bool ResourceRequestPolicy::CanRequestExtensionResourceScheme(
   }
 
   return true;
-}
-
-ResourceRequestPolicy::ResourceRequestPolicy() {
 }
 
 }  // namespace extensions
