@@ -132,7 +132,12 @@ public:
     // FIXME: We shouldn't allow access to m_overflowRect outside this class.
     LayoutRect overflowRect() const { return m_overflowRect; }
 
-    void scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping = ScrollOffsetUnclamped, ScrollBehavior = ScrollBehaviorInstant);
+    void scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping = ScrollOffsetUnclamped, ScrollBehavior = ScrollBehaviorInstant);
+
+    void scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping clamp = ScrollOffsetUnclamped, ScrollBehavior scrollBehavior = ScrollBehaviorInstant)
+    {
+        scrollToPosition(-scrollOrigin() + scrollOffset, clamp, scrollBehavior);
+    }
 
     void scrollToXOffset(double x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped, ScrollBehavior scrollBehavior = ScrollBehaviorInstant)
     {
@@ -242,10 +247,6 @@ private:
     bool needsScrollbarReconstruction() const;
 
     void computeScrollDimensions();
-
-    // TODO(bokan): This method hides the base class version and is subtly different.
-    // Should be unified.
-    DoubleSize clampScrollOffset(const DoubleSize&) const;
 
     void setScrollOffset(const IntPoint&, ScrollType) override;
     void setScrollOffset(const DoublePoint&, ScrollType) override;

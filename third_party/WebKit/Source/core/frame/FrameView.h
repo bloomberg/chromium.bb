@@ -336,6 +336,7 @@ public:
     // commit scroll offsets before a WebView::resize occurs, we need to adjust
     // our scroll extents to prevent clamping the scroll offsets.
     void setTopControlsViewportAdjustment(float);
+    IntSize topControlsSize() const { return IntSize(0, roundf(m_topControlsViewportAdjustment)); }
 
     IntPoint maximumScrollPosition() const override;
 

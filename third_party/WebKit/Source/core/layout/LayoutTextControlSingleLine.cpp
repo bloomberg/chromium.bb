@@ -398,10 +398,7 @@ LayoutUnit LayoutTextControlSingleLine::scrollWidth() const
         // Adjust scrollWidth to inculde input element horizontal paddings and
         // decoration width
         LayoutUnit adjustment = clientWidth() - inner->clientWidth();
-        // TODO(leviw): We floor to avoid breaking JS that tries to scroll to
-        // scrollWidth - clientWidth.
-        // TODO(leviw): These values are broken when zooming. crbug.com/471412
-        return inner->scrollWidth().floor() + adjustment;
+        return inner->scrollWidth() + adjustment;
     }
     return LayoutBlockFlow::scrollWidth();
 }
@@ -412,10 +409,7 @@ LayoutUnit LayoutTextControlSingleLine::scrollHeight() const
         // Adjust scrollHeight to include input element vertical paddings and
         // decoration height
         LayoutUnit adjustment = clientHeight() - inner->clientHeight();
-        // TODO(leviw): We floor to avoid breaking JS that tries to scroll to
-        // scrollHeight - clientHeight.
-        // TODO(leviw): These values are broken when zooming. crbug.com/471412
-        return inner->scrollHeight().floor() + adjustment;
+        return inner->scrollHeight() + adjustment;
     }
     return LayoutBlockFlow::scrollHeight();
 }

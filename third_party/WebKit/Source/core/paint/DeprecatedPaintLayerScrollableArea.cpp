@@ -489,9 +489,17 @@ IntPoint DeprecatedPaintLayerScrollableArea::minimumScrollPosition() const
 
 IntPoint DeprecatedPaintLayerScrollableArea::maximumScrollPosition() const
 {
-    if (!box().hasOverflowClip())
-        return -scrollOrigin();
-    return -scrollOrigin() + IntPoint(pixelSnappedScrollWidth(), pixelSnappedScrollHeight()) - enclosingIntRect(box().clientBoxRect()).size();
+    IntSize contentSize;
+    IntSize visibleSize;
+    if (layer()->isRootLayer()) {
+        FrameView* frameView = box().frameView();
+        contentSize = frameView->contentsSize();
+        visibleSize = frameView->visibleContentSize(ExcludeScrollbars) + frameView->topControlsSize();
+    } else if (box().hasOverflowClip()) {
+        contentSize = IntSize(pixelSnappedScrollWidth(), pixelSnappedScrollHeight());
+        visibleSize = enclosingIntRect(box().clientBoxRect()).size();
+    }
+    return -scrollOrigin() + (contentSize - visibleSize);
 }
 
 IntRect DeprecatedPaintLayerScrollableArea::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
@@ -642,14 +650,13 @@ void DeprecatedPaintLayerScrollableArea::computeScrollDimensions()
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }
 
-void DeprecatedPaintLayerScrollableArea::scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping clamp, ScrollBehavior scrollBehavior)
+void DeprecatedPaintLayerScrollableArea::scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping clamp, ScrollBehavior scrollBehavior)
 {
     cancelProgrammaticScrollAnimation();
-    DoubleSize newScrollOffset = clamp == ScrollOffsetClamped ? clampScrollOffset(scrollOffset) : scrollOffset;
-    if (newScrollOffset != adjustedScrollOffset()) {
-        DoublePoint origin(scrollOrigin());
-        ScrollableArea::setScrollPosition(-origin + newScrollOffset, ProgrammaticScroll, scrollBehavior);
-    }
+
+    DoublePoint newScrollPosition = clamp == ScrollOffsetClamped ? clampScrollPosition(scrollPosition) : scrollPosition;
+    if (newScrollPosition != scrollPositionDouble())
+        ScrollableArea::setScrollPosition(newScrollPosition, ProgrammaticScroll, scrollBehavior);
 }
 
 void DeprecatedPaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scrollOffset, bool& autoHorizontalScrollBarChanged, bool& autoVerticalScrollBarChanged)
@@ -691,9 +698,9 @@ void DeprecatedPaintLayerScrollableArea::finalizeScrollDimensions(const DoubleSi
 
     // Layout may cause us to be at an invalid scroll position. In this case we need
     // to pull our scroll offsets back to the max (or push them up to the min).
-    DoubleSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
-    if (clampedScrollOffset != adjustedScrollOffset())
-        scrollToOffset(clampedScrollOffset);
+    DoublePoint clampedScrollPosition = clampScrollPosition(scrollPositionDouble());
+    if (clampedScrollPosition != scrollPositionDouble())
+        scrollToPosition(clampedScrollPosition);
 
     if (originalScrollOffset != adjustedScrollOffset()) {
         DoublePoint origin(scrollOrigin());
@@ -901,16 +908,6 @@ void DeprecatedPaintLayerScrollableArea::updateAfterOverflowRecalc()
     bool autoVerticalScrollBarChanged = box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow);
     if (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)
         box().setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
-}
-
-DoubleSize DeprecatedPaintLayerScrollableArea::clampScrollOffset(const DoubleSize& scrollOffset) const
-{
-    int maxX = scrollWidth() - box().pixelSnappedClientWidth();
-    int maxY = scrollHeight() - box().pixelSnappedClientHeight();
-
-    double x = std::max(std::min(scrollOffset.width(), static_cast<double>(maxX)), 0.0);
-    double y = std::max(std::min(scrollOffset.height(), static_cast<double>(maxY)), 0.0);
-    return DoubleSize(x, y);
 }
 
 IntRect DeprecatedPaintLayerScrollableArea::rectForHorizontalScrollbar(const IntRect& borderBoxRect) const
@@ -1402,12 +1399,12 @@ LayoutRect DeprecatedPaintLayerScrollableArea::scrollIntoView(const LayoutRect& 
     LayoutRect layerBounds(0, 0, box().clientWidth(), box().clientHeight());
     LayoutRect r = ScrollAlignment::getRectToExpose(layerBounds, localExposeRect, alignX, alignY);
 
-    DoubleSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset() + roundedIntSize(r.location()));
-    if (clampedScrollOffset == adjustedScrollOffset())
+    DoublePoint clampedScrollPosition = clampScrollPosition(scrollPositionDouble() + roundedIntSize(r.location()));
+    if (clampedScrollPosition == scrollPositionDouble())
         return rect;
 
     DoubleSize oldScrollOffset = adjustedScrollOffset();
-    scrollToOffset(clampedScrollOffset);
+    scrollToPosition(clampedScrollPosition);
     DoubleSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
     localExposeRect.move(-LayoutSize(scrollOffsetDifference));
     return LayoutRect(box().localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
