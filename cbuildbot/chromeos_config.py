@@ -182,8 +182,7 @@ class HWTestList(object):
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
     """
-    # TODO(mkryu): Temporarily increase timeout to 240 mins. crbug.com/528371.
-    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=240 * 60,
+    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
                         minimum_duts=4, offload_failures_only=True)
     # Allows kwargs overrides to default_dict for cq.
@@ -234,8 +233,7 @@ class HWTestList(object):
     shared with other types of builder (canaries, pfq). The first suite in the
     list is a blocking sanity suite that verifies the build will not break dut.
     """
-    # TODO(mkryu): Temporarily increase timeout to 240 mins. crbug.com/528371.
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=240 * 60,
+    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=120 * 60,
                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
