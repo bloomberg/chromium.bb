@@ -7,6 +7,7 @@
 
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/MediaQueryBlockWatcher.h"
+#include "wtf/Partitions.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -117,26 +118,37 @@ static CSSParserToken percentage(NumericValueType type, double value)
     return token;
 }
 
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, whitespace, (WhitespaceToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, colon, (ColonToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, semicolon, (SemicolonToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, comma, (CommaToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, includeMatch, (IncludeMatchToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, dashMatch, (DashMatchToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, prefixMatch, (PrefixMatchToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, suffixMatch, (SuffixMatchToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, substringMatch, (SubstringMatchToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, column, (ColumnToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, cdo, (CDOToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, cdc, (CDCToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, leftParenthesis, (LeftParenthesisToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, rightParenthesis, (RightParenthesisToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, leftBracket, (LeftBracketToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, rightBracket, (RightBracketToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, leftBrace, (LeftBraceToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, rightBrace, (RightBraceToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, badString, (BadStringToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, badUrl, (BadUrlToken));
+// We need to initialize PartitionAlloc before creating CSSParserTokens
+// because CSSParserToken depends on PartitionAlloc. It is safe to call
+// WTF::Partitions::initialize() multiple times.
+#define DEFINE_TOKEN(name, argument)                                \
+static CSSParserToken& name()                                       \
+{                                                                   \
+    WTF::Partitions::initialize();                                  \
+    DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, name, (argument)); \
+    return name;                                                    \
+}
+
+DEFINE_TOKEN(whitespace, (WhitespaceToken))
+DEFINE_TOKEN(colon, (ColonToken));
+DEFINE_TOKEN(semicolon, (SemicolonToken));
+DEFINE_TOKEN(comma, (CommaToken));
+DEFINE_TOKEN(includeMatch, (IncludeMatchToken));
+DEFINE_TOKEN(dashMatch, (DashMatchToken));
+DEFINE_TOKEN(prefixMatch, (PrefixMatchToken));
+DEFINE_TOKEN(suffixMatch, (SuffixMatchToken));
+DEFINE_TOKEN(substringMatch, (SubstringMatchToken));
+DEFINE_TOKEN(column, (ColumnToken));
+DEFINE_TOKEN(cdo, (CDOToken));
+DEFINE_TOKEN(cdc, (CDCToken));
+DEFINE_TOKEN(leftParenthesis, (LeftParenthesisToken));
+DEFINE_TOKEN(rightParenthesis, (RightParenthesisToken));
+DEFINE_TOKEN(leftBracket, (LeftBracketToken));
+DEFINE_TOKEN(rightBracket, (RightBracketToken));
+DEFINE_TOKEN(leftBrace, (LeftBraceToken));
+DEFINE_TOKEN(rightBrace, (RightBraceToken));
+DEFINE_TOKEN(badString, (BadStringToken));
+DEFINE_TOKEN(badUrl, (BadUrlToken));
 
 String fromUChar32(UChar32 c)
 {
@@ -147,31 +159,31 @@ String fromUChar32(UChar32 c)
 
 TEST(CSSTokenizerTest, SingleCharacterTokens)
 {
-    TEST_TOKENS("(", leftParenthesis);
-    TEST_TOKENS(")", rightParenthesis);
-    TEST_TOKENS("[", leftBracket);
-    TEST_TOKENS("]", rightBracket);
-    TEST_TOKENS(",", comma);
-    TEST_TOKENS(":", colon);
-    TEST_TOKENS(";", semicolon);
-    TEST_TOKENS(")[", rightParenthesis, leftBracket);
-    TEST_TOKENS("[)", leftBracket, rightParenthesis);
-    TEST_TOKENS("{}", leftBrace, rightBrace);
-    TEST_TOKENS(",,", comma, comma);
+    TEST_TOKENS("(", leftParenthesis());
+    TEST_TOKENS(")", rightParenthesis());
+    TEST_TOKENS("[", leftBracket());
+    TEST_TOKENS("]", rightBracket());
+    TEST_TOKENS(",", comma());
+    TEST_TOKENS(":", colon());
+    TEST_TOKENS(";", semicolon());
+    TEST_TOKENS(")[", rightParenthesis(), leftBracket());
+    TEST_TOKENS("[)", leftBracket(), rightParenthesis());
+    TEST_TOKENS("{}", leftBrace(), rightBrace());
+    TEST_TOKENS(",,", comma(), comma());
 }
 
 TEST(CSSTokenizerTest, MultipleCharacterTokens)
 {
-    TEST_TOKENS("~=", includeMatch);
-    TEST_TOKENS("|=", dashMatch);
-    TEST_TOKENS("^=", prefixMatch);
-    TEST_TOKENS("$=", suffixMatch);
-    TEST_TOKENS("*=", substringMatch);
-    TEST_TOKENS("||", column);
-    TEST_TOKENS("|||", column, delim('|'));
-    TEST_TOKENS("<!--", cdo);
-    TEST_TOKENS("<!---", cdo, delim('-'));
-    TEST_TOKENS("-->", cdc);
+    TEST_TOKENS("~=", includeMatch());
+    TEST_TOKENS("|=", dashMatch());
+    TEST_TOKENS("^=", prefixMatch());
+    TEST_TOKENS("$=", suffixMatch());
+    TEST_TOKENS("*=", substringMatch());
+    TEST_TOKENS("||", column());
+    TEST_TOKENS("|||", column(), delim('|'));
+    TEST_TOKENS("<!--", cdo());
+    TEST_TOKENS("<!---", cdo(), delim('-'));
+    TEST_TOKENS("-->", cdc());
 }
 
 TEST(CSSTokenizerTest, DelimiterToken)
@@ -192,10 +204,10 @@ TEST(CSSTokenizerTest, DelimiterToken)
 
 TEST(CSSTokenizerTest, WhitespaceTokens)
 {
-    TEST_TOKENS("   ", whitespace);
-    TEST_TOKENS("\n\rS", whitespace, ident("S"));
-    TEST_TOKENS("   *", whitespace, delim('*'));
-    TEST_TOKENS("\r\n\f\t2", whitespace, number(IntegerValueType, 2, NoSign));
+    TEST_TOKENS("   ", whitespace());
+    TEST_TOKENS("\n\rS", whitespace(), ident("S"));
+    TEST_TOKENS("   *", whitespace(), delim('*'));
+    TEST_TOKENS("\r\n\f\t2", whitespace(), number(IntegerValueType, 2, NoSign));
 }
 
 TEST(CSSTokenizerTest, Escapes)
@@ -205,18 +217,18 @@ TEST(CSSTokenizerTest, Escapes)
     TEST_TOKENS("'hel\\6c o'", string("hello"));
     TEST_TOKENS("'spac\\65\r\ns'", string("spaces"));
     TEST_TOKENS("spac\\65\r\ns", ident("spaces"));
-    TEST_TOKENS("spac\\65\n\rs", ident("space"), whitespace, ident("s"));
+    TEST_TOKENS("spac\\65\n\rs", ident("space"), whitespace(), ident("s"));
     TEST_TOKENS("sp\\61\tc\\65\fs", ident("spaces"));
-    TEST_TOKENS("hel\\6c  o", ident("hell"), whitespace, ident("o"));
-    TEST_TOKENS("test\\\n", ident("test"), delim('\\'), whitespace);
+    TEST_TOKENS("hel\\6c  o", ident("hell"), whitespace(), ident("o"));
+    TEST_TOKENS("test\\\n", ident("test"), delim('\\'), whitespace());
     TEST_TOKENS("test\\D799", ident("test" + fromUChar32(0xD799)));
     TEST_TOKENS("\\E000", ident(fromUChar32(0xE000)));
     TEST_TOKENS("te\\s\\t", ident("test"));
     TEST_TOKENS("spaces\\ in\\\tident", ident("spaces in\tident"));
     TEST_TOKENS("\\.\\,\\:\\!", ident(".,:!"));
-    TEST_TOKENS("\\\r", delim('\\'), whitespace);
-    TEST_TOKENS("\\\f", delim('\\'), whitespace);
-    TEST_TOKENS("\\\r\n", delim('\\'), whitespace);
+    TEST_TOKENS("\\\r", delim('\\'), whitespace());
+    TEST_TOKENS("\\\f", delim('\\'), whitespace());
+    TEST_TOKENS("\\\r\n", delim('\\'), whitespace());
     String replacement = fromUChar32(0xFFFD);
     TEST_TOKENS(String("null\\\0", 6), ident("null" + replacement));
     TEST_TOKENS(String("null\\\0\0", 7), ident("null" + replacement + replacement));
@@ -239,7 +251,7 @@ TEST(CSSTokenizerTest, IdentToken)
     TEST_TOKENS("testing123", ident("testing123"));
     TEST_TOKENS("hello!", ident("hello"), delim('!'));
     TEST_TOKENS("world\5", ident("world"), delim('\5'));
-    TEST_TOKENS("_under score", ident("_under"), whitespace, ident("score"));
+    TEST_TOKENS("_under score", ident("_under"), whitespace(), ident("score"));
     TEST_TOKENS("-_underscore", ident("-_underscore"));
     TEST_TOKENS("-text", ident("-text"));
     TEST_TOKENS("-\\6d", ident("-m"));
@@ -258,12 +270,12 @@ TEST(CSSTokenizerTest, IdentToken)
 
 TEST(CSSTokenizerTest, FunctionToken)
 {
-    TEST_TOKENS("scale(2)", function("scale"), number(IntegerValueType, 2, NoSign), rightParenthesis);
+    TEST_TOKENS("scale(2)", function("scale"), number(IntegerValueType, 2, NoSign), rightParenthesis());
     TEST_TOKENS("foo-bar\\ baz(", function("foo-bar baz"));
     TEST_TOKENS("fun\\(ction(", function("fun(ction"));
     TEST_TOKENS("-foo(", function("-foo"));
     TEST_TOKENS("url(\"foo.gif\"", function("url"), string("foo.gif"));
-    TEST_TOKENS("foo(  \'bar.gif\'", function("foo"), whitespace, string("bar.gif"));
+    TEST_TOKENS("foo(  \'bar.gif\'", function("foo"), whitespace(), string("bar.gif"));
     // To simplify implementation we drop the whitespace in function(url),whitespace,string()
     TEST_TOKENS("url(  \'bar.gif\'", function("url"), string("bar.gif"));
 }
@@ -297,15 +309,15 @@ TEST(CSSTokenizerTest, UrlToken)
     TEST_TOKENS("URL(eof", url("eof"));
     TEST_TOKENS("url(not/*a*/comment)", url("not/*a*/comment"));
     TEST_TOKENS("urL()", url(""));
-    TEST_TOKENS("uRl(white space),", badUrl, comma);
-    TEST_TOKENS("Url(b(ad),", badUrl, comma);
-    TEST_TOKENS("uRl(ba'd):", badUrl, colon);
-    TEST_TOKENS("urL(b\"ad):", badUrl, colon);
-    TEST_TOKENS("uRl(b\"ad):", badUrl, colon);
-    TEST_TOKENS("Url(b\\\rad):", badUrl, colon);
-    TEST_TOKENS("url(b\\\nad):", badUrl, colon);
-    TEST_TOKENS("url(/*'bad')*/", badUrl, delim('*'), delim('/'));
-    TEST_TOKENS("url(ba'd\\\\))", badUrl, rightParenthesis);
+    TEST_TOKENS("uRl(white space),", badUrl(), comma());
+    TEST_TOKENS("Url(b(ad),", badUrl(), comma());
+    TEST_TOKENS("uRl(ba'd):", badUrl(), colon());
+    TEST_TOKENS("urL(b\"ad):", badUrl(), colon());
+    TEST_TOKENS("uRl(b\"ad):", badUrl(), colon());
+    TEST_TOKENS("Url(b\\\rad):", badUrl(), colon());
+    TEST_TOKENS("url(b\\\nad):", badUrl(), colon());
+    TEST_TOKENS("url(/*'bad')*/", badUrl(), delim('*'), delim('/'));
+    TEST_TOKENS("url(ba'd\\\\))", badUrl(), rightParenthesis());
 }
 
 TEST(CSSTokenizerTest, StringToken)
@@ -323,10 +335,10 @@ TEST(CSSTokenizerTest, StringToken)
     TEST_TOKENS("\"esc\\\faped\"", string("escaped"));
     TEST_TOKENS("'new\\\rline'", string("newline"));
     TEST_TOKENS("\"new\\\r\nline\"", string("newline"));
-    TEST_TOKENS("'bad\nstring", badString, whitespace, ident("string"));
-    TEST_TOKENS("'bad\rstring", badString, whitespace, ident("string"));
-    TEST_TOKENS("'bad\r\nstring", badString, whitespace, ident("string"));
-    TEST_TOKENS("'bad\fstring", badString, whitespace, ident("string"));
+    TEST_TOKENS("'bad\nstring", badString(), whitespace(), ident("string"));
+    TEST_TOKENS("'bad\rstring", badString(), whitespace(), ident("string"));
+    TEST_TOKENS("'bad\r\nstring", badString(), whitespace(), ident("string"));
+    TEST_TOKENS("'bad\fstring", badString(), whitespace(), ident("string"));
     TEST_TOKENS(String("'\0'", 3), string(fromUChar32(0xFFFD)));
     TEST_TOKENS(String("'hel\0lo'", 8), string("hel" + fromUChar32(0xFFFD) + "lo"));
     TEST_TOKENS(String("'h\\65l\0lo'", 10), string("hel" + fromUChar32(0xFFFD) + "lo"));
@@ -338,9 +350,9 @@ TEST(CSSTokenizerTest, HashToken)
     TEST_TOKENS("#FF7700", hash("FF7700", HashTokenId));
     TEST_TOKENS("#3377FF", hash("3377FF", HashTokenUnrestricted));
     TEST_TOKENS("#\\ ", hash(" ", HashTokenId));
-    TEST_TOKENS("# ", delim('#'), whitespace);
-    TEST_TOKENS("#\\\n", delim('#'), delim('\\'), whitespace);
-    TEST_TOKENS("#\\\r\n", delim('#'), delim('\\'), whitespace);
+    TEST_TOKENS("# ", delim('#'), whitespace());
+    TEST_TOKENS("#\\\n", delim('#'), delim('\\'), whitespace());
+    TEST_TOKENS("#\\\r\n", delim('#'), delim('\\'), whitespace());
     TEST_TOKENS("#!", delim('#'), delim('!'));
 }
 
@@ -360,7 +372,7 @@ TEST(CSSTokenizerTest, NumberToken)
     TEST_TOKENS("+637.54e-2", number(NumberValueType, 6.3754, PlusSign));
     TEST_TOKENS("-12.34E+2", number(NumberValueType, -1234, MinusSign));
 
-    TEST_TOKENS("+ 5", delim('+'), whitespace, number(IntegerValueType, 5, NoSign));
+    TEST_TOKENS("+ 5", delim('+'), whitespace(), number(IntegerValueType, 5, NoSign));
     TEST_TOKENS("-+12", delim('-'), number(IntegerValueType, 12, PlusSign));
     TEST_TOKENS("+-21", delim('+'), number(IntegerValueType, -21, MinusSign));
     TEST_TOKENS("++22", delim('+'), number(IntegerValueType, 22, PlusSign));
@@ -384,7 +396,7 @@ TEST(CSSTokenizerTest, DimensionToken)
     TEST_TOKENS("40\\70\\78", dimension(IntegerValueType, 40, "px"));
     TEST_TOKENS("4e3e2", dimension(NumberValueType, 4000, "e2"));
     TEST_TOKENS("0x10px", dimension(IntegerValueType, 0, "x10px"));
-    TEST_TOKENS("4unit ", dimension(IntegerValueType, 4, "unit"), whitespace);
+    TEST_TOKENS("4unit ", dimension(IntegerValueType, 4, "unit"), whitespace());
     TEST_TOKENS("5e+", dimension(IntegerValueType, 5, "e"), delim('+'));
     TEST_TOKENS("2e.5", dimension(IntegerValueType, 2, "e"), number(NumberValueType, 0.5, NoSign));
     TEST_TOKENS("2e+.5", dimension(IntegerValueType, 2, "e"), number(NumberValueType, 0.5, PlusSign));
@@ -427,11 +439,11 @@ TEST(CSSTokenizerTest, CommentToken)
 {
     TEST_TOKENS("/*comment*/a", ident("a"));
     TEST_TOKENS("/**\\2f**//", delim('/'));
-    TEST_TOKENS("/**y*a*y**/ ", whitespace);
-    TEST_TOKENS(",/* \n :) \n */)", comma, rightParenthesis);
-    TEST_TOKENS(":/*/*/", colon);
+    TEST_TOKENS("/**y*a*y**/ ", whitespace());
+    TEST_TOKENS(",/* \n :) \n */)", comma(), rightParenthesis());
+    TEST_TOKENS(":/*/*/", colon());
     TEST_TOKENS("/**/*", delim('*'));
-    TEST_TOKENS(";/******", semicolon);
+    TEST_TOKENS(";/******", semicolon());
 }
 
 typedef struct {
