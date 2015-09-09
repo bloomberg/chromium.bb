@@ -74,6 +74,12 @@ KEYBOARD_EXPORT void SetAccessibilityKeyboardEnabled(bool enabled);
 // Gets the state of the a11y onscreen keyboard.
 KEYBOARD_EXPORT bool GetAccessibilityKeyboardEnabled();
 
+// Sets the state of the hotrod onscreen keyboard.
+KEYBOARD_EXPORT void SetHotrodKeyboardEnabled(bool enabled);
+
+// Gets the state of the hotrod onscreen keyboard.
+KEYBOARD_EXPORT bool GetHotrodKeyboardEnabled();
+
 // Sets the state of the touch onscreen keyboard.
 KEYBOARD_EXPORT void SetTouchKeyboardEnabled(bool enabled);
 

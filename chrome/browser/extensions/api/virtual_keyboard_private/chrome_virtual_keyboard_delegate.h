@@ -18,6 +18,7 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool HideKeyboard() override;
   bool InsertText(const base::string16& text) override;
   bool OnKeyboardLoaded() override;
+  void SetHotrodKeyboard(bool enable) override;
   bool LockKeyboard(bool state) override;
   bool SendKeyEvent(const std::string& type,
                     int char_value,

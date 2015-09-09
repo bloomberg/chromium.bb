@@ -79,6 +79,18 @@ bool VirtualKeyboardPrivateHideKeyboardFunction::RunSync() {
   return false;
 }
 
+bool VirtualKeyboardPrivateSetHotrodKeyboardFunction::RunSync() {
+  VirtualKeyboardDelegate* delegate = GetDelegate(this);
+  if (delegate) {
+    bool enable;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enable));
+    delegate->SetHotrodKeyboard(enable);
+    return true;
+  }
+  error_ = kNotYetImplementedError;
+  return false;
+}
+
 bool VirtualKeyboardPrivateLockKeyboardFunction::RunSync() {
   VirtualKeyboardDelegate* delegate = GetDelegate(this);
   if (delegate) {

@@ -36,6 +36,9 @@ class VirtualKeyboardDelegate {
   // For example, settings should be blocked when the session is locked.
   virtual bool IsLanguageSettingsEnabled() = 0;
 
+  // Sets the state of the hotrod virtual keyboad.
+  virtual void SetHotrodKeyboard(bool enable) = 0;
+
   // Activate and lock the virtual keyboad on screen or dismiss the keyboard
   // regardless of the state of text focus. Used in a11y mode to allow typing
   // hotkeys without the need for text focus. Returns true if successful.

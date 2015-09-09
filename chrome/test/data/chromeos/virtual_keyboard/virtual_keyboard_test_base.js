@@ -87,6 +87,7 @@ function mockExtensionApis(mockController) {
     'sendKeyEvent',
     'setMode',
     'setKeyboardState',
+    'setHotrodKeyboard'
   ];
 
   var inputMethodPrivateMethods = [

@@ -50,6 +50,8 @@ base::LazyInstance<base::Time> g_keyboard_load_time_start =
 
 bool g_accessibility_keyboard_enabled = false;
 
+bool g_hotrod_keyboard_enabled = false;
+
 base::LazyInstance<GURL> g_override_content_url = LAZY_INSTANCE_INITIALIZER;
 
 bool g_touch_keyboard_enabled = false;
@@ -82,6 +84,14 @@ void SetAccessibilityKeyboardEnabled(bool enabled) {
 
 bool GetAccessibilityKeyboardEnabled() {
   return g_accessibility_keyboard_enabled;
+}
+
+void SetHotrodKeyboardEnabled(bool enabled) {
+  g_hotrod_keyboard_enabled = enabled;
+}
+
+bool GetHotrodKeyboardEnabled() {
+  return g_hotrod_keyboard_enabled;
 }
 
 void SetTouchKeyboardEnabled(bool enabled) {

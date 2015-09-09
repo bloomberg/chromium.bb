@@ -72,7 +72,10 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
     base::DictionaryValue* results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   results->SetString("layout", keyboard::GetKeyboardLayout());
+  // TODO(bshe): Consolidate a11y, hotrod and normal mode into a mode enum. See
+  // crbug.com/529474.
   results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
+  results->SetBoolean("hotrodmode", keyboard::GetHotrodKeyboardEnabled());
   scoped_ptr<base::ListValue> features(new base::ListValue());
   features->AppendString(GenerateFeatureFlag(
       "floatingvirtualkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));
@@ -115,6 +118,18 @@ bool ChromeVirtualKeyboardDelegate::OnKeyboardLoaded() {
   keyboard::MarkKeyboardLoadFinished();
   base::UserMetricsAction("VirtualKeyboardLoaded");
   return true;
+}
+
+void ChromeVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
+  if (keyboard::GetHotrodKeyboardEnabled() == enable)
+    return;
+
+  keyboard::SetHotrodKeyboardEnabled(enable);
+  // This reloads virtual keyboard even if it exists. This ensures virtual
+  // keyboard gets the correct state of the hotrod keyboard through
+  // chrome.virtualKeyboardPrivate.getKeyboardConfig.
+  if (enable && keyboard::IsKeyboardEnabled())
+    ash::Shell::GetInstance()->CreateKeyboard();
 }
 
 bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {

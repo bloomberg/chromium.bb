@@ -106,6 +106,17 @@
         ]
       },
       {
+        "name": "setHotrodKeyboard",
+        "type": "function",
+        "description": "Sets the state of the hotrod virtual keyboard. This API should only be used by hotrod.",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "enable"
+          }
+        ]
+      },
+      {
         "name": "lockKeyboard",
         "type": "function",
         "description": "Sets the lock state of the virtual keyboard. A locked keyboard remains visible even after a text area loses input focus.",

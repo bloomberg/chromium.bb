@@ -1137,6 +1137,7 @@ enum HistogramValue {
   SYSTEM_DISPLAY_ENABLEUNIFIEDDESKTOP,
   BROWSINGDATA_REMOVECACHESTORAGE,
   VIRTUALKEYBOARDPRIVATE_SETKEYBOARDSTATE,
+  VIRTUALKEYBOARDPRIVATE_SETHOTRODKEYBOARD,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
