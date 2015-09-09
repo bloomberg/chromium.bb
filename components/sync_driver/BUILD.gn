@@ -58,8 +58,6 @@ source_set("sync_driver") {
     "model_associator.h",
     "non_blocking_data_type_controller.cc",
     "non_blocking_data_type_controller.h",
-    "non_blocking_data_type_manager.cc",
-    "non_blocking_data_type_manager.h",
     "non_ui_data_type_controller.cc",
     "non_ui_data_type_controller.h",
     "open_tabs_ui_delegate.cc",

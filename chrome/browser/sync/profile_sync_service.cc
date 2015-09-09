@@ -446,38 +446,15 @@ void ProfileSyncService::UnregisterAuthNotifications() {
 
 void ProfileSyncService::RegisterDataTypeController(
     sync_driver::DataTypeController* data_type_controller) {
-  DCHECK_EQ(
-      directory_data_type_controllers_.count(data_type_controller->type()),
-      0U);
-  DCHECK(!GetRegisteredNonBlockingDataTypes().Has(
-      data_type_controller->type()));
-  directory_data_type_controllers_[data_type_controller->type()] =
-      data_type_controller;
-}
-
-void ProfileSyncService::RegisterNonBlockingType(syncer::ModelType type) {
-  DCHECK_EQ(directory_data_type_controllers_.count(type), 0U)
-      << "Duplicate registration of type " << ModelTypeToString(type);
-
-  // TODO(rlarocque): Set the enable flag properly when crbug.com/368834 is
-  // fixed and we have some way of telling whether or not this type should be
-  // enabled.
-  non_blocking_data_type_manager_.RegisterType(type, false);
-}
-
-void ProfileSyncService::InitializeNonBlockingType(
-    syncer::ModelType type,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor) {
-  non_blocking_data_type_manager_.InitializeType(
-      type, task_runner, type_processor);
+  DCHECK_EQ(data_type_controllers_.count(data_type_controller->type()), 0U);
+  data_type_controllers_[data_type_controller->type()] = data_type_controller;
 }
 
 bool ProfileSyncService::IsDataTypeControllerRunning(
     syncer::ModelType type) const {
   DataTypeController::TypeMap::const_iterator iter =
-      directory_data_type_controllers_.find(type);
-  if (iter == directory_data_type_controllers_.end()) {
+      data_type_controllers_.find(type);
+  if (iter == data_type_controllers_.end()) {
     return false;
   }
   return iter->second->state() == DataTypeController::RUNNING;
@@ -510,10 +487,9 @@ ProfileSyncService::GetLocalDeviceInfoProvider() const {
 
 void ProfileSyncService::GetDataTypeControllerStates(
   DataTypeController::StateMap* state_map) const {
-    for (DataTypeController::TypeMap::const_iterator iter =
-         directory_data_type_controllers_.begin();
-         iter != directory_data_type_controllers_.end();
-         ++iter)
+  for (DataTypeController::TypeMap::const_iterator iter =
+           data_type_controllers_.begin();
+       iter != data_type_controllers_.end(); ++iter)
       (*state_map)[iter->first] = iter->second.get()->state();
 }
 
@@ -872,8 +848,6 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
     RemoveClientFromServer();
   }
 
-  non_blocking_data_type_manager_.DisconnectSyncBackend();
-
   // First, we spin down the backend to stop change processing as soon as
   // possible.
   base::Time shutdown_start_time = base::Time::Now();
@@ -884,14 +858,14 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   // change from a native model.  In that case, it will get applied to the sync
   // database (which doesn't get destroyed until we destroy the backend below)
   // as an unsynced change.  That will be persisted, and committed on restart.
-  if (directory_data_type_manager_) {
-    if (directory_data_type_manager_->state() != DataTypeManager::STOPPED) {
+  if (data_type_manager_) {
+    if (data_type_manager_->state() != DataTypeManager::STOPPED) {
       // When aborting as part of shutdown, we should expect an aborted sync
       // configure result, else we'll dcheck when we try to read the sync error.
       expect_sync_configuration_aborted_ = true;
-      directory_data_type_manager_->Stop();
+      data_type_manager_->Stop();
     }
-    directory_data_type_manager_.reset();
+    data_type_manager_.reset();
   }
 
   // Shutdown the migrator before the backend to ensure it doesn't pull a null
@@ -996,9 +970,8 @@ void ProfileSyncService::ClearStaleErrors() {
   ClearUnrecoverableError();
   last_actionable_error_ = SyncProtocolError();
   // Clear the data type errors as well.
-  if (directory_data_type_manager_.get())
-    directory_data_type_manager_->ResetDataTypeErrors();
-
+  if (data_type_manager_.get())
+    data_type_manager_->ResetDataTypeErrors();
 }
 
 void ProfileSyncService::ClearUnrecoverableError() {
@@ -1046,7 +1019,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
   if (!backend_initialized_)
     return;
-  directory_data_type_manager_->ReenableType(type);
+  data_type_manager_->ReenableType(type);
 }
 
 void ProfileSyncService::UpdateBackendInitUMA(bool success) {
@@ -1083,9 +1056,6 @@ void ProfileSyncService::PostBackendInitialization() {
   if (protocol_event_observers_.might_have_observers()) {
     backend_->RequestBufferedProtocolEventsAndEnableForwarding();
   }
-
-  non_blocking_data_type_manager_.ConnectSyncBackend(
-      backend_->GetSyncContextProxy());
 
   if (type_debug_info_observers_.might_have_observers()) {
     backend_->EnableDirectoryTypeDebugInfoForwarding();
@@ -1163,9 +1133,6 @@ void ProfileSyncService::OnBackendInitialized(
 
   // Initialize local device info.
   local_device_->Initialize(cache_guid, signin_scoped_device_id);
-
-  DVLOG(1) << "Setting preferred types for non-blocking DTM";
-  non_blocking_data_type_manager_.SetPreferredTypes(GetPreferredDataTypes());
 
   if (backend_mode_ == BACKUP || backend_mode_ == ROLLBACK)
     ConfigureDataTypeManager();
@@ -1307,15 +1274,13 @@ void ProfileSyncService::OnPassphraseRequired(
            << syncer::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
-  const syncer::ModelTypeSet types = GetPreferredDirectoryDataTypes();
-  if (directory_data_type_manager_) {
+  // TODO(stanisc): http://crbug.com/351005: Does this support USS types?
+  const syncer::ModelTypeSet types = GetPreferredDataTypes();
+  if (data_type_manager_) {
     // Reconfigure without the encrypted types (excluded implicitly via the
     // failed datatypes handler).
-    directory_data_type_manager_->Configure(types,
-                                            syncer::CONFIGURE_REASON_CRYPTO);
+    data_type_manager_->Configure(types, syncer::CONFIGURE_REASON_CRYPTO);
   }
-
-  // TODO(rlarocque): Support non-blocking types.  http://crbug.com/351005.
 
   // Notify observers that the passphrase status may have changed.
   NotifyObservers();
@@ -1337,14 +1302,12 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
-  const syncer::ModelTypeSet types = GetPreferredDirectoryDataTypes();
-  if (directory_data_type_manager_) {
+  // TODO(stanisc): http://crbug.com/351005: Does this support USS types?
+  const syncer::ModelTypeSet types = GetPreferredDataTypes();
+  if (data_type_manager_) {
     // Re-enable any encrypted types if necessary.
-    directory_data_type_manager_->Configure(types,
-                                            syncer::CONFIGURE_REASON_CRYPTO);
+    data_type_manager_->Configure(types, syncer::CONFIGURE_REASON_CRYPTO);
   }
-
-  // TODO(rlarocque): Support non-blocking types.  http://crbug.com/351005.
 
   NotifyObservers();
 }
@@ -1377,7 +1340,7 @@ void ProfileSyncService::OnEncryptionComplete() {
 void ProfileSyncService::OnMigrationNeededForTypes(
     syncer::ModelTypeSet types) {
   DCHECK(backend_initialized_);
-  DCHECK(directory_data_type_manager_.get());
+  DCHECK(data_type_manager_.get());
 
   // Migrator must be valid, because we don't sync until it is created and this
   // callback originates from a sync cycle.
@@ -1464,14 +1427,13 @@ void ProfileSyncService::OnLocalSetPassphraseEncryption(
 
 void ProfileSyncService::BeginConfigureCatchUpBeforeClear() {
   DCHECK_EQ(backend_mode_, SYNC);
-  DCHECK(directory_data_type_manager_);
+  DCHECK(data_type_manager_);
   DCHECK(!saved_nigori_state_);
   saved_nigori_state_ =
       sync_prefs_.GetSavedNigoriStateForPassphraseEncryptionTransition().Pass();
   const syncer::ModelTypeSet types = GetActiveDataTypes();
   catch_up_configure_in_progress_ = true;
-  directory_data_type_manager_->Configure(types,
-                                          syncer::CONFIGURE_REASON_CATCH_UP);
+  data_type_manager_->Configure(types, syncer::CONFIGURE_REASON_CATCH_UP);
 }
 
 void ProfileSyncService::ClearAndRestartSyncForPassphraseEncryption() {
@@ -1629,10 +1591,8 @@ ProfileSyncService::SyncStatusSummary
     return ROLLBACK_USER_DATA;
   } else if (backend_.get() && !HasSyncSetupCompleted()) {
     return SETUP_INCOMPLETE;
-  } else if (
-      backend_.get() && HasSyncSetupCompleted() &&
-      directory_data_type_manager_.get() &&
-      directory_data_type_manager_->state() == DataTypeManager::STOPPED) {
+  } else if (backend_ && HasSyncSetupCompleted() && data_type_manager_ &&
+             data_type_manager_->state() == DataTypeManager::STOPPED) {
     return DATATYPES_NOT_INITIALIZED;
   } else if (IsSyncActive()) {
     return INITIALIZED;
@@ -1716,9 +1676,8 @@ bool ProfileSyncService::IsSyncAllowed() const {
 }
 
 bool ProfileSyncService::IsSyncActive() const {
-  return backend_initialized_ && backend_mode_ == SYNC &&
-         directory_data_type_manager_ &&
-         directory_data_type_manager_->state() != DataTypeManager::STOPPED;
+  return backend_initialized_ && backend_mode_ == SYNC && data_type_manager_ &&
+         data_type_manager_->state() != DataTypeManager::STOPPED;
 }
 
 bool ProfileSyncService::IsSignedIn() const {
@@ -1735,8 +1694,8 @@ ProfileSyncService::BackendMode ProfileSyncService::backend_mode() const {
 }
 
 bool ProfileSyncService::ConfigurationDone() const {
-  return directory_data_type_manager_ &&
-      directory_data_type_manager_->state() == DataTypeManager::CONFIGURED;
+  return data_type_manager_ &&
+         data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
 
 bool ProfileSyncService::waiting_for_auth() const {
@@ -1856,8 +1815,8 @@ void ProfileSyncService::OnUserChoseDatatypes(
   UpdateSelectedTypesHistogram(sync_everything, chosen_types);
   sync_prefs_.SetKeepEverythingSynced(sync_everything);
 
-  if (directory_data_type_manager_.get())
-    directory_data_type_manager_->ResetDataTypeErrors();
+  if (data_type_manager_)
+    data_type_manager_->ResetDataTypeErrors();
   ChangePreferredDataTypes(chosen_types);
 }
 
@@ -1871,10 +1830,6 @@ void ProfileSyncService::ChangePreferredDataTypes(
 
   // Now reconfigure the DTM.
   ReconfigureDatatypeManager();
-
-  // TODO(rlarocque): Reconfigure the NonBlockingDataTypeManager, too.  Blocked
-  // on crbug.com/368834.  Until that bug is fixed, it's difficult to tell
-  // which types should be enabled and when.
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
@@ -1895,23 +1850,6 @@ syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   return Union(preferred_types, enforced_types);
 }
 
-syncer::ModelTypeSet
-ProfileSyncService::GetPreferredDirectoryDataTypes() const {
-  const syncer::ModelTypeSet registered_directory_types =
-      GetRegisteredDirectoryDataTypes();
-  const syncer::ModelTypeSet preferred_types =
-      sync_prefs_.GetPreferredDataTypes(registered_directory_types);
-  const syncer::ModelTypeSet enforced_types =
-      Intersection(GetDataTypesFromPreferenceProviders(),
-                   registered_directory_types);
-  return Union(preferred_types, enforced_types);
-}
-
-syncer::ModelTypeSet
-ProfileSyncService::GetPreferredNonBlockingDataTypes() const {
-  return sync_prefs_.GetPreferredDataTypes(GetRegisteredNonBlockingDataTypes());
-}
-
 syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
   // TODO(treib,zea): When SyncPrefs also implements SyncTypePreferenceProvider,
   // we'll need another way to distinguish user-choosable types from
@@ -1920,26 +1858,15 @@ syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
-  return Union(GetRegisteredDirectoryDataTypes(),
-               GetRegisteredNonBlockingDataTypes());
-}
-
-syncer::ModelTypeSet
-ProfileSyncService::GetRegisteredDirectoryDataTypes() const {
   syncer::ModelTypeSet registered_types;
-  // The directory_data_type_controllers_ are determined by command-line flags;
+  // The data_type_controllers_ are determined by command-line flags;
   // that's effectively what controls the values returned here.
   for (DataTypeController::TypeMap::const_iterator it =
-       directory_data_type_controllers_.begin();
-       it != directory_data_type_controllers_.end(); ++it) {
+           data_type_controllers_.begin();
+       it != data_type_controllers_.end(); ++it) {
     registered_types.Put(it->first);
   }
   return registered_types;
-}
-
-syncer::ModelTypeSet
-ProfileSyncService::GetRegisteredNonBlockingDataTypes() const {
-  return non_blocking_data_type_manager_.GetRegisteredTypes();
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
@@ -1971,22 +1898,18 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     return;
 
   bool restart = false;
-  if (!directory_data_type_manager_) {
+  if (!data_type_manager_) {
     restart = true;
-    directory_data_type_manager_.reset(
-        factory_->CreateDataTypeManager(debug_info_listener_,
-                                        &directory_data_type_controllers_,
-                                        this,
-                                        backend_.get(),
-                                        this));
+    data_type_manager_.reset(factory_->CreateDataTypeManager(
+        debug_info_listener_, &data_type_controllers_, this, backend_.get(),
+        this));
 
     // We create the migrator at the same time.
-    migrator_.reset(
-        new browser_sync::BackendMigrator(
-            profile_->GetDebugName(), GetUserShare(),
-            this, directory_data_type_manager_.get(),
-            base::Bind(&ProfileSyncService::StartSyncingWithServer,
-                       base::Unretained(this))));
+    migrator_.reset(new browser_sync::BackendMigrator(
+        profile_->GetDebugName(), GetUserShare(), this,
+        data_type_manager_.get(),
+        base::Bind(&ProfileSyncService::StartSyncingWithServer,
+                   base::Unretained(this))));
   }
 
   syncer::ModelTypeSet types;
@@ -1995,7 +1918,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     types = syncer::BackupTypes();
     reason = syncer::CONFIGURE_REASON_BACKUP_ROLLBACK;
   } else {
-    types = GetPreferredDirectoryDataTypes();
+    types = GetPreferredDataTypes();
     if (!HasSyncSetupCompleted()) {
       reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
     } else if (restart) {
@@ -2011,7 +1934,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     }
   }
 
-  directory_data_type_manager_->Configure(types, reason);
+  data_type_manager_->Configure(types, reason);
 }
 
 syncer::UserShare* ProfileSyncService::GetUserShare() const {
@@ -2126,9 +2049,6 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
     } else if (throttled_types.Has(type)) {
       type_status->SetString("status", "warning");
       type_status->SetString("value", "Throttled");
-    } else if (GetRegisteredNonBlockingDataTypes().Has(type)) {
-      type_status->SetString("status", "ok");
-      type_status->SetString("value", "Non-Blocking");
     } else if (active_types.Has(type)) {
       type_status->SetString("status", "ok");
       type_status->SetString("value", "Active: " +
@@ -2464,24 +2384,24 @@ void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
 
 void ProfileSyncService::GetAllNodes(
     const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
-  ModelTypeSet directory_types = GetRegisteredDirectoryDataTypes();
-  directory_types.PutAll(syncer::ControlTypes());
+  // TODO(stanisc): crbug.com/328606: Make this work for USS datatypes.
+  ModelTypeSet all_types = GetRegisteredDataTypes();
+  all_types.PutAll(syncer::ControlTypes());
   scoped_refptr<GetAllNodesRequestHelper> helper =
-      new GetAllNodesRequestHelper(directory_types, callback);
+      new GetAllNodesRequestHelper(all_types, callback);
 
   if (!backend_initialized_) {
     // If there's no backend available to fulfill the request, handle it here.
     ScopedVector<base::ListValue> empty_results;
     std::vector<ModelType> type_vector;
-    for (ModelTypeSet::Iterator it = directory_types.First();
-         it.Good(); it.Inc()) {
+    for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
       type_vector.push_back(it.Get());
       empty_results.push_back(new base::ListValue());
     }
     helper->OnReceivedNodesForTypes(type_vector, empty_results.Pass());
   } else {
     backend_->GetAllNodesForTypes(
-        directory_types,
+        all_types,
         base::Bind(&GetAllNodesRequestHelper::OnReceivedNodesForTypes, helper));
   }
 }

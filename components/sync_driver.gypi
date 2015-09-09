@@ -79,8 +79,6 @@
         'sync_driver/model_associator.h',
         'sync_driver/non_blocking_data_type_controller.cc',
         'sync_driver/non_blocking_data_type_controller.h',
-        'sync_driver/non_blocking_data_type_manager.cc',
-        'sync_driver/non_blocking_data_type_manager.h',
         'sync_driver/non_ui_data_type_controller.cc',
         'sync_driver/non_ui_data_type_controller.h',
         'sync_driver/open_tabs_ui_delegate.cc',

@@ -34,7 +34,6 @@
 #include "components/sync_driver/data_type_status_table.h"
 #include "components/sync_driver/device_info_sync_service.h"
 #include "components/sync_driver/local_device_info_provider.h"
-#include "components/sync_driver/non_blocking_data_type_manager.h"
 #include "components/sync_driver/protocol_event_observer.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -334,27 +333,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // to start up. Virtual to enable mocking in tests.
   virtual bool IsOAuthRefreshTokenAvailable();
 
-  // Registers a type whose sync storage will not be managed by the
-  // ProfileSyncService.  It declares that this sync type may be activated at
-  // some point in the future.  This function call does not enable or activate
-  // the syncing of this type
-  // TODO(stanisc): crbug.com/515962: this should merge with
-  // RegisterDataTypeController.
-  void RegisterNonBlockingType(syncer::ModelType type);
-
-  // Called by a component that supports non-blocking sync when it is ready to
-  // initialize its connection to the sync backend.
-  //
-  // If policy allows for syncing this type (ie. it is "preferred"), then this
-  // should result in a message to enable syncing for this type when the sync
-  // backend is available.  If the type is not to be synced, this should result
-  // in a message that allows the component to delete its local sync state.
-  // TODO(stanisc): crbug.com/515962: review usage of this.
-  void InitializeNonBlockingType(
-      syncer::ModelType type,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor);
-
   // Returns the SyncedWindowDelegatesGetter from the embedded sessions manager.
   virtual browser_sync::SyncedWindowDelegatesGetter*
   GetSyncedWindowDelegatesGetter() const;
@@ -506,12 +484,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   virtual void ChangePreferredDataTypes(
       syncer::ModelTypeSet preferred_types);
 
-  // Returns the set of directory types which are preferred for enabling.
-  virtual syncer::ModelTypeSet GetPreferredDirectoryDataTypes() const;
-
-  // Returns the set of off-thread types which are preferred for enabling.
-  virtual syncer::ModelTypeSet GetPreferredNonBlockingDataTypes() const;
-
   // Returns the set of types which are enforced programmatically and can not
   // be disabled by the user.
   virtual syncer::ModelTypeSet GetForcedDataTypes() const;
@@ -521,12 +493,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // via a command-line option.  See class comment for more on what it means
   // for a datatype to be Registered.
   virtual syncer::ModelTypeSet GetRegisteredDataTypes() const;
-
-  // Gets the set of directory types which could be allowed.
-  virtual syncer::ModelTypeSet GetRegisteredDirectoryDataTypes() const;
-
-  // Gets the set of off-thread types which could be allowed.
-  virtual syncer::ModelTypeSet GetRegisteredNonBlockingDataTypes() const;
 
   // Returns the actual passphrase type being used for encryption.
   virtual syncer::PassphraseType GetPassphraseType() const;
@@ -639,9 +605,8 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
 
-  const sync_driver::DataTypeController::TypeMap&
-      directory_data_type_controllers() {
-    return directory_data_type_controllers_;
+  const sync_driver::DataTypeController::TypeMap& data_type_controllers() {
+    return data_type_controllers_;
   }
 
   // Helper method for managing encryption UI.
@@ -856,8 +821,8 @@ class ProfileSyncService : public sync_driver::SyncService,
   // is equal to !HasSyncSetupCompleted() at the time of OnBackendInitialized().
   bool is_first_time_sync_configure_;
 
-  // List of available data type controllers for directory types.
-  sync_driver::DataTypeController::TypeMap directory_data_type_controllers_;
+  // List of available data type controllers.
+  sync_driver::DataTypeController::TypeMap data_type_controllers_;
 
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
@@ -880,11 +845,8 @@ class ProfileSyncService : public sync_driver::SyncService,
   std::string unrecoverable_error_message_;
   tracked_objects::Location unrecoverable_error_location_;
 
-  // Manages the start and stop of the directory data types.
-  scoped_ptr<sync_driver::DataTypeManager> directory_data_type_manager_;
-
-  // Manager for the non-blocking data types.
-  sync_driver_v2::NonBlockingDataTypeManager non_blocking_data_type_manager_;
+  // Manages the start and stop of the data types.
+  scoped_ptr<sync_driver::DataTypeManager> data_type_manager_;
 
   base::ObserverList<sync_driver::SyncServiceObserver> observers_;
   base::ObserverList<browser_sync::ProtocolEventObserver>
