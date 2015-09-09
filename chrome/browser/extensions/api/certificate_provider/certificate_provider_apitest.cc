@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
     // Expect the server to return the fingerprint of the client cert that we
     // presented, which should be the fingerprint of 'l1_leaf.der'.
     // The fingerprint can be calculated independently using:
-    // openssl x509 -inform DER -noout -fingerprint -in \
+    // openssl x509 -inform DER -noout -fingerprint -in
     //   chrome/test/data/extensions/api_test/certificate_provider/l1_leaf.der
     ASSERT_EQ(
         "got client cert with fingerprint: "
