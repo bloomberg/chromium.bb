@@ -6,6 +6,7 @@
 
 import argparse
 import codecs
+import ctypes
 import logging
 import logging.handlers
 import optparse
@@ -26,28 +27,57 @@ import time
 #     WindowsError: [Error 32] The process cannot access the file because
 #     it is being used by another process
 if sys.platform == 'win32':
+  import ctypes
   import msvcrt  # pylint: disable=F0401
   import _subprocess  # pylint: disable=F0401
+
+  FILE_ATTRIBUTE_NORMAL = 0x00000080
+  FILE_SHARE_READ = 1
+  FILE_SHARE_WRITE = 2
+  FILE_SHARE_DELETE = 4
+  GENERIC_READ = 0x80000000
+  GENERIC_WRITE = 0x40000000
+  OPEN_ALWAYS = 4
 
   # TODO(maruel): Make it work in cygwin too if necessary. This would have to
   # use ctypes.cdll.kernel32 instead of _subprocess and msvcrt.
 
-  def _duplicate(handle):
-    target_process = _subprocess.GetCurrentProcess()
-    return _subprocess.DuplicateHandle(
-        _subprocess.GetCurrentProcess(), handle, target_process,
-        0, False, _subprocess.DUPLICATE_SAME_ACCESS).Detach()
+
+  def shared_open(path):
+    """Opens a file with full sharing mode and without inheritance.
+
+    The file is open for both read and write.
+
+    See https://bugs.python.org/issue15244 for inspiration.
+    """
+    path = unicode(path)
+    handle = ctypes.windll.kernel32.CreateFileW(
+        path,
+        GENERIC_READ|GENERIC_WRITE,
+        FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
+        None,
+        OPEN_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        None)
+    ctr_handle = msvcrt.open_osfhandle(handle, os.O_BINARY | os.O_NOINHERIT)
+    return os.fdopen(ctr_handle, 'r+b')
 
 
   class NoInheritRotatingFileHandler(logging.handlers.RotatingFileHandler):
     def _open(self):
-      """Opens the current file without handle inheritance."""
-      if self.encoding is None:
-        with open(self.baseFilename, self.mode) as stream:
-          newosf = _duplicate(msvcrt.get_osfhandle(stream.fileno()))
-          new_fd = msvcrt.open_osfhandle(newosf, os.O_APPEND)
-          return os.fdopen(new_fd, self.mode)
-      return codecs.open(self.baseFilename, self.mode, self.encoding)
+      """Opens the log file without handle inheritance but with file sharing.
+
+      Ignores self.mode.
+      """
+      f = shared_open(self.baseFilename)
+      if self.encoding:
+        # Do the equivalent of
+        # codecs.open(self.baseFilename, self.mode, self.encoding)
+        info = codecs.lookup(self.encoding)
+        f = codecs.StreamReaderWriter(
+            f, info.streamreader, info.streamwriter, 'replace')
+        f.encoding = self.encoding
+      return f
 
 
 else:  # Not Windows.
