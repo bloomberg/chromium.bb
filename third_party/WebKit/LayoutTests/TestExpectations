@@ -70,12 +70,6 @@ crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-backgroun
 crbug.com/463358 [ Mac Linux Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ ImageOnlyFailure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ ImageOnlyFailure ]
 
-crbug.com/492871 [ Mac ] fast/forms/listbox-scrollbar-incremental-load.html [ NeedsRebaseline ]
-crbug.com/492871 [ Mac ] fast/forms/select-initial-position.html [ NeedsRebaseline ]
-crbug.com/492871 [ Mac ] fast/overflow/overflow-text-hit-testing.html [ NeedsRebaseline ]
-crbug.com/492871 [ Mac ] fast/repaint/caret-invalidation-in-overflow-scroll.html [ NeedsRebaseline ]
-crbug.com/492871 [ Win ] fast/overflow/overflow-text-hit-testing.html [ NeedsRebaseline ]
-
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 # Times out on the windows trybot.
