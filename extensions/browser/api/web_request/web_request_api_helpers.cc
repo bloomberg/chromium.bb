@@ -361,17 +361,21 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
 
   // Find added headers (header keys are treated case insensitively).
   {
-    for (ResponseHeaders::const_iterator i = new_response_headers->begin();
-         i != new_response_headers->end(); ++i) {
-      void* iter = NULL;
+    for (const auto& i : *new_response_headers) {
+      std::string name_lowercase = base::ToLowerASCII(i.first);
+      void* iter = nullptr;
+      std::string name;
       std::string value;
       bool header_found = false;
-      while (old_response_headers->EnumerateHeader(&iter, i->first, &value) &&
-             !header_found) {
-        header_found = (value == i->second);
+      while (old_response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
+        if (base::LowerCaseEqualsASCII(name, name_lowercase) &&
+            value == i.second) {
+          header_found = true;
+          break;
+        }
       }
       if (!header_found)
-        result->added_response_headers.push_back(*i);
+        result->added_response_headers.push_back(i);
     }
   }
 
