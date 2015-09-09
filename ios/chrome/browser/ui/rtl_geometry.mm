@@ -215,23 +215,3 @@ NSLayoutFormatOptions LayoutOptionForRTLSupport() {
   }
   return NSLayoutFormatDirectionLeftToRight;
 }
-
-#pragma mark - deprecated functions
-
-bool IsRTLUILayout() {
-  if (base::ios::IsRunningOnIOS9OrLater()) {
-#if __IPHONE_9_0
-    // Calling this method is better than using the locale on iOS9 since it will
-    // work with the right to left pseudolanguage.
-    return [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:
-                       UISemanticContentAttributeUnspecified] ==
-           UIUserInterfaceLayoutDirectionRightToLeft;
-#endif
-  }
-  // Using NSLocale instead of base::i18n::IsRTL() in order to take into account
-  // right to left pseudolanguage correctly (which base::i18n::IsRTL() doesn't).
-  return [NSLocale characterDirectionForLanguage:
-                       [[NSLocale currentLocale]
-                           objectForKey:NSLocaleLanguageCode]] ==
-         NSLocaleLanguageDirectionRightToLeft;
-}

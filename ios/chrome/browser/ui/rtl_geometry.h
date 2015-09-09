@@ -167,13 +167,4 @@ CGFloat UIEdgeInsetsGetTrailing(UIEdgeInsets insets);
 // smaller sections of views should be determined case by case.
 NSLayoutFormatOptions LayoutOptionForRTLSupport();
 
-// Deprecated -- use UseRTLLayout() instead.
-// Whether the UI is configured for right to left layout.
-// The implementation will use the local in order to get the UI layout direction
-// for version of iOS under 9.
-// TODO(jbbegue): Use base::i18n::IsRTL() instead when it will support RTL
-// pseudo language. Remove that method once base::i18n::IsRTL() is fixed.
-// crbug/514625.
-bool IsRTLUILayout();
-
 #endif  // RTL_GEOMETRY_H_
