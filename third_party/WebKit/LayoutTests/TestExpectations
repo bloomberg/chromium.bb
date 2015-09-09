@@ -1530,8 +1530,6 @@ crbug.com/505086 css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebasel
 
 crbug.com/516522 [ Yosemite ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ Failure ]
 
-crbug.com/521124 [ Win ] fast/css/font-weight-1.html [ NeedsRebaseline ]
-
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
 crbug.com/502927 [ XP ] virtual/spv2/paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Skip ]
