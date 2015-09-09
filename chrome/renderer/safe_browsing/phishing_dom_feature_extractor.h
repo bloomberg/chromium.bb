@@ -24,10 +24,6 @@ namespace blink {
 class WebElement;
 }
 
-namespace content {
-class RenderView;
-}
-
 namespace safe_browsing {
 class FeatureExtractorClock;
 class FeatureMap;
@@ -38,23 +34,21 @@ class PhishingDOMFeatureExtractor {
   // argument is true if extraction was successful, false otherwise.
   typedef base::Callback<void(bool)> DoneCallback;
 
-  // Creates a PhishingDOMFeatureExtractor for the specified RenderView.
-  // The PhishingDOMFeatureExtrator should be destroyed prior to destroying
-  // the RenderView.  |clock| is used for timing feature extractor operations,
-  // and may be mocked for testing.  The caller maintains ownership of the
-  // clock.
-  PhishingDOMFeatureExtractor(content::RenderView* render_view,
-                              FeatureExtractorClock* clock);
+  // Creates a PhishingDOMFeatureExtractor instance.
+  // |clock| is used for timing feature extractor operations, and may be
+  // mocked for testing.  The caller maintains ownership of the clock.
+  explicit PhishingDOMFeatureExtractor(FeatureExtractorClock* clock);
   ~PhishingDOMFeatureExtractor();
 
-  // Begins extracting features into the given FeatureMap for the page
-  // currently loaded in this object's RenderView.  To avoid blocking the
-  // render thread for too long, the feature extractor may run in several
-  // chunks of work, posting a task to the current MessageLoop to continue
-  // processing.  Once feature extraction is complete, |done_callback|
-  // is run on the current thread.  PhishingDOMFeatureExtractor takes
-  // ownership of the callback.
-  void ExtractFeatures(FeatureMap* features, const DoneCallback& done_callback);
+  // Begins extracting features into the given FeatureMap for the page.
+  // To avoid blocking the render thread for too long, the feature extractor
+  // may run in several chunks of work, posting a task to the current
+  // MessageLoop to continue processing.  Once feature extraction is complete,
+  // |done_callback| is run on the current thread.  PhishingDOMFeatureExtractor
+  // takes ownership of the callback.
+  void ExtractFeatures(blink::WebDocument document,
+                       FeatureMap* features,
+                       const DoneCallback& done_callback);
 
   // Cancels any pending feature extraction.  The DoneCallback will not be run.
   // Must be called if there is a feature extraction in progress when the page
@@ -123,8 +117,6 @@ class PhishingDOMFeatureExtractor {
   // description of which features are computed.
   void InsertFeatures();
 
-  // Non-owned pointer to the view that we will extract features from.
-  content::RenderView* render_view_;
 
   // Non-owned pointer to our clock.
   FeatureExtractorClock* clock_;

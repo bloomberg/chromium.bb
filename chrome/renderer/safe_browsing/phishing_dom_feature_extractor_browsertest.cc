@@ -81,8 +81,7 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     render_view_routing_id_ =
         GetWebContents()->GetRenderViewHost()->GetRoutingID();
-    extractor_.reset(new PhishingDOMFeatureExtractor(
-        content::RenderView::FromRoutingID(render_view_routing_id_), &clock_));
+    extractor_.reset(new PhishingDOMFeatureExtractor(&clock_));
 
     ASSERT_TRUE(StartTestServer());
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -99,14 +98,20 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
     return success_;
   }
 
+  blink::WebFrame* GetWebFrame() {
+    content::RenderView* render_view =
+        content::RenderView::FromRoutingID(render_view_routing_id_);
+    return render_view->GetWebView()->mainFrame();
+  }
+
   void ExtractFeaturesInternal(FeatureMap* features) {
     scoped_refptr<content::MessageLoopRunner> message_loop =
         new content::MessageLoopRunner;
+
     extractor_->ExtractFeatures(
-        features,
+        GetWebFrame()->document(), features,
         base::Bind(&PhishingDOMFeatureExtractorTest::ExtractionDone,
-                   base::Unretained(this),
-                   message_loop->QuitClosure()));
+                   base::Unretained(this), message_loop->QuitClosure()));
     message_loop->Run();
   }
 
@@ -119,9 +124,7 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
 
   // Does the actual work of removing the iframe "frame1" from the document.
   void RemoveIframe() {
-    content::RenderView* render_view =
-        content::RenderView::FromRoutingID(render_view_routing_id_);
-    blink::WebFrame* main_frame = render_view->GetWebView()->mainFrame();
+    blink::WebFrame* main_frame = GetWebFrame();
     ASSERT_TRUE(main_frame);
     main_frame->executeScript(
         blink::WebString(

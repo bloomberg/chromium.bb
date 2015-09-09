@@ -58,8 +58,7 @@ void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
   scorer_ = scorer;
   if (scorer_) {
     url_extractor_.reset(new PhishingUrlFeatureExtractor);
-    dom_extractor_.reset(
-        new PhishingDOMFeatureExtractor(render_view_, clock_.get()));
+    dom_extractor_.reset(new PhishingDOMFeatureExtractor(clock_.get()));
     term_extractor_.reset(new PhishingTermFeatureExtractor(
         &scorer_->page_terms(),
         &scorer_->page_words(),
@@ -143,7 +142,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
   // DOM feature extraction can take awhile, so it runs asynchronously
   // in several chunks of work and invokes the callback when finished.
   dom_extractor_->ExtractFeatures(
-      features_.get(),
+      frame->document(), features_.get(),
       base::Bind(&PhishingClassifier::DOMExtractionFinished,
                  base::Unretained(this)));
 }
