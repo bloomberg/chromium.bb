@@ -4,6 +4,7 @@
 
 #include "content/browser/webui/web_ui_impl.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -216,8 +217,19 @@ void WebUIImpl::AddMessageHandler(WebUIMessageHandler* handler) {
 
 void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
   RenderFrameHost* target_frame = TargetFrame();
-  if (target_frame)
+  if (target_frame) {
+    if (!(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+              target_frame->GetProcess()->GetID()) ||
+          // It's possible to load about:blank in a Web UI renderer.
+          // See http://crbug.com/42547
+          target_frame->GetLastCommittedURL().spec() == url::kAboutBlankURL)) {
+      // Don't crash when we try to inject JavaScript into a non-WebUI page, but
+      // upload a crash report anyways. http://crbug.com/516690
+      base::debug::DumpWithoutCrashing();
+      return;
+    }
     target_frame->ExecuteJavaScript(javascript);
+  }
 }
 
 RenderFrameHost* WebUIImpl::TargetFrame() {
