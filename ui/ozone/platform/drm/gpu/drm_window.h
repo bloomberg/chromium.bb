@@ -134,6 +134,8 @@ class OZONE_EXPORT DrmWindow {
   OverlayPlaneList last_submitted_planes_;
   bool last_swap_sync_ = false;
 
+  bool force_buffer_reallocation_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DrmWindow);
 };
 

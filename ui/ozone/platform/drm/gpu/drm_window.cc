@@ -126,6 +126,15 @@ void DrmWindow::QueueOverlayPlane(const OverlayPlane& plane) {
 
 bool DrmWindow::SchedulePageFlip(bool is_sync,
                                  const SwapCompletionCallback& callback) {
+  if (force_buffer_reallocation_) {
+    // Clear pending planes otherwise the next call to queue planes will just
+    // add on top.
+    pending_planes_.clear();
+    force_buffer_reallocation_ = false;
+    callback.Run(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS);
+    return true;
+  }
+
   last_submitted_planes_.clear();
   last_submitted_planes_.swap(pending_planes_);
   last_swap_sync_ = is_sync;
@@ -203,6 +212,12 @@ void DrmWindow::OnCursorAnimationTimeout() {
 void DrmWindow::SetController(HardwareDisplayController* controller) {
   if (controller_ == controller)
     return;
+
+  // Force buffer reallocation since the window moved to a different controller.
+  // This is required otherwise the GPU will eventually try to render into the
+  // buffer currently showing on the old controller (there is no guarantee that
+  // the old controller has been updated in the meantime).
+  force_buffer_reallocation_ = true;
 
   controller_ = controller;
   device_manager_->UpdateDrmDevice(
