@@ -405,7 +405,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
         frame_tree_node_->IsMainFrame());
   }
 
-  // If the renderer crashed, then try to create a new one to satisfy this
+  // If the renderer isn't live, then try to create a new one to satisfy this
   // navigation request.
   if (!dest_render_frame_host->IsRenderFrameLive()) {
     // Instruct the destination render frame host to set up a Mojo connection
@@ -432,6 +432,19 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
       if (dest_render_frame_host->GetView())
         dest_render_frame_host->GetView()->Hide();
     } else {
+      // After a renderer crash we'd have marked the host as invisible, so we
+      // need to set the visibility of the new View to the correct value here
+      // after reload.
+      if (dest_render_frame_host->GetView() &&
+          dest_render_frame_host->render_view_host()->is_hidden() !=
+              delegate_->IsHidden()) {
+        if (delegate_->IsHidden()) {
+          dest_render_frame_host->GetView()->Hide();
+        } else {
+          dest_render_frame_host->GetView()->Show();
+        }
+      }
+
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
       // manager still uses NotificationService and expects to see a
       // RenderViewHost changed notification after WebContents and

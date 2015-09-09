@@ -1237,15 +1237,16 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   current_size_.SetSize(0, 0);
   // After the renderer crashes, the view is destroyed and so the
   // RenderWidgetHost cannot track its visibility anymore. We assume such
-  // RenderWidgetHost to be visible for the sake of internal accounting - be
-  // careful about changing this - see http://crbug.com/401859.
+  // RenderWidgetHost to be invisible for the sake of internal accounting - be
+  // careful about changing this - see http://crbug.com/401859 and
+  // http://crbug.com/522795.
   //
   // We need to at least make sure that the RenderProcessHost is notified about
   // the |is_hidden_| change, so that the renderer will have correct visibility
   // set when respawned.
-  if (is_hidden_) {
-    process_->WidgetRestored();
-    is_hidden_ = false;
+  if (!is_hidden_) {
+    process_->WidgetHidden();
+    is_hidden_ = true;
   }
 
   // Reset this to ensure the hung renderer mechanism is working properly.

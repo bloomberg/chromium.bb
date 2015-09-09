@@ -116,6 +116,8 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
     private static final String FILE_PATH = "chrome/test/data/android/test.html";
     // about:version will always be handled by a different renderer than a local file.
     private static final String ABOUT_VERSION_PATH = "chrome://version/";
+    private static final String SHARED_RENDERER_PAGE_PATH =
+            "chrome/test/data/android/bindingmanager/shared_renderer1.html";
 
     public BindingManagerIntegrationTest() {
         super(ChromeActivity.class);
@@ -476,6 +478,88 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         ChromeTabUtils.waitForTabPageLoaded(tabs[2], "about:blank");
         // At this point all the sanboxed services are allocated.
         assertTrue(mBindingManager.isReleaseAllModerateBindingsCalled());
+    }
+
+    @LargeTest
+    @Feature({"ProcessManagement"})
+    public void testRestoreSharedRenderer() throws Exception {
+        loadUrl(TestHttpServerClient.getUrl(SHARED_RENDERER_PAGE_PATH));
+
+        final Tab[] tabs = new Tab[2];
+        tabs[0] = getActivity().getActivityTab();
+        singleClickView(tabs[0].getView());
+
+        assertTrue("Child tab isn't opened.", CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getCurrentTabModel().getCount() == 2
+                        && getActivity()
+                                   .getActivityTab()
+                                   .getContentViewCore()
+                                   .getCurrentRenderProcessId()
+                        != 0;
+            }
+        }));
+        tabs[1] = getActivity().getActivityTab();
+        assertEquals(tabs[0].getContentViewCore().getCurrentRenderProcessId(),
+                tabs[1].getContentViewCore().getCurrentRenderProcessId());
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                // Verify the visibility of the renderer.
+                assertTrue(mBindingManager.isInForeground(
+                        tabs[0].getContentViewCore().getCurrentRenderProcessId()));
+            }
+        });
+
+        assertTrue(ChildProcessLauncher.crashProcessForTesting(
+                tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+
+        assertTrue("Renderer crash wasn't noticed by the browser.",
+                CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return tabs[1].getContentViewCore().getCurrentRenderProcessId() == 0;
+                    }
+                }));
+        // Reload the tab, respawning the renderer.
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                tabs[1].reload();
+            }
+        });
+
+        // Wait until the process is spawned and its visibility is determined.
+        assertTrue("Process for the crashed tab was not respawned.",
+                CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return tabs[1].getContentViewCore().getCurrentRenderProcessId() != 0;
+                    }
+                }));
+
+        assertTrue("setInForeground() was not called for the process.",
+                CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mBindingManager.setInForegroundWasCalled(
+                                tabs[1].getContentViewCore().getCurrentRenderProcessId());
+                    }
+                }));
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                // Verify the visibility of the renderer.
+                assertTrue(mBindingManager.isInForeground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                tabs[1].hide();
+                assertTrue(mBindingManager.isInBackground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+            }
+        });
     }
 
     @Override

@@ -1505,15 +1505,15 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
 }
 
-// Regression test for http://crbug.com/401859.
+// Regression test for http://crbug.com/401859 and http://crbug.com/522795.
 TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
   // RendererExited will delete the view.
   host_->SetView(new TestView(host_.get()));
-  host_->WasHidden();
+  host_->WasShown(ui::LatencyInfo());
 
-  ASSERT_TRUE(host_->is_hidden());
-  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   ASSERT_FALSE(host_->is_hidden());
+  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  ASSERT_TRUE(host_->is_hidden());
 
   // Make sure the input router is in a fresh state.
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
