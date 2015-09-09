@@ -97,6 +97,8 @@ source_set("lib") {
     "html_viewer.h",
     "html_widget.cc",
     "html_widget.h",
+    "ime_controller.cc",
+    "ime_controller.h",
     "media_factory.cc",
     "media_factory.h",
     "mock_web_blob_registry_impl.cc",

@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_HTML_VIEWER_HTML_WIDGET_H_
 #define COMPONENTS_HTML_VIEWER_HTML_WIDGET_H_
 
-#include "third_party/WebKit/public/web/WebTextInputInfo.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 #include "third_party/WebKit/public/web/WebWidgetClient.h"
 
@@ -21,6 +20,7 @@ class View;
 namespace html_viewer {
 
 class GlobalState;
+class ImeController;
 class WebLayerTreeViewImpl;
 
 // HTMLWidget is responsible for creation of the WebWidget. Which WebWidget
@@ -73,8 +73,6 @@ class HTMLWidgetRootLocal : public HTMLWidget, public blink::WebViewClient {
  protected:
   // WebViewClient methods:
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
-  virtual void didCancelCompositionOnSelectionChange();
-  virtual void didChangeContents();
   virtual void initializeLayerTreeView();
   virtual blink::WebLayerTreeView* layerTreeView();
   virtual void resetInputMethod();
@@ -84,10 +82,6 @@ class HTMLWidgetRootLocal : public HTMLWidget, public blink::WebViewClient {
   virtual void showImeIfNeeded();
 
  private:
-  // Update text input state from WebView to mojo::View. If the focused element
-  // is editable and |show_ime| is True, the software keyboard will be shown.
-  void UpdateTextInputState(bool show_ime);
-
   // HTMLWidget:
   blink::WebWidget* GetWidget() override;
   void OnViewBoundsChanged(mojo::View* view) override;
@@ -97,7 +91,7 @@ class HTMLWidgetRootLocal : public HTMLWidget, public blink::WebViewClient {
   mojo::View* view_;
   blink::WebView* web_view_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
-  blink::WebTextInputInfo text_input_info_;
+  scoped_ptr<ImeController> ime_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLWidgetRootLocal);
 };
@@ -119,11 +113,17 @@ class HTMLWidgetLocalRoot : public HTMLWidget, public blink::WebWidgetClient {
   // WebWidgetClient:
   virtual void initializeLayerTreeView();
   virtual blink::WebLayerTreeView* layerTreeView();
+  virtual void resetInputMethod();
+  virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
+                                     bool event_cancelled);
+  virtual void didUpdateTextOfFocusedElementByNonUserInput();
+  virtual void showImeIfNeeded();
 
   mojo::ApplicationImpl* app_;
   GlobalState* global_state_;
   blink::WebFrameWidget* web_frame_widget_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
+  scoped_ptr<ImeController> ime_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLWidgetLocalRoot);
 };
