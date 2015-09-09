@@ -93,7 +93,7 @@ clamp_view(struct image *image)
 			image->matrix.x0 = allocation.width - sw;
 	}
 
-	if (sh < allocation.width) {
+	if (sh < allocation.height) {
 		image->matrix.y0 =
 			(allocation.height - image->height * scale) / 2;
 	} else {
