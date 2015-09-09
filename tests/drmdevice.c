@@ -23,6 +23,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <xf86drm.h>
 
 
@@ -62,7 +65,8 @@ int
 main(void)
 {
     drmDevicePtr *devices;
-    int ret, max_devices;
+    drmDevicePtr device;
+    int fd, ret, max_devices;
 
     max_devices = drmGetDevices(NULL, 0);
 
@@ -84,8 +88,23 @@ main(void)
         return -1;
     }
 
-    for (int i = 0; i < ret; i++)
+    for (int i = 0; i < ret; i++) {
         print_device_info(devices[i], i);
+
+        for (int j = 0; j < DRM_NODE_MAX; j++) {
+            if (devices[i]->available_nodes & 1 << j) {
+                fd = open(devices[i]->nodes[j], O_RDONLY | O_CLOEXEC, 0);
+                if (fd < 0)
+                    continue;
+
+                if (drmGetDevice(fd, &device) == 0) {
+                    print_device_info(device, -1);
+                    drmFreeDevice(&device);
+                }
+                close(fd);
+            }
+        }
+    }
 
     drmFreeDevices(devices, ret);
     free(devices);
