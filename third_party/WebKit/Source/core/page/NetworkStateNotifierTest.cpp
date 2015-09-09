@@ -41,17 +41,25 @@
 
 namespace blink {
 
+namespace {
+    const double kNoneMaxBandwidthMbps = 0.0;
+    const double kBluetoothMaxBandwidthMbps = 1.0;
+    const double kEthernetMaxBandwidthMbps = 2.0;
+}
+
 class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
 public:
     StateObserver()
         : m_observedType(ConnectionTypeNone)
+        , m_observedMaxBandwidthMbps(0.0)
         , m_callbackCount(0)
     {
     }
 
-    virtual void connectionTypeChange(WebConnectionType type)
+    virtual void connectionChange(WebConnectionType type, double maxBandwidthMbps)
     {
         m_observedType = type;
+        m_observedMaxBandwidthMbps = maxBandwidthMbps;
         m_callbackCount += 1;
 
         if (m_closure)
@@ -61,6 +69,11 @@ public:
     WebConnectionType observedType() const
     {
         return m_observedType;
+    }
+
+    double observedMaxBandwidth() const
+    {
+        return m_observedMaxBandwidthMbps;
     }
 
     int callbackCount() const
@@ -76,6 +89,7 @@ public:
 private:
     OwnPtr<Closure> m_closure;
     WebConnectionType m_observedType;
+    double m_observedMaxBandwidthMbps;
     int m_callbackCount;
 };
 
@@ -98,9 +112,9 @@ public:
     }
 
 protected:
-    void setType(WebConnectionType type)
+    void setConnection(WebConnectionType type, double maxBandwidthMbps)
     {
-        m_notifier.setWebConnectionType(type);
+        m_notifier.setWebConnection(type, maxBandwidthMbps);
         testing::runPendingTasks();
     }
 
@@ -114,6 +128,13 @@ protected:
         observer->setNotificationCallback(bind(&NetworkStateNotifier::removeObserver, &m_notifier, observerToRemove, executionContext()));
     }
 
+    bool verifyObservations(const StateObserver& observer, WebConnectionType type, double maxBandwidthMbps)
+    {
+        EXPECT_EQ(observer.observedType(), type);
+        EXPECT_EQ(observer.observedMaxBandwidth(), maxBandwidthMbps);
+        return observer.observedType() == type && observer.observedMaxBandwidth() == maxBandwidthMbps;
+    }
+
     RefPtrWillBePersistent<Document> m_document;
     RefPtrWillBePersistent<Document> m_document2;
     NetworkStateNotifier m_notifier;
@@ -123,10 +144,10 @@ TEST_F(NetworkStateNotifierTest, AddObserver)
 {
     StateObserver observer;
     m_notifier.addObserver(&observer, executionContext());
-    EXPECT_EQ(observer.observedType(), ConnectionTypeNone);
+    EXPECT_TRUE(verifyObservations(observer, ConnectionTypeNone, kNoneMaxBandwidthMbps));
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer.observedType(), ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
     EXPECT_EQ(observer.callbackCount(), 1);
 }
 
@@ -137,19 +158,19 @@ TEST_F(NetworkStateNotifierTest, RemoveObserver)
     m_notifier.removeObserver(&observer1, executionContext());
     m_notifier.addObserver(&observer2, executionContext());
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeNone);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeNone, kNoneMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveSoleObserver)
 {
-    StateObserver observer1, observer2;
+    StateObserver observer1;
     m_notifier.addObserver(&observer1, executionContext());
     m_notifier.removeObserver(&observer1, executionContext());
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeNone);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeNone, kNoneMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, AddObserverWhileNotifying)
@@ -158,9 +179,9 @@ TEST_F(NetworkStateNotifierTest, AddObserverWhileNotifying)
     m_notifier.addObserver(&observer1, executionContext());
     addObserverOnNotification(&observer1, &observer2);
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveSoleObserverWhileNotifying)
@@ -169,11 +190,11 @@ TEST_F(NetworkStateNotifierTest, RemoveSoleObserverWhileNotifying)
     m_notifier.addObserver(&observer1, executionContext());
     removeObserverOnNotification(&observer1, &observer1);
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
 
-    setType(ConnectionTypeEthernet);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeEthernet, kEthernetMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveCurrentObserverWhileNotifying)
@@ -183,13 +204,13 @@ TEST_F(NetworkStateNotifierTest, RemoveCurrentObserverWhileNotifying)
     m_notifier.addObserver(&observer2, executionContext());
     removeObserverOnNotification(&observer1, &observer1);
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
 
-    setType(ConnectionTypeEthernet);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeEthernet);
+    setConnection(ConnectionTypeEthernet, kEthernetMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeEthernet, kEthernetMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, RemovePastObserverWhileNotifying)
@@ -199,13 +220,13 @@ TEST_F(NetworkStateNotifierTest, RemovePastObserverWhileNotifying)
     m_notifier.addObserver(&observer2, executionContext());
     removeObserverOnNotification(&observer2, &observer1);
 
-    setType(ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
     EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
     EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
 
-    setType(ConnectionTypeEthernet);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeEthernet);
+    setConnection(ConnectionTypeEthernet, kEthernetMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeEthernet, kEthernetMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveFutureObserverWhileNotifying)
@@ -216,11 +237,10 @@ TEST_F(NetworkStateNotifierTest, RemoveFutureObserverWhileNotifying)
     m_notifier.addObserver(&observer3, executionContext());
     removeObserverOnNotification(&observer1, &observer2);
 
-    setType(ConnectionTypeBluetooth);
-
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeNone);
-    EXPECT_EQ(observer3.observedType(), ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeNone, kNoneMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer3, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, MultipleContextsAddObserver)
@@ -229,9 +249,9 @@ TEST_F(NetworkStateNotifierTest, MultipleContextsAddObserver)
     m_notifier.addObserver(&observer1, executionContext());
     m_notifier.addObserver(&observer2, executionContext2());
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveContext)
@@ -241,9 +261,9 @@ TEST_F(NetworkStateNotifierTest, RemoveContext)
     m_notifier.addObserver(&observer2, executionContext2());
     m_notifier.removeObserver(&observer2, executionContext2());
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeNone);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeNone, kNoneMaxBandwidthMbps));
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveAllContexts)
@@ -254,9 +274,9 @@ TEST_F(NetworkStateNotifierTest, RemoveAllContexts)
     m_notifier.removeObserver(&observer1, executionContext());
     m_notifier.removeObserver(&observer2, executionContext2());
 
-    setType(ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), ConnectionTypeNone);
-    EXPECT_EQ(observer2.observedType(), ConnectionTypeNone);
+    setConnection(ConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
+    EXPECT_TRUE(verifyObservations(observer1, ConnectionTypeNone, kNoneMaxBandwidthMbps));
+    EXPECT_TRUE(verifyObservations(observer2, ConnectionTypeNone, kNoneMaxBandwidthMbps));
 }
 
 } // namespace blink

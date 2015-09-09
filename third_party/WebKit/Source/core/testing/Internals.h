@@ -344,9 +344,10 @@ public:
 
     bool ignoreLayoutWithPendingStylesheets(Document*);
 
+    // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo or
+    // setNetworkStateMaxBandwidth.
     void setNetworkStateNotifierTestOnly(bool);
-    // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo.
-    void setNetworkConnectionInfo(const String&, ExceptionState&);
+    void setNetworkConnectionInfo(const String&, double downlinkMaxMbps, ExceptionState&);
 
     ClientRect* boundsInViewportSpace(Element*);
 

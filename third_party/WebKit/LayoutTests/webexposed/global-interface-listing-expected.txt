@@ -3451,9 +3451,12 @@ interface Navigator
     method vibrate
     method webkitGetUserMedia
 interface NetworkInformation
+    getter downlinkMax
+    getter onchange
     getter ontypechange
     getter type
     method constructor
+    setter onchange
     setter ontypechange
 interface Node
     attribute ATTRIBUTE_NODE

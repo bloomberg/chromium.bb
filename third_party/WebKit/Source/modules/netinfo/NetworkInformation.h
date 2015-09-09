@@ -26,8 +26,10 @@ public:
     ~NetworkInformation() override;
 
     String type() const;
+    double downlinkMax() const;
 
-    void connectionTypeChange(WebConnectionType) override;
+    // NetworkStateObserver overrides.
+    void connectionChange(WebConnectionType, double downlinkMaxMbps) override;
 
     // EventTarget overrides.
     const AtomicString& interfaceName() const override;
@@ -42,7 +44,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange); // Deprecated
 
 private:
     explicit NetworkInformation(ExecutionContext*);
@@ -51,6 +54,9 @@ private:
 
     // Touched only on context thread.
     WebConnectionType m_type;
+
+    // Touched only on context thread.
+    double m_downlinkMaxMbps;
 
     // Whether this object is listening for events from NetworkStateNotifier.
     bool m_observing;

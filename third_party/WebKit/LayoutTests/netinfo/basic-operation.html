@@ -12,14 +12,26 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 
 shouldBeDefined("navigator.connection");
 shouldBeDefined("navigator.connection.type");
+shouldBeDefined("navigator.connection.downlinkMax");
 
-connection.addEventListener('typechange', function(e) {
+var typeChangeListener = function(e) {
+    shouldBe("typeof connection.type", '"string"');
+    shouldBe('connection.type', 'initialType');
+    shouldBe('connection.downlinkMax', 'initialDownlinkMax');
+    finishJSTest();
+}
+
+var changeListener = function(e) {
     shouldBe("typeof connection.type", '"string"');
     shouldBe('connection.type', 'newConnectionType');
-    finishJSTest();
-});
+    shouldBe('connection.downlinkMax', 'newDownlinkMax');
+    connection.removeEventListener('change', changeListener);
+    connection.addEventListener('typechange', typeChangeListener);
+	internals.setNetworkConnectionInfo(initialType, initialDownlinkMax);
+}
 
-internals.setNetworkConnectionInfo(newConnectionType);
+connection.addEventListener('change', changeListener);
+internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
 
 </script>
 </body>

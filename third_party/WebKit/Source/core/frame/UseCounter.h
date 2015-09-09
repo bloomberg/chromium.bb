@@ -839,6 +839,10 @@ public:
         HeaderValueNotMatchingRFC7230 = 943,
         ClipPathOfPositionedElement = 944,
         ClipCssOfPositionedElement = 945,
+        NetInfoType = 946,
+        NetInfoDownlinkMax = 947,
+        NetInfoOnChange = 948,
+        NetInfoOnTypeChange = 949,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

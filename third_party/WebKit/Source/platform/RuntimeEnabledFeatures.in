@@ -105,6 +105,7 @@ NavigatorConnect status=experimental
 NavigatorContentUtils
 WebNFC status=experimental
 NetworkInformation status=stable
+NetInfoDownlinkMax status=experimental
 NewMediaPlaybackUi
 NotificationConstructor status=stable
 NotificationExperimental status=test

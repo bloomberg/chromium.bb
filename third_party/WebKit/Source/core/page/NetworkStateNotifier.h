@@ -44,16 +44,18 @@ public:
     class NetworkStateObserver {
     public:
         // Will be called on the thread of the context passed in addObserver.
-        virtual void connectionTypeChange(WebConnectionType) = 0;
+        virtual void connectionChange(WebConnectionType, double maxBandwidthMbps) = 0;
     };
 
     NetworkStateNotifier()
         : m_isOnLine(true)
         , m_type(ConnectionTypeOther)
+        , m_maxBandwidthMbps(std::numeric_limits<double>::infinity())
         , m_testUpdatesOnly(false)
     {
     }
 
+    // Can be called on any thread.
     bool onLine() const
     {
         MutexLocker locker(m_mutex);
@@ -62,13 +64,21 @@ public:
 
     void setOnLine(bool);
 
+    // Can be called on any thread.
     WebConnectionType connectionType() const
     {
         MutexLocker locker(m_mutex);
         return m_type;
     }
 
-    void setWebConnectionType(WebConnectionType);
+    // Can be called on any thread.
+    double maxBandwidth() const
+    {
+        MutexLocker locker(m_mutex);
+        return m_maxBandwidthMbps;
+    }
+
+    void setWebConnection(WebConnectionType, double maxBandwidthMbps);
 
     // Must be called on the context's thread. An added observer must be removed
     // before its ExecutionContext is deleted. It's possible for an observer to
@@ -83,7 +93,7 @@ public:
     // can update the connection type. This is used for layout tests (see crbug.com/377736).
     void setTestUpdatesOnly(bool);
     // Tests should call this as it will change the type regardless of the value of m_testUpdatesOnly.
-    void setWebConnectionTypeForTest(WebConnectionType);
+    void setWebConnectionForTest(WebConnectionType, double maxBandwidthMbps);
 
 private:
     struct ObserverList {
@@ -96,11 +106,12 @@ private:
         Vector<size_t> zeroedObservers; // Indices in observers that are 0.
     };
 
-    void setWebConnectionTypeImpl(WebConnectionType);
+    void setWebConnectionImpl(WebConnectionType, double maxBandwidthMbps);
+    void setMaxBandwidthImpl(double maxBandwidthMbps);
 
     using ObserverListMap = HashMap<ExecutionContext*, OwnPtr<ObserverList>>;
 
-    void notifyObserversOnContext(WebConnectionType, ExecutionContext*);
+    void notifyObserversOfConnectionChangeOnContext(WebConnectionType, double maxBandwidthMbps, ExecutionContext*);
 
     ObserverList* lockAndFindObserverList(ExecutionContext*);
 
@@ -112,6 +123,7 @@ private:
     mutable Mutex m_mutex;
     bool m_isOnLine;
     WebConnectionType m_type;
+    double m_maxBandwidthMbps;
     ObserverListMap m_observers;
     bool m_testUpdatesOnly;
 };

@@ -404,9 +404,12 @@ interface MessagePort
     method start
     setter onmessage
 interface NetworkInformation
+    getter downlinkMax
+    getter onchange
     getter ontypechange
     getter type
     method constructor
+    setter onchange
     setter ontypechange
 interface Notification
     getter actions

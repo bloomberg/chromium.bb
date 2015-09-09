@@ -7,10 +7,13 @@ enum ConnectionType {
     "bluetooth",
     "ethernet",
     "wifi",
+    "wimax",
     "other",
     "none",
     "unknown"
 };
+
+typedef unrestricted double Megabit;
 
 [
     RuntimeEnabled=NetworkInformation,
@@ -18,7 +21,9 @@ enum ConnectionType {
     GarbageCollected,
     ActiveDOMObject
 ] interface NetworkInformation : EventTarget {
-    readonly attribute ConnectionType type;
-    attribute EventHandler ontypechange;
+    [MeasureAs=NetInfoType] readonly attribute ConnectionType type;
+    [RuntimeEnabled=NetInfoDownlinkMax, MeasureAs=NetInfoDownlinkMax] readonly attribute Megabit downlinkMax;
+    [RuntimeEnabled=NetInfoDownlinkMax, MeasureAs=NetInfoOnChange] attribute EventHandler onchange;
+    [MeasureAs=NetInfoOnTypeChange] attribute EventHandler ontypechange;
 };
 

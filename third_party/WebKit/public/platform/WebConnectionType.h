@@ -39,6 +39,7 @@ enum WebConnectionType {
     ConnectionTypeBluetooth,
     ConnectionTypeEthernet,
     ConnectionTypeWifi,
+    ConnectionTypeWimax,
     ConnectionTypeOther,
     ConnectionTypeNone,
     ConnectionTypeUnknown,

@@ -2388,7 +2388,7 @@ void Internals::setNetworkStateNotifierTestOnly(bool testOnly)
     networkStateNotifier().setTestUpdatesOnly(testOnly);
 }
 
-void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exceptionState)
+void Internals::setNetworkConnectionInfo(const String& type, double downlinkMaxMbps, ExceptionState& exceptionState)
 {
     WebConnectionType webtype;
     if (type == "cellular") {
@@ -2399,6 +2399,8 @@ void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exc
         webtype = ConnectionTypeEthernet;
     } else if (type == "wifi") {
         webtype = ConnectionTypeWifi;
+    } else if (type == "wimax") {
+        webtype = ConnectionTypeWimax;
     } else if (type == "other") {
         webtype = ConnectionTypeOther;
     } else if (type == "none") {
@@ -2409,7 +2411,7 @@ void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exc
         exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToEnumerate("connection type", type));
         return;
     }
-    networkStateNotifier().setWebConnectionTypeForTest(webtype);
+    networkStateNotifier().setWebConnectionForTest(webtype, downlinkMaxMbps);
 }
 
 unsigned Internals::countHitRegions(CanvasRenderingContext* context)

@@ -4,7 +4,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS connection.type is newConnectionType
+PASS connection.downlinkMax is newDownlinkMax
 PASS connection.type is initialType
+PASS connection.downlinkMax is initialDownlinkMax
 PASS successfullyParsed is true
 
 TEST COMPLETE

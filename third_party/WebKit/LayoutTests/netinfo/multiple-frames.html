@@ -25,7 +25,9 @@ var hasChildFrameEventFired = false;
 function mainFrameListener() {
     hasMainFrameEventFired = true;
     if (connection.type != newConnectionType)
-        testFailed("Event fired event but type not yet changed.");
+        testFailed("Event fired but type not yet changed.");
+    if (connection.downlinkMax != newDownlinkMax)
+        testFailed("Event fired but downlinkMax not yet changed.");
     if (!hasChildFrameEventFired && childConnection.type != initialType)
         testFailed("Child frame connection type changed before firing its event.");
     maybeFinishTest();
@@ -35,6 +37,8 @@ function childFrameListener() {
     hasChildFrameEventFired = true;
     if (childConnection.type != newConnectionType)
         testFailed("Child frame fired event but type not yet changed.");
+    if (childConnection.downlinkMax != newDownlinkMax)
+        testFailed("Child frame fired event but downlinkMax not yet changed.");
     if (!hasMainFrameEventFired && connection.type != initialType)
         testFailed("Main frame connection type changed before firing its event.");
     maybeFinishTest();
@@ -46,10 +50,10 @@ function maybeFinishTest() {
     }
 }
 
-connection.addEventListener('typechange', mainFrameListener);
-childConnection.addEventListener('typechange', childFrameListener);
+connection.addEventListener('change', mainFrameListener);
+childConnection.addEventListener('change', childFrameListener);
 
-internals.setNetworkConnectionInfo(newConnectionType);
+internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
 
 </script>
 </body>

@@ -383,9 +383,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method start
 [Worker]     setter onmessage
 [Worker] interface NetworkInformation
+[Worker]     getter downlinkMax
+[Worker]     getter onchange
 [Worker]     getter ontypechange
 [Worker]     getter type
 [Worker]     method constructor
+[Worker]     setter onchange
 [Worker]     setter ontypechange
 [Worker] interface Notification
 [Worker]     getter actions

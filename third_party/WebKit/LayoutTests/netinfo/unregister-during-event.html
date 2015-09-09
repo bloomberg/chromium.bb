@@ -13,18 +13,21 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 
 var otherHandler = function(e) {
     shouldBe('connection.type', 'initialType');
+    shouldBe('connection.downlinkMax', 'initialDownlinkMax');
+
     finishJSTest();
 };
 
 var handler = function(e) {
     shouldBe('connection.type', 'newConnectionType');
-    connection.removeEventListener('typechange', handler);
-    connection.addEventListener('typechange', otherHandler);
-    internals.setNetworkConnectionInfo(initialType);
+    shouldBe('connection.downlinkMax', 'newDownlinkMax');
+    connection.removeEventListener('change', handler);
+    connection.addEventListener('change', otherHandler);
+    internals.setNetworkConnectionInfo(initialType, initialDownlinkMax);
 };
 
-connection.addEventListener('typechange', handler);
-internals.setNetworkConnectionInfo(newConnectionType);
+connection.addEventListener('change', handler);
+internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
 
 </script>
 </body>

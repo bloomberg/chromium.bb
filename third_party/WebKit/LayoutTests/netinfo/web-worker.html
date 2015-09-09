@@ -17,16 +17,16 @@ var msg_count = 0;
 
 worker.addEventListener('message', function(e) {
     if (msg_count == 0) {
-        if (e.data != connection.type) {
+        if (e.data != connection.type + ',' + connection.downlinkMax) {
             testFailed("Worker type disagrees with main frame.");
         }
-       internals.setNetworkConnectionInfo(newConnectionType);
+       internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
     } else if (msg_count == 1) {
-        if (e.data != newConnectionType)
+        if (e.data != newConnectionType + ',' + newDownlinkMax)
             testFailed("Worker switched to wrong connection type.");
-        internals.setNetworkConnectionInfo(initialType);
+        internals.setNetworkConnectionInfo(initialType, initialDownlinkMax);
     } else if (msg_count == 2) {
-        if (e.data != initialType)
+        if (e.data != initialType + ',' + initialDownlinkMax)
             testFailed("Worker did not revert back to initial type.");
         finishJSTest();
     }
