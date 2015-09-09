@@ -96,10 +96,11 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
 {
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled()) {
         ASSERT(m_page);
-        ASSERT(m_page->mainFrame()->isLocalFrame());
-        ASSERT(Platform::current()->compositorSupport());
-        m_programmaticScrollAnimatorTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
-        m_page->chromeClient().attachCompositorAnimationTimeline(m_programmaticScrollAnimatorTimeline.get(), toLocalFrame(m_page->mainFrame()));
+        if (m_page->mainFrame()->isLocalFrame()) {
+            ASSERT(Platform::current()->compositorSupport());
+            m_programmaticScrollAnimatorTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
+            m_page->chromeClient().attachCompositorAnimationTimeline(m_programmaticScrollAnimatorTimeline.get(), toLocalFrame(m_page->mainFrame()));
+        }
     }
 }
 
