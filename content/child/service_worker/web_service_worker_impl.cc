@@ -58,7 +58,11 @@ WebServiceWorkerImpl::~WebServiceWorkerImpl() {
 void WebServiceWorkerImpl::OnStateChanged(
     blink::WebServiceWorkerState new_state) {
   state_ = new_state;
-  proxy_->dispatchStateChangeEvent();
+
+  // TODO(nhiroki): This is a quick fix for http://crbug.com/507110
+  DCHECK(proxy_);
+  if (proxy_)
+    proxy_->dispatchStateChangeEvent();
 }
 
 void WebServiceWorkerImpl::setProxy(blink::WebServiceWorkerProxy* proxy) {
