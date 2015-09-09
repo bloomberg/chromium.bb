@@ -1105,7 +1105,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
 // Check that the bounding box during a scroll event is correct.
 TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
   TimedEvents tes;
-  for (float radius = 1; radius <= 10; ++radius) {
+  for (int radius = 1; radius <= 10; ++radius) {
     ui::GestureConfiguration::GetInstance()->set_default_radius(radius);
     scoped_ptr<GestureEventConsumeDelegate> delegate(
         new GestureEventConsumeDelegate());
@@ -1124,10 +1124,8 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
                          kTouchId,
                          tes.Now());
     DispatchEventUsingWindowDispatcher(&press);
-    EXPECT_EQ(gfx::RectF(kPositionX - radius,
-                         kPositionY - radius,
-                         radius * 2,
-                         radius * 2),
+    EXPECT_EQ(gfx::Rect(kPositionX - radius, kPositionY - radius, radius * 2,
+                        radius * 2),
               delegate->bounding_box());
 
     const int kScrollAmount = 50;
@@ -1135,11 +1133,10 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
                          1, 1, kTouchId, 1, kScrollAmount, delegate.get());
     EXPECT_EQ(gfx::Point(1, 1).ToString(),
               delegate->scroll_begin_position().ToString());
-    EXPECT_EQ(gfx::RectF(kPositionX + kScrollAmount - radius,
-                         kPositionY + kScrollAmount - radius,
-                         radius * 2,
-                         radius * 2),
-              delegate->bounding_box());
+    EXPECT_EQ(
+        gfx::Rect(kPositionX + kScrollAmount - radius,
+                  kPositionY + kScrollAmount - radius, radius * 2, radius * 2),
+        delegate->bounding_box());
 
     // Release the touch. This should end the scroll.
     delegate->Reset();
@@ -1149,11 +1146,10 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
                                kTouchId, press.time_stamp() +
                                base::TimeDelta::FromMilliseconds(50));
     DispatchEventUsingWindowDispatcher(&release);
-    EXPECT_EQ(gfx::RectF(kPositionX + kScrollAmount - radius,
-                         kPositionY + kScrollAmount - radius,
-                         radius * 2,
-                         radius * 2),
-              delegate->bounding_box());
+    EXPECT_EQ(
+        gfx::Rect(kPositionX + kScrollAmount - radius,
+                  kPositionY + kScrollAmount - radius, radius * 2, radius * 2),
+        delegate->bounding_box());
   }
   ui::GestureConfiguration::GetInstance()->set_default_radius(0);
 }

@@ -41,7 +41,7 @@ class WindowTargeterTest : public test::AuraTestBase {
 };
 
 gfx::RectF GetEffectiveVisibleBoundsInRootWindow(Window* window) {
-  gfx::RectF bounds = gfx::Rect(window->bounds().size());
+  gfx::RectF bounds = gfx::RectF(gfx::SizeF(window->bounds().size()));
   Window* root = window->GetRootWindow();
   CHECK(window->layer());
   CHECK(root->layer());
