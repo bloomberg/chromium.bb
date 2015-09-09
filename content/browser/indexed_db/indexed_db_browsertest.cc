@@ -467,7 +467,14 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, DISABLED_BlobDidAck) {
   EXPECT_EQ(0UL, blob_context->context()->blob_count());
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, BlobDidAckPrefetch) {
+// Very flaky on Linux. See crbug.com/459835.
+#if defined(OS_LINUX)
+#define MAYBE_BlobDidAckPrefetch DISABLED_BlobDidAckPrefetch
+#else
+#define MAYBE_BlobDidAckPrefetch BlobDidAckPrefetch
+#endif
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
+                       MAYBE_BlobDidAckPrefetch) {
   SimpleTest(GetTestUrl("indexeddb", "blob_did_ack_prefetch.html"));
   // Wait for idle so that the blob ack has time to be received/processed by
   // the browser process.
