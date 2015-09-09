@@ -73,6 +73,8 @@
         'browser/chromeos/certificate_provider/certificate_info.h',
         'browser/chromeos/certificate_provider/certificate_provider_service.cc',
         'browser/chromeos/certificate_provider/certificate_provider_service.h',
+        'browser/chromeos/certificate_provider/certificate_provider_service_factory.cc',
+        'browser/chromeos/certificate_provider/certificate_provider_service_factory.h',
         'browser/chromeos/certificate_provider/certificate_requests.cc',
         'browser/chromeos/certificate_provider/certificate_requests.h',
         'browser/chromeos/certificate_provider/sign_requests.cc',

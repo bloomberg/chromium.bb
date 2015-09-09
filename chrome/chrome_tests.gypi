@@ -802,6 +802,7 @@
       'browser/chromeos/system/tray_accessibility_browsertest.cc',
       'browser/download/notification/download_notification_browsertest.cc',
       'browser/drive/drive_notification_manager_factory_browsertest.cc',
+      'browser/extensions/api/certificate_provider/certificate_provider_apitest.cc',
       'browser/extensions/api/vpn_provider/vpn_provider_apitest.cc',
       'browser/ui/webui/options/chromeos/accounts_options_browsertest.cc',
       'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
@@ -2156,6 +2157,12 @@
         },
       },
       'conditions': [
+        ['chromeos==1 and use_openssl==1', {
+          'dependencies': [
+            '../third_party/boringssl/boringssl.gyp:boringssl',
+          ]
+         }
+        ],
         [ 'cld_version==2', {
           'dependencies': [
             # Because the browser_tests use translate, they need CLD data.

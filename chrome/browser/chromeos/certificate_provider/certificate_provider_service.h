@@ -80,10 +80,12 @@ class CertificateProviderService : public KeyedService {
     // Dispatches a sign request with the given arguments to the extension with
     // id |extension_id|. Returns whether that extension is actually a listener
     // for that event.
-    virtual bool DispatchSignRequestToExtension(const std::string& extension_id,
-                                                int sign_request_id,
-                                                net::SSLPrivateKey::Hash hash,
-                                                const std::string& digest) = 0;
+    virtual bool DispatchSignRequestToExtension(
+        const std::string& extension_id,
+        int sign_request_id,
+        net::SSLPrivateKey::Hash hash,
+        const scoped_refptr<net::X509Certificate>& certificate,
+        const std::string& digest) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);

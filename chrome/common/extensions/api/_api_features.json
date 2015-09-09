@@ -193,6 +193,15 @@
     "dependencies": ["permission:cast.streaming"],
     "contexts": ["blessed_extension"]
   },
+  "certificateProvider": {
+    "dependencies": ["permission:certificateProvider"],
+    "contexts": ["blessed_extension"]
+  },
+  "certificateProviderInternal": {
+    "internal": true,
+    "dependencies": ["permission:certificateProvider"],
+    "contexts": ["blessed_extension"]
+  },
   "chromeosInfoPrivate": {
     "dependencies": ["permission:chromeosInfoPrivate"],
     "contexts": ["blessed_extension"]

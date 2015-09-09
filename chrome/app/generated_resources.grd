@@ -4187,6 +4187,9 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_PROMPT_WARNING_PLATFORMKEYS" desc="Permission string for access to client certificates.">
         Use your client certificates
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_CERTIFICATEPROVIDER" desc="Permission string for providing certificates that can be used for authentication.">
+        Provide certificates for authentication
+      </message>
       <if expr="is_macosx">
         <message name="IDS_EXTENSION_PROMPT_WARNING_INTERCEPT_ALL_KEYS" desc="Permission string for intercept all keyboard keys via packaged app extension APIs">
         Read and change anything you type including task switching keys like CMD+TAB

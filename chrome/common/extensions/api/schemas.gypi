@@ -108,6 +108,8 @@
     # ChromeOS-specific schemas.
     'chromeos_schema_files': [
       'cast_devices_private.idl',
+      'certificate_provider.idl',
+      'certificate_provider_internal.idl',
       'echo_private.json',
       'enterprise_device_attributes.idl',
       'enterprise_platform_keys.idl',

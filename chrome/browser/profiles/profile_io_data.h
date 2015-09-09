@@ -40,6 +40,10 @@ class MediaDeviceIDSalt;
 class ProtocolHandlerRegistry;
 class SupervisedUserURLFilter;
 
+namespace chromeos {
+class CertificateProvider;
+}
+
 namespace chrome_browser_net {
 class ResourcePrefetchPredictorObserver;
 }
@@ -313,6 +317,7 @@ class ProfileIOData {
 #if defined(OS_CHROMEOS)
     std::string username_hash;
     bool use_system_key_slot;
+    scoped_ptr<chromeos::CertificateProvider> certificate_provider;
 #endif
 
     // The profile this struct was populated from. It's passed as a void* to
@@ -550,6 +555,7 @@ class ProfileIOData {
   mutable policy::PolicyCertVerifier* policy_cert_verifier_;
   mutable std::string username_hash_;
   mutable bool use_system_key_slot_;
+  mutable scoped_ptr<chromeos::CertificateProvider> certificate_provider_;
 #endif
 
   mutable scoped_ptr<net::TransportSecurityPersister>

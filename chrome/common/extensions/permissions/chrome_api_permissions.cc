@@ -64,6 +64,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kBrailleDisplayPrivate, "brailleDisplayPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kBrowsingData, "browsingData"},
+      {APIPermission::kCertificateProvider, "certificateProvider"},
       {APIPermission::kContentSettings, "contentSettings"},
       {APIPermission::kContextMenus, "contextMenus"},
       {APIPermission::kCookie, "cookies"},

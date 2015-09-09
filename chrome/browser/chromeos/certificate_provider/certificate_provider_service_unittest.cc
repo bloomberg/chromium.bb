@@ -93,10 +93,12 @@ class TestDelegate : public CertificateProviderService::Delegate {
     expected_request_type_ = RequestType::NONE;
   }
 
-  bool DispatchSignRequestToExtension(const std::string& extension_id,
-                                      int sign_request_id,
-                                      net::SSLPrivateKey::Hash hash,
-                                      const std::string& input) override {
+  bool DispatchSignRequestToExtension(
+      const std::string& extension_id,
+      int sign_request_id,
+      net::SSLPrivateKey::Hash hash,
+      const scoped_refptr<net::X509Certificate>& certificate,
+      const std::string& input) override {
     EXPECT_EQ(expected_request_type_, RequestType::SIGN);
     last_sign_request_id_ = sign_request_id;
     last_extension_id_ = extension_id;

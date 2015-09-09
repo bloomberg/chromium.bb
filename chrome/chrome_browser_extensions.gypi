@@ -7,6 +7,8 @@
     'chrome_browser_extensions_chromeos_sources': [
       'browser/extensions/api/cast_devices_private/cast_devices_private_api.cc',
       'browser/extensions/api/cast_devices_private/cast_devices_private_api.h',
+      'browser/extensions/api/certificate_provider/certificate_provider_api.cc',
+      'browser/extensions/api/certificate_provider/certificate_provider_api.h',
       'browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_api.cc',
       'browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_api.h',
       'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.cc',

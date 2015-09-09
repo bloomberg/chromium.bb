@@ -610,6 +610,9 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_PLATFORMKEYS,
        {APIPermission::kPlatformKeys},
        {}},
+      {IDS_EXTENSION_PROMPT_WARNING_CERTIFICATEPROVIDER,
+       {APIPermission::kCertificateProvider},
+       {}},
 
       {IDS_EXTENSION_PROMPT_WARNING_SCREENLOCK_PRIVATE,
        {APIPermission::kScreenlockPrivate},

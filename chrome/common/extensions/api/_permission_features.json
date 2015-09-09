@@ -125,6 +125,11 @@
       "EF2AB692559EA97C3BBDEA018A8C45F92457BD4E"   // http://crbug.com/457908
     ]
   }],
+  "certificateProvider": {
+    "channel": "stable",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension", "platform_app"]
+  },
   "chromePrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],

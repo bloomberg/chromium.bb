@@ -444,7 +444,7 @@ void CertificateProviderService::RequestSignatureFromExtension(
 
   const int sign_request_id = sign_requests_.AddRequest(extension_id, callback);
   if (!delegate_->DispatchSignRequestToExtension(extension_id, sign_request_id,
-                                                 hash, digest)) {
+                                                 hash, certificate, digest)) {
     sign_requests_.RemoveRequest(extension_id, sign_request_id,
                                  nullptr /* callback */);
     callback.Run(net::ERR_FAILED, std::vector<uint8_t>());

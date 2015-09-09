@@ -117,6 +117,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/fileapi/external_file_protocol_handler.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
@@ -452,6 +454,14 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
           connector->GetUserAffiliation(user->email()) ==
           policy::USER_AFFILIATION_MANAGED;
     }
+  }
+
+  chromeos::CertificateProviderService* cert_provider_service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          profile);
+  if (cert_provider_service) {
+    params->certificate_provider =
+        cert_provider_service->CreateCertificateProvider();
   }
 #endif
 
@@ -940,7 +950,7 @@ ProfileIOData::ResourceContext::CreateClientCertStore() {
     return io_data_->client_cert_store_factory_.Run();
 #if defined(OS_CHROMEOS)
   return scoped_ptr<net::ClientCertStore>(new chromeos::ClientCertStoreChromeOS(
-      nullptr,  // no additional provider
+      io_data_->certificate_provider_->Copy(),
       make_scoped_ptr(new chromeos::ClientCertFilterChromeOS(
           io_data_->use_system_key_slot(), io_data_->username_hash())),
       base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
@@ -1106,6 +1116,8 @@ void ProfileIOData::Init(
   use_system_key_slot_ = profile_params_->use_system_key_slot;
   if (use_system_key_slot_)
     EnableNSSSystemKeySlotForResourceContext(resource_context_.get());
+
+  certificate_provider_ = profile_params_->certificate_provider.Pass();
 #endif
 
   if (g_cert_verifier_for_testing) {
