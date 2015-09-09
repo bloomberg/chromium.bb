@@ -460,14 +460,6 @@ void GraphicsLayer::resetTrackedPaintInvalidations()
     paintInvalidationTrackingMap().remove(this);
 }
 
-bool GraphicsLayer::hasTrackedPaintInvalidations() const
-{
-    PaintInvalidationTrackingMap::iterator it = paintInvalidationTrackingMap().find(this);
-    if (it != paintInvalidationTrackingMap().end())
-        return !it->value.invalidationRects.isEmpty();
-    return false;
-}
-
 void GraphicsLayer::trackPaintInvalidationRect(const FloatRect& rect)
 {
     if (rect.isEmpty())

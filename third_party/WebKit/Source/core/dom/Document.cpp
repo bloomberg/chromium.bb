@@ -339,7 +339,7 @@ static bool acceptsEditingFocus(const Element& element)
 
 uint64_t Document::s_globalTreeVersion = 0;
 
-static bool s_threadedParsingEnabledForTesting = true;
+static bool s_threadedParsingEnabledForUnitTests = true;
 
 Document::WeakDocumentSet& Document::liveDocumentSet()
 {
@@ -2387,7 +2387,7 @@ PassRefPtrWillBeRawPtr<DocumentParser> Document::implicitOpen(ParserSynchronizat
 
     setCompatibilityMode(NoQuirksMode);
 
-    if (!threadedParsingEnabledForTesting())
+    if (!threadedParsingEnabledForUnitTestsOnly())
         parserSyncPolicy = ForceSynchronousParsing;
 
     m_parserSyncPolicy = parserSyncPolicy;
@@ -5233,14 +5233,14 @@ void Document::adjustFloatRectForScrollAndAbsoluteZoom(FloatRect& rect, LayoutOb
     adjustFloatRectForAbsoluteZoom(rect, layoutObject);
 }
 
-void Document::setThreadedParsingEnabledForTesting(bool enabled)
+void Document::setThreadedParsingEnabledForUnitTestsOnly(bool enabled)
 {
-    s_threadedParsingEnabledForTesting = enabled;
+    s_threadedParsingEnabledForUnitTests = enabled;
 }
 
-bool Document::threadedParsingEnabledForTesting()
+bool Document::threadedParsingEnabledForUnitTestsOnly()
 {
-    return s_threadedParsingEnabledForTesting;
+    return s_threadedParsingEnabledForUnitTests;
 }
 
 bool Document::hasActiveParser()

@@ -531,7 +531,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
     ASSERT(m_frame->page());
 
     ParserSynchronizationPolicy parsingPolicy = AllowAsynchronousParsing;
-    if ((m_substituteData.isValid() && m_substituteData.forceSynchronousLoad()) || !Document::threadedParsingEnabledForTesting())
+    if ((m_substituteData.isValid() && m_substituteData.forceSynchronousLoad()) || !Document::threadedParsingEnabledForUnitTestsOnly())
         parsingPolicy = ForceSynchronousParsing;
 
     m_writer = createWriterFor(0, init, mimeType, encoding, false, parsingPolicy);
