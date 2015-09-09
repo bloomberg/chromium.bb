@@ -37,10 +37,7 @@ TEST_P(GLES2DecoderTest2, GetProgramInfoLogInvalidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, GetRenderbufferParameterivValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetRenderbufferParameteriv, 0>(true);
   typedef cmds::GetRenderbufferParameteriv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -102,10 +99,7 @@ TEST_P(GLES2DecoderTest2, GetRenderbufferParameterivInvalidArgs2_1) {
 }
 
 TEST_P(GLES2DecoderTest2, GetSamplerParameterfvValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetSamplerParameterfv, 0>(true);
   typedef cmds::GetSamplerParameterfv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -127,10 +121,7 @@ TEST_P(GLES2DecoderTest2, GetSamplerParameterfvValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, GetSamplerParameterivValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetSamplerParameteriv, 0>(true);
   typedef cmds::GetSamplerParameteriv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -152,10 +143,7 @@ TEST_P(GLES2DecoderTest2, GetSamplerParameterivValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, GetShaderivValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetShaderiv, 0>(true);
   typedef cmds::GetShaderiv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -202,10 +190,7 @@ TEST_P(GLES2DecoderTest2, GetShaderivInvalidArgs2_1) {
 // TODO(gman): GetString
 
 TEST_P(GLES2DecoderTest2, GetSyncivValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetSynciv, 0>(true);
   typedef cmds::GetSynciv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -228,10 +213,7 @@ TEST_P(GLES2DecoderTest2, GetSyncivValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, GetTexParameterfvValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetTexParameterfv, 0>(true);
   typedef cmds::GetTexParameterfv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -302,10 +284,7 @@ TEST_P(GLES2DecoderTest2, GetTexParameterfvInvalidArgs2_1) {
 }
 
 TEST_P(GLES2DecoderTest2, GetTexParameterivValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetTexParameteriv, 0>(true);
   typedef cmds::GetTexParameteriv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);

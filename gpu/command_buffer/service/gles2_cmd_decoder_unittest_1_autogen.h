@@ -1100,10 +1100,7 @@ TEST_P(GLES2DecoderTest1, GenTransformFeedbacksImmediateInvalidArgs) {
 // TODO(gman): GetAttribLocation
 
 TEST_P(GLES2DecoderTest1, GetBooleanvValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetBooleanv, 0>(true);
   typedef cmds::GetBooleanv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -1258,10 +1255,7 @@ TEST_P(GLES2DecoderTest1, GetErrorInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_P(GLES2DecoderTest1, GetFloatvValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetFloatv, 0>(true);
   typedef cmds::GetFloatv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -1314,10 +1308,7 @@ TEST_P(GLES2DecoderTest1, GetFloatvInvalidArgs1_1) {
 // TODO(gman): GetFragDataLocation
 
 TEST_P(GLES2DecoderTest1, GetFramebufferAttachmentParameterivValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetFramebufferAttachmentParameteriv, 0>(true);
   typedef cmds::GetFramebufferAttachmentParameteriv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -1386,10 +1377,7 @@ TEST_P(GLES2DecoderTest1, GetFramebufferAttachmentParameterivInvalidArgs3_1) {
 }
 
 TEST_P(GLES2DecoderTest1, GetInteger64vValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetInteger64v, 0>(true);
   typedef cmds::GetInteger64v::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -1407,10 +1395,7 @@ TEST_P(GLES2DecoderTest1, GetInteger64vValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest1, GetIntegeri_vValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetIntegeri_v, 0>(true);
   typedef cmds::GetIntegeri_v::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -1431,10 +1416,7 @@ TEST_P(GLES2DecoderTest1, GetIntegeri_vValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest1, GetInteger64i_vValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetInteger64i_v, 0>(true);
   typedef cmds::GetInteger64i_v::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -1455,10 +1437,7 @@ TEST_P(GLES2DecoderTest1, GetInteger64i_vValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest1, GetIntegervValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetIntegerv, 0>(true);
   typedef cmds::GetIntegerv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);

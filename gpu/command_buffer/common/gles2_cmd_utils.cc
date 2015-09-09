@@ -262,6 +262,23 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     //    GL_EXT_sRGB
     case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
       return 1;
+    // ES3
+    case GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE:
+      return 1;
+    case GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE:
+      return 1;
+    case GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE:
+      return 1;
+    case GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE:
+      return 1;
+    case GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE:
+      return 1;
+    case GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE:
+      return 1;
+    case GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE:
+      return 1;
+    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER:
+      return 1;
 
     // -- glGetProgramiv
     case GL_DELETE_STATUS:

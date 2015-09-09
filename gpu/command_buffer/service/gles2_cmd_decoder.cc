@@ -6176,24 +6176,72 @@ void GLES2DecoderImpl::DoFramebufferTextureLayer(
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
+  const char kFunctionName[] = "glGetFramebufferAttachmentParameteriv";
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   if (!framebuffer) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glGetFramebufferAttachmentParameteriv", "no framebuffer bound");
-    return;
+    if (!unsafe_es3_apis_enabled()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+          "no framebuffer bound");
+      return;
+    }
+    if (!validators_->backbuffer_attachment.IsValid(attachment)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+          "invalid attachment for backbuffer");
+      return;
+    }
+    switch (pname) {
+      case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
+        *params = static_cast<GLint>(GL_FRAMEBUFFER_DEFAULT);
+        return;
+      case GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE:
+      case GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE:
+      case GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE:
+      case GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE:
+      case GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE:
+      case GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE:
+      case GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE:
+      case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING:
+        // Delegate to underlying driver.
+        break;
+      default:
+        LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, kFunctionName,
+            "invalid pname for backbuffer");
+        return;
+    }
+    if (GetBackbufferServiceId() != 0) {  // Emulated backbuffer.
+      switch (attachment) {
+        case GL_BACK:
+          attachment = GL_COLOR_ATTACHMENT0;
+          break;
+        case GL_DEPTH:
+          attachment = GL_DEPTH_ATTACHMENT;
+          break;
+        case GL_STENCIL:
+          attachment = GL_STENCIL_ATTACHMENT;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+    }
+  }
+  if (pname == GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT &&
+      features().use_img_for_multisampled_render_to_texture) {
+    pname = GL_TEXTURE_SAMPLES_IMG;
   }
   if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME) {
+    DCHECK(framebuffer);
+    // If we query from the driver, it will be service ID; however, we need to
+    // return the client ID here.
     const Framebuffer::Attachment* attachment_object =
         framebuffer->GetAttachment(attachment);
     *params = attachment_object ? attachment_object->object_name() : 0;
-  } else {
-    if (pname == GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT &&
-        features().use_img_for_multisampled_render_to_texture) {
-      pname = GL_TEXTURE_SAMPLES_IMG;
-    }
-    glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
+    return;
   }
+
+  glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
+  // We didn't perform a full error check before gl call.
+  LOCAL_PEEK_GL_ERROR(kFunctionName);
 }
 
 void GLES2DecoderImpl::DoGetRenderbufferParameteriv(

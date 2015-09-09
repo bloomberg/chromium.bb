@@ -1144,6 +1144,10 @@ _NAMED_TYPE_INFO = {
     ],
     'valid_es3': [
       'GL_DEPTH_STENCIL_ATTACHMENT',
+      # For backbuffer.
+      'GL_COLOR_EXT',
+      'GL_DEPTH_EXT',
+      'GL_STENCIL_EXT',
     ],
   },
   'BackbufferAttachment': {
@@ -6625,9 +6629,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     valid_test = """
 TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+      .WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   typedef cmds::%(name)s::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);

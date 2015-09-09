@@ -16,7 +16,7 @@ static const GLenum valid_attachment_table[] = {
 };
 
 static const GLenum valid_attachment_table_es3[] = {
-    GL_DEPTH_STENCIL_ATTACHMENT,
+    GL_DEPTH_STENCIL_ATTACHMENT, GL_COLOR_EXT, GL_DEPTH_EXT, GL_STENCIL_EXT,
 };
 
 static const GLenum valid_backbuffer_attachment_table[] = {
