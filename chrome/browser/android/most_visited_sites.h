@@ -15,18 +15,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/sync_driver/sync_service_observer.h"
+#include "url/gurl.h"
 
 namespace suggestions {
 class SuggestionsService;
 }
 
-class GURL;
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 class PopularSites;
+class Profile;
 
 // Provides the list of most visited sites and their thumbnails to Java.
 class MostVisitedSites : public sync_driver::SyncServiceObserver,
@@ -53,13 +57,38 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   // Registers JNI methods.
   static bool Register(JNIEnv* env);
 
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
  private:
   friend class MostVisitedSitesTest;
 
   // The source of the Most Visited sites.
-  enum MostVisitedSource {
-    TOP_SITES,
-    SUGGESTIONS_SERVICE
+  enum MostVisitedSource { TOP_SITES, SUGGESTIONS_SERVICE, POPULAR };
+
+  struct Suggestion {
+    base::string16 title;
+    GURL url;
+    MostVisitedSource source;
+    // Only valid for source == SUGGESTIONS_SERVICE (-1 otherwise).
+    int provider_index;
+
+    Suggestion(const base::string16& title,
+               const std::string& url,
+               MostVisitedSource source);
+    Suggestion(const base::string16& title,
+               const GURL& url,
+               MostVisitedSource source);
+    Suggestion(const base::string16& title,
+               const std::string& url,
+               MostVisitedSource source,
+               int provider_index);
+    ~Suggestion();
+
+    // Get the Histogram name associated with the source.
+    std::string GetSourceHistogramName() const;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Suggestion);
   };
 
   ~MostVisitedSites() override;
@@ -77,25 +106,46 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   void OnSuggestionsProfileAvailable(
       const suggestions::SuggestionsProfile& suggestions_profile);
 
-  // Adds the suggestions from |popular_sites_| into |titles| and |urls|. This
-  // might reorder |titles| and |urls| to retain the absolute positions of the
-  // popular suggestions. Also updates |tile_sources_| accordingly.
-  void AddPopularSites(std::vector<base::string16>* titles,
-                       std::vector<std::string>* urls);
+  // Takes the personal suggestions and adds popular suggestions if necessary
+  // and reorders the suggestions based on the previously displayed order.
+  void AddPopularSites(ScopedVector<Suggestion>* suggestions);
 
   // Workhorse for AddPopularSites above. Implemented as a separate static
   // method for ease of testing.
-  static void AddPopularSitesImpl(
-      int num_sites,
-      const std::vector<base::string16>& popular_titles,
-      const std::vector<std::string>& popular_urls,
-      std::vector<base::string16>* titles,
-      std::vector<std::string>* urls,
-      std::vector<std::string>* tile_sources);
+  static ScopedVector<Suggestion> MergeSuggestions(
+      ScopedVector<Suggestion>* personal_suggestions,
+      ScopedVector<Suggestion>* popular_suggestions,
+      const std::vector<std::string>& old_sites_url,
+      const std::vector<bool>& old_sites_is_personal);
+
+  void GetPreviousNTPSites(size_t num_tiles,
+                           std::vector<std::string>* old_sites_url,
+                           std::vector<bool>* old_sites_source) const;
+
+  void SaveCurrentNTPSites();
+
+  // Takes suggestions from |src_suggestions| and moves them to
+  // |dst_suggestions| if the suggestion's url/host matches
+  // |match_urls|/|match_hosts| respectively. Unmatched suggestion indices from
+  // |src_suggestions| are returned for ease of insertion later.
+  static std::vector<size_t> InsertMatchingSuggestions(
+      ScopedVector<Suggestion>* src_suggestions,
+      ScopedVector<Suggestion>* dst_suggestions,
+      const std::vector<std::string>& match_urls,
+      const std::vector<std::string>& match_hosts);
+
+  // Inserts suggestions from |src_suggestions| at positions |insert_positions|
+  // into |dst_suggestions| where ever empty starting from |start_position|.
+  // Returns the last filled position so that future insertions can start from
+  // there.
+  static size_t InsertAllSuggestions(
+      size_t start_position,
+      const std::vector<size_t>& insert_positions,
+      ScopedVector<Suggestion>* src_suggestions,
+      ScopedVector<Suggestion>* dst_suggestions);
 
   // Notify the Java side observer about the availability of Most Visited Urls.
-  void NotifyMostVisitedURLsObserver(const std::vector<base::string16>& titles,
-                                     const std::vector<std::string>& urls);
+  void NotifyMostVisitedURLsObserver();
 
   void OnPopularSitesAvailable(bool success);
 
@@ -155,15 +205,13 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   // In this case a gray tile is used as the main tile.
   int num_empty_thumbs_;
 
-  // Identifier for where each tile came from (client, server, popular). Used
-  // for logging.
-  std::vector<std::string> tile_sources_;
-
   ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 
   MostVisitedSource mv_source_;
 
   scoped_ptr<PopularSites> popular_sites_;
+
+  ScopedVector<Suggestion> current_suggestions_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;

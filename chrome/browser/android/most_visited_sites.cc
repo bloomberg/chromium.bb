@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,7 +28,9 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/suggestions/suggestions_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -132,6 +135,41 @@ std::string GetPopularSitesFilename() {
 }
 
 }  // namespace
+
+MostVisitedSites::Suggestion::Suggestion(const base::string16& title,
+                                         const std::string& url,
+                                         MostVisitedSource source)
+    : title(title), url(url), source(source), provider_index(-1) {}
+
+MostVisitedSites::Suggestion::Suggestion(const base::string16& title,
+                                         const GURL& url,
+                                         MostVisitedSource source)
+    : title(title), url(url), source(source), provider_index(-1) {}
+
+MostVisitedSites::Suggestion::Suggestion(const base::string16& title,
+                                         const std::string& url,
+                                         MostVisitedSource source,
+                                         int provider_index)
+    : title(title), url(url), source(source), provider_index(provider_index) {
+  DCHECK_EQ(MostVisitedSites::SUGGESTIONS_SERVICE, source);
+}
+
+MostVisitedSites::Suggestion::~Suggestion() {}
+
+std::string MostVisitedSites::Suggestion::GetSourceHistogramName() const {
+  switch (source) {
+    case MostVisitedSites::TOP_SITES:
+      return kHistogramClientName;
+    case MostVisitedSites::POPULAR:
+      return kHistogramPopularName;
+    case MostVisitedSites::SUGGESTIONS_SERVICE:
+      return provider_index >= 0
+                 ? base::StringPrintf(kHistogramServerFormat, provider_index)
+                 : kHistogramServerName;
+  }
+  NOTREACHED();
+  return std::string();
+}
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
     : profile_(profile), num_sites_(0), received_most_visited_sites_(false),
@@ -310,9 +348,10 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
                                                    jobject obj,
                                                    jint index) {
   DCHECK_GE(index, 0);
-  DCHECK_LT(index, static_cast<int>(tile_sources_.size()));
-  std::string histogram = base::StringPrintf(kOpenedItemHistogramFormat,
-                                             tile_sources_[index].c_str());
+  DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
+  std::string histogram = base::StringPrintf(
+      kOpenedItemHistogramFormat,
+      current_suggestions_[index]->GetSourceHistogramName().c_str());
   LogHistogramEvent(histogram, index, num_sites_);
 }
 
@@ -326,6 +365,13 @@ void MostVisitedSites::OnStateChanged() {
 // static
 bool MostVisitedSites::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+// static
+void MostVisitedSites::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kNTPSuggestionsURL);
+  registry->RegisterListPref(prefs::kNTPSuggestionsIsPersonal);
 }
 
 void MostVisitedSites::QueryMostVisitedURLs() {
@@ -355,25 +401,23 @@ void MostVisitedSites::InitiateTopSitesQuery() {
 
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
-  std::vector<base::string16> titles;
-  std::vector<std::string> urls;
-  tile_sources_.clear();
-  int num_tiles = std::min(static_cast<int>(visited_list.size()), num_sites_);
-  for (int i = 0; i < num_tiles; ++i) {
+  ScopedVector<Suggestion> suggestions;
+  size_t num_tiles =
+      std::min(visited_list.size(), static_cast<size_t>(num_sites_));
+  for (size_t i = 0; i < num_tiles; ++i) {
     const history::MostVisitedURL& visited = visited_list[i];
     if (visited.url.is_empty()) {
       num_tiles = i;
       break;  // This is the signal that there are no more real visited sites.
     }
-    titles.push_back(visited.title);
-    urls.push_back(visited.url.spec());
-    tile_sources_.push_back(kHistogramClientName);
+    suggestions.push_back(
+        new Suggestion(visited.title, visited.url.spec(), TOP_SITES));
   }
 
   received_most_visited_sites_ = true;
   mv_source_ = TOP_SITES;
-  AddPopularSites(&titles, &urls);
-  NotifyMostVisitedURLsObserver(titles, urls);
+  AddPopularSites(&suggestions);
+  NotifyMostVisitedURLsObserver();
 }
 
 void MostVisitedSites::OnSuggestionsProfileAvailable(
@@ -387,150 +431,220 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   if (num_sites_ < num_tiles)
     num_tiles = num_sites_;
 
-  std::vector<base::string16> titles;
-  std::vector<std::string> urls;
-  tile_sources_.clear();
+  ScopedVector<Suggestion> suggestions;
   for (int i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
-    titles.push_back(base::UTF8ToUTF16(suggestion.title()));
-    urls.push_back(suggestion.url());
-    std::string tile_source;
-    if (suggestion.providers_size() > 0) {
-      tile_source =
-          base::StringPrintf(kHistogramServerFormat, suggestion.providers(0));
-    } else {
-      tile_source = kHistogramServerName;
-    }
-    tile_sources_.push_back(tile_source);
+    suggestions.push_back(new Suggestion(
+        base::UTF8ToUTF16(suggestion.title()), suggestion.url(),
+        SUGGESTIONS_SERVICE,
+        suggestion.providers_size() > 0 ? suggestion.providers(0) : -1));
   }
 
   received_most_visited_sites_ = true;
   mv_source_ = SUGGESTIONS_SERVICE;
-  AddPopularSites(&titles, &urls);
-  NotifyMostVisitedURLsObserver(titles, urls);
+  AddPopularSites(&suggestions);
+  NotifyMostVisitedURLsObserver();
 }
 
-void MostVisitedSites::AddPopularSites(std::vector<base::string16>* titles,
-                                       std::vector<std::string>* urls) {
-  if (!popular_sites_)
-    return;
+void MostVisitedSites::AddPopularSites(
+    ScopedVector<Suggestion>* personal_suggestions) {
+  size_t num_personal_suggestions = personal_suggestions->size();
+  DCHECK_LE(num_personal_suggestions, static_cast<size_t>(num_sites_));
 
-  DCHECK_EQ(titles->size(), urls->size());
-  DCHECK_EQ(titles->size(), tile_sources_.size());
-  DCHECK_LE(static_cast<int>(titles->size()), num_sites_);
+  // Collect non-blacklisted popular suggestions, skipping those already present
+  // in the personal suggestions.
+  size_t num_popular_suggestions = num_sites_ - num_personal_suggestions;
+  ScopedVector<Suggestion> popular_suggestions;
+  popular_suggestions.reserve(num_popular_suggestions);
 
-  // Collect all non-blacklisted popular suggestions.
-  std::vector<base::string16> popular_titles;
-  std::vector<std::string> popular_urls;
-  scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
-  for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
-    // Skip blacklisted sites.
-    if (top_sites && top_sites->IsBlacklisted(popular_site.url))
-      continue;
+  if (num_popular_suggestions > 0 && popular_sites_) {
+    std::set<std::string> personal_hosts;
+    for (const Suggestion* suggestion : *personal_suggestions)
+      personal_hosts.insert(suggestion->url.host());
+    scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
+    for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
+      // Skip blacklisted sites.
+      if (top_sites && top_sites->IsBlacklisted(popular_site.url))
+        continue;
+      std::string host = popular_site.url.host();
+      // Skip suggestions already present in personal.
+      if (personal_hosts.find(host) != personal_hosts.end())
+        continue;
 
-    popular_titles.push_back(popular_site.title);
-    popular_urls.push_back(popular_site.url.spec());
-    if (static_cast<int>(popular_titles.size()) >= num_sites_)
-      break;
+      popular_suggestions.push_back(
+          new Suggestion(popular_site.title, popular_site.url, POPULAR));
+      if (popular_suggestions.size() >= num_popular_suggestions)
+        break;
+    }
   }
-
-  AddPopularSitesImpl(
-      num_sites_, popular_titles, popular_urls, titles, urls, &tile_sources_);
+  num_popular_suggestions = popular_suggestions.size();
+  size_t num_actual_tiles = num_personal_suggestions + num_popular_suggestions;
+  std::vector<std::string> old_sites_url;
+  std::vector<bool> old_sites_is_personal;
+  GetPreviousNTPSites(num_actual_tiles, &old_sites_url, &old_sites_is_personal);
+  ScopedVector<Suggestion> merged_suggestions =
+      MergeSuggestions(personal_suggestions, &popular_suggestions,
+                       old_sites_url, old_sites_is_personal);
+  DCHECK_EQ(num_actual_tiles, merged_suggestions.size());
+  current_suggestions_.swap(merged_suggestions);
+  if (received_popular_sites_)
+    SaveCurrentNTPSites();
 }
 
 // static
-void MostVisitedSites::AddPopularSitesImpl(
-    int num_sites,
-    const std::vector<base::string16>& popular_titles,
-    const std::vector<std::string>& popular_urls,
-    std::vector<base::string16>* titles,
-    std::vector<std::string>* urls,
-    std::vector<std::string>* tile_sources) {
-  // Start off with the popular suggestions.
-  std::vector<base::string16> new_titles(popular_titles);
-  std::vector<std::string> new_urls(popular_urls);
-  std::vector<std::string> new_tile_sources(new_titles.size(),
-                                            kHistogramPopularName);
+ScopedVector<MostVisitedSites::Suggestion> MostVisitedSites::MergeSuggestions(
+    ScopedVector<Suggestion>* personal_suggestions,
+    ScopedVector<Suggestion>* popular_suggestions,
+    const std::vector<std::string>& old_sites_url,
+    const std::vector<bool>& old_sites_is_personal) {
+  size_t num_personal_suggestions = personal_suggestions->size();
+  size_t num_popular_suggestions = popular_suggestions->size();
+  size_t num_tiles = num_popular_suggestions + num_personal_suggestions;
+  ScopedVector<Suggestion> merged_suggestions;
+  merged_suggestions.resize(num_tiles);
 
-  // Now, go over the personalized suggestions and replace matching popular
-  // suggestions. This is so that when some of the popular suggestions become
-  // personal, they retain their absolute positions.
-  std::vector<base::string16> titles_to_insert;
-  std::vector<std::string> urls_to_insert;
-  std::vector<std::string> tile_sources_to_insert;
-  for (size_t site_index = 0; site_index < titles->size(); site_index++) {
-    const base::string16& title = (*titles)[site_index];
-    const std::string& url = (*urls)[site_index];
-    const std::string& tile_source = (*tile_sources)[site_index];
-    // See if we already have a matching popular site.
-    bool found = false;
-    for (size_t i = 0; i < new_urls.size(); i++) {
-      if (new_tile_sources[i] == kHistogramPopularName &&
-          GURL(new_urls[i]).host() == GURL(url).host()) {
-        // We have a matching popular sites suggestion. Replace it with the
-        // actual URL and title.
-        new_titles[i] = title;
-        new_urls[i] = url;
-        new_tile_sources[i] = tile_source;
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      titles_to_insert.push_back(title);
-      urls_to_insert.push_back(url);
-      tile_sources_to_insert.push_back(tile_source);
-    }
+  size_t num_old_tiles = old_sites_url.size();
+  DCHECK_LE(num_old_tiles, num_tiles);
+  DCHECK_EQ(num_old_tiles, old_sites_is_personal.size());
+  std::vector<std::string> old_sites_host;
+  old_sites_host.reserve(num_old_tiles);
+  // Only populate the hosts for popular suggestions as only they can be
+  // replaced by host. Personal suggestions require an exact url match to be
+  // replaced.
+  for (size_t i = 0; i < num_old_tiles; ++i) {
+    old_sites_host.push_back(old_sites_is_personal[i]
+                                 ? std::string()
+                                 : GURL(old_sites_url[i]).host());
   }
 
-  // Append personalized suggestions at the end if there's room.
-  size_t num_to_append =
-      std::min(static_cast<size_t>(num_sites) - new_titles.size(),
-               titles_to_insert.size());
-  new_titles.insert(new_titles.end(),
-                    titles_to_insert.end() - num_to_append,
-                    titles_to_insert.end());
-  new_urls.insert(new_urls.end(),
-                  urls_to_insert.end() - num_to_append,
-                  urls_to_insert.end());
-  new_tile_sources.insert(new_tile_sources.end(),
-                          tile_sources_to_insert.end() - num_to_append,
-                          tile_sources_to_insert.end());
-
-  // Finally, go over the remaining personalized suggestions and evict popular
-  // suggestions to accommodate them. Do it in reverse order, so the least
-  // important popular suggestions will be evicted.
-  for (size_t i = titles_to_insert.size() - num_to_append; i > 0; --i) {
-    const base::string16& title = titles_to_insert[i - 1];
-    const std::string& url = urls_to_insert[i - 1];
-    const std::string& tile_source = tile_sources_to_insert[i - 1];
-    for (size_t insert_i = new_titles.size(); insert_i > 0; --insert_i) {
-      size_t insert_index = insert_i - 1;
-      if (new_tile_sources[insert_index] == kHistogramPopularName) {
-        new_titles[insert_index] = title;
-        new_urls[insert_index] = url;
-        new_tile_sources[insert_index] = tile_source;
-        break;
-      }
-    }
-  }
-
-  titles->swap(new_titles);
-  urls->swap(new_urls);
-  tile_sources->swap(new_tile_sources);
+  // Insert personal suggestions if they existed previously.
+  std::vector<size_t> new_personal_suggestions = InsertMatchingSuggestions(
+      personal_suggestions, &merged_suggestions, old_sites_url, old_sites_host);
+  // Insert popular suggestions if they existed previously.
+  std::vector<size_t> new_popular_suggestions = InsertMatchingSuggestions(
+      popular_suggestions, &merged_suggestions, old_sites_url, old_sites_host);
+  // Insert leftover personal suggestions.
+  size_t filled_so_far = InsertAllSuggestions(
+      0, new_personal_suggestions, personal_suggestions, &merged_suggestions);
+  // Insert leftover popular suggestions.
+  InsertAllSuggestions(filled_so_far, new_popular_suggestions,
+                       popular_suggestions, &merged_suggestions);
+  return merged_suggestions.Pass();
 }
 
-void MostVisitedSites::NotifyMostVisitedURLsObserver(
-    const std::vector<base::string16>& titles,
-    const std::vector<std::string>& urls) {
-  DCHECK_EQ(titles.size(), urls.size());
+void MostVisitedSites::GetPreviousNTPSites(
+    size_t num_tiles,
+    std::vector<std::string>* old_sites_url,
+    std::vector<bool>* old_sites_is_personal) const {
+  const PrefService* prefs = profile_->GetPrefs();
+  const base::ListValue* url_list = prefs->GetList(prefs::kNTPSuggestionsURL);
+  const base::ListValue* source_list =
+      prefs->GetList(prefs::kNTPSuggestionsIsPersonal);
+  DCHECK_EQ(url_list->GetSize(), source_list->GetSize());
+  if (url_list->GetSize() < num_tiles)
+    num_tiles = url_list->GetSize();
+  if (num_tiles == 0) {
+    // No fallback required as Personal suggestions take precedence anyway.
+    return;
+  }
+  old_sites_url->reserve(num_tiles);
+  old_sites_is_personal->reserve(num_tiles);
+  for (size_t i = 0; i < num_tiles; ++i) {
+    std::string url_string;
+    bool success = url_list->GetString(i, &url_string);
+    DCHECK(success);
+    old_sites_url->push_back(url_string);
+    bool is_personal;
+    success = source_list->GetBoolean(i, &is_personal);
+    DCHECK(success);
+    old_sites_is_personal->push_back(is_personal);
+  }
+}
+
+void MostVisitedSites::SaveCurrentNTPSites() {
+  base::ListValue url_list;
+  base::ListValue source_list;
+  for (const Suggestion* suggestion : current_suggestions_) {
+    url_list.AppendString(suggestion->url.spec());
+    source_list.AppendBoolean(suggestion->source != MostVisitedSites::POPULAR);
+  }
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->Set(prefs::kNTPSuggestionsIsPersonal, source_list);
+  prefs->Set(prefs::kNTPSuggestionsURL, url_list);
+}
+
+// static
+std::vector<size_t> MostVisitedSites::InsertMatchingSuggestions(
+    ScopedVector<Suggestion>* src_suggestions,
+    ScopedVector<Suggestion>* dst_suggestions,
+    const std::vector<std::string>& match_urls,
+    const std::vector<std::string>& match_hosts) {
+  std::vector<size_t> unmatched_suggestions;
+  size_t num_src_suggestions = src_suggestions->size();
+  size_t num_matchers = match_urls.size();
+  for (size_t i = 0; i < num_src_suggestions; ++i) {
+    size_t position;
+    for (position = 0; position < num_matchers; ++position) {
+      if ((*dst_suggestions)[position] != nullptr)
+        continue;
+      if (match_urls[position] == (*src_suggestions)[i]->url.spec())
+        break;
+      // match_hosts is only populated for suggestions which can be replaced by
+      // host matching like popular suggestions.
+      if (match_hosts[position] == (*src_suggestions)[i]->url.host())
+        break;
+    }
+    if (position == num_matchers) {
+      unmatched_suggestions.push_back(i);
+    } else {
+      // A move is required as the source and destination containers own the
+      // elements.
+      std::swap((*dst_suggestions)[position], (*src_suggestions)[i]);
+    }
+  }
+  return unmatched_suggestions;
+}
+
+// static
+size_t MostVisitedSites::InsertAllSuggestions(
+    size_t start_position,
+    const std::vector<size_t>& insert_positions,
+    ScopedVector<Suggestion>* src_suggestions,
+    ScopedVector<Suggestion>* dst_suggestions) {
+  size_t num_inserts = insert_positions.size();
+  size_t num_dests = dst_suggestions->size();
+
+  size_t src_pos = 0;
+  size_t i = start_position;
+  for (; i < num_dests && src_pos < num_inserts; ++i) {
+    if ((*dst_suggestions)[i] != nullptr)
+      continue;
+    size_t src = insert_positions[src_pos++];
+    std::swap((*dst_suggestions)[i], (*src_suggestions)[src]);
+  }
+  // Return destination postions filled so far which becomes the start_position
+  // for future runs.
+  return i;
+}
+
+void MostVisitedSites::NotifyMostVisitedURLsObserver() {
+  size_t num_suggestions = current_suggestions_.size();
   if (received_most_visited_sites_ && received_popular_sites_ &&
       !recorded_uma_) {
     RecordImpressionUMAMetrics();
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, titles.size());
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, num_suggestions);
     recorded_uma_ = true;
   }
+  std::vector<base::string16> titles;
+  std::vector<std::string> urls;
+  titles.reserve(num_suggestions);
+  urls.reserve(num_suggestions);
+  for (const Suggestion* suggestion : current_suggestions_) {
+    titles.push_back(suggestion->title);
+    urls.push_back(suggestion->url.spec());
+  }
   JNIEnv* env = AttachCurrentThread();
+  DCHECK_EQ(titles.size(), urls.size());
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj());
@@ -572,9 +686,10 @@ void MostVisitedSites::RecordThumbnailUMAMetrics() {
 }
 
 void MostVisitedSites::RecordImpressionUMAMetrics() {
-  for (size_t i = 0; i < tile_sources_.size(); i++) {
-    std::string histogram = base::StringPrintf(kImpressionHistogramFormat,
-                                               tile_sources_[i].c_str());
+  for (size_t i = 0; i < current_suggestions_.size(); i++) {
+    std::string histogram = base::StringPrintf(
+        kImpressionHistogramFormat,
+        current_suggestions_[i]->GetSourceHistogramName().c_str());
     LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
   }
 }

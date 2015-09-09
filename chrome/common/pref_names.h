@@ -537,6 +537,10 @@ extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
 #endif
 extern const char kNtpShownPage[];
+#if defined(OS_ANDROID)
+extern const char kNTPSuggestionsURL[];
+extern const char kNTPSuggestionsIsPersonal[];
+#endif
 
 extern const char kDevToolsAdbKey[];
 extern const char kDevToolsDisabled[];
