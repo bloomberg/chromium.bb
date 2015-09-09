@@ -32,6 +32,7 @@
 #include "core/layout/LayoutRubyText.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBox.h"
+#include "core/layout/api/LineLayoutRubyRun.h"
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -650,7 +651,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
                 else
                     hasAnnotationsAfter = true;
 
-                LayoutRubyRun& rubyRun = toLayoutRubyRun(curr->layoutObject());
+                LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->lineLayoutItem());
                 if (LayoutRubyBase* rubyBase = rubyRun.rubyBase()) {
                     LayoutUnit bottomRubyBaseLeading = (curr->logicalHeight() - rubyBase->logicalBottom()) + rubyBase->logicalHeight() - (rubyBase->lastRootBox() ? rubyBase->lastRootBox()->lineBottom() : LayoutUnit());
                     LayoutUnit topRubyBaseLeading = rubyBase->logicalTop() + (rubyBase->firstRootBox() ? rubyBase->firstRootBox()->lineTop() : LayoutUnit());
@@ -1143,7 +1144,7 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
             result = std::max(result, toInlineFlowBox(curr)->computeOverAnnotationAdjustment(allowedPosition));
 
         if (curr->layoutObject().isReplaced() && curr->layoutObject().isRubyRun() && curr->layoutObject().style()->rubyPosition() == RubyPositionBefore) {
-            LayoutRubyRun& rubyRun = toLayoutRubyRun(curr->layoutObject());
+            LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->lineLayoutItem());
             LayoutRubyText* rubyText = rubyRun.rubyText();
             if (!rubyText)
                 continue;
@@ -1191,7 +1192,7 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
             result = std::max(result, toInlineFlowBox(curr)->computeUnderAnnotationAdjustment(allowedPosition));
 
         if (curr->layoutObject().isReplaced() && curr->layoutObject().isRubyRun() && curr->layoutObject().style()->rubyPosition() == RubyPositionAfter) {
-            LayoutRubyRun& rubyRun = toLayoutRubyRun(curr->layoutObject());
+            LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->lineLayoutItem());
             LayoutRubyText* rubyText = rubyRun.rubyText();
             if (!rubyText)
                 continue;
