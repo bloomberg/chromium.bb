@@ -82,7 +82,8 @@ source_set("test_support") {
   ]
 }
 
-mojo_native_application("mandoline_frame_apptests") {
+mojo_native_application("apptests") {
+  output_name = "web_view_apptests"
   testonly = true
 
   sources = [
