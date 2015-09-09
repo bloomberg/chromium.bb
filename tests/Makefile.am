@@ -31,6 +31,7 @@ LDADD = $(top_builddir)/libdrm.la
 
 check_PROGRAMS = \
 	dristat \
+	drmdevice \
 	drmstat
 
 dristat_LDADD = -lm
