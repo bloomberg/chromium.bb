@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -283,11 +284,10 @@ void LocationBarView::Init() {
   mic_search_view_->SetVisible(false);
   AddChildView(mic_search_view_);
 
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingImageView* content_blocked_view =
-        new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
-                                    bubble_font_list, text_color,
-                                    background_color);
+  for (ContentSettingsType type :
+       ContentSettingBubbleModel::GetSupportedBubbleTypes()) {
+    ContentSettingImageView* content_blocked_view = new ContentSettingImageView(
+        type, this, bubble_font_list, text_color, background_color);
     content_setting_views_.push_back(content_blocked_view);
     content_blocked_view->SetVisible(false);
     AddChildView(content_blocked_view);

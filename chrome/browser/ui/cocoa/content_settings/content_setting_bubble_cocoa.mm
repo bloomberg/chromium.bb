@@ -236,6 +236,26 @@ class ContentSettingBubbleWebContentsObserverBridge
                 anchoredAt:anchor];
 }
 
+struct ContentTypeToNibPath {
+  ContentSettingsType type;
+  NSString* path;
+};
+
+const ContentTypeToNibPath kNibPaths[] = {
+    {CONTENT_SETTINGS_TYPE_COOKIES, @"ContentBlockedCookies"},
+    {CONTENT_SETTINGS_TYPE_IMAGES, @"ContentBlockedSimple"},
+    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, @"ContentBlockedSimple"},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, @"ContentBlockedSimple"},
+    {CONTENT_SETTINGS_TYPE_PLUGINS, @"ContentBlockedPlugins"},
+    {CONTENT_SETTINGS_TYPE_POPUPS, @"ContentBlockedPopups"},
+    {CONTENT_SETTINGS_TYPE_GEOLOCATION, @"ContentBlockedGeolocation"},
+    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, @"ContentBlockedMixedScript"},
+    {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, @"ContentProtocolHandlers"},
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM, @"ContentBlockedMedia"},
+    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, @"ContentBlockedDownloads"},
+    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, @"ContentBlockedMIDISysEx"},
+};
+
 - (id)initWithModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
         webContents:(content::WebContents*)webContents
        parentWindow:(NSWindow*)parentWindow
@@ -247,48 +267,19 @@ class ContentSettingBubbleWebContentsObserverBridge
     new ContentSettingBubbleWebContentsObserverBridge(webContents, self));
 
   ContentSettingsType settingsType = model->content_type();
+  DCHECK(ContainsKey(ContentSettingBubbleModel::GetSupportedBubbleTypes(),
+                     settingsType));
+  DCHECK_EQ(ContentSettingBubbleModel::GetSupportedBubbleTypes().size(),
+            arraysize(kNibPaths));
   NSString* nibPath = @"";
-  switch (settingsType) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-      nibPath = @"ContentBlockedCookies"; break;
-    case CONTENT_SETTINGS_TYPE_IMAGES:
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
-      nibPath = @"ContentBlockedSimple"; break;
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-      nibPath = @"ContentBlockedPlugins"; break;
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-      nibPath = @"ContentBlockedPopups"; break;
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      nibPath = @"ContentBlockedGeolocation"; break;
-    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
-      nibPath = @"ContentBlockedMixedScript"; break;
-    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
-      nibPath = @"ContentProtocolHandlers"; break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      nibPath = @"ContentBlockedMedia"; break;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-      nibPath = @"ContentBlockedDownloads"; break;
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      nibPath = @"ContentBlockedMIDISysEx"; break;
-    // These content types have no bubble:
-    case CONTENT_SETTINGS_TYPE_DEFAULT:
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
-    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
-    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-    case CONTENT_SETTINGS_NUM_TYPES:
-    // TODO(miguelg): Remove this nib content settings support
-    // is implemented
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-    case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
-    case CONTENT_SETTINGS_TYPE_APP_BANNER:
-    case CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT:
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      NOTREACHED();
+  for (const ContentTypeToNibPath& type_to_path : kNibPaths) {
+    if (settingsType == type_to_path.type) {
+      nibPath = type_to_path.path;
+      break;
+    }
   }
+  DCHECK_NE(0u, [nibPath length]);
+
   if ((self = [super initWithWindowNibPath:nibPath
                               parentWindow:parentWindow
                                 anchoredAt:anchoredAt])) {

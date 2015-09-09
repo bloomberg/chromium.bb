@@ -104,9 +104,8 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
           new ManagePasswordsDecoration(command_updater, this)),
       browser_(browser),
       weak_ptr_factory_(this) {
-  for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    DCHECK_EQ(i, content_setting_decorations_.size());
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
+  for (ContentSettingsType type :
+       ContentSettingBubbleModel::GetSupportedBubbleTypes()) {
     content_setting_decorations_.push_back(
         new ContentSettingDecoration(type, this, profile));
   }

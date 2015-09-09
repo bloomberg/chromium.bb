@@ -97,6 +97,9 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
   };
 
+  // Returns a set of the supported bubble types.
+  static const std::set<ContentSettingsType>& GetSupportedBubbleTypes();
+
   static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
       Delegate* delegate,
       content::WebContents* web_contents,
