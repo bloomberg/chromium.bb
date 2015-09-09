@@ -81,13 +81,13 @@ class VideoTrackRecorderTest : public testing::Test,
   void Encode(const scoped_refptr<media::VideoFrame>& frame,
               base::TimeTicks capture_time) {
     EXPECT_TRUE(message_loop_.IsCurrent());
-    video_track_recorder_->OnVideoFrame(frame, capture_time);
+    video_track_recorder_->OnVideoFrameForTesting(frame, capture_time);
   }
 
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources below into believing they are on the right threads.
   const base::MessageLoopForUI message_loop_;
-  ChildProcess child_process_;
+  const ChildProcess child_process_;
 
   // All members are non-const due to the series of initialize() calls needed.
   // |mock_source_| is owned by |blink_source_|, |track_| by |blink_track_|.
@@ -101,6 +101,10 @@ class VideoTrackRecorderTest : public testing::Test,
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorderTest);
 };
+
+// Construct and destruct all objects, in particular |video_track_recorder_| and
+// its inner object(s). This is a non trivial sequence.
+TEST_F(VideoTrackRecorderTest, ConstructAndDestruct) {}
 
 // Creates the encoder and encodes 2 frames of the same size; the encoder should
 // be initialised and produce a keyframe, then a non-keyframe. Finally a frame

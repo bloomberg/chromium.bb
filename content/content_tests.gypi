@@ -728,6 +728,7 @@
       'browser/renderer_host/p2p/socket_host_test_utils.h',
       'browser/renderer_host/p2p/socket_host_udp_unittest.cc',
       'browser/renderer_host/p2p/socket_host_unittest.cc',
+      'renderer/media/media_recorder_handler_unittest.cc',
       'renderer/media/media_stream_audio_processor_unittest.cc',
       'renderer/media/media_stream_constraints_util_unittest.cc',
       'renderer/media/media_stream_dispatcher_unittest.cc',
@@ -1170,6 +1171,8 @@
             'browser/power_usage_monitor_impl_unittest.cc',
             'browser/renderer_host/begin_frame_observer_proxy_unittest.cc',
             'browser/webui/url_data_manager_backend_unittest.cc',
+            'renderer/media/media_recorder_handler_unittest.cc',
+            'renderer/media/video_track_recorder_unittest.cc',
           ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',

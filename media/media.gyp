@@ -485,8 +485,6 @@
         'capture/video/win/video_capture_device_mf_win.h',
         'capture/video/win/video_capture_device_win.cc',
         'capture/video/win/video_capture_device_win.h',
-        'capture/webm_muxer.cc',
-        'capture/webm_muxer.h',
         'cdm/aes_decryptor.cc',
         'cdm/aes_decryptor.h',
         'cdm/default_cdm_factory.cc',
@@ -707,9 +705,7 @@
           'dependencies': [
             '<(DEPTH)/third_party/libwebm/libwebm.gyp:libwebm',
           ],
-        }, {  # media_use_libwebm==0
-          # Exclude the sources that depend on libwebm.
-          'sources!': [
+          'sources': [
             'capture/webm_muxer.cc',
             'capture/webm_muxer.h',
           ],
@@ -1297,7 +1293,6 @@
         'filters/vp8_parser_unittest.cc',
         'filters/vp9_parser_unittest.cc',
         'filters/vp9_raw_bits_reader_unittest.cc',
-        'capture/webm_muxer_unittest.cc',
         'formats/common/offset_byte_queue_unittest.cc',
         'formats/webm/cluster_builder.cc',
         'formats/webm/cluster_builder.h',
@@ -1369,9 +1364,7 @@
           'dependencies': [
             '<(DEPTH)/third_party/libwebm/libwebm.gyp:libwebm',
           ],
-        }, {  # media_use_libwebm==0
-          # Exclude the sources that depend on libwebm.
-          'sources!': [
+          'sources': [
             'capture/webm_muxer_unittest.cc',
           ],
         }],

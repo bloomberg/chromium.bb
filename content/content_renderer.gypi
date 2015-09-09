@@ -596,6 +596,8 @@
     # WebRTC-specific sources. Put WebRTC plugin-related stuff in the
     # Plugin+WebRTC section below.
     'private_renderer_webrtc_sources': [
+      'renderer/media/media_recorder_handler.cc',
+      'renderer/media/media_recorder_handler.h',
       'renderer/media/media_stream.cc',
       'renderer/media/media_stream.h',
       'renderer/media/media_stream_audio_processor.cc',
@@ -756,6 +758,10 @@
     ['OS=="android"', {
       'sources!': [
         'renderer/media/audio_decoder.cc',
+        'renderer/media/video_track_recorder.cc',
+        'renderer/media/video_track_recorder.h',
+        'renderer/media/media_recorder_handler.cc',
+        'renderer/media/media_recorder_handler.h',
         'renderer/usb/type_converters.cc',
         'renderer/usb/type_converters.h',
         'renderer/usb/web_usb_client_impl.cc',

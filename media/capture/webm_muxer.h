@@ -27,8 +27,9 @@ class VideoFrame;
 // containing a single encoded video frame. WebM container has no Trailer.
 // Clients will push encoded VPx video frames one by one via the
 // OnEncodedVideo(). libwebm will eventually ping the WriteDataCB passed on
-// contructor with the wrapped encoded data. All operations must happen in a
-// single thread, where WebmMuxer is created and destroyed.
+// contructor with the wrapped encoded data.
+// WebmMuxer is created/destroyed on a thread, usually the Main Render thread,
+// and receives OnEncodedVideo()s on another thread, usually Render IO.
 // [1] http://www.webmproject.org/docs/container/
 // [2] http://www.matroska.org/technical/specs/index.html
 // TODO(mcasas): Add support for Audio muxing.
@@ -56,8 +57,7 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // Creates and adds a new video track. Called upon receiving the first
   // frame of a given Track, adds |frame_size| and |frame_rate| to the Segment
   // info, although individual frames passed to OnEncodedVideo() can have any
-  // frame size. Returns OnEncodedVideo() callback with a |track_number| bound
-  // in the callback.
+  // frame size.
   void AddVideoTrack(const gfx::Size& frame_size, double frame_rate);
 
   // IMkvWriter interface.
@@ -68,7 +68,7 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   void ElementStartNotify(mkvmuxer::uint64 element_id,
                           mkvmuxer::int64 position) override;
 
-  // Used to DCHECK that we are called on the correct thread.
+  // Used to DCHECK that we are called on the correct thread (usually IO)
   base::ThreadChecker thread_checker_;
 
   // A caller-side identifier to interact with |segment_|, initialised upon

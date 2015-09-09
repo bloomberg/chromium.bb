@@ -28,19 +28,14 @@ WebmMuxer::WebmMuxer(const WriteDataCB& write_data_callback)
     : track_index_(0),
       write_data_callback_(write_data_callback),
       position_(0) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!write_data_callback_.is_null());
-  segment_.Init(this);
-  segment_.set_mode(mkvmuxer::Segment::kLive);
-  segment_.OutputCues(false);
-
-  mkvmuxer::SegmentInfo* const info = segment_.GetSegmentInfo();
-  info->set_writing_app("Chrome");
-  info->set_muxing_app("Chrome");
+  // Creation is done on a different thread than main activities.
+  thread_checker_.DetachFromThread();
 }
 
 WebmMuxer::~WebmMuxer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // No need to segment_.Finalize() since is not Seekable(), i.e. a live stream,
+  // but is good practice.
   segment_.Finalize();
 }
 
@@ -48,6 +43,7 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
                                const base::StringPiece& encoded_data,
                                base::TimeTicks timestamp,
                                bool is_key_frame) {
+  DVLOG(1) << __FUNCTION__ << " - " << encoded_data.size() << "B";
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!track_index_) {
     // |track_index_|, cannot be zero (!), initialize WebmMuxer in that case.
@@ -66,7 +62,16 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
 
 void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(track_index_, 0u);
+  DCHECK_EQ(track_index_, 0u) << "WebmMuxer can only be initialised once.";
+
+  segment_.Init(this);
+  segment_.set_mode(mkvmuxer::Segment::kLive);
+  segment_.OutputCues(false);
+
+  mkvmuxer::SegmentInfo* const info = segment_.GetSegmentInfo();
+  info->set_writing_app("Chrome");
+  info->set_muxing_app("Chrome");
+
   track_index_ =
       segment_.AddVideoTrack(frame_size.width(), frame_size.height(), 0);
   DCHECK_GT(track_index_, 0u);

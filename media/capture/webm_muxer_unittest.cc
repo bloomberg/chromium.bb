@@ -34,8 +34,9 @@ class WebmMuxerTest : public testing::Test, public EventHandlerInterface {
         last_encoded_length_(0),
         accumulated_position_(0) {
     EXPECT_EQ(webm_muxer_.Position(), 0);
+    const mkvmuxer::int64 kRandomNewPosition = 333;
+    EXPECT_EQ(webm_muxer_.Position(kRandomNewPosition), -1);
     EXPECT_FALSE(webm_muxer_.Seekable());
-    EXPECT_EQ(webm_muxer_.segment_.mode(), mkvmuxer::Segment::kLive);
   }
 
   MOCK_METHOD1(WriteCallback, void(const base::StringPiece&));
@@ -47,6 +48,10 @@ class WebmMuxerTest : public testing::Test, public EventHandlerInterface {
 
   mkvmuxer::int64 GetWebmMuxerPosition() const {
     return webm_muxer_.Position();
+  }
+
+  mkvmuxer::Segment::Mode GetWebmSegmentMode() const {
+    return webm_muxer_.segment_.mode();
   }
 
   mkvmuxer::int32 WebmMuxerWrite(const void* buf, mkvmuxer::uint32 len) {
@@ -95,6 +100,7 @@ TEST_F(WebmMuxerTest, OnEncodedVideoTwoFrames) {
   EXPECT_EQ(last_encoded_length_, encoded_data.size());
   EXPECT_EQ(GetWebmMuxerPosition(), accumulated_position_);
   EXPECT_GE(GetWebmMuxerPosition(), static_cast<int64_t>(last_encoded_length_));
+  EXPECT_EQ(GetWebmSegmentMode(), mkvmuxer::Segment::kLive);
 
   const int64_t begin_of_second_block = accumulated_position_;
   EXPECT_CALL(*this, WriteCallback(_))

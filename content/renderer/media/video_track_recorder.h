@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/media_stream_video_sink.h"
@@ -23,7 +22,9 @@ namespace content {
 // VideoTrackRecorder is a MediaStreamVideoSink that encodes the video frames
 // received from a Stream Video Track. The class is constructed and used on a
 // single thread, namely the main Render thread. It has an internal VpxEncoder
-// that uses a worker thread for encoding.
+// with its own threading subtleties, see the implementation file. This mirrors
+// the other MediaStreamVideo* classes that are constructed/configured on Main
+// Render thread but that pass frames on Render IO thread.
 class CONTENT_EXPORT VideoTrackRecorder
     : NON_EXPORTED_BASE(public MediaStreamVideoSink) {
  public:
@@ -37,8 +38,8 @@ class CONTENT_EXPORT VideoTrackRecorder
                      const OnEncodedVideoCB& on_encoded_video_cb);
   ~VideoTrackRecorder() override;
 
-  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    base::TimeTicks capture_time);
+  void OnVideoFrameForTesting(const scoped_refptr<media::VideoFrame>& frame,
+                              base::TimeTicks capture_time);
 
  private:
   friend class VideoTrackRecorderTest;
@@ -51,9 +52,7 @@ class CONTENT_EXPORT VideoTrackRecorder
 
   // Forward declaration and member of an inner class to encode using VPx.
   class VpxEncoder;
-  const scoped_ptr<VpxEncoder> encoder_;
-
-  base::WeakPtrFactory<VideoTrackRecorder> weak_factory_;
+  const scoped_refptr<VpxEncoder> encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorder);
 };
