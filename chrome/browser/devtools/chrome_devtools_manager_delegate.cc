@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 
+#include "chrome/browser/devtools/devtools_network_protocol_handler.h"
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"

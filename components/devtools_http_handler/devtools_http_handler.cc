@@ -23,6 +23,7 @@
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/escape.h"
@@ -697,6 +698,18 @@ void DevToolsHttpHandler::OnWebSocketRequest(
                        base::Unretained(socket_factory_)));
     connection_to_client_[connection_id] = new DevToolsAgentHostClientImpl(
         thread_->message_loop(), server_wrapper_, connection_id, browser_agent);
+    AcceptWebSocket(connection_id, request);
+    return;
+  }
+
+  // Handle external connections (such as frontend api) on the embedder level.
+  content::DevToolsExternalAgentProxyDelegate* external_delegate =
+      delegate_->HandleWebSocketConnection(request.path);
+  if (external_delegate) {
+    scoped_refptr<DevToolsAgentHost> agent_host =
+        DevToolsAgentHost::Create(external_delegate);
+    connection_to_client_[connection_id] = new DevToolsAgentHostClientImpl(
+        thread_->message_loop(), server_wrapper_, connection_id, agent_host);
     AcceptWebSocket(connection_id, request);
     return;
   }

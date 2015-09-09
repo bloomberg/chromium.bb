@@ -8,8 +8,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/devtools/devtools_network_protocol_handler.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+
+class DevToolsNetworkProtocolHandler;
 
 class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  public:

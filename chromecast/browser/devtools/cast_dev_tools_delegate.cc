@@ -37,5 +37,10 @@ std::string CastDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
   return std::string();
 }
 
+content::DevToolsExternalAgentProxyDelegate*
+CastDevToolsDelegate::HandleWebSocketConnection(const std::string& path) {
+  return nullptr;
+}
+
 }  // namespace shell
 }  // namespace chromecast

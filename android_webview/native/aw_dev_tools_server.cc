@@ -50,6 +50,8 @@ class AwDevToolsServerDelegate :
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
   std::string GetPageThumbnailData(const GURL&) override;
+  content::DevToolsExternalAgentProxyDelegate*
+      HandleWebSocketConnection(const std::string& path) override;
 
  private:
 
@@ -74,6 +76,11 @@ std::string AwDevToolsServerDelegate::GetFrontendResource(
 
 std::string AwDevToolsServerDelegate::GetPageThumbnailData(const GURL&) {
   return std::string();
+}
+
+content::DevToolsExternalAgentProxyDelegate*
+AwDevToolsServerDelegate::HandleWebSocketConnection(const std::string& path) {
+  return nullptr;
 }
 
 // Factory for UnixDomainServerSocket.

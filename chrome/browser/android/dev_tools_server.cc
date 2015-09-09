@@ -116,6 +116,11 @@ class DevToolsServerDelegate :
     return std::string();
   }
 
+  content::DevToolsExternalAgentProxyDelegate*
+      HandleWebSocketConnection(const std::string& path) override {
+    return nullptr;
+  }
+
  private:
   static void PopulatePageThumbnails() {
     Profile* profile =

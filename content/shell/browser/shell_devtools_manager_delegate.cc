@@ -153,6 +153,8 @@ class ShellDevToolsDelegate :
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
   std::string GetPageThumbnailData(const GURL& url) override;
+  DevToolsExternalAgentProxyDelegate*
+      HandleWebSocketConnection(const std::string& path) override;
 
  private:
   BrowserContext* browser_context_;
@@ -189,6 +191,11 @@ std::string ShellDevToolsDelegate::GetFrontendResource(
 
 std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
   return std::string();
+}
+
+DevToolsExternalAgentProxyDelegate*
+ShellDevToolsDelegate::HandleWebSocketConnection(const std::string& path) {
+  return nullptr;
 }
 
 }  // namespace

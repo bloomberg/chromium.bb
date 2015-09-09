@@ -75,6 +75,7 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
   void Reattach();
   void Detach();
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);
+  content::DevToolsExternalAgentProxyDelegate* CreateWebSocketAPIChannel();
 
  private:
 
@@ -130,6 +131,7 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
   void SendJsonRequest(const DispatchCallback& callback,
                        const std::string& browser_id,
                        const std::string& url) override;
+  void SendFrontendAPINotification(const std::string& message) override;
   void GetPreferences(const DispatchCallback& callback) override;
   void SetPreference(const std::string& name,
                      const std::string& value) override;
@@ -184,7 +186,7 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
   void AddDevToolsExtensionsToClient();
 
   class FrontendWebContentsObserver;
-  friend class FrontendWebContentsObserver;
+  class WebSocketAPIChannel;
   scoped_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
 
   Profile* profile_;
@@ -208,6 +210,7 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
   GURL url_;
   using PendingRequestsMap = std::map<const net::URLFetcher*, DispatchCallback>;
   PendingRequestsMap pending_requests_;
+  WebSocketAPIChannel* open_api_channel_;
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsUIBindings);

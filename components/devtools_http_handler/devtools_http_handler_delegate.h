@@ -9,6 +9,10 @@
 
 #include "url/gurl.h"
 
+namespace content {
+class DevToolsExternalAgentProxyDelegate;
+}
+
 namespace devtools_http_handler {
 
 class DevToolsHttpHandlerDelegate {
@@ -26,6 +30,11 @@ class DevToolsHttpHandlerDelegate {
   // Get a thumbnail for a given page. Returns non-empty string iff we have the
   // thumbnail.
   virtual std::string GetPageThumbnailData(const GURL& url) = 0;
+
+  // Allows embedder to handle custom websocket-based protocol connection
+  // pointing remote debugging port. Returns ownership.
+  virtual content::DevToolsExternalAgentProxyDelegate*
+      HandleWebSocketConnection(const std::string& path) = 0;
 };
 
 }  // namespace devtools_http_handler

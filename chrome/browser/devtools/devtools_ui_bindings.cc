@@ -32,6 +32,8 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/ui/zoom/page_zoom.h"
+#include "content/public/browser/devtools_external_agent_proxy.h"
+#include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -359,6 +361,77 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
   devtools_bindings_->DidNavigateMainFrame();
 }
 
+// WebSocketAPIChannel --------------------------------------------------------
+
+class DevToolsUIBindings::WebSocketAPIChannel :
+    public content::DevToolsExternalAgentProxyDelegate {
+ public :
+  explicit WebSocketAPIChannel(base::WeakPtr<DevToolsUIBindings> bindings);
+  ~WebSocketAPIChannel() override;
+  void DispatchOnClientHost(const std::string& message);
+  void ConnectionClosed();
+
+ private:
+  // content::DevToolsExternalAgentProxyDelegate implementation.
+  void Attach(content::DevToolsExternalAgentProxy* proxy) override;
+  void Detach() override;
+  void SendMessageToBackend(const std::string& message) override;
+
+  base::WeakPtr<DevToolsUIBindings> bindings_;
+  content::DevToolsExternalAgentProxy* attached_proxy_;
+  DISALLOW_COPY_AND_ASSIGN(WebSocketAPIChannel);
+};
+
+DevToolsUIBindings::WebSocketAPIChannel::WebSocketAPIChannel(
+    base::WeakPtr<DevToolsUIBindings> bindings)
+    : bindings_(bindings),
+      attached_proxy_(nullptr) {
+  bindings->open_api_channel_ = this;
+}
+
+DevToolsUIBindings::WebSocketAPIChannel::~WebSocketAPIChannel() {
+  if (bindings_)
+    bindings_->open_api_channel_ = nullptr;
+}
+
+void DevToolsUIBindings::WebSocketAPIChannel::DispatchOnClientHost(
+    const std::string& message) {
+  if (attached_proxy_)
+    attached_proxy_->DispatchOnClientHost(message);
+}
+
+void DevToolsUIBindings::WebSocketAPIChannel::ConnectionClosed() {
+  if (attached_proxy_)
+    attached_proxy_->ConnectionClosed();
+}
+
+void DevToolsUIBindings::WebSocketAPIChannel::Attach(
+    content::DevToolsExternalAgentProxy* proxy) {
+  attached_proxy_ = proxy;
+  if (bindings_) {
+    bindings_->CallClientFunction("DevToolsAPI.frontendAPIAttached",
+                                  nullptr, nullptr, nullptr);
+  }
+}
+
+void DevToolsUIBindings::WebSocketAPIChannel::Detach() {
+  attached_proxy_ = nullptr;
+  if (bindings_) {
+    bindings_->open_api_channel_ = nullptr;
+    bindings_->CallClientFunction("DevToolsAPI.frontendAPIDetached",
+                                  nullptr, nullptr, nullptr);
+  }
+}
+
+void DevToolsUIBindings::WebSocketAPIChannel::SendMessageToBackend(
+    const std::string& message) {
+  if (!bindings_)
+    return;
+  base::StringValue message_value(message);
+  bindings_->CallClientFunction("DevToolsAPI.dispatchFrontendAPIMessage",
+                                &message_value, nullptr, nullptr);
+}
+
 // DevToolsUIBindings ---------------------------------------------------------
 
 DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
@@ -381,6 +454,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       devices_updates_enabled_(false),
       frontend_loaded_(false),
+      open_api_channel_(nullptr),
       weak_factory_(this) {
   g_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
@@ -412,6 +486,9 @@ DevToolsUIBindings::~DevToolsUIBindings() {
   }
   indexing_jobs_.clear();
   SetDevicesUpdatesEnabled(false);
+
+  if (open_api_channel_)
+    open_api_channel_->ConnectionClosed();
 
   // Remove self from global list.
   DevToolsUIBindingsList* instances = g_instances.Pointer();
@@ -750,6 +827,13 @@ void DevToolsUIBindings::SendJsonRequest(const DispatchCallback& callback,
                  callback));
 }
 
+void DevToolsUIBindings::SendFrontendAPINotification(
+    const std::string& message) {
+  if (!open_api_channel_)
+    return;
+  open_api_channel_->DispatchOnClientHost(message);
+}
+
 void DevToolsUIBindings::JsonReceived(const DispatchCallback& callback,
                                       int result,
                                       const std::string& message) {
@@ -944,6 +1028,13 @@ void DevToolsUIBindings::Detach() {
 
 bool DevToolsUIBindings::IsAttachedTo(content::DevToolsAgentHost* agent_host) {
   return agent_host_.get() == agent_host;
+}
+
+content::DevToolsExternalAgentProxyDelegate*
+DevToolsUIBindings::CreateWebSocketAPIChannel() {
+  if (open_api_channel_)
+    open_api_channel_->ConnectionClosed();
+  return new WebSocketAPIChannel(weak_factory_.GetWeakPtr());
 }
 
 void DevToolsUIBindings::CallClientFunction(const std::string& function_name,

@@ -341,6 +341,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::RecordEnumeratedHistogram, delegate);
   d->RegisterHandlerWithCallback("sendJsonRequest",
                                  &Delegate::SendJsonRequest, delegate);
+  d->RegisterHandler("sendFrontendAPINotification",
+                     &Delegate::SendFrontendAPINotification, delegate);
   d->RegisterHandlerWithCallback("getPreferences",
                                  &Delegate::GetPreferences, delegate);
   d->RegisterHandler("setPreference",

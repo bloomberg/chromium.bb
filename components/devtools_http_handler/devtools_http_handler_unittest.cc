@@ -104,6 +104,11 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   std::string GetPageThumbnailData(const GURL& url) override {
     return std::string();
   }
+
+  content::DevToolsExternalAgentProxyDelegate*
+      HandleWebSocketConnection(const std::string& path) override {
+    return nullptr;
+  }
 };
 
 }
