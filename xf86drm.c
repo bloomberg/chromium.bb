@@ -2982,7 +2982,7 @@ static int drmParsePciDeviceInfo(const char *d_name,
 #endif
 }
 
-static void drmFreeDevice(drmDevicePtr *device)
+void drmFreeDevice(drmDevicePtr *device)
 {
     if (device == NULL)
         return;
@@ -3069,6 +3069,119 @@ static void drmFoldDuplicatedDevices(drmDevicePtr local_devices[], int count)
             }
         }
     }
+}
+
+/**
+ * Get information about the opened drm device
+ *
+ * \param fd file descriptor of the drm device
+ * \param device the address of a drmDevicePtr where the information
+ *               will be allocated in stored
+ *
+ * \return zero on success, negative error code otherwise.
+ */
+int drmGetDevice(int fd, drmDevicePtr *device)
+{
+    drmDevicePtr *local_devices;
+    drmDevicePtr d;
+    DIR *sysdir;
+    struct dirent *dent;
+    struct stat sbuf;
+    char node[PATH_MAX + 1];
+    int node_type, subsystem_type;
+    int maj, min;
+    int ret, i, node_count;
+    int max_count = 16;
+
+    if (fd == -1 || device == NULL)
+        return -EINVAL;
+
+    if (fstat(fd, &sbuf))
+        return -errno;
+
+    maj = major(sbuf.st_rdev);
+    min = minor(sbuf.st_rdev);
+
+    if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
+        return -EINVAL;
+
+    subsystem_type = drmParseSubsystemType(maj, min);
+
+    local_devices = calloc(max_count, sizeof(drmDevicePtr));
+    if (local_devices == NULL)
+        return -ENOMEM;
+
+    sysdir = opendir(DRM_DIR_NAME);
+    if (!sysdir) {
+        ret = -errno;
+        goto close_sysdir;
+    }
+
+    i = 0;
+    while ((dent = readdir(sysdir))) {
+        node_type = drmGetNodeType(dent->d_name);
+        if (node_type < 0)
+            continue;
+
+        snprintf(node, PATH_MAX, "%s/%s", DRM_DIR_NAME, dent->d_name);
+        if (stat(node, &sbuf))
+            continue;
+
+        maj = major(sbuf.st_rdev);
+        min = minor(sbuf.st_rdev);
+
+        if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
+            continue;
+
+        if (drmParseSubsystemType(maj, min) != subsystem_type)
+            continue;
+
+        switch (subsystem_type) {
+        case DRM_BUS_PCI:
+            ret = drmProcessPciDevice(&d, dent->d_name, node, node_type,
+                                      maj, min, true);
+            if (ret)
+                goto free_devices;
+
+            break;
+        default:
+            fprintf(stderr, "The subsystem type is not supported yet\n");
+            break;
+        }
+
+        if (i >= max_count) {
+            drmDevicePtr *temp;
+
+            max_count += 16;
+            temp = realloc(local_devices, max_count * sizeof(drmDevicePtr));
+            if (!temp)
+                goto free_devices;
+            local_devices = temp;
+        }
+
+        local_devices[i] = d;
+        i++;
+    }
+    node_count = i;
+
+    /* Fold nodes into a single device if they share the same bus info */
+    drmFoldDuplicatedDevices(local_devices, node_count);
+
+    *device = local_devices[0];
+    for (i = 1; i < node_count && local_devices[i]; i++)
+            drmFreeDevice(&local_devices[i]);
+
+    free(local_devices);
+    closedir(sysdir);
+    return 0;
+
+free_devices:
+    drmFreeDevices(local_devices, i);
+    free(local_devices);
+
+close_sysdir:
+    closedir(sysdir);
+    return ret;
 }
 
 /**
