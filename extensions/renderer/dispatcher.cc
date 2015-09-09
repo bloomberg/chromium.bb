@@ -199,7 +199,11 @@ class ServiceWorkerScriptContextSet {
 
   void Insert(const GURL& url, scoped_ptr<ScriptContext> context) {
     base::AutoLock lock(lock_);
-    CHECK(script_contexts_.find(url) == script_contexts_.end());
+    scoped_ptr<ScriptContext> existing = script_contexts_.take_and_erase(url);
+    // This should be CHECK(!existing), but can't until these ScriptContexts
+    // are keyed on v8::Contexts rather than URLs. See crbug.com/525965.
+    if (existing)
+      existing->Invalidate();
     script_contexts_.set(url, context.Pass());
   }
 
@@ -358,6 +362,15 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     const GURL& url) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
+  if (!url.SchemeIs(kExtensionScheme) &&
+      !url.SchemeIs(kExtensionResourceScheme)) {
+    // Early-out if this isn't a chrome-extension:// or resource scheme,
+    // because looking up the extension registry is unnecessary if it's not.
+    // Checking this will also skip over hosted apps, which is the desired
+    // behavior - hosted app service workers are not our concern.
+    return;
+  }
+
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(url);
 
@@ -417,8 +430,11 @@ void Dispatcher::WillReleaseScriptContext(
 // static
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     const GURL& url) {
-  if (RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(url))
+  if (url.SchemeIs(kExtensionScheme) ||
+      url.SchemeIs(kExtensionResourceScheme)) {
+    // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
     g_service_worker_script_context_set.Get().Remove(url);
+  }
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
