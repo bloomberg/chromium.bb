@@ -202,28 +202,35 @@ public class ChromeMediaRouter {
      */
     @CalledByNative
     public void createRoute(
-            final String sourceId,
-            final String sinkId,
-            final String presentationId,
+            String sourceId,
+            String sinkId,
+            String presentationId,
             int requestId) {
         if (mAndroidMediaRouter == null) {
             nativeOnRouteCreationError(mNativeMediaRouterAndroid, "Not supported", requestId);
             return;
         }
 
+        final String mediaRouteId = createMediaRouteId(presentationId, sinkId, sourceId);
         new CreateRouteRequest(sourceId, sinkId, presentationId, requestId, this).start(
                 mAndroidMediaRouter,
                 mApplicationContext,
-                // TODO(avayvod): handle application disconnect and report back to the native side.
-                // Part of https://crbug.com/517100.
                 new Cast.Listener() {
+                    @Override
+                    public void onApplicationStatusChanged() {
+                        SessionWrapper session = mSessions.get(mediaRouteId);
+                        if (session == null) return;
+
+                        session.updateSessionStatus();
+                    }
+
                     @Override
                     public void onApplicationDisconnected(int errorCode) {
                         if (errorCode != CastStatusCodes.SUCCESS) {
                             Log.e(TAG, String.format(
                                     "Application disconnected with: %d", errorCode));
                         }
-                        closeRoute(createMediaRouteId(presentationId, sinkId, sourceId));
+                        closeRoute(mediaRouteId);
                     }
                 });
     }

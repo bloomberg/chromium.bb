@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         ResultCallback<Cast.ApplicationConnectionResult> {
+    private static final String TAG = "cr.MediaRouter";
+
     private static final int STATE_IDLE = 0;
     private static final int STATE_CONNECTING_TO_API = 1;
     private static final int STATE_API_CONNECTION_SUSPENDED = 2;
@@ -159,7 +161,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         }
 
         mState = STATE_LAUNCH_SUCCEEDED;
-        reportSuccess(result.getSessionId(), result.getWasLaunched());
+        reportSuccess(result);
     }
 
     // TODO(avayvod): switch to using ConnectedTask class for GoogleApiClient operations.
@@ -201,7 +203,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         throw new RuntimeException(String.format("Invalid state: %d", mState));
     }
 
-    private void reportSuccess(String sessionId, boolean wasLaunched) {
+    private void reportSuccess(Cast.ApplicationConnectionResult result) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
         String mediaRouteId = ChromeMediaRouter.createMediaRouteId(
@@ -209,8 +211,13 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         mMediaRouter.onRouteCreated(
                 mediaRouteId,
                 mRequestId,
-                new SessionWrapper(mApiClient, sessionId, mediaRouteId, mMediaRouter),
-                wasLaunched);
+                new SessionWrapper(
+                        mApiClient,
+                        result,
+                        CastDevice.getFromBundle(mRoute.getExtras()),
+                        mediaRouteId,
+                        mMediaRouter),
+                result.getWasLaunched());
 
         terminate();
     }
