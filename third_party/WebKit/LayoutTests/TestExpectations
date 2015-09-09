@@ -1607,6 +1607,11 @@ crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-spreadMeth
 crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-viewBox-interpolation.html [ Failure Pass ]
 crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-y-interpolation.html [ Failure Pass ]
 
+crbug.com/529753 [ Win10 ] virtual/pointerevent/fast/events/mouseover-mouseout.html [ Failure Pass ]
+crbug.com/529753 [ Win10 ] virtual/trustedeventsdefaultaction/fast/events/mouseover-mouseout.html [ Failure Pass ]
+crbug.com/529753 [ Win10 ] virtual/trustedeventsdefaultaction/fast/events/pointer-events-2.html [ Failure Pass ]
+crbug.com/529753 [ Win10 ] virtual/pointerevent/fast/events/pointer-events-2.html [ Failure Pass ]
+
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 crbug.com/527278 [ Win10 ] compositing/layer-creation/compositing-reason-removed.html [ Pass Timeout ]
 crbug.com/527281 [ Win10 ] compositing/overflow/scrolling-without-painting.html [ Pass Timeout ]
