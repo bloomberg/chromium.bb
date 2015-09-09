@@ -75,6 +75,7 @@ public class UrlRequestContextConfig {
      * @return the config to facilitate chaining.
      * @deprecated Not supported by the new API.
      */
+    @Deprecated
     public UrlRequestContextConfig enableLegacyMode(boolean value) {
         return putBoolean(UrlRequestContextConfigList.ENABLE_LEGACY_MODE,
                           value);
