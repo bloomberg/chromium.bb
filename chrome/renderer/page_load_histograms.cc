@@ -881,9 +881,13 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   data_reduction_proxy::LoFiStatus lofi_status =
       data_reduction_proxy::LOFI_STATUS_TEMPORARILY_OFF;
   if (!document_state->proxy_server().IsEmpty()) {
-    Send(new DataReductionProxyViewHostMsg_DataReductionProxyStatus(
-        document_state->proxy_server(), &data_reduction_proxy_was_used,
-        &lofi_status));
+    bool handled =
+        Send(new DataReductionProxyViewHostMsg_DataReductionProxyStatus(
+            document_state->proxy_server(), &data_reduction_proxy_was_used,
+            &lofi_status));
+    // If the IPC call is not handled, then |data_reduction_proxy_was_used|
+    // should remain |false|.
+    DCHECK(handled || !data_reduction_proxy_was_used);
   }
 
   bool came_from_websearch =
