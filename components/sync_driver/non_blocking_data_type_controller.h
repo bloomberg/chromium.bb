@@ -11,8 +11,8 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 
-namespace syncer {
-class ModelTypeProcessor;
+namespace syncer_v2 {
+class ModelTypeProcessorImpl;
 }
 
 namespace sync_driver_v2 {

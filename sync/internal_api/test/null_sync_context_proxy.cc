@@ -16,7 +16,7 @@ void NullSyncContextProxy::ConnectTypeToSync(
     syncer::ModelType type,
     const DataTypeState& data_type_state,
     const UpdateResponseDataList& saved_pending_updates,
-    const base::WeakPtr<ModelTypeProcessorImpl>& type_sync_proxy) {
+    const base::WeakPtr<ModelTypeProcessor>& type_processor) {
   NOTREACHED() << "NullSyncContextProxy is not meant to be used";
 }
 

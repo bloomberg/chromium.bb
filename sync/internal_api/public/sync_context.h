@@ -13,7 +13,7 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer_v2 {
-class ModelTypeProcessorImpl;
+class ModelTypeProcessor;
 
 // An interface of the core parts of sync.
 //
@@ -36,7 +36,7 @@ class SYNC_EXPORT_PRIVATE SyncContext {
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& saved_pending_updates,
       const scoped_refptr<base::SequencedTaskRunner>& datatype_task_runner,
-      const base::WeakPtr<ModelTypeProcessorImpl>& type_sync_proxy) = 0;
+      const base::WeakPtr<ModelTypeProcessor>& type_processor) = 0;
 
   // Disconnects the syncer from the model and stops syncing the type.
   //

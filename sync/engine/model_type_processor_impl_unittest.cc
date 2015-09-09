@@ -126,7 +126,7 @@ class ModelTypeProcessorImplTest : public ::testing::Test {
 
   MockCommitQueue* mock_queue_;
   scoped_ptr<InjectableSyncContextProxy> injectable_sync_context_proxy_;
-  scoped_ptr<ModelTypeProcessorImpl> type_sync_proxy_;
+  scoped_ptr<ModelTypeProcessorImpl> type_processor_;
 
   DataTypeState data_type_state_;
 };
@@ -135,39 +135,38 @@ ModelTypeProcessorImplTest::ModelTypeProcessorImplTest()
     : mock_queue_(new MockCommitQueue()),
       injectable_sync_context_proxy_(
           new InjectableSyncContextProxy(mock_queue_)),
-      type_sync_proxy_(new ModelTypeProcessorImpl(kModelType)) {
-}
+      type_processor_(new ModelTypeProcessorImpl(kModelType)) {}
 
 ModelTypeProcessorImplTest::~ModelTypeProcessorImplTest() {
 }
 
 void ModelTypeProcessorImplTest::FirstTimeInitialize() {
-  type_sync_proxy_->Enable(injectable_sync_context_proxy_->Clone());
+  type_processor_->Enable(injectable_sync_context_proxy_->Clone());
 }
 
 void ModelTypeProcessorImplTest::InitializeToReadyState() {
   // TODO(rlarocque): This should be updated to inject on-disk state.
   // At the time this code was written, there was no support for on-disk
   // state so this was the only way to inject a data_type_state into
-  // the |type_sync_proxy_|.
+  // the |type_processor_|.
   FirstTimeInitialize();
   OnInitialSyncDone();
 }
 
 void ModelTypeProcessorImplTest::Disconnect() {
-  type_sync_proxy_->Disconnect();
+  type_processor_->Disconnect();
   injectable_sync_context_proxy_.reset();
   mock_queue_ = NULL;
 }
 
 void ModelTypeProcessorImplTest::Disable() {
-  type_sync_proxy_->Disable();
+  type_processor_->Disable();
   injectable_sync_context_proxy_.reset();
   mock_queue_ = NULL;
 }
 
 void ModelTypeProcessorImplTest::ReEnable() {
-  DCHECK(!type_sync_proxy_->IsConnected());
+  DCHECK(!type_processor_->IsConnected());
 
   // Prepare a new MockCommitQueue instance, just as we would
   // if this happened in the real world.
@@ -176,25 +175,25 @@ void ModelTypeProcessorImplTest::ReEnable() {
       new InjectableSyncContextProxy(mock_queue_));
 
   // Re-enable sync with the new CommitQueue.
-  type_sync_proxy_->Enable(injectable_sync_context_proxy_->Clone());
+  type_processor_->Enable(injectable_sync_context_proxy_->Clone());
 }
 
 void ModelTypeProcessorImplTest::WriteItem(const std::string& tag,
                                            const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
-  type_sync_proxy_->Put(tag, GenerateSpecifics(tag, value));
+  type_processor_->Put(tag, GenerateSpecifics(tag, value));
 }
 
 void ModelTypeProcessorImplTest::DeleteItem(const std::string& tag) {
-  type_sync_proxy_->Delete(tag);
+  type_processor_->Delete(tag);
 }
 
 void ModelTypeProcessorImplTest::OnInitialSyncDone() {
   data_type_state_.initial_sync_done = true;
   UpdateResponseDataList empty_update_list;
 
-  type_sync_proxy_->OnUpdateReceived(
-      data_type_state_, empty_update_list, empty_update_list);
+  type_processor_->OnUpdateReceived(data_type_state_, empty_update_list,
+                                    empty_update_list);
 }
 
 void ModelTypeProcessorImplTest::UpdateFromServer(int64 version_offset,
@@ -206,8 +205,8 @@ void ModelTypeProcessorImplTest::UpdateFromServer(int64 version_offset,
 
   UpdateResponseDataList list;
   list.push_back(data);
-  type_sync_proxy_->OnUpdateReceived(data_type_state_, list,
-                                     UpdateResponseDataList());
+  type_processor_->OnUpdateReceived(data_type_state_, list,
+                                    UpdateResponseDataList());
 }
 
 void ModelTypeProcessorImplTest::PendingUpdateFromServer(
@@ -222,8 +221,8 @@ void ModelTypeProcessorImplTest::PendingUpdateFromServer(
 
   UpdateResponseDataList list;
   list.push_back(data);
-  type_sync_proxy_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
-                                     list);
+  type_processor_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
+                                    list);
 }
 
 void ModelTypeProcessorImplTest::TombstoneFromServer(int64 version_offset,
@@ -236,14 +235,14 @@ void ModelTypeProcessorImplTest::TombstoneFromServer(int64 version_offset,
 
   UpdateResponseDataList list;
   list.push_back(data);
-  type_sync_proxy_->OnUpdateReceived(data_type_state_, list,
-                                     UpdateResponseDataList());
+  type_processor_->OnUpdateReceived(data_type_state_, list,
+                                    UpdateResponseDataList());
 }
 
 bool ModelTypeProcessorImplTest::HasPendingUpdate(
     const std::string& tag) const {
   const std::string client_tag_hash = GenerateTagHash(tag);
-  const UpdateResponseDataList list = type_sync_proxy_->GetPendingUpdates();
+  const UpdateResponseDataList list = type_processor_->GetPendingUpdates();
   for (UpdateResponseDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
     if (it->client_tag_hash == client_tag_hash)
@@ -256,7 +255,7 @@ UpdateResponseData ModelTypeProcessorImplTest::GetPendingUpdate(
     const std::string& tag) const {
   DCHECK(HasPendingUpdate(tag));
   const std::string client_tag_hash = GenerateTagHash(tag);
-  const UpdateResponseDataList list = type_sync_proxy_->GetPendingUpdates();
+  const UpdateResponseDataList list = type_processor_->GetPendingUpdates();
   for (UpdateResponseDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
     if (it->client_tag_hash == client_tag_hash)
@@ -267,21 +266,21 @@ UpdateResponseData ModelTypeProcessorImplTest::GetPendingUpdate(
 }
 
 size_t ModelTypeProcessorImplTest::GetNumPendingUpdates() const {
-  return type_sync_proxy_->GetPendingUpdates().size();
+  return type_processor_->GetPendingUpdates().size();
 }
 
 void ModelTypeProcessorImplTest::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   CommitResponseDataList list;
   list.push_back(mock_queue_->SuccessfulCommitResponse(request_data));
-  type_sync_proxy_->OnCommitCompleted(data_type_state_, list);
+  type_processor_->OnCommitCompleted(data_type_state_, list);
 }
 
 void ModelTypeProcessorImplTest::UpdateDesiredEncryptionKey(
     const std::string& key_name) {
   data_type_state_.encryption_key_name = key_name;
-  type_sync_proxy_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
-                                     UpdateResponseDataList());
+  type_processor_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
+                                    UpdateResponseDataList());
 }
 
 void ModelTypeProcessorImplTest::SetServerEncryptionKey(

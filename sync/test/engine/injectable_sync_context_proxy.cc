@@ -21,16 +21,16 @@ void InjectableSyncContextProxy::ConnectTypeToSync(
     syncer::ModelType type,
     const DataTypeState& data_type_state,
     const UpdateResponseDataList& response_list,
-    const base::WeakPtr<ModelTypeProcessorImpl>& type_sync_proxy) {
+    const base::WeakPtr<ModelTypeProcessor>& type_processor) {
   // This class is allowed to participate in only one connection.
   DCHECK(!is_worker_connected_);
   is_worker_connected_ = true;
 
-  // Hands off ownership of our member to the type_sync_proxy, while keeping
+  // Hands off ownership of our member to the type_processor, while keeping
   // an unsafe pointer to it.  This is why we can only connect once.
   scoped_ptr<CommitQueue> queue(queue_);
 
-  type_sync_proxy->OnConnect(queue.Pass());
+  type_processor->OnConnect(queue.Pass());
 }
 
 void InjectableSyncContextProxy::Disconnect(syncer::ModelType type) {

@@ -191,27 +191,27 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
     const syncer_v2::DataTypeState& data_type_state,
     const syncer_v2::UpdateResponseDataList& saved_pending_updates,
     const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
-    const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& processor_impl) {
+    const base::WeakPtr<syncer_v2::ModelTypeProcessor>& type_processor) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
   // Initialize Worker -> Processor communication channel.
-  scoped_ptr<syncer_v2::ModelTypeProcessor> processor(
-      new ModelTypeProcessorProxy(processor_impl, type_task_runner));
+  scoped_ptr<syncer_v2::ModelTypeProcessor> processor_proxy(
+      new ModelTypeProcessorProxy(type_processor, type_task_runner));
   scoped_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
 
   scoped_ptr<syncer_v2::ModelTypeWorker> worker(new syncer_v2::ModelTypeWorker(
       type, data_type_state, saved_pending_updates, cryptographer_copy.Pass(),
-      nudge_handler_, processor.Pass()));
+      nudge_handler_, processor_proxy.Pass()));
 
   // Initialize Processor -> Worker communication channel.
   scoped_ptr<syncer_v2::CommitQueue> commit_queue_proxy(new CommitQueueProxy(
       worker->AsWeakPtr(), scoped_refptr<base::SequencedTaskRunner>(
                                base::ThreadTaskRunnerHandle::Get())));
   type_task_runner->PostTask(
-      FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessorImpl::OnConnect,
-                            processor_impl, base::Passed(&commit_queue_proxy)));
+      FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessor::OnConnect,
+                            type_processor, base::Passed(&commit_queue_proxy)));
 
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());

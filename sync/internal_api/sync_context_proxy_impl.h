@@ -13,7 +13,7 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 
 namespace syncer_v2 {
-class ModelTypeProcessorImpl;
+class ModelTypeProcessor;
 class SyncContext;
 struct DataTypeState;
 
@@ -40,7 +40,7 @@ class SYNC_EXPORT_PRIVATE SyncContextProxyImpl : public SyncContextProxy {
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& pending_updates,
-      const base::WeakPtr<ModelTypeProcessorImpl>& sync_proxy_impl) override;
+      const base::WeakPtr<ModelTypeProcessor>& type_processor) override;
 
   // Disables syncing for the given type on the sync thread.
   void Disconnect(syncer::ModelType type) override;

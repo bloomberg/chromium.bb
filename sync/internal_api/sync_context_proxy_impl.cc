@@ -26,7 +26,7 @@ void SyncContextProxyImpl::ConnectTypeToSync(
     syncer::ModelType type,
     const DataTypeState& data_type_state,
     const UpdateResponseDataList& saved_pending_updates,
-    const base::WeakPtr<ModelTypeProcessorImpl>& type_sync_proxy) {
+    const base::WeakPtr<ModelTypeProcessor>& type_processor) {
   VLOG(1) << "ConnectTypeToSync: " << ModelTypeToString(type);
   sync_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&SyncContext::ConnectSyncTypeToWorker,
@@ -35,7 +35,7 @@ void SyncContextProxyImpl::ConnectTypeToSync(
                                          data_type_state,
                                          saved_pending_updates,
                                          base::ThreadTaskRunnerHandle::Get(),
-                                         type_sync_proxy));
+                                         type_processor));
 }
 
 void SyncContextProxyImpl::Disconnect(syncer::ModelType type) {
