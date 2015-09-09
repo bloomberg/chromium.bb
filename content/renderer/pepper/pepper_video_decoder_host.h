@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_VIDEO_DECODER_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_VIDEO_DECODER_HOST_H_
 
+#include <list>
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -40,14 +42,25 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   ~PepperVideoDecoderHost() override;
 
  private:
+  enum class PictureBufferState {
+    ASSIGNED,
+    IN_USE,
+    DISMISSED,
+  };
+
   struct PendingDecode {
-    PendingDecode(uint32_t shm_id,
+    PendingDecode(int32_t decode_id,
+                  uint32_t shm_id,
+                  uint32_t size,
                   const ppapi::host::ReplyMessageContext& reply_context);
     ~PendingDecode();
 
+    const int32_t decode_id;
     const uint32_t shm_id;
+    const uint32_t size;
     const ppapi::host::ReplyMessageContext reply_context;
   };
+  typedef std::list<PendingDecode> PendingDecodeList;
 
   friend class VideoDecoderShim;
 
@@ -95,10 +108,20 @@ class CONTENT_EXPORT PepperVideoDecoderHost
                        uint32 texture_target,
                        const std::vector<gpu::Mailbox>& mailboxes);
 
+  // Tries to initialize software decoder. Returns true on success.
+  bool TryFallbackToSoftwareDecoder();
+
+  PendingDecodeList::iterator GetPendingDecodeById(int32_t decode_id);
+
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;
 
+  media::VideoCodecProfile profile_;
+
   scoped_ptr<media::VideoDecodeAccelerator> decoder_;
+
+  bool software_fallback_allowed_ = false;
+  bool software_fallback_used_ = false;
 
   // A vector holding our shm buffers, in sync with a similar vector in the
   // resource. We use a buffer's index in these vectors as its id on both sides
@@ -110,18 +133,16 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   std::vector<uint8_t> shm_buffer_busy_;
 
   uint32_t min_picture_count_;
-  typedef std::set<uint32_t> TextureSet;
-  TextureSet pictures_in_use_;
-  TextureSet dismissed_pictures_in_use_;
+  typedef std::map<uint32_t, PictureBufferState> PictureBufferMap;
+  PictureBufferMap picture_buffer_map_;
 
-  // Maps decode uid to PendingDecode info.
-  typedef base::hash_map<int32_t, PendingDecode> PendingDecodeMap;
-  PendingDecodeMap pending_decodes_;
+  // Keeps list of pending decodes.
+  PendingDecodeList pending_decodes_;
 
   ppapi::host::ReplyMessageContext flush_reply_context_;
   ppapi::host::ReplyMessageContext reset_reply_context_;
 
-  bool initialized_;
+  bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PepperVideoDecoderHost);
 };
