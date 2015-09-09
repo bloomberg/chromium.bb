@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -65,6 +66,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/invalidation_helper.h"
 #include "components/sync_driver/sync_driver_switches.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
@@ -185,7 +187,8 @@ SyncTest::SyncTest(TestType test_type)
       server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
       use_verifier_(true),
-      notifications_enabled_(true) {
+      notifications_enabled_(true),
+      create_gaia_account_at_runtime_(false) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT:
@@ -208,23 +211,32 @@ SyncTest::SyncTest(TestType test_type)
 SyncTest::~SyncTest() {}
 
 void SyncTest::SetUp() {
+  // Sets |server_type_| if it wasn't specified by the test.
+  DecideServerType();
+
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kPasswordFileForTest)) {
     ReadPasswordFile();
-  } else if (cl->HasSwitch(switches::kSyncUserForTest) &&
-             cl->HasSwitch(switches::kSyncPasswordForTest)) {
-    username_ = cl->GetSwitchValueASCII(switches::kSyncUserForTest);
-    password_ = cl->GetSwitchValueASCII(switches::kSyncPasswordForTest);
   } else {
-    username_ = "user@gmail.com";
-    password_ = "password";
+    // Decide on username to use or create one.
+    if (cl->HasSwitch(switches::kSyncUserForTest)) {
+      username_ = cl->GetSwitchValueASCII(switches::kSyncUserForTest);
+    } else if (UsingExternalServers()) {
+      // We assume the need to automatically create a Gaia account which
+      // requires URL navigation and needs to be done outside SetUp() function.
+      create_gaia_account_at_runtime_ = true;
+      username_ = base::GenerateGUID();
+    } else {
+      username_ = "user@gmail.com";
+    }
+    // Decide on password to use.
+    password_ = cl->HasSwitch(switches::kSyncPasswordForTest)
+        ? cl->GetSwitchValueASCII(switches::kSyncPasswordForTest)
+        : "password";
   }
 
   if (username_.empty() || password_.empty())
     LOG(FATAL) << "Cannot run sync tests without GAIA credentials.";
-
-  // Sets |server_type_| if it wasn't specified by the test.
-  DecideServerType();
 
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
 #if defined(OS_MACOSX)
@@ -275,6 +287,24 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
 }
 
 void SyncTest::AddOptionalTypesToCommandLine(base::CommandLine* cl) {}
+
+bool SyncTest::CreateGaiaAccount(const std::string& username,
+                                 const std::string& password) {
+  std::string relative_url = base::StringPrintf("/CreateUsers?%s=%s",
+                                                username.c_str(),
+                                                password.c_str());
+  GURL create_user_url =
+      GaiaUrls::GetInstance()->gaia_url().Resolve(relative_url);
+  // NavigateToURL blocks until the navigation finishes.
+  ui_test_utils::NavigateToURL(browser(), create_user_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  CHECK(entry) << "Could not get a hold on NavigationEntry post URL navigate.";
+  DVLOG(1) << "Create Gaia account request return code = "
+      << entry->GetHttpStatusCode();
+  return entry->GetHttpStatusCode() == 200;
+}
 
 // Called when the ProfileManager has created a profile.
 // static
@@ -533,6 +563,12 @@ void SyncTest::InitializeInvalidations(int index) {
 }
 
 bool SyncTest::SetupSync() {
+  if (create_gaia_account_at_runtime_) {
+    CHECK(UsingExternalServers()) <<
+        "Cannot create Gaia accounts without external authentication servers";
+    if (!CreateGaiaAccount(username_, password_))
+      LOG(FATAL) << "Could not create Gaia account.";
+  }
   // Create sync profiles and clients if they haven't already been created.
   if (profiles_.empty()) {
     if (!SetupClients())

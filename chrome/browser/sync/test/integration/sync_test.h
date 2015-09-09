@@ -285,6 +285,13 @@ class SyncTest : public InProcessBrowserTest {
   // a profile then registers it as a testing profile.
   Profile* MakeProfile(const base::FilePath::StringType name);
 
+  // Helper method used to create a Gaia account at runtime.
+  // This function should only be called when running against external servers
+  // which support this functionality.
+  // Returns true if account creation was successful, false otherwise.
+  bool CreateGaiaAccount(const std::string& username,
+                         const std::string& password);
+
   // Helper method used to read GAIA credentials from a local password file
   // specified via the "--password-file-for-test" command line switch.
   // Note: The password file must be a plain text file with exactly two lines --
@@ -396,6 +403,11 @@ class SyncTest : public InProcessBrowserTest {
   // Indicates whether or not notifications were explicitly enabled/disabled.
   // Defaults to true.
   bool notifications_enabled_;
+
+  // Indicates the need to create Gaia user account at runtime. This can only be
+  // set if tests are run against external servers with support for user
+  // creation via http requests.
+  bool create_gaia_account_at_runtime_;
 
   // Sync integration tests need to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version
