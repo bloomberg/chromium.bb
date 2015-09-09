@@ -512,7 +512,7 @@ void OmniboxEditModel::StartAutocomplete(
   }
 
   GURL current_url;
-  if (client_->CurrentPageExists() && view_->IsIndicatingQueryRefinement())
+  if (client_->CurrentPageExists())
     current_url = client_->GetURL();
   input_ = AutocompleteInput(
       user_text_, cursor_position, std::string(), current_url, ClassifyPage(),
