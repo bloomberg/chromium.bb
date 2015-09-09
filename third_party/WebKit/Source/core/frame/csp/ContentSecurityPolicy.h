@@ -176,6 +176,7 @@ public:
     // because a child frame can't manipulate the URL of a cross-origin
     // parent.
     bool allowAncestors(LocalFrame*, const KURL&, ReportingStatus = SendReport) const;
+    bool isFrameAncestorsEnforced() const;
 
     // The nonce and hash allow functions are guaranteed to not have any side
     // effects, including reporting.

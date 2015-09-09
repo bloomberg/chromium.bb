@@ -92,4 +92,16 @@ TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom)
     EXPECT_FALSE(csp2->allowPluginType("application/x-type-2", "application/x-type-2", exampleUrl, ContentSecurityPolicy::SuppressReport));
 }
 
+TEST_F(ContentSecurityPolicyTest, IsFrameAncestorsEnforced)
+{
+    csp->didReceiveHeader("script-src 'none';", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_FALSE(csp->isFrameAncestorsEnforced());
+
+    csp->didReceiveHeader("frame-ancestors 'self'", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_FALSE(csp->isFrameAncestorsEnforced());
+
+    csp->didReceiveHeader("frame-ancestors 'self'", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_TRUE(csp->isFrameAncestorsEnforced());
+}
+
 } // namespace

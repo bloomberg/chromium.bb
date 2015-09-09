@@ -615,6 +615,15 @@ bool ContentSecurityPolicy::allowAncestors(LocalFrame* frame, const KURL& url, C
     return isAllowedByAllWithFrame<&CSPDirectiveList::allowAncestors>(m_policies, frame, url, reportingStatus);
 }
 
+bool ContentSecurityPolicy::isFrameAncestorsEnforced() const
+{
+    for (const auto& policy : m_policies) {
+        if (policy->isFrameAncestorsEnforced())
+            return true;
+    }
+    return false;
+}
+
 bool ContentSecurityPolicy::isActive() const
 {
     return !m_policies.isEmpty();

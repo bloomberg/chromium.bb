@@ -469,27 +469,31 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
     if (response.appCacheID())
         memoryCache()->remove(m_mainResource.get());
 
-    DEFINE_STATIC_LOCAL(AtomicString, xFrameOptionHeader, ("x-frame-options", AtomicString::ConstructFromLiteral));
-    HTTPHeaderMap::const_iterator it = response.httpHeaderFields().find(xFrameOptionHeader);
-    if (it != response.httpHeaderFields().end()) {
-        String content = it->value;
-        if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), mainResourceIdentifier())) {
-            String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
-            RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
-            consoleMessage->setRequestIdentifier(mainResourceIdentifier());
-            frame()->document()->addConsoleMessage(consoleMessage.release());
-
-            cancelLoadAfterXFrameOptionsOrCSPDenied(response);
-            return;
-        }
-    }
-
     m_contentSecurityPolicy = ContentSecurityPolicy::create();
     m_contentSecurityPolicy->setOverrideURLForSelf(response.url());
     m_contentSecurityPolicy->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
     if (!m_contentSecurityPolicy->allowAncestors(m_frame, response.url())) {
         cancelLoadAfterXFrameOptionsOrCSPDenied(response);
         return;
+    }
+
+    DEFINE_STATIC_LOCAL(AtomicString, xFrameOptionHeader, ("x-frame-options", AtomicString::ConstructFromLiteral));
+
+    // 'frame-ancestors' obviates 'x-frame-options': https://w3c.github.io/webappsec/specs/content-security-policy/#frame-ancestors-and-frame-options
+    if (!m_contentSecurityPolicy->isFrameAncestorsEnforced()) {
+        HTTPHeaderMap::const_iterator it = response.httpHeaderFields().find(xFrameOptionHeader);
+        if (it != response.httpHeaderFields().end()) {
+            String content = it->value;
+            if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), mainResourceIdentifier())) {
+                String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
+                RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
+                consoleMessage->setRequestIdentifier(mainResourceIdentifier());
+                frame()->document()->addConsoleMessage(consoleMessage.release());
+
+                cancelLoadAfterXFrameOptionsOrCSPDenied(response);
+                return;
+            }
+        }
     }
 
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
