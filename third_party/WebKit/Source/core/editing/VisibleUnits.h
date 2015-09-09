@@ -167,7 +167,8 @@ bool isEndOfDocument(const VisiblePosition&);
 // editable content
 VisiblePosition startOfEditableContent(const VisiblePosition&);
 VisiblePosition endOfEditableContent(const VisiblePosition&);
-bool isEndOfEditableOrNonEditableContent(const VisiblePosition&);
+CORE_EXPORT bool isEndOfEditableOrNonEditableContent(const VisiblePosition&);
+CORE_EXPORT bool isEndOfEditableOrNonEditableContent(const VisiblePositionInComposedTree&);
 
 CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffinity);
 CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffinity, TextDirection primaryDirection);

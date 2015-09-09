@@ -1613,9 +1613,20 @@ VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
     return createVisiblePosition(lastPositionInNode(highestRoot));
 }
 
-bool isEndOfEditableOrNonEditableContent(const VisiblePosition& p)
+template <typename Strategy>
+static bool isEndOfEditableOrNonEditableContentAlgorithm(const VisiblePositionTemplate<Strategy>& p)
 {
     return p.isNotNull() && nextPositionOf(p).isNull();
+}
+
+bool isEndOfEditableOrNonEditableContent(const VisiblePosition& position)
+{
+    return isEndOfEditableOrNonEditableContentAlgorithm<EditingStrategy>(position);
+}
+
+bool isEndOfEditableOrNonEditableContent(const VisiblePositionInComposedTree& position)
+{
+    return isEndOfEditableOrNonEditableContentAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
 VisiblePosition leftBoundaryOfLine(const VisiblePosition& c, TextDirection direction)

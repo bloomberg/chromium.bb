@@ -93,6 +93,24 @@ TEST_F(VisibleUnitsTest, endOfParagraph)
     EXPECT_EQ(PositionInComposedTree(two->firstChild(), 2), endOfParagraph(createVisiblePositionInComposedTree(*two->firstChild(), 2)).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContent)
+{
+    const char* bodyContent = "<a id=host><b id=one contenteditable>1</b><b id=two>22</b></a>";
+    const char* shadowContent = "<content select=#two></content></p><p><content select=#one></content>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Element* one = document().getElementById("one");
+    Element* two = document().getElementById("two");
+
+    EXPECT_FALSE(isEndOfEditableOrNonEditableContent(createVisiblePositionInDOMTree(*one->firstChild(), 1)));
+    EXPECT_TRUE(isEndOfEditableOrNonEditableContent(createVisiblePositionInComposedTree(*one->firstChild(), 1)));
+
+    EXPECT_TRUE(isEndOfEditableOrNonEditableContent(createVisiblePositionInDOMTree(*two->firstChild(), 2)));
+    EXPECT_FALSE(isEndOfEditableOrNonEditableContent(createVisiblePositionInComposedTree(*two->firstChild(), 2)));
+}
+
 TEST_F(VisibleUnitsTest, inSameLine)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
