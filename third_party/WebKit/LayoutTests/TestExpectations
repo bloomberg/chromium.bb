@@ -1008,6 +1008,8 @@ crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-put.html [ Pass Fa
 crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-add.html [ Pass Failure Timeout ]
 crbug.com/510002 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout ]
 
+Bug(mkwst) [ Win10 ] svg/text/non-bmp-positioning-lists.svg [ NeedsRebaseline ]
+
 # Yosemite-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
