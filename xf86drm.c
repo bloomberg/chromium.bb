@@ -36,6 +36,7 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <strings.h>
@@ -3001,6 +3002,75 @@ void drmFreeDevices(drmDevicePtr devices[], int count)
         drmFreeDevice(&devices[i]);
 }
 
+static int drmProcessPciDevice(drmDevicePtr *device, const char *d_name,
+                               const char *node, int node_type,
+                               int maj, int min, bool fetch_deviceinfo)
+{
+    const int max_node_str = drmGetMaxNodeName();
+    int ret, i;
+    void *addr;
+
+    addr = *device = calloc(1, sizeof(drmDevice) +
+                               (DRM_NODE_MAX *
+                                (sizeof(void *) + max_node_str)) +
+                               sizeof(drmPciBusInfo) +
+                               sizeof(drmPciDeviceInfo));
+    if (!*device)
+        return -ENOMEM;
+
+    (*device)->bustype = DRM_BUS_PCI;
+    (*device)->available_nodes = 1 << node_type;
+
+    addr += sizeof(drmDevice);
+    (*device)->nodes = addr;
+
+    addr += DRM_NODE_MAX * sizeof(void *);
+    for (i = 0; i < DRM_NODE_MAX; i++) {
+        (*device)->nodes[i] = addr;
+        addr += max_node_str;
+    }
+    memcpy((*device)->nodes[node_type], node, max_node_str);
+
+    (*device)->businfo.pci = addr;
+
+    ret = drmParsePciBusInfo(maj, min, (*device)->businfo.pci);
+    if (ret)
+        goto free_device;
+
+    // Fetch the device info if the user has requested it
+    if (fetch_deviceinfo) {
+        addr += sizeof(drmPciBusInfo);
+        (*device)->deviceinfo.pci = addr;
+
+        ret = drmParsePciDeviceInfo(d_name, (*device)->deviceinfo.pci);
+        if (ret)
+            goto free_device;
+    }
+    return 0;
+
+free_device:
+    free(*device);
+    *device = NULL;
+    return ret;
+}
+
+static void drmFoldDuplicatedDevices(drmDevicePtr local_devices[], int count)
+{
+    int node_type, i, j;
+
+    for (i = 0; i < count; i++) {
+        for (j = i + 1; j < count; j++) {
+            if (drmCompareBusInfo(local_devices[i], local_devices[j]) == 0) {
+                local_devices[i]->available_nodes |= local_devices[j]->available_nodes;
+                node_type = log2(local_devices[j]->available_nodes);
+                memcpy(local_devices[i]->nodes[node_type],
+                       local_devices[j]->nodes[node_type], drmGetMaxNodeName());
+                drmFreeDevice(&local_devices[j]);
+            }
+        }
+    }
+}
+
 /**
  * Get drm devices on the system
  *
@@ -3021,12 +3091,10 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     struct dirent *dent;
     struct stat sbuf;
     char node[PATH_MAX + 1];
-    const int max_node_str = drmGetMaxNodeName();
     int node_type, subsystem_type;
     int maj, min;
-    int ret, i, j, node_count, device_count;
+    int ret, i, node_count, device_count;
     int max_count = 16;
-    void *addr;
 
     local_devices = calloc(max_count, sizeof(drmDevicePtr));
     if (local_devices == NULL)
@@ -3061,43 +3129,10 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
 
         switch (subsystem_type) {
         case DRM_BUS_PCI:
-            addr = device = calloc(1, sizeof(drmDevice) +
-                                      (DRM_NODE_MAX *
-                                       (sizeof(void *) + max_node_str)) +
-                                      sizeof(drmPciBusInfo) +
-                                      sizeof(drmPciDeviceInfo));
-            if (!device)
-                goto free_devices;
-
-            device->bustype = subsystem_type;
-            device->available_nodes = 1 << node_type;
-
-            addr += sizeof(drmDevice);
-            device->nodes = addr;
-
-            addr += DRM_NODE_MAX * sizeof(void *);
-            for (j = 0; j < DRM_NODE_MAX; j++) {
-                device->nodes[j] = addr;
-                addr += max_node_str;
-            }
-            memcpy(device->nodes[node_type], node, max_node_str);
-
-            device->businfo.pci = addr;
-
-            ret = drmParsePciBusInfo(maj, min, device->businfo.pci);
+            ret = drmProcessPciDevice(&device, dent->d_name, node, node_type,
+                                      maj, min, devices != NULL);
             if (ret)
                 goto free_devices;
-
-            // Fetch the device info if the user has requested it
-            if (devices != NULL) {
-                addr += sizeof(drmPciBusInfo);
-                device->deviceinfo.pci = addr;
-
-                ret = drmParsePciDeviceInfo(dent->d_name,
-                                            device->deviceinfo.pci);
-                if (ret)
-                    goto free_devices;
-            }
 
             break;
         default:
@@ -3121,17 +3156,7 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     node_count = i;
 
     /* Fold nodes into a single device if they share the same bus info */
-    for (i = 0; i < node_count; i++) {
-        for (j = i + 1; j < node_count; j++) {
-            if (drmCompareBusInfo(local_devices[i], local_devices[j]) == 0) {
-                local_devices[i]->available_nodes |= local_devices[j]->available_nodes;
-                node_type = log2(local_devices[j]->available_nodes);
-                memcpy(local_devices[i]->nodes[node_type],
-                       local_devices[j]->nodes[node_type], max_node_str);
-                drmFreeDevice(&local_devices[j]);
-            }
-        }
-    }
+    drmFoldDuplicatedDevices(local_devices, node_count);
 
     device_count = 0;
     for (i = 0; i < node_count && local_devices[i]; i++) {
