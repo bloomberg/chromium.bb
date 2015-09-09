@@ -1771,14 +1771,12 @@ void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
   touch_point.position = WebFloatPoint(x, y);
   touch_point.screenPosition = touch_point.position;
 
-  // TODO(e_hakkinen): Make this algorithm more robust so that it handles
-  // touch points which are not sorted by their ids, too.
-  int lowest_id = 0;
+  int highest_id = -1;
   for (size_t i = 0; i < touch_points_.size(); i++) {
-    if (touch_points_[i].id == lowest_id)
-      lowest_id++;
+    if (touch_points_[i].id > highest_id)
+      highest_id = touch_points_[i].id;
   }
-  touch_point.id = lowest_id;
+  touch_point.id = highest_id + 1;
 
   InitPointerProperties(args, &touch_point, &touch_point.radiusX,
                         &touch_point.radiusY);
@@ -2049,7 +2047,8 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
 
   for (size_t i = 0; i < touch_points_.size(); ++i) {
     WebTouchPoint* touch_point = &touch_points_[i];
-    if (touch_point->state == WebTouchPoint::StateReleased) {
+    if (touch_point->state == WebTouchPoint::StateReleased
+        || touch_point->state == WebTouchPoint::StateCancelled) {
       touch_points_.erase(touch_points_.begin() + i);
       --i;
     } else
