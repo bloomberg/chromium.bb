@@ -12,8 +12,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/base/sidecar_list_container.h"
+#include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item.h"
-#include "cc/playback/pixel_ref_map.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
@@ -80,7 +80,7 @@ class CC_EXPORT DisplayItemList
 
   void EmitTraceSnapshot() const;
 
-  void GatherPixelRefs(const gfx::Size& grid_cell_size);
+  void GatherDiscardableImages(const gfx::Size& grid_cell_size);
 
   // Finds the sidecar for a display item in this list.
   void* GetSidecar(DisplayItem* display_item);
@@ -122,10 +122,10 @@ class CC_EXPORT DisplayItemList
   // Memory usage due to external data held by display items.
   size_t external_memory_usage_;
 
-  scoped_ptr<PixelRefMap> pixel_refs_;
+  scoped_ptr<DiscardableImageMap> images_;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
-  friend class PixelRefMap::Iterator;
+  friend class DiscardableImageMap::Iterator;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, ApproximateMemoryUsage);
   DISALLOW_COPY_AND_ASSIGN(DisplayItemList);
 };

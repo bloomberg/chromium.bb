@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/playback/pixel_ref_map.h"
+#include "cc/playback/discardable_image_map.h"
 
 #include <algorithm>
 #include <limits>
@@ -10,20 +10,20 @@
 #include "cc/base/math_util.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/picture.h"
-#include "skia/ext/pixel_ref_utils.h"
+#include "skia/ext/discardable_image_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
 
-PixelRefMap::PixelRefMap(const gfx::Size& cell_size) : cell_size_(cell_size) {
+DiscardableImageMap::DiscardableImageMap(const gfx::Size& cell_size)
+    : cell_size_(cell_size) {
   DCHECK(!cell_size.IsEmpty());
 }
 
-PixelRefMap::~PixelRefMap() {
-}
+DiscardableImageMap::~DiscardableImageMap() {}
 
-void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture,
-                                             const gfx::Rect& layer_rect) {
+void DiscardableImageMap::GatherImagesFromPicture(SkPicture* picture,
+                                                  const gfx::Rect& layer_rect) {
   DCHECK(picture);
 
   int min_x = std::numeric_limits<int>::max();
@@ -31,17 +31,17 @@ void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture,
   int max_x = 0;
   int max_y = 0;
 
-  skia::DiscardablePixelRefList pixel_refs;
-  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture, &pixel_refs);
-  for (skia::DiscardablePixelRefList::const_iterator it = pixel_refs.begin();
-       it != pixel_refs.end(); ++it) {
+  skia::DiscardableImageList images;
+  skia::DiscardableImageUtils::GatherDiscardableImages(picture, &images);
+  for (skia::DiscardableImageList::const_iterator it = images.begin();
+       it != images.end(); ++it) {
     // The image rect is in space relative to the picture, but it can extend far
     // beyond the picture itself (since it represents the rect of actual image
     // contained within the picture, not clipped to picture bounds). We only
     // care about image queries that intersect the picture, so insert only into
     // the intersection of the two rects.
     gfx::Rect rect_clipped_to_picture = gfx::IntersectRects(
-        gfx::ToEnclosingRect(gfx::SkRectToRectF(it->pixel_ref_rect)),
+        gfx::ToEnclosingRect(gfx::SkRectToRectF(it->image_rect)),
         gfx::Rect(layer_rect.size()));
 
     gfx::Point min(MathUtil::UncheckedRoundDown(rect_clipped_to_picture.x(),
@@ -59,17 +59,13 @@ void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture,
     // information. However, since picture pile / display list also returns this
     // information, it would be nice to express it relative to the layer, not
     // relative to the particular implementation of the raster source.
-    skia::PositionPixelRef position_pixel_ref = *it;
-    position_pixel_ref.pixel_ref_rect.setXYWH(
-        position_pixel_ref.pixel_ref_rect.x() + layer_rect.x(),
-        position_pixel_ref.pixel_ref_rect.y() + layer_rect.y(),
-        position_pixel_ref.pixel_ref_rect.width(),
-        position_pixel_ref.pixel_ref_rect.height());
+    skia::PositionImage position_image = *it;
+    position_image.image_rect.offset(layer_rect.x(), layer_rect.y());
 
     for (int y = min.y(); y <= max.y(); y += cell_size_.height()) {
       for (int x = min.x(); x <= max.x(); x += cell_size_.width()) {
-        PixelRefMapKey key(x, y);
-        data_hash_map_[key].push_back(position_pixel_ref);
+        ImageMapKey key(x, y);
+        data_hash_map_[key].push_back(position_image);
       }
     }
 
@@ -83,47 +79,46 @@ void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture,
   max_pixel_cell_ = gfx::Point(max_x, max_y);
 }
 
-base::LazyInstance<PixelRefs> PixelRefMap::Iterator::empty_pixel_refs_;
+base::LazyInstance<Images> DiscardableImageMap::Iterator::empty_images_;
 
-PixelRefMap::Iterator::Iterator()
-    : target_pixel_ref_map_(NULL),
-      current_pixel_refs_(empty_pixel_refs_.Pointer()),
+DiscardableImageMap::Iterator::Iterator()
+    : target_image_map_(NULL),
+      current_images_(empty_images_.Pointer()),
       current_index_(0),
       min_point_(-1, -1),
       max_point_(-1, -1),
       current_x_(0),
-      current_y_(0) {
-}
+      current_y_(0) {}
 
-PixelRefMap::Iterator::Iterator(const gfx::Rect& rect, const Picture* picture)
-    : target_pixel_ref_map_(&(picture->pixel_refs_)),
-      current_pixel_refs_(empty_pixel_refs_.Pointer()),
+DiscardableImageMap::Iterator::Iterator(const gfx::Rect& rect,
+                                        const Picture* picture)
+    : target_image_map_(&(picture->images_)),
+      current_images_(empty_images_.Pointer()),
       current_index_(0) {
   map_layer_rect_ = picture->layer_rect_;
-  PointToFirstPixelRef(rect);
+  PointToFirstImage(rect);
 }
 
-PixelRefMap::Iterator::Iterator(const gfx::Rect& rect,
-                                const DisplayItemList* display_list)
-    : target_pixel_ref_map_(display_list->pixel_refs_.get()),
-      current_pixel_refs_(empty_pixel_refs_.Pointer()),
+DiscardableImageMap::Iterator::Iterator(const gfx::Rect& rect,
+                                        const DisplayItemList* display_list)
+    : target_image_map_(display_list->images_.get()),
+      current_images_(empty_images_.Pointer()),
       current_index_(0) {
   map_layer_rect_ = display_list->layer_rect_;
-  PointToFirstPixelRef(rect);
+  PointToFirstImage(rect);
 }
 
-PixelRefMap::Iterator::~Iterator() {
-}
+DiscardableImageMap::Iterator::~Iterator() {}
 
-PixelRefMap::Iterator& PixelRefMap::Iterator::operator++() {
+DiscardableImageMap::Iterator& DiscardableImageMap::Iterator::operator++() {
   ++current_index_;
   // If we're not at the end of the list, then we have the next item.
-  if (current_index_ < current_pixel_refs_->size())
+  if (current_index_ < current_images_->size())
     return *this;
 
   DCHECK(current_y_ <= max_point_.y());
   while (true) {
-    gfx::Size cell_size = target_pixel_ref_map_->cell_size_;
+    gfx::Size cell_size = target_image_map_->cell_size_;
 
     // Advance the current grid cell.
     current_x_ += cell_size.width();
@@ -131,31 +126,31 @@ PixelRefMap::Iterator& PixelRefMap::Iterator::operator++() {
       current_y_ += cell_size.height();
       current_x_ = min_point_.x();
       if (current_y_ > max_point_.y()) {
-        current_pixel_refs_ = empty_pixel_refs_.Pointer();
+        current_images_ = empty_images_.Pointer();
         current_index_ = 0;
         break;
       }
     }
 
     // If there are no pixel refs at this grid cell, keep incrementing.
-    PixelRefMapKey key(current_x_, current_y_);
-    PixelRefHashmap::const_iterator iter =
-        target_pixel_ref_map_->data_hash_map_.find(key);
-    if (iter == target_pixel_ref_map_->data_hash_map_.end())
+    ImageMapKey key(current_x_, current_y_);
+    ImageHashmap::const_iterator iter =
+        target_image_map_->data_hash_map_.find(key);
+    if (iter == target_image_map_->data_hash_map_.end())
       continue;
 
     // We found a non-empty list: store it and get the first pixel ref.
-    current_pixel_refs_ = &iter->second;
+    current_images_ = &iter->second;
     current_index_ = 0;
     break;
   }
   return *this;
 }
 
-void PixelRefMap::Iterator::PointToFirstPixelRef(const gfx::Rect& rect) {
+void DiscardableImageMap::Iterator::PointToFirstImage(const gfx::Rect& rect) {
   gfx::Rect query_rect(rect);
   // Early out if the query rect doesn't intersect this picture.
-  if (!query_rect.Intersects(map_layer_rect_) || !target_pixel_ref_map_) {
+  if (!query_rect.Intersects(map_layer_rect_) || !target_image_map_) {
     min_point_ = gfx::Point(0, 0);
     max_point_ = gfx::Point(0, 0);
     current_x_ = 1;
@@ -166,8 +161,8 @@ void PixelRefMap::Iterator::PointToFirstPixelRef(const gfx::Rect& rect) {
   // First, subtract the layer origin as cells are stored in layer space.
   query_rect.Offset(-map_layer_rect_.OffsetFromOrigin());
 
-  DCHECK(!target_pixel_ref_map_->cell_size_.IsEmpty());
-  gfx::Size cell_size(target_pixel_ref_map_->cell_size_);
+  DCHECK(!target_image_map_->cell_size_.IsEmpty());
+  gfx::Size cell_size(target_image_map_->cell_size_);
   // We have to find a cell_size aligned point that corresponds to
   // query_rect. Point is a multiple of cell_size.
   min_point_ = gfx::Point(
@@ -180,11 +175,11 @@ void PixelRefMap::Iterator::PointToFirstPixelRef(const gfx::Rect& rect) {
 
   // Limit the points to known pixel ref boundaries.
   min_point_ = gfx::Point(
-      std::max(min_point_.x(), target_pixel_ref_map_->min_pixel_cell_.x()),
-      std::max(min_point_.y(), target_pixel_ref_map_->min_pixel_cell_.y()));
+      std::max(min_point_.x(), target_image_map_->min_pixel_cell_.x()),
+      std::max(min_point_.y(), target_image_map_->min_pixel_cell_.y()));
   max_point_ = gfx::Point(
-      std::min(max_point_.x(), target_pixel_ref_map_->max_pixel_cell_.x()),
-      std::min(max_point_.y(), target_pixel_ref_map_->max_pixel_cell_.y()));
+      std::min(max_point_.x(), target_image_map_->max_pixel_cell_.x()),
+      std::min(max_point_.y(), target_image_map_->max_pixel_cell_.y()));
 
   // Make the current x be cell_size.width() less than min point, so that
   // the first increment will point at min_point_.

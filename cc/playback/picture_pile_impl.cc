@@ -298,12 +298,12 @@ void PicturePileImpl::PerformSolidColorAnalysis(
   analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
 }
 
-void PicturePileImpl::GatherPixelRefs(
+void PicturePileImpl::GatherDiscardableImages(
     const gfx::Rect& layer_rect,
-    std::vector<skia::PositionPixelRef>* pixel_refs) const {
-  DCHECK_EQ(0u, pixel_refs->size());
-  for (PixelRefIterator iter(layer_rect, this); iter; ++iter) {
-    pixel_refs->push_back(*iter);
+    std::vector<skia::PositionImage>* images) const {
+  DCHECK_EQ(0u, images->size());
+  for (ImageIterator iter(layer_rect, this); iter; ++iter) {
+    images->push_back(*iter);
   }
 }
 
@@ -401,7 +401,7 @@ scoped_refptr<RasterSource> PicturePileImpl::CreateCloneWithoutLCDText() const {
       new PicturePileImpl(this, can_use_lcd_text));
 }
 
-PicturePileImpl::PixelRefIterator::PixelRefIterator(
+PicturePileImpl::ImageIterator::ImageIterator(
     const gfx::Rect& layer_rect,
     const PicturePileImpl* picture_pile)
     : picture_pile_(picture_pile),
@@ -413,24 +413,22 @@ PicturePileImpl::PixelRefIterator::PixelRefIterator(
   if (!tile_iterator_)
     return;
 
-  AdvanceToTilePictureWithPixelRefs();
+  AdvanceToTilePictureWithImages();
 }
 
-PicturePileImpl::PixelRefIterator::~PixelRefIterator() {
-}
+PicturePileImpl::ImageIterator::~ImageIterator() {}
 
-PicturePileImpl::PixelRefIterator&
-    PicturePileImpl::PixelRefIterator::operator++() {
-  ++pixel_ref_iterator_;
-  if (pixel_ref_iterator_)
+PicturePileImpl::ImageIterator& PicturePileImpl::ImageIterator::operator++() {
+  ++image_iterator_;
+  if (image_iterator_)
     return *this;
 
   ++tile_iterator_;
-  AdvanceToTilePictureWithPixelRefs();
+  AdvanceToTilePictureWithImages();
   return *this;
 }
 
-void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
+void PicturePileImpl::ImageIterator::AdvanceToTilePictureWithImages() {
   for (; tile_iterator_; ++tile_iterator_) {
     PictureMap::const_iterator it =
         picture_pile_->picture_map_.find(tile_iterator_.index());
@@ -443,8 +441,8 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
       continue;
 
     processed_pictures_.insert(picture);
-    pixel_ref_iterator_ = picture->GetPixelRefMapIterator(layer_rect_);
-    if (pixel_ref_iterator_)
+    image_iterator_ = picture->GetDiscardableImageMapIterator(layer_rect_);
+    if (image_iterator_)
       break;
   }
 }

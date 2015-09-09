@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SKIA_EXT_PIXEL_REF_UTILS_H_
-#define SKIA_EXT_PIXEL_REF_UTILS_H_
+#ifndef SKIA_EXT_DISCARDABLE_IMAGE_UTILS_H_
+#define SKIA_EXT_DISCARDABLE_IMAGE_UTILS_H_
 
 #include <vector>
 

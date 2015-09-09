@@ -16,7 +16,7 @@
 #include "cc/debug/traced_picture.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/content_layer_client.h"
-#include "skia/ext/pixel_ref_utils.h"
+#include "skia/ext/discardable_image_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -58,20 +58,20 @@ scoped_refptr<Picture> Picture::Create(
     const gfx::Rect& layer_rect,
     ContentLayerClient* client,
     const gfx::Size& tile_grid_size,
-    bool gather_pixel_refs,
+    bool gather_discardable_images,
     RecordingSource::RecordingMode recording_mode) {
   scoped_refptr<Picture> picture =
       make_scoped_refptr(new Picture(layer_rect, tile_grid_size));
 
   picture->Record(client, recording_mode);
-  if (gather_pixel_refs)
-    picture->GatherPixelRefs();
+  if (gather_discardable_images)
+    picture->GatherDiscardableImages();
 
   return picture;
 }
 
 Picture::Picture(const gfx::Rect& layer_rect, const gfx::Size& tile_grid_size)
-    : layer_rect_(layer_rect), pixel_refs_(tile_grid_size) {
+    : layer_rect_(layer_rect), images_(tile_grid_size) {
   // Instead of recording a trace event for object creation here, we wait for
   // the picture to be recorded in Picture::Record.
 }
@@ -128,14 +128,12 @@ scoped_refptr<Picture> Picture::CreateFromValue(const base::Value* raw_value) {
 Picture::Picture(SkPicture* picture, const gfx::Rect& layer_rect)
     : layer_rect_(layer_rect),
       picture_(skia::AdoptRef(picture)),
-      pixel_refs_(layer_rect.size()) {
-}
+      images_(layer_rect.size()) {}
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
                  const gfx::Rect& layer_rect,
-                 const PixelRefMap& pixel_refs)
-    : layer_rect_(layer_rect), picture_(picture), pixel_refs_(pixel_refs) {
-}
+                 const DiscardableImageMap& images)
+    : layer_rect_(layer_rect), picture_(picture), images_(images) {}
 
 Picture::~Picture() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
@@ -232,17 +230,16 @@ void Picture::Record(ContentLayerClient* painter,
   EmitTraceSnapshot();
 }
 
-void Picture::GatherPixelRefs() {
-  TRACE_EVENT2("cc", "Picture::GatherPixelRefs",
-               "width", layer_rect_.width(),
-               "height", layer_rect_.height());
+void Picture::GatherDiscardableImages() {
+  TRACE_EVENT2("cc", "Picture::GatherDiscardableImages", "width",
+               layer_rect_.width(), "height", layer_rect_.height());
 
   DCHECK(picture_);
-  DCHECK(pixel_refs_.empty());
+  DCHECK(images_.empty());
   if (!WillPlayBackBitmaps())
     return;
 
-  pixel_refs_.GatherPixelRefsFromPicture(picture_.get(), layer_rect_);
+  images_.GatherImagesFromPicture(picture_.get(), layer_rect_);
 }
 
 int Picture::Raster(SkCanvas* canvas,
@@ -276,9 +273,8 @@ int Picture::Raster(SkCanvas* canvas,
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
   canvas->restore();
-  TRACE_EVENT_END1(
-      "cc", "Picture::Raster",
-      "num_pixels_rasterized", bounds.width() * bounds.height());
+  TRACE_EVENT_END1("cc", "Picture::Raster", "num_pixels_rasterized",
+                   bounds.width() * bounds.height());
   return bounds.width() * bounds.height();
 }
 
@@ -288,8 +284,8 @@ void Picture::Replay(SkCanvas* canvas, SkPicture::AbortCallback* callback) {
   picture_->playback(canvas, callback);
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
-  TRACE_EVENT_END1("cc", "Picture::Replay",
-                   "num_pixels_replayed", bounds.width() * bounds.height());
+  TRACE_EVENT_END1("cc", "Picture::Replay", "num_pixels_replayed",
+                   bounds.width() * bounds.height());
 }
 
 scoped_ptr<base::Value> Picture::AsValue() const {
@@ -320,9 +316,9 @@ void Picture::EmitTraceSnapshotAlias(Picture* original) const {
       TracedPicture::AsTraceablePictureAlias(original));
 }
 
-PixelRefMap::Iterator Picture::GetPixelRefMapIterator(
+DiscardableImageMap::Iterator Picture::GetDiscardableImageMapIterator(
     const gfx::Rect& layer_rect) const {
-  return PixelRefMap::Iterator(layer_rect, this);
+  return DiscardableImageMap::Iterator(layer_rect, this);
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>

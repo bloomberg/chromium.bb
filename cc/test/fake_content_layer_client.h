@@ -35,6 +35,20 @@ class FakeContentLayerClient : public ContentLayerClient {
     SkPaint paint;
   };
 
+  struct ImageData {
+    ImageData(const SkImage* image,
+              const gfx::Point& point,
+              const SkPaint& paint);
+    ImageData(const SkImage* image,
+              const gfx::Transform& transform,
+              const SkPaint& paint);
+    ~ImageData();
+    skia::RefPtr<const SkImage> image;
+    gfx::Point point;
+    gfx::Transform transform;
+    SkPaint paint;
+  };
+
   FakeContentLayerClient();
   ~FakeContentLayerClient() override;
 
@@ -73,6 +87,20 @@ class FakeContentLayerClient : public ContentLayerClient {
     draw_bitmaps_.push_back(data);
   }
 
+  void add_draw_image(const SkImage* image,
+                      const gfx::Point& point,
+                      const SkPaint& paint) {
+    ImageData data(image, point, paint);
+    draw_images_.push_back(data);
+  }
+
+  void add_draw_image_with_transform(const SkImage* image,
+                                     const gfx::Transform& transform,
+                                     const SkPaint& paint) {
+    ImageData data(image, transform, paint);
+    draw_images_.push_back(data);
+  }
+
   SkCanvas* last_canvas() const { return last_canvas_; }
 
   PaintingControlSetting last_painting_control() const {
@@ -86,10 +114,12 @@ class FakeContentLayerClient : public ContentLayerClient {
  private:
   typedef std::vector<std::pair<gfx::RectF, SkPaint>> RectPaintVector;
   typedef std::vector<BitmapData> BitmapVector;
+  typedef std::vector<ImageData> ImageVector;
 
   bool fill_with_nonsolid_color_;
   RectPaintVector draw_rects_;
   BitmapVector draw_bitmaps_;
+  ImageVector draw_images_;
   SkCanvas* last_canvas_;
   PaintingControlSetting last_painting_control_;
   size_t reported_memory_usage_;

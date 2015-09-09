@@ -50,10 +50,11 @@ void DrawDisplayList(unsigned char* buffer,
   list->Raster(&canvas, NULL, gfx::Rect(), 1.0f);
 }
 
-void CreateDiscardableBitmap(const gfx::Size& size, SkBitmap* bitmap) {
+skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size) {
   const SkImageInfo info =
       SkImageInfo::MakeN32Premul(size.width(), size.height());
-  SkInstallDiscardablePixelRef(new TestImageGenerator(info), bitmap);
+  return skia::AdoptRef(
+      SkImage::NewFromGenerator(new TestImageGenerator(info)));
 }
 
 }  // namespace cc

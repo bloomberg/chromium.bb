@@ -161,14 +161,14 @@ void DisplayListRasterSource::PerformSolidColorAnalysis(
   analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
 }
 
-void DisplayListRasterSource::GatherPixelRefs(
+void DisplayListRasterSource::GatherDiscardableImages(
     const gfx::Rect& layer_rect,
-    std::vector<skia::PositionPixelRef>* pixel_refs) const {
-  DCHECK_EQ(0u, pixel_refs->size());
+    std::vector<skia::PositionImage>* images) const {
+  DCHECK_EQ(0u, images->size());
 
-  PixelRefMap::Iterator iterator(layer_rect, display_list_.get());
+  DiscardableImageMap::Iterator iterator(layer_rect, display_list_.get());
   while (iterator) {
-    pixel_refs->push_back(*iterator);
+    images->push_back(*iterator);
     ++iterator;
   }
 }

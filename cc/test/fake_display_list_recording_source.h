@@ -78,6 +78,17 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     client_.add_draw_rectf(rect, paint);
   }
 
+  void add_draw_image(const SkImage* image, const gfx::Point& point) {
+    client_.add_draw_image(image, point, default_paint_);
+  }
+
+  void add_draw_image_with_transform(const SkImage* image,
+                                     const gfx::Transform& transform) {
+    client_.add_draw_image_with_transform(image, transform, default_paint_);
+  }
+
+  // TODO(fmalita): we should be able to remove a bunch (all?) of
+  // add_draw_bitmap* variants at this point.
   void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {
     client_.add_draw_bitmap(bitmap, point, default_paint_);
   }

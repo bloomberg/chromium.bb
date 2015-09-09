@@ -308,7 +308,7 @@ void RenderWidgetCompositor::Initialize() {
       compositor_deps_->IsElasticOverscrollEnabled();
   settings.use_image_texture_targets =
       compositor_deps_->GetImageTextureTargets();
-  settings.gather_pixel_refs = compositor_deps_->IsGatherPixelRefsEnabled();
+  settings.gather_images = compositor_deps_->IsGatherPixelRefsEnabled();
 
   if (cmd->HasSwitch(cc::switches::kTopControlsShowThreshold)) {
       std::string top_threshold_str =

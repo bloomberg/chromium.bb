@@ -39,7 +39,6 @@
     'ext/google_logging.cc',
     'ext/image_operations.cc',
     'ext/opacity_filter_canvas.cc',
-    'ext/pixel_ref_utils.cc',
     'ext/platform_canvas.cc',
     'ext/platform_device.cc',
     'ext/platform_device_linux.cc',

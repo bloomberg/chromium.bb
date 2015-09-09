@@ -68,7 +68,7 @@ LayerTreeSettings::LayerTreeSettings()
       record_full_layer(false),
       use_display_lists(false),
       verify_property_trees(false),
-      gather_pixel_refs(false),
+      gather_images(false),
       use_compositor_animation_timelines(false),
       invert_viewport_scroll_order(false),
       wait_for_beginframe_interval(true),

@@ -12,15 +12,14 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/playback/discardable_image_map.h"
 #include "cc/playback/picture_pile.h"
-#include "cc/playback/pixel_ref_map.h"
 #include "cc/playback/raster_source.h"
 #include "skia/ext/analysis_canvas.h"
 #include "skia/ext/refptr.h"
 
 class SkCanvas;
 class SkPicture;
-class SkPixelRef;
 
 namespace gfx {
 class Rect;
@@ -49,9 +48,9 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
       const gfx::Rect& content_rect,
       float contents_scale,
       RasterSource::SolidColorAnalysis* analysis) const override;
-  void GatherPixelRefs(
+  void GatherDiscardableImages(
       const gfx::Rect& layer_rect,
-      std::vector<skia::PositionPixelRef>* pixel_refs) const override;
+      std::vector<skia::PositionImage>* images) const override;
   bool CoversRect(const gfx::Rect& layer_rect) const override;
   void SetShouldAttemptToUseDistanceFieldText() override;
   bool ShouldAttemptToUseDistanceFieldText() const override;
@@ -69,36 +68,34 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   skia::RefPtr<SkPicture> GetFlattenedPicture() override;
   size_t GetPictureMemoryUsage() const override;
 
-  // Iterator used to return SkPixelRefs from this picture pile.
+  // Iterator used to return SkImages from this picture pile.
   // Public for testing.
-  class CC_EXPORT PixelRefIterator {
+  class CC_EXPORT ImageIterator {
    public:
-    PixelRefIterator(const gfx::Rect& layer_rect,
-                     const PicturePileImpl* picture_pile);
-    ~PixelRefIterator();
+    ImageIterator(const gfx::Rect& layer_rect,
+                  const PicturePileImpl* picture_pile);
+    ~ImageIterator();
 
-    const skia::PositionPixelRef* operator->() const {
-      return &(*pixel_ref_iterator_);
+    const skia::PositionImage* operator->() const {
+      return &(*image_iterator_);
     }
-    const skia::PositionPixelRef& operator*() const {
-      return *pixel_ref_iterator_;
-    }
-    PixelRefIterator& operator++();
-    operator bool() const { return pixel_ref_iterator_; }
+    const skia::PositionImage& operator*() const { return *image_iterator_; }
+    ImageIterator& operator++();
+    operator bool() const { return image_iterator_; }
 
    private:
-    void AdvanceToTilePictureWithPixelRefs();
+    void AdvanceToTilePictureWithImages();
 
     const PicturePileImpl* picture_pile_;
     gfx::Rect layer_rect_;
     TilingData::Iterator tile_iterator_;
-    PixelRefMap::Iterator pixel_ref_iterator_;
+    DiscardableImageMap::Iterator image_iterator_;
     std::set<const void*> processed_pictures_;
   };
 
  protected:
   friend class PicturePile;
-  friend class PixelRefIterator;
+  friend class ImageIterator;
 
   using PictureMapKey = PicturePile::PictureMapKey;
   using PictureMap = PicturePile::PictureMap;

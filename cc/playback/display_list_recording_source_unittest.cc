@@ -19,7 +19,7 @@ class DisplayListRecordingSourceTest : public testing::Test {
   void SetUp() override {}
 };
 
-TEST_F(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
+TEST_F(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
   gfx::Size grid_cell_size(128, 128);
   gfx::Rect recorded_viewport(256, 256);
 
@@ -27,19 +27,19 @@ TEST_F(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
       FakeDisplayListRecordingSource::CreateFilledRecordingSource(
           recorded_viewport.size());
   recording_source->SetGridCellSize(grid_cell_size);
-  SkBitmap discardable_bitmap[2][2];
+  skia::RefPtr<SkImage> discardable_image[2][2];
   gfx::Transform identity_transform;
-  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[0][0]);
+  discardable_image[0][0] = CreateDiscardableImage(gfx::Size(32, 32));
   // Translate transform is equivalent to moving using point.
   gfx::Transform translate_transform;
   translate_transform.Translate(0, 130);
-  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[1][0]);
+  discardable_image[1][0] = CreateDiscardableImage(gfx::Size(32, 32));
   // This moves the bitmap to center of viewport and rotate, this would make
   // this bitmap in all four tile grids.
   gfx::Transform rotate_transform;
   rotate_transform.Translate(112, 112);
   rotate_transform.Rotate(45);
-  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[1][1]);
+  discardable_image[1][1] = CreateDiscardableImage(gfx::Size(32, 32));
 
   gfx::RectF rect(0, 0, 32, 32);
   gfx::RectF translate_rect = rect;
@@ -47,13 +47,13 @@ TEST_F(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
   gfx::RectF rotate_rect = rect;
   rotate_transform.TransformRect(&rotate_rect);
 
-  recording_source->add_draw_bitmap_with_transform(discardable_bitmap[0][0],
-                                                   identity_transform);
-  recording_source->add_draw_bitmap_with_transform(discardable_bitmap[1][0],
-                                                   translate_transform);
-  recording_source->add_draw_bitmap_with_transform(discardable_bitmap[1][1],
-                                                   rotate_transform);
-  recording_source->SetGatherPixelRefs(true);
+  recording_source->add_draw_image_with_transform(discardable_image[0][0].get(),
+                                                  identity_transform);
+  recording_source->add_draw_image_with_transform(discardable_image[1][0].get(),
+                                                  translate_transform);
+  recording_source->add_draw_image_with_transform(discardable_image[1][1].get(),
+                                                  rotate_transform);
+  recording_source->SetGatherDiscardableImages(true);
   recording_source->Rerecord();
 
   bool can_use_lcd_text = true;
@@ -63,66 +63,68 @@ TEST_F(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
 
   // Tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), &pixel_refs);
-    EXPECT_EQ(2u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[1].pixel_ref == discardable_bitmap[1][1].pixelRef());
+    std::vector<skia::PositionImage> images;
+    raster_source->GatherDiscardableImages(gfx::Rect(0, 0, 128, 128), &images);
+    EXPECT_EQ(2u, images.size());
+    EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
+    EXPECT_TRUE(images[1].image == discardable_image[1][1].get());
     EXPECT_EQ(rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[0].image_rect).ToString());
     EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[1].image_rect).ToString());
   }
 
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(140, 140, 128, 128), &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[1][1].pixelRef());
+    std::vector<skia::PositionImage> images;
+    raster_source->GatherDiscardableImages(gfx::Rect(140, 140, 128, 128),
+                                           &images);
+    EXPECT_EQ(1u, images.size());
+    EXPECT_TRUE(images[0].image == discardable_image[1][1].get());
     EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[0].image_rect).ToString());
   }
 
   // The rotated bitmap would still be in the top right tile.
   {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(140, 0, 128, 128), &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[1][1].pixelRef());
+    std::vector<skia::PositionImage> images;
+    raster_source->GatherDiscardableImages(gfx::Rect(140, 0, 128, 128),
+                                           &images);
+    EXPECT_EQ(1u, images.size());
+    EXPECT_TRUE(images[0].image == discardable_image[1][1].get());
     EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[0].image_rect).ToString());
   }
 
   // Layer sized iterators. These should find all 6 pixel refs, including 1
   // pixel ref bitmap[0][0], 1 pixel ref for bitmap[1][0], and 4 pixel refs for
   // bitmap[1][1].
   {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), &pixel_refs);
-    EXPECT_EQ(6u, pixel_refs.size());
+    std::vector<skia::PositionImage> images;
+    raster_source->GatherDiscardableImages(gfx::Rect(0, 0, 256, 256), &images);
+    EXPECT_EQ(6u, images.size());
     // Top left tile with bitmap[0][0] and bitmap[1][1].
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[1].pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
+    EXPECT_TRUE(images[1].image == discardable_image[1][1].get());
     // Top right tile with bitmap[1][1].
-    EXPECT_TRUE(pixel_refs[2].pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(images[2].image == discardable_image[1][1].get());
     // Bottom left tile with bitmap[1][0] and bitmap[1][1].
-    EXPECT_TRUE(pixel_refs[3].pixel_ref == discardable_bitmap[1][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[4].pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(images[3].image == discardable_image[1][0].get());
+    EXPECT_TRUE(images[4].image == discardable_image[1][1].get());
     // Bottom right tile with bitmap[1][1].
-    EXPECT_TRUE(pixel_refs[5].pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(images[5].image == discardable_image[1][1].get());
     EXPECT_EQ(rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[0].image_rect).ToString());
     EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[1].image_rect).ToString());
     EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[2].image_rect).ToString());
     EXPECT_EQ(translate_rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[3].image_rect).ToString());
     EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[4].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[4].image_rect).ToString());
     EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(pixel_refs[5].pixel_ref_rect).ToString());
+              gfx::SkRectToRectF(images[5].image_rect).ToString());
   }
 }
 

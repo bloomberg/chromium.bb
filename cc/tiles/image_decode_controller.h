@@ -9,9 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/raster/tile_task_runner.h"
-#include "skia/ext/pixel_ref_utils.h"
+#include "skia/ext/discardable_image_utils.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace cc {
 
@@ -20,13 +19,13 @@ class ImageDecodeController {
   ImageDecodeController();
   ~ImageDecodeController();
 
-  scoped_refptr<ImageDecodeTask> GetTaskForPixelRef(
-      const skia::PositionPixelRef& pixel_ref,
+  scoped_refptr<ImageDecodeTask> GetTaskForImage(
+      const skia::PositionImage& image,
       int layer_id,
       uint64_t prepare_tiles_id);
 
   // Note that this function has to remain thread safe.
-  void DecodePixelRef(SkPixelRef* pixel_ref);
+  void DecodeImage(const SkImage* image);
 
   // TODO(vmpstr): This should go away once the controller is decoding images
   // based on priority and memory.
@@ -34,19 +33,17 @@ class ImageDecodeController {
   void SubtractLayerUsedCount(int layer_id);
 
   void OnImageDecodeTaskCompleted(int layer_id,
-                                  SkPixelRef* pixel_ref,
+                                  const SkImage* image,
                                   bool was_canceled);
 
  private:
-  scoped_refptr<ImageDecodeTask> CreateTaskForPixelRef(
-      SkPixelRef* pixel_ref,
-      int layer_id,
-      uint64_t prepare_tiles_id);
+  scoped_refptr<ImageDecodeTask> CreateTaskForImage(const SkImage* image,
+                                                    int layer_id,
+                                                    uint64_t prepare_tiles_id);
 
-  using PixelRefTaskMap =
-      base::hash_map<uint32_t, scoped_refptr<ImageDecodeTask>>;
-  using LayerPixelRefTaskMap = base::hash_map<int, PixelRefTaskMap>;
-  LayerPixelRefTaskMap image_decode_tasks_;
+  using ImageTaskMap = base::hash_map<uint32_t, scoped_refptr<ImageDecodeTask>>;
+  using LayerImageTaskMap = base::hash_map<int, ImageTaskMap>;
+  LayerImageTaskMap image_decode_tasks_;
 
   using LayerCountMap = base::hash_map<int, int>;
   LayerCountMap used_layer_counts_;

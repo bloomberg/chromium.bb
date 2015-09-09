@@ -155,9 +155,9 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
             static_cast<gfx::BufferFormat>(format), usage);
   }
 
-  // Note: gathering of pixel refs is only needed when using multiple
+  // Note: gathering of images is only needed when using multiple
   // raster threads.
-  settings.gather_pixel_refs = false;
+  settings.gather_images = false;
 
   settings.use_compositor_animation_timelines =
       command_line->HasSwitch(switches::kUIEnableCompositorAnimationTimelines);

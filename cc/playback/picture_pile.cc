@@ -160,7 +160,7 @@ PicturePile::PicturePile(float min_contents_scale,
                          const gfx::Size& tile_grid_size)
     : min_contents_scale_(0),
       slow_down_raster_scale_factor_for_debug_(0),
-      gather_pixel_refs_(false),
+      gather_images_(false),
       has_any_recordings_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       requires_clear_(true),
@@ -515,7 +515,7 @@ void PicturePile::CreatePictures(ContentLayerClient* painter,
     // able to slow down recording.
     scoped_refptr<Picture> picture =
         Picture::Create(padded_record_rect, painter, tile_grid_size_,
-                        gather_pixel_refs_, recording_mode);
+                        gather_images_, recording_mode);
     // Note the '&&' with previous is-suitable state.
     // This means that once a picture-pile becomes unsuitable for gpu
     // rasterization due to some content, it will continue to be unsuitable even
@@ -589,8 +589,8 @@ void PicturePile::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
 }
 
-void PicturePile::SetGatherPixelRefs(bool gather_pixel_refs) {
-  gather_pixel_refs_ = gather_pixel_refs;
+void PicturePile::SetGatherDiscardableImages(bool gather_images) {
+  gather_images_ = gather_images;
 }
 
 void PicturePile::SetBackgroundColor(SkColor background_color) {

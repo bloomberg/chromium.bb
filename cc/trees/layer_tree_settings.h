@@ -82,7 +82,7 @@ class CC_EXPORT LayerTreeSettings {
   bool record_full_layer;
   bool use_display_lists;
   bool verify_property_trees;
-  bool gather_pixel_refs;
+  bool gather_images;
   bool use_compositor_animation_timelines;
   bool invert_viewport_scroll_order;
   bool wait_for_beginframe_interval;

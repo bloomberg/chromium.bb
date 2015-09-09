@@ -293,16 +293,16 @@ void DisplayItemList::EmitTraceSnapshot() const {
           DisplayItemsTracingEnabled()));
 }
 
-void DisplayItemList::GatherPixelRefs(const gfx::Size& grid_cell_size) {
+void DisplayItemList::GatherDiscardableImages(const gfx::Size& grid_cell_size) {
   DCHECK(ProcessAppendedItemsCalled());
   // This should be only called once, and only after CreateAndCacheSkPicture.
   DCHECK(picture_);
-  DCHECK(!pixel_refs_);
-  pixel_refs_ = make_scoped_ptr(new PixelRefMap(grid_cell_size));
+  DCHECK(!images_);
+  images_ = make_scoped_ptr(new DiscardableImageMap(grid_cell_size));
   if (!picture_->willPlayBackBitmaps())
     return;
 
-  pixel_refs_->GatherPixelRefsFromPicture(picture_.get(), layer_rect_);
+  images_->GatherImagesFromPicture(picture_.get(), layer_rect_);
 }
 
 void* DisplayItemList::GetSidecar(DisplayItem* display_item) {

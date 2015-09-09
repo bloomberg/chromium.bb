@@ -93,6 +93,10 @@ class FakePicturePile : public PicturePile {
     client_.add_draw_rectf(rect, paint);
   }
 
+  void add_draw_image(const SkImage* image, const gfx::Point& point) {
+    client_.add_draw_image(image, point, default_paint_);
+  }
+
   void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {
     add_draw_bitmap_with_paint(bitmap, point, default_paint_);
   }

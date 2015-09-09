@@ -14,13 +14,11 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
-#include "cc/playback/pixel_ref_map.h"
+#include "cc/playback/discardable_image_map.h"
 #include "cc/playback/recording_source.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
-
-class SkPixelRef;
 
 namespace base {
 class Value;
@@ -41,7 +39,7 @@ class CC_EXPORT Picture
       const gfx::Rect& layer_rect,
       ContentLayerClient* client,
       const gfx::Size& tile_grid_size,
-      bool gather_pixels_refs,
+      bool gather_discardable_images,
       RecordingSource::RecordingMode recording_mode);
   static scoped_refptr<Picture> CreateFromValue(const base::Value* value);
   static scoped_refptr<Picture> CreateFromSkpValue(const base::Value* value);
@@ -78,7 +76,7 @@ class CC_EXPORT Picture
 
   bool WillPlayBackBitmaps() const { return picture_->willPlayBackBitmaps(); }
 
-  PixelRefMap::Iterator GetPixelRefMapIterator(
+  DiscardableImageMap::Iterator GetDiscardableImageMapIterator(
       const gfx::Rect& layer_rect) const;
 
  private:
@@ -87,7 +85,7 @@ class CC_EXPORT Picture
   // ownership to this picture.
   Picture(const skia::RefPtr<SkPicture>&,
           const gfx::Rect& layer_rect,
-          const PixelRefMap& pixel_refs);
+          const DiscardableImageMap& images);
   // This constructor will call AdoptRef on the SkPicture.
   Picture(SkPicture*, const gfx::Rect& layer_rect);
   ~Picture();
@@ -97,13 +95,13 @@ class CC_EXPORT Picture
   void Record(ContentLayerClient* client,
               RecordingSource::RecordingMode recording_mode);
 
-  // Gather pixel refs from recording.
-  void GatherPixelRefs();
+  // Gather discardable images from recording.
+  void GatherDiscardableImages();
 
   gfx::Rect layer_rect_;
   skia::RefPtr<SkPicture> picture_;
 
-  PixelRefMap pixel_refs_;
+  DiscardableImageMap images_;
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
     AsTraceableRasterData(float scale) const;
@@ -111,7 +109,7 @@ class CC_EXPORT Picture
     AsTraceableRecordData() const;
 
   friend class base::RefCountedThreadSafe<Picture>;
-  friend class PixelRefMap::Iterator;
+  friend class DiscardableImageMap::Iterator;
   DISALLOW_COPY_AND_ASSIGN(Picture);
 };
 

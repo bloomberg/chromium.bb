@@ -10,10 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/traced_value.h"
-#include "skia/ext/pixel_ref_utils.h"
+#include "skia/ext/discardable_image_utils.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -70,11 +69,11 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Returns the size of this raster source.
   virtual gfx::Size GetSize() const = 0;
 
-  // Populate the given list with all SkPixelRefs that may overlap the given
+  // Populate the given list with all images that may overlap the given
   // rect in layer space.
-  virtual void GatherPixelRefs(
+  virtual void GatherDiscardableImages(
       const gfx::Rect& layer_rect,
-      std::vector<skia::PositionPixelRef>* pixel_refs) const = 0;
+      std::vector<skia::PositionImage>* images) const = 0;
 
   // Return true iff this raster source can raster the given rect in layer
   // space.

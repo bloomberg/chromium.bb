@@ -52,9 +52,10 @@ class ScopedLayerTask {
 
 class ScopedImageDecodeTask {
  public:
-  explicit ScopedImageDecodeTask(void* pixelRef) {
+  explicit ScopedImageDecodeTask(const void* imagePtr) {
     TRACE_EVENT_BEGIN1(internal::kCategory, internal::kImageDecodeTask,
-        internal::kPixelRefId, reinterpret_cast<uint64>(pixelRef));
+                       internal::kPixelRefId,
+                       reinterpret_cast<uint64>(imagePtr));
   }
   ~ScopedImageDecodeTask() {
     TRACE_EVENT_END0(internal::kCategory, internal::kImageDecodeTask);

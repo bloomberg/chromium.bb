@@ -29,7 +29,7 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
   void SetSlowdownRasterScaleFactor(int factor) override;
-  void SetGatherPixelRefs(bool gather_pixel_refs) override;
+  void SetGatherDiscardableImages(bool gather_images) override;
   void SetBackgroundColor(SkColor background_color) override;
   void SetRequiresClear(bool requires_clear) override;
   bool IsSuitableForGpuRasterization() const override;
@@ -50,7 +50,7 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   gfx::Rect recorded_viewport_;
   gfx::Size size_;
   int slow_down_raster_scale_factor_for_debug_;
-  bool gather_pixel_refs_;
+  bool gather_images_;
   bool requires_clear_;
   bool is_solid_color_;
   bool clear_canvas_with_debug_color_;
