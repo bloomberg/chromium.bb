@@ -1,12 +1,28 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Presubmit script validating field trial configs.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details on the presubmit API built into depot_tools.
 """
+
+import json
+import sys
+
+
+def PrettyPrint(contents):
+  """Pretty prints a fieldtrial configuration.
+
+  Args:
+    contents: File contents as a string.
+
+  Returns:
+    Pretty printed file contents.
+  """
+  return json.dumps(json.loads(contents),
+                    sort_keys=True, indent=4,
+                    separators=(',', ': ')) + '\n'
 
 def ValidateData(json_data, file_path, message_type):
   """Validates the format of a fieldtrial configuration.
@@ -59,6 +75,26 @@ def ValidateData(json_data, file_path, message_type):
                 study))]
   return []
 
+def CheckPretty(contents, file_path, message_type):
+  """Validates the pretty printing of fieldtrial configuration.
+
+  Args:
+    contents: File contents as a string.
+    file_path: String representing the path to the JSON file.
+    message_type: Type of message from |output_api| to return in the case of
+        errors/warnings.
+
+  Returns:
+    A list of |message_type| messages. In the case of all tests passing with no
+    warnings/errors, this will return [].
+  """
+  pretty = PrettyPrint(contents)
+  if contents != pretty:
+    return [message_type(
+        'Pretty printing error: Run '
+        'python testing/variations/PRESUBMIT.py %s' % file_path)]
+  return []
+
 def CommonChecks(input_api, output_api):
   affected_files = input_api.AffectedFiles(
       include_deletes=False,
@@ -67,6 +103,9 @@ def CommonChecks(input_api, output_api):
     contents = input_api.ReadFile(f)
     try:
       json_data = input_api.json.loads(contents)
+      result = CheckPretty(contents, f.LocalPath(), output_api.PresubmitError)
+      if len(result):
+        return result
       result =  ValidateData(json_data, f.LocalPath(),
           output_api.PresubmitError)
       if len(result):
@@ -81,3 +120,12 @@ def CheckChangeOnUpload(input_api, output_api):
 
 def CheckChangeOnCommit(input_api, output_api):
   return CommonChecks(input_api, output_api)
+
+
+def main(argv):
+  content = open(argv[1]).read()
+  pretty = PrettyPrint(content)
+  open(argv[1],'w').write(pretty)
+
+if __name__ == "__main__":
+  sys.exit(main(sys.argv))

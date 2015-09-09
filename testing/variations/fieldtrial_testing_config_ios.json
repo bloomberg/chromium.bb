@@ -1,4 +1,17 @@
 {
+    "AutofillFieldMetadata": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "QUIC": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "alternate_protocol_probability_threshold": "0.01"
+            }
+        }
+    ],
     "SdchPersistence": [
         {
             "group_name": "Enabled"
@@ -10,19 +23,6 @@
         },
         {
             "group_name": "Disabled"
-        }
-    ],
-    "AutofillFieldMetadata": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
-    "QUIC": [
-        {
-            "group_name": "Enabled",
-            "params": {
-              "alternate_protocol_probability_threshold": "0.01"
-            }
         }
     ],
     "TabSyncByRecency": [

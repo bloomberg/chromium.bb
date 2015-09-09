@@ -1,4 +1,9 @@
 {
+    "AutofillFieldMetadata": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "CaptivePortalInterstitial": [
         {
             "group_name": "Enabled"
@@ -6,7 +11,7 @@
     ],
     "DataReductionProxyUseDataSaverOnVPN": [
         {
-           "group_name": "Enabled"
+            "group_name": "Enabled"
         }
     ],
     "EnableSessionCrashedBubbleUI": [
@@ -19,17 +24,17 @@
             "group_name": "Enabled"
         }
     ],
-    "RefreshTokenDeviceId": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "QUIC": [
         {
             "group_name": "Enabled",
             "params": {
-              "alternate_protocol_probability_threshold": "0.01"
+                "alternate_protocol_probability_threshold": "0.01"
             }
+        }
+    ],
+    "RefreshTokenDeviceId": [
+        {
+            "group_name": "Enabled"
         }
     ],
     "ReportCertificateErrors": [
@@ -61,6 +66,17 @@
             "group_name": "DontShowAndDontSend"
         }
     ],
+    "SafeBrowsingReportPhishingErrorLink": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Control"
+        },
+        {
+            "group_name": "Disabled"
+        }
+    ],
     "SdchPersistence": [
         {
             "group_name": "Enabled"
@@ -72,11 +88,6 @@
         },
         {
             "group_name": "Disabled"
-        }
-    ],
-    "AutofillFieldMetadata": [
-        {
-            "group_name": "Enabled"
         }
     ],
     "TabSyncByRecency": [
@@ -95,17 +106,6 @@
             "params": {
                 "fetch_period_min": "30"
             }
-        }
-    ],
-    "SafeBrowsingReportPhishingErrorLink": [
-        {
-            "group_name": "Enabled"
-        },
-        {
-            "group_name": "Control"
-        },
-        {
-            "group_name": "Disabled"
         }
     ]
 }

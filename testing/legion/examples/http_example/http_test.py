@@ -33,6 +33,7 @@ class HttpTest(legion_test_case.TestCase):
   def CreateTask(cls, name, task_hash, os_type):
     """Create a new task."""
     #pylint: disable=unexpected-keyword-arg,no-value-for-parameter
+    #pylint: disable=arguments-differ
     task = super(HttpTest, cls).CreateTask(
         name=name,
         isolated_hash=task_hash,

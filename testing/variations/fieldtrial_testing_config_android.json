@@ -1,159 +1,14 @@
 {
-    "EnhancedBookmarks": [
-        {
-            "group_name": "EnableEnhancedBookmarks",
-            "params": {
-                "id": "Fake_id_to_trigger_experiment_code"
-            }
-        },
-        {
-            "group_name": "EnableEnhancedBookmarksGrid",
-            "params": {
-                "DefaultViewMode": "Grid",
-                "id": "Fake_id_to_trigger_experiment_code"
-            }
-        },
-        {
-            "group_name": "EnableEnhancedBookmarksList",
-            "params": {
-                "DefaultViewMode": "List",
-                "id": "Fake_id_to_trigger_experiment_code"
-            }
-        }
-    ],
-    "CustomTabs": [
+    "AutofillFieldMetadata": [
         {
             "group_name": "Enabled"
-        },
-        {
-            "group_name": "DisablePrerender"
-        },
-        {
-            "group_name": "Disabled"
-        }
-    ],
-    "DataCompressionProxyLoFi": [
-        {
-            "group_name": "Enabled",
-            "params": {
-                "rtt_msec": "2000",
-                "hysteresis_period_seconds": "120"
-            }
-        }
-    ],
-    "DataReductionProxyUseDataSaverOnVPN": [
-        {
-           "group_name": "Enabled"
-        }
-    ],
-    "DataReductionProxyUseQuic": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
-    "DataReductionProxyConfigService": [
-        {
-	    "group_name": "Enabled"
-	}
-    ],
-    "LimitSyncPassphrasePrompt": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
-    "NetworkQualityEstimator": [
-        {
-            "group_name": "Enabled",
-            "params": {
-                "Unknown.DefaultMedianRTTMsec": "121",
-                "Unknown.DefaultMedianKbps": "1916",
-                "Ethernet.DefaultMedianRTTMsec": "106",
-                "Ethernet.DefaultMedianKbps": "3263",
-                "WiFi.DefaultMedianRTTMsec": "168",
-                "WiFi.DefaultMedianKbps": "2736",
-                "2G.DefaultMedianRTTMsec": "1337",
-                "2G.DefaultMedianKbps": "81",
-                "3G.DefaultMedianRTTMsec": "297",
-                "3G.DefaultMedianKbps": "658",
-                "4G.DefaultMedianRTTMsec": "159",
-                "4G.DefaultMedianKbps": "1756",
-                "None.DefaultMedianRTTMsec": "272",
-                "None.DefaultMedianKbps": "567",
-                "Bluetooth.DefaultMedianRTTMsec": "135",
-                "Bluetooth.DefaultMedianKbps": "449",
-                "HalfLifeSeconds": "60"
-            }
-        }
-    ],
-    "QUIC": [
-        {
-            "group_name": "Enabled",
-            "params": {
-              "alternate_protocol_probability_threshold": "0.01"
-            }
-        }
-    ],
-    "ReaderModeUIFeedback": [
-        {
-            "group_name": "Show"
-        },
-        {
-            "group_name": "DoNotShow"
-        }
-    ],
-    "ContextualSearch": [
-        {
-            "group_name": "OptOut",
-            "params": {
-                "enabled": "true",
-                "disable_for_cjk": "true",
-                "promo_opt_out": "true",
-                "promo_on_limited_taps": "true",
-                "tap_triggered_promo_limit": "50",
-                "tap_preload_limit_for_undecided": "20",
-                "tap_resolve_limit_for_undecided": "20",
-                "tap_preload_limit_for_decided": "50",
-                "tap_resolve_limit_for_decided": "50",
-                "contextual_search_side_search_provider_icon_enabled": "true",
-                "contextual_search_arrow_icon_enabled": "true",
-                "contextual_search_narrow_panel_supported": "true"
-            }
-        }
-    ],
-    "ReportCertificateErrors": [
-        {
-            "group_name": "ShowAndPossiblySend",
-            "params": {
-                "sendingThreshold": "1.0"
-            }
-        },
-        {
-            "group_name": "ShowAndPossiblySend",
-            "params": {
-                "sendingThreshold": "-1.0"
-            }
-        },
-        {
-            "group_name": "ShowAndPossiblySend",
-            "params": {
-                "sendingThreshold": "0.0"
-            }
-        },
-        {
-            "group_name": "ShowAndPossiblySend",
-            "params": {
-                "sendingThreshold": "abcdef"
-            }
-        },
-        {
-            "group_name": "DontShowAndDontSend"
         }
     ],
     "BackgroundHtmlParserTokenLimits": [
         {
-          "group_name": "Session_10",
+            "group_name": "Session_10",
             "params": {
-              "backgroundHtmlParserOutstandingTokenLimit": "10",
+                "backgroundHtmlParserOutstandingTokenLimit": "10",
                 "backgroundHtmlParserPendingTokenLimit": "10"
             }
         },
@@ -214,36 +69,80 @@
             }
         }
     ],
-    "SpeculativeResourcePrefetching": [
+    "ContextualSearch": [
         {
-            "group_name": "v=1a:Prefetching=Enabled:Predictor=Url"
-        },
-        {
-            "group_name":
-                "v=1b:Prefetching=Enabled:Predictor=Url:Confidence=High"
-        },
-        {
-            "group_name":
-                "v=1c:Prefetching=Enabled:Predictor=Url:Confidence=Low"
-        },
-        {
-            "group_name": "v=1d:Prefetching=Enabled:Predictor=Host"
-        },
-        {
-            "group_name":
-                "v=1e:Prefetching=Enabled:Predictor=Host:Confidence=High"
-        },
-        {
-            "group_name":
-                "v=1f:Prefetching=Enabled:Predictor=Host:Confidence=Low"
-        },
-        {
-            "group_name": "v=1:Prefetching=Learning"
+            "group_name": "OptOut",
+            "params": {
+                "contextual_search_arrow_icon_enabled": "true",
+                "contextual_search_narrow_panel_supported": "true",
+                "contextual_search_side_search_provider_icon_enabled": "true",
+                "disable_for_cjk": "true",
+                "enabled": "true",
+                "promo_on_limited_taps": "true",
+                "promo_opt_out": "true",
+                "tap_preload_limit_for_decided": "50",
+                "tap_preload_limit_for_undecided": "20",
+                "tap_resolve_limit_for_decided": "50",
+                "tap_resolve_limit_for_undecided": "20",
+                "tap_triggered_promo_limit": "50"
+            }
         }
     ],
-    "SdchPersistence": [
+    "CustomTabs": [
         {
             "group_name": "Enabled"
+        },
+        {
+            "group_name": "DisablePrerender"
+        },
+        {
+            "group_name": "Disabled"
+        }
+    ],
+    "DataCompressionProxyLoFi": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "hysteresis_period_seconds": "120",
+                "rtt_msec": "2000"
+            }
+        }
+    ],
+    "DataReductionProxyConfigService": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "DataReductionProxyUseDataSaverOnVPN": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "DataReductionProxyUseQuic": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "EnhancedBookmarks": [
+        {
+            "group_name": "EnableEnhancedBookmarks",
+            "params": {
+                "id": "Fake_id_to_trigger_experiment_code"
+            }
+        },
+        {
+            "group_name": "EnableEnhancedBookmarksGrid",
+            "params": {
+                "DefaultViewMode": "Grid",
+                "id": "Fake_id_to_trigger_experiment_code"
+            }
+        },
+        {
+            "group_name": "EnableEnhancedBookmarksList",
+            "params": {
+                "DefaultViewMode": "List",
+                "id": "Fake_id_to_trigger_experiment_code"
+            }
         }
     ],
     "IconNTP": [
@@ -254,28 +153,18 @@
             }
         }
     ],
-    "SyncHttpContentCompression": [
+    "InvalidationsGCMUpstream": [
         {
             "group_name": "Enabled"
+        },
+        {
+            "group_name": "Control"
         },
         {
             "group_name": "Disabled"
         }
     ],
-    "AutofillFieldMetadata": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
-    "VarationsServiceControl": [
-        {
-            "group_name": "Interval_30min",
-            "params": {
-                "fetch_period_min": "30"
-            }
-        }
-    ],
-    "Precache": [
+    "LimitSyncPassphrasePrompt": [
         {
             "group_name": "Enabled"
         }
@@ -290,12 +179,122 @@
             "group_name": "Ratio_25_50"
         }
     ],
-    "InvalidationsGCMUpstream": [
+    "NetworkQualityEstimator": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "2G.DefaultMedianKbps": "81",
+                "2G.DefaultMedianRTTMsec": "1337",
+                "3G.DefaultMedianKbps": "658",
+                "3G.DefaultMedianRTTMsec": "297",
+                "4G.DefaultMedianKbps": "1756",
+                "4G.DefaultMedianRTTMsec": "159",
+                "Bluetooth.DefaultMedianKbps": "449",
+                "Bluetooth.DefaultMedianRTTMsec": "135",
+                "Ethernet.DefaultMedianKbps": "3263",
+                "Ethernet.DefaultMedianRTTMsec": "106",
+                "HalfLifeSeconds": "60",
+                "None.DefaultMedianKbps": "567",
+                "None.DefaultMedianRTTMsec": "272",
+                "Unknown.DefaultMedianKbps": "1916",
+                "Unknown.DefaultMedianRTTMsec": "121",
+                "WiFi.DefaultMedianKbps": "2736",
+                "WiFi.DefaultMedianRTTMsec": "168"
+            }
+        }
+    ],
+    "Precache": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "QUIC": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "alternate_protocol_probability_threshold": "0.01"
+            }
+        }
+    ],
+    "ReaderModeUIFeedback": [
+        {
+            "group_name": "Show"
+        },
+        {
+            "group_name": "DoNotShow"
+        }
+    ],
+    "ReportCertificateErrors": [
+        {
+            "group_name": "ShowAndPossiblySend",
+            "params": {
+                "sendingThreshold": "1.0"
+            }
+        },
+        {
+            "group_name": "ShowAndPossiblySend",
+            "params": {
+                "sendingThreshold": "-1.0"
+            }
+        },
+        {
+            "group_name": "ShowAndPossiblySend",
+            "params": {
+                "sendingThreshold": "0.0"
+            }
+        },
+        {
+            "group_name": "ShowAndPossiblySend",
+            "params": {
+                "sendingThreshold": "abcdef"
+            }
+        },
+        {
+            "group_name": "DontShowAndDontSend"
+        }
+    ],
+    "SafeBrowsingReportPhishingErrorLink": [
         {
             "group_name": "Enabled"
         },
         {
             "group_name": "Control"
+        },
+        {
+            "group_name": "Disabled"
+        }
+    ],
+    "SdchPersistence": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "SpeculativeResourcePrefetching": [
+        {
+            "group_name": "v=1a:Prefetching=Enabled:Predictor=Url"
+        },
+        {
+            "group_name": "v=1b:Prefetching=Enabled:Predictor=Url:Confidence=High"
+        },
+        {
+            "group_name": "v=1c:Prefetching=Enabled:Predictor=Url:Confidence=Low"
+        },
+        {
+            "group_name": "v=1d:Prefetching=Enabled:Predictor=Host"
+        },
+        {
+            "group_name": "v=1e:Prefetching=Enabled:Predictor=Host:Confidence=High"
+        },
+        {
+            "group_name": "v=1f:Prefetching=Enabled:Predictor=Host:Confidence=Low"
+        },
+        {
+            "group_name": "v=1:Prefetching=Learning"
+        }
+    ],
+    "SyncHttpContentCompression": [
+        {
+            "group_name": "Enabled"
         },
         {
             "group_name": "Disabled"
@@ -311,20 +310,17 @@
             "group_name": "Enabled",
             "params": {
                 "Enabled": "true",
-                "Sample_Probability": "100",
-                "Optimize": "true"
+                "Optimize": "true",
+                "Sample_Probability": "100"
             }
         }
     ],
-    "SafeBrowsingReportPhishingErrorLink": [
+    "VarationsServiceControl": [
         {
-            "group_name": "Enabled"
-        },
-        {
-            "group_name": "Control"
-        },
-        {
-            "group_name": "Disabled"
+            "group_name": "Interval_30min",
+            "params": {
+                "fetch_period_min": "30"
+            }
         }
     ]
 }

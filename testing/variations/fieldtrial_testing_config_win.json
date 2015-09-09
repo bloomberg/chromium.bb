@@ -1,4 +1,9 @@
 {
+    "AutofillFieldMetadata": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "AutomaticTabDiscarding": [
         {
             "group_name": "Enabled"
@@ -63,23 +68,23 @@
         {
             "group_name": "Enabled",
             "params": {
-                "Unknown.DefaultMedianRTTMsec": "121",
-                "Unknown.DefaultMedianKbps": "1916",
-                "Ethernet.DefaultMedianRTTMsec": "106",
-                "Ethernet.DefaultMedianKbps": "3263",
-                "WiFi.DefaultMedianRTTMsec": "168",
-                "WiFi.DefaultMedianKbps": "2736",
-                "2G.DefaultMedianRTTMsec": "1337",
                 "2G.DefaultMedianKbps": "81",
-                "3G.DefaultMedianRTTMsec": "297",
+                "2G.DefaultMedianRTTMsec": "1337",
                 "3G.DefaultMedianKbps": "658",
-                "4G.DefaultMedianRTTMsec": "159",
+                "3G.DefaultMedianRTTMsec": "297",
                 "4G.DefaultMedianKbps": "1756",
-                "None.DefaultMedianRTTMsec": "272",
-                "None.DefaultMedianKbps": "567",
-                "Bluetooth.DefaultMedianRTTMsec": "135",
+                "4G.DefaultMedianRTTMsec": "159",
                 "Bluetooth.DefaultMedianKbps": "449",
-                "HalfLifeSeconds": "60"
+                "Bluetooth.DefaultMedianRTTMsec": "135",
+                "Ethernet.DefaultMedianKbps": "3263",
+                "Ethernet.DefaultMedianRTTMsec": "106",
+                "HalfLifeSeconds": "60",
+                "None.DefaultMedianKbps": "567",
+                "None.DefaultMedianRTTMsec": "272",
+                "Unknown.DefaultMedianKbps": "1916",
+                "Unknown.DefaultMedianRTTMsec": "121",
+                "WiFi.DefaultMedianKbps": "2736",
+                "WiFi.DefaultMedianRTTMsec": "168"
             }
         }
     ],
@@ -97,23 +102,13 @@
         {
             "group_name": "Enabled",
             "params": {
-              "alternate_protocol_probability_threshold": "0.01"
+                "alternate_protocol_probability_threshold": "0.01"
             }
         }
     ],
     "RefreshTokenDeviceId": [
         {
             "group_name": "Enabled"
-        }
-    ],
-    "SRTPromptFieldTrial": [
-        {
-            "group_name": "Default"
-        }
-    ],
-    "SettingsEnforcement": [
-        {
-            "group_name": "enforce_always_with_extensions_and_dse"
         }
     ],
     "ReportCertificateErrors": [
@@ -145,9 +140,30 @@
             "group_name": "DontShowAndDontSend"
         }
     ],
+    "SRTPromptFieldTrial": [
+        {
+            "group_name": "Default"
+        }
+    ],
+    "SafeBrowsingReportPhishingErrorLink": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Control"
+        },
+        {
+            "group_name": "Disabled"
+        }
+    ],
     "SdchPersistence": [
         {
             "group_name": "Enabled"
+        }
+    ],
+    "SettingsEnforcement": [
+        {
+            "group_name": "enforce_always_with_extensions_and_dse"
         }
     ],
     "SyncHttpContentCompression": [
@@ -156,11 +172,6 @@
         },
         {
             "group_name": "Disabled"
-        }
-    ],
-    "AutofillFieldMetadata": [
-        {
-            "group_name": "Enabled"
         }
     ],
     "TabSyncByRecency": [
@@ -179,17 +190,6 @@
             "params": {
                 "fetch_period_min": "30"
             }
-        }
-    ],
-    "SafeBrowsingReportPhishingErrorLink": [
-        {
-            "group_name": "Enabled"
-        },
-        {
-            "group_name": "Control"
-        },
-        {
-            "group_name": "Disabled"
         }
     ]
 }
