@@ -432,6 +432,8 @@ void BaseMultipleFieldsDateAndTimeInputType::requiredAttributeChanged()
 
 void BaseMultipleFieldsDateAndTimeInputType::handleKeydownEvent(KeyboardEvent* event)
 {
+    if (!element().focused())
+        return;
     if (m_pickerIndicatorIsVisible
         && ((event->keyIdentifier() == "Down" && event->getModifierState("Alt")) || (LayoutTheme::theme().shouldOpenPickerWithF4Key() && event->keyIdentifier() == "F4"))) {
         if (PickerIndicatorElement* element = pickerIndicatorElement())

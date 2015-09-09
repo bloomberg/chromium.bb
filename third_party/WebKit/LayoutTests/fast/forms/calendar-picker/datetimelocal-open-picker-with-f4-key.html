@@ -21,6 +21,7 @@ shouldBeNonNull('internals.pagePopupWindow');
 function sendKey(input, keyName, ctrlKey, altKey) {
     var event = document.createEvent('KeyboardEvent');
     event.initKeyboardEvent('keydown', true, true, document.defaultView, keyName, 0, ctrlKey, altKey);
+    input.focus();
     input.dispatchEvent(event);
 }
 </script>

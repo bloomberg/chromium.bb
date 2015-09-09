@@ -40,6 +40,7 @@ function rootWindow() {
 function openPicker(element, callback, errorCallback) {
     rootWindow().moveTo(window.screenX, window.screenY);
     element.offsetTop; // Force to lay out
+    element.focus();
     if (element.tagName === "SELECT") {
         sendKey(element, "Down", false, true);
     } else if (element.tagName === "INPUT") {
