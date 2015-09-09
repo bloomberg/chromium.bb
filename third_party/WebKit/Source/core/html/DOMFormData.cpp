@@ -51,14 +51,14 @@ public:
         if (m_current >= m_formData->size())
             return false;
 
-        const FormDataList::Entry entry = m_formData->getEntry(m_current++);
-        key = entry.name();
-        if (entry.isString())
-            value.setUSVString(entry.string());
-        else if (entry.isFile())
+        const FormDataList::Item& entry = m_formData->items()[m_current++];
+        key = m_formData->decode(entry.key());
+        if (entry.isString()) {
+            value.setUSVString(m_formData->decode(entry.data()));
+        } else {
+            ASSERT(entry.isFile());
             value.setFile(entry.file());
-        else
-            ASSERT_NOT_REACHED();
+        }
         return true;
     }
 
@@ -210,6 +210,11 @@ void DOMFormData::setEntry(const Item& item)
     if (!found)
         m_items.append(item);
     return;
+}
+
+String DOMFormData::decode(const CString& data) const
+{
+    return encoding().decode(data.data(), data.length());
 }
 
 PairIterable<String, FormDataEntryValue>::IterationSource* DOMFormData::startIteration(ScriptState*, ExceptionState&)

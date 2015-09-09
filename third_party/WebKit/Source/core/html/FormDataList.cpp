@@ -48,14 +48,6 @@ FormDataList::Entry FormDataList::getEntry(const String& key) const
     return Entry();
 }
 
-FormDataList::Entry FormDataList::getEntry(size_t index) const
-{
-    const FormDataListItems& items = this->items();
-    if (index >= items.size())
-        return Entry();
-    return itemsToEntry(items[index]);
-}
-
 HeapVector<FormDataList::Entry> FormDataList::getAll(const String& key) const
 {
     HeapVector<FormDataList::Entry> matches;
@@ -78,23 +70,28 @@ FormDataList::Entry FormDataList::itemsToEntry(const FormDataList::Item& item) c
         const CString valueData = item.data();
         return Entry(name, m_encoding.decode(valueData.data(), valueData.length()));
     }
+    return Entry(name, item.file());
+}
 
+File* FormDataList::Item::file() const
+{
+    ASSERT(blob());
     // The spec uses the passed filename when inserting entries into the list.
     // Here, we apply the filename (if present) as an override when extracting
     // items.
     // FIXME: Consider applying the name during insertion.
 
-    if (item.blob()->isFile()) {
-        File* file = toFile(item.blob());
-        if (item.filename().isNull())
-            return Entry(name, file);
-        return Entry(name, file->clone(item.filename()));
+    if (blob()->isFile()) {
+        File* file = toFile(blob());
+        if (filename().isNull())
+            return file;
+        return file->clone(filename());
     }
 
-    String filename = item.filename();
+    String filename = m_filename;
     if (filename.isNull())
         filename = "blob";
-    return Entry(name, File::create(filename, currentTimeMS(), item.blob()->blobDataHandle()));
+    return File::create(filename, currentTimeMS(), blob()->blobDataHandle());
 }
 
 PassRefPtr<EncodedFormData> FormDataList::createFormData(EncodedFormData::EncodingType encodingType)

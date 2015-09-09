@@ -78,6 +78,8 @@ public:
     void makeOpaque() { m_opaque = true; }
     bool opaque() const { return m_opaque; }
 
+    String decode(const CString& data) const;
+
 private:
     explicit DOMFormData(const WTF::TextEncoding&);
     explicit DOMFormData(HTMLFormElement*);

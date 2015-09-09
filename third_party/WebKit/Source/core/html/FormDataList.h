@@ -69,9 +69,12 @@ public:
         Item(const CString& key, const CString& data) : m_key(key), m_data(data) { }
         Item(const CString& key, Blob* blob, const String& filename) : m_key(key), m_blob(blob), m_filename(filename) { }
 
+        bool isString() const { return !m_blob; }
+        bool isFile() const { return m_blob; }
         const CString& key() const { return m_key; }
         const WTF::CString& data() const { return m_data; }
         Blob* blob() const { return m_blob.get(); }
+        File* file() const;
         const String& filename() const { return m_filename; }
 
         DECLARE_TRACE();
@@ -103,7 +106,6 @@ public:
     }
 
     Entry getEntry(const String& key) const;
-    Entry getEntry(size_t index) const;
     HeapVector<Entry> getAll(const String& key) const;
     size_t size() const { return m_items.size(); }
 
