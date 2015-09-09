@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
 #include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
+#include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -113,6 +114,11 @@ class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   std::set<const SyncedWindowDelegate*> GetSyncedWindowDelegates() override {
     return delegates_;
   }
+
+  const SyncedWindowDelegate* FindById(SessionID::id_type id) override {
+    return nullptr;
+  }
+
  private:
   const std::set<const SyncedWindowDelegate*> delegates_;
 };
@@ -230,6 +236,10 @@ scoped_ptr<LocalSessionEventRouter> NewDummyRouter() {
   return scoped_ptr<LocalSessionEventRouter>(new DummyRouter());
 }
 
+scoped_ptr<SyncedWindowDelegatesGetter> NewBrowserWindowGetter() {
+  return make_scoped_ptr(new BrowserSyncedWindowDelegatesGetter());
+}
+
 }  // namespace
 
 class SessionsSyncManagerTest
@@ -251,8 +261,10 @@ class SessionsSyncManagerTest
     browser_sync::NotificationServiceSessionsRouter* router(
         new browser_sync::NotificationServiceSessionsRouter(
             profile(), syncer::SyncableService::StartSyncFlare()));
-    manager_.reset(new SessionsSyncManager(profile(), local_device_.get(),
-      scoped_ptr<LocalSessionEventRouter>(router)));
+    manager_.reset(new SessionsSyncManager(
+        profile(), local_device_.get(),
+        scoped_ptr<LocalSessionEventRouter>(router),
+        NewBrowserWindowGetter()));
   }
 
   void TearDown() override {
@@ -801,7 +813,8 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
       syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   out.clear();
-  SessionsSyncManager manager2(profile(), local_device(), NewDummyRouter());
+  SessionsSyncManager manager2(profile(), local_device(), NewDummyRouter(),
+                               NewBrowserWindowGetter());
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
       syncer::SESSIONS, in,
       scoped_ptr<syncer::SyncChangeProcessor>(
@@ -864,7 +877,7 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   manager()->StopSyncing(syncer::SESSIONS);
 
   const std::set<const SyncedWindowDelegate*>& windows =
-      SyncedWindowDelegate::GetAll();
+      manager()->GetSyncedWindowDelegatesGetter()->GetSyncedWindowDelegates();
   ASSERT_EQ(1U, windows.size());
   SyncedTabDelegateFake t1_override, t2_override;
   t1_override.SetSyncId(1);  // No WebContents by default.
@@ -1390,7 +1403,8 @@ TEST_F(SessionsSyncManagerTest, SaveUnassociatedNodesForReassociation) {
       syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   changes.clear();
-  SessionsSyncManager manager2(profile(), local_device(), NewDummyRouter());
+  SessionsSyncManager manager2(profile(), local_device(), NewDummyRouter(),
+                               NewBrowserWindowGetter());
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
       syncer::SESSIONS, in,
       scoped_ptr<syncer::SyncChangeProcessor>(

@@ -75,7 +75,8 @@ bool SessionsRecencyComparator(const sync_driver::SyncedSession* s1,
 SessionsSyncManager::SessionsSyncManager(
     Profile* profile,
     LocalDeviceInfoProvider* local_device,
-    scoped_ptr<LocalSessionEventRouter> router)
+    scoped_ptr<LocalSessionEventRouter> router,
+    scoped_ptr<SyncedWindowDelegatesGetter> synced_window_getter)
     : favicon_cache_(FaviconServiceFactory::GetForProfile(
                          profile,
                          ServiceAccessType::EXPLICIT_ACCESS),
@@ -90,7 +91,7 @@ SessionsSyncManager::SessionsSyncManager(
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router.Pass()),
-      synced_window_getter_(new SyncedWindowDelegatesGetter()) {}
+      synced_window_getter_(synced_window_getter.Pass()) {}
 
 LocalSessionEventRouter::~LocalSessionEventRouter() {}
 

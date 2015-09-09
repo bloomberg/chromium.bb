@@ -17,14 +17,6 @@ class SyncedTabDelegate;
 // directly on Browser and BrowserList.
 class SyncedWindowDelegate {
  public:
-  // Methods originating from WindowList
-
-  // Returns all SyncedWindowDelegate instances.
-  static std::set<const SyncedWindowDelegate*> GetAll();
-
-  // Find a SyncedWindowDelegate given its window's id.
-  static const SyncedWindowDelegate* FindById(SessionID::id_type id);
-
   // Methods originating from Browser.
 
   // Returns true iff this browser has a visible window representation

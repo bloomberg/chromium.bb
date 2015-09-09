@@ -13,25 +13,6 @@
 
 namespace browser_sync {
 
-// SyncedWindowDelegate implementations
-
-std::set<SyncedWindowDelegate const*> SyncedWindowDelegate::GetAll() {
-  std::set<SyncedWindowDelegate const*> synced_window_delegates;
-  for (TabModelList::const_iterator i = TabModelList::begin();
-      i != TabModelList::end(); ++i) {
-    synced_window_delegates.insert((*i)->GetSyncedWindowDelegate());
-  }
-  return synced_window_delegates;
-}
-
-const SyncedWindowDelegate* SyncedWindowDelegate::FindById(
-    SessionID::id_type session_id) {
-  TabModel* tab_model = TabModelList::FindTabModelWithId(session_id);
-
-  // In case we don't find the browser (e.g. for Developer Tools).
-  return tab_model ? tab_model->GetSyncedWindowDelegate() : NULL;
-}
-
 // SyncedWindowDelegateAndroid implementations
 
 SyncedWindowDelegateAndroid::SyncedWindowDelegateAndroid(

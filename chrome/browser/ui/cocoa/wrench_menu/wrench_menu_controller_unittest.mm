@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
+#include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_builder_test_helper.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
@@ -83,7 +84,9 @@ class WrenchMenuControllerTest
         profile(),
         local_device_.get(),
         scoped_ptr<browser_sync::LocalSessionEventRouter>(
-            new DummyRouter())));
+            new DummyRouter()),
+        scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>(
+            new browser_sync::BrowserSyncedWindowDelegatesGetter())));
     manager_->MergeDataAndStartSyncing(
         syncer::SESSIONS,
         syncer::SyncDataList(),

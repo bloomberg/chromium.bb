@@ -22,15 +22,6 @@ class BrowserSyncedWindowDelegate : public browser_sync::SyncedWindowDelegate {
   explicit BrowserSyncedWindowDelegate(Browser* browser);
   ~BrowserSyncedWindowDelegate() override;
 
-  // Add all BrowserSyncedWindowDelegate instances to the output set.
-  static void GetAllHelper(
-      std::set<const browser_sync::SyncedWindowDelegate*>* delegates);
-
-  // Find the SyncedWindowDelegate for a particular browser window id. Note
-  // that this only considers Browser windows (AppWindow are not considered).
-  static const browser_sync::SyncedWindowDelegate* FindByIdHelper(
-      SessionID::id_type id);
-
   // SyncedWindowDelegate:
   bool HasWindow() const override;
   SessionID::id_type GetSessionId() const override;

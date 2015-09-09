@@ -87,9 +87,11 @@ class SessionsSyncManager : public syncer::SyncableService,
                             public sync_driver::OpenTabsUIDelegate,
                             public LocalSessionEventHandler {
  public:
-  SessionsSyncManager(Profile* profile,
-                      sync_driver::LocalDeviceInfoProvider* local_device,
-                      scoped_ptr<LocalSessionEventRouter> router);
+  SessionsSyncManager(
+      Profile* profile,
+      sync_driver::LocalDeviceInfoProvider* local_device,
+      scoped_ptr<LocalSessionEventRouter> router,
+      scoped_ptr<SyncedWindowDelegatesGetter> synced_window_getter);
   ~SessionsSyncManager() override;
 
   // syncer::SyncableService implementation.

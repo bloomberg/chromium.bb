@@ -72,6 +72,10 @@ class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
     return delegates_;
   }
 
+  const SyncedWindowDelegate* FindById(SessionID::id_type id) override {
+    return nullptr;
+  }
+
   void Add(SyncedWindowDelegate* delegate) {
     delegates_.insert(delegate);
   }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
+#include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 
 // This should be the version of ImplFromWebContents that's pulled in for non-
@@ -17,7 +18,14 @@ namespace browser_sync {
 // static
 SyncedTabDelegate* SyncedTabDelegate::ImplFromWebContents(
     content::WebContents* web_contents) {
-  return TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+  SyncedTabDelegate* delegate =
+      TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+  if (!delegate) {
+    return nullptr;
+  }
+  delegate->SetSyncedWindowGetter(make_scoped_ptr(
+      new BrowserSyncedWindowDelegatesGetter()));
+  return delegate;
 }
 
 } // namespace browser_sync

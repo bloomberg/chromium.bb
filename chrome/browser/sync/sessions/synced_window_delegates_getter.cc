@@ -4,17 +4,10 @@
 
 #include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
 
-#include "chrome/browser/sync/glue/synced_window_delegate.h"
-
 namespace browser_sync {
 
 SyncedWindowDelegatesGetter::SyncedWindowDelegatesGetter() {}
 
 SyncedWindowDelegatesGetter::~SyncedWindowDelegatesGetter() {}
-
-std::set<const SyncedWindowDelegate*>
-SyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
-  return SyncedWindowDelegate::GetAll();
-}
 
 }  // namespace browser_sync

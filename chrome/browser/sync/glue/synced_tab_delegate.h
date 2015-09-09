@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
 #include "components/sessions/session_id.h"
 
 class Profile;
@@ -24,7 +26,7 @@ class SyncedWindowDelegate;
 // directly on WebContents, NavigationController, and the extensions TabHelper.
 class SyncedTabDelegate {
  public:
-  virtual ~SyncedTabDelegate() {}
+  virtual ~SyncedTabDelegate();
 
   // Methods from TabContents.
 
@@ -69,13 +71,24 @@ class SyncedTabDelegate {
   // Returns true if this tab should be synchronized.
   bool ShouldSync() const;
 
+  // Sets the window getter. This must be called before any of the sync or
+  // supervised user methods on this class are called. It is currently set when
+  // the SyncTabDelegate is retrieved from WebContents via ImplFromWebContents.
+  void SetSyncedWindowGetter(scoped_ptr<SyncedWindowDelegatesGetter> getter);
+
   // Returns the SyncedTabDelegate associated with WebContents.
   static SyncedTabDelegate* ImplFromWebContents(
       content::WebContents* web_contents);
 
  protected:
+  SyncedTabDelegate();
+
   // Overridden by the tests to avoid interaction with static state.
   virtual const SyncedWindowDelegate* GetSyncedWindowDelegate() const;
+
+ private:
+  // A getter for accessing the associated SyncedWindowDelegate.
+  scoped_ptr<SyncedWindowDelegatesGetter> synced_window_getter_;
 };
 
 }  // namespace browser_sync
