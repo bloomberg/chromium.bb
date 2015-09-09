@@ -1,0 +1,17 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+
+<dom-module id="settings-breadcrumb">
+  <link rel="import" type="css" href="breadcrumb.css">
+  <template>
+    <template is="dom-if" if="{{currentRouteTitles}}">
+      <span on-tap="onTapPage_">{{currentRouteTitles.pageTitle}}</span>
+
+      <template is="dom-repeat" items="{{currentRouteTitles.subpageTitles}}">
+        &gt;
+        <span on-tap="onTapSubpage_"
+            data-subpage-index$="{{index}}">{{item}}</span>
+      </template>
+    </template>
+  </template>
+  <script src="breadcrumb.js"></script>
+</dom-module>

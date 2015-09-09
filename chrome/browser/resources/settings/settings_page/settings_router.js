@@ -36,6 +36,8 @@ Polymer({
      * both the Back button and the Breadcrumb to determine ancestor subpages.
      */
     currentRoute: {
+      notify: true,
+      observer: 'currentRouteChanged_',
       type: Object,
       value: function() {
         // Take the current URL, find a matching pre-defined route, and
@@ -54,8 +56,17 @@ Polymer({
         // As a fallback return the default route.
         return this.routes_[0];
       },
+    },
+
+    /**
+     * Page titles for the currently active route. Updated by the currentRoute
+     * property observer.
+     * @type {{pageTitle: string, subpageTitles: Array<string>}}
+     */
+    currentRouteTitles: {
       notify: true,
-      observer: 'currentRouteChanged_',
+      type: Object,
+      value: function() { return {}; },
     },
   },
 
@@ -70,36 +81,42 @@ Polymer({
       page: 'basic',
       section: '',
       subpage: [],
+      subpageTitles: [],
     },
     {
       url: '/advanced',
       page: 'advanced',
       section: '',
       subpage: [],
+      subpageTitles: [],
     },
     {
       url: '/searchEngines',
       page: 'basic',
       section: 'search',
       subpage: ['search-engines'],
+      subpageTitles: ['searchEnginesPageTitle'],
     },
     {
       url: '/searchEngines/advanced',
       page: 'basic',
       section: 'search',
       subpage: ['search-engines', 'search-engines-advanced'],
+      subpageTitles: ['searchEnginesPageTitle', 'advancedPageTitle'],
     },
     {
       url: '/certificates',
       page: 'advanced',
       section: 'privacy',
       subpage: ['manage-certificates'],
+      subpageTitles: ['manageCertificates'],
     },
     {
       url: '/content',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings'],
+      subpageTitles: ['siteSettings'],
     },
   ],
 
@@ -120,10 +137,6 @@ Polymer({
    * URL appropriately.
    */
   currentRouteChanged_: function(newRoute, oldRoute) {
-    // If we are currently restoring a state from history, don't push it again.
-    if (newRoute.inHistory)
-      return;
-
     for (var i = 0; i < this.routes_.length; ++i) {
       var route = this.routes_[i];
       if (route.page == newRoute.page && route.section == newRoute.section &&
@@ -131,6 +144,18 @@ Polymer({
           newRoute.subpage.every(function(value, index) {
             return value == route.subpage[index];
           })) {
+
+        // Update the property containing the titles for the current route.
+        this.currentRouteTitles = {
+          pageTitle: loadTimeData.getString(route.page + 'PageTitle'),
+          subpageTitles: route.subpageTitles.map(function(titleCode) {
+            return loadTimeData.getString(titleCode);
+          }),
+        };
+
+        // If we are restoring a state from history, don't push it again.
+        if (newRoute.inHistory)
+          return;
 
         // Mark routes persisted in history as already stored in history.
         var historicState = {

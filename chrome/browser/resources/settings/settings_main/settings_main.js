@@ -30,6 +30,9 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * The current active route.
+     */
     currentRoute: {
       type: Object,
       notify: true,

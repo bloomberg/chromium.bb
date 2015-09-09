@@ -8,13 +8,19 @@
 <link rel="import" href="chrome://md-settings/settings_main/settings_main.html">
 <link rel="import" href="chrome://md-settings/settings_menu/settings_menu.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_router.html">
+<link rel="import" href="chrome://md-settings/settings_ui/breadcrumb.html">
 
 <dom-module id="cr-settings-ui">
   <link rel="import" type="css" href="settings_ui.css">
   <template>
-    <settings-router current-route="{{currentRoute}}"></settings-router>
+    <settings-router current-route="{{currentRoute}}"
+        current-route-titles="{{currentRouteTitles}}">
+    </settings-router>
     <paper-toolbar>
       <div class="title">Settings</div>
+      <settings-breadcrumb current-route="{{currentRoute}}"
+          current-route-titles="[[currentRouteTitles]]">
+      </settings-breadcrumb>
     </paper-toolbar>
     <paper-drawer-panel drawer-width="256px">
       <cr-settings-menu drawer class="flex" current-route="{{currentRoute}}">
