@@ -20,8 +20,9 @@ TEST(DOMFormDataTest, opacityGet)
     EXPECT_TRUE(result.isUSVString());
     EXPECT_EQ("value1", result.getAsUSVString());
 
-    FormDataList::Entry entry = fd->getEntry("name1");
-    EXPECT_EQ("value1", entry.string());
+    const FormDataList::Item& entry = fd->items()[0];
+    EXPECT_STREQ("name1", entry.key().data());
+    EXPECT_STREQ("value1", entry.data().data());
 
     fd->makeOpaque();
 
@@ -31,8 +32,9 @@ TEST(DOMFormDataTest, opacityGet)
     EXPECT_TRUE(opaqueResult.isNull());
 
     // Internal interface should be uneffected.
-    FormDataList::Entry opaqueEntry = fd->getEntry("name1");
-    EXPECT_EQ("value1", opaqueEntry.string());
+    const FormDataList::Item& entry2 = fd->items()[0];
+    EXPECT_STREQ("name1", entry2.key().data());
+    EXPECT_STREQ("value1", entry2.data().data());
 }
 
 TEST(DOMFormDataTest, opacityGetAll)

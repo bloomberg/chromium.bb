@@ -35,33 +35,6 @@ namespace blink {
 // TODO(tkent): Merge FormDataList into DOMFormData.
 class CORE_EXPORT FormDataList : public GarbageCollected<FormDataList> {
 public:
-    // TODO(tkent): Merge Entry and Item.
-    class Entry final {
-        ALLOW_ONLY_INLINE_ALLOCATION();
-    public:
-        enum Type { None, StringType, FileType };
-
-        Entry() : m_type(None) { }
-        Entry(const String& name, const String& value) : m_type(StringType), m_name(name), m_string(value) { }
-        Entry(const String& name, File* value) : m_type(FileType), m_name(name), m_file(value) { }
-
-        bool isNone() const { return m_type == None; }
-        bool isString() const { return m_type == StringType; }
-        bool isFile() const { return m_type == FileType; }
-
-        const String& name() const { ASSERT(m_type != None); return m_name; }
-        const String& string() const { ASSERT(m_type == StringType); return m_string; }
-        File* file() const { ASSERT(m_type == FileType); return m_file; }
-
-        DECLARE_TRACE();
-
-    private:
-        const Type m_type;
-        const String m_name;
-        const String m_string;
-        const Member<File> m_file;
-    };
-
     class Item {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
@@ -105,8 +78,6 @@ public:
         appendItem(Item(encodeAndNormalize(key), blob, filename));
     }
 
-    Entry getEntry(const String& key) const;
-    HeapVector<Entry> getAll(const String& key) const;
     size_t size() const { return m_items.size(); }
 
     const FormDataListItems& items() const { return m_items; }
@@ -127,14 +98,12 @@ private:
     void appendKeyValuePairItemsTo(EncodedFormData*, const WTF::TextEncoding&, bool isMultiPartForm, EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
 
     void appendItem(const Item&);
-    Entry itemsToEntry(const Item&) const;
 
     WTF::TextEncoding m_encoding;
 };
 
 } // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::FormDataList::Entry);
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::FormDataList::Item);
 
 #endif // FormDataList_h

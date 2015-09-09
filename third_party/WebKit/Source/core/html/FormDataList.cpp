@@ -38,41 +38,6 @@ void FormDataList::appendItem(const FormDataList::Item& item)
     m_items.append(item);
 }
 
-FormDataList::Entry FormDataList::getEntry(const String& key) const
-{
-    const CString keyData = encodeAndNormalize(key);
-    for (const Item& item : items()) {
-        if (item.key() == keyData)
-            return itemsToEntry(item);
-    }
-    return Entry();
-}
-
-HeapVector<FormDataList::Entry> FormDataList::getAll(const String& key) const
-{
-    HeapVector<FormDataList::Entry> matches;
-
-    const CString keyData = encodeAndNormalize(key);
-    for (const Item& item : items()) {
-        if (item.key() == keyData)
-            matches.append(itemsToEntry(item));
-    }
-
-    return matches;
-}
-
-FormDataList::Entry FormDataList::itemsToEntry(const FormDataList::Item& item) const
-{
-    const CString nameData = item.key();
-    const String name = m_encoding.decode(nameData.data(), nameData.length());
-
-    if (!item.blob()) {
-        const CString valueData = item.data();
-        return Entry(name, m_encoding.decode(valueData.data(), valueData.length()));
-    }
-    return Entry(name, item.file());
-}
-
 File* FormDataList::Item::file() const
 {
     ASSERT(blob());
@@ -192,12 +157,6 @@ CString FormDataList::encodeAndNormalize(const String& string) const
 DEFINE_TRACE(FormDataList)
 {
     visitor->trace(m_items);
-}
-
-
-DEFINE_TRACE(FormDataList::Entry)
-{
-    visitor->trace(m_file);
 }
 
 DEFINE_TRACE(FormDataList::Item)

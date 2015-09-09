@@ -137,13 +137,18 @@ void DOMFormData::get(const String& name, FormDataEntryValue& result)
 {
     if (m_opaque)
         return;
-    Entry entry = getEntry(name);
-    if (entry.isString())
-        result.setUSVString(entry.string());
-    else if (entry.isFile())
-        result.setFile(entry.file());
-    else
-        ASSERT(entry.isNone());
+    const CString encodedName = encodeAndNormalize(name);
+    for (const Item& entry : items()) {
+        if (entry.key() == encodedName) {
+            if (entry.isString()) {
+                result.setUSVString(decode(entry.data()));
+            } else {
+                ASSERT(entry.isFile());
+                result.setFile(entry.file());
+            }
+            return;
+        }
+    }
 }
 
 HeapVector<FormDataEntryValue> DOMFormData::getAll(const String& name)
@@ -153,19 +158,19 @@ HeapVector<FormDataEntryValue> DOMFormData::getAll(const String& name)
     if (m_opaque)
         return results;
 
-    HeapVector<FormDataList::Entry> entries = FormDataList::getAll(name);
-    for (const FormDataList::Entry& entry : entries) {
-        ASSERT(entry.name() == name);
+    const CString encodedName = encodeAndNormalize(name);
+    for (const Item& entry : items()) {
+        if (entry.key() != encodedName)
+            continue;
         FormDataEntryValue value;
-        if (entry.isString())
-            value.setUSVString(entry.string());
-        else if (entry.isFile())
+        if (entry.isString()) {
+            value.setUSVString(decode(entry.data()));
+        } else {
+            ASSERT(entry.isFile());
             value.setFile(entry.file());
-        else
-            ASSERT_NOT_REACHED();
+        }
         results.append(value);
     }
-    ASSERT(results.size() == entries.size());
     return results;
 }
 
