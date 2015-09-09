@@ -5,34 +5,29 @@
 #ifndef UI_VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 #define UI_VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 
-#include <string>
-
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "ui/base/models/combobox_model_observer.h"
-#include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/prefix_delegate.h"
 
 namespace gfx {
 class FontList;
-class SlideAnimation;
 }
 
 namespace ui {
 class ComboboxModel;
+class MenuModel;
 }
 
 namespace views {
+namespace test {
+class ComboboxTestApi;
+}
 
 class ComboboxListener;
-class ComboboxMenuRunner;
 class CustomButton;
-class FocusableBorder;
 class MenuRunner;
-class MenuRunnerHandler;
 class Painter;
 class PrefixSelector;
 
@@ -45,10 +40,7 @@ class PrefixSelector;
 // * STYLE_ACTION: clicking on the text notifies the listener. The menu can be
 // shown only by clicking on the arrow. The selected index is always reverted to
 // 0 after the listener is notified.
-class VIEWS_EXPORT Combobox : public MenuDelegate,
-                              public PrefixDelegate,
-                              public ui::ComboboxModelObserver,
-                              public ButtonListener {
+class VIEWS_EXPORT Combobox : public PrefixDelegate, public ButtonListener {
  public:
   // The style of the combobox.
   enum Style {
@@ -104,32 +96,19 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   void GetAccessibleState(ui::AXViewState* state) override;
   void Layout() override;
 
-  // Overridden from MenuDelegate:
-  bool IsItemChecked(int id) const override;
-  bool IsCommandEnabled(int id) const override;
-  void ExecuteCommand(int id) override;
-  bool GetAccelerator(int id, ui::Accelerator* accelerator) const override;
-
   // Overridden from PrefixDelegate:
   int GetRowCount() override;
   int GetSelectedRow() override;
   void SetSelectedRow(int row) override;
   base::string16 GetTextForRow(int row) override;
 
-  // Overriden from ComboboxModelObserver:
-  void OnComboboxModelChanged(ui::ComboboxModel* model) override;
-
   // Overriden from ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ComboboxTest, Click);
-  FRIEND_TEST_ALL_PREFIXES(ComboboxTest, ClickButDisabled);
-  FRIEND_TEST_ALL_PREFIXES(ComboboxTest, NotifyOnClickWithMouse);
-  FRIEND_TEST_ALL_PREFIXES(ComboboxTest, ContentWidth);
+  friend class test::ComboboxTestApi;
 
-  // Updates the combobox's content from its model.
-  void UpdateFromModel();
+  class ComboboxMenuModelAdapter;
 
   // Updates the border according to the current state.
   void UpdateBorder();
@@ -148,17 +127,16 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
 
   // Called when the selection is changed by the user.
   void OnPerformAction();
-  void NotifyPerformAction();
-  void AfterPerformAction();
-
-  // Converts a menu command ID to a menu item index.
-  int MenuCommandToIndex(int menu_command_id) const;
 
   int GetDisclosureArrowLeftPadding() const;
   int GetDisclosureArrowRightPadding() const;
 
   // Returns the size of the disclosure arrow.
   gfx::Size ArrowSize() const;
+
+  // Finds the size of the largest menu label or, for STYLE_ACTION, the size of
+  // the selected label.
+  gfx::Size GetContentSize() const;
 
   // Handles the clicking event.
   void HandleClickEvent();
@@ -186,14 +164,8 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   // A helper used to select entries by keyboard input.
   scoped_ptr<PrefixSelector> selector_;
 
-  // Responsible for showing the context menu.
-  scoped_ptr<MenuRunner> dropdown_list_menu_runner_;
-
-  // Weak. Owned by dropdown_list_menu_runner_.
-  MenuItemView* menu_;
-
-  // Is the drop down list showing
-  bool dropdown_open_;
+  // Adapts a ComboboxModel for use by a views MenuRunner.
+  scoped_ptr<ui::MenuModel> menu_model_adapter_;
 
   // Like MenuButton, we use a time object in order to keep track of when the
   // combobox was closed. The time is used for simulating menu behavior; that
@@ -203,8 +175,8 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   // the button is not part of the displayed menu.
   base::Time closed_time_;
 
-  // The maximum dimensions of the content in the dropdown
-  mutable gfx::Size content_size_;
+  // The maximum dimensions of the content in the dropdown.
+  gfx::Size content_size_;
 
   // The painters or images that are used when |style_| is STYLE_BUTTONS. The
   // first index means the state of unfocused or focused.
@@ -221,6 +193,10 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   // The base View takes the ownerships of these as child views.
   CustomButton* text_button_;
   CustomButton* arrow_button_;
+
+  // Set while the dropdown is showing. Ensures the menu is closed if |this| is
+  // destroyed.
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   // Used for making calbacks.
   base::WeakPtrFactory<Combobox> weak_ptr_factory_;

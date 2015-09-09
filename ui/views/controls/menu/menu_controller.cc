@@ -1646,6 +1646,10 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
 
   gfx::Size pref = submenu->GetScrollViewContainer()->GetPreferredSize();
 
+  // For comboboxes, ensure the menu is at least as wide as the anchor.
+  if (is_combobox_)
+    pref.set_width(std::max(pref.width(), state_.initial_bounds.width()));
+
   // Don't let the menu go too wide.
   pref.set_width(std::min(pref.width(),
                             item->GetDelegate()->GetMaxWidthForMenu(item)));

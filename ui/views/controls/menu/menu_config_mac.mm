@@ -27,6 +27,7 @@ void MenuConfig::Init(const ui::NativeTheme* theme) {
   separator_lower_height = 6;
   align_arrow_and_shortcut = true;
   icons_in_label = true;
+  check_selected_combobox_item = true;
   corner_radius = 5;
   use_outer_border = false;
 }

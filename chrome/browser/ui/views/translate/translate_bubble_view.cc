@@ -428,7 +428,6 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
 
   std::vector<base::string16> items;
   items.push_back(l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY));
-  items.push_back(base::string16());
   items.push_back(l10n_util::GetStringFUTF16(
       IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
       original_language_name));
