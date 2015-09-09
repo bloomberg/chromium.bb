@@ -32,18 +32,18 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   // Verify the new route.
   script = base::StringPrintf(
       "domAutomationController.send(window.document.getElementById("
-      "'media-router-container').routeList[0].title)");
-  std::string route_title = ExecuteScriptAndExtractString(
+      "'media-router-container').routeList[0].description)");
+  std::string route_description = ExecuteScriptAndExtractString(
       dialog_contents, script);
-  ASSERT_EQ("Test Route", route_title);
+  ASSERT_EQ("Test Route", route_description);
 
   script = base::StringPrintf(
       "domAutomationController.send(window.document.getElementById("
       "'media-router-container').routeList[0].id)");
   std::string route_id = ExecuteScriptAndExtractString(dialog_contents, script);
   std::string current_route = base::StringPrintf(
-      "{'id': '%s', 'sinkId': '%s', 'title': '%s', 'isLocal': '%s'}",
-      route_id.c_str(), "id1", route_title.c_str(), "false");
+      "{'id': '%s', 'sinkId': '%s', 'description': '%s', 'isLocal': '%s'}",
+      route_id.c_str(), "id1", route_description.c_str(), "false");
 
   ChooseSink(web_contents, "id1", current_route);
   // TODO(leilei): Verify the router details dialog, including the title and
