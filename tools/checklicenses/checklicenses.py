@@ -548,6 +548,17 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
 }
 
+EXCLUDED_PATHS = [
+    # Don't check generated files
+    'out/',
+
+    # Don't check sysroot directories
+    'build/linux/debian_wheezy_amd64-sysroot',
+    'build/linux/debian_wheezy_arm-sysroot',
+    'build/linux/debian_wheezy_i386-sysroot',
+    'build/linux/debian_wheezy_mips-sysroot',
+]
+
 
 def check_licenses(options, args):
   # Figure out which directory we have to check.
@@ -596,9 +607,8 @@ def check_licenses(options, args):
     filename, license = line.split(':', 1)
     filename = os.path.relpath(filename.strip(), options.base_directory)
 
-    # All files in the build output directory are generated one way or another.
-    # There's no need to check them.
-    if filename.startswith('out/'):
+    # Check if the file belongs to one of the excluded paths.
+    if any((filename.startswith(path) for path in EXCLUDED_PATHS)):
       continue
 
     # For now we're just interested in the license.
