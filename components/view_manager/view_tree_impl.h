@@ -76,7 +76,9 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   bool AddView(const ViewId& parent_id, const ViewId& child_id);
   std::vector<const ServerView*> GetViewTree(const ViewId& view_id) const;
   bool SetViewVisibility(const ViewId& view_id, bool visible);
-  bool Embed(const ViewId& view_id, mojo::ViewTreeClientPtr client);
+  bool Embed(const ViewId& view_id,
+             mojo::ViewTreeClientPtr client,
+             mojo::ConnectionSpecificId* connection_id);
   void Embed(const ViewId& view_id, mojo::URLRequestPtr request);
 
   // The following methods are invoked after the corresponding change has been
@@ -199,7 +201,7 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
       mojo::SurfaceClientPtr client) override;
   void Embed(mojo::Id transport_view_id,
              mojo::ViewTreeClientPtr client,
-             const mojo::Callback<void(bool)>& callback) override;
+             const EmbedCallback& callback) override;
   void SetFocus(uint32_t view_id) override;
   void SetViewTextInputState(uint32_t view_id,
                              mojo::TextInputStatePtr state) override;

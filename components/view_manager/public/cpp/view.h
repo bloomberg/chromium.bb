@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/observer_list.h"
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/interfaces/surface_id.mojom.h"
@@ -40,6 +41,7 @@ class View {
  public:
   using Children = std::vector<View*>;
   using SharedProperties = std::map<std::string, std::vector<uint8_t>>;
+  using EmbedCallback = base::Callback<void(bool, ConnectionSpecificId)>;
 
   // Destroys this view and all its children. Destruction is allowed for views
   // that were created by this connection. For views from other connections
@@ -138,6 +140,10 @@ class View {
 
   // Embedding. See view_tree.mojom for details.
   void Embed(ViewTreeClientPtr client);
+
+  // NOTE: callback is run synchronously if Embed() is not allowed on this
+  // View.
+  void Embed(ViewTreeClientPtr client, const EmbedCallback& callback);
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.

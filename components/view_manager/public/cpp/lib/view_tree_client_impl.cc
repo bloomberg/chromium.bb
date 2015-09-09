@@ -187,9 +187,11 @@ void ViewTreeClientImpl::SetAccessPolicy(Id view_id, uint32_t access_policy) {
   tree_->SetAccessPolicy(view_id, access_policy);
 }
 
-void ViewTreeClientImpl::Embed(Id view_id, ViewTreeClientPtr client) {
+void ViewTreeClientImpl::Embed(Id view_id,
+                               ViewTreeClientPtr client,
+                               const ViewTree::EmbedCallback& callback) {
   DCHECK(tree_);
-  tree_->Embed(view_id, client.Pass(), ActionCompletedCallback());
+  tree_->Embed(view_id, client.Pass(), callback);
 }
 
 void ViewTreeClientImpl::RequestSurface(Id view_id,
@@ -255,6 +257,10 @@ View* ViewTreeClientImpl::CreateView() {
 
 bool ViewTreeClientImpl::IsEmbedRoot() {
   return is_embed_root_;
+}
+
+ConnectionSpecificId ViewTreeClientImpl::GetConnectionId() {
+  return connection_id_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

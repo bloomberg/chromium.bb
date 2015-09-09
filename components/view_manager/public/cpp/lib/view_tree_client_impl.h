@@ -50,7 +50,9 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
   void SetImeVisibility(Id view_id, bool visible, TextInputStatePtr state);
   void SetAccessPolicy(Id view_id, uint32_t access_policy);
 
-  void Embed(Id view_id, ViewTreeClientPtr client);
+  void Embed(Id view_id,
+             ViewTreeClientPtr client,
+             const ViewTree::EmbedCallback& callback);
 
   void RequestSurface(Id view_id,
                       InterfaceRequest<Surface> surface,
@@ -84,6 +86,7 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
   View* GetFocusedView() override;
   View* CreateView() override;
   bool IsEmbedRoot() override;
+  ConnectionSpecificId GetConnectionId() override;
 
   // Overridden from ViewTreeClient:
   void OnEmbed(ConnectionSpecificId connection_id,

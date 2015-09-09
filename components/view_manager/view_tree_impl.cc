@@ -151,12 +151,16 @@ bool ViewTreeImpl::SetViewVisibility(const ViewId& view_id, bool visible) {
 }
 
 bool ViewTreeImpl::Embed(const ViewId& view_id,
-                         mojo::ViewTreeClientPtr client) {
+                         mojo::ViewTreeClientPtr client,
+                         mojo::ConnectionSpecificId* connection_id) {
+  *connection_id = kInvalidConnectionId;
   if (!client.get() || !CanEmbed(view_id))
     return false;
   PrepareForEmbed(view_id);
-  ::ignore_result(
-      connection_manager_->EmbedAtView(id_, view_id, client.Pass()));
+  ViewTreeImpl* new_connection =
+      connection_manager_->EmbedAtView(id_, view_id, client.Pass());
+  if (is_embed_root_)
+    *connection_id = new_connection->id();
   return true;
 }
 
@@ -665,8 +669,11 @@ void ViewTreeImpl::SetAccessPolicy(Id transport_view_id,
 
 void ViewTreeImpl::Embed(mojo::Id transport_view_id,
                          mojo::ViewTreeClientPtr client,
-                         const mojo::Callback<void(bool)>& callback) {
-  callback.Run(Embed(ViewIdFromTransportId(transport_view_id), client.Pass()));
+                         const EmbedCallback& callback) {
+  mojo::ConnectionSpecificId connection_id = kInvalidConnectionId;
+  const bool result = Embed(ViewIdFromTransportId(transport_view_id),
+                            client.Pass(), &connection_id);
+  callback.Run(result, connection_id);
 }
 
 void ViewTreeImpl::SetFocus(uint32_t view_id) {

@@ -67,6 +67,14 @@ void ViewTreeResultCallback(base::RunLoop* run_loop,
   run_loop->Quit();
 }
 
+void EmbedCallbackImpl(base::RunLoop* run_loop,
+                       bool* result_cache,
+                       bool result,
+                       ConnectionSpecificId connection_id) {
+  *result_cache = result;
+  run_loop->Quit();
+}
+
 // -----------------------------------------------------------------------------
 
 bool EmbedUrl(mojo::ApplicationImpl* app,
@@ -83,7 +91,7 @@ bool EmbedUrl(mojo::ApplicationImpl* app,
     mojo::ViewTreeClientPtr client;
     connection->ConnectToService(&client);
     vm->Embed(root_id, client.Pass(),
-              base::Bind(&BoolResultCallback, &run_loop, &result));
+              base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
   return result;
@@ -94,7 +102,7 @@ bool Embed(ViewTree* vm, Id root_id, mojo::ViewTreeClientPtr client) {
   base::RunLoop run_loop;
   {
     vm->Embed(root_id, client.Pass(),
-              base::Bind(&BoolResultCallback, &run_loop, &result));
+              base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
   return result;
@@ -481,10 +489,8 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
 
   // Establishes a new connection by way of Embed() on the specified
   // ViewTree.
-  scoped_ptr<ViewTreeClientImpl> EstablishConnectionViaEmbed(
-    ViewTree* owner,
-      Id root_id,
-      int* connection_id) {
+  scoped_ptr<ViewTreeClientImpl>
+  EstablishConnectionViaEmbed(ViewTree* owner, Id root_id, int* connection_id) {
     if (!EmbedUrl(application_impl(), owner, application_impl()->url(),
                   root_id)) {
       ADD_FAILURE() << "Embed() failed";

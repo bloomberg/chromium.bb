@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
+#include "components/view_manager/public/cpp/util.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
@@ -137,6 +140,19 @@ class ViewTracker : public ViewObserver {
 
 // ViewManager -----------------------------------------------------------------
 
+struct EmbedResult {
+  EmbedResult(ViewTreeConnection* connection, ConnectionSpecificId id)
+      : connection(connection), connection_id(id) {}
+  EmbedResult() : connection(nullptr), connection_id(0) {}
+
+  ViewTreeConnection* connection;
+
+  // The id supplied to the callback from OnEmbed(). Depending upon the
+  // access policy this may or may not match the connection id of
+  // |connection|.
+  ConnectionSpecificId connection_id;
+};
+
 // These tests model synchronization of two peer connections to the view manager
 // service, that are given access to some root view.
 
@@ -147,30 +163,82 @@ class ViewManagerTest : public ViewManagerTestBase {
   // Embeds another version of the test app @ view. This runs a run loop until
   // a response is received, or a timeout. On success the new ViewManager is
   // returned.
-  ViewTreeConnection* Embed(View* view) {
-    most_recent_connection_ = nullptr;
-    ConnectToApplicationAndEmbed(view);
+  EmbedResult Embed(View* view) {
+    DCHECK(!embed_details_);
+    embed_details_.reset(new EmbedDetails);
+    view->Embed(ConnectToApplicationAndGetViewManagerClient(),
+                base::Bind(&ViewManagerTest::EmbedCallbackImpl,
+                           base::Unretained(this)));
+    embed_details_->waiting = true;
     if (!ViewManagerTestBase::DoRunLoopWithTimeout())
-      return nullptr;
-    ViewTreeConnection* vm = nullptr;
-    std::swap(vm, most_recent_connection_);
-    return vm;
+      return EmbedResult();
+    const EmbedResult result(embed_details_->connection,
+                             embed_details_->connection_id);
+    embed_details_.reset();
+    return result;
   }
 
   // Establishes a connection to this application and asks for a
-  // ViewTreeClient. The ViewTreeClient is then embedded in |view|. This does
-  // *not* wait for the connection to complete.
-  void ConnectToApplicationAndEmbed(View* view) {
+  // ViewTreeClient.
+  mojo::ViewTreeClientPtr ConnectToApplicationAndGetViewManagerClient() {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(application_impl()->url());
     scoped_ptr<ApplicationConnection> connection =
         application_impl()->ConnectToApplication(request.Pass());
     mojo::ViewTreeClientPtr client;
     connection->ConnectToService(&client);
-    view->Embed(client.Pass());
+    return client.Pass();
+  }
+
+  // ViewManagerTestBase:
+  void OnEmbed(View* root) override {
+    if (!embed_details_) {
+      ViewManagerTestBase::OnEmbed(root);
+      return;
+    }
+
+    embed_details_->connection = root->connection();
+    if (embed_details_->callback_run)
+      EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
 
  private:
+  // Used to track the state of a call to view->Embed().
+  struct EmbedDetails {
+    EmbedDetails()
+        : callback_run(false),
+          result(false),
+          waiting(false),
+          connection_id(0),
+          connection(nullptr) {}
+
+    // The callback supplied to Embed() was received.
+    bool callback_run;
+
+    // The boolean supplied to the Embed() callback.
+    bool result;
+
+    // Whether a MessageLoop is running.
+    bool waiting;
+
+    // Connection id supplied to the Embed() callback.
+    ConnectionSpecificId connection_id;
+
+    // The ViewTreeConnection that resulted from the Embed(). null if |result|
+    // is false.
+    ViewTreeConnection* connection;
+  };
+
+  void EmbedCallbackImpl(bool result, ConnectionSpecificId connection_id) {
+    embed_details_->callback_run = true;
+    embed_details_->result = result;
+    embed_details_->connection_id = connection_id;
+    if (embed_details_->waiting && (!result || embed_details_->connection))
+      EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
+  }
+
+  scoped_ptr<EmbedDetails> embed_details_;
+
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
 };
 
@@ -184,7 +252,7 @@ TEST_F(ViewManagerTest, Embed) {
   ASSERT_NE(nullptr, view);
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewTreeConnection* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view).connection;
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetRoot();
@@ -206,7 +274,7 @@ TEST_F(ViewManagerTest, EmbeddedDoesntSeeChild) {
   nested->SetVisible(true);
   view->AddChild(nested);
 
-  ViewTreeConnection* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view).connection;
   ASSERT_NE(nullptr, embedded);
   View* view_in_embedded = embedded->GetRoot();
   EXPECT_EQ(view->id(), view_in_embedded->id());
@@ -232,7 +300,7 @@ TEST_F(ViewManagerTest, SetBounds) {
   View* view = window_manager()->CreateView();
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewTreeConnection* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view).connection;
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetViewById(view->id());
@@ -251,7 +319,7 @@ TEST_F(ViewManagerTest, SetBoundsSecurity) {
   View* view = window_manager()->CreateView();
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewTreeConnection* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view).connection;
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetViewById(view->id());
@@ -273,7 +341,7 @@ TEST_F(ViewManagerTest, DestroySecurity) {
   View* view = window_manager()->CreateView();
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewTreeConnection* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view).connection;
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetViewById(view->id());
@@ -295,9 +363,9 @@ TEST_F(ViewManagerTest, MultiRoots) {
   View* view2 = window_manager()->CreateView();
   view2->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view2);
-  ViewTreeConnection* embedded1 = Embed(view1);
+  ViewTreeConnection* embedded1 = Embed(view1).connection;
   ASSERT_NE(nullptr, embedded1);
-  ViewTreeConnection* embedded2 = Embed(view2);
+  ViewTreeConnection* embedded2 = Embed(view2).connection;
   ASSERT_NE(nullptr, embedded2);
   EXPECT_NE(embedded1, embedded2);
 }
@@ -309,7 +377,7 @@ TEST_F(ViewManagerTest, DISABLED_Reorder) {
   view1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view1);
 
-  ViewTreeConnection* embedded = Embed(view1);
+  ViewTreeConnection* embedded = Embed(view1).connection;
   ASSERT_NE(nullptr, embedded);
 
   View* view11 = embedded->CreateView();
@@ -373,7 +441,7 @@ TEST_F(ViewManagerTest, Visible) {
   window_manager()->GetRoot()->AddChild(view1);
 
   // Embed another app and verify initial state.
-  ViewTreeConnection* embedded = Embed(view1);
+  ViewTreeConnection* embedded = Embed(view1).connection;
   ASSERT_NE(nullptr, embedded);
   ASSERT_NE(nullptr, embedded->GetRoot());
   View* embedded_root = embedded->GetRoot();
@@ -437,7 +505,7 @@ TEST_F(ViewManagerTest, Drawn) {
   window_manager()->GetRoot()->AddChild(view1);
 
   // Embed another app and verify initial state.
-  ViewTreeConnection* embedded = Embed(view1);
+  ViewTreeConnection* embedded = Embed(view1).connection;
   ASSERT_NE(nullptr, embedded);
   ASSERT_NE(nullptr, embedded->GetRoot());
   View* embedded_root = embedded->GetRoot();
@@ -500,7 +568,7 @@ TEST_F(ViewManagerTest, Focus) {
   view1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view1);
 
-  ViewTreeConnection* embedded = Embed(view1);
+  ViewTreeConnection* embedded = Embed(view1).connection;
   ASSERT_NE(nullptr, embedded);
   View* view11 = embedded->CreateView();
   view11->SetVisible(true);
@@ -580,7 +648,7 @@ TEST_F(ViewManagerTest, DeleteViewManager) {
   ASSERT_NE(nullptr, view);
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewTreeConnection* connection = Embed(view);
+  ViewTreeConnection* connection = Embed(view).connection;
   ASSERT_TRUE(connection);
   bool got_destroy = false;
   DestroyedChangedObserver observer(this, connection->GetRoot(),
@@ -597,7 +665,7 @@ TEST_F(ViewManagerTest, DisconnectTriggersDelete) {
   ASSERT_NE(nullptr, view);
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewTreeConnection* connection = Embed(view);
+  ViewTreeConnection* connection = Embed(view).connection;
   EXPECT_NE(connection, window_manager());
   View* embedded_view = connection->CreateView();
   // Embed again, this should trigger disconnect and deletion of connection.
@@ -638,7 +706,7 @@ TEST_F(ViewManagerTest, EmbedRemovesChildren) {
   view1->AddChild(view2);
 
   ViewRemovedFromParentObserver observer(view2);
-  ConnectToApplicationAndEmbed(view1);
+  view1->Embed(ConnectToApplicationAndGetViewManagerClient());
   EXPECT_TRUE(observer.was_removed());
   EXPECT_EQ(nullptr, view2->parent());
   EXPECT_TRUE(view1->children().empty());
@@ -688,7 +756,7 @@ TEST_F(ViewManagerTest, ViewManagerDestroyedAfterRootObserver) {
   View* embed_view = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(embed_view);
 
-  ViewTreeConnection* embedded_connection = Embed(embed_view);
+  ViewTreeConnection* embedded_connection = Embed(embed_view).connection;
 
   bool got_destroy = false;
   DestroyObserver observer(this, embedded_connection, &got_destroy);
@@ -706,11 +774,11 @@ TEST_F(ViewManagerTest, EmbedRootSeesHierarchyChanged) {
   window_manager()->GetRoot()->AddChild(embed_view);
 
   embed_view->SetAccessPolicy(ViewTree::ACCESS_POLICY_EMBED_ROOT);
-  ViewTreeConnection* vm2 = Embed(embed_view);
+  ViewTreeConnection* vm2 = Embed(embed_view).connection;
   View* vm2_v1 = vm2->CreateView();
   vm2->GetRoot()->AddChild(vm2_v1);
 
-  ViewTreeConnection* vm3 = Embed(vm2_v1);
+  ViewTreeConnection* vm3 = Embed(vm2_v1).connection;
   View* vm3_v1 = vm3->CreateView();
   vm3->GetRoot()->AddChild(vm3_v1);
 
@@ -722,22 +790,36 @@ TEST_F(ViewManagerTest, EmbedFromEmbedRoot) {
   View* embed_view = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(embed_view);
 
+  // Give the connection embedded at |embed_view| embed root powers.
   embed_view->SetAccessPolicy(ViewTree::ACCESS_POLICY_EMBED_ROOT);
-  ViewTreeConnection* vm2 = Embed(embed_view);
+  const EmbedResult result1 = Embed(embed_view);
+  ViewTreeConnection* vm2 = result1.connection;
+  EXPECT_EQ(result1.connection_id, vm2->GetConnectionId());
   View* vm2_v1 = vm2->CreateView();
   vm2->GetRoot()->AddChild(vm2_v1);
 
-  ViewTreeConnection* vm3 = Embed(vm2_v1);
+  const EmbedResult result2 = Embed(vm2_v1);
+  ViewTreeConnection* vm3 = result2.connection;
+  EXPECT_EQ(result2.connection_id, vm3->GetConnectionId());
   View* vm3_v1 = vm3->CreateView();
   vm3->GetRoot()->AddChild(vm3_v1);
+
+  // Embed from v3, the callback should not get the connection id as vm3 is not
+  // an embed root.
+  const EmbedResult result3 = Embed(vm3_v1);
+  ASSERT_TRUE(result3.connection);
+  EXPECT_EQ(0, result3.connection_id);
 
   // As |vm2| is an embed root it should get notified about |vm3_v1|.
   ASSERT_TRUE(WaitForTreeSizeToMatch(vm2_v1, 2));
 
-  // Embed() from vm2 in vm3_v1. This is allowed as vm2 is an embed root.
+  // Embed() from vm2 in vm3_v1. This is allowed as vm2 is an embed root, and
+  // further the callback should see the connection id.
   ASSERT_EQ(1u, vm2_v1->children().size());
   View* vm3_v1_in_vm2 = vm2_v1->children()[0];
-  ASSERT_TRUE(Embed(vm3_v1_in_vm2));
+  const EmbedResult result4 = Embed(vm3_v1_in_vm2);
+  ASSERT_TRUE(result4.connection);
+  EXPECT_EQ(result4.connection_id, result4.connection->GetConnectionId());
 }
 
 }  // namespace mojo

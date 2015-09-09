@@ -43,6 +43,9 @@ class ViewTreeConnection {
 
   // Returns true if ACCESS_POLICY_EMBED_ROOT was specified.
   virtual bool IsEmbedRoot() = 0;
+
+  // Returns the id for this connection.
+  virtual ConnectionSpecificId GetConnectionId() = 0;
 };
 
 }  // namespace mojo

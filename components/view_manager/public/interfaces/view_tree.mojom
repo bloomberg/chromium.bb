@@ -126,12 +126,20 @@ interface ViewTree {
   // search (pre-order).
   GetViewTree(uint32 view_id) => (array<ViewData> views);
 
-  // A connection may grant access to a view from another connection by way of
-  // Embed(). Embed() results in a new ViewTreeClient configured with a root of
-  // |view_id|.
+  // A connection may grant access to another connection by way of Embed().
+  // Embed() results in the supplied ViewTreeClient being configured with a
+  // root view of |view_id|. The supplied ViewTreeClient may create child
+  // views and do other various tree operations (including Embed()), but does
+  // not see nor have access to any of the views above the embed point.
   //
   // The caller must have created |view_id|. If not the request fails and the
   // response is false.
+  //
+  // When a connection embeds a ViewTreeClient the originating connection no
+  // longer has privileges to access or see any of the children of the view. If
+  // the view had existing children the children are removed. The one exception
+  // is the root connection and any connections with the policy
+  // ACCESS_POLICY_EMBED_ROOT.
   //
   // A view may only have one embedding in it at a time. Subsequent calls to
   // Embed() for the same view result in the currently embedded
@@ -142,11 +150,11 @@ interface ViewTree {
   // The embedder can detect when the embedded app disconnects by way of
   // OnEmbeddedAppDisconnected().
   //
-  // When a connection embeds an app the connection no longer has privileges
-  // to access or see any of the children of the view. If the view had existing
-  // children the children are removed. The one exception is the root
-  // connection and any connections with the policy ACCESS_POLICY_EMBED_ROOT.
-  Embed(uint32 view_id, ViewTreeClient client) => (bool success);
+  // The callback returns whether the embedding was successful, and if the
+  // embedding was successful and the originating connection is an embed root
+  // the resulting id of the new connection.
+  Embed(uint32 view_id, ViewTreeClient client) => (bool success,
+                                                   uint16 connection_id);
 
   SetFocus(uint32 view_id);
 
