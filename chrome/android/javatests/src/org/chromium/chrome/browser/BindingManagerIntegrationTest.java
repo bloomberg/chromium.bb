@@ -12,6 +12,7 @@ import android.util.SparseBooleanArray;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tab.Tab;
@@ -480,8 +481,10 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         assertTrue(mBindingManager.isReleaseAllModerateBindingsCalled());
     }
 
-    @LargeTest
-    @Feature({"ProcessManagement"})
+    // @LargeTest
+    // @Feature({"ProcessManagement"})
+    // Appears to be flaky, see crbug/529920
+    @DisabledTest
     public void testRestoreSharedRenderer() throws Exception {
         loadUrl(TestHttpServerClient.getUrl(SHARED_RENDERER_PAGE_PATH));
 
