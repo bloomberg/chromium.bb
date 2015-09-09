@@ -74,6 +74,24 @@ TEST_F(VisibleUnitsTest, characterAfter)
     EXPECT_EQ('1', characterAfter(createVisiblePositionInComposedTree(*two->firstChild(), 2)));
 }
 
+TEST_F(VisibleUnitsTest, endOfDocument)
+{
+    const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a>";
+    const char* shadowContent = "<p><content select=#two></content></p><p><content select=#one></content></p>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Element* one = document().getElementById("one");
+    Element* two = document().getElementById("two");
+
+    EXPECT_EQ(Position(two->firstChild(), 2), endOfDocument(createVisiblePositionInDOMTree(*one->firstChild(), 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 1), endOfDocument(createVisiblePositionInComposedTree(*one->firstChild(), 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(two->firstChild(), 2), endOfDocument(createVisiblePositionInDOMTree(*two->firstChild(), 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 1), endOfDocument(createVisiblePositionInComposedTree(*two->firstChild(), 1)).deepEquivalent());
+}
+
 TEST_F(VisibleUnitsTest, endOfParagraph)
 {
     const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a><b id=three>333</b>";

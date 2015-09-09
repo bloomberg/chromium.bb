@@ -158,9 +158,9 @@ bool isEndOfBlock(const VisiblePosition&);
 
 // document
 VisiblePosition startOfDocument(const Node*);
-VisiblePosition endOfDocument(const Node*);
 VisiblePosition startOfDocument(const VisiblePosition&);
-VisiblePosition endOfDocument(const VisiblePosition&);
+CORE_EXPORT VisiblePosition endOfDocument(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInComposedTree endOfDocument(const VisiblePositionInComposedTree&);
 bool isStartOfDocument(const VisiblePosition&);
 bool isEndOfDocument(const VisiblePosition&);
 

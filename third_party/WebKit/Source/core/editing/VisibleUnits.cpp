@@ -1569,18 +1569,25 @@ VisiblePosition startOfDocument(const VisiblePosition& c)
     return startOfDocument(c.deepEquivalent().anchorNode());
 }
 
-VisiblePosition endOfDocument(const Node* node)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> endOfDocumentAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    Node* node = visiblePosition.deepEquivalent().anchorNode();
     if (!node || !node->document().documentElement())
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
     Element* doc = node->document().documentElement();
-    return createVisiblePosition(lastPositionInNode(doc));
+    return createVisiblePosition(PositionAlgorithm<Strategy>::lastPositionInNode(doc));
 }
 
 VisiblePosition endOfDocument(const VisiblePosition& c)
 {
-    return endOfDocument(c.deepEquivalent().anchorNode());
+    return endOfDocumentAlgorithm<EditingStrategy>(c);
+}
+
+VisiblePositionInComposedTree endOfDocument(const VisiblePositionInComposedTree& c)
+{
+    return endOfDocumentAlgorithm<EditingInComposedTreeStrategy>(c);
 }
 
 bool isStartOfDocument(const VisiblePosition& p)
