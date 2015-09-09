@@ -286,17 +286,22 @@ public class JniInterface {
     /** Passes mouse-wheel information to the native handling code. */
     private static native void nativeSendMouseWheelEvent(int deltaX, int deltaY);
 
-    /** Presses or releases the specified (nonnegative) key. Called on the UI thread. */
-    public static boolean sendKeyEvent(int keyCode, boolean keyDown) {
+    /**
+     * Presses or releases the specified (nonnegative) key. Called on the UI thread. If scanCode
+     * is not zero then keyCode is ignored.
+     */
+    public static boolean sendKeyEvent(int scanCode, int keyCode, boolean keyDown) {
         if (!sConnected) {
             return false;
         }
 
-        return nativeSendKeyEvent(keyCode, keyDown);
+        return nativeSendKeyEvent(scanCode, keyCode, keyDown);
     }
 
-    /** Passes key press information to the native handling code. */
-    private static native boolean nativeSendKeyEvent(int keyCode, boolean keyDown);
+    /**
+     * Passes key press information to the native handling code.
+     */
+    private static native boolean nativeSendKeyEvent(int scanCode, int keyCode, boolean keyDown);
 
     /** Sends TextEvent to the host. Called on the UI thread. */
     public static void sendTextEvent(String text) {

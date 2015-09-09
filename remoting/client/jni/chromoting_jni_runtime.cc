@@ -139,10 +139,11 @@ static void SendMouseWheelEvent(JNIEnv* env,
 
 static jboolean SendKeyEvent(JNIEnv* env,
                              const JavaParamRef<jclass>& clazz,
+                             jint scanCode,
                              jint keyCode,
                              jboolean keyDown) {
   return remoting::ChromotingJniRuntime::GetInstance()->session()->SendKeyEvent(
-      keyCode, keyDown);
+      scanCode, keyCode, keyDown);
 }
 
 static void SendTextEvent(JNIEnv* env,

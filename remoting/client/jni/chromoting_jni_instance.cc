@@ -25,6 +25,7 @@
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/signaling/server_log_entry.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace remoting {
 
@@ -229,10 +230,17 @@ void ChromotingJniInstance::SendMouseWheelEvent(int delta_x, int delta_y) {
   client_->input_stub()->InjectMouseEvent(event);
 }
 
-bool ChromotingJniInstance::SendKeyEvent(int key_code, bool key_down) {
-  uint32 usb_key_code = AndroidKeycodeToUsbKeycode(key_code);
+bool ChromotingJniInstance::SendKeyEvent(int scan_code,
+                                         int key_code,
+                                         bool key_down) {
+  // For software keyboards |scan_code| is set to 0, in which case the
+  // |key_code| is used instead.
+  uint32_t usb_key_code =
+      scan_code ? ui::KeycodeConverter::NativeKeycodeToUsbKeycode(scan_code)
+                : AndroidKeycodeToUsbKeycode(key_code);
   if (!usb_key_code) {
-    LOG(WARNING) << "Ignoring unknown keycode: " << key_code;
+    LOG(WARNING) << "Ignoring unknown key code: " << key_code
+                 << " scan code: " << scan_code;
     return false;
   }
 
