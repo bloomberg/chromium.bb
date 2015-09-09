@@ -93,7 +93,6 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
-          '<(PRODUCT_DIR)/content_browsertests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

@@ -16,7 +16,6 @@
         ],
         'files': [
           '../../testing/test_env.py',
-          '<(PRODUCT_DIR)/gcm_unit_tests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

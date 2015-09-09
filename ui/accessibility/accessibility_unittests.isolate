@@ -8,9 +8,6 @@
         'command': [
           '<(PRODUCT_DIR)/accessibility_unittests<(EXECUTABLE_SUFFIX)',
         ],
-        'files': [
-          '<(PRODUCT_DIR)/accessibility_unittests<(EXECUTABLE_SUFFIX)',
-        ],
       },
     }],
   ],

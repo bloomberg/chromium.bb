@@ -8,9 +8,6 @@
         'command': [
           '<(PRODUCT_DIR)/content_gl_tests<(EXECUTABLE_SUFFIX)',
         ],
-        'files': [
-          '<(PRODUCT_DIR)/content_gl_tests<(EXECUTABLE_SUFFIX)',
-        ],
       },
     }],
     # TODO(kbr): these two dependencies seem to be necessary when

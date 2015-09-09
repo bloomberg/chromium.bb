@@ -8,9 +8,6 @@
         'command': [
           '<(PRODUCT_DIR)/gl_unittests<(EXECUTABLE_SUFFIX)',
         ],
-        'files': [
-          '<(PRODUCT_DIR)/gl_unittests<(EXECUTABLE_SUFFIX)',
-        ],
       },
     }],
   ],

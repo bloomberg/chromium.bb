@@ -10,7 +10,6 @@
         ],
         'files': [
           'format_test_data/',
-          '<(PRODUCT_DIR)/gn_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

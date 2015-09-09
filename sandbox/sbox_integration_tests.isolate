@@ -12,9 +12,6 @@
         'command': [
           '<(PRODUCT_DIR)/sbox_integration_tests.exe',
         ],
-        'files': [
-          '<(PRODUCT_DIR)/sbox_integration_tests.exe',
-        ],
       },
     }],
     ['OS=="win" and target_arch=="ia32"', {

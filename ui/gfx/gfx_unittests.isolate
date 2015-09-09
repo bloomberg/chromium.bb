@@ -10,7 +10,6 @@
         ],
         'files': [
           'test/data/',
-          '<(PRODUCT_DIR)/gfx_unittests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/ui_test.pak',
         ],
       },

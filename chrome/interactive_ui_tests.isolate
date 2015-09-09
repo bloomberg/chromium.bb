@@ -54,7 +54,6 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
-          '<(PRODUCT_DIR)/interactive_ui_tests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/ui_test.pak',
           'test/data/',

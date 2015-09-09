@@ -23,7 +23,6 @@
         ],
         'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/sql_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

@@ -18,7 +18,6 @@
           '../gin/test/expect.js',
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/gen/mojo/public/interfaces/bindings/tests/',
-          '<(PRODUCT_DIR)/mojo_js_unittests<(EXECUTABLE_SUFFIX)',
           'bindings/js/',
           'public/js/bindings/',
         ],

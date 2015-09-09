@@ -46,7 +46,6 @@
       'variables': {
         'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/components_browsertests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/components_tests_resources.pak',
           '<(PRODUCT_DIR)/content_shell.pak',
         ],

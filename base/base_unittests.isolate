@@ -25,7 +25,6 @@
       'variables': {
         'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

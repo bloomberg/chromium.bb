@@ -10,10 +10,7 @@
     ['OS=="win"', {
       'variables': {
         'command': [
-          '<(PRODUCT_DIR)/sbox_unittests.exe',
-        ],
-        'files': [
-          '<(PRODUCT_DIR)/sbox_unittests.exe',
+          '<(PRODUCT_DIR)/sbox_validation_tests.exe',
         ],
       },
     }],

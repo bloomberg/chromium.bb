@@ -42,7 +42,6 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
-          '<(PRODUCT_DIR)/extensions_browsertests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
           'test/data/',
         ],

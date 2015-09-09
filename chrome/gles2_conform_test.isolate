@@ -14,7 +14,6 @@
           '<(PRODUCT_DIR)/gles2_conform_test<(EXECUTABLE_SUFFIX)',
         ],
         'files': [
-          '<(PRODUCT_DIR)/gles2_conform_test<(EXECUTABLE_SUFFIX)',
           '../gpu/gles2_conform_support/gles2_conform_test_expectations.txt',
         ],
       },

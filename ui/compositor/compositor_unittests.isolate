@@ -39,7 +39,6 @@
         'files': [
           '../../testing/test_env.py',
           '../gfx/test/data/compositor/',
-          '<(PRODUCT_DIR)/compositor_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

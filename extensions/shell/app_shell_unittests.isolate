@@ -39,7 +39,6 @@
         'files': [
           '../../testing/test_env.py',
           '../test/data/',
-          '<(PRODUCT_DIR)/app_shell_unittests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
         ],
       },

@@ -19,7 +19,6 @@
           '../net/data/ssl/certificates/unittest.key.bin',
           '../net/data/ssl/certificates/unittest.selfsigned.der',
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/remoting_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

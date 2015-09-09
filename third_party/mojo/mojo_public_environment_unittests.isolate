@@ -16,7 +16,6 @@
         ],
         'files': [
           '../../testing/test_env.py',
-          '<(PRODUCT_DIR)/mojo_public_environment_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

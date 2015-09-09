@@ -18,7 +18,6 @@
       'variables': {
         'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/device_unittests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/usb_gadget.zip',
           '<(PRODUCT_DIR)/usb_gadget.zip.md5',
         ],
