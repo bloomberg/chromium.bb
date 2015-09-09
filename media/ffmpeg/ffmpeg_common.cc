@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_util.h"
 
 namespace media {

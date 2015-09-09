@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
-#include "media/base/video_decoder_config.h"
+#include "media/base/video_codecs.h"
 #include "media/formats/mp4/aac.h"
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/box_reader.h"
