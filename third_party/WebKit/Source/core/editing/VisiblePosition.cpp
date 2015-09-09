@@ -93,6 +93,11 @@ VisiblePositionInComposedTree createVisiblePosition(const PositionInComposedTree
     return VisiblePositionInComposedTree::create(PositionInComposedTreeWithAffinity(position, affinity));
 }
 
+VisiblePositionInComposedTree createVisiblePosition(const PositionInComposedTreeWithAffinity& positionWithAffinity)
+{
+    return VisiblePositionInComposedTree::create(positionWithAffinity);
+}
+
 VisiblePosition createVisiblePositionInDOMTree(const Position& position, TextAffinity affinity)
 {
     return createVisiblePosition(position, affinity);

@@ -162,7 +162,7 @@ PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& positio
 }
 
 template <typename Strategy>
-static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBeforeAlgorithm(const PositionWithAffinityTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
+static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBefore(const PositionWithAffinityTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -193,19 +193,10 @@ static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBeforeAlgo
     return lastEditablePositionBeforePositionInRoot(pos.position(), highestRoot);
 }
 
-static PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity& pos, const Position& anchor)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrBefore(const VisiblePositionTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
 {
-    return honorEditingBoundaryAtOrBeforeAlgorithm(pos, anchor);
-}
-
-static PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity& pos, const PositionInComposedTree& anchor)
-{
-    return honorEditingBoundaryAtOrBeforeAlgorithm(pos, anchor);
-}
-
-static VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition& pos, const Position& anchor)
-{
-    return createVisiblePosition(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), anchor));
+    return createVisiblePosition(honorEditingBoundaryAtOrBefore(pos.toPositionWithAffinity(), anchor));
 }
 
 template <typename Strategy>
@@ -961,7 +952,7 @@ static PositionWithAffinityTemplate<Strategy> startOfLine(const PositionWithAffi
         }
     }
 
-    return honorEditingBoundaryAtOrBeforeOf(visPos, c.position());
+    return honorEditingBoundaryAtOrBefore(visPos, c.position());
 }
 
 static PositionWithAffinity startOfLine(const PositionWithAffinity& currentPosition)
@@ -2597,14 +2588,16 @@ UChar32 characterBefore(const VisiblePosition& visiblePosition)
     return characterAfter(previousPositionOf(visiblePosition));
 }
 
-static Position leftVisuallyDistinctCandidate(const VisiblePosition& visiblePosition)
+template <typename Strategy>
+static PositionAlgorithm<Strategy> leftVisuallyDistinctCandidate(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const Position deepPosition = visiblePosition.deepEquivalent();
-    Position p = deepPosition;
-    if (p.isNull())
-        return Position();
+    const PositionAlgorithm<Strategy> deepPosition = visiblePosition.deepEquivalent();
+    PositionAlgorithm<Strategy> p = deepPosition;
 
-    Position downstreamStart = mostForwardCaretPosition(p);
+    if (p.isNull())
+        return PositionAlgorithm<Strategy>();
+
+    const PositionAlgorithm<Strategy> downstreamStart = mostForwardCaretPosition(p);
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
     const TextAffinity affinity = visiblePosition.affinity();
 
@@ -2642,13 +2635,13 @@ static Position leftVisuallyDistinctCandidate(const VisiblePosition& visiblePosi
                 // Overshot to the left.
                 InlineBox* prevBox = box->prevLeafChildIgnoringLineBreak();
                 if (!prevBox) {
-                    Position positionOnLeft = primaryDirection == LTR ? previousVisuallyDistinctCandidate(deepPosition) : nextVisuallyDistinctCandidate(deepPosition);
+                    PositionAlgorithm<Strategy> positionOnLeft = primaryDirection == LTR ? previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent()) : nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
                     if (positionOnLeft.isNull())
-                        return Position();
+                        return PositionAlgorithm<Strategy>();
 
                     InlineBox* boxOnLeft = computeInlineBoxPosition(positionOnLeft, affinity, primaryDirection).inlineBox;
                     if (boxOnLeft && boxOnLeft->root() == box->root())
-                        return Position();
+                        return PositionAlgorithm<Strategy>();
                     return positionOnLeft;
                 }
 
@@ -2712,7 +2705,8 @@ static Position leftVisuallyDistinctCandidate(const VisiblePosition& visiblePosi
                         continue;
                 }
             } else {
-                // Trailing edge of a secondary run. Set to the leading edge of the entire run.
+                // Trailing edge of a secondary run. Set to the leading edge of
+                // the entire run.
                 while (true) {
                     while (InlineBox* nextBox = box->nextLeafChild()) {
                         if (nextBox->bidiLevel() < level)
@@ -2737,7 +2731,7 @@ static Position leftVisuallyDistinctCandidate(const VisiblePosition& visiblePosi
             break;
         }
 
-        p = Position::editingPositionOf(layoutObject->node(), offset);
+        p = PositionAlgorithm<Strategy>::editingPositionOf(layoutObject->node(), offset);
 
         if ((isVisuallyEquivalentCandidate(p) && mostForwardCaretPosition(p) != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
@@ -2746,17 +2740,28 @@ static Position leftVisuallyDistinctCandidate(const VisiblePosition& visiblePosi
     }
 }
 
-VisiblePosition leftPositionOf(const VisiblePosition& visiblePosition)
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> leftPositionOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const Position pos = leftVisuallyDistinctCandidate(visiblePosition);
+    const PositionAlgorithm<Strategy> pos = leftVisuallyDistinctCandidate(visiblePosition);
     // TODO(yosin) Why can't we move left from the last position in a tree?
     if (pos.atStartOfTree() || pos.atEndOfTree())
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
-    VisiblePosition left = createVisiblePosition(pos);
+    const VisiblePositionTemplate<Strategy> left = createVisiblePosition(pos);
     ASSERT(left.deepEquivalent() != visiblePosition.deepEquivalent());
 
     return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrBefore(left, visiblePosition.deepEquivalent()) : honorEditingBoundaryAtOrAfter(left, visiblePosition.deepEquivalent());
+}
+
+VisiblePosition leftPositionOf(const VisiblePosition& visiblePosition)
+{
+    return leftPositionOfAlgorithm<EditingStrategy>(visiblePosition);
+}
+
+VisiblePositionInComposedTree leftPositionOf(const VisiblePositionInComposedTree& visiblePosition)
+{
+    return leftPositionOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
 }
 
 static Position rightVisuallyDistinctCandidate(const VisiblePosition& visiblePosition)

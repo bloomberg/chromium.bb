@@ -119,6 +119,7 @@ using VisiblePositionInComposedTree = VisiblePositionTemplate<EditingInComposedT
 CORE_EXPORT VisiblePosition createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
 CORE_EXPORT VisiblePositionInComposedTree createVisiblePosition(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePositionInComposedTree createVisiblePosition(const PositionInComposedTreeWithAffinity&);
 
 // TODO(yosin) Once we have composed tree version of VisibleUnits, we should not
 // use |createVisiblePositionInDOMTree()|.

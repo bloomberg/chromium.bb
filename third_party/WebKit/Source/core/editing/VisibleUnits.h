@@ -96,7 +96,11 @@ CORE_EXPORT UChar32 characterAfter(const VisiblePosition&);
 CORE_EXPORT UChar32 characterAfter(const VisiblePositionInComposedTree&);
 UChar32 characterBefore(const VisiblePosition&);
 
-VisiblePosition leftPositionOf(const VisiblePosition&);
+// TODO(yosin) Since return value of |leftPositionOf()| with |VisiblePosition|
+// isn't defined well on composed tree, we should not use it for a position in
+// composed tree.
+CORE_EXPORT VisiblePosition leftPositionOf(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInComposedTree leftPositionOf(const VisiblePositionInComposedTree&);
 VisiblePosition rightPositionOf(const VisiblePosition&);
 
 CORE_EXPORT VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
