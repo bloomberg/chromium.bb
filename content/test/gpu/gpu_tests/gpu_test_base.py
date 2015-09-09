@@ -79,12 +79,10 @@ class TestBase(benchmark_module.Benchmark):
 class ValidatorBase(page_test.PageTest):
   def __init__(self,
                needs_browser_restart_after_each_page=False,
-               discard_first_result=False,
                clear_cache_before_each_run=False):
     super(ValidatorBase, self).__init__(
       needs_browser_restart_after_each_page=\
         needs_browser_restart_after_each_page,
-      discard_first_result=discard_first_result,
       clear_cache_before_each_run=clear_cache_before_each_run)
 
   def WillNavigateToPage(self, page, tab):
