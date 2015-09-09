@@ -19,17 +19,23 @@ const char kBrandingExperimentName[] = "PasswordBranding";
 const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
 const char kSmartLockNoBrandingGroupName[] = "NoSmartLockBranding";
 
+enum CustomPassphraseState { NO_CUSTOM_PASSPHRASE, CUSTOM_PASSPHRASE };
+
+enum Branding { NO_BRANDING, BRANDING };
+
+enum FirstRunExperience { NO_FIRST_RUN_EXPERIENCE, FIRST_RUN_EXPERIENCE };
+
 struct IsSmartLockBrandingEnabledTestcase {
-  bool is_using_secondary_passphrase;
+  CustomPassphraseState passphrase_state;
   syncer::ModelType type;
-  bool is_branding_enabled;
+  Branding branding;
 };
 
 struct ShouldShowSavePromptFirstRunExperienceTestcase {
-  bool is_using_secondary_passphrase;
+  CustomPassphraseState passphrase_state;
   syncer::ModelType type;
   bool pref_value;
-  bool is_branding_enabled;
+  FirstRunExperience first_run_experience;
 };
 
 class TestSyncService : public sync_driver::FakeSyncService {
@@ -93,35 +99,43 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
 
   void TestIsSmartLockBrandingEnabledTestcase(
       const IsSmartLockBrandingEnabledTestcase& test_case) {
-    syncer::ModelTypeSet active_types;
-    active_types.Put(test_case.type);
-    sync_service()->ClearActiveDataTypes();
-    sync_service()->SetActiveDataTypes(active_types);
-    sync_service()->SetIsUsingSecondaryPassphrase(
-        test_case.is_using_secondary_passphrase);
-    EXPECT_EQ(
-        test_case.is_branding_enabled,
-        password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service()));
+    SetupFakeSyncServiceForTestCase(test_case.type, test_case.passphrase_state);
+    bool is_smart_lock_branding_enabled =
+        password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service());
+    if (test_case.branding == BRANDING) {
+      EXPECT_TRUE(is_smart_lock_branding_enabled);
+    } else {
+      EXPECT_FALSE(is_smart_lock_branding_enabled);
+    }
   }
 
   void TestShouldShowSavePromptFirstRunExperienceTestcase(
       const ShouldShowSavePromptFirstRunExperienceTestcase& test_case) {
-    syncer::ModelTypeSet active_types;
-    active_types.Put(test_case.type);
-    sync_service()->ClearActiveDataTypes();
-    sync_service()->SetActiveDataTypes(active_types);
-    sync_service()->SetIsUsingSecondaryPassphrase(
-        test_case.is_using_secondary_passphrase);
+    SetupFakeSyncServiceForTestCase(test_case.type, test_case.passphrase_state);
     prefs()->SetBoolean(
         password_manager::prefs::kWasSavePrompFirstRunExperienceShown,
         test_case.pref_value);
-    EXPECT_EQ(
-        test_case.is_branding_enabled,
+    bool should_show_first_run_experience =
         password_bubble_experiment::ShouldShowSavePromptFirstRunExperience(
-            sync_service(), prefs()));
+            sync_service(), prefs());
+    if (test_case.first_run_experience == FIRST_RUN_EXPERIENCE) {
+      EXPECT_TRUE(should_show_first_run_experience);
+    } else {
+      EXPECT_FALSE(should_show_first_run_experience);
+    }
   }
 
- protected:
+ private:
+  void SetupFakeSyncServiceForTestCase(syncer::ModelType type,
+                                       CustomPassphraseState passphrase_state) {
+    syncer::ModelTypeSet active_types;
+    active_types.Put(type);
+    sync_service()->ClearActiveDataTypes();
+    sync_service()->SetActiveDataTypes(active_types);
+    sync_service()->SetIsUsingSecondaryPassphrase(passphrase_state ==
+                                                  CUSTOM_PASSPHRASE);
+  }
+
   TestSyncService fake_sync_service_;
   base::FieldTrialList field_trial_list_;
   TestingPrefServiceSimple pref_service_;
@@ -130,10 +144,10 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        IsSmartLockBrandingEnabledTest) {
   const IsSmartLockBrandingEnabledTestcase kTestData[] = {
-      {true, syncer::PASSWORDS, false},
-      {false, syncer::PASSWORDS, true},
-      {true, syncer::BOOKMARKS, false},
-      {false, syncer::BOOKMARKS, false},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, BRANDING},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING},
   };
 
   EnforceExperimentGroup(kSmartLockBrandingGroupName);
@@ -145,10 +159,10 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        IsSmartLockBrandingEnabledTestNoBranding) {
   const IsSmartLockBrandingEnabledTestcase kTestData[] = {
-      {true, syncer::PASSWORDS, false},
-      {false, syncer::PASSWORDS, false},
-      {true, syncer::BOOKMARKS, false},
-      {false, syncer::BOOKMARKS, false},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING},
   };
 
   EnforceExperimentGroup(kSmartLockNoBrandingGroupName);
@@ -160,14 +174,14 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        ShoulShowSavePrompBrandingGroup) {
   const struct ShouldShowSavePromptFirstRunExperienceTestcase kTestData[] = {
-      {true, syncer::PASSWORDS, true, false},
-      {true, syncer::PASSWORDS, false, false},
-      {false, syncer::PASSWORDS, true, false},
-      {false, syncer::PASSWORDS, false, true},
-      {true, syncer::BOOKMARKS, true, false},
-      {true, syncer::BOOKMARKS, false, false},
-      {false, syncer::BOOKMARKS, true, false},
-      {false, syncer::BOOKMARKS, false, false},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, true, NO_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, false, NO_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true, NO_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false, NO_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, true, NO_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, false, FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true, NO_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false, NO_FIRST_RUN_EXPERIENCE},
   };
 
   EnforceExperimentGroup(kSmartLockBrandingGroupName);
@@ -179,14 +193,14 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        ShoulShowSavePrompNoBrandingGroup) {
   const struct ShouldShowSavePromptFirstRunExperienceTestcase kTestData[] = {
-      {true, syncer::PASSWORDS, true, false},
-      {true, syncer::PASSWORDS, false, false},
-      {false, syncer::PASSWORDS, true, false},
-      {false, syncer::PASSWORDS, false, false},
-      {true, syncer::BOOKMARKS, true, false},
-      {true, syncer::BOOKMARKS, false, false},
-      {false, syncer::BOOKMARKS, true, false},
-      {false, syncer::BOOKMARKS, false, false},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, true, NO_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, false, NO_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true, NO_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false, NO_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, true, NO_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, false, NO_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true, NO_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false, NO_FIRST_RUN_EXPERIENCE},
   };
 
   EnforceExperimentGroup(kSmartLockNoBrandingGroupName);
