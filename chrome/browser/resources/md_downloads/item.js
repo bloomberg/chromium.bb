@@ -147,11 +147,6 @@ cr.define('downloads', function() {
         this.set('data_.' + key, data[key]);
       }
 
-      // TODO(dbeam): Move to a computeClass_() method + data binding.
-      this.$.content.classList.toggle('is-active', this.isActive_);
-      this.$.content.classList.toggle('dangerous', this.isDangerous_);
-      this.$.content.classList.toggle('show-progress', this.showProgress_);
-
       var desc = this.getDangerText_(data) || this.getStatusText_(data);
 
       // Status goes in the "tag" (next to the file name) if there's no file.
@@ -171,6 +166,22 @@ cr.define('downloads', function() {
         var icon = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
         this.iconLoader_.loadScaledIcon(this.$['file-icon'], icon);
       }
+    },
+
+    /** @private */
+    computeClass_: function() {
+      var classes = [];
+
+      if (this.isActive_)
+        classes.push('is-active');
+
+      if (this.isDangerous_)
+        classes.push('dangerous');
+
+      if (this.showProgress_)
+        classes.push('show-progress');
+
+      return classes.join(' ');
     },
 
     /** @private */

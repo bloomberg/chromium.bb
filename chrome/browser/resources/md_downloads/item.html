@@ -18,7 +18,8 @@
     </div>
 
     <paper-material id="content" on-dragstart="onDragStart_"
-        elevation$="[[computeElevation_(isActive_)]]">
+        elevation$="[[computeElevation_(isActive_)]]"
+        class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
       <div id="file-icon-wrapper" class="icon-wrapper">
         <img class="icon" id="file-icon" alt="" hidden$="[[isDangerous_]]">
         <div class="icon" id="warning" hidden$="[[!isDangerous_]]"></div>
@@ -71,23 +72,25 @@
               i18n-values=".innerHTML:controlByExtension"></span>
         </div>
 
-        <div id="dangerous" class="controls" hidden$="[[!isDangerous_]]">
-          <!-- Dangerous file types (e.g. .exe, .jar). -->
-          <template is="dom-if" if="[[!isMalware_]]">
-            <paper-button id="discard" on-click="onDiscardDangerous_"
-                class="discard">[[i18n_.discard]]</paper-button>
-            <paper-button id="save" on-click="onSaveDangerous_"
-                class="keep">[[i18n_.save]]</paper-button>
-          </template>
+        <template is="dom-if" if="[[isDangerous_]]">
+          <div id="dangerous" class="controls">
+            <!-- Dangerous file types (e.g. .exe, .jar). -->
+            <template is="dom-if" if="[[!isMalware_]]">
+              <paper-button id="discard" on-click="onDiscardDangerous_"
+                  class="discard">[[i18n_.discard]]</paper-button>
+              <paper-button id="save" on-click="onSaveDangerous_"
+                  class="keep">[[i18n_.save]]</paper-button>
+            </template>
 
-          <!-- Things that safe browsing has determined to be dangerous. -->
-          <template is="dom-if" if="[[isMalware_]]">
-            <paper-button id="danger-remove" on-click="onDiscardDangerous_"
-                class="discard">[[i18n_.remove]]</paper-button>
-            <paper-button id="restore" on-click="onSaveDangerous_"
-                class="keep">[[i18n_.restore]</paper-button>
-          </template>
-        </div>
+            <!-- Things that safe browsing has determined to be dangerous. -->
+            <template is="dom-if" if="[[isMalware_]]">
+              <paper-button id="danger-remove" on-click="onDiscardDangerous_"
+                  class="discard">[[i18n_.remove]]</paper-button>
+              <paper-button id="restore" on-click="onSaveDangerous_"
+                  class="keep">[[i18n_.restore]</paper-button>
+            </template>
+          </div>
+        </template>
       </div>
 
       <div id="remove-wrapper" class="icon-wrapper">
