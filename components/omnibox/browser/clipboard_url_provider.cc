@@ -45,7 +45,7 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
 
   // Add a clipboard match just below the verbatim match.
   AutocompleteMatch match(this, verbatim_match.relevance - 1, false,
-                          AutocompleteMatchType::NAVSUGGEST);
+                          AutocompleteMatchType::CLIPBOARD);
   match.destination_url = url;
   match.contents.assign(url_formatter::FormatUrl(
       url, client_->GetAcceptLanguages(), url_formatter::kFormatUrlOmitAll,

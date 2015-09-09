@@ -62,6 +62,8 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::BOOKMARK_TITLE;
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
       return OmniboxEventProto::Suggestion::NAVSUGGEST_PERSONALIZED;
+    case AutocompleteMatchType::CLIPBOARD:
+      return OmniboxEventProto::Suggestion::CLIPBOARD;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::NUM_TYPES:
       break;

@@ -225,6 +225,7 @@ message OmniboxEventProto {
                                     // own type but instead can be attached to
                                     // suggestions of any type.
       CALCULATOR              = 23; // A calculator answer.
+      CLIPBOARD               = 24; // An URL based on the clipboard.
     }
     optional ResultType result_type = 2;
 
