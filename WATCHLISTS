@@ -128,6 +128,9 @@
                   'content/test/data/battery_status/|'\
                   'device/battery/',
     },
+    'blimp': {
+      'filepath': '^blimp/',
+    },
     'bookmarks': {
       'filepath': 'chrome/browser/bookmarks/' \
                   '|chrome/browser/extensions/api/bookmark_manager_private/' \
@@ -917,6 +920,9 @@
     'base_memory': ['gavinp+memory@chromium.org'],
     'base_win': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
+    'blimp' : ['maniscalco+watch-blimp@chromium.org',
+               'nyquist+watch-blimp@chromium.org',
+               'kmarshall+watch-blimp@chromium.org'],
     'bookmarks': ['noyau+watch@chromium.org', 'tfarina@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org'],
     'browser_components': ['browser-components-watch@chromium.org'],
