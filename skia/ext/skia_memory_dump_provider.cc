@@ -9,7 +9,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "skia/ext/SkTraceMemoryDump_chrome.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/src/core/SkResourceCache.h"
 
 namespace skia {
 
