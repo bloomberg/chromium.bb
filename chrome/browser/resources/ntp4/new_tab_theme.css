@@ -14,6 +14,7 @@ html {
   left: ${leftAlignAttribution};
   right: ${rightAlignAttribution};
   text-align: ${textAlignAttribution};
+  display: ${displayAttribution};
 }
 
 #attribution-img {

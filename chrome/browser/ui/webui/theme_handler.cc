@@ -39,10 +39,7 @@ void ThemeHandler::Observe(int type,
                            const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
   InitializeCSSCaches();
-  base::FundamentalValue attribution(
-      ThemeServiceFactory::GetForProfile(GetProfile())->HasCustomImage(
-          IDR_THEME_NTP_ATTRIBUTION));
-  web_ui()->CallJavascriptFunction("ntp.themeChanged", attribution);
+  web_ui()->CallJavascriptFunction("ntp.themeChanged");
 }
 
 void ThemeHandler::InitializeCSSCaches() {

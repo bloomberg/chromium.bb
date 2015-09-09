@@ -411,9 +411,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   base::DictionaryValue load_time_data;
   load_time_data.SetBoolean("bookmarkbarattached",
       prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
-  load_time_data.SetBoolean("hasattribution",
-      ThemeServiceFactory::GetForProfile(profile_)->HasCustomImage(
-          IDR_THEME_NTP_ATTRIBUTION));
   load_time_data.SetBoolean("showAppLauncherPromo",
       ShouldShowAppLauncherPromo());
   load_time_data.SetString("title",
@@ -661,6 +658,9 @@ void NTPResourceCache::CreateNewTabCSS() {
     substitutions["rightAlignAttribution"] = "0";
     substitutions["textAlignAttribution"] = "left";
   }
+
+  substitutions["displayAttribution"] =
+      tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ? "inline" : "none";
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
