@@ -24,6 +24,20 @@ MockUsbDevice::MockUsbDevice(uint16 vendor_id,
                 base::UTF8ToUTF16(serial_number)) {
 }
 
+MockUsbDevice::MockUsbDevice(uint16 vendor_id,
+                             uint16 product_id,
+                             const std::string& manufacturer_string,
+                             const std::string& product_string,
+                             const std::string& serial_number,
+                             const GURL& webusb_landing_page)
+    : UsbDevice(vendor_id,
+                product_id,
+                base::UTF8ToUTF16(manufacturer_string),
+                base::UTF8ToUTF16(product_string),
+                base::UTF8ToUTF16(serial_number)) {
+  webusb_landing_page_ = webusb_landing_page;
+}
+
 MockUsbDevice::~MockUsbDevice() {
 }
 

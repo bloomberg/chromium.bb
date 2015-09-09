@@ -740,6 +740,9 @@
     'webdata_unittest_sources': [
       'webdata/common/web_database_migration_unittest.cc',
     ],
+    'webusb_detector_unittest_sources': [
+      'webusb/webusb_detector_unittest.cc',
+    ],
   },
   'targets': [
     {
@@ -1216,6 +1219,7 @@
             '<@(feedback_unittest_sources)',
             '<@(proximity_auth_unittest_sources)',
             '<@(tracing_unittest_sources)',
+            '<@(webusb_detector_unittest_sources)',
           ],
           'sources!': [
             'variations/variations_request_scheduler_mobile_unittest.cc',
@@ -1223,6 +1227,9 @@
           ],
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
+            '../device/core/core.gyp:device_core',
+            '../device/usb/usb.gyp:device_usb',
+            '../device/usb/usb.gyp:device_usb_mocks',
             '../google_apis/google_apis.gyp:google_apis_test_support',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             'components.gyp:audio_modem',
@@ -1236,6 +1243,7 @@
             'components.gyp:pref_registry_test_support',
             'components.gyp:proximity_auth',
             'components.gyp:proximity_auth_test_support',
+            'components.gyp:webusb',
             'tracing.gyp:tracing',
           ],
         }],

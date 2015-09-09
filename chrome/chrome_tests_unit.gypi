@@ -1470,6 +1470,7 @@
       # ContentProvider.
       'browser/bookmarks/bookmark_html_writer_unittest.cc',
       'browser/browser_commands_unittest.cc',
+      'browser/chrome_webusb_browser_client_unittest.cc',
       'browser/diagnostics/diagnostics_controller_unittest.cc',
       'browser/diagnostics/diagnostics_model_unittest.cc',
       'browser/download/download_commands_unittest.cc',

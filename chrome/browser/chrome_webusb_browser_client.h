@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROME_WEBUSB_BROWSER_CLIENT_H_
 #define CHROME_BROWSER_CHROME_WEBUSB_BROWSER_CLIENT_H_
 
+#include "base/macros.h"
 #include "components/webusb/webusb_browser_client.h"
 
 class GURL;

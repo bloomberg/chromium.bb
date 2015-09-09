@@ -422,6 +422,7 @@ test("components_unittests") {
       "//components/sessions:unit_tests",
       "//components/storage_monitor:unit_tests",
       "//components/tracing:unit_tests",
+      "//components/webusb:unit_tests",
     ]
   }
 
