@@ -31,6 +31,7 @@
 #ifndef ScopedEventQueue_h
 #define ScopedEventQueue_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -41,7 +42,7 @@ namespace blink {
 
 class EventDispatchMediator;
 
-class ScopedEventQueue {
+class CORE_EXPORT ScopedEventQueue {
     WTF_MAKE_NONCOPYABLE(ScopedEventQueue); WTF_MAKE_FAST_ALLOCATED(ScopedEventQueue);
 public:
     ~ScopedEventQueue();

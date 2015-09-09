@@ -11,6 +11,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLOptGroupElement.h"
@@ -404,6 +405,7 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
 {
     ASSERT(m_popup);
     ASSERT(m_ownerElement);
+    EventQueueScope scope;
     RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
     bool success;
     int listIndex = stringValue.toInt(&success);
