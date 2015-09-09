@@ -160,8 +160,8 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
     if (!selection.isNone() && !m_compositionRange->collapsed()) {
         Position start = selection.start();
         Position end = selection.end();
-        if (selection.start().compareTo(m_compositionRange->startPosition()) >= 0
-            && selection.end().compareTo(m_compositionRange->endPosition()) <= 0)
+        if (start.compareTo(m_compositionRange->startPosition()) >= 0
+            && end.compareTo(m_compositionRange->endPosition()) <= 0)
             return;
     }
 
