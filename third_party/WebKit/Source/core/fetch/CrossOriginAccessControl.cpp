@@ -129,7 +129,7 @@ static String buildAccessControlFailureMessage(const String& detail, SecurityOri
     return detail + " Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
 }
 
-bool passesAccessControlCheck(const ResourceResponse& response, StoredCredentials includeCredentials, SecurityOrigin* securityOrigin, String& errorDescription)
+bool passesAccessControlCheck(const ResourceResponse& response, StoredCredentials includeCredentials, SecurityOrigin* securityOrigin, String& errorDescription, WebURLRequest::RequestContext context)
 {
     AtomicallyInitializedStaticReference(AtomicString, allowOriginHeaderName, (new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral)));
     AtomicallyInitializedStaticReference(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral)));
@@ -158,6 +158,9 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
             if (isInterestingStatusCode(statusCode))
                 errorDescription.append(" The response had HTTP status code " + String::number(statusCode) + ".");
 
+            if (context == WebURLRequest::RequestContextFetch)
+                errorDescription.append(" If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.");
+
             return false;
         }
 
@@ -172,6 +175,8 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
                 detail = "The 'Access-Control-Allow-Origin' header has a value '" + allowOriginHeaderValue + "' that is not equal to the supplied origin.";
         }
         errorDescription = buildAccessControlFailureMessage(detail, securityOrigin);
+        if (context == WebURLRequest::RequestContextFetch)
+            errorDescription.append(" Have the server send the header with a valid value, or, if an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.");
         return false;
     }
 
@@ -246,7 +251,7 @@ bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, Re
         bool allowRedirect = isLegalRedirectLocation(newURL, errorDescription);
         if (allowRedirect) {
             // Step 5: perform resource sharing access check.
-            allowRedirect = passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription);
+            allowRedirect = passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription, newRequest.requestContext());
             if (allowRedirect) {
                 RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(originalURL);
                 // Step 6: if the request URL origin is not same origin as the original URL's,
