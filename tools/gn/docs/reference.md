@@ -1449,7 +1449,7 @@
 
   "abspath"
       The full absolute path name to the file or directory. It will be
-      resolved relative to the currebt directory, and then the source-
+      resolved relative to the current directory, and then the source-
       absolute version will be returned. If the input is system-
       absolute, the same input will be returned.
         "foo/bar.txt" => "//mydir/foo/bar.txt"
