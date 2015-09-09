@@ -17,16 +17,39 @@ class SpdyPriorityTreePeer {
  public:
   explicit SpdyPriorityTreePeer(SpdyPriorityTree<NodeId>* tree) : tree_(tree) {}
 
-  void PropagateNodeState(NodeId node) {
-    tree_->PropagateNodeState(node);
+  void PropagateNodeState(NodeId node_id) {
+    tree_->PropagateNodeState(node_id);
+  }
+
+  int TotalChildWeights(NodeId node_id) const {
+    return tree_->FindNode(node_id)->total_child_weights;
+  }
+
+  int TotalWriteableChildWeights(NodeId node_id) const {
+    return tree_->FindNode(node_id)->total_writeable_child_weights;
+  }
+
+  bool ValidateInvariants() const {
+    return tree_->ValidateInvariantsForTests();
   }
 
  private:
   SpdyPriorityTree<NodeId>* tree_;
 };
 
-TEST(SpdyPriorityTreeTest, AddAndRemoveNodes) {
-  SpdyPriorityTree<uint32> tree;
+class SpdyPriorityTreeTest : public ::testing::Test {
+ protected:
+  typedef uint32 SpdyStreamId;
+  typedef std::pair<SpdyStreamId, float> PriorityNode;
+  typedef std::vector<PriorityNode> PriorityList;
+
+  SpdyPriorityTreeTest() : peer(&tree) {}
+
+  SpdyPriorityTree<SpdyStreamId> tree;
+  SpdyPriorityTreePeer<SpdyStreamId> peer;
+};
+
+TEST_F(SpdyPriorityTreeTest, AddAndRemoveNodes) {
   EXPECT_EQ(1, tree.num_nodes());
   EXPECT_TRUE(tree.NodeExists(0));
   EXPECT_FALSE(tree.NodeExists(1));
@@ -79,11 +102,10 @@ TEST(SpdyPriorityTreeTest, AddAndRemoveNodes) {
   EXPECT_TRUE(tree.SetWeight(17, 150));
   EXPECT_EQ(150, tree.GetWeight(17));
 
-  ASSERT_TRUE(tree.ValidateInvariantsForTests());
+  ASSERT_TRUE(peer.ValidateInvariants());
 }
 
-TEST(SpdyPriorityTreeTest, SetParent) {
-  SpdyPriorityTree<uint32> tree;
+TEST_F(SpdyPriorityTreeTest, SetParent) {
   tree.AddNode(1, 0, 100, false);
   tree.AddNode(2, 1, 20, false);
   tree.AddNode(3, 2, 30, false);
@@ -119,10 +141,10 @@ TEST(SpdyPriorityTreeTest, SetParent) {
   EXPECT_EQ(1u, tree.GetParent(2));
   EXPECT_TRUE(tree.HasChild(1, 2));
 
-  ASSERT_TRUE(tree.ValidateInvariantsForTests());
+  ASSERT_TRUE(peer.ValidateInvariants());
 }
 
-TEST(SpdyPriorityTreeTest, BlockAndUnblock) {
+TEST_F(SpdyPriorityTreeTest, BlockAndUnblock) {
   /* Create the tree.
 
            0
@@ -136,8 +158,6 @@ TEST(SpdyPriorityTreeTest, BlockAndUnblock) {
    15 16
 
   */
-  SpdyPriorityTree<uint32> tree;
-  SpdyPriorityTreePeer<uint32> tree_peer(&tree);
   tree.AddNode(1, 0, 100, false);
   tree.AddNode(2, 0, 100, false);
   tree.AddNode(3, 0, 100, false);
@@ -171,18 +191,14 @@ TEST(SpdyPriorityTreeTest, BlockAndUnblock) {
   EXPECT_EQ(7u, tree.GetParent(14));
   EXPECT_EQ(8u, tree.GetParent(15));
   EXPECT_EQ(8u, tree.GetParent(16));
-  ASSERT_TRUE(tree.ValidateInvariantsForTests());
+  ASSERT_TRUE(peer.ValidateInvariants());
 
-  EXPECT_EQ(tree.FindNode(0)->total_child_weights,
-            tree.FindNode(1)->weight +
-            tree.FindNode(2)->weight +
-            tree.FindNode(3)->weight);
-  EXPECT_EQ(tree.FindNode(3)->total_child_weights,
-            tree.FindNode(7)->weight);
-  EXPECT_EQ(tree.FindNode(7)->total_child_weights,
-            tree.FindNode(13)->weight + tree.FindNode(14)->weight);
-  EXPECT_EQ(tree.FindNode(13)->total_child_weights, 0);
-  EXPECT_EQ(tree.FindNode(14)->total_child_weights, 0);
+  EXPECT_EQ(peer.TotalChildWeights(0),
+            tree.GetWeight(1) + tree.GetWeight(2) + tree.GetWeight(3));
+  EXPECT_EQ(peer.TotalChildWeights(3), tree.GetWeight(7));
+  EXPECT_EQ(peer.TotalChildWeights(7), tree.GetWeight(13) + tree.GetWeight(14));
+  EXPECT_EQ(peer.TotalChildWeights(13), 0);
+  EXPECT_EQ(peer.TotalChildWeights(14), 0);
 
   // Set all nodes ready to write.
   EXPECT_TRUE(tree.SetReady(1, true));
@@ -205,63 +221,51 @@ TEST(SpdyPriorityTreeTest, BlockAndUnblock) {
   // Number of readable child weights should not change because
   // 7 has unblocked children.
   tree.SetBlocked(7, true);
-  tree_peer.PropagateNodeState(kRootNodeId);
-  EXPECT_EQ(tree.FindNode(3)->total_child_weights,
-            tree.FindNode(3)->total_writeable_child_weights);
+  peer.PropagateNodeState(kRootNodeId);
+  EXPECT_EQ(peer.TotalChildWeights(3), peer.TotalWriteableChildWeights(3));
 
   // Readable children for 7 should decrement.
   // Number of readable child weights for 3 still should not change.
   tree.SetBlocked(13, true);
-  tree_peer.PropagateNodeState(kRootNodeId);
-  EXPECT_EQ(tree.FindNode(3)->total_child_weights,
-            tree.FindNode(3)->total_writeable_child_weights);
-  EXPECT_EQ(tree.FindNode(14)->weight,
-            tree.FindNode(7)->total_writeable_child_weights);
+  peer.PropagateNodeState(kRootNodeId);
+  EXPECT_EQ(peer.TotalChildWeights(3), peer.TotalWriteableChildWeights(3));
+  EXPECT_EQ(tree.GetWeight(14), peer.TotalWriteableChildWeights(7));
 
   // Once 14 becomes blocked, readable children for 7 and 3 should both be
   // decremented. Total readable weights at the root should still be the same
   // because 3 is still writeable.
   tree.SetBlocked(14, true);
-  tree_peer.PropagateNodeState(kRootNodeId);
-  EXPECT_EQ(0, tree.FindNode(3)->total_writeable_child_weights);
-  EXPECT_EQ(0, tree.FindNode(7)->total_writeable_child_weights);
-  EXPECT_EQ(tree.FindNode(0)->total_child_weights,
-            tree.FindNode(1)->weight +
-            tree.FindNode(2)->weight +
-            tree.FindNode(3)->weight);
+  peer.PropagateNodeState(kRootNodeId);
+  EXPECT_EQ(0, peer.TotalWriteableChildWeights(3));
+  EXPECT_EQ(0, peer.TotalWriteableChildWeights(7));
+  EXPECT_EQ(peer.TotalChildWeights(0),
+            tree.GetWeight(1) + tree.GetWeight(2) + tree.GetWeight(3));
 
   // And now the root should be decremented as well.
   tree.SetBlocked(3, true);
-  tree_peer.PropagateNodeState(kRootNodeId);
-  EXPECT_EQ(tree.FindNode(1)->weight + tree.FindNode(2)->weight,
-            tree.FindNode(0)->total_writeable_child_weights);
+  peer.PropagateNodeState(kRootNodeId);
+  EXPECT_EQ(tree.GetWeight(1) + tree.GetWeight(2),
+            peer.TotalWriteableChildWeights(0));
 
   // Unblocking 7 should propagate all the way up to the root.
   tree.SetBlocked(7, false);
-  tree_peer.PropagateNodeState(kRootNodeId);
-  EXPECT_EQ(tree.FindNode(0)->total_writeable_child_weights,
-            tree.FindNode(1)->weight +
-            tree.FindNode(2)->weight +
-            tree.FindNode(3)->weight);
-  EXPECT_EQ(tree.FindNode(3)->total_writeable_child_weights,
-            tree.FindNode(7)->weight);
-  EXPECT_EQ(0, tree.FindNode(7)->total_writeable_child_weights);
+  peer.PropagateNodeState(kRootNodeId);
+  EXPECT_EQ(peer.TotalWriteableChildWeights(0),
+            tree.GetWeight(1) + tree.GetWeight(2) + tree.GetWeight(3));
+  EXPECT_EQ(peer.TotalWriteableChildWeights(3), tree.GetWeight(7));
+  EXPECT_EQ(0, peer.TotalWriteableChildWeights(7));
 
   // Ditto for reblocking 7.
   tree.SetBlocked(7, true);
-  tree_peer.PropagateNodeState(kRootNodeId);
-  EXPECT_EQ(tree.FindNode(0)->total_writeable_child_weights,
-            tree.FindNode(1)->weight + tree.FindNode(2)->weight);
-  EXPECT_EQ(0, tree.FindNode(3)->total_writeable_child_weights);
-  EXPECT_EQ(0, tree.FindNode(7)->total_writeable_child_weights);
-  ASSERT_TRUE(tree.ValidateInvariantsForTests());
+  peer.PropagateNodeState(kRootNodeId);
+  EXPECT_EQ(peer.TotalWriteableChildWeights(0),
+            tree.GetWeight(1) + tree.GetWeight(2));
+  EXPECT_EQ(0, peer.TotalWriteableChildWeights(3));
+  EXPECT_EQ(0, peer.TotalWriteableChildWeights(7));
+  ASSERT_TRUE(peer.ValidateInvariants());
 }
 
-TEST(SpdyPriorityTreeTest, GetPriorityList) {
-  typedef uint32 SpdyStreamId;
-  typedef std::pair<SpdyStreamId, float> PriorityNode;
-  typedef std::vector<PriorityNode> PriorityList;
-
+TEST_F(SpdyPriorityTreeTest, GetPriorityList) {
   PriorityList expected_list;
   PriorityList priority_list;
 
@@ -276,7 +280,6 @@ TEST(SpdyPriorityTreeTest, GetPriorityList) {
      8
 
   */
-  SpdyPriorityTree<uint32> tree;
   tree.AddNode(1, 0, 10, false);
   tree.AddNode(2, 0, 20, false);
   tree.AddNode(3, 0, 30, false);
@@ -363,11 +366,7 @@ TEST(SpdyPriorityTreeTest, GetPriorityList) {
   EXPECT_EQ(expected_list, priority_list);
 }
 
-TEST(SpdyPriorityTreeTest, CalculateRoundedWeights) {
-  typedef uint32 SpdyStreamId;
-  typedef std::pair<SpdyStreamId, float> PriorityNode;
-  typedef std::vector<PriorityNode> PriorityList;
-
+TEST_F(SpdyPriorityTreeTest, CalculateRoundedWeights) {
   PriorityList expected_list;
   PriorityList priority_list;
 
@@ -379,7 +378,6 @@ TEST(SpdyPriorityTreeTest, CalculateRoundedWeights) {
        //|\  |\
       83 4 5 6 7
   */
-  SpdyPriorityTree<uint32> tree;
   tree.AddNode(3, 0, 100, false);
   tree.AddNode(4, 0, 100, false);
   tree.AddNode(5, 0, 100, false);

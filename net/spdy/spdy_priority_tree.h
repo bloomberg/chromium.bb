@@ -18,16 +18,15 @@
 
 namespace net {
 
-// This data structure implements the HTTP2 prioritization data structure
-// defined in draft standard:
-// http://tools.ietf.org/html/draft-ietf-httpbis-http2-13
+// This data structure implements the HTTP/2 stream priority tree defined in
+// section 5.3 of RFC 7540:
+// http://tools.ietf.org/html/rfc7540#section-5.3
 //
-// Nodes can be added and removed, and dependencies between them defined.  Each
-// node can have at most one parent and at most one child (forming a list), but
-// there can be multiple lists, with each list root having its own priority.
-// Individual nodes can also be marked as ready to read/write, and then the
-// whole structure can be queried to pick the next node to read/write out of
-// those ready.
+// Nodes can be added and removed, and dependencies between them defined.
+// Nodes constitute a tree rooted at node ID 0: each node has a single parent
+// node, and 0 or more child nodes.  Individual nodes can be marked as ready to
+// read/write, and then the whole structure can be queried to pick the next
+// node to read/write out of those that are ready.
 //
 // The NodeId type must be a POD that supports comparison (most
 // likely, it will be a number).
@@ -49,27 +48,6 @@ class SpdyPriorityTree {
  public:
   SpdyPriorityTree();
   ~SpdyPriorityTree();
-
-  typedef std::list<NodeId> List;
-  struct Node {
-    Node();
-    ~Node();
-
-    NodeId id;
-    NodeId parent_id;
-    int weight;  // Weights can range between 1 and 256 (inclusive).
-    // The total weight of this node's direct descendants.
-    int total_child_weights;
-    // The total weight of direct descendants that are writeable
-    // (ready to write and not blocked). This value does not necessarily
-    // reflect the current state of the tree; instead, we lazily update it
-    // on calls to PropagateNodeState(node.id).
-    int total_writeable_child_weights;
-    List* child_list;  // node ID's of children, if any
-    bool blocked;  // Is the associated stream write-blocked?
-    bool ready;  // Does the stream have data ready for writing?
-    float priority;  // The fraction of resources to dedicate to this node.
-  };
 
   // Orders in descending order of priority.
   struct NodePriorityComparator {
@@ -130,25 +108,53 @@ class SpdyPriorityTree {
   // if unable to mark the specified node.
   bool SetReady(NodeId node_id, bool ready);
 
-  // Return true if all internal invariants hold (useful for unit tests).
-  // Unless there are bugs, this should always return true.
-  bool ValidateInvariantsForTests() const;
-
-  // Get the given node, or return NULL if it doesn't exist.
-  const Node* FindNode(NodeId node_id) const;
-
   // Returns an ordered list of writeable nodes and their priorities.
   // Priority is calculated as:
   // parent's priority * (node's weight / sum of sibling weights)
   PriorityNodeList GetPriorityList();
 
- protected:
+ private:
+  typedef std::list<NodeId> List;
+
+  struct Node {
+    Node();
+    ~Node();
+
+    // ID for this node.
+    NodeId id;
+    // ID of parent node.
+    NodeId parent_id;
+    // Weights can range between 1 and 256 (inclusive).
+    int weight;
+    // The total weight of this node's direct descendants.
+    int total_child_weights;
+    // The total weight of direct descendants that are writeable
+    // (ready to write and not blocked). This value does not necessarily
+    // reflect the current state of the tree; instead, we lazily update it
+    // on calls to PropagateNodeState(node.id).
+    int total_writeable_child_weights;
+    // Node IDs of children, if any.
+    List* child_list;
+    // Is the associated stream write-blocked?
+    bool blocked;
+    // Does the stream have data ready for writing?
+    bool ready;
+    // The fraction of resources to dedicate to this node.
+    float priority;
+  };
+
+  typedef base::hash_map<NodeId, Node> NodeMap;
+
   // Update the value of total_writeable_child_weights for the given node
   // to reflect the current state of the tree.
   void PropagateNodeState(NodeId node);
 
- private:
-  typedef base::hash_map<NodeId, Node> NodeMap;
+  // Get the given node, or return nullptr if it doesn't exist.
+  const Node* FindNode(NodeId node_id) const;
+
+  // Return true if all internal invariants hold (useful for unit tests).
+  // Unless there are bugs, this should always return true.
+  bool ValidateInvariantsForTests() const;
 
   NodeMap all_nodes_;  // maps from node IDs to Node objects
 
