@@ -1665,7 +1665,7 @@ HRESULT NativeThemeWin::PaintScaledTheme(HANDLE theme,
     float scale = save_transform.eM11;
     if (scale != 1 && save_transform.eM12 == 0) {
       ModifyWorldTransform(hdc, NULL, MWT_IDENTITY);
-      gfx::Rect scaled_rect(gfx::ToEnclosedRect(gfx::ScaleRect(rect, scale)));
+      gfx::Rect scaled_rect = gfx::ScaleToEnclosedRect(rect, scale);
       scaled_rect.Offset(save_transform.eDx, save_transform.eDy);
       RECT bounds = scaled_rect.ToRECT();
       HRESULT result = draw_theme_(theme, hdc, part_id, state_id, &bounds,
