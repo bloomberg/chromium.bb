@@ -133,7 +133,8 @@
             "aosp": "https://android.googlesource.com",
             "cros": "https://chromium.googlesource.com",
             "cros-internal": "https://chrome-internal.googlesource.com",
-            "kayle-cros-internal": "https://chrome-internal.googlesource.com"
+            "kayle-cros-internal": "https://chrome-internal.googlesource.com",
+            "weave": "https://weave.googlesource.com"
         },
         "EXTERNAL_MANIFEST_VERSIONS_PATH": "manifest-versions",
         "EXTERNAL_REMOTES": [
@@ -143,7 +144,8 @@
         "GERRIT_HOSTS": {
             "aosp": "android-review.googlesource.com",
             "cros": "chromium-review.googlesource.com",
-            "cros-internal": "chrome-internal-review.googlesource.com"
+            "cros-internal": "chrome-internal-review.googlesource.com",
+            "weave": "weave-review.googlesource.com"
         },
         "GIT_REMOTES": {
             "aosp": "https://android.googlesource.com",
@@ -151,7 +153,8 @@
             "chromium": "https://chromium.googlesource.com",
             "cros": "https://chromium.googlesource.com",
             "cros-internal": "https://chrome-internal.googlesource.com",
-            "kayle-cros-internal": "https://chrome-internal.googlesource.com"
+            "kayle-cros-internal": "https://chrome-internal.googlesource.com",
+            "weave": "https://weave.googlesource.com"
         },
         "GOB_REMOTES": {
             "chrome-internal": "cros-internal",
@@ -171,7 +174,14 @@
         "MANIFEST_VERSIONS_GOB_URL_TEST": "https://chromium.googlesource.com/chromiumos/manifest-versions-test",
         "MANIFEST_VERSIONS_GS_URL": "gs://chromeos-manifest-versions",
         "MANIFEST_VERSIONS_INT_GOB_URL": "https://chrome-internal.googlesource.com/chromeos/manifest-versions",
-        "MANIFEST_VERSIONS_INT_GOB_URL_TEST": "https://chrome-internal.googlesource.com/chromeos/manifest-versions-test"
+        "MANIFEST_VERSIONS_INT_GOB_URL_TEST": "https://chrome-internal.googlesource.com/chromeos/manifest-versions-test",
+        "WEAVE_GERRIT_HOST": "weave-review.googlesource.com",
+        "WEAVE_GERRIT_INSTANCE": "weave-review",
+        "WEAVE_GERRIT_URL": "https://weave-review.googlesource.com",
+        "WEAVE_GOB_HOST": "weave.googlesource.com",
+        "WEAVE_GOB_INSTANCE": "weave",
+        "WEAVE_GOB_URL": "https://weave.googlesource.com",
+        "WEAVE_REMOTE": "weave"
     },
     "_templates": {
         "asan": {

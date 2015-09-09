@@ -792,6 +792,8 @@ def DefaultSiteParameters():
       GerritInstanceParameters('INTERNAL', 'chrome-internal'))
   default_site_params.update(
       GerritInstanceParameters('AOSP', 'android', defaults=True))
+  default_site_params.update(
+      GerritInstanceParameters('WEAVE', 'weave', defaults=True))
 
   default_site_params.update(
       # Parameters to define which manifests to use.
@@ -809,6 +811,7 @@ def DefaultSiteParameters():
       CHROMIUM_REMOTE=None,
       CHROME_REMOTE=None,
       AOSP_REMOTE=None,
+      WEAVE_REMOTE=None,
 
       # Only remotes listed in CROS_REMOTES are considered branchable.
       # CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.

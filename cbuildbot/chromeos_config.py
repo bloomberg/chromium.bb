@@ -634,6 +634,7 @@ def GetConfig():
   chromium_remote = 'chromium'
   chrome_remote = 'chrome'
   aosp_remote = 'aosp'
+  weave_remote = 'weave'
 
   # Gerrit instance site parameters.
   site_params.update(
@@ -642,6 +643,8 @@ def GetConfig():
       config_lib.GerritInstanceParameters('INTERNAL', 'chrome-internal'))
   site_params.update(
       config_lib.GerritInstanceParameters('AOSP', 'android'))
+  site_params.update(
+      config_lib.GerritInstanceParameters('WEAVE', 'weave'))
 
   site_params.update(
       # Parameters to define which manifests to use.
@@ -666,19 +669,22 @@ def GetConfig():
       CHROMIUM_REMOTE=chromium_remote,
       CHROME_REMOTE=chrome_remote,
       AOSP_REMOTE=aosp_remote,
+      WEAVE_REMOTE=weave_remote,
 
       # Only remotes listed in CROS_REMOTES are considered branchable.
       # CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
       GERRIT_HOSTS={
           external_remote: site_params['EXTERNAL_GERRIT_HOST'],
           internal_remote: site_params['INTERNAL_GERRIT_HOST'],
-          aosp_remote: site_params['AOSP_GERRIT_HOST']
+          aosp_remote: site_params['AOSP_GERRIT_HOST'],
+          weave_remote: site_params['WEAVE_GERRIT_HOST']
       },
       CROS_REMOTES={
           external_remote: site_params['EXTERNAL_GOB_URL'],
           internal_remote: site_params['INTERNAL_GOB_URL'],
           kayle_internal_remote: site_params['INTERNAL_GOB_URL'],
-          aosp_remote: site_params['AOSP_GOB_URL']
+          aosp_remote: site_params['AOSP_GOB_URL'],
+          weave_remote: site_params['WEAVE_GOB_URL']
       },
       GIT_REMOTES={
           chromium_remote: site_params['EXTERNAL_GOB_URL'],
@@ -686,7 +692,8 @@ def GetConfig():
           external_remote: site_params['EXTERNAL_GOB_URL'],
           internal_remote: site_params['INTERNAL_GOB_URL'],
           kayle_internal_remote: site_params['INTERNAL_GOB_URL'],
-          aosp_remote: site_params['AOSP_GOB_URL']
+          aosp_remote: site_params['AOSP_GOB_URL'],
+          weave_remote: site_params['WEAVE_GOB_URL']
       },
 
       # Prefix to distinguish internal and external changes. This is used
