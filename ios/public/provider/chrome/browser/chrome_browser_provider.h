@@ -10,6 +10,7 @@
 #include <string>
 
 class InfoBarViewDelegate;
+class PrefRegistrySimple;
 class PrefService;
 class ProfileOAuth2TokenServiceIOSProvider;
 
@@ -28,6 +29,10 @@ class URLRequestContextGetter;
 
 namespace rappor {
 class RapporService;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // TODO(ios): Determine the best way to interface with Obj-C code through
@@ -67,6 +72,14 @@ class ChromeBrowserProvider {
   virtual net::URLRequestContextGetter* GetSystemURLRequestContext();
   // Gets the local state.
   virtual PrefService* GetLocalState();
+  // Asserts all iOS-specific |BrowserContextKeyedServiceFactory| are built.
+  virtual void AssertBrowserContextKeyedFactoriesBuilt();
+  // Registers all prefs that will be used via the local state PrefService.
+  virtual void RegisterLocalState(PrefRegistrySimple* registry);
+  // Registers all prefs that will be used via a PrefService attached to a
+  // Profile.
+  virtual void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry);
   // Returns an instance of profile OAuth2 token service provider.
   virtual ProfileOAuth2TokenServiceIOSProvider*
   GetProfileOAuth2TokenServiceIOSProvider();

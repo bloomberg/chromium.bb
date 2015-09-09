@@ -37,6 +37,16 @@ PrefService* ChromeBrowserProvider::GetLocalState() {
   return nullptr;
 }
 
+void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {
+}
+
+void ChromeBrowserProvider::RegisterLocalState(PrefRegistrySimple* registry) {
+}
+
+void ChromeBrowserProvider::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+}
+
 ProfileOAuth2TokenServiceIOSProvider*
 ChromeBrowserProvider::GetProfileOAuth2TokenServiceIOSProvider() {
   return nullptr;
