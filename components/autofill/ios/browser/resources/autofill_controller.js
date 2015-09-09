@@ -412,7 +412,7 @@ function formOrFieldsetsToFormData_(formElement, formControlElement,
  * Scans DOM and returns a JSON string representation of forms and form
  * extraction results.
  *
- * TODO(thestig): Merge with extractNewForms()?
+ * TODO(thestig): Obsolete. Convert callers to use extractNewForms() and remove.
  *
  * @param {number} requiredFields The minimum number of fields forms must have
  *     to be extracted.
@@ -420,16 +420,8 @@ function formOrFieldsetsToFormData_(formElement, formControlElement,
  *     forms data.
  */
 __gCrWeb.autofill['extractForms'] = function(requiredFields) {
-  var forms = [];
-  // Protect against custom implementation of Array.toJSON in host pages.
-  /** @suppress {checkTypes} */(function() { forms.toJSON = null; })();
-
-  __gCrWeb.autofill.extractNewForms(
-      window,
-      requiredFields,
-      forms);
   var results = new __gCrWeb.common.JSONSafeObject;
-  results['forms'] = forms;
+  results['forms'] = __gCrWeb.autofill.extractNewForms(requiredFields);
   return __gCrWeb.stringify(results);
 };
 
@@ -594,30 +586,12 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
 };
 
 /**
- * See extractFormsAndFormElements below.
- *
- * @param {HTMLFrameElement|Window} frame A window or a frame containing forms
- *     from which the data will be extracted.
- * @param {number} minimumRequiredFields The minimum number of fields a form
- *     should contain for autofill.
- * @param {Array<AutofillFormData>} forms Forms that will be filled in data of
- *     forms in frame.
- */
-__gCrWeb.autofill.extractNewForms = function(
-    frame, minimumRequiredFields, forms) {
-  __gCrWeb.autofill.extractFormsAndFormElements(
-      frame, minimumRequiredFields, forms);
-}
-
-/**
  * Scans the DOM in |frame| extracting and storing forms. Fills |forms| with
  * extracted forms.
  *
- * This method is based on the logic in method
+ * This method is based on the logic in method:
  *
- *     bool FormCache::ExtractNewForms(
- *         const WebFrame& frame,
- *         std::vector<FormData>* forms)
+ *     std::vector<FormData> ExtractNewForms();
  *
  * in chromium/src/components/autofill/content/renderer/form_cache.cc.
  *
@@ -628,8 +602,25 @@ __gCrWeb.autofill.extractNewForms = function(
  * This version still takes the minimumRequiredFields parameters. Whereas the
  * C++ version does not.
  *
- * TODO(thestig): Update iOS internal callers to use extractNewForms(). Once
- * that happens, this can be removed.
+ *
+ * @param {number} minimumRequiredFields The minimum number of fields a form
+ *     should contain for autofill.
+ * @return {Array<AutofillFormData>} The extracted forms.
+ */
+__gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
+  var forms = [];
+  // Protect against custom implementation of Array.toJSON in host pages.
+  /** @suppress {checkTypes} */(function() { forms.toJSON = null; })();
+
+  __gCrWeb.autofill.extractFormsAndFormElements(
+      window, minimumRequiredFields, forms);
+  return forms;
+}
+
+/**
+ * See extractNewForms() above.
+ *
+ * TODO(thestig): Obsolete. Convert callers to use extractNewForms() and remove.
  *
  * @param {HTMLFrameElement|Window} frame A window or a frame containing forms
  *     from which the data will be extracted.
