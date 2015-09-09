@@ -276,6 +276,7 @@
         'src/policy_low_level_unittest.cc',
         'src/policy_opcodes_unittest.cc',
         'src/ipc_unittest.cc',
+        'src/sandbox_nt_util_unittest.cc',
         'src/threadpool_unittest.cc',
         'src/win_utils_unittest.cc',
         'tests/common/test_utils.cc',

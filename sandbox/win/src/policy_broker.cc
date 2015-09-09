@@ -38,7 +38,7 @@ SANDBOX_INTERCEPT NtExports g_nt;
   if (NULL == g_nt.member) \
     return false
 
-bool SetupNtdllImports(TargetProcess *child) {
+bool InitGlobalNt() {
   HMODULE ntdll = ::GetModuleHandle(kNtdllName);
   base::win::PEImage ntdll_image(ntdll);
 
@@ -74,6 +74,14 @@ bool SetupNtdllImports(TargetProcess *child) {
   INIT_GLOBAL_RTL(strlen);
   INIT_GLOBAL_RTL(wcslen);
   INIT_GLOBAL_RTL(memcpy);
+
+  return true;
+}
+
+bool SetupNtdllImports(TargetProcess *child) {
+  if (!InitGlobalNt()) {
+    return false;
+  }
 
 #ifndef NDEBUG
   // Verify that the structure is fully initialized.

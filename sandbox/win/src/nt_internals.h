@@ -308,15 +308,27 @@ typedef enum _PROCESSINFOCLASS {
 } PROCESSINFOCLASS;
 
 typedef PVOID PPEB;
-typedef PVOID KPRIORITY;
+typedef LONG KPRIORITY;
 
 typedef struct _PROCESS_BASIC_INFORMATION {
-  NTSTATUS ExitStatus;
+  union {
+    NTSTATUS ExitStatus;
+    PVOID padding_for_x64_0;
+  };
   PPEB PebBaseAddress;
   KAFFINITY AffinityMask;
-  KPRIORITY BasePriority;
-  ULONG UniqueProcessId;
-  ULONG InheritedFromUniqueProcessId;
+  union {
+    KPRIORITY BasePriority;
+    PVOID padding_for_x64_1;
+  };
+  union {
+    DWORD UniqueProcessId;
+    PVOID padding_for_x64_2;
+  };
+  union {
+    DWORD InheritedFromUniqueProcessId;
+    PVOID padding_for_x64_3;
+  };
 } PROCESS_BASIC_INFORMATION, *PPROCESS_BASIC_INFORMATION;
 
 typedef NTSTATUS (WINAPI *NtQueryInformationProcessFunction)(

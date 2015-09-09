@@ -337,7 +337,7 @@ NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
   return ret;
 }
 
-NTSTATUS GetProcessId(HANDLE process, ULONG *process_id) {
+NTSTATUS GetProcessId(HANDLE process, DWORD *process_id) {
   PROCESS_BASIC_INFORMATION proc_info;
   ULONG bytes_returned;
 
@@ -355,7 +355,7 @@ bool IsSameProcess(HANDLE process) {
   if (NtCurrentProcess == process)
     return true;
 
-  static ULONG s_process_id = 0;
+  static DWORD s_process_id = 0;
 
   if (!s_process_id) {
     NTSTATUS ret = GetProcessId(NtCurrentProcess, &s_process_id);
@@ -363,7 +363,7 @@ bool IsSameProcess(HANDLE process) {
       return false;
   }
 
-  ULONG process_id;
+  DWORD process_id;
   NTSTATUS ret = GetProcessId(process, &process_id);
   if (!NT_SUCCESS(ret))
     return false;
