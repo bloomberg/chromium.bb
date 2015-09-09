@@ -461,8 +461,9 @@ TEST_F(SandwichTest, SuccessfulTwoOverlays) {
   // Both candidates should become overlays.
   EXPECT_EQ(1u, pass_list.size());
   EXPECT_EQ(3u, candidate_list.size());
-  EXPECT_EQ(kOverlayTopLeftRect, candidate_list[1].display_rect);
-  EXPECT_EQ(kOverlayBottomRightRect, candidate_list[2].display_rect);
+  EXPECT_EQ(gfx::RectF(kOverlayTopLeftRect), candidate_list[1].display_rect);
+  EXPECT_EQ(gfx::RectF(kOverlayBottomRightRect),
+            candidate_list[2].display_rect);
 
   // The overlay quads should be gone.
   const QuadList& quad_list = pass_list.back()->quad_list;
@@ -493,7 +494,7 @@ TEST_F(SandwichTest, OverlappingOverlays) {
   // Only one of the candidates should become an overlay.
   EXPECT_EQ(1u, pass_list.size());
   EXPECT_EQ(2u, candidate_list.size());
-  EXPECT_EQ(kOverlayTopLeftRect, candidate_list[1].display_rect);
+  EXPECT_EQ(gfx::RectF(kOverlayTopLeftRect), candidate_list[1].display_rect);
 
   // One of the overlay quads should be gone.
   const QuadList& quad_list = pass_list.back()->quad_list;
