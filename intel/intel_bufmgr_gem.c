@@ -200,6 +200,13 @@ struct _drm_intel_bo_gem {
 	drm_intel_reloc_target *reloc_target_info;
 	/** Number of entries in relocs */
 	int reloc_count;
+	/** Array of BOs that are referenced by this buffer and will be softpinned */
+	drm_intel_bo **softpin_target;
+	/** Number softpinned BOs that are referenced by this buffer */
+	int softpin_target_count;
+	/** Maximum amount of softpinned BOs that are referenced by this buffer */
+	int softpin_target_size;
+
 	/** Mapped address for the buffer, saved across map/unmap cycles */
 	void *mem_virtual;
 	/** GTT virtual address for the buffer, saved across map/unmap cycles */
@@ -260,6 +267,11 @@ struct _drm_intel_bo_gem {
 	 * flag is explicitly set.
 	 */
 	bool use_48b_address_range;
+
+	/**
+	 * Whether this buffer is softpinned at offset specified by the user
+	 */
+	bool is_softpin;
 
 	/**
 	 * Size in bytes of this buffer and its relocation descendents.
@@ -414,8 +426,9 @@ drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 		drm_intel_bo *bo = bufmgr_gem->exec_bos[i];
 		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 
-		if (bo_gem->relocs == NULL) {
-			DBG("%2d: %d (%s)\n", i, bo_gem->gem_handle,
+		if (bo_gem->relocs == NULL && bo_gem->softpin_target == NULL) {
+			DBG("%2d: %d %s(%s)\n", i, bo_gem->gem_handle,
+			    bo_gem->is_softpin ? "*" : "",
 			    bo_gem->name);
 			continue;
 		}
@@ -425,17 +438,32 @@ drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 			drm_intel_bo_gem *target_gem =
 			    (drm_intel_bo_gem *) target_bo;
 
-			DBG("%2d: %d (%s)@0x%08x %08x -> "
-			    "%d (%s)@0x%08x %08x + 0x%08x\n",
+			DBG("%2d: %d %s(%s)@0x%016llx -> "
+			    "%d (%s)@0x%016llx + 0x%08x\n",
 			    i,
-			    bo_gem->gem_handle, bo_gem->name,
-			    upper_32_bits(bo_gem->relocs[j].offset),
-			    lower_32_bits(bo_gem->relocs[j].offset),
+			    bo_gem->gem_handle,
+			    bo_gem->is_softpin ? "*" : "",
+			    bo_gem->name,
+			    (unsigned long long) bo_gem->relocs[j].offset,
 			    target_gem->gem_handle,
 			    target_gem->name,
-			    upper_32_bits(target_bo->offset64),
-			    lower_32_bits(target_bo->offset64),
+			    (unsigned long long) target_bo->offset64,
 			    bo_gem->relocs[j].delta);
+		}
+
+		for (j = 0; j < bo_gem->softpin_target_count; j++) {
+			drm_intel_bo *target_bo = bo_gem->softpin_target[j];
+			drm_intel_bo_gem *target_gem =
+			    (drm_intel_bo_gem *) target_bo;
+			DBG("%2d: %d %s(%s) -> "
+			    "%d *(%s)@0x%016lx\n",
+			    i,
+			    bo_gem->gem_handle,
+			    bo_gem->is_softpin ? "*" : "",
+			    bo_gem->name,
+			    target_gem->gem_handle,
+			    target_gem->name,
+			    target_bo->offset64);
 		}
 	}
 }
@@ -506,6 +534,8 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 		flags |= EXEC_OBJECT_NEEDS_FENCE;
 	if (bo_gem->use_48b_address_range)
 		flags |= EXEC_OBJECT_SUPPORTS_48B_ADDRESS;
+	if (bo_gem->is_softpin)
+		flags |= EXEC_OBJECT_PINNED;
 
 	if (bo_gem->validate_index != -1) {
 		bufmgr_gem->exec2_objects[bo_gem->validate_index].flags |= flags;
@@ -535,7 +565,8 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 	bufmgr_gem->exec2_objects[index].relocation_count = bo_gem->reloc_count;
 	bufmgr_gem->exec2_objects[index].relocs_ptr = (uintptr_t)bo_gem->relocs;
 	bufmgr_gem->exec2_objects[index].alignment = bo->align;
-	bufmgr_gem->exec2_objects[index].offset = 0;
+	bufmgr_gem->exec2_objects[index].offset = bo_gem->is_softpin ?
+		bo->offset64 : 0;
 	bufmgr_gem->exec_bos[index] = bo;
 	bufmgr_gem->exec2_objects[index].flags = flags;
 	bufmgr_gem->exec2_objects[index].rsvd1 = 0;
@@ -1291,8 +1322,12 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 								  time);
 		}
 	}
+	for (i = 0; i < bo_gem->softpin_target_count; i++)
+		drm_intel_gem_bo_unreference_locked_timed(bo_gem->softpin_target[i],
+								  time);
 	bo_gem->reloc_count = 0;
 	bo_gem->used_as_reloc_target = false;
+	bo_gem->softpin_target_count = 0;
 
 	DBG("bo_unreference final: %d (%s)\n",
 	    bo_gem->gem_handle, bo_gem->name);
@@ -1305,6 +1340,11 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 	if (bo_gem->relocs) {
 		free(bo_gem->relocs);
 		bo_gem->relocs = NULL;
+	}
+	if (bo_gem->softpin_target) {
+		free(bo_gem->softpin_target);
+		bo_gem->softpin_target = NULL;
+		bo_gem->softpin_target_size = 0;
 	}
 
 	/* Clear any left-over mappings */
@@ -1943,14 +1983,6 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 		bo_gem->reloc_tree_fences += target_bo_gem->reloc_tree_fences;
 	}
 
-	bo_gem->relocs[bo_gem->reloc_count].offset = offset;
-	bo_gem->relocs[bo_gem->reloc_count].delta = target_offset;
-	bo_gem->relocs[bo_gem->reloc_count].target_handle =
-	    target_bo_gem->gem_handle;
-	bo_gem->relocs[bo_gem->reloc_count].read_domains = read_domains;
-	bo_gem->relocs[bo_gem->reloc_count].write_domain = write_domain;
-	bo_gem->relocs[bo_gem->reloc_count].presumed_offset = target_bo->offset64;
-
 	bo_gem->reloc_target_info[bo_gem->reloc_count].bo = target_bo;
 	if (target_bo != bo)
 		drm_intel_gem_bo_reference(target_bo);
@@ -1960,6 +1992,13 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	else
 		bo_gem->reloc_target_info[bo_gem->reloc_count].flags = 0;
 
+	bo_gem->relocs[bo_gem->reloc_count].offset = offset;
+	bo_gem->relocs[bo_gem->reloc_count].delta = target_offset;
+	bo_gem->relocs[bo_gem->reloc_count].target_handle =
+	    target_bo_gem->gem_handle;
+	bo_gem->relocs[bo_gem->reloc_count].read_domains = read_domains;
+	bo_gem->relocs[bo_gem->reloc_count].write_domain = write_domain;
+	bo_gem->relocs[bo_gem->reloc_count].presumed_offset = target_bo->offset64;
 	bo_gem->reloc_count++;
 
 	return 0;
@@ -1973,15 +2012,57 @@ drm_intel_gem_bo_use_48b_address_range(drm_intel_bo *bo, uint32_t enable)
 }
 
 static int
+drm_intel_gem_bo_add_softpin_target(drm_intel_bo *bo, drm_intel_bo *target_bo)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *) target_bo;
+	if (bo_gem->has_error)
+		return -ENOMEM;
+
+	if (target_bo_gem->has_error) {
+		bo_gem->has_error = true;
+		return -ENOMEM;
+	}
+
+	if (!target_bo_gem->is_softpin)
+		return -EINVAL;
+	if (target_bo_gem == bo_gem)
+		return -EINVAL;
+
+	if (bo_gem->softpin_target_count == bo_gem->softpin_target_size) {
+		int new_size = bo_gem->softpin_target_size * 2;
+		if (new_size == 0)
+			new_size = bufmgr_gem->max_relocs;
+
+		bo_gem->softpin_target = realloc(bo_gem->softpin_target, new_size *
+				sizeof(drm_intel_bo *));
+		if (!bo_gem->softpin_target)
+			return -ENOMEM;
+
+		bo_gem->softpin_target_size = new_size;
+	}
+	bo_gem->softpin_target[bo_gem->softpin_target_count] = target_bo;
+	drm_intel_gem_bo_reference(target_bo);
+	bo_gem->softpin_target_count++;
+
+	return 0;
+}
+
+static int
 drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 			    drm_intel_bo *target_bo, uint32_t target_offset,
 			    uint32_t read_domains, uint32_t write_domain)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+	drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *)target_bo;
 
-	return do_bo_emit_reloc(bo, offset, target_bo, target_offset,
-				read_domains, write_domain,
-				!bufmgr_gem->fenced_relocs);
+	if (target_bo_gem->is_softpin)
+		return drm_intel_gem_bo_add_softpin_target(bo, target_bo);
+	else
+		return do_bo_emit_reloc(bo, offset, target_bo, target_offset,
+					read_domains, write_domain,
+					!bufmgr_gem->fenced_relocs);
 }
 
 static int
@@ -2014,6 +2095,8 @@ drm_intel_gem_bo_get_reloc_count(drm_intel_bo *bo)
  *
  * Any further drm_intel_bufmgr_check_aperture_space() queries
  * involving this buffer in the tree are undefined after this call.
+ *
+ * This also removes all softpinned targets being referenced by the BO.
  */
 void
 drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start)
@@ -2039,6 +2122,12 @@ drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start)
 		}
 	}
 	bo_gem->reloc_count = start;
+
+	for (i = 0; i < bo_gem->softpin_target_count; i++) {
+		drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *) bo_gem->softpin_target[i];
+		drm_intel_gem_bo_unreference_locked_timed(&target_bo_gem->bo, time.tv_sec);
+	}
+	bo_gem->softpin_target_count = 0;
 
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
@@ -2080,7 +2169,7 @@ drm_intel_gem_bo_process_reloc2(drm_intel_bo *bo)
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 	int i;
 
-	if (bo_gem->relocs == NULL)
+	if (bo_gem->relocs == NULL && bo_gem->softpin_target == NULL)
 		return;
 
 	for (i = 0; i < bo_gem->reloc_count; i++) {
@@ -2100,6 +2189,17 @@ drm_intel_gem_bo_process_reloc2(drm_intel_bo *bo)
 
 		/* Add the target to the validate list */
 		drm_intel_add_validate_buffer2(target_bo, need_fence);
+	}
+
+	for (i = 0; i < bo_gem->softpin_target_count; i++) {
+		drm_intel_bo *target_bo = bo_gem->softpin_target[i];
+
+		if (target_bo == bo)
+			continue;
+
+		drm_intel_gem_bo_mark_mmaps_incoherent(bo);
+		drm_intel_gem_bo_process_reloc2(target_bo);
+		drm_intel_add_validate_buffer2(target_bo, false);
 	}
 }
 
@@ -2138,12 +2238,14 @@ drm_intel_update_buffer_offsets2 (drm_intel_bufmgr_gem *bufmgr_gem)
 
 		/* Update the buffer offset */
 		if (bufmgr_gem->exec2_objects[i].offset != bo->offset64) {
-			DBG("BO %d (%s) migrated: 0x%08x %08x -> 0x%08x %08x\n",
+			/* If we're seeing softpinned object here it means that the kernel
+			 * has relocated our object... Indicating a programming error
+			 */
+			assert(!bo_gem->is_softpin);
+			DBG("BO %d (%s) migrated: 0x%016llx -> 0x%016llx\n",
 			    bo_gem->gem_handle, bo_gem->name,
-			    upper_32_bits(bo->offset64),
-			    lower_32_bits(bo->offset64),
-			    upper_32_bits(bufmgr_gem->exec2_objects[i].offset),
-			    lower_32_bits(bufmgr_gem->exec2_objects[i].offset));
+			    (unsigned long long) bo->offset64,
+			    (unsigned long long) bufmgr_gem->exec2_objects[i].offset);
 			bo->offset64 = bufmgr_gem->exec2_objects[i].offset;
 			bo->offset = bufmgr_gem->exec2_objects[i].offset;
 		}
@@ -2462,6 +2564,17 @@ drm_intel_gem_bo_get_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 
 	*tiling_mode = bo_gem->tiling_mode;
 	*swizzle_mode = bo_gem->swizzle_mode;
+	return 0;
+}
+
+static int
+drm_intel_gem_bo_set_softpin_offset(drm_intel_bo *bo, uint64_t offset)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	bo_gem->is_softpin = true;
+	bo->offset64 = offset;
+	bo->offset = offset;
 	return 0;
 }
 
@@ -2841,6 +2954,13 @@ _drm_intel_gem_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
 			continue;
 		if (_drm_intel_gem_bo_references(bo_gem->reloc_target_info[i].bo,
 						target_bo))
+			return 1;
+	}
+
+	for (i = 0; i< bo_gem->softpin_target_count; i++) {
+		if (bo_gem->softpin_target[i] == target_bo)
+			return 1;
+		if (_drm_intel_gem_bo_references(bo_gem->softpin_target[i], target_bo))
 			return 1;
 	}
 
@@ -3299,6 +3419,11 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	gp.param = I915_PARAM_HAS_VEBOX;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	bufmgr_gem->has_vebox = (ret == 0) & (*gp.value > 0);
+
+	gp.param = I915_PARAM_HAS_EXEC_SOFTPIN;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	if (ret == 0 && *gp.value > 0)
+		bufmgr_gem->bufmgr.bo_set_softpin_offset = drm_intel_gem_bo_set_softpin_offset;
 
 	if (bufmgr_gem->gen < 4) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;

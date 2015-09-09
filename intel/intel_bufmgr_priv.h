@@ -241,6 +241,13 @@ struct _drm_intel_bufmgr {
 			      uint32_t * swizzle_mode);
 
 	/**
+	 * Set the offset at which this buffer will be softpinned
+	 * \param bo Buffer to set the softpin offset for
+	 * \param offset Softpin offset
+	 */
+	int (*bo_set_softpin_offset) (drm_intel_bo *bo, uint64_t offset);
+
+	/**
 	 * Create a visible name for a buffer which can be used by other apps
 	 *
 	 * \param buf Buffer to create a name for
