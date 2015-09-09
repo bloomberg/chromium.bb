@@ -55,6 +55,7 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
 
   size_t known_spaces_used_size = 0;
   size_t known_spaces_size = 0;
+  size_t known_spaces_physical_size = 0;
   size_t number_of_spaces = isolate_holder_->isolate()->NumberOfHeapSpaces();
   for (size_t space = 0; space < number_of_spaces; space++) {
     v8::HeapSpaceStatistics space_statistics;
@@ -62,37 +63,45 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
                                                        space);
     const size_t space_size = space_statistics.space_size();
     const size_t space_used_size = space_statistics.space_used_size();
+    const size_t space_physical_size = space_statistics.physical_space_size();
 
     known_spaces_size += space_size;
     known_spaces_used_size += space_used_size;
+    known_spaces_physical_size += space_physical_size;
 
     std::string space_dump_name =
         space_name_prefix + "/" + space_statistics.space_name();
     auto space_dump = process_memory_dump->CreateAllocatorDump(space_dump_name);
     space_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          space_physical_size);
+
+    space_dump->AddScalar("virtual_size",
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                           space_size);
 
-    auto space_allocated_dump = process_memory_dump->CreateAllocatorDump(
-        space_dump_name + "/allocated_objects");
-    space_allocated_dump->AddScalar(
-        base::trace_event::MemoryAllocatorDump::kNameSize,
-        base::trace_event::MemoryAllocatorDump::kUnitsBytes, space_used_size);
+    space_dump->AddScalar("allocated_objects_size",
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          space_used_size);
   }
 
   // Compute the rest of the memory, not accounted by the spaces above.
   std::string other_spaces_name = space_name_prefix + "/other_spaces";
   auto other_dump = process_memory_dump->CreateAllocatorDump(other_spaces_name);
-  other_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                        heap_statistics.total_heap_size() - known_spaces_size);
 
-  auto other_allocated_dump = process_memory_dump->CreateAllocatorDump(
-      other_spaces_name + "/allocated_objects");
-  other_allocated_dump->AddScalar(
+  other_dump->AddScalar(
       base::trace_event::MemoryAllocatorDump::kNameSize,
       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+      heap_statistics.total_physical_size() - known_spaces_physical_size);
+
+  other_dump->AddScalar(
+      "allocated_objects_size",
+      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
       heap_statistics.used_heap_size() - known_spaces_used_size);
+
+  other_dump->AddScalar("virtual_size",
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        heap_statistics.total_heap_size() - known_spaces_size);
 
   // If light dump is requested, then object statistics are not dumped
   if (args.level_of_detail ==
@@ -100,7 +109,9 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
     return;
 
   // Dump statistics of the heap's live objects from last GC.
-  std::string object_name_prefix = dump_base_name + "/heap_objects";
+  // TODO(primiano): these should not be tracked in the same trace event as they
+  // report stats for the last GC (not the current state). See crbug.com/498779.
+  std::string object_name_prefix = dump_base_name + "/heap_objects_at_last_gc";
   bool did_dump_object_stats = false;
   const size_t object_types =
       isolate_holder_->isolate()->NumberOfTrackedHeapObjectTypes();
