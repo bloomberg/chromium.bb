@@ -734,6 +734,7 @@ PassRefPtr<XMLParserContext> XMLParserContext::createStringParser(xmlSAXHandlerP
 {
     initializeLibXMLIfNecessary();
     xmlParserCtxtPtr parser = xmlCreatePushParserCtxt(handlers, 0, 0, 0, 0);
+    xmlCtxtUseOptions(parser, XML_PARSE_HUGE);
     parser->_private = userData;
     parser->replaceEntities = true;
     return adoptRef(new XMLParserContext(parser));
@@ -756,7 +757,8 @@ PassRefPtr<XMLParserContext> XMLParserContext::createMemoryParser(xmlSAXHandlerP
     // Set parser options.
     // XML_PARSE_NODICT: default dictionary option.
     // XML_PARSE_NOENT: force entities substitutions.
-    xmlCtxtUseOptions(parser, XML_PARSE_NODICT | XML_PARSE_NOENT);
+    // XML_PARSE_HUGE: don't impose arbitrary limits on document size.
+    xmlCtxtUseOptions(parser, XML_PARSE_NODICT | XML_PARSE_NOENT | XML_PARSE_HUGE);
 
     // Internal initialization
     parser->sax2 = 1;
