@@ -1123,6 +1123,10 @@ void QuicStreamFactory::OnIPAddressChanged() {
   set_require_confirmation(true);
 }
 
+void QuicStreamFactory::OnSSLConfigChanged() {
+  CloseAllSessions(ERR_CERT_DATABASE_CHANGED);
+}
+
 void QuicStreamFactory::OnCertAdded(const X509Certificate* cert) {
   CloseAllSessions(ERR_CERT_DATABASE_CHANGED);
 }

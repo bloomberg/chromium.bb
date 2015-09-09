@@ -1334,6 +1334,62 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
+TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
+  MockRead reads[] = {
+      MockRead(ASYNC, 0, 0)  // EOF
+  };
+  scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::vector<MockWrite> writes;
+  writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      writes.empty() ? nullptr : &writes[0],
+                                      writes.size());
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  MockRead reads2[] = {
+      MockRead(ASYNC, 0, 0)  // EOF
+  };
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data2.StopAfter(1);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, is_https_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  factory_.OnSSLConfigChanged();
+  EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
+            stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_FALSE(factory_.require_confirmation());
+
+  // Now attempting to request a stream to the same origin should create
+  // a new session.
+
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_pair_, is_https_, privacy_mode_,
+                             /*cert_verify_flags=*/0, host_port_pair_.host(),
+                             "GET", net_log_, callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  stream = request2.ReleaseStream();
+  stream.reset();  // Will reset stream 3.
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
 TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
