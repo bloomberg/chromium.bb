@@ -263,8 +263,8 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     public PointF getMouseCoordinates() {
         PointF result = new PointF();
         Point shapePixels = mDesktop.getFrameSizePixels();
-        int heightPixels = shapePixels.x;
-        int widthPixels = shapePixels.y;
+        int widthPixels = shapePixels.x;
+        int heightPixels = shapePixels.y;
 
         synchronized (mEyeDesktopPositionLock) {
             // Due to the coordinate direction, we only have to inverse x.

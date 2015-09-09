@@ -202,8 +202,8 @@ public class Desktop {
      */
     public Point getFrameSizePixels() {
         synchronized (mVideoFrameLock) {
-            return new Point(mVideoFrame == null ? 0 : mVideoFrame.getHeight(),
-                    mVideoFrame == null ? 0 : mVideoFrame.getWidth());
+            return new Point(mVideoFrame == null ? 0 : mVideoFrame.getWidth(),
+                    mVideoFrame == null ? 0 : mVideoFrame.getHeight());
         }
     }
 
