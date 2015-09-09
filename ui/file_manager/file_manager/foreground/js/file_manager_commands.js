@@ -219,8 +219,10 @@ CommandUtil.forceDefaultHandler = function(node, commandId) {
     event.cancelBubble = true;
   });
   node.addEventListener('canExecute', function(event) {
-    if (event.command.id === commandId)
-      event.canExecute = document.queryCommandEnabled(event.command.id);
+    if (event.command.id !== commandId)
+      return;
+    event.canExecute = document.queryCommandEnabled(event.command.id);
+    event.command.setHidden(false);
   });
 };
 
