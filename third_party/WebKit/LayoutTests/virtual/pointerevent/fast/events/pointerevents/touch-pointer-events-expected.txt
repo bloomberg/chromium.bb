@@ -71,13 +71,11 @@ PASS receivedPEsAtTarget[4].isPrimary is false
 PASS receivedPEsAtTarget[4].pointerId is 1
 green received pointerdown at phase=target
 PASS receivedPEsAtTarget[5].isPrimary is false
-receivedPEsAtTarget[5].pointerId=0
 green received pointerup at phase=target
 PASS receivedPEsAtTarget[6].isPrimary is false
 PASS receivedPEsAtTarget[6].pointerId is 1
 green received pointerup at phase=target
 PASS receivedPEsAtTarget[7].isPrimary is false
-PASS receivedPEsAtTarget[7].pointerId is 0
 green received pointerdown at phase=target
 PASS receivedPEsAtTarget[8].isPrimary is true
 PASS receivedPEsAtTarget.length is 9
