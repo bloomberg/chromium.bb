@@ -752,6 +752,13 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     if (reportEndpoints.isEmpty())
         return;
 
+    // TODO(mkwst): Obviously, we shouldn't hit this check, as extension-loaded
+    // resources should be allowed regardless. We apparently do, however, so
+    // we should at least stop spamming reporting endpoints. See
+    // https://crbug.com/524356 for detail.
+    if (!violationData.sourceFile().isEmpty() && SchemeRegistry::schemeShouldBypassContentSecurityPolicy(KURL(ParsedURLString, violationData.sourceFile()).protocol()))
+        return;
+
     // We need to be careful here when deciding what information to send to the
     // report-uri. Currently, we send only the current document's URL and the
     // directive that was violated. The document's URL is safe to send because
