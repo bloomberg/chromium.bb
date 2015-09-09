@@ -1277,6 +1277,8 @@
       'browser/sync/glue/synced_tab_delegate_desktop.cc',
       'browser/sync/sync_ui_util.cc',
       'browser/sync/sync_ui_util.h',
+      'browser/usb/web_usb_permission_provider.cc',
+      'browser/usb/web_usb_permission_provider.h',
     ],
     'chrome_browser_win_sources': [
       'browser/browser_process_platform_part_aurawin.cc',

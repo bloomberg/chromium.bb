@@ -14,7 +14,6 @@
 #include "device/core/device_client.h"
 #include "device/devices_app/usb/device_impl.h"
 #include "device/devices_app/usb/device_manager_impl.h"
-#include "device/devices_app/usb/public/cpp/device_manager_delegate.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
@@ -29,14 +28,21 @@ namespace usb {
 
 namespace {
 
-class TestDeviceManagerDelegate : public DeviceManagerDelegate {
+class TestPermissionProvider : public PermissionProvider {
  public:
-  TestDeviceManagerDelegate() {}
-  ~TestDeviceManagerDelegate() override {}
+  TestPermissionProvider(mojo::InterfaceRequest<PermissionProvider> request)
+      : binding_(this, request.Pass()) {}
+  ~TestPermissionProvider() override {}
+
+  void HasDevicePermission(
+      mojo::Array<mojo::String> requested_guids,
+      const HasDevicePermissionCallback& callback) override {
+    // Permission to access all devices granted.
+    callback.Run(requested_guids.Pass());
+  }
 
  private:
-  // DeviceManagerDelegate implementation:
-  bool IsDeviceAllowed(const DeviceInfo& device_info) override { return true; }
+  mojo::StrongBinding<PermissionProvider> binding_;
 };
 
 class TestDeviceClient : public DeviceClient {
@@ -66,11 +72,12 @@ class USBDeviceManagerImplTest : public testing::Test {
   }
 
   DeviceManagerPtr ConnectToDeviceManager() {
+    PermissionProviderPtr permission_provider;
+    new TestPermissionProvider(mojo::GetProxy(&permission_provider));
     DeviceManagerPtr device_manager;
-    new DeviceManagerImpl(
-        mojo::GetProxy(&device_manager),
-        scoped_ptr<DeviceManagerDelegate>(new TestDeviceManagerDelegate),
-        base::ThreadTaskRunnerHandle::Get());
+    new DeviceManagerImpl(mojo::GetProxy(&device_manager),
+                          permission_provider.Pass(),
+                          base::ThreadTaskRunnerHandle::Get());
     return device_manager.Pass();
   }
 
@@ -236,13 +243,14 @@ TEST_F(USBDeviceManagerImplTest, GetDeviceChanges) {
   DeviceManagerPtr device_manager = ConnectToDeviceManager();
 
   {
-    std::set<std::string> added_guids;
-    std::set<std::string> removed_guids;
-    added_guids.insert(device0->guid());
+    // Call GetDevices once to make sure the device manager is up and running
+    // or else we could end up waiting forever for device changes as the next
+    // block races with the ServiceThreadHelper startup.
+    std::set<std::string> guids;
+    guids.insert(device0->guid());
     base::RunLoop loop;
-    device_manager->GetDeviceChanges(base::Bind(&ExpectDeviceChangesAndThen,
-                                                added_guids, removed_guids,
-                                                loop.QuitClosure()));
+    device_manager->GetDevices(
+        nullptr, base::Bind(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
     loop.Run();
   }
 

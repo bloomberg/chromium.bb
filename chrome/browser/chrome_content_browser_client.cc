@@ -259,6 +259,10 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/usb/web_usb_permission_provider.h"
+#endif
+
 using base::FileDescriptor;
 using blink::WebWindowFeatures;
 using content::AccessTokenStore;
@@ -2515,6 +2519,10 @@ void ChromeContentBrowserClient::RegisterFrameMojoShellServices(
   registry->AddService(
       base::Bind(&chromeos::attestation::PlatformVerificationImpl::Create,
                  render_frame_host));
+#endif
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  registry->AddService(
+      base::Bind(&WebUSBPermissionProvider::Create, render_frame_host));
 #endif
 }
 

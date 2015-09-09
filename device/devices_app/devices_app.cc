@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "device/core/device_client.h"
 #include "device/devices_app/usb/device_manager_impl.h"
-#include "device/devices_app/usb/public/cpp/device_manager_delegate.h"
 #include "device/usb/usb_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -27,32 +26,6 @@ namespace {
 // The number of seconds to wait without any bound DeviceManagers before
 // exiting the app.
 const int64 kIdleTimeoutInSeconds = 10;
-
-// A usb::DeviceManagerDelegate implementation which provides origin-based
-// device access control.
-//
-// TODO(rockot/reillyg): We should just get rid of DeviceManagerDelegate, or
-// at least repurpose it as test support to provide device mocks.
-class USBDeviceManagerDelegate : public usb::DeviceManagerDelegate {
- public:
-  explicit USBDeviceManagerDelegate(const GURL& remote_url)
-      : remote_url_(remote_url) {}
-  ~USBDeviceManagerDelegate() override {}
-
- private:
-  // usb::DeviceManagerDelegate:
-  bool IsDeviceAllowed(const usb::DeviceInfo& device) override {
-    // Also let browser apps and mojo apptests talk to all devices.
-    if (remote_url_.SchemeIs("system") ||
-        remote_url_ == GURL("mojo://devices_apptests/"))
-      return true;
-    return false;
-  }
-
-  GURL remote_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(USBDeviceManagerDelegate);
-};
 
 // A DeviceClient implementation to be constructed iff the app is not running
 // in an embedder that provides a DeviceClient (i.e. running as a standalone
@@ -131,12 +104,14 @@ void DevicesApp::Quit() {
 
 void DevicesApp::Create(mojo::ApplicationConnection* connection,
                         mojo::InterfaceRequest<usb::DeviceManager> request) {
-  scoped_ptr<usb::DeviceManagerDelegate> delegate(new USBDeviceManagerDelegate(
-      GURL(connection->GetRemoteApplicationURL())));
+  // Bind the new device manager to the connecting application's permission
+  // provider.
+  usb::PermissionProviderPtr permission_provider;
+  connection->ConnectToService(&permission_provider);
 
   // Owned by its message pipe.
   usb::DeviceManagerImpl* device_manager = new usb::DeviceManagerImpl(
-      request.Pass(), delegate.Pass(), service_task_runner_);
+      request.Pass(), permission_provider.Pass(), service_task_runner_);
   device_manager->set_connection_error_handler(
       base::Bind(&DevicesApp::OnConnectionError, base::Unretained(this)));
 

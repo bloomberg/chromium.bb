@@ -14,9 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
+#include "device/devices_app/usb/public/interfaces/permission_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -38,11 +39,13 @@ class DeviceManagerImpl : public DeviceManager {
  public:
   DeviceManagerImpl(
       mojo::InterfaceRequest<DeviceManager> request,
-      scoped_ptr<DeviceManagerDelegate> delegate,
+      PermissionProviderPtr permission_provider,
       scoped_refptr<base::SequencedTaskRunner> service_task_runner);
   ~DeviceManagerImpl() override;
 
-  void set_connection_error_handler(const mojo::Closure& error_handler);
+  void set_connection_error_handler(const mojo::Closure& error_handler) {
+    connection_error_handler_ = error_handler;
+  }
 
  private:
   class ServiceThreadHelper;
@@ -55,20 +58,25 @@ class DeviceManagerImpl : public DeviceManager {
                   mojo::InterfaceRequest<Device> device_request,
                   const OpenDeviceCallback& callback) override;
 
+  void OnOpenDevicePermissionCheckComplete(
+      mojo::InterfaceRequest<Device> device_request,
+      const OpenDeviceCallback& callback,
+      mojo::Array<mojo::String> allowed_guids);
+
   // Callbacks to handle the async responses from the underlying UsbService.
   void OnGetDevices(const GetDevicesCallback& callback,
                     mojo::Array<DeviceInfoPtr> devices);
-  void OnGetInitialDevices(const GetDeviceChangesCallback& callback,
-                           mojo::Array<DeviceInfoPtr> devices);
 
   // Methods called by |helper_| when devices are added or removed.
   void OnDeviceAdded(DeviceInfoPtr device);
   void OnDeviceRemoved(std::string device_guid);
   void MaybeRunDeviceChangesCallback();
+  void OnEnumerationPermissionCheckComplete(
+      mojo::Array<DeviceInfoPtr> devices_added,
+      const std::set<std::string>& devices_removed,
+      mojo::Array<mojo::String> allowed_guids);
 
-  mojo::StrongBinding<DeviceManager> binding_;
-
-  scoped_ptr<DeviceManagerDelegate> delegate_;
+  PermissionProviderPtr permission_provider_;
   scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
 
   // If there are unfinished calls to GetDeviceChanges their callbacks
@@ -78,11 +86,17 @@ class DeviceManagerImpl : public DeviceManager {
   std::queue<GetDeviceChangesCallback> device_change_callbacks_;
   mojo::Array<DeviceInfoPtr> devices_added_;
   std::set<std::string> devices_removed_;
+  // To ensure that GetDeviceChangesCallbacks are called in the correct order
+  // only perform a single request to |permission_provider_| at a time.
+  bool permission_request_pending_ = false;
 
   // |helper_| is owned by the service thread and holds a weak reference
   // back to the device manager that created it.
-  ServiceThreadHelper* helper_ = nullptr;
+  ServiceThreadHelper* helper_;
 
+  mojo::Closure connection_error_handler_;
+
+  mojo::Binding<DeviceManager> binding_;
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerImpl);

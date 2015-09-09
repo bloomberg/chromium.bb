@@ -35,7 +35,7 @@ struct DeviceFilter {
 };
 
 struct EnumerationOptions {
-  array<DeviceFilter> filters;
+  array<DeviceFilter>? filters;
 };
 
 struct DeviceChangeNotification {
@@ -46,12 +46,11 @@ struct DeviceChangeNotification {
 interface DeviceManager {
   // Retrieves information about all devices available to the DeviceManager
   // implementation.
-  GetDevices(EnumerationOptions options) => (array<DeviceInfo> results);
+  GetDevices(EnumerationOptions? options) => (array<DeviceInfo> results);
 
   // Retrieves information about changes to the set of devices available to the
-  // DeviceManager since the last call to this method. The first call will
-  // return the set of all devices available. Device added and removed between
-  // calls will not be included.
+  // DeviceManager since the last call to this method. A device that is added
+  // and removed between calls will not be included.
   GetDeviceChanges() => (DeviceChangeNotification changes);
 
   // Attempts to open a device given its GUID.

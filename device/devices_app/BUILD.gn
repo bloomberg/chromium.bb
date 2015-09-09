@@ -18,7 +18,6 @@ source_set("lib") {
 
   deps = [
     "//device/core",
-    "//device/devices_app/usb/public/cpp",
     "//device/devices_app/usb/public/interfaces",
     "//device/usb",
     "//net",

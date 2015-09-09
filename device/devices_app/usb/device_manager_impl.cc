@@ -14,7 +14,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "device/core/device_client.h"
 #include "device/devices_app/usb/device_impl.h"
-#include "device/devices_app/usb/public/cpp/device_manager_delegate.h"
 #include "device/devices_app/usb/public/interfaces/device.mojom.h"
 #include "device/devices_app/usb/type_converters.h"
 #include "device/usb/usb_device.h"
@@ -108,6 +107,23 @@ void OpenDeviceOnServiceThread(
                           callback_task_runner));
 }
 
+void FilterDeviceListAndThen(
+    const DeviceManagerImpl::GetDevicesCallback& callback,
+    mojo::Array<DeviceInfoPtr> devices,
+    mojo::Array<mojo::String> allowed_guids) {
+  std::set<std::string> allowed_guid_set;
+  for (size_t i = 0; i < allowed_guids.size(); ++i)
+    allowed_guid_set.insert(allowed_guids[i]);
+
+  mojo::Array<DeviceInfoPtr> allowed_devices(0);
+  for (size_t i = 0; i < devices.size(); ++i) {
+    if (ContainsKey(allowed_guid_set, devices[i]->guid))
+      allowed_devices.push_back(devices[i].Pass());
+  }
+
+  callback.Run(allowed_devices.Pass());
+}
+
 }  // namespace
 
 class DeviceManagerImpl::ServiceThreadHelper
@@ -122,17 +138,10 @@ class DeviceManagerImpl::ServiceThreadHelper
     base::MessageLoop::current()->RemoveDestructionObserver(this);
   }
 
-  static void Start(
-      scoped_ptr<ServiceThreadHelper> self,
-      const base::Callback<void(mojo::Array<DeviceInfoPtr>)>& callback) {
+  static void Start(scoped_ptr<ServiceThreadHelper> self) {
     UsbService* usb_service = DeviceClient::Get()->GetUsbService();
-    if (usb_service) {
+    if (usb_service)
       self->observer_.Add(usb_service);
-      std::vector<UsbDeviceFilter> no_filters;
-      usb_service->GetDevices(base::Bind(&OnGetDevicesOnServiceThread,
-                                         no_filters, callback,
-                                         self->task_runner_));
-    }
 
     // |self| now owned by the current message loop.
     base::MessageLoop::current()->AddDestructionObserver(self.release());
@@ -165,30 +174,38 @@ class DeviceManagerImpl::ServiceThreadHelper
 
 DeviceManagerImpl::DeviceManagerImpl(
     mojo::InterfaceRequest<DeviceManager> request,
-    scoped_ptr<DeviceManagerDelegate> delegate,
+    PermissionProviderPtr permission_provider,
     scoped_refptr<base::SequencedTaskRunner> service_task_runner)
-    : binding_(this, request.Pass()),
-      delegate_(delegate.Pass()),
+    : permission_provider_(permission_provider.Pass()),
       service_task_runner_(service_task_runner),
+      binding_(this, request.Pass()),
       weak_factory_(this) {
+  // This object owns itself and will be destroyed if either the message pipe
+  // it is bound to is closed or the PermissionProvider it depends on is
+  // unavailable.
+  binding_.set_connection_error_handler([this]() { delete this; });
+  permission_provider_.set_connection_error_handler([this]() { delete this; });
+
+  scoped_ptr<ServiceThreadHelper> helper(new ServiceThreadHelper(
+      weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
+  helper_ = helper.get();
+  service_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ServiceThreadHelper::Start, base::Passed(&helper)));
 }
 
 DeviceManagerImpl::~DeviceManagerImpl() {
-  if (helper_) {
-    // It is safe to call this if |helper_| was already destroyed when
-    // |service_task_runner_| exited as the task will never execute.
-    service_task_runner_->DeleteSoon(FROM_HERE, helper_);
-  }
-}
-
-void DeviceManagerImpl::set_connection_error_handler(
-    const mojo::Closure& error_handler) {
-  binding_.set_connection_error_handler(error_handler);
+  // It is safe to call this if |helper_| was already destroyed when
+  // |service_task_runner_| exited as the task will never execute.
+  service_task_runner_->DeleteSoon(FROM_HERE, helper_);
+  connection_error_handler_.Run();
 }
 
 void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
                                    const GetDevicesCallback& callback) {
-  auto filters = options->filters.To<std::vector<UsbDeviceFilter>>();
+  std::vector<UsbDeviceFilter> filters;
+  if (options)
+    filters = options->filters.To<std::vector<UsbDeviceFilter>>();
   auto get_devices_callback = base::Bind(&DeviceManagerImpl::OnGetDevices,
                                          weak_factory_.GetWeakPtr(), callback);
   service_task_runner_->PostTask(
@@ -199,53 +216,48 @@ void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
 
 void DeviceManagerImpl::GetDeviceChanges(
     const GetDeviceChangesCallback& callback) {
-  if (helper_) {
-    device_change_callbacks_.push(callback);
-    MaybeRunDeviceChangesCallback();
-  } else {
-    scoped_ptr<ServiceThreadHelper> helper(new ServiceThreadHelper(
-        weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
-    helper_ = helper.get();
-    auto get_devices_callback =
-        base::Bind(&DeviceManagerImpl::OnGetInitialDevices,
-                   weak_factory_.GetWeakPtr(), callback);
-    service_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ServiceThreadHelper::Start,
-                              base::Passed(&helper), get_devices_callback));
-  }
+  device_change_callbacks_.push(callback);
+  MaybeRunDeviceChangesCallback();
 }
 
 void DeviceManagerImpl::OpenDevice(
     const mojo::String& guid,
     mojo::InterfaceRequest<Device> device_request,
     const OpenDeviceCallback& callback) {
+  mojo::Array<mojo::String> requested_guids(1);
+  requested_guids[0] = guid;
+  permission_provider_->HasDevicePermission(
+      requested_guids.Pass(),
+      base::Bind(&DeviceManagerImpl::OnOpenDevicePermissionCheckComplete,
+                 base::Unretained(this), base::Passed(&device_request),
+                 callback));
+}
+
+void DeviceManagerImpl::OnOpenDevicePermissionCheckComplete(
+    mojo::InterfaceRequest<Device> device_request,
+    const OpenDeviceCallback& callback,
+    mojo::Array<mojo::String> allowed_guids) {
+  if (allowed_guids.size() == 0) {
+    callback.Run(OPEN_DEVICE_ERROR_ACCESS_DENIED);
+    return;
+  }
+
+  DCHECK(allowed_guids.size() == 1);
   service_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&OpenDeviceOnServiceThread, guid,
+      FROM_HERE, base::Bind(&OpenDeviceOnServiceThread, allowed_guids[0],
                             base::Passed(&device_request), callback,
                             base::ThreadTaskRunnerHandle::Get()));
 }
 
 void DeviceManagerImpl::OnGetDevices(const GetDevicesCallback& callback,
                                      mojo::Array<DeviceInfoPtr> devices) {
-  mojo::Array<DeviceInfoPtr> allowed_devices(0);
-  for (size_t i = 0; i < devices.size(); ++i) {
-    if (delegate_->IsDeviceAllowed(*devices[i]))
-      allowed_devices.push_back(devices[i].Pass());
-  }
-  callback.Run(allowed_devices.Pass());
-}
+  mojo::Array<mojo::String> requested_guids(devices.size());
+  for (size_t i = 0; i < devices.size(); ++i)
+    requested_guids[i] = devices[i]->guid;
 
-void DeviceManagerImpl::OnGetInitialDevices(
-    const GetDeviceChangesCallback& callback,
-    mojo::Array<DeviceInfoPtr> devices) {
-  DeviceChangeNotificationPtr notification = DeviceChangeNotification::New();
-  notification->devices_added = mojo::Array<DeviceInfoPtr>::New(0);
-  notification->devices_removed = mojo::Array<mojo::String>::New(0);
-  for (size_t i = 0; i < devices.size(); ++i) {
-    if (delegate_->IsDeviceAllowed(*devices[i]))
-      notification->devices_added.push_back(devices[i].Pass());
-  }
-  callback.Run(notification.Pass());
+  permission_provider_->HasDevicePermission(
+      requested_guids.Pass(),
+      base::Bind(&FilterDeviceListAndThen, callback, base::Passed(&devices)));
 }
 
 void DeviceManagerImpl::OnDeviceAdded(DeviceInfoPtr device) {
@@ -270,18 +282,63 @@ void DeviceManagerImpl::OnDeviceRemoved(std::string device_guid) {
 }
 
 void DeviceManagerImpl::MaybeRunDeviceChangesCallback() {
-  if (!device_change_callbacks_.empty()) {
-    DeviceChangeNotificationPtr notification = DeviceChangeNotification::New();
-    notification->devices_added.Swap(&devices_added_);
-    notification->devices_removed.resize(0);
-    for (const std::string& device : devices_removed_)
-      notification->devices_removed.push_back(device);
-    devices_removed_.clear();
+  if (!permission_request_pending_ && !device_change_callbacks_.empty()) {
+    mojo::Array<DeviceInfoPtr> devices_added;
+    devices_added.Swap(&devices_added_);
+    std::set<std::string> devices_removed;
+    devices_removed.swap(devices_removed_);
 
+    mojo::Array<mojo::String> requested_guids(devices_added.size() +
+                                              devices_removed.size());
+    {
+      size_t i;
+      for (i = 0; i < devices_added.size(); ++i)
+        requested_guids[i] = devices_added[i]->guid;
+      for (const std::string& guid : devices_removed)
+        requested_guids[i++] = guid;
+    }
+
+    permission_request_pending_ = true;
+    permission_provider_->HasDevicePermission(
+        requested_guids.Pass(),
+        base::Bind(&DeviceManagerImpl::OnEnumerationPermissionCheckComplete,
+                   base::Unretained(this), base::Passed(&devices_added),
+                   devices_removed));
+  }
+}
+
+void DeviceManagerImpl::OnEnumerationPermissionCheckComplete(
+    mojo::Array<DeviceInfoPtr> devices_added,
+    const std::set<std::string>& devices_removed,
+    mojo::Array<mojo::String> allowed_guids) {
+  permission_request_pending_ = false;
+
+  if (allowed_guids.size() > 0) {
+    std::set<std::string> allowed_guid_set;
+    for (size_t i = 0; i < allowed_guids.size(); ++i)
+      allowed_guid_set.insert(allowed_guids[i]);
+
+    DeviceChangeNotificationPtr notification = DeviceChangeNotification::New();
+    notification->devices_added.resize(0);
+    for (size_t i = 0; i < devices_added.size(); ++i) {
+      if (ContainsKey(allowed_guid_set, devices_added[i]->guid))
+        notification->devices_added.push_back(devices_added[i].Pass());
+    }
+
+    notification->devices_removed.resize(0);
+    for (const std::string& guid : devices_removed) {
+      if (ContainsKey(allowed_guid_set, guid))
+        notification->devices_removed.push_back(guid);
+    }
+
+    DCHECK(!device_change_callbacks_.empty());
     const GetDeviceChangesCallback& callback = device_change_callbacks_.front();
     callback.Run(notification.Pass());
     device_change_callbacks_.pop();
   }
+
+  if (devices_added_.size() > 0 || !devices_removed_.empty())
+    MaybeRunDeviceChangesCallback();
 }
 
 }  // namespace usb
