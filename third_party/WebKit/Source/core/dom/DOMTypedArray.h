@@ -52,6 +52,12 @@ public:
         return adoptRef(new ThisType(bufferView.release(), buffer.release()));
     }
 
+    static PassRefPtr<ThisType> createOrNull(unsigned length)
+    {
+        RefPtr<WTF::ArrayBuffer> buffer = WTF::ArrayBuffer::createOrNull(length, 1);
+        return buffer ? create(buffer.release(), 0, length) : nullptr;
+    }
+
     const WTFTypedArray* view() const { return static_cast<const WTFTypedArray*>(DOMArrayBufferView::view()); }
     WTFTypedArray* view() { return static_cast<WTFTypedArray*>(DOMArrayBufferView::view()); }
 

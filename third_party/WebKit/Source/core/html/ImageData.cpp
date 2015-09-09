@@ -41,10 +41,15 @@ ImageData* ImageData::create(const IntSize& size)
     Checked<int, RecordOverflow> dataSize = 4;
     dataSize *= size.width();
     dataSize *= size.height();
-    if (dataSize.hasOverflowed())
+    if (dataSize.hasOverflowed() || dataSize.unsafeGet() < 0)
         return nullptr;
 
-    return new ImageData(size);
+    RefPtr<DOMUint8ClampedArray> byteArray =
+        DOMUint8ClampedArray::createOrNull(dataSize.unsafeGet());
+    if (!byteArray)
+        return nullptr;
+
+    return new ImageData(size, byteArray.release());
 }
 
 ImageData* ImageData::create(const IntSize& size, PassRefPtr<DOMUint8ClampedArray> byteArray)
@@ -72,12 +77,21 @@ ImageData* ImageData::create(unsigned width, unsigned height, ExceptionState& ex
     Checked<unsigned, RecordOverflow> dataSize = 4;
     dataSize *= width;
     dataSize *= height;
-    if (dataSize.hasOverflowed()) {
+    if (dataSize.hasOverflowed()
+        || static_cast<int>(width) < 0
+        || static_cast<int>(height) < 0) {
         exceptionState.throwDOMException(IndexSizeError, "The requested image size exceeds the supported range.");
         return nullptr;
     }
 
-    return new ImageData(IntSize(width, height));
+    RefPtr<DOMUint8ClampedArray> byteArray =
+        DOMUint8ClampedArray::createOrNull(dataSize.unsafeGet());
+    if (!byteArray) {
+        exceptionState.throwDOMException(V8GeneralError, "Out of memory at ImageData creation");
+        return nullptr;
+    }
+
+    return new ImageData(IntSize(width, height), byteArray.release());
 }
 
 bool ImageData::validateConstructorArguments(DOMUint8ClampedArray* data, unsigned width, unsigned& lengthInPixels, ExceptionState& exceptionState)
@@ -145,12 +159,6 @@ v8::Local<v8::Object> ImageData::associateWithWrapper(v8::Isolate* isolate, cons
             return v8::Local<v8::Object>();
     }
     return wrapper;
-}
-
-ImageData::ImageData(const IntSize& size)
-    : m_size(size)
-    , m_data(DOMUint8ClampedArray::create(size.width() * size.height() * 4))
-{
 }
 
 ImageData::ImageData(const IntSize& size, PassRefPtr<DOMUint8ClampedArray> byteArray)
