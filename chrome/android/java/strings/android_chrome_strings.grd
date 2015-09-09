@@ -2128,9 +2128,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
         Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
       </message>
-      <message name="IDS_MEDIA_NOTIFICATION_TEXT_NO_LINK" desc="The notification will display this text for the user to identify the tab to return to when the link is unknown">
-        Touch to return to the tab
-      </message>
       <message name="IDS_NEW_TAB_INCOGNITO_HEADER" desc="Header shown when a user opens an incognito tab explaining incognito mode">
         You've gone incognito.
       </message>
