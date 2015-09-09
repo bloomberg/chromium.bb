@@ -530,17 +530,9 @@ Polymer({
     // computed functions prematurely.
     var tempSinkToRouteMap = {};
 
-    for (var i = 0; i < this.routeList.length; i++) {
-      var route = this.routeList[i];
-      var existingRoute = tempSinkToRouteMap[route.sinkId];
+    // We expect that each route in |routeList| maps to a unique sink.
+    this.routeList.forEach(function(route) {
       this.routeMap_[route.id] = route;
-
-      // If we've already accounted for locality of a route that maps to the
-      // same sink, we don't need to check again. However, some routes that are
-      // not local may have local counterparts, so we want to check those.
-      if (existingRoute && existingRoute.isLocal)
-        continue;
-
       tempSinkToRouteMap[route.sinkId] = route;
 
       if (route.isLocal) {
@@ -550,7 +542,7 @@ Polymer({
         // |localRouteCount_| == 1, which implies it was only set once.
         localRoute = route;
       }
-    }
+    }, this);
 
     this.sinkToRouteMap_ = tempSinkToRouteMap;
     this.maybeShowRouteDetailsOnOpen_(localRoute);

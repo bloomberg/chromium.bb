@@ -80,8 +80,19 @@ void MediaRouterUI::UIMediaRoutesObserver::OnRoutesUpdated(
     const std::vector<MediaRoute>& routes) {
   std::vector<MediaRoute> routes_for_display;
   for (const MediaRoute& route : routes) {
-    if (route.for_display())
+    if (route.for_display()) {
+#ifndef NDEBUG
+      for (const MediaRoute& existing_route : routes_for_display) {
+        if (existing_route.media_sink_id() == route.media_sink_id()) {
+          DVLOG(2) << "Received another route for display with the same sink"
+                   << " id as an existing route. "
+                   << route.media_route_id() << " has the same sink id as "
+                   << existing_route.media_sink_id() << ".";
+        }
+      }
+#endif
       routes_for_display.push_back(route);
+    }
   }
 
   callback_.Run(routes_for_display);
