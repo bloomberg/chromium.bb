@@ -5,8 +5,13 @@
 #ifndef COMPONENTS_MEMORY_PRESSURE_FILTERED_MEMORY_PRESSURE_CALCULATOR_H_
 #define COMPONENTS_MEMORY_PRESSURE_FILTERED_MEMORY_PRESSURE_CALCULATOR_H_
 
-#include "base/time/tick_clock.h"
 #include "components/memory_pressure/memory_pressure_calculator.h"
+
+#include "base/time/time.h"
+
+namespace base {
+class TickClock;
+}  // namespace base
 
 namespace memory_pressure {
 
@@ -26,17 +31,15 @@ class FilteredMemoryPressureCalculator : public MemoryPressureCalculator {
   static const int kCriticalPressureCooldownPeriodMs;
   static const int kModeratePressureCooldownPeriodMs;
 
-  explicit FilteredMemoryPressureCalculator(
-      scoped_ptr<MemoryPressureCalculator> pressure_calculator);
+  // The provided |pressure_calculator| and |tick_clock| must outlive this
+  // object.
+  FilteredMemoryPressureCalculator(
+      MemoryPressureCalculator* pressure_calculator,
+      base::TickClock* tick_clock);
   ~FilteredMemoryPressureCalculator() override;
 
   // Calculates the current pressure level.
   MemoryPressureLevel CalculateCurrentPressureLevel() override;
-
-  // Testing seam for configuring the tick clock in use.
-  void set_tick_clock(scoped_ptr<base::TickClock> tick_clock) {
-    tick_clock_ = tick_clock.Pass();
-  }
 
   // Accessors for unittesting.
   bool cooldown_in_progress() const { return cooldown_in_progress_; }
@@ -46,11 +49,11 @@ class FilteredMemoryPressureCalculator : public MemoryPressureCalculator {
  private:
   friend class TestFilteredMemoryPressureCalculator;
 
-  // The delegate tick clock. This is settable as a testing seam.
-  scoped_ptr<base::TickClock> tick_clock_;
-
   // The delegate pressure calculator. Provided by the constructor.
-  scoped_ptr<MemoryPressureCalculator> pressure_calculator_;
+  MemoryPressureCalculator* pressure_calculator_;
+
+  // The delegate tick clock. Provided by the constructor.
+  base::TickClock* tick_clock_;
 
   // The memory pressure currently being reported.
   MemoryPressureLevel current_pressure_level_;

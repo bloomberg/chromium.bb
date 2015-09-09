@@ -4,7 +4,7 @@
 
 #include "components/memory_pressure/filtered_memory_pressure_calculator.h"
 
-#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 
 namespace memory_pressure {
 
@@ -24,13 +24,17 @@ const int FilteredMemoryPressureCalculator::kModeratePressureCooldownPeriodMs =
     5000;
 
 FilteredMemoryPressureCalculator::FilteredMemoryPressureCalculator(
-    scoped_ptr<MemoryPressureCalculator> pressure_calculator)
-    : tick_clock_(new base::DefaultTickClock()),
-      pressure_calculator_(pressure_calculator.Pass()),
+    MemoryPressureCalculator* pressure_calculator,
+    base::TickClock* tick_clock)
+    : pressure_calculator_(pressure_calculator),
+      tick_clock_(tick_clock),
       current_pressure_level_(
           MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       samples_taken_(false),
-      cooldown_in_progress_(false) {}
+      cooldown_in_progress_(false) {
+  DCHECK(pressure_calculator);
+  DCHECK(tick_clock);
+}
 
 FilteredMemoryPressureCalculator::~FilteredMemoryPressureCalculator() {
 }
