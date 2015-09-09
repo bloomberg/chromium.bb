@@ -24,6 +24,11 @@ bool SpellCheckerSessionBridge::RegisterJNI(JNIEnv* env) {
 void SpellCheckerSessionBridge::RequestTextCheck(int route_id,
                                                  int identifier,
                                                  const base::string16& text) {
+  // SpellCheckerSessionBridge#create() will return null if spell checker
+  // service is unavailable.
+  if (java_object_initialization_failed_)
+    return;
+
   // RequestTextCheck IPC arrives at the message filter before
   // ToggleSpellCheck IPC when the user focuses an input field that already
   // contains completed text.  We need to initialize the spellchecker here
@@ -33,6 +38,10 @@ void SpellCheckerSessionBridge::RequestTextCheck(int route_id,
     java_object_.Reset(Java_SpellCheckerSessionBridge_create(
         base::android::AttachCurrentThread(),
         reinterpret_cast<intptr_t>(this)));
+    if (java_object_.is_null()) {
+      java_object_initialization_failed_ = true;
+      return;
+    }
   }
 
   // Save incoming requests to run at the end of the currently active request.

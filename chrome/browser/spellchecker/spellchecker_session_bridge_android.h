@@ -54,6 +54,7 @@ class SpellCheckerSessionBridge {
   scoped_ptr<SpellingRequest> pending_request_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+  bool java_object_initialization_failed_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckerSessionBridge);
 };
