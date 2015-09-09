@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebElement;
@@ -29,6 +30,7 @@ using blink::WebNode;
 using blink::WebPoint;
 using blink::WebSize;
 using blink::WebTextAreaElement;
+using blink::WebUserGestureIndicator;
 
 namespace {
 
@@ -77,12 +79,16 @@ PageClickTracker::~PageClickTracker() {
 void PageClickTracker::OnMouseDown(const WebNode& mouse_down_node) {
   focused_node_was_last_clicked_ = !mouse_down_node.isNull() &&
                                    mouse_down_node.focused();
+
+  if (IsKeyboardAccessoryEnabled())
+    DoFocusChangeComplete();
 }
 
 void PageClickTracker::FocusedNodeChanged(const WebNode& node) {
   was_focused_before_now_ = false;
 
-  if (IsKeyboardAccessoryEnabled()) {
+  if (IsKeyboardAccessoryEnabled() &&
+      WebUserGestureIndicator::isProcessingUserGesture()) {
     focused_node_was_last_clicked_ = true;
     DoFocusChangeComplete();
   }
