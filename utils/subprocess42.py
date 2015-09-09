@@ -433,10 +433,12 @@ def call_with_timeout(args, timeout, **kwargs):
 @contextlib.contextmanager
 def set_signal_handler(signals, handler):
   """Temporarilly override signals handler."""
-  previous = dict((s, signal.signal(s, handler)) for s in signals)
-  yield None
-  for s in signals:
-    signal.signal(s, previous[s])
+  previous = {s: signal.signal(s, handler) for s in signals}
+  try:
+    yield
+  finally:
+    for sig, h in previous.iteritems():
+      signal.signal(sig, h)
 
 
 @contextlib.contextmanager
