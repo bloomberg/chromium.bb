@@ -478,7 +478,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 }
 
 // Test that find-in-page UI can request focus, even when it is already open.
-#if defined(OS_MACOSX)
+// flaky on Windows - http://crbug.com/523255
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_FindFocusTest DISABLED_FindFocusTest
 #else
 #define MAYBE_FindFocusTest FindFocusTest

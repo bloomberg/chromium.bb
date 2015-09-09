@@ -326,8 +326,14 @@ IN_PROC_BROWSER_TEST_F(
   delegate->Release();
 }
 
+#if defined(OS_WIN)
+#define MAYBE_UpdateProgressNotificationWhenCenterVisible DISABLED_UpdateProgressNotificationWhenCenterVisible
+#else
+#define MAYBE_UpdateProgressNotificationWhenCenterVisible UpdateProgressNotificationWhenCenterVisible
+#endif
+
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       UpdateProgressNotificationWhenCenterVisible) {
+                       MAYBE_UpdateProgressNotificationWhenCenterVisible) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

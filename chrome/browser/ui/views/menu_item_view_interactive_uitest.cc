@@ -53,20 +53,22 @@ class MenuItemViewTestBasic : public MenuTestBase {
   DISALLOW_COPY_AND_ASSIGN(MenuItemViewTestBasic);
 };
 
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_SelectItem2 DISABLED_SelectItem2
+#define MAYBE_SelectItem0 DISABLED_SelectItem0
+#else
+#define MAYBE_SelectItem2 SelectItem2
+#define MAYBE_SelectItem0 SelectItem0
+#endif
+
 // Click each item of a 3-item menu (with separator).
 typedef MenuItemViewTestBasic<0> MenuItemViewTestBasic0;
 typedef MenuItemViewTestBasic<1> MenuItemViewTestBasic1;
 typedef MenuItemViewTestBasic<2> MenuItemViewTestBasic2;
-VIEW_TEST(MenuItemViewTestBasic0, SelectItem0)
+VIEW_TEST(MenuItemViewTestBasic0, MAYBE_SelectItem0)
 VIEW_TEST(MenuItemViewTestBasic1, SelectItem1)
 
-
-#if defined(OS_WIN)
-// flaky on Windows - http://crbug.com/523255
-#define MAYBE_SelectItem2 DISABLED_SelectItem2
-#else
-#define MAYBE_SelectItem2 SelectItem2
-#endif
 VIEW_TEST(MenuItemViewTestBasic2, MAYBE_SelectItem2)
 
 // Test class for inserting a menu item while the menu is open.
@@ -149,13 +151,17 @@ typedef MenuItemViewTestInsert<2,2> MenuItemViewTestInsert22;
 #if defined(OS_WIN)
 // flaky on Windows - http://crbug.com/523255
 #define MAYBE_InsertItem00 DISABLED_InsertItem00
+#define MAYBE_InsertItem02 DISABLED_InsertItem02
+#define MAYBE_InsertItem10 DISABLED_InsertItem10
 #else
 #define MAYBE_InsertItem00 InsertItem00
+#define MAYBE_InsertItem02 InsertItem02
+#define MAYBE_InsertItem10 InsertItem10
 #endif
 VIEW_TEST(MenuItemViewTestInsert00, MAYBE_InsertItem00)
 
-VIEW_TEST(MenuItemViewTestInsert02, InsertItem02)
-VIEW_TEST(MenuItemViewTestInsert10, InsertItem10)
+VIEW_TEST(MenuItemViewTestInsert02, MAYBE_InsertItem02)
+VIEW_TEST(MenuItemViewTestInsert10, MAYBE_InsertItem10)
 
 #if defined(OS_WIN)
 // flaky on Windows - http://crbug.com/523255

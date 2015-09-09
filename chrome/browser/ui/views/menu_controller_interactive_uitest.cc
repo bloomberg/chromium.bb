@@ -83,8 +83,9 @@ VIEW_TEST(MenuControllerMnemonicTestTitleMatch, MAYBE_TitleMatch);
 typedef MenuControllerMnemonicTest<ui::VKEY_A,0>
     MenuControllerMnemonicTestNoMatch;
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_WIN)
 // ozone bringup - http://crbug.com/401304
+// flaky on windows - http://crbug.com/523255
 #define MAYBE_NoMatch DISABLED_NoMatch
 #else
 #define MAYBE_NoMatch NoMatch
