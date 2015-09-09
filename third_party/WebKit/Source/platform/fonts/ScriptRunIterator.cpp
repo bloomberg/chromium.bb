@@ -8,8 +8,6 @@
 #include "platform/Logging.h"
 #include "wtf/Threading.h"
 
-#include <ubidi_props.h>
-
 namespace blink {
 
 typedef ScriptData::PairedBracketType PairedBracketType;
