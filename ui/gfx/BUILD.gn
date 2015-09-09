@@ -467,6 +467,7 @@ action("aggregate_vector_icons") {
     "vector_icons/tablet.icon",
     "vector_icons/translate.icon",
     "vector_icons/warning.icon",
+    "vector_icons/warning_badge.icon",
     "vector_icons/web.icon",
   ]
   outputs = [

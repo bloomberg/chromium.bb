@@ -53,6 +53,7 @@ class ContentSettingImageModel {
   void SetIconByVectorId(gfx::VectorIconId id, bool blocked);
 #endif
   void set_visible(bool visible) { is_visible_ = visible; }
+  void set_icon(const gfx::Image& image) { icon_ = image; }
   void set_explanatory_string_id(int text_id) {
     explanatory_string_id_ = text_id;
   }
