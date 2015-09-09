@@ -1601,6 +1601,3 @@ crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/527009 fast/dom/plugin-attributes-enumeration.html [ NeedsManualRebaseline ]
 
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
-
-crbug.com/492871 fast/forms/input-readonly-autoscroll.html [ NeedsRebaseline ]
-crbug.com/492871 fast/forms/input-text-scroll-left-on-blur.html [ NeedsRebaseline ]
