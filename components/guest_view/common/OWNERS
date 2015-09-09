@@ -1,5 +1,6 @@
 fsamuel@chromium.org
 lazyboy@chromium.org
+wjmaclean@chromium.org
 
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
