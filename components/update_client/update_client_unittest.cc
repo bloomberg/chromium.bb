@@ -1983,4 +1983,65 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
   StopWorkerPool();
 }
 
+// Make sure that we don't get any crashes when trying to update an empty list
+// of ids.
+TEST_F(UpdateClientTest, EmptyIdList) {
+  class DataCallbackFake {
+   public:
+    static void Callback(const std::vector<std::string>& ids,
+                         std::vector<CrxComponent>* components) {}
+  };
+
+  class CompletionCallbackFake {
+   public:
+    static void Callback(const base::Closure& quit_closure, int error) {
+      quit_closure.Run();
+    }
+  };
+  class FakeUpdateChecker : public UpdateChecker {
+   public:
+    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+    }
+
+    bool CheckForUpdates(
+        const std::vector<CrxUpdateItem*>& items_to_check,
+        const std::string& additional_attributes,
+        const UpdateCheckCallback& update_check_callback) override {
+      return false;
+    }
+  };
+
+  class FakeCrxDownloader : public CrxDownloader {
+   public:
+    static scoped_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        net::URLRequestContextGetter* context_getter,
+        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
+        const scoped_refptr<base::SingleThreadTaskRunner>&
+            background_task_runner) {
+      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+    }
+
+   private:
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    ~FakeCrxDownloader() override {}
+
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
+      config(), make_scoped_ptr(new FakePingManagerImpl(*config())),
+      &FakeUpdateChecker::Create, &FakeCrxDownloader::Create));
+
+  std::vector<std::string> empty_id_list;
+  base::RunLoop runloop;
+  update_client->Update(
+      empty_id_list, base::Bind(&DataCallbackFake::Callback),
+      base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+  runloop.Run();
+
+  StopWorkerPool();
+}
+
 }  // namespace update_client

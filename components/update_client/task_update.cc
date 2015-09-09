@@ -31,8 +31,10 @@ TaskUpdate::~TaskUpdate() {
 void TaskUpdate::Run() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (ids_.empty())
+  if (ids_.empty()) {
     RunComplete(-1);
+    return;
+  }
 
   update_engine_->Update(
       is_foreground_, ids_, crx_data_callback_,
