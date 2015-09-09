@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x243
-  LayoutBlockFlow {HTML} at (0,0) size 800x243
-    LayoutBlockFlow {BODY} at (8,16) size 784x129
-      LayoutBlockFlow {P} at (0,0) size 784x43 [color=#000080]
-        LayoutText {#text} at (0,4) size 407x17
-          text run at (0,4) width 252: "In the following test, the purple square "
-          text run at (251,4) width 156: "should be on the left (\x{21E6}"
-        LayoutImage {IMG} at (406.48,2) size 19x19.19
-        LayoutText {#text} at (425,4) size 221x17
-          text run at (425,4) width 221: "), and the teal square on the right ("
-        LayoutImage {IMG} at (645.41,2) size 19x19.19
-        LayoutText {#text} at (664,4) size 758x38
-          text run at (664,4) width 94: "\x{21E8}) of the blue"
-          text run at (0,25) width 63: "rectangle."
-      LayoutBlockFlow {DIV} at (0,59) size 784x70
+layer at (0,0) size 800x240
+  LayoutBlockFlow {HTML} at (0,0) size 800x240
+    LayoutBlockFlow {BODY} at (8,16) size 784x126
+      LayoutBlockFlow {P} at (0,0) size 784x40 [color=#000080]
+        LayoutText {#text} at (0,2) size 406x17
+          text run at (0,2) width 252: "In the following test, the purple square "
+          text run at (251,2) width 155: "should be on the left (\x{21E6}"
+        LayoutImage {IMG} at (405.20,0) size 19x19.19
+        LayoutText {#text} at (424,2) size 221x17
+          text run at (424,2) width 221: "), and the teal square on the right ("
+        LayoutImage {IMG} at (644.13,0) size 19x19.19
+        LayoutText {#text} at (663,2) size 755x37
+          text run at (663,2) width 92: "\x{21E8}) of the blue"
+          text run at (0,22) width 63: "rectangle."
+      LayoutBlockFlow {DIV} at (0,56) size 784x70
         LayoutBlockFlow {DIV} at (16,0) size 752x70 [color=#0000FF] [bgcolor=#000080]
           LayoutImage (floating) {IMG} at (8,8) size 160x160
           LayoutImage (floating) {IMG} at (584,8) size 160x160

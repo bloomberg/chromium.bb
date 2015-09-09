@@ -1,47 +1,47 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x267
-  LayoutBlockFlow {HTML} at (0,0) size 800x267
+layer at (0,0) size 800x262
+  LayoutBlockFlow {HTML} at (0,0) size 800x262
     LayoutBlockFlow {BODY} at (8,8) size 784x0
-      LayoutBlockFlow (floating) {DIV} at (0,0) size 588x259 [color=#FFFFFF] [bgcolor=#000080]
-        LayoutBlockFlow (floating) {DIV} at (277,0) size 294x79 [color=#00FFFF] [bgcolor=#008080]
-          LayoutBlockFlow {P} at (0,0) size 294x79
-            LayoutText {#text} at (0,0) size 294x75
+      LayoutBlockFlow (floating) {DIV} at (0,0) size 588x254 [color=#FFFFFF] [bgcolor=#000080]
+        LayoutBlockFlow (floating) {DIV} at (277,0) size 294x74 [color=#00FFFF] [bgcolor=#008080]
+          LayoutBlockFlow {P} at (0,0) size 294x74
+            LayoutText {#text} at (0,0) size 294x71
               text run at (0,0) width 294: "To the right of this teal box there should be a"
               text run at (0,18) width 103: "purple square, "
               text run at (102,18) width 192: "tightly squeezed in between"
               text run at (0,36) width 213: "the edge of the teal box and the "
               text run at (212,36) width 82: "outside edge"
-              text run at (0,58) width 131: "of the blue block. \x{21E8}"
-        LayoutBlockFlow {P} at (0,0) size 588x259
-          LayoutText {#text} at (0,0) size 277x39
+              text run at (0,54) width 130: "of the blue block. \x{21E8}"
+        LayoutBlockFlow {P} at (0,0) size 588x254
+          LayoutText {#text} at (0,0) size 277x35
             text run at (0,0) width 277: "Inside this blue block on the right there"
-            text run at (0,22) width 160: "should be a teal box. \x{21E8} "
-          LayoutInline {SPAN} at (0,0) size 588x236 [color=#000080]
-            LayoutText {#text} at (160,22) size 588x236
-              text run at (160,22) width 117: "FAIL FAIL FAIL"
-              text run at (0,43) width 277: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,61) width 81: "FAIL FAIL "
-              text run at (80,61) width 197: "FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,79) width 297: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
-              text run at (296,79) width 292: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,97) width 212: "FAIL FAIL FAIL FAIL FAIL "
-              text run at (211,97) width 377: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,115) width 127: "FAIL FAIL FAIL "
-              text run at (126,115) width 462: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,133) width 42: "FAIL "
-              text run at (41,133) width 512: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
-              text run at (552,133) width 36: "FAIL"
-              text run at (0,151) width 468: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
-              text run at (467,151) width 121: "FAIL FAIL FAIL"
-              text run at (0,169) width 382: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
-              text run at (381,169) width 207: "FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,187) width 297: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
-              text run at (296,187) width 292: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,205) width 212: "FAIL FAIL FAIL FAIL FAIL "
-              text run at (211,205) width 377: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,223) width 127: "FAIL FAIL FAIL "
-              text run at (126,223) width 462: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,241) width 40: "FAIL "
-              text run at (39,241) width 472: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
+            text run at (0,18) width 160: "should be a teal box. \x{21E8} "
+          LayoutInline {SPAN} at (0,0) size 588x235 [color=#000080]
+            LayoutText {#text} at (159,18) size 588x235
+              text run at (159,18) width 118: "FAIL FAIL FAIL"
+              text run at (0,38) width 277: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,56) width 81: "FAIL FAIL "
+              text run at (80,56) width 197: "FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,74) width 297: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
+              text run at (296,74) width 292: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,92) width 212: "FAIL FAIL FAIL FAIL FAIL "
+              text run at (211,92) width 377: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,110) width 127: "FAIL FAIL FAIL "
+              text run at (126,110) width 462: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,128) width 42: "FAIL "
+              text run at (41,128) width 512: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
+              text run at (552,128) width 36: "FAIL"
+              text run at (0,146) width 468: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
+              text run at (467,146) width 121: "FAIL FAIL FAIL"
+              text run at (0,164) width 382: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
+              text run at (381,164) width 207: "FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,182) width 297: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL "
+              text run at (296,182) width 292: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,200) width 212: "FAIL FAIL FAIL FAIL FAIL "
+              text run at (211,200) width 377: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,218) width 127: "FAIL FAIL FAIL "
+              text run at (126,218) width 462: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
+              text run at (0,236) width 40: "FAIL "
+              text run at (39,236) width 472: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
           LayoutText {#text} at (0,0) size 0x0

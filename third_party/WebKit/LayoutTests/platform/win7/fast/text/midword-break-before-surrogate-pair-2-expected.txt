@@ -1,0 +1,8 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 186x54 [border: (3px solid #0000FF)]
+        LayoutText {#text} at (3,10) size 219x40
+          text run at (3,10) width 219: "\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}"
