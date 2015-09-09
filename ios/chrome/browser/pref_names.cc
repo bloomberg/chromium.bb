@@ -13,6 +13,7 @@ namespace prefs {
 // preference.
 
 const char kAcceptLanguages[] = "intl.accept_languages";
+const char kEnableDoNotTrack[] = "enable_do_not_track";
 const char kHttpServerProperties[] = "net.http_server_properties";
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
