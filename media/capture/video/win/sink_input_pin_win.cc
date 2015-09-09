@@ -36,17 +36,21 @@ void SinkInputPin::SetRequestedMediaFormat(
   resulting_format_.pixel_format = PIXEL_FORMAT_UNKNOWN;
 }
 
+const VideoCaptureFormat& SinkInputPin::ResultingFormat() {
+  return resulting_format_;
+}
+
 bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
-  const GUID type = media_type->majortype;
+  GUID type = media_type->majortype;
   if (type != MEDIATYPE_Video)
     return false;
 
-  const GUID format_type = media_type->formattype;
+  GUID format_type = media_type->formattype;
   if (format_type != FORMAT_VideoInfo)
     return false;
 
   // Check for the sub types we support.
-  const GUID sub_type = media_type->subtype;
+  GUID sub_type = media_type->subtype;
   VIDEOINFOHEADER* pvi =
       reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
   if (pvi == NULL)
@@ -71,12 +75,6 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
     resulting_format_.pixel_format = PIXEL_FORMAT_YUY2;
     return true;
   }
-  // This format is added after http:/crbug.com/508413.
-  if (sub_type == MEDIASUBTYPE_UYVY &&
-      pvi->bmiHeader.biCompression == MAKEFOURCC('U', 'Y', 'V', 'Y')) {
-    resulting_format_.pixel_format = PIXEL_FORMAT_UYVY;
-    return true;
-  }
   if (sub_type == MEDIASUBTYPE_MJPG &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('M', 'J', 'P', 'G')) {
     resulting_format_.pixel_format = PIXEL_FORMAT_MJPEG;
@@ -92,12 +90,6 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
     resulting_format_.pixel_format = PIXEL_FORMAT_RGB32;
     return true;
   }
-
-#ifndef NDEBUG
-  WCHAR guid_str[128];
-  StringFromGUID2(sub_type, guid_str, arraysize(guid_str));
-  DVLOG(2) << __FUNCTION__ << " unsupported media type: " << guid_str;
-#endif
   return false;
 }
 
@@ -105,7 +97,7 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
   if (media_type->cbFormat < sizeof(VIDEOINFOHEADER))
     return false;
 
-  VIDEOINFOHEADER* const pvi =
+  VIDEOINFOHEADER* pvi =
       reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
 
   ZeroMemory(pvi, sizeof(VIDEOINFOHEADER));
@@ -113,8 +105,9 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
   pvi->bmiHeader.biPlanes = 1;
   pvi->bmiHeader.biClrImportant = 0;
   pvi->bmiHeader.biClrUsed = 0;
-  if (requested_frame_rate_ > 0)
+  if (requested_frame_rate_ > 0) {
     pvi->AvgTimePerFrame = kSecondsToReferenceTime / requested_frame_rate_;
+  }
 
   media_type->majortype = MEDIATYPE_Video;
   media_type->formattype = FORMAT_VideoInfo;
@@ -151,15 +144,6 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
       break;
     }
     case 2: {
-      pvi->bmiHeader.biCompression = MAKEFOURCC('U', 'Y', 'V', 'Y');
-      pvi->bmiHeader.biBitCount = 16;
-      pvi->bmiHeader.biWidth = requested_info_header_.biWidth;
-      pvi->bmiHeader.biHeight = requested_info_header_.biHeight;
-      pvi->bmiHeader.biSizeImage = GetArea(requested_info_header_) * 2;
-      media_type->subtype = MEDIASUBTYPE_UYVY;
-      break;
-    }
-    case 3: {
       pvi->bmiHeader.biCompression = BI_RGB;
       pvi->bmiHeader.biBitCount = 24;
       pvi->bmiHeader.biWidth = requested_info_header_.biWidth;
@@ -168,7 +152,7 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
       media_type->subtype = MEDIASUBTYPE_RGB24;
       break;
     }
-    case 4: {
+    case 3: {
       pvi->bmiHeader.biCompression = BI_RGB;
       pvi->bmiHeader.biBitCount = 32;
       pvi->bmiHeader.biWidth = requested_info_header_.biWidth;
