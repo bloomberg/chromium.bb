@@ -6,8 +6,15 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
+
+namespace {
+// These are the default dimensions of radio buttons and checkboxes on Android.
+const int kCheckboxAndRadioWidth = 16;
+const int kCheckboxAndRadioHeight = 16;
+}
 
 #if !defined(USE_AURA)
 // static
@@ -20,6 +27,14 @@ NativeTheme* NativeTheme::instance() {
 NativeThemeAndroid* NativeThemeAndroid::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeAndroid, s_native_theme, ());
   return &s_native_theme;
+}
+
+gfx::Size NativeThemeAndroid::GetPartSize(Part part,
+                                          State state,
+                                          const ExtraParams& extra) const {
+  if (part == kCheckbox || part == kRadio)
+    return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
+  return NativeThemeBase::GetPartSize(part, state, extra);
 }
 
 SkColor NativeThemeAndroid::GetSystemColor(ColorId color_id) const {
