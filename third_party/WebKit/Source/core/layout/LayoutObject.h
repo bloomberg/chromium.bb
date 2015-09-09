@@ -360,7 +360,6 @@ public:
     void* operator new(size_t);
     void operator delete(void*);
 
-public:
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
 
     virtual bool isBoxModelObject() const { return false; }
