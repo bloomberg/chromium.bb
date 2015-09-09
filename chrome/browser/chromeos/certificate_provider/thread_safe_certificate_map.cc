@@ -14,20 +14,28 @@ namespace {
 void BuildFingerprintsMap(
     const std::map<std::string, certificate_provider::CertificateInfoList>&
         extension_to_certificates,
-    ThreadSafeCertificateMap::ExtensionToFingerprintsMap* ext_to_certs_map) {
+    ThreadSafeCertificateMap::FingerprintToCertAndExtensionMap*
+        fingerprint_to_cert) {
   for (const auto& entry : extension_to_certificates) {
     const std::string& extension_id = entry.first;
-    auto& fingerprint_to_cert = (*ext_to_certs_map)[extension_id];
     for (const CertificateInfo& cert_info : entry.second) {
       const net::SHA256HashValue fingerprint =
           net::X509Certificate::CalculateFingerprint256(
               cert_info.certificate->os_cert_handle());
-      fingerprint_to_cert[fingerprint] = cert_info;
+      fingerprint_to_cert->insert(
+          fingerprint, make_scoped_ptr(new ThreadSafeCertificateMap::MapValue(
+                           cert_info, extension_id)));
     }
   }
 }
 
 }  // namespace
+
+ThreadSafeCertificateMap::MapValue::MapValue(const CertificateInfo& cert_info,
+                                             const std::string& extension_id)
+    : cert_info(cert_info), extension_id(extension_id) {}
+
+ThreadSafeCertificateMap::MapValue::~MapValue() {}
 
 ThreadSafeCertificateMap::ThreadSafeCertificateMap() {}
 
@@ -36,37 +44,53 @@ ThreadSafeCertificateMap::~ThreadSafeCertificateMap() {}
 void ThreadSafeCertificateMap::Update(
     const std::map<std::string, certificate_provider::CertificateInfoList>&
         extension_to_certificates) {
-  ExtensionToFingerprintsMap new_ext_to_certs_map;
-  BuildFingerprintsMap(extension_to_certificates, &new_ext_to_certs_map);
+  FingerprintToCertAndExtensionMap new_fingerprint_map;
+  BuildFingerprintsMap(extension_to_certificates, &new_fingerprint_map);
 
   base::AutoLock auto_lock(lock_);
-  extension_to_certificates_.swap(new_ext_to_certs_map);
+  // Keep all old fingerprints from |fingerprint_to_cert_and_extension_| but
+  // remove the association to any extension.
+  for (const auto& entry : fingerprint_to_cert_and_extension_) {
+    const net::SHA256HashValue& fingerprint = entry.first;
+    // This doesn't modify the map if it already contains the key |fingerprint|.
+    new_fingerprint_map.insert(fingerprint, nullptr);
+  }
+  fingerprint_to_cert_and_extension_.swap(new_fingerprint_map);
 }
 
 bool ThreadSafeCertificateMap::LookUpCertificate(
     const net::X509Certificate& cert,
+    bool* is_currently_provided,
     CertificateInfo* info,
     std::string* extension_id) {
+  *is_currently_provided = false;
   const net::SHA256HashValue fingerprint =
       net::X509Certificate::CalculateFingerprint256(cert.os_cert_handle());
 
   base::AutoLock auto_lock(lock_);
-  for (const auto& entry : extension_to_certificates_) {
-    const FingerprintToCertMap& certs = entry.second;
-    const auto it = certs.find(fingerprint);
-    if (it != certs.end()) {
-      *info = it->second;
-      *extension_id = entry.first;
-      return true;
-    }
+  const auto it = fingerprint_to_cert_and_extension_.find(fingerprint);
+  if (it == fingerprint_to_cert_and_extension_.end())
+    return false;
+
+  MapValue* const value = it->second;
+  if (value) {
+    *is_currently_provided = true;
+    *info = value->cert_info;
+    *extension_id = value->extension_id;
   }
-  return false;
+  return true;
 }
 
 void ThreadSafeCertificateMap::RemoveExtension(
     const std::string& extension_id) {
   base::AutoLock auto_lock(lock_);
-  extension_to_certificates_.erase(extension_id);
+  for (auto& entry : fingerprint_to_cert_and_extension_) {
+    MapValue* const value = entry.second;
+    // Only remove the association of the fingerprint to the extension, but keep
+    // the fingerprint.
+    if (value && value->extension_id == extension_id)
+      fingerprint_to_cert_and_extension_.set(entry.first, nullptr);
+  }
 }
 
 }  // namespace certificate_provider

@@ -35,7 +35,8 @@ bool SignRequests::RemoveRequest(const std::string& extension_id,
   if (it == pending.end())
     return false;
 
-  *callback = it->second;
+  if (callback)
+    *callback = it->second;
   pending.erase(it);
   return true;
 }

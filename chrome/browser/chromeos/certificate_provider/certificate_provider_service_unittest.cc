@@ -184,6 +184,30 @@ class CertificateProviderServiceTest : public testing::Test {
                                                  infos);
   }
 
+  bool CheckLookUpCertificate(
+      const certificate_provider::CertificateInfo& cert_info,
+      bool expected_is_certificate_known,
+      bool expected_is_currently_provided,
+      const std::string& expected_extension_id) {
+    bool is_currently_provided = !expected_is_currently_provided;
+    std::string extension_id;
+    if (expected_is_certificate_known !=
+        service_->LookUpCertificate(*cert_info.certificate,
+                                    &is_currently_provided, &extension_id)) {
+      LOG(ERROR) << "Wrong return value.";
+      return false;
+    }
+    if (expected_is_currently_provided != is_currently_provided) {
+      LOG(ERROR) << "Wrong |is_currently_provided|.";
+      return false;
+    }
+    if (expected_extension_id != extension_id) {
+      LOG(ERROR) << "Wrong extension id. Got " << extension_id;
+      return false;
+    }
+    return true;
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   TestDelegate* test_delegate_ = nullptr;
@@ -218,6 +242,7 @@ TEST_F(CertificateProviderServiceTest, GetCertificates) {
   task_runner_->RunUntilIdle();
   EXPECT_EQ(2u, certs.size());
 
+  // Verify that the ClientKeyStore returns key handles for the provide certs.
   EXPECT_TRUE(
       client_key_store_->FetchClientCertPrivateKey(*cert_info1_.certificate));
   EXPECT_TRUE(
@@ -237,6 +262,98 @@ TEST_F(CertificateProviderServiceTest, GetCertificates) {
   // As |certs| was not empty before, this ensures that StoreCertificates() was
   // called.
   EXPECT_TRUE(certs.empty());
+}
+
+TEST_F(CertificateProviderServiceTest, LookUpCertificate) {
+  // Provide only |cert_info1_|.
+  {
+    const int cert_request_id = RequestCertificatesFromExtensions(nullptr);
+    SetCertificateProvidedByExtension(kExtension1, cert_request_id,
+                                      cert_info1_);
+    task_runner_->RunUntilIdle();
+  }
+
+  EXPECT_TRUE(CheckLookUpCertificate(cert_info1_, true /* is known */,
+                                     true /* is currently provided */,
+                                     kExtension1));
+
+  EXPECT_TRUE(CheckLookUpCertificate(cert_info2_, false /* is not known */,
+                                     false /* is currently not provided */,
+                                     std::string()));
+
+  // Provide only |cert_info2_| from |kExtension2|.
+  test_delegate_->provider_extensions_.insert(kExtension2);
+  {
+    const int cert_request_id = RequestCertificatesFromExtensions(nullptr);
+    service_->SetCertificatesProvidedByExtension(
+        kExtension1, cert_request_id,
+        certificate_provider::CertificateInfoList());
+    SetCertificateProvidedByExtension(kExtension2, cert_request_id,
+                                      cert_info2_);
+    task_runner_->RunUntilIdle();
+  }
+
+  EXPECT_TRUE(CheckLookUpCertificate(cert_info1_, true /* is known */,
+                                     false /* is currently not provided */,
+                                     std::string()));
+
+  EXPECT_TRUE(CheckLookUpCertificate(cert_info2_, true /* is known */,
+                                     true /* is currently provided */,
+                                     kExtension2));
+
+  // Deregister |kExtension2| as certificate provider and provide |cert_info1_|
+  // from |kExtension1|.
+  test_delegate_->provider_extensions_.erase(kExtension2);
+
+  {
+    const int cert_request_id = RequestCertificatesFromExtensions(nullptr);
+    SetCertificateProvidedByExtension(kExtension1, cert_request_id,
+                                      cert_info1_);
+    task_runner_->RunUntilIdle();
+  }
+
+  EXPECT_TRUE(CheckLookUpCertificate(cert_info1_, true /* is known */,
+                                     true /* is currently provided */,
+                                     kExtension1));
+
+  EXPECT_TRUE(CheckLookUpCertificate(cert_info2_, true /* is known */,
+                                     false /* is currently not provided */,
+                                     std::string()));
+
+  // Provide |cert_info2_| from |kExtension1|.
+  {
+    const int cert_request_id = RequestCertificatesFromExtensions(nullptr);
+    SetCertificateProvidedByExtension(kExtension1, cert_request_id,
+                                      cert_info2_);
+    task_runner_->RunUntilIdle();
+  }
+
+  {
+    bool is_currently_provided = true;
+    std::string extension_id;
+    // |cert_info1_.certificate| was provided before, so this must return true.
+    EXPECT_TRUE(service_->LookUpCertificate(
+        *cert_info1_.certificate, &is_currently_provided, &extension_id));
+    EXPECT_FALSE(is_currently_provided);
+    EXPECT_TRUE(extension_id.empty());
+  }
+
+  {
+    bool is_currently_provided = false;
+    std::string extension_id;
+    EXPECT_TRUE(service_->LookUpCertificate(
+        *cert_info2_.certificate, &is_currently_provided, &extension_id));
+    EXPECT_TRUE(is_currently_provided);
+    EXPECT_EQ(kExtension1, extension_id);
+  }
+
+  EXPECT_TRUE(CheckLookUpCertificate(cert_info1_, true /* is known */,
+                                     false /* is currently not provided */,
+                                     std::string()));
+
+  EXPECT_TRUE(CheckLookUpCertificate(cert_info2_, true /* is known */,
+                                     true /* is currently provided */,
+                                     kExtension1));
 }
 
 TEST_F(CertificateProviderServiceTest, GetCertificatesTimeout) {

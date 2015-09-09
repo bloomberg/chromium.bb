@@ -127,6 +127,16 @@ class CertificateProviderService : public KeyedService {
                           int sign_request_id,
                           const std::vector<uint8_t>& signature);
 
+  // Returns whether this certificate was provided by any extension during the
+  // lifetime of this service. If this certificate is currently provided by an
+  // extension, sets |is_currently_provided| to true and |extension_id| to that
+  // extension's id. If this certificate was provided before but not anymore,
+  // |is_currently_provided| will be set to false and |extension_id| will not be
+  // modified.
+  bool LookUpCertificate(const net::X509Certificate& cert,
+                         bool* is_currently_provided,
+                         std::string* extension_id);
+
   // Returns a CertificateProvider that always returns the latest list of
   // certificates that are provided by all registered extensions. Therefore, it
   // is sufficient to create the CertificateProvider once and then repeatedly
@@ -187,8 +197,14 @@ class CertificateProviderService : public KeyedService {
   // Contains all pending certificate requests.
   certificate_provider::CertificateRequests certificate_requests_;
 
-  // Contains all certificates that the extensions returned in response to the
-  // most recent certificate request.
+  // Contains all certificates that the extensions returned during the lifetime
+  // of this service. Each certificate is associated with the extension that
+  // reported the certificate in response to the most recent certificate
+  // request. If a certificate was reported previously but in the most recent
+  // responses, it is still cached but not loses it's association with any
+  // extension. This ensures that a certificate can't magically appear as
+  // platform certificate (e.g. in the client certificate selection dialog)
+  // after an extension doesn't report it anymore.
   certificate_provider::ThreadSafeCertificateMap certificate_map_;
 
   base::ThreadChecker thread_checker_;

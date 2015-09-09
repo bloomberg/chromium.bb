@@ -151,9 +151,12 @@ CertificateProviderService::CertKeyProviderImpl::~CertKeyProviderImpl() {}
 bool CertificateProviderService::CertKeyProviderImpl::GetCertificateKey(
     const net::X509Certificate& cert,
     scoped_ptr<net::SSLPrivateKey>* private_key) {
+  bool is_currently_provided = false;
   CertificateInfo info;
   std::string extension_id;
-  if (!certificate_map_->LookUpCertificate(cert, &info, &extension_id))
+  certificate_map_->LookUpCertificate(cert, &is_currently_provided, &info,
+                                      &extension_id);
+  if (!is_currently_provided)
     return false;
 
   private_key->reset(
@@ -348,6 +351,17 @@ void CertificateProviderService::ReplyToSignRequest(
 
   const net::Error error_code = signature.empty() ? net::ERR_FAILED : net::OK;
   callback.Run(error_code, signature);
+}
+
+bool CertificateProviderService::LookUpCertificate(
+    const net::X509Certificate& cert,
+    bool* has_extension,
+    std::string* extension_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  CertificateInfo unused_info;
+  return certificate_map_.LookUpCertificate(cert, has_extension, &unused_info,
+                                            extension_id);
 }
 
 scoped_ptr<CertificateProvider>
