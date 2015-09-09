@@ -55,8 +55,15 @@ bool WillHandleBrowserAboutURL(GURL* url,
     host = chrome::kChromeUISyncInternalsHost;
   // Redirect chrome://extensions.
   } else if (host == chrome::kChromeUIExtensionsHost) {
-    host = chrome::kChromeUIUberHost;
-    path = chrome::kChromeUIExtensionsHost + url->path();
+    // If the material design extensions page is enabled, it gets its own host.
+    // Otherwise, it's handled by the uber settings page.
+    if (::switches::MdExtensionsEnabled()) {
+      host = chrome::kChromeUIExtensionsHost;
+      path = url->path();
+    } else {
+      host = chrome::kChromeUIUberHost;
+      path = chrome::kChromeUIExtensionsHost + url->path();
+    }
   // Redirect chrome://settings/extensions (legacy URL).
   } else if (host == chrome::kChromeUISettingsHost &&
       url->path() == std::string("/") + chrome::kExtensionsSubPage) {

@@ -398,6 +398,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       ::switches::MdSettingsEnabled()) {
     return &NewWebUI<settings::MdSettingsUI>;
   }
+  // If the material design extensions page is enabled, it gets its own host.
+  // Otherwise, it's handled by the uber settings page.
+  if (url.host() == chrome::kChromeUIExtensionsHost &&
+      ::switches::MdExtensionsEnabled()) {
+    return &NewWebUI<extensions::ExtensionsUI>;
+  }
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   // Settings are implemented with native UI elements on Android.

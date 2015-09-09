@@ -30,6 +30,7 @@
       </if>
       <if expr="enable_extensions">
         <structure name="IDR_EXTENSIONS_HTML" file="resources\extensions\extensions.html" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_MD_EXTENSIONS_EXTENSIONS_HTML" file="resources\md_extensions\extensions.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       </if>
       <if expr="chromeos">
         <structure name="IDR_FIRST_RUN_HTML" file="resources\chromeos\first_run\first_run.html" flattenhtml="true" type="chrome_html"/>
@@ -147,6 +148,9 @@
         <include name="IDR_EXTENSION_COMMAND_LIST_JS" file="resources\extensions\extension_command_list.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_EXTENSION_LIST_JS" file="resources\extensions\extension_list.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_EXTENSIONS_JS" file="resources\extensions\extensions.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_MANAGER_HTML" file="resources\md_extensions\manager.html" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_MANAGER_JS" file="resources\md_extensions\manager.js" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_STRINGS_HTML" file="resources\md_extensions\strings.html" type="BINDATA" />
       </if>
       <include name="IDR_FEEDBACK_MANIFEST" file="resources\feedback\manifest.json" type="BINDATA" />
       <include name="IDR_SUPERVISED_USER_INTERNALS_HTML" file="resources\supervised_user_internals.html" allowexternalscript="true" type="BINDATA" />

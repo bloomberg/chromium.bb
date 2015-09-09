@@ -24,6 +24,7 @@
         '../../chrome/browser/resources/history/compiled_resources.gyp:*',
         '../../chrome/browser/resources/options/compiled_resources.gyp:*',
         '../../chrome/browser/resources/md_downloads/compiled_resources.gyp:*',
+        '../../chrome/browser/resources/md_extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/ntp4/compiled_resources.gyp:*',
 	'../../chrome/browser/resources/settings/compiled_resources.gyp:*',
         '../../chrome/browser/resources/uber/compiled_resources.gyp:*',

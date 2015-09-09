@@ -452,6 +452,9 @@ const char kEnableInsecureQuic[] = "enable-insecure-quic";
 // Enables the Material Design version of chrome://downloads.
 const char kEnableMaterialDesignDownloads[] = "enable-md-downloads";
 
+// Enables the Material Design version of chrome://extensions.
+const char kEnableMaterialDesignExtensions[] = "enable-md-extensions";
+
 // Enables the material design Settings feature.
 const char kEnableMaterialDesignSettings[]  = "enable-md-settings";
 
@@ -1321,6 +1324,11 @@ bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              ::switches::kDisableAboutInSettings);
+}
+
+bool MdExtensionsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableMaterialDesignExtensions);
 }
 
 bool MdSettingsEnabled() {
