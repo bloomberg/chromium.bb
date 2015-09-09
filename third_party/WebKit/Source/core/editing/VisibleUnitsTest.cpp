@@ -332,4 +332,31 @@ TEST_F(VisibleUnitsTest, renderedOffset)
     EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
 }
 
+TEST_F(VisibleUnitsTest, rightPositionOf)
+{
+    const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
+    const char* shadowContent = "<p id=four>4444</p><content select=#two></content><content select=#one></content><p id=five>55555</p>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+    Node* four = shadowRoot->getElementById("four")->firstChild();
+    Node* five = shadowRoot->getElementById("five")->firstChild();
+
+    EXPECT_EQ(Position(), rightPositionOf(createVisiblePosition(Position(one, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(five, 0), rightPositionOf(createVisiblePosition(PositionInComposedTree(one, 1))).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 1), rightPositionOf(createVisiblePosition(Position(two, 2))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one, 1), rightPositionOf(createVisiblePosition(PositionInComposedTree(two, 2))).deepEquivalent());
+
+    EXPECT_EQ(Position(five, 0), rightPositionOf(createVisiblePosition(Position(four, 4))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(two, 0), rightPositionOf(createVisiblePosition(PositionInComposedTree(four, 4))).deepEquivalent());
+
+    EXPECT_EQ(Position(), rightPositionOf(createVisiblePosition(Position(five, 5))).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), rightPositionOf(createVisiblePosition(PositionInComposedTree(five, 5))).deepEquivalent());
+}
+
 } // namespace blink
