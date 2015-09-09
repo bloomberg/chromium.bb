@@ -154,6 +154,12 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   // Use an event generator to ensure targeting is correct.
   app_list::AppListView* app_list_view = GetAppListView();
+
+  // On ChromeOS, displaying the app list can be delayed while icons finish
+  // loading. Explicitly show it to ensure the event generator gets meaningful
+  // coordinates. See http://crbug.com/525128.
+  app_list_view->GetWidget()->Show();
+
   app_list::ContentsView* contents_view =
       app_list_view->app_list_main_view()->contents_view();
   gfx::NativeWindow window = app_list_view->GetWidget()->GetNativeWindow();
