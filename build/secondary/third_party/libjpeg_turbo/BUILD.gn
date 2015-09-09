@@ -198,14 +198,11 @@ source_set("libjpeg") {
 
   # MemorySanitizer doesn't support assembly code, so keep it disabled in
   # MSan builds for now.
-  # TODO: Enable on Linux when .asm files are recognized.
-  if (is_msan || is_linux) {
+  if (is_msan) {
     sources += [ "jsimd_none.c" ]
   } else {
     deps = [
       ":simd",
     ]
   }
-
-  # TODO(GYP): Compile the .asm files with YASM as GYP does.
 }
