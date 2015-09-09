@@ -184,10 +184,8 @@ bool IsFloatingVirtualKeyboardEnabled() {
 }
 
 bool IsGestureTypingEnabled() {
-  std::string keyboard_switch =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kGestureTyping);
-  return keyboard_switch == switches::kGestureTypingEnabled;
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kGestureTyping) != switches::kGestureTypingDisabled;
 }
 
 bool IsGestureEditingEnabled() {
