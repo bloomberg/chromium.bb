@@ -113,8 +113,6 @@ public:
     void mapInstanceToElement(SVGElement*);
     void removeInstanceMapping(SVGElement*);
 
-    bool getBoundingBox(FloatRect&);
-
     void setCursorElement(SVGCursorElement*);
     void setCursorImageValue(CSSCursorImageValue*);
 

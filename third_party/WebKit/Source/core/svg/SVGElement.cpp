@@ -501,15 +501,6 @@ const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& SVGElement::instanc
     return svgRareData()->elementInstances();
 }
 
-bool SVGElement::getBoundingBox(FloatRect& rect)
-{
-    if (!isSVGGraphicsElement())
-        return false;
-
-    rect = toSVGGraphicsElement(this)->getBBox();
-    return true;
-}
-
 void SVGElement::setCursorElement(SVGCursorElement* cursorElement)
 {
     SVGElementRareData* rareData = ensureSVGRareData();

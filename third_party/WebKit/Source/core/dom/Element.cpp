@@ -999,10 +999,8 @@ IntRect Element::boundsInViewportSpace()
     Vector<FloatQuad> quads;
     if (isSVGElement() && layoutObject()) {
         // Get the bounding rectangle from the SVG model.
-        SVGElement* svgElement = toSVGElement(this);
-        FloatRect localRect;
-        if (svgElement->getBoundingBox(localRect))
-            quads.append(layoutObject()->localToAbsoluteQuad(localRect));
+        if (toSVGElement(this)->isSVGGraphicsElement())
+            quads.append(layoutObject()->localToAbsoluteQuad(layoutObject()->objectBoundingBox()));
     } else {
         // Get the bounding rectangle from the box model.
         if (layoutBoxModelObject())
@@ -1045,10 +1043,8 @@ ClientRect* Element::getBoundingClientRect()
     if (elementLayoutObject) {
         if (isSVGElement() && !elementLayoutObject->isSVGRoot()) {
             // Get the bounding rectangle from the SVG model.
-            SVGElement* svgElement = toSVGElement(this);
-            FloatRect localRect;
-            if (svgElement->getBoundingBox(localRect))
-                quads.append(elementLayoutObject->localToAbsoluteQuad(localRect));
+            if (toSVGElement(this)->isSVGGraphicsElement())
+                quads.append(elementLayoutObject->localToAbsoluteQuad(elementLayoutObject->objectBoundingBox()));
         } else if (elementLayoutObject->isBoxModelObject() || elementLayoutObject->isBR()) {
             elementLayoutObject->absoluteQuads(quads);
         }
