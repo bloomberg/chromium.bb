@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
@@ -182,9 +183,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyOTRProfileDestroyedOnIOThread, profile_, this));
 #endif
-
-  if (host_content_settings_map_.get())
-    host_content_settings_map_->ShutdownOnUIThread();
 
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
@@ -376,31 +374,10 @@ net::SSLConfigService* OffTheRecordProfileImpl::GetSSLConfigService() {
 }
 
 HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Retrieve the host content settings map of the parent profile in order to
-  // ensure the preferences have been migrated.
-  profile_->GetHostContentSettingsMap();
-  if (!host_content_settings_map_.get()) {
-    host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), true);
-#if defined(ENABLE_EXTENSIONS)
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(this)->extension_service();
-    if (extension_service) {
-      extension_service->RegisterContentSettings(
-          host_content_settings_map_.get());
-    }
-#endif
-#if defined(ENABLE_SUPERVISED_USERS)
-    SupervisedUserSettingsService* supervised_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(this);
-    scoped_ptr<content_settings::SupervisedProvider> supervised_provider(
-        new content_settings::SupervisedProvider(supervised_service));
-    host_content_settings_map_->RegisterProvider(
-        HostContentSettingsMap::SUPERVISED_PROVIDER,
-        supervised_provider.Pass());
-#endif
-  }
-  return host_content_settings_map_.get();
+  // TODO(peconn): Once HostContentSettingsMapFactory works for TestingProfiles
+  // remove Profile::GetHostContentSettingsMap and replace all references to it.
+  // Don't forget to remove the #include "host_content_settings_map_factory"!
+  return HostContentSettingsMapFactory::GetForProfile(this);
 }
 
 content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {

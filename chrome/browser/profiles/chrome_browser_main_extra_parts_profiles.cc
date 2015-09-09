@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -233,6 +234,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_EXTENSIONS)
   HotwordServiceFactory::GetInstance();
 #endif
+  HostContentSettingsMapFactory::GetInstance();
   InMemoryURLIndexFactory::GetInstance();
   invalidation::ProfileInvalidationProviderFactory::GetInstance();
   InstantServiceFactory::GetInstance();

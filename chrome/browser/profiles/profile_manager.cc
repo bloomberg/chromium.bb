@@ -24,6 +24,7 @@
 #include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -1055,13 +1056,23 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 
 #if defined(ENABLE_EXTENSIONS)
   ProfileInfoCache& cache = GetProfileInfoCache();
+
+  // Ensure that the HostContentSettingsMap has been created before the
+  // ExtensionSystem is initialized otherwise the ExtensionSystem will be
+  // registered twice
+  HostContentSettingsMap* content_settings_map =
+    HostContentSettingsMapFactory::GetForProfile(profile);
+
   extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
       !go_off_the_record);
   // During tests, when |profile| is an instance of TestingProfile,
   // ExtensionSystem might not create an ExtensionService.
+  // This block is duplicated in the HostContentSettingsMapFactory
+  // ::BuildServiceInstanceFor method, it should be called once when both the
+  // HostContentSettingsMap and the extension_service are set up.
   if (extensions::ExtensionSystem::Get(profile)->extension_service()) {
     extensions::ExtensionSystem::Get(profile)->extension_service()->
-        RegisterContentSettings(profile->GetHostContentSettingsMap());
+        RegisterContentSettings(content_settings_map);
   }
   // Set the block extensions bit on the ExtensionService. There likely are no
   // blockable extensions to block.

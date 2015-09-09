@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/favicon/chrome_fallback_icon_client_factory.h"
 #include "chrome/browser/favicon/fallback_icon_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -856,19 +857,9 @@ content::ResourceContext* TestingProfile::GetResourceContext() {
 }
 
 HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!host_content_settings_map_.get()) {
-    host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
-#if defined(ENABLE_EXTENSIONS)
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(this)->extension_service();
-    if (extension_service) {
-      extension_service->RegisterContentSettings(
-          host_content_settings_map_.get());
-    }
-#endif
-  }
-  return host_content_settings_map_.get();
+  // TODO(peconn): Get rid of this function
+  // Don't forget to remove the #include "host_content_settings_map_factory"!
+  return HostContentSettingsMapFactory::GetForProfile(this);
 }
 
 content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {

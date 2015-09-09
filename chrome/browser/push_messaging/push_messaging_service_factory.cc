@@ -4,6 +4,7 @@
 
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
@@ -33,6 +34,7 @@ PushMessagingServiceFactory::PushMessagingServiceFactory()
           "PushMessagingProfileService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
 }
 
 PushMessagingServiceFactory::~PushMessagingServiceFactory() {

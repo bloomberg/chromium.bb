@@ -33,6 +33,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -369,7 +370,6 @@ ProfileImpl::ProfileImpl(
     : path_(path),
       pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(this),
-      host_content_settings_map_(NULL),
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(Time::Now()),
       delegate_(delegate),
@@ -688,9 +688,6 @@ ProfileImpl::~ProfileImpl() {
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
 
-  if (host_content_settings_map_.get())
-    host_content_settings_map_->ShutdownOnUIThread();
-
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
     SetExitType(EXIT_NORMAL);
@@ -992,20 +989,10 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
 }
 
 HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!host_content_settings_map_.get()) {
-    host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
-#if defined(ENABLE_SUPERVISED_USERS)
-  SupervisedUserSettingsService* supervised_user_settings =
-      SupervisedUserSettingsServiceFactory::GetForProfile(this);
-    scoped_ptr<content_settings::SupervisedProvider> supervised_provider(
-        new content_settings::SupervisedProvider(supervised_user_settings));
-    host_content_settings_map_->RegisterProvider(
-        HostContentSettingsMap::SUPERVISED_PROVIDER,
-        supervised_provider.Pass());
-#endif
-  }
-  return host_content_settings_map_.get();
+  // TODO(peconn): Once HostContentSettingsMapFactory works for TestingProfiles
+  // remove Profile::GetHostContentSettingsMap and replace all references to it.
+  // Don't forget to remove the #include "host_content_settings_map_factory"!
+  return HostContentSettingsMapFactory::GetForProfile(this);
 }
 
 content::BrowserPluginGuestManager* ProfileImpl::GetGuestManager() {

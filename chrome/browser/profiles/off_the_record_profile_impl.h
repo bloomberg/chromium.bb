@@ -134,9 +134,6 @@ class OffTheRecordProfileImpl : public Profile {
       parent_default_zoom_level_subscription_;
   scoped_ptr<OffTheRecordProfileIOData::Handle> io_data_;
 
-  // We use a non-persistent content settings map for OTR.
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-
   // Time we were started.
   Time start_time_;
 

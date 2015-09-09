@@ -1430,6 +1430,8 @@
       'browser/content_settings/chrome_content_settings_utils.h',
       'browser/content_settings/cookie_settings_factory.cc',
       'browser/content_settings/cookie_settings_factory.h',
+      'browser/content_settings/host_content_settings_map_factory.cc',
+      'browser/content_settings/host_content_settings_map_factory.h',
       'browser/content_settings/local_shared_objects_container.cc',
       'browser/content_settings/local_shared_objects_container.h',
       'browser/content_settings/tab_specific_content_settings.cc',

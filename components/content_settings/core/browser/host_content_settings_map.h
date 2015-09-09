@@ -22,6 +22,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/keyed_service/core/refcounted_keyed_service.h"
 
 class ExtensionService;
 class GURL;
@@ -42,9 +43,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class HostContentSettingsMap
-    : public content_settings::Observer,
-      public base::RefCountedThreadSafe<HostContentSettingsMap> {
+class HostContentSettingsMap : public content_settings::Observer,
+                               public RefcountedKeyedService {
  public:
   enum ProviderType {
     // EXTENSION names is a layering violation when this class will move to
@@ -189,11 +189,8 @@ class HostContentSettingsMap
   // Returns true if the values for content type are of type dictionary/map.
   static bool ContentTypeHasCompoundValue(ContentSettingsType type);
 
-  // Detaches the HostContentSettingsMap from all Profile-related objects like
-  // PrefService. This methods needs to be called before destroying the Profile.
-  // Afterwards, none of the methods above that should only be called on the UI
-  // thread should be called anymore.
-  void ShutdownOnUIThread();
+  // RefcountedKeyedService implementation.
+  void ShutdownOnUIThread() override;
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
