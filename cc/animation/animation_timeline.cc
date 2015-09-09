@@ -35,8 +35,8 @@ void AnimationTimeline::SetAnimationHost(AnimationHost* animation_host) {
 }
 
 void AnimationTimeline::AttachPlayer(scoped_refptr<AnimationPlayer> player) {
-  DCHECK(animation_host_);
   player->SetAnimationHost(animation_host_);
+
   player->SetAnimationTimeline(this);
   players_.push_back(player);
 }
