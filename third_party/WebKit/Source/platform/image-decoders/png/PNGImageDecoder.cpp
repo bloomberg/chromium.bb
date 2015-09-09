@@ -89,9 +89,9 @@ namespace blink {
 class PNGImageReader {
     WTF_MAKE_FAST_ALLOCATED(PNGImageReader);
 public:
-    PNGImageReader(PNGImageDecoder* decoder)
+    PNGImageReader(PNGImageDecoder* decoder, unsigned readOffset)
         : m_decoder(decoder)
-        , m_readOffset(0)
+        , m_readOffset(readOffset)
         , m_currentBufferSize(0)
         , m_decodingSizeOnly(false)
         , m_hasAlpha(false)
@@ -204,9 +204,10 @@ private:
 #endif
 };
 
-PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes, unsigned offset)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_hasColorProfile(false)
+    , m_offset(offset)
 {
 }
 
@@ -495,7 +496,7 @@ void PNGImageDecoder::decode(bool onlySize)
         return;
 
     if (!m_reader)
-        m_reader = adoptPtr(new PNGImageReader(this));
+        m_reader = adoptPtr(new PNGImageReader(this, m_offset));
 
     // If we couldn't decode the image but have received all the data, decoding
     // has failed.
