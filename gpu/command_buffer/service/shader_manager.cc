@@ -175,12 +175,20 @@ const sh::Attribute* Shader::GetAttribInfo(const std::string& name) const {
 
 const std::string* Shader::GetAttribMappedName(
     const std::string& original_name) const {
-  for (AttributeMap::const_iterator it = attrib_map_.begin();
-       it != attrib_map_.end(); ++it) {
-    if (it->second.name == original_name)
-      return &(it->first);
+  for (const auto& key_value : attrib_map_) {
+    if (key_value.second.name == original_name)
+      return &(key_value.first);
   }
-  return NULL;
+  return nullptr;
+}
+
+const std::string* Shader::GetUniformMappedName(
+    const std::string& original_name) const {
+  for (const auto& key_value : uniform_map_) {
+    if (key_value.second.name == original_name)
+      return &(key_value.first);
+  }
+  return nullptr;
 }
 
 const std::string* Shader::GetOriginalNameFromHashedName(

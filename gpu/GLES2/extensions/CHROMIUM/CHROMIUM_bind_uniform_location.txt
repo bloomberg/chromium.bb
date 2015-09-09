@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modifed Date: June 20, 2012
+    Last Modifed Date: September 8, 2015
 
 Dependencies
 
@@ -110,12 +110,8 @@ New Procedures and Functions
     the same location.  This is referred to as aliasing.  This will only work
     if only one of the aliased uniforms is active in the executable program,
     or if no path through the shader consumes more than one uniform of a set
-    of uniforms aliased to the same location.  A link error can occur if the
-    linker determines that every path through the shader consumes multiple
-    aliased uniforms, but implementations are not required to generate an
-    error in this case.  The compiler and linker are allowed to assume that no
-    aliasing is done, and may employ optimizations that work only in the
-    absence of aliasing.
+    of uniforms aliased to the same location.  If two statically used uniforms
+    in a program are bound to the name location, link must fail.
 
 Errors
 
@@ -128,4 +124,6 @@ New State
 Revision History
 
     7/20/2012    Documented the extension
+    9/8/2015     Require program link to fail if two statically used uniforms
+                 are bound to the same location.
 

@@ -133,6 +133,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   const std::string* GetAttribMappedName(
       const std::string& original_name) const;
 
+  // If the original name is not found, return NULL.
+  const std::string* GetUniformMappedName(
+      const std::string& original_name) const;
+
   // If the hashed name is not found, return NULL.
   const std::string* GetOriginalNameFromHashedName(
       const std::string& hashed_name) const;
@@ -221,6 +225,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // We only consider the declared attributes in the program.
   bool DetectAttribLocationBindingConflicts() const;
 
+  // Detects if there are uniform location conflicts from
+  // glBindUniformLocationCHROMIUM() calls.
+  // We only consider the statically used uniforms in the program.
+  bool DetectUniformLocationBindingConflicts() const;
+
   // Detects if there are uniforms of the same name but different type
   // or precision in vertex/fragment shaders.
   // Return true and set the first found conflicting hashed name to
@@ -307,7 +316,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // translated.
   void ExecuteBindAttribLocationCalls();
 
-  bool AddUniformInfo(
+  void AddUniformInfo(
       GLsizei size, GLenum type, GLint location, GLint fake_base_location,
       const std::string& name, const std::string& original_name,
       size_t* next_available_index);
@@ -434,7 +443,7 @@ class GPU_EXPORT ProgramManager {
   static bool IsInvalidPrefix(const char* name, size_t length);
 
   // Check if a Program is owned by this ProgramManager.
-  bool IsOwned(Program* program);
+  bool IsOwned(Program* program) const;
 
   static int32 MakeFakeLocation(int32 index, int32 element);
 

@@ -90,6 +90,10 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   const std::string* GetAttribMappedName(
       const std::string& original_name) const;
 
+  // If the original_name is not found, return NULL.
+  const std::string* GetUniformMappedName(
+      const std::string& original_name) const;
+
   // If the hashed_name is not found, return NULL.
   const std::string* GetOriginalNameFromHashedName(
       const std::string& hashed_name) const;
