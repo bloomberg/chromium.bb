@@ -39,7 +39,7 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   // dlmalloc the total is given by |arena| + |hblkhd|.
   // For more details see link: http://goo.gl/fMR8lF.
   MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
-  outer_dump->AddScalar("heap_virtual_size",
+  outer_dump->AddScalar("virtual_size",
                         MemoryAllocatorDump::kUnitsBytes,
                         info.arena + info.hblkhd);
 

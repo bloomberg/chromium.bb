@@ -56,7 +56,7 @@ void RequestPeriodicGlobalDump() {
                                ? MemoryDumpArgs::LevelOfDetail::HIGH
                                : MemoryDumpArgs::LevelOfDetail::LOW;
 
-    if (++g_periodic_dumps_count == g_heavy_dumps_rate)
+    if (++g_periodic_dumps_count == g_heavy_dumps_rate - 1)
       g_periodic_dumps_count = 0;
   }
 
@@ -78,6 +78,17 @@ const int MemoryDumpManager::kMaxConsecutiveFailuresCount = 3;
 const uint64 MemoryDumpManager::kInvalidTracingProcessId = 0;
 
 // static
+const char* const MemoryDumpManager::kSystemAllocatorPoolName =
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+    MallocDumpProvider::kAllocatedObjects;
+#elif defined(OS_WIN)
+    WinHeapDumpProvider::kAllocatedObjects;
+#else
+    nullptr;
+#endif
+
+
+// static
 MemoryDumpManager* MemoryDumpManager::GetInstance() {
   if (g_instance_for_testing)
     return g_instance_for_testing;
@@ -97,42 +108,39 @@ MemoryDumpManager::MemoryDumpManager()
     : delegate_(nullptr),
       memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
-      system_allocator_pool_name_(nullptr),
       skip_core_dumpers_auto_registration_for_testing_(false),
       disable_periodic_dumps_for_testing_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
-  base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+  TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
 }
 
 void MemoryDumpManager::Initialize() {
   TRACE_EVENT0(kTraceCategory, "init");  // Add to trace-viewer category list.
-  trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
 
-  if (skip_core_dumpers_auto_registration_for_testing_)
-    return;
+  TraceLog::GetInstance()->AddEnabledStateObserver(this);
 
   // Enable the core dump providers.
+  if (!skip_core_dumpers_auto_registration_for_testing_) {
 #if !defined(OS_NACL)
-  RegisterDumpProvider(ProcessMemoryTotalsDumpProvider::GetInstance());
+    RegisterDumpProvider(ProcessMemoryTotalsDumpProvider::GetInstance());
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
-  RegisterDumpProvider(MallocDumpProvider::GetInstance());
-  system_allocator_pool_name_ = MallocDumpProvider::kAllocatedObjects;
+    RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
+    RegisterDumpProvider(MallocDumpProvider::GetInstance());
 #endif
 
 #if defined(OS_ANDROID)
-  RegisterDumpProvider(JavaHeapDumpProvider::GetInstance());
+    RegisterDumpProvider(JavaHeapDumpProvider::GetInstance());
 #endif
 
 #if defined(OS_WIN)
-  RegisterDumpProvider(WinHeapDumpProvider::GetInstance());
-  system_allocator_pool_name_ = WinHeapDumpProvider::kAllocatedObjects;
+    RegisterDumpProvider(WinHeapDumpProvider::GetInstance());
 #endif
+  }  // !skip_core_dumpers_auto_registration_for_testing_
 }
 
 void MemoryDumpManager::SetDelegate(MemoryDumpManagerDelegate* delegate) {
@@ -203,7 +211,7 @@ void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
       TraceLog::GetInstance()->MangleEventId(g_next_guid.GetNext());
 
   // The delegate_ is supposed to be thread safe, immutable and long lived.
-  // No need to keep the lock after we ensure that a delegate has been set.
+  // No need to keep the lock after we ensured that a delegate has been set.
   MemoryDumpManagerDelegate* delegate;
   {
     AutoLock lock(lock_);
