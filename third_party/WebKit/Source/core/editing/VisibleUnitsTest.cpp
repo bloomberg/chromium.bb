@@ -359,4 +359,22 @@ TEST_F(VisibleUnitsTest, rightPositionOf)
     EXPECT_EQ(PositionInComposedTree(three, 0), rightPositionOf(createVisiblePosition(PositionInComposedTree(five, 5))).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, startOfDocument)
+{
+    const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a>";
+    const char* shadowContent = "<p><content select=#two></content></p><p><content select=#one></content></p>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+
+    EXPECT_EQ(Position(one, 0), startOfDocument(createVisiblePositionInDOMTree(*one, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(two, 0), startOfDocument(createVisiblePositionInComposedTree(*one, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), startOfDocument(createVisiblePositionInDOMTree(*two, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(two, 0), startOfDocument(createVisiblePositionInComposedTree(*two, 1)).deepEquivalent());
+}
+
 } // namespace blink

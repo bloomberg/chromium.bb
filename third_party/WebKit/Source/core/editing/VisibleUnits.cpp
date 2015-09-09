@@ -1557,17 +1557,24 @@ bool isEndOfBlock(const VisiblePosition& pos)
 
 // ---------
 
-VisiblePosition startOfDocument(const Node* node)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> startOfDocumentAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    Node* node = visiblePosition.deepEquivalent().anchorNode();
     if (!node || !node->document().documentElement())
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
-    return createVisiblePosition(firstPositionInNode(node->document().documentElement()));
+    return createVisiblePosition(PositionAlgorithm<Strategy>::firstPositionInNode(node->document().documentElement()));
 }
 
 VisiblePosition startOfDocument(const VisiblePosition& c)
 {
-    return startOfDocument(c.deepEquivalent().anchorNode());
+    return startOfDocumentAlgorithm<EditingStrategy>(c);
+}
+
+VisiblePositionInComposedTree startOfDocument(const VisiblePositionInComposedTree& c)
+{
+    return startOfDocumentAlgorithm<EditingInComposedTreeStrategy>(c);
 }
 
 template <typename Strategy>

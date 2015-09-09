@@ -162,8 +162,8 @@ bool isStartOfBlock(const VisiblePosition&);
 bool isEndOfBlock(const VisiblePosition&);
 
 // document
-VisiblePosition startOfDocument(const Node*);
-VisiblePosition startOfDocument(const VisiblePosition&);
+CORE_EXPORT VisiblePosition startOfDocument(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInComposedTree startOfDocument(const VisiblePositionInComposedTree&);
 CORE_EXPORT VisiblePosition endOfDocument(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInComposedTree endOfDocument(const VisiblePositionInComposedTree&);
 bool isStartOfDocument(const VisiblePosition&);
