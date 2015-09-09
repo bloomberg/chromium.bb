@@ -23,19 +23,6 @@
 
 namespace courgette {
 
-// Stream indexes.
-const int kStreamMisc    = 0;
-const int kStreamOps     = 1;
-const int kStreamBytes   = 2;
-const int kStreamAbs32Indexes = 3;
-const int kStreamRel32Indexes = 4;
-const int kStreamAbs32Addresses = 5;
-const int kStreamRel32Addresses = 6;
-const int kStreamCopyCounts = 7;
-const int kStreamOriginAddresses = kStreamMisc;
-
-const int kStreamLimit = 9;
-
 // Constructor is here rather than in the header.  Although the constructor
 // appears to do nothing it is fact quite large because of the implicit calls to
 // field constructors.  Ditto for the destructor.
@@ -72,23 +59,23 @@ bool ReadVector(V* items, SourceStream* buffer) {
   return ok;
 }
 
-// Serializes a vector, using delta coding followed by Varint32 coding.
+// Serializes a vector, using delta coding followed by Varint32Signed coding.
 template<typename V>
-CheckBool WriteU32Delta(const V& set, SinkStream* buffer) {
+CheckBool WriteSigned32Delta(const V& set, SinkStream* buffer) {
   size_t count = set.size();
   bool ok = buffer->WriteSizeVarint32(count);
   uint32 prev = 0;
-  for (size_t i = 0;  ok && i < count;  ++i) {
+  for (size_t i = 0; ok && i < count; ++i) {
     uint32 current = set[i];
-    uint32 delta = current - prev;
-    ok = buffer->WriteVarint32(delta);
+    int32 delta = current - prev;
+    ok = buffer->WriteVarint32Signed(delta);
     prev = current;
   }
   return ok;
 }
 
 template <typename V>
-static CheckBool ReadU32Delta(V* set, SourceStream* buffer) {
+static CheckBool ReadSigned32Delta(V* set, SourceStream* buffer) {
   uint32 count;
 
   if (!buffer->ReadVarint32(&count))
@@ -97,17 +84,15 @@ static CheckBool ReadU32Delta(V* set, SourceStream* buffer) {
   set->clear();
   bool ok = set->reserve(count);
   uint32 prev = 0;
-
-  for (size_t i = 0; ok && i < count;  ++i) {
-    uint32 delta;
-    ok = buffer->ReadVarint32(&delta);
+  for (size_t i = 0; ok && i < count; ++i) {
+    int32 delta;
+    ok = buffer->ReadVarint32Signed(&delta);
     if (ok) {
-      uint32 current = prev + delta;
+      uint32 current = static_cast<uint32>(prev + delta);
       ok = set->push_back(current);
       prev = current;
     }
   }
-
   return ok;
 }
 
@@ -333,13 +318,13 @@ CheckBool EncodedProgram::WriteTo(SinkStreamSet* streams) {
   bool success = true;
 
   if (select & INCLUDE_ABS32_ADDRESSES) {
-    success &= WriteU32Delta(abs32_rva_,
-                             streams->stream(kStreamAbs32Addresses));
+    success &= WriteSigned32Delta(abs32_rva_,
+                                  streams->stream(kStreamAbs32Addresses));
   }
 
   if (select & INCLUDE_REL32_ADDRESSES) {
-    success &= WriteU32Delta(rel32_rva_,
-                             streams->stream(kStreamRel32Addresses));
+    success &= WriteSigned32Delta(rel32_rva_,
+                                  streams->stream(kStreamRel32Addresses));
   }
 
   if (select & INCLUDE_MISC)
@@ -376,9 +361,9 @@ bool EncodedProgram::ReadFrom(SourceStreamSet* streams) {
   }
   image_base_ = (static_cast<uint64>(high) << 32) | low;
 
-  if (!ReadU32Delta(&abs32_rva_, streams->stream(kStreamAbs32Addresses)))
+  if (!ReadSigned32Delta(&abs32_rva_, streams->stream(kStreamAbs32Addresses)))
     return false;
-  if (!ReadU32Delta(&rel32_rva_, streams->stream(kStreamRel32Addresses)))
+  if (!ReadSigned32Delta(&rel32_rva_, streams->stream(kStreamRel32Addresses)))
     return false;
   if (!ReadVector(&origins_, streams->stream(kStreamOriginAddresses)))
     return false;

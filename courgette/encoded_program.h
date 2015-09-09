@@ -14,6 +14,19 @@
 
 namespace courgette {
 
+// Stream indexes.
+const int kStreamMisc = 0;
+const int kStreamOps = 1;
+const int kStreamBytes = 2;
+const int kStreamAbs32Indexes = 3;
+const int kStreamRel32Indexes = 4;
+const int kStreamAbs32Addresses = 5;
+const int kStreamRel32Addresses = 6;
+const int kStreamCopyCounts = 7;
+const int kStreamOriginAddresses = kStreamMisc;
+
+const int kStreamLimit = 9;
+
 class SinkStream;
 class SinkStreamSet;
 class SourceStreamSet;
