@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
@@ -66,6 +68,10 @@ const char kGetBodyClass[] =
         "document.body.className)";
 
 const unsigned kDarkToolbarThemeColor = 0xFF1A1A1A;
+
+const char kTestDistillerObject[] =
+    "window.domAutomationController.send("
+    "typeof distiller == 'object')";
 
 void AddEntry(const ArticleEntry& e, FakeDB<ArticleEntry>::EntryMap* map) {
   (*map)[e.entry_id()] = e;
@@ -320,7 +326,66 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       MultiPageArticle) {
+                       DistillerJavaScriptExposed) {
+  // Navigate to a distiller URL.
+  GURL url(std::string(kDomDistillerScheme) + "://url");
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  chrome::Navigate(&params);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Wait for the page load to complete (this will be a distiller error page).
+  content::WaitForLoadStop(contents);
+
+  bool result;
+  // Execute in isolated world; where all distiller scripts are run.
+  EXPECT_TRUE(content::ExecuteScriptInIsolatedWorldAndExtractBool(
+      contents, chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL, kTestDistillerObject,
+      &result));
+  EXPECT_TRUE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       DistillerJavaScriptNotInMainWorld) {
+  // Navigate to a distiller URL.
+  GURL url(std::string(kDomDistillerScheme) + "://url");
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  chrome::Navigate(&params);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Wait for the page load to complete (this will be a distiller error page).
+  content::WaitForLoadStop(contents);
+
+  bool result;
+  // Execute in main world, the distiller object should not be here.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents, kTestDistillerObject, &result));
+  EXPECT_FALSE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       DistillerJavaScriptNotExposed) {
+  // Navigate to a non-distiller URL.
+  GURL url("http://url");
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  chrome::Navigate(&params);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Wait for the page load to complete.
+  content::WaitForLoadStop(contents);
+
+  bool result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents, kTestDistillerObject, &result));
+  EXPECT_FALSE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, MultiPageArticle) {
   expect_distillation_ = false;
   expect_distiller_page_ = true;
   dom_distiller::DomDistillerServiceFactory::GetInstance()

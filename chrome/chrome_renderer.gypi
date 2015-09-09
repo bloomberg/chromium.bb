@@ -279,6 +279,7 @@
         ['OS != "ios"', {
           'dependencies': [
             'common_net',
+            '../components/components.gyp:dom_distiller_content_renderer',
           ],
         }],
         ['disable_nacl!=1', {
