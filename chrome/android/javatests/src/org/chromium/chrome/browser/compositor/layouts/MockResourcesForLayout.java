@@ -126,6 +126,11 @@ public class MockResourcesForLayout extends MockResources {
     }
 
     @Override
+    public int getColor(int id, Theme theme) {
+        return getInteger(id);
+    }
+
+    @Override
     public Drawable getDrawable(int id) {
         return mDrawable;
     }
