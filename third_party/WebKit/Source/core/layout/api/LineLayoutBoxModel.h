@@ -108,6 +108,26 @@ public:
         return toBoxModel()->paddingAfter();
     }
 
+    int borderTop() const
+    {
+        return toBoxModel()->borderTop();
+    }
+
+    int borderBottom() const
+    {
+        return toBoxModel()->borderBottom();
+    }
+
+    int borderLeft() const
+    {
+        return toBoxModel()->borderLeft();
+    }
+
+    int borderRight() const
+    {
+        return toBoxModel()->borderRight();
+    }
+
     int borderBefore() const
     {
         return toBoxModel()->borderBefore();
