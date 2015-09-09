@@ -245,7 +245,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kPointerLock, "pointerLock"},
       {APIPermission::kCastStreaming, "cast.streaming"},
       {APIPermission::kBrowser, "browser"},
-      {APIPermission::kInterceptAllKeys, "app.window.interceptAllKeys"},
       {APIPermission::kLauncherSearchProvider, "launcherSearchProvider"},
 
       // Settings override permissions.

@@ -8,7 +8,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/views/apps/desktop_keyboard_capture.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -355,14 +354,6 @@ SkColor ChromeNativeAppWindowViews::ActiveFrameColor() const {
 
 SkColor ChromeNativeAppWindowViews::InactiveFrameColor() const {
   return inactive_frame_color_;
-}
-
-void ChromeNativeAppWindowViews::SetInterceptAllKeys(bool want_all_keys) {
-  if (want_all_keys && (desktop_keyboard_capture_.get() == NULL)) {
-    desktop_keyboard_capture_.reset(new DesktopKeyboardCapture(widget()));
-  } else if (!want_all_keys) {
-    desktop_keyboard_capture_.reset(NULL);
-  }
 }
 
 // NativeAppWindowViews implementation.

@@ -68,10 +68,6 @@
       ]
     }
   ],
-  "app.window.interceptAllKeys": {
-    "channel": "dev",
-    "extension_types": ["platform_app"]
-  },
   "app.window.shape": {
     "channel": "stable",
     "extension_types": ["platform_app"]

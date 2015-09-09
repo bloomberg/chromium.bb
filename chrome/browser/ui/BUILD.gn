@@ -346,7 +346,6 @@ source_set("ui") {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_win_sources, ".", "//chrome")
     sources -= [
-      "views/apps/keyboard_hook_handler.cc",
       "views/frame/taskbar_decorator.cc",
     ]
     public_deps += [

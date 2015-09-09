@@ -138,7 +138,7 @@ class APIPermission {
     kInlineInstallPrivate,
     kInput,
     kInputMethodPrivate,
-    kInterceptAllKeys,
+    kDeleted_InterceptAllKeys,
     kLauncherSearchProvider,
     kLocation,
     kLogPrivate,

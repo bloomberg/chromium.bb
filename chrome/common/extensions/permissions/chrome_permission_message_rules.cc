@@ -585,9 +585,6 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_DOCUMENT_SCAN,
        {APIPermission::kDocumentScan},
        {}},
-      {IDS_EXTENSION_PROMPT_WARNING_INTERCEPT_ALL_KEYS,
-       {APIPermission::kInterceptAllKeys},
-       {}},  // TODO(treib): This should probably suppress kInput.
       {IDS_EXTENSION_PROMPT_WARNING_INPUT, {APIPermission::kInput}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
        {APIPermission::kManagement},

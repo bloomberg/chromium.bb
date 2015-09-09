@@ -983,7 +983,6 @@
       'browser/apps/app_shim/app_shim_interactive_uitest_mac.mm',
       'browser/apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
       'browser/apps/app_window_interactive_uitest.cc',
-      'browser/apps/app_window_intercept_all_keys_uitest.cc',
       'browser/apps/guest_view/web_view_interactive_browsertest.cc',
       'browser/autofill/autofill_interactive_uitest.cc',
       'browser/autofill/autofill_uitest_util.cc',

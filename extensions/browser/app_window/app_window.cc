@@ -705,10 +705,6 @@ void AppWindow::RestoreAlwaysOnTop() {
     UpdateNativeAlwaysOnTop();
 }
 
-void AppWindow::SetInterceptAllKeys(bool want_all_keys) {
-  native_app_window_->SetInterceptAllKeys(want_all_keys);
-}
-
 void AppWindow::WindowEventsReady() {
   can_send_events_ = true;
   SendOnWindowShownIfShown();

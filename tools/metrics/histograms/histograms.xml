@@ -58818,7 +58818,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="924" label="HOTWORDPRIVATE_GETLOCALIZEDSTRINGS"/>
   <int value="925" label="HOTWORDPRIVATE_SETAUDIOHISTORYENABLED"/>
   <int value="926" label="HOTWORDPRIVATE_GETAUDIOHISTORYENABLED"/>
-  <int value="927" label="APP_CURRENTWINDOWINTERNAL_SETINTERCEPTALLKEYS"/>
+  <int value="927"
+      label="DELETED_APP_CURRENTWINDOWINTERNAL_SETINTERCEPTALLKEYS"/>
   <int value="928" label="LAUNCHERPAGE_PUSHSUBPAGE"/>
   <int value="929" label="LAUNCHERPAGE_SHOW"/>
   <int value="930" label="AUTOTESTPRIVATE_SETTOUCHPADSENSITIVITY"/>
@@ -59174,7 +59175,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="75" label="kHosts3ReadOnly"/>
   <int value="76" label="kHosts4OrMoreReadOnly"/>
   <int value="77" label="kHostsAllReadOnly"/>
-  <int value="78" label="kInterceptAllKeys"/>
+  <int value="78" label="kDeleted_InterceptAllKeys"/>
   <int value="79" label="kSettingsPrivate"/>
   <int value="80" label="kPrinterProvider"/>
   <int value="81" label="kSearchEnginesPrivate"/>
@@ -59280,7 +59281,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="91" label="kInlineInstallPrivate"/>
   <int value="92" label="kInput"/>
   <int value="93" label="kInputMethodPrivate"/>
-  <int value="94" label="kInterceptAllKeys"/>
+  <int value="94" label="kDeleted_InterceptAllKeys"/>
   <int value="95" label="kLauncherSearchProvider"/>
   <int value="96" label="kLocation"/>
   <int value="97" label="kLogPrivate"/>

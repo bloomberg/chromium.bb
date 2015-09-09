@@ -332,10 +332,6 @@ class AppWindow : public content::WebContentsDelegate,
   // Restores the always-on-top property according to |cached_always_on_top_|.
   void RestoreAlwaysOnTop();
 
-  // Set whether the window should get even reserved keys (modulo platform
-  // restrictions).
-  void SetInterceptAllKeys(bool want_all_keys);
-
   // Retrieve the current state of the app window as a dictionary, to pass to
   // the renderer.
   void GetSerializedState(base::DictionaryValue* properties) const;

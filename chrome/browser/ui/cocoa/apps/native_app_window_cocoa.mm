@@ -868,11 +868,6 @@ void NativeAppWindowCocoa::SetVisibleOnAllWorkspaces(bool always_visible) {
   gfx::SetNSWindowVisibleOnAllWorkspaces(window(), always_visible);
 }
 
-void NativeAppWindowCocoa::SetInterceptAllKeys(bool want_all_key) {
-  // TODO(sriramsr): implement for OSX (http://crbug.com/166928).
-  NOTIMPLEMENTED();
-}
-
 NativeAppWindowCocoa::~NativeAppWindowCocoa() {
 }
 

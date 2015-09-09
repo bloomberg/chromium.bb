@@ -12,7 +12,6 @@ namespace apps {
 class AppWindowFrameView;
 }
 
-class DesktopKeyboardCapture;
 class ExtensionKeybindingRegistryViews;
 
 class ChromeNativeAppWindowViews
@@ -67,7 +66,6 @@ class ChromeNativeAppWindowViews
   bool HasFrameColor() const override;
   SkColor ActiveFrameColor() const override;
   SkColor InactiveFrameColor() const override;
-  void SetInterceptAllKeys(bool want_all_keys) override;
 
   // NativeAppWindowViews implementation.
   void InitializeWindow(
@@ -86,9 +84,6 @@ class ChromeNativeAppWindowViews
 
   // The class that registers for keyboard shortcuts for extension commands.
   scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
-
-  // Used to capture all keyboard events including task switching sequence.
-  scoped_ptr<DesktopKeyboardCapture> desktop_keyboard_capture_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViews);
 };
