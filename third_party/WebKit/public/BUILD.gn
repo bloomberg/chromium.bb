@@ -131,6 +131,8 @@ source_set("blink_headers") {
     "platform/WebMediaStream.h",
     "platform/WebServiceWorkerRegistration.h",
     "platform/WebRect.h",
+    "platform/WebPageScheduler.h",
+    "platform/WebFrameScheduler.h",
     "platform/WebTaskRunner.h",
     "platform/WebThread.h",
     "platform/WebSetSinkIdError.h",
