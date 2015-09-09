@@ -519,7 +519,6 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       next_output_surface_id_(0),
 #if defined(OS_ANDROID)
       text_field_is_dirty_(false),
-      body_background_color_(SK_ColorWHITE),
 #endif
       popup_origin_scale_for_emulation_(0.f),
       frame_swap_message_queue_(new FrameSwapMessageQueue()),
@@ -1407,12 +1406,6 @@ blink::WebLayerTreeView* RenderWidget::layerTreeView() {
 }
 
 void RenderWidget::didFirstVisuallyNonEmptyLayout() {
-  // TODO(dglazkov): Remove this -- we should just pass background color
-  // in CompositorFrameMetadata.
-#if defined(OS_ANDROID)
-  DidChangeBodyBackgroundColor(webwidget_->backgroundColor());
-#endif
-
   QueueMessage(
       new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_),
       MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
@@ -2129,18 +2122,6 @@ bool RenderWidget::ShouldUpdateCompositionInfo(
 }
 
 #if defined(OS_ANDROID)
-void RenderWidget::DidChangeBodyBackgroundColor(SkColor bg_color) {
-  // If not initialized, default to white. Note that 0 is different from black
-  // as black still has alpha 0xFF.
-  if (!bg_color)
-    bg_color = SK_ColorWHITE;
-
-  if (bg_color != body_background_color_) {
-    body_background_color_ = bg_color;
-    Send(new ViewHostMsg_DidChangeBodyBackgroundColor(routing_id(), bg_color));
-  }
-}
-
 bool RenderWidget::DoesRecordFullLayer() const {
   return false;
 }

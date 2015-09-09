@@ -336,7 +336,6 @@ class CONTENT_EXPORT RenderWidget
   void UpdateCompositionInfo(bool should_update_range);
 
 #if defined(OS_ANDROID)
-  void DidChangeBodyBackgroundColor(SkColor bg_color);
   virtual bool DoesRecordFullLayer() const;
 #endif
 
@@ -784,11 +783,6 @@ class CONTENT_EXPORT RenderWidget
   // intentionally keep the last ack'd value to know what the browser is
   // currently aware of.
   std::deque<blink::WebTextInputInfo> text_input_info_history_;
-
-  // The background color of the document body element. This is used as the
-  // default background color for filling the screen areas for which we don't
-  // have the actual content.
-  SkColor body_background_color_;
 #endif
 
   scoped_ptr<ScreenMetricsEmulator> screen_metrics_emulator_;

@@ -211,7 +211,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
-  void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrames(bool enabled);
   void OnSmartClipDataExtracted(const base::string16& text,
@@ -274,6 +273,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void HideInternal(bool hide_frontbuffer, bool stop_observing_root_window);
   void AttachLayers();
   void RemoveLayers();
+
+  void UpdateBackgroundColor(SkColor color);
 
   // Called after async screenshot task completes. Scales and crops the result
   // of the copy.

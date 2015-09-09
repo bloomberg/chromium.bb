@@ -1459,6 +1459,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
       gfx::Vector2dF(0.f, top_controls_manager_->ControlsTopOffset());
   metadata.location_bar_content_translation =
       gfx::Vector2dF(0.f, top_controls_manager_->ContentTopOffset());
+  metadata.root_background_color = active_tree_->background_color();
 
   active_tree_->GetViewportSelection(&metadata.selection);
 

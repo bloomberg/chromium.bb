@@ -357,8 +357,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
-                        OnDidChangeBodyBackgroundColor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
                         OnSetNeedsBeginFrames)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SmartClipDataExtracted,
@@ -674,8 +672,7 @@ void RenderWidgetHostViewAndroid::TextInputStateChanged(
       params.show_ime_if_needed, params.is_non_ime_change);
 }
 
-void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(
-    SkColor color) {
+void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
   if (cached_background_color_ == color)
     return;
 
@@ -859,7 +856,7 @@ void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
 void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {
   RenderWidgetHostViewBase::SetBackgroundColor(color);
   host_->SetBackgroundOpaque(GetBackgroundOpaque());
-  OnDidChangeBodyBackgroundColor(color);
+  UpdateBackgroundColor(color);
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
@@ -1319,6 +1316,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
         ConvertSelectionBound(frame_metadata.selection.start),
         ConvertSelectionBound(frame_metadata.selection.end));
   }
+
+  UpdateBackgroundColor(frame_metadata.root_background_color);
 
   // All offsets and sizes are in CSS pixels.
   content_view_core_->UpdateFrameInfo(

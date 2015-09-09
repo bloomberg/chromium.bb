@@ -1400,10 +1400,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_FindMatchRects_Reply,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_StartContentIntent,
                     GURL /* content_url */)
 
-// Message sent when the renderer changed the background color for the view.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeBodyBackgroundColor,
-                    uint32  /* bg_color */)
-
 // This message runs the MediaCodec for decoding audio for webaudio.
 IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,
                      base::SharedMemoryHandle /* encoded_data_handle */,
