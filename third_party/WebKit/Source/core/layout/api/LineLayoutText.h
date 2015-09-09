@@ -122,6 +122,11 @@ public:
         return toText()->selectionStartEnd(spos, epos);
     }
 
+    unsigned textStartOffset() const
+    {
+        return toText()->textStartOffset();
+    }
+
 private:
     LayoutText* toText() { return toLayoutText(layoutObject()); }
     const LayoutText* toText() const { return toLayoutText(layoutObject()); }

@@ -35,6 +35,7 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/GlyphOverflow.h"
@@ -523,7 +524,7 @@ static PositionWithAffinity createPositionWithAffinityForBox(const InlineBox* bo
         affinity = offset > box->caretMinOffset() ? VP_UPSTREAM_IF_POSSIBLE : TextAffinity::Downstream;
         break;
     }
-    int textStartOffset = box->layoutObject().isText() ? toLayoutText(box->layoutObject()).textStartOffset() : 0;
+    int textStartOffset = box->lineLayoutItem().isText() ? LineLayoutText(box->lineLayoutItem()).textStartOffset() : 0;
     return box->layoutObject().createPositionWithAffinity(offset + textStartOffset, affinity);
 }
 
@@ -541,7 +542,7 @@ static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffset
 
         const InlineBox* prevBox = box->prevLeafChildIgnoringLineBreak();
         if ((prevBox && prevBox->bidiLevel() == box->bidiLevel())
-            || box->layoutObject().containingBlock()->style()->direction() == box->direction()) // FIXME: left on 12CBA
+            || box->lineLayoutItem().containingBlock().style()->direction() == box->direction()) // FIXME: left on 12CBA
             return createPositionWithAffinityForBox(box, box->caretLeftmostOffset(), shouldAffinityBeDownstream);
 
         if (prevBox && prevBox->bidiLevel() > box->bidiLevel()) {
@@ -571,7 +572,7 @@ static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffset
 
     const InlineBox* nextBox = box->nextLeafChildIgnoringLineBreak();
     if ((nextBox && nextBox->bidiLevel() == box->bidiLevel())
-        || box->layoutObject().containingBlock()->style()->direction() == box->direction())
+        || box->lineLayoutItem().containingBlock().style()->direction() == box->direction())
         return createPositionWithAffinityForBox(box, box->caretRightmostOffset(), shouldAffinityBeDownstream);
 
     // offset is on the right edge
