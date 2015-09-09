@@ -96,6 +96,11 @@ void WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(const 
     SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme, static_cast<SchemeRegistry::PolicyAreas>(policyAreas));
 }
 
+void WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel(const WebString& scheme)
+{
+    SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(scheme);
+}
+
 void WebSecurityPolicy::registerURLSchemeAsEmptyDocument(const WebString& scheme)
 {
     SchemeRegistry::registerURLSchemeAsEmptyDocument(scheme);

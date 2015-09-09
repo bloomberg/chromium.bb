@@ -189,6 +189,13 @@ static URLSchemesSet& fetchAPISchemes()
     return fetchAPISchemes;
 }
 
+static URLSchemesSet& firstPartyWhenTopLevelSchemes()
+{
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, firstPartyWhenTopLevelSchemes, ());
+    return firstPartyWhenTopLevelSchemes;
+}
+
 static URLSchemesMap<SchemeRegistry::PolicyAreas>& ContentSecurityPolicyBypassingSchemes()
 {
     assertLockHeld();
@@ -378,6 +385,20 @@ bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(const String& sche
         return false;
     MutexLocker locker(mutex());
     return fetchAPISchemes().contains(scheme);
+}
+
+void SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(const String& scheme)
+{
+    MutexLocker locker(mutex());
+    firstPartyWhenTopLevelSchemes().add(scheme);
+}
+
+bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(const String& scheme)
+{
+    if (scheme.isEmpty())
+        return false;
+    MutexLocker locker(mutex());
+    return firstPartyWhenTopLevelSchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, PolicyAreas policyAreas)

@@ -12,11 +12,12 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLLinkElement.h"
-#include "core/style/ComputedStyle.h"
 #include "core/page/Page.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
@@ -294,6 +295,17 @@ TEST_F(WebDocumentFirstPartyTest, NestedData)
 
     ASSERT_EQ(toOriginA(nestedData), topDocument()->firstPartyForCookies());
     ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginBWithFirstPartyOverride)
+{
+    load(nestedOriginAInOriginB);
+
+    SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel("http");
+
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginB), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginB), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginB), nestedNestedDocument()->firstPartyForCookies());
 }
 
 } // namespace blink
