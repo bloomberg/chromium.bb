@@ -288,6 +288,8 @@ public:
 
     LayoutBox* embeddedContentBox() const;
 
+    static void setInitialTracksPaintInvalidationsForTesting(bool);
+
     void setTracksPaintInvalidations(bool);
     bool isTrackingPaintInvalidations() const { return m_isTrackingPaintInvalidations; }
     void resetTrackedPaintInvalidations();

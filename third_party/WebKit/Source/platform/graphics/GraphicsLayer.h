@@ -220,6 +220,7 @@ public:
 
     bool isTrackingPaintInvalidations() const { return m_client->isTrackingPaintInvalidations(); }
     void resetTrackedPaintInvalidations();
+    bool hasTrackedPaintInvalidations() const;
     void trackPaintInvalidationRect(const FloatRect&);
     void trackPaintInvalidationObject(const String&);
 
@@ -251,6 +252,8 @@ public:
 
     // Exposed for tests.
     virtual WebLayer* contentsLayer() const { return m_contentsLayer; }
+
+    ContentLayerDelegate* contentLayerDelegateForTesting() const { return m_contentLayerDelegate.get(); }
 
 #ifndef NDEBUG
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }

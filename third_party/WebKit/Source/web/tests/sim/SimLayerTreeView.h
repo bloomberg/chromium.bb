@@ -10,13 +10,13 @@
 
 namespace blink {
 
-class SimLayerTreeView : public WebLayerTreeView {
+class SimLayerTreeView final : public WebLayerTreeView {
 public:
     SimLayerTreeView();
 
     void setNeedsAnimate() override { m_needsAnimate = true; }
-    void clearNeedsAnimate() { m_needsAnimate = false; }
     bool needsAnimate() const { return m_needsAnimate; }
+    void clearNeedsAnimate() { m_needsAnimate = false; }
 
     void setDeferCommits(bool deferCommits) override { m_deferCommits = deferCommits; }
     bool deferCommits() const { return m_deferCommits; }

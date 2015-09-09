@@ -34,27 +34,27 @@ public:
     virtual ~WebDisplayItemList() { }
 
     // This grabs a ref on the passed-in SkPicture.
-    virtual void appendDrawingItem(const SkPicture*) = 0;
+    virtual void appendDrawingItem(const SkPicture*) { }
 
-    virtual void appendClipItem(const WebRect&, const WebVector<SkRRect>&) = 0;
-    virtual void appendEndClipItem() = 0;
-    virtual void appendClipPathItem(const SkPath&, SkRegion::Op, bool antialias) = 0;
-    virtual void appendEndClipPathItem() = 0;
-    virtual void appendFloatClipItem(const WebFloatRect&) = 0;
-    virtual void appendEndFloatClipItem() = 0;
-    virtual void appendTransformItem(const SkMatrix44&) = 0;
-    virtual void appendEndTransformItem() = 0;
+    virtual void appendClipItem(const WebRect&, const WebVector<SkRRect>&) { }
+    virtual void appendEndClipItem() { }
+    virtual void appendClipPathItem(const SkPath&, SkRegion::Op, bool antialias) { }
+    virtual void appendEndClipPathItem() { }
+    virtual void appendFloatClipItem(const WebFloatRect&) { }
+    virtual void appendEndFloatClipItem() { }
+    virtual void appendTransformItem(const SkMatrix44&) { }
+    virtual void appendEndTransformItem() { }
     virtual void appendCompositingItem(float opacity,
-        SkXfermode::Mode, SkRect* bounds, SkColorFilter*) = 0;
-    virtual void appendEndCompositingItem() = 0;
+        SkXfermode::Mode, SkRect* bounds, SkColorFilter*) { }
+    virtual void appendEndCompositingItem() { }
 
-    virtual void appendFilterItem(const WebFilterOperations&, const WebFloatRect& bounds) = 0;
-    virtual void appendEndFilterItem() = 0;
+    virtual void appendFilterItem(const WebFilterOperations&, const WebFloatRect& bounds) { }
+    virtual void appendEndFilterItem() { }
 
     // Scroll containers are identified by an opaque pointer.
     using ScrollContainerId = const void*;
-    virtual void appendScrollItem(const WebSize& scrollOffset, ScrollContainerId) = 0;
-    virtual void appendEndScrollItem() = 0;
+    virtual void appendScrollItem(const WebSize& scrollOffset, ScrollContainerId) { }
+    virtual void appendEndScrollItem() { }
 };
 
 } // namespace blink

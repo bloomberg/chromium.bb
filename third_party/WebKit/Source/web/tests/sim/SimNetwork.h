@@ -17,6 +17,9 @@ class WebURLLoader;
 class WebURLLoaderClient;
 class WebURLResponse;
 
+// Simulates a network with precise flow control so you can make requests
+// return, write data, and finish in a specific order in a unit test. One of
+// these must be created before using the SimRequest to issue requests.
 class SimNetwork final : public WebURLLoaderTestDelegate {
 public:
     SimNetwork();
