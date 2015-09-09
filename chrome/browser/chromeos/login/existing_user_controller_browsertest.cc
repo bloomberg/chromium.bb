@@ -460,10 +460,10 @@ class ExistingUserControllerPublicSessionTest
     if (!proto.has_device_local_accounts() ||
         !proto.device_local_accounts().has_auto_login_delay() ||
         proto.device_local_accounts().auto_login_delay() != delay) {
-      runner1 = new content::MessageLoopRunner;
-      subscription1 = chromeos::CrosSettings::Get()->AddSettingsObserver(
+      runner2 = new content::MessageLoopRunner;
+      subscription2 = chromeos::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-          runner1->QuitClosure());
+          runner2->QuitClosure());
     }
 
     // Update the policy.
@@ -738,9 +738,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   // First run propagates public accounts and stores them in Local State.
 }
 
-// See http://crbug.com/393704; flaky.
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
-                       DISABLED_TestLoadingPublicUsersFromLocalState) {
+                       TestLoadingPublicUsersFromLocalState) {
   // Second run loads list of public accounts from Local State.
 }
 
