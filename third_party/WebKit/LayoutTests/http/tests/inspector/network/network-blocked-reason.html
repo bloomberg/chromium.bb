@@ -11,10 +11,10 @@ function sendCSPRequest()
     document.head.appendChild(script);
 }
 
-function addBlockedScript()
+function addBlockedScript(url)
 {
     var script = document.createElement("script");
-    script.src = "resources/silent_script.js";
+    script.src = url;
     document.head.appendChild(script);
 }
 
@@ -30,13 +30,26 @@ function test()
         if (request.name() !== requestName)
             return;
         requestName = undefined;
-        InspectorTest.addResult("");
-        InspectorTest.addResult("Request: " + request.name());
         InspectorTest.addResult("BlockedReason: " + request.blockedReason());
         nextStep();
     }
 
     InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequest);
+
+    function testBlockedURL(patterns, url, next)
+    {
+        InspectorTest.addResult("Blocked patterns: " + patterns.join(";"));
+        InspectorTest.addResult("Request: " + url);
+        blockedSetting.set(patterns);
+        nextStep = next;
+        InspectorTest.runAfterPendingDispatches(addScript);
+
+        function addScript()
+        {
+            requestName = url.substring(url.lastIndexOf("/") + 1);
+            InspectorTest.evaluateInPage("addBlockedScript(\"" + url + "\")");
+        }
+    }
 
     InspectorTest.runTestSuite([
         function testCSP(next)
@@ -46,24 +59,84 @@ function test()
             InspectorTest.evaluateInPage("sendCSPRequest()");
         },
 
-        function testDevTools(next)
+        function testBlockedByDevTools1(next)
         {
-            blockedSetting.set(["http://some.strange.origin/script.js", "resources/silent_script.js"]);
-            nextStep = removeBlock;
-            InspectorTest.runAfterPendingDispatches(addScript);
+            testBlockedURL(["resources**/silent*.js"], "resources/silent_script.js", next);
+        },
 
-            function removeBlock()
-            {
-                blockedSetting.set(["http://some.strange.origin/script.js"]);
-                nextStep = next;
-                InspectorTest.runAfterPendingDispatches(addScript);
-            }
+        function testBlockedByDevTools2(next)
+        {
+            testBlockedURL(["a*b"], "ba", next);
+        },
 
-            function addScript()
-            {
-                requestName = "silent_script.js";
-                InspectorTest.evaluateInPage("addBlockedScript()");
-            }
+        function testBlockedByDevTools3(next)
+        {
+            testBlockedURL(["***pattern***"], "there/is/a/pattern/inside.js", next);
+        },
+
+        function testBlockedByDevTools4(next)
+        {
+            testBlockedURL(["pattern"], "patt1ern", next);
+        },
+
+        function testBlockedByDevTools5(next)
+        {
+            testBlockedURL(["*this***is*a*pattern"], "file/this/is/the/pattern", next);
+        },
+
+        function testBlockedByDevTools6(next)
+        {
+            testBlockedURL(["*this***is*a*pattern"], "this/is/a/pattern", next);
+        },
+
+        function testBlockedByDevTools6(next)
+        {
+            testBlockedURL(["*this***is*a*pattern"], "this/is", next);
+        },
+
+        function testBlockedByDevTools7(next)
+        {
+            testBlockedURL(["pattern"], "long/pattern/inside", next);
+        },
+
+        function testBlockedByDevTools8(next)
+        {
+            testBlockedURL(["pattern"], "pattern", next);
+        },
+
+        function testBlockedByDevTools9(next)
+        {
+            testBlockedURL(["pattern", "pattern"], "pattern", next);
+        },
+
+        function testBlockedByDevTools10(next)
+        {
+            testBlockedURL(["a*b*c*d*e"], "edcbaedcbaedcbaedcba", next);
+        },
+
+        function testBlockedByDevTools11(next)
+        {
+            testBlockedURL(["a*b*c*d*e"], "edcbaedcbaedcbaedcbae", next);
+        },
+
+        function testBlockedByDevTools12(next)
+        {
+            testBlockedURL(["one1", "two2"], "one1two2", next);
+        },
+
+        function testBlockedByDevTools13(next)
+        {
+            testBlockedURL(["one1", "two2", "three3"], "four4", next);
+        },
+
+        function testBlockedByDevTools14(next)
+        {
+            testBlockedURL(["one1", "two2", "three3"], "only-two2-here", next);
+        },
+
+        function cleanupBlockedURLs(next)
+        {
+            testBlockedURL([], "resources/silent_script.js", next);
         }
     ]);
 }

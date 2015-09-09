@@ -95,6 +95,22 @@ namespace {
 // Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc
 const char kDevToolsEmulateNetworkConditionsClientId[] = "X-DevTools-Emulate-Network-Conditions-Client-Id";
 
+// Pattern may contain stars ('*') which match to any (possibly empty) string.
+// Stars implicitly assumed at the begin/end of pattern.
+bool matches(const String& url, const String& pattern)
+{
+    Vector<String> parts;
+    pattern.split("*", parts);
+    size_t pos = 0;
+    for (const String& part : parts) {
+        pos = url.find(part, pos);
+        if (pos == kNotFound)
+            return false;
+        pos += part.length();
+    }
+    return true;
+}
+
 static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
 {
     RefPtr<JSONObject> headersObject = JSONObject::create();
@@ -407,7 +423,7 @@ bool InspectorResourceAgent::shouldBlockRequest(const ResourceRequest& request)
     String url = request.url().string();
     RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
     for (const auto& entry : *blockedURLs) {
-        if (url.contains(entry.key))
+        if (matches(url, entry.key))
             return true;
     }
     return false;
