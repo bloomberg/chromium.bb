@@ -549,6 +549,11 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
     return earliestFireTime;
 }
 
+void SMILTimeContainer::advanceFrameForTesting()
+{
+    setElapsed(elapsed().value() + initialFrameDelay);
+}
+
 DEFINE_TRACE(SMILTimeContainer)
 {
 #if ENABLE(OILPAN)

@@ -395,6 +395,20 @@ bool SVGImage::hasAnimations() const
     return rootElement->timeContainer()->hasAnimations() || toLocalFrame(m_page->mainFrame())->document()->timeline().hasPendingUpdates();
 }
 
+void SVGImage::advanceAnimationForTesting()
+{
+    if (SVGSVGElement* rootElement = svgRootElement(m_page.get())) {
+        rootElement->timeContainer()->advanceFrameForTesting();
+
+        // The following triggers animation updates which can issue a new draw
+        // but will not permanently change the animation timeline.
+        // TODO(pdr): Actually advance the document timeline so CSS animations
+        // can be properly tested.
+        rootElement->document().page()->animator().serviceScriptedAnimations(rootElement->getCurrentTime());
+        imageObserver()->animationAdvanced(this);
+    }
+}
+
 void SVGImage::updateUseCounters(Document& document) const
 {
     if (SVGSVGElement* rootElement = svgRootElement(m_page.get())) {

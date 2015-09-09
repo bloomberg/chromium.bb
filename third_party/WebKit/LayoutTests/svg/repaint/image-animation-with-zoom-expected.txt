@@ -9,7 +9,7 @@
         [0, 9, 22, 22]
       ],
       "paintInvalidationClients": [
-        "LayoutImage IMG"
+        "LayoutImage IMG id='targetImage'"
       ]
     }
   ]

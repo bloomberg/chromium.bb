@@ -20,22 +20,20 @@
     var ctx = canvas.getContext("2d");
 
     var img = new Image();
-    img.src = 'resources/green-red-animated.gif';
     img.onload = imageLoaded;
+    img.src = 'resources/green-red-animated.gif';
 
     function imageLoaded() {
-        // The gif switches from green to red in 10ms. We wait 50ms to ensure that the gif will have changed colors.
         // If the ImageBitmap is green, we know that it is a snapshot of the gif's 0th frame.
-        window.setTimeout(function() {
-            createImageBitmap(img).then(function (imageBitmap) {
-                ctx.drawImage(imageBitmap, 0, 0);
-                shouldBeGreen(100, 100);
-                finishJSTest();
-            }, function() {
-                testFailed("Promise was rejected.");
-                finishJSTest();
-            });
-        }, 50);
+        window.internals.advanceImageAnimation(img);
+        createImageBitmap(img).then(function (imageBitmap) {
+            ctx.drawImage(imageBitmap, 0, 0);
+            shouldBeGreen(100, 100);
+            finishJSTest();
+        }, function() {
+            testFailed("Promise was rejected.");
+            finishJSTest();
+        });
     }
 </script>
 </body>

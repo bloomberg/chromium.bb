@@ -10,10 +10,15 @@
     if (!window.testRunner)
       return;
 
-    // The animation lasts 100ms. Wait 200ms for the repaint.
-    setTimeout(function() {
+    // The animation lasts 100ms so skip 12 (12*1s/120=100ms) frames to be sure.
+    for (var i = 0; i < 12; i++) {
+      window.internals.advanceImageAnimation(imageA);
+      window.internals.advanceImageAnimation(imageB);
+    }
+
+    window.requestAnimationFrame(function() {
       finishRepaintTest();
-    }, 200);
+    });
   }
   </script>
   <style type="text/css" media="screen">
@@ -24,7 +29,7 @@
 </head>
 <body onload="runRepaintAndPixelTest()">
   <p>Images should redraw correctly when SVG animation runs</p>
-  <img height="250px" width="350px" border="2" src="resources/animated-rect-same-image.svg"><br>
-  <img height="250px" width="350px" border="2" src="resources/animated-rect-same-image.svg">
+  <img id="imageA" height="250px" width="350px" border="2" src="resources/animated-rect-same-image.svg"><br>
+  <img id="imageB" height="250px" width="350px" border="2" src="resources/animated-rect-same-image.svg">
 </body>
 </html>

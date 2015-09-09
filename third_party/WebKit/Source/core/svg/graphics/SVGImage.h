@@ -63,6 +63,10 @@ public:
     void stopAnimation() override;
     void resetAnimation() override;
 
+    // Advances an animated image. This will trigger an animation update for CSS
+    // and advance the SMIL timeline by one frame.
+    void advanceAnimationForTesting() override;
+
     PassRefPtr<SkImage> imageForCurrentFrame() override;
 
     // Returns the SVG image document's frame.

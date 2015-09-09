@@ -512,6 +512,29 @@ void Internals::advanceTimeForImage(Element* image, double deltaTimeInSeconds, E
     imageData->advanceTime(deltaTimeInSeconds);
 }
 
+void Internals::advanceImageAnimation(Element* image, ExceptionState& exceptionState)
+{
+    ASSERT(image);
+
+    ImageResource* resource = nullptr;
+    if (isHTMLImageElement(*image)) {
+        resource = toHTMLImageElement(*image).cachedImage();
+    } else if (isSVGImageElement(*image)) {
+        resource = toSVGImageElement(*image).cachedImage();
+    } else {
+        exceptionState.throwDOMException(InvalidAccessError, "The element provided is not a image element.");
+        return;
+    }
+
+    if (!resource || !resource->hasImage()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The image resource is not available.");
+        return;
+    }
+
+    Image* imageData = resource->image();
+    imageData->advanceAnimationForTesting();
+}
+
 bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionState& exceptionState) const
 {
     ASSERT(root);

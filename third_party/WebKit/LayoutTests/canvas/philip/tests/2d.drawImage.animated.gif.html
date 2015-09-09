@@ -13,11 +13,14 @@
 _addTest(function(canvas, ctx) {
 
 deferTest();
-setTimeout(wrapFunction(function () {
+
+// Advance the animation one frame to ensure we only draw the first frame.
+window.internals.advanceImageAnimation(document.getElementById('anim-gr.gif'));
+
+requestAnimationFrame(wrapFunction(function () {
     ctx.drawImage(document.getElementById('anim-gr.gif'), 0, 0);
     _assertPixelApprox(canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
-}), 500);
-
+}));
 
 });
 </script>

@@ -121,6 +121,11 @@ public:
     virtual ImageAnimationPolicy animationPolicy() { return ImageAnimationPolicyAllowed; }
     virtual void advanceTime(double deltaTimeInSeconds) { }
 
+    // Advances an animated image. For BitmapImage (e.g., animated gifs) this
+    // will advance to the next frame. For SVGImage, this will trigger an
+    // animation update for CSS and advance the SMIL timeline by one frame.
+    virtual void advanceAnimationForTesting() { }
+
     // Typically the ImageResource that owns us.
     ImageObserver* imageObserver() const { return m_imageObserver; }
     void setImageObserver(ImageObserver* observer) { m_imageObserver = observer; }

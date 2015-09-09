@@ -69,6 +69,9 @@ public:
 
     void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }
 
+    // Advance the animation timeline a single frame.
+    void advanceFrameForTesting();
+
     DECLARE_TRACE();
 
 private:

@@ -84,6 +84,9 @@ public:
     ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
     void advanceTime(double deltaTimeInSeconds) override;
 
+    // Advance the image animation by one frame.
+    void advanceAnimationForTesting() override { internalAdvanceAnimation(false); }
+
     PassRefPtr<SkImage> imageForCurrentFrame() override;
     PassRefPtr<Image> imageForDefaultFrame() override;
     bool currentFrameKnownToBeOpaque() override;

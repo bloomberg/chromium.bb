@@ -116,6 +116,11 @@ public:
     // for testing whether animated images work properly.
     void advanceTimeForImage(Element* image, double deltaTimeInSeconds, ExceptionState&);
 
+    // Advances an animated image. For BitmapImage (e.g., animated gifs) this
+    // will advance to the next frame. For SVGImage, this will trigger an
+    // animation update for CSS and advance the SMIL timeline by one frame.
+    void advanceImageAnimation(Element* image, ExceptionState&);
+
     bool isValidContentSelect(Element* insertionPoint, ExceptionState&);
     Node* treeScopeRootNode(Node*);
     Node* parentTreeScope(Node*);

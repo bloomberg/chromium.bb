@@ -15,10 +15,10 @@ window.testIsAsync = true;
 window.onload = runRepaintTest;
 
 function repaintTest() {
-  setTimeout(function() {
-    if (window.testRunner)
-      finishRepaintTest();
-  }, 220);
+  window.internals.advanceImageAnimation(targetImage);
+  window.requestAnimationFrame(function() {
+    finishRepaintTest();
+  });
 };
 </script>
-<img src="resources/animate-center.svg" width="10px" height="10px">
+<img id="targetImage" src="resources/animate-center.svg" width="10px" height="10px">

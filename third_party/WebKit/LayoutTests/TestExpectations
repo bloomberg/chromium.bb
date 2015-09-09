@@ -1344,7 +1344,6 @@ crbug.com/521730 [ Win10 ] inspector/file-reader-with-network-panel.html [ Failu
 crbug.com/521730 [ Win10 ] inspector/sources/debugger-step/debugger-step-out-document-write.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] media/W3C/audio/error/error_onerror_called_on_bogus_source.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] paint/inline/outline-offset.html [ ImageOnlyFailure Timeout ]
-crbug.com/521730 [ Win10 ] svg/as-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass Timeout ]
 crbug.com/521730 [ Win10 ] svg/as-image/svg-object-intrinsic-size.html [ Missing Timeout ]
 crbug.com/521730 [ Win10 ] svg/as-object/nested-embedded-svg-size-changes.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] svg/custom/rounded-rect-update-to-empty.html [ Pass Timeout ]
