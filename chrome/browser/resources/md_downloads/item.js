@@ -158,19 +158,12 @@ cr.define('downloads', function() {
 
       this.$.content.classList.toggle('show-progress', this.showProgress_);
 
-      var hideRemove;
-
-      if (this.isDangerous_) {
-        hideRemove = true;
-      } else {
+      if (!this.isDangerous_) {
         this.$['file-link'].href = data.url;
         this.ensureTextIs_(this.$['file-link'], data.file_name);
 
         this.$['file-link'].hidden = !this.completelyOnDisk_;
         this.$.name.hidden = this.completelyOnDisk_;
-
-        hideRemove = this.showCancel_ ||
-            !loadTimeData.getBoolean('allowDeletingHistory');
 
         /** @const */ var controlledByExtension = data.by_ext_id &&
                                                   data.by_ext_name;
@@ -184,8 +177,6 @@ cr.define('downloads', function() {
         var icon = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
         this.iconLoader_.loadScaledIcon(this.$['file-icon'], icon);
       }
-
-      this.$.remove.style.visibility = hideRemove ? 'hidden' : '';
     },
 
     /** @private */
@@ -217,6 +208,13 @@ cr.define('downloads', function() {
     /** @private */
     computeIsDangerous_: function() {
       return this.data_.state == downloads.States.DANGEROUS;
+    },
+
+    /** @private */
+    computeRemoveStyle_: function() {
+      var canDelete = loadTimeData.getBoolean('allowDeletingHistory');
+      var hideRemove = this.isDangerous_ || this.showCancel_ || !canDelete;
+      return hideRemove ? 'visibility: hidden' : '';
     },
 
     /** @private */
@@ -302,6 +300,11 @@ cr.define('downloads', function() {
       this.actionService_.cancel(this.data_.id);
     },
 
+    /** @private */
+    onDiscardDangerous_: function() {
+      this.actionService_.discardDangerous(this.data_.id);
+    },
+
     /**
      * @private
      * @param {Event} e
@@ -327,18 +330,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onRemoveClick_: function() {
-      assert(!this.$.remove.disabled);
       this.actionService_.remove(this.data_.id);
-    },
-
-    /** @private */
-    onSaveDangerous_: function() {
-      this.actionService_.saveDangerous(this.data_.id);
-    },
-
-    /** @private */
-    onDiscardDangerous_: function() {
-      this.actionService_.discardDangerous(this.data_.id);
     },
 
     /** @private */
@@ -349,6 +341,11 @@ cr.define('downloads', function() {
     /** @private */
     onRetryClick_: function() {
       this.actionService_.download(this.$['file-link'].href);
+    },
+
+    /** @private */
+    onSaveDangerous_: function() {
+      this.actionService_.saveDangerous(this.data_.id);
     },
 
     /** @private */
