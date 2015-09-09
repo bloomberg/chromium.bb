@@ -225,7 +225,6 @@
         'src/handle_closer_test.cc',
         'src/integrity_level_test.cc',
         'src/ipc_ping_test.cc',
-        'src/lpc_policy_test.cc',
         'src/named_pipe_policy_test.cc',
         'src/policy_target_test.cc',
         'src/process_mitigations_test.cc',

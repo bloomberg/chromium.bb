@@ -59,22 +59,6 @@ bool CloseOpenHandles(bool* is_csrss_connected) {
   return true;
 }
 
-// Warm up language subsystems before the sandbox is turned on.
-// Tested on Win8.1 x64:
-// This needs to happen after RevertToSelf() is called, because (at least) in
-// the case of GetUserDefaultLCID() it checks the TEB to see if the process is
-// impersonating (TEB!IsImpersonating). If it is, the cached locale information
-// is not used, nor is it set. Therefore, calls after RevertToSelf() will not
-// have warmed-up values to use.
-bool WarmupWindowsLocales() {
-  // NOTE(liamjm): When last checked (Win 8.1 x64) it wasn't necessary to
-  // warmup all of these functions, but let's not assume that.
-  ::GetUserDefaultLangID();
-  ::GetUserDefaultLCID();
-  wchar_t localeName[LOCALE_NAME_MAX_LENGTH] = { 0 };
-  return (0 != ::GetUserDefaultLocaleName(
-      localeName, LOCALE_NAME_MAX_LENGTH * sizeof(wchar_t)));
-}
 
 // Used as storage for g_target_services, because other allocation facilities
 // are not available early. We can't use a regular function static because on
@@ -113,8 +97,6 @@ void TargetServicesBase::LowerToken() {
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_FLUSHANDLES);
   if (ERROR_SUCCESS != ::RegDisablePredefinedCache())
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_CACHEDISABLE);
-  if (!WarmupWindowsLocales())
-      ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_WARMUP);
   bool is_csrss_connected = true;
   if (!CloseOpenHandles(&is_csrss_connected))
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_CLOSEHANDLES);
