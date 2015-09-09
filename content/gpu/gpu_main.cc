@@ -75,7 +75,11 @@
 #include <sanitizer/coverage_interface.h>
 #endif
 
+#if defined(CYGPROFILE_INSTRUMENTATION)
+const int kGpuTimeout = 30000;
+#else
 const int kGpuTimeout = 10000;
+#endif
 
 namespace content {
 

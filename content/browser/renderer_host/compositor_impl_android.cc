@@ -596,8 +596,9 @@ void CompositorImpl::OnGpuChannelTimeout() {
 void CompositorImpl::RequestNewOutputSurface() {
   output_surface_request_pending_ = true;
 
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || defined(SYZYASAN)
-  const int64 kGpuChannelTimeoutInSeconds = 30;
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
+  defined(SYZYASAN) || defined(CYGPROFILE_INSTRUMENTATION)
+  const int64 kGpuChannelTimeoutInSeconds = 40;
 #else
   const int64 kGpuChannelTimeoutInSeconds = 10;
 #endif

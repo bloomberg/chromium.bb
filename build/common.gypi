@@ -4634,9 +4634,10 @@
                 'cflags': [
                   '-finstrument-functions',
                   # Allow mmx intrinsics to inline, so that the
-                  #0 compiler can expand the intrinsics.
+                  # compiler can expand the intrinsics.
                   '-finstrument-functions-exclude-file-list=mmintrin.h',
                 ],
+                'defines': ['CYGPROFILE_INSTRUMENTATION'],
               }],
               ['_toolset=="target" and OS=="android"', {
                 'cflags': [

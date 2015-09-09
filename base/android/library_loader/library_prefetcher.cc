@@ -118,6 +118,12 @@ bool NativeLibraryPrefetcher::FindRanges(std::vector<AddressRange>* ranges) {
 
 // static
 bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary() {
+  // Avoid forking with cygprofile instrumentation because the latter performs
+  // memory allocations.
+#if defined(CYGPROFILE_INSTRUMENTATION)
+  return false;
+#endif
+
   // Looking for ranges is done before the fork, to avoid syscalls and/or memory
   // allocations in the forked process. The child process inherits the lock
   // state of its parent thread. It cannot rely on being able to acquire any
@@ -126,6 +132,7 @@ bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary() {
   std::vector<AddressRange> ranges;
   if (!FindRanges(&ranges))
     return false;
+
   pid_t pid = fork();
   if (pid == 0) {
     setpriority(PRIO_PROCESS, 0, kBackgroundPriority);
