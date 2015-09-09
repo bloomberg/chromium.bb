@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.Context;
 
 import org.chromium.base.ThreadUtils;
@@ -105,6 +106,11 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                     @Override
                     public String getAccountId(Context ctx, String accountName) {
                         return "gaia-id-" + accountName;
+                    }
+
+                    @Override
+                    public boolean canBeUsed(Context ctx, Activity activity) {
+                        return true;
                     }
                 });
             }

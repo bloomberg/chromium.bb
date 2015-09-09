@@ -295,6 +295,11 @@ public class SigninManager {
 
         notifySignInAllowedChanged();
 
+        if (!AccountIdProvider.getInstance().canBeUsed(mContext, mSignInActivity)) {
+            Log.d(TAG, "Deferring the sign-in process as Google Play services is unavailable");
+            return;
+        }
+
         if (!nativeShouldLoadPolicyForUser(account.name)) {
             // Proceed with the sign-in flow without checking for policy if it can be determined
             // that this account can't have management enabled based on the username.
