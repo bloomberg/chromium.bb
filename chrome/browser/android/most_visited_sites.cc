@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -121,7 +122,8 @@ bool ShouldShowPopularSites() {
     return false;
   if (cmd_line->HasSwitch(switches::kEnableNTPPopularSites))
     return true;
-  return group_name == "Enabled";
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 std::string GetPopularSitesFilename() {
