@@ -254,37 +254,9 @@ cvox.AbstractTts.prototype.preprocess = function(text, properties) {
         return cvox.AbstractTts.PRONUNCIATION_DICTIONARY[word.toLowerCase()];
       });
 
-  // Special case for google+, where the punctuation must be pronounced.
-  text = text.replace(/google\+/ig, 'google plus');
-
   // Expand all repeated characters.
   text = text.replace(
       cvox.AbstractTts.repetitionRegexp_, cvox.AbstractTts.repetitionReplace_);
-
-  // If there's no lower case letters, and at least two spaces, skip spacing
-  // text.
-  var skipSpacing = false;
-  if (!text.match(/[a-z]+/) && text.indexOf(' ') != text.lastIndexOf(' ')) {
-    skipSpacing = true;
-  }
-
-  // Convert all-caps words to lowercase if they don't look like acronyms,
-  // otherwise add a space before all-caps words so that all-caps words in
-  // the middle of camelCase will be separated.
-  text = text.replace(/[A-Z]+/g, function(word) {
-    // If a word contains vowels and is more than 3 letters long, it is
-    // probably a real word and not just an abbreviation. Convert it to lower
-    // case and speak it normally.
-    if ((word.length > 3) && word.match(/([AEIOUY])/g)) {
-      return word.toLowerCase();
-    } else if (!skipSpacing) {
-      // Builds spaced-out camelCased/all CAPS words so they sound better when
-      // spoken by TTS engines.
-      return ' ' + word.split('').join(' ');
-    } else {
-      return word;
-    }
-  });
 
   return text;
 };

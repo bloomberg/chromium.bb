@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
 
   SendKeyPress(ui::VKEY_RETURN);
 
-  EXPECT_EQ("Search or type U R L", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Search or type URL", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
 
   SendKeyPress(ui::VKEY_DOWN);
