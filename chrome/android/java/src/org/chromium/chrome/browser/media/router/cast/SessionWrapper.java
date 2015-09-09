@@ -57,7 +57,11 @@ public class SessionWrapper {
 
         @Override
         public void onMessageReceived(CastDevice castDevice, String namespace, String message) {
-            mSession.onMessage("v2_message", message);
+            if (MEDIA_NAMESPACE.equals(namespace) || RECEIVER_NAMESPACE.equals(namespace)) {
+                mSession.onMessage("v2_message", message);
+            } else {
+                mSession.onAppMessage(namespace, message);
+            }
         }
     }
 
@@ -68,6 +72,7 @@ public class SessionWrapper {
 
     // Ids of the connected Cast clients.
     private Set<String> mClients = new HashSet<String>();
+    private Set<String> mNamespaces = new HashSet<String>();
     private GoogleApiClient mApiClient;
     private String mSessionId;
     private String mApplicationStatus;
@@ -96,15 +101,11 @@ public class SessionWrapper {
         mCastDevice = castDevice;
 
         mMessageChannel = new CastMessagingChannel(this);
-        try {
-            Cast.CastApi.setMessageReceivedCallbacks(
-                    mApiClient, MEDIA_NAMESPACE, mMessageChannel);
-            Cast.CastApi.setMessageReceivedCallbacks(
-                    mApiClient, RECEIVER_NAMESPACE, mMessageChannel);
-        } catch (IOException e) {
-            Log.e(TAG, "Exception while creating channel", e);
-        }
+        addNamespace(RECEIVER_NAMESPACE);
+        addNamespace(MEDIA_NAMESPACE);
     }
+
+
 
     /**
      * Stops the Cast application associated with this session.
@@ -115,6 +116,10 @@ public class SessionWrapper {
         if (mApiClient.isConnected() || mApiClient.isConnecting()) {
             Cast.CastApi.stopApplication(mApiClient, mSessionId);
         }
+
+        for (String namespace : mNamespaces) unregisterNamespace(namespace);
+        mNamespaces.clear();
+        mClients.clear();
 
         mSessionId = null;
         mApiClient = null;
@@ -133,12 +138,60 @@ public class SessionWrapper {
         mMediaRouter.onMessageSentResult(false, callbackId);
     }
 
+    /**
+     * Sends the internal Cast message to the Cast clients on the page via the media router.
+     * @param type The type of the message (e.g. "new_session" or "v2_message")
+     * @param message The message itself (encoded JSON).
+     */
     public void onMessage(String type, String message) {
         for (String client : mClients) {
             mMediaRouter.onMessage(mMediaRouteId,
                     buildInternalMessage(type, message, client, mSequenceNumber));
         }
         mSequenceNumber++;
+    }
+
+    /**
+     * Forwards the application specific message to the page via the media router.
+     * @param namespace The application specific namespace this message belongs to.
+     * @param message The message within the namespace that's being send by the receiver.
+     */
+    public void onAppMessage(String namespace, String message) {
+        try {
+            JSONObject jsonMessage = new JSONObject();
+            jsonMessage.put("sessionId", mSessionId);
+            jsonMessage.put("namespaceName", namespace);
+            jsonMessage.put("message", message);
+            onMessage("app_message", jsonMessage.toString());
+        } catch (JSONException e) {
+            Log.d(TAG, "Failed to create the message wrapper", e);
+        }
+    }
+
+    private void addNamespace(String namespace) {
+        assert !mNamespaces.contains(namespace);
+        if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return;
+
+        if (!mApplicationMetadata.isNamespaceSupported(namespace)) return;
+
+        try {
+            Cast.CastApi.setMessageReceivedCallbacks(mApiClient, namespace, mMessageChannel);
+            mNamespaces.add(namespace);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to register namespace listener for %s", namespace, e);
+        }
+    }
+
+    private void unregisterNamespace(String namespace) {
+        assert mNamespaces.contains(namespace);
+
+        if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return;
+
+        try {
+            Cast.CastApi.removeMessageReceivedCallbacks(mApiClient, namespace);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to remove the namespace listener for %s", namespace, e);
+        }
     }
 
     private boolean handleInternalMessage(String message, int callbackId) {
@@ -151,7 +204,10 @@ public class SessionWrapper {
                 success = handleClientConnectMessage(jsonMessage);
             } else if ("v2_message".equals(messageType)) {
                 success = handleCastV2Message(message, jsonMessage);
+            } else if ("app_message".equals(messageType)) {
+                success = handleAppMessage(message, jsonMessage);
             } else {
+                Log.d(TAG, "Unsupported message: %s", message);
                 return false;
             }
         } catch (JSONException e) {
@@ -200,6 +256,36 @@ public class SessionWrapper {
         } else if (Arrays.asList(MEDIA_MESSAGE_TYPES).contains(messageType)) {
             return sendCastMessage(jsonMessage.getString("message"), MEDIA_NAMESPACE);
         }
+
+        return true;
+    }
+
+    // An example of the Cast application message:
+    // {
+    //   "type":"app_message",
+    //   "message": {
+    //     "sessionId":"...",
+    //     "namespaceName":"...",
+    //     "message": ...
+    //   },
+    //   "sequenceNumber":0,
+    //   "timeoutMillis":3000,
+    //   "clientId":"14417311915272175"
+    // }
+    private boolean handleAppMessage(String message, JSONObject jsonMessage) throws JSONException {
+        assert "app_message".equals(jsonMessage.getString("type"));
+
+        String clientId = jsonMessage.getString("clientId");
+        if (!mClients.contains(clientId)) return false;
+
+        JSONObject jsonAppMessageWrapper = jsonMessage.getJSONObject("message");
+        if (!mSessionId.equals(jsonAppMessageWrapper.getString("sessionId"))) return false;
+
+        String namespaceName = jsonAppMessageWrapper.getString("namespaceName");
+        if (namespaceName == null || namespaceName.isEmpty()) return false;
+
+        if (!mNamespaces.contains(namespaceName)) addNamespace(namespaceName);
+        sendCastMessage(jsonAppMessageWrapper.getString("message"), namespaceName);
 
         return true;
     }
@@ -328,9 +414,9 @@ public class SessionWrapper {
         JSONArray jsonNamespaces = new JSONArray();
         // TODO(avayvod): Need a way to retrieve all the supported namespaces (e.g. YouTube).
         // See crbug.com/529680.
-        if (metadata.isNamespaceSupported(MEDIA_NAMESPACE)) {
+        for (String namespace : mNamespaces) {
             JSONObject jsonNamespace = new JSONObject();
-            jsonNamespace.put("name", MEDIA_NAMESPACE);
+            jsonNamespace.put("name", namespace);
             jsonNamespaces.put(jsonNamespace);
         }
         return jsonNamespaces;
