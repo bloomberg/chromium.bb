@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sync/glue/synced_window_delegate.h"
+#include "components/sync_driver/glue/synced_window_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
 #include "components/sessions/session_id.h"
+#include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 
 class Profile;
 

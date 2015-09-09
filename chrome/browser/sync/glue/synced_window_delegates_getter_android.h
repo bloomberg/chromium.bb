@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
+#include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 
 namespace browser_sync {
 

@@ -7,9 +7,9 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegates_getter_android.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
+#include "components/sync_driver/glue/synced_window_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
