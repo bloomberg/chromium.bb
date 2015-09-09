@@ -26,6 +26,14 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaIntArrayToIntVector;
 using base::android::ScopedJavaLocalRef;
 
+#define RETURN_ON_ERROR(condition)                          \
+  do {                                                           \
+    if (!(condition)) {                                          \
+      LOG(ERROR) << "Unable to parse AAC header: " #condition; \
+      return false;                                              \
+    }                                                            \
+  } while (0)
+
 namespace media {
 
 enum {
@@ -642,18 +650,19 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
       uint8 profile = 0;
       uint8 frequency_index = 0;
       uint8 channel_config = 0;
-      if (!reader.ReadBits(5, &profile) ||
-          !reader.ReadBits(4, &frequency_index)) {
-        LOG(ERROR) << "Unable to parse AAC header";
-        return false;
-      }
-      if (0xf == frequency_index && !reader.SkipBits(24)) {
-        LOG(ERROR) << "Unable to parse AAC header";
-        return false;
-      }
-      if (!reader.ReadBits(4, &channel_config)) {
-        LOG(ERROR) << "Unable to parse AAC header";
-        return false;
+      RETURN_ON_ERROR(reader.ReadBits(5, &profile));
+      RETURN_ON_ERROR(reader.ReadBits(4, &frequency_index));
+
+      if (0xf == frequency_index)
+        RETURN_ON_ERROR(reader.SkipBits(24));
+      RETURN_ON_ERROR(reader.ReadBits(4, &channel_config));
+
+      if (profile == 5 || profile == 29) {
+        // Read extension config.
+        RETURN_ON_ERROR(reader.ReadBits(4, &frequency_index));
+        if (frequency_index == 0xf)
+          RETURN_ON_ERROR(reader.SkipBits(24));
+        RETURN_ON_ERROR(reader.ReadBits(5, &profile));
       }
 
       if (profile < 1 || profile > 4 || frequency_index == 0xf ||
