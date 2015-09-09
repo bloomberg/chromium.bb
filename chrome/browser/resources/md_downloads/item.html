@@ -68,20 +68,20 @@
 
         <div id="dangerous" class="controls" hidden$="[[!isDangerous_]]">
           <!-- Dangerous file types (e.g. .exe, .jar). -->
-          <paper-button id="discard" i18n-content="dangerDiscard"
-              on-click="onDiscardDangerous_" class="discard"
-              hidden$="[[isMalware_]]"></paper-button>
-          <paper-button id="save" i18n-content="dangerSave"
-              on-click="onSaveDangerous_" class="keep"
-              hidden$="[[isMalware_]]"></paper-button>
+          <template is="dom-if" if="[[!isMalware_]]">
+            <paper-button id="discard" on-click="onDiscardDangerous_"
+                class="discard">[[i18n_.discard]]</paper-button>
+            <paper-button id="save" on-click="onSaveDangerous_"
+                class="keep">[[i18n_.save]]</paper-button>
+          </template>
 
           <!-- Things that safe browsing has determined to be dangerous. -->
-          <paper-button id="danger-remove" i18n-content="controlRemoveFromList"
-              on-click="onDiscardDangerous_" class="discard"
-              hidden$="[[!isMalware_]]"></paper-button>
-          <paper-button id="restore" i18n-content="dangerRestore"
-              on-click="onSaveDangerous_" class="keep"
-              hidden$="[[!isMalware_]]"></paper-button>
+          <template is="dom-if" if="[[isMalware_]]">
+            <paper-button id="danger-remove" on-click="onDiscardDangerous_"
+                class="discard">[[i18n_.remove]]</paper-button>
+            <paper-button id="restore" on-click="onSaveDangerous_"
+                class="keep">[[i18n_.restore]</paper-button>
+          </template>
         </div>
       </div>
 

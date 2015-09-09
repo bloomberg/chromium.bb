@@ -35,58 +35,65 @@ cr.define('downloads', function() {
       },
 
       scrollbarWidth: {
+        observer: 'onScrollbarWidthChange_',
         type: Number,
         value: 0,
-        observer: 'onScrollbarWidthChange_',
       },
 
       completelyOnDisk_: {
-        type: Boolean,
-        value: true,
         computed: 'computeCompletelyOnDisk_(' +
             'data_.state, data_.file_externally_removed)',
+        type: Boolean,
+        value: true,
       },
 
       i18n_: {
+        readOnly: true,
         type: Object,
         value: function() {
           return {
             cancel: loadTimeData.getString('controlCancel'),
+            discard: loadTimeData.getString('dangerDiscard'),
             pause: loadTimeData.getString('controlPause'),
+            remove: loadTimeData.getString('controlRemoveFromList'),
             resume: loadTimeData.getString('controlResume'),
+            restore: loadTimeData.getString('dangerRestore'),
             retry: loadTimeData.getString('controlRetry'),
+            save: loadTimeData.getString('dangerSave'),
             show: loadTimeData.getString('controlShowInFolder'),
           };
         },
-        readOnly: true,
       },
 
       isDangerous_: {
+        computed: 'computeIsDangerous_(data_.state)',
         type: Boolean,
         value: false,
-        computed: 'computeIsDangerous_(data_.state)',
       },
 
       isInProgress_: {
+        computed: 'computeIsInProgress_(data_.state)',
         type: Boolean,
         value: false,
-        computed: 'computeIsInProgress_(data_.state)',
       },
 
       showCancel_: {
+        computed: 'computeShowCancel_(data_.state)',
         type: Boolean,
         value: false,
-        computed: 'computeShowCancel_(data_.state)',
       },
 
       showProgress_: {
+        computed: 'computeShowProgress_(showCancel_, data_.percent)',
         type: Boolean,
         value: false,
-        computed: 'computeShowProgress_(showCancel_, data_.percent)',
       },
 
-      /** Only set when |isDangerous| is true. */
-      isMalware_: Boolean,
+      isMalware_: {
+        computed: 'computeIsMalware_(isDangerous_, data_.danger_type)',
+        type: Boolean,
+        value: false,
+      },
 
       // TODO(dbeam): move all properties to |data_|.
       data_: {
@@ -154,11 +161,6 @@ cr.define('downloads', function() {
       var hideRemove;
 
       if (this.isDangerous_) {
-        this.isMalware_ =
-            data.danger_type == downloads.DangerType.DANGEROUS_CONTENT ||
-            data.danger_type == downloads.DangerType.DANGEROUS_HOST ||
-            data.danger_type == downloads.DangerType.DANGEROUS_URL ||
-            data.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED;
         hideRemove = true;
       } else {
         this.$['file-link'].href = data.url;
@@ -201,6 +203,15 @@ cr.define('downloads', function() {
     /** @private */
     computeIsInProgress_: function() {
       return this.data_.state == downloads.States.IN_PROGRESS;
+    },
+
+    /** @private */
+    computeIsMalware_: function() {
+      return this.isDangerous_ &&
+          (this.data_.danger_type == downloads.DangerType.DANGEROUS_CONTENT ||
+           this.data_.danger_type == downloads.DangerType.DANGEROUS_HOST ||
+           this.data_.danger_type == downloads.DangerType.DANGEROUS_URL ||
+           this.data_.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED);
     },
 
     /** @private */

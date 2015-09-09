@@ -22,10 +22,10 @@ cr.define('downloads', function() {
     this.addItem('pause-resume', '#resume');
     this.addItem('cancel', '#cancel');
     this.addItem('controlled-by', '#controlled-by a');
-    assert(this.addItem('danger-remove-discard', '#discard'));
-    assert(this.addItem('restore-save', '#save'));
-    assert(this.addItem('danger-remove-discard', '#danger-remove'));
-    assert(this.addItem('restore-save', '#restore'));
+    this.addItem('danger-remove-discard', '#discard');
+    this.addItem('restore-save', '#save');
+    this.addItem('danger-remove-discard', '#danger-remove');
+    this.addItem('restore-save', '#restore');
     assert(this.addItem('remove', '#remove'));
   }
 
