@@ -404,8 +404,11 @@ const UChar* getFallbackFamily(UChar32 character,
     ASSERT(character);
     ASSERT(fontManager);
     const UChar* family = getFontBasedOnUnicodeBlock(character, fontManager);
-    if (family)
+    if (family) {
+        if (scriptChecked)
+            *scriptChecked = USCRIPT_INVALID_CODE;
         return family;
+    }
 
     UScriptCode script = getScript(character);
 
