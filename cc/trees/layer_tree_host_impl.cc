@@ -405,16 +405,23 @@ bool LayerTreeHostImpl::CanDraw() const {
 }
 
 void LayerTreeHostImpl::Animate() {
+  DCHECK(proxy_->IsImplThread());
   base::TimeTicks monotonic_time = CurrentBeginFrameArgs().frame_time;
 
   // mithro(TODO): Enable these checks.
   // DCHECK(!current_begin_frame_tracker_.HasFinished());
   // DCHECK(monotonic_time == current_begin_frame_tracker_.Current().frame_time)
   //  << "Called animate with unknown frame time!?";
-  if (!root_layer_scroll_offset_delegate_ ||
-      (CurrentlyScrollingLayer() != InnerViewportScrollLayer() &&
-       CurrentlyScrollingLayer() != OuterViewportScrollLayer()))
-    AnimateInput(monotonic_time);
+
+  if (input_handler_client_) {
+    // This animates fling scrolls. But on Android WebView root flings are
+    // controlled by the application, so the compositor does not animate them.
+    bool ignore_fling =
+        settings_.ignore_root_layer_flings && IsCurrentlyScrollingRoot();
+    if (!ignore_fling)
+      input_handler_client_->Animate(monotonic_time);
+  }
+
   AnimatePageScale(monotonic_time);
   AnimateLayers(monotonic_time);
   AnimateScrollbars(monotonic_time);
@@ -474,25 +481,24 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 }
 
 void LayerTreeHostImpl::SetNeedsAnimateInput() {
-  if (root_layer_scroll_offset_delegate_ &&
-      (CurrentlyScrollingLayer() == InnerViewportScrollLayer() ||
-       CurrentlyScrollingLayer() == OuterViewportScrollLayer())) {
-    if (root_layer_animation_callback_.is_null()) {
-      root_layer_animation_callback_ =
-          base::Bind(&LayerTreeHostImpl::AnimateInput, AsWeakPtr());
-    }
-    root_layer_scroll_offset_delegate_->SetNeedsAnimate(
-        root_layer_animation_callback_);
-    return;
-  }
-
+  DCHECK_IMPLIES(IsCurrentlyScrollingRoot(),
+                 !settings_.ignore_root_layer_flings);
   SetNeedsAnimate();
+}
+
+bool LayerTreeHostImpl::IsCurrentlyScrollingRoot() const {
+  LayerImpl* scrolling_layer = CurrentlyScrollingLayer();
+  if (!scrolling_layer)
+    return false;
+  return scrolling_layer == InnerViewportScrollLayer() ||
+         scrolling_layer == OuterViewportScrollLayer();
 }
 
 bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
     const gfx::Point& viewport_point,
-    InputHandler::ScrollInputType type) {
-  if (!CurrentlyScrollingLayer())
+    InputHandler::ScrollInputType type) const {
+  LayerImpl* scrolling_layer_impl = CurrentlyScrollingLayer();
+  if (!scrolling_layer_impl)
     return false;
 
   gfx::PointF device_viewport_point =
@@ -502,20 +508,20 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
   bool scroll_on_main_thread = false;
-  LayerImpl* scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
+  LayerImpl* test_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, type, layer_impl, &scroll_on_main_thread, NULL);
 
-  if (!scrolling_layer_impl)
+  if (!test_layer_impl)
     return false;
 
-  if (CurrentlyScrollingLayer() == scrolling_layer_impl)
+  if (scrolling_layer_impl == test_layer_impl)
     return true;
 
   // For active scrolling state treat the inner/outer viewports interchangeably.
-  if ((CurrentlyScrollingLayer() == InnerViewportScrollLayer() &&
-       scrolling_layer_impl == OuterViewportScrollLayer()) ||
-      (CurrentlyScrollingLayer() == OuterViewportScrollLayer() &&
-       scrolling_layer_impl == InnerViewportScrollLayer())) {
+  if ((scrolling_layer_impl == InnerViewportScrollLayer() &&
+       test_layer_impl == OuterViewportScrollLayer()) ||
+      (scrolling_layer_impl == OuterViewportScrollLayer() &&
+       test_layer_impl == InnerViewportScrollLayer())) {
     return true;
   }
 
@@ -1824,12 +1830,11 @@ LayerImpl* LayerTreeHostImpl::CurrentlyScrollingLayer() const {
 bool LayerTreeHostImpl::IsActivelyScrolling() const {
   if (!CurrentlyScrollingLayer())
     return false;
-  if (root_layer_scroll_offset_delegate_ &&
-      (CurrentlyScrollingLayer() == InnerViewportScrollLayer() ||
-       CurrentlyScrollingLayer() == OuterViewportScrollLayer())) {
-    // ScrollDelegate cannot determine current scroll, so assume no.
+  // On Android WebView root flings are controlled by the application,
+  // so the compositor does not animate them and can't tell if they
+  // are actually animating. So assume there are none.
+  if (settings_.ignore_root_layer_flings && IsCurrentlyScrollingRoot())
     return false;
-  }
   return did_lock_scrolling_layer_;
 }
 
@@ -2773,8 +2778,9 @@ void LayerTreeHostImpl::OnRootLayerDelegatedScrollOffsetChanged() {
   DCHECK(root_layer_scroll_offset_delegate_);
   active_tree_->DistributeRootScrollOffset();
   client_->SetNeedsCommitOnImplThread();
-  SetNeedsRedraw();
   active_tree_->set_needs_update_draw_properties();
+  // No need to SetNeedsRedraw, this is for WebView and every frame has redraw
+  // requested by the WebView embedder already.
 }
 
 void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {
@@ -2996,12 +3002,6 @@ void LayerTreeHostImpl::ScrollViewportBy(gfx::Vector2dF scroll_delta) {
 
   if (!unused_delta.IsZero() && (scroll_layer == OuterViewportScrollLayer()))
     InnerViewportScrollLayer()->ScrollBy(unused_delta);
-}
-
-void LayerTreeHostImpl::AnimateInput(base::TimeTicks monotonic_time) {
-  DCHECK(proxy_->IsImplThread());
-  if (input_handler_client_)
-    input_handler_client_->Animate(monotonic_time);
 }
 
 void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {

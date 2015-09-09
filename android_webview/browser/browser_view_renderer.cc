@@ -418,13 +418,10 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
 }
 
 void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
-  if (pending_fling_animation_.is_null())
+  if (!compositor_)
     return;
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnComputeScroll");
-  DCHECK(!pending_fling_animation_.is_null());
-  AnimationCallback animation = pending_fling_animation_;
-  pending_fling_animation_.Reset();
-  animation.Run(animation_time);
+  compositor_->OnComputeScroll(animation_time);
 }
 
 void BrowserViewRenderer::ReleaseHardware() {
@@ -613,15 +610,6 @@ BrowserViewRenderer::RootLayerStateAsValue(
 
   state->SetDouble("page_scale_factor", page_scale_factor_);
   return state;
-}
-
-void BrowserViewRenderer::SetNeedsAnimateScroll(
-    const AnimationCallback& scroll_animation) {
-  pending_fling_animation_ = scroll_animation;
-  // No need to reschedule the fallback tick here because the compositor is
-  // fine with the animation not being ticked. The invalidate could happen some
-  // time later, or not at all.
-  client_->PostInvalidate();
 }
 
 void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,

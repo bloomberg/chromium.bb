@@ -30,6 +30,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   void SetMemoryPolicy(size_t bytes_limit) override {}
   void DidChangeRootLayerScrollOffset() override {}
   void SetIsActive(bool is_active) override {}
+  void OnComputeScroll(base::TimeTicks animate_time) override {}
 
  private:
   SynchronousCompositorClient* client_;

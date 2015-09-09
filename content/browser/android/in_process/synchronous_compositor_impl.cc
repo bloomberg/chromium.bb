@@ -83,6 +83,7 @@ SynchronousCompositorImpl::SynchronousCompositorImpl(WebContents* contents)
       registered_with_client_(false),
       is_active_(true),
       renderer_needs_begin_frames_(false),
+      need_animate_input_(false),
       weak_ptr_factory_(this) {
   DCHECK(contents);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
@@ -132,6 +133,10 @@ void SynchronousCompositorImpl::RegisterWithClient() {
   // Setting the delegate causes UpdateRootLayerState immediately so do it
   // after setting the client.
   input_handler_->SetRootLayerScrollOffsetDelegate(this);
+  // This disables the input system from animating inputs autonomously, instead
+  // routing all input animations through the SynchronousInputHandler, which is
+  // |this| class.
+  synchronous_input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(this);
 }
 
 // static
@@ -150,17 +155,20 @@ void SynchronousCompositor::SetUseIpcCommandBuffer() {
 void SynchronousCompositorImpl::DidInitializeRendererObjects(
     SynchronousCompositorOutputSurface* output_surface,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
-    cc::InputHandler* input_handler) {
+    cc::InputHandler* input_handler,
+    SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK(!output_surface_);
   DCHECK(!begin_frame_source_);
   DCHECK(output_surface);
   DCHECK(begin_frame_source);
   DCHECK(compositor_client_);
   DCHECK(input_handler);
+  DCHECK(synchronous_input_handler_proxy);
 
   output_surface_ = output_surface;
   begin_frame_source_ = begin_frame_source;
   input_handler_ = input_handler;
+  synchronous_input_handler_proxy_ = synchronous_input_handler_proxy;
 
   output_surface_->SetCompositor(this);
   begin_frame_source_->SetCompositor(this);
@@ -184,6 +192,8 @@ void SynchronousCompositorImpl::DidDestroyRendererObjects() {
   input_handler_ = nullptr;
   begin_frame_source_ = nullptr;
   output_surface_ = nullptr;
+  // Don't propogate this signal from one renderer to the next.
+  need_animate_input_ = false;
 }
 
 scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
@@ -275,6 +285,14 @@ void SynchronousCompositorImpl::SetIsActive(bool is_active) {
   UpdateNeedsBeginFrames();
 }
 
+void SynchronousCompositorImpl::OnComputeScroll(
+    base::TimeTicks animation_time) {
+  if (need_animate_input_) {
+    synchronous_input_handler_proxy_->SynchronouslyAnimate(animation_time);
+    need_animate_input_ = false;
+  }
+}
+
 void SynchronousCompositorImpl::OnNeedsBeginFramesChange(
     bool needs_begin_frames) {
   renderer_needs_begin_frames_ = needs_begin_frames;
@@ -342,6 +360,15 @@ void SynchronousCompositorImpl::DidActivatePendingTree() {
   DeliverMessages();
 }
 
+void SynchronousCompositorImpl::SetNeedsSynchronousAnimateInput() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(compositor_client_);
+  if (!registered_with_client_)
+    return;
+  need_animate_input_ = true;
+  compositor_client_->PostInvalidate();
+}
+
 gfx::ScrollOffset SynchronousCompositorImpl::GetTotalScrollOffset() {
   DCHECK(CalledOnValidThread());
   DCHECK(compositor_client_);
@@ -351,15 +378,6 @@ gfx::ScrollOffset SynchronousCompositorImpl::GetTotalScrollOffset() {
   // ScrollOffset. crbug.com/414283.
   return gfx::ScrollOffset(
       compositor_client_->GetTotalRootLayerScrollOffset());
-}
-
-void SynchronousCompositorImpl::SetNeedsAnimate(
-    const AnimationCallback& animation) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(compositor_client_);
-  if (!registered_with_client_)
-    return;
-  compositor_client_->SetNeedsAnimateScroll(animation);
 }
 
 void SynchronousCompositorImpl::UpdateRootLayerState(

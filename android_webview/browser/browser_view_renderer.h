@@ -108,8 +108,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
                             float page_scale_factor,
                             float min_page_scale_factor,
                             float max_page_scale_factor) override;
-  void SetNeedsAnimateScroll(
-      const AnimationCallback& scroll_animation) override;
   void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
                      gfx::Vector2dF latest_overscroll_delta,
                      gfx::Vector2dF current_fling_velocity) override;
@@ -181,11 +179,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   bool fallback_tick_pending_;
 
   gfx::Size size_;
-
-  // Used to drive a fling animation as requested by the compositor. This acts
-  // as a single-shot animation; the compositor will continually post an
-  // animation callback as long as they're required.
-  AnimationCallback pending_fling_animation_;
 
   // Current scroll offset in CSS pixels.
   gfx::Vector2dF scroll_offset_dip_;

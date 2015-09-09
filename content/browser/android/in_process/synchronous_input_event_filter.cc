@@ -48,10 +48,11 @@ void SynchronousInputEventFilter::SetBoundHandlerOnUIThread(
 
 void SynchronousInputEventFilter::DidAddInputHandler(
     int routing_id,
-    cc::InputHandler* input_handler) {
+    cc::InputHandler* input_handler,
+    SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SynchronousCompositorRegistry::GetInstance()->RegisterInputHandler(
-      routing_id, input_handler);
+      routing_id, input_handler, synchronous_input_handler_proxy);
 }
 
 void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {

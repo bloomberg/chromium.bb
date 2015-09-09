@@ -189,8 +189,10 @@ class CC_EXPORT LayerTreeHostImpl
                                float page_scale,
                                base::TimeDelta duration);
   void SetNeedsAnimateInput() override;
-  bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
-                                   InputHandler::ScrollInputType type) override;
+  bool IsCurrentlyScrollingRoot() const override;
+  bool IsCurrentlyScrollingLayerAt(
+      const gfx::Point& viewport_point,
+      InputHandler::ScrollInputType type) const override;
   bool HaveWheelEventHandlersAt(const gfx::Point& viewport_point) override;
   bool DoTouchEventsBlockScrollAt(const gfx::Point& viewport_port) override;
   scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
@@ -642,7 +644,6 @@ class CC_EXPORT LayerTreeHostImpl
       LayerImpl* scrolling_layer_impl,
       InputHandler::ScrollInputType type);
 
-  void AnimateInput(base::TimeTicks monotonic_time);
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
   void AnimateTopControls(base::TimeTicks monotonic_time);
@@ -742,7 +743,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   // The optional delegate for the root layer scroll offset.
   LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
-  LayerScrollOffsetDelegate::AnimationCallback root_layer_animation_callback_;
 
   const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;

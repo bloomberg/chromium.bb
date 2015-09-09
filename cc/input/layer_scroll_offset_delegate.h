@@ -44,11 +44,6 @@ class LayerScrollOffsetDelegate {
       float min_page_scale_factor,
       float max_page_scale_factor) = 0;
 
-  // This is called by the compositor when a fling hitting the root layer
-  // requires a scheduled animation update.
-  typedef base::Callback<void(base::TimeTicks)> AnimationCallback;
-  virtual void SetNeedsAnimate(const AnimationCallback& animation) = 0;
-
  protected:
   LayerScrollOffsetDelegate() {}
   virtual ~LayerScrollOffsetDelegate() {}

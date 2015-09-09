@@ -25,6 +25,7 @@ class WebInputEvent;
 
 namespace content {
 struct DidOverscrollParams;
+class SynchronousInputHandlerProxy;
 
 class CONTENT_EXPORT InputHandlerManagerClient {
  public:
@@ -42,8 +43,10 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void SetBoundHandler(const Handler& handler) = 0;
 
   // Called from the compositor thread.
-  virtual void DidAddInputHandler(int routing_id,
-                                  cc::InputHandler* input_handler) = 0;
+  virtual void DidAddInputHandler(
+      int routing_id,
+      cc::InputHandler* input_handler,
+      SynchronousInputHandlerProxy* synchronous_handler) = 0;
   virtual void DidRemoveInputHandler(int routing_id) = 0;
   virtual void DidOverscroll(int routing_id,
                              const DidOverscrollParams& params) = 0;

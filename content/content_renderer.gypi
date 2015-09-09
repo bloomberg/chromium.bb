@@ -227,6 +227,7 @@
       'renderer/input/input_scroll_elasticity_controller.h',
       'renderer/input/main_thread_input_event_filter.cc',
       'renderer/input/main_thread_input_event_filter.h',
+      'renderer/input/synchronous_input_handler_proxy.h',
       'renderer/internal_document_state_data.cc',
       'renderer/internal_document_state_data.h',
       'renderer/java/gin_java_bridge_dispatcher.cc',

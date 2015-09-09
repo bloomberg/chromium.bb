@@ -1,0 +1,45 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_RENDERER_INPUT_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_
+#define CONTENT_RENDERER_INPUT_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_
+
+#include "base/time/time.h"
+
+namespace content {
+
+class CONTENT_EXPORT SynchronousInputHandler {
+ public:
+  // Informs the Android WebView embedder that a fling animation is running, and
+  // that it should call SynchronouslyAnimate() if it wants to execute that
+  // animation. The embedder/app may choose to override and ignore the
+  // request for animation.
+  virtual void SetNeedsSynchronousAnimateInput() = 0;
+};
+
+// Android WebView requires synchronous scrolling from the WebView application.
+// This interface provides support for that behaviour. The WebView embedder will
+// act as the InputHandler for controlling the timing of input (fling)
+// animations.
+class CONTENT_EXPORT SynchronousInputHandlerProxy {
+ public:
+  // Tell the proxy that we will control the timing of root fling animations
+  // from the SynchronousInputHandler. Once this is set, the InputHandler is
+  // not requested to Animate() the InputHandlerProxy for root layer flings.
+  // Instead, requests for animation will go to the SynchronousInputHandler and
+  // animation ticks will only come back through SynchronouslyAnimate().
+  // Non-root flings are not affected.
+  virtual void SetOnlySynchronouslyAnimateRootFlings(
+      SynchronousInputHandler* synchronous_input_handler) = 0;
+
+  // Tick input (fling) animations. This may happen out of phase with the frame
+  // timing, or not at all, as it is controlled by the WebView application. When
+  // it returns, it expects the animation scroll offsets to be visible to the
+  // application.
+  virtual void SynchronouslyAnimate(base::TimeTicks time) = 0;
+};
+
+}  // namespace content
+
+#endif  // CONTENT_RENDERER_INPUT_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_

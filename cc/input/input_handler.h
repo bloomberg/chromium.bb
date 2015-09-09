@@ -143,9 +143,13 @@ class CC_EXPORT InputHandler {
   // Request another callback to InputHandlerClient::Animate().
   virtual void SetNeedsAnimateInput() = 0;
 
+  // If there is a scroll active, this reports whether the scroll is on the
+  // root layer, or on some other sublayer.
+  virtual bool IsCurrentlyScrollingRoot() const = 0;
+
   // Whether the layer under |viewport_point| is the currently scrolling layer.
   virtual bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
-                                           ScrollInputType type) = 0;
+                                           ScrollInputType type) const = 0;
 
   virtual bool HaveWheelEventHandlersAt(const gfx::Point& viewport_point) = 0;
 

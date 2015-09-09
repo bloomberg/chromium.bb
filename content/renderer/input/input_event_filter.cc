@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/input/input_handler.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
@@ -56,8 +55,10 @@ void InputEventFilter::SetBoundHandler(const Handler& handler) {
   handler_ = handler;
 }
 
-void InputEventFilter::DidAddInputHandler(int routing_id,
-                                          cc::InputHandler* input_handler) {
+void InputEventFilter::DidAddInputHandler(
+    int routing_id,
+    cc::InputHandler* input_handler,
+    SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
 }

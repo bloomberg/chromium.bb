@@ -185,6 +185,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
     : client_(client),
       input_handler_(input_handler),
       deferred_fling_cancel_time_seconds_(0),
+      synchronous_input_handler_(nullptr),
+      allow_root_animate_(true),
 #ifndef NDEBUG
       expect_scroll_update_end_(false),
 #endif
@@ -551,7 +553,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
           WebPoint(gesture_event.globalX, gesture_event.globalY);
       fling_parameters_.modifiers = gesture_event.modifiers;
       fling_parameters_.sourceDevice = gesture_event.sourceDevice;
-      input_handler_->SetNeedsAnimateInput();
+      RequestAnimation();
       return DID_HANDLE;
     }
     case cc::InputHandler::SCROLL_UNKNOWN:
@@ -751,6 +753,11 @@ void InputHandlerProxy::ExtendBoostedFlingTimeout(
 }
 
 void InputHandlerProxy::Animate(base::TimeTicks time) {
+  // If using synchronous animate, then only expect Animate attempts started by
+  // the synchronous system. Don't let the InputHandler try to Animate also.
+  DCHECK_IMPLIES(input_handler_->IsCurrentlyScrollingRoot(),
+                 allow_root_animate_);
+
   if (scroll_elasticity_controller_)
     scroll_elasticity_controller_->Animate(time);
 
@@ -777,7 +784,7 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
         monotonic_time_sec >= fling_parameters_.startTime +
                                   kMaxSecondsFromFlingTimestampToFirstAnimate) {
       fling_parameters_.startTime = monotonic_time_sec;
-      input_handler_->SetNeedsAnimateInput();
+      RequestAnimation();
       return;
     }
   }
@@ -790,7 +797,7 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     fling_is_active = false;
 
   if (fling_is_active) {
-    input_handler_->SetNeedsAnimateInput();
+    RequestAnimation();
   } else {
     TRACE_EVENT_INSTANT0("input",
                          "InputHandlerProxy::animate::flingOver",
@@ -807,6 +814,21 @@ void InputHandlerProxy::MainThreadHasStoppedFlinging() {
 void InputHandlerProxy::ReconcileElasticOverscrollAndRootScroll() {
   if (scroll_elasticity_controller_)
     scroll_elasticity_controller_->ReconcileStretchAndScroll();
+}
+
+void InputHandlerProxy::SetOnlySynchronouslyAnimateRootFlings(
+    SynchronousInputHandler* synchronous_input_handler) {
+  allow_root_animate_ = false;
+  synchronous_input_handler_ = synchronous_input_handler;
+}
+
+void InputHandlerProxy::SynchronouslyAnimate(base::TimeTicks time) {
+  // When this function is used, SetOnlySynchronouslyAnimate() should have been
+  // previously called. IOW you should either be entirely in synchronous mode or
+  // not.
+  DCHECK(!allow_root_animate_);
+  base::AutoReset<bool> reset(&allow_root_animate_, true);
+  Animate(time);
 }
 
 void InputHandlerProxy::HandleOverscroll(
@@ -886,6 +908,16 @@ bool InputHandlerProxy::CancelCurrentFlingWithoutNotifyingClient() {
   }
 
   return had_fling_animation;
+}
+
+void InputHandlerProxy::RequestAnimation() {
+  // When a SynchronousInputHandler is present, root flings should go through
+  // it to allow it to control when or if the root fling is animated. Non-root
+  // flings always go through the normal InputHandler.
+  if (synchronous_input_handler_ && input_handler_->IsCurrentlyScrollingRoot())
+    synchronous_input_handler_->SetNeedsSynchronousAnimateInput();
+  else
+    input_handler_->SetNeedsAnimateInput();
 }
 
 bool InputHandlerProxy::TouchpadFlingScroll(

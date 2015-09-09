@@ -17,6 +17,7 @@ namespace content {
 class SynchronousCompositorExternalBeginFrameSource;
 class SynchronousCompositorImpl;
 class SynchronousCompositorOutputSurface;
+class SynchronousInputHandlerProxy;
 
 class SynchronousCompositorRegistry {
  public:
@@ -40,7 +41,8 @@ class SynchronousCompositorRegistry {
       SynchronousCompositorOutputSurface* output_surface);
   void RegisterInputHandler(
       int routing_id,
-      cc::InputHandler* input_handler);
+      cc::InputHandler* input_handler,
+      SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
   void UnregisterInputHandler(int routing_id);
 
  private:
@@ -53,6 +55,7 @@ class SynchronousCompositorRegistry {
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source;
     SynchronousCompositorOutputSurface* output_surface;
     cc::InputHandler* input_handler;
+    SynchronousInputHandlerProxy* synchronous_input_handler_proxy;
 
     Entry();
     bool IsReady();
