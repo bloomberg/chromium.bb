@@ -1641,10 +1641,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
 // Chromeos defaults to restoring the last session, so this test isn't
 // applicable.
 #if !defined(OS_CHROMEOS)
-#if defined(OS_MACOSX)
-// Crashy, http://crbug.com/38522
-#define RestorePinnedTabs DISABLED_RestorePinnedTabs
-#endif
 // Makes sure pinned tabs are restored correctly on start.
 IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   ASSERT_TRUE(test_server()->Start());
