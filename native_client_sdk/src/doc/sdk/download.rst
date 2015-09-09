@@ -9,7 +9,7 @@ downloading and installing the SDK.
 .. raw:: html
   
   <div id="home">
-  <a class="button-nacl button-download" href="http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip">Download SDK Zip File</a>
+  <a class="button-nacl button-download" href="https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip">Download SDK Zip File</a>
   </div>
 
 .. _sdk-overview:
@@ -48,10 +48,10 @@ not yet supported.
   
 * On Mac and Linux, Python is likely preinstalled. Run the command ``python -V``
   in a terminal window, and make sure that the version you have is 2.7.x.
-* On Windows, you may need to install Python. Go to `http://www.python.org/
-  download/ <http://www.python.org/download/>`_ and select the latest 2.x
+* On Windows, you may need to install Python. Go to `https://www.python.org/
+  download/ <https://www.python.org/download/>`_ and select the latest 2.x
   version. In addition, be sure to add the Python directory (for example,
-  ``C:\python27``) to the ``PATH`` `environment variable <http://en.wikipedia.
+  ``C:\python27``) to the ``PATH`` `environment variable <https://en.wikipedia.
   org/wiki/Environment_variable>`_. Run ``python -V`` from a command line to
   verify that you properly configured the PATH variable.
 
@@ -65,11 +65,7 @@ Make
   several other useful tools, is to install `Xcode Developer Tools 
   <https://developer.apple.com/technologies/tools/>`_. After installing Xcode,
   go to the XCode menu, open the Preferences dialog box then select Downloads
-  and Components. Verify that Command Line Tools are installed. If you'd rather
-  not install Xcode, you can download and build an `open source version 
-  <http://mac.softpedia.com/dyn-postdownload.php?p=44632&t=4&i=1>`_ of ``make``.
-  To build the program you may also need to download and install `gcc 
-  <https://github.com/kennethreitz/osx-gcc-installer>`_.
+  and Components. Verify that Command Line Tools are installed.
 * On Windows, the Native Client SDK includes a copy of GNU Make.
 
 .. _platforms:
@@ -107,7 +103,7 @@ Downloading and Unzipping
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Download the `SDK update zip file
-   <http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip>`_.
+   <https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip>`_.
 
 #. Unzip the file:
 
