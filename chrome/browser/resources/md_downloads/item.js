@@ -65,6 +65,13 @@ cr.define('downloads', function() {
         },
       },
 
+      isActive_: {
+        computed: 'computeIsActive_(' +
+            'data_.state, data_.file_externally_removed)',
+        type: Boolean,
+        value: true,
+      },
+
       isDangerous_: {
         computed: 'computeIsDangerous_(data_.state)',
         type: Boolean,
@@ -140,31 +147,18 @@ cr.define('downloads', function() {
         this.set('data_.' + key, data[key]);
       }
 
-      /** @const */ var isActive =
-          data.state != downloads.States.CANCELLED &&
-          data.state != downloads.States.INTERRUPTED &&
-          !data.file_externally_removed;
-      this.$.content.classList.toggle('is-active', isActive);
-      this.$.content.elevation = isActive ? 1 : 0;
-
-      // Danger-dependent UI and controls.
+      // TODO(dbeam): Move to a computeClass_() method + data binding.
+      this.$.content.classList.toggle('is-active', this.isActive_);
       this.$.content.classList.toggle('dangerous', this.isDangerous_);
-
-      var description = this.getDangerText_(data) || this.getStatusText_(data);
-
-      // Status goes in the "tag" (next to the file name) if there's no file.
-      this.ensureTextIs_(this.$.description, isActive ? description : '');
-      this.ensureTextIs_(this.$.tag, isActive ? '' : description);
-
       this.$.content.classList.toggle('show-progress', this.showProgress_);
 
+      var desc = this.getDangerText_(data) || this.getStatusText_(data);
+
+      // Status goes in the "tag" (next to the file name) if there's no file.
+      this.ensureTextIs_(this.$.description, this.isActive_ ? desc : '');
+      this.ensureTextIs_(this.$.tag, this.isActive_ ? '' : desc);
+
       if (!this.isDangerous_) {
-        this.$['file-link'].href = data.url;
-        this.ensureTextIs_(this.$['file-link'], data.file_name);
-
-        this.$['file-link'].hidden = !this.completelyOnDisk_;
-        this.$.name.hidden = this.completelyOnDisk_;
-
         /** @const */ var controlledByExtension = data.by_ext_id &&
                                                   data.by_ext_name;
         this.$['controlled-by'].hidden = !controlledByExtension;
@@ -189,6 +183,18 @@ cr.define('downloads', function() {
     computeDate_: function() {
       assert(!this.hideDate);
       return assert(this.data_.since_string || this.data_.date_string);
+    },
+
+    /** @private */
+    computeElevation_: function() {
+      return this.isActive_ ? 1 : 0;
+    },
+
+    /** @private */
+    computeIsActive_: function() {
+      return this.data_.state != downloads.States.CANCELLED &&
+             this.data_.state != downloads.States.INTERRUPTED &&
+             !this.data_.file_externally_removed;
     },
 
     /** @private */

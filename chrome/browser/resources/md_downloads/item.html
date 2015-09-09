@@ -17,21 +17,26 @@
       </template>
     </div>
 
-    <paper-material id="content" on-dragstart="onDragStart_">
+    <paper-material id="content" on-dragstart="onDragStart_"
+        elevation$="[[computeElevation_(isActive_)]]">
       <div id="file-icon-wrapper" class="icon-wrapper">
-        <img class="icon" id="file-icon" alt="" hidden="[[isDangerous_]]">
-        <div class="icon" id="warning" hidden="[[!isDangerous_]]"></div>
+        <img class="icon" id="file-icon" alt="" hidden$="[[isDangerous_]]">
+        <div class="icon" id="warning" hidden$="[[!isDangerous_]]"></div>
       </div>
 
       <div id="details">
-        <div id="title-area"><!-- Can't have any line breaks.
-          --><a is="action-link" id="file-link"
-              on-click="onFileLinkClick_"></a><!-- Before #name.
-          --><span id="name">[[data_.file_name]]</span>
+        <div id="title-area"><!--
+          Can't have any line breaks.
+          --><a is="action-link" id="file-link" href$="[[data_.url]]"
+              on-click="onFileLinkClick_"
+              hidden$="[[!completelyOnDisk_]]">[[data_.file_name]]</a><!--
+          Before #name.
+          --><span id="name"
+              hidden$="[[completelyOnDisk_]]">[[data_.file_name]]</span>
           <span id="tag"></span>
         </div>
 
-        <a id="url" target="_blank" href="[[data_.url]]">[[data_.url]]</a>
+        <a id="url" target="_blank" href$="[[data_.url]]">[[data_.url]]</a>
 
         <div id="description"></div>
 
