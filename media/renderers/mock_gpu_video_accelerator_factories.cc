@@ -4,6 +4,7 @@
 
 #include "media/renderers/mock_gpu_video_accelerator_factories.h"
 
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
@@ -13,16 +14,23 @@ namespace {
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   GpuMemoryBufferImpl(const gfx::Size& size, gfx::BufferFormat format)
-      : format_(format), size_(size) {
+      : format_(format), size_(size),
+        num_planes_(gfx::NumberOfPlanesForBufferFormat(format)) {
     DCHECK(gfx::BufferFormat::R_8 == format_ ||
+           gfx::BufferFormat::YUV_420_BIPLANAR == format_ ||
            gfx::BufferFormat::UYVY_422 == format_);
-    bytes_.resize(size_.GetArea() *
-                  (format_ == gfx::BufferFormat::UYVY_422 ? 2 : 1));
+    DCHECK(num_planes_ <= kMaxPlanes);
+    for (int i = 0; i < static_cast<int>(num_planes_); ++i) {
+      bytes_[i].resize(
+          gfx::RowSizeForBufferFormat(size_.width(), format_, i) *
+          size_.height() / gfx::SubsamplingFactorForBufferFormat(format_, i));
+    }
   }
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override {
-    data[0] = &bytes_[0];
+    for (size_t plane = 0; plane < num_planes_; ++plane)
+      data[plane] = &bytes_[plane][0];
     return true;
   }
   void Unmap() override{};
@@ -31,12 +39,13 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     return false;
   }
   gfx::BufferFormat GetFormat() const override {
-    NOTREACHED();
-    return gfx::BufferFormat::R_8;
+    return format_;
   }
-  void GetStride(int* stride) const override {
-    stride[0] =
-        size_.width() * (format_ == gfx::BufferFormat::UYVY_422 ? 2 : 1);
+  void GetStride(int* strides) const override {
+    for (int plane = 0; plane < static_cast<int>(num_planes_); ++plane) {
+      strides[plane] = static_cast<int>(
+          gfx::RowSizeForBufferFormat(size_.width(), format_, plane));
+    }
   }
   gfx::GpuMemoryBufferId GetId() const override {
     NOTREACHED();
@@ -51,9 +60,12 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
  private:
+  static const size_t kMaxPlanes = 3;
+
   gfx::BufferFormat format_;
-  std::vector<unsigned char> bytes_;
   const gfx::Size size_;
+  size_t num_planes_;
+  std::vector<uint8> bytes_[kMaxPlanes];
 };
 
 }  // unnamed namespace

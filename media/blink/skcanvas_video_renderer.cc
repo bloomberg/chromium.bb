@@ -137,6 +137,7 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameNative(
     VideoFrame* video_frame,
     const Context3D& context_3d) {
   DCHECK(PIXEL_FORMAT_ARGB == video_frame->format() ||
+         PIXEL_FORMAT_NV12 == video_frame->format() ||
          PIXEL_FORMAT_UYVY == video_frame->format());
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
