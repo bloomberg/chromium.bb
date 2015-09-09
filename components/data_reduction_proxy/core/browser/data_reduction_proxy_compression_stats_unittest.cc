@@ -10,6 +10,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -35,6 +36,23 @@ int64 GetListPrefInt64Value(
   return value;
 }
 
+class DataUsageLoadVerifier {
+ public:
+  DataUsageLoadVerifier(
+      scoped_ptr<std::vector<data_reduction_proxy::DataUsageBucket>> expected) {
+    expected_ = expected.Pass();
+  }
+
+  void OnLoadDataUsage(
+      scoped_ptr<std::vector<data_reduction_proxy::DataUsageBucket>> actual) {
+    EXPECT_EQ(expected_->size(), actual->size());
+    // TODO(kundaji): Check for equality when DataUsageBucket format firms up.
+  }
+
+ private:
+  scoped_ptr<std::vector<data_reduction_proxy::DataUsageBucket>> expected_;
+};
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -52,9 +70,7 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
   }
 
   void SetUp() override {
-    drp_test_context_ = DataReductionProxyTestContext::Builder()
-                            .WithMockDataReductionProxyService()
-                            .Build();
+    drp_test_context_ = DataReductionProxyTestContext::Builder().Build();
 
     compression_stats_.reset(new DataReductionProxyCompressionStats(
         data_reduction_proxy_service(), pref_service(), base::TimeDelta()));
@@ -336,6 +352,22 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     RecordContentLengthPrefs(received_content_length, original_content_length,
                              with_data_reduction_proxy_enabled, request_type,
                              "application/octet-stream", now);
+  }
+
+  void RecordDataUsage(const std::string& data_usage_host,
+                       int64 data_used,
+                       int64 original_size) {
+    compression_stats_->RecordDataUsage(data_usage_host, data_used,
+                                        original_size);
+  }
+
+  void GetHistoricalDataUsage(
+      const HistoricalDataUsageCallback& onLoadDataUsage) {
+    compression_stats_->GetHistoricalDataUsage(onLoadDataUsage);
+  }
+
+  void EnableDataUsageReporting() {
+    pref_service()->SetBoolean(prefs::kDataUsageReportingEnabled, true);
   }
 
   DataReductionProxyCompressionStats* compression_stats() {
@@ -965,6 +997,20 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordUma) {
                             100, 1);
   tester.ExpectUniqueSample(
       "Net.DailyContentPercent_DataReductionProxyEnabled_Unknown", 0, 1);
+}
+
+TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsage) {
+  EnableDataUsageReporting();
+  base::RunLoop().RunUntilIdle();
+
+  RecordDataUsage("https://www.google.com", 1000, 1250);
+
+  DataUsageLoadVerifier verifier(make_scoped_ptr(
+      new std::vector<data_reduction_proxy::DataUsageBucket>(5760)));
+
+  GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
+                                    base::Unretained(&verifier)));
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace data_reduction_proxy

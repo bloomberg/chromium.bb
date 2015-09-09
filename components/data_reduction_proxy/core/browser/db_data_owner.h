@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DB_SERVICE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DB_SERVICE_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -18,8 +20,13 @@ class DataStore;
 class DataUsageBucket;
 class DataUsageStore;
 
+// Callback for loading the historical data usage.
+typedef base::Callback<void(scoped_ptr<std::vector<DataUsageBucket>>)>
+    HistoricalDataUsageCallback;
+
+// Callback for loading data usage for the current bucket.
 typedef base::Callback<void(scoped_ptr<DataUsageBucket>)>
-    OnLoadDataUsageBucketCallback;
+    LoadCurrentDataUsageCallback;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the DB task runner.
@@ -30,6 +37,9 @@ class DBDataOwner {
 
   // Initializes all the DB objects. Must be called on the DB task runner.
   void InitializeOnDBThread();
+
+  // Loads data usage history stored in |DataStore|.
+  void LoadHistoricalDataUsage(std::vector<DataUsageBucket>* data_usage);
 
   // Loads the last stored data usage bucket from |DataStore| into |bucket|.
   void LoadCurrentDataUsageBucket(DataUsageBucket* bucket);

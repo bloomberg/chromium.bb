@@ -121,8 +121,10 @@ class DataReductionProxyService
   // Virtual for testing.
   virtual void SetProxyPrefs(bool enabled, bool at_startup);
 
+  void LoadHistoricalDataUsage(
+      const HistoricalDataUsageCallback& load_data_usage_callback);
   void LoadCurrentDataUsageBucket(
-      const OnLoadDataUsageBucketCallback& onLoadDataUsageBucket);
+      const LoadCurrentDataUsageCallback& load_current_data_usage_callback);
   void StoreCurrentDataUsageBucket(scoped_ptr<DataUsageBucket> current);
 
   // Methods for adding/removing observers on |this|.

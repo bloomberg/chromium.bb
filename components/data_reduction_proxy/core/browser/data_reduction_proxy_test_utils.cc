@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 
+#include <map>
+
 #include "base/prefs/testing_pref_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
@@ -217,6 +219,28 @@ void TestDataReductionProxyIOData::SetDataReductionProxyService(
         data_reduction_proxy_service);
 
   service_set_ = true;
+}
+
+TestDataStore::TestDataStore() {}
+
+TestDataStore::~TestDataStore() {}
+
+DataStore::Status TestDataStore::Get(const std::string& key,
+                                     std::string* value) {
+  auto value_iter = map_.find(key);
+  if (value_iter == map_.end())
+    return NOT_FOUND;
+
+  value->assign(value_iter->second);
+  return OK;
+}
+
+DataStore::Status TestDataStore::Put(
+    const std::map<std::string, std::string>& map) {
+  for (auto iter = map.begin(); iter != map.end(); ++iter)
+    map_[iter->first] = iter->second;
+
+  return OK;
 }
 
 DataReductionProxyTestContext::Builder::Builder()

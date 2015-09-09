@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
+#include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "net/base/network_change_notifier.h"
@@ -111,6 +112,14 @@ class DataReductionProxyCompressionStats
                          int64* received_content_length,
                          int64* last_update_time);
 
+  // Calls |get_data_usage_callback| with full data usage history. In-memory
+  // data usage stats are flushed to storage before querying for full history.
+  // An empty vector will be returned if "data_usage_reporting.enabled" pref is
+  // not enabled or if called immediately after enabling the pref before
+  // in-memory stats could be initialized from storage.
+  void GetHistoricalDataUsage(
+      const HistoricalDataUsageCallback& get_data_usage_callback);
+
   // Called by |net::NetworkChangeNotifier| when network type changes. Used to
   // keep track of connection type for reporting data usage breakdown by
   // connection type.
@@ -120,11 +129,11 @@ class DataReductionProxyCompressionStats
   // Callback from loading detailed data usage. Initializes in memory data
   // structures used to collect data usage. |data_usage| contains the data usage
   // for the last stored interval.
-  void OnDataUsageLoaded(scoped_ptr<DataUsageBucket> data_usage);
+  void OnCurrentDataUsageLoaded(scoped_ptr<DataUsageBucket> data_usage);
 
  private:
   // Enum to track the state of loading data usage from storage.
-  enum DataUsageLoadStatus { NOT_LOADED = 0, LOADING = 1, LOADED = 2 };
+  enum CurrentDataUsageLoadStatus { NOT_LOADED = 0, LOADING = 1, LOADED = 2 };
 
   friend class DataReductionProxyCompressionStatsTest;
 
@@ -238,7 +247,7 @@ class DataReductionProxyCompressionStats
   bool data_usage_map_is_dirty_;
 
   // Tracks state of loading data usage from storage.
-  DataUsageLoadStatus data_usage_loaded_;
+  CurrentDataUsageLoadStatus current_data_usage_load_status_;
 
   base::OneShotTimer<DataReductionProxyCompressionStats> pref_writer_timer_;
   base::ThreadChecker thread_checker_;

@@ -14,14 +14,12 @@
 #include <stdlib.h>
 
 #include <algorithm>
-#include <map>
 #include <string>
 #include <utility>
 
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 
 namespace {
@@ -74,6 +72,19 @@ DataUsageStore::~DataUsageStore() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 }
 
+void DataUsageStore::LoadDataUsage(std::vector<DataUsageBucket>* data_usage) {
+  DCHECK(data_usage);
+  DataUsageBucket empty_bucket;
+  data_usage->clear();
+  data_usage->resize(kNumDataUsageBuckets, empty_bucket);
+
+  for (int i = 0; i < kNumDataUsageBuckets; ++i) {
+    int circular_array_index =
+        (i + current_bucket_index_ + 1) % kNumDataUsageBuckets;
+    LoadBucketAtIndex(circular_array_index, &data_usage->at(i));
+  }
+}
+
 void DataUsageStore::LoadCurrentDataUsageBucket(DataUsageBucket* current) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(current);
@@ -90,19 +101,8 @@ void DataUsageStore::LoadCurrentDataUsageBucket(DataUsageBucket* current) {
   DCHECK_GE(current_bucket_index_, 0);
   DCHECK_LT(current_bucket_index_, kNumDataUsageBuckets);
 
-  std::string bucket_key = DbKeyForBucketIndex(current_bucket_index_);
-  std::string bucket_as_string;
-  DataStore::Status bucket_read_status =
-      db_->Get(bucket_key, &bucket_as_string);
-  if ((bucket_read_status != DataStore::Status::OK &&
-       bucket_read_status != DataStore::NOT_FOUND)) {
-    LOG(WARNING) << "Failed to read data usage bucket from LevelDB: "
-                 << bucket_read_status;
-  }
-
-  if (bucket_read_status == DataStore::Status::OK) {
-    bool parse_successful = current->ParseFromString(bucket_as_string);
-    DCHECK(parse_successful);
+  DataStore::Status status = LoadBucketAtIndex(current_bucket_index_, current);
+  if (status == DataStore::Status::OK) {
     current_bucket_last_updated_ =
         base::Time::FromInternalValue(current->last_updated_timestamp());
   }
@@ -125,18 +125,14 @@ void DataUsageStore::StoreCurrentDataUsageBucket(
   base::Time last_updated =
       base::Time::FromInternalValue(current.last_updated_timestamp());
   std::map<std::string, std::string> buckets_to_save;
-  int num_buckets_since_last_saved = NumBucketsSinceLastSaved(last_updated);
+  int num_buckets_since_last_saved = BucketOffsetFromLastSaved(last_updated);
   DataUsageBucket empty_bucket;
-  for (int i = 0; i < num_buckets_since_last_saved; ++i) {
-    AddBucketToMap(empty_bucket, &buckets_to_save);
+  for (int i = 0; i < num_buckets_since_last_saved - 1; ++i)
+    GenerateKeyAndAddToMap(empty_bucket, &buckets_to_save, true);
 
-    current_bucket_index_++;
-    DCHECK(current_bucket_index_ <= kNumDataUsageBuckets);
-    if (current_bucket_index_ == kNumDataUsageBuckets)
-      current_bucket_index_ = 0;
-  }
+  GenerateKeyAndAddToMap(current, &buckets_to_save,
+                         num_buckets_since_last_saved > 0);
 
-  AddBucketToMap(current, &buckets_to_save);
   current_bucket_last_updated_ =
       base::Time::FromInternalValue(current.last_updated_timestamp());
 
@@ -161,8 +157,17 @@ bool DataUsageStore::IsInCurrentInterval(const base::Time& time) {
   return BucketLowerBoundary(base::Time::Now()) == BucketLowerBoundary(time);
 }
 
-void DataUsageStore::AddBucketToMap(const DataUsageBucket& bucket,
-                                    std::map<std::string, std::string>* map) {
+void DataUsageStore::GenerateKeyAndAddToMap(
+    const DataUsageBucket& bucket,
+    std::map<std::string, std::string>* map,
+    bool increment_current_index) {
+  if (increment_current_index) {
+    current_bucket_index_++;
+    DCHECK(current_bucket_index_ <= kNumDataUsageBuckets);
+    if (current_bucket_index_ == kNumDataUsageBuckets)
+      current_bucket_index_ = 0;
+  }
+
   std::string bucket_key = DbKeyForBucketIndex(current_bucket_index_);
 
   std::string bucket_value;
@@ -172,17 +177,36 @@ void DataUsageStore::AddBucketToMap(const DataUsageBucket& bucket,
   map->insert(std::pair<std::string, std::string>(bucket_key, bucket_value));
 }
 
-int DataUsageStore::NumBucketsSinceLastSaved(
-    base::Time new_last_updated_timestamp) const {
+int DataUsageStore::BucketOffsetFromLastSaved(
+    const base::Time& new_last_updated_timestamp) const {
   if (current_bucket_last_updated_.is_null())
     return 0;
 
   base::TimeDelta time_delta =
       BucketLowerBoundary(new_last_updated_timestamp) -
       BucketLowerBoundary(current_bucket_last_updated_);
-  int num_buckets_skipped =
-      time_delta.InMinutes() / kDataUsageBucketLengthInMinutes;
-  return std::min(num_buckets_skipped, kNumDataUsageBuckets - 1);
+  int offset_from_last_saved =
+      (time_delta.InMinutes() / kDataUsageBucketLengthInMinutes);
+  return std::min(offset_from_last_saved, kNumDataUsageBuckets);
+}
+
+DataStore::Status DataUsageStore::LoadBucketAtIndex(int index,
+                                                    DataUsageBucket* bucket) {
+  DCHECK(index >= 0 && index < kNumDataUsageBuckets);
+
+  std::string bucket_as_string;
+  DataStore::Status bucket_read_status =
+      db_->Get(DbKeyForBucketIndex(index), &bucket_as_string);
+  if ((bucket_read_status != DataStore::Status::OK &&
+       bucket_read_status != DataStore::NOT_FOUND)) {
+    LOG(WARNING) << "Failed to read data usage bucket from LevelDB: "
+                 << bucket_read_status;
+  }
+  if (bucket_read_status == DataStore::Status::OK) {
+    bool parse_successful = bucket->ParseFromString(bucket_as_string);
+    DCHECK(parse_successful);
+  }
+  return bucket_read_status;
 }
 
 }  // namespace data_reduction_proxy

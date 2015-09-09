@@ -7,9 +7,11 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "components/data_reduction_proxy/core/browser/data_store.h"
 
 namespace base {
 
@@ -28,6 +30,9 @@ class DataUsageStore {
   explicit DataUsageStore(DataStore* db);
 
   ~DataUsageStore();
+
+  // Loads the historic data usage into |data_usage|.
+  void LoadDataUsage(std::vector<DataUsageBucket>* data_usage);
 
   // Loads the data usage bucket for the current interval into |current_bucket|.
   // This method must be called at least once before any calls to
@@ -49,13 +54,22 @@ class DataUsageStore {
   friend class DataUsageStoreTest;
 
   // Converts the given |bucket| into a string format for persistance to
-  // |DataReductionProxyStore| and add to the map.
-  void AddBucketToMap(const DataUsageBucket& bucket,
-                      std::map<std::string, std::string>* map);
+  // |DataReductionProxyStore| and adds it to the map. The key is generated
+  // based on |current_bucket_index_|.
+  // |current_bucket_index_| will be incremented before generating the key if
+  // |increment_current_index| is true.
+  void GenerateKeyAndAddToMap(const DataUsageBucket& bucket,
+                              std::map<std::string, std::string>* map,
+                              bool increment_current_index);
 
-  // Returns the number of buckets between the current interval bucket and the
-  // last bucket that was persisted to the store.
-  int NumBucketsSinceLastSaved(base::Time current) const;
+  // Returns the offset between the bucket for |current| time and the last
+  // bucket that was persisted to the store. Eg: Returns 0 if |current| is in
+  // the last persisted bucket. Returns 1 if |current| belongs to the bucket
+  // immediately after the last persisted bucket.
+  int BucketOffsetFromLastSaved(const base::Time& current) const;
+
+  // Loads the data usage bucket at the given index.
+  DataStore::Status LoadBucketAtIndex(int index, DataUsageBucket* current);
 
   // The store to persist data usage information.
   DataStore* db_;

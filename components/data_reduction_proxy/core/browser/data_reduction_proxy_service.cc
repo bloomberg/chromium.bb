@@ -255,15 +255,27 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
                             enabled, at_startup));
 }
 
+void DataReductionProxyService::LoadHistoricalDataUsage(
+    const HistoricalDataUsageCallback& load_data_usage_callback) {
+  scoped_ptr<std::vector<DataUsageBucket>> data_usage(
+      new std::vector<DataUsageBucket>());
+  std::vector<DataUsageBucket>* data_usage_ptr = data_usage.get();
+  db_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(&DBDataOwner::LoadHistoricalDataUsage,
+                            db_data_owner_->GetWeakPtr(),
+                            base::Unretained(data_usage_ptr)),
+      base::Bind(load_data_usage_callback, base::Passed(&data_usage)));
+}
+
 void DataReductionProxyService::LoadCurrentDataUsageBucket(
-    const OnLoadDataUsageBucketCallback& onLoadDataUsageBucket) {
+    const LoadCurrentDataUsageCallback& load_current_data_usage_callback) {
   scoped_ptr<DataUsageBucket> bucket(new DataUsageBucket());
   DataUsageBucket* bucket_ptr = bucket.get();
   db_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DBDataOwner::LoadCurrentDataUsageBucket,
                  db_data_owner_->GetWeakPtr(), base::Unretained(bucket_ptr)),
-      base::Bind(onLoadDataUsageBucket, base::Passed(&bucket)));
+      base::Bind(load_current_data_usage_callback, base::Passed(&bucket)));
 }
 
 void DataReductionProxyService::StoreCurrentDataUsageBucket(

@@ -20,6 +20,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "net/base/backoff_entry.h"
 #include "net/log/test_net_log.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -196,6 +197,25 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
  private:
   // Allowed SetDataReductionProxyService to be re-entrant.
   bool service_set_;
+};
+
+// Test version of |DataStore|. Uses an in memory hash map to store data.
+class TestDataStore : public data_reduction_proxy::DataStore {
+ public:
+  TestDataStore();
+
+  ~TestDataStore() override;
+
+  void InitializeOnDBThread() override {}
+
+  DataStore::Status Get(const std::string& key, std::string* value) override;
+
+  DataStore::Status Put(const std::map<std::string, std::string>& map) override;
+
+  std::map<std::string, std::string>* map() { return &map_; }
+
+ private:
+  std::map<std::string, std::string> map_;
 };
 
 // Builds a test version of the Data Reduction Proxy stack for use in tests.

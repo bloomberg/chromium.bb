@@ -29,6 +29,13 @@ void DBDataOwner::InitializeOnDBThread() {
   store_->InitializeOnDBThread();
 }
 
+void DBDataOwner::LoadHistoricalDataUsage(
+    std::vector<DataUsageBucket>* data_usage) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
+  data_usage_->LoadDataUsage(data_usage);
+}
+
 void DBDataOwner::LoadCurrentDataUsageBucket(DataUsageBucket* bucket) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
