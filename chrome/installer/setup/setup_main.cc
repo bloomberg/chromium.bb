@@ -66,6 +66,7 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/user_experiment.h"
+#include "version.h"  // NOLINT
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/installer/util/updating_app_registration_data.h"
@@ -1172,21 +1173,18 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
 // Returns the Custom information for the client identified by the exe path
 // passed in. This information is used for crash reporting.
 google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* exe_path) {
-  base::string16 product;
   base::string16 version;
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(base::FilePath(exe_path)));
-  if (version_info.get()) {
+  if (version_info.get())
     version = version_info->product_version();
-    product = version_info->product_short_name();
-  }
 
   if (version.empty())
     version = L"0.1.0.0";
 
-  if (product.empty())
-    product = L"Chrome Installer";
-
+  // Report crashes under the same product name as the browser. This string
+  // MUST match server-side configuration.
+  base::string16 product(base::ASCIIToUTF16(PRODUCT_SHORTNAME_STRING));
   static google_breakpad::CustomInfoEntry ver_entry(L"ver", version.c_str());
   static google_breakpad::CustomInfoEntry prod_entry(L"prod", product.c_str());
   static google_breakpad::CustomInfoEntry plat_entry(L"plat", L"Win32");
