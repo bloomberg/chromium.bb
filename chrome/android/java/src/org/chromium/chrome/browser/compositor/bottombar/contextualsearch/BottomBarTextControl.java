@@ -37,8 +37,10 @@ public class BottomBarTextControl {
     private ViewResourceAdapter mSearchContextResourceAdapter;
     private boolean mIsSearchContextDirty;
 
-    private TextView mSearchTermView;
+    private ViewGroup mSearchTermView;
+    private TextView mSearchTermText;
     private ViewResourceAdapter mSearchTermResourceAdapter;
+    private boolean mIsSearchTermDirty;
 
     /**
      * Constructs a new bottom bar control container by inflating views from XML.
@@ -56,8 +58,22 @@ public class BottomBarTextControl {
         // in the Compositor and get rid of the View entirely.
         // TODO(twellington): Make this class more generic so that it can be reused by ReaderMode.
         LayoutInflater.from(mContext).inflate(R.layout.contextual_search_term_view, container);
-        mSearchTermView = (TextView) container.findViewById(R.id.contextual_search_term_view);
+        mSearchTermView = (ViewGroup) container.findViewById(R.id.contextual_search_term_view);
+        mSearchTermText = (TextView) container.findViewById(R.id.contextual_search_term);
         mSearchTermResourceAdapter = new ViewResourceAdapter(mSearchTermView);
+
+        // mSearchTermResourceAdapter needs to be invalidated in OnDraw after it has been measured.
+        // Without this OnDrawListener, the search text view wasn't always appearing on the panel
+        // for RTL text.
+        mSearchTermView.getViewTreeObserver().addOnDrawListener(new OnDrawListener() {
+            @Override
+            public void onDraw() {
+                if (mIsSearchTermDirty) {
+                    mSearchTermResourceAdapter.invalidate(null);
+                    mIsSearchTermDirty = false;
+                }
+            }
+        });
 
         LayoutInflater.from(mContext).inflate(R.layout.contextual_search_context_view, container);
         mSearchContextView = (ViewGroup) container.findViewById(
@@ -132,8 +148,8 @@ public class BottomBarTextControl {
      * @param searchTerm The string that represents the search term.
      */
     public void setSearchTerm(String searchTerm) {
-        mSearchTermView.setText(searchTerm);
-        mSearchTermResourceAdapter.invalidate(null);
+        mSearchTermText.setText(searchTerm);
+        mIsSearchTermDirty = true;
     }
 
     private String sanitizeText(String text) {

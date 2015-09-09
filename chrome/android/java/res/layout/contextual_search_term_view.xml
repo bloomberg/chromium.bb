@@ -4,14 +4,16 @@
      found in the LICENSE file. -->
 
 <!-- Contextual Search search term view. -->
-<TextView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/contextual_search_term_view"
-    style="@style/ContextualSearchTextView"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom"
-    android:background="#FFF"
-    android:paddingStart="60dp"
-    android:paddingEnd="60dp"
-    android:visibility="invisible" />
+    style="@style/ContextualSearchTextViewLayout" >
+    <TextView
+        android:id="@+id/contextual_search_term"
+        style="@style/ContextualSearchTextView"
+        android:layout_width="match_parent"
+        android:layout_gravity="bottom"
+        android:background="#FFF"
+        android:layout_marginStart="7dp"
+        android:layout_marginEnd="7dp" />
+</FrameLayout>
