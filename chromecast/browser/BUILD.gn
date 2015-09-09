@@ -55,7 +55,6 @@ source_set("browser") {
     sources += [
       "cast_content_browser_client_simple.cc",
       "cast_network_delegate_simple.cc",
-      "devtools/remote_debugging_server_simple.cc",
       "pref_service_helper_simple.cc",
     ]
   }

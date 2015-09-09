@@ -331,8 +331,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   if (!PlatformClientAuth::Initialize())
     LOG(ERROR) << "PlatformClientAuth::Initialize failed.";
 
-  cast_browser_process_->SetRemoteDebuggingServer(
-      make_scoped_ptr(new RemoteDebuggingServer()));
+  cast_browser_process_->SetRemoteDebuggingServer(make_scoped_ptr(
+      new RemoteDebuggingServer(cast_browser_process_->browser_client()->
+          EnableRemoteDebuggingImmediately())));
 
   media::MediaMessageLoop::GetTaskRunner()->PostTask(
       FROM_HERE,

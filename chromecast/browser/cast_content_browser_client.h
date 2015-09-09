@@ -83,6 +83,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   virtual void RegisterMetricsProviders(
       ::metrics::MetricsService* metrics_service);
 
+  // Returns whether or not the remote debugging service should be started
+  // on browser startup.
+  virtual bool EnableRemoteDebuggingImmediately();
+
   // content::ContentBrowserClient implementation:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;

@@ -106,6 +106,10 @@ void CastContentBrowserClient::RegisterMetricsProviders(
     ::metrics::MetricsService* metrics_service) {
 }
 
+bool CastContentBrowserClient::EnableRemoteDebuggingImmediately() {
+  return true;
+}
+
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   content::BrowserMainParts* parts = new CastBrowserMainParts(

@@ -409,7 +409,6 @@
           'sources': [
             'browser/cast_content_browser_client_simple.cc',
             'browser/cast_network_delegate_simple.cc',
-            'browser/devtools/remote_debugging_server_simple.cc',
             'browser/pref_service_helper_simple.cc',
             'common/platform_client_auth_simple.cc',
             'renderer/cast_content_renderer_client_simple.cc',

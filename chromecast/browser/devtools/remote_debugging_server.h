@@ -19,16 +19,12 @@ class CastDevToolsManagerDelegate;
 
 class RemoteDebuggingServer {
  public:
-  RemoteDebuggingServer();
+  explicit RemoteDebuggingServer(bool start_immediately);
   ~RemoteDebuggingServer();
 
  private:
   // Called when pref_enabled_ is changed.
   void OnEnabledChanged();
-
-  // Returns whether or not the remote debugging server should be available
-  // on device startup.
-  bool ShouldStartImmediately();
 
   scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
 

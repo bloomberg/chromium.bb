@@ -113,7 +113,7 @@ std::string GetFrontendUrl() {
 
 }  // namespace
 
-RemoteDebuggingServer::RemoteDebuggingServer()
+RemoteDebuggingServer::RemoteDebuggingServer(bool start_immediately)
     : port_(kDefaultRemoteDebuggingPort) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pref_enabled_.Init(prefs::kEnableRemoteDebugging,
@@ -135,7 +135,7 @@ RemoteDebuggingServer::RemoteDebuggingServer()
 
   // Starts new dev tools, clearing port number saved in config.
   // Remote debugging in production must be triggered only by config server.
-  pref_enabled_.SetValue(ShouldStartImmediately() && port_ != 0);
+  pref_enabled_.SetValue(start_immediately && port_ != 0);
   OnEnabledChanged();
 }
 
