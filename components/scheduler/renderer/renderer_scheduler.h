@@ -26,6 +26,19 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   CompositorTaskRunner() = 0;
 
+  // Keep RendererScheduler::UseCaseToString in sync with this enum.
+  enum class UseCase {
+    NONE,
+    COMPOSITOR_GESTURE,
+    MAIN_THREAD_GESTURE,
+    TOUCHSTART,
+    LOADING,
+    // Must be the last entry.
+    USE_CASE_COUNT,
+    FIRST_USE_CASE = NONE,
+  };
+  static const char* UseCaseToString(UseCase use_case);
+
   // Returns the loading task runner.  This queue is intended for tasks related
   // to resource dispatch, foreground HTML parsing, etc...
   virtual scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() = 0;
@@ -45,10 +58,12 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // called from the main thread.
   virtual void DidCommitFrameToCompositor() = 0;
 
+  // Keep RendererScheduler::InputEventStateToString in sync with this enum.
   enum class InputEventState {
     EVENT_CONSUMED_BY_COMPOSITOR,
     EVENT_FORWARDED_TO_MAIN_THREAD,
   };
+  static const char* InputEventStateToString(InputEventState input_event_state);
 
   // Tells the scheduler that the system processed an input event. Called by the
   // compositor (impl) thread.  Note it's expected that every call to

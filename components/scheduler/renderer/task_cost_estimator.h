@@ -27,6 +27,8 @@ class SCHEDULER_EXPORT TaskCostEstimator
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
+  void Clear();
+
  protected:
   // Virtual for testing.
   virtual base::TimeTicks Now();

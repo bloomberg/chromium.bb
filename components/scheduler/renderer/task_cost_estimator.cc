@@ -35,4 +35,9 @@ base::TimeTicks TaskCostEstimator::Now() {
   return base::TimeTicks::Now();
 }
 
+void TaskCostEstimator::Clear() {
+  rolling_time_delta_history_.Clear();
+  expected_task_duration_ = base::TimeDelta();
+}
+
 }  // namespace scheduler
