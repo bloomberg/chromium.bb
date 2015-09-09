@@ -10,6 +10,9 @@
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/drive/drive_api_util.h"
@@ -141,12 +144,13 @@ class HiddenEntryClassifier {
 
 // Used to implement SearchMetadata.
 // Adds entry to the result when appropriate.
-// In particular, if |query| is non-null, only adds files with the name matching
-// the query.
+// In particular, if size of |queries| is larger than 0, only adds files with
+// the name matching the query.
 FileError MaybeAddEntryToResult(
     ResourceMetadata* resource_metadata,
     ResourceMetadata::Iterator* it,
-    base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
+    const ScopedVector<
+        base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>& queries,
     const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
     HiddenEntryClassifier* hidden_entry_classifier,
@@ -168,7 +172,7 @@ FileError MaybeAddEntryToResult(
   // contain |query| to match the query.
   std::string highlighted;
   if (!predicate.Run(entry) ||
-      (query && !FindAndHighlight(entry.base_name(), query, &highlighted)))
+      !FindAndHighlight(entry.base_name(), queries, &highlighted))
     return FILE_ERROR_OK;
 
   // Hidden entry should not be returned.
@@ -194,8 +198,18 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
                       ResultCandidateComparator> result_candidates;
 
   // Prepare data structure for searching.
-  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents query(
-      base::UTF8ToUTF16(query_text));
+  std::vector<base::string16> keywords =
+      base::SplitString(base::UTF8ToUTF16(query_text),
+                        base::StringPiece16(base::kWhitespaceUTF16),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  ScopedVector<base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>
+      queries;
+  for (const auto& keyword : keywords) {
+    queries.push_back(
+        new base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents(
+            keyword));
+  }
 
   // Prepare an object to filter out hidden entries.
   ResourceEntry mydrive;
@@ -210,9 +224,8 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
   scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     FileError error = MaybeAddEntryToResult(
-        resource_metadata, it.get(), query_text.empty() ? NULL : &query,
-        predicate, at_most_num_matches, &hidden_entry_classifier,
-        &result_candidates);
+        resource_metadata, it.get(), queries, predicate, at_most_num_matches,
+        &hidden_entry_classifier, &result_candidates);
     if (error != FILE_ERROR_OK)
       return error;
   }
@@ -251,6 +264,22 @@ void RunSearchMetadataCallback(const SearchMetadataCallback& callback,
 
   UMA_HISTOGRAM_TIMES("Drive.SearchMetadataTime",
                       base::TimeTicks::Now() - start_time);
+}
+
+// Appends substring of |original_text| to |highlighted_text| with highlight.
+void AppendStringWithHighlight(const base::string16& original_text,
+                               size_t start,
+                               size_t length,
+                               bool highlight,
+                               std::string* highlighted_text) {
+  if (highlight)
+    highlighted_text->append("<b>");
+
+  highlighted_text->append(net::EscapeForHTML(
+      base::UTF16ToUTF8(original_text.substr(start, length))));
+
+  if (highlight)
+    highlighted_text->append("</b>");
 }
 
 }  // namespace
@@ -308,26 +337,45 @@ bool MatchesType(int options, const ResourceEntry& entry) {
 
 bool FindAndHighlight(
     const std::string& text,
-    base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
+    const ScopedVector<
+        base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>& queries,
     std::string* highlighted_text) {
-  DCHECK(query);
   DCHECK(highlighted_text);
   highlighted_text->clear();
 
-  base::string16 text16 = base::UTF8ToUTF16(text);
+  // Check text matches with all queries.
   size_t match_start = 0;
   size_t match_length = 0;
-  if (!query->Search(text16, &match_start, &match_length))
-    return false;
 
-  base::string16 pre = text16.substr(0, match_start);
-  base::string16 match = text16.substr(match_start, match_length);
-  base::string16 post = text16.substr(match_start + match_length);
-  highlighted_text->append(net::EscapeForHTML(base::UTF16ToUTF8(pre)));
-  highlighted_text->append("<b>");
-  highlighted_text->append(net::EscapeForHTML(base::UTF16ToUTF8(match)));
-  highlighted_text->append("</b>");
-  highlighted_text->append(net::EscapeForHTML(base::UTF16ToUTF8(post)));
+  base::string16 text16 = base::UTF8ToUTF16(text);
+  std::vector<bool> highlights(text16.size(), false);
+  for (auto* query : queries) {
+    if (!query->Search(text16, &match_start, &match_length))
+      return false;
+
+    std::fill(highlights.begin() + match_start,
+              highlights.begin() + match_start + match_length, true);
+  }
+
+  // Generate highlighted text.
+  size_t start_current_segment = 0;
+
+  for (size_t i = 0; i < text16.size(); ++i) {
+    if (highlights[start_current_segment] == highlights[i])
+      continue;
+
+    AppendStringWithHighlight(
+        text16, start_current_segment, i - start_current_segment,
+        highlights[start_current_segment], highlighted_text);
+
+    start_current_segment = i;
+  }
+
+  DCHECK_GE(text16.size(), start_current_segment);
+  AppendStringWithHighlight(
+      text16, start_current_segment, text16.size() - start_current_segment,
+      highlights[start_current_segment], highlighted_text);
+
   return true;
 }
 

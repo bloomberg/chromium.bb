@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_vector.h"
 #include "components/drive/file_system_interface.h"
 
 namespace base {
@@ -24,11 +25,12 @@ typedef base::Callback<bool(const ResourceEntry&)> SearchMetadataPredicate;
 
 // Searches the local resource metadata, and returns the entries
 // |at_most_num_matches| that contain |query| in their base names. Search is
-// done in a case-insensitive fashion. The eligible entries are selected based
-// on the given |options|, which is a bit-wise OR of SearchMetadataOptions.
-// |callback| must not be null. Must be called on UI thread. Empty |query|
-// matches any base name. i.e. returns everything. |blocking_task_runner| must
-// be the same one as |resource_metadata| uses.
+// done in a case-insensitive fashion. |query| is splitted into keywords by
+// whitespace. All keywords are considered as AND condition. The eligible
+// entries are selected based on the given |options|, which is a bit-wise OR of
+// SearchMetadataOptions. |callback| must not be null. Must be called on UI
+// thread. Empty |query| matches any base name. i.e. returns everything.
+// |blocking_task_runner| must be the same one as |resource_metadata| uses.
 void SearchMetadata(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     ResourceMetadata* resource_metadata,
@@ -47,16 +49,18 @@ void SearchMetadata(
 // match with the query. This option can not be used with other options.
 bool MatchesType(int options, const ResourceEntry& entry);
 
-// Finds |query| in |text| while ignoring cases or accents. Cases of non-ASCII
+// Finds |queries| in |text| while ignoring cases or accents. Cases of non-ASCII
 // characters are also ignored; they are compared in the 'Primary Level' of
 // http://userguide.icu-project.org/collation/concepts.
-// Returns true if |query| is found. |highlighted_text| will have the original
+// Returns true if |queries| are found. |highlighted_text| will have the
+// original
 // text with matched portions highlighted with <b> tag (only the first match
 // is highlighted). Meta characters are escaped like &lt;. The original
 // contents of |highlighted_text| will be lost.
 bool FindAndHighlight(
     const std::string& text,
-    base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
+    const ScopedVector<
+        base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>& queries,
     std::string* highlighted_text);
 
 }  // namespace internal

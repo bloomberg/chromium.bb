@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/string_search.h"
+#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,9 +33,12 @@ bool FindAndHighlightWrapper(
     const std::string& text,
     const std::string& query_text,
     std::string* highlighted_text) {
-  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents query(
-      base::UTF8ToUTF16(query_text));
-  return FindAndHighlight(text, &query, highlighted_text);
+  ScopedVector<base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>
+      queries;
+  queries.push_back(
+      new base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents(
+          base::UTF8ToUTF16(query_text)));
+  return FindAndHighlight(text, queries, highlighted_text);
 }
 
 }  // namespace
@@ -77,18 +81,20 @@ class SearchMetadataTest : public testing::Test {
         util::GetDriveMyDriveRootPath(), &local_id));
     const std::string root_local_id = local_id;
 
-    // drive/root/Directory 1
-    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
-        "Directory 1", "dir1", 1, root_local_id), &local_id));
+    // drive/root/Directory-1
+    EXPECT_EQ(FILE_ERROR_OK,
+              resource_metadata_->AddEntry(
+                  GetDirectoryEntry("Directory-1", "dir1", 1, root_local_id),
+                  &local_id));
     const std::string dir1_local_id = local_id;
 
-    // drive/root/Directory 1/SubDirectory File 1.txt
+    // drive/root/Directory-1/SubDirectory File 1.txt
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetFileEntry(
         "SubDirectory File 1.txt", "file1a", 2, dir1_local_id), &local_id));
     EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
         local_id, temp_file_md5, temp_file, FileCache::FILE_OPERATION_COPY));
 
-    // drive/root/Directory 1/Shared To The Account Owner.txt
+    // drive/root/Directory-1/Shared To The Account Owner.txt
     entry = GetFileEntry(
         "Shared To The Account Owner.txt", "file1b", 3, dir1_local_id);
     entry.set_shared_with_me(true);
@@ -187,7 +193,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(result);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
+  EXPECT_EQ("drive/root/Directory-1/SubDirectory File 1.txt",
             result->at(0).path.AsUTF8Unsafe());
 }
 
@@ -207,7 +213,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(result);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
+  EXPECT_EQ("drive/root/Directory-1/SubDirectory File 1.txt",
             result->at(0).path.AsUTF8Unsafe());
 }
 
@@ -228,7 +234,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   // last accessed time in descending order.
   EXPECT_EQ("drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt",
             result->at(0).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
+  EXPECT_EQ("drive/root/Directory-1/SubDirectory File 1.txt",
             result->at(1).path.AsUTF8Unsafe());
 }
 
@@ -257,14 +263,14 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
 
   SearchMetadata(
       base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
-      "Directory 1", base::Bind(&MatchesType, SEARCH_METADATA_ALL),
+      "Directory-1", base::Bind(&MatchesType, SEARCH_METADATA_ALL),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(result);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ("drive/root/Directory 1", result->at(0).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/Directory-1", result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
@@ -312,7 +318,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_SharedWithMe) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(result);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ("drive/root/Directory 1/Shared To The Account Owner.txt",
+  EXPECT_EQ("drive/root/Directory-1/Shared To The Account Owner.txt",
             result->at(0).path.AsUTF8Unsafe());
 }
 
@@ -396,8 +402,51 @@ TEST_F(SearchMetadataTest, SearchMetadata_Offline) {
 
   EXPECT_EQ("drive/root/File 2.txt",
             result->at(1).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
+  EXPECT_EQ("drive/root/Directory-1/SubDirectory File 1.txt",
             result->at(2).path.AsUTF8Unsafe());
+}
+
+TEST_F(SearchMetadataTest, SearchMetadata_MultipleKeywords) {
+  FileError error = FILE_ERROR_FAILED;
+  scoped_ptr<MetadataSearchResultVector> result;
+
+  SearchMetadata(
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
+      "Directory 1", base::Bind(&MatchesType, SEARCH_METADATA_ALL),
+      kDefaultAtMostNumMatches,
+      google_apis::test_util::CreateCopyResultCallback(&error, &result));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(result);
+  ASSERT_EQ(2U, result->size());
+
+  EXPECT_EQ("drive/root/Directory-1/SubDirectory File 1.txt",
+            result->at(0).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/Directory-1", result->at(1).path.AsUTF8Unsafe());
+}
+
+TEST_F(SearchMetadataTest,
+       SearchMetadata_KeywordsSeparatedWithIdeographicSpace) {
+  FileError error = FILE_ERROR_FAILED;
+  scoped_ptr<MetadataSearchResultVector> result;
+
+  // \xE3\x80\x80 is ideographic space.
+  SearchMetadata(
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
+      "Directory\xE3\x80\x80"
+      "1",
+      base::Bind(&MatchesType, SEARCH_METADATA_ALL), kDefaultAtMostNumMatches,
+      google_apis::test_util::CreateCopyResultCallback(&error, &result));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(result);
+  ASSERT_EQ(2U, result->size());
+
+  EXPECT_EQ("drive/root/Directory-1/SubDirectory File 1.txt",
+            result->at(0).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/Directory-1", result->at(1).path.AsUTF8Unsafe());
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_ZeroMatches) {
@@ -408,6 +457,15 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_ZeroMatches) {
 TEST(SearchMetadataSimpleTest, FindAndHighlight_EmptyText) {
   std::string highlighted_text;
   EXPECT_FALSE(FindAndHighlightWrapper("", "query", &highlighted_text));
+}
+
+TEST(SearchMetadataSimpleTest, FindAndHighlight_EmptyQuery) {
+  ScopedVector<base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>
+      queries;
+
+  std::string highlighted_text;
+  EXPECT_TRUE(FindAndHighlight("hello", queries, &highlighted_text));
+  EXPECT_EQ("hello", highlighted_text);
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_FullMatch) {
@@ -473,14 +531,17 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_IgnoreCaseNonASCII) {
 }
 
 TEST(SearchMetadataSimpleTest, MultiTextBySingleQuery) {
-  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents query(
-      base::UTF8ToUTF16("hello"));
+  ScopedVector<base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>
+      queries;
+  queries.push_back(
+      new base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents(
+          base::UTF8ToUTF16("hello")));
 
   std::string highlighted_text;
-  EXPECT_TRUE(FindAndHighlight("hello", &query, &highlighted_text));
+  EXPECT_TRUE(FindAndHighlight("hello", queries, &highlighted_text));
   EXPECT_EQ("<b>hello</b>", highlighted_text);
-  EXPECT_FALSE(FindAndHighlight("goodbye", &query, &highlighted_text));
-  EXPECT_TRUE(FindAndHighlight("1hello2", &query, &highlighted_text));
+  EXPECT_FALSE(FindAndHighlight("goodbye", queries, &highlighted_text));
+  EXPECT_TRUE(FindAndHighlight("1hello2", queries, &highlighted_text));
   EXPECT_EQ("1<b>hello</b>2", highlighted_text);
 }
 
@@ -494,6 +555,46 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_MoreMetaChars) {
   std::string highlighted_text;
   EXPECT_TRUE(FindAndHighlightWrapper("a&b&c&d", "b&c", &highlighted_text));
   EXPECT_EQ("a&amp;<b>b&amp;c</b>&amp;d", highlighted_text);
+}
+
+TEST(SearchMetadataSimpleTest, FindAndHighlight_SurrogatePair) {
+  std::string highlighted_text;
+  // \xF0\x9F\x98\x81 (U+1F601) is a surrogate pair for smile icon of emoji.
+  EXPECT_TRUE(FindAndHighlightWrapper("hi\xF0\x9F\x98\x81hello",
+                                      "i\xF0\x9F\x98\x81", &highlighted_text));
+  EXPECT_EQ("h<b>i\xF0\x9F\x98\x81</b>hello", highlighted_text);
+}
+
+TEST(SearchMetadataSimpleTest, FindAndHighlight_MultipleQueries) {
+  ScopedVector<base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>
+      queries;
+  queries.push_back(
+      new base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents(
+          base::UTF8ToUTF16("hello")));
+  queries.push_back(
+      new base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents(
+          base::UTF8ToUTF16("good")));
+
+  std::string highlighted_text;
+  EXPECT_TRUE(
+      FindAndHighlight("good morning, hello", queries, &highlighted_text));
+  EXPECT_EQ("<b>good</b> morning, <b>hello</b>", highlighted_text);
+}
+
+TEST(SearchMetadataSimpleTest, FindAndHighlight_OverlappingHighlights) {
+  ScopedVector<base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>
+      queries;
+  queries.push_back(
+      new base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents(
+          base::UTF8ToUTF16("morning")));
+  queries.push_back(
+      new base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents(
+          base::UTF8ToUTF16("ing,")));
+
+  std::string highlighted_text;
+  EXPECT_TRUE(
+      FindAndHighlight("good morning, hello", queries, &highlighted_text));
+  EXPECT_EQ("good <b>morning,</b> hello", highlighted_text);
 }
 
 }  // namespace internal
