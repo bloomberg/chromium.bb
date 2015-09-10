@@ -640,7 +640,7 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
     const blink::WebSyncRegistration& registration,
     const SyncCallback& callback) {
   TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerScriptContext::DispatchSyncEvent");
+               "ServiceWorkerContextClient::DispatchSyncEvent");
   int request_id =
       context_->sync_event_callbacks.Add(new SyncCallback(callback));
   proxy_->dispatchSyncEvent(request_id, registration);
