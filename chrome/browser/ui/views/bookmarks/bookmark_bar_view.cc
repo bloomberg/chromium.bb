@@ -581,15 +581,6 @@ void BookmarkBarView::SetBookmarkBarState(
   bookmark_bar_state_ = state;
 }
 
-int BookmarkBarView::GetFullyDetachedToolbarOverlap() const {
-  if (!infobar_visible_ && browser_->window()->IsFullscreen()) {
-    // There is no client edge to overlap when detached in fullscreen with no
-    // infobars visible.
-    return 0;
-  }
-  return views::NonClientFrameView::kClientEdgeThickness;
-}
-
 bool BookmarkBarView::is_animating() {
   return size_animation_->is_animating();
 }
@@ -744,7 +735,7 @@ int BookmarkBarView::GetToolbarOverlap() const {
   if (!IsDetached())
     return attached_overlap;
 
-  int detached_overlap = GetFullyDetachedToolbarOverlap();
+  int detached_overlap = views::NonClientFrameView::kClientEdgeThickness;
 
   // Do not animate the overlap when the infobar is above us (i.e. when we're
   // detached), since drawing over the infobar looks weird.

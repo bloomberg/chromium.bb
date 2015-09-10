@@ -102,9 +102,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
   void SetBookmarkBarState(BookmarkBar::State state,
                            BookmarkBar::AnimateChangeType animate_type);
 
-  // Returns the toolbar overlap when fully detached.
-  int GetFullyDetachedToolbarOverlap() const;
-
   // Whether or not we are animating.
   bool is_animating();
 

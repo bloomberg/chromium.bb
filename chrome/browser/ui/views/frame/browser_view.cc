@@ -2537,13 +2537,13 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
 
 int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED ||
-      !bookmark_bar_view_.get() || !bookmark_bar_view_->IsDetached()) {
+      !bookmark_bar_view_ || !bookmark_bar_view_->IsDetached()) {
     return 0;
   }
   // Don't use bookmark_bar_view_->height() which won't be the final height if
   // the bookmark bar is animating.
   return chrome::kNTPBookmarkBarHeight -
-      bookmark_bar_view_->GetFullyDetachedToolbarOverlap();
+      views::NonClientFrameView::kClientEdgeThickness;
 }
 
 void BrowserView::ExecuteExtensionCommand(
