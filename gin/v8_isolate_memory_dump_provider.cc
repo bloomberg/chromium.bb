@@ -128,7 +128,7 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
     auto object_dump = process_memory_dump->CreateAllocatorDump(dump_name);
 
     object_dump->AddScalar(
-        base::trace_event::MemoryAllocatorDump::kNameObjectsCount,
+        base::trace_event::MemoryAllocatorDump::kNameObjectCount,
         base::trace_event::MemoryAllocatorDump::kUnitsObjects,
         object_statistics.object_count());
     object_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

@@ -31,7 +31,7 @@ bool SkiaMemoryDumpProvider::OnMemoryDump(
   font_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                       SkGraphics::GetFontCacheUsed());
-  font_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectsCount,
+  font_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
                       base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                       SkGraphics::GetFontCacheCountUsed());
 

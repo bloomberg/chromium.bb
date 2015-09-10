@@ -35,7 +35,7 @@ void ReportHeapDump(ProcessMemoryDump* pmd, const WinHeapInfo& heap_info) {
   inner_dump->AddScalar(MemoryAllocatorDump::kNameSize,
                         MemoryAllocatorDump::kUnitsBytes,
                         heap_info.allocated_size);
-  inner_dump->AddScalar(MemoryAllocatorDump::kNameObjectsCount,
+  inner_dump->AddScalar(MemoryAllocatorDump::kNameObjectCount,
                         MemoryAllocatorDump::kUnitsObjects,
                         heap_info.block_count);
 }

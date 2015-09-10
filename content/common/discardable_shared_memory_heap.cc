@@ -389,7 +389,7 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
 
   base::trace_event::MemoryAllocatorDump* obj_dump =
       pmd->CreateAllocatorDump(segment_dump_name + "/allocated_objects");
-  obj_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectsCount,
+  obj_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
                       base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                       static_cast<uint64_t>(allocated_objects_count));
   obj_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

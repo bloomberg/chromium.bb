@@ -34,7 +34,7 @@ class BASE_EXPORT MemoryAllocatorDump {
 
   // Standard attribute |name|s for the AddScalar and AddString() methods.
   static const char kNameSize[];          // To represent allocated space.
-  static const char kNameObjectsCount[];  // To represent number of objects.
+  static const char kNameObjectCount[];   // To represent number of objects.
 
   // Standard attribute |unit|s for the AddScalar and AddString() methods.
   static const char kUnitsBytes[];    // Unit name to represent bytes.

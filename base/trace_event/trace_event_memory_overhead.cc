@@ -147,7 +147,7 @@ void TraceEventMemoryOverhead::DumpInto(const char* base_name,
                    it.second.allocated_size_in_bytes);
     mad->AddScalar("resident_size", MemoryAllocatorDump::kUnitsBytes,
                    it.second.resident_size_in_bytes);
-    mad->AddScalar(MemoryAllocatorDump::kNameObjectsCount,
+    mad->AddScalar(MemoryAllocatorDump::kNameObjectCount,
                    MemoryAllocatorDump::kUnitsObjects, it.second.count);
   }
 }

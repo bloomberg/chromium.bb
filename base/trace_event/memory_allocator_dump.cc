@@ -16,7 +16,7 @@ namespace base {
 namespace trace_event {
 
 const char MemoryAllocatorDump::kNameSize[] = "size";
-const char MemoryAllocatorDump::kNameObjectsCount[] = "objects_count";
+const char MemoryAllocatorDump::kNameObjectCount[] = "object_count";
 const char MemoryAllocatorDump::kTypeScalar[] = "scalar";
 const char MemoryAllocatorDump::kTypeString[] = "string";
 const char MemoryAllocatorDump::kUnitsBytes[] = "bytes";
