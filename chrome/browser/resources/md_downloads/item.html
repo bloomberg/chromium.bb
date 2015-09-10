@@ -34,12 +34,12 @@
           Before #name.
           --><span id="name"
               hidden$="[[completelyOnDisk_]]">[[data_.file_name]]</span>
-          <span id="tag"></span>
+          <span id="tag">[[computeTag_(data_.state, data_.last_reason_text, data_.file_externally_removed)]]</span>
         </div>
 
         <a id="url" target="_blank" href$="[[data_.url]]">[[data_.url]]</a>
 
-        <div id="description"></div>
+        <div id="description">[[computeDescription_(data_.state, data_.danger_type, data_.file_name, data_.progress_status_text)]]</div>
 
         <template is="dom-if" if="[[showProgress_]]">
           <paper-progress id="progress"

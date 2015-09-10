@@ -144,14 +144,10 @@ cr.define('downloads', function() {
       }
 
       for (var key in data) {
+        // TODO(dbeam): does update order matter? Right now it seems to be
+        // alphabetical.
         this.set('data_.' + key, data[key]);
       }
-
-      var desc = this.getDangerText_(data) || this.getStatusText_(data);
-
-      // Status goes in the "tag" (next to the file name) if there's no file.
-      this.ensureTextIs_(this.$.description, this.isActive_ ? desc : '');
-      this.ensureTextIs_(this.$.tag, this.isActive_ ? '' : desc);
 
       if (!this.isDangerous_) {
         /** @const */ var controlledByExtension = data.by_ext_id &&
@@ -194,6 +190,36 @@ cr.define('downloads', function() {
     computeDate_: function() {
       assert(!this.hideDate);
       return assert(this.data_.since_string || this.data_.date_string);
+    },
+
+    /** @private */
+    computeDescription_: function() {
+      var data = this.data_;
+
+      switch (data.state) {
+        case downloads.States.DANGEROUS:
+          var fileName = data.file_name;
+          switch (data.danger_type) {
+            case downloads.DangerType.DANGEROUS_FILE:
+              return loadTimeData.getStringF('dangerFileDesc', fileName);
+            case downloads.DangerType.DANGEROUS_URL:
+              return loadTimeData.getString('dangerUrlDesc');
+            case downloads.DangerType.DANGEROUS_CONTENT:  // Fall through.
+            case downloads.DangerType.DANGEROUS_HOST:
+              return loadTimeData.getStringF('dangerContentDesc', fileName);
+            case downloads.DangerType.UNCOMMON_CONTENT:
+              return loadTimeData.getStringF('dangerUncommonDesc', fileName);
+            case downloads.DangerType.POTENTIALLY_UNWANTED:
+              return loadTimeData.getStringF('dangerSettingsDesc', fileName);
+          }
+          break;
+
+        case downloads.States.IN_PROGRESS:
+        case downloads.States.PAUSED:  // Fallthrough.
+          return data.progress_status_text;
+      }
+
+      return '';
     },
 
     /** @private */
@@ -245,64 +271,20 @@ cr.define('downloads', function() {
       return this.showCancel_ && isFinite(this.data_.percent);
     },
 
-    /**
-     * Overwrite |el|'s textContent if it differs from |text|. This is done
-     * generally so quickly updating text can be copied via text selection.
-     * @param {!Element} el
-     * @param {string} text
-     * @private
-     */
-    ensureTextIs_: function(el, text) {
-      if (el.textContent != text)
-        el.textContent = text;
-    },
-
-    /**
-     * @param {!downloads.Data} data
-     * @return {string} Text describing the danger of a download. Empty if not
-     *     dangerous.
-     */
-    getDangerText_: function(data) {
-      switch (data.danger_type) {
-        case downloads.DangerType.DANGEROUS_FILE:
-          return loadTimeData.getStringF('dangerFileDesc', data.file_name);
-        case downloads.DangerType.DANGEROUS_URL:
-          return loadTimeData.getString('dangerUrlDesc');
-        case downloads.DangerType.DANGEROUS_CONTENT:  // Fall through.
-        case downloads.DangerType.DANGEROUS_HOST:
-          return loadTimeData.getStringF('dangerContentDesc', data.file_name);
-        case downloads.DangerType.UNCOMMON_CONTENT:
-          return loadTimeData.getStringF('dangerUncommonDesc', data.file_name);
-        case downloads.DangerType.POTENTIALLY_UNWANTED:
-          return loadTimeData.getStringF('dangerSettingsDesc', data.file_name);
-        default:
-          return '';
-      }
-    },
-
-    /**
-     * @param {!downloads.Data} data
-     * @return {string} User-visible status update text.
-     * @private
-     */
-    getStatusText_: function(data) {
-      switch (data.state) {
-        case downloads.States.IN_PROGRESS:
-        case downloads.States.PAUSED:  // Fallthrough.
-          assert(typeof data.progress_status_text == 'string');
-          return data.progress_status_text;
+    /** @private */
+    computeTag_: function() {
+      switch (this.data_.state) {
         case downloads.States.CANCELLED:
           return loadTimeData.getString('statusCancelled');
-        case downloads.States.DANGEROUS:
-          break;  // Intentionally hit assertNotReached(); at bottom.
+
         case downloads.States.INTERRUPTED:
-          assert(typeof data.last_reason_text == 'string');
-          return data.last_reason_text;
+          return this.data_.last_reason_text;
+
         case downloads.States.COMPLETE:
-          return data.file_externally_removed ?
+          return this.data_.file_externally_removed ?
               loadTimeData.getString('statusRemoved') : '';
       }
-      assertNotReached();
+
       return '';
     },
 

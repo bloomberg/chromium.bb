@@ -188,6 +188,10 @@ base::DictionaryValue* CreateDownloadItemValue(
   file_value->SetBoolean("retry", false); // Overridden below if needed.
   file_value->SetBoolean("resume", download_item->CanResume());
 
+  const char* danger_type = "";
+  base::string16 last_reason_text;
+  base::string16 progress_status_text;
+
   switch (download_item->GetState()) {
     case content::DownloadItem::IN_PROGRESS: {
       if (download_item->IsDangerous()) {
@@ -205,16 +209,13 @@ base::DictionaryValue* CreateDownloadItemValue(
                    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
                download_item->GetDangerType() ==
                    content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED);
-        const char* danger_type_value =
-            GetDangerTypeString(download_item->GetDangerType());
-        file_value->SetString("danger_type", danger_type_value);
+        danger_type = GetDangerTypeString(download_item->GetDangerType());
       } else if (download_item->IsPaused()) {
         file_value->SetString("state", "PAUSED");
       } else {
         file_value->SetString("state", "IN_PROGRESS");
       }
-      file_value->SetString("progress_status_text",
-                            download_model.GetTabProgressStatusText());
+      progress_status_text = download_model.GetTabProgressStatusText();
 
       int percent = download_item->PercentComplete();
       if (!MdDownloadsEnabled())
@@ -228,9 +229,7 @@ base::DictionaryValue* CreateDownloadItemValue(
 
     case content::DownloadItem::INTERRUPTED:
       file_value->SetString("state", "INTERRUPTED");
-
-      file_value->SetString("progress_status_text",
-                            download_model.GetTabProgressStatusText());
+      progress_status_text = download_model.GetTabProgressStatusText();
 
       if (download_item->CanResume()) {
         file_value->SetInteger("percent",
@@ -238,8 +237,7 @@ base::DictionaryValue* CreateDownloadItemValue(
       }
       file_value->SetInteger("received",
           static_cast<int>(download_item->GetReceivedBytes()));
-      file_value->SetString("last_reason_text",
-                            download_model.GetInterruptReasonText());
+      last_reason_text = download_model.GetInterruptReasonText();
       if (content::DOWNLOAD_INTERRUPT_REASON_CRASH ==
           download_item->GetLastReason() && !download_item->CanResume())
         file_value->SetBoolean("retry", true);
@@ -258,6 +256,10 @@ base::DictionaryValue* CreateDownloadItemValue(
     case content::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
   }
+
+  file_value->SetString("danger_type", danger_type);
+  file_value->SetString("last_reason_text", last_reason_text);
+  file_value->SetString("progress_status_text", progress_status_text);
 
   return file_value;
 }
