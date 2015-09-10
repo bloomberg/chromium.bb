@@ -117,6 +117,7 @@ paper-item {
   -webkit-user-select: none;
   cursor: pointer;
   font: inherit;
+  min-height: 40px;
 }
 
 paper-item:hover {
