@@ -438,20 +438,6 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadValidators) {
   }
 }
 
-TEST_F(HistoryBackendDBTest, PurgeArchivedDatabase) {
-  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(27));
-  ASSERT_NO_FATAL_FAILURE(CreateArchivedDB());
-
-  ASSERT_TRUE(base::PathExists(history_dir_.Append(kArchivedHistoryFilename)));
-
-  CreateBackendAndDatabase();
-  DeleteBackend();
-
-  // We do not retain expired history entries in an archived database as of M37.
-  // Verify that any legacy archived database is deleted on start-up.
-  ASSERT_FALSE(base::PathExists(history_dir_.Append(kArchivedHistoryFilename)));
-}
-
 TEST_F(HistoryBackendDBTest, MigrateDownloadMimeType) {
   base::Time now(base::Time::Now());
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(28));

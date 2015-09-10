@@ -289,10 +289,6 @@ base::FilePath HistoryBackend::GetFaviconsFileName() const {
   return history_dir_.Append(kFaviconsFilename);
 }
 
-base::FilePath HistoryBackend::GetArchivedFileName() const {
-  return history_dir_.Append(kArchivedHistoryFilename);
-}
-
 SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
   // Set is used to detect referrer loops.  Should not happen, but can
   // if the database is corrupt.
@@ -618,7 +614,6 @@ void HistoryBackend::InitImpl(
   history_dir_ = history_database_params.history_dir;
   base::FilePath history_name = history_dir_.Append(kHistoryFilename);
   base::FilePath thumbnail_name = GetFaviconsFileName();
-  base::FilePath archived_name = GetArchivedFileName();
 
   // Delete the old index database files which are no longer used.
   DeleteFTSIndexDatabases();
@@ -681,12 +676,6 @@ void HistoryBackend::InitImpl(
     LOG(WARNING) << "Could not initialize the thumbnail database.";
     thumbnail_db_.reset();
   }
-
-  // Nuke any files corresponding to the legacy Archived History Database, which
-  // previously retained expired (> 3 months old) history entries, but, in the
-  // end, was not used for much, and consequently has been removed as of M37.
-  // TODO(engedy): Remove this code after the end of 2014.
-  sql::Connection::Delete(archived_name);
 
   // Generate the history and thumbnail database metrics only after performing
   // any migration work.

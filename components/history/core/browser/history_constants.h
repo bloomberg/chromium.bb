@@ -10,7 +10,6 @@
 namespace history {
 
 // filenames
-extern const base::FilePath::CharType kArchivedHistoryFilename[];
 extern const base::FilePath::CharType kFaviconsFilename[];
 extern const base::FilePath::CharType kHistoryFilename[];
 extern const base::FilePath::CharType kThumbnailsFilename[];

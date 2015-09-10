@@ -9,8 +9,6 @@
 namespace history {
 
 // filenames
-const base::FilePath::CharType kArchivedHistoryFilename[] =
-    FILE_PATH_LITERAL("Archived History");
 const base::FilePath::CharType kFaviconsFilename[] =
     FILE_PATH_LITERAL("Favicons");
 const base::FilePath::CharType kHistoryFilename[] =

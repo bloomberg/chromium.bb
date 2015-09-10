@@ -47,8 +47,6 @@ class HistoryBackendDBBaseTest : public HistoryUnitTestBase {
 
   void CreateDBVersion(int version);
 
-  void CreateArchivedDB();
-
   void DeleteBackend();
 
   bool AddDownload(uint32 id, DownloadState state, base::Time time);

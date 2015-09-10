@@ -557,7 +557,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class ::TestingProfile;
 
   // Computes the name of the specified database on disk.
-  base::FilePath GetArchivedFileName() const;
   base::FilePath GetThumbnailFileName() const;
 
   // Returns the name of the Favicons database. This is the new name

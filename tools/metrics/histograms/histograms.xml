@@ -6123,10 +6123,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Recovery.SQLiteIntegrityArchivedHistory"
     enum="DiagnosticsResult">
+  <obsolete>
+    Removed as of Jun 2014: we no longer have an archived database.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityArchivedHistory
-    recovery step that runs on recovery startups.  The recovery step attempts to
+    recovery step that runs on recovery startups. The recovery step attempts to
     guarantee the SQLiteIntegrityArchivedHistory test, which checks the
     integrity of the Archived History database, would pass on the next startup.
   </summary>
@@ -6342,6 +6345,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Test.SQLiteIntegrityArchivedHistory"
     enum="DiagnosticsResult">
+  <obsolete>
+    Removed as of Jun 2014: we no longer have an archived database.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityArchivedHistory
@@ -55674,7 +55680,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="10" label="Path User Data Test"/>
   <int value="11" label="Version Test"/>
   <int value="12" label="SQLite Integrity App Cache Test"/>
-  <int value="13" label="SQLite Integrity Archived History Test"/>
+  <int value="13" label="SQLite Integrity Archived History Test (obsolete)"/>
   <int value="14" label="SQLite Integrity Cookie Test"/>
   <int value="15" label="SQLite Integrity Database Tracker Test"/>
   <int value="16" label="SQLite Integrity History Test"/>
