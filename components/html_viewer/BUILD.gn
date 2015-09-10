@@ -251,6 +251,7 @@ mojo_native_application("layout_test_html_viewer") {
     ":pak",
     "//cc",
     "//components/test_runner",
+    "//components/web_view/test_runner/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:test_support",

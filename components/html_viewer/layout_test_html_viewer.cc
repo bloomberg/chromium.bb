@@ -7,6 +7,7 @@
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/layout_test_content_handler_impl.h"
 #include "components/test_runner/web_test_interfaces.h"
+#include "components/web_view/test_runner/public/interfaces/layout_test_runner.mojom.h"
 
 namespace html_viewer {
 
@@ -22,7 +23,18 @@ void LayoutTestHTMLViewer::Initialize(mojo::ApplicationImpl* app) {
   test_interfaces_.reset(new test_runner::WebTestInterfaces);
   test_interfaces_->ResetAll();
   test_delegate_.set_test_interfaces(test_interfaces_.get());
+  test_delegate_.set_completion_callback(
+      base::Bind(&LayoutTestHTMLViewer::TestFinished, base::Unretained(this)));
   test_interfaces_->SetDelegate(&test_delegate_);
+}
+
+void LayoutTestHTMLViewer::TestFinished() {
+  web_view::LayoutTestRunnerPtr test_runner_ptr;
+
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:web_view_test_runner");
+  app()->ConnectToService(request.Pass(), &test_runner_ptr);
+  test_runner_ptr->TestFinished();
 }
 
 void LayoutTestHTMLViewer::Create(

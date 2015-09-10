@@ -42,6 +42,7 @@ group("tests") {
       "//components/resource_provider:resource_provider_unittests",
       "//components/view_manager:tests",
       "//components/web_view:apptests",
+      "//components/web_view/test_runner",
       "//media/mojo/services:tests",
       "//sql/mojo:apptests",
     ]

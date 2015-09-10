@@ -13,6 +13,7 @@ include_rules = [
   "+components/view_manager",
   "+components/webcrypto",
   "+components/web_view/public/interfaces",
+  "+components/web_view/test_runner/public/interfaces",
   "+components/web_view/web_view_switches.cc",
   "+components/web_view/web_view_switches.h",
   "+gin",

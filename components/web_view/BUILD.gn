@@ -41,6 +41,7 @@ source_set("lib") {
     "//components/resource_provider/public/interfaces",
     "//components/view_manager/public/cpp",
     "//components/view_manager/public/interfaces",
+    "//components/web_view/test_runner/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/interfaces",
     "//mojo/common:common_base",

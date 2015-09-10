@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/web_test_delegate_impl.h"
 
+#include <iostream>
+
 #include "base/time/time.h"
 #include "cc/layers/texture_layer.h"
 #include "components/test_runner/web_task.h"
@@ -85,7 +87,7 @@ void WebTestDelegateImpl::DidChangeBatteryStatus(
 }
 
 void WebTestDelegateImpl::PrintMessage(const std::string& message) {
-  fprintf(stderr, "%s", message.c_str());
+  std::cout << message;
 }
 
 void WebTestDelegateImpl::PostTask(test_runner::WebTask* task) {
@@ -228,9 +230,13 @@ void WebTestDelegateImpl::SetLocale(const std::string& locale) {
 }
 
 void WebTestDelegateImpl::TestFinished() {
+  std::cout << "Content-Type: text/plain\n";
+  std::cout << (proxy_ ? proxy_->CaptureTree(false, false) : dump_tree_);
+  std::cout << "#EOF\n";
+
   test_interfaces_->SetTestIsRunning(false);
-  fprintf(stderr, "%s", proxy_ ? proxy_->CaptureTree(false, false).c_str()
-                               : dump_tree_.c_str());
+  if (!completion_callback_.is_null())
+    completion_callback_.Run();
 }
 
 void WebTestDelegateImpl::CloseRemainingWindows() {

@@ -22,6 +22,8 @@ class LayoutTestHTMLViewer : public HTMLViewer {
   ~LayoutTestHTMLViewer() override;
 
  private:
+  void TestFinished();
+
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
 

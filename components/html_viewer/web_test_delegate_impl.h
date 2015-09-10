@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_WEB_TEST_DELEGATE_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_WEB_TEST_DELEGATE_IMPL_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/web_test_delegate.h"
@@ -26,6 +27,9 @@ class WebTestDelegateImpl : public test_runner::WebTestDelegate {
   }
   void set_test_proxy(test_runner::WebTestProxyBase* proxy) {
     proxy_ = proxy;
+  }
+  void set_completion_callback(const base::Closure& callback) {
+    completion_callback_ = callback;
   }
 
  private:
@@ -114,6 +118,7 @@ class WebTestDelegateImpl : public test_runner::WebTestDelegate {
   test_runner::WebTestInterfaces* test_interfaces_;
   test_runner::WebTestProxyBase* proxy_;
   std::string dump_tree_;
+  base::Closure completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestDelegateImpl);
 };
