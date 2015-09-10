@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/login_database.h"
 
+#include <stdint.h>
+
 #include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -63,6 +65,26 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->federation_url = GURL("https://accounts.google.com/federation");
   form->skip_zero_click = true;
 }
+
+// Helper functions to read the value of the first column of an executed
+// statement if we know its type. You must implement a specialization for
+// every column type you use.
+template<class T> struct must_be_specialized {
+  static const bool is_specialized = false;
+};
+
+template<class T> T GetFirstColumn(const sql::Statement& s) {
+  COMPILE_ASSERT(must_be_specialized<T>::is_specialized,
+                 "Implement a specialization.");
+}
+
+template<> int64_t GetFirstColumn(const sql::Statement& s) {
+  return s.ColumnInt64(0);
+};
+
+template<> std::string GetFirstColumn(const sql::Statement& s) {
+  return s.ColumnString(0);
+};
 
 }  // namespace
 
@@ -1329,25 +1351,26 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
       sql::Connection::Delete(database_path_);
   }
 
-  // Returns an empty vector on failure. Otherwise returns the values of the
-  // date_created field from the logins table. The order of the returned rows
-  // is well-defined.
-  std::vector<int64_t> GetDateCreated() {
+  // Returns an empty vector on failure. Otherwise returns values in the column
+  // |column_name| of the logins table. The order of the
+  // returned rows is well-defined.
+  template <class T> std::vector<T> GetValues(std::string column_name) {
     sql::Connection db;
-    std::vector<int64_t> results;
+    std::vector<T> results;
     if (!db.Open(database_path_))
       return results;
 
-    sql::Statement s(db.GetCachedStatement(
-        SQL_FROM_HERE, "SELECT date_created FROM logins "
-                       "ORDER BY username_value, date_created DESC"));
+    std::string statement = base::StringPrintf(
+        "SELECT %s FROM logins ORDER BY username_value, %s DESC",
+        column_name.c_str(), column_name.c_str());
+    sql::Statement s(db.GetCachedStatement(SQL_FROM_HERE, statement.c_str()));
     if (!s.is_valid()) {
       db.Close();
       return results;
     }
 
     while (s.Step())
-      results.push_back(s.ColumnInt64(0));
+      results.push_back(GetFirstColumn<T>(s));
 
     s.Clear();
     db.Close();
@@ -1372,7 +1395,7 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
   SCOPED_TRACE(testing::Message("Version file = ") << sql_file);
   CreateDatabase(sql_file);
   // Original date, in seconds since UTC epoch.
-  std::vector<int64_t> date_created(GetDateCreated());
+  std::vector<int64_t> date_created(GetValues<int64_t>("date_created"));
   ASSERT_EQ(2U, date_created.size());
   // Migration to version 8 performs changes dates to the new format.
   // So for versions less of equal to 8 create date should be in old
@@ -1407,7 +1430,7 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
     EXPECT_TRUE(db.RemoveLogin(form));
   }
   // New date, in microseconds since platform independent epoch.
-  std::vector<int64_t> new_date_created(GetDateCreated());
+  std::vector<int64_t> new_date_created(GetValues<int64_t>("date_created"));
   if (version() <= 8) {
     ASSERT_EQ(2U, new_date_created.size());
     // Check that the two dates match up.
@@ -1422,6 +1445,23 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
     ASSERT_EQ(2U, new_date_created.size());
     ASSERT_EQ(13047429345000000, new_date_created[0]);
     ASSERT_EQ(13047423600000000, new_date_created[1]);
+  }
+
+  if (version() >= 7 && version() <= 13) {
+    // The "avatar_url" column first appeared in version 7. In version 14,
+    // it was renamed to "icon_url". Migration from a version <= 13
+    // to >= 14 should not break theses URLs.
+    std::vector<std::string> urls(GetValues<std::string>("icon_url"));
+
+    if (version() == 10) {
+      // The testcase for version 10 tests duplicate entries, so we only expect
+      // one URL.
+      EXPECT_THAT(urls, testing::ElementsAre("https://www.google.com/icon"));
+    } else {
+      // Otherwise, we expect one empty and one valid URL.
+      EXPECT_THAT(
+          urls, testing::ElementsAre("", "https://www.google.com/icon"));
+    }
   }
   DestroyDatabase();
 }

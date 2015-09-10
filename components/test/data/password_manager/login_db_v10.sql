@@ -71,7 +71,7 @@ X'00000000', /* possible_usernames */
 X'18000000020000000000000000000000000000000000000000000000', /* form_data */
 0, /* date_synced */
 '', /* display_name */
-'', /* avatar_url */
+'https://www.google.com/icon', /* avatar_url */
 '', /* federation_url */
 0  /* is_zero_click */
 );
