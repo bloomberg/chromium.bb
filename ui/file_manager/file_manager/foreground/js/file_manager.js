@@ -1006,6 +1006,7 @@ FileManager.prototype = /** @struct */ {
                            assert(this.directoryModel_),
                            assert(this.volumeManager_),
                            assert(this.metadataModel_),
+                           assert(this.fileOperationManager_),
                            fakeEntriesVisible);
     directoryTree.dataModel = new NavigationListModel(
         assert(this.volumeManager_),

@@ -888,13 +888,16 @@ function DirectoryTree() {}
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
  * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
  * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
+ * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.decorate = function(
-    el, directoryModel, volumeManager, metadataModel, fakeEntriesVisible) {
+    el, directoryModel, volumeManager, metadataModel, fileOperationManager,
+    fakeEntriesVisible) {
   el.__proto__ = DirectoryTree.prototype;
   /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
-      directoryModel, volumeManager, metadataModel, fakeEntriesVisible);
+      directoryModel, volumeManager, metadataModel, fileOperationManager,
+      fakeEntriesVisible);
 };
 
 DirectoryTree.prototype = {
@@ -1060,10 +1063,12 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
  * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
  * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
+ * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.prototype.decorateDirectoryTree = function(
-    directoryModel, volumeManager, metadataModel, fakeEntriesVisible) {
+    directoryModel, volumeManager, metadataModel, fileOperationManager,
+    fakeEntriesVisible) {
   cr.ui.Tree.prototype.decorate.call(this);
 
   this.sequence_ = 0;
@@ -1079,6 +1084,11 @@ DirectoryTree.prototype.decorateDirectoryTree = function(
   this.directoryModel_.addEventListener('directory-changed',
       this.onCurrentDirectoryChanged_.bind(this));
 
+  util.addEventListenerToBackgroundComponent(
+      fileOperationManager,
+      'entries-changed',
+      this.onEntriesChanged_.bind(this));
+
   this.privateOnDirectoryChangedBound_ =
       this.onDirectoryContentChanged_.bind(this);
   chrome.fileManagerPrivate.onDirectoryChanged.addListener(
@@ -1093,6 +1103,20 @@ DirectoryTree.prototype.decorateDirectoryTree = function(
    * @private
    */
   this.fakeEntriesVisible_ = fakeEntriesVisible;
+};
+
+/**
+ * Handles entries changed event.
+ * @param {!Event} event
+ * @private
+ */
+DirectoryTree.prototype.onEntriesChanged_ = function(event) {
+  // TODO(yawano): Handle other entry change kinds.
+  if (event.kind !== util.EntryChangedKind.DELETED)
+    return;
+
+  var directories = event.entries.filter((entry) => entry.isDirectory);
+  directories.forEach((directory) => this.updateTreeByEntry_(directory));
 };
 
 /**

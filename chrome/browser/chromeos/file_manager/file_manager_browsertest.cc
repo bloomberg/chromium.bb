@@ -179,7 +179,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE,
                       "copyFromDirectoryTreeWithKeyboardShortcut"),
         TestParameter(IN_GUEST_MODE,
-                      "copyFromDirectoryTreeWithKeyboardShortcut")));
+                      "copyFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(NOT_IN_GUEST_MODE, "cutFromDirectoryTreeWithContextMenu"),
+        TestParameter(IN_GUEST_MODE, "cutFromDirectoryTreeWithContextMenu"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "cutFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(IN_GUEST_MODE,
+                      "cutFromDirectoryTreeWithKeyboardShortcut")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
