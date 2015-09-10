@@ -322,6 +322,8 @@
             '<(libjingle_source)/talk/app/webrtc/localaudiosource.h',
             '<(libjingle_source)/talk/app/webrtc/mediaconstraintsinterface.cc',
             '<(libjingle_source)/talk/app/webrtc/mediaconstraintsinterface.h',
+            '<(libjingle_source)/talk/app/webrtc/mediacontroller.cc',
+            '<(libjingle_source)/talk/app/webrtc/mediacontroller.h',
             '<(libjingle_source)/talk/app/webrtc/mediastream.cc',
             '<(libjingle_source)/talk/app/webrtc/mediastream.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamhandler.cc',
@@ -432,8 +434,6 @@
             '<(libjingle_source)/talk/session/media/rtcpmuxfilter.h',
             '<(libjingle_source)/talk/session/media/srtpfilter.cc',
             '<(libjingle_source)/talk/session/media/srtpfilter.h',
-            '<(libjingle_source)/talk/session/media/typingmonitor.cc',
-            '<(libjingle_source)/talk/session/media/typingmonitor.h',
             '<(libjingle_source)/talk/session/media/voicechannel.h',
           ],
           'conditions': [

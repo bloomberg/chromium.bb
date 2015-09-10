@@ -331,6 +331,8 @@ if (enable_webrtc) {
       "source/talk/app/webrtc/localaudiosource.h",
       "source/talk/app/webrtc/mediaconstraintsinterface.cc",
       "source/talk/app/webrtc/mediaconstraintsinterface.h",
+      "source/talk/app/webrtc/mediacontroller.cc",
+      "source/talk/app/webrtc/mediacontroller.h",
       "source/talk/app/webrtc/mediastream.cc",
       "source/talk/app/webrtc/mediastream.h",
       "source/talk/app/webrtc/mediastreamhandler.cc",
@@ -441,8 +443,6 @@ if (enable_webrtc) {
       "source/talk/session/media/rtcpmuxfilter.h",
       "source/talk/session/media/srtpfilter.cc",
       "source/talk/session/media/srtpfilter.h",
-      "source/talk/session/media/typingmonitor.cc",
-      "source/talk/session/media/typingmonitor.h",
       "source/talk/session/media/voicechannel.h",
     ]
 
