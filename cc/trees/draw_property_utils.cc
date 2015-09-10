@@ -110,7 +110,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
                                             layer_content_rect);
       combined_clip_rect_in_target_space.Intersect(
           layer_content_bounds_in_target_space);
-      clip_rect_in_target_space.Intersect(layer_content_bounds_in_target_space);
       if (combined_clip_rect_in_target_space.IsEmpty()) {
         layer->set_visible_rect_from_property_trees(gfx::Rect());
         continue;
