@@ -36,7 +36,6 @@ void BuildColumnSetIfNeeded(views::GridLayout* layout, int column_set_id) {
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
 
   // The username/"Deleted!"/Border field.
-  column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
@@ -63,7 +62,6 @@ void BuildColumnSetIfNeeded(views::GridLayout* layout, int column_set_id) {
                           0,
                           0);
   }
-  column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
 }
 
 scoped_ptr<views::Label> GenerateUsernameLabel(
@@ -211,8 +209,7 @@ void ManagePasswordItemsView::PasswordFormRow::AddCredentialsRow(
           ? THREE_COLUMN_SET
           : TWO_COLUMN_SET;
   BuildColumnSetIfNeeded(layout, column_set_id);
-  layout->StartRowWithPadding(0, column_set_id, 0,
-                              views::kRelatedControlVerticalSpacing);
+  layout->StartRow(0, column_set_id);
   layout->AddView(GenerateUsernameLabel(*password_form_).release(), 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   0, fixed_height_);
@@ -234,8 +231,7 @@ void ManagePasswordItemsView::PasswordFormRow::AddUndoRow(
   scoped_ptr<views::Link> undo_link = GenerateUndoLink(this);
   undo_link_ = undo_link.get();
   BuildColumnSetIfNeeded(layout, TWO_COLUMN_SET);
-  layout->StartRowWithPadding(0, TWO_COLUMN_SET, 0,
-                              views::kRelatedControlVerticalSpacing);
+  layout->StartRow(0, TWO_COLUMN_SET);
   layout->AddView(text.release(), 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   0, fixed_height_);
@@ -282,6 +278,8 @@ void ManagePasswordItemsView::AddRows() {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   for (auto* row : password_forms_rows_) {
+    if (row != password_forms_rows_[0])
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     row->AddRow(layout);
   }
   GetLayoutManager()->Layout(this);

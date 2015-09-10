@@ -40,6 +40,7 @@ int ManagePasswordsBubbleView::auto_signin_toast_timeout_ = 3;
 namespace {
 
 const int kDesiredBubbleWidth = 370;
+const SkColor kWarmWelcomeColor = SkColorSetARGB(0xFF, 0x64, 0x64, 0x64);
 
 enum ColumnSetType {
   // | | (FILL, FILL) | |
@@ -424,18 +425,33 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(title_label);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Credential row.
   if (item) {
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
+                                views::kUnrelatedControlVerticalSpacing);
     layout->AddView(item);
+  }
+
+  // Smart Lock warm welcome.
+  if (parent_->model()->ShouldShowGoogleSmartLockWelcome()) {
+    views::Label* smart_lock_label = new views::Label(
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_WELCOME));
+    smart_lock_label->SetMultiLine(true);
+    smart_lock_label->SetFontList(
+        ui::ResourceBundle::GetSharedInstance().GetFontList(
+            ui::ResourceBundle::SmallFont));
+    smart_lock_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    smart_lock_label->SetEnabledColor(kWarmWelcomeColor);
+    layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
+                                views::kUnrelatedControlVerticalSpacing);
+    layout->AddView(smart_lock_label);
   }
 
   // Button row.
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
+                              views::kUnrelatedControlVerticalSpacing);
   layout->AddView(save_button_);
   layout->AddView(never_button_);
 
@@ -512,7 +528,8 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   if (!parent_->model()->local_credentials().empty()) {
     ManagePasswordItemsView* item = new ManagePasswordItemsView(
         parent_->model(), parent_->model()->local_credentials().get());
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
+                                views::kUnrelatedControlVerticalSpacing);
     layout->AddView(item);
   } else {
     views::Label* empty_label = new views::Label(
@@ -523,9 +540,9 @@ ManagePasswordsBubbleView::ManageView::ManageView(
         ui::ResourceBundle::GetSharedInstance().GetFontList(
             ui::ResourceBundle::SmallFont));
 
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
+                                views::kUnrelatedControlVerticalSpacing);
     layout->AddView(empty_label);
-    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   }
 
   // Then add the "manage passwords" link and "Done" button.
@@ -543,8 +560,8 @@ ManagePasswordsBubbleView::ManageView::ManageView(
       ui::ResourceBundle::SmallFont));
 
   BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, LINK_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(0, LINK_BUTTON_COLUMN_SET, 0,
+                              views::kUnrelatedControlVerticalSpacing);
   layout->AddView(manage_link_);
   layout->AddView(done_button_);
 

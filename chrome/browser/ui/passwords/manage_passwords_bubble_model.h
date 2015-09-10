@@ -127,6 +127,10 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // should be presented.
   bool ShouldShowMultipleAccountUpdateUI() const;
 
+  // True if the save bubble should display the warm welcome for Google Smart
+  // Lock.
+  bool ShouldShowGoogleSmartLockWelcome() const;
+
 #if defined(UNIT_TEST)
   // Gets and sets the reason the bubble was displayed.
   password_manager::metrics_util::UIDisplayDisposition display_disposition()

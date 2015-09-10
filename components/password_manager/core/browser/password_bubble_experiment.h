@@ -17,6 +17,9 @@ class SyncService;
 
 namespace password_bubble_experiment {
 
+extern const char kBrandingExperimentName[];
+extern const char kSmartLockBrandingGroupName[];
+
 // Should be called when user dismisses the "Save Password?" dialog. It stores
 // the statistics about interactions with the bubble.
 void RecordBubbleClosed(

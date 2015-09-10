@@ -6,10 +6,13 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -18,7 +21,44 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
 const char kUIDismissalReasonMetric[] = "PasswordManager.UIDismissalReason";
+
+class TestSyncService : public ProfileSyncServiceMock {
+ public:
+  explicit TestSyncService(Profile* profile)
+      : ProfileSyncServiceMock(profile), smartlock_enabled_(false) {}
+  ~TestSyncService() override {}
+
+  // FakeSyncService:
+  bool HasSyncSetupCompleted() const override { return true; }
+  bool IsSyncAllowed() const override { return true; }
+  bool IsSyncActive() const override { return true; }
+  syncer::ModelTypeSet GetActiveDataTypes() const override {
+    return smartlock_enabled_ ? syncer::ModelTypeSet::All()
+                              : syncer::ModelTypeSet();
+  }
+  bool CanSyncStart() const override { return true; }
+  syncer::ModelTypeSet GetPreferredDataTypes() const override {
+    return GetActiveDataTypes();
+  }
+  bool IsUsingSecondaryPassphrase() const override { return false; }
+
+  void set_smartlock_enabled(bool smartlock_enabled) {
+    smartlock_enabled_ = smartlock_enabled;
+  }
+
+ private:
+  bool smartlock_enabled_;
+};
+
+scoped_ptr<KeyedService> TestingSyncFactoryFunction(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new TestSyncService(static_cast<Profile*>(context)));
+}
+
+}  // namespace
 
 class ManagePasswordsBubbleModelTest : public testing::Test {
  public:
@@ -39,6 +79,8 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
   void TearDown() override { model_.reset(); }
 
   PrefService* prefs() { return profile_.GetPrefs(); }
+
+  TestingProfile* profile() { return &profile_; }
 
   void PretendPasswordWaiting() {
     model_->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
@@ -276,4 +318,40 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
   model_->OnBubbleHidden();
   EXPECT_TRUE(controller()->updated_password());
   EXPECT_FALSE(controller()->never_saved_password());
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, ShowSmartLockWarmWelcome) {
+  TestSyncService* sync_service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), &TestingSyncFactoryFunction));
+  sync_service->set_smartlock_enabled(true);
+  base::FieldTrialList field_trials(nullptr);
+  base::FieldTrialList::CreateFieldTrial(
+      password_bubble_experiment::kBrandingExperimentName,
+      password_bubble_experiment::kSmartLockBrandingGroupName);
+
+  PretendPasswordWaiting();
+  EXPECT_TRUE(model_->ShouldShowGoogleSmartLockWelcome());
+  model_->OnBubbleHidden();
+  EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
+  EXPECT_TRUE(prefs()->GetBoolean(
+      password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, OmitSmartLockWarmWelcome) {
+  TestSyncService* sync_service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), &TestingSyncFactoryFunction));
+  sync_service->set_smartlock_enabled(false);
+  base::FieldTrialList field_trials(nullptr);
+  base::FieldTrialList::CreateFieldTrial(
+      password_bubble_experiment::kBrandingExperimentName,
+      password_bubble_experiment::kSmartLockBrandingGroupName);
+
+  PretendPasswordWaiting();
+  EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
+  model_->OnBubbleHidden();
+  EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
+  EXPECT_FALSE(prefs()->GetBoolean(
+      password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
 }

@@ -11,12 +11,9 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 
 namespace password_bubble_experiment {
-namespace {
 
 const char kBrandingExperimentName[] = "PasswordBranding";
 const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
-
-}  // namespace
 
 void RecordBubbleClosed(
     PrefService* prefs,
