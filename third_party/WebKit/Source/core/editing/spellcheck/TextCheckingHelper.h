@@ -53,8 +53,6 @@ public:
     UChar textCharAt(int index) const { return text()[static_cast<unsigned>(index)]; }
 
     bool isEmpty() const;
-    bool isTextEmpty() const { return text().isEmpty(); }
-    bool isRangeEmpty() const { return checkingStart() >= checkingEnd(); }
 
     int checkingStart() const;
     int checkingEnd() const;
@@ -67,6 +65,9 @@ public:
 private:
     void invalidateParagraphRangeValues();
     PassRefPtrWillBeRawPtr<Range> offsetAsRange() const;
+
+    bool isTextEmpty() const { return text().isEmpty(); }
+    bool isRangeEmpty() const { return checkingStart() >= checkingEnd(); }
 
     RefPtrWillBeMember<Range> m_checkingRange;
     mutable RefPtrWillBeMember<Range> m_paragraphRange;

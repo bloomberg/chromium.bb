@@ -507,7 +507,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node)
 
 void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck, bool asynchronous)
 {
-    if (fullParagraphToCheck.isRangeEmpty() || fullParagraphToCheck.isEmpty())
+    if (fullParagraphToCheck.isEmpty())
         return;
 
     // Since the text may be quite big chunk it up and adjust to the sentence boundary.
