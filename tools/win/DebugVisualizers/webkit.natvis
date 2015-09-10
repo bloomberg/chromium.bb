@@ -134,4 +134,28 @@
     <DisplayString Condition="m_firstChild.m_ptr != 0">&lt;{m_tagName}>{*m_firstChild.m_ptr}</DisplayString>
     <DisplayString>&lt;{m_tagName}></DisplayString>
   </Type>
+  <!-- Layout -->
+  <Type Name="blink::LayoutObject">
+    <DisplayString>{*m_node}</DisplayString>
+  </Type>
+  <Type Name="blink::InlineBox">
+    <DisplayString>{m_layoutObject}</DisplayString>
+  </Type>
+  <Type Name="blink::LineLayoutItem">
+    <DisplayString>{m_layoutObject}</DisplayString>
+  </Type>
+  <Type Name="blink::TextRun">
+    <DisplayString Condition="m_is8Bit">{m_data.characters8,[m_len]s}</DisplayString>
+    <DisplayString>{(m_data.characters16),[m_len]su}</DisplayString>
+  </Type>
+  <Type Name="blink::BidiRun">
+    <DisplayString>{*m_object} {m_start}-{m_stop}</DisplayString>
+  </Type>
+  <!-- Fonts -->
+  <Type Name="blink::SimpleFontData">
+    <DisplayString>{m_platformData}</DisplayString>
+  </Type>
+  <Type Name="blink::FontPlatformData">
+    <DisplayString>{((skia.dll!LogFontTypeface*)m_typeface.m_ptr)->fLogFont.lfFaceName,su}, {m_textSize,g}px</DisplayString>
+  </Type>
 </AutoVisualizer>
