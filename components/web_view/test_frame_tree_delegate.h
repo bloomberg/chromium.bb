@@ -6,14 +6,28 @@
 #define COMPONENTS_WEB_VIEW_TEST_FRAME_TREE_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/web_view/frame_tree_delegate.h"
+
+namespace base {
+class RunLoop;
+}
+
+namespace mojo {
+class ApplicationImpl;
+}
 
 namespace web_view {
 
 class TestFrameTreeDelegate : public FrameTreeDelegate {
  public:
-  TestFrameTreeDelegate();
+  explicit TestFrameTreeDelegate(mojo::ApplicationImpl* app);
   ~TestFrameTreeDelegate() override;
+
+  mojo::ApplicationImpl* app() { return app_; }
+
+  void WaitForCreateFrame();
+  void WaitForDestroyFrame(Frame* frame);
 
   // TestFrameTreeDelegate:
   bool CanPostMessageEventToFrame(const Frame* source,
@@ -27,8 +41,17 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
                         mojo::URLRequestPtr request,
                         const CanNavigateFrameCallback& callback) override;
   void DidStartNavigation(Frame* frame) override;
+  void DidCreateFrame(Frame* frame) override;
+  void DidDestroyFrame(Frame* frame) override;
 
  private:
+  bool is_waiting() const { return run_loop_.get(); }
+
+  mojo::ApplicationImpl* app_;
+  bool waiting_for_create_frame_;
+  Frame* waiting_for_destroy_frame_;
+  scoped_ptr<base::RunLoop> run_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeDelegate);
 };
 

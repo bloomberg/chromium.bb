@@ -99,8 +99,12 @@ void ViewTreeImpl::OnWillDestroyViewTreeImpl(
     ViewTreeImpl* connection) {
   if (creator_id_ == connection->id())
     creator_id_ = kInvalidConnectionId;
-  if (connection->root_ && connection->root_->connection_id == id_ &&
-      view_map_.count(connection->root_->view_id) > 0) {
+  const ServerView* connection_root =
+      connection->root_ ? connection->GetView(*connection->root_) : nullptr;
+  if (connection_root &&
+      ((connection_root->id().connection_id == id_ &&
+        view_map_.count(connection_root->id().view_id) > 0) ||
+       (is_embed_root_ && IsViewKnown(connection_root)))) {
     client()->OnEmbeddedAppDisconnected(
         ViewIdToTransportId(*connection->root_));
   }

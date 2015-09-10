@@ -22,6 +22,7 @@ source_set("lib") {
     "frame_devtools_agent_delegate.h",
     "frame_tree.cc",
     "frame_tree.h",
+    "frame_tree_delegate.cc",
     "frame_tree_delegate.h",
     "frame_user_data.h",
     "pending_web_view_load.cc",
@@ -73,6 +74,8 @@ mojo_native_application("web_view") {
 }
 
 source_set("test_support") {
+  testonly = true
+
   sources = [
     "test_frame_tree_delegate.cc",
     "test_frame_tree_delegate.h",
@@ -80,6 +83,7 @@ source_set("test_support") {
   deps = [
     ":lib",
     "//base",
+    "//testing/gtest",
   ]
 }
 

@@ -190,7 +190,10 @@ interface ViewTreeClient {
           uint32 focused_view,
           uint32 access_policy);
 
-  // Invoked when the application embedded at |view| is disconnected.
+  // Invoked when the application embedded at |view| is disconnected. In other
+  // words the embedded app closes the connection to the server. This is called
+  // on the connection that created |view| as well as any ancestors that have
+  // the embed root policy.
   OnEmbeddedAppDisconnected(uint32 view);
 
   // Sent when another connection is embedded in the View this connection was

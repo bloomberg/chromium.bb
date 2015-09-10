@@ -44,7 +44,8 @@ class FrameTree {
   // useful for testing.
   static bool AlwaysCreateNewFrameTree();
 
-  Frame* root() { return &root_; }
+  const Frame* root() const { return root_; }
+  Frame* root() { return root_; }
 
   uint32_t change_id() const { return change_id_; }
 
@@ -89,7 +90,9 @@ class FrameTree {
 
   FrameTreeDelegate* delegate_;
 
-  Frame root_;
+  // |root_| is owned by this, but a raw pointer as during destruction we still
+  // want access to it.
+  Frame* root_;
 
   double progress_;
 

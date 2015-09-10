@@ -81,7 +81,7 @@ scoped_ptr<base::Value> ExecuteScript(ApplicationConnection* connection,
 class TestFrameTreeDelegateImpl : public web_view::TestFrameTreeDelegate {
  public:
   explicit TestFrameTreeDelegateImpl(mojo::ApplicationImpl* app)
-      : app_(app),
+      : TestFrameTreeDelegate(app),
         frame_tree_(nullptr),
         waiting_for_navigate_(false),
         got_navigate_(false) {}
@@ -112,7 +112,7 @@ class TestFrameTreeDelegateImpl : public web_view::TestFrameTreeDelegate {
                         mojo::URLRequestPtr request,
                         const CanNavigateFrameCallback& callback) override {
     FrameConnection::CreateConnectionForCanNavigateFrame(
-        app_, target, request.Pass(), callback);
+        app(), target, request.Pass(), callback);
   }
 
   void DidStartNavigation(Frame* frame) override {
@@ -123,7 +123,6 @@ class TestFrameTreeDelegateImpl : public web_view::TestFrameTreeDelegate {
   }
 
  private:
-  mojo::ApplicationImpl* app_;
   FrameTree* frame_tree_;
   bool waiting_for_navigate_;
   bool got_navigate_;

@@ -33,6 +33,7 @@ void OnGotContentHandlerForFrame(
     scoped_ptr<FrameConnection> connection) {
   mojo::ViewTreeClientPtr view_tree_client;
   if (existing_content_handler_id != connection->GetContentHandlerID() ||
+      existing_content_handler_id == mojo::Shell::kInvalidContentHandlerID ||
       FrameTree::AlwaysCreateNewFrameTree()) {
     view_tree_client = connection->GetViewTreeClient();
   }
@@ -109,11 +110,6 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   application_connection_ = app->ConnectToApplicationWithCapabilityFilter(
       request.Pass(), filter.Pass());
   application_connection_->ConnectToService(&frame_tree_client_);
-  frame_tree_client_.set_connection_error_handler([]() {
-    // TODO(sky): implement this.
-    NOTIMPLEMENTED();
-  });
-
   application_connection_->AddContentHandlerIDCallback(on_got_id_callback);
 }
 

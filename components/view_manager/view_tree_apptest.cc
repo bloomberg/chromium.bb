@@ -1526,12 +1526,20 @@ TEST_F(ViewTreeAppTest, OnEmbeddedAppDisconnected) {
   changes2()->clear();
   ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), view_2_2));
 
+  // Connection 1 should get a hierarchy change for view_2_2.
+  vm_client1_->WaitForChangeCount(1);
+  changes1()->clear();
+
   // Close connection 3. Connection 2 (which had previously embedded 3) should
   // be notified of this.
   vm_client3_.reset();
   vm_client2_->WaitForChangeCount(1);
   EXPECT_EQ("OnEmbeddedAppDisconnected view=" + IdToString(view_2_2),
             SingleChangeToDescription(*changes2()));
+
+  vm_client1_->WaitForChangeCount(1);
+  EXPECT_EQ("OnEmbeddedAppDisconnected view=" + IdToString(view_2_2),
+            SingleChangeToDescription(*changes1()));
 }
 
 // Verifies when the parent of an Embed() is destroyed the embedded app gets

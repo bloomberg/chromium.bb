@@ -96,7 +96,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   FrameUserData* user_data() { return user_data_.get(); }
 
-  const std::vector<Frame*>& children() { return children_; }
+  const std::vector<Frame*>& children() const { return children_; }
 
   // Returns true if this Frame or any child Frame is loading.
   bool IsLoading() const;
@@ -193,6 +193,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   // mojo::ViewObserver:
   void OnTreeChanged(const TreeChangeParams& params) override;
   void OnViewDestroying(mojo::View* view) override;
+  void OnViewEmbeddedAppDisconnected(mojo::View* view) override;
 
   // FrameTreeServer:
   void PostMessageEventToFrame(uint32_t source_frame_id,

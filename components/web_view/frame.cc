@@ -86,6 +86,7 @@ Frame::~Frame() {
     if (view_ownership_ == ViewOwnership::OWNS_VIEW)
       view_->Destroy();
   }
+  tree_->delegate_->DidDestroyFrame(this);
 }
 
 void Frame::Init(Frame* parent, mojo::ViewTreeClientPtr view_tree_client) {
@@ -99,6 +100,8 @@ void Frame::Init(Frame* parent, mojo::ViewTreeClientPtr view_tree_client) {
   }
 
   InitClient(ClientType::NEW_APP, nullptr, view_tree_client.Pass());
+
+  tree_->delegate_->DidCreateFrame(this);
 }
 
 // static
@@ -164,8 +167,9 @@ void Frame::InitClient(
   for (size_t i = 0; i < frames.size(); ++i)
     array[i] = FrameToFrameData(frames[i]).Pass();
 
-  // TODO(sky): error handling.
   FrameTreeServerPtr frame_tree_server_ptr;
+  // Don't install an error handler. We allow for the target to only implement
+  // ViewTreeClient.
   frame_tree_server_binding_.reset(new mojo::Binding<FrameTreeServer>(
       this, GetProxy(&frame_tree_server_ptr).Pass()));
   if (frame_tree_client_) {
@@ -421,6 +425,12 @@ void Frame::OnViewDestroying(mojo::View* view) {
   }
 
   delete this;
+}
+
+void Frame::OnViewEmbeddedAppDisconnected(mojo::View* view) {
+  if (tree_->root() != this)
+    delete this;
+  // TODO(sky): the root case should go to the delegate.
 }
 
 void Frame::PostMessageEventToFrame(uint32_t source_frame_id,
