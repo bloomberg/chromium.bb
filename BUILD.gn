@@ -701,7 +701,7 @@ group("gn_only") {
   }
 
   if (is_android) {
-    deps += [ "//blimp/client:blimp_apk" ]
+    deps += [ "//blimp" ]
   }
 
   if (is_mac) {

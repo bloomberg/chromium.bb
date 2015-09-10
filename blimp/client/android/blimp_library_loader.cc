@@ -59,15 +59,16 @@ bool RegisterJni(JNIEnv* env) {
 
 namespace blimp {
 
-static jboolean InitializeBlimp(JNIEnv* env, jclass clazz, jobject jcontext) {
-  base::android::ScopedJavaLocalRef<jobject> scoped_jcontext(env, jcontext);
-  base::android::InitApplicationContext(env, scoped_jcontext);
+static jboolean InitializeBlimp(JNIEnv* env,
+                                const JavaParamRef<jclass>& clazz,
+                                const JavaParamRef<jobject>& jcontext) {
+  base::android::InitApplicationContext(env, jcontext);
 
   // TODO(dtrainor): Start the runner?
   return true;
 }
 
-static jboolean StartBlimp(JNIEnv* env, jclass clazz) {
+static jboolean StartBlimp(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   // TODO(dtrainor): Initialize ICU?
 
   if (!gfx::GLSurface::InitializeOneOff())

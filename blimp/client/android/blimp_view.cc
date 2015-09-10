@@ -12,7 +12,7 @@ namespace blimp {
 
 // static
 static jlong Init(JNIEnv* env,
-                  jobject jobj,
+                  const JavaParamRef<jobject>& jobj,
                   jint real_width,
                   jint real_height,
                   jint width,
@@ -29,7 +29,7 @@ bool BlimpView::RegisterJni(JNIEnv* env) {
 }
 
 BlimpView::BlimpView(JNIEnv* env,
-                     jobject jobj,
+                     const JavaParamRef<jobject>& jobj,
                      const gfx::Size& real_size,
                      const gfx::Size& size,
                      float dp_to_px)

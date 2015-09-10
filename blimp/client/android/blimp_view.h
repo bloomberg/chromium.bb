@@ -30,7 +30,7 @@ class BlimpView {
   // |dp_to_px| is the scale factor that is required to convert dp (device
   // pixels) to px.
   BlimpView(JNIEnv* env,
-            jobject jobj,
+            const base::android::JavaParamRef<jobject>& jobj,
             const gfx::Size& real_size,
             const gfx::Size& size,
             float dp_to_px);
