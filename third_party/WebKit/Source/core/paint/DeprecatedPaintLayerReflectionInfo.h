@@ -46,7 +46,7 @@
 #define DeprecatedPaintLayerReflectionInfo_h
 
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/paint/DeprecatedPaintLayerPaintingInfo.h"
+#include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 

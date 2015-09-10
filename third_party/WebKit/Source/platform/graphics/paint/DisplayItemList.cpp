@@ -93,7 +93,6 @@ void DisplayItemList::processNewItem(DisplayItem& displayItem)
     addItemToIndexIfNeeded(displayItem, m_newDisplayItems.size() - 1, m_newDisplayItemIndicesByClient);
 #endif // ENABLE(ASSERT)
 
-    ASSERT(!displayItem.skippedCache()); // Only DisplayItemList can set the flag.
     if (skippingCache())
         displayItem.setSkippedCache();
 }

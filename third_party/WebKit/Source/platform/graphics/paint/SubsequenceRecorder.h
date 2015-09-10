@@ -27,9 +27,12 @@ public:
     SubsequenceRecorder(GraphicsContext&, const DisplayItemClientWrapper&);
     ~SubsequenceRecorder();
 
+    void setUncacheable();
+
 private:
     DisplayItemList* m_displayItemList;
     DisplayItemClientWrapper m_client;
+    size_t m_beginSubsequenceIndex;
 };
 
 } // namespace blink

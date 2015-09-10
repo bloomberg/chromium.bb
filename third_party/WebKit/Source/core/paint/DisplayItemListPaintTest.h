@@ -52,11 +52,11 @@ protected:
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
 
     // Expose some document lifecycle steps for checking new display items before commiting.
-    void updateLifecyclePhasesToPaintForSlimmingPaintV2Clean()
+    void updateLifecyclePhasesToPaintForSlimmingPaintV2Clean(const LayoutRect& interestRect = LayoutRect::infiniteRect())
     {
         document().view()->updateLifecyclePhasesInternal(FrameView::OnlyUpToCompositingCleanPlusScrolling);
         document().view()->invalidateTreeIfNeededRecursive();
-        document().view()->paintForSlimmingPaintV2();
+        document().view()->paintForSlimmingPaintV2(interestRect);
     }
     void compositeForSlimmingPaintV2() { document().view()->compositeForSlimmingPaintV2(); }
 

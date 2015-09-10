@@ -33,11 +33,13 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
 SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client)
     : m_displayItemList(context.displayItemList())
     , m_client(client)
+    , m_beginSubsequenceIndex(0)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
     ASSERT(m_displayItemList);
+    m_beginSubsequenceIndex = m_displayItemList->newDisplayItems().size();
     m_displayItemList->createAndAppend<BeginSubsequenceDisplayItem>(m_client);
 }
 
@@ -46,9 +48,26 @@ SubsequenceRecorder::~SubsequenceRecorder()
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
-    // Don't remove no-op BeginSubsequence/EndSubsequence pairs because we need to
-    // match them later with CachedSubsequences.
+    if (m_displayItemList->lastDisplayItemIsNoopBegin()) {
+        ASSERT(m_beginSubsequenceIndex == m_displayItemList->newDisplayItems().size() - 1);
+        // Remove uncacheable no-op BeginSubsequence/EndSubsequence pairs.
+        // Don't remove cacheable no-op pairs because we need to match them later with CachedSubsequences.
+        if (m_displayItemList->newDisplayItems().last().skippedCache()) {
+            m_displayItemList->removeLastDisplayItem();
+            return;
+        }
+    }
+
     m_displayItemList->createAndAppend<EndSubsequenceDisplayItem>(m_client);
+}
+
+void SubsequenceRecorder::setUncacheable()
+{
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return;
+
+    ASSERT(m_displayItemList->newDisplayItems()[m_beginSubsequenceIndex].type() == DisplayItem::BeginSubsequence);
+    m_displayItemList->newDisplayItems()[m_beginSubsequenceIndex].setSkippedCache();
 }
 
 } // namespace blink

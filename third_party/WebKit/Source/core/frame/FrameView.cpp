@@ -2418,9 +2418,9 @@ void FrameView::updateWidgetPositionsIfNeeded()
     updateWidgetPositions();
 }
 
-void FrameView::updateAllLifecyclePhases()
+void FrameView::updateAllLifecyclePhases(const LayoutRect& interestRect)
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhases);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhases, interestRect);
 }
 
 // TODO(chrishtr): add a scrolling update lifecycle phase.
@@ -2429,7 +2429,7 @@ void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling);
 }
 
-void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
+void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, const LayoutRect& interestRect)
 {
     // This must be called from the root frame, since it recurses down, not up.
     // Otherwise the lifecycles of the frames might be out of sync.
@@ -2459,7 +2459,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             updateCompositedSelectionIfNeeded();
 
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-                paintForSlimmingPaintV2();
+                paintForSlimmingPaintV2(interestRect);
                 compositeForSlimmingPaintV2();
             }
 
@@ -2473,7 +2473,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
     }
 }
 
-void FrameView::paintForSlimmingPaintV2()
+void FrameView::paintForSlimmingPaintV2(const LayoutRect& interestRect)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
@@ -2488,10 +2488,8 @@ void FrameView::paintForSlimmingPaintV2()
 
     lifecycle().advanceTo(DocumentLifecycle::InPaintForSlimmingPaintV2);
 
-    // TODO(pdr): Update callers to pass in the interest rect.
-    IntRect interestRect = LayoutRect::infiniteIntRect();
     GraphicsContext context(rootGraphicsLayer->displayItemList());
-    rootGraphicsLayer->paint(context, interestRect);
+    rootGraphicsLayer->paint(context, roundedIntRect(interestRect));
 
     lifecycle().advanceTo(DocumentLifecycle::PaintForSlimmingPaintV2Clean);
 }

@@ -3847,6 +3847,7 @@
             'page/PagePopupClientTest.cpp',
             'page/PrintContextTest.cpp',
             'page/scrolling/ScrollStateTest.cpp',
+            'paint/DeprecatedPaintLayerPainterTest.cpp',
             'paint/DisplayItemListPaintTest.cpp',
             'paint/DisplayItemListPaintTest.h',
             'paint/LayerClipRecorderTest.cpp',

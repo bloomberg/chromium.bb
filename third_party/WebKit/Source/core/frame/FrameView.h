@@ -226,7 +226,8 @@ public:
     Color documentBackgroundColor() const;
 
     // Run all needed lifecycle stages. After calling this method, all frames will be in the lifecycle state PaintInvalidationClean.
-    void updateAllLifecyclePhases();
+    // TODO(pdr): Update callers to pass in the interest rect.
+    void updateAllLifecyclePhases(const LayoutRect& interestRect = LayoutRect::infiniteRect());
 
     // Computes the style, layout and compositing lifecycle stages if needed. After calling this method, all frames wil lbe in a lifecycle
     // state >= CompositingClean, and scrolling has been updated.
@@ -611,11 +612,11 @@ private:
         OnlyUpToCompositingCleanPlusScrolling,
     };
 
-    void updateLifecyclePhasesInternal(LifeCycleUpdateOption);
+    void updateLifecyclePhasesInternal(LifeCycleUpdateOption, const LayoutRect& interestRect = LayoutRect::infiniteRect());
     void invalidateTreeIfNeededRecursive();
     void scrollContentsIfNeededRecursive();
     void updateStyleAndLayoutIfNeededRecursive();
-    void paintForSlimmingPaintV2();
+    void paintForSlimmingPaintV2(const LayoutRect& interestRect);
     void compositeForSlimmingPaintV2();
 
     void reset();
