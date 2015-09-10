@@ -75,6 +75,10 @@ def main():
       sys.stdout.flush()
 
       assert test_type in ('gtest', 'gtest_isolated')
+      if test_type == 'gtest':
+        print ('WARNING: tests are forced to gtest_isolated until '
+               'http://crbug.com/529487 is fixed')
+        test_type = 'gtest_isolated'
       isolate = test_type == 'gtest_isolated'
       (ran, fail) = gtest.run_apptest(config, shell, test_args, test, isolate)
       # Ignore empty fixture lists when the commandline has a gtest filter flag.
