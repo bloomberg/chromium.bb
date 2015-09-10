@@ -54,11 +54,6 @@
 
 namespace blink {
 
-namespace {
-const double kLongIdlePeriodSecs = 1.0;
-
-} // namespace
-
 class WorkerMicrotaskRunner : public WebThread::TaskObserver {
 public:
     explicit WorkerMicrotaskRunner(WorkerThread* workerThread)
@@ -260,8 +255,6 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     m_workerReportingProxy.didEvaluateWorkerScript(success);
 
     postInitialize();
-
-    m_webScheduler->postIdleTaskAfterWakeup(FROM_HERE, WTF::bind<double>(&WorkerThread::performIdleWork, this));
 }
 
 void WorkerThread::shutdown()
@@ -395,29 +388,6 @@ void WorkerThread::terminateAndWaitForAllWorkers()
 bool WorkerThread::isCurrentThread()
 {
     return m_started && backingThread().isCurrentThread();
-}
-
-void WorkerThread::performIdleWork(double deadlineSeconds)
-{
-    double gcDeadlineSeconds = deadlineSeconds;
-
-    // The V8 GC does some GC steps (e.g. compaction) only when the idle notification is ~1s.
-    // TODO(rmcilroy): Refactor so extending the deadline like this this isn't needed.
-    if (m_webScheduler->canExceedIdleDeadlineIfRequired())
-        gcDeadlineSeconds = Platform::current()->monotonicallyIncreasingTime() + kLongIdlePeriodSecs;
-
-    if (doIdleGc(gcDeadlineSeconds))
-        m_webScheduler->postIdleTaskAfterWakeup(FROM_HERE, WTF::bind<double>(&WorkerThread::performIdleWork, this));
-    else
-        m_webScheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&WorkerThread::performIdleWork, this));
-}
-
-bool WorkerThread::doIdleGc(double deadlineSeconds)
-{
-    bool gcFinished = false;
-    if (deadlineSeconds > Platform::current()->monotonicallyIncreasingTime())
-        gcFinished = isolate()->IdleNotificationDeadline(deadlineSeconds);
-    return gcFinished;
 }
 
 void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)

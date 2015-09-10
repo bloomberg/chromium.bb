@@ -137,9 +137,6 @@ protected:
     virtual void destroyIsolate();
     virtual void terminateV8Execution();
 
-    // This is protected virtual for testing.
-    virtual bool doIdleGc(double deadlineSeconds);
-
 private:
     friend class WorkerMicrotaskRunner;
 
@@ -150,7 +147,6 @@ private:
     void initialize(PassOwnPtr<WorkerThreadStartupData>);
     void shutdown();
     void performShutdownTask();
-    void performIdleWork(double deadlineSeconds);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
     bool m_started;

@@ -117,8 +117,6 @@ public:
         WorkerThread::willDestroyIsolate();
     }
 
-    MOCK_METHOD1(doIdleGc, bool(double deadlineSeconds));
-
     PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData) override
     {
         return adoptRefWillBeNoop(new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, startupData->m_starterOrigin, startupData->m_workerClients.release()));
@@ -287,59 +285,6 @@ TEST_F(WorkerThreadTest, StartAndStopOnScriptLoaded)
         .Times(AtMost(1));
     startWithSourceCode(source);
     m_workerThread->waitUntilScriptLoaded();
-    m_workerThread->terminateAndWait();
-}
-
-class RepeatingTask : public WebTaskRunner::Task {
-public:
-    RepeatingTask(WebScheduler* scheduler, WebWaitableEvent* completion)
-        : RepeatingTask(scheduler, completion, 0) { }
-
-    ~RepeatingTask() override { }
-
-    void run() override
-    {
-        m_taskCount++;
-        if (m_taskCount == 10)
-            m_completion->signal();
-
-        m_scheduler->timerTaskRunner()->postTask(
-            FROM_HERE, new RepeatingTask(m_scheduler, m_completion, m_taskCount));
-        m_scheduler->timerTaskRunner()->postTask(FROM_HERE, new WakeupTask());
-    }
-
-private:
-    RepeatingTask(WebScheduler* scheduler, WebWaitableEvent* completion, int taskCount)
-        : m_scheduler(scheduler)
-        , m_completion(completion)
-        , m_taskCount(taskCount)
-        { }
-
-    WebScheduler* m_scheduler; // Not owned.
-    WebWaitableEvent* m_completion;
-    int m_taskCount;
-};
-
-TEST_F(WorkerThreadTest, GcDoesNotOccurWhenNotIdle)
-{
-    OwnPtr<WebWaitableEvent> completion = adoptPtr(Platform::current()->createWaitableEvent());
-
-    EXPECT_CALL(*m_workerThread, doIdleGc(_)).Times(0);
-
-    expectWorkerLifetimeReportingCalls();
-    start();
-    waitForInit();
-
-    WebScheduler* scheduler = m_workerThread->backingThread().platformThread().scheduler();
-
-    // Post a repeating task that should prevent any GC from happening.
-    scheduler->loadingTaskRunner()->postTask(FROM_HERE, new RepeatingTask(scheduler, completion.get()));
-
-    completion->wait();
-
-    // Make sure doIdleGc has not been called by this stage.
-    Mock::VerifyAndClearExpectations(m_workerThread.get());
-
     m_workerThread->terminateAndWait();
 }
 
