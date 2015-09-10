@@ -1908,8 +1908,8 @@ TEST_F(DiskCacheTest, SimpleCacheControlRestart) {
 
     disk_cache::Entry* entry = NULL;
     rv = cache->OpenEntry(kExistingEntryKey, &entry, cb.callback());
-    EXPECT_EQ(net::OK, cb.GetResult(rv));
-    EXPECT_TRUE(entry);
+    ASSERT_EQ(net::OK, cb.GetResult(rv));
+    EXPECT_NE(nullptr, entry);
     entry->Close();
   }
 }
@@ -1949,8 +1949,8 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
 
     disk_cache::Entry* entry = NULL;
     rv = cache->OpenEntry(kExistingEntryKey, &entry, cb.callback());
-    EXPECT_EQ(net::OK, cb.GetResult(rv));
-    EXPECT_TRUE(entry);
+    ASSERT_EQ(net::OK, cb.GetResult(rv));
+    EXPECT_NE(nullptr, entry);
     entry->Close();
   }
 }
