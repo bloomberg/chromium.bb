@@ -600,10 +600,6 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   params.SetString("service", "chromiumsync");
 
   content::WebContents* contents = web_ui()->GetWebContents();
-  const GURL& current_url = contents->GetURL();
-  std::string is_constrained;
-  net::GetValueForKeyInQuery(current_url, "constrained", &is_constrained);
-
   content::WebContentsObserver::Observe(contents);
   LogHistogramValue(signin_metrics::HISTOGRAM_SHOWN);
 }
