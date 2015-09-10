@@ -642,9 +642,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     DOMStorageArea::EnableAggressiveCommitDelay();
   }
 
-  base::trace_event::MemoryDumpManager::GetInstance()->Initialize();
-
-  // Enable the dump providers.
+  // Enable memory-infra dump providers.
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       HostSharedBitmapManager::current());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

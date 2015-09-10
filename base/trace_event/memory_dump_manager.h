@@ -40,12 +40,19 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   static MemoryDumpManager* GetInstance();
 
-  // Invoked once per process to register the TraceLog observer.
-  void Initialize();
-
-  // See the lifetime and thread-safety requirements on the delegate below in
-  // the |MemoryDumpManagerDelegate| docstring.
-  void SetDelegate(MemoryDumpManagerDelegate* delegate);
+  // Invoked once per process to listen to trace begin / end events.
+  // Initialization can happen after (Un)RegisterMemoryDumpProvider() calls
+  // and the MemoryDumpManager guarantees to support this.
+  // On the other side, the MemoryDumpManager will not be fully operational
+  // (i.e. will NACK any RequestGlobalMemoryDump()) until initialized.
+  // Arguments:
+  //  is_coordinator: if true this MemoryDumpManager instance will act as a
+  //      coordinator and schedule periodic dumps (if enabled via TraceConfig);
+  //      false when the MemoryDumpManager is initialized in a slave process.
+  //  delegate: inversion-of-control interface for embedder-specific behaviors
+  //      (multiprocess handshaking). See the lifetime and thread-safety
+  //      requirements in the |MemoryDumpManagerDelegate| docstring.
+  void Initialize(MemoryDumpManagerDelegate* delegate, bool is_coordinator);
 
   // MemoryDumpManager does NOT take memory ownership of |mdp|, which is
   // expected to either be a singleton or unregister itself.
@@ -108,9 +115,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
   friend class MemoryDumpManagerDelegate;
   friend class MemoryDumpManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(MemoryDumpManagerTest, DisableFailingDumpers);
-  FRIEND_TEST_ALL_PREFIXES(MemoryDumpManagerTest,
-                           UnregisterDumperFromThreadWhileDumping);
 
   // Descriptor struct used to hold information about registered MDPs. It is
   // deliberately copyable, in order to allow it to be used as std::set value.
@@ -208,6 +212,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   MemoryDumpManagerDelegate* delegate_;  // Not owned.
 
+  // When true, this instance is in charge of coordinating periodic dumps.
+  bool is_coordinator_;
+
   // Protects from concurrent accesses to the |dump_providers_*| and |delegate_|
   // to guard against disabling logging while dumping on another thread.
   Lock lock_;
@@ -240,10 +247,6 @@ class BASE_EXPORT MemoryDumpManagerDelegate {
  public:
   virtual void RequestGlobalMemoryDump(const MemoryDumpRequestArgs& args,
                                        const MemoryDumpCallback& callback) = 0;
-
-  // Determines whether the MemoryDumpManager instance should be the master
-  // (the ones which initiates and coordinates the multiprocess dumps) or not.
-  virtual bool IsCoordinatorProcess() const = 0;
 
   // Returns tracing process id of the current process. This is used by
   // MemoryDumpManager::GetTracingProcessId.

@@ -106,6 +106,7 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 
 MemoryDumpManager::MemoryDumpManager()
     : delegate_(nullptr),
+      is_coordinator_(false),
       memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
       skip_core_dumpers_auto_registration_for_testing_(false),
@@ -117,10 +118,15 @@ MemoryDumpManager::~MemoryDumpManager() {
   TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
 }
 
-void MemoryDumpManager::Initialize() {
-  TRACE_EVENT0(kTraceCategory, "init");  // Add to trace-viewer category list.
-
-  TraceLog::GetInstance()->AddEnabledStateObserver(this);
+void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
+                                   bool is_coordinator) {
+  {
+    AutoLock lock(lock_);
+    DCHECK(delegate);
+    DCHECK(!delegate_);
+    delegate_ = delegate;
+    is_coordinator_ = is_coordinator;
+  }
 
   // Enable the core dump providers.
   if (!skip_core_dumpers_auto_registration_for_testing_) {
@@ -141,12 +147,14 @@ void MemoryDumpManager::Initialize() {
     RegisterDumpProvider(WinHeapDumpProvider::GetInstance());
 #endif
   }  // !skip_core_dumpers_auto_registration_for_testing_
-}
 
-void MemoryDumpManager::SetDelegate(MemoryDumpManagerDelegate* delegate) {
-  AutoLock lock(lock_);
-  DCHECK_EQ(static_cast<MemoryDumpManagerDelegate*>(nullptr), delegate_);
-  delegate_ = delegate;
+  // If tracing was enabled before initializing MemoryDumpManager, we missed the
+  // OnTraceLogEnabled() event. Synthetize it so we can late-join the party.
+  bool is_tracing_already_enabled = TraceLog::GetInstance()->IsEnabled();
+  TRACE_EVENT0(kTraceCategory, "init");  // Add to trace-viewer category list.
+  TraceLog::GetInstance()->AddEnabledStateObserver(this);
+  if (is_tracing_already_enabled)
+    OnTraceLogEnabled();
 }
 
 void MemoryDumpManager::RegisterDumpProvider(
@@ -210,22 +218,21 @@ void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
   const uint64 guid =
       TraceLog::GetInstance()->MangleEventId(g_next_guid.GetNext());
 
-  // The delegate_ is supposed to be thread safe, immutable and long lived.
-  // No need to keep the lock after we ensured that a delegate has been set.
+  // Technically there is no need to grab the |lock_| here as the delegate is
+  // long-lived and can only be set by Initialize(), which is locked and
+  // necessarily happens before memory_tracing_enabled_ == true.
+  // Not taking the |lock_|, though, is lakely make TSan barf and, at this point
+  // (memory-infra is enabled) we're not in the fast-path anymore.
   MemoryDumpManagerDelegate* delegate;
   {
     AutoLock lock(lock_);
     delegate = delegate_;
   }
 
-  if (delegate) {
-    // The delegate is in charge to coordinate the request among all the
-    // processes and call the CreateLocalDumpPoint on the local process.
-    MemoryDumpRequestArgs args = {guid, dump_type, dump_args};
-    delegate->RequestGlobalMemoryDump(args, callback);
-  } else if (!callback.is_null()) {
-    callback.Run(guid, false /* success */);
-  }
+  // The delegate will coordinate the IPC broadcast and at some point invoke
+  // CreateProcessDump() to get a dump for the current process.
+  MemoryDumpRequestArgs args = {guid, dump_type, dump_args};
+  delegate->RequestGlobalMemoryDump(args, callback);
 }
 
 void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
@@ -394,11 +401,10 @@ void MemoryDumpManager::AbortDumpLocked(
 }
 
 void MemoryDumpManager::OnTraceLogEnabled() {
-  // TODO(primiano): at this point we query  TraceLog::GetCurrentCategoryFilter
-  // to figure out (and cache) which dumpers should be enabled or not.
-  // For the moment piggy back everything on the generic "memory" category.
   bool enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &enabled);
+  if (!enabled)
+    return;
 
   // Initialize the TraceLog for the current thread. This is to avoid that the
   // TraceLog memory dump provider is registered lazily in the PostTask() below
@@ -407,13 +413,7 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 
   AutoLock lock(lock_);
 
-  // There is no point starting the tracing without a delegate.
-  if (!enabled || !delegate_) {
-    // Disable all the providers.
-    for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it)
-      it->disabled = true;
-    return;
-  }
+  DCHECK(delegate_);  // At this point we must have a delegate.
 
   session_state_ = new MemoryDumpSessionState();
   for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
@@ -425,9 +425,9 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 
   // TODO(primiano): This is a temporary hack to disable periodic memory dumps
   // when running memory benchmarks until telemetry uses TraceConfig to
-  // enable/disable periodic dumps.
+  // enable/disable periodic dumps. See crbug.com/529184 .
   // The same mechanism should be used to disable periodic dumps in tests.
-  if (!delegate_->IsCoordinatorProcess() ||
+  if (!is_coordinator_ ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           "enable-memory-benchmarking") ||
       disable_periodic_dumps_for_testing_) {

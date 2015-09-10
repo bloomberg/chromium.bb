@@ -59,7 +59,8 @@ TracingControllerImpl::TracingControllerImpl()
       is_recording_(TraceLog::GetInstance()->IsEnabled()),
       is_monitoring_(false),
       is_power_tracing_(false) {
-  base::trace_event::MemoryDumpManager::GetInstance()->SetDelegate(this);
+  base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
+      this /* delegate */, true /* is_coordinator */);
 
   // Deliberately leaked, like this class.
   base::FileTracing::SetProvider(new FileTracingProviderImpl);
@@ -844,10 +845,6 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
 
   for (const scoped_refptr<TraceMessageFilter>& tmf : trace_message_filters_)
     tmf->SendProcessMemoryDumpRequest(args);
-}
-
-bool TracingControllerImpl::IsCoordinatorProcess() const {
-  return true;
 }
 
 uint64 TracingControllerImpl::GetTracingProcessId() const {

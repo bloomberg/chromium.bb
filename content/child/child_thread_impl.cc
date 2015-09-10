@@ -28,7 +28,6 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/child_trace_message_filter.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
@@ -494,8 +493,6 @@ void ChildThreadImpl::Init(const Options& options) {
       message_loop_->task_runner(), ::HeapProfilerWithPseudoStackStart,
       ::HeapProfilerStop, ::GetHeapProfile));
 #endif
-
-  base::trace_event::MemoryDumpManager::GetInstance()->Initialize();
 
   shared_bitmap_manager_.reset(
       new ChildSharedBitmapManager(thread_safe_sender()));

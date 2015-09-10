@@ -21,11 +21,11 @@ ChildMemoryDumpManagerDelegateImpl::ChildMemoryDumpManagerDelegateImpl()
     : ctmf_(nullptr),
       tracing_process_id_(
           base::trace_event::MemoryDumpManager::kInvalidTracingProcessId) {
-  base::trace_event::MemoryDumpManager::GetInstance()->SetDelegate(this);
+  base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
+      this /* delegate */, false /* is_coordinator */);
 }
 
-ChildMemoryDumpManagerDelegateImpl::~ChildMemoryDumpManagerDelegateImpl() {
-}
+ChildMemoryDumpManagerDelegateImpl::~ChildMemoryDumpManagerDelegateImpl() {}
 
 void ChildMemoryDumpManagerDelegateImpl::SetChildTraceMessageFilter(
     ChildTraceMessageFilter* ctmf) {
@@ -68,10 +68,6 @@ void ChildMemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
 
   // Send the request up to the browser process' MessageDumpmanager.
   ctmf_->SendGlobalMemoryDumpRequest(args, callback);
-}
-
-bool ChildMemoryDumpManagerDelegateImpl::IsCoordinatorProcess() const {
-  return false;
 }
 
 uint64 ChildMemoryDumpManagerDelegateImpl::GetTracingProcessId() const {

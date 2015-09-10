@@ -68,13 +68,14 @@ class MemoryTracingTest : public ContentBrowserTest {
     callback_call_count_ = 0;
     last_callback_dump_guid_ = 0;
     last_callback_success_ = false;
-    MemoryDumpManager::GetInstance()->Initialize();
-    mock_dump_provider_.reset(new MockDumpProvider());
-    MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        mock_dump_provider_.get());
+
     // TODO(primiano): This should be done via TraceConfig.
     // See https://goo.gl/5Hj3o0.
     MemoryDumpManager::GetInstance()->DisablePeriodicDumpsForTesting();
+
+    mock_dump_provider_.reset(new MockDumpProvider());
+    MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        mock_dump_provider_.get());
     ContentBrowserTest::SetUp();
   }
 
