@@ -939,41 +939,48 @@ static PositionWithAffinityTemplate<Strategy> startPositionForLine(const Positio
 }
 
 template <typename Strategy>
-static PositionWithAffinityTemplate<Strategy> startOfLine(const PositionWithAffinityTemplate<Strategy>& c, LineEndpointComputationMode mode)
+static PositionWithAffinityTemplate<Strategy> startOfLineAlgorithm(const PositionWithAffinityTemplate<Strategy>& c)
 {
     // TODO: this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-    PositionWithAffinityTemplate<Strategy> visPos = startPositionForLine(c, mode);
-
-    if (mode == UseLogicalOrdering) {
-        if (ContainerNode* editableRoot = highestEditableRoot(c.position())) {
-            if (!editableRoot->contains(visPos.position().computeContainerNode()))
-                return PositionWithAffinityTemplate<Strategy>(PositionAlgorithm<Strategy>::firstPositionInNode(editableRoot));
-        }
-    }
-
+    PositionWithAffinityTemplate<Strategy> visPos = startPositionForLine(c, UseInlineBoxOrdering);
     return honorEditingBoundaryAtOrBefore(visPos, c.position());
 }
 
 static PositionWithAffinity startOfLine(const PositionWithAffinity& currentPosition)
 {
-    return startOfLine(currentPosition, UseInlineBoxOrdering);
+    return startOfLineAlgorithm<EditingStrategy>(currentPosition);
 }
 
 static PositionInComposedTreeWithAffinity startOfLine(const PositionInComposedTreeWithAffinity& currentPosition)
 {
-    return startOfLine(currentPosition, UseInlineBoxOrdering);
+    return startOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition);
 }
 
 // FIXME: Rename this function to reflect the fact it ignores bidi levels.
 VisiblePosition startOfLine(const VisiblePosition& currentPosition)
 {
-    return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity(), UseInlineBoxOrdering));
+    return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity()));
+}
+
+template <typename Strategy>
+static PositionWithAffinityTemplate<Strategy> logicalStartOfLineAlgorithm(const PositionWithAffinityTemplate<Strategy>& c)
+{
+    // TODO: this is the current behavior that might need to be fixed.
+    // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
+    PositionWithAffinityTemplate<Strategy> visPos = startPositionForLine(c, UseLogicalOrdering);
+
+    if (ContainerNode* editableRoot = highestEditableRoot(c.position())) {
+        if (!editableRoot->contains(visPos.position().computeContainerNode()))
+            return PositionWithAffinityTemplate<Strategy>(PositionAlgorithm<Strategy>::firstPositionInNode(editableRoot));
+    }
+
+    return honorEditingBoundaryAtOrBefore(visPos, c.position());
 }
 
 VisiblePosition logicalStartOfLine(const VisiblePosition& currentPosition)
 {
-    return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity(), UseLogicalOrdering));
+    return createVisiblePosition(logicalStartOfLineAlgorithm<EditingStrategy>(currentPosition.toPositionWithAffinity()));
 }
 
 static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpointComputationMode mode)
