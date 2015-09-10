@@ -88,24 +88,21 @@
                     android:padding="16dp"
                     android:gravity="end" >
 
-                    <org.chromium.ui.widget.ButtonCompat
+                    <Button
                         android:id="@+id/no_thanks_button"
                         android:layout_height="match_parent"
                         android:layout_width="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
                         android:minHeight="40dp"
                         android:text="@string/no_thanks"
                         android:textColor="@color/light_normal_color"
                         android:textSize="@dimen/data_reduction_promo_button_text_size"
-                        chrome:buttonColor="#FFFFFF"
                         style="@style/ButtonCompatBorderless" />
 
                     <org.chromium.ui.widget.ButtonCompat
                         android:id="@+id/enable_button"
                         android:layout_height="match_parent"
                         android:layout_width="wrap_content"
-                        android:layout_weight="1"
                         android:elevation="0dp"
                         android:minHeight="40dp"
                         android:text="@string/data_reduction_enable_button"

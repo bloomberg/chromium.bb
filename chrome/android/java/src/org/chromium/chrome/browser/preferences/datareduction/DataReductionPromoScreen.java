@@ -8,10 +8,12 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
@@ -66,6 +68,12 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         super(context, R.style.DataReductionPromoScreenDialog);
         setContentView(getContentView(context), new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+
+        // Remove the shadow from the enable button.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Button enableButton = (Button) findViewById(R.id.enable_button);
+            enableButton.setStateListAnimator(null);
+        }
     }
 
     @Override
