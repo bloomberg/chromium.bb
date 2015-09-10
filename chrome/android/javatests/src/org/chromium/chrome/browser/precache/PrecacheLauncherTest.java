@@ -57,7 +57,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         }
 
         @Override
-        public boolean isSyncInitialized() {
+        public boolean isBackendInitialized() {
             return mSyncInitialized;
         }
 
@@ -88,8 +88,8 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                // The StubProfileSyncService stubs out isSyncInitialized so we can change that on
-                // the fly.
+                // The StubProfileSyncService stubs out isBackendInitialized so we can change that
+                // on the fly.
                 mSync = new StubProfileSyncService();
                 ProfileSyncService.overrideForTests(mSync);
 

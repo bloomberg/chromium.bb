@@ -508,7 +508,7 @@ public class AccountManagementFragment extends PreferenceFragment
         }
 
         if (AndroidSyncSettings.isSyncEnabled(activity)) {
-            if (!profileSyncService.isSyncInitialized()) {
+            if (!profileSyncService.isBackendInitialized()) {
                 return res.getString(R.string.sync_setup_progress);
             }
 

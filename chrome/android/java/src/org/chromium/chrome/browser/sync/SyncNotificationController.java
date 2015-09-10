@@ -67,7 +67,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         if (shouldSyncAuthErrorBeShown()) {
             message = mProfileSyncService.getAuthError().getMessage();
             intent = createSettingsIntent();
-        } else if (mProfileSyncService.isSyncInitialized()
+        } else if (mProfileSyncService.isBackendInitialized()
                 && mProfileSyncService.isPassphraseRequiredForDecryption()) {
             if (mProfileSyncService.isPassphrasePrompted()) {
                 return;

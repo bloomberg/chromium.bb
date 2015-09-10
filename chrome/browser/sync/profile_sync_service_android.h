@@ -60,7 +60,7 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   void SetSyncSessionsId(JNIEnv* env, jobject obj, jstring tag);
 
   // Returns true if the sync backend is initialized.
-  jboolean IsSyncInitialized(JNIEnv* env, jobject obj);
+  jboolean IsBackendInitialized(JNIEnv* env, jobject obj);
 
   // Returns true if the sync is currently being setup for the first time.
   jboolean IsFirstSetupInProgress(JNIEnv* env, jobject obj);

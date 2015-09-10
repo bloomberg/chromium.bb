@@ -18,7 +18,7 @@ public class FakeProfileSyncService extends ProfileSyncService {
     }
 
     @Override
-    public boolean isSyncInitialized() {
+    public boolean isBackendInitialized() {
         return mBackendInitialized;
     }
 

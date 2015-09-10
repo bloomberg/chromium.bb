@@ -139,7 +139,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             @Override
             public void run() {
                 assertFalse(mProfileSyncService.isSyncRequested());
-                assertFalse(mProfileSyncService.isSyncInitialized());
+                assertFalse(mProfileSyncService.isBackendInitialized());
             }
         });
     }
@@ -526,7 +526,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         boolean success = CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mProfileSyncService.isSyncInitialized();
+                return mProfileSyncService.isBackendInitialized();
             }
         }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
         assertTrue("Timed out waiting for sync's backend to be initialized.", success);
