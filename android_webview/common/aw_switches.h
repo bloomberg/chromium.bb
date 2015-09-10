@@ -9,7 +9,7 @@ namespace switches {
 
 extern const char kEnablePageVisibility[];
 extern const char kUseInProcCommandBuffer[];
-extern const char kWebViewSanboxedRenderer[];
+extern const char kWebViewSandboxedRenderer[];
 
 }  // namespace switches
 

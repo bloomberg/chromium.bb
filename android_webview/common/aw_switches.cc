@@ -8,6 +8,6 @@ namespace switches {
 
 const char kEnablePageVisibility[] = "enable-page-visibility";
 const char kUseInProcCommandBuffer[] = "use-in-proc-command-buffer";
-const char kWebViewSanboxedRenderer[] = "webview-sandboxed-renderer";
+const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 
 }  // namespace switches

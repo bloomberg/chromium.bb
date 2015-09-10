@@ -9,8 +9,8 @@ package org.chromium.android_webview;
  */
 public abstract class AwSwitches {
     // Experimental mode to run renderers in a sandbox, disables kSingleProcess,
-    // enables kInProcessGPU ans sets kRendererProcessLimit to 1.
-    // Native switch kWebViewSanboxedRenderer.
+    // enables kInProcessGPU and sets kRendererProcessLimit to 1.
+    // Native switch kWebViewSandboxedRenderer.
     public static final String WEBVIEW_SANDBOXED_RENDERER = "webview-sandboxed-renderer";
 
     private AwSwitches() {}
