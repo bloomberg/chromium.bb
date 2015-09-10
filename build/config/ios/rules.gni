@@ -93,6 +93,29 @@ template("ios_app") {
 
     output_name = "${_app_name}.app/${_app_name}"
 
+    forward_variables_from(invoker,
+                           [
+                             "all_dependent_configs",
+                             "allow_circular_includes_from",
+                             "cflags",
+                             "cflags_c",
+                             "cflags_cc",
+                             "cflags_objc",
+                             "cflags_objcc",
+                             "configs",
+                             "check_includes",
+                             "data",
+                             "data_deps",
+                             "defines",
+                             "forward_dependent_configs_from",
+                             "include_dirs",
+                             "ldflags",
+                             "public",
+                             "public_configs",
+                             "public_deps",
+                             "sources",
+                           ])
+
     if (defined(invoker.libs)) {
       libs = invoker.libs
     } else {

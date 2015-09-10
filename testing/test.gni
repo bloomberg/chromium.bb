@@ -110,33 +110,6 @@ template("test") {
       import("//build/config/ios/rules.gni")
     }
 
-    target__sources_name = "${target_name}__sources"
-    if (defined(invoker.sources)) {
-      source_set(target__sources_name) {
-        sources = invoker.sources
-        testonly = true
-
-        configs = []  # Prevent list overwriting warning.
-        configs += invoker.configs
-
-        forward_variables_from(invoker,
-                               [
-                                 "cflags",
-                                 "cflags_c",
-                                 "cflags_cc",
-                                 "cflags_objc",
-                                 "cflags_objcc",
-                                 "data",
-                                 "data_deps",
-                                 "datadeps",
-                                 "defines",
-                                 "deps",
-                                 "include_dirs",
-                                 "includes",
-                               ])
-      }
-    }
-
     ios_app(target_name) {
       # TODO(GYP): Make this configurable and only provide a default
       # that can be overridden.
@@ -159,7 +132,12 @@ template("test") {
                                "cflags_objc",
                                "cflags_objcc",
                                "check_includes",
+                               "configs",
+                               "data",
+                               "data_deps",
+                               "defines",
                                "forward_dependent_configs_from",
+                               "include_dirs",
                                "ldflags",
                                "libs",
                                "output_extension",
@@ -167,6 +145,7 @@ template("test") {
                                "public",
                                "public_configs",
                                "public_deps",
+                               "sources",
                                "visibility",
                              ])
 
@@ -180,10 +159,6 @@ template("test") {
         # asan mode (this target will be empty in other cases).
         "//build/config/sanitizers:deps",
       ]
-
-      if (defined(invoker.sources)) {
-        deps += [ ":${target__sources_name}" ]
-      }
     }
   } else {
     executable(target_name) {
