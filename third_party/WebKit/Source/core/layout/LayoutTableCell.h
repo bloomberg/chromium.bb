@@ -40,6 +40,46 @@ enum IncludeBorderColorOrNot { DoNotIncludeBorderColor, IncludeBorderColor };
 
 class SubtreeLayoutScope;
 
+// LayoutTableCell is used to represent a table cell (display: table-cell).
+//
+// Because rows are as tall as the tallest cell, cells need to be aligned into
+// the enclosing row space. To achieve this, LayoutTableCell introduces the
+// concept of 'intrinsic padding'. Those 2 paddings are used to shift the box
+// into the row as follows:
+//
+//        --------------------------------
+//        ^  ^
+//        |  |
+//        |  |    cell's border before
+//        |  |
+//        |  v
+//        |  ^
+//        |  |
+//        |  | m_intrinsicPaddingBefore
+//        |  |
+//        |  v
+//        |  -----------------------------
+//        |  |                           |
+// row    |  |   cell's padding box      |
+// height |  |                           |
+//        |  -----------------------------
+//        |  ^
+//        |  |
+//        |  | m_intrinsicPaddingAfter
+//        |  |
+//        |  v
+//        |  ^
+//        |  |
+//        |  |    cell's border after
+//        |  |
+//        v  v
+//        ---------------------------------
+//
+// Note that this diagram is not impacted by collapsing or separate borders
+// (see 'border-collapse').
+// Also there is no margin on table cell (or any internal table element).
+// TODO(jchaffraix): Explain the positioning system used in tables and how
+// this interacts (badly) with table rows.
 class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 public:
     explicit LayoutTableCell(Element*);
@@ -287,6 +327,12 @@ private:
     unsigned m_cellWidthChanged : 1;
     unsigned m_hasColSpan: 1;
     unsigned m_hasRowSpan: 1;
+
+    // The intrinsic padding.
+    // See class comment for what they are.
+    //
+    // Note: Those fields are using non-subpixel units (int)
+    // because we don't do fractional arithmetic on tables.
     int m_intrinsicPaddingBefore;
     int m_intrinsicPaddingAfter;
 };

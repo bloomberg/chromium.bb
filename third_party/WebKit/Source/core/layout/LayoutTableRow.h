@@ -30,9 +30,25 @@
 
 namespace blink {
 
+// There is a window of opportunity to read |m_rowIndex| before it is set when
+// inserting the LayoutTableRow or during LayoutTableSection::recalcCells.
+// This value is used to detect that case.
 static const unsigned unsetRowIndex = 0x7FFFFFFF;
 static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 
+// LayoutTableRow is used to represent a table row (display: table-row).
+//
+// LayoutTableRow is a simple object. The reason is that most operations
+// have to be coordinated at the LayoutTableSection level and thus are
+// handled in LayoutTableSection (see e.g. layoutRows).
+//
+// The table model prevents any layout overflow on rows (but allow visual
+// overflow). For row height, it is defined as "the maximum of the row's
+// computed 'height', the computed 'height' of each cell in the row, and
+// the minimum height (MIN) required by  the cells" (CSS 2.1 - section 17.5.3).
+// Note that this means that rows and cells differ from other LayoutObject as
+// they will ignore 'height' in some situation (when other LayoutObject just
+// allow some layout overflow to occur).
 class CORE_EXPORT LayoutTableRow final : public LayoutBox {
 public:
     explicit LayoutTableRow(Element*);
@@ -129,6 +145,10 @@ private:
     void previousSibling() const = delete;
 
     LayoutObjectChildList m_children;
+
+    // This field should never be read directly. It should be read through
+    // rowIndex() above instead. This is to ensure that we never read this
+    // value before it is set.
     unsigned m_rowIndex : 31;
 };
 
