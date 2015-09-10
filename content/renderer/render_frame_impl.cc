@@ -3488,6 +3488,12 @@ void RenderFrameImpl::didRunInsecureContent(
       GURL(origin.toString().utf8()));
 }
 
+void RenderFrameImpl::didChangePerformanceTiming() {
+  FOR_EACH_OBSERVER(RenderFrameObserver,
+                    observers_,
+                    DidChangePerformanceTiming());
+}
+
 void RenderFrameImpl::didAbortLoading(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
 #if defined(ENABLE_PLUGINS)

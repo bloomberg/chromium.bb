@@ -99,6 +99,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when a compositor frame has committed.
   virtual void DidCommitCompositorFrame() {}
 
+  // Notifications when |PerformanceTiming| data becomes available
+  virtual void DidChangePerformanceTiming() {}
+
   // Called when the focused node has changed to |node|.
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
 
