@@ -27,7 +27,6 @@ import swarming
 import test_utils
 
 from utils import file_path
-from utils import logging_utils
 from utils import tools
 
 import isolateserver_mock
@@ -81,24 +80,35 @@ def main(args):
   return dispatcher.execute(swarming.OptionParserSwarming(), args)
 
 
-def gen_request_data(properties=None, **kwargs):
+def gen_request_data(isolated_hash=FILE_HASH, properties=None, **kwargs):
   out = {
-    'expiration_secs': 3600,
-    'name': 'unit_tests',
+    'name': u'unit_tests',
     'parent_task_id': '',
     'priority': 101,
     'properties': {
-      'command': ['--some-arg', '123'],
-      'dimensions': [
-        {'key': 'foo', 'value': 'bar'},
-        {'key': 'os', 'value': 'Mac'},
+      'commands': [
+        [
+          'python',
+          'run_isolated.zip',
+          '--isolated', isolated_hash,
+          '--isolate-server', 'https://localhost:2',
+          '--namespace', 'default-gzip',
+          '--',
+          '--some-arg',
+          '123',
+        ],
       ],
-      'env': [],
+      'data': [('https://localhost:1/fetch_url', 'swarm_data.zip')],
+      'dimensions': {
+        'foo': 'bar',
+        'os': 'Mac',
+      },
+      'env': {},
       'execution_timeout_secs': 60,
       'idempotent': False,
-      'inputs_ref': None,
       'io_timeout_secs': 60,
     },
+    'scheduling_expiration_secs': 3600,
     'tags': ['taga', 'tagb'],
     'user': 'joe@localhost',
   }
@@ -119,25 +129,35 @@ def gen_request_response(request, **kwargs):
 
 def gen_result_response(**kwargs):
   out = {
-    u'bot_id': u'swarm6',
-    u'completed_ts': u'2014-09-24T13:49:16.012345',
-    u'created_ts': u'2014-09-24T13:49:03.012345',
-    u'duration': 0.9636809825897217,
-    u'exit_code': 0,
-    u'failure': False,
-    u'internal_failure': False,
-    u'modified_ts': u'2014-09-24T13:49:17.012345',
-    u'name': u'heartbeat-canary-2014-09-24_13:49:01-os=Linux',
-    u'server_versions': [u'1'],
-    u'started_ts': u'2014-09-24T13:49:09.012345',
-    u'state': 'COMPLETED',
-    u'tags': [u'cpu:x86', u'priority:100', u'user:joe@localhost'],
-    u'task_id': u'10100',
-    u'try_number': 1,
-    u'user': u'joe@localhost',
+    "abandoned_ts": None,
+    "bot_id": "swarm6",
+    "completed_ts": "2014-09-24 13:49:16",
+    "created_ts": "2014-09-24 13:49:03",
+    "durations": [0.9636809825897217],
+    "exit_codes": [0],
+    "failure": False,
+    "id": "10100",
+    "internal_failure": False,
+    "modified_ts": "2014-09-24 13:49:17",
+    "name": "heartbeat-canary-2014-09-24_13:49:01-os=Linux",
+    "started_ts": "2014-09-24 13:49:09",
+    "state": 112,
+    "try_number": 1,
+    "user": "unknown",
   }
   out.update(kwargs)
   return out
+
+
+def gen_run_isolated_out_hack_log(isolate_server, namespace, isolated_hash):
+  data = {
+    'hash': isolated_hash,
+    'namespace': namespace,
+    'storage': isolate_server,
+  }
+  return (OUTPUT +
+      '[run_isolated_out_hack]%s[/run_isolated_out_hack]\n' % (
+          json.dumps(data, sort_keys=True, separators=(',',':'))))
 
 
 # Silence pylint 'Access to a protected member _Event of a client class'.
@@ -162,8 +182,6 @@ class NetTestCase(net_utils.TestCase):
     self.mock(threading, 'Event', NonBlockingEvent)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
-    self.mock(logging_utils, 'prepare_logging', lambda *args: None)
-    self.mock(logging_utils, 'set_console_level', lambda *args: None)
 
   def tearDown(self):
     try:
@@ -214,18 +232,47 @@ class TestIsolated(auto_stub.TestCase):
       self._server = isolateserver_mock.MockIsolateServer()
     return self._server
 
+  # Test isolated related code.
+  def test_isolated_get_data(self):
+    data = swarming.isolated_get_data(self.server.url)
+    self.assertEqual(['default'], self.server.contents.keys())
+    self.assertEqual(1, len(self.server.contents['default']))
+    h = self.server.contents['default'].popitem()[0]
+    expected = [
+      (
+        '%s/content-gs/retrieve/default/%s' % (self.server.url, h),
+        'swarm_data.zip',
+      ),
+    ]
+    self.assertEqual(expected, data)
+
+  def test_isolated_get_run_commands(self):
+    actual = swarming.isolated_get_run_commands(
+        'http://foo.invalid', 'default', '1'*40, ['fo', 'ba'], True)
+    expected = [
+      'python',
+      'run_isolated.zip',
+      '--isolated', '1111111111111111111111111111111111111111',
+      '--isolate-server', 'http://foo.invalid',
+      '--namespace', 'default',
+      '--verbose',
+      '--',
+      'fo',
+      'ba',
+    ]
+    self.assertEqual(expected, actual)
+
 
 class TestSwarmingTrigger(NetTestCase):
   def test_trigger_task_shards_2_shards(self):
     task_request = swarming.TaskRequest(
         command=['a', 'b'],
+        data=[],
         dimensions={'foo': 'bar', 'os': 'Mac'},
         env={},
         expiration=60*60,
-        extra_args=[],
         hard_timeout=60,
         idempotent=False,
-        inputs_ref=None,
         io_timeout=60,
         name=TEST_NAME,
         priority=101,
@@ -235,29 +282,32 @@ class TestSwarmingTrigger(NetTestCase):
 
     request_1 = swarming.task_request_to_raw_request(task_request)
     request_1['name'] = u'unit_tests:0:2'
-    request_1['properties']['env'] = [
-      {'key': 'GTEST_SHARD_INDEX', 'value': '0'},
-      {'key': 'GTEST_TOTAL_SHARDS', 'value': '2'},
-    ]
+    request_1['properties']['env'] = {
+      'GTEST_SHARD_INDEX': '0', 'GTEST_TOTAL_SHARDS': '2',
+    }
     result_1 = gen_request_response(request_1)
 
     request_2 = swarming.task_request_to_raw_request(task_request)
     request_2['name'] = u'unit_tests:1:2'
-    request_2['properties']['env'] = [
-      {'key': 'GTEST_SHARD_INDEX', 'value': '1'},
-      {'key': 'GTEST_TOTAL_SHARDS', 'value': '2'},
-    ]
+    request_2['properties']['env'] = {
+      'GTEST_SHARD_INDEX': '1', 'GTEST_TOTAL_SHARDS': '2',
+    }
     result_2 = gen_request_response(request_2, task_id='12400')
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
-            {'data': request_1},
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request_1, 'headers': {'X-XSRF-Token': 'Token'}},
             result_1,
           ),
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
-            {'data': request_2},
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request_2, 'headers': {'X-XSRF-Token': 'Token'}},
             result_2,
           ),
         ])
@@ -283,13 +333,12 @@ class TestSwarmingTrigger(NetTestCase):
   def test_trigger_task_shards_priority_override(self):
     task_request = swarming.TaskRequest(
         command=['a', 'b'],
+        data=[['https://foo.invalid/bar', 'bar.zip']],
         dimensions={'foo': 'bar', 'os': 'Mac'},
         env={},
         expiration=60*60,
-        extra_args=[],
         hard_timeout=60,
         idempotent=False,
-        inputs_ref=None,
         io_timeout=60,
         name=TEST_NAME,
         priority=101,
@@ -309,8 +358,13 @@ class TestSwarmingTrigger(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
-            {'data': request},
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request, 'headers': {'X-XSRF-Token': 'Token'}},
             result,
           ),
         ])
@@ -333,41 +387,77 @@ class TestSwarmingTrigger(NetTestCase):
     self.assertEqual(expected, tasks)
     self._check_output('', 'Priority was reset to 200\n')
 
+  def test_isolated_to_hash(self):
+    calls = []
+    self.mock(subprocess, 'call', lambda *c: calls.append(c))
+    content = '{}'
+    expected_hash = hashlib.sha1(content).hexdigest()
+    handle, isolated = tempfile.mkstemp(
+        prefix=u'swarming_test_', suffix=u'.isolated')
+    os.close(handle)
+    try:
+      with open(isolated, 'w') as f:
+        f.write(content)
+      hash_value, is_file = swarming.isolated_to_hash(
+          'https://localhost:2', 'default-gzip', isolated, hashlib.sha1, False)
+    finally:
+      os.remove(isolated)
+    self.assertEqual(expected_hash, hash_value)
+    self.assertEqual(True, is_file)
+    expected_calls = [
+        (
+          [
+            sys.executable,
+            os.path.join(swarming.ROOT_DIR, 'isolate.py'),
+            'archive',
+            '--isolate-server', 'https://localhost:2',
+            '--namespace', 'default-gzip',
+            '--isolated',
+            isolated,
+          ],
+          False,
+        ),
+    ]
+    self.assertEqual(expected_calls, calls)
+    self._check_output('Archiving: %s\n' % isolated, '')
+
 
 class TestSwarmingCollection(NetTestCase):
   def test_success(self):
     self.expected_requests(
         [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/stdout',
+            'https://host:9001/swarming/api/v1/client/task/10100/output/all',
             {},
-            {'output': OUTPUT},
+            {'outputs': [OUTPUT]},
           ),
         ])
-    expected = [gen_yielded_data(0, output=OUTPUT)]
-    self.assertEqual(expected, get_results(['10100']))
+    expected = [gen_yielded_data(0, outputs=[OUTPUT])]
+    actual = get_results(['10100'])
+    self.assertEqual(expected, actual)
 
   def test_failure(self):
     self.expected_requests(
         [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
-            gen_result_response(exit_code=1),
+            gen_result_response(exit_codes=[0, 1]),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/stdout',
+            'https://host:9001/swarming/api/v1/client/task/10100/output/all',
             {},
-            {'output': OUTPUT},
+            {'outputs': [OUTPUT]},
           ),
         ])
-    expected = [gen_yielded_data(0, output=OUTPUT, exit_code=1)]
-    self.assertEqual(expected, get_results(['10100']))
+    expected = [gen_yielded_data(0, outputs=[OUTPUT], exit_codes=[0, 1])]
+    actual = get_results(['10100'])
+    self.assertEqual(expected, actual)
 
   def test_no_ids(self):
     actual = get_results([])
@@ -389,7 +479,7 @@ class TestSwarmingCollection(NetTestCase):
     self.expected_requests(
         9 * [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
             None,
           )
@@ -402,40 +492,40 @@ class TestSwarmingCollection(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/stdout',
+            'https://host:9001/swarming/api/v1/client/task/10100/output/all',
             {},
-            {'output': SHARD_OUTPUT_1},
+            {'outputs': [SHARD_OUTPUT_1]},
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10200/result',
+            'https://host:9001/swarming/api/v1/client/task/10200',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10200/stdout',
+            'https://host:9001/swarming/api/v1/client/task/10200/output/all',
             {},
-            {'output': SHARD_OUTPUT_2},
+            {'outputs': [SHARD_OUTPUT_2]},
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10300/result',
+            'https://host:9001/swarming/api/v1/client/task/10300',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10300/stdout',
+            'https://host:9001/swarming/api/v1/client/task/10300/output/all',
             {},
-            {'output': SHARD_OUTPUT_3},
+            {'outputs': [SHARD_OUTPUT_3]},
           ),
         ])
     expected = [
-      gen_yielded_data(0, output=SHARD_OUTPUT_1),
-      gen_yielded_data(1, output=SHARD_OUTPUT_2),
-      gen_yielded_data(2, output=SHARD_OUTPUT_3),
+      gen_yielded_data(0, outputs=[SHARD_OUTPUT_1]),
+      gen_yielded_data(1, outputs=[SHARD_OUTPUT_2]),
+      gen_yielded_data(2, outputs=[SHARD_OUTPUT_3]),
     ]
     actual = get_results(['10100', '10200', '10300'])
     self.assertEqual(expected, sorted(actual))
@@ -445,34 +535,34 @@ class TestSwarmingCollection(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/stdout',
+            'https://host:9001/swarming/api/v1/client/task/10100/output/all',
             {},
-            {'output': SHARD_OUTPUT_1},
+            {'outputs': [SHARD_OUTPUT_1]},
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10200/result',
+            'https://host:9001/swarming/api/v1/client/task/10200',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10200/stdout',
+            'https://host:9001/swarming/api/v1/client/task/10200/output/all',
             {},
-            {'output': SHARD_OUTPUT_2},
+            {'outputs': [SHARD_OUTPUT_2]},
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10300/result',
+            'https://host:9001/swarming/api/v1/client/task/10300',
             {'retry_50x': False},
-            gen_result_response(exit_code=1),
+            gen_result_response(exit_codes=[0, 1]),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10300/stdout',
+            'https://host:9001/swarming/api/v1/client/task/10300/output/all',
             {},
-            {'output': SHARD_OUTPUT_3},
+            {'outputs': [SHARD_OUTPUT_3]},
           ),
         ])
 
@@ -489,9 +579,9 @@ class TestSwarmingCollection(NetTestCase):
     get_results(['10100', '10200', '10300'], output_collector)
 
     expected = [
-      gen_yielded_data(0, output=SHARD_OUTPUT_1),
-      gen_yielded_data(1, output=SHARD_OUTPUT_2),
-      gen_yielded_data(2, output=SHARD_OUTPUT_3, exit_code=1),
+      gen_yielded_data(0, outputs=[SHARD_OUTPUT_1]),
+      gen_yielded_data(1, outputs=[SHARD_OUTPUT_2]),
+      gen_yielded_data(2, outputs=[SHARD_OUTPUT_3], exit_codes=[0, 1]),
     ]
     self.assertEqual(sorted(expected), sorted(output_collector.results))
 
@@ -502,10 +592,10 @@ class TestSwarmingCollection(NetTestCase):
     self._check_output('', 'Results from some shards are missing: 0, 1\n')
 
   def test_collect_success(self):
-    data = gen_result_response(output='Foo')
+    data = gen_result_response(outputs=['Foo'])
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(0, collect('https://localhost:1', 'name', ['10100']))
-    expected = u'\n'.join((
+    expected = '\n'.join((
       '+---------------------------------------------------------------------+',
       '| Shard 0  https://localhost:1/user/task/10100                        |',
       '+---------------------------------------------------------------------+',
@@ -518,11 +608,11 @@ class TestSwarmingCollection(NetTestCase):
     self._check_output(expected, '')
 
   def test_collect_fail(self):
-    data = gen_result_response(output='Foo', exit_code=-9)
-    data['output'] = 'Foo'
+    data = gen_result_response(outputs=['Foo'], exit_codes=[-9])
+    data['outputs'] = ['Foo']
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(-9, collect('https://localhost:1', 'name', ['10100']))
-    expected = u'\n'.join((
+    expected = '\n'.join((
       '+----------------------------------------------------------------------'
         '+',
       '| Shard 0  https://localhost:1/user/task/10100                         '
@@ -541,12 +631,12 @@ class TestSwarmingCollection(NetTestCase):
     self._check_output(expected, '')
 
   def test_collect_one_missing(self):
-    data = gen_result_response(output='Foo')
-    data['output'] = 'Foo'
+    data = gen_result_response(outputs=['Foo'])
+    data['outputs'] = ['Foo']
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
         1, collect('https://localhost:1', 'name', ['10100', '10200']))
-    expected = u'\n'.join((
+    expected = '\n'.join((
       '+---------------------------------------------------------------------+',
       '| Shard 0  https://localhost:1/user/task/10100                        |',
       '+---------------------------------------------------------------------+',
@@ -561,52 +651,67 @@ class TestSwarmingCollection(NetTestCase):
 
   def test_collect_multi(self):
     actual_calls = []
-    def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
-      self.assertIs(storage.__class__, isolateserver.Storage)
-      self.assertIs(cache.__class__, isolateserver.MemoryCache)
-      # Ensure storage is pointing to required location.
-      self.assertEqual('https://localhost:2', storage.location)
-      self.assertEqual('default', storage.namespace)
-      actual_calls.append((isolated_hash, outdir, require_command))
-    self.mock(isolateserver, 'fetch_isolated', fetch_isolated)
+    self.mock(
+        isolateserver, 'fetch_isolated',
+        lambda *args: actual_calls.append(args))
+    shards_output = [
+      gen_run_isolated_out_hack_log('https://server', 'namespace', 'hash1'),
+      gen_run_isolated_out_hack_log('https://server', 'namespace', 'hash2'),
+      OUTPUT,
+    ]
 
-    collector = swarming.TaskOutputCollector(self.tempdir, 'name', 2)
-    for index in xrange(2):
+    collector = swarming.TaskOutputCollector(
+        self.tempdir, 'name', len(shards_output))
+    for index, shard_output in enumerate(shards_output):
       collector.process_shard_result(
-          index,
-          gen_result_response(
-              outputs_ref={
-                'isolated': str(index) * 40,
-                'isolatedserver': 'https://localhost:2',
-                'namespace': 'default',
-              }))
+          index, gen_result_response(outputs=[shard_output]))
     summary = collector.finalize()
 
     expected_calls = [
-      ('0'*40, os.path.join(self.tempdir, '0'), False),
-      ('1'*40, os.path.join(self.tempdir, '1'), False),
+      ('hash1', None, None, os.path.join(self.tempdir, '0'), False),
+      ('hash2', None, None, os.path.join(self.tempdir, '1'), False),
     ]
-    self.assertEqual(expected_calls, actual_calls)
+    self.assertEqual(len(expected_calls), len(actual_calls))
+    storage_instances = set()
+    for expected, used in zip(expected_calls, actual_calls):
+      isolated_hash, storage, cache, outdir, require_command = used
+      storage_instances.add(storage)
+      # Compare everything but |storage| and |cache| (use None in their place).
+      self.assertEqual(
+          expected, (isolated_hash, None, None, outdir, require_command))
+      # Ensure cache is set.
+      self.assertTrue(cache)
+
+    # Only one instance of Storage should be used.
+    self.assertEqual(1, len(storage_instances))
+
+    # Ensure storage is pointing to required location.
+    storage = storage_instances.pop()
+    self.assertEqual('https://server', storage.location)
+    self.assertEqual('namespace', storage.namespace)
 
     # Ensure collected summary is correct.
-    outputs_refs = [
+    isolated_outs = [
       {
-        'isolated': '0'*40,
-        'isolatedserver': 'https://localhost:2',
-        'namespace': 'default',
-        'view_url':
-            'https://localhost:2/browse?namespace=default&hash=' + '0'*40,
+        'hash': 'hash1',
+        'namespace': 'namespace',
+        'server': 'https://server',
+        'view_url': 'https://server/browse?namespace=namespace&hash=hash1',
       },
       {
-        'isolated': '1'*40,
-        'isolatedserver': 'https://localhost:2',
-        'namespace': 'default',
-        'view_url':
-            'https://localhost:2/browse?namespace=default&hash=' + '1'*40,
+        'hash': 'hash2',
+        'namespace': 'namespace',
+        'server': 'https://server',
+        'view_url': 'https://server/browse?namespace=namespace&hash=hash2',
       },
+      None,
     ]
     expected = {
-      'shards': [gen_result_response(outputs_ref=o) for o in outputs_refs],
+      'shards': [
+        gen_result_response(isolated_out=isolated_out, outputs=[shard_output])
+        for index, (isolated_out, shard_output) in
+            enumerate(zip(isolated_outs, shards_output))
+      ],
     }
     self.assertEqual(expected, summary)
 
@@ -624,17 +729,13 @@ class TestSwarmingCollection(NetTestCase):
         lambda *args: actual_calls.append(args))
     data = [
       gen_result_response(
-        outputs_ref={
-          'isolatedserver': 'https://server1',
-          'namespace': 'namespace',
-          'isolated':'hash1',
-        }),
+        outputs=[
+          gen_run_isolated_out_hack_log('https://server1', 'namespace', 'hash1')
+        ]),
       gen_result_response(
-        outputs_ref={
-          'isolatedserver': 'https://server2',
-          'namespace': 'namespace',
-          'isolated':'hash1',
-        }),
+        outputs=[
+          gen_run_isolated_out_hack_log('https://server2', 'namespace', 'hash2')
+        ]),
     ]
 
     # Feed them to collector.
@@ -651,6 +752,65 @@ class TestSwarmingCollection(NetTestCase):
         (isolated_hash, outdir))
     self.assertEqual('https://server1', storage.location)
 
+  def test_extract_output_files_location_ok(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      gen_run_isolated_out_hack_log('https://fake', 'default', '12345'),
+      'more log',
+    ))
+    self.assertEqual(
+        {'hash': '12345',
+         'namespace': 'default',
+         'server': 'https://fake',
+         'view_url': 'https://fake/browse?namespace=default&hash=12345'},
+        swarming.extract_output_files_location(task_log))
+
+  def test_extract_output_files_location_empty(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      '[run_isolated_out_hack]',
+      '[/run_isolated_out_hack]',
+    ))
+    self.assertEqual(
+        None,
+        swarming.extract_output_files_location(task_log))
+
+  def test_extract_output_files_location_missing(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      'more log',
+    ))
+    self.assertEqual(
+        None,
+        swarming.extract_output_files_location(task_log))
+
+  def test_extract_output_files_location_corrupt(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      '[run_isolated_out_hack]',
+      '{"hash": "12345","namespace":}',
+      '[/run_isolated_out_hack]',
+      'more log',
+    ))
+    self.assertEqual(
+        None,
+        swarming.extract_output_files_location(task_log))
+
+  def test_extract_output_files_location_not_url(self):
+    task_log = '\n'.join((
+      'some log',
+      'some more log',
+      gen_run_isolated_out_hack_log('/local/path', 'default', '12345'),
+      'more log',
+    ))
+    self.assertEqual(
+        None,
+        swarming.extract_output_files_location(task_log))
+
 
 class TestMain(NetTestCase):
   # Tests calling main().
@@ -658,7 +818,7 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/foo',
+            'https://localhost:1/swarming/api/v1/client/bot/foo',
             {'method': 'DELETE'},
             {},
           ),
@@ -671,21 +831,19 @@ class TestMain(NetTestCase):
   def test_run_raw_cmd(self):
     # Minimalist use.
     request = {
-      'expiration_secs': 21600,
       'name': 'None/foo=bar',
       'parent_task_id': '',
       'priority': 100,
       'properties': {
-        'command': ['python', '-c', 'print(\'hi\')'],
-        'dimensions': [
-          {'key': 'foo', 'value': 'bar'},
-        ],
-        'env': [],
+        'commands': [['python', '-c', 'print(\'hi\')']],
+        'data': [],
+        'dimensions': {'foo': 'bar'},
+        'env': {},
         'execution_timeout_secs': 3600,
         'idempotent': False,
-        'inputs_ref': None,
         'io_timeout_secs': 1200,
       },
+      'scheduling_expiration_secs': 21600,
       'tags': [],
       'user': None,
     }
@@ -693,8 +851,13 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
-            {'data': request},
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request, 'headers': {'X-XSRF-Token': 'Token'}},
             result,
           ),
         ])
@@ -720,23 +883,24 @@ class TestMain(NetTestCase):
 
   def test_run_isolated_hash(self):
     # pylint: disable=unused-argument
+    def isolated_upload_zip_bundle(isolate_server, bundle):
+      return 'https://localhost:1/fetch_url'
+    self.mock(
+        swarming, 'isolated_upload_zip_bundle', isolated_upload_zip_bundle)
     self.mock(swarming, 'now', lambda: 123456)
 
-    request = gen_request_data(
-        properties={
-          'command': None,
-          'inputs_ref': {
-            'isolated': u'1111111111111111111111111111111111111111',
-            'isolatedserver': 'https://localhost:2',
-            'namespace': 'default-gzip',
-          },
-        })
+    request = gen_request_data()
     result = gen_request_response(request)
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
-            {'data': request},
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request, 'headers': {'X-XSRF-Token': 'Token'}},
             result,
           ),
         ])
@@ -774,6 +938,10 @@ class TestMain(NetTestCase):
     # pylint: disable=unused-argument
     write_json_calls = []
     self.mock(tools, 'write_json', lambda *args: write_json_calls.append(args))
+    def isolated_upload_zip_bundle(isolate_server, bundle):
+      return 'https://localhost:1/fetch_url'
+    self.mock(
+        swarming, 'isolated_upload_zip_bundle', isolated_upload_zip_bundle)
     subprocess_calls = []
     self.mock(subprocess, 'call', lambda *c: subprocess_calls.append(c))
     self.mock(swarming, 'now', lambda: 123456)
@@ -785,21 +953,18 @@ class TestMain(NetTestCase):
 
     isolated_hash = isolateserver_mock.hash_content(content)
     request = gen_request_data(
-        properties={
-          'command': None,
-          'idempotent': True,
-          'inputs_ref': {
-            'isolated': isolated_hash,
-            'isolatedserver': 'https://localhost:2',
-            'namespace': 'default-gzip',
-          },
-        })
+        isolated_hash=isolated_hash, properties=dict(idempotent=True))
     result = gen_request_response(request)
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
-            {'data': request},
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request, 'headers': {'X-XSRF-Token': 'Token'}},
             result,
           ),
         ])
@@ -827,13 +992,25 @@ class TestMain(NetTestCase):
       ])
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
-    self.assertEqual([], subprocess_calls)
+    expected = [
+      (
+        [
+          sys.executable,
+          os.path.join(swarming.ROOT_DIR, 'isolate.py'), 'archive',
+          '--isolate-server', 'https://localhost:2',
+          '--namespace' ,'default-gzip',
+          '--isolated', isolated,
+        ],
+      0),
+    ]
+    self.assertEqual(expected, subprocess_calls)
     self._check_output(
+        'Archiving: %s\n'
         'Triggered task: unit_tests\n'
         'To collect results, use:\n'
         '  swarming.py collect -S https://localhost:1 --json foo.json\n'
         'Or visit:\n'
-        '  https://localhost:1/user/task/12300\n',
+        '  https://localhost:1/user/task/12300\n' % isolated,
         '')
     expected = [
       (
@@ -919,14 +1096,15 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/botid/tasks?limit=200',
+            'https://localhost:1/swarming/api/v1/client/bots/botid/tasks?'
+                'limit=200',
             {},
             {'yo': 'dawg'},
           ),
         ])
     ret = main(
         [
-          'query', '--swarming', 'https://localhost:1', 'bot/botid/tasks',
+          'query', '--swarming', 'https://localhost:1', 'bots/botid/tasks',
         ])
     self._check_output('{\n  "yo": "dawg"\n}\n', '')
     self.assertEqual(0, ret)
@@ -935,8 +1113,8 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/botid/tasks?'
-                'foo=bar&limit=2',
+            'https://localhost:1/swarming/api/v1/client/bots/botid/tasks?'
+                'limit=2',
             {},
             {
               'cursor': '%',
@@ -945,8 +1123,8 @@ class TestMain(NetTestCase):
             },
           ),
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/botid/tasks?'
-                'foo=bar&cursor=%25&limit=1',
+            'https://localhost:1/swarming/api/v1/client/bots/botid/tasks?'
+                'cursor=%25&limit=1',
             {},
             {
               'cursor': None,
@@ -957,8 +1135,7 @@ class TestMain(NetTestCase):
         ])
     ret = main(
         [
-          'query', '--swarming', 'https://localhost:1',
-          'bot/botid/tasks?foo=bar',
+          'query', '--swarming', 'https://localhost:1', 'bots/botid/tasks',
           '--limit', '2',
         ])
     expected = (
@@ -990,14 +1167,13 @@ class TestMain(NetTestCase):
       self.expected_requests(
           [
             (
-              'https://localhost:1/_ah/api/swarming/v1/task/123/request',
+              'https://localhost:1/swarming/api/v1/client/task/123/request',
               {},
               {
                 'properties': {
-                  'command': ['foo'],
-                  'env': [
-                    {'key': 'aa', 'value': 'bb'},
-                  ],
+                  'commands': [['foo']],
+                  'data': [],
+                  'env': {'aa': 'bb'},
                 },
               },
             ),
@@ -1020,12 +1196,12 @@ class TestCommandBot(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bots/list?limit=250',
+            'https://localhost:1/swarming/api/v1/client/bots?limit=250',
             {},
             self.mock_swarming_api_v1_bots_page_1(),
           ),
           (
-            'https://localhost:1/_ah/api/swarming/v1/bots/list?limit=250&'
+            'https://localhost:1/swarming/api/v1/client/bots?limit=250&'
               'cursor=opaque_cursor',
             {},
             self.mock_swarming_api_v1_bots_page_2(),
@@ -1034,23 +1210,24 @@ class TestCommandBot(NetTestCase):
 
   @staticmethod
   def mock_swarming_api_v1_bots_page_1():
-    """Returns fake /_ah/api/swarming/v1/bots/list data."""
+    """Returns fake /swarming/api/v1/client/bots data."""
     # Sample data retrieved from actual server.
     now = unicode(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     return {
       u'items': [
         {
-          u'bot_id': u'swarm3',
           u'created_ts': now,
-          u'dimensions': [
-            {u'key': u'cores', u'value': [u'4']},
-            {u'key': u'cpu', u'value': [u'x86', u'x86-64']},
-            {u'key': u'gpu', u'value': [u'15ad', u'15ad:0405']},
-            {u'key': u'id', u'value': [u'swarm3']},
-            {u'key': u'os', u'value': [u'Mac', u'Mac-10.9']},
-          ],
+          u'dimensions': {
+            u'cores': u'4',
+            u'cpu': [u'x86', u'x86-64'],
+            u'gpu': [u'15ad', u'15ad:0405'],
+            u'hostname': u'swarm3.example.com',
+            u'id': u'swarm3',
+            u'os': [u'Mac', u'Mac-10.9'],
+          },
           u'external_ip': u'1.1.1.3',
           u'hostname': u'swarm3.example.com',
+          u'id': u'swarm3',
           u'internal_ip': u'192.168.0.3',
           u'is_dead': False,
           u'last_seen_ts': now,
@@ -1060,17 +1237,18 @@ class TestCommandBot(NetTestCase):
           u'version': u'56918a2ea28a6f51751ad14cc086f118b8727905',
         },
         {
-          u'bot_id': u'swarm1',
           u'created_ts': now,
-          u'dimensions': [
-            {u'key': u'cores', u'value': [u'8']},
-            {u'key': u'cpu', u'value': [u'x86', u'x86-64']},
-            {u'key': u'gpu', u'value': []},
-            {u'key': u'id', u'value': [u'swarm1']},
-            {u'key': u'os', u'value': [u'Linux', u'Linux-12.04']},
-          ],
+          u'dimensions': {
+            u'cores': u'8',
+            u'cpu': [u'x86', u'x86-64'],
+            u'gpu': [],
+            u'hostname': u'swarm1.example.com',
+            u'id': u'swarm1',
+            u'os': [u'Linux', u'Linux-12.04'],
+          },
           u'external_ip': u'1.1.1.1',
           u'hostname': u'swarm1.example.com',
+          u'id': u'swarm1',
           u'internal_ip': u'192.168.0.1',
           u'is_dead': True,
           u'last_seen_ts': 'A long time ago',
@@ -1080,21 +1258,24 @@ class TestCommandBot(NetTestCase):
           u'version': u'56918a2ea28a6f51751ad14cc086f118b8727905',
         },
         {
-          u'bot_id': u'swarm2',
           u'created_ts': now,
-          u'dimensions': [
-            {u'key': u'cores', u'value': [u'8']},
-            {u'key': u'cpu', u'value': [u'x86', u'x86-64']},
-            {u'key': u'gpu', u'value': [
+          u'dimensions': {
+            u'cores': u'8',
+            u'cpu': [u'x86', u'x86-64'],
+            u'cygwin': u'0',
+            u'gpu': [
               u'15ad',
               u'15ad:0405',
               u'VMware Virtual SVGA 3D Graphics Adapter',
-            ]},
-            {u'key': u'id', u'value': [u'swarm2']},
-            {u'key': u'os', u'value': [u'Windows', u'Windows-6.1']},
-          ],
+            ],
+            u'hostname': u'swarm2.example.com',
+            u'id': u'swarm2',
+            u'integrity': u'high',
+            u'os': [u'Windows', u'Windows-6.1'],
+          },
           u'external_ip': u'1.1.1.2',
           u'hostname': u'swarm2.example.com',
+          u'id': u'swarm2',
           u'internal_ip': u'192.168.0.2',
           u'is_dead': False,
           u'last_seen_ts': now,
@@ -1112,23 +1293,24 @@ class TestCommandBot(NetTestCase):
 
   @staticmethod
   def mock_swarming_api_v1_bots_page_2():
-    """Returns fake /_ah/api/swarming/v1/bots/list data."""
+    """Returns fake /swarming/api/v1/client/bots data."""
     # Sample data retrieved from actual server.
     now = unicode(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     return {
       u'items': [
         {
-          u'bot_id': u'swarm4',
           u'created_ts': now,
-          u'dimensions': [
-            {u'key': u'cores', u'value': [u'8']},
-            {u'key': u'cpu', u'value': [u'x86', u'x86-64']},
-            {u'key': u'gpu', u'value': []},
-            {u'key': u'id', u'value': [u'swarm4']},
-            {u'key': u'os', u'value': [u'Linux', u'Linux-12.04']},
-          ],
+          u'dimensions': {
+            u'cores': u'8',
+            u'cpu': [u'x86', u'x86-64'],
+            u'gpu': [],
+            u'hostname': u'swarm4.example.com',
+            u'id': u'swarm4',
+            u'os': [u'Linux', u'Linux-12.04'],
+          },
           u'external_ip': u'1.1.1.4',
           u'hostname': u'swarm4.example.com',
+          u'id': u'swarm4',
           u'internal_ip': u'192.168.0.4',
           u'is_dead': False,
           u'last_seen_ts': now,
@@ -1148,16 +1330,19 @@ class TestCommandBot(NetTestCase):
     ret = main(['bots', '--swarming', 'https://localhost:1'])
     expected = (
         u'swarm2\n'
-        u'  {"cores": ["8"], "cpu": ["x86", "x86-64"], "gpu": '
+        u'  {"cores": "8", "cpu": ["x86", "x86-64"], "cygwin": "0", "gpu": '
           '["15ad", "15ad:0405", "VMware Virtual SVGA 3D Graphics Adapter"], '
-          '"id": ["swarm2"], "os": ["Windows", "Windows-6.1"]}\n'
+          '"hostname": "swarm2.example.com", "id": "swarm2", "integrity": '
+          '"high", "os": ["Windows", "Windows-6.1"]}\n'
         'swarm3\n'
-        '  {"cores": ["4"], "cpu": ["x86", "x86-64"], "gpu": ["15ad", '
-          '"15ad:0405"], "id": ["swarm3"], "os": ["Mac", "Mac-10.9"]}\n'
+        '  {"cores": "4", "cpu": ["x86", "x86-64"], "gpu": ["15ad", '
+          '"15ad:0405"], "hostname": "swarm3.example.com", "id": "swarm3", '
+          '"os": ["Mac", "Mac-10.9"]}\n'
         u'  task: 148569b73a89501\n'
         u'swarm4\n'
-        u'  {"cores": ["8"], "cpu": ["x86", "x86-64"], "gpu": [], '
-          '"id": ["swarm4"], "os": ["Linux", "Linux-12.04"]}\n'
+        u'  {"cores": "8", "cpu": ["x86", "x86-64"], "gpu": [], "hostname": '
+          '"swarm4.example.com", "id": "swarm4", "os": ["Linux", '
+          '"Linux-12.04"]}\n'
         u'  task: 14856971a64c601\n')
     self._check_output(expected, '')
     self.assertEqual(0, ret)
@@ -1174,10 +1359,10 @@ class TestCommandBot(NetTestCase):
           '--dimension', 'os', 'Windows',
         ])
     expected = (
-        u'swarm2\n  {"cores": ["8"], "cpu": ["x86", "x86-64"], '
+        u'swarm2\n  {"cores": "8", "cpu": ["x86", "x86-64"], "cygwin": "0", '
           '"gpu": ["15ad", "15ad:0405", "VMware Virtual SVGA 3D Graphics '
-          'Adapter"], "id": ["swarm2"], '
-          '"os": ["Windows", "Windows-6.1"]}\n')
+          'Adapter"], "hostname": "swarm2.example.com", "id": "swarm2", '
+          '"integrity": "high", "os": ["Windows", "Windows-6.1"]}\n')
     self._check_output(expected, '')
     self.assertEqual(0, ret)
 
@@ -1188,11 +1373,13 @@ class TestCommandBot(NetTestCase):
           '--dimension', 'os', 'Linux', '--keep-dead',
         ])
     expected = (
-        u'swarm1\n  {"cores": ["8"], "cpu": ["x86", "x86-64"], "gpu": [], '
-          '"id": ["swarm1"], "os": ["Linux", "Linux-12.04"]}\n'
+        u'swarm1\n  {"cores": "8", "cpu": ["x86", "x86-64"], "gpu": [], '
+          '"hostname": "swarm1.example.com", "id": "swarm1", "os": ["Linux", '
+          '"Linux-12.04"]}\n'
         u'swarm4\n'
-        u'  {"cores": ["8"], "cpu": ["x86", "x86-64"], "gpu": [], '
-          '"id": ["swarm4"], "os": ["Linux", "Linux-12.04"]}\n'
+        u'  {"cores": "8", "cpu": ["x86", "x86-64"], "gpu": [], "hostname": '
+          '"swarm4.example.com", "id": "swarm4", "os": ["Linux", '
+          '"Linux-12.04"]}\n'
         u'  task: 14856971a64c601\n')
     self._check_output(expected, '')
     self.assertEqual(0, ret)
@@ -1204,8 +1391,9 @@ class TestCommandBot(NetTestCase):
           '--dimension', 'os', 'Linux', '--dead-only',
         ])
     expected = (
-        u'swarm1\n  {"cores": ["8"], "cpu": ["x86", "x86-64"], "gpu": [], '
-          '"id": ["swarm1"], "os": ["Linux", "Linux-12.04"]}\n')
+        u'swarm1\n  {"cores": "8", "cpu": ["x86", "x86-64"], "gpu": [], '
+          '"hostname": "swarm1.example.com", "id": "swarm1", "os": ["Linux", '
+          '"Linux-12.04"]}\n')
     self._check_output(expected, '')
     self.assertEqual(0, ret)
 
