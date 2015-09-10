@@ -2080,6 +2080,13 @@ const Experiment kExperiments[] = {
       IDS_FLAGS_ENABLE_WEBUSB_NOTIFICATIONS_DESCRIPTION,
       kOsDesktop,
       SINGLE_VALUE_TYPE(switches::kEnableWebUsbNotifications)},
+     // TODO(reillyg): Remove this flag when the permission granting UI is
+     // available. crbug.com/529950
+     {"enable-webusb-on-any-origin",
+      IDS_FLAGS_ENABLE_WEBUSB_ON_ANY_ORIGIN_NAME,
+      IDS_FLAGS_ENABLE_WEBUSB_ON_ANY_ORIGIN_DESCRIPTION,
+      kOsDesktop,
+      SINGLE_VALUE_TYPE(switches::kEnableWebUsbOnAnyOrigin)},
 #endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

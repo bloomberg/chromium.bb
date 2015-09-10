@@ -15322,6 +15322,14 @@ After you create a new supervised user, you can manage their settings at any tim
         Experimental WebUsb notifications.
       </message>
 
+      <!-- WebUSB permission bypass flag. -->
+      <message name="IDS_FLAGS_ENABLE_WEBUSB_ON_ANY_ORIGIN_NAME" desc="Title for the flag that bypasses WebUSB permission prompts.">
+        Allow WebUSB from any origin.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBUSB_ON_ANY_ORIGIN_DESCRIPTION" desc="Description for the flag that bypasses WebUSB permission prompts.">
+        If enabled, any origin is allowed to use connected WebUSB devices without prompting the user.
+      </message>
+
       <!-- WebUsb Notification -->
       <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION" desc="Content for notification shown to the user when a USB device gets plugged in.">
         Click here to visit this page
