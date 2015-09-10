@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
+#include "components/bubble/bubble_controller.h"
 
 @interface BaseBubbleController (Private)
 - (void)registerForNotifications;
@@ -28,6 +29,13 @@
 - (void)parentWindowWillClose:(NSNotification*)notification;
 - (void)parentWindowWillToggleFullScreen:(NSNotification*)notification;
 - (void)closeCleanup;
+
+// Temporary methods to decide how to close the bubble controller.
+// TODO(hcarmona): remove these methods when all bubbles use the BubbleManager.
+// Notify BubbleManager to close a bubble.
+- (void)closeBubbleWithReason:(BubbleCloseReason)reason;
+// Will be a no-op in bubble API because this is handled by the BubbleManager.
+- (void)closeBubble;
 @end
 
 @implementation BaseBubbleController
@@ -36,6 +44,7 @@
 @synthesize bubble = bubble_;
 @synthesize shouldOpenAsKeyWindow = shouldOpenAsKeyWindow_;
 @synthesize shouldCloseOnResignKey = shouldCloseOnResignKey_;
+@synthesize bubbleReference = bubbleReference_;
 
 - (id)initWithWindowNibPath:(NSString*)nibPath
                parentWindow:(NSWindow*)parentWindow
@@ -228,12 +237,12 @@
 
 - (void)parentWindowWillClose:(NSNotification*)notification {
   [self setParentWindow:nil];
-  [self close];
+  [self closeBubble];
 }
 
 - (void)parentWindowWillToggleFullScreen:(NSNotification*)notification {
   [self setParentWindow:nil];
-  [self close];
+  [self closeBubble];
 }
 
 - (void)closeCleanup {
@@ -250,6 +259,18 @@
   }
 
   tabStripObserverBridge_.reset();
+}
+
+- (void)closeBubbleWithReason:(BubbleCloseReason)reason {
+  if ([self bubbleReference])
+    [self bubbleReference]->CloseBubble(reason);
+  else
+    [self close];
+}
+
+- (void)closeBubble {
+  if (![self bubbleReference])
+    [self close];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -296,7 +317,7 @@
   // Don't close when explicily disabled, or if there's an attached sheet (e.g.
   // Open File dialog).
   if ([self shouldCloseOnResignKey] && ![window attachedSheet]) {
-    [self close];
+    [self closeBubbleWithReason:BUBBLE_CLOSE_FOCUS_LOST];
     return;
   }
 
@@ -369,7 +390,7 @@
 - (IBAction)cancel:(id)sender {
   // This is not a "real" cancel as potential changes to the radio group are not
   // undone. That's ok.
-  [self close];
+  [self closeBubbleWithReason:BUBBLE_CLOSE_CANCELED];
 }
 
 // Takes the |anchor_| point and adjusts the window's origin accordingly.
@@ -429,7 +450,7 @@
                         atIndex:(NSInteger)index
                          reason:(int)reason {
   // The user switched tabs; close.
-  [self close];
+  [self closeBubble];
 }
 
 @end  // BaseBubbleController

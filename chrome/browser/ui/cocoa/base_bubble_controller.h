@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "components/bubble/bubble_reference.h"
 
 @class InfoBubbleView;
 class TabStripModelObserverBridge;
@@ -45,6 +46,7 @@ class TabStripModelObserverBridge;
   BOOL shouldOpenAsKeyWindow_;
   // The bubble window should close if it (or its parent) resigns key status.
   BOOL shouldCloseOnResignKey_;
+  BubbleReference bubbleReference_;
 }
 
 @property(nonatomic, assign) NSWindow* parentWindow;
@@ -55,6 +57,8 @@ class TabStripModelObserverBridge;
 @property(nonatomic, assign) BOOL shouldOpenAsKeyWindow;
 // Controls if the bubble auto-closes if the user clicks outside the bubble.
 @property(nonatomic, assign) BOOL shouldCloseOnResignKey;
+// A reference for bubbles that are managed by the BubbleManager.
+@property(nonatomic, assign) BubbleReference bubbleReference;
 
 // Creates a bubble. |nibPath| is just the basename, e.g. @"FirstRunBubble".
 // |anchoredAt| is in screen space. You need to call -showWindow: to make the
