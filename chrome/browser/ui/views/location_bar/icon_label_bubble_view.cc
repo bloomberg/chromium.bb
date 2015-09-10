@@ -119,14 +119,14 @@ void IconLabelBubbleView::Layout() {
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   gfx::Size size(image_->GetPreferredSize());
   if (ShouldShowBackground()) {
-    const int image_width = image_->width();
+    const int image_width = image_->GetPreferredSize().width();
     const int horizontal_item_padding = GetThemeProvider()->GetDisplayProperty(
         ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
     const int non_label_width =
         GetBubbleOuterPadding(true) +
         (image_width ? (image_width + horizontal_item_padding) : 0) +
         GetBubbleOuterPadding(false);
-    size.Enlarge(WidthMultiplier() * (width + non_label_width), 0);
+    size = gfx::Size(WidthMultiplier() * (width + non_label_width), 0);
     size.SetToMax(background_painter_->GetMinimumSize());
   }
 
