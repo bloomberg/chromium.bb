@@ -13,10 +13,13 @@
 
 namespace syncer_v2 {
 
-ModelTypeProcessorImpl::ModelTypeProcessorImpl(syncer::ModelType type)
+ModelTypeProcessorImpl::ModelTypeProcessorImpl(
+    syncer::ModelType type,
+    base::WeakPtr<ModelTypeStore> store)
     : type_(type),
       is_preferred_(false),
       is_connected_(false),
+      store_(store),
       weak_ptr_factory_for_ui_(this),
       weak_ptr_factory_for_sync_(this) {}
 

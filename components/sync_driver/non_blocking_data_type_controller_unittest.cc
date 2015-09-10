@@ -120,7 +120,8 @@ class MockSyncContextProxy : public syncer_v2::SyncContextProxy {
 class NonBlockingDataTypeControllerTest : public testing::Test {
  public:
   NonBlockingDataTypeControllerTest()
-      : type_processor_(syncer::DICTIONARY),
+      : type_processor_(syncer::DICTIONARY,
+                        base::WeakPtr<syncer_v2::ModelTypeStore>()),
         model_thread_(new base::TestSimpleTaskRunner()),
         sync_thread_(new base::TestSimpleTaskRunner()),
         controller_(syncer::DICTIONARY, true),

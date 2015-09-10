@@ -76,6 +76,8 @@
         'api/attachments/attachment_store.h',
         'api/attachments/attachment_store_backend.cc',
         'api/attachments/attachment_store_backend.h',
+        'api/model_type_store.cc',
+        'api/model_type_store.h',
         'api/string_ordinal.h',
         'api/sync_change.cc',
         'api/sync_change.h',

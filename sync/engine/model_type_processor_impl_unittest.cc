@@ -135,7 +135,9 @@ ModelTypeProcessorImplTest::ModelTypeProcessorImplTest()
     : mock_queue_(new MockCommitQueue()),
       injectable_sync_context_proxy_(
           new InjectableSyncContextProxy(mock_queue_)),
-      type_processor_(new ModelTypeProcessorImpl(kModelType)) {}
+      type_processor_(
+          new ModelTypeProcessorImpl(kModelType,
+                                     base::WeakPtr<ModelTypeStore>())) {}
 
 ModelTypeProcessorImplTest::~ModelTypeProcessorImplTest() {
 }

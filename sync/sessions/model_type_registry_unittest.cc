@@ -17,8 +17,6 @@
 
 namespace syncer {
 
-using syncer_v2::ModelTypeProcessorImpl;
-
 class ModelTypeRegistryTest : public ::testing::Test {
  public:
   ModelTypeRegistryTest();
@@ -145,8 +143,10 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_OffAndOn) {
 }
 
 TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
-  ModelTypeProcessorImpl themes_sync_proxy(syncer::THEMES);
-  ModelTypeProcessorImpl sessions_sync_proxy(syncer::SESSIONS);
+  syncer_v2::ModelTypeProcessorImpl themes_sync_proxy(
+      syncer::THEMES, base::WeakPtr<syncer_v2::ModelTypeStore>());
+  syncer_v2::ModelTypeProcessorImpl sessions_sync_proxy(
+      syncer::SESSIONS, base::WeakPtr<syncer_v2::ModelTypeStore>());
   scoped_refptr<base::DeferredSequencedTaskRunner> task_runner =
       new base::DeferredSequencedTaskRunner(
           base::ThreadTaskRunnerHandle::Get());
@@ -176,8 +176,10 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
 }
 
 TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
-  ModelTypeProcessorImpl themes_sync_proxy(syncer::THEMES);
-  ModelTypeProcessorImpl sessions_sync_proxy(syncer::SESSIONS);
+  syncer_v2::ModelTypeProcessorImpl themes_sync_proxy(
+      syncer::THEMES, base::WeakPtr<syncer_v2::ModelTypeStore>());
+  syncer_v2::ModelTypeProcessorImpl sessions_sync_proxy(
+      syncer::SESSIONS, base::WeakPtr<syncer_v2::ModelTypeStore>());
   scoped_refptr<base::DeferredSequencedTaskRunner> task_runner =
       new base::DeferredSequencedTaskRunner(
           base::ThreadTaskRunnerHandle::Get());
@@ -224,10 +226,12 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
 }
 
 TEST_F(ModelTypeRegistryTest, DeletionOrdering) {
-  scoped_ptr<ModelTypeProcessorImpl> themes_sync_proxy(
-      new ModelTypeProcessorImpl(syncer::THEMES));
-  scoped_ptr<ModelTypeProcessorImpl> sessions_sync_proxy(
-      new ModelTypeProcessorImpl(syncer::SESSIONS));
+  scoped_ptr<syncer_v2::ModelTypeProcessorImpl> themes_sync_proxy(
+      new syncer_v2::ModelTypeProcessorImpl(
+          syncer::THEMES, base::WeakPtr<syncer_v2::ModelTypeStore>()));
+  scoped_ptr<syncer_v2::ModelTypeProcessorImpl> sessions_sync_proxy(
+      new syncer_v2::ModelTypeProcessorImpl(
+          syncer::SESSIONS, base::WeakPtr<syncer_v2::ModelTypeStore>()));
   scoped_refptr<base::DeferredSequencedTaskRunner> task_runner =
       new base::DeferredSequencedTaskRunner(
           base::ThreadTaskRunnerHandle::Get());

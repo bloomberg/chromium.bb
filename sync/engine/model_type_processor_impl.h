@@ -18,6 +18,7 @@
 namespace syncer_v2 {
 class CommitQueue;
 class ModelTypeEntity;
+class ModelTypeStore;
 class SyncContextProxy;
 
 // A sync component embedded on the synced type's thread that helps to handle
@@ -25,7 +26,8 @@ class SyncContextProxy;
 class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
                                                    base::NonThreadSafe {
  public:
-  ModelTypeProcessorImpl(syncer::ModelType type);
+  ModelTypeProcessorImpl(syncer::ModelType type,
+                         base::WeakPtr<ModelTypeStore> store);
   ~ModelTypeProcessorImpl() override;
 
   // Returns true if this object believes that sync is preferred for this type.
@@ -140,6 +142,11 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
   // used by the model.  They are kept here only so we can save and restore
   // them across restarts, and keep them in sync with our progress markers.
   UpdateMap pending_updates_map_;
+
+  // Store is supplied by model type implementation. ModelTypeProcessorImpl
+  // uses store for persisting sync related data (entity state and data type
+  // state).
+  base::WeakPtr<ModelTypeStore> store_;
 
   // We use two different WeakPtrFactories because we want the pointers they
   // issue to have different lifetimes.  When asked to disconnect from the sync
