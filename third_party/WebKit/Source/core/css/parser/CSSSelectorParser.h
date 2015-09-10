@@ -49,7 +49,7 @@ private:
     CSSSelector::AttributeMatchType consumeAttributeFlags(CSSParserTokenRange&);
 
     const AtomicString& defaultNamespace() const;
-    QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
+    const AtomicString& determineNamespace(const AtomicString& prefix);
     void prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector*);
     void rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, CSSParserSelector*, bool tagIsImplicit);
     void rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, CSSParserSelector*, bool tagIsImplicit);

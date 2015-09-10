@@ -685,7 +685,6 @@ crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
-crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
 crbug.com/515454 [ Mac Win7 Win10 Android Linux ] css3/fonts/font-style-matching.html [ Slow ]

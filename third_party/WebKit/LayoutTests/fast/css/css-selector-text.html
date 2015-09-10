@@ -19,8 +19,9 @@ function parseThenSerializeRule(rule)
     var head = document.getElementById("head");
     head.appendChild(styleElement);
     
+    styleElement.appendChild(document.createTextNode("@namespace n url('test');"));
     styleElement.appendChild(document.createTextNode(rule));
-    return styleElement.sheet.cssRules[0].cssText;
+    return styleElement.sheet.cssRules[1].cssText;
 }
 
 function testSelectorRoundTrip(selector)
