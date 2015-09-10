@@ -35,7 +35,7 @@ class LayoutMenuList;
 
 class AXMenuList final : public AXLayoutObject {
 public:
-    static PassRefPtrWillBeRawPtr<AXMenuList> create(LayoutMenuList* layoutObject, AXObjectCacheImpl&);
+    static AXMenuList* create(LayoutMenuList* layoutObject, AXObjectCacheImpl&);
 
     bool isCollapsed() const override;
     AccessibilityExpanded isExpanded() const final;

@@ -50,9 +50,9 @@ AXListBox::~AXListBox()
 {
 }
 
-PassRefPtrWillBeRawPtr<AXListBox> AXListBox::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXListBox* AXListBox::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXListBox(layoutObject, axObjectCache));
+    return new AXListBox(layoutObject, axObjectCache);
 }
 
 AccessibilityRole AXListBox::determineAccessibilityRole()

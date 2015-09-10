@@ -41,7 +41,7 @@ private:
     AXARIAGrid(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXARIAGrid> create(LayoutObject*, AXObjectCacheImpl&);
+    static AXARIAGrid* create(LayoutObject*, AXObjectCacheImpl&);
     ~AXARIAGrid() override;
 
     bool isAriaTable() const override { return true; }
@@ -54,7 +54,7 @@ private:
     bool isMultiSelectable() const override { return true; }
     bool isTableExposableThroughAccessibility() const override { return true; }
 
-    bool addTableCellChild(AXObject*, HashSet<AXObject*>& appendedRows, unsigned& columnCount);
+    bool addTableCellChild(AXObject*, HeapHashSet<Member<AXObject>>& appendedRows, unsigned& columnCount);
 };
 
 } // namespace blink

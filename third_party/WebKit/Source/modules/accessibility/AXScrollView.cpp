@@ -52,9 +52,9 @@ void AXScrollView::detach()
     m_scrollView = nullptr;
 }
 
-PassRefPtrWillBeRawPtr<AXScrollView> AXScrollView::create(FrameView* view, AXObjectCacheImpl& axObjectCache)
+AXScrollView* AXScrollView::create(FrameView* view, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXScrollView(view, axObjectCache));
+    return new AXScrollView(view, axObjectCache);
 }
 
 AXObject* AXScrollView::scrollBar(AccessibilityOrientation orientation)

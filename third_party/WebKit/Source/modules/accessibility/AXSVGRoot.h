@@ -41,7 +41,7 @@ protected:
     AXSVGRoot(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXSVGRoot> create(LayoutObject*, AXObjectCacheImpl&);
+    static AXSVGRoot* create(LayoutObject*, AXObjectCacheImpl&);
     ~AXSVGRoot() override;
 
     void setParent(AXObject*) override;

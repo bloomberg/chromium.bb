@@ -309,9 +309,9 @@ public:
     BLINK_EXPORT void scrollToGlobalPoint(const WebPoint&) const;
 
 #if BLINK_IMPLEMENTATION
-    WebAXObject(const PassRefPtrWillBeRawPtr<AXObject>&);
-    WebAXObject& operator=(const PassRefPtrWillBeRawPtr<AXObject>&);
-    operator PassRefPtrWillBeRawPtr<AXObject>() const;
+    WebAXObject(AXObject*);
+    WebAXObject& operator=(AXObject*);
+    operator AXObject*() const;
 #endif
 
 private:

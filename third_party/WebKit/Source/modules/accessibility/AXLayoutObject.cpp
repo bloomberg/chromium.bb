@@ -184,9 +184,9 @@ AXLayoutObject::AXLayoutObject(LayoutObject* layoutObject, AXObjectCacheImpl& ax
 #endif
 }
 
-PassRefPtrWillBeRawPtr<AXLayoutObject> AXLayoutObject::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXLayoutObject* AXLayoutObject::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXLayoutObject(layoutObject, axObjectCache));
+    return new AXLayoutObject(layoutObject, axObjectCache);
 }
 
 AXLayoutObject::~AXLayoutObject()
@@ -1707,12 +1707,12 @@ void AXLayoutObject::addChildren()
     if (!canHaveChildren())
         return;
 
-    Vector<AXObject*> ownedChildren;
+    HeapVector<Member<AXObject>> ownedChildren;
     computeAriaOwnsChildren(ownedChildren);
 
-    for (RefPtrWillBeRawPtr<AXObject> obj = firstChild(); obj; obj = obj->nextSibling()) {
-        if (!axObjectCache().isAriaOwned(obj.get()))
-            addChild(obj.get());
+    for (AXObject* obj = firstChild(); obj; obj = obj->nextSibling()) {
+        if (!axObjectCache().isAriaOwned(obj))
+            addChild(obj);
     }
 
     addHiddenChildren();
@@ -1862,12 +1862,15 @@ AXObject::AXRange AXLayoutObject::selection() const
     Node* anchorNode = selectionRange->startContainer();
     ASSERT(anchorNode);
 
-    RefPtrWillBeRawPtr<AXObject> anchorObject = nullptr;
+    AXObject* anchorObject = nullptr;
     // Find the closest node that has a corresponding AXObject.
     // This is because some nodes may be aria hidden or might not even have
     // a layout object if they are part of the shadow DOM.
-    while (anchorNode
-        && !(anchorObject = getUnignoredObjectFromNode(*anchorNode))) {
+    while (anchorNode) {
+        anchorObject = getUnignoredObjectFromNode(*anchorNode);
+        if (anchorObject)
+            break;
+
         if (anchorNode->nextSibling())
             anchorNode = anchorNode->nextSibling();
         else
@@ -1879,9 +1882,12 @@ AXObject::AXRange AXLayoutObject::selection() const
     Node* focusNode = selectionRange->endContainer();
     ASSERT(focusNode);
 
-    RefPtrWillBeRawPtr<AXObject> focusObject = nullptr;
-    while (focusNode
-        && !(focusObject = getUnignoredObjectFromNode(*focusNode))) {
+    AXObject* focusObject = nullptr;
+    while (focusNode) {
+        focusObject = getUnignoredObjectFromNode(*focusNode);
+        if (focusObject)
+            break;
+
         if (focusNode->previousSibling())
             focusNode = focusNode->previousSibling();
         else

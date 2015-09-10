@@ -43,7 +43,7 @@ private:
     explicit AXImageMapLink(AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXImageMapLink> create(AXObjectCacheImpl&);
+    static AXImageMapLink* create(AXObjectCacheImpl&);
     ~AXImageMapLink() override;
     DECLARE_VIRTUAL_TRACE();
 

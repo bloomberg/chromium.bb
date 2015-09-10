@@ -46,7 +46,7 @@ protected:
     AXNodeObject(Node*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXNodeObject> create(Node*, AXObjectCacheImpl&);
+    static AXNodeObject* create(Node*, AXObjectCacheImpl&);
     ~AXNodeObject() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -207,14 +207,14 @@ protected:
     int setSize() const override;
 
     // Aria-owns.
-    void computeAriaOwnsChildren(Vector<AXObject*>& ownedChildren);
+    void computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedChildren);
 
 private:
     RawPtrWillBeMember<Node> m_node;
 
     String deprecatedAlternativeTextForWebArea() const;
-    void deprecatedAlternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
-    void deprecatedAriaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
+    void deprecatedAlternativeText(HeapVector<Member<AccessibilityText>>&) const;
+    void deprecatedAriaLabelledbyText(HeapVector<Member<AccessibilityText>>&) const;
 
     String textFromDescendants(AXObjectSet& visited) const;
     String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXObjectVector* nameObjects) const;

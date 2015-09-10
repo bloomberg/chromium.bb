@@ -31,7 +31,7 @@ class LayoutProgress;
 
 class AXProgressIndicator final : public AXLayoutObject {
 public:
-    static PassRefPtrWillBeRawPtr<AXProgressIndicator> create(LayoutProgress*, AXObjectCacheImpl&);
+    static AXProgressIndicator* create(LayoutProgress*, AXObjectCacheImpl&);
 
 private:
     AccessibilityRole determineAccessibilityRole() final;

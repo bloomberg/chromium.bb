@@ -75,9 +75,9 @@ AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& axObjectCache)
 {
 }
 
-PassRefPtrWillBeRawPtr<AXNodeObject> AXNodeObject::create(Node* node, AXObjectCacheImpl& axObjectCache)
+AXNodeObject* AXNodeObject::create(Node* node, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXNodeObject(node, axObjectCache));
+    return new AXNodeObject(node, axObjectCache);
 }
 
 AXNodeObject::~AXNodeObject()
@@ -1586,7 +1586,7 @@ String AXNodeObject::deprecatedTextUnderElement(TextUnderElementMode mode) const
             continue;
 
         if (child->isAXNodeObject()) {
-            WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>> textOrder;
+            HeapVector<Member<AccessibilityText>> textOrder;
             toAXNodeObject(child)->deprecatedAlternativeText(textOrder);
             if (textOrder.size() > 0) {
                 builder.append(textOrder[0]->text());
@@ -1980,10 +1980,10 @@ String AXNodeObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSe
     AXObjectVector localNameObjects;
 
     for (const auto& element : elements) {
-        RefPtrWillBeRawPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
+        AXObject* axElement = axObjectCache().getOrCreate(element);
         if (axElement) {
             foundValidElement = true;
-            localNameObjects.append(axElement.get());
+            localNameObjects.append(axElement);
 
             String result = recursiveTextAlternative(*axElement, inAriaLabelledbyTraversal, visited);
             if (!result.isEmpty()) {
@@ -2124,7 +2124,7 @@ void AXNodeObject::addChildren()
     if (layoutObject() && !isHTMLCanvasElement(*m_node))
         return;
 
-    Vector<AXObject*> ownedChildren;
+    HeapVector<Member<AXObject>> ownedChildren;
     computeAriaOwnsChildren(ownedChildren);
 
     for (Node& child : NodeTraversal::childrenOf(*m_node)) {
@@ -2417,7 +2417,7 @@ void AXNodeObject::updateAccessibilityRole()
         childrenChanged();
 }
 
-void AXNodeObject::computeAriaOwnsChildren(Vector<AXObject*>& ownedChildren)
+void AXNodeObject::computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedChildren)
 {
     if (!hasAttribute(aria_ownsAttr))
         return;
@@ -2470,7 +2470,7 @@ String AXNodeObject::deprecatedAlternativeTextForWebArea() const
     return String();
 }
 
-void AXNodeObject::deprecatedAlternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>& textOrder) const
+void AXNodeObject::deprecatedAlternativeText(HeapVector<Member<AccessibilityText>>& textOrder) const
 {
     if (isWebArea()) {
         String webAreaText = deprecatedAlternativeTextForWebArea();
@@ -2494,7 +2494,7 @@ void AXNodeObject::deprecatedAlternativeText(WillBeHeapVector<OwnPtrWillBeMember
     }
 }
 
-void AXNodeObject::deprecatedAriaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>& textOrder) const
+void AXNodeObject::deprecatedAriaLabelledbyText(HeapVector<Member<AccessibilityText>>& textOrder) const
 {
     String ariaLabelledby = ariaLabelledbyAttribute();
     if (!ariaLabelledby.isEmpty()) {
@@ -2502,7 +2502,7 @@ void AXNodeObject::deprecatedAriaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMem
         ariaLabelledbyElements(elements);
 
         for (const auto& element : elements) {
-            RefPtrWillBeRawPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
+            AXObject* axElement = axObjectCache().getOrCreate(element);
             textOrder.append(AccessibilityText::create(ariaLabelledby, AlternativeText, axElement));
         }
     }
@@ -2539,11 +2539,11 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         }
         HTMLLabelElement* label = labelForElement(htmlElement);
         if (label) {
-            RefPtrWillBeRawPtr<AXObject> labelAXObject = axObjectCache().getOrCreate(label);
+            AXObject* labelAXObject = axObjectCache().getOrCreate(label);
             // Avoid an infinite loop for label wrapped
-            if (labelAXObject && !visited.contains(labelAXObject.get())) {
+            if (labelAXObject && !visited.contains(labelAXObject)) {
                 if (nameObjects) {
-                    localNameObjects.append(labelAXObject.get());
+                    localNameObjects.append(labelAXObject);
                     *nameObjects = localNameObjects;
                     localNameObjects.clear();
                 }
@@ -2682,10 +2682,10 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
             }
         }
         if (figcaption) {
-            RefPtrWillBeRawPtr<AXObject> figcaptionAXObject = axObjectCache().getOrCreate(figcaption);
+            AXObject* figcaptionAXObject = axObjectCache().getOrCreate(figcaption);
             if (figcaptionAXObject) {
                 if (nameObjects) {
-                    localNameObjects.append(figcaptionAXObject.get());
+                    localNameObjects.append(figcaptionAXObject);
                     *nameObjects = localNameObjects;
                     localNameObjects.clear();
                 }
@@ -2740,10 +2740,10 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         }
         HTMLTableCaptionElement* caption = tableElement->caption();
         if (caption) {
-            RefPtrWillBeRawPtr<AXObject> captionAXObject = axObjectCache().getOrCreate(caption);
+            AXObject* captionAXObject = axObjectCache().getOrCreate(caption);
             if (captionAXObject) {
                 if (nameObjects) {
-                    localNameObjects.append(captionAXObject.get());
+                    localNameObjects.append(captionAXObject);
                     *nameObjects = localNameObjects;
                     localNameObjects.clear();
                 }

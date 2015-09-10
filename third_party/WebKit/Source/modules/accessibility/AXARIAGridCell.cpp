@@ -45,9 +45,9 @@ AXARIAGridCell::~AXARIAGridCell()
 {
 }
 
-PassRefPtrWillBeRawPtr<AXARIAGridCell> AXARIAGridCell::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXARIAGridCell* AXARIAGridCell::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXARIAGridCell(layoutObject, axObjectCache));
+    return new AXARIAGridCell(layoutObject, axObjectCache);
 }
 
 bool AXARIAGridCell::isAriaColumnHeader() const

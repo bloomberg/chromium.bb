@@ -37,7 +37,7 @@ class FrameView;
 
 class AXScrollView final : public AXObject {
 public:
-    static PassRefPtrWillBeRawPtr<AXScrollView> create(FrameView*, AXObjectCacheImpl&);
+    static AXScrollView* create(FrameView*, AXObjectCacheImpl&);
     AccessibilityRole roleValue() const override { return ScrollAreaRole; }
     FrameView* scrollView() const { return m_scrollView; }
 
@@ -77,8 +77,8 @@ private:
     void removeChildScrollbar(AXObject*);
 
     RawPtrWillBeMember<FrameView> m_scrollView;
-    RefPtrWillBeMember<AXObject> m_horizontalScrollbar;
-    RefPtrWillBeMember<AXObject> m_verticalScrollbar;
+    Member<AXObject> m_horizontalScrollbar;
+    Member<AXObject> m_verticalScrollbar;
     bool m_childrenDirty;
 };
 

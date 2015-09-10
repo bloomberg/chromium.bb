@@ -46,9 +46,9 @@ AXList::~AXList()
 {
 }
 
-PassRefPtrWillBeRawPtr<AXList> AXList::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXList* AXList::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXList(layoutObject, axObjectCache));
+    return new AXList(layoutObject, axObjectCache);
 }
 
 bool AXList::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const

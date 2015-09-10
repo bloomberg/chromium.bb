@@ -35,9 +35,9 @@ AXProgressIndicator::AXProgressIndicator(LayoutProgress* layoutObject, AXObjectC
 {
 }
 
-PassRefPtrWillBeRawPtr<AXProgressIndicator> AXProgressIndicator::create(LayoutProgress* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXProgressIndicator* AXProgressIndicator::create(LayoutProgress* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXProgressIndicator(layoutObject, axObjectCache));
+    return new AXProgressIndicator(layoutObject, axObjectCache);
 }
 
 AccessibilityRole AXProgressIndicator::determineAccessibilityRole()

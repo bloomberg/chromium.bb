@@ -50,7 +50,7 @@ protected:
     AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXLayoutObject> create(LayoutObject*, AXObjectCacheImpl&);
+    static AXLayoutObject* create(LayoutObject*, AXObjectCacheImpl&);
     ~AXLayoutObject() override;
 
     // Public, overridden from AXObject.

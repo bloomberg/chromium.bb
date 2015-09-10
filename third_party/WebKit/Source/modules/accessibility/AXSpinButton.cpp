@@ -31,9 +31,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<AXSpinButton> AXSpinButton::create(AXObjectCacheImpl& axObjectCache)
+AXSpinButton* AXSpinButton::create(AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXSpinButton(axObjectCache));
+    return new AXSpinButton(axObjectCache);
 }
 
 AXSpinButton::AXSpinButton(AXObjectCacheImpl& axObjectCache)
@@ -110,9 +110,9 @@ AXSpinButtonPart::AXSpinButtonPart(AXObjectCacheImpl& axObjectCache)
 {
 }
 
-PassRefPtrWillBeRawPtr<AXSpinButtonPart> AXSpinButtonPart::create(AXObjectCacheImpl& axObjectCache)
+AXSpinButtonPart* AXSpinButtonPart::create(AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXSpinButtonPart(axObjectCache));
+    return new AXSpinButtonPart(axObjectCache);
 }
 
 LayoutRect AXSpinButtonPart::elementRect() const

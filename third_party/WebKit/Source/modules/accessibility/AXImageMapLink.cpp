@@ -63,9 +63,9 @@ void AXImageMapLink::detachFromParent()
     m_mapElement = nullptr;
 }
 
-PassRefPtrWillBeRawPtr<AXImageMapLink> AXImageMapLink::create(AXObjectCacheImpl& axObjectCache)
+AXImageMapLink* AXImageMapLink::create(AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXImageMapLink(axObjectCache));
+    return new AXImageMapLink(axObjectCache);
 }
 
 AXObject* AXImageMapLink::computeParent() const

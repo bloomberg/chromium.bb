@@ -47,9 +47,9 @@ AXTableRow::~AXTableRow()
 {
 }
 
-PassRefPtrWillBeRawPtr<AXTableRow> AXTableRow::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXTableRow* AXTableRow::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXTableRow(layoutObject, axObjectCache));
+    return new AXTableRow(layoutObject, axObjectCache);
 }
 
 AccessibilityRole AXTableRow::determineAccessibilityRole()

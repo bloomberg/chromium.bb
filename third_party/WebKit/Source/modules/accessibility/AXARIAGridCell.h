@@ -41,7 +41,7 @@ private:
     AXARIAGridCell(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXARIAGridCell> create(LayoutObject*, AXObjectCacheImpl&);
+    static AXARIAGridCell* create(LayoutObject*, AXObjectCacheImpl&);
     ~AXARIAGridCell() override;
 
     // fills in the start location and row span of cell

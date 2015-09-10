@@ -41,7 +41,7 @@ private:
     AXListBox(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXListBox> create(LayoutObject*, AXObjectCacheImpl&);
+    static AXListBox* create(LayoutObject*, AXObjectCacheImpl&);
     ~AXListBox() override;
 
     AccessibilityRole determineAccessibilityRole() final;

@@ -53,9 +53,9 @@ void AXScrollbar::detachFromParent()
     AXMockObject::detachFromParent();
 }
 
-PassRefPtrWillBeRawPtr<AXScrollbar> AXScrollbar::create(Scrollbar* scrollbar, AXObjectCacheImpl& axObjectCache)
+AXScrollbar* AXScrollbar::create(Scrollbar* scrollbar, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXScrollbar(scrollbar, axObjectCache));
+    return new AXScrollbar(scrollbar, axObjectCache);
 }
 
 LayoutRect AXScrollbar::elementRect() const

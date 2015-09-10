@@ -45,9 +45,9 @@ AXInlineTextBox::AXInlineTextBox(PassRefPtr<AbstractInlineTextBox> inlineTextBox
 {
 }
 
-PassRefPtrWillBeRawPtr<AXInlineTextBox> AXInlineTextBox::create(PassRefPtr<AbstractInlineTextBox> inlineTextBox, AXObjectCacheImpl& axObjectCache)
+AXInlineTextBox* AXInlineTextBox::create(PassRefPtr<AbstractInlineTextBox> inlineTextBox, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXInlineTextBox(inlineTextBox, axObjectCache));
+    return new AXInlineTextBox(inlineTextBox, axObjectCache);
 }
 
 void AXInlineTextBox::init()

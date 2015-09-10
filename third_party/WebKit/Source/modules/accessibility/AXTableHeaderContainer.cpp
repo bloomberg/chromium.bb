@@ -42,9 +42,9 @@ AXTableHeaderContainer::~AXTableHeaderContainer()
 {
 }
 
-PassRefPtrWillBeRawPtr<AXTableHeaderContainer> AXTableHeaderContainer::create(AXObjectCacheImpl& axObjectCache)
+AXTableHeaderContainer* AXTableHeaderContainer::create(AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXTableHeaderContainer(axObjectCache));
+    return new AXTableHeaderContainer(axObjectCache);
 }
 
 LayoutRect AXTableHeaderContainer::elementRect() const

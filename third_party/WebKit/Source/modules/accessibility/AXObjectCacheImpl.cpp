@@ -84,9 +84,9 @@ namespace blink {
 using namespace HTMLNames;
 
 // static
-PassOwnPtrWillBeRawPtr<AXObjectCache> AXObjectCacheImpl::create(Document& document)
+AXObjectCache* AXObjectCacheImpl::create(Document& document)
 {
-    return adoptPtrWillBeNoop(new AXObjectCacheImpl(document));
+    return new AXObjectCacheImpl(document);
 }
 
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
@@ -109,7 +109,7 @@ void AXObjectCacheImpl::dispose()
     m_notificationPostTimer.stop();
 
     for (auto& entry : m_objects) {
-        AXObject* obj = entry.value.get();
+        AXObject* obj = entry.value;
         obj->detach();
         removeAXID(obj);
     }
@@ -142,7 +142,7 @@ AXObject* AXObjectCacheImpl::focusedImageMapUIElement(HTMLAreaElement* areaEleme
     const AXObject::AccessibilityChildrenVector& imageChildren = axLayoutImage->children();
     unsigned count = imageChildren.size();
     for (unsigned k = 0; k < count; ++k) {
-        AXObject* child = imageChildren[k].get();
+        AXObject* child = imageChildren[k];
         if (!child->isImageMapLink())
             continue;
 
@@ -277,7 +277,7 @@ bool nodeHasRole(Node* node, const String& role)
     return equalIgnoringCase(toElement(node)->getAttribute(roleAttr), role);
 }
 
-PassRefPtrWillBeRawPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutObject)
+AXObject* AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutObject)
 {
     // FIXME: How could layoutObject->node() ever not be an Element?
     Node* node = layoutObject->node();
@@ -333,7 +333,7 @@ PassRefPtrWillBeRawPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObj
     return AXLayoutObject::create(layoutObject, *this);
 }
 
-PassRefPtrWillBeRawPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
+AXObject* AXObjectCacheImpl::createFromNode(Node* node)
 {
     if (isMenuListOption(node))
         return AXMenuListOption::create(toHTMLOptionElement(node), *this);
@@ -341,7 +341,7 @@ PassRefPtrWillBeRawPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
     return AXNodeObject::create(node, *this);
 }
 
-PassRefPtrWillBeRawPtr<AXObject> AXObjectCacheImpl::createFromInlineTextBox(AbstractInlineTextBox* inlineTextBox)
+AXObject* AXObjectCacheImpl::createFromInlineTextBox(AbstractInlineTextBox* inlineTextBox)
 {
     return AXInlineTextBox::create(inlineTextBox, *this);
 }
@@ -354,7 +354,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
     if (AXObject* obj = get(widget))
         return obj;
 
-    RefPtrWillBeRawPtr<AXObject> newObj = nullptr;
+    AXObject* newObj = nullptr;
     if (widget->isFrameView()) {
         FrameView* frameView = toFrameView(widget);
 
@@ -376,12 +376,12 @@ AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
     if (!newObj)
         return 0;
 
-    getAXID(newObj.get());
+    getAXID(newObj);
 
     m_widgetObjectMapping.set(widget, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
-    return newObj.get();
+    return newObj;
 }
 
 AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
@@ -401,12 +401,12 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     if (isHTMLHeadElement(node))
         return 0;
 
-    RefPtrWillBeRawPtr<AXObject> newObj = createFromNode(node);
+    AXObject* newObj = createFromNode(node);
 
     // Will crash later if we have two objects for the same node.
     ASSERT(!get(node));
 
-    getAXID(newObj.get());
+    getAXID(newObj);
 
     m_nodeObjectMapping.set(node, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
@@ -416,7 +416,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     if (node->isElementNode())
         updateTreeIfElementIdIsAriaOwned(toElement(node));
 
-    return newObj.get();
+    return newObj;
 }
 
 AXObject* AXObjectCacheImpl::getOrCreate(LayoutObject* layoutObject)
@@ -427,19 +427,19 @@ AXObject* AXObjectCacheImpl::getOrCreate(LayoutObject* layoutObject)
     if (AXObject* obj = get(layoutObject))
         return obj;
 
-    RefPtrWillBeRawPtr<AXObject> newObj = createFromRenderer(layoutObject);
+    AXObject* newObj = createFromRenderer(layoutObject);
 
     // Will crash later if we have two objects for the same layoutObject.
     ASSERT(!get(layoutObject));
 
-    getAXID(newObj.get());
+    getAXID(newObj);
 
     m_layoutObjectMapping.set(layoutObject, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
     newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
 
-    return newObj.get();
+    return newObj;
 }
 
 AXObject* AXObjectCacheImpl::getOrCreate(AbstractInlineTextBox* inlineTextBox)
@@ -450,19 +450,19 @@ AXObject* AXObjectCacheImpl::getOrCreate(AbstractInlineTextBox* inlineTextBox)
     if (AXObject* obj = get(inlineTextBox))
         return obj;
 
-    RefPtrWillBeRawPtr<AXObject> newObj = createFromInlineTextBox(inlineTextBox);
+    AXObject* newObj = createFromInlineTextBox(inlineTextBox);
 
     // Will crash later if we have two objects for the same inlineTextBox.
     ASSERT(!get(inlineTextBox));
 
-    getAXID(newObj.get());
+    getAXID(newObj);
 
     m_inlineTextBoxObjectMapping.set(inlineTextBox, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
     newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
 
-    return newObj.get();
+    return newObj;
 }
 
 AXObject* AXObjectCacheImpl::rootObject()
@@ -475,7 +475,7 @@ AXObject* AXObjectCacheImpl::rootObject()
 
 AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role)
 {
-    RefPtrWillBeRawPtr<AXObject> obj = nullptr;
+    AXObject* obj = nullptr;
 
     // will be filled in...
     switch (role) {
@@ -505,13 +505,13 @@ AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role)
     }
 
     if (obj)
-        getAXID(obj.get());
+        getAXID(obj);
     else
         return 0;
 
     m_objects.set(obj->axObjectID(), obj);
     obj->init();
-    return obj.get();
+    return obj;
 }
 
 void AXObjectCacheImpl::remove(AXID axID)
@@ -696,7 +696,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
 
     unsigned i = 0, count = m_notificationsToPost.size();
     for (i = 0; i < count; ++i) {
-        AXObject* obj = m_notificationsToPost[i].first.get();
+        AXObject* obj = m_notificationsToPost[i].first;
 
         if (!obj->axObjectID())
             continue;
@@ -764,7 +764,7 @@ AXObject* AXObjectCacheImpl::getAriaOwnedParent(const AXObject* child) const
     return objectFromAXID(m_ariaOwnedChildToOwnerMapping.get(child->axObjectID()));
 }
 
-void AXObjectCacheImpl::updateAriaOwns(const AXObject* owner, const Vector<String>& idVector, Vector<AXObject*>& ownedChildren)
+void AXObjectCacheImpl::updateAriaOwns(const AXObject* owner, const Vector<String>& idVector, HeapVector<Member<AXObject>>& ownedChildren)
 {
     //
     // Update the map from the AXID of this element to the ids of the owned children,
@@ -1346,11 +1346,13 @@ DEFINE_TRACE(AXObjectCacheImpl)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_document);
-    visitor->trace(m_objects);
     visitor->trace(m_widgetObjectMapping);
     visitor->trace(m_nodeObjectMapping);
-    visitor->trace(m_notificationsToPost);
 #endif
+
+    visitor->trace(m_objects);
+    visitor->trace(m_notificationsToPost);
+
     AXObjectCache::trace(visitor);
 }
 

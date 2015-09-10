@@ -46,12 +46,12 @@ AXARIAGrid::~AXARIAGrid()
 {
 }
 
-PassRefPtrWillBeRawPtr<AXARIAGrid> AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXARIAGrid* AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXARIAGrid(layoutObject, axObjectCache));
+    return new AXARIAGrid(layoutObject, axObjectCache);
 }
 
-bool AXARIAGrid::addTableCellChild(AXObject* child, HashSet<AXObject*>& appendedRows, unsigned& columnCount)
+bool AXARIAGrid::addTableCellChild(AXObject* child, HeapHashSet<Member<AXObject>>& appendedRows, unsigned& columnCount)
 {
     if (!child || !child->isTableRow() || child->ariaRoleAttribute() != RowRole)
         return false;
@@ -92,7 +92,7 @@ void AXARIAGrid::addChildren()
     if (!m_layoutObject)
         return;
 
-    Vector<AXObject*> children;
+    HeapVector<Member<AXObject>> children;
     for (AXObject* child = firstChild(); child; child = child->nextSibling())
         children.append(child);
     computeAriaOwnsChildren(children);
@@ -100,7 +100,7 @@ void AXARIAGrid::addChildren()
     AXObjectCacheImpl& axCache = axObjectCache();
 
     // add only rows that are labeled as aria rows
-    HashSet<AXObject*> appendedRows;
+    HeapHashSet<Member<AXObject>> appendedRows;
     unsigned columnCount = 0;
     for (const auto& child : children) {
         if (!addTableCellChild(child, appendedRows, columnCount)) {

@@ -42,7 +42,7 @@ private:
     AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXInlineTextBox> create(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
+    static AXInlineTextBox* create(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
     void init() override;
     void detach() override;

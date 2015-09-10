@@ -38,7 +38,7 @@ class Scrollbar;
 
 class AXScrollbar final : public AXMockObject {
 public:
-    static PassRefPtrWillBeRawPtr<AXScrollbar> create(Scrollbar*, AXObjectCacheImpl&);
+    static AXScrollbar* create(Scrollbar*, AXObjectCacheImpl&);
     ~AXScrollbar() override;
     DECLARE_VIRTUAL_TRACE();
 

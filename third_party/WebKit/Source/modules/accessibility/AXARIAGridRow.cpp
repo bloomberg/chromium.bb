@@ -44,9 +44,9 @@ AXARIAGridRow::~AXARIAGridRow()
 {
 }
 
-PassRefPtrWillBeRawPtr<AXARIAGridRow> AXARIAGridRow::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXARIAGridRow* AXARIAGridRow::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXARIAGridRow(layoutObject, axObjectCache));
+    return new AXARIAGridRow(layoutObject, axObjectCache);
 }
 
 bool AXARIAGridRow::isARIATreeGridRow() const

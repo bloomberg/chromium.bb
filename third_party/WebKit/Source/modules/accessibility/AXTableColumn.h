@@ -44,7 +44,7 @@ private:
     explicit AXTableColumn(AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXTableColumn> create(AXObjectCacheImpl&);
+    static AXTableColumn* create(AXObjectCacheImpl&);
     ~AXTableColumn() override;
 
     // retrieves the topmost "column" header (th)

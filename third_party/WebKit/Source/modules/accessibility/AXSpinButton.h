@@ -36,7 +36,7 @@ class AXObjectCacheImpl;
 
 class AXSpinButton final : public AXMockObject {
 public:
-    static PassRefPtrWillBeRawPtr<AXSpinButton> create(AXObjectCacheImpl&);
+    static AXSpinButton* create(AXObjectCacheImpl&);
     ~AXSpinButton() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -59,7 +59,7 @@ private:
 
 class AXSpinButtonPart final : public AXMockObject {
 public:
-    static PassRefPtrWillBeRawPtr<AXSpinButtonPart> create(AXObjectCacheImpl&);
+    static AXSpinButtonPart* create(AXObjectCacheImpl&);
     ~AXSpinButtonPart() override { }
 
     bool isIncrementor() const { return m_isIncrementor; }

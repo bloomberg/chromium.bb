@@ -40,10 +40,10 @@ void AXObjectCache::init(AXObjectCacheCreateFunction function)
     m_createFunction = function;
 }
 
-PassOwnPtrWillBeRawPtr<AXObjectCache> AXObjectCache::create(Document& document)
+AXObjectCache* AXObjectCache::create(Document& document)
 {
     ASSERT(m_createFunction);
-    return (m_createFunction)(document);
+    return m_createFunction(document);
 }
 
 AXObjectCache::AXObjectCache()

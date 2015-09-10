@@ -37,7 +37,6 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -50,7 +49,7 @@ class Widget;
 class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl);
 public:
-    static PassOwnPtrWillBeRawPtr<AXObjectCache> create(Document&);
+    static AXObjectCache* create(Document&);
 
     explicit AXObjectCacheImpl(Document&);
     ~AXObjectCacheImpl();
@@ -173,7 +172,7 @@ public:
     //
     // If one or more ids aren't found, they're added to a lookup table so that if an
     // element with that id appears later, it can be added when you call updateTreeIfElementIdIsAriaOwned.
-    void updateAriaOwns(const AXObject* owner, const Vector<String>& idVector, Vector<AXObject*>& ownedChildren);
+    void updateAriaOwns(const AXObject* owner, const Vector<String>& idVector, HeapVector<Member<AXObject>>& ownedChildren);
 
     // Given an element in the DOM tree that was either just added or whose id just changed,
     // check to see if another object wants to be its parent due to aria-owns. If so, update
@@ -186,14 +185,14 @@ protected:
     void textChanged(AXObject*);
     void labelChanged(Element*);
 
-    PassRefPtrWillBeRawPtr<AXObject> createFromRenderer(LayoutObject*);
-    PassRefPtrWillBeRawPtr<AXObject> createFromNode(Node*);
-    PassRefPtrWillBeRawPtr<AXObject> createFromInlineTextBox(AbstractInlineTextBox*);
+    AXObject* createFromRenderer(LayoutObject*);
+    AXObject* createFromNode(Node*);
+    AXObject* createFromInlineTextBox(AbstractInlineTextBox*);
 
 private:
 
     RawPtrWillBeMember<Document> m_document;
-    WillBeHeapHashMap<AXID, RefPtrWillBeMember<AXObject>> m_objects;
+    HeapHashMap<AXID, Member<AXObject>> m_objects;
     // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
     // do not use HeapHashMap for those mappings.
     HashMap<LayoutObject*, AXID> m_layoutObjectMapping;
@@ -237,7 +236,7 @@ private:
     HashMap<String, OwnPtr<HashSet<AXID>>> m_idToAriaOwnersMapping;
 
     Timer<AXObjectCacheImpl> m_notificationPostTimer;
-    WillBeHeapVector<pair<RefPtrWillBeMember<AXObject>, AXNotification>> m_notificationsToPost;
+    HeapVector<pair<Member<AXObject>, AXNotification>> m_notificationsToPost;
     void notificationPostTimerFired(Timer<AXObjectCacheImpl>*);
 
     AXObject* focusedImageMapUIElement(HTMLAreaElement*);

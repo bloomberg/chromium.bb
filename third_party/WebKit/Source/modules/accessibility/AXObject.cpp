@@ -673,7 +673,7 @@ bool AXObject::isPresentationalChild() const
 
 String AXObject::name(AXNameFrom& nameFrom, AXObjectVector* nameObjects) const
 {
-    WillBeHeapHashSet<RawPtrWillBeMember<const AXObject>> visited;
+    HeapHashSet<Member<const AXObject>> visited;
     return textAlternative(false, false, visited, nameFrom, nameObjects, nullptr);
 }
 
@@ -1275,7 +1275,7 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const
 {
     // Search up the parent chain and create a vector of all scrollable parent objects
     // and ending with this object itself.
-    Vector<const AXObject*> objects;
+    HeapVector<Member<const AXObject>> objects;
     AXObject* parentObject;
     for (parentObject = this->parentObject(); parentObject; parentObject = parentObject->parentObject()) {
         if (parentObject->getScrollableAreaIfScrollable() && !parentObject->isAXScrollView())

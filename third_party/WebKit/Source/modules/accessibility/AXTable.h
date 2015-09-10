@@ -44,7 +44,7 @@ protected:
     AXTable(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtrWillBeRawPtr<AXTable> create(LayoutObject*, AXObjectCacheImpl&);
+    static AXTable* create(LayoutObject*, AXObjectCacheImpl&);
     ~AXTable() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -84,7 +84,7 @@ protected:
     AccessibilityChildrenVector m_rows;
     AccessibilityChildrenVector m_columns;
 
-    RefPtrWillBeMember<AXObject> m_headerContainer;
+    Member<AXObject> m_headerContainer;
     bool m_isAXTable;
 
     bool hasARIARole() const;

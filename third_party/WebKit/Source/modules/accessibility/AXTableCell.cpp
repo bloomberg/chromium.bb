@@ -46,9 +46,9 @@ AXTableCell::~AXTableCell()
 {
 }
 
-PassRefPtrWillBeRawPtr<AXTableCell> AXTableCell::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+AXTableCell* AXTableCell::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRefWillBeNoop(new AXTableCell(layoutObject, axObjectCache));
+    return new AXTableCell(layoutObject, axObjectCache);
 }
 
 bool AXTableCell::isTableHeaderCell() const

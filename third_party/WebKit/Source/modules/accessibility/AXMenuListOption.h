@@ -35,7 +35,7 @@ class AXObjectCacheImpl;
 
 class AXMenuListOption final : public AXMockObject {
 public:
-    static PassRefPtrWillBeRawPtr<AXMenuListOption> create(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache) { return adoptRefWillBeNoop(new AXMenuListOption(element, axObjectCache)); }
+    static AXMenuListOption* create(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache) { return new AXMenuListOption(element, axObjectCache); }
     ~AXMenuListOption() override;
 
 private:
