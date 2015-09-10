@@ -259,6 +259,42 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertIn('\'branch_G\' was merged', output)
     self.assertIn('checking out \'origin/master\'', output)
 
+  def testRebaseConflictsKeepGoing(self):
+    # Pretend that branch_L landed
+    self.origin.git('checkout', 'master')
+    with self.origin.open('L', 'w') as f:
+      f.write('L')
+    self.origin.git('add', 'L')
+    self.origin.git_commit('L')
+
+    # Add a commit to branch_K so that things fail
+    self.repo.git('checkout', 'branch_K')
+    with self.repo.open('M', 'w') as f:
+      f.write('NOPE')
+    self.repo.git('add', 'M')
+    self.repo.git_commit('K NOPE')
+
+    # Add a commits to branch_L which will work when squashed
+    self.repo.git('checkout', 'branch_L')
+    self.repo.git('reset', 'branch_L~')
+    with self.repo.open('L', 'w') as f:
+      f.write('NOPE')
+    self.repo.git('add', 'L')
+    self.repo.git_commit('L NOPE')
+    with self.repo.open('L', 'w') as f:
+      f.write('L')
+    self.repo.git('add', 'L')
+    self.repo.git_commit('L YUP')
+
+    # start on a branch which will be deleted
+    self.repo.git('checkout', 'branch_G')
+
+    self.repo.git('config', 'branch.branch_K.dormant', 'false')
+    output, _ = self.repo.capture_stdio(self.reup.main, ['-k'])
+    self.assertIn('--keep-going set, continuing with next branch.', output)
+    self.assertIn('could not be cleanly rebased:', output)
+    self.assertIn('  branch_K', output)
+
 
   def testTrackTag(self):
     self.origin.git('tag', 'lkgr', self.origin['M'])

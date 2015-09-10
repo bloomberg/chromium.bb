@@ -9,7 +9,7 @@ include::_git-rebase-update_desc.helper.txt[]
 SYNOPSIS
 --------
 [verse]
-'git rebase-update' [-v | --verbose] [-n | --no-fetch]
+'git rebase-update' [-v | --verbose] [-n | --no-fetch] [-k | --keep-going]
 
 DESCRIPTION
 -----------
@@ -48,6 +48,10 @@ If it does not apply cleanly, then your original (non-squashed) branch will be
 left in mid-rebase and `git rebase-update` will exit. You can deal with this
 like any other conflicted rebase. When you're done, just `git rebase-update`
 again to pick up where you left off.
+
+If you'd like to rebase all rebaseable branches in one pass and manually process
+the unrebaseable ones later, use -k or --keep-going. Cleanup will not happen
+until all branches apply cleanly.
 
 Cleanup::
   Once all the branches have been rebased, any empty branches (i.e. branches

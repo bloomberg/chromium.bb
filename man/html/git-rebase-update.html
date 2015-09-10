@@ -755,7 +755,7 @@ git-rebase-update(1) Manual Page
 <h2 id="_synopsis">SYNOPSIS</h2>
 <div class="sectionbody">
 <div class="verseblock">
-<pre class="content"><em>git rebase-update</em> [-v | --verbose] [-n | --no_fetch]</pre>
+<pre class="content"><em>git rebase-update</em> [-v | --verbose] [-n | --no-fetch] [-k | --keep-going]</pre>
 <div class="attribution">
 </div></div>
 </div>
@@ -786,7 +786,7 @@ Fetching
   of git remotes is determined, and fetched accordingly. Note that if any
   branches have a tag as their upstream, we are forced to pull all remotes.
 </p>
-<div class="paragraph"><p>Pass <code>--no_fetch</code> to skip this phase.</p></div>
+<div class="paragraph"><p>Pass <code>--no-fetch</code> to skip this phase.</p></div>
 </dd>
 <dt class="hdlist1">
 Rebasing
@@ -810,6 +810,11 @@ left in mid-rebase and <code>git rebase-update</code> will exit. You can deal wi
 like any other conflicted rebase. When you&#8217;re done, just <code>git rebase-update</code>
 again to pick up where you left off.</p></div>
 </dd>
+</dl></div>
+<div class="paragraph"><p>If you&#8217;d like to rebase all rebaseable branches in one pass and manually process
+the unrebaseable ones later, use -k or --keep-going. Cleanup will not happen
+until all branches apply cleanly.</p></div>
+<div class="dlist"><dl>
 <dt class="hdlist1">
 Cleanup
 </dt>
@@ -844,7 +849,7 @@ Restoration
 -n
 </dt>
 <dt class="hdlist1">
---no_fetch
+--no-fetch
 </dt>
 <dd>
 <p>
@@ -930,7 +935,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-04-10 14:23:11 PDT
+Last updated 2015-09-10 16:42:50 PDT
 </div>
 </div>
 </body>

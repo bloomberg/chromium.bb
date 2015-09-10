@@ -196,6 +196,8 @@ def rebase_branch(branch, parent, start_hash):
 def main(args=None):
   parser = argparse.ArgumentParser()
   parser.add_argument('--verbose', '-v', action='store_true')
+  parser.add_argument('--keep-going', '-k', action='store_true',
+                      help='Keep processing past failed rebases.')
   parser.add_argument('--no_fetch', '--no-fetch', '-n',
                       action='store_true',
                       help='Skip fetching remotes.')
@@ -245,6 +247,7 @@ def main(args=None):
   logging.debug('merge_base: %s' % pformat(merge_base))
 
   retcode = 0
+  unrebased_branches = []
   # Rebase each branch starting with the root-most branches and working
   # towards the leaves.
   for branch, parent in git.topo_iter(branch_tree):
@@ -254,7 +257,23 @@ def main(args=None):
       ret = rebase_branch(branch, parent, merge_base[branch])
       if not ret:
         retcode = 1
-        break
+
+        if opts.keep_going:
+          print '--keep-going set, continuing with next branch.'
+          unrebased_branches.append(branch)
+          if git.in_rebase():
+            git.run_with_retcode('rebase', '--abort')
+          if git.in_rebase():  # pragma: no cover
+            print 'Failed to abort rebase. Something is really wrong.'
+            break
+        else:
+          break
+
+  if unrebased_branches:
+    print
+    print 'The following branches could not be cleanly rebased:'
+    for branch in unrebased_branches:
+      print '  %s' % branch
 
   if not retcode:
     remove_empty_branches(branch_tree)

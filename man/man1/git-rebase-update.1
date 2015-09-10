@@ -2,12 +2,12 @@
 .\"     Title: git-rebase-update
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
+.\"      Date: 09/10/2015
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 68b1017
+.\"    Source: depot_tools 805792e
 .\"  Language: English
 .\"
-.TH "GIT\-REBASE\-UPDATE" "1" "04/10/2014" "depot_tools 68b1017" "Chromium depot_tools Manual"
+.TH "GIT\-REBASE\-UPDATE" "1" "09/10/2015" "depot_tools 805792e" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ git-rebase-update \- Updates all branches to have the latest changes from their 
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIgit rebase\-update\fR [\-v | \-\-verbose] [\-n | \-\-no_fetch]
+\fIgit rebase\-update\fR [\-v | \-\-verbose] [\-n | \-\-no\-fetch] [\-k | \-\-keep\-going]
 .fi
 .sp
 .SH "DESCRIPTION"
@@ -58,7 +58,7 @@ Fetching
 All branches are examined to find their upstream references\&. The correct set of git remotes is determined, and fetched accordingly\&. Note that if any branches have a tag as their upstream, we are forced to pull all remotes\&.
 .sp
 Pass
-\-\-no_fetch
+\-\-no\-fetch
 to skip this phase\&.
 .RE
 .PP
@@ -87,6 +87,8 @@ will exit\&. You can deal with this like any other conflicted rebase\&. When you
 git rebase\-update
 again to pick up where you left off\&.
 .RE
+.sp
+If you\(cqd like to rebase all rebaseable branches in one pass and manually process the unrebaseable ones later, use \-k or \-\-keep\-going\&. Cleanup will not happen until all branches apply cleanly\&.
 .PP
 Cleanup
 .RS 4
@@ -111,7 +113,7 @@ depot\-tools\&.upstream, see
 .RE
 .SH "OPTIONS"
 .PP
-\-n, \-\-no_fetch
+\-n, \-\-no\-fetch
 .RS 4
 Skip the
 git fetch
