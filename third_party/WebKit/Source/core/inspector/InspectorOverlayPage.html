@@ -158,10 +158,6 @@ body.platform-linux {
     display: none !important;
 }
 
-#tooltip-container {
-    -webkit-filter: drop-shadow(0 1px 1px hsla(0, 0%, 0%, 0.1)) drop-shadow(0 0px 1px hsla(0, 0%, 0%, 0.2));
-}
-
 #element-tooltip,
 #element-tooltip-arrow {
     position: absolute;
@@ -170,17 +166,17 @@ body.platform-linux {
 }
 
 #element-tooltip {
-    background-color: hsl(0, 0%, 25%);
+    background-color: #333740;
     font-size: 11px;
     line-height: 14px;
-    padding: 5px 6px;
-    border-radius: 2px;
+    padding: 5px 8px;
+    border-radius: 3px;
     color: white;
     display: flex;
     align-content: stretch;
     box-sizing: border-box;
     max-width: calc(100% - 4px);
-    border: 1px solid hsla(0, 0%, 0%, 0.1);
+    border: 1px solid hsla(0, 0%, 100%, 0.3);
     z-index: 1;
     background-clip: padding-box;
     will-change: transform;
@@ -189,7 +185,7 @@ body.platform-linux {
 
 #element-tooltip-arrow {
     border: solid;
-    border-color: hsl(0, 0%, 25%) transparent;
+    border-color: #333740 transparent;
     border-width: 0 8px 8px 8px;
     z-index: 2;
     margin-top: 1px;
@@ -199,7 +195,6 @@ body.platform-linux {
     border-width: 8px 8px 0 8px;
     margin-top: -1px;
 }
-
 
 #element-description {
     flex: 1 1;
@@ -235,7 +230,7 @@ body.platform-linux {
 }
 
 #material-class-name {
-    color: hsl(202, 90%, 75%);
+    color: hsl(202,92%,77%);
 }
 
 
@@ -550,8 +545,8 @@ function _drawMaterialElementTitle(elementInfo, bounds)
        className = className.substring(0, 50) + "\u2026";
     document.getElementById("material-class-name").textContent = className || "";
     document.getElementById("material-class-name").classList.toggle("hidden", !className);
-    document.getElementById("material-node-width").textContent = elementInfo.nodeWidth;
-    document.getElementById("material-node-height").textContent = elementInfo.nodeHeight;
+    document.getElementById("material-node-width").textContent = Math.round(elementInfo.nodeWidth* 100) / 100;
+    document.getElementById("material-node-height").textContent = Math.round(elementInfo.nodeHeight * 100) / 100;
 
     var titleWidth = elementTitle.offsetWidth;
     var titleHeight = elementTitle.offsetHeight;
@@ -1160,7 +1155,7 @@ document.addEventListener("keydown", onDocumentKeyDown);
 </div>
 <div id="tooltip-container" class="hidden">
     <div id="element-tooltip">
-      <div id="element-description" class="monospace"><span id="material-tag-name"></span><span id="material-node-id"></span><span id="material-class-name"></span></div>
+      <div id="element-description" class="monospace"><b><span id="material-tag-name"></span></b><span id="material-node-id"></span><span id="material-class-name"></span></div>
       <div id="dimensions"><span id="material-node-width"></span>&#xD7;<span id="material-node-height"></span></div>
     </div>
     <div id="element-tooltip-arrow"></div>
