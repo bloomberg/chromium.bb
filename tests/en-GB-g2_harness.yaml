@@ -222,6 +222,9 @@ tests:
     - ⠽ ⠺⠑⠝⠞ ⠞⠕
     - mode: [compbrlAtCursor]
       cursorPos: [0,1,2,3,4,5,6,7,8,9,10]
+      # FIXME: the original json based test only specified one cursor
+      # position to be tested. Since I don't know the expected result
+      # I'm setting this test to xfail
       xfail: true
   - # An example to reproduce:
     # https://bugzilla.gnome.org/show_bug.cgi?id=651217 note that the
@@ -231,6 +234,9 @@ tests:
     - ⠠⠏⠁⠏⠏⠁ ⠠⠏⠁⠏⠏⠁ ⠓⠑⠇⠏ ⠍⠑⠲
     - mode: [compbrlAtCursor]
       cursorPos: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+      # FIXME: the original json based test only specified one cursor
+      # position to be tested. Since I don't know the expected result
+      # I'm setting this test to xfail
       xfail: true
   - # this testcase tests cursor position when mode is 0. The word
     # about is contracted to ab. The user presses cursor routing 1 on
@@ -238,4 +244,5 @@ tests:
     # lands on letter a (index 0).
     - about
     - ⠁⠃
-    - {cursorPos: [0,1,2,3,4]}
+    - cursorPos: [0,1,2,3,4]
+      xfail: true
