@@ -872,12 +872,7 @@ crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
-crbug.com/528122 [ Mac Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
-crbug.com/529996 fast/text/international/vertical-text-glyph-test.html [ Failure Pass ]
-crbug.com/529996 fast/text/international/text-combine-image-test.html [ Failure Pass ]
-crbug.com/529996 fast/css/font-weight-1.html [ Failure Pass ]
-crbug.com/529996 fast/writing-mode/english-lr-text.html [ Failure Pass ]
-crbug.com/529996 fast/text/orientation-sideways.html [ Failure Pass ]
+crbug.com/528122 [ Mac ] fast/text/justify-ideograph-vertical.html [ Failure ImageOnlyFailure Pass ]
 
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
@@ -901,6 +896,13 @@ crbug.com/471066 [ SnowLeopard ] fast/text/emphasis-overlap.html [ Failure ]
 crbug.com/471066 [ SnowLeopard ] fast/text/fake-italic.html [ Failure ImageOnlyFailure ]
 
 crbug.com/478109 [ SnowLeopard ] fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
+
+crbug.com/521124 [ Win7 Release ] fast/text/international/vertical-text-glyph-test.html [ Pass ImageOnlyFailure ]
+crbug.com/521124 [ Win7 Release ] fast/text/international/text-combine-image-test.html [ Pass ImageOnlyFailure ]
+crbug.com/521124 [ Win7 Release ] fast/css/font-weight-1.html [ Pass ImageOnlyFailure ]
+crbug.com/521124 [ Win7 Release ] fast/text/justify-ideograph-vertical.html [ Pass ImageOnlyFailure ]
+crbug.com/521124 [ Win7 Release ] fast/writing-mode/english-lr-text.html [ Pass ImageOnlyFailure ]
+crbug.com/521124 [ Win7 Release ] fast/text/orientation-sideways.html [ Pass ImageOnlyFailure ]
 
 crbug.com/419769 [ Debug SnowLeopard ] fast/forms/time-multiple-fields/time-multiple-fields-localization.html [ Crash ]
 crbug.com/419769 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
@@ -1594,6 +1596,9 @@ crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
 crbug.com/525295 fast/block/float/trailing-float-layout-2.html [ Failure Pass ]
 crbug.com/525295 fast/block/float/trailing-float-layout.html [ Failure Pass ]
 
+crbug.com/459055 fast/forms/radio/radio-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/459055 fast/forms/checkbox/checkbox-appearance-basic.html [ NeedsRebaseline ]
+
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash ImageOnlyFailure Pass ]
 
 crbug.com/525299 [ MountainLion Mavericks XP Win10 ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
@@ -1605,3 +1610,6 @@ crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/527009 fast/dom/plugin-attributes-enumeration.html [ NeedsManualRebaseline ]
 
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
+
+crbug.com/492871 fast/forms/input-readonly-autoscroll.html [ NeedsRebaseline ]
+crbug.com/492871 fast/forms/input-text-scroll-left-on-blur.html [ NeedsRebaseline ]
