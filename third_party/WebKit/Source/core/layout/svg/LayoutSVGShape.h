@@ -83,7 +83,6 @@ public:
     float strokeWidth() const;
 
     virtual ShapeGeometryCodePath geometryCodePath() const { return PathGeometry; }
-    virtual const Vector<FloatPoint>* zeroLengthLineCaps() const { return nullptr; }
 
     FloatRect objectBoundingBox() const final { return m_fillBoundingBox; }
 

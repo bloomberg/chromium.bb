@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/paint/SVGShapePainter.h"
 
-#include "core/layout/svg/LayoutSVGPath.h"
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -173,7 +172,6 @@ void SVGShapePainter::strokeShape(GraphicsContext* context, const SkPaint& paint
         if (m_layoutSVGShape.hasNonScalingStroke())
             usePath = m_layoutSVGShape.nonScalingStrokePath(usePath, m_layoutSVGShape.nonScalingStrokeTransform());
         context->drawPath(usePath->skPath(), paint);
-        strokeZeroLengthLineCaps(context, paint);
     }
 }
 
@@ -227,37 +225,6 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceM
         clipRecorder.emplace(*paintInfo.context, marker, paintInfo.phase, marker.viewport());
 
     SVGContainerPainter(marker).paint(paintInfo);
-}
-
-void SVGShapePainter::strokeZeroLengthLineCaps(GraphicsContext* context, const SkPaint& strokePaint)
-{
-    const Vector<FloatPoint>* zeroLengthLineCaps = m_layoutSVGShape.zeroLengthLineCaps();
-    if (!zeroLengthLineCaps || zeroLengthLineCaps->isEmpty())
-        return;
-
-    // We need a paint for filling.
-    SkPaint fillPaint = strokePaint;
-    fillPaint.setStyle(SkPaint::kFill_Style);
-
-    AffineTransform nonScalingTransform;
-    bool hasNonScalingStroke = m_layoutSVGShape.hasNonScalingStroke();
-    if (hasNonScalingStroke)
-        nonScalingTransform = m_layoutSVGShape.nonScalingStrokeTransform();
-
-    for (const FloatPoint& capPosition : *zeroLengthLineCaps) {
-        FloatPoint position = capPosition;
-        // If non-scaling-stroke is in effect, apply the transform to the
-        // position (being the non-stroke geometry), and then paint the
-        // requested shape. The CTM should've been adjusted in
-        // SVGShapePainter::paint.
-        if (hasNonScalingStroke)
-            position = nonScalingTransform.mapPoint(position);
-        FloatRect subpathRect = LayoutSVGPath::zeroLengthSubpathRect(position, m_layoutSVGShape.strokeWidth());
-        if (m_layoutSVGShape.style()->svgStyle().capStyle() == SquareCap)
-            context->drawRect(subpathRect, fillPaint);
-        else
-            context->drawOval(subpathRect, fillPaint);
-    }
 }
 
 } // namespace blink

@@ -37,28 +37,18 @@ public:
 
     const Vector<MarkerPosition>* markerPositions() const override { return &m_markerPositions; }
 
-    const Vector<FloatPoint>* zeroLengthLineCaps() const override { return &m_zeroLengthLinecapLocations; }
-    static FloatRect zeroLengthSubpathRect(const FloatPoint&, float);
-
     const char* name() const override { return "LayoutSVGPath"; }
 
 private:
-    void updateShapeFromElement() override;
     void updateStrokeAndFillBoundingBoxes() override;
 
     FloatRect hitTestStrokeBoundingBox() const override;
-
-    bool shapeDependentStrokeContains(const FloatPoint&) override;
 
     FloatRect markerRect(float strokeWidth) const;
     bool shouldGenerateMarkerPositions() const;
     void processMarkerPositions();
 
-    bool shouldStrokeZeroLengthSubpath() const;
-    void updateZeroLengthSubpaths();
-
     Vector<MarkerPosition> m_markerPositions;
-    Vector<FloatPoint> m_zeroLengthLinecapLocations;
 };
 
 }

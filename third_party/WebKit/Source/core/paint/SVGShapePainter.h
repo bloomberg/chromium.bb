@@ -15,7 +15,6 @@ namespace blink {
 class FloatRect;
 struct MarkerPosition;
 struct PaintInfo;
-class FloatPoint;
 class GraphicsContext;
 class LayoutSVGResourceMarker;
 class LayoutSVGShape;
@@ -33,7 +32,6 @@ private:
 
     void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
     void paintMarker(const PaintInfo&, LayoutSVGResourceMarker&, const MarkerPosition&, float);
-    void strokeZeroLengthLineCaps(GraphicsContext*, const SkPaint&);
 
     LayoutSVGShape& m_layoutSVGShape;
 };
