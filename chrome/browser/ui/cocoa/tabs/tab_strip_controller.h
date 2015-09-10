@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 
 @class CrTrackingArea;
+@class CustomWindowControlsView;
 @class NewTabButton;
 @class TabContentsController;
 @class TabView;
@@ -147,7 +148,8 @@ class WebContents;
 
   // A container view for custom traffic light buttons, which must be manually
   // added in fullscreen in 10.10+.
-  base::scoped_nsobject<NSView> customWindowControls_;
+  base::scoped_nsobject<CustomWindowControlsView> customWindowControls_;
+  base::scoped_nsobject<CrTrackingArea> customWindowControlsTrackingArea_;
 }
 
 @property(nonatomic) CGFloat leftIndentForControls;

@@ -252,6 +252,39 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 - (void)setNewTabImages;
 @end
 
+// A simple view class that contains the traffic light buttons. This class
+// ensures that the buttons display the icons when the mouse hovers over
+// them by overriding the _mouseInGroup method.
+@interface CustomWindowControlsView : NSView {
+ @private
+  BOOL mouseInside_;
+}
+
+// Overrides the undocumented NSView method: _mouseInGroup. When the traffic
+// light buttons are drawn, they call _mouseInGroup from the superview. If
+// _mouseInGroup returns YES, the buttons will draw themselves with the icons
+// inside.
+- (BOOL)_mouseInGroup:(NSButton*)button;
+- (void)setMouseInside:(BOOL)isInside;
+
+@end
+
+@implementation CustomWindowControlsView
+
+- (void)setMouseInside:(BOOL)isInside {
+  if (mouseInside_ != isInside) {
+    mouseInside_ = isInside;
+    for (NSButton* button : [self subviews])
+      [button setNeedsDisplay];
+  }
+}
+
+- (BOOL)_mouseInGroup:(NSButton*)button {
+  return mouseInside_;
+}
+
+@end
+
 // A simple view class that prevents the Window Server from dragging the area
 // behind tabs. Sometimes core animation confuses it. Unfortunately, it can also
 // falsely pick up clicks during rapid tab closure, so we have to account for
@@ -1856,6 +1889,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     mouseInside_ = YES;
     [self setTabTrackingAreasEnabled:YES];
     [self mouseMoved:event];
+  } else if ([area isEqual:customWindowControlsTrackingArea_]) {
+    [customWindowControls_ setMouseInside:YES];
   }
 }
 
@@ -1876,6 +1911,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     // Since this would result in the new tab button incorrectly staying in the
     // hover state, disable the hover image on every mouse exit.
     [self setNewTabButtonHoverState:NO];
+  } else if ([area isEqual:customWindowControlsTrackingArea_]) {
+    [customWindowControls_ setMouseInside:NO];
   }
 }
 
@@ -2194,7 +2231,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     // Make the container view.
     CGFloat height = NSHeight([tabStripView_ frame]);
     NSRect frame = NSMakeRect(0, 0, [self leftIndentForControls], height);
-    customWindowControls_.reset([[NSView alloc] initWithFrame:frame]);
+    customWindowControls_.reset(
+        [[CustomWindowControlsView alloc] initWithFrame:frame]);
     [customWindowControls_
         setAutoresizingMask:NSViewMaxXMargin | NSViewHeightSizable];
 
@@ -2225,6 +2263,14 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                           forStyleMask:styleMask];
     [customWindowControls_ addSubview:zoomButton];
     [zoomButton setFrameOrigin:NSMakePoint(zoomButtonX, buttonY)];
+
+    customWindowControlsTrackingArea_.reset([[CrTrackingArea alloc]
+        initWithRect:[customWindowControls_ bounds]
+             options:(NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways)
+               owner:self
+            userInfo:nil]);
+    [customWindowControls_
+        addTrackingArea:customWindowControlsTrackingArea_.get()];
   }
 
   if (![permanentSubviews_ containsObject:customWindowControls_]) {
@@ -2237,6 +2283,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   if (customWindowControls_)
     [permanentSubviews_ removeObject:customWindowControls_];
   [self regenerateSubviewList];
+  [customWindowControls_ setMouseInside:NO];
 }
 
 - (void)themeDidChangeNotification:(NSNotification*)notification {
