@@ -208,6 +208,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # NVIDIA
     self.Fail('conformance/textures/misc/default-texture.html',
         ['linux', ('nvidia', 0x104a)], bug=422152)
+    self.Flaky('conformance/extensions/oes-element-index-uint.html',
+               ['linux', 'nvidia'], bug=524144)
     # AMD Radeon 5450
     self.Fail('conformance/programs/program-test.html',
         ['linux', ('amd', 0x68f9)], bug=436212)
