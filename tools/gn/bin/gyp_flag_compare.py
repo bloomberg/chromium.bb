@@ -69,15 +69,12 @@ def NormalizeSymbolArguments(command_line):
     command_line[command_line.index('-g2')] = '-g'
 
 
-def GetFlags(lines):
+def GetFlags(lines, build_dir):
   """Turn a list of command lines into a semi-structured dict."""
+  is_win = sys.platform == 'win32'
   flags_by_output = {}
   for line in lines:
-    # TODO(scottmg): Hacky way of getting only cc for now.
-    if 'clang' not in line:
-      continue
-
-    command_line = shlex.split(line.strip())[1:]
+    command_line = shlex.split(line.strip(), posix=not is_win)[1:]
 
     output_name = FindAndRemoveArgWithValue(command_line, '-o')
     dep_name = FindAndRemoveArgWithValue(command_line, '-MF')
@@ -86,10 +83,6 @@ def GetFlags(lines):
 
     command_line = MergeSpacedArgs(command_line, '-Xclang')
 
-    defines = [x for x in command_line if x.startswith('-D')]
-    include_dirs = [x for x in command_line if x.startswith('-I')]
-    dash_f = [x for x in command_line if x.startswith('-f')]
-    warnings = [x for x in command_line if x.startswith('-W')]
     cc_file = [x for x in command_line if x.endswith('.cc') or
                                           x.endswith('.c') or
                                           x.endswith('.cpp')]
@@ -97,11 +90,38 @@ def GetFlags(lines):
       print 'Skipping %s' % command_line
       continue
     assert len(cc_file) == 1
+
+    if is_win:
+      rsp_file = [x for x in command_line if x.endswith('.rsp')]
+      assert len(rsp_file) <= 1
+      if rsp_file:
+        rsp_file = os.path.join(build_dir, rsp_file[0][1:])
+        with open(rsp_file, "r") as open_rsp_file:
+          command_line = shlex.split(open_rsp_file, posix=False)
+
+    defines = [x for x in command_line if x.startswith('-D')]
+    include_dirs = [x for x in command_line if x.startswith('-I')]
+    dash_f = [x for x in command_line if x.startswith('-f')]
+    warnings = \
+        [x for x in command_line if x.startswith('/wd' if is_win else '-W')]
     others = [x for x in command_line if x not in defines and \
                                          x not in include_dirs and \
                                          x not in dash_f and \
                                          x not in warnings and \
                                          x not in cc_file]
+
+    for index, value in enumerate(include_dirs):
+      if value == '-Igen':
+        continue
+      path = value[2:]
+      if not os.path.isabs(path):
+        path = os.path.join(build_dir, path)
+      include_dirs[index] = '-I' + os.path.normpath(path)
+
+    # GYP supports paths above the source root like <(DEPTH)/../foo while such
+    # paths are unsupported by gn. But gn allows to use system-absolute paths
+    # instead (paths that start with single '/'). Normalize all paths.
+    cc_file = [os.path.normpath(os.path.join(build_dir, cc_file[0]))]
 
     # Filter for libFindBadConstructs.so having a relative path in one and
     # absolute path in the other.
@@ -177,15 +197,35 @@ def main():
   if len(sys.argv) == 2:
     sys.argv.append(sys.argv[1])
 
-  print >>sys.stderr, 'Regenerating...'
+  gn_out_dir = 'out/gn_flags'
+  print >> sys.stderr, 'Regenerating in %s...' % gn_out_dir
   # Currently only Release, non-component.
-  Run('gn gen out/gn_flags --args="is_debug=false is_component_build=false"')
+  Run('gn gen %s --args="is_debug=false is_component_build=false"' % gn_out_dir)
+  gn = Run('ninja -C %s -t commands %s' % (gn_out_dir, sys.argv[2]))
+  if sys.platform == 'win32':
+    # On Windows flags are stored in .rsp files which are created during build.
+    print >> sys.stderr, 'Building in %s...' % gn_out_dir
+    Run('ninja -C %s -d keeprsp %s' % (gn_out_dir, sys.argv[2]))
+
   os.environ.pop('GYP_DEFINES', None)
+  # Remove environment variables required by gn but conflicting with GYP.
+  # Relevant if Windows toolchain isn't provided by depot_tools.
+  os.environ.pop('GYP_MSVS_OVERRIDE_PATH', None)
+  os.environ.pop('WINDOWSSDKDIR', None)
+
+  gyp_out_dir = 'out_gyp_flags/Release'
+  print >> sys.stderr, 'Regenerating in %s...' % gyp_out_dir
   Run('python build/gyp_chromium -Goutput_dir=out_gyp_flags -Gconfig=Release')
-  gn = Run('ninja -C out/gn_flags -t commands %s' % sys.argv[2])
-  gyp = Run('ninja -C out_gyp_flags/Release -t commands %s' % sys.argv[1])
-  all_gyp_flags = GetFlags(gyp.splitlines())
-  all_gn_flags = GetFlags(gn.splitlines())
+  gyp = Run('ninja -C %s -t commands %s' % (gyp_out_dir, sys.argv[1]))
+  if sys.platform == 'win32':
+    # On Windows flags are stored in .rsp files which are created during build.
+    print >> sys.stderr, 'Building in %s...' % gyp_out_dir
+    Run('ninja -C %s -d keeprsp %s' % (gyp_out_dir, sys.argv[2]))
+
+  all_gyp_flags = GetFlags(gyp.splitlines(),
+                           os.path.join(os.getcwd(), gyp_out_dir))
+  all_gn_flags = GetFlags(gn.splitlines(),
+                          os.path.join(os.getcwd(), gn_out_dir))
   gyp_files = set(all_gyp_flags.keys())
   gn_files = set(all_gn_flags.keys())
   different_source_list = gyp_files != gn_files
@@ -204,12 +244,25 @@ def main():
     differences = CompareLists(gyp_flags, gn_flags, 'dash_f')
     differences += CompareLists(gyp_flags, gn_flags, 'defines')
     differences += CompareLists(gyp_flags, gn_flags, 'include_dirs')
-    differences += CompareLists(gyp_flags, gn_flags, 'warnings', dont_care_gn=[
+    differences += CompareLists(gyp_flags, gn_flags, 'warnings',
         # More conservative warnings in GN we consider to be OK.
-        '-Wendif-labels',
-        '-Wextra',
-        '-Wsign-compare',
-        ])
+        dont_care_gyp=[
+          '/wd4091',  # 'keyword' : ignored on left of 'type' when no variable
+                      # is declared.
+          '/wd4456',  # Declaration hides previous local declaration.
+          '/wd4457',  # Declaration hides function parameter.
+          '/wd4458',  # Declaration hides class member.
+          '/wd4459',  # Declaration hides global declaration.
+          '/wd4702',  # Unreachable code.
+          '/wd4800',  # Forcing value to bool 'true' or 'false'.
+          '/wd4838',  # Conversion from 'type' to 'type' requires a narrowing
+                      # conversion.
+        ] if sys.platform == 'win32' else None,
+        dont_care_gn=[
+          '-Wendif-labels',
+          '-Wextra',
+          '-Wsign-compare',
+        ] if not sys.platform == 'win32' else None)
     differences += CompareLists(gyp_flags, gn_flags, 'other')
     if differences:
       files_with_given_differences.setdefault(differences, []).append(filename)
