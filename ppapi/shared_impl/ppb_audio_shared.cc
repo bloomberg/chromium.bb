@@ -161,18 +161,21 @@ void PPB_Audio_Shared::StopThread() {
   // down the thread and Join it while holding the lock, we would deadlock. So
   // we give up the lock here so that the thread at least _can_ make Pepper
   // calls without causing deadlock.
+  // IMPORTANT: This instance's thread state should be reset to uninitialized
+  // before we release the proxy lock, so any calls from the plugin while we're
+  // unlocked can't access the joined thread.
   if (g_nacl_mode) {
     if (nacl_thread_active_) {
+      nacl_thread_active_ = false;
       int result =
           CallWhileUnlocked(g_thread_functions.thread_join, nacl_thread_id_);
       DCHECK_EQ(0, result);
-      nacl_thread_active_ = false;
     }
   } else {
     if (audio_thread_.get()) {
+      auto local_audio_thread(audio_thread_.Pass());
       CallWhileUnlocked(base::Bind(&base::DelegateSimpleThread::Join,
-                                   base::Unretained(audio_thread_.get())));
-      audio_thread_.reset();
+                                   base::Unretained(local_audio_thread.get())));
     }
   }
 }
