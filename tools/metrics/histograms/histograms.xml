@@ -59007,6 +59007,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1079" label="VIRTUALKEYBOARDPRIVATE_SETHOTRODKEYBOARD"/>
   <int value="1080" label="CERTIFICATEPROVIDERINTERNAL_REPORTSIGNATURE"/>
   <int value="1081" label="CERTIFICATEPROVIDERINTERNAL_REPORTCERTIFICATES"/>
+  <int value="1082" label="BLUETOOTHPRIVATE_PAIR"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

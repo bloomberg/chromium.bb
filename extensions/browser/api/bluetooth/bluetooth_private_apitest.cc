@@ -27,6 +27,7 @@ using testing::InSequence;
 using testing::NiceMock;
 using testing::Return;
 using testing::ReturnPointee;
+using testing::SaveArg;
 using testing::WithArgs;
 using testing::WithoutArgs;
 
@@ -118,6 +119,10 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
 
   void DispatchPasskeyPairingEvent() {
     DispatchPairingEvent(bt_private::PAIRING_EVENT_TYPE_REQUESTPASSKEY);
+  }
+
+  void DispatchConfirmPasskeyPairingEvent() {
+    DispatchPairingEvent(bt_private::PAIRING_EVENT_TYPE_CONFIRMPASSKEY);
   }
 
   void CallSetDiscoveryFilterCallback(
@@ -250,6 +255,21 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DiscoveryFilter) {
       .WillOnce(InvokeCallbackArgument<1>());
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/discovery_filter"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Pair) {
+  EXPECT_CALL(*mock_adapter_.get(),
+              AddPairingDelegate(
+                  _, device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH));
+  EXPECT_CALL(*mock_device_, ExpectingConfirmation())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_device_.get(), Connect(_, _, _))
+      .WillOnce(DoAll(
+          WithoutArgs(Invoke(
+              this,
+              &BluetoothPrivateApiTest::DispatchConfirmPasskeyPairingEvent)),
+          InvokeCallbackArgument<1>()));
+  ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/pair")) << message_;
 }
 
 }  // namespace extensions

@@ -69,6 +69,22 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "pair",
+        "type": "function",
+        "description": "Pairs the given device",
+        "parameters": [
+          {
+            "name": "deviceAddress",
+            "type": "string"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

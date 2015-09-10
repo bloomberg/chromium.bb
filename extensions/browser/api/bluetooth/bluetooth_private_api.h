@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_BLUETOOTH_BLUETOOTH_PRIVATE_API_H_
 
 #include "base/callback_forward.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "extensions/browser/api/bluetooth/bluetooth_extension_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
@@ -125,6 +126,23 @@ class BluetoothPrivateSetDiscoveryFilterFunction
  private:
   void OnSuccessCallback();
   void OnErrorCallback();
+};
+
+class BluetoothPrivatePairFunction : public BluetoothExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothPrivate.pair", BLUETOOTHPRIVATE_PAIR)
+  BluetoothPrivatePairFunction();
+
+  // BluetoothExtensionFunction:
+  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+
+ private:
+  ~BluetoothPrivatePairFunction() override;
+
+  void OnSuccessCallback();
+  void OnErrorCallback(device::BluetoothDevice::ConnectErrorCode error);
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothPrivatePairFunction);
 };
 
 }  // namespace api
