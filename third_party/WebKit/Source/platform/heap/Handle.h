@@ -895,29 +895,40 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { retu
 
 #endif // ENABLE(OILPAN)
 
+template<typename T, bool = IsGarbageCollectedType<T>::value>
+class PointerFieldStorageTrait {
+public:
+    using Type = RawPtr<T>;
+};
+
+template<typename T>
+class PointerFieldStorageTrait<T, true> {
+public:
+    using Type = Member<T>;
+};
+
 // Abstraction for injecting calls to an object's 'dispose()' method
 // on leaving a stack scope, ensuring earlier release of resources
 // than waiting until the object is eventually GCed.
-template<typename T>
+template<typename T, void (T::*Disposer)() = (&T::dispose)>
 class ScopedDisposal {
     STACK_ALLOCATED();
 public:
     ScopedDisposal(T* object)
         : m_object(object)
     {
-        static_assert(IsGarbageCollectedType<T>::value, "can only be used with garbage collected types");
     }
 
     ~ScopedDisposal()
     {
         if (m_object)
-            m_object->dispose();
+            (m_object->*Disposer)();
     }
 
     void clear() { m_object.clear(); }
 
 private:
-    Member<T> m_object;
+    typename PointerFieldStorageTrait<T>::Type m_object;
 };
 
 // SelfKeepAlive<Object> is the idiom to use for objects that have to keep
