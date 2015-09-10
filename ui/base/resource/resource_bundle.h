@@ -317,6 +317,11 @@ class UI_BASE_EXPORT ResourceBundle {
   // Load the main resources.
   void LoadCommonResources();
 
+  // Loads the resource paks chrome_{100,200}_percent.pak. Also loads the
+  // resource paks chrome_material_{100,200}_percent.pak contaning top
+  // chrome material design assets if the runtime flag is enabled.
+  void LoadChromeResources();
+
   // Implementation for the public methods which add a DataPack from a path. If
   // |optional| is false, an error is logged on failure to load. Sets the
   // member |has_only_material_design_assets_| on the created DataPack to the

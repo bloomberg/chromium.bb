@@ -28,31 +28,13 @@ HINSTANCE GetCurrentResourceDLL() {
   return GetModuleHandle(NULL);
 }
 
-base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
-  base::FilePath path;
-  if (PathService::Get(base::DIR_MODULE, &path))
-    return path.AppendASCII(pak_name.c_str());
-
-  // Return just the name of the pack file.
-  return base::FilePath(base::ASCIIToUTF16(pak_name));
-}
-
 }  // namespace
 
 void ResourceBundle::LoadCommonResources() {
   // As a convenience, add the current resource module as a data packs.
   data_packs_.push_back(new ResourceDataDLL(GetCurrentResourceDLL()));
 
-  if (IsScaleFactorSupported(SCALE_FACTOR_100P)) {
-    AddDataPackFromPath(
-        GetResourcesPakFilePath("chrome_100_percent.pak"),
-        SCALE_FACTOR_100P);
-  }
-  if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
-    AddDataPackFromPath(
-        GetResourcesPakFilePath("chrome_200_percent.pak"),
-        SCALE_FACTOR_200P);
-  }
+  LoadChromeResources();
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {

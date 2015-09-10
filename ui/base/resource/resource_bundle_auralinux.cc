@@ -8,56 +8,16 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "ui/base/layout.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/image/image.h"
 
-namespace {
-
-base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
-  base::FilePath path;
-  if (PathService::Get(base::DIR_MODULE, &path))
-    return path.AppendASCII(pak_name.c_str());
-
-  // Return just the name of the pack file.
-  return base::FilePath(pak_name.c_str());
-}
-
-}  // namespace
-
 namespace ui {
 
-// TODO(tdanderson): Refactor cross-platform loading of common resources.
 void ResourceBundle::LoadCommonResources() {
-  if (MaterialDesignController::IsModeMaterial()) {
-    // The material design data packs contain some of the same asset IDs as in
-    // the non-material design data packs. Add these to the ResourceBundle
-    // first so that they are searched first when a request for an asset is
-    // made.
-    AddMaterialDesignDataPackFromPath(
-        GetResourcesPakFilePath("chrome_material_100_percent.pak"),
-        SCALE_FACTOR_100P);
-
-    if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
-      AddOptionalMaterialDesignDataPackFromPath(
-          GetResourcesPakFilePath("chrome_material_200_percent.pak"),
-          SCALE_FACTOR_200P);
-    }
-  }
-
-  // Always load the 1x data pack first as the 2x data pack contains both 1x and
-  // 2x images. The 1x data pack only has 1x images, thus passes in an accurate
-  // scale factor to gfx::ImageSkia::AddRepresentation.
-  AddDataPackFromPath(GetResourcesPakFilePath(
-      "chrome_100_percent.pak"), SCALE_FACTOR_100P);
-
-  if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
-    AddOptionalDataPackFromPath(GetResourcesPakFilePath(
-        "chrome_200_percent.pak"), SCALE_FACTOR_200P);
-  }
+  LoadChromeResources();
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {

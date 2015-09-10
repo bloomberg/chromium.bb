@@ -25,6 +25,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -91,6 +92,19 @@ ScaleFactor FindClosestScaleFactorUnsafe(float scale) {
   return closest_match;
 }
 #endif  // OS_ANDROID
+
+base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
+  base::FilePath path;
+  if (PathService::Get(base::DIR_MODULE, &path))
+    return path.AppendASCII(pak_name.c_str());
+
+  // Return just the name of the pak file.
+#if defined(OS_WIN)
+  return base::FilePath(base::ASCIIToUTF16(pak_name));
+#else
+  return base::FilePath(pak_name.c_str());
+#endif  // OS_WIN
+}
 
 }  // namespace
 
@@ -641,6 +655,39 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 
 void ResourceBundle::FreeImages() {
   images_.clear();
+}
+
+void ResourceBundle::LoadChromeResources() {
+  // The material design data packs contain some of the same asset IDs as in
+  // the non-material design data packs. Add these to the ResourceBundle
+  // first so that they are searched first when a request for an asset is
+  // made.
+  if (MaterialDesignController::IsModeMaterial()) {
+    if (IsScaleFactorSupported(SCALE_FACTOR_100P)) {
+      AddMaterialDesignDataPackFromPath(
+          GetResourcesPakFilePath("chrome_material_100_percent.pak"),
+          SCALE_FACTOR_100P);
+    }
+
+    if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
+      AddOptionalMaterialDesignDataPackFromPath(
+          GetResourcesPakFilePath("chrome_material_200_percent.pak"),
+          SCALE_FACTOR_200P);
+    }
+  }
+
+  // Always load the 1x data pack first as the 2x data pack contains both 1x and
+  // 2x images. The 1x data pack only has 1x images, thus passes in an accurate
+  // scale factor to gfx::ImageSkia::AddRepresentation.
+  if (IsScaleFactorSupported(SCALE_FACTOR_100P)) {
+    AddDataPackFromPath(GetResourcesPakFilePath(
+        "chrome_100_percent.pak"), SCALE_FACTOR_100P);
+  }
+
+  if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
+    AddOptionalDataPackFromPath(GetResourcesPakFilePath(
+        "chrome_200_percent.pak"), SCALE_FACTOR_200P);
+  }
 }
 
 void ResourceBundle::AddDataPackFromPathInternal(
