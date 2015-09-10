@@ -325,14 +325,32 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   job_observer.ExpectJobResult(id,
                                base::FilePath(FILE_PATH_LITERAL("page2.js")),
                                JobObserver::Result::SUCCESS);
+  job_observer.ExpectJobResult(id, base::FilePath(FILE_PATH_LITERAL("cs1.js")),
+                               JobObserver::Result::SUCCESS);
+  job_observer.ExpectJobResult(id, base::FilePath(FILE_PATH_LITERAL("cs2.js")),
+                               JobObserver::Result::SUCCESS);
+
+  VerifierObserver verifier_observer;
+  ContentVerifier::SetObserverForTests(&verifier_observer);
 
   // Install a test extension we copied from the webstore that has actual
-  // signatures, and contains image paths with leading "./".
+  // signatures, and contains paths with a leading "./" in various places.
   const Extension* extension = InstallExtensionFromWebstore(
       test_data_dir_.AppendASCII("content_verifier/dot_slash_paths.crx"), 1);
 
   ASSERT_TRUE(extension);
   ASSERT_EQ(extension->id(), id);
+
+  // The content scripts might fail verification the first time since the
+  // one-time processing might not be finished yet - if that's the case then
+  // we want to wait until that work is done.
+  if (!ContainsKey(verifier_observer.completed_fetches(), id))
+    verifier_observer.WaitForFetchComplete(id);
+
+  // Now disable/re-enable the extension to cause the content scripts to be
+  // read again.
+  DisableExtension(id);
+  EnableExtension(id);
 
   EXPECT_TRUE(job_observer.WaitForExpectedJobs());
 
