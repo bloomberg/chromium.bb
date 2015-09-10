@@ -16,13 +16,13 @@ PassRefPtrWillBeRawPtr<DragEvent> DragEvent::create(const AtomicString& type, bo
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
     short button, unsigned short buttons,
-    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer* dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType,
+    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer* dataTransfer, PlatformMouseEvent::SyntheticEventType syntheticEventType,
     double uiCreateTime)
 {
     return adoptRefWillBeNoop(new DragEvent(type, canBubble, cancelable, view,
         detail, screenX, screenY, windowX, windowY,
         movementX, movementY,
-        ctrlKey, altKey, shiftKey, metaKey, button, buttons, relatedTarget, dataTransfer, isSimulated, syntheticEventType, uiCreateTime));
+        ctrlKey, altKey, shiftKey, metaKey, button, buttons, relatedTarget, dataTransfer, syntheticEventType, uiCreateTime));
 }
 
 
@@ -41,11 +41,11 @@ DragEvent::DragEvent(const AtomicString& eventType, bool canBubble, bool cancela
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
     short button, unsigned short buttons, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
-    DataTransfer* dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType,
+    DataTransfer* dataTransfer, PlatformMouseEvent::SyntheticEventType syntheticEventType,
     double uiCreateTime)
     : MouseEvent(eventType, canBubble, cancelable, view, detail, screenX, screenY,
         windowX, windowY, movementX, movementY, ctrlKey, altKey, shiftKey, metaKey, button, buttons, relatedTarget,
-        isSimulated, syntheticEventType, uiCreateTime)
+        syntheticEventType, uiCreateTime)
     , m_dataTransfer(dataTransfer)
 
 {

@@ -33,6 +33,12 @@ namespace blink {
 // Internal only: Helper class for what's common between mouse and wheel events.
 class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
 public:
+    enum class PositionType {
+        Position,
+        // Positionless mouse events are used, for example, for 'click' events from keyboard input.
+        // It's kind of surprising for a mouse event not to have a position.
+        Positionless
+    };
     // Note that these values are adjusted to counter the effects of zoom, so that values
     // exposed via DOM APIs are invariant under zooming.
     int screenX() const { return m_screenLocation.x(); }
@@ -47,14 +53,11 @@ public:
     int layerY();
     int offsetX();
     int offsetY();
-    // FIXME: rename isSimulated to fromKeyboard() and replace m_isSimulated with a new value
-    // in PlatformMouseEvent::SyntheticEventType. isSimulated() is only true for synthetic
-    // mouse events that derive from keyboard input, which do not have a position.
-    bool isSimulated() const { return m_isSimulated; }
     int pageX() const;
     int pageY() const;
     int x() const;
     int y() const;
+    bool hasPosition() const { return m_positionType == PositionType::Position; }
 
     // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative coords,
     // usable with LayoutObject::absoluteToLocal).
@@ -70,7 +73,7 @@ protected:
     MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable,
         PassRefPtrWillBeRawPtr<AbstractView>, int detail, const IntPoint& screenLocation,
         const IntPoint& rootFrameLocation, const IntPoint& movementDelta, bool ctrlKey, bool altKey,
-        bool shiftKey, bool metaKey, bool isSimulated = false, InputDeviceCapabilities* sourceCapabilities = nullptr);
+        bool shiftKey, bool metaKey, PositionType, InputDeviceCapabilities* sourceCapabilities = nullptr);
 
     void initCoordinates();
     void initCoordinates(const LayoutPoint& clientLocation);
@@ -89,7 +92,7 @@ private:
     LayoutPoint m_layerLocation;
     LayoutPoint m_offsetLocation;
     LayoutPoint m_absoluteLocation;
-    bool m_isSimulated;
+    PositionType m_positionType;
     bool m_hasCachedRelativePosition;
 };
 

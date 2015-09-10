@@ -33,7 +33,7 @@
 namespace blink {
 
 MouseRelatedEvent::MouseRelatedEvent()
-    : m_isSimulated(false)
+    : m_positionType(PositionType::Position)
     , m_hasCachedRelativePosition(false)
 {
 }
@@ -55,17 +55,17 @@ static LayoutSize contentsScrollOffset(AbstractView* abstractView)
 MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> abstractView,
     int detail, const IntPoint& screenLocation, const IntPoint& rootFrameLocation,
     const IntPoint& movementDelta,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool isSimulated, InputDeviceCapabilities* sourceCapabilities)
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, PositionType positionType, InputDeviceCapabilities* sourceCapabilities)
     : UIEventWithKeyState(eventType, canBubble, cancelable, abstractView, detail, ctrlKey, altKey, shiftKey, metaKey, sourceCapabilities)
     , m_screenLocation(screenLocation)
     , m_movementDelta(movementDelta)
-    , m_isSimulated(isSimulated)
+    , m_positionType(positionType)
 {
     LayoutPoint adjustedPageLocation;
     LayoutPoint scrollPosition;
 
     LocalFrame* frame = view() && view()->isLocalDOMWindow() ? toLocalDOMWindow(view())->frame() : 0;
-    if (frame && !isSimulated) {
+    if (frame && hasPosition()) {
         if (FrameView* frameView = frame->view()) {
             scrollPosition = frameView->scrollPosition();
             adjustedPageLocation = frameView->rootFrameToContents(rootFrameLocation);
@@ -184,7 +184,7 @@ int MouseRelatedEvent::layerY()
 
 int MouseRelatedEvent::offsetX()
 {
-    if (isSimulated())
+    if (!hasPosition())
         return 0;
     if (!m_hasCachedRelativePosition)
         computeRelativePosition();
@@ -193,7 +193,7 @@ int MouseRelatedEvent::offsetX()
 
 int MouseRelatedEvent::offsetY()
 {
-    if (isSimulated())
+    if (!hasPosition())
         return 0;
     if (!m_hasCachedRelativePosition)
         computeRelativePosition();

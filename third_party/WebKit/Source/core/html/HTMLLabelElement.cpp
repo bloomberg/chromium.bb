@@ -156,9 +156,9 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
         // If the click is not simulated and the text of the label element
         // is selected by dragging over it, then return without passing the
         // click event to control element.
-        // Note: a click event may be not a mouse event if created by
-        // document.createEvent().
-        if (evt->isMouseEvent() && !toMouseEvent(evt)->isSimulated()) {
+        // Note: check if it is a MouseEvent because a click event may
+        // not be an instance of a MouseEvent if created by document.createEvent().
+        if (evt->isMouseEvent() && toMouseEvent(evt)->hasPosition()) {
             if (LocalFrame* frame = document().frame()) {
                 // Check if there is a selection and click is not on the
                 // selection.

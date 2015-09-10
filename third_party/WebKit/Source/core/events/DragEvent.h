@@ -31,7 +31,7 @@ public:
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer*,
-        bool isSimulated = false, PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable,
+        PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable,
         double uiCreateTime = 0);
 
     static PassRefPtrWillBeRawPtr<DragEvent> create(const AtomicString& type, const DragEventInit& initializer)
@@ -56,7 +56,7 @@ private:
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer*,
-        bool isSimulated, PlatformMouseEvent::SyntheticEventType, double uiCreateTime = 0);
+        PlatformMouseEvent::SyntheticEventType, double uiCreateTime = 0);
 
     DragEvent(const AtomicString& type, const DragEventInit&);
 
