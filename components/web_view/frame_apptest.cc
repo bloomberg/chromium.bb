@@ -209,6 +209,35 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     return most_recent_connection_;
   }
 
+ protected:
+  ViewTreeConnection* window_manager() { return window_manager_; }
+  TestFrameTreeDelegate* frame_tree_delegate() {
+    return frame_tree_delegate_.get();
+  }
+  FrameTree* frame_tree() { return frame_tree_.get(); }
+  ViewAndFrame* root_view_and_frame() { return root_view_and_frame_.get(); }
+
+  scoped_ptr<ViewAndFrame> CreateChildViewAndFrame(ViewAndFrame* parent) {
+    mojo::View* child_frame_view = parent->view()->connection()->CreateView();
+    parent->view()->AddChild(child_frame_view);
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties;
+    client_properties.mark_non_null();
+    parent->frame_tree_server()->OnCreatedFrame(
+        child_frame_view->parent()->id(), child_frame_view->id(),
+        client_properties.Pass());
+    frame_tree_delegate()->WaitForCreateFrame();
+    if (HasFatalFailure())
+      return nullptr;
+
+    // Navigate the child frame, which should trigger a new ViewAndFrame.
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From(application_impl()->url());
+    parent->frame_tree_server()->RequestNavigate(
+        NAVIGATION_TARGET_TYPE_EXISTING_FRAME, child_frame_view->id(),
+        request.Pass());
+    return WaitForViewAndFrame();
+  }
+
   // Runs a message loop until the data necessary to represent to a client side
   // frame has been obtained.
   scoped_ptr<ViewAndFrame> WaitForViewAndFrame() {
@@ -218,6 +247,10 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     return view_and_frame_.Pass();
   }
 
+ private:
+  // ApplicationTestBase:
+  ApplicationDelegate* GetApplicationDelegate() override { return this; }
+
   // ApplicationDelegate implementation.
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
@@ -226,11 +259,6 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     return true;
   }
 
-  ViewTreeConnection* window_manager() { return window_manager_; }
-
-  // ApplicationTestBase:
-  ApplicationDelegate* GetApplicationDelegate() override { return this; }
-
   // Overridden from ViewTreeDelegate:
   void OnEmbed(View* root) override {
     most_recent_connection_ = root->connection();
@@ -238,7 +266,6 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   }
   void OnConnectionLost(ViewTreeConnection* connection) override {}
 
- private:
   // Overridden from testing::Test:
   void SetUp() override {
     ApplicationTestBase::SetUp();
@@ -247,10 +274,29 @@ class FrameTest : public mojo::test::ApplicationTestBase,
 
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);
+
+    // Creates a FrameTree, which creates a single frame. Wait for the
+    // FrameTreeClient to be connected to.
+    frame_tree_delegate_.reset(new TestFrameTreeDelegate(application_impl()));
+    scoped_ptr<FrameConnection> frame_connection =
+        CreateFrameConnection(application_impl());
+    FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
+    mojo::ViewTreeClientPtr view_tree_client =
+        frame_connection->GetViewTreeClient();
+    mojo::View* frame_root_view = window_manager()->CreateView();
+    window_manager()->GetRoot()->AddChild(frame_root_view);
+    frame_tree_.reset(
+        new FrameTree(0u, frame_root_view, view_tree_client.Pass(),
+                      frame_tree_delegate_.get(), frame_tree_client,
+                      frame_connection.Pass(), Frame::ClientPropertyMap()));
+    root_view_and_frame_ = WaitForViewAndFrame();
   }
 
   // Overridden from testing::Test:
   void TearDown() override {
+    root_view_and_frame_.reset();
+    frame_tree_.reset();
+    frame_tree_delegate_.reset();
     ApplicationTestBase::TearDown();
   }
 
@@ -272,6 +318,10 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     view_and_frame_->Bind(request.Pass());
   }
 
+  scoped_ptr<TestFrameTreeDelegate> frame_tree_delegate_;
+  scoped_ptr<FrameTree> frame_tree_;
+  scoped_ptr<ViewAndFrame> root_view_and_frame_;
+
   mojo::ViewTreeHostPtr host_;
 
   // Used to receive the most recent view manager loaded by an embed action.
@@ -285,89 +335,44 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   MOJO_DISALLOW_COPY_AND_ASSIGN(FrameTest);
 };
 
-// Verifies the root gets a connect.
-TEST_F(FrameTest, RootGetsConnect) {
-  TestFrameTreeDelegate tree_delegate(application_impl());
-  TestFrameTreeClient root_client;
-  FrameTree tree(0u, window_manager()->GetRoot(), nullptr, &tree_delegate,
-                 &root_client, nullptr, Frame::ClientPropertyMap());
-  ASSERT_EQ(1, root_client.connect_count());
-  mojo::Array<FrameDataPtr> frames = root_client.connect_frames();
+// Verifies the FrameData supplied to the root FrameTreeClient::OnConnect().
+TEST_F(FrameTest, RootFrameClientConnectData) {
+  mojo::Array<FrameDataPtr> frames =
+      root_view_and_frame()->test_frame_tree_client()->connect_frames();
   ASSERT_EQ(1u, frames.size());
-  EXPECT_EQ(tree.root()->view()->id(), frames[0]->frame_id);
+  EXPECT_EQ(root_view_and_frame()->view()->id(), frames[0]->frame_id);
   EXPECT_EQ(0u, frames[0]->parent_id);
 }
 
-// Verifies adding a child to the root.
-TEST_F(FrameTest, SingleChild) {
-  TestFrameTreeDelegate tree_delegate(application_impl());
-  TestFrameTreeClient root_client;
-  FrameTree tree(0u, window_manager()->GetRoot(), nullptr, &tree_delegate,
-                 &root_client, nullptr, Frame::ClientPropertyMap());
-
-  View* child = window_manager()->CreateView();
-  EXPECT_EQ(nullptr, Frame::FindFirstFrameAncestor(child));
-  window_manager()->GetRoot()->AddChild(child);
-  EXPECT_EQ(tree.root(), Frame::FindFirstFrameAncestor(child));
-
-  TestFrameTreeClient child_client;
-  Frame* child_frame =
-      tree.CreateAndAddFrame(child, tree.root(), 0u, &child_client, nullptr);
-  EXPECT_EQ(tree.root(), child_frame->parent());
-
-  ASSERT_EQ(1, child_client.connect_count());
-  mojo::Array<FrameDataPtr> frames_in_child = child_client.connect_frames();
+// Verifies the FrameData supplied to a child FrameTreeClient::OnConnect().
+TEST_F(FrameTest, ChildFrameClientConnectData) {
+  scoped_ptr<ViewAndFrame> child_view_and_frame(
+      CreateChildViewAndFrame(root_view_and_frame()));
+  ASSERT_TRUE(child_view_and_frame);
+  mojo::Array<FrameDataPtr> frames_in_child =
+      child_view_and_frame->test_frame_tree_client()->connect_frames();
   // We expect 2 frames. One for the root, one for the child.
   ASSERT_EQ(2u, frames_in_child.size());
-  EXPECT_EQ(tree.root()->view()->id(), frames_in_child[0]->frame_id);
+  EXPECT_EQ(frame_tree()->root()->id(), frames_in_child[0]->frame_id);
   EXPECT_EQ(0u, frames_in_child[0]->parent_id);
-  EXPECT_EQ(child_frame->view()->id(), frames_in_child[1]->frame_id);
-  EXPECT_EQ(tree.root()->view()->id(), frames_in_child[1]->parent_id);
-
-  // We should have gotten notification of the add.
-  EXPECT_EQ(1u, root_client.adds().size());
+  EXPECT_EQ(child_view_and_frame->view()->id(), frames_in_child[1]->frame_id);
+  EXPECT_EQ(frame_tree()->root()->id(), frames_in_child[1]->parent_id);
 }
 
 TEST_F(FrameTest, DisconnectingViewDestroysFrame) {
-  TestFrameTreeDelegate tree_delegate(application_impl());
-  scoped_ptr<FrameConnection> frame_connection =
-      CreateFrameConnection(application_impl());
-  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  mojo::ViewTreeClientPtr view_tree_client =
-      frame_connection->GetViewTreeClient();
-  mojo::View* frame_root_view = window_manager()->CreateView();
-  window_manager()->GetRoot()->AddChild(frame_root_view);
-  FrameTree tree(0u, frame_root_view, view_tree_client.Pass(), &tree_delegate,
-                 frame_tree_client, frame_connection.Pass(),
-                 Frame::ClientPropertyMap());
-  scoped_ptr<ViewAndFrame> vf1(WaitForViewAndFrame());
+  scoped_ptr<ViewAndFrame> child_view_and_frame(
+      CreateChildViewAndFrame(root_view_and_frame()));
+  ASSERT_TRUE(child_view_and_frame);
 
-  // Create a new child frame.
-  mojo::View* child_frame_view = vf1->view()->connection()->CreateView();
-  vf1->view()->AddChild(child_frame_view);
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties;
-  client_properties.mark_non_null();
-  vf1->frame_tree_server()->OnCreatedFrame(child_frame_view->parent()->id(),
-                                           child_frame_view->id(),
-                                           client_properties.Pass());
-  ASSERT_NO_FATAL_FAILURE(tree_delegate.WaitForCreateFrame());
-
-  // Navigate the child frame, which should trigger a new ViewAndFrame.
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From(application_impl()->url());
-  vf1->frame_tree_server()->RequestNavigate(
-      NAVIGATION_TARGET_TYPE_EXISTING_FRAME, child_frame_view->id(),
-      request.Pass());
-  scoped_ptr<ViewAndFrame> vf2(WaitForViewAndFrame());
-
-  // Delete the ViewTreeConnection for vf2, which should trigger destroying
+  // Delete the ViewTreeConnection for the child, which should trigger
+  // destroying
   // the frame. Deleting the ViewTreeConnection triggers
   // Frame::OnViewEmbeddedAppDisconnected.
-  delete vf2->view()->connection();
-  ASSERT_EQ(1u, tree.root()->children().size());
-  ASSERT_NO_FATAL_FAILURE(
-      tree_delegate.WaitForDestroyFrame(tree.root()->children()[0]));
-  ASSERT_EQ(0u, tree.root()->children().size());
+  delete child_view_and_frame->view()->connection();
+  ASSERT_EQ(1u, frame_tree()->root()->children().size());
+  ASSERT_NO_FATAL_FAILURE(frame_tree_delegate()->WaitForDestroyFrame(
+      frame_tree()->root()->children()[0]));
+  ASSERT_EQ(0u, frame_tree()->root()->children().size());
 }
 
 }  // namespace web_view

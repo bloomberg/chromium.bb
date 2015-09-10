@@ -46,15 +46,6 @@ bool FrameTree::AlwaysCreateNewFrameTree() {
       web_view::switches::kOOPIFAlwaysCreateNewFrameTree);
 }
 
-Frame* FrameTree::CreateAndAddFrame(mojo::View* view,
-                                    Frame* parent,
-                                    uint32_t app_id,
-                                    FrameTreeClient* client,
-                                    scoped_ptr<FrameUserData> user_data) {
-  return CreateAndAddFrameImpl(view, view->id(), app_id, parent, client,
-                               user_data.Pass(), Frame::ClientPropertyMap());
-}
-
 Frame* FrameTree::CreateSharedFrame(
     Frame* parent,
     uint32_t frame_id,
@@ -63,27 +54,15 @@ Frame* FrameTree::CreateSharedFrame(
   mojo::View* frame_view = root_->view()->GetChildById(frame_id);
   // |frame_view| may be null if the View hasn't been created yet. If this is
   // the case the View will be connected to the Frame in Frame::OnTreeChanged.
-  return CreateAndAddFrameImpl(frame_view, frame_id, app_id, parent, nullptr,
-                               nullptr, client_properties);
+  Frame* frame =
+      new Frame(this, frame_view, frame_id, app_id, ViewOwnership::OWNS_VIEW,
+                nullptr, nullptr, client_properties);
+  frame->Init(parent, nullptr);
+  return frame;
 }
 
 uint32_t FrameTree::AdvanceChangeID() {
   return ++change_id_;
-}
-
-Frame* FrameTree::CreateAndAddFrameImpl(
-    mojo::View* view,
-    uint32_t frame_id,
-    uint32_t app_id,
-    Frame* parent,
-    FrameTreeClient* client,
-    scoped_ptr<FrameUserData> user_data,
-    const Frame::ClientPropertyMap& client_properties) {
-  Frame* frame =
-      new Frame(this, view, frame_id, app_id, ViewOwnership::OWNS_VIEW, client,
-                user_data.Pass(), client_properties);
-  frame->Init(parent, nullptr);
-  return frame;
 }
 
 void FrameTree::LoadingStateChanged() {

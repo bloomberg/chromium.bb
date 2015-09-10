@@ -46,14 +46,10 @@ class FrameTree {
 
   const Frame* root() const { return root_; }
   Frame* root() { return root_; }
-
   uint32_t change_id() const { return change_id_; }
 
-  Frame* CreateAndAddFrame(mojo::View* view,
-                           Frame* parent,
-                           uint32_t app_id,
-                           FrameTreeClient* client,
-                           scoped_ptr<FrameUserData> user_data);
+ private:
+  friend class Frame;
 
   // Creates a new Frame parented to |parent|. The Frame is considered shared in
   // that it is sharing the FrameTreeClient/FrameTreeServer of |parent|. There
@@ -64,20 +60,8 @@ class FrameTree {
                            uint32_t app_id,
                            const Frame::ClientPropertyMap& client_properties);
 
- private:
-  friend class Frame;
-
   // Increments the change id, returning the new value.
   uint32_t AdvanceChangeID();
-
-  Frame* CreateAndAddFrameImpl(
-      mojo::View* view,
-      uint32_t frame_id,
-      uint32_t app_id,
-      Frame* parent,
-      FrameTreeClient* client,
-      scoped_ptr<FrameUserData> user_data,
-      const Frame::ClientPropertyMap& client_properties);
 
   void LoadingStateChanged();
   void ProgressChanged();
