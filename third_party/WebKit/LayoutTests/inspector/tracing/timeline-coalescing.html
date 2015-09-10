@@ -12,13 +12,14 @@ InspectorTest.dumpStats = function(presentationRecord)
     if (!presentationRecord.presentationParent())
         return "";
 
+    var model = InspectorTest.timelineModel();
     var aggregatedStats = {};
     if (presentationRecord.coalesced()) {
         var presentationChildren = presentationRecord.presentationChildren();
         for (var i = 0; i < presentationChildren.length; ++i)
-            WebInspector.TimelineUIUtils.aggregateTimeForRecord(aggregatedStats, presentationChildren[i].record());
+            WebInspector.TimelineUIUtils.aggregateTimeForRecord(aggregatedStats, model, presentationChildren[i].record());
     } else {
-        WebInspector.TimelineUIUtils.aggregateTimeForRecord(aggregatedStats, presentationRecord.record());
+        WebInspector.TimelineUIUtils.aggregateTimeForRecord(aggregatedStats, model, presentationRecord.record());
     }
 
     var timeByCategory = "";

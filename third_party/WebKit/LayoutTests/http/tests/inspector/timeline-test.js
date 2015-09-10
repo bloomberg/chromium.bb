@@ -283,18 +283,24 @@ InspectorTest.dumpTimelineRecords = function(timelineRecords)
 InspectorTest.printTimelineRecordProperties = function(record)
 {
     InspectorTest.addResult(record.type() + " Properties:");
-    var object = {};
-    var names = ["data", "endTime", "frameId", "stackTrace", "startTime", "thread", "type"];
-    for (var i = 0; i < names.length; i++) {
-        var name = names[i];
-        var value = record[name].call(record);
-        if (value)
-            object[name] = value;
+    var traceEvent = record.traceEvent();
+    var data = traceEvent.args["beginData"] || traceEvent.args["data"];
+    var frameId = data && data["frame"];
+    var object = {
+        data: traceEvent.args["data"] || traceEvent.args,
+        endTime: record.endTime(),
+        frameId: frameId,
+        stackTrace: traceEvent.stackTrace,
+        startTime: record.startTime(),
+        thread: record.thread(),
+        type: record.type()
+    };
+    for (var field in object) {
+        if (object[field] === null || object[field] === undefined)
+            delete object[field];
     }
     if (record.children().length)
         object["children"] = [];
-    if (!record.data())
-        object["data"] = record.traceEvent().args;
     InspectorTest.addObject(object, InspectorTest.timelinePropertyFormatters);
 };
 

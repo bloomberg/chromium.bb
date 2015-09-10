@@ -39,7 +39,8 @@ function test()
         InspectorTest.addResult("Script evaluated.");
         var record = InspectorTest.findFirstTimelineRecord("ResourceReceivedData");
         if (record) {
-            if (record.data() && typeof record.data().encodedDataLength === "number")
+            var data = record.traceEvent().args["data"];
+            if (data && typeof data.encodedDataLength === "number")
                 InspectorTest.addResult("Resource received data has length, test passed.");
         }
         InspectorTest.completeTest();

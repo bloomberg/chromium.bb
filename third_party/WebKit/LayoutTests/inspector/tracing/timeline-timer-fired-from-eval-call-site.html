@@ -34,7 +34,7 @@ function test()
         function formatter(record)
         {
             if (record.type() === "TimerFire") {
-                var fnCallSite = record.children()[0].data();
+                var fnCallSite = record.children()[0].traceEvent().args["data"];
                 InspectorTest.addResult(record.type() + " " + fnCallSite.scriptName + ":" + fnCallSite.scriptLine);
             }
         }

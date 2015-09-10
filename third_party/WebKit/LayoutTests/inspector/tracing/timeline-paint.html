@@ -40,9 +40,9 @@ function test()
     {
         var paintRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
         InspectorTest.assertTrue(paintRecord, "Paint record with subframe paint not found");
-        var topQuad = paintRecord.data().clip;
+        var topQuad = paintRecord.traceEvent().args["data"].clip;
         var subframePaint = paintRecord.children()[0];
-        var subframeQuad = subframePaint.data().clip;
+        var subframeQuad = subframePaint.traceEvent().args["data"].clip;
         InspectorTest.assertEquals(8, topQuad.length);
         InspectorTest.assertEquals(8, subframeQuad.length);
         InspectorTest.assertGreaterOrEqual(subframeQuad[0], topQuad[0]);

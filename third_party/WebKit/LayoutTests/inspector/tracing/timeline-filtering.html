@@ -64,7 +64,7 @@ function test()
             prefix.push(" ");
         }
         var mark = record.expandable() ? (record.collapsed() ? "+" : "-") : " ";
-        InspectorTest.addResult(prefix.join("") + mark + record.record().data().message);
+        InspectorTest.addResult(prefix.join("") + mark + record.record().traceEvent().args["data"].message);
     }
 
     function dumpRecords()
@@ -87,7 +87,7 @@ function test()
     var collapseList = {"bar04":true, "foo13": true};
     for (var i = 0; i < records.length; ++i) {
         var record = records[i];
-        if (collapseList[record.record().data().message])
+        if (collapseList[record.record().traceEvent().args["data"].message])
             record.setCollapsed(true);
     }
     model.invalidateFilteredRecords();
