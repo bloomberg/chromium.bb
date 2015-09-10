@@ -506,6 +506,9 @@ public:
     // Returns the bounding box of the block type node touched by the WebPoint.
     WebRect computeBlockBound(const WebPoint&, bool ignoreClipping);
 
+    // Exposed for tests.
+    WebVector<WebCompositionUnderline> compositionUnderlines() const;
+
     WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
 
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }

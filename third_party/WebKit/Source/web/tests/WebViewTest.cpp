@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -993,6 +992,9 @@ TEST_F(WebViewTest, SetCompositionFromExistingText)
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(4, 10);
     frame->setCompositionFromExistingText(8, 12, underlines);
+    WebVector<WebCompositionUnderline> underlineResults = toWebViewImpl(webView)->compositionUnderlines();
+    EXPECT_EQ(8u, underlineResults[0].startOffset);
+    EXPECT_EQ(12u, underlineResults[0].endOffset);
     WebTextInputInfo info = webView->textInputInfo();
     EXPECT_EQ(4, info.selectionStart);
     EXPECT_EQ(10, info.selectionEnd);
@@ -1023,6 +1025,9 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
 
     frame->setEditableSelectionOffsets(31, 31);
     frame->setCompositionFromExistingText(30, 34, underlines);
+    WebVector<WebCompositionUnderline> underlineResults = toWebViewImpl(webView)->compositionUnderlines();
+    EXPECT_EQ(2u, underlineResults[0].startOffset);
+    EXPECT_EQ(6u, underlineResults[0].endOffset);
     info = webView->textInputInfo();
     EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", std::string(info.value.utf8().data()));
     EXPECT_EQ(31, info.selectionStart);
@@ -1038,21 +1043,6 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     EXPECT_EQ(34, info.selectionEnd);
     EXPECT_EQ(-1, info.compositionStart);
     EXPECT_EQ(-1, info.compositionEnd);
-}
-
-TEST_F(WebViewTest, SetCompositionFromExistingTextInRichText)
-{
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("content_editable_rich_text.html"));
-    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "content_editable_rich_text.html");
-    webView->setInitialFocus(false);
-    WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
-    underlines[0] = WebCompositionUnderline(0, 4, 0, false, 0);
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
-    frame->setEditableSelectionOffsets(1, 1);
-    WebDocument document = webView->mainFrame()->document();
-    EXPECT_FALSE(document.getElementById("bold").isNull());
-    frame->setCompositionFromExistingText(0, 4, underlines);
-    EXPECT_FALSE(document.getElementById("bold").isNull());
 }
 
 TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition)
@@ -1683,6 +1673,7 @@ TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange)
     // text changed notification for autofill.
     client.clearChangeCounts();
     webView->setFocus(false);
+    EXPECT_EQ(1, client.textChangesWhileIgnored());
     EXPECT_EQ(0, client.textChangesWhileNotIgnored());
 
     frame->setAutofillClient(0);
