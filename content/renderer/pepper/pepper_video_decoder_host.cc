@@ -471,6 +471,9 @@ void PepperVideoDecoderHost::RequestTextures(
 }
 
 bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
+#if defined(OS_ANDROID)
+  return false;
+#else
   DCHECK(!software_fallback_used_ && software_fallback_allowed_);
 
   uint32_t shim_texture_pool_size = media::limits::kMaxVideoFrames + 1;
@@ -523,6 +526,7 @@ bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
     decoder_->Flush();
 
   return true;
+#endif
 }
 
 PepperVideoDecoderHost::PendingDecodeList::iterator
