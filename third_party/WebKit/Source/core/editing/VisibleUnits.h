@@ -129,7 +129,10 @@ VisiblePosition nextSentencePosition(const VisiblePosition&);
 
 // lines
 VisiblePosition startOfLine(const VisiblePosition&);
-VisiblePosition endOfLine(const VisiblePosition&);
+// TODO(yosin) Return values of |VisiblePosition| version of |endOfLine()| with
+// shadow tree isn't defined well. We should not use it for shadow tree.
+CORE_EXPORT VisiblePosition endOfLine(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInComposedTree endOfLine(const VisiblePositionInComposedTree&);
 CORE_EXPORT VisiblePosition previousLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
 CORE_EXPORT VisiblePosition nextLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
 CORE_EXPORT bool inSameLine(const VisiblePosition&, const VisiblePosition&);

@@ -47,6 +47,7 @@ class RenderedPosition {
 public:
     RenderedPosition();
     explicit RenderedPosition(const VisiblePosition&);
+    explicit RenderedPosition(const VisiblePositionInComposedTree&);
     RenderedPosition(const Position&, TextAffinity);
     RenderedPosition(const PositionInComposedTree&, TextAffinity);
     bool isEquivalent(const RenderedPosition&) const;

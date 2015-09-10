@@ -983,19 +983,20 @@ VisiblePosition logicalStartOfLine(const VisiblePosition& currentPosition)
     return createVisiblePosition(logicalStartOfLineAlgorithm<EditingStrategy>(currentPosition.toPositionWithAffinity()));
 }
 
-static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpointComputationMode mode)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> endPositionForLine(const VisiblePositionTemplate<Strategy>& c, LineEndpointComputationMode mode)
 {
     if (c.isNull())
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
     RootInlineBox* rootBox = RenderedPosition(c).rootBox();
     if (!rootBox) {
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
-        Position p = c.deepEquivalent();
+        const PositionAlgorithm<Strategy> p = c.deepEquivalent();
         if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.computeEditingOffset())
             return c;
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
     }
 
     Node* endNode;
@@ -1003,14 +1004,15 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
     if (mode == UseLogicalOrdering) {
         endNode = rootBox->getLogicalEndBoxWithNode(endBox);
         if (!endNode)
-            return VisiblePosition();
+            return VisiblePositionTemplate<Strategy>();
     } else {
-        // Generated content (e.g. list markers and CSS :before and :after pseudoelements) have no corresponding DOM element,
-        // and so cannot be represented by a VisiblePosition. Use whatever precedes instead.
+        // Generated content (e.g. list markers and CSS :before and :after
+        // pseudo elements) have no corresponding DOM element, and so cannot be
+        // represented by a VisiblePosition. Use whatever precedes instead.
         endBox = rootBox->lastLeafChild();
         while (true) {
             if (!endBox)
-                return VisiblePosition();
+                return VisiblePositionTemplate<Strategy>();
 
             endNode = endBox->layoutObject().nonPseudoNode();
             if (endNode)
@@ -1020,28 +1022,29 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
         }
     }
 
-    Position pos;
+    PositionAlgorithm<Strategy> pos;
     if (isHTMLBRElement(*endNode)) {
-        pos = positionBeforeNode(endNode);
+        pos = PositionAlgorithm<Strategy>::beforeNode(endNode);
     } else if (endBox->isInlineTextBox() && endNode->isTextNode()) {
         InlineTextBox* endTextBox = toInlineTextBox(endBox);
         int endOffset = endTextBox->start();
         if (!endTextBox->isLineBreak())
             endOffset += endTextBox->len();
-        pos = Position(toText(endNode), endOffset);
+        pos = PositionAlgorithm<Strategy>(toText(endNode), endOffset);
     } else {
-        pos = positionAfterNode(endNode);
+        pos = PositionAlgorithm<Strategy>::afterNode(endNode);
     }
 
     return createVisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
 }
 
 // TODO(yosin) Rename this function to reflect the fact it ignores bidi levels.
-VisiblePosition endOfLine(const VisiblePosition& currentPosition)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> endOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& currentPosition)
 {
     // TODO(yosin) this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-    VisiblePosition visPos = endPositionForLine(currentPosition, UseInlineBoxOrdering);
+    VisiblePositionTemplate<Strategy> visPos = endPositionForLine(currentPosition, UseInlineBoxOrdering);
 
     // Make sure the end of line is at the same line as the given input
     // position. Else use the previous position to obtain end of line. This
@@ -1054,11 +1057,22 @@ VisiblePosition endOfLine(const VisiblePosition& currentPosition)
     if (!inSameLine(currentPosition, visPos)) {
         visPos = previousPositionOf(currentPosition);
         if (visPos.isNull())
-            return VisiblePosition();
+            return VisiblePositionTemplate<Strategy>();
         visPos = endPositionForLine(visPos, UseInlineBoxOrdering);
     }
 
     return honorEditingBoundaryAtOrAfter(visPos, currentPosition.deepEquivalent());
+}
+
+// TODO(yosin) Rename this function to reflect the fact it ignores bidi levels.
+VisiblePosition endOfLine(const VisiblePosition& currentPosition)
+{
+    return endOfLineAlgorithm<EditingStrategy>(currentPosition);
+}
+
+VisiblePositionInComposedTree endOfLine(const VisiblePositionInComposedTree& currentPosition)
+{
+    return endOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition);
 }
 
 static bool inSameLogicalLine(const VisiblePosition& a, const VisiblePosition& b)

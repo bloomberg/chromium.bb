@@ -71,6 +71,11 @@ RenderedPosition::RenderedPosition(const VisiblePosition& position)
 {
 }
 
+RenderedPosition::RenderedPosition(const VisiblePositionInComposedTree& position)
+    : RenderedPosition(position.deepEquivalent(), position.affinity())
+{
+}
+
 RenderedPosition::RenderedPosition(const Position& position, TextAffinity affinity)
     : m_layoutObject(nullptr)
     , m_inlineBox(nullptr)
