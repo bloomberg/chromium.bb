@@ -322,7 +322,13 @@ VIEW_TEST(MenuItemViewTestRemove01, RemoveItem01)
 #endif
 VIEW_TEST(MenuItemViewTestRemove10, MAYBE_RemoveItem10)
 
-VIEW_TEST(MenuItemViewTestRemove11, RemoveItem11)
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_RemoveItem11 DISABLED_RemoveItem11
+#else
+#define MAYBE_RemoveItem11 RemoveItem11
+#endif
+VIEW_TEST(MenuItemViewTestRemove11, MAYBE_RemoveItem11)
 
 #if defined(OS_WIN)
 // flaky on Windows - http://crbug.com/523255
