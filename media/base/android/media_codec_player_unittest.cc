@@ -62,13 +62,35 @@ bool AlmostEqual(T a, T b, double tolerance_ms) {
   return (a - b).magnitude().InMilliseconds() <= tolerance_ms;
 }
 
+// A helper function to calculate the expected number of frames.
+int GetFrameCount(base::TimeDelta duration,
+                  base::TimeDelta frame_period,
+                  int num_reconfigs) {
+  // A chunk has 4 access units. The last unit timestamp must exceed the
+  // duration. Last chunk has 3 regular access units and one stand-alone EOS
+  // unit that we do not count.
+
+  // Number of time intervals to exceed duration.
+  int num_intervals = duration / frame_period + 1.0;
+
+  // To cover these intervals we need one extra unit at the beginning and a one
+  // for each reconfiguration.
+  int num_units = num_intervals + 1 + num_reconfigs;
+
+  // Number of 4-unit chunks that hold these units:
+  int num_chunks = (num_units + 3) / 4;
+
+  // Altogether these chunks hold 4*num_chunks units, but we do not count
+  // reconfiguration units and last EOS as frames.
+  return 4 * num_chunks - 1 - num_reconfigs;
+}
+
 // Mock of MediaPlayerManager for testing purpose.
 
 class MockMediaPlayerManager : public MediaPlayerManager {
  public:
   MockMediaPlayerManager()
-      : verbose_(false),
-        playback_completed_(false),
+      : playback_completed_(false),
         num_seeks_completed_(0),
         num_audio_codecs_created_(0),
         num_video_codecs_created_(0),
@@ -107,10 +129,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
                       const base::TimeDelta& current_time) override {
     ++num_seeks_completed_;
   }
-  void OnError(int player_id, int error) override {
-    if (verbose_)
-      DVLOG(0) << __FUNCTION__;
-  }
+  void OnError(int player_id, int error) override {}
   void OnVideoSizeChanged(int player_id, int width, int height) override {}
   void OnWaitingForDecryptionKey(int player_id) override {}
   MediaPlayerAndroid* GetFullscreenPlayer() override { return nullptr; }
@@ -124,11 +143,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnDecodersTimeUpdate(DemuxerStream::Type stream_type,
                             base::TimeDelta now_playing,
                             base::TimeDelta last_buffered) {
-    if (verbose_) {
-      DVLOG(0) << __FUNCTION__ << " " << stream_type << "[" << now_playing
-               << "," << last_buffered << "]";
-    }
-
     render_stat_[stream_type].AddValue(
         PTSTime(now_playing, base::TimeTicks::Now()));
   }
@@ -191,8 +205,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
 
   Minimax<base::TimeDelta> pts_stat_;
 
-  bool verbose_;
-
  private:
   bool playback_completed_;
   int num_seeks_completed_;
@@ -240,8 +252,12 @@ class AudioFactory : public TestDataFactory {
   }
 
  protected:
-  void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override {
-    unit->is_key_frame = true;
+  void ModifyChunk(DemuxerData* chunk) override {
+    DCHECK(chunk);
+    for (AccessUnit& unit : chunk->access_units) {
+      if (!unit.data.empty())
+        unit.is_key_frame = true;
+    }
   }
 };
 
@@ -261,7 +277,7 @@ class VideoFactory : public TestDataFactory {
   void RequestKeyFrame() { key_frame_requested_ = true; }
 
  protected:
-  void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override {
+  void ModifyChunk(DemuxerData* chunk) override {
     // The frames are taken from High profile and some are B-frames.
     // The first 4 frames appear in the file in the following order:
     //
@@ -271,23 +287,34 @@ class VideoFactory : public TestDataFactory {
     //
     // I keep the last PTS to be 3 for simplicity.
 
-    // Swap pts for second and third frames. Make first frame a key frame.
-    switch (index_in_chunk) {
-      case 0:  // first frame
-        unit->is_key_frame = key_frame_requested_;
-        key_frame_requested_ = false;
-        break;
-      case 1:  // second frame
-        unit->timestamp += frame_period_;
-        break;
-      case 2:  // third frame
-        unit->timestamp -= frame_period_;
-        break;
-      case 3:  // fourth frame, do not modify
-        break;
-      default:
-        NOTREACHED();
-        break;
+    // If the chunk contains EOS, it should not break the presentation order.
+    // For instance, the following chunk is ok:
+    //
+    // Frames:             I P B EOS
+    // Decoding order:     0 1 2 -
+    // Presentation order: 0 2 1 -
+    //
+    // while this might cause decoder to block:
+    //
+    // Frames:             I P EOS
+    // Decoding order:     0 1 -
+    // Presentation order: 0 2 -  <------- might wait for the B frame forever
+    //
+    // With current base class implementation that always has EOS at the 4th
+    // place we are covered (http://crbug.com/526755)
+
+    DCHECK(chunk);
+    DCHECK(chunk->access_units.size() == 4);
+
+    // Swap pts for second and third frames.
+    base::TimeDelta tmp = chunk->access_units[1].timestamp;
+    chunk->access_units[1].timestamp = chunk->access_units[2].timestamp;
+    chunk->access_units[2].timestamp = tmp;
+
+    // Make first frame a key frame.
+    if (key_frame_requested_) {
+      chunk->access_units[0].is_key_frame = true;
+      key_frame_requested_ = false;
     }
   }
 
@@ -1655,7 +1682,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
   // the preroll finishes and playback continues after it.
 
   // http://crbug.com/526755
-  manager_.verbose_ = true;
+  // TODO(timav): remove these logs after verifying that the bug is fixed.
   DVLOG(0) << "AVPrerollVideoEndsWhilePrerolling: begin";
 
   base::TimeDelta audio_duration = base::TimeDelta::FromMilliseconds(1100);
@@ -1690,10 +1717,6 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
     return;
   }
 
-  // http://crbug.com/526755
-  // Set verbose mode to the decoders after decoders are created.
-  player_->SetVerboseForTests(true);
-
   // Post configuration after the player has been initialized.
   demuxer_->PostInternalConfigs();
 
@@ -1703,19 +1726,12 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
   // Start the playback.
   player_->Start();
 
-  // http://crbug.com/526755
-  DVLOG(0) << "AVPrerollVideoEndsWhilePrerolling: player started";
-
   // The video decoder should start prerolling.
   // Wait till preroll starts.
   EXPECT_TRUE(WaitForCondition(
       base::Bind(&MediaCodecPlayer::IsPrerollingForTests,
                  base::Unretained(player_), DemuxerStream::VIDEO),
       start_timeout));
-
-  // http://crbug.com/526755
-  DVLOG(0) << "AVPrerollVideoEndsWhilePrerolling: IsPrerollingForTests(VIDEO)="
-           << player_->IsPrerollingForTests(DemuxerStream::VIDEO);
 
   // Wait for playback to start.
   bool playback_started =
@@ -1728,19 +1744,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
     DVLOG(0) << "AVPrerollVideoEndsWhilePrerolling: playback did not start for "
              << preroll_timeout;
   }
-
-  // Wait for the same time once more
-  playback_started =
-      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
-                                  base::Unretained(&manager_)),
-                       preroll_timeout);
-
-  if (!playback_started) {
-    DVLOG(0) << "AVPrerollVideoEndsWhilePrerolling: playback did not start for "
-             << " another " << preroll_timeout;
-    return;  // do not fail this test during investigation,
-             // http://crbug.com/526755
-  }
+  ASSERT_TRUE(playback_started);
 
   EXPECT_TRUE(manager_.HasFirstFrame(DemuxerStream::AUDIO));
 
@@ -1752,6 +1756,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
   // There should not be any video frames.
   EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::VIDEO));
 
+  // http://crbug.com/526755
   DVLOG(0) << "AVPrerollVideoEndsWhilePrerolling: end";
 }
 
@@ -1820,7 +1825,7 @@ TEST_F(MediaCodecPlayerTest, VideoConfigChangeWhilePlaying) {
   EXPECT_EQ(2, manager_.num_video_codecs_created());
 
   // Check that we did not miss video frames
-  int expected_video_frames = duration / kVideoFramePeriod + 1;
+  int expected_video_frames = GetFrameCount(duration, kVideoFramePeriod, 1);
   EXPECT_EQ(expected_video_frames,
             manager_.render_stat_[DemuxerStream::VIDEO].num_values());
 }
@@ -1859,7 +1864,7 @@ TEST_F(MediaCodecPlayerTest, AVVideoConfigChangeWhilePlaying) {
   EXPECT_EQ(2, manager_.num_video_codecs_created());
 
   // Check that we did not miss video frames
-  int expected_video_frames = duration / kVideoFramePeriod + 1;
+  int expected_video_frames = GetFrameCount(duration, kVideoFramePeriod, 1);
   EXPECT_EQ(expected_video_frames,
             manager_.render_stat_[DemuxerStream::VIDEO].num_values());
 
@@ -1867,7 +1872,7 @@ TEST_F(MediaCodecPlayerTest, AVVideoConfigChangeWhilePlaying) {
   // that are not reported.
   // For Nexus 4 KitKat the AAC decoder seems to swallow the first frame
   // but reports the last pts twice, maybe it just shifts the reported PTS.
-  int expected_audio_frames = duration / kAudioFramePeriod + 1 - 1;
+  int expected_audio_frames = GetFrameCount(duration, kAudioFramePeriod, 0) - 1;
   EXPECT_EQ(expected_audio_frames,
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
@@ -1905,13 +1910,13 @@ TEST_F(MediaCodecPlayerTest, AVAudioConfigChangeWhilePlaying) {
   EXPECT_EQ(1, manager_.num_video_codecs_created());
 
   // Check that we did not miss video frames.
-  int expected_video_frames = duration / kVideoFramePeriod + 1;
+  int expected_video_frames = GetFrameCount(duration, kVideoFramePeriod, 0);
   EXPECT_EQ(expected_video_frames,
             manager_.render_stat_[DemuxerStream::VIDEO].num_values());
 
   // Check that we did not miss audio frames. We expect two postponed frames
   // that are not reported.
-  int expected_audio_frames = duration / kAudioFramePeriod + 1 - 2;
+  int expected_audio_frames = GetFrameCount(duration, kAudioFramePeriod, 1) - 2;
   EXPECT_EQ(expected_audio_frames,
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
@@ -1951,13 +1956,13 @@ TEST_F(MediaCodecPlayerTest, AVSimultaneousConfigChange_1) {
   EXPECT_EQ(2, manager_.num_video_codecs_created());
 
   // Check that we did not miss video frames.
-  int expected_video_frames = duration / kVideoFramePeriod + 1;
+  int expected_video_frames = GetFrameCount(duration, kVideoFramePeriod, 1);
   EXPECT_EQ(expected_video_frames,
             manager_.render_stat_[DemuxerStream::VIDEO].num_values());
 
   // Check that we did not miss audio frames. We expect two postponed frames
   // that are not reported.
-  int expected_audio_frames = duration / kAudioFramePeriod + 1 - 2;
+  int expected_audio_frames = GetFrameCount(duration, kAudioFramePeriod, 1) - 2;
   EXPECT_EQ(expected_audio_frames,
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
@@ -1998,13 +2003,13 @@ TEST_F(MediaCodecPlayerTest, AVSimultaneousConfigChange_2) {
   EXPECT_EQ(2, manager_.num_video_codecs_created());
 
   // Check that we did not miss video frames.
-  int expected_video_frames = duration / kVideoFramePeriod + 1;
+  int expected_video_frames = GetFrameCount(duration, kVideoFramePeriod, 1);
   EXPECT_EQ(expected_video_frames,
             manager_.render_stat_[DemuxerStream::VIDEO].num_values());
 
   // Check that we did not miss audio frames. We expect two postponed frames
   // that are not reported.
-  int expected_audio_frames = duration / kAudioFramePeriod + 1 - 2;
+  int expected_audio_frames = GetFrameCount(duration, kAudioFramePeriod, 1) - 2;
   EXPECT_EQ(expected_audio_frames,
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
@@ -2042,7 +2047,8 @@ TEST_F(MediaCodecPlayerTest, AVAudioEndsAcrossVideoConfigChange) {
   EXPECT_EQ(2, manager_.num_video_codecs_created());
 
   // Check that we did not miss video frames.
-  int expected_video_frames = video_duration / kVideoFramePeriod + 1;
+  int expected_video_frames =
+      GetFrameCount(video_duration, kVideoFramePeriod, 1);
   EXPECT_EQ(expected_video_frames,
             manager_.render_stat_[DemuxerStream::VIDEO].num_values());
 
@@ -2091,7 +2097,8 @@ TEST_F(MediaCodecPlayerTest, AVVideoEndsAcrossAudioConfigChange) {
 
   // Check that we did not miss audio frames. We expect two postponed frames
   // that are not reported.
-  int expected_audio_frames = audio_duration / kAudioFramePeriod + 1 - 2;
+  int expected_audio_frames =
+      GetFrameCount(audio_duration, kAudioFramePeriod, 1) - 2;
   EXPECT_EQ(expected_audio_frames,
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }

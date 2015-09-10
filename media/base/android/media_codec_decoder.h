@@ -241,9 +241,6 @@ class MediaCodecDecoder {
   // Sets the notification to be called when MediaCodec is created.
   void SetCodecCreatedCallbackForTests(base::Closure cb);
 
-  // Turn on and off extra logging with elevated log level.
-  void SetVerboseForTests(bool value);
-
  protected:
   enum RenderMode {
     kRenderSkip = 0,
@@ -326,9 +323,6 @@ class MediaCodecDecoder {
 
   // For tests only. Forces to always reconfigure for |kConfigChanged| unit.
   bool always_reconfigure_for_tests_;
-
-  // For tests only. Enables more logging output.
-  bool verbose_;
 
   // For tests only. Callback to be callned when MediaCodec is created.
   base::Closure codec_created_for_tests_cb_;

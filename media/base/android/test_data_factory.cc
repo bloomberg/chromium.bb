@@ -92,42 +92,46 @@ bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
   for (int i = 0; i < 4; ++i) {
     chunk->access_units.push_back(AccessUnit());
     AccessUnit& unit = chunk->access_units.back();
+
     unit.status = DemuxerStream::kOk;
-
     unit.timestamp = regular_pts_;
-    regular_pts_ += frame_period_;
-
-    if (unit.timestamp > duration_) {
-      if (starvation_mode_)
-        return false;
-
-      unit.is_end_of_stream = true;
-      eos_reached_ = true;
-      break;  // EOS units have no data.
-    }
-
     unit.data = packet_[i];
 
-    // Allow for modification by subclasses.
-    ModifyAccessUnit(i, &unit);
+    regular_pts_ += frame_period_;
+  }
 
-    // Maintain last PTS. ModifyAccessUnit() can modify unit's PTS.
-    if (last_pts_ < unit.timestamp)
+  if (chunk->access_units.back().timestamp > duration_) {
+    eos_reached_ = true;
+
+    // Replace last access unit with stand-alone EOS if we exceeded duration.
+    if (!starvation_mode_) {
+      AccessUnit& unit = chunk->access_units.back();
+      unit.is_end_of_stream = true;
+      unit.data.clear();
+    }
+  }
+
+  // Allow for modification by subclasses.
+  ModifyChunk(chunk);
+
+  // Maintain last PTS.
+  for (const AccessUnit& unit : chunk->access_units) {
+    if (last_pts_ < unit.timestamp && !unit.data.empty())
       last_pts_ = unit.timestamp;
   }
 
   // Replace last access unit with |kConfigChanged| if we have a config
   // request for the chunk's interval.
-  base::TimeDelta chunk_end_pts = regular_pts_;
+  base::TimeDelta new_chunk_begin_pts = regular_pts_;
 
   // The interval is [first, last)
-  if (HasReconfigForInterval(chunk_begin_pts_, chunk_end_pts)) {
+  if (HasReconfigForInterval(chunk_begin_pts_, new_chunk_begin_pts)) {
     eos_reached_ = false;
     regular_pts_ -= frame_period_;
     chunk->access_units.pop_back();
     AddConfiguration(chunk);
   }
-  chunk_begin_pts_ = chunk_end_pts;
+  chunk_begin_pts_ = new_chunk_begin_pts;
 
   ++total_chunks_;
   return true;

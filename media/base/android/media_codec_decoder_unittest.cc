@@ -33,13 +33,33 @@ const base::TimeDelta kAudioFramePeriod =
     base::TimeDelta::FromSecondsD(1024.0 / 44100);  // 1024 samples @ 44100 Hz
 const base::TimeDelta kVideoFramePeriod = base::TimeDelta::FromMilliseconds(20);
 
+// A helper function to calculate the expected number of frames.
+int GetFrameCount(base::TimeDelta duration, base::TimeDelta frame_period) {
+  // A chunk has 4 access units. The last unit timestamp must exceed the
+  // duration. Last chunk has 3 regular access units and one stand-alone EOS
+  // unit that we do not count.
+
+  // Number of time intervals to exceed duration.
+  int num_intervals = duration / frame_period + 1.0;
+
+  // To cover these intervals we need one extra unit at the beginning.
+  int num_units = num_intervals + 1;
+
+  // Number of 4-unit chunks that hold these units:
+  int num_chunks = (num_units + 3) / 4;
+
+  // Altogether these chunks hold 4*num_chunks units, but we do not count
+  // the last EOS as a frame.
+  return 4 * num_chunks - 1;
+}
+
 class AudioFactory : public TestDataFactory {
  public:
   AudioFactory(base::TimeDelta duration);
   DemuxerConfigs GetConfigs() const override;
 
  protected:
-  void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override;
+  void ModifyChunk(DemuxerData* chunk) override;
 };
 
 class VideoFactory : public TestDataFactory {
@@ -48,7 +68,7 @@ class VideoFactory : public TestDataFactory {
   DemuxerConfigs GetConfigs() const override;
 
  protected:
-  void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override;
+  void ModifyChunk(DemuxerData* chunk) override;
 };
 
 AudioFactory::AudioFactory(base::TimeDelta duration)
@@ -59,8 +79,12 @@ DemuxerConfigs AudioFactory::GetConfigs() const {
   return TestDataFactory::CreateAudioConfigs(kCodecAAC, duration_);
 }
 
-void AudioFactory::ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) {
-  unit->is_key_frame = true;
+void AudioFactory::ModifyChunk(DemuxerData* chunk) {
+  DCHECK(chunk);
+  for (AccessUnit& unit : chunk->access_units) {
+    if (!unit.data.empty())
+      unit.is_key_frame = true;
+  }
 }
 
 VideoFactory::VideoFactory(base::TimeDelta duration)
@@ -72,7 +96,7 @@ DemuxerConfigs VideoFactory::GetConfigs() const {
                                              gfx::Size(320, 180));
 }
 
-void VideoFactory::ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) {
+void VideoFactory::ModifyChunk(DemuxerData* chunk) {
   // The frames are taken from High profile and some are B-frames.
   // The first 4 frames appear in the file in the following order:
   //
@@ -82,23 +106,31 @@ void VideoFactory::ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) {
   //
   // I keep the last PTS to be 3 for simplicity.
 
+  // If the chunk contains EOS, it should not break the presentation order.
+  // For instance, the following chunk is ok:
+  //
+  // Frames:             I P B EOS
+  // Decoding order:     0 1 2 -
+  // Presentation order: 0 2 1 -
+  //
+  // while this one might cause decoder to block:
+  //
+  // Frames:             I P EOS
+  // Decoding order:     0 1 -
+  // Presentation order: 0 2 -  <------- might wait for the B frame forever
+  //
+  // With current base class implementation that always has EOS at the 4th
+  // place we are covered (http://crbug.com/526755)
+
+  DCHECK(chunk);
+  DCHECK(chunk->access_units.size() == 4);
+
   // Swap pts for second and third frames. Make first frame a key frame.
-  switch (index_in_chunk) {
-    case 0:  // first frame
-      unit->is_key_frame = true;
-      break;
-    case 1:  // second frame
-      unit->timestamp += frame_period_;
-      break;
-    case 2:  // third frame
-      unit->timestamp -= frame_period_;
-      break;
-    case 3:  // fourth frame, do not modify
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  base::TimeDelta tmp = chunk->access_units[1].timestamp;
+  chunk->access_units[1].timestamp = chunk->access_units[2].timestamp;
+  chunk->access_units[2].timestamp = tmp;
+
+  chunk->access_units[0].is_key_frame = true;
 }
 
 }  // namespace (anonymous)
@@ -549,7 +581,8 @@ TEST_F(MediaCodecDecoderTest, VideoPlayTillCompletion) {
   EXPECT_TRUE(decoder_->IsStopped());
   EXPECT_TRUE(decoder_->IsCompleted());
 
-  EXPECT_EQ(26, pts_stat_.num_values());
+  int expected_video_frames = GetFrameCount(duration, kVideoFramePeriod);
+  EXPECT_EQ(expected_video_frames, pts_stat_.num_values());
   EXPECT_EQ(data_factory_->last_pts(), pts_stat_.max());
 }
 
@@ -617,7 +650,8 @@ TEST_F(MediaCodecDecoderTest, VideoStopAndResume) {
   EXPECT_TRUE(decoder_->IsCompleted());
 
   // We should not skip frames in this process.
-  EXPECT_EQ(26, pts_stat_.num_values());
+  int expected_video_frames = GetFrameCount(duration, kVideoFramePeriod);
+  EXPECT_EQ(expected_video_frames, pts_stat_.num_values());
   EXPECT_EQ(data_factory_->last_pts(), pts_stat_.max());
 }
 

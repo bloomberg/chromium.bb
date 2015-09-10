@@ -535,16 +535,6 @@ bool MediaCodecPlayer::IsPrerollingForTests(DemuxerStream::Type type) const {
     return false;
 }
 
-// http://crbug.com/526755
-void MediaCodecPlayer::SetVerboseForTests(bool value) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  if (audio_decoder_)
-    audio_decoder_->SetVerboseForTests(value);
-  if (video_decoder_)
-    video_decoder_->SetVerboseForTests(value);
-}
-
 // Events from Player, called on UI thread
 
 void MediaCodecPlayer::OnMediaMetadataChanged(base::TimeDelta duration,
@@ -621,14 +611,13 @@ void MediaCodecPlayer::OnPrefetchDone() {
 void MediaCodecPlayer::OnPrerollDone() {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
 
-  // http://crbug.com/526755
-  DVLOG(0) << __FUNCTION__;
-
   if (state_ != kStatePlaying) {
     DVLOG(1) << __FUNCTION__ << ": in state " << AsString(state_)
              << ", ignoring";
     return;
   }
+
+  DVLOG(1) << __FUNCTION__;
 
   StartStatus status = StartDecoders();
   if (status != kStartOk)
@@ -642,8 +631,20 @@ void MediaCodecPlayer::OnDecoderDrained(DemuxerStream::Type type) {
   // We expect that OnStopDone() comes next.
 
   DCHECK(type == DemuxerStream::AUDIO || type == DemuxerStream::VIDEO);
-  DCHECK(state_ == kStatePlaying || state_ == kStateStopping)
-      << __FUNCTION__ << " illegal state: " << AsString(state_);
+
+  // DCHECK(state_ == kStatePlaying || state_ == kStateStopping)
+  //    << __FUNCTION__ << " illegal state: " << AsString(state_);
+  //
+  // With simultaneous reconfiguration of audio and video streams the state
+  // can be kStatePrefetching as well:
+  // OnLastFrameRendered VIDEO (VIDEO decoder is stopped)
+  // OnLastFrameRendered AUDIO (AUDIO decoder is stopped)
+  // OnDecoderDrained VIDEO (kStatePlaying -> kStateStopping)
+  // OnStopDone VIDEO (kStateStopping -> kStatePrefetching)
+  // OnDecoderDrained AUDIO
+  // OnStopDone AUDIO
+  //
+  // TODO(timav): combine OnDecoderDrained() and OnStopDone() ?
 
   switch (state_) {
     case kStatePlaying:
@@ -1028,8 +1029,7 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::StartDecoders() {
 
   base::TimeDelta current_time = GetInterpolatedTime();
 
-  // http://crbug.com/526755
-  DVLOG(0) << __FUNCTION__ << " current_time:" << current_time;
+  DVLOG(1) << __FUNCTION__ << " current_time:" << current_time;
 
   if (!AudioFinished()) {
     if (!audio_decoder_->Start(current_time))

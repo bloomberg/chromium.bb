@@ -393,8 +393,7 @@ void MediaCodecDecoder::RequestToStop() {
 void MediaCodecDecoder::OnLastFrameRendered(bool eos_encountered) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // http://crbug.com/526755
-  DVLOG(0) << class_name() << "::" << __FUNCTION__
+  DVLOG(1) << class_name() << "::" << __FUNCTION__
            << " eos_encountered:" << eos_encountered;
 
   decoder_thread_.Stop();  // synchronous
@@ -405,10 +404,6 @@ void MediaCodecDecoder::OnLastFrameRendered(bool eos_encountered) {
   // If the stream is completed during preroll we need to report it since
   // another stream might be running and the player waits for two callbacks.
   if (completed_ && !preroll_done_cb_.is_null()) {
-    // http://crbug.com/526755
-    DVLOG(0) << class_name() << "::" << __FUNCTION__
-             << ": completed, calling preroll_done_cb_";
-
     preroll_timestamp_ = base::TimeDelta();
     media_task_runner_->PostTask(FROM_HERE,
                                  base::ResetAndReturn(&preroll_done_cb_));
@@ -427,8 +422,7 @@ void MediaCodecDecoder::OnLastFrameRendered(bool eos_encountered) {
 void MediaCodecDecoder::OnPrerollDone() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // http://crbug.com/526755
-  DVLOG(0) << class_name() << "::" << __FUNCTION__
+  DVLOG(1) << class_name() << "::" << __FUNCTION__
            << " state:" << AsString(GetState());
 
   preroll_timestamp_ = base::TimeDelta();
@@ -488,12 +482,6 @@ void MediaCodecDecoder::SetCodecCreatedCallbackForTests(base::Closure cb) {
   codec_created_for_tests_cb_ = cb;
 }
 
-// http://crbug.com/526755
-void MediaCodecDecoder::SetVerboseForTests(bool value) {
-  // UI task runner.
-  verbose_ = value;
-}
-
 int MediaCodecDecoder::NumDelayedRenderTasks() const {
   return 0;
 }
@@ -519,13 +507,6 @@ void MediaCodecDecoder::CheckLastFrame(bool eos_encountered,
   bool last_frame_when_stopping = GetState() == kStopping && !has_delayed_tasks;
 
   if (last_frame_when_stopping || eos_encountered) {
-    if (verbose_) {
-      DVLOG(0) << class_name() << "::" << __FUNCTION__
-               << " last_frame_when_stopping:" << last_frame_when_stopping
-               << " eos_encountered:" << eos_encountered
-               << ", posting MediaCodecDecoder::OnLastFrameRendered";
-    }
-
     media_task_runner_->PostTask(
         FROM_HERE, base::Bind(&MediaCodecDecoder::OnLastFrameRendered,
                               weak_factory_.GetWeakPtr(), eos_encountered));
@@ -586,15 +567,13 @@ void MediaCodecDecoder::ProcessNextFrame() {
   DecoderState state = GetState();
 
   if (state != kPrerolling && state != kRunning && state != kStopping) {
-    DVLOG(1) << class_name() << "::" << __FUNCTION__ << ": not running";
+    DVLOG(1) << class_name() << "::" << __FUNCTION__
+             << ": state: " << AsString(state) << " stopping frame processing";
     return;
   }
 
   if (state == kStopping) {
     if (NumDelayedRenderTasks() == 0 && !last_frame_posted_) {
-      // http://crbug.com/526755
-      DVLOG(0) << class_name() << "::" << __FUNCTION__
-               << ": kStopping, no delayed tasks, posting OnLastFrameRendered";
       media_task_runner_->PostTask(
           FROM_HERE, base::Bind(&MediaCodecDecoder::OnLastFrameRendered,
                                 weak_factory_.GetWeakPtr(), false));
@@ -812,6 +791,8 @@ bool MediaCodecDecoder::DepleteOutputBufferQueue() {
     switch (status) {
       case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
         // Output buffers are replaced in MediaCodecBridge, nothing to do.
+        DVLOG(2) << class_name() << "::" << __FUNCTION__
+                 << " MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED";
         break;
 
       case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED:
@@ -845,6 +826,8 @@ bool MediaCodecDecoder::DepleteOutputBufferQueue() {
 
       case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
         // Nothing to do.
+        DVLOG(2) << class_name() << "::" << __FUNCTION__
+                 << " MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER";
         break;
 
       case MEDIA_CODEC_ERROR:

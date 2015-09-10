@@ -69,8 +69,8 @@ class TestDataFactory {
   // |file_name_template|.
   virtual void LoadPackets(const char* file_name_template);
 
-  // Used to modify the generated access unit by a subclass.
-  virtual void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) {}
+  // Used to modify the generated chunk by a subclass.
+  virtual void ModifyChunk(DemuxerData* chunk) {}
 
   base::TimeDelta duration_;
   base::TimeDelta frame_period_;

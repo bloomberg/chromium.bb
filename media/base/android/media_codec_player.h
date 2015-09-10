@@ -208,9 +208,6 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   void SetAlwaysReconfigureForTests(DemuxerStream::Type type);
   bool IsPrerollingForTests(DemuxerStream::Type type) const;
 
-  // Turn on and off extra logging with elevated log level.
-  void SetVerboseForTests(bool value);
-
  private:
   // The state machine states.
   enum PlayerState {
