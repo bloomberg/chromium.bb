@@ -17,10 +17,10 @@ tests:
   - ['"Tamás még nem tudta, hogy mi vár rá."', ⠈⡞⠁⠍⢈⠎ ⠍⢡⠛ ⠝⠑⠍ ⠞⠥⠙⠞⠁⠂ ⠓⠕⠛⠽ ⠍⠊ ⠧⢈⠗ ⠗⢈⠄⠈]
   - [I don't no why happened this problem., ⡊ ⠙⠕⠝⠠⠞ ⠝⠕ ⠺⠓⠽ ⠓⠁⠏⠏⠑⠝⠑⠙ ⠞⠓⠊⠎ ⠏⠗⠕⠃⠇⠑⠍⠄]
   - [Az 1§ paragrafus alapján a kedvezmény igénybe vehető., ⡁⠵ ⠡⡔ ⠏⠁⠗⠁⠛⠗⠁⠋⠥⠎ ⠁⠇⠁⠏⠚⢈⠝ ⠁ ⠅⠑⠙⠧⠑⠵⠍⢡⠝⠽ ⠊⠛⢡⠝⠽⠃⠑ ⠧⠑⠓⠑⠞⢻⠄]
-  - ['- A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy
-      Ford. De mi nem megyünk magával. - Elővette az irattárcáját, és átadott Naszifnak
-      egy angol fontot. - Ha visszajön, keressen meg a vasútállomás mellett a Grand
-      Hotelban.', ⠤ ⡁ ⠎⠊⠧⠁⠞⠁⠛⠊ ⠅⠁⠗⠁⠧⢈⠝⢬⠞⠕⠝⠂ ⠝⠑⠛⠽⠧⠑⠝ ⠧⠁⠛⠽ ⢟⠞⠧⠑⠝ ⠍⢡⠗⠋⢟⠇⠙⠝⠽⠊⠗⠑ ⠊⠝⠝⠑⠝⠄ ⡑⠛⠽ ⡋⠕⠗⠙⠄ ⡙⠑ ⠍⠊ ⠝⠑⠍ ⠍⠑⠛⠽⢷⠝⠅ ⠍⠁⠛⢈⠧⠁⠇⠄ ⠤ ⡑⠇⢻⠧⠑⠞⠞⠑ ⠁⠵ ⠊⠗⠁⠞⠞⢈⠗⠉⢈⠚⢈⠞⠂ ⢡⠎ ⢈⠞⠁⠙⠕⠞⠞ ⡝⠁⠎⠵⠊⠋⠝⠁⠅ ⠑⠛⠽ ⠁⠝⠛⠕⠇ ⠋⠕⠝⠞⠕⠞⠄ ⠤ ⡓⠁ ⠧⠊⠎⠎⠵⠁⠚⢟⠝⠂ ⠅⠑⠗⠑⠎⠎⠑⠝ ⠍⠑⠛ ⠁ ⠧⠁⠎⢬⠞⢈⠇⠇⠕⠍⢈⠎ ⠍⠑⠇⠇⠑⠞⠞ ⠁ ⡛⠗⠁⠝⠙ ⡓⠕⠞⠑⠇⠃⠁⠝⠄]
+  - ['- A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De
+      mi nem megyünk magával. - Elővette az irattárcáját, és átadott Naszifnak egy
+      angol fontot. - Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.',
+    ⠤ ⡁ ⠎⠊⠧⠁⠞⠁⠛⠊ ⠅⠁⠗⠁⠧⢈⠝⢬⠞⠕⠝⠂ ⠝⠑⠛⠽⠧⠑⠝ ⠧⠁⠛⠽ ⢟⠞⠧⠑⠝ ⠍⢡⠗⠋⢟⠇⠙⠝⠽⠊⠗⠑ ⠊⠝⠝⠑⠝⠄ ⡑⠛⠽ ⡋⠕⠗⠙⠄ ⡙⠑ ⠍⠊ ⠝⠑⠍ ⠍⠑⠛⠽⢷⠝⠅ ⠍⠁⠛⢈⠧⠁⠇⠄ ⠤ ⡑⠇⢻⠧⠑⠞⠞⠑ ⠁⠵ ⠊⠗⠁⠞⠞⢈⠗⠉⢈⠚⢈⠞⠂ ⢡⠎ ⢈⠞⠁⠙⠕⠞⠞ ⡝⠁⠎⠵⠊⠋⠝⠁⠅ ⠑⠛⠽ ⠁⠝⠛⠕⠇ ⠋⠕⠝⠞⠕⠞⠄ ⠤ ⡓⠁ ⠧⠊⠎⠎⠵⠁⠚⢟⠝⠂ ⠅⠑⠗⠑⠎⠎⠑⠝ ⠍⠑⠛ ⠁ ⠧⠁⠎⢬⠞⢈⠇⠇⠕⠍⢈⠎ ⠍⠑⠇⠇⠑⠞⠞ ⠁ ⡛⠗⠁⠝⠙ ⡓⠕⠞⠑⠇⠃⠁⠝⠄]
   - [A vételár 1 €., ⡁ ⠧⢡⠞⠑⠇⢈⠗ ⠡ ⡘⠄]
   - [De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat).,
     ⡙⠑ ⠝⠑⠅⠑⠍ ⠝⠁⠛⠽⠕⠝ ⠝⠑⠓⠑⠵⠑⠍⠗⠑ ⠑⠎⠊⠅ ⠁ ⠇⠑⠧⢡⠇⢌⠗⢈⠎ ⠦⠝⢡⠵⠙ ⠑⠇ ⠁ ⠓⠑⠇⠽⠑⠎⢌⠗⢈⠎⠊ ⠓⠊⠃⢈⠅⠁⠞ ⢡⠎ ⠁ ⠉⠎⢬⠝⠽⠁ ⢌⠗⢈⠎⠕⠍⠁⠞⠴⠄]
