@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 namespace {
 
@@ -136,12 +137,12 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
         &settings->use_image_texture_targets);
   }
 
-  settings->gather_pixel_refs = false;
+  settings->gather_images = false;
   if (cmd.HasSwitch(switches::kNumRasterThreads)) {
     int num_raster_threads = 0;
     GetSwitchValueAsInt(cmd, switches::kNumRasterThreads, 0,
                         std::numeric_limits<int>::max(), &num_raster_threads);
-    settings->gather_pixel_refs = num_raster_threads > 1;
+    settings->gather_images = num_raster_threads > 1;
   }
 
   if (cmd.HasSwitch(cc::switches::kTopControlsShowThreshold)) {
@@ -253,7 +254,8 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   // When pinching in, only show the pinch-viewport overlay scrollbars if the
   // page scale is at least some threshold away from the minimum. i.e. don't
   // show the pinch scrollbars when at minimum scale.
-  settings->scrollbar_show_scale_threshold = 1.05f;
+  // TODO(dtrainor): Update this since https://crrev.com/1267603004 landed.
+  // settings->scrollbar_show_scale_threshold = 1.05f;
 #endif
 
   if (cmd.HasSwitch(switches::kEnableLowResTiling))
