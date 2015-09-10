@@ -169,7 +169,8 @@ const CGFloat kMinimumContainerWidth = 3.0;
 - (void)setHighlight:(scoped_ptr<ui::NinePartImageIds>)highlight {
   if (highlight || highlight_) {
     highlight_ = highlight.Pass();
-    resizable_ = highlight.get() != nullptr;
+    // We don't allow resizing when the container is highlighting.
+    resizable_ = highlight.get() == nullptr;
     [self setNeedsDisplay:YES];
   }
 }
