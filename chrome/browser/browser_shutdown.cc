@@ -66,10 +66,10 @@ upgrade_util::RelaunchMode g_relaunch_mode =
     upgrade_util::RELAUNCH_MODE_DEFAULT;
 #endif
 
-Time* shutdown_started_ = NULL;
-ShutdownType shutdown_type_ = NOT_VALID;
-int shutdown_num_processes_;
-int shutdown_num_processes_slow_;
+Time* g_shutdown_started = nullptr;
+ShutdownType g_shutdown_type = NOT_VALID;
+int g_shutdown_num_processes;
+int g_shutdown_num_processes_slow;
 
 const char kShutdownMsFile[] = "chrome_shutdown_ms.txt";
 
@@ -97,39 +97,39 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 ShutdownType GetShutdownType() {
-  return shutdown_type_;
+  return g_shutdown_type;
 }
 
 void OnShutdownStarting(ShutdownType type) {
-  if (shutdown_type_ != NOT_VALID)
+  if (g_shutdown_type != NOT_VALID)
     return;
   base::debug::SetCrashKeyValue(crash_keys::kShutdownType,
                                 ToShutdownTypeString(type));
 #if !defined(OS_CHROMEOS)
-  // Start the shutdown tracing. Note that On ChromeOS we have started this
-  // already.
+  // Start the shutdown tracing. Note that On ChromeOS this has already been
+  // called in AttemptUserExit().
   chrome::StartShutdownTracing();
 #endif
 
-  shutdown_type_ = type;
+  g_shutdown_type = type;
   // For now, we're only counting the number of renderer processes
   // since we can't safely count the number of plugin processes from this
   // thread, and we'd really like to avoid anything which might add further
   // delays to shutdown time.
-  DCHECK(!shutdown_started_);
-  shutdown_started_ = new Time(Time::Now());
+  DCHECK(!g_shutdown_started);
+  g_shutdown_started = new Time(Time::Now());
 
   // Call FastShutdown on all of the RenderProcessHosts.  This will be
   // a no-op in some cases, so we still need to go through the normal
   // shutdown path for the ones that didn't exit here.
-  shutdown_num_processes_ = 0;
-  shutdown_num_processes_slow_ = 0;
+  g_shutdown_num_processes = 0;
+  g_shutdown_num_processes_slow = 0;
   for (content::RenderProcessHost::iterator i(
           content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    ++shutdown_num_processes_;
+    ++g_shutdown_num_processes;
     if (!i.GetCurrentValue()->FastShutdownIfPossible())
-      ++shutdown_num_processes_slow_;
+      ++g_shutdown_num_processes_slow;
   }
 }
 
@@ -161,13 +161,13 @@ bool ShutdownPreThreadsStop() {
   if (metrics)
     metrics->RecordCompletedSessionEnd();
 
-  if (shutdown_type_ > NOT_VALID && shutdown_num_processes_ > 0) {
+  if (g_shutdown_type > NOT_VALID && g_shutdown_num_processes > 0) {
     // Record the shutdown info so that we can put it into a histogram at next
     // startup.
-    prefs->SetInteger(prefs::kShutdownType, shutdown_type_);
-    prefs->SetInteger(prefs::kShutdownNumProcesses, shutdown_num_processes_);
+    prefs->SetInteger(prefs::kShutdownType, g_shutdown_type);
+    prefs->SetInteger(prefs::kShutdownNumProcesses, g_shutdown_num_processes);
     prefs->SetInteger(prefs::kShutdownNumProcessesSlow,
-                      shutdown_num_processes_slow_);
+                      g_shutdown_num_processes_slow);
   }
 
   // Check local state for the restart flag so we can restart the session below.
@@ -208,12 +208,12 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
 
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserDeleted",
-                                                        true);
+                                                          true);
 #endif
 
 #if defined(OS_WIN)
   if (!browser_util::IsBrowserAlreadyRunning() &&
-      shutdown_type_ != browser_shutdown::END_SESSION) {
+      g_shutdown_type != browser_shutdown::END_SESSION) {
     upgrade_util::SwapNewChromeExeIfPresent();
   }
 #endif
@@ -236,15 +236,12 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
     about_flags::RemoveFlagsSwitches(&switches);
     switches::RemoveSwitchesForAutostart(&switches);
     // Append the old switches to the new command line.
-    for (
-        std::map<std::string, base::CommandLine::StringType>::const_iterator i =
-            switches.begin();
-        i != switches.end(); ++i) {
-      base::CommandLine::StringType switch_value = i->second;
+    for (const auto& it : switches) {
+      const base::CommandLine::StringType& switch_value = it.second;
       if (!switch_value.empty())
-        new_cl->AppendSwitchNative(i->first, i->second);
+        new_cl->AppendSwitchNative(it.first, it.second);
       else
-        new_cl->AppendSwitch(i->first);
+        new_cl->AppendSwitch(it.first);
     }
 
 #if defined(OS_WIN)
@@ -258,11 +255,11 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
 #endif  // !defined(OS_CHROMEOS)
   }
 
-  if (shutdown_type_ > NOT_VALID && shutdown_num_processes_ > 0) {
+  if (g_shutdown_type > NOT_VALID && g_shutdown_num_processes > 0) {
     // Measure total shutdown time as late in the process as possible
     // and then write it to a file to be read at startup.
     // We can't use prefs since all services are shutdown at this point.
-    TimeDelta shutdown_delta = Time::Now() - *shutdown_started_;
+    TimeDelta shutdown_delta = Time::Now() - *g_shutdown_started;
     std::string shutdown_ms =
         base::Int64ToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;
@@ -282,7 +279,7 @@ void ReadLastShutdownFile(ShutdownType type,
 
   base::FilePath shutdown_ms_file = GetShutdownMsPath();
   std::string shutdown_ms_str;
-  int64 shutdown_ms = 0;
+  int64_t shutdown_ms = 0;
   if (base::ReadFileToString(shutdown_ms_file, &shutdown_ms_str))
     base::StringToInt64(shutdown_ms_str, &shutdown_ms);
   base::DeleteFile(shutdown_ms_file, false);
@@ -290,8 +287,8 @@ void ReadLastShutdownFile(ShutdownType type,
   if (type == NOT_VALID || shutdown_ms == 0 || num_procs == 0)
     return;
 
-  const char* time_fmt = "Shutdown.%s.time";
-  const char* time_per_fmt = "Shutdown.%s.time_per_process";
+  const char time_fmt[] = "Shutdown.%s.time";
+  const char time_per_fmt[] = "Shutdown.%s.time_per_process";
   std::string time;
   std::string time_per;
   if (type == WINDOW_CLOSE) {
@@ -311,8 +308,7 @@ void ReadLastShutdownFile(ShutdownType type,
     return;
 
   // TODO(erikkay): change these to UMA histograms after a bit more testing.
-  UMA_HISTOGRAM_TIMES(time.c_str(),
-                      TimeDelta::FromMilliseconds(shutdown_ms));
+  UMA_HISTOGRAM_TIMES(time.c_str(), TimeDelta::FromMilliseconds(shutdown_ms));
   UMA_HISTOGRAM_TIMES(time_per.c_str(),
                       TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
   UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.total", num_procs);
