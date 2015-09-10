@@ -1046,7 +1046,8 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
         current_page_scale_factor(), min_page_scale_factor(),
         max_page_scale_factor());
 
-    DistributeRootScrollOffset();
+    DistributeRootScrollOffset(
+        root_layer_scroll_offset_delegate_->GetTotalScrollOffset());
   }
 }
 
@@ -1064,12 +1065,9 @@ void LayerTreeImpl::UpdateRootScrollOffsetDelegate() {
       max_page_scale_factor());
 }
 
-void LayerTreeImpl::DistributeRootScrollOffset() {
-  if (!root_layer_scroll_offset_delegate_)
-    return;
-
-  gfx::ScrollOffset root_offset =
-      root_layer_scroll_offset_delegate_->GetTotalScrollOffset();
+void LayerTreeImpl::DistributeRootScrollOffset(
+    const gfx::ScrollOffset& root_offset) {
+  DCHECK(root_layer_scroll_offset_delegate_);
 
   if (!InnerViewportScrollLayer())
     return;

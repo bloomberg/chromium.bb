@@ -136,7 +136,8 @@ class MockInputHandler : public cc::InputHandler {
       cc::LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate)
       override {}
 
-  void OnRootLayerDelegatedScrollOffsetChanged() override {}
+  void OnRootLayerDelegatedScrollOffsetChanged(
+      const gfx::ScrollOffset& root_offset) override {}
 
   bool IsCurrentlyScrollingRoot() const override { return is_scrolling_root_; }
   void set_is_scrolling_root(bool is) { is_scrolling_root_ = is; }

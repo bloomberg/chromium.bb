@@ -274,8 +274,10 @@ void SynchronousCompositorImpl::PostInvalidate() {
 }
 
 void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset() {
-  if (input_handler_)
-    input_handler_->OnRootLayerDelegatedScrollOffsetChanged();
+  if (!input_handler_)
+    return;
+  gfx::ScrollOffset offset = GetTotalScrollOffset();
+  input_handler_->OnRootLayerDelegatedScrollOffsetChanged(offset);
 }
 
 void SynchronousCompositorImpl::SetIsActive(bool is_active) {

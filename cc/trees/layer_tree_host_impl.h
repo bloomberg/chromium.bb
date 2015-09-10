@@ -176,7 +176,8 @@ class CC_EXPORT LayerTreeHostImpl
                               ScrollDirection direction) override;
   void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) override;
-  void OnRootLayerDelegatedScrollOffsetChanged() override;
+  void OnRootLayerDelegatedScrollOffsetChanged(
+      const gfx::ScrollOffset& root_offset) override;
   void ScrollEnd() override;
   InputHandler::ScrollStatus FlingScrollBegin() override;
   void MouseMoveAt(const gfx::Point& viewport_point) override;

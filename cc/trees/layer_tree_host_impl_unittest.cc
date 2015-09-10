@@ -4611,14 +4611,14 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   host_impl_->PinchGestureEnd();
   host_impl_->ScrollEnd();
 
-  // Scrolling should be relative to the offset as returned by the delegate.
+  // Scrolling should be relative to the offset as given by the delegate.
   gfx::Vector2dF scroll_delta(0.f, 10.f);
   gfx::ScrollOffset current_offset(7.f, 8.f);
 
   scroll_delegate.set_getter_return_value(current_offset);
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
 
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   EXPECT_EQ(ScrollOffsetWithDelta(current_offset, scroll_delta),
@@ -4626,13 +4626,13 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
 
   current_offset = gfx::ScrollOffset(42.f, 41.f);
   scroll_delegate.set_getter_return_value(current_offset);
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   EXPECT_EQ(current_offset + gfx::ScrollOffset(scroll_delta),
             scroll_delegate.last_set_scroll_offset());
   host_impl_->ScrollEnd();
   scroll_delegate.set_getter_return_value(gfx::ScrollOffset());
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(gfx::ScrollOffset());
 
   // Forces a full tree synchronization and ensures that the scroll delegate
   // sees the correct size of the new tree.
@@ -4647,7 +4647,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   // the root scrollable layer.
   current_offset = gfx::ScrollOffset(13.f, 12.f);
   scroll_delegate.set_getter_return_value(current_offset);
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
   host_impl_->SetRootLayerScrollOffsetDelegate(NULL);
 
   EXPECT_EQ(current_offset.ToString(),
@@ -4681,7 +4681,7 @@ TEST_F(LayerTreeHostImplTest,
   // Set external scroll delta on delegate and notify LayerTreeHost.
   gfx::ScrollOffset scroll_offset(10.f, 10.f);
   scroll_delegate.set_getter_return_value(scroll_offset);
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(scroll_offset);
 
   // Check scroll delta reflected in layer.
   LayerTreeHostImpl::FrameData frame;
@@ -7657,7 +7657,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, ScrollBothInnerAndOuterLayer) {
     gfx::ScrollOffset current_offset(70.f, 100.f);
 
     scroll_delegate.set_getter_return_value(current_offset);
-    host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
+    host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
     EXPECT_EQ(gfx::ScrollOffset(25.f, 40.f), inner_scroll->MaxScrollOffset());
     EXPECT_EQ(gfx::ScrollOffset(50.f, 80.f), outer_scroll->MaxScrollOffset());
 

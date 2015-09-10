@@ -15,6 +15,7 @@
 namespace gfx {
 class Point;
 class PointF;
+class ScrollOffset;
 class Vector2d;
 class Vector2dF;
 }
@@ -130,10 +131,12 @@ class CC_EXPORT InputHandler {
 
   // Called when the value returned by
   // LayerScrollOffsetDelegate.GetTotalScrollOffset has changed for reasons
-  // other than a SetTotalScrollOffset call.
+  // other than a SetTotalScrollOffset call. This passes along the new value of
+  // GetTotalScrollOffset.
   // NOTE: This should only called after a valid delegate was set via a call to
   // SetRootLayerScrollOffsetDelegate.
-  virtual void OnRootLayerDelegatedScrollOffsetChanged() = 0;
+  virtual void OnRootLayerDelegatedScrollOffsetChanged(
+      const gfx::ScrollOffset& root_offset) = 0;
 
   virtual void PinchGestureBegin() = 0;
   virtual void PinchGestureUpdate(float magnify_delta,
