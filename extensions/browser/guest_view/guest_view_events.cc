@@ -73,6 +73,13 @@ class EventMap {
         {webview::kEventUnresponsive,
          events::WEB_VIEW_INTERNAL_ON_UNRESPONSIVE},
         {webview::kEventZoomChange, events::WEB_VIEW_INTERNAL_ON_ZOOM_CHANGE},
+        {webview::kEventAuthRequired,
+         events::WEB_VIEW_INTERNAL_ON_AUTH_REQUIRED},
+        {webview::kEventBeforeRedirect,
+         events::WEB_VIEW_INTERNAL_ON_BEFORE_REDIRECT},
+        {webview::kEventErrorOccurred,
+         events::WEB_VIEW_INTERNAL_ON_ERROR_OCCURRED},
+        {webview::kEventSendHeaders, events::WEB_VIEW_INTERNAL_ON_SEND_HEADERS},
     };
     for (const auto& name_and_value : names_and_values) {
       values_[name_and_value.name] = name_and_value.value;

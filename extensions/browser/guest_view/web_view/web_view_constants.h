@@ -27,10 +27,7 @@ extern const char kAPILoadDataInvalidBaseURL[];
 extern const char kAPILoadDataInvalidVirtualURL[];
 
 // Events.
-extern const char kEventBeforeRequest[];
-extern const char kEventBeforeSendHeaders[];
 extern const char kEventClose[];
-extern const char kEventCompleted[];
 extern const char kEventConsoleMessage[];
 extern const char kEventContentLoad[];
 extern const char kEventContextMenuShow[];
@@ -55,6 +52,15 @@ extern const char kEventResponsive[];
 extern const char kEventSizeChanged[];
 extern const char kEventUnresponsive[];
 extern const char kEventZoomChange[];
+
+// WebRequest API events.
+extern const char kEventAuthRequired[];
+extern const char kEventBeforeRedirect[];
+extern const char kEventBeforeRequest[];
+extern const char kEventBeforeSendHeaders[];
+extern const char kEventCompleted[];
+extern const char kEventErrorOccurred[];
+extern const char kEventSendHeaders[];
 
 // Event related constants.
 extern const char kWebViewEventPrefix[];

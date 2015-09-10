@@ -562,6 +562,27 @@ function testWebRequestAPIExistence() {
   document.body.appendChild(webview);
 }
 
+// Tests that calling addListener() succeeds on all WebRequest API events.
+function testWebRequestAPIAddListener() {
+  var webview = new WebView();
+
+  [webview.request.onBeforeRequest,
+   webview.request.onBeforeSendHeaders,
+   webview.request.onSendHeaders,
+   webview.request.onHeadersReceived,
+   webview.request.onAuthRequired,
+   webview.request.onBeforeRedirect,
+   webview.request.onCompleted,
+   webview.request.onErrorOccurred,
+  ].forEach(function(event) {
+    event.addListener(function(){}, {urls: ['<all_urls>']});
+  });
+
+  webview.onloadstop = function() { embedder.test.succeed(); };
+  webview.src = 'about:blank';
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the loadstart, loadstop, and exit events fire as
 // expected.
 function testEventName() {
@@ -1678,6 +1699,20 @@ function testWebRequestAPIWithHeaders() {
     }
   });
   webview.src = embedder.detectUserAgentURL;
+  document.body.appendChild(webview);
+}
+
+function testWebRequestAPIErrorOccurred() {
+  var webview = new WebView();
+
+  webview.request.onErrorOccurred.addListener(function(details) {
+    embedder.test.succeed();
+  }, {urls: ['<all_urls>']});
+  webview.request.onBeforeRequest.addListener(function(e) {
+    return {cancel: true};
+  }, {urls: ['<all_urls>']}, ['blocking']) ;
+
+  webview.src = 'http://nonexistent.com';
   document.body.appendChild(webview);
 }
 
@@ -2869,6 +2904,7 @@ embedder.test.testList = {
       testInlineScriptFromAccessibleResources,
   'testInvalidChromeExtensionURL': testInvalidChromeExtensionURL,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
+  'testWebRequestAPIAddListener': testWebRequestAPIAddListener,
   'testEventName': testEventName,
   'testOnEventProperties': testOnEventProperties,
   'testLoadProgressEvent': testLoadProgressEvent,
@@ -2917,6 +2953,7 @@ embedder.test.testList = {
       testDeclarativeWebRequestAPISendMessage,
   'testDisplayBlock': testDisplayBlock,
   'testWebRequestAPI': testWebRequestAPI,
+  'testWebRequestAPIErrorOccurred': testWebRequestAPIErrorOccurred,
   'testWebRequestAPIWithHeaders': testWebRequestAPIWithHeaders,
   'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
   'testWebRequestListenerSurvivesReparenting':

@@ -57881,6 +57881,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="382" label="CAST_DEVICES_PRIVATE_ON_STOP_CAST"/>
   <int value="383" label="CERTIFICATEPROVIDER_ON_CERTIFICATES_REQUESTED"/>
   <int value="384" label="CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED"/>
+  <int value="385" label="WEB_VIEW_INTERNAL_ON_AUTH_REQUIRED"/>
+  <int value="386" label="WEB_VIEW_INTERNAL_ON_BEFORE_REDIRECT"/>
+  <int value="387" label="WEB_VIEW_INTERNAL_ON_ERROR_OCCURRED"/>
+  <int value="388" label="WEB_VIEW_INTERNAL_ON_SEND_HEADERS"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
