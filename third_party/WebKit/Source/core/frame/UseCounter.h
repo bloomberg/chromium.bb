@@ -842,6 +842,10 @@ public:
         NetInfoDownlinkMax = 947,
         NetInfoOnChange = 948,
         NetInfoOnTypeChange = 949,
+        V8Window_Alert_Method = 950,
+        V8Window_Confirm_Method = 951,
+        V8Window_Prompt_Method = 952,
+        V8Window_Print_Method = 953,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
