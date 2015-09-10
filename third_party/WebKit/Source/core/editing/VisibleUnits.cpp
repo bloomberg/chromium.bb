@@ -2609,9 +2609,20 @@ UChar32 characterAfter(const VisiblePositionInComposedTree& visiblePosition)
     return characterAfterAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
 }
 
-UChar32 characterBefore(const VisiblePosition& visiblePosition)
+template <typename Strategy>
+static UChar32 characterBeforeAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
     return characterAfter(previousPositionOf(visiblePosition));
+}
+
+UChar32 characterBefore(const VisiblePosition& visiblePosition)
+{
+    return characterBeforeAlgorithm<EditingStrategy>(visiblePosition);
+}
+
+UChar32 characterBefore(const VisiblePositionInComposedTree& visiblePosition)
+{
+    return characterBeforeAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
 }
 
 template <typename Strategy>

@@ -74,6 +74,31 @@ TEST_F(VisibleUnitsTest, characterAfter)
     EXPECT_EQ('1', characterAfter(createVisiblePositionInComposedTree(*two->firstChild(), 2)));
 }
 
+TEST_F(VisibleUnitsTest, characterBefore)
+{
+    const char* bodyContent = "<p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
+    const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>5555</b>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* five = shadowRoot->getElementById("five")->firstChild();
+
+    EXPECT_EQ(0, characterBefore(createVisiblePositionInDOMTree(*one, 0)));
+    EXPECT_EQ('2', characterBefore(createVisiblePositionInComposedTree(*one, 0)));
+
+    EXPECT_EQ('1', characterBefore(createVisiblePositionInDOMTree(*one, 1)));
+    EXPECT_EQ('1', characterBefore(createVisiblePositionInComposedTree(*one, 1)));
+
+    EXPECT_EQ('1', characterBefore(createVisiblePositionInDOMTree(*two, 0)));
+    EXPECT_EQ('4', characterBefore(createVisiblePositionInComposedTree(*two, 0)));
+
+    EXPECT_EQ('4', characterBefore(createVisiblePositionInDOMTree(*five, 0)));
+    EXPECT_EQ('1', characterBefore(createVisiblePositionInComposedTree(*five, 0)));
+}
+
 TEST_F(VisibleUnitsTest, endOfDocument)
 {
     const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a>";

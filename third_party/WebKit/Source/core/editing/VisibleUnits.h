@@ -94,7 +94,8 @@ CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePositionInComposedTree&);
 
 CORE_EXPORT UChar32 characterAfter(const VisiblePosition&);
 CORE_EXPORT UChar32 characterAfter(const VisiblePositionInComposedTree&);
-UChar32 characterBefore(const VisiblePosition&);
+CORE_EXPORT UChar32 characterBefore(const VisiblePosition&);
+CORE_EXPORT UChar32 characterBefore(const VisiblePositionInComposedTree&);
 
 // TODO(yosin) Since return value of |leftPositionOf()| with |VisiblePosition|
 // isn't defined well on composed tree, we should not use it for a position in
