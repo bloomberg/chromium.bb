@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
@@ -44,15 +43,6 @@ namespace {
 // variable controls the delay between loading eTLDs, so as to not overload the
 // CPU or I/O with these low priority requests immediately after start up.
 const int kLoadDelayMilliseconds = 0;
-
-const char kDeleteAtShutdown[] = "DeleteAtShutdown";
-const char kSessionCookieDeletionStrategy[] = "SessionCookieDeletionStrategy";
-
-bool ShouldDeleteSessionCookiesAtShutdown() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kSessionCookieDeletionStrategy);
-  return group_name == kDeleteAtShutdown;
-}
 
 }  // namespace
 
@@ -89,9 +79,7 @@ class SQLitePersistentCookieStore::Backend
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
       CookieCryptoDelegate* crypto_delegate)
-      : delete_session_cookies_at_shutdown_(
-            ShouldDeleteSessionCookiesAtShutdown()),
-        path_(path),
+      : path_(path),
         num_pending_(0),
         initialized_(false),
         corruption_detected_(false),
@@ -226,8 +214,6 @@ class SQLitePersistentCookieStore::Backend
 
   void DeleteSessionCookiesOnStartup();
 
-  void DeleteSessionCookiesOnShutdown();
-
   void BackgroundDeleteAllInList(const std::list<CookieOrigin>& cookies);
 
   void DatabaseErrorCallback(int error, sql::Statement* stmt);
@@ -243,7 +229,6 @@ class SQLitePersistentCookieStore::Backend
   void FinishedLoadingCookies(const LoadedCallback& loaded_callback,
                               bool success);
 
-  bool delete_session_cookies_at_shutdown_;
   const base::FilePath path_;
   scoped_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
@@ -1193,10 +1178,6 @@ void SQLitePersistentCookieStore::Backend::Close(
 void SQLitePersistentCookieStore::Backend::InternalBackgroundClose(
     const base::Closure& callback) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
-
-  if (delete_session_cookies_at_shutdown_)
-    DeleteSessionCookiesOnShutdown();
-
   // Commit any pending operations
   Commit();
 
@@ -1268,22 +1249,6 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
   UMA_HISTOGRAM_TIMES("Cookie.Startup.TimeSpentDeletingCookies",
                       base::Time::Now() - start_time);
   UMA_HISTOGRAM_COUNTS("Cookie.Startup.NumberOfCookiesDeleted",
-                       db_->GetLastChangeCount());
-}
-
-void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
-
-  if (!db_)
-    return;
-
-  base::Time start_time = base::Time::Now();
-  if (!db_->Execute("DELETE FROM cookies WHERE persistent != 1"))
-    LOG(WARNING) << "Unable to delete session cookies.";
-
-  UMA_HISTOGRAM_TIMES("Cookie.Shutdown.TimeSpentDeletingCookies",
-                      base::Time::Now() - start_time);
-  UMA_HISTOGRAM_COUNTS("Cookie.Shutdown.NumberOfCookiesDeleted",
                        db_->GetLastChangeCount());
 }
 

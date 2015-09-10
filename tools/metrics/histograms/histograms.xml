@@ -4968,6 +4968,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.Shutdown.NumberOfCookiesDeleted">
+  <obsolete>
+    Deprecated as of 9/2015. The associated experiment was flawed.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     The number of session cookies deleted on shutdown. This metric is emitted
@@ -4976,6 +4979,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.Shutdown.TimeSpentDeletingCookies" units="ms">
+  <obsolete>
+    Deprecated as of 9/2015. The associated experiment was flawed.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     The amount of time required to delete session cookies on shutdown. This
