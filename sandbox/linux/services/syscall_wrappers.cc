@@ -152,7 +152,7 @@ int sys_sigprocmask(int how, const sigset_t* set, decltype(nullptr) oldset) {
 }
 
 #if (defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) ||  \
-     (defined(ARCH_CPU_X86_64) && !defined(__clang__))) && \
+     (defined(ARCH_CPU_X86_FAMILY) && !defined(__clang__))) && \
     !defined(OS_NACL_NONSFI)
 // If MEMORY_SANITIZER or THREAD_SANITIZER is enabled, it is necessary to call
 // sigaction() here, rather than the direct syscall (sys_sigaction() defined
@@ -172,7 +172,7 @@ int sys_sigprocmask(int how, const sigset_t* set, decltype(nullptr) oldset) {
 // in other libc functions' interceptors (such as for raise()), so that it
 // would not work properly.
 //
-// Also on x86_64 architecture, we need naked function for rt_sigreturn.
+// Also on x86 architectures, we need naked function for rt_sigreturn.
 // However, there is no simple way to define it with GCC. Note that the body
 // of function is actually very small (only two instructions), but we need to
 // define much debug information in addition, otherwise backtrace() used by
@@ -189,20 +189,57 @@ int sys_sigaction(int signum,
   return sigaction(signum, act, oldact);
 }
 #else
-// On X86_64 arch, it is necessary to set sa_restorer always.
-#if defined(ARCH_CPU_X86_64)
+// On X86_64, sa_restorer is required. We specify it on x86 as well in order to
+// support kernels with VDSO disabled.
+#if defined(ARCH_CPU_X86_FAMILY)
+
 #if !defined(SA_RESTORER)
 #define SA_RESTORER 0x04000000
 #endif
 
+// XSTR(__NR_foo) expands to a string literal containing the value value of
+// __NR_foo.
+#define STR(x) #x
+#define XSTR(x) STR(x)
+
 // rt_sigreturn is a special system call that interacts with the user land
 // stack. Thus, here prologue must not be created, which implies syscall()
-// does not work properly, too. Note that rt_sigreturn will never return.
-static __attribute__((naked)) void sys_rt_sigreturn() {
-  // Just invoke rt_sigreturn system call.
-  asm volatile ("syscall\n"
-                :: "a"(__NR_rt_sigreturn));
+// does not work properly, too. Note that rt_sigreturn does not return.
+#if defined(ARCH_CPU_X86_64)
+
+extern "C" {
+  void sys_rt_sigreturn();
 }
+
+asm(
+    ".text\n"
+    "sys_rt_sigreturn:\n"
+    "mov $" XSTR(__NR_rt_sigreturn) ", %eax\n"
+    "syscall\n");
+
+#elif defined(ARCH_CPU_X86)
+extern "C" {
+  void sys_sigreturn();
+  void sys_rt_sigreturn();
+}
+
+asm(
+    ".text\n"
+    "sys_rt_sigreturn:\n"
+    "mov $" XSTR(__NR_rt_sigreturn) ", %eax\n"
+    "int $0x80\n"
+
+    "sys_sigreturn:\n"
+    "pop %eax\n"
+    "mov $" XSTR(__NR_sigreturn) ", %eax\n"
+    "int $0x80\n");
+#else
+#error "Unsupported architecture."
+#endif
+
+#undef STR
+#undef XSTR
+
 #endif
 
 int sys_sigaction(int signum,
@@ -215,10 +252,17 @@ int sys_sigaction(int signum,
                 std::min(sizeof(linux_act.sa_mask), sizeof(act->sa_mask)));
     linux_act.sa_flags = act->sa_flags;
 
-#if defined(ARCH_CPU_X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
     if (!(linux_act.sa_flags & SA_RESTORER)) {
       linux_act.sa_flags |= SA_RESTORER;
+#if defined(ARCH_CPU_X86_64)
       linux_act.sa_restorer = sys_rt_sigreturn;
+#elif defined(ARCH_CPU_X86)
+      linux_act.sa_restorer =
+          linux_act.sa_flags & SA_SIGINFO ? sys_rt_sigreturn : sys_sigreturn;
+#else
+#error "Unsupported architecture."
+#endif
     }
 #endif
   }
