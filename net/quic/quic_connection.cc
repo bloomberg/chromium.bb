@@ -1457,11 +1457,9 @@ void QuicConnection::WriteIfNotBlocked() {
 }
 
 bool QuicConnection::ProcessValidatedPacket() {
-  if ((peer_ip_changed_ && !FLAGS_quic_allow_ip_migration) ||
-      self_ip_changed_ || self_port_changed_) {
-    SendConnectionCloseWithDetails(
-        QUIC_ERROR_MIGRATING_ADDRESS,
-        "Neither IP address migration, nor self port migration are supported.");
+  if (self_ip_changed_ || self_port_changed_) {
+    SendConnectionCloseWithDetails(QUIC_ERROR_MIGRATING_ADDRESS,
+                                   "Self address migration is not supported.");
     return false;
   }
 
@@ -1615,6 +1613,16 @@ bool QuicConnection::WritePacket(QueuedPacket* packet) {
 }
 
 bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
+  if (FLAGS_quic_close_connection_out_of_order_sending &&
+      packet->serialized_packet.packet_number <
+          sent_packet_manager_.largest_sent_packet()) {
+    LOG(DFATAL) << "Attempt to write packet:"
+                << packet->serialized_packet.packet_number
+                << " after:" << sent_packet_manager_.largest_sent_packet();
+    SendConnectionCloseWithDetails(QUIC_INTERNAL_ERROR,
+                                   "Packet written out of order.");
+    return true;
+  }
   if (ShouldDiscardPacket(*packet)) {
     ++stats_.packets_discarded;
     return true;

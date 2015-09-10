@@ -53,13 +53,6 @@ bool FLAGS_quic_do_path_mtu_discovery = true;
 // packet's parsing to complete.
 bool FLAGS_quic_process_frames_inline = true;
 
-// No longer call OnCanWrite when connection level flow control unblocks in
-// QuicSession.
-bool FLAGS_quic_dont_write_when_flow_unblocked = true;
-
-// If true, client IP migration is allowed in QUIC.
-bool FLAGS_quic_allow_ip_migration = true;
-
 // Estimate that only 60% of QUIC's receive buffer is usable as opposed to 95%.
 bool FLAGS_quic_use_conservative_receive_buffer = true;
 
@@ -83,3 +76,7 @@ bool FLAGS_quic_disable_truncated_ack_handling = true;
 // If true, after a server silo receives a packet from a migrated QUIC
 // client, a GO_AWAY frame is sent to the client.
 bool FLAGS_send_goaway_after_client_migration = true;
+
+// Close the connection instead of attempting to write a packet out of sequence
+// number order.
+bool FLAGS_quic_close_connection_out_of_order_sending = true;

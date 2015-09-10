@@ -1359,9 +1359,6 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
 };
 
 TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
-  // Allow client IP migration during an established QUIC connection.
-  ValueRestore<bool> old_flag(&FLAGS_quic_allow_ip_migration, true);
-
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1379,29 +1376,6 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   // Send a request using the new socket.
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
-}
-
-TEST_P(EndToEndTest, ConnectionMigrationClientIPChangedUnsupported) {
-  // Tests that the client's IP can not change during an established QUIC
-  // connection. If it changes, the connection is closed by the server as we
-  // do not yet support IP migration.
-  ValueRestore<bool> old_flag(&FLAGS_quic_allow_ip_migration, false);
-
-  ASSERT_TRUE(Initialize());
-
-  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
-
-  WrongAddressWriter* writer = new WrongAddressWriter();
-
-  writer->set_writer(new QuicDefaultPacketWriter(client_->client()->fd()));
-  QuicConnectionPeer::SetWriter(client_->client()->session()->connection(),
-                                writer, /* owns_writer= */ true);
-
-  client_->SendSynchronousRequest("/bar");
-
-  EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
-  EXPECT_EQ(QUIC_ERROR_MIGRATING_ADDRESS, client_->connection_error());
 }
 
 TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {

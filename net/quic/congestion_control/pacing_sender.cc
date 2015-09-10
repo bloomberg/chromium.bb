@@ -62,7 +62,8 @@ bool PacingSender::OnPacketSent(
   if (has_retransmittable_data != HAS_RETRANSMITTABLE_DATA) {
     return in_flight;
   }
-  if (bytes_in_flight == 0) {
+  // If in recovery, the connection is not coming out of quiescence.
+  if (bytes_in_flight == 0 && !sender_->InRecovery()) {
     // Add more burst tokens anytime the connection is leaving quiescence, but
     // limit it to the equivalent of a single bulk write, not exceeding the
     // current CWND in packets.

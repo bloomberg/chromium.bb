@@ -454,7 +454,12 @@ bool QuicPacketGenerator::AddFrame(const QuicFrame& frame,
 }
 
 void QuicPacketGenerator::SerializeAndSendPacket() {
-  char buffer[kMaxPacketSize];
+  // The optimized encryption algorithm implementations run faster when
+  // operating on aligned memory.
+  //
+  // TODO(rtenneti): Change the default 64 alignas value (used the default
+  // value from CACHELINE_SIZE).
+  ALIGNAS(64) char buffer[kMaxPacketSize];
   SerializedPacket serialized_packet =
       packet_creator_.SerializePacket(buffer, kMaxPacketSize);
   if (serialized_packet.packet == nullptr) {

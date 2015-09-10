@@ -21,13 +21,12 @@ NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_stateless_reject_support;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_do_path_mtu_discovery;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_process_frames_inline;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_write_when_flow_unblocked;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_ip_migration;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_conservative_receive_buffer;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_max_cwnd;
 NET_EXPORT_PRIVATE extern bool FLAGS_exact_stream_id_delta;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_handshake_confirmation;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_truncated_ack_handling;
 NET_EXPORT_PRIVATE extern bool FLAGS_send_goaway_after_client_migration;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_close_connection_out_of_order_sending;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

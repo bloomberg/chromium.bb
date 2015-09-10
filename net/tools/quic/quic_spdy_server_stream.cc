@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/spdy_utils.h"
@@ -97,9 +98,17 @@ bool QuicSpdyServerStream::ParseRequestHeaders(const char* data,
   if (data_len > len) {
     body_.append(data + len, data_len - len);
   }
-  if (ContainsKey(request_headers_, "content-length") &&
-      !StringToInt(request_headers_["content-length"], &content_length_)) {
-    return false;  // Invalid content-length.
+  if (ContainsKey(request_headers_, "content-length")) {
+    // Historically, if an input to SimpleAtoi contained null byte, anything
+    // past it would be silently ignored. This behavior is being removed, but
+    // this method relies on it (see cl/101239633). Hence, we explicitly call
+    // c_str() on request headers to simulate the old behavior.
+    // TODO(rch): Correctly handle null-separated value in content-length.
+    // b/23554022
+    StringPiece trimmed_header(request_headers_["content-length"].c_str());
+    if (!StringToInt(trimmed_header, &content_length_)) {
+      return false;  // Invalid content-length.
+    }
   }
   return true;
 }

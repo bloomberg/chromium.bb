@@ -228,7 +228,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     return unacked_packets_.largest_observed();
   }
 
-  QuicPacketNumber least_packet_awaited_by_peer() {
+  QuicPacketNumber largest_sent_packet() const {
+    return unacked_packets_.largest_sent_packet();
+  }
+
+  QuicPacketNumber least_packet_awaited_by_peer() const {
     return least_packet_awaited_by_peer_;
   }
 

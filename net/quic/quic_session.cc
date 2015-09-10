@@ -219,15 +219,7 @@ void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
     DVLOG(1) << ENDPOINT << "Received connection level flow control window "
                             "update with byte offset: "
              << frame.byte_offset;
-    if (flow_controller_.UpdateSendWindowOffset(frame.byte_offset)) {
-      // Connection level flow control window has increased, so blocked streams
-      // can write again.
-      // TODO(ianswett): I suspect this can be delayed until the packet
-      // processing is complete.
-      if (!FLAGS_quic_dont_write_when_flow_unblocked) {
-        OnCanWrite();
-      }
-    }
+    flow_controller_.UpdateSendWindowOffset(frame.byte_offset);
     return;
   }
   ReliableQuicStream* stream = GetStream(stream_id);
