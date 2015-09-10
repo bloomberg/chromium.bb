@@ -27,8 +27,8 @@
 namespace {
 
 // These are the default dimensions of radio buttons and checkboxes.
-const int kCheckboxAndRadioWidth = 14;
-const int kCheckboxAndRadioHeight = 14;
+const int kCheckboxAndRadioWidth = 13;
+const int kCheckboxAndRadioHeight = 13;
 
 // These sizes match the sizes in Chromium Win.
 const int kSliderThumbWidth = 11;
@@ -591,8 +591,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   }
 
   // Make room for the drop shadow.
-  skrect.iset(skrect.x() + 1, skrect.y() + 1, skrect.right() - 1,
-              skrect.bottom() - 1);
+  skrect.iset(skrect.x(), skrect.y(), skrect.right() - 1, skrect.bottom() - 1);
 
   // Draw the drop shadow below the widget.
   if (state != kPressed) {
