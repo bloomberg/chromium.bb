@@ -219,6 +219,8 @@ bool serializeIdentifier(const String& identifier, StringBuilder& appendTo)
 
         if (c <= 0x1f || c == 0x7f || (0x30 <= c && c <= 0x39 && (isFirst || (isSecond && isFirstCharHyphen))))
             serializeCharacterAsCodePoint(c, appendTo);
+        else if (c == 0x2d && isFirst && index == identifier.length())
+            serializeCharacter(c, appendTo);
         else if (0x80 <= c || c == 0x2d || c == 0x5f || (0x30 <= c && c <= 0x39) || (0x41 <= c && c <= 0x5a) || (0x61 <= c && c <= 0x7a))
             appendTo.append(c);
         else

@@ -43,6 +43,8 @@ PASS CSS.escape('-6a') is "-\\36 a"
 PASS CSS.escape('-7a') is "-\\37 a"
 PASS CSS.escape('-8a') is "-\\38 a"
 PASS CSS.escape('-9a') is "-\\39 a"
+PASS CSS.escape('-') is "\\-"
+PASS CSS.escape('--') is "--"
 PASS CSS.escape('--a') is "--a"
 PASS CSS.escape('-_©') is "-_©"
 PASS CSS.escape('') is "\\7f "
