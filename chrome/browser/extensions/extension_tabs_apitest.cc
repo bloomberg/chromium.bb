@@ -150,7 +150,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabGetCurrent) {
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabConnect) {
+// Flaky on the trybots. See http://crbug.com/96725.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabConnect) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
 }
