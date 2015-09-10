@@ -7180,6 +7180,7 @@ tests:
   - [belong, ⠆⠇⠰⠛]
   - [belonged, ⠆⠇⠰⠛⠫]
   - [belonging, ⠆⠇⠰⠛⠌, {xfail: true}]
+  - [belonging's, ⠆⠇⠰⠛⠌⠄⠎, {xfail: true}]
   - [belongings, ⠆⠇⠰⠛⠌⠎, {xfail: true}]
   - [belongs, ⠆⠇⠰⠛⠎]
   - [beloved, ⠆⠇⠕⠧⠫]
@@ -93795,4 +93796,3 @@ tests:
   - [zygotic, ⠵⠽⠛⠕⠞⠊⠉]
   - [zymurgy, ⠵⠽⠍⠥⠗⠛⠽]
   - [zymurgy's, ⠵⠽⠍⠥⠗⠛⠽⠄⠎]
-
