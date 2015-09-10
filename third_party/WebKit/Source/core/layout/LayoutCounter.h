@@ -29,11 +29,33 @@ namespace blink {
 
 class CounterNode;
 
+// LayoutCounter is used to represent the text of a counter.
+// See http://www.w3.org/TR/CSS21/generate.html#counters
+//
+// Counters are always generated content ("content: counter(a)") thus this
+// LayoutObject is always anonymous.
+//
+// CounterNodes is where the logic for knowing the value of a counter is.
+// LayoutCounter makes sure the CounterNodes tree is consistent with the
+// style. It then just queries CounterNodes for their values.
+//
+// CounterNodes are rare so they are stored in a map instead of growing
+// LayoutObject. counterMaps() (in LayoutCounter.cpp) keeps the association
+// between LayoutObject and CounterNodes. To avoid unneeded hash-lookups in the
+// common case where there is no CounterNode, LayoutObject also keeps track of
+// whether it has at least one CounterNode in the hasCounterNodeMap bit.
+//
+// Keeping the map up-to-date is the reason why LayoutObjects need to call into
+// LayoutCounter during their lifetime (see the static functions below).
 class LayoutCounter final : public LayoutText {
 public:
     LayoutCounter(Document*, const CounterContent&);
     ~LayoutCounter() override;
 
+    // These functions are static so that any LayoutObject can call them.
+    // The reason is that any LayoutObject in the tree can have a CounterNode
+    // without a LayoutCounter (e.g. by specifying 'counter-increment' without
+    // a "content: counter(a)" directive)).
     static void destroyCounterNodes(LayoutObject&);
     static void destroyCounterNode(LayoutObject&, const AtomicString& identifier);
     static void layoutObjectSubtreeAttached(LayoutObject*);

@@ -46,6 +46,7 @@ typedef HashMap<const LayoutObject*, OwnPtr<CounterMap>> CounterMaps;
 
 static CounterNode* makeCounterNode(LayoutObject&, const AtomicString& identifier, bool alwaysCreateCounter);
 
+// See class definition as to why we have this map.
 static CounterMaps& counterMaps()
 {
     DEFINE_STATIC_LOCAL(CounterMaps, staticCounterMaps, ());

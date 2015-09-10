@@ -32,6 +32,14 @@ namespace blink {
 class Document;
 class LayoutTextFragment;
 
+// LayoutQuote is the layout object associated with generated quotes
+// ("content: open-quote | close-quote | no-open-quote | no-close-quote").
+// http://www.w3.org/TR/CSS2/generate.html#quotes-insert
+//
+// This object is generated thus always anonymous.
+//
+// For performance reasons, LayoutQuotes form a doubly-linked list. See |m_next|
+// and |m_previous| below.
 class LayoutQuote final : public LayoutInline {
 public:
     LayoutQuote(Document*, const QuoteType);
@@ -56,11 +64,31 @@ private:
 
     LayoutTextFragment* findFragmentChild() const;
 
+    // Type of this LayoutQuote: open-quote, close-quote, no-open-quote,
+    // no-close-quote.
     QuoteType m_type;
+
+    // Number of open quotes in the tree. Also called the nesting level
+    // in CSS 2.1.
+    // Used to determine if a LayoutQuote is invalid (closing quote without a
+    // matching opening quote) and which quote character to use (see the 'quote'
+    // property that is used to define quote character pairs).
     int m_depth;
+
+    // The next and previous LayoutQuote in layout tree order.
+    // LayoutQuotes are linked together by this doubly-linked list.
+    // Those are used to compute |m_depth| in an efficient manner.
     LayoutQuote* m_next;
     LayoutQuote* m_previous;
+
+    // This tracks whether this LayoutQuote was inserted into the layout tree
+    // and its position in the linked list is correct (m_next and m_previous).
+    // It's used for both performance (avoid unneeded tree walks to find the
+    // previous and next quotes) and conformance (|m_depth| relies on an
+    // up-to-date linked list positions).
     bool m_attached;
+
+    // Cached text for this quote.
     String m_text;
 };
 

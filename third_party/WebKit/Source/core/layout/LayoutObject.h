@@ -433,6 +433,7 @@ public:
 
     bool hasCounterNodeMap() const { return m_bitfields.hasCounterNodeMap(); }
     void setHasCounterNodeMap(bool hasCounterNodeMap) { m_bitfields.setHasCounterNodeMap(hasCounterNodeMap); }
+
     bool everHadLayout() const { return m_bitfields.everHadLayout(); }
 
     bool childrenInline() const { return m_bitfields.childrenInline(); }
@@ -1477,7 +1478,11 @@ private:
         ADD_BOOLEAN_BITFIELD(hasTransformRelatedProperty, HasTransformRelatedProperty);
         ADD_BOOLEAN_BITFIELD(hasReflection, HasReflection);
 
+        // This boolean is used to know if this LayoutObject has one (or more)
+        // associated CounterNode(s).
+        // See class comment in LayoutCounter.h for more detail.
         ADD_BOOLEAN_BITFIELD(hasCounterNodeMap, HasCounterNodeMap);
+
         ADD_BOOLEAN_BITFIELD(everHadLayout, EverHadLayout);
         ADD_BOOLEAN_BITFIELD(ancestorLineBoxDirty, AncestorLineBoxDirty);
 
