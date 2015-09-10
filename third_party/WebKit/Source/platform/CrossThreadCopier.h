@@ -210,33 +210,6 @@ namespace blink {
         return AllowCrossThreadAccessWrapper<const WeakPtr<T>&>(value);
     }
 
-    // FIXME: Move to a different header file. AllowAccessLater is for cross-thread access
-    // that is not cross-thread (tasks posted to a queue guaranteed to run on the same thread).
-    template<typename T> struct AllowAccessLaterWrapper {
-    public:
-        explicit AllowAccessLaterWrapper(T* value) : m_value(value) { }
-        T* value() const { return m_value; }
-    private:
-        // This raw pointer is safe since AllowAccessLaterWrapper is
-        // always stack-allocated. Ideally this should be Member<T> if T is
-        // garbage-collected and T* otherwise, but we don't want to introduce
-        // another template magic just for distinguishing Member<T> from T*.
-        // From the perspective of GC, T* always works correctly.
-        GC_PLUGIN_IGNORE("")
-        T* m_value;
-    };
-
-    template<typename T> struct CrossThreadCopierBase<false, false, false, AllowAccessLaterWrapper<T>> {
-        typedef T* Type;
-        static Type copy(const AllowAccessLaterWrapper<T>& wrapper) { return wrapper.value(); }
-    };
-
-    template<typename T> AllowAccessLaterWrapper<T> AllowAccessLater(T* value)
-    {
-        return AllowAccessLaterWrapper<T>(value);
-    }
-
-
 } // namespace blink
 
 #endif // CrossThreadCopier_h
