@@ -33,6 +33,8 @@ AudioNode::AudioNode(bool is_input,
       plugged_time(plugged_time) {
 }
 
+AudioNode::~AudioNode() {}
+
 std::string AudioNode::ToString() const {
   std::string result;
   base::StringAppendF(&result,

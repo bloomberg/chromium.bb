@@ -408,6 +408,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
       } else if (key == cras::kPluggedTimeProperty) {
         if (!value_reader.PopUint64(&node->plugged_time))
           return false;
+      } else if (key == cras::kMicPositionsProperty) {
+        if (!value_reader.PopString(&node->mic_positions))
+          return false;
       }
     }
 

@@ -59,6 +59,7 @@ struct CHROMEOS_EXPORT AudioDevice {
   uint64 id;
   std::string display_name;
   std::string device_name;
+  std::string mic_positions;
   AudioDeviceType type;
   uint8 priority;
   bool active;
