@@ -529,9 +529,7 @@ bool WebFrameWidgetImpl::compositionRange(size_t* location, size_t* length)
 
 WebTextInputInfo WebFrameWidgetImpl::textInputInfo()
 {
-    WebTextInputInfo info;
-    // FIXME: To be implemented.
-    return info;
+    return view()->textInputInfo();
 }
 
 WebColor WebFrameWidgetImpl::backgroundColor() const
