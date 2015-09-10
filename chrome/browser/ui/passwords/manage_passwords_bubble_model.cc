@@ -119,8 +119,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CHOOSE_TITLE);
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
     // There is no title.
-  } else {
-    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
+  } else if (state_ == password_manager::ui::MANAGE_STATE) {
+    UpdateManageStateTitle();
   }
 
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
@@ -358,6 +358,11 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
       IsSmartLockBrandingEnabled(GetProfile()),
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, &title_,
       &title_brand_link_range_);
+}
+
+void ManagePasswordsBubbleModel::UpdateManageStateTitle() {
+  GetManagePasswordsDialogTitleText(web_contents()->GetVisibleURL(), origin(),
+                                    &title_);
 }
 
 password_manager::metrics_util::UpdatePasswordSubmissionEvent

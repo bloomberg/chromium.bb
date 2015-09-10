@@ -15393,7 +15393,10 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_SAVE_PASSWORD_TITLE" desc="The title of the save password bubble when a password can be saved.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your password for <ph name="ORIGIN">$2<ex>example.com</ex></ph>?
       </message>
-
+      <message name="IDS_MANAGE_PASSWORDS_TITLE_DIFFERENT_DOMAIN" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
+        Saved passwords for <ph name="ORIGIN">$1<ex>example.com</ex></ph>:
+      </message> 
+      
     <if expr="is_win or is_macosx">
       <!-- Tab discarding -->
       <message name="IDS_FLAGS_ENABLE_TAB_DISCARDING_NAME" desc="Name for the flag to enable tab discarding.">
