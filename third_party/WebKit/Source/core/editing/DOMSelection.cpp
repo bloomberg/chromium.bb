@@ -456,12 +456,14 @@ void DOMSelection::deleteFromDocument()
 
 bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
 {
+    ASSERT(n);
+
     if (!m_frame)
         return false;
 
     FrameSelection& selection = m_frame->selection();
 
-    if (!n || m_frame->document() != n->document() || selection.isNone())
+    if (m_frame->document() != n->document() || selection.isNone())
         return false;
 
     unsigned nodeIndex = n->nodeIndex();

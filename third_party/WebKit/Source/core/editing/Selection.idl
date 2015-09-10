@@ -65,8 +65,7 @@
                                                                                  [Default=Undefined] optional long extentOffset);
     [RaisesException, TypeChecking=Interface] void selectAllChildren(Node node);
     [CustomElementCallbacks] void deleteFromDocument();
-    // TODO(philipj): The arguments should not be optional.
-    [MeasureAs=SelectionContainsNode] boolean containsNode([Default=Undefined] optional Node node, [Default=Undefined] optional boolean allowPartialContainment);
+    [MeasureAs=SelectionContainsNode, TypeChecking=Interface] boolean containsNode(Node node, optional boolean allowPartialContainment = false);
     // TODO(philipj): The spec does not use [NotEnumerable]. See also:
     // https://codereview.chromium.org/345983004/
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=26179

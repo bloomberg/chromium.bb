@@ -1,6 +1,6 @@
 foobarbaz
-Success: s.containsNode(null, false) is false.
-Success: s.containsNode(null, true) is false.
+Success: s.containsNode(null, false); raised TypeError: Failed to execute 'containsNode' on 'Selection': parameter 1 is not of type 'Node'..
+Success: s.containsNode(null, true); raised TypeError: Failed to execute 'containsNode' on 'Selection': parameter 1 is not of type 'Node'..
 Success: s.containsNode(testDiv, false) is false.
 Success: s.containsNode(testDiv, true) is true.
 Success: s.containsNode(span1, false) is false.
