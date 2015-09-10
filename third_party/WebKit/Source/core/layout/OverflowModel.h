@@ -24,18 +24,52 @@
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
-// OverflowModel is a class for tracking content that spills out of a box.  This class is used by LayoutBox and
-// InlineFlowBox.
-//
-// There are two types of overflow: layout overflow (which is expected to be reachable via scrolling mechanisms) and
-// visual overflow (which is not expected to be reachable via scrolling mechanisms).
-//
-// Layout overflow examples include other boxes that spill out of our box,  For example, in the inline case a tall image
-// could spill out of a line box.
 
-// Examples of visual overflow are shadows, text stroke (and eventually outline and border-image).
-
-// This object is allocated only when some of these fields have non-default values in the owning box.
+// OverflowModel is a class for tracking content that spills out of an object.
+// This class is used by LayoutBox and InlineFlowBox.
+//
+// There are 3 types of overflows that we store: layout, visual overflow and
+// content visual overflows.
+// All overflows are in logical coordinates.
+//
+// This class models the overflows as rectangles that unite all the sources of
+// overflow. This is the natural choice for layout overflow (scrollbars are
+// linear in nature, thus are modelled by rectangles in 2D). For visual overflow
+// and content visual overflow, this is a first order simplification though as
+// they can be though as a collection of (potentially overlapping) rectangles.
+//
+// Layout overflow is the overflow that is reachable via scrollbars. It is used
+// to size the scrollbar thumb and determine its position, which is determined
+// by the maximum layout overflow size.
+// Layout overflow cannot occur without an overflow clip as this is the only way
+// to get scrollbars. As its name implies, it is a direct consequence of layout.
+// Example of layout overflow:
+// * in the inline case, a tall image could spill out of a line box.
+// * 'height' / 'width' set to a value smaller than the one needed by the
+//   descendants.
+// Due to how scrollbars work, no overflow in the logical top and logical left
+// direction is allowed(see LayoutBox::addLayoutOverflow).
+//
+// Visual overflow covers all the effects that visually bleed out of the box.
+// Its primary use is to determine the area to invalidate.
+// Visual overflow includes shadows ('text-shadow' / 'box-shadow'), text stroke,
+// 'outline' and 'border-image'.
+//
+// Content visual overflow includes anything that would bleed out of the box and
+// would be clipped by the overflow clip ('overflow' != visible). This
+// corresponds to children that overflows their parent.
+// It's important to note that this overflow ignores descendants with
+// self-painting layers. This is required by the simplification made by this
+// model (single united rectangle) to avoid gigantic invalidation. A good
+// example for this is positioned objects that can be anywhere on the page and
+// could artificially inflate the visual overflow.
+// TODO(jchaffraix): Explain the interaction with the content visual overflow
+// code path (BoxPainter) and DeprecatedPaintLayerClipper.
+//
+// This object is allocated only when some of these fields have non-default
+// values in the owning box. Care should be taken to use LayoutBox adder
+// functions (addLayoutOverflow, addVisualOverflow, addContentsVisualOverflow)
+// to keep this invariant.
 class OverflowModel {
     WTF_MAKE_NONCOPYABLE(OverflowModel);
     WTF_MAKE_FAST_ALLOCATED(OverflowModel);
@@ -63,8 +97,13 @@ public:
     void setLayoutClientAfterEdge(LayoutUnit clientAfterEdge) { m_layoutClientAfterEdge = clientAfterEdge; }
 
 private:
+    // The layout overflow rectangle. See class description for details.
     LayoutRect m_layoutOverflow;
+
+    // The visual overflow rectangle. See class description for details.
     LayoutRect m_visualOverflow;
+
+    // The content visual overflow rectangle. See class description for details.
     LayoutRect m_contentsVisualOverflow;
 
     LayoutUnit m_layoutClientAfterEdge;
