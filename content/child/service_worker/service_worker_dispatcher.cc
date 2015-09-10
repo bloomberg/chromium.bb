@@ -297,7 +297,7 @@ WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
   return new WebServiceWorkerImpl(handle_ref.Pass(), thread_safe_sender_.get());
 }
 
-scoped_ptr<WebServiceWorkerRegistrationImpl>
+scoped_ptr<blink::WebServiceWorkerRegistration>
 ServiceWorkerDispatcher::CreateRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
@@ -307,7 +307,7 @@ ServiceWorkerDispatcher::CreateRegistration(
       attrs, false /* adopt_handle */);
 }
 
-scoped_ptr<WebServiceWorkerRegistrationImpl>
+scoped_ptr<blink::WebServiceWorkerRegistration>
 ServiceWorkerDispatcher::AdoptRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
@@ -447,7 +447,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistration(
   if (!callbacks)
     return;
 
-  scoped_ptr<WebServiceWorkerRegistrationImpl> registration;
+  scoped_ptr<blink::WebServiceWorkerRegistration> registration;
   if (info.handle_id != kInvalidServiceWorkerHandleId)
     registration = AdoptRegistration(info, attrs);
 
@@ -776,19 +776,19 @@ void ServiceWorkerDispatcher::RemoveServiceWorkerRegistration(
   registrations_.erase(registration_handle_id);
 }
 
-scoped_ptr<WebServiceWorkerRegistrationImpl>
+scoped_ptr<blink::WebServiceWorkerRegistration>
 ServiceWorkerDispatcher::CreateRegistrationInternal(
     scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref,
     const ServiceWorkerVersionAttributes& attrs,
     bool adopt_handle) {
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration.
-  scoped_ptr<WebServiceWorkerRegistrationImpl> registration(
-      new WebServiceWorkerRegistrationImpl(handle_ref.Pass()));
+  WebServiceWorkerRegistrationImpl* registration =
+      new WebServiceWorkerRegistrationImpl(handle_ref.Pass());
   registration->SetInstalling(GetServiceWorker(attrs.installing, adopt_handle));
   registration->SetWaiting(GetServiceWorker(attrs.waiting, adopt_handle));
   registration->SetActive(GetServiceWorker(attrs.active, adopt_handle));
-  return registration.Pass();
+  return scoped_ptr<blink::WebServiceWorkerRegistration>(registration);
 }
 
 }  // namespace content

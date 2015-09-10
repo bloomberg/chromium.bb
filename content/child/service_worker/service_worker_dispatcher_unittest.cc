@@ -139,10 +139,9 @@ TEST_F(ServiceWorkerDispatcherTest, CreateRegistration) {
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
   // Should return a registration object newly created with adopting refcount.
-  scoped_ptr<WebServiceWorkerRegistrationImpl> registration(
+  scoped_ptr<blink::WebServiceWorkerRegistration> registration(
       dispatcher()->AdoptRegistration(info, attrs));
   EXPECT_TRUE(registration);
-  EXPECT_EQ(info.registration_id, registration->registration_id());
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // The registration dtor decrements the refcount.

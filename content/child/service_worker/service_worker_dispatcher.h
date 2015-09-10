@@ -134,10 +134,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       bool adopt_handle);
 
   // Returns a new registration filled in with version attributes.
-  scoped_ptr<WebServiceWorkerRegistrationImpl> CreateRegistration(
+  scoped_ptr<blink::WebServiceWorkerRegistration> CreateRegistration(
       const ServiceWorkerRegistrationObjectInfo& info,
       const ServiceWorkerVersionAttributes& attrs);
-  scoped_ptr<WebServiceWorkerRegistrationImpl> AdoptRegistration(
+  scoped_ptr<blink::WebServiceWorkerRegistration> AdoptRegistration(
       const ServiceWorkerRegistrationObjectInfo& info,
       const ServiceWorkerVersionAttributes& attrs);
 
@@ -264,7 +264,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
 
-  scoped_ptr<WebServiceWorkerRegistrationImpl> CreateRegistrationInternal(
+  scoped_ptr<blink::WebServiceWorkerRegistration> CreateRegistrationInternal(
       scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref,
       const ServiceWorkerVersionAttributes& attrs,
       bool adopt_handle);

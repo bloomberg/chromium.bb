@@ -675,7 +675,7 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
 
   // Register a registration and its version attributes with the dispatcher
   // living on the worker thread.
-  scoped_ptr<WebServiceWorkerRegistrationImpl> registration(
+  scoped_ptr<blink::WebServiceWorkerRegistration> registration(
       dispatcher->CreateRegistration(info, attrs));
   proxy_->setRegistration(registration.release());
 }
