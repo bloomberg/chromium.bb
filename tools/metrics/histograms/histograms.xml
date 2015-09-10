@@ -16827,6 +16827,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Bits per channel of HTML5 audio sample data.</summary>
 </histogram>
 
+<histogram name="Media.AudioCapturerAudioGlitches" enum="AudioGlitchResult">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    Whether input audio glitches due to input audio read verifications that
+    missed dealine are detected. Sampled when a low-latency input audio stream
+    is destructed.
+  </summary>
+</histogram>
+
+<histogram name="Media.AudioCapturerMissedReadDeadline" units="%">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The percentage of input audio read verifications that missed its realtime
+    deadline. The read verification ensures that data is not overwritten in the
+    shared ring buffer on the browser/renderer boundary before read by the other
+    side. Missing the deadline means that the reading side hasn't read data in
+    time and we had to drop audio input data. Reported at the destruction of
+    low-latency audio input stream.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioChannelLayout" enum="ChannelLayout">
   <owner>dalecurtis@chromium.org</owner>
   <summary>Audio channel layout in HTML5 media.</summary>
@@ -16932,6 +16953,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.AudioTrackProcessingStates"
     enum="AudioTrackProcessingStates">
+  <owner>grunell@chromium.org</owner>
   <summary>
     State of the media stream audio track processing, sampled once during the
     life time of a MediaStreamAudioProcessor.

@@ -9,6 +9,7 @@
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "media/audio/audio_input_controller.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -17,20 +18,19 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-namespace base {
-class SharedMemory;
-}
-
 namespace content {
+
 // A AudioInputController::SyncWriter implementation using SyncSocket. This
 // is used by AudioInputController to provide a low latency data source for
 // transmitting audio packets between the browser process and the renderer
 // process.
-class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
+class CONTENT_EXPORT AudioInputSyncWriter
+    : public media::AudioInputController::SyncWriter {
  public:
-  explicit AudioInputSyncWriter(base::SharedMemory* shared_memory,
-                                int shared_memory_segment_count,
-                                const media::AudioParameters& params);
+  AudioInputSyncWriter(void* shared_memory,
+                       size_t shared_memory_size,
+                       int shared_memory_segment_count,
+                       const media::AudioParameters& params);
 
   ~AudioInputSyncWriter() override;
 
@@ -45,14 +45,18 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
   bool PrepareForeignSocket(base::ProcessHandle process_handle,
                             base::SyncSocket::TransitDescriptor* descriptor);
 
+ protected:
+  // Socket for transmitting audio data.
+  scoped_ptr<base::CancelableSyncSocket> socket_;
+
  private:
-  base::SharedMemory* shared_memory_;
+  // Virtual function for native logging to be able to override in tests.
+  virtual void AddToNativeLog(const std::string& message);
+
+  uint8* shared_memory_;
   uint32 shared_memory_segment_size_;
   uint32 shared_memory_segment_count_;
   uint32 current_segment_id_;
-
-  // Socket for transmitting audio data.
-  scoped_ptr<base::CancelableSyncSocket> socket_;
 
   // Socket to be used by the renderer. The reference is released after
   // PrepareForeignSocketHandle() is called and ran successfully.
@@ -67,8 +71,23 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
   // Size in bytes of each audio bus.
   const int audio_bus_memory_size_;
 
-  // Increasing ID used for audio buffers correct sequence at read side.
+  // Increasing ID used for checking audio buffers are in correct sequence at
+  // read side.
   uint32_t next_buffer_id_;
+
+  // Next expected audio buffer index to have been read at the other side. We
+  // will get the index read at the other side over the socket. Note that this
+  // index does not correspond to |next_buffer_id_|, it's two separate counters.
+  uint32_t next_read_buffer_index_;
+
+  // Keeps track of number of filled buffer segments in the ring buffer to
+  // ensure the we don't overwrite data that hasn't been read yet.
+  int number_of_filled_segments_;
+
+  // Counts the total number of calls to Write() and number of failures due to
+  // ring buffer being full.
+  size_t write_count_;
+  size_t write_error_count_;
 
   // Vector of audio buses allocated during construction and deleted in the
   // destructor.

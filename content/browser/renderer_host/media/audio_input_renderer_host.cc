@@ -427,7 +427,8 @@ void AudioInputRendererHost::DoCreateStream(
   }
 
   scoped_ptr<AudioInputSyncWriter> writer(new AudioInputSyncWriter(
-      &entry->shared_memory, entry->shared_memory_segment_count, audio_params));
+      entry->shared_memory.memory(), entry->shared_memory.requested_size(),
+      entry->shared_memory_segment_count, audio_params));
 
   if (!writer->Init()) {
     SendErrorMessage(stream_id, SYNC_WRITER_INIT_FAILED);

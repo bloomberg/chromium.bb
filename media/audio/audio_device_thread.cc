@@ -183,8 +183,15 @@ void AudioDeviceThread::Thread::Run() {
         callback_->Process(pending_data);
     }
 
-    // Let the other end know which buffer we just filled.  The buffer index is
-    // used to ensure the other end is getting the buffer it expects.  For more
+    // The usage of |synchronized_buffers_| differs between input and output
+    // cases.
+    // Input:
+    // Let the other end know that we have read data, so that it can verify
+    // it doesn't overwrite any data before read. The |buffer_index| value is
+    // not used. For more details, see AudioInputSyncWriter::Write().
+    // Output:
+    // Let the other end know which buffer we just filled. The |buffer_index| is
+    // used to ensure the other end is getting the buffer it expects. For more
     // details on how this works see AudioSyncReader::WaitUntilDataIsReady().
     if (synchronized_buffers_) {
       ++buffer_index;

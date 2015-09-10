@@ -129,7 +129,7 @@ class MEDIA_EXPORT AudioInputController
 
   // A synchronous writer interface used by AudioInputController for
   // synchronous writing.
-  class SyncWriter {
+  class MEDIA_EXPORT SyncWriter {
    public:
     virtual ~SyncWriter() {}
 
