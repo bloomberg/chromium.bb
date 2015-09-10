@@ -61,8 +61,6 @@ class TopLevelDisplayClient
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
-  void Draw();
-
   scoped_refptr<gles2::GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;
   cc::SurfaceFactory factory_;
@@ -70,7 +68,6 @@ class TopLevelDisplayClient
 
   gfx::Size last_submitted_frame_size_;
   scoped_ptr<cc::CompositorFrame> pending_frame_;
-  base::Closure pending_callback_;
 
   scoped_ptr<cc::Display> display_;
 

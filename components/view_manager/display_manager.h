@@ -138,6 +138,8 @@ class DefaultDisplayManager :
   scoped_ptr<surfaces::TopLevelDisplayClient> top_level_display_client_;
   scoped_ptr<ui::PlatformWindow> platform_window_;
 
+  base::WeakPtrFactory<DefaultDisplayManager> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DefaultDisplayManager);
 };
 

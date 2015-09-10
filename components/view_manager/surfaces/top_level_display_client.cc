@@ -62,23 +62,15 @@ TopLevelDisplayClient::~TopLevelDisplayClient() {
 void TopLevelDisplayClient::SubmitCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame,
     const base::Closure& callback) {
-  DCHECK(pending_callback_.is_null());
   pending_frame_ = frame.Pass();
-  pending_callback_ = callback;
-  if (display_)
-    Draw();
-}
 
-void TopLevelDisplayClient::Draw() {
-  gfx::Size frame_size =
+  last_submitted_frame_size_ =
       pending_frame_->delegated_frame_data->render_pass_list.back()->
           output_rect.size();
-  last_submitted_frame_size_ = frame_size;
-  display_->Resize(frame_size);
+  display_->Resize(last_submitted_frame_size_);
   factory_.SubmitCompositorFrame(cc_id_, pending_frame_.Pass(),
-                                 base::Bind(&CallCallback, pending_callback_));
+                                 base::Bind(&CallCallback, callback));
   surfaces_state_->scheduler()->SetNeedsDraw();
-  pending_callback_.Reset();
 }
 
 void TopLevelDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,
