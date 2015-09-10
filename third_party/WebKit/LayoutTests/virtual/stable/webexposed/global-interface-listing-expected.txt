@@ -2691,6 +2691,9 @@ interface ImageData
     getter height
     getter width
     method constructor
+interface InputDeviceCapabilities
+    getter firesTouchEvents
+    method constructor
 interface KeyboardEvent
     attribute DOM_KEY_LOCATION_LEFT
     attribute DOM_KEY_LOCATION_NUMPAD
@@ -4938,6 +4941,7 @@ interface TreeWalker
     setter currentNode
 interface UIEvent
     getter detail
+    getter sourceCapabilities
     getter view
     getter which
     method constructor
