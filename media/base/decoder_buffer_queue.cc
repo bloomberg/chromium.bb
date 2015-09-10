@@ -39,7 +39,7 @@ void DecoderBufferQueue::Push(const scoped_refptr<DecoderBuffer>& buffer) {
   }
 
   if (buffer->timestamp() < earliest_valid_timestamp_) {
-    DVLOG(1)
+    DVLOG(2)
         << "Out of order timestamps: "
         << buffer->timestamp().InMicroseconds()
         << " vs. "
