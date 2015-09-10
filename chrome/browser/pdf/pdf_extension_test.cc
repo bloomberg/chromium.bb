@@ -330,6 +330,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Title) {
   RunTestsInFile("title_test.js", "test-title.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, WhitespaceTitle) {
+  RunTestsInFile("whitespace_title_test.js", "test-whitespace-title.pdf");
+}
+
 // Ensure that the internal PDF plugin application/x-google-chrome-pdf won't be
 // loaded if it's not loaded in the chrome extension page.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureInternalPluginDisabled) {
@@ -419,4 +423,8 @@ IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ToolbarManager) {
 
 IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Title) {
   RunTestsInFile("title_test.js", "test-title.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, WhitespaceTitle) {
+  RunTestsInFile("whitespace_title_test.js", "test-whitespace-title.pdf");
 }

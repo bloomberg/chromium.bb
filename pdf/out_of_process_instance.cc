@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/content_restriction.h"
 #include "net/base/escape.h"
@@ -1131,7 +1132,7 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   pp::VarDictionary metadata_message;
   metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
   std::string title = engine_->GetMetadata("Title");
-  if (!title.empty())
+  if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty())
     metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
 
   metadata_message.Set(pp::Var(kJSBookmarks), engine_->GetBookmarks());
