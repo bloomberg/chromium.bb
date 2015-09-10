@@ -101,11 +101,11 @@ extern "C"
     CTC_UserDefined5 = 0x200000,
     CTC_UserDefined6 = 0x400000,
     CTC_UserDefined7 = 0x800000,
-    CTC_CapsMode = 0x10000000,
-    // CTC_EmphMode = 0x20000000,
-    CTC_NumericMode = 0x20000000,
-    CTC_NumericNoContract = 0x40000000,
-    CTC_EndOfInput = 0x80000000   //   used by pattern matcher
+    CTC_CapsMode = 0x1000000,
+    // CTC_EmphMode = 0x2000000,
+    CTC_NumericMode = 0x2000000,
+    CTC_NumericNoContract = 0x4000000,
+    CTC_EndOfInput = 0x8000000   //   used by pattern matcher
   } TranslationTableCharacterAttribute;
 
   typedef enum
@@ -584,7 +584,7 @@ extern "C"
     int corrections;
     int syllables;
     int usesSequences;
-    int usesEmphMode;
+    // int usesEmphMode;
     TranslationTableOffset tableSize;
     TranslationTableOffset bytesUsed;
     TranslationTableOffset noBreak;
