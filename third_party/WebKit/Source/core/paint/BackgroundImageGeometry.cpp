@@ -127,6 +127,20 @@ IntSize calculateFillTileSize(const LayoutBoxModelObject& obj, const FillLayer& 
     return IntSize();
 }
 
+IntPoint accumulatedScrollOffset(const LayoutBoxModelObject& object, const LayoutBoxModelObject* container)
+{
+    const LayoutBlock* block = object.isLayoutBlock() ? toLayoutBlock(&object) : object.containingBlock();
+    IntPoint result;
+    while (block) {
+        if (block->hasOverflowClip())
+            result += block->scrolledContentOffset();
+        if (block == container)
+            break;
+        block = block->containingBlock();
+    }
+    return result;
+}
+
 } // anonymous namespace
 
 void BackgroundImageGeometry::setNoRepeatX(int xOffset)
@@ -223,10 +237,15 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
         setHasNonLocalGeometry();
 
         IntRect viewportRect = pixelSnappedIntRect(obj.viewRect());
-        if (fixedBackgroundPaintsInLocalCoordinates(obj, globalPaintFlags))
+        if (fixedBackgroundPaintsInLocalCoordinates(obj, globalPaintFlags)) {
             viewportRect.setLocation(IntPoint());
-        else if (FrameView* frameView = obj.view()->frameView())
-            viewportRect.setLocation(frameView->scrollPosition());
+        } else {
+            if (FrameView* frameView = obj.view()->frameView())
+                viewportRect.setLocation(frameView->scrollPosition());
+            // Compensate the translations created by ScrollRecorders.
+            // TODO(trchen): Fix this for SP phase 2. crbug.com/529963.
+            viewportRect.moveBy(accumulatedScrollOffset(obj, paintContainer));
+        }
 
         if (paintContainer) {
             IntPoint absoluteContainerOffset = roundedIntPoint(paintContainer->localToAbsolute(FloatPoint()));
