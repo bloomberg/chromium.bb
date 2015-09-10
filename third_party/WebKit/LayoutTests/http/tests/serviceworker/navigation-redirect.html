@@ -260,14 +260,11 @@ promise_test(function(t) {
 
 // SW fetched redirect.
 // SW: event.respondWith(fetch(event.request));
-// TODO(horo): When we change Request.redirect of navigation requests to
-// 'manual', the expected last URL shuold be changed. (crbug.com/510650)
-// Spec Issue: https://github.com/whatwg/fetch/issues/106
 promise_test(function(t) {
     return setup_environment(t).then(function() {
         return test_redirect(
             SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(OUT_SCOPE),
-            SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(OUT_SCOPE),
+            OUT_SCOPE,
             [[SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(OUT_SCOPE)],
              [],
              []]);
@@ -277,18 +274,45 @@ promise_test(function(t) {
     return setup_environment(t).then(function() {
         return test_redirect(
             SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(SCOPE1),
-            SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(SCOPE1),
-            [[SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(SCOPE1)], [], []]);
+            SCOPE1,
+            [[SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(SCOPE1), SCOPE1],
+             [],
+             []]);
       });
   }, 'SW-fetched redirect to same-origin same-scope.');
 promise_test(function(t) {
     return setup_environment(t).then(function() {
         return test_redirect(
             SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(SCOPE2),
-            SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(SCOPE2),
-            [[SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(SCOPE2)], [], []]);
+            SCOPE2,
+            [[SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(SCOPE2)],
+             [SCOPE2],
+             []]);
       });
-  }, 'SW fetched redirect to same-origin other-scope.');
+  }, 'SW-fetched redirect to same-origin other-scope.');
+promise_test(function(t) {
+    return setup_environment(t).then(function() {
+        return test_redirect(
+            SCOPE1 + 'sw=fetch&url=' +
+            encodeURIComponent(OTHER_ORIGIN_OUT_SCOPE),
+            OTHER_ORIGIN_OUT_SCOPE,
+            [[SCOPE1 + 'sw=fetch&url=' +
+              encodeURIComponent(OTHER_ORIGIN_OUT_SCOPE)],
+             [],
+             []]);
+      });
+  }, 'SW-fetched redirect to other-origin out-scope.');
+promise_test(function(t) {
+    return setup_environment(t).then(function() {
+        return test_redirect(
+            SCOPE1 + 'sw=fetch&url=' + encodeURIComponent(OTHER_ORIGIN_SCOPE),
+            OTHER_ORIGIN_SCOPE,
+            [[SCOPE1 + 'sw=fetch&url=' +
+              encodeURIComponent(OTHER_ORIGIN_SCOPE)],
+             [],
+             [OTHER_ORIGIN_SCOPE]]);
+      });
+  }, 'SW-fetched redirect to other-origin in-scope.');
 
 // Opaque redirect.
 // SW: event.respondWith(fetch(

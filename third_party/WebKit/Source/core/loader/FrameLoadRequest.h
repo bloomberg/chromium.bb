@@ -40,65 +40,28 @@ struct FrameLoadRequest {
     STACK_ALLOCATED();
 public:
     explicit FrameLoadRequest(Document* originDocument)
-        : m_originDocument(originDocument)
-        , m_replacesCurrentItem(false)
-        , m_clientRedirect(NotClientRedirect)
-        , m_shouldSendReferrer(MaybeSendReferrer)
-        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
+        : FrameLoadRequest(originDocument, ResourceRequest())
     {
-        if (originDocument)
-            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
     }
 
     FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest)
-        : m_originDocument(originDocument)
-        , m_resourceRequest(resourceRequest)
-        , m_replacesCurrentItem(false)
-        , m_clientRedirect(NotClientRedirect)
-        , m_shouldSendReferrer(MaybeSendReferrer)
-        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
+        : FrameLoadRequest(originDocument, resourceRequest, AtomicString())
     {
-        if (originDocument)
-            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
     }
 
     FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName)
-        : m_originDocument(originDocument)
-        , m_resourceRequest(resourceRequest)
-        , m_frameName(frameName)
-        , m_replacesCurrentItem(false)
-        , m_clientRedirect(NotClientRedirect)
-        , m_shouldSendReferrer(MaybeSendReferrer)
-        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
+        : FrameLoadRequest(originDocument, resourceRequest, frameName, CheckContentSecurityPolicy)
     {
-        if (originDocument)
-            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
-    }
-
-    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
-        : m_originDocument(originDocument)
-        , m_resourceRequest(resourceRequest)
-        , m_frameName(frameName)
-        , m_replacesCurrentItem(false)
-        , m_clientRedirect(NotClientRedirect)
-        , m_shouldSendReferrer(MaybeSendReferrer)
-        , m_shouldCheckMainWorldContentSecurityPolicy(shouldCheckMainWorldContentSecurityPolicy)
-    {
-        if (originDocument)
-            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
     }
 
     FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const SubstituteData& substituteData)
-        : m_originDocument(originDocument)
-        , m_resourceRequest(resourceRequest)
-        , m_substituteData(substituteData)
-        , m_replacesCurrentItem(false)
-        , m_clientRedirect(NotClientRedirect)
-        , m_shouldSendReferrer(MaybeSendReferrer)
-        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
+        : FrameLoadRequest(originDocument, resourceRequest, AtomicString(), substituteData, CheckContentSecurityPolicy)
     {
-        if (originDocument)
-            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
+    }
+
+    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
+        : FrameLoadRequest(originDocument, resourceRequest, frameName, SubstituteData(), shouldCheckMainWorldContentSecurityPolicy)
+    {
     }
 
     Document* originDocument() const { return m_originDocument.get(); }
@@ -129,6 +92,27 @@ public:
     ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy() const { return m_shouldCheckMainWorldContentSecurityPolicy; }
 
 private:
+    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, const SubstituteData& substituteData, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
+        : m_originDocument(originDocument)
+        , m_resourceRequest(resourceRequest)
+        , m_frameName(frameName)
+        , m_substituteData(substituteData)
+        , m_replacesCurrentItem(false)
+        , m_clientRedirect(NotClientRedirect)
+        , m_shouldSendReferrer(MaybeSendReferrer)
+        , m_shouldCheckMainWorldContentSecurityPolicy(shouldCheckMainWorldContentSecurityPolicy)
+    {
+        initializeFetchFlags();
+        if (originDocument)
+            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
+    }
+    void initializeFetchFlags()
+    {
+        // These flags are passed to a service worker which controls the page.
+        m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeSameOrigin);
+        m_resourceRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
+        m_resourceRequest.setFetchRedirectMode(WebURLRequest::FetchRedirectModeManual);
+    }
     RefPtrWillBeMember<Document> m_originDocument;
     ResourceRequest m_resourceRequest;
     AtomicString m_frameName;

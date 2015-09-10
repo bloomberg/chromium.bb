@@ -16,6 +16,9 @@ onfetch = function(e) {
     method: e.request.method,
     referrer: e.request.referrer,
     headers: headers,
+    mode: e.request.mode,
+    credentials: e.request.credentials,
+    redirect: e.request.redirect,
     append_header_error: append_header_error
   })));
 };

@@ -20,6 +20,9 @@ promise_test(t => {
           assert_equals(result.url, frame.src, 'request.url');
           assert_equals(result.method, 'GET', 'request.method');
           assert_equals(result.referrer, location.href, 'request.referrer');
+          assert_equals(result.mode, 'same-origin', 'request.mode');
+          assert_equals(result.credentials, 'include', 'request.credentials');
+          assert_equals(result.redirect, 'manual', 'request.redirect');
           assert_equals(result.headers['user-agent'], navigator.userAgent,
                         'User-Agent header');
           assert_equals(result.append_header_error, 'TypeError',
