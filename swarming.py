@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8'
+__version__ = '0.8.1'
 
 import collections
 import datetime
@@ -443,6 +443,18 @@ def now():
   return time.time()
 
 
+def parse_time(value):
+  """Converts serialized time from the API to datetime.datetime."""
+  # When microseconds are 0, the '.123456' suffix is elided. This means the
+  # serialized format is not consistent, which confuses the hell out of python.
+  for fmt in ('%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S'):
+    try:
+      return datetime.datetime.strptime(value, fmt)
+    except ValueError:
+      pass
+  raise ValueError('Failed to parse %s' % value)
+
+
 def retrieve_results(
     base_url, shard_index, task_id, timeout, should_stop, output_collector):
   """Retrieves results for a single task ID.
@@ -618,11 +630,10 @@ def yield_results(
 
 def decorate_shard_output(swarming, shard_index, metadata):
   """Returns wrapped output for swarming task shard."""
-  def t(d):
-    return datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S.%f')
   if metadata.get('started_ts'):
     pending = '%.1fs' % (
-      t(metadata['started_ts']) - t(metadata['created_ts'])).total_seconds()
+        parse_time(metadata['started_ts']) - parse_time(metadata['created_ts'])
+        ).total_seconds()
   else:
     pending = 'N/A'
 
