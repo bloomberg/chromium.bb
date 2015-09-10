@@ -22,7 +22,6 @@
 #include "core/html/FormDataList.h"
 
 #include "core/fileapi/File.h"
-#include "platform/network/FormDataEncoder.h"
 #include "platform/text/LineEnding.h"
 #include "wtf/CurrentTime.h"
 
@@ -57,95 +56,6 @@ File* FormDataList::Item::file() const
     if (filename.isNull())
         filename = "blob";
     return File::create(filename, currentTimeMS(), blob()->blobDataHandle());
-}
-
-PassRefPtr<EncodedFormData> FormDataList::createFormData(EncodedFormData::EncodingType encodingType)
-{
-    RefPtr<EncodedFormData> result = EncodedFormData::create();
-    appendKeyValuePairItemsTo(result.get(), m_encoding, false, encodingType);
-    return result.release();
-}
-
-PassRefPtr<EncodedFormData> FormDataList::createMultiPartFormData()
-{
-    RefPtr<EncodedFormData> result = EncodedFormData::create();
-    appendKeyValuePairItemsTo(result.get(), m_encoding, true);
-    return result.release();
-}
-
-void FormDataList::appendKeyValuePairItemsTo(EncodedFormData* formData, const WTF::TextEncoding& encoding, bool isMultiPartForm, EncodedFormData::EncodingType encodingType)
-{
-    if (isMultiPartForm)
-        formData->setBoundary(FormDataEncoder::generateUniqueBoundaryString());
-
-    Vector<char> encodedData;
-
-    for (const Item& item : items()) {
-        if (isMultiPartForm) {
-            Vector<char> header;
-            FormDataEncoder::beginMultiPartHeader(header, formData->boundary().data(), item.key());
-
-            // If the current type is blob, then we also need to include the filename
-            if (item.blob()) {
-                String name;
-                if (item.blob()->isFile()) {
-                    File* file = toFile(item.blob());
-                    // For file blob, use the filename (or relative path if it is present) as the name.
-                    name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
-
-                    // If a filename is passed in FormData.append(), use it
-                    // instead of the file blob's name.
-                    if (!item.filename().isNull())
-                        name = item.filename();
-                } else {
-                    // For non-file blob, use the filename if it is passed in
-                    // FormData.append().
-                    if (!item.filename().isNull())
-                        name = item.filename();
-                    else
-                        name = "blob";
-                }
-
-                // We have to include the filename=".." part in the header, even if the filename is empty
-                FormDataEncoder::addFilenameToMultiPartHeader(header, encoding, name);
-
-                // Add the content type if available, or "application/octet-stream" otherwise (RFC 1867).
-                String contentType;
-                if (item.blob()->type().isEmpty())
-                    contentType = "application/octet-stream";
-                else
-                    contentType = item.blob()->type();
-                FormDataEncoder::addContentTypeToMultiPartHeader(header, contentType.latin1());
-            }
-
-            FormDataEncoder::finishMultiPartHeader(header);
-
-            // Append body
-            formData->appendData(header.data(), header.size());
-            if (item.blob()) {
-                if (item.blob()->hasBackingFile()) {
-                    File* file = toFile(item.blob());
-                    // Do not add the file if the path is empty.
-                    if (!file->path().isEmpty())
-                        formData->appendFile(file->path());
-                    if (!file->fileSystemURL().isEmpty())
-                        formData->appendFileSystemURL(file->fileSystemURL());
-                } else {
-                    formData->appendBlob(item.blob()->uuid(), item.blob()->blobDataHandle());
-                }
-            } else {
-                formData->appendData(item.data().data(), item.data().length());
-            }
-            formData->appendData("\r\n", 2);
-        } else {
-            FormDataEncoder::addKeyValuePairAsFormData(encodedData, item.key(), item.data(), encodingType);
-        }
-    }
-
-    if (isMultiPartForm)
-        FormDataEncoder::addBoundaryToMultiPartHeader(encodedData, formData->boundary().data(), true);
-
-    formData->appendData(encodedData.data(), encodedData.size());
 }
 
 CString FormDataList::encodeAndNormalize(const String& string) const

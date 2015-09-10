@@ -37,6 +37,7 @@
 #include "core/CoreExport.h"
 #include "core/html/FormDataList.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
 
 namespace WTF {
@@ -80,10 +81,14 @@ public:
 
     String decode(const CString& data) const;
 
+    PassRefPtr<EncodedFormData> createFormData(EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
+    PassRefPtr<EncodedFormData> createMultiPartFormData();
+
 private:
     explicit FormData(const WTF::TextEncoding&);
     explicit FormData(HTMLFormElement*);
     void setEntry(const Item&);
+    void appendKeyValuePairItemsTo(EncodedFormData*, const WTF::TextEncoding&, bool isMultiPartForm, EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
 
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
     bool m_opaque;
