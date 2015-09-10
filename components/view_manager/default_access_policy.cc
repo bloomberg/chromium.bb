@@ -63,7 +63,8 @@ bool DefaultAccessPolicy::CanDescendIntoViewForViewTree(
 bool DefaultAccessPolicy::CanEmbed(const ServerView* view) const {
   return WasCreatedByThisConnection(view) ||
       (delegate_->IsViewKnownForAccessPolicy(view) &&
-       IsDescendantOfEmbedRoot(view));
+       IsDescendantOfEmbedRoot(view) &&
+       !delegate_->IsRootForAccessPolicy(view->id()));
 }
 
 bool DefaultAccessPolicy::CanChangeViewVisibility(

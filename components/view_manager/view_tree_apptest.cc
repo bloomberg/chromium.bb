@@ -414,7 +414,7 @@ class ViewTreeClientFactory : public mojo::InterfaceFactory<ViewTreeClient> {
  private:
   // InterfaceFactory<ViewTreeClient>:
   void Create(ApplicationConnection* connection,
-    InterfaceRequest<ViewTreeClient> request) override {
+              InterfaceRequest<ViewTreeClient> request) override {
     client_impl_.reset(new ViewTreeClientImpl(app_));
     client_impl_->Bind(request.Pass());
     if (run_loop_.get())
@@ -485,6 +485,10 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
     vm_client3_ = EstablishConnectionViaEmbed(owner, root_id, nullptr);
     ASSERT_TRUE(vm_client3_.get() != nullptr);
     vm_client3_->set_root_view(root_view_id_);
+  }
+
+  scoped_ptr<ViewTreeClientImpl> WaitForViewTreeClient() {
+    return client_factory_->WaitForInstance();
   }
 
   // Establishes a new connection by way of Embed() on the specified
@@ -1619,6 +1623,35 @@ TEST_F(ViewTreeAppTest, EmbedFromOtherConnection) {
 
   WaitForAllMessages(vm2());
   EXPECT_EQ(std::string(), SingleChangeToDescription(*changes2()));
+}
+
+TEST_F(ViewTreeAppTest, CantEmbedFromConnectionRoot) {
+  // Shouldn't be able to embed into the root.
+  ASSERT_FALSE(EmbedUrl(application_impl(), vm1(), application_impl()->url(),
+                        root_view_id()));
+
+  // Even though the call above failed a ViewTreeClient was obtained. We need to
+  // wait for it else we throw off the next connect.
+  WaitForViewTreeClient();
+
+  // Don't allow a connection to embed into its own root.
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
+  EXPECT_FALSE(EmbedUrl(application_impl(), vm2(), application_impl()->url(),
+                        BuildViewId(connection_id_1(), 1)));
+
+  // Need to wait for a ViewTreeClient for same reason as above.
+  WaitForViewTreeClient();
+
+  Id view_1_2 = vm_client1()->CreateView(2);
+  ASSERT_TRUE(view_1_2);
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(connection_id_1(), 1), view_1_2));
+  vm1()->SetAccessPolicy(view_1_2, ViewTree::ACCESS_POLICY_EMBED_ROOT);
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm1(), view_1_2));
+
+  // view_1_2 is vm3's root, so even though v3 is an embed root it should not
+  // be able to Embed into itself.
+  ASSERT_FALSE(EmbedUrl(application_impl(), vm3(), application_impl()->url(),
+                        view_1_2));
 }
 
 // TODO(sky): need to better track changes to initial connection. For example,
