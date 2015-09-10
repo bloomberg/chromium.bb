@@ -245,27 +245,22 @@ String FormData::decode(const CString& data) const
 
 PassRefPtr<EncodedFormData> FormData::createFormData(EncodedFormData::EncodingType encodingType)
 {
-    RefPtr<EncodedFormData> result = EncodedFormData::create();
-    appendKeyValuePairItemsTo(result.get(), encoding(), false, encodingType);
-    return result.release();
+    RefPtr<EncodedFormData> formData = EncodedFormData::create();
+    Vector<char> encodedData;
+    for (const Item& item : items())
+        FormDataEncoder::addKeyValuePairAsFormData(encodedData, item.key(), item.data(), encodingType);
+    formData->appendData(encodedData.data(), encodedData.size());
+    return formData.release();
 }
 
 PassRefPtr<EncodedFormData> FormData::createMultiPartFormData()
 {
-    RefPtr<EncodedFormData> result = EncodedFormData::create();
-    appendKeyValuePairItemsTo(result.get(), encoding(), true);
-    return result.release();
-}
-
-void FormData::appendKeyValuePairItemsTo(EncodedFormData* formData, const WTF::TextEncoding& encoding, bool isMultiPartForm, EncodedFormData::EncodingType encodingType)
-{
-    if (isMultiPartForm)
-        formData->setBoundary(FormDataEncoder::generateUniqueBoundaryString());
-
+    RefPtr<EncodedFormData> formData = EncodedFormData::create();
+    formData->setBoundary(FormDataEncoder::generateUniqueBoundaryString());
     Vector<char> encodedData;
-
     for (const Item& item : items()) {
-        if (isMultiPartForm) {
+            // TODO(tkent): Intentional wrong indentation in order to make a
+            // diff smaller. Fix this later.
             Vector<char> header;
             FormDataEncoder::beginMultiPartHeader(header, formData->boundary().data(), item.key());
 
@@ -291,7 +286,7 @@ void FormData::appendKeyValuePairItemsTo(EncodedFormData* formData, const WTF::T
                 }
 
                 // We have to include the filename=".." part in the header, even if the filename is empty
-                FormDataEncoder::addFilenameToMultiPartHeader(header, encoding, name);
+                FormDataEncoder::addFilenameToMultiPartHeader(header, encoding(), name);
 
                 // Add the content type if available, or "application/octet-stream" otherwise (RFC 1867).
                 String contentType;
@@ -321,15 +316,10 @@ void FormData::appendKeyValuePairItemsTo(EncodedFormData* formData, const WTF::T
                 formData->appendData(item.data().data(), item.data().length());
             }
             formData->appendData("\r\n", 2);
-        } else {
-            FormDataEncoder::addKeyValuePairAsFormData(encodedData, item.key(), item.data(), encodingType);
-        }
     }
-
-    if (isMultiPartForm)
-        FormDataEncoder::addBoundaryToMultiPartHeader(encodedData, formData->boundary().data(), true);
-
+    FormDataEncoder::addBoundaryToMultiPartHeader(encodedData, formData->boundary().data(), true);
     formData->appendData(encodedData.data(), encodedData.size());
+    return formData.release();
 }
 
 PairIterable<String, FormDataEntryValue>::IterationSource* FormData::startIteration(ScriptState*, ExceptionState&)

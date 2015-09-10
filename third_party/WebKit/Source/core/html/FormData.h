@@ -96,7 +96,6 @@ private:
     explicit FormData(const WTF::TextEncoding&);
     explicit FormData(HTMLFormElement*);
     void setEntry(const Item&);
-    void appendKeyValuePairItemsTo(EncodedFormData*, const WTF::TextEncoding&, bool isMultiPartForm, EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
 
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
     bool m_opaque;
