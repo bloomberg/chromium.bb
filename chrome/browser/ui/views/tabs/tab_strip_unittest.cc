@@ -392,10 +392,10 @@ TEST_F(TabStripTest, TabHitTestMaskWhenStacked) {
   // Verify that the tab close button is not occluded.
   EXPECT_TRUE(tab_bounds.Contains(contents_bounds));
 
-  // Bounds of the tab close button (without padding) in the tab's
-  // coordinate space.
+  // Bounds of the tab close button (with padding) in the tab's coordinate
+  // space.
   gfx::Rect local_bounds = GetTabCloseHitTestMask(active_tab, true);
-  EXPECT_EQ(gfx::Rect(81, 0, 39, 29).ToString(), local_bounds.ToString());
+  EXPECT_EQ(gfx::Rect(82, 0, 38, 29).ToString(), local_bounds.ToString());
 
   // Hit tests within the tab.
   EXPECT_TRUE(active_tab->HitTestRect(gfx::Rect(30, 15, 1, 1)));

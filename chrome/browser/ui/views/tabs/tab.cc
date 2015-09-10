@@ -74,7 +74,7 @@ static const int kTouchWidth = 120;
 
 static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
-static const int kViewSpacing = 3;
+static const int kAfterTitleSpacing = 3;
 static const int kStandardTitleWidth = 175;
 
 // Width of pinned-tabs.
@@ -792,12 +792,13 @@ void Tab::Layout() {
     close_button_->SetBorder(views::Border::NullBorder());
     const gfx::Size close_button_size(close_button_->GetPreferredSize());
     const int top = lb.y() + (lb.height() - close_button_size.height() + 1) / 2;
+    const int left = kAfterTitleSpacing;
     const int bottom = height() - (close_button_size.height() + top);
-    const int left = kViewSpacing;
-    const int right = width() - (lb.width() + close_button_size.width() + left);
+    const int right = kRightPadding;
+    close_button_->SetPosition(
+        gfx::Point(lb.right() - close_button_size.width() - left, 0));
     close_button_->SetBorder(
         views::Border::CreateEmptyBorder(top, left, bottom, right));
-    close_button_->SetPosition(gfx::Point(lb.width(), 0));
     close_button_->SizeToPreferredSize();
   }
   close_button_->SetVisible(showing_close_button_);
@@ -827,11 +828,12 @@ void Tab::Layout() {
     int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
     int title_width = lb.width() - title_left;
     if (showing_media_indicator_) {
-      title_width = media_indicator_button_->x() - kViewSpacing - title_left;
+      title_width =
+          media_indicator_button_->x() - kAfterTitleSpacing - title_left;
     } else if (close_button_->visible()) {
       // Allow the title to overlay the close button's empty border padding.
       title_width = close_button_->x() + close_button_->GetInsets().left() -
-          kViewSpacing - title_left;
+          kAfterTitleSpacing - title_left;
     }
     gfx::Rect rect(title_left, lb.y(), std::max(title_width, 0), lb.height());
     const int title_height = title_->GetPreferredSize().height();
