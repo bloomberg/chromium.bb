@@ -559,9 +559,12 @@ class MockMediaSource {
     chunk_demuxer_->MarkEndOfStream(PIPELINE_OK);
   }
 
-  void Abort() {
+  void Shutdown() {
     if (!chunk_demuxer_)
       return;
+    chunk_demuxer_->Abort(
+        kSourceId,
+        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
     chunk_demuxer_->Shutdown();
     chunk_demuxer_ = NULL;
   }
@@ -781,7 +784,7 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
 
     source.EndOfStream();
 
-    source.Abort();
+    source.Shutdown();
     Stop();
     return true;
   }
@@ -951,7 +954,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource) {
   ASSERT_TRUE(WaitUntilOnEnded());
 
   EXPECT_TRUE(demuxer_->GetTimelineOffset().is_null());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -971,7 +974,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Live) {
 
   EXPECT_EQ(kLiveTimelineOffset(),
             demuxer_->GetTimelineOffset());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -988,7 +991,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VP9_WebM) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1005,7 +1008,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VP8A_WebM) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1022,7 +1025,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1050,7 +1053,7 @@ TEST_F(PipelineIntegrationTest, DISABLED_MediaSource_Opus_Seeking_WebM) {
 
   EXPECT_HASH_EQ("0.76,0.20,-0.82,-0.58,-1.29,-0.29,", GetAudioHash());
 
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1075,7 +1078,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1102,7 +1105,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_Encrypted_WebM) {
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1134,7 +1137,7 @@ TEST_F(PipelineIntegrationTest,
   Play();
 
   EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
-  source.Abort();
+  source.Shutdown();
 }
 
 // Config changes from clear to encrypted are not currently supported.
@@ -1162,7 +1165,7 @@ TEST_F(PipelineIntegrationTest,
   Play();
 
   EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
-  source.Abort();
+  source.Shutdown();
 }
 #endif  // !defined(DISABLE_EME_TESTS)
 
@@ -1302,7 +1305,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1330,7 +1333,7 @@ TEST_F(PipelineIntegrationTest,
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1357,7 +1360,7 @@ TEST_F(PipelineIntegrationTest,
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1390,7 +1393,7 @@ TEST_F(PipelineIntegrationTest,
   Play();
 
   EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
-  source.Abort();
+  source.Shutdown();
 }
 
 // Config changes from encrypted to clear are not currently supported.
@@ -1418,7 +1421,7 @@ TEST_F(PipelineIntegrationTest,
   Play();
 
   EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
-  source.Abort();
+  source.Shutdown();
 }
 #endif  // !defined(DISABLE_EME_TESTS)
 
@@ -1449,7 +1452,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_WebM) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1465,7 +1468,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_ClearStart_WebM) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1481,7 +1484,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_NoEncryptedFrames_WebM) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 #endif  // !defined(DISABLE_EME_TESTS)
@@ -1500,7 +1503,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_MP4_CENC_VideoOnly) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1516,7 +1519,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_MP4_CENC_AudioOnly) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1533,7 +1536,7 @@ TEST_F(PipelineIntegrationTest,
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1550,7 +1553,7 @@ TEST_F(PipelineIntegrationTest,
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1566,7 +1569,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_MP4_CENC_KeyRotation_Video) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 
@@ -1582,7 +1585,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_MP4_CENC_KeyRotation_Audio) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 #endif  // !defined(DISABLE_EME_TESTS)
@@ -1601,7 +1604,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_MP4_AVC3) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
 }
 #endif  // defined(USE_PROPRIETARY_CODECS)
@@ -1788,7 +1791,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus441kHz) {
   source.EndOfStream();
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
-  source.Abort();
+  source.Shutdown();
   Stop();
   EXPECT_EQ(48000,
             demuxer_->GetStream(DemuxerStream::AUDIO)
