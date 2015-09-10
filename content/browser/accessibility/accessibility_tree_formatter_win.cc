@@ -95,7 +95,7 @@ base::string16 GetIA2Hypertext(BrowserAccessibilityWin& ax_object) {
     if (hr == S_OK) {
       DCHECK_GE(index_of_embed, 0);
       base::win::ScopedComPtr<IAccessibleHyperlink> embedded_object;
-      HRESULT hr = ax_object.get_hyperlink(
+      hr = ax_object.get_hyperlink(
           index_of_embed, embedded_object.Receive());
       DCHECK(SUCCEEDED(hr));
       base::win::ScopedComPtr<IAccessible2> ax_embed;
