@@ -37,6 +37,13 @@ blink::WebSize WebExternalBitmapImpl::size() {
 }
 
 uint8* WebExternalBitmapImpl::pixels() {
+  if (!shared_bitmap_) {
+    // crbug.com/520417: not sure why a non-null WebExternalBitmap is
+    // being passed to prepareMailbox when the shared_bitmap_ is null.
+    // Best hypothesis is that the bitmap is zero-sized.
+    DCHECK(size_.isEmpty());
+    return nullptr;
+  }
   return shared_bitmap_->pixels();
 }
 
