@@ -462,6 +462,7 @@
         ['OS=="android"', {
           'dependencies': [
             'cast_jni_headers',
+            'cast_version_header',
           ],
         }],
         ['chromecast_branding=="public" and OS!="android"', {
