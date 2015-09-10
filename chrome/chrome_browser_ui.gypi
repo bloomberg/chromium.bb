@@ -1688,8 +1688,6 @@
       'browser/ui/tabs/pinned_tab_service_factory.h',
       'browser/ui/tabs/tab_menu_model.cc',
       'browser/ui/tabs/tab_menu_model.h',
-      'browser/ui/tabs/tab_resources.cc',
-      'browser/ui/tabs/tab_resources.h',
       'browser/ui/tabs/tab_strip_model.cc',
       'browser/ui/tabs/tab_strip_model.h',
       'browser/ui/tabs/tab_strip_model_delegate.h',

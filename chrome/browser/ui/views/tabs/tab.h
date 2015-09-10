@@ -278,6 +278,12 @@ class Tab : public gfx::AnimationDelegate,
   // Schedules repaint task for icon.
   void ScheduleIconPaint();
 
+  // Returns a |path| containing the region that matches the bitmap display of
+  // this tab, for input event hit testing.  Set |include_top_shadow| to include
+  // the mostly-transparent shadow pixels above the top edge of the tab in the
+  // path.
+  void GetHitTestMaskHelper(bool include_top_shadow, gfx::Path* path) const;
+
   // Returns the rectangle for the light bar in immersive mode.
   gfx::Rect GetImmersiveBarRect() const;
 

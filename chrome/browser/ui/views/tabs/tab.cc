@@ -13,7 +13,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tabs/tab_resources.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/media_indicator_button.h"
@@ -722,9 +721,8 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
   // shadow of the tab, such that the user can click anywhere along the top
   // edge of the screen to select a tab. Ditto for immersive fullscreen.
   const views::Widget* widget = GetWidget();
-  bool include_top_shadow =
-      widget && (widget->IsMaximized() || widget->IsFullscreen());
-  TabResources::GetHitTestMask(width(), height(), include_top_shadow, mask);
+  GetHitTestMaskHelper(
+      widget && (widget->IsMaximized() || widget->IsFullscreen()), mask);
 
   // It is possible for a portion of the tab to be occluded if tabs are
   // stacked, so modify the hit test mask to only include the visible
@@ -1510,6 +1508,58 @@ void Tab::ScheduleIconPaint() {
     bounds.set_height(height() - bounds.y());
   bounds.set_x(GetMirroredXForRect(bounds));
   SchedulePaintInRect(bounds);
+}
+
+void Tab::GetHitTestMaskHelper(bool include_top_shadow, gfx::Path* path) const {
+  DCHECK(path);
+
+  // Hit mask constants.
+  const SkScalar kTabCapWidth = 15;
+  const SkScalar kTabTopCurveWidth = 4;
+  const SkScalar kTabBottomCurveWidth = 3;
+#if defined(OS_MACOSX)
+  // Mac's Cocoa UI doesn't have shadows.
+  const SkScalar kTabInset = 0;
+  const SkScalar kTabTop = 0;
+#elif defined(TOOLKIT_VIEWS)
+  // The views browser UI has shadows in the left, right and top parts of the
+  // tab.
+  const SkScalar kTabInset = 6;
+  const SkScalar kTabTop = 2;
+#endif
+
+  SkScalar left = kTabInset;
+  SkScalar top = kTabTop;
+  SkScalar right = SkIntToScalar(width()) - kTabInset;
+  SkScalar bottom = SkIntToScalar(height());
+
+  // Start in the lower-left corner.
+  path->moveTo(left, bottom);
+
+  // Left end cap.
+  path->lineTo(left + kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
+  path->lineTo(left + kTabCapWidth - kTabTopCurveWidth,
+               top + kTabTopCurveWidth);
+  path->lineTo(left + kTabCapWidth, top);
+
+  // Extend over the top shadow area if we have one and the caller wants it.
+  if (kTabTop > 0 && include_top_shadow) {
+    path->lineTo(left + kTabCapWidth, 0);
+    path->lineTo(right - kTabCapWidth, 0);
+  }
+
+  // Connect to the right cap.
+  path->lineTo(right - kTabCapWidth, top);
+
+  // Right end cap.
+  path->lineTo(right - kTabCapWidth + kTabTopCurveWidth,
+               top + kTabTopCurveWidth);
+  path->lineTo(right - kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
+  path->lineTo(right, bottom);
+
+  // Close out the path.
+  path->lineTo(left, bottom);
+  path->close();
 }
 
 gfx::Rect Tab::GetImmersiveBarRect() const {
