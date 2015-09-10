@@ -231,8 +231,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
       // through WebGeolocationPermissionRequest. We are only interested
       // in the fact whether the embedder/app has geolocation
       // permission. Therefore we use an invalid |bridge_id|.
-      -1,
-      GURL());
+      -1);
 
   Profile* profile = Profile::FromBrowserContext(
       web_view_guest()->browser_context());

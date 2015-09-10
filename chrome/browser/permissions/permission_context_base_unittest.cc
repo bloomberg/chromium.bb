@@ -103,7 +103,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(),
-        -1, GURL());
+        -1);
     permission_context.RequestPermission(
         web_contents(),
         id, url, true,
@@ -131,7 +131,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(),
-        -1, GURL());
+        -1);
     permission_context.RequestPermission(
         web_contents(),
         id, url, true,
@@ -159,7 +159,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(),
-        -1, GURL());
+        -1);
     permission_context.RequestPermission(
         web_contents(),
         id, url, true,
@@ -185,7 +185,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(),
-        -1, GURL());
+        -1);
     permission_context.RequestPermission(
         web_contents(),
         id, url, true,

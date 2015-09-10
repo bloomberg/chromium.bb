@@ -169,8 +169,7 @@ void PermissionManager::RequestPermission(
   int render_frame_id = render_frame_host->GetRoutingID();
   const PermissionRequestID request(render_process_id,
                                     render_frame_id,
-                                    request_id,
-                                    requesting_origin);
+                                    request_id);
 
   context->RequestPermission(
       web_contents, request, requesting_origin, user_gesture,
@@ -195,8 +194,7 @@ void PermissionManager::CancelPermissionRequest(
   int render_frame_id = render_frame_host->GetRoutingID();
   const PermissionRequestID request(render_process_id,
                                     render_frame_id,
-                                    request_id,
-                                    requesting_origin);
+                                    request_id);
 
   context->CancelPermissionRequest(web_contents, request);
 }

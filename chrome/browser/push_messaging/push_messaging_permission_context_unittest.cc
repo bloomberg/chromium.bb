@@ -132,7 +132,7 @@ TEST_F(PushMessagingPermissionContextTest, HasPermissionAccept) {
 TEST_F(PushMessagingPermissionContextTest, DecidePushPermission) {
   TestingProfile profile;
   TestPushMessagingPermissionContext context(&profile);
-  PermissionRequestID request_id(-1, -1, -1, GURL(kOriginA));
+  PermissionRequestID request_id(-1, -1, -1);
   BrowserPermissionCallback callback;
 
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),

@@ -28,8 +28,7 @@ class PermissionQueueControllerTests : public ChromeRenderViewHostTestHarness {
     return PermissionRequestID(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(),
-        bridge_id,
-        GURL());
+        bridge_id);
   }
 
  private:
