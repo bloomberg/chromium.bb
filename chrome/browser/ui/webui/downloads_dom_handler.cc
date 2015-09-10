@@ -160,9 +160,13 @@ base::DictionaryValue* CreateDownloadItemValue(
 
   extensions::DownloadedByExtension* by_ext =
       extensions::DownloadedByExtension::Get(download_item);
+  std::string by_ext_id;
+  std::string by_ext_name;
   if (by_ext) {
-    file_value->SetString("by_ext_id", by_ext->id());
-    file_value->SetString("by_ext_name", by_ext->name());
+    by_ext_id = by_ext->id();
+    // TODO(dbeam): why doesn't DownloadsByExtension::name() return a string16?
+    by_ext_name = by_ext->name();
+
     // Lookup the extension's current name() in case the user changed their
     // language. This won't work if the extension was uninstalled, so the name
     // might be the wrong language.
@@ -173,6 +177,8 @@ base::DictionaryValue* CreateDownloadItemValue(
     if (extension)
       file_value->SetString("by_ext_name", extension->name());
   }
+  file_value->SetString("by_ext_id", by_ext_id);
+  file_value->SetString("by_ext_name", by_ext_name);
 
   // Keep file names as LTR.
   base::string16 file_name =

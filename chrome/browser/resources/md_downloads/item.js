@@ -109,6 +109,10 @@ cr.define('downloads', function() {
       },
     },
 
+    observers: [
+      'observeControlledBy_(data_.by_ext_id, data_.by_ext_name)',
+    ],
+
     ready: function() {
       this.content = this.$.content;
       this.resolveReadyPromise_();
@@ -116,33 +120,6 @@ cr.define('downloads', function() {
 
     /** @param {!downloads.Data} data */
     update: function(data) {
-      assert(!('id' in this.data_) || this.data_.id == data.id);
-
-      if (this.data_ &&
-          data.by_ext_id === this.data_.by_ext_id &&
-          data.by_ext_name === this.data_.by_ext_name &&
-          data.danger_type === this.data_.danger_type &&
-          data.date_string == this.data_.date_string &&
-          data.file_externally_removed == this.data_.file_externally_removed &&
-          data.file_name == this.data_.file_name &&
-          data.file_path == this.data_.file_path &&
-          data.file_url == this.data_.file_url &&
-          data.last_reason_text === this.data_.last_reason_text &&
-          data.otr == this.data_.otr &&
-          data.percent === this.data_.percent &&
-          data.progress_status_text === this.data_.progress_status_text &&
-          data.received === this.data_.received &&
-          data.resume == this.data_.resume &&
-          data.retry == this.data_.retry &&
-          data.since_string == this.data_.since_string &&
-          data.started == this.data_.started &&
-          data.state == this.data_.state &&
-          data.total == this.data_.total &&
-          data.url == this.data_.url) {
-        // TODO(dbeam): remove this once data binding is fully in place.
-        return;
-      }
-
       for (var key in data) {
         // TODO(dbeam): does update order matter? Right now it seems to be
         // alphabetical.
@@ -150,15 +127,6 @@ cr.define('downloads', function() {
       }
 
       if (!this.isDangerous_) {
-        /** @const */ var controlledByExtension = data.by_ext_id &&
-                                                  data.by_ext_name;
-        this.$['controlled-by'].hidden = !controlledByExtension;
-        if (controlledByExtension) {
-          var link = this.$['controlled-by'].querySelector('a');
-          link.href = 'chrome://extensions#' + data.by_ext_id;
-          link.textContent = data.by_ext_name;
-        }
-
         var icon = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
         this.iconLoader_.loadScaledIcon(this.$['file-icon'], icon);
       }
@@ -235,6 +203,11 @@ cr.define('downloads', function() {
     },
 
     /** @private */
+    computeIsDangerous_: function() {
+      return this.data_.state == downloads.States.DANGEROUS;
+    },
+
+    /** @private */
     computeIsInProgress_: function() {
       return this.data_.state == downloads.States.IN_PROGRESS;
     },
@@ -246,11 +219,6 @@ cr.define('downloads', function() {
            this.data_.danger_type == downloads.DangerType.DANGEROUS_HOST ||
            this.data_.danger_type == downloads.DangerType.DANGEROUS_URL ||
            this.data_.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED);
-    },
-
-    /** @private */
-    computeIsDangerous_: function() {
-      return this.data_.state == downloads.States.DANGEROUS;
     },
 
     /** @private */
@@ -292,6 +260,17 @@ cr.define('downloads', function() {
     isIndeterminate_: function() {
       assert(this.showProgress_);
       return this.data_.percent == -1;
+    },
+
+    /** @private */
+    observeControlledBy_: function() {
+      var html = '';
+      if (this.data_.by_ext_id && this.data_.by_ext_name) {
+        var url = 'chrome://extensions#' + this.data_.by_ext_id;
+        var name = this.data_.by_ext_name;
+        html = loadTimeData.getStringF('controlledByUrl', url, name);
+      }
+      this.$['controlled-by'].innerHTML = html;
     },
 
     /** @private */

@@ -68,8 +68,7 @@
             <paper-button id="cancel"
                 on-click="onCancelClick_">[[i18n_.cancel]]</paper-button>
           </template>
-          <span id="controlled-by"
-              i18n-values=".innerHTML:controlByExtension"></span>
+          <span id="controlled-by"><!-- Text populated dynamically. --></span>
         </div>
 
         <template is="dom-if" if="[[isDangerous_]]">

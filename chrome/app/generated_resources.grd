@@ -2083,6 +2083,10 @@ Even if you have downloaded files from this website before, the website might ha
                desc="Indicates which extension downloaded this file.">
         Downloaded by &lt;a&gt;<ph name="EXTENSION">$1<ex>The Best Chrome Extension Ever</ex></ph>&lt;/a&gt;
       </message>
+      <message name="IDS_DOWNLOAD_BY_EXTENSION_URL"
+               desc="Indicates which extension downloaded this file by name and URL.">
+        Downloaded by &lt;a href=&quot;<ph name="URL">$1<ex>adblock.com</ex></ph>&quot;&gt;<ph name="EXTENSION">$2<ex>The Best Chrome Extension Ever</ex></ph>&lt;/a&gt;
+      </message>
 
       <!-- Download Context Menu Items -->
       <if expr="not is_android">

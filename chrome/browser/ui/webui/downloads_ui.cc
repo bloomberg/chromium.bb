@@ -78,8 +78,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
   source->AddLocalizedString("controlRemoveFromList",
                              IDS_DOWNLOAD_LINK_REMOVE);
-  source->AddLocalizedString("controlByExtension",
-                             IDS_DOWNLOAD_BY_EXTENSION);
 
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean("allowDeletingHistory",
@@ -95,9 +93,11 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS);
 
   if (MdDownloadsEnabled()) {
-    source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
     source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
+    source->AddLocalizedString("controlledByUrl",
+                               IDS_DOWNLOAD_BY_EXTENSION_URL);
     source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
+    source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
 
     source->AddResourcePath("action_service.html",
                             IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
@@ -119,9 +119,11 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
     source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
   } else {
-    source->AddLocalizedString("searchButton", IDS_DOWNLOAD_SEARCH_BUTTON);
     source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
+    source->AddLocalizedString("controlByExtension",
+                               IDS_DOWNLOAD_BY_EXTENSION);
     source->AddLocalizedString("noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS);
+    source->AddLocalizedString("searchButton", IDS_DOWNLOAD_SEARCH_BUTTON);
 
     source->AddResourcePath("item_view.js", IDR_DOWNLOADS_ITEM_VIEW_JS);
     source->AddResourcePath("focus_row.js", IDR_DOWNLOADS_FOCUS_ROW_JS);
