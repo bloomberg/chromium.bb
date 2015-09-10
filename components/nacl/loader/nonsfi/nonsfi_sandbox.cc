@@ -30,10 +30,11 @@
 #if !defined(MAP_STACK)
 # if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY)
 #  define MAP_STACK 0x20000
+# elif defined(ARCH_CPU_MIPS_FAMILY)
+#  define MAP_STACK 0x40000
 # else
-// Note that, on other architecture, MAP_STACK has different value (e.g. mips'
-// MAP_STACK is 0x40000), though Non-SFI is not supported on such
-// architectures.
+// Note that, on other architectures, MAP_STACK has different value,
+// though Non-SFI is not supported on such architectures.
 #  error "Unknown platform."
 # endif
 #endif  // !defined(MAP_STACK)
