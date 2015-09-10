@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 
 import collections
 import datetime
@@ -643,7 +643,8 @@ def decorate_shard_output(swarming, shard_index, metadata):
     duration = 'N/A'
 
   if metadata.get('exit_code') is not None:
-    exit_code = '%d' % metadata['exit_code']
+    # Integers are encoded as string to not loose precision.
+    exit_code = '%s' % metadata['exit_code']
   else:
     exit_code = 'N/A'
 
