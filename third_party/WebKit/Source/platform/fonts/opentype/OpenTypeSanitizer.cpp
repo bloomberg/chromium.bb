@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/fonts/opentype/OpenTypeSanitizer.h"
 
+#include "hb.h"
 #include "ots-memory-stream.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
@@ -130,6 +131,10 @@ void BlinkOTSContext::Message(int level, const char *format, ...)
     }
 }
 
+#if !defined(HB_VERSION_ATLEAST)
+#define HB_VERSION_ATLEAST(major, minor, micro) 0
+#endif
+
 ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
 {
 #define TABLE_TAG(c1, c2, c3, c4) ((uint32_t)((((uint8_t)(c1)) << 24) | (((uint8_t)(c2)) << 16) | (((uint8_t)(c3)) << 8) | ((uint8_t)(c4))))
@@ -138,6 +143,9 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
     const uint32_t cblcTag = TABLE_TAG('C', 'B', 'L', 'C');
     const uint32_t colrTag = TABLE_TAG('C', 'O', 'L', 'R');
     const uint32_t cpalTag = TABLE_TAG('C', 'P', 'A', 'L');
+    const uint32_t gdefTag = TABLE_TAG('G', 'D', 'E', 'F');
+    const uint32_t gposTag = TABLE_TAG('G', 'P', 'O', 'S');
+    const uint32_t gsubTag = TABLE_TAG('G', 'S', 'U', 'B');
 
     switch (tag) {
     // Google Color Emoji Tables
@@ -146,6 +154,12 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
     // Windows Color Emoji Tables
     case colrTag:
     case cpalTag:
+#if HB_VERSION_ATLEAST(1, 0, 0)
+    // Let HarfBuzz handle how to deal with broken tables.
+    case gdefTag:
+    case gposTag:
+    case gsubTag:
+#endif
         return ots::TABLE_ACTION_PASSTHRU;
     default:
         return ots::TABLE_ACTION_DEFAULT;
