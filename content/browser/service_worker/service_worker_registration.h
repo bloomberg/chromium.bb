@@ -22,9 +22,10 @@ namespace content {
 class ServiceWorkerVersion;
 struct ServiceWorkerRegistrationInfo;
 
-// This class represents a Service Worker registration. The scope is constant
-// for the life of the persistent registration. It's refcounted to facilitate
-// multiple controllees being associated with the same registration.
+// Represents the core of a service worker registration object. Other
+// registration derivatives (WebServiceWorkerRegistration etc) ultimately refer
+// to this class. This is refcounted via ServiceWorkerRegistrationHandle to
+// facilitate multiple controllees being associated with the same registration.
 class CONTENT_EXPORT ServiceWorkerRegistration
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>),
       public ServiceWorkerVersion::Listener {
@@ -177,9 +178,12 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   bool should_activate_when_ready_;
   base::Time last_update_check_;
   int64_t resources_total_size_bytes_;
+
+  // This registration is the primary owner of these versions.
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> waiting_version_;
   scoped_refptr<ServiceWorkerVersion> installing_version_;
+
   base::ObserverList<Listener> listeners_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
 

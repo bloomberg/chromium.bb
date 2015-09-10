@@ -13,8 +13,9 @@ namespace content {
 
 class ThreadSafeSender;
 
-// Automatically increments and decrements ServiceWorkerHandle's ref-count
-// (in the browser side) in ctor and dtor.
+// Represents an interprocess reference to ServiceWorkerHandle managed in the
+// browser process. The constructor and destructor sends a message to increment
+// or decrement the reference count to the browser process.
 class ServiceWorkerHandleReference {
  public:
   // Creates a new ServiceWorkerHandleReference and increments ref-count.
@@ -22,11 +23,7 @@ class ServiceWorkerHandleReference {
       const ServiceWorkerObjectInfo& info,
       ThreadSafeSender* sender);
 
-  // Creates a new ServiceWorkerHandleReference by adopting a
-  // ref-count. ServiceWorkerHandleReferences created this way must
-  // have a matching
-  // ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle call on
-  // the browser side.
+  // Creates a new ServiceWorkerHandleReference by adopting a ref-count.
   static scoped_ptr<ServiceWorkerHandleReference> Adopt(
       const ServiceWorkerObjectInfo& info,
       ThreadSafeSender* sender);

@@ -21,8 +21,13 @@ namespace content {
 
 class ServiceWorkerContextCore;
 
-// Roughly corresponds to one ServiceWorker object in the renderer process
-// (WebServiceWorkerImpl).
+// Roughly corresponds to one WebServiceWorker object in the renderer process.
+//
+// The renderer process maintains the reference count by owning a
+// ServiceWorkerHandleReference for each reference it has to the service worker
+// object. ServiceWorkerHandleReference creation and destruction sends an IPC to
+// the browser process, which adjusts the ServiceWorkerHandle refcount.
+//
 // Has references to the corresponding ServiceWorkerVersion in order to ensure
 // that the version is alive while this handle is around.
 class CONTENT_EXPORT ServiceWorkerHandle

@@ -14,6 +14,10 @@ namespace content {
 
 class ThreadSafeSender;
 
+// Represents an interprocess reference to ServiceWorkerRegistrationHandle
+// managed in the browser process. The constructor and destructor sends a
+// message to increment or decrement the reference count to the browser
+// process.
 class ServiceWorkerRegistrationHandleReference {
  public:
   // Creates a new ServiceWorkerRegistrationHandleReference and increments

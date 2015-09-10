@@ -18,11 +18,17 @@ class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerVersion;
 
-// Roughly Corresponds to one ServiceWorkerRegistration object in the renderer
-// process (WebServiceWorkerRegistrationImpl).
-// Has references to the corresponding ServiceWorkerRegistration and
-// ServiceWorkerVersions (therefore they're guaranteed to be alive while this
-// handle is around).
+// Roughly corresponds to one WebServiceWorkerRegistration object in the
+// renderer process.
+//
+// The renderer process maintains the reference count by owning a
+// ServiceWorkerRegistrationHandleReference for each reference it has to the
+// registration object. ServiceWorkerRegistrationHandleReference creation and
+// destruction sends an IPC to the browser process, which adjusts the
+// ServiceWorkerRegistrationHandle refcount.
+//
+// Has a reference to the corresponding ServiceWorkerRegistration in order to
+// ensure that the registration is alive while this handle is around.
 class ServiceWorkerRegistrationHandle
     : public ServiceWorkerRegistration::Listener {
  public:
@@ -66,6 +72,7 @@ class ServiceWorkerRegistrationHandle
   const int handle_id_;
   int ref_count_;  // Created with 1.
 
+  // This handle is the primary owner of this registration.
   scoped_refptr<ServiceWorkerRegistration> registration_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationHandle);
