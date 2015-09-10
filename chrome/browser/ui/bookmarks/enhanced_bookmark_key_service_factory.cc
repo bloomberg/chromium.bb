@@ -12,7 +12,7 @@
 // static
 EnhancedBookmarkKeyServiceFactory*
     EnhancedBookmarkKeyServiceFactory::GetInstance() {
-  return Singleton<EnhancedBookmarkKeyServiceFactory>::get();
+  return base::Singleton<EnhancedBookmarkKeyServiceFactory>::get();
 }
 
 EnhancedBookmarkKeyServiceFactory::EnhancedBookmarkKeyServiceFactory()

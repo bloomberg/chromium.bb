@@ -83,7 +83,7 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
   // uniquely identify a voice across all available modules.
   scoped_ptr<std::map<std::string, SPDChromeVoice> > all_native_voices_;
 
-  friend struct DefaultSingletonTraits<TtsPlatformImplLinux>;
+  friend struct base::DefaultSingletonTraits<TtsPlatformImplLinux>;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplLinux);
 };
@@ -346,8 +346,9 @@ void TtsPlatformImplLinux::IndexMarkCallback(size_t msg_id,
 
 // static
 TtsPlatformImplLinux* TtsPlatformImplLinux::GetInstance() {
-  return Singleton<TtsPlatformImplLinux,
-                   LeakySingletonTraits<TtsPlatformImplLinux> >::get();
+  return base::Singleton<
+      TtsPlatformImplLinux,
+      base::LeakySingletonTraits<TtsPlatformImplLinux>>::get();
 }
 
 // static

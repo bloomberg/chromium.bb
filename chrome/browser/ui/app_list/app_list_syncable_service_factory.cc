@@ -31,7 +31,7 @@ AppListSyncableService* AppListSyncableServiceFactory::GetForProfile(
 
 // static
 AppListSyncableServiceFactory* AppListSyncableServiceFactory::GetInstance() {
-  return Singleton<AppListSyncableServiceFactory>::get();
+  return base::Singleton<AppListSyncableServiceFactory>::get();
 }
 
 // static

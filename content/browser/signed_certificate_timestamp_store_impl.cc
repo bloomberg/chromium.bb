@@ -17,7 +17,7 @@ SignedCertificateTimestampStore::GetInstance() {
 // static
 SignedCertificateTimestampStoreImpl*
 SignedCertificateTimestampStoreImpl::GetInstance() {
-  return Singleton<SignedCertificateTimestampStoreImpl>::get();
+  return base::Singleton<SignedCertificateTimestampStoreImpl>::get();
 }
 
 SignedCertificateTimestampStoreImpl::SignedCertificateTimestampStoreImpl() {}

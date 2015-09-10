@@ -22,7 +22,7 @@ ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
 // static
 ProtectedMediaIdentifierPermissionContextFactory*
 ProtectedMediaIdentifierPermissionContextFactory::GetInstance() {
-  return Singleton<
+  return base::Singleton<
       ProtectedMediaIdentifierPermissionContextFactory>::get();
 }
 

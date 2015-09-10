@@ -26,7 +26,7 @@ CookieSettingsFactory::GetForBrowserState(
 
 // static
 CookieSettingsFactory* CookieSettingsFactory::GetInstance() {
-  return Singleton<CookieSettingsFactory>::get();
+  return base::Singleton<CookieSettingsFactory>::get();
 }
 
 CookieSettingsFactory::CookieSettingsFactory()

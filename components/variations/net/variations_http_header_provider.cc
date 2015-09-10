@@ -44,7 +44,7 @@ const char kClientData[] = "X-Client-Data";
 }  // namespace
 
 VariationsHttpHeaderProvider* VariationsHttpHeaderProvider::GetInstance() {
-  return Singleton<VariationsHttpHeaderProvider>::get();
+  return base::Singleton<VariationsHttpHeaderProvider>::get();
 }
 
 void VariationsHttpHeaderProvider::AppendHeaders(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WARNING_BADGE_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WARNING_BADGE_SERVICE_FACTORY_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_WARNING_BADGE_SERVICE_FACTORY_H_
+#define CHROME_BROWSER_EXTENSIONS_WARNING_BADGE_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -19,7 +19,7 @@ class WarningBadgeServiceFactory : public BrowserContextKeyedServiceFactory {
   static WarningBadgeServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<WarningBadgeServiceFactory>;
+  friend struct base::DefaultSingletonTraits<WarningBadgeServiceFactory>;
 
   WarningBadgeServiceFactory();
   ~WarningBadgeServiceFactory() override;
@@ -36,4 +36,4 @@ class WarningBadgeServiceFactory : public BrowserContextKeyedServiceFactory {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WARNING_BADGE_SERVICE_FACTORY_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_WARNING_BADGE_SERVICE_FACTORY_H_

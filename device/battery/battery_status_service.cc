@@ -27,8 +27,9 @@ BatteryStatusService::~BatteryStatusService() {
 }
 
 BatteryStatusService* BatteryStatusService::GetInstance() {
-  return Singleton<BatteryStatusService,
-                   LeakySingletonTraits<BatteryStatusService> >::get();
+  return base::Singleton<
+      BatteryStatusService,
+      base::LeakySingletonTraits<BatteryStatusService>>::get();
 }
 
 scoped_ptr<BatteryStatusService::BatteryUpdateSubscription>

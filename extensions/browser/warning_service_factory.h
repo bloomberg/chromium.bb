@@ -18,7 +18,7 @@ class WarningServiceFactory : public BrowserContextKeyedServiceFactory {
   static WarningServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<WarningServiceFactory>;
+  friend struct base::DefaultSingletonTraits<WarningServiceFactory>;
 
   WarningServiceFactory();
   ~WarningServiceFactory() override;

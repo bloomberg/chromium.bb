@@ -21,7 +21,7 @@ AppSyncUIState* AppSyncUIStateFactory::GetForProfile(Profile* profile) {
 
 // static
 AppSyncUIStateFactory* AppSyncUIStateFactory::GetInstance() {
-  return Singleton<AppSyncUIStateFactory>::get();
+  return base::Singleton<AppSyncUIStateFactory>::get();
 }
 
 AppSyncUIStateFactory::AppSyncUIStateFactory()

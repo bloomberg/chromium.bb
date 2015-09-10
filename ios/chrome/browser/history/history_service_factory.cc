@@ -52,7 +52,7 @@ history::HistoryService* HistoryServiceFactory::GetForBrowserStateIfExists(
 
 // static
 HistoryServiceFactory* HistoryServiceFactory::GetInstance() {
-  return Singleton<HistoryServiceFactory>::get();
+  return base::Singleton<HistoryServiceFactory>::get();
 }
 
 HistoryServiceFactory::HistoryServiceFactory()

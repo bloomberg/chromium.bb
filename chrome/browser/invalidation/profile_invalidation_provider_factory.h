@@ -49,7 +49,8 @@ class ProfileInvalidationProviderFactory
  private:
   friend class ProfileInvalidationProviderFactoryTestBase;
   friend class policy::AffiliatedInvalidationServiceProviderImplTest;
-  friend struct DefaultSingletonTraits<ProfileInvalidationProviderFactory>;
+  friend struct base::DefaultSingletonTraits<
+      ProfileInvalidationProviderFactory>;
 
   ProfileInvalidationProviderFactory();
   ~ProfileInvalidationProviderFactory() override;

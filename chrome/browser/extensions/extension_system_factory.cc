@@ -35,7 +35,7 @@ ExtensionSystemSharedFactory::GetForBrowserContext(
 
 // static
 ExtensionSystemSharedFactory* ExtensionSystemSharedFactory::GetInstance() {
-  return Singleton<ExtensionSystemSharedFactory>::get();
+  return base::Singleton<ExtensionSystemSharedFactory>::get();
 }
 
 ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
@@ -84,7 +84,7 @@ ExtensionSystem* ExtensionSystemFactory::GetForBrowserContext(
 
 // static
 ExtensionSystemFactory* ExtensionSystemFactory::GetInstance() {
-  return Singleton<ExtensionSystemFactory>::get();
+  return base::Singleton<ExtensionSystemFactory>::get();
 }
 
 ExtensionSystemFactory::ExtensionSystemFactory()

@@ -180,7 +180,7 @@ bool NPAPIRemovalInfoBarDelegate::LinkClicked(
 
 // static
 ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
-  return Singleton<ChromePluginServiceFilter>::get();
+  return base::Singleton<ChromePluginServiceFilter>::get();
 }
 
 void ChromePluginServiceFilter::RegisterResourceContext(

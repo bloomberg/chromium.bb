@@ -14,7 +14,10 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/point.h"
 
-template <typename T> struct DefaultSingletonTraits;
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace content {
 class RenderWidgetHost;
@@ -82,7 +85,7 @@ class CONTENT_EXPORT TextInputClientMac {
   void GetStringAtPointReply(NSAttributedString*, NSPoint);
 
  private:
-  friend struct DefaultSingletonTraits<TextInputClientMac>;
+  friend struct base::DefaultSingletonTraits<TextInputClientMac>;
   TextInputClientMac();
   ~TextInputClientMac();
 

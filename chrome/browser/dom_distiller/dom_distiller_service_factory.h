@@ -40,7 +40,7 @@ class DomDistillerServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context);
 
  private:
-  friend struct DefaultSingletonTraits<DomDistillerServiceFactory>;
+  friend struct base::DefaultSingletonTraits<DomDistillerServiceFactory>;
 
   DomDistillerServiceFactory();
   ~DomDistillerServiceFactory() override;

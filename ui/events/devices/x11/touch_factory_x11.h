@@ -14,7 +14,10 @@
 #include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/sequential_id_generator.h"
 
+namespace base {
+
 template <typename T> struct DefaultSingletonTraits;
+}
 
 typedef unsigned long Cursor;
 typedef unsigned long Window;
@@ -96,7 +99,7 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
 
  private:
   // Requirement for Singleton
-  friend struct DefaultSingletonTraits<TouchFactory>;
+  friend struct base::DefaultSingletonTraits<TouchFactory>;
 
   void CacheTouchscreenIds(int id);
 

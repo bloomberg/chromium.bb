@@ -26,7 +26,7 @@ VolumeManager* VolumeManagerFactory::Get(content::BrowserContext* context) {
 }
 
 VolumeManagerFactory* VolumeManagerFactory::GetInstance() {
-  return Singleton<VolumeManagerFactory>::get();
+  return base::Singleton<VolumeManagerFactory>::get();
 }
 
 content::BrowserContext* VolumeManagerFactory::GetBrowserContextToUse(

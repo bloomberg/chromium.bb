@@ -7,7 +7,9 @@
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template<typename T> struct DefaultSingletonTraits;
+}
 
 namespace content {
 class BrowserContext;
@@ -28,7 +30,7 @@ class FeedbackUploaderFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context);
 
  private:
-  friend struct DefaultSingletonTraits<FeedbackUploaderFactory>;
+  friend struct base::DefaultSingletonTraits<FeedbackUploaderFactory>;
 
   FeedbackUploaderFactory();
   ~FeedbackUploaderFactory() override;

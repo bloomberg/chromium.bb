@@ -23,7 +23,7 @@ SigninErrorController* SigninErrorControllerFactory::GetForProfile(
 
 // static
 SigninErrorControllerFactory* SigninErrorControllerFactory::GetInstance() {
-  return Singleton<SigninErrorControllerFactory>::get();
+  return base::Singleton<SigninErrorControllerFactory>::get();
 }
 
 KeyedService* SigninErrorControllerFactory::BuildServiceInstanceFor(

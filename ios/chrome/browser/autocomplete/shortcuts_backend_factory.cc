@@ -54,7 +54,7 @@ ShortcutsBackendFactory::GetForBrowserStateIfExists(
 
 // static
 ShortcutsBackendFactory* ShortcutsBackendFactory::GetInstance() {
-  return Singleton<ShortcutsBackendFactory>::get();
+  return base::Singleton<ShortcutsBackendFactory>::get();
 }
 
 ShortcutsBackendFactory::ShortcutsBackendFactory()

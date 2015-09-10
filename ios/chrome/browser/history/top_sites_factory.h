@@ -8,9 +8,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
-
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace history {
 class TopSites;
@@ -29,7 +30,7 @@ class TopSitesFactory : public RefcountedBrowserStateKeyedServiceFactory {
   static TopSitesFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<TopSitesFactory>;
+  friend struct base::DefaultSingletonTraits<TopSitesFactory>;
 
   TopSitesFactory();
   ~TopSitesFactory() override;

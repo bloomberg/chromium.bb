@@ -85,7 +85,7 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
 
  private:
   class ManagerWrapper;
-  friend struct DefaultSingletonTraits<UserCloudPolicyManagerFactory>;
+  friend struct base::DefaultSingletonTraits<UserCloudPolicyManagerFactory>;
 
   UserCloudPolicyManagerFactory();
   ~UserCloudPolicyManagerFactory() override;

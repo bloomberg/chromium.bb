@@ -23,7 +23,7 @@ ExtensionSyncService* ExtensionSyncServiceFactory::GetForBrowserContext(
 
 // static
 ExtensionSyncServiceFactory* ExtensionSyncServiceFactory::GetInstance() {
-  return Singleton<ExtensionSyncServiceFactory>::get();
+  return base::Singleton<ExtensionSyncServiceFactory>::get();
 }
 
 ExtensionSyncServiceFactory::ExtensionSyncServiceFactory()

@@ -51,7 +51,7 @@ class NaClBrokerService {
   typedef std::map<int, base::WeakPtr<NaClProcessHost> >
       PendingDebugExceptionHandlersMap;
 
-  friend struct DefaultSingletonTraits<NaClBrokerService>;
+  friend struct base::DefaultSingletonTraits<NaClBrokerService>;
 
   NaClBrokerService();
   ~NaClBrokerService();

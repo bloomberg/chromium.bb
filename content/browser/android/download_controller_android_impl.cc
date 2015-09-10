@@ -147,7 +147,7 @@ void DownloadControllerAndroid::SetDownloadControllerAndroid(
 
 // static
 DownloadControllerAndroidImpl* DownloadControllerAndroidImpl::GetInstance() {
-  return Singleton<DownloadControllerAndroidImpl>::get();
+  return base::Singleton<DownloadControllerAndroidImpl>::get();
 }
 
 DownloadControllerAndroidImpl::DownloadControllerAndroidImpl()

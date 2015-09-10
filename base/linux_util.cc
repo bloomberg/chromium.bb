@@ -37,7 +37,7 @@ class LinuxDistroHelper {
  public:
   // Retrieves the Singleton.
   static LinuxDistroHelper* GetInstance() {
-    return Singleton<LinuxDistroHelper>::get();
+    return base::Singleton<LinuxDistroHelper>::get();
   }
 
   // The simple state machine goes from:
@@ -106,7 +106,7 @@ std::string GetLinuxDistro() {
   argv.push_back("lsb_release");
   argv.push_back("-d");
   std::string output;
-  base::GetAppOutput(CommandLine(argv), &output);
+  GetAppOutput(CommandLine(argv), &output);
   if (output.length() > 0) {
     // lsb_release -d should return: Description:<tab>Distro Info
     const char field[] = "Description:\t";
@@ -124,8 +124,8 @@ std::string GetLinuxDistro() {
 
 void SetLinuxDistro(const std::string& distro) {
   std::string trimmed_distro;
-  base::TrimWhitespaceASCII(distro, base::TRIM_ALL, &trimmed_distro);
-  base::strlcpy(g_linux_distro, trimmed_distro.c_str(), kDistroSize);
+  TrimWhitespaceASCII(distro, TRIM_ALL, &trimmed_distro);
+  strlcpy(g_linux_distro, trimmed_distro.c_str(), kDistroSize);
 }
 
 pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,

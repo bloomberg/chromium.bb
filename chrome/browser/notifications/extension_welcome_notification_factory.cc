@@ -23,7 +23,7 @@ ExtensionWelcomeNotificationFactory::GetForBrowserContext(
 // static
 ExtensionWelcomeNotificationFactory*
 ExtensionWelcomeNotificationFactory::GetInstance() {
-  return Singleton<ExtensionWelcomeNotificationFactory>::get();
+  return base::Singleton<ExtensionWelcomeNotificationFactory>::get();
 }
 
 ExtensionWelcomeNotificationFactory::ExtensionWelcomeNotificationFactory()

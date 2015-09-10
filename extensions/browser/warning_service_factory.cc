@@ -22,7 +22,7 @@ WarningService* WarningServiceFactory::GetForBrowserContext(
 
 // static
 WarningServiceFactory* WarningServiceFactory::GetInstance() {
-  return Singleton<WarningServiceFactory>::get();
+  return base::Singleton<WarningServiceFactory>::get();
 }
 
 WarningServiceFactory::WarningServiceFactory()

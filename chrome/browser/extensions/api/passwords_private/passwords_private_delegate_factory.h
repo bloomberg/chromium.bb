@@ -26,7 +26,7 @@ class PasswordsPrivateDelegateFactory
   static PasswordsPrivateDelegateFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PasswordsPrivateDelegateFactory>;
+  friend struct base::DefaultSingletonTraits<PasswordsPrivateDelegateFactory>;
 
   PasswordsPrivateDelegateFactory();
   ~PasswordsPrivateDelegateFactory() override;

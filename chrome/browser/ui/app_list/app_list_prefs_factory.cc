@@ -22,7 +22,7 @@ AppListPrefs* AppListPrefsFactory::GetForBrowserContext(
 
 // static
 AppListPrefsFactory* AppListPrefsFactory::GetInstance() {
-  return Singleton<AppListPrefsFactory>::get();
+  return base::Singleton<AppListPrefsFactory>::get();
 }
 
 void AppListPrefsFactory::SetInstanceForTesting(

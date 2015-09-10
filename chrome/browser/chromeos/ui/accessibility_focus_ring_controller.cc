@@ -39,7 +39,7 @@ struct Region {
 // static
 AccessibilityFocusRingController*
     AccessibilityFocusRingController::GetInstance() {
-  return Singleton<AccessibilityFocusRingController>::get();
+  return base::Singleton<AccessibilityFocusRingController>::get();
 }
 
 AccessibilityFocusRingController::AccessibilityFocusRingController()

@@ -35,7 +35,7 @@ class CONTENT_EXPORT WebUIControllerFactoryRegistry
                                const GURL& url) const;
 
  private:
-  friend struct DefaultSingletonTraits<WebUIControllerFactoryRegistry>;
+  friend struct base::DefaultSingletonTraits<WebUIControllerFactoryRegistry>;
 
   WebUIControllerFactoryRegistry();
   ~WebUIControllerFactoryRegistry() override;

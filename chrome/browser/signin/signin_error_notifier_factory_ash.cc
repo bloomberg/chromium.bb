@@ -30,7 +30,7 @@ SigninErrorNotifier* SigninErrorNotifierFactory::GetForProfile(
 
 // static
 SigninErrorNotifierFactory* SigninErrorNotifierFactory::GetInstance() {
-  return Singleton<SigninErrorNotifierFactory>::get();
+  return base::Singleton<SigninErrorNotifierFactory>::get();
 }
 
 KeyedService* SigninErrorNotifierFactory::BuildServiceInstanceFor(

@@ -13,7 +13,7 @@ namespace content {
 // static
 SharedWorkerDevToolsManager* SharedWorkerDevToolsManager::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return Singleton<SharedWorkerDevToolsManager>::get();
+  return base::Singleton<SharedWorkerDevToolsManager>::get();
 }
 
 DevToolsAgentHostImpl*

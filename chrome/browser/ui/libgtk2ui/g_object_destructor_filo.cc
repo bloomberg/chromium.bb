@@ -21,7 +21,7 @@ GObjectDestructorFILO::~GObjectDestructorFILO() {
 
 // static
 GObjectDestructorFILO* GObjectDestructorFILO::GetInstance() {
-  return Singleton<GObjectDestructorFILO>::get();
+  return base::Singleton<GObjectDestructorFILO>::get();
 }
 
 void GObjectDestructorFILO::Connect(

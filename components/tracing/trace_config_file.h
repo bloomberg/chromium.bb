@@ -10,7 +10,9 @@
 #include "base/trace_event/trace_config.h"
 #include "components/tracing/tracing_export.h"
 
+namespace base {
 template <typename Type> struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace tracing {
 
@@ -75,7 +77,7 @@ class TRACING_EXPORT TraceConfigFile {
  private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
-  friend struct DefaultSingletonTraits<TraceConfigFile>;
+  friend struct base::DefaultSingletonTraits<TraceConfigFile>;
   TraceConfigFile();
   ~TraceConfigFile();
 

@@ -26,7 +26,7 @@ class SpellcheckServiceFactory : public BrowserContextKeyedServiceFactory {
   static SpellcheckServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SpellcheckServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SpellcheckServiceFactory>;
 
   SpellcheckServiceFactory();
   ~SpellcheckServiceFactory() override;

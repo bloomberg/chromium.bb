@@ -20,7 +20,7 @@ IdleManager* IdleManagerFactory::GetForBrowserContext(
 
 // static
 IdleManagerFactory* IdleManagerFactory::GetInstance() {
-  return Singleton<IdleManagerFactory>::get();
+  return base::Singleton<IdleManagerFactory>::get();
 }
 
 IdleManagerFactory::IdleManagerFactory()

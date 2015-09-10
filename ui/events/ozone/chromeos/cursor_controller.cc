@@ -41,7 +41,7 @@ void TransformCursorMove(gfx::Display::Rotation rotation,
 
 // static
 CursorController* CursorController::GetInstance() {
-  return Singleton<CursorController>::get();
+  return base::Singleton<CursorController>::get();
 }
 
 void CursorController::SetCursorConfigForWindow(gfx::AcceleratedWidget widget,

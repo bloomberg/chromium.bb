@@ -54,7 +54,7 @@ class RendererStartupHelperFactory : public BrowserContextKeyedServiceFactory {
   static RendererStartupHelperFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<RendererStartupHelperFactory>;
+  friend struct base::DefaultSingletonTraits<RendererStartupHelperFactory>;
 
   RendererStartupHelperFactory();
   ~RendererStartupHelperFactory() override;

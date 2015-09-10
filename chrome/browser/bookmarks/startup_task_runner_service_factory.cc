@@ -28,7 +28,7 @@ StartupTaskRunnerService* StartupTaskRunnerServiceFactory::GetForProfile(
 // static
 StartupTaskRunnerServiceFactory*
     StartupTaskRunnerServiceFactory::GetInstance() {
-  return Singleton<StartupTaskRunnerServiceFactory>::get();
+  return base::Singleton<StartupTaskRunnerServiceFactory>::get();
 }
 
 KeyedService* StartupTaskRunnerServiceFactory::BuildServiceInstanceFor(

@@ -29,7 +29,7 @@ class WebHistoryServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
 
  private:
-  friend struct DefaultSingletonTraits<WebHistoryServiceFactory>;
+  friend struct base::DefaultSingletonTraits<WebHistoryServiceFactory>;
 
   WebHistoryServiceFactory();
   ~WebHistoryServiceFactory() override;

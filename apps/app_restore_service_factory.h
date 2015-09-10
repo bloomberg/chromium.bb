@@ -24,7 +24,7 @@ class AppRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
   static AppRestoreServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AppRestoreServiceFactory>;
+  friend struct base::DefaultSingletonTraits<AppRestoreServiceFactory>;
 
   AppRestoreServiceFactory();
   ~AppRestoreServiceFactory() override;

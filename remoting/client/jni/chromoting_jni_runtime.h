@@ -14,7 +14,9 @@
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/protocol/connection_to_host.h"
 
+namespace base {
 template<typename T> struct DefaultSingletonTraits;
+}
 
 namespace remoting {
 
@@ -135,7 +137,7 @@ class ChromotingJniRuntime {
   // Contains all connection-specific state.
   scoped_refptr<ChromotingJniInstance> session_;
 
-  friend struct DefaultSingletonTraits<ChromotingJniRuntime>;
+  friend struct base::DefaultSingletonTraits<ChromotingJniRuntime>;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingJniRuntime);
 };

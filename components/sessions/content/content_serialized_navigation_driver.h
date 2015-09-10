@@ -9,7 +9,9 @@
 
 #include "components/sessions/sessions_export.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace sessions {
 
@@ -38,7 +40,7 @@ class SESSIONS_EXPORT_PRIVATE ContentSerializedNavigationDriver
 
  private:
   ContentSerializedNavigationDriver();
-  friend struct DefaultSingletonTraits<ContentSerializedNavigationDriver>;
+  friend struct base::DefaultSingletonTraits<ContentSerializedNavigationDriver>;
 };
 
 }  // namespace sessions

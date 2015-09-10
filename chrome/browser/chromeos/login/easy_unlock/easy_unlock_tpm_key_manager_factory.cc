@@ -23,7 +23,7 @@ PrefService* GetLocalState() {
 
 // static
 EasyUnlockTpmKeyManagerFactory* EasyUnlockTpmKeyManagerFactory::GetInstance() {
-  return Singleton<EasyUnlockTpmKeyManagerFactory>::get();
+  return base::Singleton<EasyUnlockTpmKeyManagerFactory>::get();
 }
 
 // static

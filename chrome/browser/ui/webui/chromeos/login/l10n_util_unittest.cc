@@ -42,7 +42,7 @@ MachineStatisticsInitializer::MachineStatisticsInitializer() {
 
 // static
 MachineStatisticsInitializer* MachineStatisticsInitializer::GetInstance() {
-  return Singleton<MachineStatisticsInitializer>::get();
+  return base::Singleton<MachineStatisticsInitializer>::get();
 }
 
 void VerifyOnlyUILanguages(const base::ListValue& list) {

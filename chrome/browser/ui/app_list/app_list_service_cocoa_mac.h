@@ -14,8 +14,10 @@ class AppListServiceMacTestApi;
 class AppListControllerDelegateImpl;
 @class AppListWindowController;
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 // AppListServiceCocoaMac shows and hides the Cocoa app list on Mac.
 class AppListServiceCocoaMac : public AppListServiceMac {
@@ -40,7 +42,7 @@ class AppListServiceCocoaMac : public AppListServiceMac {
 
  private:
   friend class test::AppListServiceMacTestApi;
-  friend struct DefaultSingletonTraits<AppListServiceCocoaMac>;
+  friend struct base::DefaultSingletonTraits<AppListServiceCocoaMac>;
 
   AppListServiceCocoaMac();
 

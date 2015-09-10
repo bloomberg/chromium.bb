@@ -99,7 +99,7 @@ ZygoteHostImpl::~ZygoteHostImpl() { TearDown(); }
 
 // static
 ZygoteHostImpl* ZygoteHostImpl::GetInstance() {
-  return Singleton<ZygoteHostImpl>::get();
+  return base::Singleton<ZygoteHostImpl>::get();
 }
 
 void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {

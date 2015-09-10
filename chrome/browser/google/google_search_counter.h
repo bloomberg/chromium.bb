@@ -41,7 +41,7 @@ class GoogleSearchCounter : content::NotificationObserver {
   }
 
  private:
-  friend struct DefaultSingletonTraits<GoogleSearchCounter>;
+  friend struct base::DefaultSingletonTraits<GoogleSearchCounter>;
   friend class GoogleSearchCounterTest;
   friend class GoogleSearchCounterAndroidTest;
 

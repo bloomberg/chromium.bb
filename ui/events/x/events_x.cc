@@ -41,7 +41,7 @@ const int kMaxWheelButton = 7;
 class XModifierStateWatcher{
  public:
   static XModifierStateWatcher* GetInstance() {
-    return Singleton<XModifierStateWatcher>::get();
+    return base::Singleton<XModifierStateWatcher>::get();
   }
 
   int StateFromKeyboardCode(ui::KeyboardCode keyboard_code) {
@@ -100,7 +100,7 @@ class XModifierStateWatcher{
   unsigned int state() { return state_; }
 
  private:
-  friend struct DefaultSingletonTraits<XModifierStateWatcher>;
+  friend struct base::DefaultSingletonTraits<XModifierStateWatcher>;
 
   XModifierStateWatcher() : state_(0) { }
 

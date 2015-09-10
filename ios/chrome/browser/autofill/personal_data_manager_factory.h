@@ -9,8 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace autofill {
 class PersonalDataManager;
@@ -29,7 +31,7 @@ class PersonalDataManagerFactory : public BrowserStateKeyedServiceFactory {
   static PersonalDataManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PersonalDataManagerFactory>;
+  friend struct base::DefaultSingletonTraits<PersonalDataManagerFactory>;
 
   PersonalDataManagerFactory();
   ~PersonalDataManagerFactory() override;

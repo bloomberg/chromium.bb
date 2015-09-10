@@ -20,7 +20,7 @@ GoogleURLTracker* GoogleURLTrackerFactory::GetForProfile(Profile* profile) {
 
 // static
 GoogleURLTrackerFactory* GoogleURLTrackerFactory::GetInstance() {
-  return Singleton<GoogleURLTrackerFactory>::get();
+  return base::Singleton<GoogleURLTrackerFactory>::get();
 }
 
 GoogleURLTrackerFactory::GoogleURLTrackerFactory()

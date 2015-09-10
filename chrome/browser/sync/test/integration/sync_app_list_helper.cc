@@ -25,7 +25,7 @@ using app_list::AppListSyncableService;
 using app_list::AppListSyncableServiceFactory;
 
 SyncAppListHelper* SyncAppListHelper::GetInstance() {
-  SyncAppListHelper* instance = Singleton<SyncAppListHelper>::get();
+  SyncAppListHelper* instance = base::Singleton<SyncAppListHelper>::get();
   instance->SetupIfNecessary(sync_datatype_helper::test());
   return instance;
 }

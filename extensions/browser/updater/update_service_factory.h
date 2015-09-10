@@ -20,7 +20,7 @@ class UpdateServiceFactory : public BrowserContextKeyedServiceFactory {
   static UpdateServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<UpdateServiceFactory>;
+  friend struct base::DefaultSingletonTraits<UpdateServiceFactory>;
 
   UpdateServiceFactory();
   ~UpdateServiceFactory() override;

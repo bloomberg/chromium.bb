@@ -29,7 +29,7 @@ class AppListSyncableServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* browser_context);
 
  private:
-  friend struct DefaultSingletonTraits<AppListSyncableServiceFactory>;
+  friend struct base::DefaultSingletonTraits<AppListSyncableServiceFactory>;
 
   AppListSyncableServiceFactory();
   ~AppListSyncableServiceFactory() override;

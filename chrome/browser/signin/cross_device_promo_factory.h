@@ -27,7 +27,7 @@ class CrossDevicePromoFactory : public BrowserContextKeyedServiceFactory {
       user_prefs::PrefRegistrySyncable* registry) override;
 
  private:
-  friend struct DefaultSingletonTraits<CrossDevicePromoFactory>;
+  friend struct base::DefaultSingletonTraits<CrossDevicePromoFactory>;
 
   CrossDevicePromoFactory();
   ~CrossDevicePromoFactory() override;

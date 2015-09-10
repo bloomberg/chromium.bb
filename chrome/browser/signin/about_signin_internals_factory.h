@@ -27,7 +27,7 @@ class AboutSigninInternalsFactory : public BrowserContextKeyedServiceFactory {
       user_prefs::PrefRegistrySyncable* registry) override;
 
  private:
-  friend struct DefaultSingletonTraits<AboutSigninInternalsFactory>;
+  friend struct base::DefaultSingletonTraits<AboutSigninInternalsFactory>;
 
   AboutSigninInternalsFactory();
   ~AboutSigninInternalsFactory() override;

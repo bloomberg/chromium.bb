@@ -41,7 +41,7 @@ class CONTENT_EXPORT BrowserURLHandlerImpl : public BrowserURLHandler {
   // This object is a singleton:
   BrowserURLHandlerImpl();
   ~BrowserURLHandlerImpl() override;
-  friend struct DefaultSingletonTraits<BrowserURLHandlerImpl>;
+  friend struct base::DefaultSingletonTraits<BrowserURLHandlerImpl>;
 
   // A URLHandler to run in a preliminary phase, before rewriting is done.
   URLHandler fixup_handler_;

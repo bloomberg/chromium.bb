@@ -114,7 +114,7 @@ class MemoryUsageCache {
  public:
   // Retrieves the Singleton.
   static MemoryUsageCache* GetInstance() {
-    return Singleton<MemoryUsageCache>::get();
+    return base::Singleton<MemoryUsageCache>::get();
   }
 
   MemoryUsageCache() : memory_value_(0) { Init(); }

@@ -79,7 +79,7 @@ class BrailleControllerImpl : public BrailleController {
   // Manipulated on the FILE thread.
   base::FilePathWatcher file_path_watcher_;
 
-  friend struct DefaultSingletonTraits<BrailleControllerImpl>;
+  friend struct base::DefaultSingletonTraits<BrailleControllerImpl>;
 
   DISALLOW_COPY_AND_ASSIGN(BrailleControllerImpl);
 };

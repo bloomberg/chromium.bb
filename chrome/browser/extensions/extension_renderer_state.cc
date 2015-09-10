@@ -176,7 +176,7 @@ ExtensionRendererState::~ExtensionRendererState() {
 
 // static
 ExtensionRendererState* ExtensionRendererState::GetInstance() {
-  return Singleton<ExtensionRendererState>::get();
+  return base::Singleton<ExtensionRendererState>::get();
 }
 
 void ExtensionRendererState::Init() {

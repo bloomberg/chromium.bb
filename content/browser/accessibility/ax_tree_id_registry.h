@@ -8,9 +8,10 @@
 #include <map>
 
 #include "base/stl_util.h"
-
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace content {
 
@@ -33,7 +34,7 @@ class AXTreeIDRegistry {
   void RemoveAXTreeID(AXTreeID ax_tree_id);
 
  private:
-  friend struct DefaultSingletonTraits<AXTreeIDRegistry>;
+  friend struct base::DefaultSingletonTraits<AXTreeIDRegistry>;
 
   AXTreeIDRegistry();
   virtual ~AXTreeIDRegistry();

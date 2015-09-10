@@ -41,8 +41,8 @@ AppListServiceLinux::~AppListServiceLinux() {}
 
 // static
 AppListServiceLinux* AppListServiceLinux::GetInstance() {
-  return Singleton<AppListServiceLinux,
-                   LeakySingletonTraits<AppListServiceLinux> >::get();
+  return base::Singleton<AppListServiceLinux, base::LeakySingletonTraits<
+                                                  AppListServiceLinux>>::get();
 }
 
 void AppListServiceLinux::CreateShortcut() {

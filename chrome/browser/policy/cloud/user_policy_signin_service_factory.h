@@ -50,7 +50,7 @@ class UserPolicySigninServiceFactory
       user_prefs::PrefRegistrySyncable* registry) override;
 
  private:
-  friend struct DefaultSingletonTraits<UserPolicySigninServiceFactory>;
+  friend struct base::DefaultSingletonTraits<UserPolicySigninServiceFactory>;
 
   UserPolicySigninServiceFactory();
   ~UserPolicySigninServiceFactory() override;

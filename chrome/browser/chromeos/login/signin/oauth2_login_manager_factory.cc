@@ -39,7 +39,7 @@ OAuth2LoginManager* OAuth2LoginManagerFactory::GetForProfile(
 // static
 OAuth2LoginManagerFactory*
     OAuth2LoginManagerFactory::GetInstance() {
-  return Singleton<OAuth2LoginManagerFactory>::get();
+  return base::Singleton<OAuth2LoginManagerFactory>::get();
 }
 
 KeyedService* OAuth2LoginManagerFactory::BuildServiceInstanceFor(

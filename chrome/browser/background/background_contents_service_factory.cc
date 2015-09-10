@@ -24,7 +24,7 @@ BackgroundContentsService* BackgroundContentsServiceFactory::GetForProfile(
 // static
 BackgroundContentsServiceFactory* BackgroundContentsServiceFactory::
     GetInstance() {
-  return Singleton<BackgroundContentsServiceFactory>::get();
+  return base::Singleton<BackgroundContentsServiceFactory>::get();
 }
 
 BackgroundContentsServiceFactory::BackgroundContentsServiceFactory()

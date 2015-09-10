@@ -23,7 +23,7 @@ class WebUIIOSControllerFactoryRegistry : public WebUIIOSControllerFactory {
       const GURL& url) const override;
 
  private:
-  friend struct DefaultSingletonTraits<WebUIIOSControllerFactoryRegistry>;
+  friend struct base::DefaultSingletonTraits<WebUIIOSControllerFactoryRegistry>;
 
   WebUIIOSControllerFactoryRegistry();
   ~WebUIIOSControllerFactoryRegistry() override;

@@ -9,8 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}
+
 class AccountConsistencyService;
 
 namespace ios {
@@ -33,7 +36,7 @@ class AccountConsistencyServiceFactory
   static AccountConsistencyServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AccountConsistencyServiceFactory>;
+  friend struct base::DefaultSingletonTraits<AccountConsistencyServiceFactory>;
 
   AccountConsistencyServiceFactory();
   ~AccountConsistencyServiceFactory() override;

@@ -224,7 +224,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
                                   public ui::test::EventGeneratorDelegate {
  public:
   static EventGeneratorDelegateMac* GetInstance() {
-    return Singleton<EventGeneratorDelegateMac>::get();
+    return base::Singleton<EventGeneratorDelegateMac>::get();
   }
 
   IMP CurrentEventMethod() {
@@ -285,7 +285,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
                             gfx::Point* point) const override {}
 
  private:
-  friend struct DefaultSingletonTraits<EventGeneratorDelegateMac>;
+  friend struct base::DefaultSingletonTraits<EventGeneratorDelegateMac>;
 
   EventGeneratorDelegateMac();
   ~EventGeneratorDelegateMac() override;

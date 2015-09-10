@@ -17,7 +17,7 @@ ProxyModule::~ProxyModule() {
 
 // static
 ProxyModule* ProxyModule::GetInstance() {
-  return Singleton<ProxyModule>::get();
+  return base::Singleton<ProxyModule>::get();
 }
 
 const std::string& ProxyModule::GetFlashCommandLineArgs() {

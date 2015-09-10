@@ -23,11 +23,11 @@ class ShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
  public:
   static ShutdownNotifierFactory* GetInstance() {
-    return Singleton<ShutdownNotifierFactory>::get();
+    return base::Singleton<ShutdownNotifierFactory>::get();
   }
 
  private:
-  friend struct DefaultSingletonTraits<ShutdownNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
 
   ShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(

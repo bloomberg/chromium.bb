@@ -33,7 +33,7 @@ class AuraLinuxApplication
  public:
   // Get the single instance of this class.
   static AuraLinuxApplication* GetInstance() {
-    return Singleton<AuraLinuxApplication>::get();
+    return base::Singleton<AuraLinuxApplication>::get();
   }
 
   // Called every time we create a new accessibility on a View.
@@ -114,7 +114,7 @@ class AuraLinuxApplication
   }
 
  private:
-  friend struct DefaultSingletonTraits<AuraLinuxApplication>;
+  friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;
 
   AuraLinuxApplication()
       : platform_node_(ui::AXPlatformNode::Create(this)) {

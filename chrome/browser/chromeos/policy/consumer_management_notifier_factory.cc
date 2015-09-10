@@ -26,7 +26,7 @@ ConsumerManagementNotifierFactory::GetForBrowserContext(
 // static
 ConsumerManagementNotifierFactory*
 ConsumerManagementNotifierFactory::GetInstance() {
-  return Singleton<ConsumerManagementNotifierFactory>::get();
+  return base::Singleton<ConsumerManagementNotifierFactory>::get();
 }
 
 ConsumerManagementNotifierFactory::ConsumerManagementNotifierFactory()

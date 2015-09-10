@@ -13,7 +13,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
+
 class EasyUnlockService;
 class Profile;
 
@@ -30,7 +33,7 @@ class EasyUnlockServiceFactory : public BrowserContextKeyedServiceFactory {
   }
 
  private:
-  friend struct DefaultSingletonTraits<EasyUnlockServiceFactory>;
+  friend struct base::DefaultSingletonTraits<EasyUnlockServiceFactory>;
 
   EasyUnlockServiceFactory();
   ~EasyUnlockServiceFactory() override;

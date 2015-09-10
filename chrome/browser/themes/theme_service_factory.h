@@ -34,7 +34,7 @@ class ThemeServiceFactory : public BrowserContextKeyedServiceFactory {
   static ThemeServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ThemeServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ThemeServiceFactory>;
 
   ThemeServiceFactory();
   ~ThemeServiceFactory() override;

@@ -20,7 +20,7 @@ class ToolbarActionsModelFactory : public BrowserContextKeyedServiceFactory {
   static ToolbarActionsModelFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ToolbarActionsModelFactory>;
+  friend struct base::DefaultSingletonTraits<ToolbarActionsModelFactory>;
 
   ToolbarActionsModelFactory();
   ~ToolbarActionsModelFactory() override;

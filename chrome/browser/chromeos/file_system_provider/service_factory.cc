@@ -27,7 +27,7 @@ Service* ServiceFactory::FindExisting(content::BrowserContext* context) {
 }
 
 ServiceFactory* ServiceFactory::GetInstance() {
-  return Singleton<ServiceFactory>::get();
+  return base::Singleton<ServiceFactory>::get();
 }
 
 ServiceFactory::ServiceFactory()

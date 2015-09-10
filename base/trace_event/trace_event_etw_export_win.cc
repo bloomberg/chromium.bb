@@ -133,19 +133,18 @@ namespace trace_event {
 // This object will be created by each process. It's a background (low-priority)
 // thread that will monitor the ETW keyword for any changes.
 class TraceEventETWExport::ETWKeywordUpdateThread
-    : public base::PlatformThread::Delegate {
+    : public PlatformThread::Delegate {
  public:
   ETWKeywordUpdateThread() {}
   ~ETWKeywordUpdateThread() override {}
 
   // Implementation of PlatformThread::Delegate:
   void ThreadMain() override {
-    base::PlatformThread::SetName("ETW Keyword Update Thread");
-    base::TimeDelta sleep_time =
-        base::TimeDelta::FromMilliseconds(kUpdateTimerDelayMs);
+    PlatformThread::SetName("ETW Keyword Update Thread");
+    TimeDelta sleep_time = TimeDelta::FromMilliseconds(kUpdateTimerDelayMs);
     while (1) {
-      base::PlatformThread::Sleep(sleep_time);
-      base::trace_event::TraceEventETWExport::UpdateETWKeyword();
+      PlatformThread::Sleep(sleep_time);
+      trace_event::TraceEventETWExport::UpdateETWKeyword();
     }
   }
 

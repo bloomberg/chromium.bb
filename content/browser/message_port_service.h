@@ -76,7 +76,7 @@ class CONTENT_EXPORT MessagePortService {
   void SendQueuedMessagesIfPossible(int message_port_id);
 
  private:
-  friend struct DefaultSingletonTraits<MessagePortService>;
+  friend struct base::DefaultSingletonTraits<MessagePortService>;
 
   MessagePortService();
   ~MessagePortService();

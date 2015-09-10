@@ -222,7 +222,7 @@ class DriveIntegrationServiceFactory
   static DriveIntegrationServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<DriveIntegrationServiceFactory>;
+  friend struct base::DefaultSingletonTraits<DriveIntegrationServiceFactory>;
 
   DriveIntegrationServiceFactory();
   ~DriveIntegrationServiceFactory() override;

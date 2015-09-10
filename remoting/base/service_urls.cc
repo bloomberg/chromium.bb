@@ -74,7 +74,7 @@ ServiceUrls::~ServiceUrls() {
 }
 
 ServiceUrls* remoting::ServiceUrls::GetInstance() {
-  return Singleton<ServiceUrls>::get();
+  return base::Singleton<ServiceUrls>::get();
 }
 
 const std::string& ServiceUrls::directory_base_url() const {

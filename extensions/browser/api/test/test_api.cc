@@ -111,7 +111,7 @@ TestGetConfigFunction::TestConfigState::TestConfigState()
 // static
 TestGetConfigFunction::TestConfigState*
 TestGetConfigFunction::TestConfigState::GetInstance() {
-  return Singleton<TestConfigState>::get();
+  return base::Singleton<TestConfigState>::get();
 }
 
 TestGetConfigFunction::~TestGetConfigFunction() {}

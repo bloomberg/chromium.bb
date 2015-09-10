@@ -15,7 +15,9 @@
 #include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/x/x11_types.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 typedef struct _XDisplay Display;
 
@@ -53,7 +55,7 @@ class EVENTS_DEVICES_EXPORT DeviceListCacheX11 {
   const XIDeviceList& GetXI2DeviceList(Display* display);
 
  private:
-  friend struct DefaultSingletonTraits<DeviceListCacheX11>;
+  friend struct base::DefaultSingletonTraits<DeviceListCacheX11>;
 
   DeviceListCacheX11();
   ~DeviceListCacheX11();

@@ -221,7 +221,7 @@ bool (*SharedWorkerServiceImpl::s_try_increment_worker_ref_count_)(int) =
 
 SharedWorkerServiceImpl* SharedWorkerServiceImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return Singleton<SharedWorkerServiceImpl>::get();
+  return base::Singleton<SharedWorkerServiceImpl>::get();
 }
 
 SharedWorkerServiceImpl::SharedWorkerServiceImpl()

@@ -36,7 +36,7 @@ class BootstrapSandboxPolicy : public BrowserChildProcessObserver {
       int exit_code) override;
 
  private:
-  friend struct DefaultSingletonTraits<BootstrapSandboxPolicy>;
+  friend struct base::DefaultSingletonTraits<BootstrapSandboxPolicy>;
   BootstrapSandboxPolicy();
   ~BootstrapSandboxPolicy() override;
 
@@ -46,7 +46,7 @@ class BootstrapSandboxPolicy : public BrowserChildProcessObserver {
 };
 
 BootstrapSandboxPolicy* BootstrapSandboxPolicy::GetInstance() {
-  return Singleton<BootstrapSandboxPolicy>::get();
+  return base::Singleton<BootstrapSandboxPolicy>::get();
 }
 
 void BootstrapSandboxPolicy::BrowserChildProcessHostDisconnected(

@@ -26,7 +26,7 @@ CameraPresenceNotifier::~CameraPresenceNotifier() {}
 
 // static
 CameraPresenceNotifier* CameraPresenceNotifier::GetInstance() {
-  return Singleton<CameraPresenceNotifier>::get();
+  return base::Singleton<CameraPresenceNotifier>::get();
 }
 
 void CameraPresenceNotifier::AddObserver(

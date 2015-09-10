@@ -32,7 +32,7 @@ AccountReconcilor* AccountReconcilorFactory::GetForProfile(
 
 // static
 AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
-  return Singleton<AccountReconcilorFactory>::get();
+  return base::Singleton<AccountReconcilorFactory>::get();
 }
 
 KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(

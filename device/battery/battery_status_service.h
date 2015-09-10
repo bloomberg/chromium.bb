@@ -45,7 +45,7 @@ class DEVICE_BATTERY_EXPORT BatteryStatusService {
   const BatteryUpdateCallback& GetUpdateCallbackForTesting() const;
 
  private:
-  friend struct DefaultSingletonTraits<BatteryStatusService>;
+  friend struct base::DefaultSingletonTraits<BatteryStatusService>;
   friend class BatteryStatusServiceTest;
 
   BatteryStatusService();

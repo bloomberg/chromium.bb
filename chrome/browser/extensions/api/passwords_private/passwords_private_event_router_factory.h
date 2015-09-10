@@ -34,7 +34,8 @@ class PasswordsPrivateEventRouterFactory
   bool ServiceIsNULLWhileTesting() const override;
 
  private:
-  friend struct DefaultSingletonTraits<PasswordsPrivateEventRouterFactory>;
+  friend struct base::DefaultSingletonTraits<
+      PasswordsPrivateEventRouterFactory>;
 
   PasswordsPrivateEventRouterFactory();
   ~PasswordsPrivateEventRouterFactory() override;

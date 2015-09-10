@@ -24,7 +24,7 @@ class NetworkingConfigServiceFactory
   static NetworkingConfigServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<NetworkingConfigServiceFactory>;
+  friend struct base::DefaultSingletonTraits<NetworkingConfigServiceFactory>;
 
   NetworkingConfigServiceFactory();
   ~NetworkingConfigServiceFactory() override;

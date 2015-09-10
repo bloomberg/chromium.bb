@@ -32,7 +32,7 @@ scoped_refptr<ThumbnailService> ThumbnailServiceFactory::GetForProfile(
 
 // static
 ThumbnailServiceFactory* ThumbnailServiceFactory::GetInstance() {
-  return Singleton<ThumbnailServiceFactory>::get();
+  return base::Singleton<ThumbnailServiceFactory>::get();
 }
 
 scoped_refptr<RefcountedKeyedService>

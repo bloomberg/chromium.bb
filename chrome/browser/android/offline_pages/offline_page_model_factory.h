@@ -8,8 +8,10 @@
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace offline_pages {
 
@@ -23,7 +25,7 @@ class OfflinePageModelFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context);
 
  private:
-  friend struct DefaultSingletonTraits<OfflinePageModelFactory>;
+  friend struct base::DefaultSingletonTraits<OfflinePageModelFactory>;
 
   OfflinePageModelFactory();
   ~OfflinePageModelFactory() override {}

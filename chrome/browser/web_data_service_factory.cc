@@ -153,7 +153,7 @@ WebDataServiceFactory::GetPasswordWebDataForProfile(
 
 // static
 WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
-  return Singleton<WebDataServiceFactory>::get();
+  return base::Singleton<WebDataServiceFactory>::get();
 }
 
 content::BrowserContext* WebDataServiceFactory::GetBrowserContextToUse(

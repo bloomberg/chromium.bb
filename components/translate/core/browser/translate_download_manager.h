@@ -13,7 +13,9 @@
 #include "components/translate/core/browser/translate_script.h"
 #include "net/url_request/url_request_context_getter.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 class PrefService;
 
@@ -91,7 +93,7 @@ class TranslateDownloadManager {
   void SetTranslateScriptExpirationDelay(int delay_ms);
 
  private:
-  friend struct DefaultSingletonTraits<TranslateDownloadManager>;
+  friend struct base::DefaultSingletonTraits<TranslateDownloadManager>;
   TranslateDownloadManager();
   virtual ~TranslateDownloadManager();
 

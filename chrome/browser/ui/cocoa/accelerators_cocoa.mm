@@ -151,7 +151,7 @@ AcceleratorsCocoa::~AcceleratorsCocoa() {}
 
 // static
 AcceleratorsCocoa* AcceleratorsCocoa::GetInstance() {
-  return Singleton<AcceleratorsCocoa>::get();
+  return base::Singleton<AcceleratorsCocoa>::get();
 }
 
 const ui::Accelerator* AcceleratorsCocoa::GetAcceleratorForCommand(

@@ -34,7 +34,7 @@ PrerenderManager* PrerenderManagerFactory::GetForProfile(
 
 // static
 PrerenderManagerFactory* PrerenderManagerFactory::GetInstance() {
-  return Singleton<PrerenderManagerFactory>::get();
+  return base::Singleton<PrerenderManagerFactory>::get();
 }
 
 PrerenderManagerFactory::PrerenderManagerFactory()

@@ -25,7 +25,7 @@ class MissingServiceKeyedServiceFactory
   static MissingServiceKeyedServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<MissingServiceKeyedServiceFactory>;
+  friend struct base::DefaultSingletonTraits<MissingServiceKeyedServiceFactory>;
 
   MissingServiceKeyedServiceFactory();
   ~MissingServiceKeyedServiceFactory() override;
@@ -40,7 +40,7 @@ class MissingServiceKeyedServiceFactory
 // static
 MissingServiceKeyedServiceFactory*
 MissingServiceKeyedServiceFactory::GetInstance() {
-  return Singleton<MissingServiceKeyedServiceFactory>::get();
+  return base::Singleton<MissingServiceKeyedServiceFactory>::get();
 }
 
 MissingServiceKeyedServiceFactory::MissingServiceKeyedServiceFactory()

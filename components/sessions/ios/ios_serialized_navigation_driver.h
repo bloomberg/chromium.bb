@@ -7,7 +7,9 @@
 
 #include "components/sessions/core/serialized_navigation_driver.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace sessions {
 
@@ -36,7 +38,7 @@ class IOSSerializedNavigationDriver
 
  private:
   IOSSerializedNavigationDriver();
-  friend struct DefaultSingletonTraits<IOSSerializedNavigationDriver>;
+  friend struct base::DefaultSingletonTraits<IOSSerializedNavigationDriver>;
 };
 
 }  // namespace sessions

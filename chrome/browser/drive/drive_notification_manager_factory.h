@@ -34,7 +34,7 @@ class DriveNotificationManagerFactory
   static DriveNotificationManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<DriveNotificationManagerFactory>;
+  friend struct base::DefaultSingletonTraits<DriveNotificationManagerFactory>;
 
   DriveNotificationManagerFactory();
   ~DriveNotificationManagerFactory() override;

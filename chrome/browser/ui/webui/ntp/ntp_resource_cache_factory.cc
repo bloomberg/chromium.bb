@@ -19,7 +19,7 @@ NTPResourceCache* NTPResourceCacheFactory::GetForProfile(Profile* profile) {
 
 // static
 NTPResourceCacheFactory* NTPResourceCacheFactory::GetInstance() {
-  return Singleton<NTPResourceCacheFactory>::get();
+  return base::Singleton<NTPResourceCacheFactory>::get();
 }
 
 NTPResourceCacheFactory::NTPResourceCacheFactory()

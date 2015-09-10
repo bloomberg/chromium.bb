@@ -139,7 +139,7 @@ LogoService* LogoServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 LogoServiceFactory* LogoServiceFactory::GetInstance() {
-  return Singleton<LogoServiceFactory>::get();
+  return base::Singleton<LogoServiceFactory>::get();
 }
 
 LogoServiceFactory::LogoServiceFactory()

@@ -31,8 +31,9 @@ const int kSendReplyTimeoutMs = 100;
 
 // static
 BrowserIOSurfaceManager* BrowserIOSurfaceManager::GetInstance() {
-  return Singleton<BrowserIOSurfaceManager,
-                   LeakySingletonTraits<BrowserIOSurfaceManager>>::get();
+  return base::Singleton<
+      BrowserIOSurfaceManager,
+      base::LeakySingletonTraits<BrowserIOSurfaceManager>>::get();
 }
 
 // static

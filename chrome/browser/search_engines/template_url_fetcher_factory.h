@@ -25,7 +25,7 @@ class TemplateURLFetcherFactory : public BrowserContextKeyedServiceFactory {
   static void ShutdownForProfile(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<TemplateURLFetcherFactory>;
+  friend struct base::DefaultSingletonTraits<TemplateURLFetcherFactory>;
 
   TemplateURLFetcherFactory();
   ~TemplateURLFetcherFactory() override;

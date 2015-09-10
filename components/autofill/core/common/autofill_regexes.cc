@@ -24,7 +24,7 @@ class AutofillRegexes {
  private:
   AutofillRegexes();
   ~AutofillRegexes();
-  friend struct DefaultSingletonTraits<AutofillRegexes>;
+  friend struct base::DefaultSingletonTraits<AutofillRegexes>;
 
   // Maps patterns to their corresponding regex matchers.
   base::ScopedPtrHashMap<base::string16, scoped_ptr<icu::RegexMatcher>>
@@ -35,7 +35,7 @@ class AutofillRegexes {
 
 // static
 AutofillRegexes* AutofillRegexes::GetInstance() {
-  return Singleton<AutofillRegexes>::get();
+  return base::Singleton<AutofillRegexes>::get();
 }
 
 AutofillRegexes::AutofillRegexes() {

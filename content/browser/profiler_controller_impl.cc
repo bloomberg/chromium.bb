@@ -21,7 +21,7 @@ ProfilerController* ProfilerController::GetInstance() {
 }
 
 ProfilerControllerImpl* ProfilerControllerImpl::GetInstance() {
-  return Singleton<ProfilerControllerImpl>::get();
+  return base::Singleton<ProfilerControllerImpl>::get();
 }
 
 ProfilerControllerImpl::ProfilerControllerImpl() : subscriber_(NULL) {

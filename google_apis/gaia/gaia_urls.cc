@@ -73,7 +73,7 @@ GURL GetURLSwitchValueWithDefault(const char* switch_value,
 }  // namespace
 
 GaiaUrls* GaiaUrls::GetInstance() {
-  return Singleton<GaiaUrls>::get();
+  return base::Singleton<GaiaUrls>::get();
 }
 
 GaiaUrls::GaiaUrls() {

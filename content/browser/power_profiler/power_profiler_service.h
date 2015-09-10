@@ -37,7 +37,7 @@ class CONTENT_EXPORT PowerProfilerService {
     PROFILING
   };
 
-  friend struct DefaultSingletonTraits<PowerProfilerService>;
+  friend struct base::DefaultSingletonTraits<PowerProfilerService>;
   friend class PowerProfilerServiceTest;
 
   PowerProfilerService();

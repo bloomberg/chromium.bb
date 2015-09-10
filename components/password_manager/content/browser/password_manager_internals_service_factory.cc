@@ -20,7 +20,7 @@ PasswordManagerInternalsServiceFactory::GetForBrowserContext(
 // static
 PasswordManagerInternalsServiceFactory*
 PasswordManagerInternalsServiceFactory::GetInstance() {
-  return Singleton<PasswordManagerInternalsServiceFactory>::get();
+  return base::Singleton<PasswordManagerInternalsServiceFactory>::get();
 }
 
 PasswordManagerInternalsServiceFactory::PasswordManagerInternalsServiceFactory()

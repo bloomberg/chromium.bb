@@ -32,7 +32,7 @@ MediaStreamMicPermissionContextFactory::GetBrowserContextToUse(
 // static
 MediaStreamMicPermissionContextFactory*
 MediaStreamMicPermissionContextFactory::GetInstance() {
-  return Singleton<MediaStreamMicPermissionContextFactory>::get();
+  return base::Singleton<MediaStreamMicPermissionContextFactory>::get();
 }
 
 // static

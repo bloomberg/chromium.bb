@@ -29,7 +29,7 @@ class GAIAInfoUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
   static GAIAInfoUpdateServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<GAIAInfoUpdateServiceFactory>;
+  friend struct base::DefaultSingletonTraits<GAIAInfoUpdateServiceFactory>;
 
   GAIAInfoUpdateServiceFactory();
   ~GAIAInfoUpdateServiceFactory() override;

@@ -73,7 +73,7 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
       SigninManagerBase* manager);
 
  private:
-  friend struct DefaultSingletonTraits<SigninManagerFactory>;
+  friend struct base::DefaultSingletonTraits<SigninManagerFactory>;
 
   SigninManagerFactory();
   ~SigninManagerFactory() override;

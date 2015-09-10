@@ -41,7 +41,7 @@ class HotwordServiceFactory : public BrowserContextKeyedServiceFactory {
   void UpdateMicrophoneState();
 
  private:
-  friend struct DefaultSingletonTraits<HotwordServiceFactory>;
+  friend struct base::DefaultSingletonTraits<HotwordServiceFactory>;
 
   HotwordServiceFactory();
   ~HotwordServiceFactory() override;

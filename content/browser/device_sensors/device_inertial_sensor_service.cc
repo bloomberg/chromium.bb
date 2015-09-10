@@ -22,8 +22,9 @@ DeviceInertialSensorService::~DeviceInertialSensorService() {
 }
 
 DeviceInertialSensorService* DeviceInertialSensorService::GetInstance() {
-  return Singleton<DeviceInertialSensorService,
-                   LeakySingletonTraits<DeviceInertialSensorService> >::get();
+  return base::Singleton<
+      DeviceInertialSensorService,
+      base::LeakySingletonTraits<DeviceInertialSensorService>>::get();
 }
 
 void DeviceInertialSensorService::AddConsumer(ConsumerType consumer_type) {

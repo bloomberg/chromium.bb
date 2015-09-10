@@ -11,7 +11,9 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "components/variations/service/variations_service.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 class UpgradeDetectorImpl : public UpgradeDetector,
                             public variations::VariationsService::Observer {
@@ -37,7 +39,7 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   void NotifyOnUpgradeWithTimePassed(base::TimeDelta time_passed);
 
  private:
-  friend struct DefaultSingletonTraits<UpgradeDetectorImpl>;
+  friend struct base::DefaultSingletonTraits<UpgradeDetectorImpl>;
 
   // Start the timer that will call |CheckForUpgrade()|.
   void StartTimerForUpgradeCheck();

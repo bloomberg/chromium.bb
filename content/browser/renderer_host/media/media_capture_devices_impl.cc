@@ -28,7 +28,7 @@ MediaCaptureDevices* MediaCaptureDevices::GetInstance() {
 }
 
 MediaCaptureDevicesImpl* MediaCaptureDevicesImpl::GetInstance() {
-  return Singleton<MediaCaptureDevicesImpl>::get();
+  return base::Singleton<MediaCaptureDevicesImpl>::get();
 }
 
 const MediaStreamDevices&

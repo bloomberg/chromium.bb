@@ -28,7 +28,7 @@ class CameraPresenceNotifier {
   void RemoveObserver(CameraPresenceNotifier::Observer* observer);
 
  private:
-  friend struct DefaultSingletonTraits<CameraPresenceNotifier>;
+  friend struct base::DefaultSingletonTraits<CameraPresenceNotifier>;
   CameraPresenceNotifier();
   ~CameraPresenceNotifier();
 

@@ -87,7 +87,7 @@ class KioskAppUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
   static KioskAppUpdateServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<KioskAppUpdateServiceFactory>;
+  friend struct base::DefaultSingletonTraits<KioskAppUpdateServiceFactory>;
 
   KioskAppUpdateServiceFactory();
   ~KioskAppUpdateServiceFactory() override;

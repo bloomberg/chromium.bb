@@ -27,7 +27,7 @@ QuicInMemoryCache::Response::~Response() {}
 
 // static
 QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
-  return Singleton<QuicInMemoryCache>::get();
+  return base::Singleton<QuicInMemoryCache>::get();
 }
 
 const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(

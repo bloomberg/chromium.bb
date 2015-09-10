@@ -22,7 +22,7 @@ SettingsPrivateEventRouter* SettingsPrivateEventRouterFactory::GetForProfile(
 // static
 SettingsPrivateEventRouterFactory*
 SettingsPrivateEventRouterFactory::GetInstance() {
-  return Singleton<SettingsPrivateEventRouterFactory>::get();
+  return base::Singleton<SettingsPrivateEventRouterFactory>::get();
 }
 
 SettingsPrivateEventRouterFactory::SettingsPrivateEventRouterFactory()

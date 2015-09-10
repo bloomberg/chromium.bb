@@ -27,7 +27,7 @@ PersonalDataManager* PersonalDataManagerFactory::GetForProfile(
 
 // static
 PersonalDataManagerFactory* PersonalDataManagerFactory::GetInstance() {
-  return Singleton<PersonalDataManagerFactory>::get();
+  return base::Singleton<PersonalDataManagerFactory>::get();
 }
 
 PersonalDataManagerFactory::PersonalDataManagerFactory()

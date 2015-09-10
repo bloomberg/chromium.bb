@@ -60,7 +60,7 @@ class ASH_EXPORT TouchUMA {
                         const ui::TouchEvent& event);
 
  private:
-  friend struct DefaultSingletonTraits<TouchUMA>;
+  friend struct base::DefaultSingletonTraits<TouchUMA>;
 
   TouchUMA();
   ~TouchUMA();

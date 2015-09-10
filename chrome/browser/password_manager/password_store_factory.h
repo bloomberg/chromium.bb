@@ -67,7 +67,7 @@ class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
   static void TrimOrDeleteAffiliationCache(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<PasswordStoreFactory>;
+  friend struct base::DefaultSingletonTraits<PasswordStoreFactory>;
 
   PasswordStoreFactory();
   ~PasswordStoreFactory() override;

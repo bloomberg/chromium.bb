@@ -52,7 +52,7 @@ bool BrowserURLRewriter::RewriteURLWithWriters(
 
 // static
 BrowserURLRewriterImpl* BrowserURLRewriterImpl::GetInstance() {
-  return Singleton<BrowserURLRewriterImpl>::get();
+  return base::Singleton<BrowserURLRewriterImpl>::get();
 }
 
 BrowserURLRewriterImpl::BrowserURLRewriterImpl() {

@@ -310,7 +310,7 @@ class ExtensionWebRequestEventRouter
   void AddCallbackForPageLoad(const base::Closure& callback);
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
+  friend struct base::DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
 
   struct EventListener;
   using EventListeners = std::vector<const EventListener*>;

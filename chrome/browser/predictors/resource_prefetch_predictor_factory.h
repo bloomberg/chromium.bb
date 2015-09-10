@@ -21,7 +21,7 @@ class ResourcePrefetchPredictorFactory
   static ResourcePrefetchPredictorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ResourcePrefetchPredictorFactory>;
+  friend struct base::DefaultSingletonTraits<ResourcePrefetchPredictorFactory>;
 
   ResourcePrefetchPredictorFactory();
   ~ResourcePrefetchPredictorFactory() override;

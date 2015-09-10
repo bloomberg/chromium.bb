@@ -29,7 +29,7 @@ enum UMACrosGestureMetricsType{
 namespace chromeos {
 
 DeviceUMA* DeviceUMA::GetInstance() {
-  return Singleton<DeviceUMA>::get();
+  return base::Singleton<DeviceUMA>::get();
 }
 
 DeviceUMA::DeviceUMA()

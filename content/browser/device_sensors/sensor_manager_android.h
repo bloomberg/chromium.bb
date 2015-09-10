@@ -13,7 +13,10 @@
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
 #include "content/common/device_sensors/device_orientation_hardware_buffer.h"
 
-template<typename T> struct DefaultSingletonTraits;
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}
 
 namespace content {
 
@@ -83,7 +86,7 @@ class CONTENT_EXPORT SensorManagerAndroid {
   void StopFetchingOrientationDataOnUI();
 
  private:
-  friend struct DefaultSingletonTraits<SensorManagerAndroid>;
+  friend struct base::DefaultSingletonTraits<SensorManagerAndroid>;
 
   enum {
     RECEIVED_MOTION_DATA_ACCELERATION = 0,

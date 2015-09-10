@@ -63,7 +63,7 @@ void SessionServiceFactory::ShutdownForProfile(Profile* profile) {
 }
 
 SessionServiceFactory* SessionServiceFactory::GetInstance() {
-  return Singleton<SessionServiceFactory>::get();
+  return base::Singleton<SessionServiceFactory>::get();
 }
 
 SessionServiceFactory::SessionServiceFactory()

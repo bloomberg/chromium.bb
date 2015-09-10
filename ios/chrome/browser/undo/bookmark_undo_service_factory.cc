@@ -27,7 +27,7 @@ BookmarkUndoService* BookmarkUndoServiceFactory::GetForBrowserStateIfExists(
 
 // static
 BookmarkUndoServiceFactory* BookmarkUndoServiceFactory::GetInstance() {
-  return Singleton<BookmarkUndoServiceFactory>::get();
+  return base::Singleton<BookmarkUndoServiceFactory>::get();
 }
 
 BookmarkUndoServiceFactory::BookmarkUndoServiceFactory()

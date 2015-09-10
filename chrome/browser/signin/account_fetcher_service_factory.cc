@@ -36,7 +36,7 @@ AccountFetcherService* AccountFetcherServiceFactory::GetForProfile(
 
 // static
 AccountFetcherServiceFactory* AccountFetcherServiceFactory::GetInstance() {
-  return Singleton<AccountFetcherServiceFactory>::get();
+  return base::Singleton<AccountFetcherServiceFactory>::get();
 }
 
 void AccountFetcherServiceFactory::RegisterProfilePrefs(

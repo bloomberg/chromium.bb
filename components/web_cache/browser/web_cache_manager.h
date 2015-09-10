@@ -21,8 +21,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
+namespace base {
 template<typename Type>
 struct DefaultSingletonTraits;
+}  // namespace base
+
 class PrefRegistrySimple;
 
 namespace web_cache {
@@ -124,7 +127,7 @@ class WebCacheManager : public content::NotificationObserver {
 
   // This class is a singleton.  Do not instantiate directly.
   WebCacheManager();
-  friend struct DefaultSingletonTraits<WebCacheManager>;
+  friend struct base::DefaultSingletonTraits<WebCacheManager>;
 
   ~WebCacheManager() override;
 

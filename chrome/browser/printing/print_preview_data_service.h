@@ -10,11 +10,11 @@
 
 #include "base/memory/ref_counted.h"
 
-template<typename T> struct DefaultSingletonTraits;
-
 class PrintPreviewDataStore;
 
 namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
 class RefCountedBytes;
 }
 
@@ -46,7 +46,7 @@ class PrintPreviewDataService {
   int GetAvailableDraftPageCount(int32_t preview_ui_id);
 
  private:
-  friend struct DefaultSingletonTraits<PrintPreviewDataService>;
+  friend struct base::DefaultSingletonTraits<PrintPreviewDataService>;
 
   // 1:1 relationship between PrintPreviewUI and data store object.
   // Key: PrintPreviewUI ID.

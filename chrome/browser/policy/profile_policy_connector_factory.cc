@@ -31,7 +31,7 @@ namespace policy {
 
 // static
 ProfilePolicyConnectorFactory* ProfilePolicyConnectorFactory::GetInstance() {
-  return Singleton<ProfilePolicyConnectorFactory>::get();
+  return base::Singleton<ProfilePolicyConnectorFactory>::get();
 }
 
 // static

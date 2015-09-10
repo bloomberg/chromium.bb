@@ -41,8 +41,8 @@ const char kResultFileParam[] = "result_file";
 } // namespace
 
 TraceConfigFile* TraceConfigFile::GetInstance() {
-  return Singleton<TraceConfigFile,
-                   DefaultSingletonTraits<TraceConfigFile>>::get();
+  return base::Singleton<TraceConfigFile,
+                         base::DefaultSingletonTraits<TraceConfigFile>>::get();
 }
 
 TraceConfigFile::TraceConfigFile()

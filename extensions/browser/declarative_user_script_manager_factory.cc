@@ -24,7 +24,7 @@ DeclarativeUserScriptManagerFactory::GetForBrowserContext(
 // static
 DeclarativeUserScriptManagerFactory*
 DeclarativeUserScriptManagerFactory::GetInstance() {
-  return Singleton<DeclarativeUserScriptManagerFactory>::get();
+  return base::Singleton<DeclarativeUserScriptManagerFactory>::get();
 }
 
 DeclarativeUserScriptManagerFactory::DeclarativeUserScriptManagerFactory()

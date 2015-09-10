@@ -32,7 +32,7 @@ static void UpdateSharedDeviceDisplayInfo(JNIEnv* env,
 
 // static
 SharedDeviceDisplayInfo* SharedDeviceDisplayInfo::GetInstance() {
-  return Singleton<SharedDeviceDisplayInfo>::get();
+  return base::Singleton<SharedDeviceDisplayInfo>::get();
 }
 
 int SharedDeviceDisplayInfo::GetDisplayHeight() {

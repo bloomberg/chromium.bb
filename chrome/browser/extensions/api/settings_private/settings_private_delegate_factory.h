@@ -25,7 +25,7 @@ class SettingsPrivateDelegateFactory
   static SettingsPrivateDelegateFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SettingsPrivateDelegateFactory>;
+  friend struct base::DefaultSingletonTraits<SettingsPrivateDelegateFactory>;
 
   SettingsPrivateDelegateFactory();
   ~SettingsPrivateDelegateFactory() override;

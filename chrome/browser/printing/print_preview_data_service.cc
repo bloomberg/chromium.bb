@@ -80,7 +80,7 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
 
 // static
 PrintPreviewDataService* PrintPreviewDataService::GetInstance() {
-  return Singleton<PrintPreviewDataService>::get();
+  return base::Singleton<PrintPreviewDataService>::get();
 }
 
 PrintPreviewDataService::PrintPreviewDataService() {

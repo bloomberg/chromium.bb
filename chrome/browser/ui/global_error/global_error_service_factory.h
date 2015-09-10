@@ -23,7 +23,7 @@ class GlobalErrorServiceFactory : public BrowserContextKeyedServiceFactory {
   static GlobalErrorServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<GlobalErrorServiceFactory>;
+  friend struct base::DefaultSingletonTraits<GlobalErrorServiceFactory>;
 
   GlobalErrorServiceFactory();
   ~GlobalErrorServiceFactory() override;

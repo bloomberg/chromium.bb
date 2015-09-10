@@ -21,7 +21,7 @@ class AppLoadServiceFactory : public BrowserContextKeyedServiceFactory {
   static AppLoadServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AppLoadServiceFactory>;
+  friend struct base::DefaultSingletonTraits<AppLoadServiceFactory>;
 
   AppLoadServiceFactory();
   ~AppLoadServiceFactory() override;

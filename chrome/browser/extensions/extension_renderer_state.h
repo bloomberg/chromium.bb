@@ -37,7 +37,7 @@ class ExtensionRendererState {
   class RenderViewHostObserver;
   class TabObserver;
   friend class TabObserver;
-  friend struct DefaultSingletonTraits<ExtensionRendererState>;
+  friend struct base::DefaultSingletonTraits<ExtensionRendererState>;
 
   typedef std::pair<int, int> RenderId;
   typedef std::pair<int, int> TabAndWindowId;

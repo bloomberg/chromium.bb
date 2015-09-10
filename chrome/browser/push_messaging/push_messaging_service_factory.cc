@@ -26,7 +26,7 @@ PushMessagingServiceImpl* PushMessagingServiceFactory::GetForProfile(
 
 // static
 PushMessagingServiceFactory* PushMessagingServiceFactory::GetInstance() {
-  return Singleton<PushMessagingServiceFactory>::get();
+  return base::Singleton<PushMessagingServiceFactory>::get();
 }
 
 PushMessagingServiceFactory::PushMessagingServiceFactory()

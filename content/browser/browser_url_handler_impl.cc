@@ -85,7 +85,7 @@ BrowserURLHandler::URLHandler BrowserURLHandler::null_handler() {
 
 // static
 BrowserURLHandlerImpl* BrowserURLHandlerImpl::GetInstance() {
-  return Singleton<BrowserURLHandlerImpl>::get();
+  return base::Singleton<BrowserURLHandlerImpl>::get();
 }
 
 BrowserURLHandlerImpl::BrowserURLHandlerImpl() :

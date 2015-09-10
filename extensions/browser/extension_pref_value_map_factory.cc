@@ -26,7 +26,7 @@ ExtensionPrefValueMap* ExtensionPrefValueMapFactory::GetForBrowserContext(
 
 // static
 ExtensionPrefValueMapFactory* ExtensionPrefValueMapFactory::GetInstance() {
-  return Singleton<ExtensionPrefValueMapFactory>::get();
+  return base::Singleton<ExtensionPrefValueMapFactory>::get();
 }
 
 KeyedService* ExtensionPrefValueMapFactory::BuildServiceInstanceFor(

@@ -150,7 +150,7 @@ void UpgradeDetectorChromeos::OnChannelsReceived(
 
 // static
 UpgradeDetectorChromeos* UpgradeDetectorChromeos::GetInstance() {
-  return Singleton<UpgradeDetectorChromeos>::get();
+  return base::Singleton<UpgradeDetectorChromeos>::get();
 }
 
 // static

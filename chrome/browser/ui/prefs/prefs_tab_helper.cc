@@ -414,11 +414,11 @@ class PrefWatcherFactory : public BrowserContextKeyedServiceFactory {
   }
 
   static PrefWatcherFactory* GetInstance() {
-    return Singleton<PrefWatcherFactory>::get();
+    return base::Singleton<PrefWatcherFactory>::get();
   }
 
  private:
-  friend struct DefaultSingletonTraits<PrefWatcherFactory>;
+  friend struct base::DefaultSingletonTraits<PrefWatcherFactory>;
 
   PrefWatcherFactory() : BrowserContextKeyedServiceFactory(
       "PrefWatcher",

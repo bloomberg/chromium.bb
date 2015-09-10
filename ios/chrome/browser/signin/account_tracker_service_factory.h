@@ -10,8 +10,11 @@
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class AccountTrackerService;
+
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace ios {
 
@@ -32,7 +35,7 @@ class AccountTrackerServiceFactory : public BrowserStateKeyedServiceFactory {
   static AccountTrackerServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AccountTrackerServiceFactory>;
+  friend struct base::DefaultSingletonTraits<AccountTrackerServiceFactory>;
 
   AccountTrackerServiceFactory();
   ~AccountTrackerServiceFactory() override;

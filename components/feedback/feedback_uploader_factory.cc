@@ -13,7 +13,7 @@ namespace feedback {
 
 // static
 FeedbackUploaderFactory* FeedbackUploaderFactory::GetInstance() {
-  return Singleton<FeedbackUploaderFactory>::get();
+  return base::Singleton<FeedbackUploaderFactory>::get();
 }
 
 // static

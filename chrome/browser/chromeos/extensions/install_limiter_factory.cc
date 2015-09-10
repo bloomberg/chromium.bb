@@ -20,7 +20,7 @@ InstallLimiter* InstallLimiterFactory::GetForProfile(Profile* profile) {
 
 // static
 InstallLimiterFactory* InstallLimiterFactory::GetInstance() {
-  return Singleton<InstallLimiterFactory>::get();
+  return base::Singleton<InstallLimiterFactory>::get();
 }
 
 InstallLimiterFactory::InstallLimiterFactory()

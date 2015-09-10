@@ -24,7 +24,7 @@ class CloudPrintProxyServiceFactory : public BrowserContextKeyedServiceFactory {
   static CloudPrintProxyServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<CloudPrintProxyServiceFactory>;
+  friend struct base::DefaultSingletonTraits<CloudPrintProxyServiceFactory>;
 
   CloudPrintProxyServiceFactory();
   ~CloudPrintProxyServiceFactory() override;

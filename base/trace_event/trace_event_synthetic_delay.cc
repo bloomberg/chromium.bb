@@ -24,7 +24,7 @@ class TraceEventSyntheticDelayRegistry : public TraceEventSyntheticDelayClock {
   void ResetAllDelays();
 
   // TraceEventSyntheticDelayClock implementation.
-  base::TimeTicks Now() override;
+  TimeTicks Now() override;
 
  private:
   TraceEventSyntheticDelayRegistry();
@@ -34,7 +34,7 @@ class TraceEventSyntheticDelayRegistry : public TraceEventSyntheticDelayClock {
   Lock lock_;
   TraceEventSyntheticDelay delays_[kMaxSyntheticDelays];
   TraceEventSyntheticDelay dummy_delay_;
-  base::subtle::Atomic32 delay_count_;
+  subtle::Atomic32 delay_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventSyntheticDelayRegistry);
 };
@@ -57,8 +57,7 @@ void TraceEventSyntheticDelay::Initialize(
   clock_ = clock;
 }
 
-void TraceEventSyntheticDelay::SetTargetDuration(
-    base::TimeDelta target_duration) {
+void TraceEventSyntheticDelay::SetTargetDuration(TimeDelta target_duration) {
   AutoLock lock(lock_);
   target_duration_ = target_duration;
   trigger_count_ = 0;
@@ -85,7 +84,7 @@ void TraceEventSyntheticDelay::Begin() {
   if (!target_duration_.ToInternalValue())
     return;
 
-  base::TimeTicks start_time = clock_->Now();
+  TimeTicks start_time = clock_->Now();
   {
     AutoLock lock(lock_);
     if (++begin_count_ != 1)
@@ -94,15 +93,15 @@ void TraceEventSyntheticDelay::Begin() {
   }
 }
 
-void TraceEventSyntheticDelay::BeginParallel(base::TimeTicks* out_end_time) {
+void TraceEventSyntheticDelay::BeginParallel(TimeTicks* out_end_time) {
   // See note in Begin().
   ANNOTATE_BENIGN_RACE(&target_duration_, "Synthetic delay duration");
   if (!target_duration_.ToInternalValue()) {
-    *out_end_time = base::TimeTicks();
+    *out_end_time = TimeTicks();
     return;
   }
 
-  base::TimeTicks start_time = clock_->Now();
+  TimeTicks start_time = clock_->Now();
   {
     AutoLock lock(lock_);
     *out_end_time = CalculateEndTimeLocked(start_time);
@@ -115,7 +114,7 @@ void TraceEventSyntheticDelay::End() {
   if (!target_duration_.ToInternalValue())
     return;
 
-  base::TimeTicks end_time;
+  TimeTicks end_time;
   {
     AutoLock lock(lock_);
     if (!begin_count_ || --begin_count_ != 0)
@@ -126,21 +125,21 @@ void TraceEventSyntheticDelay::End() {
     ApplyDelay(end_time);
 }
 
-void TraceEventSyntheticDelay::EndParallel(base::TimeTicks end_time) {
+void TraceEventSyntheticDelay::EndParallel(TimeTicks end_time) {
   if (!end_time.is_null())
     ApplyDelay(end_time);
 }
 
-base::TimeTicks TraceEventSyntheticDelay::CalculateEndTimeLocked(
-    base::TimeTicks start_time) {
+TimeTicks TraceEventSyntheticDelay::CalculateEndTimeLocked(
+    TimeTicks start_time) {
   if (mode_ == ONE_SHOT && trigger_count_++)
-    return base::TimeTicks();
+    return TimeTicks();
   else if (mode_ == ALTERNATING && trigger_count_++ % 2)
-    return base::TimeTicks();
+    return TimeTicks();
   return start_time + target_duration_;
 }
 
-void TraceEventSyntheticDelay::ApplyDelay(base::TimeTicks end_time) {
+void TraceEventSyntheticDelay::ApplyDelay(TimeTicks end_time) {
   TRACE_EVENT0("synthetic_delay", name_.c_str());
   while (clock_->Now() < end_time) {
     // Busy loop.
@@ -161,14 +160,14 @@ TraceEventSyntheticDelay* TraceEventSyntheticDelayRegistry::GetOrCreateDelay(
     const char* name) {
   // Try to find an existing delay first without locking to make the common case
   // fast.
-  int delay_count = base::subtle::Acquire_Load(&delay_count_);
+  int delay_count = subtle::Acquire_Load(&delay_count_);
   for (int i = 0; i < delay_count; ++i) {
     if (!strcmp(name, delays_[i].name_.c_str()))
       return &delays_[i];
   }
 
   AutoLock lock(lock_);
-  delay_count = base::subtle::Acquire_Load(&delay_count_);
+  delay_count = subtle::Acquire_Load(&delay_count_);
   for (int i = 0; i < delay_count; ++i) {
     if (!strcmp(name, delays_[i].name_.c_str()))
       return &delays_[i];
@@ -180,19 +179,19 @@ TraceEventSyntheticDelay* TraceEventSyntheticDelayRegistry::GetOrCreateDelay(
     return &dummy_delay_;
 
   delays_[delay_count].Initialize(std::string(name), this);
-  base::subtle::Release_Store(&delay_count_, delay_count + 1);
+  subtle::Release_Store(&delay_count_, delay_count + 1);
   return &delays_[delay_count];
 }
 
-base::TimeTicks TraceEventSyntheticDelayRegistry::Now() {
-  return base::TimeTicks::Now();
+TimeTicks TraceEventSyntheticDelayRegistry::Now() {
+  return TimeTicks::Now();
 }
 
 void TraceEventSyntheticDelayRegistry::ResetAllDelays() {
   AutoLock lock(lock_);
-  int delay_count = base::subtle::Acquire_Load(&delay_count_);
+  int delay_count = subtle::Acquire_Load(&delay_count_);
   for (int i = 0; i < delay_count; ++i) {
-    delays_[i].SetTargetDuration(base::TimeDelta());
+    delays_[i].SetTargetDuration(TimeDelta());
     delays_[i].SetClock(this);
   }
 }

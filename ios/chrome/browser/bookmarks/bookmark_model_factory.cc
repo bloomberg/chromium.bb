@@ -39,7 +39,7 @@ bookmarks::BookmarkModel* BookmarkModelFactory::GetForBrowserStateIfExists(
 
 // static
 BookmarkModelFactory* BookmarkModelFactory::GetInstance() {
-  return Singleton<BookmarkModelFactory>::get();
+  return base::Singleton<BookmarkModelFactory>::get();
 }
 
 BookmarkModelFactory::BookmarkModelFactory()

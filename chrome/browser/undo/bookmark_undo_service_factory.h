@@ -20,7 +20,7 @@ class BookmarkUndoServiceFactory : public BrowserContextKeyedServiceFactory {
   static BookmarkUndoServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<BookmarkUndoServiceFactory>;
+  friend struct base::DefaultSingletonTraits<BookmarkUndoServiceFactory>;
 
   BookmarkUndoServiceFactory();
   ~BookmarkUndoServiceFactory() override;

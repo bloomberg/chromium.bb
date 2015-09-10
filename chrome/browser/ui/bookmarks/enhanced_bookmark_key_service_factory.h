@@ -12,7 +12,9 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 class EnhancedBookmarkKeyService;
 
@@ -24,7 +26,7 @@ class EnhancedBookmarkKeyServiceFactory
   static EnhancedBookmarkKeyServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<EnhancedBookmarkKeyServiceFactory>;
+  friend struct base::DefaultSingletonTraits<EnhancedBookmarkKeyServiceFactory>;
 
   EnhancedBookmarkKeyServiceFactory();
   ~EnhancedBookmarkKeyServiceFactory() override;

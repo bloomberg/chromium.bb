@@ -11,7 +11,7 @@
 
 // static
 PerAppSettingsServiceFactory* PerAppSettingsServiceFactory::GetInstance() {
-  return Singleton<PerAppSettingsServiceFactory>::get();
+  return base::Singleton<PerAppSettingsServiceFactory>::get();
 }
 
 // static

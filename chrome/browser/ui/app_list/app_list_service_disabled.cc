@@ -11,12 +11,13 @@ namespace {
 class AppListServiceDisabled : public AppListService {
  public:
   static AppListServiceDisabled* GetInstance() {
-    return Singleton<AppListServiceDisabled,
-                     LeakySingletonTraits<AppListServiceDisabled> >::get();
+    return base::Singleton<
+        AppListServiceDisabled,
+        base::LeakySingletonTraits<AppListServiceDisabled>>::get();
   }
 
  private:
-  friend struct DefaultSingletonTraits<AppListServiceDisabled>;
+  friend struct base::DefaultSingletonTraits<AppListServiceDisabled>;
 
   AppListServiceDisabled() {}
 

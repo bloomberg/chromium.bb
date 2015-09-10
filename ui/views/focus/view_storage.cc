@@ -14,7 +14,7 @@ namespace views {
 
 // static
 ViewStorage* ViewStorage::GetInstance() {
-  return Singleton<ViewStorage>::get();
+  return base::Singleton<ViewStorage>::get();
 }
 
 ViewStorage::ViewStorage() : view_storage_next_id_(0) {

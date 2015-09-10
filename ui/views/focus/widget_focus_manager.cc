@@ -12,7 +12,7 @@ namespace views {
 
 // static
 WidgetFocusManager* WidgetFocusManager::GetInstance() {
-  return Singleton<WidgetFocusManager>::get();
+  return base::Singleton<WidgetFocusManager>::get();
 }
 
 void WidgetFocusManager::AddFocusChangeListener(

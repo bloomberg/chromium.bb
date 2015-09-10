@@ -22,8 +22,8 @@ class GeolocationPermissionContextFactory
   static GeolocationPermissionContextFactory* GetInstance();
 
  private:
-  friend struct
-      DefaultSingletonTraits<GeolocationPermissionContextFactory>;
+  friend struct base::DefaultSingletonTraits<
+      GeolocationPermissionContextFactory>;
 
   GeolocationPermissionContextFactory();
   ~GeolocationPermissionContextFactory() override;

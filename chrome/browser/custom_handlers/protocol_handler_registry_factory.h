@@ -11,7 +11,10 @@
 
 class Profile;
 class ProtocolHandlerRegistry;
+
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 // Singleton that owns all ProtocolHandlerRegistrys and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
@@ -35,7 +38,7 @@ class ProtocolHandlerRegistryFactory
   bool ServiceIsNULLWhileTesting() const override;
 
  private:
-  friend struct DefaultSingletonTraits<ProtocolHandlerRegistryFactory>;
+  friend struct base::DefaultSingletonTraits<ProtocolHandlerRegistryFactory>;
 
   ProtocolHandlerRegistryFactory();
   ~ProtocolHandlerRegistryFactory() override;

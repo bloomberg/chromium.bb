@@ -23,7 +23,7 @@ class ManagerPasswordServiceFactory
   static ManagerPasswordServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ManagerPasswordServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ManagerPasswordServiceFactory>;
 
   ManagerPasswordServiceFactory();
   ~ManagerPasswordServiceFactory() override;

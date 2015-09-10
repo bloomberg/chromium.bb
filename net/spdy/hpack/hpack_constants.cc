@@ -29,7 +29,7 @@ struct SharedHpackHuffmanTable {
   }
 
   static SharedHpackHuffmanTable* GetInstance() {
-    return Singleton<SharedHpackHuffmanTable>::get();
+    return base::Singleton<SharedHpackHuffmanTable>::get();
   }
 
   scoped_ptr<const HpackHuffmanTable> table;
@@ -48,7 +48,7 @@ struct SharedHpackStaticTable {
   }
 
   static SharedHpackStaticTable* GetInstance() {
-    return Singleton<SharedHpackStaticTable>::get();
+    return base::Singleton<SharedHpackStaticTable>::get();
   }
 
   scoped_ptr<const HpackStaticTable> table;

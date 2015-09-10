@@ -21,7 +21,7 @@ class NTPResourceCacheFactory : public BrowserContextKeyedServiceFactory {
   static NTPResourceCacheFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<NTPResourceCacheFactory>;
+  friend struct base::DefaultSingletonTraits<NTPResourceCacheFactory>;
 
   NTPResourceCacheFactory();
   ~NTPResourceCacheFactory() override;

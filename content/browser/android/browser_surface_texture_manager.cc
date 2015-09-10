@@ -19,8 +19,9 @@ namespace content {
 
 // static
 BrowserSurfaceTextureManager* BrowserSurfaceTextureManager::GetInstance() {
-  return Singleton<BrowserSurfaceTextureManager,
-                   LeakySingletonTraits<BrowserSurfaceTextureManager>>::get();
+  return base::Singleton<
+      BrowserSurfaceTextureManager,
+      base::LeakySingletonTraits<BrowserSurfaceTextureManager>>::get();
 }
 
 void BrowserSurfaceTextureManager::RegisterSurfaceTexture(

@@ -38,7 +38,7 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::GetForProfileIfExists(
 
 // static
 ShortcutsBackendFactory* ShortcutsBackendFactory::GetInstance() {
-  return Singleton<ShortcutsBackendFactory>::get();
+  return base::Singleton<ShortcutsBackendFactory>::get();
 }
 
 // static

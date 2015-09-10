@@ -31,7 +31,7 @@ class ThumbnailServiceFactory
   static ThumbnailServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ThumbnailServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ThumbnailServiceFactory>;
 
   ThumbnailServiceFactory();
   ~ThumbnailServiceFactory() override;

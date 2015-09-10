@@ -77,7 +77,7 @@ Logging::~Logging() {
 }
 
 Logging* Logging::GetInstance() {
-  return Singleton<Logging>::get();
+  return base::Singleton<Logging>::get();
 }
 
 void Logging::SetConsumer(Consumer* consumer) {

@@ -30,7 +30,7 @@ namespace service_tab_launcher {
 
 // static
 ServiceTabLauncher* ServiceTabLauncher::GetInstance() {
-  return Singleton<ServiceTabLauncher>::get();
+  return base::Singleton<ServiceTabLauncher>::get();
 }
 
 ServiceTabLauncher::ServiceTabLauncher() {

@@ -419,7 +419,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 namespace extensions {
 
 InputImeEventRouterFactory* InputImeEventRouterFactory::GetInstance() {
-  return Singleton<InputImeEventRouterFactory>::get();
+  return base::Singleton<InputImeEventRouterFactory>::get();
 }
 
 InputImeEventRouterFactory::InputImeEventRouterFactory() {

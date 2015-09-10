@@ -75,7 +75,7 @@ class HistogramSynchronizer : public HistogramSubscriber {
                                             base::TimeDelta wait_time);
 
  private:
-  friend struct DefaultSingletonTraits<HistogramSynchronizer>;
+  friend struct base::DefaultSingletonTraits<HistogramSynchronizer>;
 
   class RequestContext;
 

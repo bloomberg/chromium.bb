@@ -22,7 +22,7 @@ EphemeralAppServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 EphemeralAppServiceFactory* EphemeralAppServiceFactory::GetInstance() {
-  return Singleton<EphemeralAppServiceFactory>::get();
+  return base::Singleton<EphemeralAppServiceFactory>::get();
 }
 
 EphemeralAppServiceFactory::EphemeralAppServiceFactory()

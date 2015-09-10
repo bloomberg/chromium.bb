@@ -20,7 +20,7 @@ namespace chrome {
 
 // static
 SettingsWindowManager* SettingsWindowManager::GetInstance() {
-  return Singleton<SettingsWindowManager>::get();
+  return base::Singleton<SettingsWindowManager>::get();
 }
 
 void SettingsWindowManager::AddObserver(

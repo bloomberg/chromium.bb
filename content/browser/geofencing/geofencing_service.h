@@ -12,8 +12,10 @@
 #include "content/common/content_export.h"
 #include "content/common/geofencing_types.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}
 
 namespace blink {
 struct WebCircularGeofencingRegion;
@@ -69,7 +71,7 @@ class CONTENT_EXPORT GeofencingServiceImpl
 
  protected:
   friend class GeofencingServiceTest;
-  friend struct DefaultSingletonTraits<GeofencingServiceImpl>;
+  friend struct base::DefaultSingletonTraits<GeofencingServiceImpl>;
   GeofencingServiceImpl();
   ~GeofencingServiceImpl() override;
 

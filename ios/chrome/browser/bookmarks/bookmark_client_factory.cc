@@ -34,7 +34,7 @@ BookmarkClientImpl* BookmarkClientFactory::GetForBrowserState(
 
 // static
 BookmarkClientFactory* BookmarkClientFactory::GetInstance() {
-  return Singleton<BookmarkClientFactory>::get();
+  return base::Singleton<BookmarkClientFactory>::get();
 }
 
 // static

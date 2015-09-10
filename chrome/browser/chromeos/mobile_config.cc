@@ -213,8 +213,8 @@ void MobileConfig::LocaleConfig::InitFromDictionary(
 
 // static
 MobileConfig* MobileConfig::GetInstance() {
-  return Singleton<MobileConfig,
-      DefaultSingletonTraits<MobileConfig> >::get();
+  return base::Singleton<MobileConfig,
+                         base::DefaultSingletonTraits<MobileConfig>>::get();
 }
 
 const MobileConfig::Carrier* MobileConfig::GetCarrier(

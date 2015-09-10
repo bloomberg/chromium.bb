@@ -20,7 +20,7 @@ PushMessagingPermissionContextFactory::GetForProfile(
 // static
 PushMessagingPermissionContextFactory*
 PushMessagingPermissionContextFactory::GetInstance() {
-  return Singleton<PushMessagingPermissionContextFactory>::get();
+  return base::Singleton<PushMessagingPermissionContextFactory>::get();
 }
 
 PushMessagingPermissionContextFactory::PushMessagingPermissionContextFactory()

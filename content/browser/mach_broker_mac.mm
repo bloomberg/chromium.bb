@@ -78,7 +78,8 @@ bool MachBroker::ChildSendTaskPortToParent() {
 }
 
 MachBroker* MachBroker::GetInstance() {
-  return Singleton<MachBroker, LeakySingletonTraits<MachBroker>>::get();
+  return base::Singleton<MachBroker,
+                         base::LeakySingletonTraits<MachBroker>>::get();
 }
 
 base::Lock& MachBroker::GetLock() {

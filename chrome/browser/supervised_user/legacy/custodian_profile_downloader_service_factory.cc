@@ -21,7 +21,7 @@ CustodianProfileDownloaderServiceFactory::GetForProfile(
 // static
 CustodianProfileDownloaderServiceFactory*
 CustodianProfileDownloaderServiceFactory::GetInstance() {
-  return Singleton<CustodianProfileDownloaderServiceFactory>::get();
+  return base::Singleton<CustodianProfileDownloaderServiceFactory>::get();
 }
 
 CustodianProfileDownloaderServiceFactory::

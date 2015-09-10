@@ -389,10 +389,10 @@ class BadExtensionsTest(unittest.TestCase):
 class CheckSingletonInHeadersTest(unittest.TestCase):
   def testSingletonInArbitraryHeader(self):
     diff_singleton_h = ['base::subtle::AtomicWord '
-                        'Singleton<Type, Traits, DifferentiatingType>::']
-    diff_foo_h = ['// Singleton<Foo> in comment.',
-                  'friend class Singleton<Foo>']
-    diff_bad_h = ['Foo* foo = Singleton<Foo>::get();']
+                        'base::Singleton<Type, Traits, DifferentiatingType>::']
+    diff_foo_h = ['// base::Singleton<Foo> in comment.',
+                  'friend class base::Singleton<Foo>']
+    diff_bad_h = ['Foo* foo = base::Singleton<Foo>::get();']
     mock_input_api = MockInputApi()
     mock_input_api.files = [MockAffectedFile('base/memory/singleton.h',
                                      diff_singleton_h),
@@ -402,10 +402,10 @@ class CheckSingletonInHeadersTest(unittest.TestCase):
                                                   MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual('error', warnings[0].type)
-    self.assertTrue('Found Singleton<T>' in warnings[0].message)
+    self.assertTrue('Found base::Singleton<T>' in warnings[0].message)
 
   def testSingletonInCC(self):
-    diff_cc = ['Foo* foo = Singleton<Foo>::get();']
+    diff_cc = ['Foo* foo = base::Singleton<Foo>::get();']
     mock_input_api = MockInputApi()
     mock_input_api.files = [MockAffectedFile('some/path/foo.cc', diff_cc)]
     warnings = PRESUBMIT._CheckSingletonInHeaders(mock_input_api,

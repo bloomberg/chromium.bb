@@ -19,7 +19,7 @@ DownloadService* DownloadServiceFactory::GetForBrowserContext(
 
 // static
 DownloadServiceFactory* DownloadServiceFactory::GetInstance() {
-  return Singleton<DownloadServiceFactory>::get();
+  return base::Singleton<DownloadServiceFactory>::get();
 }
 
 DownloadServiceFactory::DownloadServiceFactory()

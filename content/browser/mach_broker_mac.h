@@ -82,7 +82,7 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
 
  private:
   friend class MachBrokerTest;
-  friend struct DefaultSingletonTraits<MachBroker>;
+  friend struct base::DefaultSingletonTraits<MachBroker>;
 
   MachBroker();
   ~MachBroker() override;

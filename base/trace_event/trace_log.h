@@ -25,11 +25,10 @@
       TRACE_EVENT_PHASE_INSTANT, name, reinterpret_cast<const void*>(id), \
       extra)
 
-template <typename Type>
-struct DefaultSingletonTraits;
-
 namespace base {
 
+template <typename Type>
+struct DefaultSingletonTraits;
 class RefCountedString;
 
 namespace trace_event {

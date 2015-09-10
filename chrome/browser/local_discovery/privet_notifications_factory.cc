@@ -12,7 +12,7 @@ namespace local_discovery {
 
 PrivetNotificationServiceFactory*
 PrivetNotificationServiceFactory::GetInstance() {
-  return Singleton<PrivetNotificationServiceFactory>::get();
+  return base::Singleton<PrivetNotificationServiceFactory>::get();
 }
 
 PrivetNotificationServiceFactory::PrivetNotificationServiceFactory()

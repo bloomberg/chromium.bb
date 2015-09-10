@@ -43,7 +43,7 @@ class LogoServiceFactory : public BrowserContextKeyedServiceFactory {
   static LogoServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<LogoServiceFactory>;
+  friend struct base::DefaultSingletonTraits<LogoServiceFactory>;
 
   LogoServiceFactory();
   ~LogoServiceFactory() override;

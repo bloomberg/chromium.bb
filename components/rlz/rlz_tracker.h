@@ -123,7 +123,7 @@ class RLZTracker {
   void PingNowImpl();
 
  private:
-  friend struct DefaultSingletonTraits<RLZTracker>;
+  friend struct base::DefaultSingletonTraits<RLZTracker>;
   friend class base::RefCountedThreadSafe<RLZTracker>;
 
   // Implementation called from SetRlzDelegate() static method.

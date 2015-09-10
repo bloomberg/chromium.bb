@@ -214,7 +214,7 @@ DesktopCaptureRequestsRegistry::~DesktopCaptureRequestsRegistry() {}
 
 // static
 DesktopCaptureRequestsRegistry* DesktopCaptureRequestsRegistry::GetInstance() {
-  return Singleton<DesktopCaptureRequestsRegistry>::get();
+  return base::Singleton<DesktopCaptureRequestsRegistry>::get();
 }
 
 void DesktopCaptureRequestsRegistry::AddRequest(

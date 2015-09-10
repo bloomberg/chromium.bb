@@ -30,7 +30,7 @@ class CookieSettingsFactory
   static CookieSettingsFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<CookieSettingsFactory>;
+  friend struct base::DefaultSingletonTraits<CookieSettingsFactory>;
 
   CookieSettingsFactory();
   ~CookieSettingsFactory() override;

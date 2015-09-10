@@ -29,7 +29,7 @@ class PrefMetricsService : public KeyedService {
     static Factory* GetInstance();
     static PrefMetricsService* GetForProfile(Profile* profile);
    private:
-    friend struct DefaultSingletonTraits<Factory>;
+    friend struct base::DefaultSingletonTraits<Factory>;
 
     Factory();
     ~Factory() override;

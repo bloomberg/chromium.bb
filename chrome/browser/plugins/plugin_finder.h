@@ -74,8 +74,7 @@ class PluginFinder {
       const content::WebPluginInfo& plugin);
 
  private:
-  friend struct DefaultSingletonTraits<PluginFinder>;
-  friend class Singleton<PluginFinder>;
+  friend struct base::DefaultSingletonTraits<PluginFinder>;
   FRIEND_TEST_ALL_PREFIXES(PluginFinderTest, JsonSyntax);
   FRIEND_TEST_ALL_PREFIXES(PluginFinderTest, PluginGroups);
 

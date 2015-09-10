@@ -28,7 +28,7 @@ class CertStoreImpl : public CertStore {
   ~CertStoreImpl() override;
 
  private:
-  friend struct DefaultSingletonTraits<CertStoreImpl>;
+  friend struct base::DefaultSingletonTraits<CertStoreImpl>;
 
   RendererDataMemoizingStore<net::X509Certificate> store_;
 

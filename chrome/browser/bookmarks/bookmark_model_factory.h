@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 class Profile;
 
@@ -26,7 +28,7 @@ class BookmarkModelFactory : public BrowserContextKeyedServiceFactory {
   static BookmarkModelFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<BookmarkModelFactory>;
+  friend struct base::DefaultSingletonTraits<BookmarkModelFactory>;
 
   BookmarkModelFactory();
   ~BookmarkModelFactory() override;

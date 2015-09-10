@@ -215,7 +215,7 @@ class NetworkPredictionTransformer : public PrefTransformerInterface {
 class PrefMapping {
  public:
   static PrefMapping* GetInstance() {
-    return Singleton<PrefMapping>::get();
+    return base::Singleton<PrefMapping>::get();
   }
 
   bool FindBrowserPrefForExtensionPref(const std::string& extension_pref,
@@ -255,7 +255,7 @@ class PrefMapping {
   }
 
  private:
-  friend struct DefaultSingletonTraits<PrefMapping>;
+  friend struct base::DefaultSingletonTraits<PrefMapping>;
 
   PrefMapping() {
     identity_transformer_.reset(new IdentityPrefTransformer());

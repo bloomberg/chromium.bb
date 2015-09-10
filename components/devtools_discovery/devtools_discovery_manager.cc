@@ -14,7 +14,7 @@ namespace devtools_discovery {
 
 // static
 DevToolsDiscoveryManager* DevToolsDiscoveryManager::GetInstance() {
-  return Singleton<DevToolsDiscoveryManager>::get();
+  return base::Singleton<DevToolsDiscoveryManager>::get();
 }
 
 DevToolsDiscoveryManager::DevToolsDiscoveryManager() {

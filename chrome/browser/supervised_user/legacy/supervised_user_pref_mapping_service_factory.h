@@ -20,7 +20,8 @@ class SupervisedUserPrefMappingServiceFactory
   static SupervisedUserPrefMappingServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SupervisedUserPrefMappingServiceFactory>;
+  friend struct base::DefaultSingletonTraits<
+      SupervisedUserPrefMappingServiceFactory>;
 
   SupervisedUserPrefMappingServiceFactory();
   ~SupervisedUserPrefMappingServiceFactory() override;

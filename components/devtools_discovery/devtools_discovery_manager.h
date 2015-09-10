@@ -38,7 +38,7 @@ class DevToolsDiscoveryManager {
   scoped_ptr<DevToolsTargetDescriptor> CreateNew(const GURL& url);
 
  private:
-  friend struct DefaultSingletonTraits<DevToolsDiscoveryManager>;
+  friend struct base::DefaultSingletonTraits<DevToolsDiscoveryManager>;
 
   DevToolsDiscoveryManager();
   ~DevToolsDiscoveryManager();

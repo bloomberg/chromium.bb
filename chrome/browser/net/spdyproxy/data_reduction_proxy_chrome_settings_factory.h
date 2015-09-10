@@ -29,7 +29,8 @@ class DataReductionProxyChromeSettingsFactory
   static DataReductionProxyChromeSettingsFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<DataReductionProxyChromeSettingsFactory>;
+  friend struct base::DefaultSingletonTraits<
+      DataReductionProxyChromeSettingsFactory>;
 
   DataReductionProxyChromeSettingsFactory();
 

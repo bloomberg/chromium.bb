@@ -9,8 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
+
 class Profile;
 
 namespace bookmarks {
@@ -26,7 +29,7 @@ class ManagedBookmarkServiceFactory : public BrowserContextKeyedServiceFactory {
   static TestingFactoryFunction GetDefaultFactory();
 
  private:
-  friend struct DefaultSingletonTraits<ManagedBookmarkServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ManagedBookmarkServiceFactory>;
 
   ManagedBookmarkServiceFactory();
   ~ManagedBookmarkServiceFactory() override;

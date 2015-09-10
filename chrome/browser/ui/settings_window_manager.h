@@ -42,7 +42,7 @@ class SettingsWindowManager {
   bool IsSettingsBrowser(Browser* browser) const;
 
  private:
-  friend struct DefaultSingletonTraits<SettingsWindowManager>;
+  friend struct base::DefaultSingletonTraits<SettingsWindowManager>;
   typedef std::map<Profile*, SessionID::id_type> ProfileSessionMap;
 
   SettingsWindowManager();

@@ -73,7 +73,7 @@ class CONTENT_EXPORT PerSessionWebRTCAPIMetrics : public base::NonThreadSafe {
   void DecrementStreamCounter();
 
  protected:
-  friend struct DefaultSingletonTraits<PerSessionWebRTCAPIMetrics>;
+  friend struct base::DefaultSingletonTraits<PerSessionWebRTCAPIMetrics>;
   friend void UpdateWebRTCMethodCount(JavaScriptAPIName);
 
   // Protected so that unit tests can test without this being a

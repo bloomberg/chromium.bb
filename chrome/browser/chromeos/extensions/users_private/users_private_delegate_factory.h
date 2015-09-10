@@ -24,7 +24,7 @@ class UsersPrivateDelegateFactory : public BrowserContextKeyedServiceFactory {
   static UsersPrivateDelegateFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<UsersPrivateDelegateFactory>;
+  friend struct base::DefaultSingletonTraits<UsersPrivateDelegateFactory>;
 
   UsersPrivateDelegateFactory();
   ~UsersPrivateDelegateFactory() override;

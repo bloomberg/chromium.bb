@@ -24,7 +24,7 @@ class StartPageServiceFactory : public BrowserContextKeyedServiceFactory {
   static StartPageServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<StartPageServiceFactory>;
+  friend struct base::DefaultSingletonTraits<StartPageServiceFactory>;
 
   StartPageServiceFactory();
   ~StartPageServiceFactory() override;

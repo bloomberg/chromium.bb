@@ -416,8 +416,8 @@ void ShaderClearHelper::DoClearShaderCache(int rv) {
 
 // static
 ShaderCacheFactory* ShaderCacheFactory::GetInstance() {
-  return Singleton<ShaderCacheFactory,
-      LeakySingletonTraits<ShaderCacheFactory> >::get();
+  return base::Singleton<ShaderCacheFactory,
+                         base::LeakySingletonTraits<ShaderCacheFactory>>::get();
 }
 
 ShaderCacheFactory::ShaderCacheFactory() {

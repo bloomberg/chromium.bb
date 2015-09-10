@@ -239,7 +239,7 @@ AppWindowRegistry* AppWindowRegistry::Factory::GetForBrowserContext(
 }
 
 AppWindowRegistry::Factory* AppWindowRegistry::Factory::GetInstance() {
-  return Singleton<AppWindowRegistry::Factory>::get();
+  return base::Singleton<AppWindowRegistry::Factory>::get();
 }
 
 AppWindowRegistry::Factory::Factory()

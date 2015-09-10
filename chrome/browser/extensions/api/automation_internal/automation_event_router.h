@@ -79,7 +79,7 @@ class AutomationEventRouter : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   std::vector<AutomationListener> listeners_;
 
-  friend struct DefaultSingletonTraits<AutomationEventRouter>;
+  friend struct base::DefaultSingletonTraits<AutomationEventRouter>;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationEventRouter);
 };

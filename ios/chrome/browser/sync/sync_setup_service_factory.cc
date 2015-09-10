@@ -26,7 +26,7 @@ SyncSetupService* SyncSetupServiceFactory::GetForBrowserStateIfExists(
 
 // static
 SyncSetupServiceFactory* SyncSetupServiceFactory::GetInstance() {
-  return Singleton<SyncSetupServiceFactory>::get();
+  return base::Singleton<SyncSetupServiceFactory>::get();
 }
 
 SyncSetupServiceFactory::SyncSetupServiceFactory()

@@ -2115,7 +2115,7 @@ class FlagsState {
 
   // Returns the singleton instance of this class
   static FlagsState* GetInstance() {
-    return Singleton<FlagsState>::get();
+    return base::Singleton<FlagsState>::get();
   }
 
  private:

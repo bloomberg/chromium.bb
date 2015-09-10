@@ -24,8 +24,9 @@ namespace extensions {
 
 // static
 AutomationEventRouter* AutomationEventRouter::GetInstance() {
-  return Singleton<AutomationEventRouter,
-                   LeakySingletonTraits<AutomationEventRouter>>::get();
+  return base::Singleton<
+      AutomationEventRouter,
+      base::LeakySingletonTraits<AutomationEventRouter>>::get();
 }
 
 AutomationEventRouter::AutomationEventRouter() {

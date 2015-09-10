@@ -10,8 +10,9 @@ namespace content {
 
 // static
 InProcessIOSurfaceManager* InProcessIOSurfaceManager::GetInstance() {
-  return Singleton<InProcessIOSurfaceManager,
-                   LeakySingletonTraits<InProcessIOSurfaceManager>>::get();
+  return base::Singleton<
+      InProcessIOSurfaceManager,
+      base::LeakySingletonTraits<InProcessIOSurfaceManager>>::get();
 }
 
 bool InProcessIOSurfaceManager::RegisterIOSurface(IOSurfaceId io_surface_id,

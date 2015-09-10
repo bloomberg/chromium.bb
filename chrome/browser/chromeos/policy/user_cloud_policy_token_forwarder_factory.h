@@ -24,7 +24,8 @@ class UserCloudPolicyTokenForwarderFactory
   static UserCloudPolicyTokenForwarderFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<UserCloudPolicyTokenForwarderFactory>;
+  friend struct base::DefaultSingletonTraits<
+      UserCloudPolicyTokenForwarderFactory>;
 
   UserCloudPolicyTokenForwarderFactory();
   ~UserCloudPolicyTokenForwarderFactory() override;

@@ -84,7 +84,7 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
 
 // static
 ContentWebUIControllerFactory* ContentWebUIControllerFactory::GetInstance() {
-  return Singleton<ContentWebUIControllerFactory>::get();
+  return base::Singleton<ContentWebUIControllerFactory>::get();
 }
 
 ContentWebUIControllerFactory::ContentWebUIControllerFactory() {

@@ -23,7 +23,7 @@ class ExtensionPrefsFactory : public BrowserContextKeyedServiceFactory {
                              scoped_ptr<ExtensionPrefs> prefs);
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionPrefsFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionPrefsFactory>;
 
   ExtensionPrefsFactory();
   ~ExtensionPrefsFactory() override;

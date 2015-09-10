@@ -182,7 +182,7 @@ MobileActivator::~MobileActivator() {
 }
 
 MobileActivator* MobileActivator::GetInstance() {
-  return Singleton<MobileActivator>::get();
+  return base::Singleton<MobileActivator>::get();
 }
 
 void MobileActivator::TerminateActivation() {

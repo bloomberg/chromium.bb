@@ -53,7 +53,8 @@ class ChildMemoryDumpManagerDelegateImpl
   friend class ChildTraceMessageFilter;
 
  private:
-  friend struct DefaultSingletonTraits<ChildMemoryDumpManagerDelegateImpl>;
+  friend struct base::DefaultSingletonTraits<
+      ChildMemoryDumpManagerDelegateImpl>;
 
   ChildMemoryDumpManagerDelegateImpl();
   ~ChildMemoryDumpManagerDelegateImpl() override;

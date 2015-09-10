@@ -11,8 +11,10 @@
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -53,7 +55,7 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter {
   void ShowContextMenu(int32 id) override;
 
  private:
-  friend struct DefaultSingletonTraits<AutomationManagerAura>;
+  friend struct base::DefaultSingletonTraits<AutomationManagerAura>;
 
   AutomationManagerAura();
   virtual ~AutomationManagerAura();

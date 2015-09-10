@@ -20,7 +20,7 @@ class DialAPIFactory : public RefcountedBrowserContextKeyedServiceFactory {
   static DialAPIFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<DialAPIFactory>;
+  friend struct base::DefaultSingletonTraits<DialAPIFactory>;
 
   DialAPIFactory();
   ~DialAPIFactory() override;

@@ -29,7 +29,7 @@ bool IsHistorySyncEnabled(Profile* profile) {
 
 // static
 WebHistoryServiceFactory* WebHistoryServiceFactory::GetInstance() {
-  return Singleton<WebHistoryServiceFactory>::get();
+  return base::Singleton<WebHistoryServiceFactory>::get();
 }
 
 // static

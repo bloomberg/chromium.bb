@@ -20,7 +20,7 @@ ProcessMap* ProcessMapFactory::GetForBrowserContext(BrowserContext* context) {
 
 // static
 ProcessMapFactory* ProcessMapFactory::GetInstance() {
-  return Singleton<ProcessMapFactory>::get();
+  return base::Singleton<ProcessMapFactory>::get();
 }
 
 ProcessMapFactory::ProcessMapFactory()

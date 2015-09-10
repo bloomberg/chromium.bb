@@ -152,7 +152,7 @@ void PluginService::PurgePluginListCache(BrowserContext* browser_context,
 
 // static
 PluginServiceImpl* PluginServiceImpl::GetInstance() {
-  return Singleton<PluginServiceImpl>::get();
+  return base::Singleton<PluginServiceImpl>::get();
 }
 
 PluginServiceImpl::PluginServiceImpl()

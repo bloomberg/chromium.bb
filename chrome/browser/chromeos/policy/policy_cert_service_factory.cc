@@ -42,7 +42,7 @@ scoped_ptr<PolicyCertVerifier> PolicyCertServiceFactory::CreateForProfile(
 
 // static
 PolicyCertServiceFactory* PolicyCertServiceFactory::GetInstance() {
-  return Singleton<PolicyCertServiceFactory>::get();
+  return base::Singleton<PolicyCertServiceFactory>::get();
 }
 
 // static

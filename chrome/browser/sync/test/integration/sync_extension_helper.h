@@ -101,7 +101,7 @@ class SyncExtensionHelper {
   typedef std::map<std::string, std::string> StringMap;
   typedef std::map<std::string, extensions::Manifest::Type> TypeMap;
 
-  friend struct DefaultSingletonTraits<SyncExtensionHelper>;
+  friend struct base::DefaultSingletonTraits<SyncExtensionHelper>;
 
   SyncExtensionHelper();
   ~SyncExtensionHelper();

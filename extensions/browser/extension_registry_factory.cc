@@ -21,7 +21,7 @@ ExtensionRegistry* ExtensionRegistryFactory::GetForBrowserContext(
 
 // static
 ExtensionRegistryFactory* ExtensionRegistryFactory::GetInstance() {
-  return Singleton<ExtensionRegistryFactory>::get();
+  return base::Singleton<ExtensionRegistryFactory>::get();
 }
 
 ExtensionRegistryFactory::ExtensionRegistryFactory()

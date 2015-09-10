@@ -165,7 +165,7 @@ KioskAppUpdateService* KioskAppUpdateServiceFactory::GetForProfile(
 
 // static
 KioskAppUpdateServiceFactory* KioskAppUpdateServiceFactory::GetInstance() {
-  return Singleton<KioskAppUpdateServiceFactory>::get();
+  return base::Singleton<KioskAppUpdateServiceFactory>::get();
 }
 
 KeyedService* KioskAppUpdateServiceFactory::BuildServiceInstanceFor(

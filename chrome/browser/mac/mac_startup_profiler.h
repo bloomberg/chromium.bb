@@ -42,7 +42,7 @@ class MacStartupProfiler {
   void RecordMetrics();
 
  private:
-  friend struct DefaultSingletonTraits<MacStartupProfiler>;
+  friend struct base::DefaultSingletonTraits<MacStartupProfiler>;
 
   // Returns the name of the histogram for the given location.
   const std::string HistogramName(Location location);

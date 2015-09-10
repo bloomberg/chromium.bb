@@ -20,7 +20,7 @@ class LazyBackgroundTaskQueueFactory
   static LazyBackgroundTaskQueueFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<LazyBackgroundTaskQueueFactory>;
+  friend struct base::DefaultSingletonTraits<LazyBackgroundTaskQueueFactory>;
 
   LazyBackgroundTaskQueueFactory();
   ~LazyBackgroundTaskQueueFactory() override;

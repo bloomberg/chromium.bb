@@ -25,7 +25,7 @@ SyncFileSystemService* SyncFileSystemServiceFactory::GetForProfile(
 
 // static
 SyncFileSystemServiceFactory* SyncFileSystemServiceFactory::GetInstance() {
-  return Singleton<SyncFileSystemServiceFactory>::get();
+  return base::Singleton<SyncFileSystemServiceFactory>::get();
 }
 
 void SyncFileSystemServiceFactory::set_mock_local_file_service(

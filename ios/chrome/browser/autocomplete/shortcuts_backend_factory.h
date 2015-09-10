@@ -9,8 +9,11 @@
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
+
 class ShortcutsBackend;
 
 namespace ios {
@@ -29,7 +32,7 @@ class ShortcutsBackendFactory
   static ShortcutsBackendFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ShortcutsBackendFactory>;
+  friend struct base::DefaultSingletonTraits<ShortcutsBackendFactory>;
 
   ShortcutsBackendFactory();
   ~ShortcutsBackendFactory() override;

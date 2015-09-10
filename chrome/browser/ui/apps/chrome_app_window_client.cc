@@ -27,8 +27,9 @@ ChromeAppWindowClient::~ChromeAppWindowClient() {
 
 // static
 ChromeAppWindowClient* ChromeAppWindowClient::GetInstance() {
-  return Singleton<ChromeAppWindowClient,
-                   LeakySingletonTraits<ChromeAppWindowClient> >::get();
+  return base::Singleton<
+      ChromeAppWindowClient,
+      base::LeakySingletonTraits<ChromeAppWindowClient>>::get();
 }
 
 extensions::AppWindow* ChromeAppWindowClient::CreateAppWindow(

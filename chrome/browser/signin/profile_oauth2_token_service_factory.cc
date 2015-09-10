@@ -42,7 +42,7 @@ ProfileOAuth2TokenServiceFactory::GetForProfile(Profile* profile) {
 // static
 ProfileOAuth2TokenServiceFactory*
     ProfileOAuth2TokenServiceFactory::GetInstance() {
-  return Singleton<ProfileOAuth2TokenServiceFactory>::get();
+  return base::Singleton<ProfileOAuth2TokenServiceFactory>::get();
 }
 
 KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(

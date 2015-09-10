@@ -18,7 +18,7 @@ namespace views {
 
 // static
 AXAuraObjCache* AXAuraObjCache::GetInstance() {
-  return Singleton<AXAuraObjCache>::get();
+  return base::Singleton<AXAuraObjCache>::get();
 }
 
 AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(View* view) {

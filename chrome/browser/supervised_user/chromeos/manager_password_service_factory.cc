@@ -27,7 +27,7 @@ ManagerPasswordServiceFactory::GetForProfile(Profile* profile) {
 // static
 ManagerPasswordServiceFactory*
 ManagerPasswordServiceFactory::GetInstance() {
-  return Singleton<ManagerPasswordServiceFactory>::get();
+  return base::Singleton<ManagerPasswordServiceFactory>::get();
 }
 
 ManagerPasswordServiceFactory::ManagerPasswordServiceFactory()

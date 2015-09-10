@@ -28,7 +28,7 @@ LoginUIService* LoginUIServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 LoginUIServiceFactory* LoginUIServiceFactory::GetInstance() {
-  return Singleton<LoginUIServiceFactory>::get();
+  return base::Singleton<LoginUIServiceFactory>::get();
 }
 
 // static

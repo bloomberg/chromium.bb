@@ -125,7 +125,7 @@ LinuxSandbox::~LinuxSandbox() {
 }
 
 LinuxSandbox* LinuxSandbox::GetInstance() {
-  LinuxSandbox* instance = Singleton<LinuxSandbox>::get();
+  LinuxSandbox* instance = base::Singleton<LinuxSandbox>::get();
   CHECK(instance);
   return instance;
 }

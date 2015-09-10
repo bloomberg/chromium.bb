@@ -169,7 +169,7 @@ CertificateProviderServiceFactory::GetForBrowserContext(
 // static
 CertificateProviderServiceFactory*
 CertificateProviderServiceFactory::GetInstance() {
-  return Singleton<CertificateProviderServiceFactory>::get();
+  return base::Singleton<CertificateProviderServiceFactory>::get();
 }
 
 CertificateProviderServiceFactory::CertificateProviderServiceFactory()

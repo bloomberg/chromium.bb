@@ -57,7 +57,7 @@ class ProxyEventRouter {
                         const base::string16& error);
 
  private:
-  friend struct DefaultSingletonTraits<ProxyEventRouter>;
+  friend struct base::DefaultSingletonTraits<ProxyEventRouter>;
 
   ProxyEventRouter();
   ~ProxyEventRouter();

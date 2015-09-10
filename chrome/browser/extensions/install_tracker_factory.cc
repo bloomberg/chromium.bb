@@ -22,7 +22,7 @@ InstallTracker* InstallTrackerFactory::GetForBrowserContext(
 }
 
 InstallTrackerFactory* InstallTrackerFactory::GetInstance() {
-  return Singleton<InstallTrackerFactory>::get();
+  return base::Singleton<InstallTrackerFactory>::get();
 }
 
 InstallTrackerFactory::InstallTrackerFactory()

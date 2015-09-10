@@ -18,8 +18,8 @@ LogEventProvider::LogEventProvider() : old_log_level_(LOG_NONE) {
 }
 
 LogEventProvider* LogEventProvider::GetInstance() {
-  return Singleton<LogEventProvider,
-                   StaticMemorySingletonTraits<LogEventProvider> >::get();
+  return base::Singleton<LogEventProvider, base::StaticMemorySingletonTraits<
+                                               LogEventProvider>>::get();
 }
 
 bool LogEventProvider::LogMessage(logging::LogSeverity severity,

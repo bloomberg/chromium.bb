@@ -25,7 +25,7 @@ Service* ServiceFactory::Get(content::BrowserContext* context) {
 
 // static
 ServiceFactory* ServiceFactory::GetInstance() {
-  return Singleton<ServiceFactory>::get();
+  return base::Singleton<ServiceFactory>::get();
 }
 
 ServiceFactory::ServiceFactory()

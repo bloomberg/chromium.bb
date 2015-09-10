@@ -17,7 +17,9 @@
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace views {
 

@@ -17,7 +17,7 @@ WebViewRendererState::WebViewInfo::~WebViewInfo() {
 
 // static
 WebViewRendererState* WebViewRendererState::GetInstance() {
-  return Singleton<WebViewRendererState>::get();
+  return base::Singleton<WebViewRendererState>::get();
 }
 
 WebViewRendererState::WebViewRendererState() {

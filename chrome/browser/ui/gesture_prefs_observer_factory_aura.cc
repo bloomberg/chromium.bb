@@ -183,7 +183,7 @@ void GesturePrefsObserver::Notify() {
 // static
 GesturePrefsObserverFactoryAura*
 GesturePrefsObserverFactoryAura::GetInstance() {
-  return Singleton<GesturePrefsObserverFactoryAura>::get();
+  return base::Singleton<GesturePrefsObserverFactoryAura>::get();
 }
 
 GesturePrefsObserverFactoryAura::GesturePrefsObserverFactoryAura()

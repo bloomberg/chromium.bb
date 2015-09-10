@@ -28,7 +28,7 @@ ExtensionGarbageCollectorFactory::GetForBrowserContext(
 // static
 ExtensionGarbageCollectorFactory*
 ExtensionGarbageCollectorFactory::GetInstance() {
-  return Singleton<ExtensionGarbageCollectorFactory>::get();
+  return base::Singleton<ExtensionGarbageCollectorFactory>::get();
 }
 
 ExtensionGarbageCollectorFactory::ExtensionGarbageCollectorFactory()

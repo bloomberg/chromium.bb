@@ -64,7 +64,7 @@ TemplateURLService* TemplateURLServiceFactory::GetForBrowserState(
 
 // static
 TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
-  return Singleton<TemplateURLServiceFactory>::get();
+  return base::Singleton<TemplateURLServiceFactory>::get();
 }
 
 // static

@@ -17,7 +17,7 @@ class NotifierStateTrackerFactory : public BrowserContextKeyedServiceFactory {
   static NotifierStateTrackerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<NotifierStateTrackerFactory>;
+  friend struct base::DefaultSingletonTraits<NotifierStateTrackerFactory>;
 
   NotifierStateTrackerFactory();
   ~NotifierStateTrackerFactory() override;

@@ -90,7 +90,7 @@ RendererStartupHelper* RendererStartupHelperFactory::GetForBrowserContext(
 
 // static
 RendererStartupHelperFactory* RendererStartupHelperFactory::GetInstance() {
-  return Singleton<RendererStartupHelperFactory>::get();
+  return base::Singleton<RendererStartupHelperFactory>::get();
 }
 
 RendererStartupHelperFactory::RendererStartupHelperFactory()

@@ -79,7 +79,7 @@ scoped_refptr<history::TopSites> TopSitesFactory::GetForProfile(
 
 // static
 TopSitesFactory* TopSitesFactory::GetInstance() {
-  return Singleton<TopSitesFactory>::get();
+  return base::Singleton<TopSitesFactory>::get();
 }
 
 // static

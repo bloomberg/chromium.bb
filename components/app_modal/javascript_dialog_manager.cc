@@ -52,7 +52,7 @@ bool ShouldDisplaySuppressCheckbox(
 
 // static
 JavaScriptDialogManager* JavaScriptDialogManager::GetInstance() {
-  return Singleton<JavaScriptDialogManager>::get();
+  return base::Singleton<JavaScriptDialogManager>::get();
 }
 
 void JavaScriptDialogManager::SetNativeDialogFactory(

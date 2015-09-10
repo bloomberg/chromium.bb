@@ -12,8 +12,10 @@
 #include "base/win/event_trace_consumer.h"
 #include "base/win/event_trace_controller.h"
 
+namespace base {
 template <typename Type>
 struct DefaultSingletonTraits;
+}
 
 namespace content {
 
@@ -32,7 +34,7 @@ class EtwSystemEventConsumer :
  private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
-  friend struct DefaultSingletonTraits<EtwSystemEventConsumer>;
+  friend struct base::DefaultSingletonTraits<EtwSystemEventConsumer>;
 
   // Constructor.
   EtwSystemEventConsumer();

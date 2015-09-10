@@ -20,7 +20,7 @@ MediaGalleriesPreferencesFactory::GetForProfile(Profile* profile) {
 // static
 MediaGalleriesPreferencesFactory*
 MediaGalleriesPreferencesFactory::GetInstance() {
-  return Singleton<MediaGalleriesPreferencesFactory>::get();
+  return base::Singleton<MediaGalleriesPreferencesFactory>::get();
 }
 
 MediaGalleriesPreferencesFactory::MediaGalleriesPreferencesFactory()

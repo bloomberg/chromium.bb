@@ -472,7 +472,7 @@ AccelerometerFileReader::ConfigurationData::~ConfigurationData() {
 
 // static
 AccelerometerReader* AccelerometerReader::GetInstance() {
-  return Singleton<AccelerometerReader>::get();
+  return base::Singleton<AccelerometerReader>::get();
 }
 
 void AccelerometerReader::Initialize(

@@ -7,7 +7,9 @@
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace extensions {
 
@@ -19,7 +21,7 @@ class InstallTrackerFactory : public BrowserContextKeyedServiceFactory {
   static InstallTrackerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<InstallTrackerFactory>;
+  friend struct base::DefaultSingletonTraits<InstallTrackerFactory>;
 
   InstallTrackerFactory();
   ~InstallTrackerFactory() override;

@@ -11,9 +11,9 @@
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
 
-namespace base {
 template <class ObserverType>
 class ObserverListThreadSafe;
 }
@@ -105,7 +105,7 @@ class NET_EXPORT CertDatabase {
   void NotifyObserversOfCACertChanged(const X509Certificate* cert);
 
  private:
-  friend struct DefaultSingletonTraits<CertDatabase>;
+  friend struct base::DefaultSingletonTraits<CertDatabase>;
 
   CertDatabase();
   ~CertDatabase();

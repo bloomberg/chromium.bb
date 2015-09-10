@@ -65,7 +65,7 @@ void WarnIfMissingPauseOrResumeListener(
 }  // namespace
 
 TtsExtensionEngine* TtsExtensionEngine::GetInstance() {
-  return Singleton<TtsExtensionEngine>::get();
+  return base::Singleton<TtsExtensionEngine>::get();
 }
 
 void TtsExtensionEngine::GetVoices(content::BrowserContext* browser_context,

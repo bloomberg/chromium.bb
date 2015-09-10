@@ -23,7 +23,7 @@ class ChromeSSLHostStateDelegateFactory
   static ChromeSSLHostStateDelegateFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ChromeSSLHostStateDelegateFactory>;
+  friend struct base::DefaultSingletonTraits<ChromeSSLHostStateDelegateFactory>;
 
   ChromeSSLHostStateDelegateFactory();
   ~ChromeSSLHostStateDelegateFactory() override;

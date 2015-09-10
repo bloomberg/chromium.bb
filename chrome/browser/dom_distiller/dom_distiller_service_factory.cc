@@ -32,7 +32,7 @@ DomDistillerContextKeyedService::DomDistillerContextKeyedService(
 
 // static
 DomDistillerServiceFactory* DomDistillerServiceFactory::GetInstance() {
-  return Singleton<DomDistillerServiceFactory>::get();
+  return base::Singleton<DomDistillerServiceFactory>::get();
 }
 
 // static

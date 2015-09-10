@@ -19,7 +19,7 @@ class HostContentSettingsMapFactory
   static HostContentSettingsMapFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<HostContentSettingsMapFactory>;
+  friend struct base::DefaultSingletonTraits<HostContentSettingsMapFactory>;
 
   HostContentSettingsMapFactory();
   ~HostContentSettingsMapFactory() override;

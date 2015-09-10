@@ -19,7 +19,7 @@ SupervisedUserSettingsServiceFactory::GetForProfile(Profile* profile) {
 // static
 SupervisedUserSettingsServiceFactory*
 SupervisedUserSettingsServiceFactory::GetInstance() {
-  return Singleton<SupervisedUserSettingsServiceFactory>::get();
+  return base::Singleton<SupervisedUserSettingsServiceFactory>::get();
 }
 
 SupervisedUserSettingsServiceFactory::SupervisedUserSettingsServiceFactory()

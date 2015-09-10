@@ -17,7 +17,7 @@
 
 // static
 PluginPrefsFactory* PluginPrefsFactory::GetInstance() {
-  return Singleton<PluginPrefsFactory>::get();
+  return base::Singleton<PluginPrefsFactory>::get();
 }
 
 // static

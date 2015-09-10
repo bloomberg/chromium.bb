@@ -74,7 +74,7 @@ class AccessibilityFocusRingController
   base::TimeTicks focus_change_time_;
   ui::Compositor* compositor_;
 
-  friend struct DefaultSingletonTraits<AccessibilityFocusRingController>;
+  friend struct base::DefaultSingletonTraits<AccessibilityFocusRingController>;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingController);
 };

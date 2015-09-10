@@ -86,7 +86,7 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
         content::BrowserContext* context) const override;
 
    private:
-    friend struct DefaultSingletonTraits<Factory>;
+    friend struct base::DefaultSingletonTraits<Factory>;
 
     Factory();
     ~Factory() override;

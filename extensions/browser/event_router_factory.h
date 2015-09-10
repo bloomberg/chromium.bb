@@ -18,7 +18,7 @@ class EventRouterFactory : public BrowserContextKeyedServiceFactory {
   static EventRouterFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<EventRouterFactory>;
+  friend struct base::DefaultSingletonTraits<EventRouterFactory>;
 
   EventRouterFactory();
   ~EventRouterFactory() override;

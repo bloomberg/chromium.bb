@@ -27,7 +27,7 @@ InstanceIDProfileService* InstanceIDProfileServiceFactory::GetForProfile(
 // static
 InstanceIDProfileServiceFactory*
 InstanceIDProfileServiceFactory::GetInstance() {
-  return Singleton<InstanceIDProfileServiceFactory>::get();
+  return base::Singleton<InstanceIDProfileServiceFactory>::get();
 }
 
 InstanceIDProfileServiceFactory::InstanceIDProfileServiceFactory()

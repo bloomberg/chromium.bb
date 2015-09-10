@@ -55,7 +55,7 @@ class SessionServiceFactory : public BrowserContextKeyedServiceFactory {
   static SessionServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SessionServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SessionServiceFactory>;
   FRIEND_TEST_ALL_PREFIXES(SessionCrashedInfoBarDelegateUnitTest,
                            DetachingTabWithCrashedInfoBar);
 

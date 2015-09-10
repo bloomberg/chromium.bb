@@ -16,7 +16,7 @@ namespace enhanced_bookmarks {
 
 // static
 EnhancedBookmarkModelFactory* EnhancedBookmarkModelFactory::GetInstance() {
-  return Singleton<EnhancedBookmarkModelFactory>::get();
+  return base::Singleton<EnhancedBookmarkModelFactory>::get();
 }
 
 // static

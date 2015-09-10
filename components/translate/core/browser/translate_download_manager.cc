@@ -15,7 +15,7 @@ namespace translate {
 
 // static
 TranslateDownloadManager* TranslateDownloadManager::GetInstance() {
-  return Singleton<TranslateDownloadManager>::get();
+  return base::Singleton<TranslateDownloadManager>::get();
 }
 
 TranslateDownloadManager::TranslateDownloadManager()

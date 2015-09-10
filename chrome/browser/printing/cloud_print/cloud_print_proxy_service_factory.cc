@@ -16,7 +16,7 @@ CloudPrintProxyService* CloudPrintProxyServiceFactory::GetForProfile(
 }
 
 CloudPrintProxyServiceFactory* CloudPrintProxyServiceFactory::GetInstance() {
-  return Singleton<CloudPrintProxyServiceFactory>::get();
+  return base::Singleton<CloudPrintProxyServiceFactory>::get();
 }
 
 CloudPrintProxyServiceFactory::CloudPrintProxyServiceFactory()

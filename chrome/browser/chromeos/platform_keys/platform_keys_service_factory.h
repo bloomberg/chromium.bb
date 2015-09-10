@@ -8,8 +8,10 @@
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace chromeos {
 
@@ -24,7 +26,7 @@ class PlatformKeysServiceFactory : public BrowserContextKeyedServiceFactory {
   static PlatformKeysServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PlatformKeysServiceFactory>;
+  friend struct base::DefaultSingletonTraits<PlatformKeysServiceFactory>;
 
   PlatformKeysServiceFactory();
   ~PlatformKeysServiceFactory() override;

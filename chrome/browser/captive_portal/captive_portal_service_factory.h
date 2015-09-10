@@ -28,7 +28,7 @@ class CaptivePortalServiceFactory : public BrowserContextKeyedServiceFactory {
  private:
   friend class CaptivePortalBrowserTest;
   friend class CaptivePortalServiceTest;
-  friend struct DefaultSingletonTraits<CaptivePortalServiceFactory>;
+  friend struct base::DefaultSingletonTraits<CaptivePortalServiceFactory>;
 
   CaptivePortalServiceFactory();
   ~CaptivePortalServiceFactory() override;

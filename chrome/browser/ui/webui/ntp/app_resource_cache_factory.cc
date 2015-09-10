@@ -18,7 +18,7 @@ NTPResourceCache* AppResourceCacheFactory::GetForProfile(Profile* profile) {
 
 // static
 AppResourceCacheFactory* AppResourceCacheFactory::GetInstance() {
-  return Singleton<AppResourceCacheFactory>::get();
+  return base::Singleton<AppResourceCacheFactory>::get();
 }
 
 AppResourceCacheFactory::AppResourceCacheFactory()

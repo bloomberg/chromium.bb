@@ -185,7 +185,7 @@ static void SendExtensionMessage(JNIEnv* env,
 
 // static
 ChromotingJniRuntime* ChromotingJniRuntime::GetInstance() {
-  return Singleton<ChromotingJniRuntime>::get();
+  return base::Singleton<ChromotingJniRuntime>::get();
 }
 
 ChromotingJniRuntime::ChromotingJniRuntime() {

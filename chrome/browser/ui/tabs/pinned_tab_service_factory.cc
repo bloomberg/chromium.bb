@@ -16,7 +16,7 @@ PinnedTabService* PinnedTabServiceFactory::GetForProfile(
 }
 
 PinnedTabServiceFactory* PinnedTabServiceFactory::GetInstance() {
-  return Singleton<PinnedTabServiceFactory>::get();
+  return base::Singleton<PinnedTabServiceFactory>::get();
 }
 
 PinnedTabServiceFactory::PinnedTabServiceFactory()

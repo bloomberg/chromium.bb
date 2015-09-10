@@ -21,7 +21,7 @@ SupervisedUserPrefMappingServiceFactory::GetForBrowserContext(
 // static
 SupervisedUserPrefMappingServiceFactory*
 SupervisedUserPrefMappingServiceFactory::GetInstance() {
-  return Singleton<SupervisedUserPrefMappingServiceFactory>::get();
+  return base::Singleton<SupervisedUserPrefMappingServiceFactory>::get();
 }
 
 SupervisedUserPrefMappingServiceFactory::

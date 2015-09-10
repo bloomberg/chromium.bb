@@ -198,7 +198,7 @@ class ExtensionManagementFactory : public BrowserContextKeyedServiceFactory {
   static ExtensionManagementFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionManagementFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionManagementFactory>;
 
   ExtensionManagementFactory();
   ~ExtensionManagementFactory() override;

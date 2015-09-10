@@ -100,7 +100,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   class SharedWorkerPendingInstance;
   class SharedWorkerReserver;
 
-  friend struct DefaultSingletonTraits<SharedWorkerServiceImpl>;
+  friend struct base::DefaultSingletonTraits<SharedWorkerServiceImpl>;
   friend class SharedWorkerServiceImplTest;
 
   typedef void (*UpdateWorkerDependencyFunc)(const std::vector<int>&,

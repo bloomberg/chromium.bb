@@ -24,7 +24,7 @@ ResourcePrefetchPredictor* ResourcePrefetchPredictorFactory::GetForProfile(
 // static
 ResourcePrefetchPredictorFactory*
 ResourcePrefetchPredictorFactory::GetInstance() {
-  return Singleton<ResourcePrefetchPredictorFactory>::get();
+  return base::Singleton<ResourcePrefetchPredictorFactory>::get();
 }
 
 ResourcePrefetchPredictorFactory::ResourcePrefetchPredictorFactory()

@@ -31,7 +31,7 @@ DeviceListCacheX11::~DeviceListCacheX11() {
 }
 
 DeviceListCacheX11* DeviceListCacheX11::GetInstance() {
-  return Singleton<DeviceListCacheX11>::get();
+  return base::Singleton<DeviceListCacheX11>::get();
 }
 
 void DeviceListCacheX11::UpdateDeviceList(Display* display) {

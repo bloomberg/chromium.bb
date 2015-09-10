@@ -39,7 +39,7 @@ const extensions::Extension* ThemeServiceFactory::GetThemeForProfile(
 
 // static
 ThemeServiceFactory* ThemeServiceFactory::GetInstance() {
-  return Singleton<ThemeServiceFactory>::get();
+  return base::Singleton<ThemeServiceFactory>::get();
 }
 
 ThemeServiceFactory::ThemeServiceFactory()

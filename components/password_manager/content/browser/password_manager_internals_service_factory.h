@@ -28,7 +28,8 @@ class PasswordManagerInternalsServiceFactory
   static PasswordManagerInternalsServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PasswordManagerInternalsServiceFactory>;
+  friend struct base::DefaultSingletonTraits<
+      PasswordManagerInternalsServiceFactory>;
 
   PasswordManagerInternalsServiceFactory();
   ~PasswordManagerInternalsServiceFactory() override;

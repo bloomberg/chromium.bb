@@ -76,7 +76,7 @@ void CancelNotification(const std::string& id, ProfileID profile_id) {
 // static
 PlatformNotificationServiceImpl*
 PlatformNotificationServiceImpl::GetInstance() {
-  return Singleton<PlatformNotificationServiceImpl>::get();
+  return base::Singleton<PlatformNotificationServiceImpl>::get();
 }
 
 PlatformNotificationServiceImpl::PlatformNotificationServiceImpl()

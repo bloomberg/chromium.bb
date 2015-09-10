@@ -14,9 +14,10 @@
 namespace content {
 class UtilityProcessHost;
 }
-
+namespace base {
 template <typename Type>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 // A factory used to create connections to Mojo proxy resolver services run in a
 // utility process. All Mojo proxy resolver services will be run in the same
@@ -34,7 +35,8 @@ class UtilityProcessMojoProxyResolverFactory
       net::interfaces::ProxyResolverFactoryRequestClientPtr client) override;
 
  private:
-  friend struct DefaultSingletonTraits<UtilityProcessMojoProxyResolverFactory>;
+  friend struct base::DefaultSingletonTraits<
+      UtilityProcessMojoProxyResolverFactory>;
   UtilityProcessMojoProxyResolverFactory();
   ~UtilityProcessMojoProxyResolverFactory() override;
 

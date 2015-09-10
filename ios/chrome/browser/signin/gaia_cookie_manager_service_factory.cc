@@ -36,7 +36,7 @@ GaiaCookieManagerService* GaiaCookieManagerServiceFactory::GetForBrowserState(
 // static
 GaiaCookieManagerServiceFactory*
 GaiaCookieManagerServiceFactory::GetInstance() {
-  return Singleton<GaiaCookieManagerServiceFactory>::get();
+  return base::Singleton<GaiaCookieManagerServiceFactory>::get();
 }
 
 scoped_ptr<KeyedService>

@@ -249,8 +249,8 @@ void SetWindowAttributes(HWND hwnd) {
 
 // static
 AppListServiceWin* AppListServiceWin::GetInstance() {
-  return Singleton<AppListServiceWin,
-                   LeakySingletonTraits<AppListServiceWin> >::get();
+  return base::Singleton<AppListServiceWin,
+                         base::LeakySingletonTraits<AppListServiceWin>>::get();
 }
 
 AppListServiceWin::AppListServiceWin()

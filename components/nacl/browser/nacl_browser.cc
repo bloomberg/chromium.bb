@@ -213,7 +213,7 @@ bool NaClBrowser::GetNaCl64ExePath(base::FilePath* exe_path) {
 #endif
 
 NaClBrowser* NaClBrowser::GetInstance() {
-  return Singleton<NaClBrowser>::get();
+  return base::Singleton<NaClBrowser>::get();
 }
 
 bool NaClBrowser::IsReady() const {

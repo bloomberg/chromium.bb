@@ -16,7 +16,7 @@ namespace content {
 
 // static
 AboutTcmallocOutputs* AboutTcmallocOutputs::GetInstance() {
-  return Singleton<AboutTcmallocOutputs>::get();
+  return base::Singleton<AboutTcmallocOutputs>::get();
 }
 
 AboutTcmallocOutputs::AboutTcmallocOutputs() {}

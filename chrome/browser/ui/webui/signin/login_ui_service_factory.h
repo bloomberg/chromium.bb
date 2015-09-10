@@ -30,7 +30,7 @@ class LoginUIServiceFactory : public BrowserContextKeyedServiceFactory {
   static base::Closure GetShowLoginPopupCallbackForProfile(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<LoginUIServiceFactory>;
+  friend struct base::DefaultSingletonTraits<LoginUIServiceFactory>;
 
   LoginUIServiceFactory();
   ~LoginUIServiceFactory() override;

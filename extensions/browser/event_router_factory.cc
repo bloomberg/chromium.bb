@@ -24,7 +24,7 @@ EventRouter* EventRouterFactory::GetForBrowserContext(BrowserContext* context) {
 
 // static
 EventRouterFactory* EventRouterFactory::GetInstance() {
-  return Singleton<EventRouterFactory>::get();
+  return base::Singleton<EventRouterFactory>::get();
 }
 
 EventRouterFactory::EventRouterFactory()

@@ -13,7 +13,7 @@ using content::BrowserChildProcessHostIterator;
 namespace nacl {
 
 NaClBrokerService* NaClBrokerService::GetInstance() {
-  return Singleton<NaClBrokerService>::get();
+  return base::Singleton<NaClBrokerService>::get();
 }
 
 NaClBrokerService::NaClBrokerService()

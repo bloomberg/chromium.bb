@@ -9,7 +9,10 @@
 #ifndef UI_CHROMEOS_IME_INPUT_METHOD_MENU_MANAGER_H_
 #define UI_CHROMEOS_IME_INPUT_METHOD_MENU_MANAGER_H_
 
-template<typename Type> struct DefaultSingletonTraits;
+namespace base {
+template <typename Type>
+struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace ui {
 namespace ime {
@@ -47,7 +50,7 @@ public:
   InputMethodMenuManager();
 
   // For Singleton to be able to construct an instance.
-  friend struct DefaultSingletonTraits<InputMethodMenuManager>;
+  friend struct base::DefaultSingletonTraits<InputMethodMenuManager>;
 
   // Menu item list of the input method.  This is set by extension IMEs.
   InputMethodMenuItemList menu_list_;

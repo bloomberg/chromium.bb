@@ -35,8 +35,7 @@ class MediaDrmCredentialManager {
   static bool RegisterMediaDrmCredentialManager(JNIEnv* env);
 
  private:
-  friend struct DefaultSingletonTraits<MediaDrmCredentialManager>;
-  friend class Singleton<MediaDrmCredentialManager>;
+  friend struct base::DefaultSingletonTraits<MediaDrmCredentialManager>;
   typedef media::MediaDrmBridge::SecurityLevel SecurityLevel;
 
   MediaDrmCredentialManager();

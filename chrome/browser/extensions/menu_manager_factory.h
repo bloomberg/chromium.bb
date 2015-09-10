@@ -26,7 +26,7 @@ class MenuManagerFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context);
 
  private:
-  friend struct DefaultSingletonTraits<MenuManagerFactory>;
+  friend struct base::DefaultSingletonTraits<MenuManagerFactory>;
 
   MenuManagerFactory();
   ~MenuManagerFactory() override;

@@ -10,7 +10,9 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace views {
 
@@ -48,7 +50,7 @@ class VIEWS_EXPORT WidgetFocusManager {
   void DisableNotifications() { enabled_ = false; }
 
  private:
-  friend struct DefaultSingletonTraits<WidgetFocusManager>;
+  friend struct base::DefaultSingletonTraits<WidgetFocusManager>;
 
   WidgetFocusManager();
   ~WidgetFocusManager();

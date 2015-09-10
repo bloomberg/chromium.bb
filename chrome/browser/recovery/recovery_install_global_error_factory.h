@@ -25,7 +25,7 @@ class RecoveryInstallGlobalErrorFactory
   static RecoveryInstallGlobalErrorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<RecoveryInstallGlobalErrorFactory>;
+  friend struct base::DefaultSingletonTraits<RecoveryInstallGlobalErrorFactory>;
 
   RecoveryInstallGlobalErrorFactory();
   ~RecoveryInstallGlobalErrorFactory() override;

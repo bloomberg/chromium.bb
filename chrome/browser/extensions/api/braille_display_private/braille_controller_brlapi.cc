@@ -46,8 +46,9 @@ BrailleController* BrailleController::GetInstance() {
 
 // static
 BrailleControllerImpl* BrailleControllerImpl::GetInstance() {
-  return Singleton<BrailleControllerImpl,
-                   LeakySingletonTraits<BrailleControllerImpl> >::get();
+  return base::Singleton<
+      BrailleControllerImpl,
+      base::LeakySingletonTraits<BrailleControllerImpl>>::get();
 }
 
 BrailleControllerImpl::BrailleControllerImpl()

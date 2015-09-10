@@ -31,7 +31,7 @@ namespace ios {
 
 // static
 FakeSyncServiceFactory* FakeSyncServiceFactory::GetInstance() {
-  return Singleton<FakeSyncServiceFactory>::get();
+  return base::Singleton<FakeSyncServiceFactory>::get();
 }
 
 // static

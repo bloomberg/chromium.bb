@@ -28,7 +28,7 @@ class AuthSyncObserverFactory
   static AuthSyncObserverFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AuthSyncObserverFactory>;
+  friend struct base::DefaultSingletonTraits<AuthSyncObserverFactory>;
 
   AuthSyncObserverFactory();
   ~AuthSyncObserverFactory() override;

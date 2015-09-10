@@ -25,7 +25,7 @@ InstallVerifier* InstallVerifierFactory::GetForBrowserContext(
 
 // static
 InstallVerifierFactory* InstallVerifierFactory::GetInstance() {
-  return Singleton<InstallVerifierFactory>::get();
+  return base::Singleton<InstallVerifierFactory>::get();
 }
 
 InstallVerifierFactory::InstallVerifierFactory()

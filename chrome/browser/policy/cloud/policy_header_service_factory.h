@@ -31,7 +31,7 @@ class PolicyHeaderServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* profile) const override;
 
  private:
-  friend struct DefaultSingletonTraits<PolicyHeaderServiceFactory>;
+  friend struct base::DefaultSingletonTraits<PolicyHeaderServiceFactory>;
 
   PolicyHeaderServiceFactory();
   ~PolicyHeaderServiceFactory() override;

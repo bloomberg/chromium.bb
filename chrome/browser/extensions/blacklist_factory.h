@@ -18,7 +18,7 @@ class BlacklistFactory : public BrowserContextKeyedServiceFactory {
   static BlacklistFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<BlacklistFactory>;
+  friend struct base::DefaultSingletonTraits<BlacklistFactory>;
 
   BlacklistFactory();
   ~BlacklistFactory() override;

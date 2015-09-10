@@ -14,7 +14,11 @@ namespace content {
 class BrowserContext;
 }
 
-template <typename T> struct DefaultSingletonTraits;
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}  // namespace base
+
 class EasyUnlockTpmKeyManager;
 
 // Singleton factory that builds and owns all EasyUnlockTpmKeyManager services.
@@ -27,7 +31,7 @@ class EasyUnlockTpmKeyManagerFactory
   static EasyUnlockTpmKeyManager* GetForUser(const std::string& user_id);
 
  private:
-  friend struct DefaultSingletonTraits<EasyUnlockTpmKeyManagerFactory>;
+  friend struct base::DefaultSingletonTraits<EasyUnlockTpmKeyManagerFactory>;
 
   EasyUnlockTpmKeyManagerFactory();
   ~EasyUnlockTpmKeyManagerFactory() override;

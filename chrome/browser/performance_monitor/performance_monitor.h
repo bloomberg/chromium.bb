@@ -12,8 +12,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/performance_monitor/process_metrics_history.h"
 
+namespace base {
 template <typename Type>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace content {
 struct ChildProcessData;
@@ -36,7 +38,7 @@ class PerformanceMonitor {
  private:
   typedef std::map<base::ProcessHandle, ProcessMetricsHistory> MetricsMap;
 
-  friend struct DefaultSingletonTraits<PerformanceMonitor>;
+  friend struct base::DefaultSingletonTraits<PerformanceMonitor>;
 
   PerformanceMonitor();
   virtual ~PerformanceMonitor();

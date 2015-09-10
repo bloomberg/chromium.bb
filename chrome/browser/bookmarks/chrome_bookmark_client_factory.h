@@ -8,8 +8,10 @@
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 class ChromeBookmarkClient;
 class Profile;
@@ -23,7 +25,7 @@ class ChromeBookmarkClientFactory : public BrowserContextKeyedServiceFactory {
   static TestingFactoryFunction GetDefaultFactory();
 
  private:
-  friend struct DefaultSingletonTraits<ChromeBookmarkClientFactory>;
+  friend struct base::DefaultSingletonTraits<ChromeBookmarkClientFactory>;
 
   ChromeBookmarkClientFactory();
   ~ChromeBookmarkClientFactory() override;

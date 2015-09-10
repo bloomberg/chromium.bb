@@ -16,7 +16,7 @@ namespace libgtk2ui {
 
 // static
 Gtk2EventLoop* Gtk2EventLoop::GetInstance() {
-  return Singleton<Gtk2EventLoop>::get();
+  return base::Singleton<Gtk2EventLoop>::get();
 }
 
 Gtk2EventLoop::Gtk2EventLoop() {

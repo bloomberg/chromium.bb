@@ -41,7 +41,8 @@ class WifiCredentialSyncableServiceFactory
 #endif
 
  private:
-  friend struct DefaultSingletonTraits<WifiCredentialSyncableServiceFactory>;
+  friend struct base::DefaultSingletonTraits<
+      WifiCredentialSyncableServiceFactory>;
 
   WifiCredentialSyncableServiceFactory();
   ~WifiCredentialSyncableServiceFactory() override;

@@ -34,7 +34,8 @@ class SearchEnginesPrivateEventRouterFactory
   bool ServiceIsNULLWhileTesting() const override;
 
  private:
-  friend struct DefaultSingletonTraits<SearchEnginesPrivateEventRouterFactory>;
+  friend struct base::DefaultSingletonTraits<
+      SearchEnginesPrivateEventRouterFactory>;
 
   SearchEnginesPrivateEventRouterFactory();
   ~SearchEnginesPrivateEventRouterFactory() override;

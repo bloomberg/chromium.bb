@@ -18,7 +18,7 @@ class BitmapFetcherServiceFactory : BrowserContextKeyedServiceFactory {
   static BitmapFetcherServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<BitmapFetcherServiceFactory>;
+  friend struct base::DefaultSingletonTraits<BitmapFetcherServiceFactory>;
 
   BitmapFetcherServiceFactory();
   ~BitmapFetcherServiceFactory() override;

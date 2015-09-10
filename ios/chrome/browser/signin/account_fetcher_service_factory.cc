@@ -39,7 +39,7 @@ AccountFetcherService* AccountFetcherServiceFactory::GetForBrowserState(
 
 // static
 AccountFetcherServiceFactory* AccountFetcherServiceFactory::GetInstance() {
-  return Singleton<AccountFetcherServiceFactory>::get();
+  return base::Singleton<AccountFetcherServiceFactory>::get();
 }
 
 void AccountFetcherServiceFactory::RegisterBrowserStatePrefs(

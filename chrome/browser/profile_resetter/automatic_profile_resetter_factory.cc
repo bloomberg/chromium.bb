@@ -25,7 +25,7 @@ AutomaticProfileResetter* AutomaticProfileResetterFactory::GetForBrowserContext(
 // static
 AutomaticProfileResetterFactory*
 AutomaticProfileResetterFactory::GetInstance() {
-  return Singleton<AutomaticProfileResetterFactory>::get();
+  return base::Singleton<AutomaticProfileResetterFactory>::get();
 }
 
 // static

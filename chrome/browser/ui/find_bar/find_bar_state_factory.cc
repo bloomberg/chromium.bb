@@ -31,7 +31,7 @@ base::string16 FindBarStateFactory::GetLastPrepopulateText(Profile* p) {
 
 // static
 FindBarStateFactory* FindBarStateFactory::GetInstance() {
-  return Singleton<FindBarStateFactory>::get();
+  return base::Singleton<FindBarStateFactory>::get();
 }
 
 FindBarStateFactory::FindBarStateFactory()

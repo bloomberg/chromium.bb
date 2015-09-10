@@ -9,8 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespase base
+
 class BookmarkClientImpl;
 
 namespace ios {
@@ -27,7 +30,7 @@ class BookmarkClientFactory : public BrowserStateKeyedServiceFactory {
   static TestingFactoryFunction GetDefaultFactory();
 
  private:
-  friend struct DefaultSingletonTraits<BookmarkClientFactory>;
+  friend struct base::DefaultSingletonTraits<BookmarkClientFactory>;
 
   BookmarkClientFactory();
   ~BookmarkClientFactory() override;

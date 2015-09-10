@@ -12,7 +12,11 @@
 #include "base/strings/string_piece.h"
 #include "net/spdy/spdy_framer.h"
 
+namespace base {
+
 template <typename Type> struct DefaultSingletonTraits;
+
+}  // namespace base
 
 namespace net {
 namespace tools {
@@ -99,7 +103,7 @@ class QuicInMemoryCache {
  private:
   typedef base::hash_map<std::string, Response*> ResponseMap;
 
-  friend struct DefaultSingletonTraits<QuicInMemoryCache>;
+  friend struct base::DefaultSingletonTraits<QuicInMemoryCache>;
   friend class test::QuicInMemoryCachePeer;
 
   QuicInMemoryCache();

@@ -18,7 +18,7 @@ TokenCacheServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 TokenCacheServiceFactory* TokenCacheServiceFactory::GetInstance() {
-  return Singleton<TokenCacheServiceFactory>::get();
+  return base::Singleton<TokenCacheServiceFactory>::get();
 }
 
 TokenCacheServiceFactory::TokenCacheServiceFactory()

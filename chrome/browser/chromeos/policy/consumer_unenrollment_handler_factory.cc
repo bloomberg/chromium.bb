@@ -25,7 +25,7 @@ ConsumerUnenrollmentHandlerFactory::GetForBrowserContext(
 // static
 ConsumerUnenrollmentHandlerFactory*
 ConsumerUnenrollmentHandlerFactory::GetInstance() {
-  return Singleton<ConsumerUnenrollmentHandlerFactory>::get();
+  return base::Singleton<ConsumerUnenrollmentHandlerFactory>::get();
 }
 
 ConsumerUnenrollmentHandlerFactory::ConsumerUnenrollmentHandlerFactory()

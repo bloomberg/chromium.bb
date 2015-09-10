@@ -22,7 +22,7 @@ class GCMProfileServiceFactory : public BrowserContextKeyedServiceFactory {
   static GCMProfileServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<GCMProfileServiceFactory>;
+  friend struct base::DefaultSingletonTraits<GCMProfileServiceFactory>;
 
   GCMProfileServiceFactory();
   ~GCMProfileServiceFactory() override;

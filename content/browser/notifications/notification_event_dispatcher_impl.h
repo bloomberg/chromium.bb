@@ -29,7 +29,7 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
   NotificationEventDispatcherImpl();
   ~NotificationEventDispatcherImpl() override;
 
-  friend struct DefaultSingletonTraits<NotificationEventDispatcherImpl>;
+  friend struct base::DefaultSingletonTraits<NotificationEventDispatcherImpl>;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationEventDispatcherImpl);
 };

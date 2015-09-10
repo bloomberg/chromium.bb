@@ -8,8 +8,12 @@
 #include "base/values.h"
 #include "extensions/browser/extension_function.h"
 
+namespace base {
+
 template <typename T>
 struct DefaultSingletonTraits;
+
+}  // namespace base
 
 namespace extensions {
 
@@ -100,7 +104,7 @@ class TestGetConfigFunction : public TestExtensionFunction {
     const base::DictionaryValue* config_state() { return config_state_; }
 
    private:
-    friend struct DefaultSingletonTraits<TestConfigState>;
+    friend struct base::DefaultSingletonTraits<TestConfigState>;
     TestConfigState();
 
     base::DictionaryValue* config_state_;

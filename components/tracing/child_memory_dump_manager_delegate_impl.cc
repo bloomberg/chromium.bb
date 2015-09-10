@@ -12,9 +12,9 @@ namespace tracing {
 // static
 ChildMemoryDumpManagerDelegateImpl*
 ChildMemoryDumpManagerDelegateImpl::GetInstance() {
-  return Singleton<
+  return base::Singleton<
       ChildMemoryDumpManagerDelegateImpl,
-      LeakySingletonTraits<ChildMemoryDumpManagerDelegateImpl>>::get();
+      base::LeakySingletonTraits<ChildMemoryDumpManagerDelegateImpl>>::get();
 }
 
 ChildMemoryDumpManagerDelegateImpl::ChildMemoryDumpManagerDelegateImpl()

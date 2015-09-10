@@ -20,7 +20,7 @@ class ProtectedMediaIdentifierPermissionContextFactory
   static ProtectedMediaIdentifierPermissionContextFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<
+  friend struct base::DefaultSingletonTraits<
       ProtectedMediaIdentifierPermissionContextFactory>;
 
   ProtectedMediaIdentifierPermissionContextFactory();

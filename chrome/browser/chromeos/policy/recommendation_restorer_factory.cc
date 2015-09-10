@@ -13,7 +13,7 @@ namespace policy {
 
 // static
 RecommendationRestorerFactory* RecommendationRestorerFactory::GetInstance() {
-  return Singleton<RecommendationRestorerFactory>::get();
+  return base::Singleton<RecommendationRestorerFactory>::get();
 }
 
 // static

@@ -20,7 +20,7 @@ class SupervisedUserSharedSettingsServiceFactory
   static SupervisedUserSharedSettingsServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<
+  friend struct base::DefaultSingletonTraits<
       SupervisedUserSharedSettingsServiceFactory>;
 
   SupervisedUserSharedSettingsServiceFactory();

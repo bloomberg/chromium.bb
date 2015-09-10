@@ -39,7 +39,7 @@ MediaDrmCredentialManager::~MediaDrmCredentialManager() {};
 
 // static
 MediaDrmCredentialManager* MediaDrmCredentialManager::GetInstance() {
-  return Singleton<MediaDrmCredentialManager>::get();
+  return base::Singleton<MediaDrmCredentialManager>::get();
 }
 
 void MediaDrmCredentialManager::ResetCredentials(

@@ -141,7 +141,7 @@ void AndroidLocationApiAdapter::OnNewErrorAvailable(JNIEnv* env,
 
 // static
 AndroidLocationApiAdapter* AndroidLocationApiAdapter::GetInstance() {
-  return Singleton<AndroidLocationApiAdapter>::get();
+  return base::Singleton<AndroidLocationApiAdapter>::get();
 }
 
 // static

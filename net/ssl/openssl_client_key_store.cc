@@ -117,7 +117,7 @@ void OpenSSLClientKeyStore::Flush() {
 }
 
 OpenSSLClientKeyStore* OpenSSLClientKeyStore::GetInstance() {
-  return Singleton<OpenSSLClientKeyStore>::get();
+  return base::Singleton<OpenSSLClientKeyStore>::get();
 }
 
 }  // namespace net

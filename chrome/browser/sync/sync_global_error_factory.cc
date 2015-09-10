@@ -35,7 +35,7 @@ SyncGlobalError* SyncGlobalErrorFactory::GetForProfile(
 
 // static
 SyncGlobalErrorFactory* SyncGlobalErrorFactory::GetInstance() {
-  return Singleton<SyncGlobalErrorFactory>::get();
+  return base::Singleton<SyncGlobalErrorFactory>::get();
 }
 
 KeyedService* SyncGlobalErrorFactory::BuildServiceInstanceFor(

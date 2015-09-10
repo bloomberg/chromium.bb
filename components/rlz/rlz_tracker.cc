@@ -150,7 +150,7 @@ RLZTracker* RLZTracker::tracker_ = nullptr;
 
 // static
 RLZTracker* RLZTracker::GetInstance() {
-  return tracker_ ? tracker_ : Singleton<RLZTracker>::get();
+  return tracker_ ? tracker_ : base::Singleton<RLZTracker>::get();
 }
 
 RLZTracker::RLZTracker()

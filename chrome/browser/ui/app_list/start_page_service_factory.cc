@@ -31,7 +31,7 @@ StartPageService* StartPageServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 StartPageServiceFactory* StartPageServiceFactory::GetInstance() {
-  return Singleton<StartPageServiceFactory>::get();
+  return base::Singleton<StartPageServiceFactory>::get();
 }
 
 StartPageServiceFactory::StartPageServiceFactory()

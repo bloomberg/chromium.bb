@@ -21,7 +21,7 @@ const char kAppMenuRegistrarPath[] = "/com/canonical/AppMenu/Registrar";
 
 // static
 GlobalMenuBarRegistrarX11* GlobalMenuBarRegistrarX11::GetInstance() {
-  return Singleton<GlobalMenuBarRegistrarX11>::get();
+  return base::Singleton<GlobalMenuBarRegistrarX11>::get();
 }
 
 void GlobalMenuBarRegistrarX11::OnWindowMapped(unsigned long xid) {

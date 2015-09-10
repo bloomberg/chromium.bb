@@ -19,7 +19,7 @@ class MediaStreamCameraPermissionContextFactory
   static MediaStreamCameraPermissionContextFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<
+  friend struct base::DefaultSingletonTraits<
       MediaStreamCameraPermissionContextFactory>;
 
   MediaStreamCameraPermissionContextFactory();

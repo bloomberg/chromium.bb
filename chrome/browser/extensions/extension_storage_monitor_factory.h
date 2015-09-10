@@ -21,7 +21,7 @@ class ExtensionStorageMonitorFactory
   static ExtensionStorageMonitorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionStorageMonitorFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionStorageMonitorFactory>;
 
   ExtensionStorageMonitorFactory();
   ~ExtensionStorageMonitorFactory() override;

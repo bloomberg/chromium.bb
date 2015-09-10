@@ -24,7 +24,7 @@ namespace  {
 class AuraWindowRegistry : public aura::WindowObserver {
  public:
   static AuraWindowRegistry* GetInstance() {
-    return Singleton<AuraWindowRegistry>::get();
+    return base::Singleton<AuraWindowRegistry>::get();
   }
 
   int RegisterWindow(aura::Window* window) {
@@ -43,7 +43,7 @@ class AuraWindowRegistry : public aura::WindowObserver {
   }
 
  private:
-  friend struct DefaultSingletonTraits<AuraWindowRegistry>;
+  friend struct base::DefaultSingletonTraits<AuraWindowRegistry>;
 
   AuraWindowRegistry() {}
   ~AuraWindowRegistry() override {}

@@ -18,7 +18,7 @@ class PushMessagingServiceFactory : public BrowserContextKeyedServiceFactory {
   static PushMessagingServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PushMessagingServiceFactory>;
+  friend struct base::DefaultSingletonTraits<PushMessagingServiceFactory>;
 
   PushMessagingServiceFactory();
   ~PushMessagingServiceFactory() override;

@@ -7,7 +7,7 @@
 #include "base/memory/singleton.h"
 
 OmniboxEventGlobalTracker* OmniboxEventGlobalTracker::GetInstance() {
-  return Singleton<OmniboxEventGlobalTracker>::get();
+  return base::Singleton<OmniboxEventGlobalTracker>::get();
 }
 
 scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>

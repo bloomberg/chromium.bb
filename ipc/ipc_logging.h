@@ -101,7 +101,7 @@ class IPC_EXPORT Logging {
   const char* ANSIEscape(ANSIColor color);
   ANSIColor DelayColor(double delay);
 
-  friend struct DefaultSingletonTraits<Logging>;
+  friend struct base::DefaultSingletonTraits<Logging>;
   Logging();
 
   void OnSendLogs();

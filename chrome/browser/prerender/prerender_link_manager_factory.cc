@@ -22,7 +22,7 @@ PrerenderLinkManager* PrerenderLinkManagerFactory::GetForProfile(
 
 // static
 PrerenderLinkManagerFactory* PrerenderLinkManagerFactory::GetInstance() {
-  return Singleton<PrerenderLinkManagerFactory>::get();
+  return base::Singleton<PrerenderLinkManagerFactory>::get();
 }
 
 PrerenderLinkManagerFactory::PrerenderLinkManagerFactory()

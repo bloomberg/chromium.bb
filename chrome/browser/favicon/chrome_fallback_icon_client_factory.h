@@ -7,7 +7,9 @@
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace content {
 class BrowserContext;
@@ -31,7 +33,7 @@ class ChromeFallbackIconClientFactory
   static ChromeFallbackIconClientFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ChromeFallbackIconClientFactory>;
+  friend struct base::DefaultSingletonTraits<ChromeFallbackIconClientFactory>;
 
   ChromeFallbackIconClientFactory();
   ~ChromeFallbackIconClientFactory() override;

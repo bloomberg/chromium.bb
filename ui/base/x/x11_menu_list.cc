@@ -11,7 +11,7 @@ namespace ui {
 
 // static
 XMenuList* XMenuList::GetInstance() {
-  return Singleton<XMenuList>::get();
+  return base::Singleton<XMenuList>::get();
 }
 
 XMenuList::XMenuList()

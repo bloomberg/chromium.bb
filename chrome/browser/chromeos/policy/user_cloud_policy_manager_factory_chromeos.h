@@ -62,7 +62,8 @@ class UserCloudPolicyManagerFactoryChromeOS
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
  private:
-  friend struct DefaultSingletonTraits<UserCloudPolicyManagerFactoryChromeOS>;
+  friend struct base::DefaultSingletonTraits<
+      UserCloudPolicyManagerFactoryChromeOS>;
 
   UserCloudPolicyManagerFactoryChromeOS();
   ~UserCloudPolicyManagerFactoryChromeOS() override;

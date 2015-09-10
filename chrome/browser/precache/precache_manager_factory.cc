@@ -23,7 +23,7 @@ PrecacheManager* PrecacheManagerFactory::GetForBrowserContext(
 
 // static
 PrecacheManagerFactory* PrecacheManagerFactory::GetInstance() {
-  return Singleton<PrecacheManagerFactory>::get();
+  return base::Singleton<PrecacheManagerFactory>::get();
 }
 
 PrecacheManagerFactory::PrecacheManagerFactory()

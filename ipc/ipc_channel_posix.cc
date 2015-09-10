@@ -95,9 +95,7 @@ namespace {
 
 class PipeMap {
  public:
-  static PipeMap* GetInstance() {
-    return Singleton<PipeMap>::get();
-  }
+  static PipeMap* GetInstance() { return base::Singleton<PipeMap>::get(); }
 
   ~PipeMap() {
     // Shouldn't have left over pipes.
@@ -139,7 +137,7 @@ class PipeMap {
   typedef std::map<std::string, int> ChannelToFDMap;
   ChannelToFDMap map_;
 
-  friend struct DefaultSingletonTraits<PipeMap>;
+  friend struct base::DefaultSingletonTraits<PipeMap>;
 #if defined(OS_ANDROID)
   friend void ::IPC::Channel::NotifyProcessForkedForTesting();
 #endif

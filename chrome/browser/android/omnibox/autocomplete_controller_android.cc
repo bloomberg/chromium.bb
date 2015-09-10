@@ -295,7 +295,7 @@ AutocompleteControllerAndroid::Factory::GetForProfile(
 
 AutocompleteControllerAndroid::Factory*
 AutocompleteControllerAndroid::Factory::GetInstance() {
-  return Singleton<AutocompleteControllerAndroid::Factory>::get();
+  return base::Singleton<AutocompleteControllerAndroid::Factory>::get();
 }
 
 content::BrowserContext*

@@ -99,7 +99,7 @@ class TaskManager {
 
   // Obtain an instance via GetInstance().
   TaskManager();
-  friend struct DefaultSingletonTraits<TaskManager>;
+  friend struct base::DefaultSingletonTraits<TaskManager>;
 
   ~TaskManager();
 

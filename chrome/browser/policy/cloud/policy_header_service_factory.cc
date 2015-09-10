@@ -113,7 +113,7 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
 
 // static
 PolicyHeaderServiceFactory* PolicyHeaderServiceFactory::GetInstance() {
-  return Singleton<PolicyHeaderServiceFactory>::get();
+  return base::Singleton<PolicyHeaderServiceFactory>::get();
 }
 
 }  // namespace policy

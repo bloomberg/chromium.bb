@@ -71,7 +71,7 @@ class SelectionChangeObserver : public ui::PlatformEventObserver {
   uint64 primary_sequence_number() const { return primary_sequence_number_; }
 
  private:
-  friend struct DefaultSingletonTraits<SelectionChangeObserver>;
+  friend struct base::DefaultSingletonTraits<SelectionChangeObserver>;
 
   SelectionChangeObserver();
   ~SelectionChangeObserver() override;
@@ -119,7 +119,7 @@ SelectionChangeObserver::~SelectionChangeObserver() {
 }
 
 SelectionChangeObserver* SelectionChangeObserver::GetInstance() {
-  return Singleton<SelectionChangeObserver>::get();
+  return base::Singleton<SelectionChangeObserver>::get();
 }
 
 void SelectionChangeObserver::WillProcessEvent(const ui::PlatformEvent& event) {

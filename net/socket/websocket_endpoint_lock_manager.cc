@@ -33,7 +33,7 @@ WebSocketEndpointLockManager::Waiter::~Waiter() {
 }
 
 WebSocketEndpointLockManager* WebSocketEndpointLockManager::GetInstance() {
-  return Singleton<WebSocketEndpointLockManager>::get();
+  return base::Singleton<WebSocketEndpointLockManager>::get();
 }
 
 int WebSocketEndpointLockManager::LockEndpoint(const IPEndPoint& endpoint,

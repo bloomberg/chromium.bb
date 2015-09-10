@@ -132,7 +132,7 @@ namespace {
 class AbbreviatedMonthsMap {
  public:
   static AbbreviatedMonthsMap* GetInstance() {
-    return Singleton<AbbreviatedMonthsMap>::get();
+    return base::Singleton<AbbreviatedMonthsMap>::get();
   }
 
   // Converts abbreviated month name |text| to its number (in range 1-12).
@@ -150,7 +150,7 @@ class AbbreviatedMonthsMap {
   }
 
  private:
-  friend struct DefaultSingletonTraits<AbbreviatedMonthsMap>;
+  friend struct base::DefaultSingletonTraits<AbbreviatedMonthsMap>;
 
   // Constructor, initializes the map based on ICU data. It is much faster
   // to do that just once.

@@ -317,7 +317,7 @@ bool ServiceProcessControl::Shutdown() {
 
 // static
 ServiceProcessControl* ServiceProcessControl::GetInstance() {
-  return Singleton<ServiceProcessControl>::get();
+  return base::Singleton<ServiceProcessControl>::get();
 }
 
 ServiceProcessControl::Launcher::Launcher(

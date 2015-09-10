@@ -25,8 +25,9 @@ SerializedNavigationDriver* SerializedNavigationDriver::Get() {
 // static
 IOSSerializedNavigationDriver*
 IOSSerializedNavigationDriver::GetInstance() {
-  return Singleton<IOSSerializedNavigationDriver,
-      LeakySingletonTraits<IOSSerializedNavigationDriver>>::get();
+  return base::Singleton<
+      IOSSerializedNavigationDriver,
+      base::LeakySingletonTraits<IOSSerializedNavigationDriver>>::get();
 }
 
 IOSSerializedNavigationDriver::IOSSerializedNavigationDriver() {

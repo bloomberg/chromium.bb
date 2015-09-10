@@ -37,7 +37,7 @@ class HistoryServiceFactory : public BrowserContextKeyedServiceFactory {
   static void ShutdownForProfile(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<HistoryServiceFactory>;
+  friend struct base::DefaultSingletonTraits<HistoryServiceFactory>;
 
   HistoryServiceFactory();
   ~HistoryServiceFactory() override;

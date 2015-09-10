@@ -58,7 +58,7 @@ class CONTENT_EXPORT RendererFrameManager {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  friend struct DefaultSingletonTraits<RendererFrameManager>;
+  friend struct base::DefaultSingletonTraits<RendererFrameManager>;
 
   // Listens for system under pressure notifications and adjusts number of
   // cached frames accordingly.

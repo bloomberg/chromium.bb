@@ -49,7 +49,7 @@ TouchFactory::~TouchFactory() {
 
 // static
 TouchFactory* TouchFactory::GetInstance() {
-  return Singleton<TouchFactory>::get();
+  return base::Singleton<TouchFactory>::get();
 }
 
 // static

@@ -52,7 +52,7 @@ base::FilePath GetEasyUnlockAppPath() {
 
 // static
 EasyUnlockServiceFactory* EasyUnlockServiceFactory::GetInstance() {
-  return Singleton<EasyUnlockServiceFactory>::get();
+  return base::Singleton<EasyUnlockServiceFactory>::get();
 }
 
 // static

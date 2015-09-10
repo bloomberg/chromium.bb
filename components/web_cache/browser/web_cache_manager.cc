@@ -56,7 +56,7 @@ int GetDefaultCacheSize() {
 
 // static
 WebCacheManager* WebCacheManager::GetInstance() {
-  return Singleton<WebCacheManager>::get();
+  return base::Singleton<WebCacheManager>::get();
 }
 
 WebCacheManager::WebCacheManager()

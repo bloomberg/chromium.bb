@@ -17,7 +17,7 @@ AppShortcutManager* AppShortcutManagerFactory::GetForProfile(Profile* profile) {
 }
 
 AppShortcutManagerFactory* AppShortcutManagerFactory::GetInstance() {
-  return Singleton<AppShortcutManagerFactory>::get();
+  return base::Singleton<AppShortcutManagerFactory>::get();
 }
 
 AppShortcutManagerFactory::AppShortcutManagerFactory()

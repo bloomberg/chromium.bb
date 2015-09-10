@@ -17,7 +17,7 @@ SiteEngagementService* SiteEngagementServiceFactory::GetForProfile(
 
 // static
 SiteEngagementServiceFactory* SiteEngagementServiceFactory::GetInstance() {
-  return Singleton<SiteEngagementServiceFactory>::get();
+  return base::Singleton<SiteEngagementServiceFactory>::get();
 }
 
 SiteEngagementServiceFactory::SiteEngagementServiceFactory()

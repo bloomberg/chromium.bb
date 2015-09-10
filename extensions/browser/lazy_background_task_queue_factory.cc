@@ -23,7 +23,7 @@ LazyBackgroundTaskQueue* LazyBackgroundTaskQueueFactory::GetForBrowserContext(
 
 // static
 LazyBackgroundTaskQueueFactory* LazyBackgroundTaskQueueFactory::GetInstance() {
-  return Singleton<LazyBackgroundTaskQueueFactory>::get();
+  return base::Singleton<LazyBackgroundTaskQueueFactory>::get();
 }
 
 LazyBackgroundTaskQueueFactory::LazyBackgroundTaskQueueFactory()

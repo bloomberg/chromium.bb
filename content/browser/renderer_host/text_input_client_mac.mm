@@ -30,7 +30,7 @@ TextInputClientMac::~TextInputClientMac() {
 
 // static
 TextInputClientMac* TextInputClientMac::GetInstance() {
-  return Singleton<TextInputClientMac>::get();
+  return base::Singleton<TextInputClientMac>::get();
 }
 
 void TextInputClientMac::GetStringAtPoint(

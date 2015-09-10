@@ -24,7 +24,7 @@ InstantService* InstantServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 InstantServiceFactory* InstantServiceFactory::GetInstance() {
-  return Singleton<InstantServiceFactory>::get();
+  return base::Singleton<InstantServiceFactory>::get();
 }
 
 InstantServiceFactory::InstantServiceFactory()

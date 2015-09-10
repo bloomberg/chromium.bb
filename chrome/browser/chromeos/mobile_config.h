@@ -160,7 +160,7 @@ class MobileConfig : public CustomizationDocument  {
   FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, OldDeal);
   FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, LocalConfigNoDeals);
   FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, LocalConfig);
-  friend struct DefaultSingletonTraits<MobileConfig>;
+  friend struct base::DefaultSingletonTraits<MobileConfig>;
 
   // C-tor for singleton construction.
   MobileConfig();

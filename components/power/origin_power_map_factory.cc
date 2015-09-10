@@ -18,7 +18,7 @@ OriginPowerMap* OriginPowerMapFactory::GetForBrowserContext(
 
 // static
 OriginPowerMapFactory* OriginPowerMapFactory::GetInstance() {
-  return Singleton<OriginPowerMapFactory>::get();
+  return base::Singleton<OriginPowerMapFactory>::get();
 }
 
 OriginPowerMapFactory::OriginPowerMapFactory()

@@ -25,7 +25,7 @@ PasswordsPrivateDelegate* PasswordsPrivateDelegateFactory::GetForBrowserContext(
 // static
 PasswordsPrivateDelegateFactory*
     PasswordsPrivateDelegateFactory::GetInstance() {
-  return Singleton<PasswordsPrivateDelegateFactory>::get();
+  return base::Singleton<PasswordsPrivateDelegateFactory>::get();
 }
 
 PasswordsPrivateDelegateFactory::PasswordsPrivateDelegateFactory()

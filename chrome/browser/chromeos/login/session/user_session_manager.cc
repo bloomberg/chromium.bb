@@ -323,8 +323,8 @@ UserSessionStateObserver::~UserSessionStateObserver() {
 
 // static
 UserSessionManager* UserSessionManager::GetInstance() {
-  return Singleton<UserSessionManager,
-      DefaultSingletonTraits<UserSessionManager> >::get();
+  return base::Singleton<UserSessionManager, base::DefaultSingletonTraits<
+                                                 UserSessionManager>>::get();
 }
 
 // static

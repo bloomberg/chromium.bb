@@ -277,8 +277,9 @@ StartupCustomizationDocument::StartupCustomizationDocument(
 StartupCustomizationDocument::~StartupCustomizationDocument() {}
 
 StartupCustomizationDocument* StartupCustomizationDocument::GetInstance() {
-  return Singleton<StartupCustomizationDocument,
-      DefaultSingletonTraits<StartupCustomizationDocument> >::get();
+  return base::Singleton<
+      StartupCustomizationDocument,
+      base::DefaultSingletonTraits<StartupCustomizationDocument>>::get();
 }
 
 void StartupCustomizationDocument::Init(
@@ -427,8 +428,9 @@ ServicesCustomizationDocument* ServicesCustomizationDocument::GetInstance() {
   if (g_test_services_customization_document)
     return g_test_services_customization_document;
 
-  return Singleton<ServicesCustomizationDocument,
-      DefaultSingletonTraits<ServicesCustomizationDocument> >::get();
+  return base::Singleton<
+      ServicesCustomizationDocument,
+      base::DefaultSingletonTraits<ServicesCustomizationDocument>>::get();
 }
 
 // static

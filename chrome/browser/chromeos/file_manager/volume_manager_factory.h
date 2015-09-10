@@ -8,7 +8,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_VOLUME_MANAGER_FACTORY_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_VOLUME_MANAGER_FACTORY_H_
 
-template<typename T> struct DefaultSingletonTraits;
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -39,7 +42,7 @@ class VolumeManagerFactory : public BrowserContextKeyedServiceFactory {
 
  private:
   // For Singleton.
-  friend struct DefaultSingletonTraits<VolumeManagerFactory>;
+  friend struct base::DefaultSingletonTraits<VolumeManagerFactory>;
 
   VolumeManagerFactory();
   ~VolumeManagerFactory() override;

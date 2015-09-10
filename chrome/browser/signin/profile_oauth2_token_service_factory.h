@@ -27,7 +27,7 @@ class ProfileOAuth2TokenServiceFactory
   static ProfileOAuth2TokenServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ProfileOAuth2TokenServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ProfileOAuth2TokenServiceFactory>;
 
   ProfileOAuth2TokenServiceFactory();
   ~ProfileOAuth2TokenServiceFactory() override;

@@ -17,7 +17,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/updater/extension_cache.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace extensions {
 

@@ -21,7 +21,7 @@ class PrerenderLinkManagerFactory : public BrowserContextKeyedServiceFactory {
   static PrerenderLinkManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PrerenderLinkManagerFactory>;
+  friend struct base::DefaultSingletonTraits<PrerenderLinkManagerFactory>;
 
   PrerenderLinkManagerFactory();
   ~PrerenderLinkManagerFactory() override {}

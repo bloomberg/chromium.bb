@@ -318,7 +318,7 @@ InterfaceList::~InterfaceList() {
 InterfaceList* InterfaceList::GetInstance() {
   // CAUTION: This function is called without the ProxyLock to avoid excessive
   // excessive locking from C++ wrappers. (See also GetBrowserInterface.)
-  return Singleton<InterfaceList>::get();
+  return base::Singleton<InterfaceList>::get();
 }
 
 // static

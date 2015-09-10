@@ -24,7 +24,7 @@ NetworkingPrivateEventRouterFactory::GetForProfile(
 // static
 NetworkingPrivateEventRouterFactory*
 NetworkingPrivateEventRouterFactory::GetInstance() {
-  return Singleton<NetworkingPrivateEventRouterFactory>::get();
+  return base::Singleton<NetworkingPrivateEventRouterFactory>::get();
 }
 
 NetworkingPrivateEventRouterFactory::NetworkingPrivateEventRouterFactory()

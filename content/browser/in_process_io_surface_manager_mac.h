@@ -28,7 +28,7 @@ class CONTENT_EXPORT InProcessIOSurfaceManager : public IOSurfaceManager {
   IOSurfaceRef AcquireIOSurface(IOSurfaceId io_surface_id) override;
 
  private:
-  friend struct DefaultSingletonTraits<InProcessIOSurfaceManager>;
+  friend struct base::DefaultSingletonTraits<InProcessIOSurfaceManager>;
 
   InProcessIOSurfaceManager();
   ~InProcessIOSurfaceManager() override;

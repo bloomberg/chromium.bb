@@ -24,7 +24,7 @@ ExtensionPrefs* ExtensionPrefsFactory::GetForBrowserContext(
 
 // static
 ExtensionPrefsFactory* ExtensionPrefsFactory::GetInstance() {
-  return Singleton<ExtensionPrefsFactory>::get();
+  return base::Singleton<ExtensionPrefsFactory>::get();
 }
 
 void ExtensionPrefsFactory::SetInstanceForTesting(

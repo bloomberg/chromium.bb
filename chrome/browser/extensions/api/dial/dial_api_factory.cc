@@ -20,7 +20,7 @@ scoped_refptr<DialAPI> DialAPIFactory::GetForBrowserContext(
 
 // static
 DialAPIFactory* DialAPIFactory::GetInstance() {
-  return Singleton<DialAPIFactory>::get();
+  return base::Singleton<DialAPIFactory>::get();
 }
 
 DialAPIFactory::DialAPIFactory() : RefcountedBrowserContextKeyedServiceFactory(

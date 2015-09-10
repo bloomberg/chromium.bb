@@ -23,7 +23,7 @@ SystemIndicatorManager* SystemIndicatorManagerFactory::GetForProfile(
 
 // static
 SystemIndicatorManagerFactory* SystemIndicatorManagerFactory::GetInstance() {
-  return Singleton<SystemIndicatorManagerFactory>::get();
+  return base::Singleton<SystemIndicatorManagerFactory>::get();
 }
 
 SystemIndicatorManagerFactory::SystemIndicatorManagerFactory()

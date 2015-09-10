@@ -29,7 +29,7 @@ GAIAInfoUpdateService* GAIAInfoUpdateServiceFactory::GetForProfile(
 
 // static
 GAIAInfoUpdateServiceFactory* GAIAInfoUpdateServiceFactory::GetInstance() {
-  return Singleton<GAIAInfoUpdateServiceFactory>::get();
+  return base::Singleton<GAIAInfoUpdateServiceFactory>::get();
 }
 
 KeyedService* GAIAInfoUpdateServiceFactory::BuildServiceInstanceFor(

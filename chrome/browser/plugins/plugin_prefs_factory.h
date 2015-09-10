@@ -20,7 +20,7 @@ class PluginPrefsFactory : public RefcountedBrowserContextKeyedServiceFactory {
 
  private:
   friend class PluginPrefs;
-  friend struct DefaultSingletonTraits<PluginPrefsFactory>;
+  friend struct base::DefaultSingletonTraits<PluginPrefsFactory>;
 
   // Helper method for PluginPrefs::GetForTestingProfile.
   static scoped_refptr<RefcountedKeyedService> CreateForTestingProfile(

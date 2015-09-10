@@ -60,7 +60,7 @@ class GaiaUrls {
   GaiaUrls();
   ~GaiaUrls();
 
-  friend struct DefaultSingletonTraits<GaiaUrls>;
+  friend struct base::DefaultSingletonTraits<GaiaUrls>;
 
   GURL google_url_;
   GURL gaia_url_;

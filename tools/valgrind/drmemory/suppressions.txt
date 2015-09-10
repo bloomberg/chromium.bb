@@ -555,8 +555,8 @@ system call NtUserCallOneParam.RELEASEDC
 USER32.dll!ReleaseDC
 *!std::_Tree<>::_Erase
 *!std::_Tree<>::erase
-*!DefaultSingletonTraits<>::Delete
-*!Singleton<>::OnExit
+*!base::DefaultSingletonTraits<>::Delete
+*!base::Singleton<>::OnExit
 *!base::AtExitManager::ProcessCallbacksNow
 *!base::AtExitManager::~AtExitManager
 *!base::TestSuite::~TestSuite

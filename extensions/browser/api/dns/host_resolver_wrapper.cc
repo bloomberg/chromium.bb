@@ -13,7 +13,7 @@ HostResolverWrapper::HostResolverWrapper() : resolver_(NULL) {}
 
 // static
 HostResolverWrapper* HostResolverWrapper::GetInstance() {
-  return Singleton<extensions::HostResolverWrapper>::get();
+  return base::Singleton<extensions::HostResolverWrapper>::get();
 }
 
 net::HostResolver* HostResolverWrapper::GetHostResolver(

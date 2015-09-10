@@ -15,13 +15,13 @@ class GestureConfigurationDefault : public GestureConfiguration {
   }
 
   static GestureConfigurationDefault* GetInstance() {
-    return Singleton<GestureConfigurationDefault>::get();
+    return base::Singleton<GestureConfigurationDefault>::get();
   }
 
  private:
   GestureConfigurationDefault() {}
 
-  friend struct DefaultSingletonTraits<GestureConfigurationDefault>;
+  friend struct base::DefaultSingletonTraits<GestureConfigurationDefault>;
   DISALLOW_COPY_AND_ASSIGN(GestureConfigurationDefault);
 };
 

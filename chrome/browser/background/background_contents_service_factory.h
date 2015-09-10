@@ -23,7 +23,7 @@ class BackgroundContentsServiceFactory
   static BackgroundContentsServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<BackgroundContentsServiceFactory>;
+  friend struct base::DefaultSingletonTraits<BackgroundContentsServiceFactory>;
 
   BackgroundContentsServiceFactory();
   ~BackgroundContentsServiceFactory() override;

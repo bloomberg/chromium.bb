@@ -31,7 +31,7 @@ class EventRouterFactory : public BrowserContextKeyedServiceFactory {
   bool ServiceIsNULLWhileTesting() const override;
 
  private:
-  friend struct DefaultSingletonTraits<EventRouterFactory>;
+  friend struct base::DefaultSingletonTraits<EventRouterFactory>;
 
   EventRouterFactory();
   ~EventRouterFactory() override;

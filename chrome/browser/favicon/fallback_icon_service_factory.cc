@@ -19,7 +19,7 @@ favicon::FallbackIconService* FallbackIconServiceFactory::GetForBrowserContext(
 
 // static
 FallbackIconServiceFactory* FallbackIconServiceFactory::GetInstance() {
-  return Singleton<FallbackIconServiceFactory>::get();
+  return base::Singleton<FallbackIconServiceFactory>::get();
 }
 
 FallbackIconServiceFactory::FallbackIconServiceFactory()

@@ -32,7 +32,7 @@ GCMProfileService* GCMProfileServiceFactory::GetForProfile(
 
 // static
 GCMProfileServiceFactory* GCMProfileServiceFactory::GetInstance() {
-  return Singleton<GCMProfileServiceFactory>::get();
+  return base::Singleton<GCMProfileServiceFactory>::get();
 }
 
 GCMProfileServiceFactory::GCMProfileServiceFactory()

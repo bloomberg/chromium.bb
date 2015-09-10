@@ -19,7 +19,7 @@ class ExtensionSyncServiceFactory : public BrowserContextKeyedServiceFactory {
   static ExtensionSyncServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionSyncServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionSyncServiceFactory>;
 
   ExtensionSyncServiceFactory();
   ~ExtensionSyncServiceFactory() override;

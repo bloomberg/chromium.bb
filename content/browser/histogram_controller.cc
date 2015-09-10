@@ -18,7 +18,7 @@
 namespace content {
 
 HistogramController* HistogramController::GetInstance() {
-  return Singleton<HistogramController>::get();
+  return base::Singleton<HistogramController>::get();
 }
 
 HistogramController::HistogramController() : subscriber_(NULL) {

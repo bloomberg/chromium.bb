@@ -307,7 +307,7 @@ typedef std::map<std::string, icu::UnicodeSet*> LangToExemplarSetMap;
 class LangToExemplarSet {
  public:
   static LangToExemplarSet* GetInstance() {
-    return Singleton<LangToExemplarSet>::get();
+    return base::Singleton<LangToExemplarSet>::get();
   }
 
  private:
@@ -317,8 +317,8 @@ class LangToExemplarSet {
     STLDeleteContainerPairSecondPointers(map.begin(), map.end());
   }
 
-  friend class Singleton<LangToExemplarSet>;
-  friend struct DefaultSingletonTraits<LangToExemplarSet>;
+  friend class base::Singleton<LangToExemplarSet>;
+  friend struct base::DefaultSingletonTraits<LangToExemplarSet>;
   friend bool GetExemplarSetForLang(const std::string&, icu::UnicodeSet**);
   friend void SetExemplarSetForLang(const std::string&, icu::UnicodeSet*);
 

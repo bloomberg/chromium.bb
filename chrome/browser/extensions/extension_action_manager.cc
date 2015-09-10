@@ -30,7 +30,7 @@ class ExtensionActionManagerFactory : public BrowserContextKeyedServiceFactory {
   static ExtensionActionManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionActionManagerFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionActionManagerFactory>;
 
   ExtensionActionManagerFactory()
       : BrowserContextKeyedServiceFactory(
@@ -51,7 +51,7 @@ class ExtensionActionManagerFactory : public BrowserContextKeyedServiceFactory {
 
 ExtensionActionManagerFactory*
 ExtensionActionManagerFactory::GetInstance() {
-  return Singleton<ExtensionActionManagerFactory>::get();
+  return base::Singleton<ExtensionActionManagerFactory>::get();
 }
 
 }  // namespace

@@ -15,7 +15,9 @@
 
 // A process wide singleton for selecting events on X windows which were not
 // created by Chrome.
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace ui {
 
@@ -39,7 +41,7 @@ class UI_BASE_EXPORT XForeignWindowManager {
   void OnWindowDestroyed(XID xid);
 
  private:
-  friend struct DefaultSingletonTraits<XForeignWindowManager>;
+  friend struct base::DefaultSingletonTraits<XForeignWindowManager>;
 
   struct Request {
     Request(int request_id, long entry_event_mask);

@@ -41,7 +41,7 @@ PerformanceMonitor::~PerformanceMonitor() {
 
 // static
 PerformanceMonitor* PerformanceMonitor::GetInstance() {
-  return Singleton<PerformanceMonitor>::get();
+  return base::Singleton<PerformanceMonitor>::get();
 }
 
 void PerformanceMonitor::StartGatherCycle() {

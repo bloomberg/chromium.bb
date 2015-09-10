@@ -22,7 +22,7 @@ SearchEnginesPrivateEventRouterFactory::GetForProfile(
 // static
 SearchEnginesPrivateEventRouterFactory*
 SearchEnginesPrivateEventRouterFactory::GetInstance() {
-  return Singleton<SearchEnginesPrivateEventRouterFactory>::get();
+  return base::Singleton<SearchEnginesPrivateEventRouterFactory>::get();
 }
 
 SearchEnginesPrivateEventRouterFactory::SearchEnginesPrivateEventRouterFactory()

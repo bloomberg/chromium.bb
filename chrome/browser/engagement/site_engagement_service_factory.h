@@ -26,7 +26,7 @@ class SiteEngagementServiceFactory : public BrowserContextKeyedServiceFactory {
   static SiteEngagementServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SiteEngagementServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SiteEngagementServiceFactory>;
 
   SiteEngagementServiceFactory();
   ~SiteEngagementServiceFactory() override;

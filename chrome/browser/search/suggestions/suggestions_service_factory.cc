@@ -34,7 +34,7 @@ SuggestionsService* SuggestionsServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 SuggestionsServiceFactory* SuggestionsServiceFactory::GetInstance() {
-  return Singleton<SuggestionsServiceFactory>::get();
+  return base::Singleton<SuggestionsServiceFactory>::get();
 }
 
 SuggestionsServiceFactory::SuggestionsServiceFactory()

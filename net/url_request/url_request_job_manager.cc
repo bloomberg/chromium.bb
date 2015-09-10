@@ -41,7 +41,7 @@ static const SchemeToFactory kBuiltinFactories[] = {
 
 // static
 URLRequestJobManager* URLRequestJobManager::GetInstance() {
-  return Singleton<URLRequestJobManager>::get();
+  return base::Singleton<URLRequestJobManager>::get();
 }
 
 URLRequestJob* URLRequestJobManager::CreateJob(

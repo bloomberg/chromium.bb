@@ -73,7 +73,7 @@ const int kInitialPolicyFetchTimeoutSeconds = 10;
 // static
 UserCloudPolicyManagerFactoryChromeOS*
     UserCloudPolicyManagerFactoryChromeOS::GetInstance() {
-  return Singleton<UserCloudPolicyManagerFactoryChromeOS>::get();
+  return base::Singleton<UserCloudPolicyManagerFactoryChromeOS>::get();
 }
 
 // static

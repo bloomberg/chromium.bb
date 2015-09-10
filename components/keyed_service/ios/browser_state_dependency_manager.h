@@ -11,8 +11,10 @@
 #include "components/keyed_service/core/dependency_manager.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace web {
 class BrowserState;
@@ -69,7 +71,7 @@ class KEYED_SERVICE_EXPORT BrowserStateDependencyManager
 #endif  // NDEBUG
 
  private:
-  friend struct DefaultSingletonTraits<BrowserStateDependencyManager>;
+  friend struct base::DefaultSingletonTraits<BrowserStateDependencyManager>;
 
   BrowserStateDependencyManager();
   ~BrowserStateDependencyManager() override;

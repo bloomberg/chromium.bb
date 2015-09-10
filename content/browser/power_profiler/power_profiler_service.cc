@@ -60,7 +60,7 @@ std::string PowerProfilerService::GetAccuracyLevel() const {
 }
 
 PowerProfilerService* PowerProfilerService::GetInstance() {
-  return Singleton<PowerProfilerService>::get();
+  return base::Singleton<PowerProfilerService>::get();
 }
 
 void PowerProfilerService::AddObserver(PowerProfilerObserver* observer) {

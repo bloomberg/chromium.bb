@@ -19,7 +19,7 @@ class ChildAccountServiceFactory : public BrowserContextKeyedServiceFactory {
   static ChildAccountServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ChildAccountServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ChildAccountServiceFactory>;
 
   ChildAccountServiceFactory();
   ~ChildAccountServiceFactory() override;

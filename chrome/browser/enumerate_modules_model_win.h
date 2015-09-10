@@ -310,7 +310,7 @@ class EnumerateModulesModel {
   GURL GetFirstNotableConflict();
 
  private:
-  friend struct DefaultSingletonTraits<EnumerateModulesModel>;
+  friend struct base::DefaultSingletonTraits<EnumerateModulesModel>;
   friend class ModuleEnumerator;
 
   EnumerateModulesModel();

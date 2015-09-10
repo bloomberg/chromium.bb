@@ -25,7 +25,7 @@ class GaiaCookieManagerServiceFactory :
   static GaiaCookieManagerServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<GaiaCookieManagerServiceFactory>;
+  friend struct base::DefaultSingletonTraits<GaiaCookieManagerServiceFactory>;
 
   GaiaCookieManagerServiceFactory();
   ~GaiaCookieManagerServiceFactory() override;

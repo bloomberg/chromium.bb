@@ -20,7 +20,7 @@ NotifierStateTrackerFactory::GetForProfile(Profile* profile) {
 // static
 NotifierStateTrackerFactory*
 NotifierStateTrackerFactory::GetInstance() {
-  return Singleton<NotifierStateTrackerFactory>::get();
+  return base::Singleton<NotifierStateTrackerFactory>::get();
 }
 
 NotifierStateTrackerFactory::NotifierStateTrackerFactory()

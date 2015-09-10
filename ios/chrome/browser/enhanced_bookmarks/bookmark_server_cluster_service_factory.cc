@@ -24,7 +24,7 @@ namespace enhanced_bookmarks {
 // static
 BookmarkServerClusterServiceFactory*
 BookmarkServerClusterServiceFactory::GetInstance() {
-  return Singleton<BookmarkServerClusterServiceFactory>::get();
+  return base::Singleton<BookmarkServerClusterServiceFactory>::get();
 }
 
 // static

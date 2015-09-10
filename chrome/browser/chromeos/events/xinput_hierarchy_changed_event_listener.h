@@ -26,7 +26,8 @@ class XInputHierarchyChangedEventListener : public ui::PlatformEventObserver {
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
   // and const/dest private as recommended for Singletons.
-  friend struct DefaultSingletonTraits<XInputHierarchyChangedEventListener>;
+  friend struct base::DefaultSingletonTraits<
+      XInputHierarchyChangedEventListener>;
 
   XInputHierarchyChangedEventListener();
   ~XInputHierarchyChangedEventListener() override;

@@ -18,7 +18,7 @@ CaptivePortalService* CaptivePortalServiceFactory::GetForProfile(
 
 // static
 CaptivePortalServiceFactory* CaptivePortalServiceFactory::GetInstance() {
-  return Singleton<CaptivePortalServiceFactory>::get();
+  return base::Singleton<CaptivePortalServiceFactory>::get();
 }
 
 CaptivePortalServiceFactory::CaptivePortalServiceFactory()

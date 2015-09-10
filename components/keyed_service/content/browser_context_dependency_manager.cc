@@ -74,7 +74,7 @@ void BrowserContextDependencyManager::MarkBrowserContextLiveForTesting(
 // static
 BrowserContextDependencyManager*
 BrowserContextDependencyManager::GetInstance() {
-  return Singleton<BrowserContextDependencyManager>::get();
+  return base::Singleton<BrowserContextDependencyManager>::get();
 }
 
 BrowserContextDependencyManager::BrowserContextDependencyManager() {

@@ -16,7 +16,7 @@ BitmapFetcherService* BitmapFetcherServiceFactory::GetForBrowserContext(
 
 // static
 BitmapFetcherServiceFactory* BitmapFetcherServiceFactory::GetInstance() {
-  return Singleton<BitmapFetcherServiceFactory>::get();
+  return base::Singleton<BitmapFetcherServiceFactory>::get();
 }
 
 BitmapFetcherServiceFactory::BitmapFetcherServiceFactory()

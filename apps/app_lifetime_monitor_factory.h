@@ -24,7 +24,7 @@ class AppLifetimeMonitorFactory : public BrowserContextKeyedServiceFactory {
   static AppLifetimeMonitorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AppLifetimeMonitorFactory>;
+  friend struct base::DefaultSingletonTraits<AppLifetimeMonitorFactory>;
 
   AppLifetimeMonitorFactory();
   ~AppLifetimeMonitorFactory() override;

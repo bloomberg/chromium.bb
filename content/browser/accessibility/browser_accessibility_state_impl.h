@@ -74,7 +74,7 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
  private:
   friend class base::RefCountedThreadSafe<BrowserAccessibilityStateImpl>;
-  friend struct DefaultSingletonTraits<BrowserAccessibilityStateImpl>;
+  friend struct base::DefaultSingletonTraits<BrowserAccessibilityStateImpl>;
 
   // Resets accessibility_mode_ to the default value.
   void ResetAccessibilityModeValue();

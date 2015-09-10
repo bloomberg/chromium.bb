@@ -25,7 +25,7 @@ class BrailleControllerImpl : public BrailleController {
  private:
   BrailleControllerImpl();
   ~BrailleControllerImpl() override;
-  friend struct DefaultSingletonTraits<BrailleControllerImpl>;
+  friend struct base::DefaultSingletonTraits<BrailleControllerImpl>;
   DISALLOW_COPY_AND_ASSIGN(BrailleControllerImpl);
 };
 
@@ -48,8 +48,9 @@ BrailleControllerImpl::~BrailleControllerImpl() {
 
 // static
 BrailleControllerImpl* BrailleControllerImpl::GetInstance() {
-  return Singleton<BrailleControllerImpl,
-                   LeakySingletonTraits<BrailleControllerImpl> >::get();
+  return base::Singleton<
+      BrailleControllerImpl,
+      base::LeakySingletonTraits<BrailleControllerImpl>>::get();
 }
 
 scoped_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {

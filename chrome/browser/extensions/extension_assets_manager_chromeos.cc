@@ -56,7 +56,7 @@ class ExtensionAssetsManagerHelper {
 
   static ExtensionAssetsManagerHelper* GetInstance() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    return Singleton<ExtensionAssetsManagerHelper>::get();
+    return base::Singleton<ExtensionAssetsManagerHelper>::get();
   }
 
   // Remember that shared install is in progress. Return true if there is no
@@ -94,7 +94,7 @@ class ExtensionAssetsManagerHelper {
   }
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionAssetsManagerHelper>;
+  friend struct base::DefaultSingletonTraits<ExtensionAssetsManagerHelper>;
 
   ExtensionAssetsManagerHelper() {}
   ~ExtensionAssetsManagerHelper() {}
@@ -130,7 +130,7 @@ ExtensionAssetsManagerChromeOS::~ExtensionAssetsManagerChromeOS() {
 
 // static
 ExtensionAssetsManagerChromeOS* ExtensionAssetsManagerChromeOS::GetInstance() {
-  return Singleton<ExtensionAssetsManagerChromeOS>::get();
+  return base::Singleton<ExtensionAssetsManagerChromeOS>::get();
 }
 
 // static

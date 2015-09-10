@@ -35,7 +35,7 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
       scoped_ptr<JavaScriptDialogExtensionsClient> extensions_client);
 
  private:
-  friend struct DefaultSingletonTraits<JavaScriptDialogManager>;
+  friend struct base::DefaultSingletonTraits<JavaScriptDialogManager>;
 
   JavaScriptDialogManager();
   ~JavaScriptDialogManager() override;

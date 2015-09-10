@@ -11,7 +11,9 @@
 typedef union _GdkEvent GdkEvent;
 typedef struct _GdkEventKey GdkEventKey;
 
+namespace base {
 template<typename Type> struct DefaultSingletonTraits;
+}
 
 namespace libgtk2ui {
 
@@ -20,7 +22,7 @@ class Gtk2EventLoop {
   static Gtk2EventLoop* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<Gtk2EventLoop>;
+  friend struct base::DefaultSingletonTraits<Gtk2EventLoop>;
 
   Gtk2EventLoop();
   ~Gtk2EventLoop();

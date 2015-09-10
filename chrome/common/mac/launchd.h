@@ -88,7 +88,7 @@ class Launchd {
  private:
   // TODO(dmaclach): remove this once http://crbug.com/76925 is fixed.
   // Scaffolding for doing unittests with our singleton.
-  friend struct DefaultSingletonTraits<Launchd>;
+  friend struct base::DefaultSingletonTraits<Launchd>;
   static Launchd* g_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(Launchd);

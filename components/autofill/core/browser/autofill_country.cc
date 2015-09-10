@@ -792,7 +792,7 @@ class CountryDataMap {
 
  private:
   CountryDataMap();
-  friend struct DefaultSingletonTraits<CountryDataMap>;
+  friend struct base::DefaultSingletonTraits<CountryDataMap>;
 
   std::map<std::string, CountryData> country_data_;
 
@@ -801,7 +801,7 @@ class CountryDataMap {
 
 // static
 CountryDataMap* CountryDataMap::GetInstance() {
-  return Singleton<CountryDataMap>::get();
+  return base::Singleton<CountryDataMap>::get();
 }
 
 CountryDataMap::CountryDataMap() {
@@ -855,7 +855,7 @@ class CountryNames {
  private:
   CountryNames();
   ~CountryNames();
-  friend struct DefaultSingletonTraits<CountryNames>;
+  friend struct base::DefaultSingletonTraits<CountryNames>;
 
   // Populates |locales_to_localized_names_| with the mapping of country names
   // localized to |locale| to their corresponding country codes.
@@ -901,7 +901,7 @@ class CountryNames {
 
 // static
 CountryNames* CountryNames::GetInstance() {
-  return Singleton<CountryNames>::get();
+  return base::Singleton<CountryNames>::get();
 }
 
 CountryNames::CountryNames() {

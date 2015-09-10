@@ -43,7 +43,7 @@ DriveNotificationManagerFactory::GetForBrowserContext(
 // static
 DriveNotificationManagerFactory*
 DriveNotificationManagerFactory::GetInstance() {
-  return Singleton<DriveNotificationManagerFactory>::get();
+  return base::Singleton<DriveNotificationManagerFactory>::get();
 }
 
 DriveNotificationManagerFactory::DriveNotificationManagerFactory()

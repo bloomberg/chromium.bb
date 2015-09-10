@@ -25,7 +25,7 @@ SupervisedUserService* SupervisedUserServiceFactory::GetForProfile(
 
 // static
 SupervisedUserServiceFactory* SupervisedUserServiceFactory::GetInstance() {
-  return Singleton<SupervisedUserServiceFactory>::get();
+  return base::Singleton<SupervisedUserServiceFactory>::get();
 }
 
 // static

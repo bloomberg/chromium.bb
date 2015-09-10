@@ -49,7 +49,7 @@ class ProfilerControllerImpl : public ProfilerController {
   void OnProfilingPhaseCompleted(int profiling_phase) override;
 
  private:
-  friend struct DefaultSingletonTraits<ProfilerControllerImpl>;
+  friend struct base::DefaultSingletonTraits<ProfilerControllerImpl>;
 
   // Contact child processes and get their profiler data.
   void GetProfilerDataFromChildProcesses(int sequence_number,

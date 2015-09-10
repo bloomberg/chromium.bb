@@ -23,7 +23,7 @@ class PinnedTabServiceFactory : public BrowserContextKeyedServiceFactory {
   static PinnedTabServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PinnedTabServiceFactory>;
+  friend struct base::DefaultSingletonTraits<PinnedTabServiceFactory>;
 
   PinnedTabServiceFactory();
   ~PinnedTabServiceFactory() override;

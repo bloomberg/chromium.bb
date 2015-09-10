@@ -18,7 +18,7 @@ SavedFilesService* SavedFilesServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 SavedFilesServiceFactory* SavedFilesServiceFactory::GetInstance() {
-  return Singleton<SavedFilesServiceFactory>::get();
+  return base::Singleton<SavedFilesServiceFactory>::get();
 }
 
 SavedFilesServiceFactory::SavedFilesServiceFactory()

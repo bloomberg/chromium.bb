@@ -19,7 +19,7 @@ NotificationPermissionContextFactory::GetForProfile(Profile* profile) {
 // static
 NotificationPermissionContextFactory*
 NotificationPermissionContextFactory::GetInstance() {
-  return Singleton<NotificationPermissionContextFactory>::get();
+  return base::Singleton<NotificationPermissionContextFactory>::get();
 }
 
 NotificationPermissionContextFactory::NotificationPermissionContextFactory()

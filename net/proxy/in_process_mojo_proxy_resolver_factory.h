@@ -8,8 +8,10 @@
 #include "base/macros.h"
 #include "net/proxy/mojo_proxy_resolver_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}
 
 namespace net {
 
@@ -29,7 +31,7 @@ class InProcessMojoProxyResolverFactory : public MojoProxyResolverFactory {
  private:
   InProcessMojoProxyResolverFactory();
   ~InProcessMojoProxyResolverFactory() override;
-  friend struct DefaultSingletonTraits<InProcessMojoProxyResolverFactory>;
+  friend struct base::DefaultSingletonTraits<InProcessMojoProxyResolverFactory>;
 
   interfaces::ProxyResolverFactoryPtr factory_;
 

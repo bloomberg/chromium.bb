@@ -22,7 +22,7 @@ class IdleManagerFactory : public BrowserContextKeyedServiceFactory {
   static IdleManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<IdleManagerFactory>;
+  friend struct base::DefaultSingletonTraits<IdleManagerFactory>;
 
   IdleManagerFactory();
   ~IdleManagerFactory() override;

@@ -20,7 +20,7 @@ UpdateService* UpdateServiceFactory::GetForBrowserContext(
 
 // static
 UpdateServiceFactory* UpdateServiceFactory::GetInstance() {
-  return Singleton<UpdateServiceFactory>::get();
+  return base::Singleton<UpdateServiceFactory>::get();
 }
 
 UpdateServiceFactory::UpdateServiceFactory()

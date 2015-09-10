@@ -21,7 +21,7 @@ class PermissionManagerFactory : public BrowserContextKeyedServiceFactory {
   static PermissionManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PermissionManagerFactory>;
+  friend struct base::DefaultSingletonTraits<PermissionManagerFactory>;
 
   PermissionManagerFactory();
   ~PermissionManagerFactory() override;

@@ -30,7 +30,7 @@ PerSessionWebRTCAPIMetrics::~PerSessionWebRTCAPIMetrics() {
 
 // static
 PerSessionWebRTCAPIMetrics* PerSessionWebRTCAPIMetrics::GetInstance() {
-  return Singleton<PerSessionWebRTCAPIMetrics>::get();
+  return base::Singleton<PerSessionWebRTCAPIMetrics>::get();
 }
 
 void PerSessionWebRTCAPIMetrics::IncrementStreamCounter() {

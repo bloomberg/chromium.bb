@@ -18,7 +18,8 @@ class NotificationPermissionContextFactory
   static NotificationPermissionContextFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<NotificationPermissionContextFactory>;
+  friend struct base::DefaultSingletonTraits<
+      NotificationPermissionContextFactory>;
 
   NotificationPermissionContextFactory();
   ~NotificationPermissionContextFactory() override;

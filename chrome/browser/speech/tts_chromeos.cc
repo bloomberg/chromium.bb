@@ -48,7 +48,7 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
   TtsPlatformImplChromeOs() {}
   ~TtsPlatformImplChromeOs() override {}
 
-  friend struct DefaultSingletonTraits<TtsPlatformImplChromeOs>;
+  friend struct base::DefaultSingletonTraits<TtsPlatformImplChromeOs>;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplChromeOs);
 };
@@ -61,5 +61,5 @@ TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
 // static
 TtsPlatformImplChromeOs*
 TtsPlatformImplChromeOs::GetInstance() {
-  return Singleton<TtsPlatformImplChromeOs>::get();
+  return base::Singleton<TtsPlatformImplChromeOs>::get();
 }

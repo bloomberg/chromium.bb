@@ -11,8 +11,9 @@ namespace content {
 
 // static
 ChildIOSurfaceManager* ChildIOSurfaceManager::GetInstance() {
-  return Singleton<ChildIOSurfaceManager,
-                   LeakySingletonTraits<ChildIOSurfaceManager>>::get();
+  return base::Singleton<
+      ChildIOSurfaceManager,
+      base::LeakySingletonTraits<ChildIOSurfaceManager>>::get();
 }
 
 bool ChildIOSurfaceManager::RegisterIOSurface(IOSurfaceId io_surface_id,

@@ -701,7 +701,7 @@ DevicePermissionsManager* DevicePermissionsManagerFactory::GetForBrowserContext(
 // static
 DevicePermissionsManagerFactory*
 DevicePermissionsManagerFactory::GetInstance() {
-  return Singleton<DevicePermissionsManagerFactory>::get();
+  return base::Singleton<DevicePermissionsManagerFactory>::get();
 }
 
 DevicePermissionsManagerFactory::DevicePermissionsManagerFactory()

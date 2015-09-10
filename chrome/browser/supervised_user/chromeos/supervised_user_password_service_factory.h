@@ -23,7 +23,8 @@ class SupervisedUserPasswordServiceFactory
   static SupervisedUserPasswordServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SupervisedUserPasswordServiceFactory>;
+  friend struct base::DefaultSingletonTraits<
+      SupervisedUserPasswordServiceFactory>;
 
   SupervisedUserPasswordServiceFactory();
   ~SupervisedUserPasswordServiceFactory() override;

@@ -23,7 +23,7 @@ class AppListPrefsFactory : public BrowserContextKeyedServiceFactory {
                              scoped_ptr<AppListPrefs> prefs);
 
  private:
-  friend struct DefaultSingletonTraits<AppListPrefsFactory>;
+  friend struct base::DefaultSingletonTraits<AppListPrefsFactory>;
 
   AppListPrefsFactory();
   ~AppListPrefsFactory() override;

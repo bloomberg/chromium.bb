@@ -113,7 +113,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
 
  protected:
   typedef std::map<std::string, bool> MachineFlags;
-  friend struct DefaultSingletonTraits<StatisticsProviderImpl>;
+  friend struct base::DefaultSingletonTraits<StatisticsProviderImpl>;
 
   StatisticsProviderImpl();
   ~StatisticsProviderImpl() override;
@@ -342,8 +342,9 @@ void StatisticsProviderImpl::LoadOemManifestFromFile(
 }
 
 StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {
-  return Singleton<StatisticsProviderImpl,
-                   DefaultSingletonTraits<StatisticsProviderImpl> >::get();
+  return base::Singleton<
+      StatisticsProviderImpl,
+      base::DefaultSingletonTraits<StatisticsProviderImpl>>::get();
 }
 
 static StatisticsProvider* g_test_statistics_provider = NULL;

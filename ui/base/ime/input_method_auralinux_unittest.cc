@@ -25,7 +25,9 @@ const base::char16 kActionCompositionEnd = L'E';
 
 class TestResult {
  public:
-  static TestResult* GetInstance() { return Singleton<TestResult>::get(); }
+  static TestResult* GetInstance() {
+    return base::Singleton<TestResult>::get();
+  }
 
   void RecordAction(const base::string16& action) {
     recorded_actions_.push_back(action);

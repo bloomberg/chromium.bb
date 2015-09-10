@@ -23,7 +23,7 @@ class TranslateAcceptLanguagesFactory
   static TranslateAcceptLanguagesFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<TranslateAcceptLanguagesFactory>;
+  friend struct base::DefaultSingletonTraits<TranslateAcceptLanguagesFactory>;
 
   TranslateAcceptLanguagesFactory();
   ~TranslateAcceptLanguagesFactory() override;

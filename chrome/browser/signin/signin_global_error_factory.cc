@@ -35,7 +35,7 @@ SigninGlobalError* SigninGlobalErrorFactory::GetForProfile(
 
 // static
 SigninGlobalErrorFactory* SigninGlobalErrorFactory::GetInstance() {
-  return Singleton<SigninGlobalErrorFactory>::get();
+  return base::Singleton<SigninGlobalErrorFactory>::get();
 }
 
 KeyedService* SigninGlobalErrorFactory::BuildServiceInstanceFor(

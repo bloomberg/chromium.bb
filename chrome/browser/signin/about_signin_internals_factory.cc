@@ -38,7 +38,7 @@ AboutSigninInternals* AboutSigninInternalsFactory::GetForProfile(
 
 // static
 AboutSigninInternalsFactory* AboutSigninInternalsFactory::GetInstance() {
-  return Singleton<AboutSigninInternalsFactory>::get();
+  return base::Singleton<AboutSigninInternalsFactory>::get();
 }
 
 void AboutSigninInternalsFactory::RegisterProfilePrefs(

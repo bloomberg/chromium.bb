@@ -18,7 +18,7 @@ class ErrorConsoleFactory : public BrowserContextKeyedServiceFactory {
   static ErrorConsoleFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ErrorConsoleFactory>;
+  friend struct base::DefaultSingletonTraits<ErrorConsoleFactory>;
 
   ErrorConsoleFactory();
   ~ErrorConsoleFactory() override;

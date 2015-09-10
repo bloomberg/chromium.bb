@@ -1548,7 +1548,7 @@ void TaskManager::ModelChanged() {
 
 // static
 TaskManager* TaskManager::GetInstance() {
-  return Singleton<TaskManager>::get();
+  return base::Singleton<TaskManager>::get();
 }
 
 void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {

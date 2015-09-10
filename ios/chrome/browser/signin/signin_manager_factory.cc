@@ -49,7 +49,7 @@ SigninManager* SigninManagerFactory::GetForBrowserStateIfExists(
 
 // static
 SigninManagerFactory* SigninManagerFactory::GetInstance() {
-  return Singleton<SigninManagerFactory>::get();
+  return base::Singleton<SigninManagerFactory>::get();
 }
 
 void SigninManagerFactory::RegisterBrowserStatePrefs(

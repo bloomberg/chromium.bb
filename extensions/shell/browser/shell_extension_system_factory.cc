@@ -21,7 +21,7 @@ ExtensionSystem* ShellExtensionSystemFactory::GetForBrowserContext(
 
 // static
 ShellExtensionSystemFactory* ShellExtensionSystemFactory::GetInstance() {
-  return Singleton<ShellExtensionSystemFactory>::get();
+  return base::Singleton<ShellExtensionSystemFactory>::get();
 }
 
 ShellExtensionSystemFactory::ShellExtensionSystemFactory()

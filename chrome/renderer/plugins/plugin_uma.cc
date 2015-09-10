@@ -62,7 +62,7 @@ void UMASenderImpl::SendPluginUMA(PluginUMAReporter::ReportType report_type,
 
 // static.
 PluginUMAReporter* PluginUMAReporter::GetInstance() {
-  return Singleton<PluginUMAReporter>::get();
+  return base::Singleton<PluginUMAReporter>::get();
 }
 
 void PluginUMAReporter::ReportPluginMissing(const std::string& plugin_mime_type,

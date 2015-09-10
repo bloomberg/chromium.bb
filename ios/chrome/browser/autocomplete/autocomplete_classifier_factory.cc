@@ -41,7 +41,7 @@ AutocompleteClassifier* AutocompleteClassifierFactory::GetForBrowserState(
 
 // static
 AutocompleteClassifierFactory* AutocompleteClassifierFactory::GetInstance() {
-  return Singleton<AutocompleteClassifierFactory>::get();
+  return base::Singleton<AutocompleteClassifierFactory>::get();
 }
 
 // static

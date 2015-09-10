@@ -26,7 +26,7 @@ GeolocationPermissionContextFactory::GetForProfile(Profile* profile) {
 // static
 GeolocationPermissionContextFactory*
 GeolocationPermissionContextFactory::GetInstance() {
-  return Singleton<GeolocationPermissionContextFactory>::get();
+  return base::Singleton<GeolocationPermissionContextFactory>::get();
 }
 
 #if !defined(OS_ANDROID)

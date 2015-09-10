@@ -24,7 +24,7 @@ class SigninGlobalErrorFactory : public BrowserContextKeyedServiceFactory {
   static SigninGlobalErrorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SigninGlobalErrorFactory>;
+  friend struct base::DefaultSingletonTraits<SigninGlobalErrorFactory>;
 
   SigninGlobalErrorFactory();
   ~SigninGlobalErrorFactory() override;

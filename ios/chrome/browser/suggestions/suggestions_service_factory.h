@@ -9,8 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace ios {
 class ChromeBrowserState;
@@ -31,7 +33,7 @@ class SuggestionsServiceFactory : public BrowserStateKeyedServiceFactory {
       ios::ChromeBrowserState* browser_state);
 
  private:
-  friend struct DefaultSingletonTraits<SuggestionsServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SuggestionsServiceFactory>;
 
   SuggestionsServiceFactory();
   ~SuggestionsServiceFactory() override;

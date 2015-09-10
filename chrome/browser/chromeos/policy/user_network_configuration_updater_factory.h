@@ -9,9 +9,10 @@
 #include "base/compiler_specific.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-
+}  // namespace base
 class Profile;
 
 namespace policy {
@@ -30,7 +31,8 @@ class UserNetworkConfigurationUpdaterFactory
   static UserNetworkConfigurationUpdaterFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<UserNetworkConfigurationUpdaterFactory>;
+  friend struct base::DefaultSingletonTraits<
+      UserNetworkConfigurationUpdaterFactory>;
 
   UserNetworkConfigurationUpdaterFactory();
   ~UserNetworkConfigurationUpdaterFactory() override;

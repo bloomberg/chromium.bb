@@ -9,8 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 class SyncSetupService;
 
@@ -30,7 +32,7 @@ class SyncSetupServiceFactory : public BrowserStateKeyedServiceFactory {
   static SyncSetupServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SyncSetupServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SyncSetupServiceFactory>;
 
   SyncSetupServiceFactory();
   ~SyncSetupServiceFactory() override;

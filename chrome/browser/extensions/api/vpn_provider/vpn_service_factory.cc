@@ -25,7 +25,7 @@ VpnService* VpnServiceFactory::GetForBrowserContext(
 
 // static
 VpnServiceFactory* VpnServiceFactory::GetInstance() {
-  return Singleton<VpnServiceFactory>::get();
+  return base::Singleton<VpnServiceFactory>::get();
 }
 
 VpnServiceFactory::VpnServiceFactory()

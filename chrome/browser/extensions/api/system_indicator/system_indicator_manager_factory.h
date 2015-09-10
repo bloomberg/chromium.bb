@@ -21,7 +21,7 @@ class SystemIndicatorManagerFactory : public BrowserContextKeyedServiceFactory {
   static SystemIndicatorManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SystemIndicatorManagerFactory>;
+  friend struct base::DefaultSingletonTraits<SystemIndicatorManagerFactory>;
 
   SystemIndicatorManagerFactory();
   ~SystemIndicatorManagerFactory() override;

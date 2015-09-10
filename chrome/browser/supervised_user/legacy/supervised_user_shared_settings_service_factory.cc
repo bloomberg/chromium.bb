@@ -20,7 +20,7 @@ SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
 // static
 SupervisedUserSharedSettingsServiceFactory*
 SupervisedUserSharedSettingsServiceFactory::GetInstance() {
-  return Singleton<SupervisedUserSharedSettingsServiceFactory>::get();
+  return base::Singleton<SupervisedUserSharedSettingsServiceFactory>::get();
 }
 
 SupervisedUserSharedSettingsServiceFactory::

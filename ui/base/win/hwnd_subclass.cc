@@ -55,8 +55,9 @@ namespace ui {
 class HWNDSubclass::HWNDSubclassFactory {
  public:
   static HWNDSubclassFactory* GetInstance() {
-    return Singleton<HWNDSubclassFactory,
-        LeakySingletonTraits<HWNDSubclassFactory> >::get();
+    return base::Singleton<
+        HWNDSubclassFactory,
+        base::LeakySingletonTraits<HWNDSubclassFactory>>::get();
   }
 
   // Returns a non-null HWNDSubclass corresponding to the HWND |target|. Creates
@@ -77,7 +78,7 @@ class HWNDSubclass::HWNDSubclassFactory {
   }
 
  private:
-  friend struct DefaultSingletonTraits<HWNDSubclassFactory>;
+  friend struct base::DefaultSingletonTraits<HWNDSubclassFactory>;
 
   HWNDSubclassFactory() {}
 

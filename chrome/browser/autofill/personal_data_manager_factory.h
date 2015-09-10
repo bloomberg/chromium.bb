@@ -9,7 +9,10 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
+
 class Profile;
 
 namespace autofill {
@@ -29,7 +32,7 @@ class PersonalDataManagerFactory : public BrowserContextKeyedServiceFactory {
   static PersonalDataManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PersonalDataManagerFactory>;
+  friend struct base::DefaultSingletonTraits<PersonalDataManagerFactory>;
 
   PersonalDataManagerFactory();
   ~PersonalDataManagerFactory() override;

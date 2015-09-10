@@ -86,7 +86,7 @@ class PlatformNotificationServiceImpl
       std::set<std::string>* displayed_notifications) override;
 
  private:
-  friend struct DefaultSingletonTraits<PlatformNotificationServiceImpl>;
+  friend struct base::DefaultSingletonTraits<PlatformNotificationServiceImpl>;
   friend class PlatformNotificationServiceBrowserTest;
   friend class PlatformNotificationServiceTest;
   friend class PushMessagingBrowserTest;

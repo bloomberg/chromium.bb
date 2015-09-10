@@ -22,7 +22,7 @@ ExtensionStorageMonitorFactory::GetForBrowserContext(
 
 // static
 ExtensionStorageMonitorFactory* ExtensionStorageMonitorFactory::GetInstance() {
-  return Singleton<ExtensionStorageMonitorFactory>::get();
+  return base::Singleton<ExtensionStorageMonitorFactory>::get();
 }
 
 ExtensionStorageMonitorFactory::ExtensionStorageMonitorFactory()

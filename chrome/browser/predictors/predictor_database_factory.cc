@@ -19,7 +19,7 @@ PredictorDatabase* PredictorDatabaseFactory::GetForProfile(Profile* profile) {
 
 // static
 PredictorDatabaseFactory* PredictorDatabaseFactory::GetInstance() {
-  return Singleton<PredictorDatabaseFactory>::get();
+  return base::Singleton<PredictorDatabaseFactory>::get();
 }
 
 PredictorDatabaseFactory::PredictorDatabaseFactory()

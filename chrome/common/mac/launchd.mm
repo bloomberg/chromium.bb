@@ -73,7 +73,7 @@ Launchd* Launchd::g_instance_ = NULL;
 
 Launchd* Launchd::GetInstance() {
   if (!g_instance_) {
-    g_instance_ = Singleton<Launchd>::get();
+    g_instance_ = base::Singleton<Launchd>::get();
   }
   return g_instance_;
 }

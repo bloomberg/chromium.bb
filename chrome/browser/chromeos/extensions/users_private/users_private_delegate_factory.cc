@@ -23,7 +23,7 @@ UsersPrivateDelegate* UsersPrivateDelegateFactory::GetForBrowserContext(
 
 // static
 UsersPrivateDelegateFactory* UsersPrivateDelegateFactory::GetInstance() {
-  return Singleton<UsersPrivateDelegateFactory>::get();
+  return base::Singleton<UsersPrivateDelegateFactory>::get();
 }
 
 UsersPrivateDelegateFactory::UsersPrivateDelegateFactory()

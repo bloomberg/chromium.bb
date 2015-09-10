@@ -712,7 +712,7 @@ ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() {
 
 // static
 ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
-  return Singleton<ExtensionWebRequestEventRouter>::get();
+  return base::Singleton<ExtensionWebRequestEventRouter>::get();
 }
 
 ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter()

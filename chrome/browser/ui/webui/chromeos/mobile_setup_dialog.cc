@@ -35,7 +35,7 @@ class MobileSetupDialogDelegate : public WebDialogDelegate {
   void ShowDialog(const std::string& service_path);
 
  protected:
-  friend struct DefaultSingletonTraits<MobileSetupDialogDelegate>;
+  friend struct base::DefaultSingletonTraits<MobileSetupDialogDelegate>;
 
   MobileSetupDialogDelegate();
   ~MobileSetupDialogDelegate() override;
@@ -71,7 +71,7 @@ void MobileSetupDialog::Show(const std::string& service_path) {
 // static
 MobileSetupDialogDelegate* MobileSetupDialogDelegate::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return Singleton<MobileSetupDialogDelegate>::get();
+  return base::Singleton<MobileSetupDialogDelegate>::get();
 }
 
 MobileSetupDialogDelegate::MobileSetupDialogDelegate() : dialog_window_(NULL) {

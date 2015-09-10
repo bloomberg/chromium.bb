@@ -48,7 +48,7 @@ class CONTENT_EXPORT DeviceInertialSensorService {
   void SetDataFetcherForTesting(DataFetcherSharedMemory* test_data_fetcher);
 
  private:
-  friend struct DefaultSingletonTraits<DeviceInertialSensorService>;
+  friend struct base::DefaultSingletonTraits<DeviceInertialSensorService>;
 
   DeviceInertialSensorService();
   virtual ~DeviceInertialSensorService();

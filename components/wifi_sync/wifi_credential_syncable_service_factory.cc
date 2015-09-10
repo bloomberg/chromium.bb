@@ -60,7 +60,7 @@ WifiCredentialSyncableServiceFactory::GetForBrowserContext(
 // static
 WifiCredentialSyncableServiceFactory*
 WifiCredentialSyncableServiceFactory::GetInstance() {
-  return Singleton<WifiCredentialSyncableServiceFactory>::get();
+  return base::Singleton<WifiCredentialSyncableServiceFactory>::get();
 }
 
 // Private methods.

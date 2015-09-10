@@ -12,7 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-template <typename T> struct DefaultSingletonTraits;
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}  // namespace base
 
 class PrefRegistrySimple;
 class Profile;
@@ -49,7 +52,7 @@ class PolicyCertServiceFactory : public BrowserContextKeyedServiceFactory {
   static void RegisterPrefs(PrefRegistrySimple* local_state);
 
  private:
-  friend struct DefaultSingletonTraits<PolicyCertServiceFactory>;
+  friend struct base::DefaultSingletonTraits<PolicyCertServiceFactory>;
 
   PolicyCertServiceFactory();
   ~PolicyCertServiceFactory() override;

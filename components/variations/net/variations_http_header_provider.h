@@ -26,7 +26,9 @@ class HttpRequestHeaders;
 
 class GURL;
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace variations {
 
@@ -61,7 +63,7 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   void ResetForTesting();
 
  private:
-  friend struct DefaultSingletonTraits<VariationsHttpHeaderProvider>;
+  friend struct base::DefaultSingletonTraits<VariationsHttpHeaderProvider>;
 
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            ShouldAppendHeaders);

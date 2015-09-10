@@ -9,8 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace history {
 class WebHistoryService;
@@ -29,7 +31,7 @@ class WebHistoryServiceFactory : public BrowserStateKeyedServiceFactory {
   static WebHistoryServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<WebHistoryServiceFactory>;
+  friend struct base::DefaultSingletonTraits<WebHistoryServiceFactory>;
 
   WebHistoryServiceFactory();
   ~WebHistoryServiceFactory() override;

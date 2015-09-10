@@ -26,7 +26,7 @@ namespace content {
 
 // static
 SystemHotkeyHelperMac* SystemHotkeyHelperMac::GetInstance() {
-  return Singleton<SystemHotkeyHelperMac>::get();
+  return base::Singleton<SystemHotkeyHelperMac>::get();
 }
 
 void SystemHotkeyHelperMac::DeferredLoadSystemHotkeys() {

@@ -35,7 +35,7 @@ class SyncFileSystemServiceFactory : public BrowserContextKeyedServiceFactory {
       scoped_ptr<RemoteFileSyncService> mock_remote_service);
 
  private:
-  friend struct DefaultSingletonTraits<SyncFileSystemServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SyncFileSystemServiceFactory>;
   SyncFileSystemServiceFactory();
   ~SyncFileSystemServiceFactory() override;
 

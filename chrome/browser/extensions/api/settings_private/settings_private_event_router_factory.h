@@ -34,7 +34,7 @@ class SettingsPrivateEventRouterFactory
   bool ServiceIsNULLWhileTesting() const override;
 
  private:
-  friend struct DefaultSingletonTraits<SettingsPrivateEventRouterFactory>;
+  friend struct base::DefaultSingletonTraits<SettingsPrivateEventRouterFactory>;
 
   SettingsPrivateEventRouterFactory();
   ~SettingsPrivateEventRouterFactory() override;

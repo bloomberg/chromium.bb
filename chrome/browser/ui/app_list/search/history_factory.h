@@ -7,7 +7,9 @@
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template<typename T> struct DefaultSingletonTraits;
+}
 
 namespace content {
 class BrowserContext;
@@ -27,7 +29,7 @@ class HistoryFactory : public BrowserContextKeyedServiceFactory {
   static History* GetForBrowserContext(content::BrowserContext* context);
 
  private:
-  friend struct DefaultSingletonTraits<HistoryFactory>;
+  friend struct base::DefaultSingletonTraits<HistoryFactory>;
 
   HistoryFactory();
   ~HistoryFactory() override;

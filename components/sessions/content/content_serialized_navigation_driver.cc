@@ -27,8 +27,9 @@ SerializedNavigationDriver* SerializedNavigationDriver::Get() {
 // static
 ContentSerializedNavigationDriver*
 ContentSerializedNavigationDriver::GetInstance() {
-  return Singleton<ContentSerializedNavigationDriver,
-      LeakySingletonTraits<ContentSerializedNavigationDriver>>::get();
+  return base::Singleton<
+      ContentSerializedNavigationDriver,
+      base::LeakySingletonTraits<ContentSerializedNavigationDriver>>::get();
 }
 
 ContentSerializedNavigationDriver::ContentSerializedNavigationDriver() {

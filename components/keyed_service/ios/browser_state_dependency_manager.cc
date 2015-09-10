@@ -10,7 +10,7 @@
 
 // static
 BrowserStateDependencyManager* BrowserStateDependencyManager::GetInstance() {
-  return Singleton<BrowserStateDependencyManager>::get();
+  return base::Singleton<BrowserStateDependencyManager>::get();
 }
 
 void BrowserStateDependencyManager::RegisterBrowserStatePrefsForServices(

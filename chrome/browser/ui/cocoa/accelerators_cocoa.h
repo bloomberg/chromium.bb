@@ -13,7 +13,10 @@
 #include "base/gtest_prod_util.h"
 #include "ui/base/accelerators/accelerator.h"
 
-template <typename T> struct DefaultSingletonTraits;
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}  // namespace base
 
 // This class maintains a map of command_ids to Accelerator objects (see
 // chrome/app/chrome_command_ids.h). Currently, this only lists the commands
@@ -47,7 +50,7 @@ class AcceleratorsCocoa {
   static AcceleratorsCocoa* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AcceleratorsCocoa>;
+  friend struct base::DefaultSingletonTraits<AcceleratorsCocoa>;
   FRIEND_TEST_ALL_PREFIXES(AcceleratorsCocoaBrowserTest,
                            MappingAcceleratorsInMainMenu);
 

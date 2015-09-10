@@ -37,7 +37,7 @@ class ServiceUrls {
   const std::string& gcd_jid() const;
 
  private:
-  friend struct DefaultSingletonTraits<ServiceUrls>;
+  friend struct base::DefaultSingletonTraits<ServiceUrls>;
 
   ServiceUrls();
   virtual ~ServiceUrls();

@@ -26,7 +26,7 @@ class AutocompleteClassifierFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context);
 
  private:
-  friend struct DefaultSingletonTraits<AutocompleteClassifierFactory>;
+  friend struct base::DefaultSingletonTraits<AutocompleteClassifierFactory>;
 
   AutocompleteClassifierFactory();
   ~AutocompleteClassifierFactory() override;

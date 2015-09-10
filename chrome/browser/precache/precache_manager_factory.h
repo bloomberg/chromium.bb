@@ -24,7 +24,7 @@ class PrecacheManagerFactory : public BrowserContextKeyedServiceFactory {
   static PrecacheManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PrecacheManagerFactory>;
+  friend struct base::DefaultSingletonTraits<PrecacheManagerFactory>;
 
   PrecacheManagerFactory();
   ~PrecacheManagerFactory() override;

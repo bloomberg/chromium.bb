@@ -29,7 +29,7 @@ UserNetworkConfigurationUpdaterFactory::GetForProfile(Profile* profile) {
 // static
 UserNetworkConfigurationUpdaterFactory*
 UserNetworkConfigurationUpdaterFactory::GetInstance() {
-  return Singleton<UserNetworkConfigurationUpdaterFactory>::get();
+  return base::Singleton<UserNetworkConfigurationUpdaterFactory>::get();
 }
 
 UserNetworkConfigurationUpdaterFactory::UserNetworkConfigurationUpdaterFactory()

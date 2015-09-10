@@ -47,7 +47,7 @@ class DiagnosticsController {
   void RecordRegularStartup();
 
  private:
-  friend struct DefaultSingletonTraits<DiagnosticsController>;
+  friend struct base::DefaultSingletonTraits<DiagnosticsController>;
 
   DiagnosticsController();
   ~DiagnosticsController();

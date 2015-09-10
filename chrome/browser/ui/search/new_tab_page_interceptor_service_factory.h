@@ -28,7 +28,8 @@ class NewTabPageInterceptorServiceFactory
   static NewTabPageInterceptorServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<NewTabPageInterceptorServiceFactory>;
+  friend struct base::DefaultSingletonTraits<
+      NewTabPageInterceptorServiceFactory>;
 
   NewTabPageInterceptorServiceFactory();
   ~NewTabPageInterceptorServiceFactory() override;

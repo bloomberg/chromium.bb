@@ -32,7 +32,7 @@ GaiaCookieManagerService* GaiaCookieManagerServiceFactory::GetForProfile(
 // static
 GaiaCookieManagerServiceFactory*
 GaiaCookieManagerServiceFactory::GetInstance() {
-  return Singleton<GaiaCookieManagerServiceFactory>::get();
+  return base::Singleton<GaiaCookieManagerServiceFactory>::get();
 }
 
 KeyedService* GaiaCookieManagerServiceFactory::BuildServiceInstanceFor(

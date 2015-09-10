@@ -32,7 +32,7 @@ class ThemeHelperMac : public NotificationObserver {
       blink::ScrollbarButtonsPlacement button_placement);
 
  private:
-  friend struct DefaultSingletonTraits<ThemeHelperMac>;
+  friend struct base::DefaultSingletonTraits<ThemeHelperMac>;
 
   ThemeHelperMac();
   ~ThemeHelperMac() override;

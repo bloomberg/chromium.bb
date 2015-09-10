@@ -42,7 +42,7 @@ class CONTENT_EXPORT SharedWorkerDevToolsManager {
   void RemoveInspectedWorkerData(WorkerId id);
 
  private:
-  friend struct DefaultSingletonTraits<SharedWorkerDevToolsManager>;
+  friend struct base::DefaultSingletonTraits<SharedWorkerDevToolsManager>;
   friend class SharedWorkerDevToolsAgentHost;
   friend class SharedWorkerDevToolsManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SharedWorkerDevToolsManagerTest, BasicTest);

@@ -22,7 +22,7 @@ class GoogleURLTrackerFactory : public BrowserContextKeyedServiceFactory {
   static GoogleURLTrackerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<GoogleURLTrackerFactory>;
+  friend struct base::DefaultSingletonTraits<GoogleURLTrackerFactory>;
 
   GoogleURLTrackerFactory();
   ~GoogleURLTrackerFactory() override;

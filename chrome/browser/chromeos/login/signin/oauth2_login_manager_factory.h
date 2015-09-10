@@ -28,7 +28,7 @@ class OAuth2LoginManagerFactory
   static OAuth2LoginManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<OAuth2LoginManagerFactory>;
+  friend struct base::DefaultSingletonTraits<OAuth2LoginManagerFactory>;
 
   OAuth2LoginManagerFactory();
   ~OAuth2LoginManagerFactory() override;

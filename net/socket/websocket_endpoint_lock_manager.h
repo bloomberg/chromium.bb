@@ -146,7 +146,7 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
   // object.
   base::WeakPtrFactory<WebSocketEndpointLockManager> weak_factory_;
 
-  friend struct DefaultSingletonTraits<WebSocketEndpointLockManager>;
+  friend struct base::DefaultSingletonTraits<WebSocketEndpointLockManager>;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEndpointLockManager);
 };

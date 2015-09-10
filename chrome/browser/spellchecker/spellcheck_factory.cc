@@ -38,7 +38,7 @@ SpellcheckService* SpellcheckServiceFactory::GetForRenderProcessId(
 
 // static
 SpellcheckServiceFactory* SpellcheckServiceFactory::GetInstance() {
-  return Singleton<SpellcheckServiceFactory>::get();
+  return base::Singleton<SpellcheckServiceFactory>::get();
 }
 
 SpellcheckServiceFactory::SpellcheckServiceFactory()

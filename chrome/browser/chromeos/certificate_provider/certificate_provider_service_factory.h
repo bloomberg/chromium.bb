@@ -8,8 +8,10 @@
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}
 
 namespace content {
 class BrowserContext;
@@ -29,7 +31,7 @@ class CertificateProviderServiceFactory
   static CertificateProviderServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<CertificateProviderServiceFactory>;
+  friend struct base::DefaultSingletonTraits<CertificateProviderServiceFactory>;
 
   CertificateProviderServiceFactory();
 

@@ -511,7 +511,7 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
 
 // static
 UpgradeDetectorImpl* UpgradeDetectorImpl::GetInstance() {
-  return Singleton<UpgradeDetectorImpl>::get();
+  return base::Singleton<UpgradeDetectorImpl>::get();
 }
 
 // static

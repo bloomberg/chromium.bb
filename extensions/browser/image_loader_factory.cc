@@ -18,7 +18,7 @@ ImageLoader* ImageLoaderFactory::GetForBrowserContext(
 }
 
 ImageLoaderFactory* ImageLoaderFactory::GetInstance() {
-  return Singleton<ImageLoaderFactory>::get();
+  return base::Singleton<ImageLoaderFactory>::get();
 }
 
 ImageLoaderFactory::ImageLoaderFactory()

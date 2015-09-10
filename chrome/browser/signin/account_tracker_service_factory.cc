@@ -29,7 +29,7 @@ AccountTrackerServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 AccountTrackerServiceFactory* AccountTrackerServiceFactory::GetInstance() {
-  return Singleton<AccountTrackerServiceFactory>::get();
+  return base::Singleton<AccountTrackerServiceFactory>::get();
 }
 
 void AccountTrackerServiceFactory::RegisterProfilePrefs(

@@ -46,7 +46,7 @@ favicon::FaviconService* FaviconServiceFactory::GetForProfile(
 
 // static
 FaviconServiceFactory* FaviconServiceFactory::GetInstance() {
-  return Singleton<FaviconServiceFactory>::get();
+  return base::Singleton<FaviconServiceFactory>::get();
 }
 
 // static

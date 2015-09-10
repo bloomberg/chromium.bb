@@ -25,7 +25,7 @@ SigninClient* ChromeSigninClientFactory::GetForProfile(Profile* profile) {
 
 // static
 ChromeSigninClientFactory* ChromeSigninClientFactory::GetInstance() {
-  return Singleton<ChromeSigninClientFactory>::get();
+  return base::Singleton<ChromeSigninClientFactory>::get();
 }
 
 KeyedService* ChromeSigninClientFactory::BuildServiceInstanceFor(

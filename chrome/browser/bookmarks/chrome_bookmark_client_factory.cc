@@ -32,7 +32,7 @@ ChromeBookmarkClient* ChromeBookmarkClientFactory::GetForProfile(
 
 // static
 ChromeBookmarkClientFactory* ChromeBookmarkClientFactory::GetInstance() {
-  return Singleton<ChromeBookmarkClientFactory>::get();
+  return base::Singleton<ChromeBookmarkClientFactory>::get();
 }
 
 // static

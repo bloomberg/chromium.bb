@@ -62,7 +62,7 @@ const wchar_t kComProcessMandatoryLabel[] =
 }  // namespace
 
 HostService* HostService::GetInstance() {
-  return Singleton<HostService>::get();
+  return base::Singleton<HostService>::get();
 }
 
 bool HostService::InitWithCommandLine(const base::CommandLine* command_line) {

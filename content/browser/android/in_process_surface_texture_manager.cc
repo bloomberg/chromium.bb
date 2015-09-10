@@ -17,8 +17,9 @@ namespace content {
 
 // static
 InProcessSurfaceTextureManager* InProcessSurfaceTextureManager::GetInstance() {
-  return Singleton<InProcessSurfaceTextureManager,
-                   LeakySingletonTraits<InProcessSurfaceTextureManager>>::get();
+  return base::Singleton<
+      InProcessSurfaceTextureManager,
+      base::LeakySingletonTraits<InProcessSurfaceTextureManager>>::get();
 }
 
 void InProcessSurfaceTextureManager::RegisterSurfaceTexture(

@@ -49,7 +49,7 @@ OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
 // static
 OwnerSettingsServiceChromeOSFactory*
 OwnerSettingsServiceChromeOSFactory::GetInstance() {
-  return Singleton<OwnerSettingsServiceChromeOSFactory>::get();
+  return base::Singleton<OwnerSettingsServiceChromeOSFactory>::get();
 }
 
 // static

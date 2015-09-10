@@ -35,7 +35,7 @@ class ShortcutsBackendFactory
       content::BrowserContext* profile);
 
  private:
-  friend struct DefaultSingletonTraits<ShortcutsBackendFactory>;
+  friend struct base::DefaultSingletonTraits<ShortcutsBackendFactory>;
 
   ShortcutsBackendFactory();
   ~ShortcutsBackendFactory() override;

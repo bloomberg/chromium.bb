@@ -23,7 +23,7 @@ SettingsPrivateDelegate* SettingsPrivateDelegateFactory::GetForBrowserContext(
 
 // static
 SettingsPrivateDelegateFactory* SettingsPrivateDelegateFactory::GetInstance() {
-  return Singleton<SettingsPrivateDelegateFactory>::get();
+  return base::Singleton<SettingsPrivateDelegateFactory>::get();
 }
 
 SettingsPrivateDelegateFactory::SettingsPrivateDelegateFactory()

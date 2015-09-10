@@ -136,7 +136,7 @@ namespace ui {
 
 // static
 AtkUtilAuraLinux* AtkUtilAuraLinux::GetInstance() {
-  return Singleton<AtkUtilAuraLinux>::get();
+  return base::Singleton<AtkUtilAuraLinux>::get();
 }
 
 AtkUtilAuraLinux::AtkUtilAuraLinux() {

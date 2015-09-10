@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "ui/views/views_export.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace aura {
 class Window;
@@ -63,7 +65,7 @@ class VIEWS_EXPORT AXAuraObjCache {
   bool is_destroying() { return is_destroying_; }
 
  private:
-  friend struct DefaultSingletonTraits<AXAuraObjCache>;
+  friend struct base::DefaultSingletonTraits<AXAuraObjCache>;
 
   AXAuraObjCache();
   virtual ~AXAuraObjCache();

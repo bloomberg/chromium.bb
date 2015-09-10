@@ -51,7 +51,7 @@ class GL_EXPORT GpuSwitchingManager {
   void NotifyGpuSwitched();
 
  private:
-  friend struct DefaultSingletonTraits<GpuSwitchingManager>;
+  friend struct base::DefaultSingletonTraits<GpuSwitchingManager>;
 
   GpuSwitchingManager();
   virtual ~GpuSwitchingManager();

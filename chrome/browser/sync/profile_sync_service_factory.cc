@@ -45,7 +45,7 @@
 
 // static
 ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
-  return Singleton<ProfileSyncServiceFactory>::get();
+  return base::Singleton<ProfileSyncServiceFactory>::get();
 }
 
 // static

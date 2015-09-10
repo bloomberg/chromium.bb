@@ -13,7 +13,10 @@ class BrowserContext;
 
 class PerAppSettingsService;
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
+
 class PerAppSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static PerAppSettingsServiceFactory* GetInstance();
@@ -21,7 +24,7 @@ class PerAppSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* browser_context);
 
  private:
-  friend struct DefaultSingletonTraits<PerAppSettingsServiceFactory>;
+  friend struct base::DefaultSingletonTraits<PerAppSettingsServiceFactory>;
 
   PerAppSettingsServiceFactory();
   ~PerAppSettingsServiceFactory() override;

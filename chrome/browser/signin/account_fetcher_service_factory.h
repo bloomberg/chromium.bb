@@ -17,7 +17,7 @@ class AccountFetcherServiceFactory : public BrowserContextKeyedServiceFactory {
   static AccountFetcherServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AccountFetcherServiceFactory>;
+  friend struct base::DefaultSingletonTraits<AccountFetcherServiceFactory>;
 
   AccountFetcherServiceFactory();
   ~AccountFetcherServiceFactory() override;

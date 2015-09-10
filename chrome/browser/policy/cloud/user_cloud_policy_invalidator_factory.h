@@ -17,7 +17,7 @@ class UserCloudPolicyInvalidatorFactory
   static UserCloudPolicyInvalidatorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<UserCloudPolicyInvalidatorFactory>;
+  friend struct base::DefaultSingletonTraits<UserCloudPolicyInvalidatorFactory>;
 
   UserCloudPolicyInvalidatorFactory();
   ~UserCloudPolicyInvalidatorFactory() override;

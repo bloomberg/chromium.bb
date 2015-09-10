@@ -24,7 +24,7 @@ class SyncGlobalErrorFactory : public BrowserContextKeyedServiceFactory {
   static SyncGlobalErrorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SyncGlobalErrorFactory>;
+  friend struct base::DefaultSingletonTraits<SyncGlobalErrorFactory>;
 
   SyncGlobalErrorFactory();
   ~SyncGlobalErrorFactory() override;

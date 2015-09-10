@@ -95,7 +95,7 @@ class PendingProfiles {
   void ResetToDefaultStateForTesting();
 
  private:
-  friend struct DefaultSingletonTraits<PendingProfiles>;
+  friend struct base::DefaultSingletonTraits<PendingProfiles>;
 
   PendingProfiles();
   ~PendingProfiles();
@@ -119,8 +119,8 @@ class PendingProfiles {
 // static
 PendingProfiles* PendingProfiles::GetInstance() {
   // Leaky for performance rather than correctness reasons.
-  return Singleton<PendingProfiles,
-                   LeakySingletonTraits<PendingProfiles>>::get();
+  return base::Singleton<PendingProfiles,
+                         base::LeakySingletonTraits<PendingProfiles>>::get();
 }
 
 void PendingProfiles::Clear() {

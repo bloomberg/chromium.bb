@@ -10,8 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
+
 class KeywordWebDataService;
 class TokenWebData;
 class WebDataServiceWrapper;
@@ -55,7 +58,7 @@ class WebDataServiceFactory : public BrowserStateKeyedServiceFactory {
   static WebDataServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<WebDataServiceFactory>;
+  friend struct base::DefaultSingletonTraits<WebDataServiceFactory>;
 
   WebDataServiceFactory();
   ~WebDataServiceFactory() override;

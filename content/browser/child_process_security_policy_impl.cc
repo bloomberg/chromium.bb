@@ -305,7 +305,7 @@ ChildProcessSecurityPolicy* ChildProcessSecurityPolicy::GetInstance() {
 }
 
 ChildProcessSecurityPolicyImpl* ChildProcessSecurityPolicyImpl::GetInstance() {
-  return Singleton<ChildProcessSecurityPolicyImpl>::get();
+  return base::Singleton<ChildProcessSecurityPolicyImpl>::get();
 }
 
 void ChildProcessSecurityPolicyImpl::Add(int child_id) {

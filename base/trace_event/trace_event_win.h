@@ -12,11 +12,11 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/event_trace_provider.h"
 
-// Fwd.
+namespace base {
+
 template <typename Type>
 struct StaticMemorySingletonTraits;
 
-namespace base {
 namespace trace_event {
 
 // This EtwTraceProvider subclass implements ETW logging

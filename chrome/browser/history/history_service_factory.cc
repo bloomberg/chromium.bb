@@ -55,7 +55,7 @@ history::HistoryService* HistoryServiceFactory::GetForProfileWithoutCreating(
 
 // static
 HistoryServiceFactory* HistoryServiceFactory::GetInstance() {
-  return Singleton<HistoryServiceFactory>::get();
+  return base::Singleton<HistoryServiceFactory>::get();
 }
 
 // static

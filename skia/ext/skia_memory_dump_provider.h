@@ -22,7 +22,7 @@ class SK_API SkiaMemoryDumpProvider
       base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
  private:
-  friend struct DefaultSingletonTraits<SkiaMemoryDumpProvider>;
+  friend struct base::DefaultSingletonTraits<SkiaMemoryDumpProvider>;
 
   SkiaMemoryDumpProvider();
   ~SkiaMemoryDumpProvider() override;

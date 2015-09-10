@@ -22,7 +22,7 @@ AppLoadService* AppLoadServiceFactory::GetForProfile(Profile* profile) {
 }
 
 AppLoadServiceFactory* AppLoadServiceFactory::GetInstance() {
-  return Singleton<AppLoadServiceFactory>::get();
+  return base::Singleton<AppLoadServiceFactory>::get();
 }
 
 AppLoadServiceFactory::AppLoadServiceFactory()

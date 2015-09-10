@@ -19,8 +19,8 @@ class CustodianProfileDownloaderServiceFactory
   static CustodianProfileDownloaderServiceFactory* GetInstance();
 
  private:
-  friend struct
-      DefaultSingletonTraits<CustodianProfileDownloaderServiceFactory>;
+  friend struct base::DefaultSingletonTraits<
+      CustodianProfileDownloaderServiceFactory>;
 
   CustodianProfileDownloaderServiceFactory();
   ~CustodianProfileDownloaderServiceFactory() override;

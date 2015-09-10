@@ -177,7 +177,7 @@ NotificationEventDispatcher* NotificationEventDispatcher::GetInstance() {
 NotificationEventDispatcherImpl*
 NotificationEventDispatcherImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return Singleton<NotificationEventDispatcherImpl>::get();
+  return base::Singleton<NotificationEventDispatcherImpl>::get();
 }
 
 NotificationEventDispatcherImpl::NotificationEventDispatcherImpl() {}

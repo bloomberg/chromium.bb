@@ -35,7 +35,7 @@ class CONTENT_EXPORT BrowserSurfaceTextureManager
       int player_id) override;
 
  private:
-  friend struct DefaultSingletonTraits<BrowserSurfaceTextureManager>;
+  friend struct base::DefaultSingletonTraits<BrowserSurfaceTextureManager>;
 
   BrowserSurfaceTextureManager();
   ~BrowserSurfaceTextureManager() override;

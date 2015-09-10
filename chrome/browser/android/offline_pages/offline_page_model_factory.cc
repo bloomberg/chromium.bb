@@ -28,7 +28,7 @@ OfflinePageModelFactory::OfflinePageModelFactory()
 
 // static
 OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
-  return Singleton<OfflinePageModelFactory>::get();
+  return base::Singleton<OfflinePageModelFactory>::get();
 }
 
 // static

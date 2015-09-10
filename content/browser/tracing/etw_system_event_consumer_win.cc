@@ -129,7 +129,7 @@ bool EtwSystemEventConsumer::StopKernelSessionTracing() {
 
 // static
 EtwSystemEventConsumer* EtwSystemEventConsumer::GetInstance() {
-  return Singleton<EtwSystemEventConsumer>::get();
+  return base::Singleton<EtwSystemEventConsumer>::get();
 }
 
 // static

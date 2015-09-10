@@ -28,7 +28,7 @@ DataReductionProxyChromeSettingsFactory::HasDataReductionProxyChromeSettings(
 // static
 DataReductionProxyChromeSettingsFactory*
 DataReductionProxyChromeSettingsFactory::GetInstance() {
-  return Singleton<DataReductionProxyChromeSettingsFactory>::get();
+  return base::Singleton<DataReductionProxyChromeSettingsFactory>::get();
 }
 
 

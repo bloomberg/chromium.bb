@@ -16,7 +16,9 @@
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/common/geoposition.h"
 
+namespace base {
 template<typename Type> struct DefaultSingletonTraits;
+}
 
 namespace content {
 class LocationArbitrator;
@@ -46,7 +48,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
   }
 
  protected:
-  friend struct DefaultSingletonTraits<GeolocationProviderImpl>;
+  friend struct base::DefaultSingletonTraits<GeolocationProviderImpl>;
   GeolocationProviderImpl();
   ~GeolocationProviderImpl() override;
 

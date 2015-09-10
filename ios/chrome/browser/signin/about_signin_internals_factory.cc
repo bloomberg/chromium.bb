@@ -40,7 +40,7 @@ AboutSigninInternals* AboutSigninInternalsFactory::GetForBrowserState(
 
 // static
 AboutSigninInternalsFactory* AboutSigninInternalsFactory::GetInstance() {
-  return Singleton<AboutSigninInternalsFactory>::get();
+  return base::Singleton<AboutSigninInternalsFactory>::get();
 }
 
 scoped_ptr<KeyedService> AboutSigninInternalsFactory::BuildServiceInstanceFor(

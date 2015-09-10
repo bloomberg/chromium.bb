@@ -9,8 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
+
 class InMemoryURLIndex;
 
 namespace ios {
@@ -26,7 +29,7 @@ class InMemoryURLIndexFactory : public BrowserStateKeyedServiceFactory {
   static InMemoryURLIndexFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<InMemoryURLIndexFactory>;
+  friend struct base::DefaultSingletonTraits<InMemoryURLIndexFactory>;
 
   InMemoryURLIndexFactory();
   ~InMemoryURLIndexFactory() override;

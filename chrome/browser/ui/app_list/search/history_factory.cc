@@ -17,7 +17,7 @@ namespace app_list {
 
 // static
 HistoryFactory* HistoryFactory::GetInstance() {
-  return Singleton<HistoryFactory>::get();
+  return base::Singleton<HistoryFactory>::get();
 }
 
 // static

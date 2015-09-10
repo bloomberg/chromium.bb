@@ -40,7 +40,7 @@ class AboutTcmallocOutputs {
   typedef std::map<std::string, std::string> AboutTcmallocOutputsType;
   AboutTcmallocOutputsType outputs_;
 
-  friend struct DefaultSingletonTraits<AboutTcmallocOutputs>;
+  friend struct base::DefaultSingletonTraits<AboutTcmallocOutputs>;
 
   DISALLOW_COPY_AND_ASSIGN(AboutTcmallocOutputs);
 };

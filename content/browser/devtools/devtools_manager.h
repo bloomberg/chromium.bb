@@ -31,7 +31,7 @@ class CONTENT_EXPORT DevToolsManager {
   void AgentHostStateChanged(DevToolsAgentHostImpl* agent_host, bool attached);
 
  private:
-  friend struct DefaultSingletonTraits<DevToolsManager>;
+  friend struct base::DefaultSingletonTraits<DevToolsManager>;
 
   scoped_ptr<DevToolsManagerDelegate> delegate_;
   int attached_hosts_count_;

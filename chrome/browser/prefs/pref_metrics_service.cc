@@ -212,7 +212,7 @@ void PrefMetricsService::LogIntegerPrefChange(int boundary_value,
 
 // static
 PrefMetricsService::Factory* PrefMetricsService::Factory::GetInstance() {
-  return Singleton<PrefMetricsService::Factory>::get();
+  return base::Singleton<PrefMetricsService::Factory>::get();
 }
 
 // static

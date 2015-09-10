@@ -26,7 +26,7 @@ SupervisedUserPasswordServiceFactory::GetForProfile(Profile* profile) {
 // static
 SupervisedUserPasswordServiceFactory*
 SupervisedUserPasswordServiceFactory::GetInstance() {
-  return Singleton<SupervisedUserPasswordServiceFactory>::get();
+  return base::Singleton<SupervisedUserPasswordServiceFactory>::get();
 }
 
 SupervisedUserPasswordServiceFactory::SupervisedUserPasswordServiceFactory()

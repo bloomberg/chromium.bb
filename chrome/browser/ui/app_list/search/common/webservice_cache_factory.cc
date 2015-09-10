@@ -12,7 +12,7 @@ namespace app_list {
 
 // static
 WebserviceCacheFactory* WebserviceCacheFactory::GetInstance() {
-  return Singleton<WebserviceCacheFactory>::get();
+  return base::Singleton<WebserviceCacheFactory>::get();
 }
 
 // static

@@ -35,7 +35,7 @@ ProfileOAuth2TokenService* OAuth2TokenServiceFactory::GetForBrowserState(
 
 // static
 OAuth2TokenServiceFactory* OAuth2TokenServiceFactory::GetInstance() {
-  return Singleton<OAuth2TokenServiceFactory>::get();
+  return base::Singleton<OAuth2TokenServiceFactory>::get();
 }
 
 void OAuth2TokenServiceFactory::RegisterBrowserStatePrefs(

@@ -24,7 +24,7 @@ namespace keys = proxy_api_constants;
 
 // static
 ProxyEventRouter* ProxyEventRouter::GetInstance() {
-  return Singleton<ProxyEventRouter>::get();
+  return base::Singleton<ProxyEventRouter>::get();
 }
 
 ProxyEventRouter::ProxyEventRouter() {

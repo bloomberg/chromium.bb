@@ -27,7 +27,7 @@ class ImageLoaderFactory : public BrowserContextKeyedServiceFactory {
   static ImageLoaderFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ImageLoaderFactory>;
+  friend struct base::DefaultSingletonTraits<ImageLoaderFactory>;
 
   ImageLoaderFactory();
   ~ImageLoaderFactory() override;

@@ -838,7 +838,7 @@ base::string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
 
 // static
 EnumerateModulesModel* EnumerateModulesModel::GetInstance() {
-  return Singleton<EnumerateModulesModel>::get();
+  return base::Singleton<EnumerateModulesModel>::get();
 }
 
 bool EnumerateModulesModel::ShouldShowConflictWarning() const {

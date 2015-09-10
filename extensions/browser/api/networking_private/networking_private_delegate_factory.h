@@ -62,7 +62,7 @@ class NetworkingPrivateDelegateFactory
   static NetworkingPrivateDelegateFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<NetworkingPrivateDelegateFactory>;
+  friend struct base::DefaultSingletonTraits<NetworkingPrivateDelegateFactory>;
 
   NetworkingPrivateDelegateFactory();
   ~NetworkingPrivateDelegateFactory() override;

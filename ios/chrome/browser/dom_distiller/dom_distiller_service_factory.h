@@ -9,8 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace dom_distiller {
 class DomDistillerService;
@@ -29,7 +31,7 @@ class DomDistillerServiceFactory : public BrowserStateKeyedServiceFactory {
       ios::ChromeBrowserState* browser_state);
 
  private:
-  friend struct DefaultSingletonTraits<DomDistillerServiceFactory>;
+  friend struct base::DefaultSingletonTraits<DomDistillerServiceFactory>;
 
   DomDistillerServiceFactory();
   ~DomDistillerServiceFactory() override;

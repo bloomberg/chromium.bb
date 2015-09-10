@@ -34,7 +34,7 @@ class SAMLOfflineSigninLimiterFactory
   static void SetClockForTesting(base::Clock* clock);
 
  private:
-  friend struct DefaultSingletonTraits<SAMLOfflineSigninLimiterFactory>;
+  friend struct base::DefaultSingletonTraits<SAMLOfflineSigninLimiterFactory>;
 
   SAMLOfflineSigninLimiterFactory();
   ~SAMLOfflineSigninLimiterFactory() override;

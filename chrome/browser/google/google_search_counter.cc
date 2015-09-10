@@ -19,7 +19,7 @@ void GoogleSearchCounter::RegisterForNotifications() {
 
 // static
 GoogleSearchCounter* GoogleSearchCounter::GetInstance() {
-  return Singleton<GoogleSearchCounter>::get();
+  return base::Singleton<GoogleSearchCounter>::get();
 }
 
 GoogleSearchMetrics::AccessPoint

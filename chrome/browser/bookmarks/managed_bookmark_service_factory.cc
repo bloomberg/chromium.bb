@@ -45,7 +45,7 @@ bookmarks::ManagedBookmarkService* ManagedBookmarkServiceFactory::GetForProfile(
 
 // static
 ManagedBookmarkServiceFactory* ManagedBookmarkServiceFactory::GetInstance() {
-  return Singleton<ManagedBookmarkServiceFactory>::get();
+  return base::Singleton<ManagedBookmarkServiceFactory>::get();
 }
 
 // static

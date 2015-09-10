@@ -27,7 +27,7 @@ ProcessManager* ProcessManagerFactory::GetForBrowserContextIfExists(
 
 // static
 ProcessManagerFactory* ProcessManagerFactory::GetInstance() {
-  return Singleton<ProcessManagerFactory>::get();
+  return base::Singleton<ProcessManagerFactory>::get();
 }
 
 ProcessManagerFactory::ProcessManagerFactory()

@@ -154,7 +154,7 @@ static const ApiInfo kApiInfoTable[] = {
 class ApiInfoDatabase {
  public:
   static ApiInfoDatabase* GetInstance() {
-    return Singleton<ApiInfoDatabase>::get();
+    return base::Singleton<ApiInfoDatabase>::get();
   }
 
   // Retrieves an ApiInfo record for the given Action type.  Returns either a
@@ -184,7 +184,7 @@ class ApiInfoDatabase {
   // should still be checked before returning a positive match.
   std::map<std::string, const ApiInfo*> api_database_;
 
-  friend struct DefaultSingletonTraits<ApiInfoDatabase>;
+  friend struct base::DefaultSingletonTraits<ApiInfoDatabase>;
   DISALLOW_COPY_AND_ASSIGN(ApiInfoDatabase);
 };
 

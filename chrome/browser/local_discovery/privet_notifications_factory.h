@@ -17,7 +17,7 @@ class PrivetNotificationServiceFactory
   static PrivetNotificationServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PrivetNotificationServiceFactory>;
+  friend struct base::DefaultSingletonTraits<PrivetNotificationServiceFactory>;
 
   PrivetNotificationServiceFactory();
   ~PrivetNotificationServiceFactory() override;

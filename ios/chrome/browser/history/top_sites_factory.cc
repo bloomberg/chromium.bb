@@ -27,7 +27,7 @@ scoped_refptr<history::TopSites> TopSitesFactory::GetForBrowserState(
 
 // static
 TopSitesFactory* TopSitesFactory::GetInstance() {
-  return Singleton<TopSitesFactory>::get();
+  return base::Singleton<TopSitesFactory>::get();
 }
 
 TopSitesFactory::TopSitesFactory()

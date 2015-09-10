@@ -14,14 +14,15 @@ namespace {
 class SecurityServicesSingleton {
  public:
   static SecurityServicesSingleton* GetInstance() {
-    return Singleton<SecurityServicesSingleton,
-                     LeakySingletonTraits<SecurityServicesSingleton> >::get();
+    return base::Singleton<
+        SecurityServicesSingleton,
+        base::LeakySingletonTraits<SecurityServicesSingleton>>::get();
   }
 
   base::Lock& lock() { return lock_; }
 
  private:
-  friend struct DefaultSingletonTraits<SecurityServicesSingleton>;
+  friend struct base::DefaultSingletonTraits<SecurityServicesSingleton>;
 
   SecurityServicesSingleton() {}
   ~SecurityServicesSingleton() {}

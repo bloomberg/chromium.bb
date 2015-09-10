@@ -21,7 +21,7 @@ Blacklist* BlacklistFactory::GetForBrowserContext(BrowserContext* context) {
 
 // static
 BlacklistFactory* BlacklistFactory::GetInstance() {
-  return Singleton<BlacklistFactory>::get();
+  return base::Singleton<BlacklistFactory>::get();
 }
 
 BlacklistFactory::BlacklistFactory()

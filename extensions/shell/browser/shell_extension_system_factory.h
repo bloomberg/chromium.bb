@@ -20,7 +20,7 @@ class ShellExtensionSystemFactory : public ExtensionSystemProvider {
   static ShellExtensionSystemFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ShellExtensionSystemFactory>;
+  friend struct base::DefaultSingletonTraits<ShellExtensionSystemFactory>;
 
   ShellExtensionSystemFactory();
   ~ShellExtensionSystemFactory() override;

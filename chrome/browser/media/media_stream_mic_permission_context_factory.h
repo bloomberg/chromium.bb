@@ -19,7 +19,8 @@ class MediaStreamMicPermissionContextFactory
   static MediaStreamMicPermissionContextFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<MediaStreamMicPermissionContextFactory>;
+  friend struct base::DefaultSingletonTraits<
+      MediaStreamMicPermissionContextFactory>;
 
   MediaStreamMicPermissionContextFactory();
   ~MediaStreamMicPermissionContextFactory() override;

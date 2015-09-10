@@ -9,7 +9,9 @@
 #include "content/public/browser/signed_certificate_timestamp_store.h"
 #include "net/cert/signed_certificate_timestamp.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace content {
 
@@ -27,7 +29,8 @@ class SignedCertificateTimestampStoreImpl
       scoped_refptr<net::ct::SignedCertificateTimestamp>* sct) override;
 
  private:
-  friend struct DefaultSingletonTraits<SignedCertificateTimestampStoreImpl>;
+  friend struct base::DefaultSingletonTraits<
+      SignedCertificateTimestampStoreImpl>;
 
   SignedCertificateTimestampStoreImpl();
   ~SignedCertificateTimestampStoreImpl() override;

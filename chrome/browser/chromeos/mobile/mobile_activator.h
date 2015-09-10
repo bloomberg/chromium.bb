@@ -155,7 +155,7 @@ class MobileActivator
   virtual const NetworkState* GetDefaultNetwork();
 
  private:
-  friend struct DefaultSingletonTraits<MobileActivator>;
+  friend struct base::DefaultSingletonTraits<MobileActivator>;
   friend class TestMobileActivator;
   friend class MobileActivatorTest;
 

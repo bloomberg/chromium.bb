@@ -19,7 +19,7 @@ MidiPermissionContextFactory::GetForProfile(Profile* profile) {
 // static
 MidiPermissionContextFactory*
 MidiPermissionContextFactory::GetInstance() {
-  return Singleton<MidiPermissionContextFactory>::get();
+  return base::Singleton<MidiPermissionContextFactory>::get();
 }
 
 MidiPermissionContextFactory::MidiPermissionContextFactory()

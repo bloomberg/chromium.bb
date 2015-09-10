@@ -12,7 +12,7 @@ namespace gfx {
 
 // static
 SingletonHwnd* SingletonHwnd::GetInstance() {
-  return Singleton<SingletonHwnd>::get();
+  return base::Singleton<SingletonHwnd>::get();
 }
 
 BOOL SingletonHwnd::ProcessWindowMessage(HWND window,

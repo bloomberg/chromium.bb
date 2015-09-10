@@ -136,8 +136,8 @@ namespace content {
 
 // static
 ThemeHelperMac* ThemeHelperMac::GetInstance() {
-  return Singleton<ThemeHelperMac,
-      LeakySingletonTraits<ThemeHelperMac> >::get();
+  return base::Singleton<ThemeHelperMac,
+                         base::LeakySingletonTraits<ThemeHelperMac>>::get();
 }
 
 // static

@@ -72,7 +72,7 @@ GeofencingServiceImpl::~GeofencingServiceImpl() {
 
 GeofencingServiceImpl* GeofencingServiceImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return Singleton<GeofencingServiceImpl>::get();
+  return base::Singleton<GeofencingServiceImpl>::get();
 }
 
 bool GeofencingServiceImpl::IsServiceAvailable() {

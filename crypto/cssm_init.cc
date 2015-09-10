@@ -39,8 +39,8 @@ void* CSSMCalloc(uint32 num, CSSM_SIZE size, void* alloc_ref) {
 class CSSMInitSingleton {
  public:
   static CSSMInitSingleton* GetInstance() {
-    return Singleton<CSSMInitSingleton,
-                     LeakySingletonTraits<CSSMInitSingleton> >::get();
+    return base::Singleton<CSSMInitSingleton, base::LeakySingletonTraits<
+                                                  CSSMInitSingleton>>::get();
   }
 
   CSSM_CSP_HANDLE csp_handle() const { return csp_handle_; }
@@ -150,7 +150,7 @@ class CSSMInitSingleton {
   CSSM_CL_HANDLE cl_handle_;
   CSSM_TP_HANDLE tp_handle_;
 
-  friend struct DefaultSingletonTraits<CSSMInitSingleton>;
+  friend struct base::DefaultSingletonTraits<CSSMInitSingleton>;
 };
 
 }  // namespace

@@ -52,7 +52,7 @@ bool SyncExtensionHelper::ExtensionState::Equals(
 
 // static
 SyncExtensionHelper* SyncExtensionHelper::GetInstance() {
-  SyncExtensionHelper* instance = Singleton<SyncExtensionHelper>::get();
+  SyncExtensionHelper* instance = base::Singleton<SyncExtensionHelper>::get();
   instance->SetupIfNecessary(sync_datatype_helper::test());
   return instance;
 }

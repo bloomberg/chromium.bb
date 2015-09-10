@@ -22,7 +22,8 @@ class ExtensionWelcomeNotificationFactory
   static ExtensionWelcomeNotificationFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionWelcomeNotificationFactory>;
+  friend struct base::DefaultSingletonTraits<
+      ExtensionWelcomeNotificationFactory>;
 
   ExtensionWelcomeNotificationFactory();
   ~ExtensionWelcomeNotificationFactory() override;

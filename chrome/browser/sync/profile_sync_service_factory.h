@@ -29,7 +29,7 @@ class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
   static ProfileSyncServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ProfileSyncServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ProfileSyncServiceFactory>;
 
   ProfileSyncServiceFactory();
   ~ProfileSyncServiceFactory() override;

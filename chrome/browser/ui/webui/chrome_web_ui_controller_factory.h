@@ -45,7 +45,7 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
   ~ChromeWebUIControllerFactory() override;
 
  private:
-  friend struct DefaultSingletonTraits<ChromeWebUIControllerFactory>;
+  friend struct base::DefaultSingletonTraits<ChromeWebUIControllerFactory>;
 
   // Gets the data for the favicon for a WebUI page. Returns NULL if the WebUI
   // does not have a favicon.

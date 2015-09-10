@@ -18,7 +18,7 @@ AppRestoreService* AppRestoreServiceFactory::GetForProfile(Profile* profile) {
 }
 
 AppRestoreServiceFactory* AppRestoreServiceFactory::GetInstance() {
-  return Singleton<AppRestoreServiceFactory>::get();
+  return base::Singleton<AppRestoreServiceFactory>::get();
 }
 
 AppRestoreServiceFactory::AppRestoreServiceFactory()

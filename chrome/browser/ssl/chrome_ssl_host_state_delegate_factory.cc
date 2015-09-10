@@ -41,7 +41,7 @@ ChromeSSLHostStateDelegate* ChromeSSLHostStateDelegateFactory::GetForProfile(
 // static
 ChromeSSLHostStateDelegateFactory*
 ChromeSSLHostStateDelegateFactory::GetInstance() {
-  return Singleton<ChromeSSLHostStateDelegateFactory>::get();
+  return base::Singleton<ChromeSSLHostStateDelegateFactory>::get();
 }
 
 ChromeSSLHostStateDelegateFactory::ChromeSSLHostStateDelegateFactory()

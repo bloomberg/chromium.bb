@@ -47,7 +47,7 @@ FontRenderParams::SubpixelRendering GetSubpixelRenderingGeometry() {
 class CachedFontRenderParams {
  public:
   static CachedFontRenderParams* GetInstance() {
-    return Singleton<CachedFontRenderParams>::get();
+    return base::Singleton<CachedFontRenderParams>::get();
   }
 
   const FontRenderParams& GetParams() {
@@ -81,7 +81,7 @@ class CachedFontRenderParams {
   }
 
  private:
-  friend struct DefaultSingletonTraits<CachedFontRenderParams>;
+  friend struct base::DefaultSingletonTraits<CachedFontRenderParams>;
 
   CachedFontRenderParams() {}
   ~CachedFontRenderParams() {}

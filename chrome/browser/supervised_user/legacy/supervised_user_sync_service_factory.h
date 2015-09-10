@@ -19,7 +19,7 @@ class SupervisedUserSyncServiceFactory
   static SupervisedUserSyncServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SupervisedUserSyncServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SupervisedUserSyncServiceFactory>;
 
   SupervisedUserSyncServiceFactory();
   ~SupervisedUserSyncServiceFactory() override;

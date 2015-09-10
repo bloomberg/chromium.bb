@@ -44,7 +44,7 @@ class ServiceTabLauncher {
   static bool RegisterServiceTabLauncher(JNIEnv* env);
 
  private:
-  friend struct DefaultSingletonTraits<ServiceTabLauncher>;
+  friend struct base::DefaultSingletonTraits<ServiceTabLauncher>;
 
   ServiceTabLauncher();
   ~ServiceTabLauncher();

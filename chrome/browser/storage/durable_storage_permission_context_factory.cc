@@ -19,7 +19,7 @@ DurableStoragePermissionContextFactory::GetForProfile(Profile* profile) {
 // static
 DurableStoragePermissionContextFactory*
 DurableStoragePermissionContextFactory::GetInstance() {
-  return Singleton<DurableStoragePermissionContextFactory>::get();
+  return base::Singleton<DurableStoragePermissionContextFactory>::get();
 }
 
 DurableStoragePermissionContextFactory::DurableStoragePermissionContextFactory()

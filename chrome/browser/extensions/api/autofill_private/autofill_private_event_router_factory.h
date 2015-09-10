@@ -34,7 +34,7 @@ class AutofillPrivateEventRouterFactory
   bool ServiceIsNULLWhileTesting() const override;
 
  private:
-  friend struct DefaultSingletonTraits<AutofillPrivateEventRouterFactory>;
+  friend struct base::DefaultSingletonTraits<AutofillPrivateEventRouterFactory>;
 
   AutofillPrivateEventRouterFactory();
   ~AutofillPrivateEventRouterFactory() override;

@@ -24,7 +24,7 @@ class ChromeSigninClientFactory : public BrowserContextKeyedServiceFactory {
   static ChromeSigninClientFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ChromeSigninClientFactory>;
+  friend struct base::DefaultSingletonTraits<ChromeSigninClientFactory>;
 
   ChromeSigninClientFactory();
   ~ChromeSigninClientFactory() override;

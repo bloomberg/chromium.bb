@@ -28,12 +28,10 @@ class KioskDiagnosisRunner::Factory : public BrowserContextKeyedServiceFactory {
         GetInstance()->GetServiceForBrowserContext(profile, true));
   }
 
-  static Factory* GetInstance() {
-    return Singleton<Factory>::get();
-  }
+  static Factory* GetInstance() { return base::Singleton<Factory>::get(); }
 
  private:
-  friend struct DefaultSingletonTraits<Factory>;
+  friend struct base::DefaultSingletonTraits<Factory>;
 
   Factory()
       : BrowserContextKeyedServiceFactory(

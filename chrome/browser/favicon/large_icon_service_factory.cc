@@ -22,7 +22,7 @@ favicon::LargeIconService* LargeIconServiceFactory::GetForBrowserContext(
 
 // static
 LargeIconServiceFactory* LargeIconServiceFactory::GetInstance() {
-  return Singleton<LargeIconServiceFactory>::get();
+  return base::Singleton<LargeIconServiceFactory>::get();
 }
 
 LargeIconServiceFactory::LargeIconServiceFactory()

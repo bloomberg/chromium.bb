@@ -24,7 +24,7 @@ PasswordsPrivateEventRouterFactory::GetForProfile(
 // static
 PasswordsPrivateEventRouterFactory*
 PasswordsPrivateEventRouterFactory::GetInstance() {
-  return Singleton<PasswordsPrivateEventRouterFactory>::get();
+  return base::Singleton<PasswordsPrivateEventRouterFactory>::get();
 }
 
 PasswordsPrivateEventRouterFactory::PasswordsPrivateEventRouterFactory()

@@ -28,7 +28,7 @@ const base::FilePath::CharType kThumbnailDirectory[] =
 
 // static
 SuggestionsServiceFactory* SuggestionsServiceFactory::GetInstance() {
-  return Singleton<SuggestionsServiceFactory>::get();
+  return base::Singleton<SuggestionsServiceFactory>::get();
 }
 
 // static

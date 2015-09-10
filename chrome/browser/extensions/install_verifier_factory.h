@@ -19,7 +19,7 @@ class InstallVerifierFactory : public BrowserContextKeyedServiceFactory {
   static InstallVerifierFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<InstallVerifierFactory>;
+  friend struct base::DefaultSingletonTraits<InstallVerifierFactory>;
 
   InstallVerifierFactory();
   ~InstallVerifierFactory() override;

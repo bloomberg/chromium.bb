@@ -32,7 +32,7 @@ class SystemHotkeyHelperMac {
   SystemHotkeyMap* map() { return map_.get(); }
 
  private:
-  friend struct DefaultSingletonTraits<SystemHotkeyHelperMac>;
+  friend struct base::DefaultSingletonTraits<SystemHotkeyHelperMac>;
 
   SystemHotkeyHelperMac();
   ~SystemHotkeyHelperMac();

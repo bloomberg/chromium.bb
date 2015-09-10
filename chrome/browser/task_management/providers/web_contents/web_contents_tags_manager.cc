@@ -11,7 +11,7 @@ namespace task_management {
 
 // static
 WebContentsTagsManager* WebContentsTagsManager::GetInstance() {
-  return Singleton<WebContentsTagsManager>::get();
+  return base::Singleton<WebContentsTagsManager>::get();
 }
 
 void WebContentsTagsManager::AddTag(WebContentsTag* tag) {

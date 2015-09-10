@@ -43,7 +43,8 @@ class OwnerSettingsServiceChromeOSFactory
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
 
  private:
-  friend struct DefaultSingletonTraits<OwnerSettingsServiceChromeOSFactory>;
+  friend struct base::DefaultSingletonTraits<
+      OwnerSettingsServiceChromeOSFactory>;
 
   OwnerSettingsServiceChromeOSFactory();
   ~OwnerSettingsServiceChromeOSFactory() override;

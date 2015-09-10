@@ -43,7 +43,7 @@ bool ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::Matches(
 // static
 ServiceWorkerDevToolsManager* ServiceWorkerDevToolsManager::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return Singleton<ServiceWorkerDevToolsManager>::get();
+  return base::Singleton<ServiceWorkerDevToolsManager>::get();
 }
 
 DevToolsAgentHostImpl*

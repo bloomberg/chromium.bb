@@ -142,8 +142,8 @@ class X509InitSingleton {
     // We allow the X509 store to leak, because it is used from a non-joinable
     // worker that is not stopped on shutdown, hence may still be using
     // OpenSSL library after the AtExit runner has completed.
-    return Singleton<X509InitSingleton,
-                     LeakySingletonTraits<X509InitSingleton> >::get();
+    return base::Singleton<X509InitSingleton, base::LeakySingletonTraits<
+                                                  X509InitSingleton>>::get();
   }
   X509_STORE* store() const { return store_.get(); }
 
@@ -155,7 +155,7 @@ class X509InitSingleton {
   }
 
  private:
-  friend struct DefaultSingletonTraits<X509InitSingleton>;
+  friend struct base::DefaultSingletonTraits<X509InitSingleton>;
   X509InitSingleton() {
     crypto::EnsureOpenSSLInit();
     ResetCertStore();

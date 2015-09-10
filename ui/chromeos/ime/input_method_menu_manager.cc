@@ -50,7 +50,7 @@ bool InputMethodMenuManager::HasInputMethodMenuItemForKey(
 
 // static
 InputMethodMenuManager* InputMethodMenuManager::GetInstance() {
-  return Singleton<InputMethodMenuManager>::get();
+  return base::Singleton<InputMethodMenuManager>::get();
 }
 
 }  // namespace ime

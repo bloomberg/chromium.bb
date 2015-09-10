@@ -10,7 +10,9 @@
 #include "base/basictypes.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
+namespace base {
 template<typename T> struct DefaultSingletonTraits;
+}
 
 namespace ppapi {
 namespace proxy {
@@ -27,7 +29,7 @@ class PPAPI_PROXY_EXPORT ProxyModule {
   void SetFlashCommandLineArgs(const std::string& args);
 
  private:
-  friend struct DefaultSingletonTraits<ProxyModule>;
+  friend struct base::DefaultSingletonTraits<ProxyModule>;
 
   std::string flash_command_line_args_;
 

@@ -20,7 +20,7 @@ SigninClient* SigninClientFactory::GetForBrowserState(
 
 // static
 SigninClientFactory* SigninClientFactory::GetInstance() {
-  return Singleton<SigninClientFactory>::get();
+  return base::Singleton<SigninClientFactory>::get();
 }
 
 SigninClientFactory::SigninClientFactory()

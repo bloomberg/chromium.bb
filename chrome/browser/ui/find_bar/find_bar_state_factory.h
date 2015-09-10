@@ -25,7 +25,7 @@ class FindBarStateFactory : public BrowserContextKeyedServiceFactory {
   static FindBarStateFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<FindBarStateFactory>;
+  friend struct base::DefaultSingletonTraits<FindBarStateFactory>;
 
   FindBarStateFactory();
   ~FindBarStateFactory() override;

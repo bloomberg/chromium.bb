@@ -61,7 +61,7 @@ class EVENTS_OZONE_EXPORT CursorController {
  private:
   CursorController();
   ~CursorController();
-  friend struct DefaultSingletonTraits<CursorController>;
+  friend struct base::DefaultSingletonTraits<CursorController>;
 
   struct PerWindowCursorConfiguration {
     gfx::Display::Rotation rotation;

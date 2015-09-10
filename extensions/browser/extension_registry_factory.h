@@ -23,7 +23,7 @@ class ExtensionRegistryFactory : public BrowserContextKeyedServiceFactory {
   static ExtensionRegistryFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionRegistryFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionRegistryFactory>;
 
   ExtensionRegistryFactory();
   ~ExtensionRegistryFactory() override;

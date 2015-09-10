@@ -19,7 +19,8 @@ class PushMessagingPermissionContextFactory
   static PushMessagingPermissionContextFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PushMessagingPermissionContextFactory>;
+  friend struct base::DefaultSingletonTraits<
+      PushMessagingPermissionContextFactory>;
 
   PushMessagingPermissionContextFactory();
   ~PushMessagingPermissionContextFactory() override;

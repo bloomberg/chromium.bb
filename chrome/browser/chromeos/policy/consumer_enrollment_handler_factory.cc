@@ -29,7 +29,7 @@ ConsumerEnrollmentHandlerFactory::GetForBrowserContext(
 // static
 ConsumerEnrollmentHandlerFactory*
 ConsumerEnrollmentHandlerFactory::GetInstance() {
-  return Singleton<ConsumerEnrollmentHandlerFactory>::get();
+  return base::Singleton<ConsumerEnrollmentHandlerFactory>::get();
 }
 
 ConsumerEnrollmentHandlerFactory::ConsumerEnrollmentHandlerFactory()

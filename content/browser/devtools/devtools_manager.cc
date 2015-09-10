@@ -15,7 +15,7 @@ namespace content {
 
 // static
 DevToolsManager* DevToolsManager::GetInstance() {
-  return Singleton<DevToolsManager>::get();
+  return base::Singleton<DevToolsManager>::get();
 }
 
 DevToolsManager::DevToolsManager()

@@ -11,7 +11,7 @@
 
 // static
 ProtocolHandlerRegistryFactory* ProtocolHandlerRegistryFactory::GetInstance() {
-  return Singleton<ProtocolHandlerRegistryFactory>::get();
+  return base::Singleton<ProtocolHandlerRegistryFactory>::get();
 }
 
 // static

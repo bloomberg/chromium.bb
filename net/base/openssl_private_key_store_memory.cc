@@ -24,7 +24,7 @@ class MemoryKeyPairStore {
   MemoryKeyPairStore() {}
 
   static MemoryKeyPairStore* GetInstance() {
-    return Singleton<MemoryKeyPairStore>::get();
+    return base::Singleton<MemoryKeyPairStore>::get();
   }
 
   ~MemoryKeyPairStore() {

@@ -98,7 +98,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
                          const content::WebPluginInfo& info) override;
 
  private:
-  friend struct DefaultSingletonTraits<ChromePluginServiceFilter>;
+  friend struct base::DefaultSingletonTraits<ChromePluginServiceFilter>;
 
   struct OverriddenPlugin {
     OverriddenPlugin();

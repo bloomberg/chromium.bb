@@ -51,7 +51,7 @@ class SyncAppListHelper {
   void PrintAppList(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<SyncAppListHelper>;
+  friend struct base::DefaultSingletonTraits<SyncAppListHelper>;
 
   SyncAppListHelper();
   ~SyncAppListHelper();

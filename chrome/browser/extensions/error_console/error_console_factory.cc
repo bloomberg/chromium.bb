@@ -23,7 +23,7 @@ ErrorConsole* ErrorConsoleFactory::GetForBrowserContext(
 
 // static
 ErrorConsoleFactory* ErrorConsoleFactory::GetInstance() {
-  return Singleton<ErrorConsoleFactory>::get();
+  return base::Singleton<ErrorConsoleFactory>::get();
 }
 
 ErrorConsoleFactory::ErrorConsoleFactory()

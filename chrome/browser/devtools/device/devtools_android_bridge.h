@@ -20,14 +20,14 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base {
 template<typename T> struct DefaultSingletonTraits;
 
-namespace base {
 class MessageLoop;
 class DictionaryValue;
 class ListValue;
 class Thread;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -51,7 +51,7 @@ class DevToolsAndroidBridge : public KeyedService {
     static DevToolsAndroidBridge* GetForProfile(Profile* profile);
 
    private:
-    friend struct DefaultSingletonTraits<Factory>;
+    friend struct base::DefaultSingletonTraits<Factory>;
 
     Factory();
     ~Factory() override;

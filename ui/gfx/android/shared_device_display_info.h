@@ -44,7 +44,7 @@ class SharedDeviceDisplayInfo {
                     jint smallest_dip_width,
                     jint rotation_degrees);
  private:
-  friend struct DefaultSingletonTraits<SharedDeviceDisplayInfo>;
+  friend struct base::DefaultSingletonTraits<SharedDeviceDisplayInfo>;
 
   SharedDeviceDisplayInfo();
   ~SharedDeviceDisplayInfo();

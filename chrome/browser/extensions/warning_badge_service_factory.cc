@@ -23,7 +23,7 @@ WarningBadgeService* WarningBadgeServiceFactory::GetForBrowserContext(
 
 // static
 WarningBadgeServiceFactory* WarningBadgeServiceFactory::GetInstance() {
-  return Singleton<WarningBadgeServiceFactory>::get();
+  return base::Singleton<WarningBadgeServiceFactory>::get();
 }
 
 WarningBadgeServiceFactory::WarningBadgeServiceFactory()

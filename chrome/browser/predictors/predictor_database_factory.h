@@ -24,7 +24,7 @@ class PredictorDatabaseFactory : public BrowserContextKeyedServiceFactory {
   static PredictorDatabaseFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<PredictorDatabaseFactory>;
+  friend struct base::DefaultSingletonTraits<PredictorDatabaseFactory>;
 
   PredictorDatabaseFactory();
   ~PredictorDatabaseFactory() override;

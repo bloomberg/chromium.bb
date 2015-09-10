@@ -10,7 +10,10 @@
 #include "ui/app_list/app_list_model.h"
 
 class AppListControllerDelegateAsh;
+
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 // AppListServiceAsh wraps functionality in ChromeLauncherController and the Ash
 // Shell for showing and hiding the app list on the Ash desktop.
@@ -28,7 +31,7 @@ class AppListServiceAsh : public AppListServiceImpl {
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
  private:
-  friend struct DefaultSingletonTraits<AppListServiceAsh>;
+  friend struct base::DefaultSingletonTraits<AppListServiceAsh>;
 
   AppListServiceAsh();
   ~AppListServiceAsh() override;

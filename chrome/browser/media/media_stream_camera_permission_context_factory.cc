@@ -34,7 +34,7 @@ MediaStreamCameraPermissionContextFactory::GetBrowserContextToUse(
 // static
 MediaStreamCameraPermissionContextFactory*
 MediaStreamCameraPermissionContextFactory::GetInstance() {
-  return Singleton<MediaStreamCameraPermissionContextFactory>::get();
+  return base::Singleton<MediaStreamCameraPermissionContextFactory>::get();
 }
 
 // static

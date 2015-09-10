@@ -257,7 +257,7 @@ ProtocolCommand::~ProtocolCommand() {
 
 // static
 DevToolsAndroidBridge::Factory* DevToolsAndroidBridge::Factory::GetInstance() {
-  return Singleton<DevToolsAndroidBridge::Factory>::get();
+  return base::Singleton<DevToolsAndroidBridge::Factory>::get();
 }
 
 // static

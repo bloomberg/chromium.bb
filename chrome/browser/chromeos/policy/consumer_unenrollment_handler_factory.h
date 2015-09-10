@@ -22,7 +22,8 @@ class ConsumerUnenrollmentHandlerFactory
   static ConsumerUnenrollmentHandlerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ConsumerUnenrollmentHandlerFactory>;
+  friend struct base::DefaultSingletonTraits<
+      ConsumerUnenrollmentHandlerFactory>;
 
   ConsumerUnenrollmentHandlerFactory();
   ~ConsumerUnenrollmentHandlerFactory() override;

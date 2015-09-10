@@ -21,7 +21,7 @@ class AppSyncUIStateFactory : public BrowserContextKeyedServiceFactory {
   static AppSyncUIStateFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AppSyncUIStateFactory>;
+  friend struct base::DefaultSingletonTraits<AppSyncUIStateFactory>;
 
   AppSyncUIStateFactory();
   ~AppSyncUIStateFactory() override;

@@ -18,7 +18,7 @@ RenderSandboxHostLinux::RenderSandboxHostLinux()
 
 // static
 RenderSandboxHostLinux* RenderSandboxHostLinux::GetInstance() {
-  return Singleton<RenderSandboxHostLinux>::get();
+  return base::Singleton<RenderSandboxHostLinux>::get();
 }
 
 void RenderSandboxHostLinux::Init() {

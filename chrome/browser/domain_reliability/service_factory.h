@@ -27,7 +27,7 @@ class DomainReliabilityServiceFactory
   static DomainReliabilityServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<DomainReliabilityServiceFactory>;
+  friend struct base::DefaultSingletonTraits<DomainReliabilityServiceFactory>;
 
   DomainReliabilityServiceFactory();
   ~DomainReliabilityServiceFactory() override;

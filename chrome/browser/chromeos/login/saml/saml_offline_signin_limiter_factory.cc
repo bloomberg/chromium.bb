@@ -18,7 +18,7 @@ base::Clock* SAMLOfflineSigninLimiterFactory::clock_for_testing_ = NULL;
 // static
 SAMLOfflineSigninLimiterFactory*
     SAMLOfflineSigninLimiterFactory::GetInstance() {
-  return Singleton<SAMLOfflineSigninLimiterFactory>::get();
+  return base::Singleton<SAMLOfflineSigninLimiterFactory>::get();
 }
 
 // static

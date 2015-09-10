@@ -24,7 +24,7 @@ class TokenCacheServiceFactory : public BrowserContextKeyedServiceFactory {
   TokenCacheServiceFactory();
   ~TokenCacheServiceFactory() override;
 
-  friend struct DefaultSingletonTraits<TokenCacheServiceFactory>;
+  friend struct base::DefaultSingletonTraits<TokenCacheServiceFactory>;
 
   // Inherited from BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(

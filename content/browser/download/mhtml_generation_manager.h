@@ -45,7 +45,7 @@ class MHTMLGenerationManager {
   void MHTMLGenerated(int job_id, int64 mhtml_data_size);
 
  private:
-  friend struct DefaultSingletonTraits<MHTMLGenerationManager>;
+  friend struct base::DefaultSingletonTraits<MHTMLGenerationManager>;
   class Job;
 
   MHTMLGenerationManager();

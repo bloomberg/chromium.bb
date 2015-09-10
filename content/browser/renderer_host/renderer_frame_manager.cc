@@ -23,7 +23,7 @@ const int kCriticalPressurePercentage = 10;
 }  // namespace
 
 RendererFrameManager* RendererFrameManager::GetInstance() {
-  return Singleton<RendererFrameManager>::get();
+  return base::Singleton<RendererFrameManager>::get();
 }
 
 void RendererFrameManager::AddFrame(RendererFrameManagerClient* frame,

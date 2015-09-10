@@ -23,9 +23,9 @@ const int kUtilityProcessIdleTimeoutSeconds = 5;
 UtilityProcessMojoProxyResolverFactory*
 UtilityProcessMojoProxyResolverFactory::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return Singleton<
-      UtilityProcessMojoProxyResolverFactory,
-      LeakySingletonTraits<UtilityProcessMojoProxyResolverFactory>>::get();
+  return base::Singleton<UtilityProcessMojoProxyResolverFactory,
+                         base::LeakySingletonTraits<
+                             UtilityProcessMojoProxyResolverFactory>>::get();
 }
 
 UtilityProcessMojoProxyResolverFactory::

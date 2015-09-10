@@ -28,7 +28,7 @@ class StartupTaskRunnerServiceFactory
   static StartupTaskRunnerServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<StartupTaskRunnerServiceFactory>;
+  friend struct base::DefaultSingletonTraits<StartupTaskRunnerServiceFactory>;
 
   StartupTaskRunnerServiceFactory();
   ~StartupTaskRunnerServiceFactory() override;

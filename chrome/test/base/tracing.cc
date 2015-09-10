@@ -46,7 +46,7 @@ class StringTraceSink : public content::TracingController::TraceDataSink {
 class InProcessTraceController {
  public:
   static InProcessTraceController* GetInstance() {
-    return Singleton<InProcessTraceController>::get();
+    return base::Singleton<InProcessTraceController>::get();
   }
 
   InProcessTraceController()
@@ -126,7 +126,7 @@ class InProcessTraceController {
   }
 
  private:
-  friend struct DefaultSingletonTraits<InProcessTraceController>;
+  friend struct base::DefaultSingletonTraits<InProcessTraceController>;
 
   void OnEnableTracingComplete() {
     message_loop_runner_->Quit();

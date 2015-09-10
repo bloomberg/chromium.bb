@@ -13,7 +13,7 @@ const AXTreeIDRegistry::AXTreeID AXTreeIDRegistry::kNoAXTreeID = -1;
 
 // static
 AXTreeIDRegistry* AXTreeIDRegistry::GetInstance() {
-  return Singleton<AXTreeIDRegistry>::get();
+  return base::Singleton<AXTreeIDRegistry>::get();
 }
 
 AXTreeIDRegistry::AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(

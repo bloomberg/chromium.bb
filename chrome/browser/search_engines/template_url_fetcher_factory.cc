@@ -19,7 +19,7 @@ TemplateURLFetcher* TemplateURLFetcherFactory::GetForProfile(
 
 // static
 TemplateURLFetcherFactory* TemplateURLFetcherFactory::GetInstance() {
-  return Singleton<TemplateURLFetcherFactory>::get();
+  return base::Singleton<TemplateURLFetcherFactory>::get();
 }
 
 // static

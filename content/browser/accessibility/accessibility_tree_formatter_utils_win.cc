@@ -31,15 +31,16 @@ class AccessibilityEnumMap {
   AccessibilityEnumMap();
   virtual ~AccessibilityEnumMap() {}
 
-  friend struct DefaultSingletonTraits<AccessibilityEnumMap>;
+  friend struct base::DefaultSingletonTraits<AccessibilityEnumMap>;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityEnumMap);
 };
 
 // static
 AccessibilityEnumMap* AccessibilityEnumMap::GetInstance() {
-  return Singleton<AccessibilityEnumMap,
-                   LeakySingletonTraits<AccessibilityEnumMap> >::get();
+  return base::Singleton<
+      AccessibilityEnumMap,
+      base::LeakySingletonTraits<AccessibilityEnumMap>>::get();
 }
 
 AccessibilityEnumMap::AccessibilityEnumMap() {

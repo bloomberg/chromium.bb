@@ -175,7 +175,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Obtain an instance of ChildProcessSecurityPolicyImpl via GetInstance().
   ChildProcessSecurityPolicyImpl();
-  friend struct DefaultSingletonTraits<ChildProcessSecurityPolicyImpl>;
+  friend struct base::DefaultSingletonTraits<ChildProcessSecurityPolicyImpl>;
 
   // Adds child process during registration.
   void AddChild(int child_id);

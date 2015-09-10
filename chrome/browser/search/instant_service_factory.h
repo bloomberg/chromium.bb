@@ -22,7 +22,7 @@ class InstantServiceFactory : public BrowserContextKeyedServiceFactory {
   static InstantServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<InstantServiceFactory>;
+  friend struct base::DefaultSingletonTraits<InstantServiceFactory>;
 
   InstantServiceFactory();
   ~InstantServiceFactory() override;

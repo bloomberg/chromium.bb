@@ -28,7 +28,7 @@ class AppFirewallHoleManagerFactory : public BrowserContextKeyedServiceFactory {
   }
 
   static AppFirewallHoleManagerFactory* GetInstance() {
-    return Singleton<AppFirewallHoleManagerFactory>::get();
+    return base::Singleton<AppFirewallHoleManagerFactory>::get();
   }
 
   AppFirewallHoleManagerFactory()

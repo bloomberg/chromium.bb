@@ -17,7 +17,7 @@ class GestureConfigurationAura : public GestureConfiguration {
   }
 
   static GestureConfigurationAura* GetInstance() {
-    return Singleton<GestureConfigurationAura>::get();
+    return base::Singleton<GestureConfigurationAura>::get();
   }
 
  private:
@@ -40,7 +40,7 @@ class GestureConfigurationAura : public GestureConfiguration {
     set_fling_touchscreen_tap_suppression_enabled(true);
   }
 
-  friend struct DefaultSingletonTraits<GestureConfigurationAura>;
+  friend struct base::DefaultSingletonTraits<GestureConfigurationAura>;
   DISALLOW_COPY_AND_ASSIGN(GestureConfigurationAura);
 };
 

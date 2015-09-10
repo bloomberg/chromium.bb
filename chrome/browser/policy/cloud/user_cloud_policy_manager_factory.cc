@@ -54,7 +54,7 @@ class UserCloudPolicyManagerFactory::ManagerWrapper : public KeyedService {
 
 // static
 UserCloudPolicyManagerFactory* UserCloudPolicyManagerFactory::GetInstance() {
-  return Singleton<UserCloudPolicyManagerFactory>::get();
+  return base::Singleton<UserCloudPolicyManagerFactory>::get();
 }
 
 // static

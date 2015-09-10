@@ -24,7 +24,7 @@ class MediaCaptureDevicesImpl : public MediaCaptureDevices {
   void OnVideoCaptureDevicesChanged(const MediaStreamDevices& devices);
 
  private:
-  friend struct DefaultSingletonTraits<MediaCaptureDevicesImpl>;
+  friend struct base::DefaultSingletonTraits<MediaCaptureDevicesImpl>;
   MediaCaptureDevicesImpl();
   ~MediaCaptureDevicesImpl() override;
 

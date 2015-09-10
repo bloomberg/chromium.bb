@@ -78,7 +78,7 @@ PlatformKeysService* PlatformKeysServiceFactory::GetForBrowserContext(
 
 // static
 PlatformKeysServiceFactory* PlatformKeysServiceFactory::GetInstance() {
-  return Singleton<PlatformKeysServiceFactory>::get();
+  return base::Singleton<PlatformKeysServiceFactory>::get();
 }
 
 PlatformKeysServiceFactory::PlatformKeysServiceFactory()

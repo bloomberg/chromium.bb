@@ -180,8 +180,9 @@ HistogramSynchronizer::~HistogramSynchronizer() {
 }
 
 HistogramSynchronizer* HistogramSynchronizer::GetInstance() {
-  return Singleton<HistogramSynchronizer,
-      LeakySingletonTraits<HistogramSynchronizer> >::get();
+  return base::Singleton<
+      HistogramSynchronizer,
+      base::LeakySingletonTraits<HistogramSynchronizer>>::get();
 }
 
 // static

@@ -23,7 +23,7 @@ AutocompleteActionPredictor* AutocompleteActionPredictorFactory::GetForProfile(
 // static
 AutocompleteActionPredictorFactory*
     AutocompleteActionPredictorFactory::GetInstance() {
-  return Singleton<AutocompleteActionPredictorFactory>::get();
+  return base::Singleton<AutocompleteActionPredictorFactory>::get();
 }
 
 AutocompleteActionPredictorFactory::AutocompleteActionPredictorFactory()

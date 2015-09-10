@@ -126,7 +126,7 @@ class CONTENT_EXPORT ShaderCacheFactory {
   void RemoveFromCache(const base::FilePath& path);
 
  private:
-  friend struct DefaultSingletonTraits<ShaderCacheFactory>;
+  friend struct base::DefaultSingletonTraits<ShaderCacheFactory>;
   friend class ShaderClearHelper;
 
   ShaderCacheFactory();

@@ -141,7 +141,7 @@ class UserGestureForTests {
 
  private:
   UserGestureForTests();
-  friend struct DefaultSingletonTraits<UserGestureForTests>;
+  friend struct base::DefaultSingletonTraits<UserGestureForTests>;
 
   base::Lock lock_; // for protecting access to count_
   int count_;
@@ -149,7 +149,7 @@ class UserGestureForTests {
 
 // static
 UserGestureForTests* UserGestureForTests::GetInstance() {
-  return Singleton<UserGestureForTests>::get();
+  return base::Singleton<UserGestureForTests>::get();
 }
 
 UserGestureForTests::UserGestureForTests() : count_(0) {}

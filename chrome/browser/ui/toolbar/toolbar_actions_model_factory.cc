@@ -21,7 +21,7 @@ ToolbarActionsModel* ToolbarActionsModelFactory::GetForProfile(
 
 // static
 ToolbarActionsModelFactory* ToolbarActionsModelFactory::GetInstance() {
-  return Singleton<ToolbarActionsModelFactory>::get();
+  return base::Singleton<ToolbarActionsModelFactory>::get();
 }
 
 ToolbarActionsModelFactory::ToolbarActionsModelFactory()

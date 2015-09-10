@@ -68,7 +68,7 @@ void GeolocationProviderImpl::OnLocationUpdate(const Geoposition& position) {
 
 GeolocationProviderImpl* GeolocationProviderImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return Singleton<GeolocationProviderImpl>::get();
+  return base::Singleton<GeolocationProviderImpl>::get();
 }
 
 GeolocationProviderImpl::GeolocationProviderImpl()

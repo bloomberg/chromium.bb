@@ -18,7 +18,8 @@ class DurableStoragePermissionContextFactory
   static DurableStoragePermissionContextFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<DurableStoragePermissionContextFactory>;
+  friend struct base::DefaultSingletonTraits<
+      DurableStoragePermissionContextFactory>;
 
   DurableStoragePermissionContextFactory();
   ~DurableStoragePermissionContextFactory() override = default;

@@ -19,7 +19,7 @@ class GesturePrefsObserverFactoryAura
   static GesturePrefsObserverFactoryAura* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<GesturePrefsObserverFactoryAura>;
+  friend struct base::DefaultSingletonTraits<GesturePrefsObserverFactoryAura>;
 
   GesturePrefsObserverFactoryAura();
   ~GesturePrefsObserverFactoryAura() override;

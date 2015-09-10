@@ -36,7 +36,7 @@ AccountReconcilor* AccountReconcilorFactory::GetForBrowserState(
 
 // static
 AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
-  return Singleton<AccountReconcilorFactory>::get();
+  return base::Singleton<AccountReconcilorFactory>::get();
 }
 
 scoped_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(

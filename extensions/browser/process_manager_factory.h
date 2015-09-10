@@ -21,7 +21,7 @@ class ProcessManagerFactory : public BrowserContextKeyedServiceFactory {
   static ProcessManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ProcessManagerFactory>;
+  friend struct base::DefaultSingletonTraits<ProcessManagerFactory>;
 
   ProcessManagerFactory();
   ~ProcessManagerFactory() override;

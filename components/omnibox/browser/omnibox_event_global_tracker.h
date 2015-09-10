@@ -9,8 +9,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 struct OmniboxLog;
 
@@ -36,7 +38,7 @@ class OmniboxEventGlobalTracker {
   void OnURLOpened(OmniboxLog* log);
 
  private:
-  friend struct DefaultSingletonTraits<OmniboxEventGlobalTracker>;
+  friend struct base::DefaultSingletonTraits<OmniboxEventGlobalTracker>;
 
   OmniboxEventGlobalTracker();
   ~OmniboxEventGlobalTracker();

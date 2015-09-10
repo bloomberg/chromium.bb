@@ -18,7 +18,7 @@ class OriginPowerMapFactory : public BrowserContextKeyedServiceFactory {
   static OriginPowerMapFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<OriginPowerMapFactory>;
+  friend struct base::DefaultSingletonTraits<OriginPowerMapFactory>;
 
   OriginPowerMapFactory();
   ~OriginPowerMapFactory() override;

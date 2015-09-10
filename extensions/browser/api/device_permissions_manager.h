@@ -21,10 +21,9 @@
 #include "device/hid/hid_service.h"
 #include "device/usb/usb_service.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-
-namespace base {
 class Value;
 }
 
@@ -210,7 +209,7 @@ class DevicePermissionsManagerFactory
   static DevicePermissionsManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<DevicePermissionsManagerFactory>;
+  friend struct base::DefaultSingletonTraits<DevicePermissionsManagerFactory>;
 
   DevicePermissionsManagerFactory();
   ~DevicePermissionsManagerFactory() override;

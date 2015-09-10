@@ -85,7 +85,7 @@ void MHTMLGenerationManager::Job::RenderProcessHostDestroyed(
 }
 
 MHTMLGenerationManager* MHTMLGenerationManager::GetInstance() {
-  return Singleton<MHTMLGenerationManager>::get();
+  return base::Singleton<MHTMLGenerationManager>::get();
 }
 
 MHTMLGenerationManager::MHTMLGenerationManager() {

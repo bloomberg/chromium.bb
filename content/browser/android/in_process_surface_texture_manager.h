@@ -39,7 +39,7 @@ class CONTENT_EXPORT InProcessSurfaceTextureManager
       int player_id) override;
 
  private:
-  friend struct DefaultSingletonTraits<InProcessSurfaceTextureManager>;
+  friend struct base::DefaultSingletonTraits<InProcessSurfaceTextureManager>;
 
   InProcessSurfaceTextureManager();
   ~InProcessSurfaceTextureManager() override;

@@ -21,7 +21,7 @@ namespace policy {
 // static
 UserCloudPolicyInvalidatorFactory*
     UserCloudPolicyInvalidatorFactory::GetInstance() {
-  return Singleton<UserCloudPolicyInvalidatorFactory>::get();
+  return base::Singleton<UserCloudPolicyInvalidatorFactory>::get();
 }
 
 UserCloudPolicyInvalidatorFactory::UserCloudPolicyInvalidatorFactory()

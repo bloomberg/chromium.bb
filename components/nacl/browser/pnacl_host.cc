@@ -84,7 +84,7 @@ PnaclHost::~PnaclHost() {
 }
 
 PnaclHost* PnaclHost::GetInstance() {
-  return Singleton<PnaclHost>::get();
+  return base::Singleton<PnaclHost>::get();
 }
 
 PnaclHost::PendingTranslation::PendingTranslation()

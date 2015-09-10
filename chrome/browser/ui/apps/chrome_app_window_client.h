@@ -9,8 +9,10 @@
 #include "base/compiler_specific.h"
 #include "extensions/browser/app_window/app_window_client.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}
 
 // The implementation of AppWindowClient for Chrome.
 class ChromeAppWindowClient : public extensions::AppWindowClient {
@@ -22,7 +24,7 @@ class ChromeAppWindowClient : public extensions::AppWindowClient {
   static ChromeAppWindowClient* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ChromeAppWindowClient>;
+  friend struct base::DefaultSingletonTraits<ChromeAppWindowClient>;
 
   // extensions::AppWindowClient
   extensions::AppWindow* CreateAppWindow(

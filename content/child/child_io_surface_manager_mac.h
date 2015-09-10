@@ -45,7 +45,7 @@ class CONTENT_EXPORT ChildIOSurfaceManager : public IOSurfaceManager {
   }
 
  private:
-  friend struct DefaultSingletonTraits<ChildIOSurfaceManager>;
+  friend struct base::DefaultSingletonTraits<ChildIOSurfaceManager>;
 
   ChildIOSurfaceManager();
   ~ChildIOSurfaceManager() override;

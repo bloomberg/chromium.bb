@@ -53,7 +53,7 @@ class SyncAppHelper {
   void FixNTPOrdinalCollisions(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<SyncAppHelper>;
+  friend struct base::DefaultSingletonTraits<SyncAppHelper>;
 
   SyncAppHelper();
   ~SyncAppHelper();

@@ -83,7 +83,7 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
     // Default copy constructor is used for passing this struct by value.
   };
   struct JavaObject;
-  friend struct DefaultSingletonTraits<DownloadControllerAndroidImpl>;
+  friend struct base::DefaultSingletonTraits<DownloadControllerAndroidImpl>;
   DownloadControllerAndroidImpl();
   ~DownloadControllerAndroidImpl() override;
 

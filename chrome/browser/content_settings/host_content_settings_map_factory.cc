@@ -50,7 +50,7 @@ HostContentSettingsMap* HostContentSettingsMapFactory::GetForProfile(
 
 // static
 HostContentSettingsMapFactory* HostContentSettingsMapFactory::GetInstance() {
-  return Singleton<HostContentSettingsMapFactory>::get();
+  return base::Singleton<HostContentSettingsMapFactory>::get();
 }
 
 scoped_refptr<RefcountedKeyedService>

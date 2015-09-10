@@ -157,7 +157,7 @@ class CONTENT_EXPORT PluginServiceImpl
   void RegisterPluginCrash(const base::FilePath& plugin_path);
 
  private:
-  friend struct DefaultSingletonTraits<PluginServiceImpl>;
+  friend struct base::DefaultSingletonTraits<PluginServiceImpl>;
 
   // Creates the PluginServiceImpl object, but doesn't actually build the plugin
   // list yet.  It's generated lazily.

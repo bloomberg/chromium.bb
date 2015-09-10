@@ -30,7 +30,7 @@ class DownloadServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
 
  private:
-  friend struct DefaultSingletonTraits<DownloadServiceFactory>;
+  friend struct base::DefaultSingletonTraits<DownloadServiceFactory>;
 
   DownloadServiceFactory();
   ~DownloadServiceFactory() override;

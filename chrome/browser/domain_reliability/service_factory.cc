@@ -76,7 +76,7 @@ DomainReliabilityServiceFactory::GetForBrowserContext(
 // static
 DomainReliabilityServiceFactory*
 DomainReliabilityServiceFactory::GetInstance() {
-  return Singleton<DomainReliabilityServiceFactory>::get();
+  return base::Singleton<DomainReliabilityServiceFactory>::get();
 }
 
 DomainReliabilityServiceFactory::DomainReliabilityServiceFactory()

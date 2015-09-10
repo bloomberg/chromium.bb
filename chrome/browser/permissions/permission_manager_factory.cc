@@ -19,7 +19,7 @@ PermissionManagerFactory::GetForProfile(Profile* profile) {
 
 // static
 PermissionManagerFactory* PermissionManagerFactory::GetInstance() {
-  return Singleton<PermissionManagerFactory>::get();
+  return base::Singleton<PermissionManagerFactory>::get();
 }
 
 PermissionManagerFactory::PermissionManagerFactory()

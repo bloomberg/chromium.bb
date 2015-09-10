@@ -244,7 +244,7 @@ class ImageDataCache {
   void DidDeleteInstance(PP_Instance instance);
 
  private:
-  friend struct LeakySingletonTraits<ImageDataCache>;
+  friend struct base::LeakySingletonTraits<ImageDataCache>;
 
   // Timer callback to expire entries for the given instance.
   void OnTimer(PP_Instance instance);
@@ -263,8 +263,8 @@ class ImageDataCache {
 
 // static
 ImageDataCache* ImageDataCache::GetInstance() {
-  return Singleton<ImageDataCache,
-                   LeakySingletonTraits<ImageDataCache> >::get();
+  return base::Singleton<ImageDataCache,
+                         base::LeakySingletonTraits<ImageDataCache>>::get();
 }
 
 scoped_refptr<ImageData> ImageDataCache::Get(

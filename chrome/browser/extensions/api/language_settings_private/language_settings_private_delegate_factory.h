@@ -35,7 +35,7 @@ class LanguageSettingsPrivateDelegateFactory
   bool ServiceIsNULLWhileTesting() const override;
 
  private:
-  friend struct DefaultSingletonTraits<
+  friend struct base::DefaultSingletonTraits<
       LanguageSettingsPrivateDelegateFactory>;
 
   LanguageSettingsPrivateDelegateFactory();

@@ -7,7 +7,9 @@
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template<typename Type> struct DefaultSingletonTraits;
+}
 
 class Profile;
 
@@ -24,7 +26,7 @@ class AppShortcutManagerFactory : public BrowserContextKeyedServiceFactory {
   static AppShortcutManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AppShortcutManagerFactory>;
+  friend struct base::DefaultSingletonTraits<AppShortcutManagerFactory>;
 
   AppShortcutManagerFactory();
   ~AppShortcutManagerFactory() override;

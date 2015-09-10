@@ -605,7 +605,7 @@ DriveIntegrationService* DriveIntegrationServiceFactory::FindForProfile(
 
 // static
 DriveIntegrationServiceFactory* DriveIntegrationServiceFactory::GetInstance() {
-  return Singleton<DriveIntegrationServiceFactory>::get();
+  return base::Singleton<DriveIntegrationServiceFactory>::get();
 }
 
 DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()

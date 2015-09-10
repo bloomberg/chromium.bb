@@ -22,7 +22,7 @@ MenuManager* MenuManagerFactory::GetForBrowserContext(
 
 // static
 MenuManagerFactory* MenuManagerFactory::GetInstance() {
-  return Singleton<MenuManagerFactory>::get();
+  return base::Singleton<MenuManagerFactory>::get();
 }
 
 // static

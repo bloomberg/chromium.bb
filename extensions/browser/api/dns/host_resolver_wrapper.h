@@ -40,7 +40,7 @@ class HostResolverWrapper {
 
  private:
   HostResolverWrapper();
-  friend struct DefaultSingletonTraits<HostResolverWrapper>;
+  friend struct base::DefaultSingletonTraits<HostResolverWrapper>;
 
   net::HostResolver* resolver_;
 

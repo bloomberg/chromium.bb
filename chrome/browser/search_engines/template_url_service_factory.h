@@ -24,7 +24,7 @@ class TemplateURLServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* profile);
 
  private:
-  friend struct DefaultSingletonTraits<TemplateURLServiceFactory>;
+  friend struct base::DefaultSingletonTraits<TemplateURLServiceFactory>;
 
   TemplateURLServiceFactory();
   ~TemplateURLServiceFactory() override;

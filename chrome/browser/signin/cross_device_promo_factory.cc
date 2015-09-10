@@ -37,7 +37,7 @@ CrossDevicePromo* CrossDevicePromoFactory::GetForProfile(Profile* profile) {
 
 // static
 CrossDevicePromoFactory* CrossDevicePromoFactory::GetInstance() {
-  return Singleton<CrossDevicePromoFactory>::get();
+  return base::Singleton<CrossDevicePromoFactory>::get();
 }
 
 void CrossDevicePromoFactory::RegisterProfilePrefs(

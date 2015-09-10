@@ -35,7 +35,7 @@ void TabRestoreServiceFactory::ResetForProfile(Profile* profile) {
 }
 
 TabRestoreServiceFactory* TabRestoreServiceFactory::GetInstance() {
-  return Singleton<TabRestoreServiceFactory>::get();
+  return base::Singleton<TabRestoreServiceFactory>::get();
 }
 
 TabRestoreServiceFactory::TabRestoreServiceFactory()

@@ -29,7 +29,7 @@ class RecommendationRestorerFactory : public BrowserContextKeyedServiceFactory {
   bool ServiceIsCreatedWithBrowserContext() const override;
 
  private:
-  friend struct DefaultSingletonTraits<RecommendationRestorerFactory>;
+  friend struct base::DefaultSingletonTraits<RecommendationRestorerFactory>;
 
   RecommendationRestorerFactory();
   ~RecommendationRestorerFactory() override;

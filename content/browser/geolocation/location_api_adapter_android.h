@@ -57,7 +57,7 @@ class AndroidLocationApiAdapter {
   static void OnNewErrorAvailable(JNIEnv* env, jstring message);
 
  private:
-  friend struct DefaultSingletonTraits<AndroidLocationApiAdapter>;
+  friend struct base::DefaultSingletonTraits<AndroidLocationApiAdapter>;
   AndroidLocationApiAdapter();
   ~AndroidLocationApiAdapter();
 

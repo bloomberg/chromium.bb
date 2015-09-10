@@ -42,7 +42,7 @@ namespace {
 class PlatformParentalControlsValue {
  public:
   static PlatformParentalControlsValue* GetInstance() {
-    return Singleton<PlatformParentalControlsValue>::get();
+    return base::Singleton<PlatformParentalControlsValue>::get();
   }
 
   bool is_enabled() const {
@@ -50,7 +50,7 @@ class PlatformParentalControlsValue {
   }
 
  private:
-  friend struct DefaultSingletonTraits<PlatformParentalControlsValue>;
+  friend struct base::DefaultSingletonTraits<PlatformParentalControlsValue>;
 
   // Histogram enum for tracking the thread that checked parental controls.
   enum class ThreadType {

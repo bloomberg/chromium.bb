@@ -59,7 +59,7 @@ class PluginUMAReporter {
                             const GURL& plugin_src);
 
  private:
-  friend struct DefaultSingletonTraits<PluginUMAReporter>;
+  friend struct base::DefaultSingletonTraits<PluginUMAReporter>;
   friend class PluginUMATest;
 
   PluginUMAReporter();

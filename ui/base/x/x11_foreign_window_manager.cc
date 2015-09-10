@@ -13,7 +13,7 @@ namespace ui {
 
 // static
 XForeignWindowManager* XForeignWindowManager::GetInstance() {
-  return Singleton<XForeignWindowManager>::get();
+  return base::Singleton<XForeignWindowManager>::get();
 }
 
 int XForeignWindowManager::RequestEvents(XID xid, long event_mask) {

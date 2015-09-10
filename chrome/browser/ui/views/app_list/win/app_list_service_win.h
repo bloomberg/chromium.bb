@@ -11,7 +11,9 @@
 
 class ActivationTrackerWin;
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 class AppListServiceWin : public AppListServiceViews {
  public:
@@ -26,7 +28,7 @@ class AppListServiceWin : public AppListServiceViews {
   void CreateShortcut() override;
 
  private:
-  friend struct DefaultSingletonTraits<AppListServiceWin>;
+  friend struct base::DefaultSingletonTraits<AppListServiceWin>;
 
   // AppListServiceViews overrides:
   void OnViewBeingDestroyed() override;

@@ -81,7 +81,7 @@ class ClassRegistrar {
   };
 
   ClassRegistrar();
-  friend struct DefaultSingletonTraits<ClassRegistrar>;
+  friend struct base::DefaultSingletonTraits<ClassRegistrar>;
 
   typedef std::list<RegisteredClass> RegisteredClasses;
   RegisteredClasses registered_classes_;
@@ -98,8 +98,8 @@ ClassRegistrar::~ClassRegistrar() {}
 
 // static
 ClassRegistrar* ClassRegistrar::GetInstance() {
-  return Singleton<ClassRegistrar,
-      LeakySingletonTraits<ClassRegistrar> >::get();
+  return base::Singleton<ClassRegistrar,
+                         base::LeakySingletonTraits<ClassRegistrar>>::get();
 }
 
 void ClassRegistrar::UnregisterClasses() {

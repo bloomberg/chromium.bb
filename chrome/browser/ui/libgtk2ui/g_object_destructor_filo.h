@@ -11,7 +11,9 @@
 
 #include "base/basictypes.h"
 
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 typedef struct _GObject GObject;
 
@@ -72,7 +74,7 @@ class GObjectDestructorFILO {
 
   GObjectDestructorFILO();
   ~GObjectDestructorFILO();
-  friend struct DefaultSingletonTraits<GObjectDestructorFILO>;
+  friend struct base::DefaultSingletonTraits<GObjectDestructorFILO>;
 
   void WeakNotify(GObject* where_the_object_was);
   static void WeakNotifyThunk(gpointer data, GObject* where_the_object_was) {

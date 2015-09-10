@@ -60,7 +60,7 @@ class PendingDialog {
       SelectFileDialogExtension::RoutingID id);
 
  private:
-  friend struct DefaultSingletonTraits<PendingDialog>;
+  friend struct base::DefaultSingletonTraits<PendingDialog>;
   typedef std::map<SelectFileDialogExtension::RoutingID,
                    scoped_refptr<SelectFileDialogExtension> > Map;
   Map map_;
@@ -68,7 +68,7 @@ class PendingDialog {
 
 // static
 PendingDialog* PendingDialog::GetInstance() {
-  return Singleton<PendingDialog>::get();
+  return base::Singleton<PendingDialog>::get();
 }
 
 void PendingDialog::Add(SelectFileDialogExtension::RoutingID id,

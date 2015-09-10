@@ -211,7 +211,7 @@ XCursorCache* cursor_cache = NULL;
 class XCustomCursorCache {
  public:
   static XCustomCursorCache* GetInstance() {
-    return Singleton<XCustomCursorCache>::get();
+    return base::Singleton<XCustomCursorCache>::get();
   }
 
   ::Cursor InstallCustomCursor(XcursorImage* image) {
@@ -239,7 +239,7 @@ class XCustomCursorCache {
   }
 
  private:
-  friend struct DefaultSingletonTraits<XCustomCursorCache>;
+  friend struct base::DefaultSingletonTraits<XCustomCursorCache>;
 
   class XCustomCursor {
    public:

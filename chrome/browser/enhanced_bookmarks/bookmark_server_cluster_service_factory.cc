@@ -36,7 +36,7 @@ BookmarkServerClusterServiceFactory::~BookmarkServerClusterServiceFactory() {
 // static
 BookmarkServerClusterServiceFactory*
 BookmarkServerClusterServiceFactory::GetInstance() {
-  return Singleton<BookmarkServerClusterServiceFactory>::get();
+  return base::Singleton<BookmarkServerClusterServiceFactory>::get();
 }
 
 // static

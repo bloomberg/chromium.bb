@@ -185,7 +185,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
  private:
   friend class GpuDataManagerImplPrivate;
   friend class GpuDataManagerImplPrivateTest;
-  friend struct DefaultSingletonTraits<GpuDataManagerImpl>;
+  friend struct base::DefaultSingletonTraits<GpuDataManagerImpl>;
 
   // It's similar to AutoUnlock, but we want to make it a no-op
   // if the owner GpuDataManagerImpl is null.

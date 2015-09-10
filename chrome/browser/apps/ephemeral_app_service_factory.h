@@ -18,7 +18,7 @@ class EphemeralAppServiceFactory : public BrowserContextKeyedServiceFactory {
   static EphemeralAppServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<EphemeralAppServiceFactory>;
+  friend struct base::DefaultSingletonTraits<EphemeralAppServiceFactory>;
 
   EphemeralAppServiceFactory();
   ~EphemeralAppServiceFactory() override;

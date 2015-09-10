@@ -30,7 +30,7 @@ ChromeFallbackIconClientFactory::GetForBrowserContext(
 // static
 ChromeFallbackIconClientFactory*
 ChromeFallbackIconClientFactory::GetInstance() {
-  return Singleton<ChromeFallbackIconClientFactory>::get();
+  return base::Singleton<ChromeFallbackIconClientFactory>::get();
 }
 
 KeyedService* ChromeFallbackIconClientFactory::BuildServiceInstanceFor(

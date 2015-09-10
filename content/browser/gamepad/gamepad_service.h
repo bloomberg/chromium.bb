@@ -80,7 +80,7 @@ class CONTENT_EXPORT GamepadService {
   void OnGamepadDisconnected(int index, const blink::WebGamepad& pad);
 
  private:
-  friend struct DefaultSingletonTraits<GamepadService>;
+  friend struct base::DefaultSingletonTraits<GamepadService>;
   friend class GamepadServiceTestConstructor;
   friend class GamepadServiceTest;
 

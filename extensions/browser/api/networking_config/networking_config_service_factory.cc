@@ -54,7 +54,7 @@ NetworkingConfigService* NetworkingConfigServiceFactory::GetForBrowserContext(
 
 // static
 NetworkingConfigServiceFactory* NetworkingConfigServiceFactory::GetInstance() {
-  return Singleton<NetworkingConfigServiceFactory>::get();
+  return base::Singleton<NetworkingConfigServiceFactory>::get();
 }
 
 NetworkingConfigServiceFactory::NetworkingConfigServiceFactory()

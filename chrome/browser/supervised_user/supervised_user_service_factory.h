@@ -22,7 +22,7 @@ class SupervisedUserServiceFactory : public BrowserContextKeyedServiceFactory {
   static KeyedService* BuildInstanceFor(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<SupervisedUserServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SupervisedUserServiceFactory>;
 
   SupervisedUserServiceFactory();
   ~SupervisedUserServiceFactory() override;

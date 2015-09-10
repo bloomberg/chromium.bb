@@ -15,7 +15,7 @@
 NewTabPageInterceptorServiceFactory*
 NewTabPageInterceptorServiceFactory::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return Singleton<NewTabPageInterceptorServiceFactory>::get();
+  return base::Singleton<NewTabPageInterceptorServiceFactory>::get();
 }
 
 // static

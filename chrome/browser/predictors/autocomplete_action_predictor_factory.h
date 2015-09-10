@@ -26,7 +26,8 @@ class AutocompleteActionPredictorFactory
   static AutocompleteActionPredictorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AutocompleteActionPredictorFactory>;
+  friend struct base::DefaultSingletonTraits<
+      AutocompleteActionPredictorFactory>;
 
   AutocompleteActionPredictorFactory();
   ~AutocompleteActionPredictorFactory() override;

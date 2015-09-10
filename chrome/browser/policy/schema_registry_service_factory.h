@@ -45,7 +45,7 @@ class SchemaRegistryServiceFactory : public BrowserContextKeyedBaseFactory {
       CombinedSchemaRegistry* global_registry);
 
  private:
-  friend struct DefaultSingletonTraits<SchemaRegistryServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SchemaRegistryServiceFactory>;
 
   SchemaRegistryServiceFactory();
   ~SchemaRegistryServiceFactory() override;

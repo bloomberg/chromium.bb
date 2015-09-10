@@ -19,7 +19,7 @@ class ExtensionPrefValueMapFactory : public BrowserContextKeyedServiceFactory {
   static ExtensionPrefValueMapFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionPrefValueMapFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionPrefValueMapFactory>;
 
   ExtensionPrefValueMapFactory();
   ~ExtensionPrefValueMapFactory() override;

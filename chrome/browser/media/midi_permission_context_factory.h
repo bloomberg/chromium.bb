@@ -18,7 +18,7 @@ class MidiPermissionContextFactory
   static MidiPermissionContextFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<MidiPermissionContextFactory>;
+  friend struct base::DefaultSingletonTraits<MidiPermissionContextFactory>;
 
   MidiPermissionContextFactory();
   ~MidiPermissionContextFactory() override;

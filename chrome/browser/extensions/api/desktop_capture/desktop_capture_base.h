@@ -97,7 +97,7 @@ class DesktopCaptureRequestsRegistry {
   void CancelRequest(int process_id, int request_id);
 
  private:
-  friend struct DefaultSingletonTraits<DesktopCaptureRequestsRegistry>;
+  friend struct base::DefaultSingletonTraits<DesktopCaptureRequestsRegistry>;
 
   struct RequestId {
     RequestId(int process_id, int request_id);

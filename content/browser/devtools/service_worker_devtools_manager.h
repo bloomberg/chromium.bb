@@ -96,7 +96,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   }
 
  private:
-  friend struct DefaultSingletonTraits<ServiceWorkerDevToolsManager>;
+  friend struct base::DefaultSingletonTraits<ServiceWorkerDevToolsManager>;
   friend class ServiceWorkerDevToolsAgentHost;
 
   using AgentHostMap = std::map<WorkerId, ServiceWorkerDevToolsAgentHost*>;

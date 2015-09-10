@@ -27,11 +27,11 @@ class TtsEngineExtensionObserverFactory
   }
 
   static TtsEngineExtensionObserverFactory* GetInstance() {
-    return Singleton<TtsEngineExtensionObserverFactory>::get();
+    return base::Singleton<TtsEngineExtensionObserverFactory>::get();
   }
 
  private:
-  friend struct DefaultSingletonTraits<TtsEngineExtensionObserverFactory>;
+  friend struct base::DefaultSingletonTraits<TtsEngineExtensionObserverFactory>;
 
   TtsEngineExtensionObserverFactory()
       : BrowserContextKeyedServiceFactory(

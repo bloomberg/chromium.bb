@@ -14,8 +14,9 @@ namespace skia {
 
 // static
 SkiaMemoryDumpProvider* SkiaMemoryDumpProvider::GetInstance() {
-  return Singleton<SkiaMemoryDumpProvider,
-                   LeakySingletonTraits<SkiaMemoryDumpProvider>>::get();
+  return base::Singleton<
+      SkiaMemoryDumpProvider,
+      base::LeakySingletonTraits<SkiaMemoryDumpProvider>>::get();
 }
 
 SkiaMemoryDumpProvider::SkiaMemoryDumpProvider() {}

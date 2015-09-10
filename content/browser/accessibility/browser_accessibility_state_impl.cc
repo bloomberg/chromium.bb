@@ -25,8 +25,9 @@ BrowserAccessibilityState* BrowserAccessibilityState::GetInstance() {
 
 // static
 BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
-  return Singleton<BrowserAccessibilityStateImpl,
-                   LeakySingletonTraits<BrowserAccessibilityStateImpl> >::get();
+  return base::Singleton<
+      BrowserAccessibilityStateImpl,
+      base::LeakySingletonTraits<BrowserAccessibilityStateImpl>>::get();
 }
 
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()

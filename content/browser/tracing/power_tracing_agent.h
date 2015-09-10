@@ -8,8 +8,10 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/threading/thread.h"
 
+namespace base {
 template <typename Type>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace content {
 
@@ -29,7 +31,7 @@ class PowerTracingAgent {
  private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
-  friend struct DefaultSingletonTraits<PowerTracingAgent>;
+  friend struct base::DefaultSingletonTraits<PowerTracingAgent>;
 
   // Constructor.
   PowerTracingAgent();

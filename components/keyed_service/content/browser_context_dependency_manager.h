@@ -11,8 +11,11 @@
 #include "components/keyed_service/core/keyed_service_export.h"
 
 class BrowserContextKeyedBaseFactory;
+
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -80,7 +83,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
 
  private:
   friend class BrowserContextDependencyManagerUnittests;
-  friend struct DefaultSingletonTraits<BrowserContextDependencyManager>;
+  friend struct base::DefaultSingletonTraits<BrowserContextDependencyManager>;
 
   // Helper function used by CreateBrowserContextServices[ForTest].
   void DoCreateBrowserContextServices(content::BrowserContext* context,

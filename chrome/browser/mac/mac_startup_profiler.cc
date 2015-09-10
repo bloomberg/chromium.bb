@@ -10,7 +10,7 @@
 
 // static
 MacStartupProfiler* MacStartupProfiler::GetInstance() {
-  return Singleton<MacStartupProfiler>::get();
+  return base::Singleton<MacStartupProfiler>::get();
 }
 
 MacStartupProfiler::MacStartupProfiler() : recorded_metrics_(false) {

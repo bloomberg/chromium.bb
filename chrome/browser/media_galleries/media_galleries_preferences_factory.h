@@ -24,7 +24,7 @@ class MediaGalleriesPreferencesFactory
   static MediaGalleriesPreferencesFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<MediaGalleriesPreferencesFactory>;
+  friend struct base::DefaultSingletonTraits<MediaGalleriesPreferencesFactory>;
 
   MediaGalleriesPreferencesFactory();
   ~MediaGalleriesPreferencesFactory() override;

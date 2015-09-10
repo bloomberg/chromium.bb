@@ -21,7 +21,7 @@ class AppResourceCacheFactory : public BrowserContextKeyedServiceFactory {
   static AppResourceCacheFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AppResourceCacheFactory>;
+  friend struct base::DefaultSingletonTraits<AppResourceCacheFactory>;
 
   AppResourceCacheFactory();
   ~AppResourceCacheFactory() override;

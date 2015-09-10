@@ -15,8 +15,9 @@ AppListServiceCocoaMac::~AppListServiceCocoaMac() {
 
 // static
 AppListServiceCocoaMac* AppListServiceCocoaMac::GetInstance() {
-  return Singleton<AppListServiceCocoaMac,
-                   LeakySingletonTraits<AppListServiceCocoaMac>>::get();
+  return base::Singleton<
+      AppListServiceCocoaMac,
+      base::LeakySingletonTraits<AppListServiceCocoaMac>>::get();
 }
 
 void AppListServiceCocoaMac::ShowForProfile(Profile* requested_profile) {

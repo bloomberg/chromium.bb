@@ -25,7 +25,7 @@ InMemoryURLIndex* InMemoryURLIndexFactory::GetForProfile(Profile* profile) {
 
 // static
 InMemoryURLIndexFactory* InMemoryURLIndexFactory::GetInstance() {
-  return Singleton<InMemoryURLIndexFactory>::get();
+  return base::Singleton<InMemoryURLIndexFactory>::get();
 }
 
 InMemoryURLIndexFactory::InMemoryURLIndexFactory()

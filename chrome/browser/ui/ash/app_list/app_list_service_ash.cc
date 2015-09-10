@@ -18,8 +18,8 @@
 
 // static
 AppListServiceAsh* AppListServiceAsh::GetInstance() {
-  return Singleton<AppListServiceAsh,
-                   LeakySingletonTraits<AppListServiceAsh> >::get();
+  return base::Singleton<AppListServiceAsh,
+                         base::LeakySingletonTraits<AppListServiceAsh>>::get();
 }
 
 AppListServiceAsh::AppListServiceAsh()

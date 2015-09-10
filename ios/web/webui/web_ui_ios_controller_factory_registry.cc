@@ -20,7 +20,7 @@ void WebUIIOSControllerFactory::RegisterFactory(
 
 WebUIIOSControllerFactoryRegistry*
 WebUIIOSControllerFactoryRegistry::GetInstance() {
-  return Singleton<WebUIIOSControllerFactoryRegistry>::get();
+  return base::Singleton<WebUIIOSControllerFactoryRegistry>::get();
 }
 
 WebUIIOSController*

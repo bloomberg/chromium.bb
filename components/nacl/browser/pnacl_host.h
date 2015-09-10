@@ -101,7 +101,7 @@ class PnaclHost {
   // PnaclHost is a singleton because there is only one translation cache, and
   // so that the BrowsingDataRemover can clear it even if no translation has
   // ever been started.
-  friend struct DefaultSingletonTraits<PnaclHost>;
+  friend struct base::DefaultSingletonTraits<PnaclHost>;
   friend class FileProxy;
   friend class pnacl::PnaclHostTest;
   friend class pnacl::PnaclHostTestDisk;

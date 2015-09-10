@@ -16,7 +16,7 @@ namespace {
 class DefaultEventGeneratorDelegate : public EventGeneratorDelegateAura {
  public:
   static DefaultEventGeneratorDelegate* GetInstance() {
-    return Singleton<DefaultEventGeneratorDelegate>::get();
+    return base::Singleton<DefaultEventGeneratorDelegate>::get();
   }
 
   // EventGeneratorDelegate:
@@ -37,7 +37,7 @@ class DefaultEventGeneratorDelegate : public EventGeneratorDelegateAura {
   }
 
  private:
-  friend struct DefaultSingletonTraits<DefaultEventGeneratorDelegate>;
+  friend struct base::DefaultSingletonTraits<DefaultEventGeneratorDelegate>;
 
   DefaultEventGeneratorDelegate() : root_window_(NULL) {
     DCHECK(!ui::test::EventGenerator::default_delegate);

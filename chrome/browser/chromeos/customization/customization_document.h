@@ -108,7 +108,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
   friend class OobeLocalizationTest;
   friend void InitStartupCustomizationDocumentForTesting(
       const std::string& manifest);
-  friend struct DefaultSingletonTraits<StartupCustomizationDocument>;
+  friend struct base::DefaultSingletonTraits<StartupCustomizationDocument>;
 
   // C-tor for singleton construction.
   StartupCustomizationDocument();
@@ -198,7 +198,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   }
 
  private:
-  friend struct DefaultSingletonTraits<ServicesCustomizationDocument>;
+  friend struct base::DefaultSingletonTraits<ServicesCustomizationDocument>;
   FRIEND_TEST_ALL_PREFIXES(CustomizationWallpaperDownloaderBrowserTest,
                            OEMWallpaperIsPresent);
   FRIEND_TEST_ALL_PREFIXES(CustomizationWallpaperDownloaderBrowserTest,

@@ -24,7 +24,7 @@ class SyncErrorNotifierFactory : public BrowserContextKeyedServiceFactory {
   static SyncErrorNotifierFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SyncErrorNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<SyncErrorNotifierFactory>;
 
   SyncErrorNotifierFactory();
   ~SyncErrorNotifierFactory() override;

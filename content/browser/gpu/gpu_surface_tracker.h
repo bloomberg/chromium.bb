@@ -122,7 +122,7 @@ class CONTENT_EXPORT GpuSurfaceTracker : public GpuSurfaceLookup {
   };
   typedef std::map<int, SurfaceInfo> SurfaceMap;
 
-  friend struct DefaultSingletonTraits<GpuSurfaceTracker>;
+  friend struct base::DefaultSingletonTraits<GpuSurfaceTracker>;
 
   GpuSurfaceTracker();
   ~GpuSurfaceTracker() override;

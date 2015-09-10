@@ -41,7 +41,7 @@ AccountConsistencyService* AccountConsistencyServiceFactory::GetForBrowserState(
 // static
 AccountConsistencyServiceFactory*
 AccountConsistencyServiceFactory::GetInstance() {
-  return Singleton<AccountConsistencyServiceFactory>::get();
+  return base::Singleton<AccountConsistencyServiceFactory>::get();
 }
 
 void AccountConsistencyServiceFactory::RegisterBrowserStatePrefs(

@@ -9,8 +9,10 @@
 
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tag.h"
 
+namespace base {
 template<typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace task_management {
 
@@ -44,7 +46,7 @@ class WebContentsTagsManager {
   }
 
  private:
-  friend struct DefaultSingletonTraits<WebContentsTagsManager>;
+  friend struct base::DefaultSingletonTraits<WebContentsTagsManager>;
 
   WebContentsTagsManager();
   ~WebContentsTagsManager();

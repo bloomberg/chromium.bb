@@ -24,7 +24,7 @@ LanguageSettingsPrivateDelegateFactory::GetForBrowserContext(
 // static
 LanguageSettingsPrivateDelegateFactory*
 LanguageSettingsPrivateDelegateFactory::GetInstance() {
-  return Singleton<LanguageSettingsPrivateDelegateFactory>::get();
+  return base::Singleton<LanguageSettingsPrivateDelegateFactory>::get();
 }
 
 LanguageSettingsPrivateDelegateFactory::LanguageSettingsPrivateDelegateFactory()

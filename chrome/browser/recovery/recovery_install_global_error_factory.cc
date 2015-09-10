@@ -29,7 +29,7 @@ RecoveryInstallGlobalErrorFactory::GetForProfile(Profile* profile) {
 // static
 RecoveryInstallGlobalErrorFactory*
 RecoveryInstallGlobalErrorFactory::GetInstance() {
-  return Singleton<RecoveryInstallGlobalErrorFactory>::get();
+  return base::Singleton<RecoveryInstallGlobalErrorFactory>::get();
 }
 
 KeyedService* RecoveryInstallGlobalErrorFactory::BuildServiceInstanceFor(

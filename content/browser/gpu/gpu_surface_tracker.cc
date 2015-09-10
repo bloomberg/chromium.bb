@@ -22,7 +22,7 @@ GpuSurfaceTracker::~GpuSurfaceTracker() {
 }
 
 GpuSurfaceTracker* GpuSurfaceTracker::GetInstance() {
-  return Singleton<GpuSurfaceTracker>::get();
+  return base::Singleton<GpuSurfaceTracker>::get();
 }
 
 int GpuSurfaceTracker::AddSurfaceForRenderer(int renderer_id,

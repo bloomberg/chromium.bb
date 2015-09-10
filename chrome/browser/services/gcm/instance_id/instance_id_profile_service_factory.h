@@ -22,7 +22,7 @@ class InstanceIDProfileServiceFactory :
   static InstanceIDProfileServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<InstanceIDProfileServiceFactory>;
+  friend struct base::DefaultSingletonTraits<InstanceIDProfileServiceFactory>;
 
   InstanceIDProfileServiceFactory();
   ~InstanceIDProfileServiceFactory() override;

@@ -23,7 +23,7 @@ EventRouter* EventRouterFactory::GetForProfile(Profile* profile) {
 
 // static
 EventRouterFactory* EventRouterFactory::GetInstance() {
-  return Singleton<EventRouterFactory>::get();
+  return base::Singleton<EventRouterFactory>::get();
 }
 
 EventRouterFactory::EventRouterFactory()

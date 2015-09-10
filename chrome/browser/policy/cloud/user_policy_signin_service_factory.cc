@@ -52,7 +52,7 @@ UserPolicySigninService* UserPolicySigninServiceFactory::GetForProfile(
 
 // static
 UserPolicySigninServiceFactory* UserPolicySigninServiceFactory::GetInstance() {
-  return Singleton<UserPolicySigninServiceFactory>::get();
+  return base::Singleton<UserPolicySigninServiceFactory>::get();
 }
 
 // static

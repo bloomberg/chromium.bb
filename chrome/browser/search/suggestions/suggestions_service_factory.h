@@ -24,7 +24,7 @@ class SuggestionsServiceFactory : public BrowserContextKeyedServiceFactory {
   static SuggestionsServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SuggestionsServiceFactory>;
+  friend struct base::DefaultSingletonTraits<SuggestionsServiceFactory>;
 
   SuggestionsServiceFactory();
   ~SuggestionsServiceFactory() override;

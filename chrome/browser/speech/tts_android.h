@@ -35,7 +35,7 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   static bool Register(JNIEnv* env);
 
  private:
-  friend struct DefaultSingletonTraits<TtsPlatformImplAndroid>;
+  friend struct base::DefaultSingletonTraits<TtsPlatformImplAndroid>;
 
   TtsPlatformImplAndroid();
   ~TtsPlatformImplAndroid() override;

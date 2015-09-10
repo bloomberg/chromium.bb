@@ -53,7 +53,7 @@ void PowerTracingAgent::OnStopTracingDone(
 
 // static
 PowerTracingAgent* PowerTracingAgent::GetInstance() {
-  return Singleton<PowerTracingAgent>::get();
+  return base::Singleton<PowerTracingAgent>::get();
 }
 
 void PowerTracingAgent::FlushOnThread(const OutputCallback& callback) {

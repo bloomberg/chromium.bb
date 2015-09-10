@@ -50,7 +50,7 @@ struct MessagePortService::MessagePort {
 };
 
 MessagePortService* MessagePortService::GetInstance() {
-  return Singleton<MessagePortService>::get();
+  return base::Singleton<MessagePortService>::get();
 }
 
 MessagePortService::MessagePortService()

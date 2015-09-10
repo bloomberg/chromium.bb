@@ -116,7 +116,7 @@ AppStateMap GetAppStates(Profile* profile) {
 }  // namespace
 
 SyncAppHelper* SyncAppHelper::GetInstance() {
-  SyncAppHelper* instance = Singleton<SyncAppHelper>::get();
+  SyncAppHelper* instance = base::Singleton<SyncAppHelper>::get();
   instance->SetupIfNecessary(sync_datatype_helper::test());
   return instance;
 }

@@ -138,7 +138,7 @@ class NaClBrowser {
   bool IsThrottled();
 
  private:
-  friend struct DefaultSingletonTraits<NaClBrowser>;
+  friend struct base::DefaultSingletonTraits<NaClBrowser>;
 
   enum NaClResourceState {
     NaClResourceUninitialized,

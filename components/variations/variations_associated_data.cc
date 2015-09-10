@@ -22,7 +22,7 @@ class GroupMapAccessor {
 
   // Retrieve the singleton.
   static GroupMapAccessor* GetInstance() {
-    return Singleton<GroupMapAccessor>::get();
+    return base::Singleton<GroupMapAccessor>::get();
   }
 
   // Note that this normally only sets the ID for a group the first time, unless
@@ -81,7 +81,7 @@ class GroupMapAccessor {
   }
 
  private:
-  friend struct DefaultSingletonTraits<GroupMapAccessor>;
+  friend struct base::DefaultSingletonTraits<GroupMapAccessor>;
 
   // Retrieves the GroupToIDMap for |key|.
   GroupToIDMap* GetGroupToIDMap(IDCollectionKey key) {
@@ -108,7 +108,7 @@ class VariationsParamAssociator {
 
   // Retrieve the singleton.
   static VariationsParamAssociator* GetInstance() {
-    return Singleton<VariationsParamAssociator>::get();
+    return base::Singleton<VariationsParamAssociator>::get();
   }
 
   bool AssociateVariationParams(const std::string& trial_name,
@@ -147,7 +147,7 @@ class VariationsParamAssociator {
   }
 
  private:
-  friend struct DefaultSingletonTraits<VariationsParamAssociator>;
+  friend struct base::DefaultSingletonTraits<VariationsParamAssociator>;
 
   VariationsParamAssociator() {}
   ~VariationsParamAssociator() {}

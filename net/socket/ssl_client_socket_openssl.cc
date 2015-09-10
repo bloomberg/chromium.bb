@@ -200,7 +200,9 @@ base::LazyInstance<PlatformKeyTaskRunner>::Leaky g_platform_key_task_runner =
 
 class SSLClientSocketOpenSSL::SSLContext {
  public:
-  static SSLContext* GetInstance() { return Singleton<SSLContext>::get(); }
+  static SSLContext* GetInstance() {
+    return base::Singleton<SSLContext>::get();
+  }
   SSL_CTX* ssl_ctx() { return ssl_ctx_.get(); }
   SSLClientSessionCacheOpenSSL* session_cache() { return &session_cache_; }
 
@@ -219,7 +221,7 @@ class SSLClientSocketOpenSSL::SSLContext {
   static const SSL_PRIVATE_KEY_METHOD kPrivateKeyMethod;
 
  private:
-  friend struct DefaultSingletonTraits<SSLContext>;
+  friend struct base::DefaultSingletonTraits<SSLContext>;
 
   SSLContext() : session_cache_(SSLClientSessionCacheOpenSSL::Config()) {
     crypto::EnsureOpenSSLInit();

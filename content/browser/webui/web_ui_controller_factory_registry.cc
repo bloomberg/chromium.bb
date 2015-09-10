@@ -31,7 +31,7 @@ void WebUIControllerFactory::UnregisterFactoryForTesting(
 }
 
 WebUIControllerFactoryRegistry* WebUIControllerFactoryRegistry::GetInstance() {
-  return Singleton<WebUIControllerFactoryRegistry>::get();
+  return base::Singleton<WebUIControllerFactoryRegistry>::get();
 }
 
 WebUIController* WebUIControllerFactoryRegistry::CreateWebUIControllerForURL(

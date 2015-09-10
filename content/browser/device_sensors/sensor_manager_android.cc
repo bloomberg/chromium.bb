@@ -60,8 +60,9 @@ bool SensorManagerAndroid::Register(JNIEnv* env) {
 }
 
 SensorManagerAndroid* SensorManagerAndroid::GetInstance() {
-  return Singleton<SensorManagerAndroid,
-                   LeakySingletonTraits<SensorManagerAndroid> >::get();
+  return base::Singleton<
+      SensorManagerAndroid,
+      base::LeakySingletonTraits<SensorManagerAndroid>>::get();
 }
 
 void SensorManagerAndroid::GotOrientation(

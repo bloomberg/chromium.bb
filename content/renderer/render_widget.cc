@@ -121,7 +121,7 @@ typedef std::map<std::string, ui::TextInputMode> TextInputModeMap;
 class TextInputModeMapSingleton {
  public:
   static TextInputModeMapSingleton* GetInstance() {
-    return Singleton<TextInputModeMapSingleton>::get();
+    return base::Singleton<TextInputModeMapSingleton>::get();
   }
   TextInputModeMapSingleton() {
     map_["verbatim"] = ui::TEXT_INPUT_MODE_VERBATIM;
@@ -140,7 +140,7 @@ class TextInputModeMapSingleton {
  private:
   TextInputModeMap map_;
 
-  friend struct DefaultSingletonTraits<TextInputModeMapSingleton>;
+  friend struct base::DefaultSingletonTraits<TextInputModeMapSingleton>;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputModeMapSingleton);
 };

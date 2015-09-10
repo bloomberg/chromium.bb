@@ -24,7 +24,7 @@ class AccountReconcilorFactory : public BrowserContextKeyedServiceFactory {
   static AccountReconcilorFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AccountReconcilorFactory>;
+  friend struct base::DefaultSingletonTraits<AccountReconcilorFactory>;
 
   AccountReconcilorFactory();
   ~AccountReconcilorFactory() override;

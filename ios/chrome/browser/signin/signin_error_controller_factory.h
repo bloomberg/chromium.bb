@@ -9,8 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
+
 class SigninErrorController;
 
 namespace ios {
@@ -26,7 +29,7 @@ class SigninErrorControllerFactory : public BrowserStateKeyedServiceFactory {
   static SigninErrorControllerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SigninErrorControllerFactory>;
+  friend struct base::DefaultSingletonTraits<SigninErrorControllerFactory>;
 
   SigninErrorControllerFactory();
   ~SigninErrorControllerFactory() override;

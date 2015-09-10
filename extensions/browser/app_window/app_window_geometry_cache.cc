@@ -267,7 +267,7 @@ AppWindowGeometryCache* AppWindowGeometryCache::Factory::GetForContext(
 
 AppWindowGeometryCache::Factory*
 AppWindowGeometryCache::Factory::GetInstance() {
-  return Singleton<AppWindowGeometryCache::Factory>::get();
+  return base::Singleton<AppWindowGeometryCache::Factory>::get();
 }
 
 AppWindowGeometryCache::Factory::Factory()

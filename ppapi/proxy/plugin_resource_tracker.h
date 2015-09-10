@@ -19,7 +19,9 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 
+namespace base {
 template<typename T> struct DefaultSingletonTraits;
+}
 
 namespace ppapi {
 

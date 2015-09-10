@@ -32,7 +32,7 @@ class ServiceFactory : public BrowserContextKeyedServiceFactory {
   static ServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ServiceFactory>;
+  friend struct base::DefaultSingletonTraits<ServiceFactory>;
 
   ServiceFactory();
   ~ServiceFactory() override;

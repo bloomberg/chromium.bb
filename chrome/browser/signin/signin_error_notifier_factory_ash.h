@@ -24,7 +24,7 @@ class SigninErrorNotifierFactory : public BrowserContextKeyedServiceFactory {
   static SigninErrorNotifierFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SigninErrorNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<SigninErrorNotifierFactory>;
 
   SigninErrorNotifierFactory();
   ~SigninErrorNotifierFactory() override;

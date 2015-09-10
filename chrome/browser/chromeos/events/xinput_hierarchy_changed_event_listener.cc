@@ -44,7 +44,7 @@ void HandleHierarchyChangedEvent(XIHierarchyEvent* event) {
 // static
 XInputHierarchyChangedEventListener*
 XInputHierarchyChangedEventListener::GetInstance() {
-  return Singleton<XInputHierarchyChangedEventListener>::get();
+  return base::Singleton<XInputHierarchyChangedEventListener>::get();
 }
 
 XInputHierarchyChangedEventListener::XInputHierarchyChangedEventListener()

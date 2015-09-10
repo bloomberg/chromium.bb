@@ -8,8 +8,10 @@
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
 
 namespace enhanced_bookmarks {
 
@@ -23,7 +25,7 @@ class EnhancedBookmarkModelFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context);
 
  private:
-  friend struct DefaultSingletonTraits<EnhancedBookmarkModelFactory>;
+  friend struct base::DefaultSingletonTraits<EnhancedBookmarkModelFactory>;
 
   EnhancedBookmarkModelFactory();
   ~EnhancedBookmarkModelFactory() override {}

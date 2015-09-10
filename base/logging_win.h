@@ -12,8 +12,10 @@
 #include "base/win/event_trace_provider.h"
 #include "base/logging.h"
 
+namespace base {
 template <typename Type>
 struct StaticMemorySingletonTraits;
+}  // namespace base
 
 namespace logging {
 
@@ -71,7 +73,7 @@ class BASE_EXPORT LogEventProvider : public base::win::EtwTraceProvider {
   // restored in OnEventsDisabled.
   logging::LogSeverity old_log_level_;
 
-  friend struct StaticMemorySingletonTraits<LogEventProvider>;
+  friend struct base::StaticMemorySingletonTraits<LogEventProvider>;
   DISALLOW_COPY_AND_ASSIGN(LogEventProvider);
 };
 

@@ -30,7 +30,7 @@ typedef std::map<std::string, std::string> TokenMap;
 struct TokenMapHolder {
  public:
   static TokenMapHolder* GetInstance() {
-    return Singleton<TokenMapHolder>::get();
+    return base::Singleton<TokenMapHolder>::get();
   }
 
   TokenMap map;

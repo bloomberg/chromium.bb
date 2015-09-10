@@ -14,8 +14,10 @@ class BrowserContext;
 
 }  // namespace content
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}
 
 namespace chromeos {
 
@@ -28,7 +30,7 @@ class VpnServiceFactory : public BrowserContextKeyedServiceFactory {
   static VpnServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<VpnServiceFactory>;
+  friend struct base::DefaultSingletonTraits<VpnServiceFactory>;
 
   VpnServiceFactory();
   ~VpnServiceFactory() override;

@@ -12,7 +12,7 @@ namespace net {
 // static
 InProcessMojoProxyResolverFactory*
 InProcessMojoProxyResolverFactory::GetInstance() {
-  return Singleton<InProcessMojoProxyResolverFactory>::get();
+  return base::Singleton<InProcessMojoProxyResolverFactory>::get();
 }
 
 InProcessMojoProxyResolverFactory::InProcessMojoProxyResolverFactory() {

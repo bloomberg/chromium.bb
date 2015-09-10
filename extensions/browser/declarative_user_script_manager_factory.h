@@ -20,7 +20,8 @@ class DeclarativeUserScriptManagerFactory
   static DeclarativeUserScriptManagerFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<DeclarativeUserScriptManagerFactory>;
+  friend struct base::DefaultSingletonTraits<
+      DeclarativeUserScriptManagerFactory>;
 
   DeclarativeUserScriptManagerFactory();
   ~DeclarativeUserScriptManagerFactory() override;

@@ -40,7 +40,7 @@ MimeHandlerStreamManagerFactory::MimeHandlerStreamManagerFactory()
 // static
 MimeHandlerStreamManagerFactory*
 MimeHandlerStreamManagerFactory::GetInstance() {
-  return Singleton<MimeHandlerStreamManagerFactory>::get();
+  return base::Singleton<MimeHandlerStreamManagerFactory>::get();
 }
 
 MimeHandlerStreamManager* MimeHandlerStreamManagerFactory::Get(

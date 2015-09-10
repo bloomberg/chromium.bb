@@ -13,7 +13,7 @@ CertStore* CertStore::GetInstance() {
 
 //  static
 CertStoreImpl* CertStoreImpl::GetInstance() {
-  return Singleton<CertStoreImpl>::get();
+  return base::Singleton<CertStoreImpl>::get();
 }
 
 CertStoreImpl::CertStoreImpl() {

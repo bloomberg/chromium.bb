@@ -17,7 +17,10 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
+namespace base {
 template<typename T> struct DefaultSingletonTraits;
+}
+
 struct PPP_Class_Deprecated;
 
 namespace ppapi {
@@ -106,7 +109,7 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
       base::SharedMemoryHandle handle) override;
 
  private:
-  friend struct DefaultSingletonTraits<PluginVarTracker>;
+  friend struct base::DefaultSingletonTraits<PluginVarTracker>;
   friend class PluginProxyTestHarness;
 
   // Represents a var as received from the host.

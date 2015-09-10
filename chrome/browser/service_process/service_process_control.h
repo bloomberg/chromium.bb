@@ -176,7 +176,7 @@ class ServiceProcessControl : public IPC::Sender,
   ServiceProcessControl();
   ~ServiceProcessControl() override;
 
-  friend struct DefaultSingletonTraits<ServiceProcessControl>;
+  friend struct base::DefaultSingletonTraits<ServiceProcessControl>;
 
   typedef std::vector<base::Closure> TaskList;
 

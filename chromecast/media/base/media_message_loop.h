@@ -21,11 +21,10 @@ class MediaMessageLoop {
  public:
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
- private:
-  friend struct DefaultSingletonTraits<MediaMessageLoop>;
-  friend class Singleton<MediaMessageLoop>;
-
   static MediaMessageLoop* GetInstance();
+
+ private:
+  friend struct base::DefaultSingletonTraits<MediaMessageLoop>;
 
   MediaMessageLoop();
   ~MediaMessageLoop();

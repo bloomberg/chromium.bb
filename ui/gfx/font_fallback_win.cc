@@ -113,7 +113,7 @@ class CachedFontLinkSettings {
   const std::vector<Font>* GetLinkedFonts(const Font& font);
 
  private:
-  friend struct DefaultSingletonTraits<CachedFontLinkSettings>;
+  friend struct base::DefaultSingletonTraits<CachedFontLinkSettings>;
 
   CachedFontLinkSettings();
   virtual ~CachedFontLinkSettings();
@@ -129,8 +129,9 @@ class CachedFontLinkSettings {
 
 // static
 CachedFontLinkSettings* CachedFontLinkSettings::GetInstance() {
-  return Singleton<CachedFontLinkSettings,
-                   LeakySingletonTraits<CachedFontLinkSettings> >::get();
+  return base::Singleton<
+      CachedFontLinkSettings,
+      base::LeakySingletonTraits<CachedFontLinkSettings>>::get();
 }
 
 const std::vector<Font>* CachedFontLinkSettings::GetLinkedFonts(

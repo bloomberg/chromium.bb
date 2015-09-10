@@ -26,7 +26,7 @@ HotwordService* HotwordServiceFactory::GetForProfile(BrowserContext* context) {
 
 // static
 HotwordServiceFactory* HotwordServiceFactory::GetInstance() {
-  return Singleton<HotwordServiceFactory>::get();
+  return base::Singleton<HotwordServiceFactory>::get();
 }
 
 // static

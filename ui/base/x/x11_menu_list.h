@@ -12,7 +12,9 @@
 #include "ui/gfx/x/x11_types.h"
 
 // A process wide singleton cache for X menus.
+namespace base {
 template <typename T> struct DefaultSingletonTraits;
+}
 
 namespace ui {
 
@@ -32,7 +34,7 @@ class UI_BASE_EXPORT XMenuList {
   void InsertMenuWindowXIDs(std::vector<XID>* stack);
 
  private:
-  friend struct DefaultSingletonTraits<XMenuList>;
+  friend struct base::DefaultSingletonTraits<XMenuList>;
   XMenuList();
   ~XMenuList();
 

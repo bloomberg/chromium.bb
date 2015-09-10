@@ -300,7 +300,7 @@ class TimezoneSettingsImpl : public TimezoneSettingsBaseImpl {
   static TimezoneSettingsImpl* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<TimezoneSettingsImpl>;
+  friend struct base::DefaultSingletonTraits<TimezoneSettingsImpl>;
 
   TimezoneSettingsImpl();
 
@@ -316,7 +316,7 @@ class TimezoneSettingsStubImpl : public TimezoneSettingsBaseImpl {
   static TimezoneSettingsStubImpl* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<TimezoneSettingsStubImpl>;
+  friend struct base::DefaultSingletonTraits<TimezoneSettingsStubImpl>;
 
   TimezoneSettingsStubImpl();
 
@@ -387,8 +387,9 @@ void TimezoneSettingsImpl::SetTimezone(const icu::TimeZone& timezone) {
 
 // static
 TimezoneSettingsImpl* TimezoneSettingsImpl::GetInstance() {
-  return Singleton<TimezoneSettingsImpl,
-                   DefaultSingletonTraits<TimezoneSettingsImpl> >::get();
+  return base::Singleton<
+      TimezoneSettingsImpl,
+      base::DefaultSingletonTraits<TimezoneSettingsImpl>>::get();
 }
 
 TimezoneSettingsImpl::TimezoneSettingsImpl() {
@@ -433,8 +434,9 @@ void TimezoneSettingsStubImpl::SetTimezone(const icu::TimeZone& timezone) {
 
 // static
 TimezoneSettingsStubImpl* TimezoneSettingsStubImpl::GetInstance() {
-  return Singleton<TimezoneSettingsStubImpl,
-      DefaultSingletonTraits<TimezoneSettingsStubImpl> >::get();
+  return base::Singleton<
+      TimezoneSettingsStubImpl,
+      base::DefaultSingletonTraits<TimezoneSettingsStubImpl>>::get();
 }
 
 TimezoneSettingsStubImpl::TimezoneSettingsStubImpl() {

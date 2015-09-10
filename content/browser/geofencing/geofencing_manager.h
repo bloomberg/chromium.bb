@@ -20,8 +20,11 @@
 #include "content/common/geofencing_types.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base  // namespace base
+
 class GURL;
 
 namespace blink {

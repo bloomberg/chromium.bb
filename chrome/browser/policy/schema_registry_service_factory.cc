@@ -58,7 +58,7 @@ DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
 
 // static
 SchemaRegistryServiceFactory* SchemaRegistryServiceFactory::GetInstance() {
-  return Singleton<SchemaRegistryServiceFactory>::get();
+  return base::Singleton<SchemaRegistryServiceFactory>::get();
 }
 
 // static

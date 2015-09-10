@@ -246,7 +246,7 @@ class UserSessionManager
 
  private:
   friend class test::UserSessionManagerTestApi;
-  friend struct DefaultSingletonTraits<UserSessionManager>;
+  friend struct base::DefaultSingletonTraits<UserSessionManager>;
 
   typedef std::set<std::string> SigninSessionRestoreStateSet;
 

@@ -15,7 +15,7 @@ GpuDataManager* GpuDataManager::GetInstance() {
 
 // static
 GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
-  return Singleton<GpuDataManagerImpl>::get();
+  return base::Singleton<GpuDataManagerImpl>::get();
 }
 
 void GpuDataManagerImpl::InitializeForTesting(

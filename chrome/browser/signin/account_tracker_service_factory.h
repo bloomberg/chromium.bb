@@ -27,7 +27,7 @@ class AccountTrackerServiceFactory
   static AccountTrackerServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<AccountTrackerServiceFactory>;
+  friend struct base::DefaultSingletonTraits<AccountTrackerServiceFactory>;
 
   AccountTrackerServiceFactory();
   ~AccountTrackerServiceFactory() override;

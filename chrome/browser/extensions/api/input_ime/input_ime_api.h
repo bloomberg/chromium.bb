@@ -77,7 +77,7 @@ class InputImeEventRouterFactory {
   InputImeEventRouter* GetRouter(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<InputImeEventRouterFactory>;
+  friend struct base::DefaultSingletonTraits<InputImeEventRouterFactory>;
   InputImeEventRouterFactory();
   ~InputImeEventRouterFactory();
 

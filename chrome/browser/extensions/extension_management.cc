@@ -466,7 +466,7 @@ ExtensionManagement* ExtensionManagementFactory::GetForBrowserContext(
 }
 
 ExtensionManagementFactory* ExtensionManagementFactory::GetInstance() {
-  return Singleton<ExtensionManagementFactory>::get();
+  return base::Singleton<ExtensionManagementFactory>::get();
 }
 
 ExtensionManagementFactory::ExtensionManagementFactory()

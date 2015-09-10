@@ -23,7 +23,7 @@ class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
   static ExtensionSystemSharedFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionSystemSharedFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionSystemSharedFactory>;
 
   ExtensionSystemSharedFactory();
   ~ExtensionSystemSharedFactory() override;
@@ -48,7 +48,7 @@ class ExtensionSystemFactory : public ExtensionSystemProvider {
   static ExtensionSystemFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionSystemFactory>;
+  friend struct base::DefaultSingletonTraits<ExtensionSystemFactory>;
 
   ExtensionSystemFactory();
   ~ExtensionSystemFactory() override;

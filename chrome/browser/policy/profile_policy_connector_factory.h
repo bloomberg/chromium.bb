@@ -12,12 +12,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
 
-namespace base {
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -63,7 +63,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   void PushProviderForTesting(ConfigurationPolicyProvider* provider);
 
  private:
-  friend struct DefaultSingletonTraits<ProfilePolicyConnectorFactory>;
+  friend struct base::DefaultSingletonTraits<ProfilePolicyConnectorFactory>;
 
   ProfilePolicyConnectorFactory();
   ~ProfilePolicyConnectorFactory() override;

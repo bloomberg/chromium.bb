@@ -19,7 +19,7 @@ AppLifetimeMonitor* AppLifetimeMonitorFactory::GetForProfile(Profile* profile) {
 }
 
 AppLifetimeMonitorFactory* AppLifetimeMonitorFactory::GetInstance() {
-  return Singleton<AppLifetimeMonitorFactory>::get();
+  return base::Singleton<AppLifetimeMonitorFactory>::get();
 }
 
 AppLifetimeMonitorFactory::AppLifetimeMonitorFactory()

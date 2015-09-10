@@ -39,18 +39,22 @@
 #include "base/trace_event/trace_event_win.h"
 #endif
 
-class DeleteTraceLogForTesting {
- public:
-  static void Delete() {
-    Singleton<base::trace_event::TraceLog,
-              LeakySingletonTraits<base::trace_event::TraceLog>>::OnExit(0);
-  }
-};
-
 // The thread buckets for the sampling profiler.
 BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state[3];
 
 namespace base {
+namespace internal {
+
+class DeleteTraceLogForTesting {
+ public:
+  static void Delete() {
+    Singleton<trace_event::TraceLog,
+              LeakySingletonTraits<trace_event::TraceLog>>::OnExit(0);
+  }
+};
+
+}  // namespace internal
+
 namespace trace_event {
 
 namespace {
@@ -1595,7 +1599,7 @@ void TraceLog::WaitSamplingEventForTesting() {
 }
 
 void TraceLog::DeleteForTesting() {
-  DeleteTraceLogForTesting::Delete();
+  internal::DeleteTraceLogForTesting::Delete();
 }
 
 TraceEvent* TraceLog::GetEventByHandle(TraceEventHandle handle) {

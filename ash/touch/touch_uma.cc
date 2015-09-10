@@ -52,7 +52,7 @@ namespace ash {
 
 // static
 TouchUMA* TouchUMA::GetInstance() {
-  return Singleton<TouchUMA>::get();
+  return base::Singleton<TouchUMA>::get();
 }
 
 void TouchUMA::RecordGestureEvent(aura::Window* target,

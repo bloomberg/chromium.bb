@@ -19,7 +19,7 @@ namespace policy {
 // static
 UserCloudPolicyTokenForwarderFactory*
     UserCloudPolicyTokenForwarderFactory::GetInstance() {
-  return Singleton<UserCloudPolicyTokenForwarderFactory>::get();
+  return base::Singleton<UserCloudPolicyTokenForwarderFactory>::get();
 }
 
 UserCloudPolicyTokenForwarderFactory::UserCloudPolicyTokenForwarderFactory()

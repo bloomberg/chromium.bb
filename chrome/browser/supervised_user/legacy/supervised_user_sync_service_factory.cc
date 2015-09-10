@@ -19,7 +19,7 @@ SupervisedUserSyncService* SupervisedUserSyncServiceFactory::GetForProfile(
 // static
 SupervisedUserSyncServiceFactory*
 SupervisedUserSyncServiceFactory::GetInstance() {
-  return Singleton<SupervisedUserSyncServiceFactory>::get();
+  return base::Singleton<SupervisedUserSyncServiceFactory>::get();
 }
 
 SupervisedUserSyncServiceFactory::SupervisedUserSyncServiceFactory()

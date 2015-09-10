@@ -23,7 +23,7 @@
 namespace diagnostics {
 
 DiagnosticsController* DiagnosticsController::GetInstance() {
-  return Singleton<DiagnosticsController>::get();
+  return base::Singleton<DiagnosticsController>::get();
 }
 
 DiagnosticsController::DiagnosticsController() : writer_(NULL) {}

@@ -28,7 +28,7 @@ using extensions::AutomationEventRouter;
 
 // static
 AutomationManagerAura* AutomationManagerAura::GetInstance() {
-  return Singleton<AutomationManagerAura>::get();
+  return base::Singleton<AutomationManagerAura>::get();
 }
 
 void AutomationManagerAura::Enable(BrowserContext* context) {

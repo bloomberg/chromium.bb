@@ -72,7 +72,7 @@ class WebViewRendererState {
 
  private:
   friend class WebViewGuest;
-  friend struct DefaultSingletonTraits<WebViewRendererState>;
+  friend struct base::DefaultSingletonTraits<WebViewRendererState>;
 
   using RenderId = std::pair<int, int>;
   using WebViewInfoMap = std::map<RenderId, WebViewInfo>;

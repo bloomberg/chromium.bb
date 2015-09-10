@@ -24,7 +24,7 @@ class InstallLimiterFactory : public BrowserContextKeyedServiceFactory {
   static InstallLimiterFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<InstallLimiterFactory>;
+  friend struct base::DefaultSingletonTraits<InstallLimiterFactory>;
 
   InstallLimiterFactory();
   ~InstallLimiterFactory() override;

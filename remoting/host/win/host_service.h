@@ -122,7 +122,7 @@ class HostService : public WtsTerminalMonitor {
   base::WeakPtrFactory<HostService> weak_factory_;
 
   // Singleton.
-  friend struct DefaultSingletonTraits<HostService>;
+  friend struct base::DefaultSingletonTraits<HostService>;
 
   DISALLOW_COPY_AND_ASSIGN(HostService);
 };

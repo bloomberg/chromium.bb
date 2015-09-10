@@ -64,7 +64,7 @@ class WindowControllerList {
   static WindowControllerList* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<WindowControllerList>;
+  friend struct base::DefaultSingletonTraits<WindowControllerList>;
 
   // Entries are not owned by this class and must be removed when destroyed.
   ControllerList windows_;

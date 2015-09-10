@@ -81,7 +81,7 @@ WebDataServiceFactory::GetTokenWebDataForBrowserState(
 
 // static
 WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
-  return Singleton<WebDataServiceFactory>::get();
+  return base::Singleton<WebDataServiceFactory>::get();
 }
 
 WebDataServiceFactory::WebDataServiceFactory()

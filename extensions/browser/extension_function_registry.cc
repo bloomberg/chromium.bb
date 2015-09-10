@@ -10,7 +10,7 @@
 
 // static
 ExtensionFunctionRegistry* ExtensionFunctionRegistry::GetInstance() {
-  return Singleton<ExtensionFunctionRegistry>::get();
+  return base::Singleton<ExtensionFunctionRegistry>::get();
 }
 
 ExtensionFunctionRegistry::ExtensionFunctionRegistry() {

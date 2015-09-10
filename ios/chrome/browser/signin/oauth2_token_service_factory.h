@@ -13,8 +13,11 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
+}  // namespace base
+
 class ProfileOAuth2TokenService;
 
 // Singleton that owns all ProfileOAuth2TokenServices and associates them with
@@ -32,7 +35,7 @@ class OAuth2TokenServiceFactory : public BrowserStateKeyedServiceFactory {
   static OAuth2TokenServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<OAuth2TokenServiceFactory>;
+  friend struct base::DefaultSingletonTraits<OAuth2TokenServiceFactory>;
 
   OAuth2TokenServiceFactory();
   ~OAuth2TokenServiceFactory() override;

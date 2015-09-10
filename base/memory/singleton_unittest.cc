@@ -6,6 +6,7 @@
 #include "base/memory/singleton.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
 namespace {
 
 COMPILE_ASSERT(DefaultSingletonTraits<int>::kRegisterAtExit == true, a);
@@ -115,7 +116,7 @@ class AlignedTestSingleton {
   ~AlignedTestSingleton() {}
   static AlignedTestSingleton* GetInstance() {
     return Singleton<AlignedTestSingleton,
-        StaticMemorySingletonTraits<AlignedTestSingleton> >::get();
+                     StaticMemorySingletonTraits<AlignedTestSingleton>>::get();
   }
 
   Type type_;
@@ -147,7 +148,6 @@ CallbackFunc* GetStaticSingleton() {
   return &CallbackSingletonWithStaticTrait::GetInstance()->callback_;
 }
 
-}  // namespace
 
 class SingletonTest : public testing::Test {
  public:
@@ -207,7 +207,7 @@ TEST_F(SingletonTest, Basic) {
   CallbackFunc* static_singleton;
 
   {
-    base::ShadowingAtExitManager sem;
+    ShadowingAtExitManager sem;
     {
       singleton_int = SingletonInt();
     }
@@ -241,7 +241,7 @@ TEST_F(SingletonTest, Basic) {
   EXPECT_EQ(NULL, GetStaticSingleton());
 
   {
-    base::ShadowingAtExitManager sem;
+    ShadowingAtExitManager sem;
     // Verifiy that the variables were reset.
     {
       singleton_int = SingletonInt();
@@ -285,3 +285,6 @@ TEST_F(SingletonTest, Alignment) {
   EXPECT_ALIGNED(align128, 128);
   EXPECT_ALIGNED(align4096, 4096);
 }
+
+}  // namespace
+}  // namespace base

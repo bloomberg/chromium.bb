@@ -21,7 +21,7 @@ namespace extensions {
 
 // static
 WindowControllerList* WindowControllerList::GetInstance() {
-  return Singleton<WindowControllerList>::get();
+  return base::Singleton<WindowControllerList>::get();
 }
 
 WindowControllerList::WindowControllerList() {

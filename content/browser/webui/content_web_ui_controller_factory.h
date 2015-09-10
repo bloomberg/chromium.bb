@@ -31,7 +31,7 @@ class CONTENT_EXPORT ContentWebUIControllerFactory
   ~ContentWebUIControllerFactory() override;
 
  private:
-  friend struct DefaultSingletonTraits<ContentWebUIControllerFactory>;
+  friend struct base::DefaultSingletonTraits<ContentWebUIControllerFactory>;
 
   DISALLOW_COPY_AND_ASSIGN(ContentWebUIControllerFactory);
 };

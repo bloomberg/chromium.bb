@@ -26,7 +26,7 @@ class ConsumerManagementNotifierFactory
   static ConsumerManagementNotifierFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ConsumerManagementNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<ConsumerManagementNotifierFactory>;
 
   ConsumerManagementNotifierFactory();
   ~ConsumerManagementNotifierFactory() override;

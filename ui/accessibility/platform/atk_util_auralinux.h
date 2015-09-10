@@ -28,7 +28,7 @@ class AtkUtilAuraLinux {
   void Initialize(scoped_refptr<base::TaskRunner> init_task_runner);
 
  private:
-  friend struct DefaultSingletonTraits<AtkUtilAuraLinux>;
+  friend struct base::DefaultSingletonTraits<AtkUtilAuraLinux>;
 };
 
 }  // namespace ui

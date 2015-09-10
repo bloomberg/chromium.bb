@@ -25,7 +25,7 @@ namespace views {
 class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
  public:
   static WtsRegistrationNotificationManager* GetInstance() {
-    return Singleton<WtsRegistrationNotificationManager>::get();
+    return base::Singleton<WtsRegistrationNotificationManager>::get();
   }
 
   WtsRegistrationNotificationManager() {
@@ -46,7 +46,8 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
   }
 
  private:
-  friend struct DefaultSingletonTraits<WtsRegistrationNotificationManager>;
+  friend struct base::DefaultSingletonTraits<
+      WtsRegistrationNotificationManager>;
 
   void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
     switch (message) {

@@ -31,7 +31,7 @@ AuthSyncObserver* AuthSyncObserverFactory::GetForProfile(
 // static
 AuthSyncObserverFactory*
     AuthSyncObserverFactory::GetInstance() {
-  return Singleton<AuthSyncObserverFactory>::get();
+  return base::Singleton<AuthSyncObserverFactory>::get();
 }
 
 KeyedService* AuthSyncObserverFactory::BuildServiceInstanceFor(

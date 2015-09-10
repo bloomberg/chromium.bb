@@ -22,7 +22,7 @@ class ProcessMapFactory : public BrowserContextKeyedServiceFactory {
   static ProcessMapFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ProcessMapFactory>;
+  friend struct base::DefaultSingletonTraits<ProcessMapFactory>;
 
   ProcessMapFactory();
   ~ProcessMapFactory() override;

@@ -16,7 +16,7 @@ scoped_refptr<base::SingleThreadTaskRunner> MediaMessageLoop::GetTaskRunner() {
 
 // static
 MediaMessageLoop* MediaMessageLoop::GetInstance() {
-  return Singleton<MediaMessageLoop>::get();
+  return base::Singleton<MediaMessageLoop>::get();
 }
 
 MediaMessageLoop::MediaMessageLoop()

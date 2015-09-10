@@ -11,7 +11,7 @@ namespace app_modal {
 
 // static
 AppModalDialogQueue* AppModalDialogQueue::GetInstance() {
-  return Singleton<AppModalDialogQueue>::get();
+  return base::Singleton<AppModalDialogQueue>::get();
 }
 
 void AppModalDialogQueue::AddDialog(AppModalDialog* dialog) {
