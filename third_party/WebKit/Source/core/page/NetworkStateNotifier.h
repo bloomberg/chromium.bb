@@ -49,7 +49,7 @@ public:
 
     NetworkStateNotifier()
         : m_isOnLine(true)
-        , m_type(ConnectionTypeOther)
+        , m_type(WebConnectionTypeOther)
         , m_maxBandwidthMbps(std::numeric_limits<double>::infinity())
         , m_testUpdatesOnly(false)
     {

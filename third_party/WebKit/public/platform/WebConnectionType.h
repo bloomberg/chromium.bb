@@ -35,7 +35,18 @@ namespace blink {
 
 // Connection types from http://w3c.github.io/netinfo/.
 enum WebConnectionType {
-    ConnectionTypeCellular = 0,
+    WebConnectionTypeCellular = 0,
+    WebConnectionTypeBluetooth,
+    WebConnectionTypeEthernet,
+    WebConnectionTypeWifi,
+    WebConnectionTypeWimax,
+    WebConnectionTypeOther,
+    WebConnectionTypeNone,
+    WebConnectionTypeUnknown,
+    WebConnectionTypeLast = WebConnectionTypeUnknown,
+
+    // TODO(jkarlin): Remove these after the browser only uses the Web* prefixes.
+    ConnectionTypeCellular = WebConnectionTypeCellular,
     ConnectionTypeBluetooth,
     ConnectionTypeEthernet,
     ConnectionTypeWifi,

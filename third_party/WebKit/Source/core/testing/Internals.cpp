@@ -2392,21 +2392,21 @@ void Internals::setNetworkConnectionInfo(const String& type, double downlinkMaxM
 {
     WebConnectionType webtype;
     if (type == "cellular") {
-        webtype = ConnectionTypeCellular;
+        webtype = WebConnectionTypeCellular;
     } else if (type == "bluetooth") {
-        webtype = ConnectionTypeBluetooth;
+        webtype = WebConnectionTypeBluetooth;
     } else if (type == "ethernet") {
-        webtype = ConnectionTypeEthernet;
+        webtype = WebConnectionTypeEthernet;
     } else if (type == "wifi") {
-        webtype = ConnectionTypeWifi;
+        webtype = WebConnectionTypeWifi;
     } else if (type == "wimax") {
-        webtype = ConnectionTypeWimax;
+        webtype = WebConnectionTypeWimax;
     } else if (type == "other") {
-        webtype = ConnectionTypeOther;
+        webtype = WebConnectionTypeOther;
     } else if (type == "none") {
-        webtype = ConnectionTypeNone;
+        webtype = WebConnectionTypeNone;
     } else if (type == "unknown") {
-        webtype = ConnectionTypeUnknown;
+        webtype = WebConnectionTypeUnknown;
     } else {
         exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToEnumerate("connection type", type));
         return;

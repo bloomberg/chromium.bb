@@ -19,21 +19,21 @@ using namespace blink;
 String connectionTypeToString(WebConnectionType type)
 {
     switch (type) {
-    case ConnectionTypeCellular:
+    case WebConnectionTypeCellular:
         return "cellular";
-    case ConnectionTypeBluetooth:
+    case WebConnectionTypeBluetooth:
         return "bluetooth";
-    case ConnectionTypeEthernet:
+    case WebConnectionTypeEthernet:
         return "ethernet";
-    case ConnectionTypeWifi:
+    case WebConnectionTypeWifi:
         return "wifi";
-    case ConnectionTypeWimax:
+    case WebConnectionTypeWimax:
         return "wimax";
-    case ConnectionTypeOther:
+    case WebConnectionTypeOther:
         return "other";
-    case ConnectionTypeNone:
+    case WebConnectionTypeNone:
         return "none";
-    case ConnectionTypeUnknown:
+    case WebConnectionTypeUnknown:
         return "unknown";
     }
     ASSERT_NOT_REACHED();
