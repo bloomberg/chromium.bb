@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,14 +48,11 @@ class TestFunctionDispatcherDelegate
 
 namespace extension_function_test_utils {
 
-base::Value* ParseJSON(const std::string& data) {
-  return base::JSONReader::DeprecatedRead(data);
-}
-
 base::ListValue* ParseList(const std::string& data) {
-  base::Value* result = ParseJSON(data);
+  scoped_ptr<base::Value> result = base::JSONReader::Read(data);
   base::ListValue* list = NULL;
   result->GetAsList(&list);
+  ignore_result(result.release());
   return list;
 }
 

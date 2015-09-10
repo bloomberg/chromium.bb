@@ -208,8 +208,8 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
     const ::sync_pb::ManagedUserSharedSettingSpecifics&
         supervised_user_shared_setting =
             sync_data.GetSpecifics().managed_user_shared_setting();
-    scoped_ptr<Value> value(base::JSONReader::DeprecatedRead(
-        supervised_user_shared_setting.value()));
+    scoped_ptr<Value> value =
+        base::JSONReader::Read(supervised_user_shared_setting.value());
     const std::string& su_id = supervised_user_shared_setting.mu_id();
     ScopedSupervisedUserSharedSettingsUpdate update(prefs_, su_id);
     const std::string& key = supervised_user_shared_setting.key();
@@ -318,8 +318,8 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
           dict = new DictionaryValue;
           update_dict->SetWithoutPathExpansion(key, dict);
         }
-        scoped_ptr<Value> value(base::JSONReader::DeprecatedRead(
-            supervised_user_shared_setting.value()));
+        scoped_ptr<Value> value =
+            base::JSONReader::Read(supervised_user_shared_setting.value());
         dict->SetWithoutPathExpansion(kValue, value.release());
         dict->SetBooleanWithoutPathExpansion(
             kAcknowledged, supervised_user_shared_setting.acknowledged());

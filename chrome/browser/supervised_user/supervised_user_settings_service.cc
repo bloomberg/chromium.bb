@@ -196,8 +196,8 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
     DCHECK_EQ(SUPERVISED_USER_SETTINGS, sync_data.GetDataType());
     const ::sync_pb::ManagedUserSettingSpecifics& supervised_user_setting =
         sync_data.GetSpecifics().managed_user_setting();
-    scoped_ptr<base::Value> value(
-        JSONReader::DeprecatedRead(supervised_user_setting.value()));
+    scoped_ptr<base::Value> value =
+        JSONReader::Read(supervised_user_setting.value());
     std::string name_suffix = supervised_user_setting.name();
     base::DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
     dict->SetWithoutPathExpansion(name_suffix, value.release());
@@ -280,8 +280,8 @@ SyncError SupervisedUserSettingsService::ProcessSyncChanges(
     switch (change_type) {
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
-        scoped_ptr<base::Value> value(
-            JSONReader::DeprecatedRead(supervised_user_setting.value()));
+        scoped_ptr<base::Value> value =
+            JSONReader::Read(supervised_user_setting.value());
         if (dict->HasKey(key)) {
           DLOG_IF(WARNING, change_type == SyncChange::ACTION_ADD)
               << "Value for key " << key << " already exists";

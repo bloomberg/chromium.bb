@@ -417,7 +417,7 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
                                       std::vector<uint32>());
   std::string actual_data = GetUploadData();
   scoped_ptr<base::DictionaryValue> actual(static_cast<base::DictionaryValue*>(
-      base::JSONReader::DeprecatedRead(actual_data)));
+      base::JSONReader::Read(actual_data).release()));
   actual->SetString("params.key", "TestDummyKey");
   base::ListValue* suggestions = NULL;
   actual->GetList("params.suggestionInfo", &suggestions);

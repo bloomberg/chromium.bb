@@ -55,7 +55,7 @@ TEST(PrivetConfirmApiFlowTest, Parsing) {
 
   EXPECT_CALL(delegate, Callback(GCDApiFlow::ERROR_FROM_SERVER)).Times(1);
 
-  value.reset(base::JSONReader::DeprecatedRead(kFailedConfirmResponse));
+  value = base::JSONReader::Read(kFailedConfirmResponse);
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   confirmation.OnGCDAPIFlowComplete(*dictionary);
 }

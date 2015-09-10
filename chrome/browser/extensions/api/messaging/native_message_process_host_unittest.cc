@@ -11,6 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
@@ -114,14 +115,14 @@ class NativeMessagingTest : public ::testing::Test,
     last_message_ = message;
 
     // Parse the message.
-    base::Value* parsed = base::JSONReader::DeprecatedRead(message);
+    scoped_ptr<base::Value> parsed = base::JSONReader::Read(message);
     base::DictionaryValue* dict_value;
-    if (parsed && parsed->GetAsDictionary(&dict_value)) {
+    if (parsed.get() && parsed->GetAsDictionary(&dict_value)) {
+      ignore_result(parsed.release());
       last_message_parsed_.reset(dict_value);
     } else {
       LOG(ERROR) << "Failed to parse " << message;
       last_message_parsed_.reset();
-      delete parsed;
     }
 
     if (run_loop_)

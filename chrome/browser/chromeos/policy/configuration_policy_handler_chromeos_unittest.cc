@@ -358,10 +358,11 @@ TEST_F(LoginScreenPowerManagementPolicyHandlerTest, Empty) {
 
 TEST_F(LoginScreenPowerManagementPolicyHandlerTest, ValidPolicy) {
   PolicyMap policy_map;
-  policy_map.Set(key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::JSONReader::DeprecatedRead(
-                                        kLoginScreenPowerManagementPolicy),
-                 NULL);
+  policy_map.Set(
+      key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER,
+      base::JSONReader::Read(kLoginScreenPowerManagementPolicy).release(),
+      NULL);
   LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));

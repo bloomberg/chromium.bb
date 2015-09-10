@@ -103,7 +103,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
         : profile_(profile),
           event_name_(event_name),
           json_args_(json_args),
-          args_(base::JSONReader::DeprecatedRead(json_args)),
+          args_(base::JSONReader::Read(json_args).release()),
           caught_(caught) {}
 
     const base::Time& caught() { return caught_; }

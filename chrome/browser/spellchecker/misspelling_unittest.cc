@@ -20,14 +20,14 @@ TEST(MisspellingTest, SerializeTest) {
   misspelling.hash = 9001;
   misspelling.suggestions.push_back(base::ASCIIToUTF16("does it"));
 
-  scoped_ptr<base::Value> expected(base::JSONReader::DeprecatedRead(
+  scoped_ptr<base::Value> expected = base::JSONReader::Read(
       "{\"originalText\": \"How doe sit know\","
       "\"misspelledStart\": 4,"
       "\"misspelledLength\": 7,"
       "\"timestamp\": \"42\","
       "\"suggestionId\":\"9001\","
       "\"suggestions\": [\"does it\"],"
-      "\"userActions\": [{\"actionType\": \"PENDING\"}]}"));
+      "\"userActions\": [{\"actionType\": \"PENDING\"}]}");
 
   scoped_ptr<base::DictionaryValue> serialized(
       SerializeMisspelling(misspelling));

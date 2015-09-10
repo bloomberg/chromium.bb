@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -59,10 +60,13 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
         "    JSON.stringify(peerConnectionDataStore));",
         webrtc_internals_tab);
 
-    base::Value* parsed_json = base::JSONReader::DeprecatedRead(all_stats_json);
+    scoped_ptr<base::Value> parsed_json =
+        base::JSONReader::Read(all_stats_json);
     base::DictionaryValue* result;
-    if (parsed_json && parsed_json->GetAsDictionary(&result))
+    if (parsed_json.get() && parsed_json->GetAsDictionary(&result)) {
+      ignore_result(parsed_json.release());
       return result;
+    }
 
     return NULL;
   }

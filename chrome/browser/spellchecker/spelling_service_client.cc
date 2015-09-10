@@ -189,9 +189,9 @@ bool SpellingServiceClient::ParseResponse(
   //     "data": [...]
   //   }
   // }
-  scoped_ptr<base::DictionaryValue> value(
-      static_cast<base::DictionaryValue*>(base::JSONReader::DeprecatedRead(
-          data, base::JSON_ALLOW_TRAILING_COMMAS)));
+  scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
+      base::JSONReader::Read(data, base::JSON_ALLOW_TRAILING_COMMAS)
+          .release()));
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 

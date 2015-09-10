@@ -1807,7 +1807,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
                                                      get_locale_list,
                                                      &json));
-  value_ptr.reset(base::JSONReader::DeprecatedRead(json));
+  value_ptr = base::JSONReader::Read(json);
   locales = NULL;
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->GetAsList(&locales));
@@ -1891,7 +1891,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
           user_id_1_.c_str()),
       &json));
   LOG(ERROR) << json;
-  value_ptr.reset(base::JSONReader::DeprecatedRead(json));
+  value_ptr = base::JSONReader::Read(json);
   const base::DictionaryValue* state = NULL;
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->GetAsDictionary(&state));

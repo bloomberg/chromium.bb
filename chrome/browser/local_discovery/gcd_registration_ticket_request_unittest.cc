@@ -60,7 +60,7 @@ TEST(GCDRegistrationTicketRequestTest, Parsing) {
 
   EXPECT_CALL(delegate, Callback("", ""));
 
-  value.reset(base::JSONReader::DeprecatedRead(kErrorResponse));
+  value = base::JSONReader::Read(kErrorResponse);
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   request.OnGCDAPIFlowComplete(*dictionary);
 }

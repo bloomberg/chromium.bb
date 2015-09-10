@@ -107,8 +107,8 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
       EXPECT_TRUE(split_items_.GetWithoutPathExpansion(key, &expected_value));
     }
 
-    scoped_ptr<base::Value> value(
-        base::JSONReader::DeprecatedRead(supervised_user_setting.value()));
+    scoped_ptr<base::Value> value =
+        base::JSONReader::Read(supervised_user_setting.value());
     EXPECT_TRUE(expected_value->Equals(value.get()));
   }
 
