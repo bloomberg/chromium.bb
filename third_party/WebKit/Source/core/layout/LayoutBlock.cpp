@@ -55,6 +55,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -1902,7 +1903,7 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
             point = point.transposedPoint();
         if (closestBox->layoutObject().isReplaced())
             return positionForPointRespectingEditingBoundaries(this, &toLayoutBox(closestBox->layoutObject()), point);
-        return closestBox->layoutObject().positionForPoint(point);
+        return closestBox->lineLayoutItem().positionForPoint(point);
     }
 
     if (lastRootBoxWithChildren) {

@@ -34,6 +34,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/PointerEventsHitRules.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
@@ -459,7 +460,7 @@ PositionWithAffinity LayoutSVGText::positionForPoint(const LayoutPoint& pointInC
     if (!closestBox)
         return createPositionWithAffinity(0);
 
-    return closestBox->layoutObject().positionForPoint(LayoutPoint(pointInContents.x(), closestBox->y()));
+    return closestBox->lineLayoutItem().positionForPoint(LayoutPoint(pointInContents.x(), closestBox->y()));
 }
 
 void LayoutSVGText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const

@@ -525,7 +525,7 @@ static PositionWithAffinity createPositionWithAffinityForBox(const InlineBox* bo
         break;
     }
     int textStartOffset = box->lineLayoutItem().isText() ? LineLayoutText(box->lineLayoutItem()).textStartOffset() : 0;
-    return box->layoutObject().createPositionWithAffinity(offset + textStartOffset, affinity);
+    return box->lineLayoutItem().createPositionWithAffinity(offset + textStartOffset, affinity);
 }
 
 static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(const InlineTextBox* box, int offset, ShouldAffinityBeDownstream shouldAffinityBeDownstream)
