@@ -76,9 +76,10 @@ def main():
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-  blacklist = (device_blacklist.Blacklist(options.blacklist_file)
-               if options.blacklist_file
-               else None)
+  if options.blacklist_file:
+    blacklist = device_blacklist.Blacklist(options.blacklist_file)
+  else:
+    blacklist = None
 
   devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
   if options.device:

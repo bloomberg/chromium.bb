@@ -55,10 +55,6 @@ def KillAllAdb():
       pass
 
 
-def _IsBlacklisted(serial, blacklist):
-  return blacklist and serial in blacklist.Read()
-
-
 def _BatteryStatus(device, blacklist):
   battery_info = {}
   try:
@@ -142,7 +138,7 @@ def DeviceStatus(devices, blacklist):
     }
 
     if adb_status == 'device':
-      if not _IsBlacklisted(serial, blacklist):
+      if not serial in blacklist.Read():
         try:
           build_product = device.build_product
           build_id = device.build_id
@@ -184,7 +180,7 @@ def DeviceStatus(devices, blacklist):
     elif blacklist:
       blacklist.Extend([serial])
 
-    device_status['blacklisted'] = _IsBlacklisted(serial, blacklist)
+    device_status['blacklisted'] = serial in blacklist.Read()
 
     return device_status
 
@@ -227,8 +223,7 @@ def RecoverDevices(devices, blacklist):
   for d in should_reboot_device:
     logging.debug('  %s', d)
 
-  if blacklist:
-    blacklist.Reset()
+  blacklist.Reset()
 
   if should_restart_adb:
     KillAllAdb()
@@ -241,7 +236,7 @@ def RecoverDevices(devices, blacklist):
         blacklist.Extend([serial])
 
   def blacklisting_recovery(device):
-    if _IsBlacklisted(device.adb.GetDeviceSerial(), blacklist):
+    if blacklist and device.adb.GetDeviceSerial() in blacklist.Read():
       logging.debug('%s is blacklisted, skipping recovery.', str(device))
       return
 
@@ -287,9 +282,11 @@ def main():
 
   run_tests_helper.SetLogLevel(args.verbose)
 
-  blacklist = (device_blacklist.Blacklist(args.blacklist_file)
-               if args.blacklist_file
-               else None)
+  if args.blacklist_file:
+    blacklist = device_blacklist.Blacklist(args.blacklist_file)
+  else:
+    # TODO(jbudorick): Remove this once bots pass the blacklist file.
+    blacklist = device_blacklist.Blacklist(device_blacklist.BLACKLIST_JSON)
 
   last_devices_path = os.path.join(
       args.out_dir, device_list.LAST_DEVICES_FILENAME)
@@ -361,7 +358,7 @@ def main():
 
   live_devices = [status['serial'] for status in statuses
                   if (status['adb_status'] == 'device'
-                      and not _IsBlacklisted(status['serial'], blacklist))]
+                      and status['serial'] not in blacklist.Read())]
 
   # If all devices failed, or if there are no devices, it's an infra error.
   return 0 if live_devices else constants.INFRA_EXIT_CODE

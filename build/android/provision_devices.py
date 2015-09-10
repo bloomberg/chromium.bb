@@ -53,9 +53,11 @@ class _PHASES(object):
 
 
 def ProvisionDevices(args):
-  blacklist = (device_blacklist.Blacklist(args.blacklist_file)
-               if args.blacklist_file
-               else None)
+  if args.blacklist_file:
+    blacklist = device_blacklist.Blacklist(args.blacklist_file)
+  else:
+    # TODO(jbudorick): Remove once the bots have switched over.
+    blacklist = device_blacklist.Blacklist(device_blacklist.BLACKLIST_JSON)
 
   devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
   if args.device:

@@ -55,9 +55,11 @@ def main(argv):
     parser.error('Bad port number')
     sys.exit(1)
 
-  blacklist = (device_blacklist.Blacklist(options.blacklist_file)
-               if options.blacklist_file
-               else None)
+  if options.blacklist_file:
+    blacklist = device_blacklist.Blacklist(options.blacklist_file)
+  else:
+    blacklist = None
+
   devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
 
   if options.device:

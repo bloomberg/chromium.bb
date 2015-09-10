@@ -87,9 +87,10 @@ def main():
   args = parser.parse_args()
   run_tests_helper.SetLogLevel(args.verbose)
 
-  blacklist = (device_blacklist.Blacklist(args.blacklist_file)
-               if args.blacklist_file
-               else None)
+  if args.blacklist_file:
+    blacklist = device_blacklist.Blacklist(args.blacklist_file)
+  else:
+    blacklist = None
 
   devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
   if not devices:
