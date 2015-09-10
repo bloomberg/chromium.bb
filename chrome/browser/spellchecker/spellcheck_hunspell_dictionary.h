@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HUNSPELL_DICTIONARY_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HUNSPELL_DICTIONARY_H_
 
+#include <string>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -32,16 +34,20 @@ class SpellcheckHunspellDictionary
   class Observer {
    public:
     // The dictionary has been initialized.
-    virtual void OnHunspellDictionaryInitialized() = 0;
+    virtual void OnHunspellDictionaryInitialized(
+        const std::string& language) = 0;
 
     // Dictionary download began.
-    virtual void OnHunspellDictionaryDownloadBegin() = 0;
+    virtual void OnHunspellDictionaryDownloadBegin(
+        const std::string& language) = 0;
 
     // Dictionary download succeeded.
-    virtual void OnHunspellDictionaryDownloadSuccess() = 0;
+    virtual void OnHunspellDictionaryDownloadSuccess(
+        const std::string& language) = 0;
 
     // Dictionary download failed.
-    virtual void OnHunspellDictionaryDownloadFailure() = 0;
+    virtual void OnHunspellDictionaryDownloadFailure(
+        const std::string& language) = 0;
   };
 
   SpellcheckHunspellDictionary(

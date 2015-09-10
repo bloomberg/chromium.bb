@@ -129,19 +129,23 @@ void LanguageSettingsPrivateDelegate::Observe(
   StartOrStopListeningForSpellcheckChanges();
 }
 
-void LanguageSettingsPrivateDelegate::OnHunspellDictionaryInitialized() {
+void LanguageSettingsPrivateDelegate::OnHunspellDictionaryInitialized(
+    const std::string& language) {
   BroadcastDictionariesChangedEvent();
 }
 
-void LanguageSettingsPrivateDelegate::OnHunspellDictionaryDownloadBegin() {
+void LanguageSettingsPrivateDelegate::OnHunspellDictionaryDownloadBegin(
+    const std::string& language) {
   BroadcastDictionariesChangedEvent();
 }
 
-void LanguageSettingsPrivateDelegate::OnHunspellDictionaryDownloadSuccess() {
+void LanguageSettingsPrivateDelegate::OnHunspellDictionaryDownloadSuccess(
+    const std::string& language) {
   BroadcastDictionariesChangedEvent();
 }
 
-void LanguageSettingsPrivateDelegate::OnHunspellDictionaryDownloadFailure() {
+void LanguageSettingsPrivateDelegate::OnHunspellDictionaryDownloadFailure(
+    const std::string& language) {
   BroadcastDictionariesChangedEvent();
 }
 

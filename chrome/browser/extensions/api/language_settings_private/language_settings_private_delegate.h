@@ -55,10 +55,12 @@ class LanguageSettingsPrivateDelegate
                const content::NotificationDetails& details) override;
 
   // SpellcheckHunspellDictionary::Observer implementation.
-  void OnHunspellDictionaryInitialized() override;
-  void OnHunspellDictionaryDownloadBegin() override;
-  void OnHunspellDictionaryDownloadSuccess() override;
-  void OnHunspellDictionaryDownloadFailure() override;
+  void OnHunspellDictionaryInitialized(const std::string& language) override;
+  void OnHunspellDictionaryDownloadBegin(const std::string& language) override;
+  void OnHunspellDictionaryDownloadSuccess(
+      const std::string& language) override;
+  void OnHunspellDictionaryDownloadFailure(
+      const std::string& language) override;
 
   // SpellcheckCustomDictionary::Observer implementation.
   void OnCustomDictionaryLoaded() override;
