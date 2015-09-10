@@ -20,11 +20,11 @@ GuestTask::GuestTask(content::WebContents* web_contents)
 GuestTask::~GuestTask() {
 }
 
-void GuestTask::OnTitleChanged(content::NavigationEntry* entry) {
+void GuestTask::UpdateTitle() {
   set_title(GetCurrentTitle(web_contents()));
 }
 
-void GuestTask::OnFaviconChanged() {
+void GuestTask::UpdateFavicon() {
   const gfx::ImageSkia* icon = GetFaviconFromWebContents(web_contents());
   set_icon(icon ? *icon : gfx::ImageSkia());
 }

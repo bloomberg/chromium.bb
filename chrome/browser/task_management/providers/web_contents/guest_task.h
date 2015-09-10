@@ -17,8 +17,8 @@ class GuestTask : public RendererTask {
   ~GuestTask() override;
 
   // task_management::RendererTask:
-  void OnTitleChanged(content::NavigationEntry* entry) override;
-  void OnFaviconChanged() override;
+  void UpdateTitle() override;
+  void UpdateFavicon() override;
   Type GetType() const override;
 
  private:

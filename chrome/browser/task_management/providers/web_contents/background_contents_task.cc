@@ -68,12 +68,12 @@ BackgroundContentsTask::BackgroundContentsTask(
 BackgroundContentsTask::~BackgroundContentsTask() {
 }
 
-void BackgroundContentsTask::OnTitleChanged(content::NavigationEntry* entry) {
+void BackgroundContentsTask::UpdateTitle() {
   // TODO(afakhry): At the time of integration testing figure out whether we
   // need to change the title of the task here.
 }
 
-void BackgroundContentsTask::OnFaviconChanged() {
+void BackgroundContentsTask::UpdateFavicon() {
   // We don't do anything here. For background contents we always use the
   // default icon.
 }

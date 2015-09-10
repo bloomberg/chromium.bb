@@ -48,12 +48,12 @@ PrerenderTask::PrerenderTask(content::WebContents* web_contents)
 PrerenderTask::~PrerenderTask() {
 }
 
-void PrerenderTask::OnTitleChanged(content::NavigationEntry* entry) {
+void PrerenderTask::UpdateTitle() {
   // As long as this task lives we keep prefixing its title with "Prerender:".
   set_title(PrefixTitle(RendererTask::GetTitleFromWebContents(web_contents())));
 }
 
-void PrerenderTask::OnFaviconChanged() {
+void PrerenderTask::UpdateFavicon() {
   // As long as this task lives we keep using the prerender icon, so we ignore
   // this event.
 }

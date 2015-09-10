@@ -85,7 +85,7 @@ class TabContentsTagTest : public InProcessBrowserTest {
     base::string16 title = base::UTF8ToUTF16(page_data.title);
     if (title.empty()) {
       GURL url = GetUrlOfFile(page_data.page_file);
-      title = base::UTF8ToUTF16(url.spec());
+      title = base::UTF8ToUTF16(url.host() + ":" + url.port() + url.path());
     }
     return l10n_util::GetStringFUTF16(page_data.expected_prefix_message, title);
   }

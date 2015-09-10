@@ -28,14 +28,15 @@ class RendererTask : public Task {
   ~RendererTask() override;
 
   // An abstract method that will be called when the event
-  // |WebContentsObserver::TitleWasSet()| occurs. This gives the freedom to
-  // concrete tasks to adjust the title however they need to before they set it.
-  virtual void OnTitleChanged(content::NavigationEntry* entry) = 0;
+  // WebContentsObserver::DidNavigateMainFrame() occurs. This gives the
+  // freedom to concrete tasks to adjust the title however they need to before
+  // they set it.
+  virtual void UpdateTitle() = 0;
 
   // An abstract method that will be called when the event
-  // |WebContentsObserver::DidUpdateFaviconURL()| occurs, so that concrete tasks
-  // can update their favicons.
-  virtual void OnFaviconChanged() = 0;
+  // WebContentsObserver::DocumentOnLoadCompletedInMainFrame() occurs, so that
+  // concrete tasks can update their favicons.
+  virtual void UpdateFavicon() = 0;
 
   // task_management::Task:
   void Activate() override;

@@ -48,12 +48,12 @@ ExtensionTask::ExtensionTask(content::WebContents* web_contents,
 ExtensionTask::~ExtensionTask() {
 }
 
-void ExtensionTask::OnTitleChanged(content::NavigationEntry* entry) {
+void ExtensionTask::UpdateTitle() {
   // The title of the extension should not change as a result of title change
   // in its WebContents, so we ignore this.
 }
 
-void ExtensionTask::OnFaviconChanged() {
+void ExtensionTask::UpdateFavicon() {
   // We don't care about the favicon of the WebContents but rather of the
   // extension.
 }

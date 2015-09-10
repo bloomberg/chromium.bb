@@ -43,12 +43,12 @@ SubframeTask::SubframeTask(content::RenderFrameHost* render_frame_host,
 SubframeTask::~SubframeTask() {
 }
 
-void SubframeTask::OnTitleChanged(content::NavigationEntry* entry) {
+void SubframeTask::UpdateTitle() {
   // This will be called when the title changes on the WebContents's main frame,
   // but this Task represents other frames, so we don't care.
 }
 
-void SubframeTask::OnFaviconChanged() {
+void SubframeTask::UpdateFavicon() {
   // This will be called when the favicon changes on the WebContents's main
   // frame, but this Task represents other frames, so we don't care.
 }

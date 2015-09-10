@@ -19,16 +19,12 @@ DevToolsTask::~DevToolsTask() {
 }
 
 // task_management::RendererTask:
-void DevToolsTask::OnTitleChanged(content::NavigationEntry* entry) {
-  // In the case of a devtools tab, this won't happen so we ignore it.
-  // TODO(afakhry): Confirm that it doesn't happen in practice.
-  NOTREACHED();
+void DevToolsTask::UpdateTitle() {
+  // In the case of a devtools tab, we just ignore this event.
 }
 
-void DevToolsTask::OnFaviconChanged() {
-  // In the case of a devtools tab, this won't happen so we ignore it.
-  // TODO(afakhry): Confirm that it doesn't happen in practice.
-  NOTREACHED();
+void DevToolsTask::UpdateFavicon() {
+  // In the case of a devtools tab, we just ignore this event.
 }
 
 }  // namespace task_management

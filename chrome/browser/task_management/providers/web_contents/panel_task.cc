@@ -33,11 +33,11 @@ PanelTask::PanelTask(Panel* panel, content::WebContents* web_contents)
 PanelTask::~PanelTask() {
 }
 
-void PanelTask::OnTitleChanged(content::NavigationEntry* entry) {
+void PanelTask::UpdateTitle() {
   set_title(GetCurrentPanelTitle(panel_));
 }
 
-void PanelTask::OnFaviconChanged() {
+void PanelTask::UpdateFavicon() {
   const gfx::ImageSkia* icon = GetPanelIcon(panel_);
   set_icon(icon ? *icon : gfx::ImageSkia());
 }

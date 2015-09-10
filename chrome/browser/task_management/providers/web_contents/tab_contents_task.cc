@@ -34,11 +34,11 @@ TabContentsTask::TabContentsTask(content::WebContents* web_contents)
 TabContentsTask::~TabContentsTask() {
 }
 
-void TabContentsTask::OnTitleChanged(content::NavigationEntry* entry) {
+void TabContentsTask::UpdateTitle() {
   set_title(GetCurrentTitle());
 }
 
-void TabContentsTask::OnFaviconChanged() {
+void TabContentsTask::UpdateFavicon() {
   const gfx::ImageSkia* icon =
       RendererTask::GetFaviconFromWebContents(web_contents());
   set_icon(icon ? *icon : gfx::ImageSkia());
@@ -58,7 +58,6 @@ base::string16 TabContentsTask::GetCurrentTitle() const {
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(profile);
   GURL url = web_contents()->GetURL();
-  base::string16 url_spec = base::UTF8ToUTF16(url.spec());
 
   bool is_app = process_map->Contains(process_id()) &&
       extension_registry->enabled_extensions().GetAppByURL(url) != nullptr;
@@ -69,7 +68,7 @@ base::string16 TabContentsTask::GetCurrentTitle() const {
       RendererTask::GetTitleFromWebContents(web_contents());
 
   // Fall back to the URL if the title is empty.
-  return PrefixRendererTitle(tab_title.empty() ? url_spec : tab_title,
+  return PrefixRendererTitle(tab_title,
                              is_app,
                              is_extension,
                              is_incognito,

@@ -51,6 +51,10 @@ class WebContentsEntry : public content::WebContentsObserver {
   void RenderViewReady() override;
   void WebContentsDestroyed() override;
   void RenderProcessGone(base::TerminationStatus status) override;
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+  void DocumentOnLoadCompletedInMainFrame() override;
   void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
   void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
@@ -154,26 +158,58 @@ void WebContentsEntry::RenderProcessGone(base::TerminationStatus status) {
   ClearAllTasks(true);
 }
 
-void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
-                                   bool explicit_set) {
-  if (!tasks_by_frames_.count(web_contents()->GetMainFrame())) {
+void WebContentsEntry::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  // Note: Listening to WebContentsObserver::TitleWasSet() only is not enough in
+  // some cases when the the webpage doesn't have a title. That's why we update
+  // the title here as well.
+  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
+  if (itr == tasks_by_frames_.end()) {
     // TODO(afakhry): Validate whether this actually happens in practice.
     NOTREACHED();
     return;
   }
 
-  tasks_by_frames_[web_contents()->GetMainFrame()]->OnTitleChanged(entry);
+  itr->second->UpdateTitle();
+}
+
+void WebContentsEntry::DocumentOnLoadCompletedInMainFrame() {
+  // Note: Requesting the task to update its favicon, in any earlier occurring
+  // event than this one, may not work properly. We also need to listen to
+  // WebContentsObserver::DidUpdateFaviconURL().
+  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
+  if (itr == tasks_by_frames_.end()) {
+    // TODO(afakhry): Validate whether this actually happens in practice.
+    NOTREACHED();
+    return;
+  }
+
+  itr->second->UpdateFavicon();
+}
+
+void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
+                                   bool explicit_set) {
+  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
+  if (itr == tasks_by_frames_.end()) {
+    // TODO(afakhry): Validate whether this actually happens in practice.
+    NOTREACHED();
+    return;
+  }
+
+  itr->second->UpdateTitle();
 }
 
 void WebContentsEntry::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
-  if (!tasks_by_frames_.count(web_contents()->GetMainFrame())) {
+  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
+  if (itr == tasks_by_frames_.end()) {
     // TODO(afakhry): Validate whether this actually happens in practice.
     NOTREACHED();
     return;
   }
 
-  tasks_by_frames_[web_contents()->GetMainFrame()]->OnFaviconChanged();
+  itr->second->UpdateFavicon();
 }
 
 void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {

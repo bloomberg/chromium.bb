@@ -16,8 +16,8 @@ class DevToolsTask : public RendererTask {
   ~DevToolsTask() override;
 
   // task_management::RendererTask:
-  void OnTitleChanged(content::NavigationEntry* entry) override;
-  void OnFaviconChanged() override;
+  void UpdateTitle() override;
+  void UpdateFavicon() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsTask);

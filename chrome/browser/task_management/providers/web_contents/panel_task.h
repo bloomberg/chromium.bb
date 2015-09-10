@@ -19,8 +19,8 @@ class PanelTask : public RendererTask {
   ~PanelTask() override;
 
   // task_management::RendererTask:
-  void OnTitleChanged(content::NavigationEntry* entry) override;
-  void OnFaviconChanged() override;
+  void UpdateTitle() override;
+  void UpdateFavicon() override;
   Task::Type GetType() const override;
 
  private:
