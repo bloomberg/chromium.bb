@@ -10,8 +10,6 @@ import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -26,6 +24,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -517,7 +516,7 @@ public class IntentHandler {
      * a trusted source.
      */
     public static void addTrustedIntentExtras(Intent intent, Context context) {
-        if (willChromeHandleIntent(intent, context)) {
+        if (ExternalNavigationDelegateImpl.willChromeHandleIntent(context, intent, true)) {
             // The PendingIntent functions as an authentication token --- it could only have come
             // from us. Stash it in the real Intent as an extra. shouldIgnoreIntent will retrieve it
             // and check it with isIntentChromeInternal.
@@ -528,18 +527,6 @@ public class IntentHandler {
             // scope the real Intent to our package.
             intent.setPackage(context.getApplicationContext().getPackageName());
         }
-    }
-
-    /**
-     * Determine if Chrome is the default or only handler for a given intent. If
-     * true, Chrome will handle the intent when started.
-     * TODO(nileshagrawal): There is a similar method in UrlResolver.java, consider extracting
-     * the code to a common place.
-     */
-    private static boolean willChromeHandleIntent(Intent i, Context context) {
-        ResolveInfo info =
-                context.getPackageManager().resolveActivity(i, PackageManager.MATCH_DEFAULT_ONLY);
-        return info != null && info.activityInfo.packageName.equals(context.getPackageName());
     }
 
     /**

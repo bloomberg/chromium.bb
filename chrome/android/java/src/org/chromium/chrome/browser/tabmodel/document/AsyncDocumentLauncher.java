@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
  * that our task exists before firing the next Intent.
  */
 public class AsyncDocumentLauncher {
+    private static final String TAG = "cr.document.AsyncLaunc";
+
     /**
      * Milliseconds to wait for Android to acknowledge that our Activity's task exists.
      * This value is empirically defined because Android doesn't let us know when it finishes
@@ -57,8 +60,14 @@ public class AsyncDocumentLauncher {
             final Activity parentActivity = ActivityDelegate.getActivityForTabId(mParentId);
             mLaunchedId = ChromeLauncherActivity.launchDocumentInstance(
                     parentActivity, mIsIncognito, mAsyncParams);
-            mLaunchTimestamp = SystemClock.elapsedRealtime();
-            run();
+
+            if (mLaunchedId == Tab.INVALID_TAB_ID) {
+                Log.e(TAG, "Failed to launch document.");
+                finishLaunch();
+            } else {
+                mLaunchTimestamp = SystemClock.elapsedRealtime();
+                run();
+            }
         }
 
         @Override

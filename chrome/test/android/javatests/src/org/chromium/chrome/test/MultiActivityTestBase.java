@@ -153,12 +153,20 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
     }
 
     /**
-     * Approximates when a ChromeActivity is fully ready and loaded, which is hard to gauge
-     * because Android's Activity transition animations are not monitorable.
+     * See {@link #waitForFullLoad(ChromeActivity,String,boolean)}.
      */
     protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle)
             throws Exception {
-        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(activity, 0.5f);
+        waitForFullLoad(activity, expectedTitle, false);
+    }
+
+    /**
+     * Approximates when a ChromeActivity is fully ready and loaded, which is hard to gauge
+     * because Android's Activity transition animations are not monitorable.
+     */
+    protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle,
+            boolean waitLongerForLoad) throws Exception {
+        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(activity, 0.5f, waitLongerForLoad);
         final Tab tab = activity.getActivityTab();
         assert tab != null;
 

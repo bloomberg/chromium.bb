@@ -116,6 +116,27 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return false;
     }
 
+
+    /**
+     * Determines whether Chrome will be handling the given Intent.
+     * @param context           Context that will be firing the Intent.
+     * @param intent            Intent that will be fired.
+     * @param matchDefaultOnly  See {@link PackageManager#MATCH_DEFAULT_ONLY}.
+     * @return                  True if Chrome will definitely handle the intent, false otherwise.
+     */
+    public static boolean willChromeHandleIntent(
+            Context context, Intent intent, boolean matchDefaultOnly) {
+        try {
+            ResolveInfo info = context.getPackageManager().resolveActivity(
+                    intent, matchDefaultOnly ? PackageManager.MATCH_DEFAULT_ONLY : 0);
+            return info != null
+                    && info.activityInfo.packageName.equals(context.getPackageName());
+        } catch (RuntimeException e) {
+            logTransactionTooLargeOrRethrow(e, intent);
+            return false;
+        }
+    }
+
     @Override
     public List<ComponentName> queryIntentActivities(Intent intent) {
         return IntentUtils.getIntentHandlers(mActivity, intent);
@@ -133,14 +154,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean willChromeHandleIntent(Intent intent) {
-        try {
-            ResolveInfo info = mActivity.getPackageManager().resolveActivity(intent, 0);
-            return info != null
-                    && info.activityInfo.packageName.equals(mActivity.getPackageName());
-        } catch (RuntimeException e) {
-            logTransactionTooLargeOrRethrow(e, intent);
-            return false;
-        }
+        return willChromeHandleIntent(mActivity, intent, false);
     }
 
     @Override

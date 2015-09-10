@@ -11,11 +11,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -43,6 +45,41 @@ import java.util.List;
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @DisableInTabbedMode
 public class DocumentModeTest extends DocumentModeTestBase {
+    /** Opens a new page with a huge URL via window.open(). */
+    protected static final String HUGE_URL_PAGE = UrlUtils.encodeHtmlDataUri(
+            "<html>"
+            + "  <head>"
+            + "    <title>behemoth URL page</title>"
+            + "    <meta name='viewport'"
+            + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
+            + "    <style>"
+            + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
+            + "    </style>"
+            + "    <script>"
+            + "      var length = 1000000;"
+            + "      var fullString = '';"
+            + "      for (var i = 0; i < length; i++) {"
+            + "        fullString += String.fromCharCode('a'.charCodeAt(0) + (i % 26));"
+            + "      }"
+            + "      function initialize() {"
+            + "        document.getElementById('content').innerHTML = fullString;"
+            + "      }"
+            + "      function openNewWindow() {"
+            + "        var scheme = 'data:text/html;utf-8,';"
+            + "        var title = '%3Ctitle%3Ebehemoth%20result%3C%2Ftitle%3E';"
+            + "        var header = '%3Cmeta%20name%3D%27viewport%27%20content%3D%27'"
+            + "            + 'initial-scale%3D0.5%2C%20maximum-scale%3D0.5%27%3E';"
+            + "        var footer = '%3Cscript%3Elocation.href%3D%27%23success%27%3C%2Fscript%3E';"
+            + "        var site = window.open(scheme + title + header + fullString + footer);"
+            + "        if (site) location.href = '" + SUCCESS_URL + "';"
+            + "      }"
+            + "    </script>"
+            + "  </head>"
+            + "  <body onload='initialize()'>"
+            + "    <div onclick='openNewWindow()' id='content'></div>"
+            + "  </body>"
+            + "</html>");
+
     /**
      * Confirm that you can't start ChromeTabbedActivity while the user is running in Document mode.
      */
@@ -558,7 +595,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     @MediumTest
     public void testTargetBlank() throws Exception {
         Intent lastIntent = performNewWindowTest(
-                HREF_NO_REFERRER_LINK, "href no referrer link page", false);
+                HREF_NO_REFERRER_LINK, "href no referrer link page", false, "Page 4", false);
         assertEquals("URL is not in the Intent", URL_4, IntentHandler.getUrlFromIntent(lastIntent));
     }
 
@@ -569,9 +606,31 @@ public class DocumentModeTest extends DocumentModeTestBase {
      */
     @MediumTest
     public void testWindowOpen() throws Exception {
-        Intent lastIntent = performNewWindowTest(ONCLICK_LINK, "window.open page", true);
+        Intent lastIntent = performNewWindowTest(
+                ONCLICK_LINK, "window.open page", true, "Page 4", false);
         assertEquals("URL is not in the Intent",
                 URL_4, IntentHandler.getUrlFromIntent(lastIntent));
+    }
+
+    /**
+     * Tests that tabs opened via window.open() that have huge URLs load properly, even without the
+     * URL in the Intent.
+     */
+    @MediumTest
+    public void testBehemothUrlWindowOpen() throws Exception {
+        Intent lastIntent = performNewWindowTest(
+                HUGE_URL_PAGE, "behemoth URL page", true, "behemoth result", true);
+        assertNull("URL is in the Intent", IntentHandler.getUrlFromIntent(lastIntent));
+
+        final DocumentActivity lastActivity =
+                (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+        String uri = lastActivity.getActivityTab().getUrl();
+        assertTrue("URI wasn't loaded properly", uri.length() > 1000000);
+
+        // Check that the page loaded correctly by confirming that javascript in the footer of the
+        // opened page changed the URL correctly.
+        assertTrue("Javascript at the end of the huge data URI wasn't triggered",
+                TextUtils.equals("#success", uri.substring(uri.length() - "#success".length())));
     }
 
     /**
@@ -580,14 +639,14 @@ public class DocumentModeTest extends DocumentModeTestBase {
      */
     @MediumTest
     public void testWindowOpenWithOpenerSuppressed() throws Exception {
-        Intent lastIntent = performNewWindowTest(
-                ONCLICK_NO_REFERRER_LINK, "window.open page, opener set to null", true);
+        Intent lastIntent = performNewWindowTest(ONCLICK_NO_REFERRER_LINK,
+                "window.open page, opener set to null", true, "Page 4", false);
         assertEquals("Intent wasn't fired with about:blank",
                 "about:blank", IntentHandler.getUrlFromIntent(lastIntent));
     }
 
-    private Intent performNewWindowTest(String url, String title, boolean checkWindowOpenSuccess)
-            throws Exception {
+    private Intent performNewWindowTest(String url, String title, boolean checkWindowOpenSuccess,
+            String openTitle, boolean waitLongerForOpenedPage) throws Exception {
         launchViaLaunchDocumentInstance(false, url, title);
 
         final DocumentActivity firstActivity =
@@ -616,7 +675,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
 
         final DocumentActivity lastActivity = ActivityUtils.waitForActivity(
                     getInstrumentation(), DocumentActivity.class, fgTrigger);
-        waitForFullLoad(lastActivity, "Page 4");
+        waitForFullLoad(lastActivity, openTitle, waitLongerForOpenedPage);
         assertEquals("Wrong number of tabs", 2, tabModel.getCount());
         assertNotSame("Wrong tab selected", firstTabIndex, tabModel.index());
         assertNotSame("Wrong tab ID in foreground", firstTabId, selector.getCurrentTabId());

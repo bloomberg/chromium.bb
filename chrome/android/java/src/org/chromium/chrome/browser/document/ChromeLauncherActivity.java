@@ -20,13 +20,14 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.TransactionTooLargeException;
 import android.provider.Browser;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -82,7 +83,7 @@ public class ChromeLauncherActivity extends Activity
     static final String ACTION_CLOSE_ALL_INCOGNITO =
             "com.google.android.apps.chrome.document.CLOSE_ALL_INCOGNITO";
 
-    private static final String TAG = "ChromeLauncherActivity";
+    private static final String TAG = "cr.document.CLActivity";
 
     /** New instance should be launched in the foreground. */
     public static final int LAUNCH_MODE_FOREGROUND = 0;
@@ -505,15 +506,15 @@ public class ChromeLauncherActivity extends Activity
         intent.putExtra(EXTRA_LAUNCH_MODE, launchMode);
         IntentHandler.addTrustedIntentExtras(intent, context);
 
+        boolean succeeded = false;
         boolean affiliated = launchMode == LAUNCH_MODE_AFFILIATED;
         if (activity == null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            fireDocumentIntent(context, intent, incognito, affiliated, asyncParams);
+            succeeded = fireDocumentIntent(context, intent, incognito, affiliated, asyncParams);
         } else {
-            fireDocumentIntent(activity, intent, incognito, affiliated, asyncParams);
+            succeeded = fireDocumentIntent(activity, intent, incognito, affiliated, asyncParams);
         }
-
-        return ActivityDelegate.getTabIdFromIntent(intent);
+        return succeeded ? ActivityDelegate.getTabIdFromIntent(intent) : Tab.INVALID_TAB_ID;
     }
 
     /**
@@ -525,7 +526,7 @@ public class ChromeLauncherActivity extends Activity
      * may therefore _not_ create a new DocumentActivity instance.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private static void fireDocumentIntent(Context context, Intent intent, boolean incognito,
+    private static boolean fireDocumentIntent(Context context, Intent intent, boolean incognito,
             boolean affiliated, AsyncTabCreationParams asyncParams) {
         assert asyncParams != null;
         assert incognito || TextUtils.equals(
@@ -554,15 +555,28 @@ public class ChromeLauncherActivity extends Activity
             options = ActivityOptions.makeTaskLaunchBehind().toBundle();
             asyncParams.setIsInitiallyHidden(true);
         }
-        if (incognito && !CipherFactory.getInstance().hasCipher()
-                && ChromeApplication.getDocumentTabModelSelector().getModel(true)
-                        .getCount() > 0) {
-            // The CipherKeyActivity needs to be run to restore the Incognito decryption key.
-            Intent cipherIntent = CipherKeyActivity.createIntent(context, intent, options);
-            context.startActivity(cipherIntent);
-        } else {
-            context.startActivity(intent, options);
+
+        try {
+            if (incognito && !CipherFactory.getInstance().hasCipher()
+                    && ChromeApplication.getDocumentTabModelSelector().getModel(true)
+                            .getCount() > 0) {
+                // The CipherKeyActivity needs to be run to restore the Incognito decryption key.
+                Intent cipherIntent = CipherKeyActivity.createIntent(context, intent, options);
+                context.startActivity(cipherIntent);
+            } else {
+                context.startActivity(intent, options);
+            }
+        } catch (java.lang.RuntimeException exception) {
+            if (exception.getCause() instanceof TransactionTooLargeException) {
+                Log.e(TAG, "Failed to launch DocumentActivity because Intent was too large");
+                AsyncTabCreationParamsManager.remove(tabId);
+                if (isWebContentsPending) asyncParams.getWebContents().destroy();
+                return false;
+            }
+            throw exception;
         }
+
+        return true;
     }
 
     /**
@@ -591,12 +605,12 @@ public class ChromeLauncherActivity extends Activity
         Intent intent = oldIntent == null ? new Intent() : new Intent(oldIntent);
         intent.setAction(Intent.ACTION_VIEW);
         intent.setClassName(context, getDocumentClassName(incognito));
+        intent.setData(DocumentTabModelSelector.createDocumentDataString(newTabId, url));
 
-        if (incognito) {
-            // Incognito Intents don't pass URLs in their data.
+        if (incognito || IntentUtils.isIntentTooLarge(intent)) {
+            // Don't pass URLs via Incognito Intents for privacy reasons, and don't do it when the
+            // Intent is too large to prevent crashes: https://crbug.com/526238
             intent.setData(DocumentTabModelSelector.createDocumentDataString(newTabId, ""));
-        } else {
-            intent.setData(DocumentTabModelSelector.createDocumentDataString(newTabId, url));
         }
 
         // For content URIs, because intent.getData().getScheme() begins with "document://,
