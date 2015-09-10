@@ -266,6 +266,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
 #endif  // defined(OS_ANDROID)
+    // For simplicity with respect to parameterized tests, enable for all tests.
+    command_line->AppendSwitch(switches::kEnablePrefixedEncryptedMedia);
   }
 
   void SetUpCommandLineForKeySystem(const std::string& key_system,
@@ -362,7 +364,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
 };
 
 // Tests encrypted media playback using ExternalClearKey key system in
-// decrypt-and-decode mode for unprefixed EME.
+// decrypt-and-decode mode for prefixed EME.
 class ECKPrefixedEncryptedMediaTest : public EncryptedMediaTestBase {
  public:
   // We use special |key_system| names to do non-playback related tests, e.g.
@@ -764,7 +766,6 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException_Prefixed) {
                         PlayTwice::NO, kEmeNotSupportedError);
 }
 
-// TODO(jrummell): http://crbug.com/349181
 // The parent key system cannot be used when creating MediaKeys.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly,

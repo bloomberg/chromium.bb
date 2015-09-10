@@ -5758,11 +5758,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to disable the Encrypted Media Extensions APIs.">
         Disable Encrypted Media Extensions on video and audio elements.
       </message>
-      <message name="IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to disable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
-        Disable prefixed Encrypted Media Extensions.
+      <message name="IDS_FLAGS_ENABLE_PREFIXED_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to enable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
+        Enable prefixed Encrypted Media Extensions.
       </message>
-      <message name="IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to disable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
-        Disable the experimental version of Encrypted Media Extensions on video and audio elements.
+      <message name="IDS_FLAGS_ENABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to enable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
+        Enable the deprecated version of Encrypted Media Extensions on video and audio elements.
       </message>
       <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag to disable gesture requiment for media playback">
         Disable gesture requirement for media playback.

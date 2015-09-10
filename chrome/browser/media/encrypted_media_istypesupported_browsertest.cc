@@ -141,6 +141,11 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
     vp8_invalid_extension_codec_.push_back("vp8.1");
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // TODO(jrummell): Switch tests to unprefixed EME: http://crbug.com/367158.
+    command_line->AppendSwitch(switches::kEnablePrefixedEncryptedMedia);
+  }
+
   typedef std::vector<std::string> CodecVector;
 
   const CodecVector& no_codecs() const { return no_codecs_; }
@@ -327,6 +332,8 @@ class EncryptedMediaIsTypeSupportedExternalClearKeyTest
 #if defined(ENABLE_PEPPER_CDMS)
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    EncryptedMediaIsTypeSupportedTest::SetUpCommandLine(command_line);
+
     // Platform-specific filename relative to the chrome executable.
     const char adapter_file_name[] =
 #if defined(OS_MACOSX)
@@ -356,10 +363,11 @@ class EncryptedMediaIsTypeSupportedClearKeyCDMRegisteredWithWrongPathTest
     : public EncryptedMediaIsTypeSupportedTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-   RegisterPepperCdm(command_line,
-                     "clearkeycdmadapterwrongname.dll",
-                     "application/x-ppapi-clearkey-cdm",
-                     false);
+    EncryptedMediaIsTypeSupportedTest::SetUpCommandLine(command_line);
+    RegisterPepperCdm(command_line,
+                      "clearkeycdmadapterwrongname.dll",
+                      "application/x-ppapi-clearkey-cdm",
+                      false);
   }
 };
 
@@ -368,10 +376,11 @@ class EncryptedMediaIsTypeSupportedWidevineCDMRegisteredWithWrongPathTest
     : public EncryptedMediaIsTypeSupportedTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-   RegisterPepperCdm(command_line,
-                     "widevinecdmadapterwrongname.dll",
-                     "application/x-ppapi-widevine-cdm",
-                     false);
+    EncryptedMediaIsTypeSupportedTest::SetUpCommandLine(command_line);
+    RegisterPepperCdm(command_line,
+                      "widevinecdmadapterwrongname.dll",
+                      "application/x-ppapi-widevine-cdm",
+                      false);
   }
 };
 #endif  // defined(ENABLE_PEPPER_CDMS)

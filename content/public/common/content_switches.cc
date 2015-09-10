@@ -168,9 +168,9 @@ const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 // this switch.
 const char kDisableKillAfterBadIPC[]        = "disable-kill-after-bad-ipc";
 
-// Disables prefixed Encrypted Media API (e.g. webkitGenerateKeyRequest()).
-const char kDisablePrefixedEncryptedMedia[] =
-    "disable-prefixed-encrypted-media";
+// Enables prefixed Encrypted Media API (e.g. webkitGenerateKeyRequest()).
+const char kEnablePrefixedEncryptedMedia[] =
+    "enable-prefixed-encrypted-media";
 
 // Disables LCD text.
 const char kDisableLCDText[]                = "disable-lcd-text";

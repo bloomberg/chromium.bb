@@ -60,7 +60,7 @@ CONTENT_EXPORT extern const char kDisableHangMonitor[];
 CONTENT_EXPORT extern const char kDisableHideInactiveStackedTabCloseButtons[];
 extern const char kDisableHistogramCustomizer[];
 CONTENT_EXPORT extern const char kDisableLCDText[];
-CONTENT_EXPORT extern const char kDisablePrefixedEncryptedMedia[];
+CONTENT_EXPORT extern const char kEnablePrefixedEncryptedMedia[];
 extern const char kDisableKillAfterBadIPC[];
 CONTENT_EXPORT extern const char kDisableLocalStorage[];
 CONTENT_EXPORT extern const char kDisableLogging[];
