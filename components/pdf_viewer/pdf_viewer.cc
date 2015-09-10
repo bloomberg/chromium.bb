@@ -75,6 +75,7 @@ class BitmapUploader : public mojo::SurfaceClient {
 
   void Init(mojo::Shell* shell) {
     surface_ = view_->RequestSurface();
+    surface_->BindToThread();
 
     mojo::ServiceProviderPtr gpu_service_provider;
     mojo::URLRequestPtr request2(mojo::URLRequest::New());
@@ -124,6 +125,13 @@ class BitmapUploader : public mojo::SurfaceClient {
     gfx::Rect bounds(view_->bounds().To<gfx::Rect>());
     mojo::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
     mojo::CompositorFramePtr frame = mojo::CompositorFrame::New();
+
+    // TODO(rjkroege): Support device scale factor in PDF viewer
+    mojo::CompositorFrameMetadataPtr meta =
+        mojo::CompositorFrameMetadata::New();
+    meta->device_scale_factor = 1.0f;
+    frame->metadata = meta.Pass();
+
     frame->resources.resize(0u);
 
     pass->quads.resize(0u);
