@@ -22,6 +22,7 @@
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ime/input_method_initializer.h"
 
 #if defined(OS_ANDROID)
@@ -150,6 +151,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // not run these parts of initialization twice.
     if (!initialization_started_) {
       initialization_started_ = true;
+
+      SkGraphics::Init();
 
 #if !defined(OS_IOS)
       if (parameters.command_line.HasSwitch(switches::kWaitForDebugger))
