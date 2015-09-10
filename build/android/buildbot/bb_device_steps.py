@@ -446,7 +446,10 @@ def ProvisionDevices(options):
 
 def DeviceStatusCheck(options):
   bb_annotations.PrintNamedStep('device_status_check')
-  cmd = ['build/android/buildbot/bb_device_status_check.py']
+  cmd = [
+      'build/android/buildbot/bb_device_status_check.py',
+      '--blacklist-file', 'out/bad_devices.json',
+  ]
   if options.restart_usb:
     cmd.append('--restart-usb')
   RunCmd(cmd, halt_on_failure=True)

@@ -66,7 +66,9 @@ def get_device_info(args, failures):
                      'android',
                      'buildbot',
                      'bb_device_status_check.py'),
-        '--json-output', tempfile_path])
+        '--json-output', tempfile_path,
+        '--blacklist-file', os.path.join(
+            args.paths['checkout'], 'out', 'bad_devices.json')])
 
     if rc:
       failures.append('bb_device_status_check')
