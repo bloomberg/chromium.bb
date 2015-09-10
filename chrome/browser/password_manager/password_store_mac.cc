@@ -980,15 +980,15 @@ PasswordStoreMac::MigrationResult PasswordStoreMac::ImportFromKeychain() {
   if (database_forms.empty())
     return MIGRATION_OK;
 
+  // Mute the Keychain.
+  chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
+      false);
+
   // Make sure that the encryption key is retrieved from the Keychain so the
   // encryption can be done.
   std::string ciphertext;
   if (!OSCrypt::EncryptString("test", &ciphertext))
     return ENCRYPTOR_FAILURE;
-
-  // Mute the Keychain.
-  chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
-      false);
 
   // Retrieve the passwords.
   // Get all the password attributes first.
