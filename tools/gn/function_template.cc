@@ -163,6 +163,14 @@ Value RunTemplate(Scope* scope,
                   const std::vector<Value>& args,
                   BlockNode* block,
                   Err* err) {
+  // Of course you can have configs and targets in a template. But here, we're
+  // not actually executing the block, only declaring it. Marking the template
+  // declaration as non-nestable means that you can't put it inside a target,
+  // for example.
+  NonNestableBlock non_nestable(scope, function, "template");
+  if (!non_nestable.Enter(err))
+    return Value();
+
   // TODO(brettw) determine if the function is built-in and throw an error if
   // it is.
   if (args.size() != 1) {

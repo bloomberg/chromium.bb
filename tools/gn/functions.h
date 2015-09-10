@@ -430,4 +430,40 @@ Label MakeLabelForScope(const Scope* scope,
                         const FunctionCallNode* function,
                         const std::string& name);
 
+// Some tyesp of blocks can't be nested inside other ones. For such cases,
+// instantiate this object upon entering the block and Enter() will fail if
+// there is already another non-nestable block on the stack.
+class NonNestableBlock {
+ public:
+  enum Type {
+    CONFIG,
+    DECLARE_ARGS,
+    TARGET,
+    TEMPLATE,
+    TOOLCHAIN,
+  };
+
+  // type_description is a string that will be used in error messages
+  // describing the type of the block, for example, "template" or "config".
+  NonNestableBlock(Scope* scope,
+                   const FunctionCallNode* function,
+                   const char* type_description);
+  ~NonNestableBlock();
+
+  bool Enter(Err* err);
+
+ private:
+  // Used as a void* key for the Scope to track our property. The actual value
+  // is never used.
+  static const int kKey;
+
+  Scope* scope_;
+  const FunctionCallNode* function_;
+  const char* type_description_;
+
+  // Set to true when the key is added to the scope so we don't try to
+  // delete nonexistant keys which will cause assertions.
+  bool key_added_;
+};
+
 #endif  // TOOLS_GN_FUNCTIONS_H_

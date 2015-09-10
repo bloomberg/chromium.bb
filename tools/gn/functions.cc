@@ -131,6 +131,42 @@ Label MakeLabelForScope(const Scope* scope,
                toolchain_label.name());
 }
 
+// static
+const int NonNestableBlock::kKey = 0;
+
+NonNestableBlock::NonNestableBlock(
+    Scope* scope,
+    const FunctionCallNode* function,
+    const char* type_description)
+    : scope_(scope),
+      function_(function),
+      type_description_(type_description),
+      key_added_(false) {
+}
+
+NonNestableBlock::~NonNestableBlock() {
+  if (key_added_)
+    scope_->SetProperty(&kKey, nullptr);
+}
+
+bool NonNestableBlock::Enter(Err* err) {
+  void* scope_value = scope_->GetProperty(&kKey, nullptr);
+  if (scope_value) {
+    // Existing block.
+    const NonNestableBlock* existing =
+        reinterpret_cast<const NonNestableBlock*>(scope_value);
+    *err = Err(function_, "Can't nest these things.",
+        std::string("You are trying to nest a ") + type_description_ +
+        " inside a " + existing->type_description_ + ".");
+    err->AppendSubErr(Err(existing->function_, "The enclosing block."));
+    return false;
+  }
+
+  scope_->SetProperty(&kKey, this);
+  key_added_ = true;
+  return true;
+}
+
 namespace functions {
 
 // assert ----------------------------------------------------------------------
@@ -244,6 +280,10 @@ Value RunConfig(const FunctionCallNode* function,
                 const std::vector<Value>& args,
                 Scope* scope,
                 Err* err) {
+  NonNestableBlock non_nestable(scope, function, "config");
+  if (!non_nestable.Enter(err))
+    return Value();
+
   if (!EnsureSingleStringArg(function, args, err) ||
       !EnsureNotProcessingImport(function, scope, err))
     return Value();
@@ -308,6 +348,10 @@ Value RunDeclareArgs(Scope* scope,
                      const std::vector<Value>& args,
                      BlockNode* block,
                      Err* err) {
+  NonNestableBlock non_nestable(scope, function, "declare_args");
+  if (!non_nestable.Enter(err))
+    return Value();
+
   Scope block_scope(scope);
   block->Execute(&block_scope, err);
   if (err->has_error())

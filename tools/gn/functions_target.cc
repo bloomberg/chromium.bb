@@ -31,6 +31,10 @@ Value ExecuteGenericTarget(const char* target_type,
                            const std::vector<Value>& args,
                            BlockNode* block,
                            Err* err) {
+  NonNestableBlock non_nestable(scope, function, "target");
+  if (!non_nestable.Enter(err))
+    return Value();
+
   if (!EnsureNotProcessingImport(function, scope, err) ||
       !EnsureNotProcessingBuildConfig(function, scope, err))
     return Value();

@@ -767,7 +767,8 @@ const char kLdflags_Help[] =
     "  ldflags are NOT pushed to dependents, so applying ldflags to source\n"
     "  sets or static libraries will be a no-op. If you want to apply ldflags\n"
     "  to dependent targets, put them in a config and set it in the\n"
-    "  all_dependent_configs or public_configs.\n";
+    "  all_dependent_configs or public_configs.\n"
+    COMMON_ORDERING_HELP;
 
 #define COMMON_LIB_INHERITANCE_HELP \
     "\n" \
