@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/session_service_commands.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -206,16 +207,11 @@ class SessionService : public BaseSessionServiceDelegateImpl,
                          const SessionID& tab_id,
                          base::TimeTicks last_active_time);
 
-  // Callback from GetLastSession.
-  // The second parameter is the id of the window that was last active.
-  typedef base::Callback<void(ScopedVector<sessions::SessionWindow>,
-                         SessionID::id_type)> SessionCallback;
-
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
   // it means the session could not be restored.
   base::CancelableTaskTracker::TaskId GetLastSession(
-      const SessionCallback& callback,
+      const sessions::GetLastSessionCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   // BaseSessionServiceDelegateImpl:
@@ -257,7 +253,7 @@ class SessionService : public BaseSessionServiceDelegateImpl,
   void OnBrowserSetLastActive(Browser* browser) override;
 
   // Converts |commands| to SessionWindows and notifies the callback.
-  void OnGotSessionCommands(const SessionCallback& callback,
+  void OnGotSessionCommands(const sessions::GetLastSessionCallback& callback,
                             ScopedVector<sessions::SessionCommand> commands);
 
   // Adds commands to commands that will recreate the state of the specified

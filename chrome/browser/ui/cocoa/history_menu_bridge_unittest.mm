@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
 #include "chrome/browser/sessions/persistent_tab_restore_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
@@ -27,7 +28,11 @@ namespace {
 
 class MockTRS : public PersistentTabRestoreService {
  public:
-  MockTRS(Profile* profile) : PersistentTabRestoreService(profile, NULL) {}
+  MockTRS(Profile* profile)
+      : PersistentTabRestoreService(
+            profile,
+            make_scoped_ptr(new ChromeTabRestoreServiceClient(profile)),
+            nullptr) {}
   MOCK_CONST_METHOD0(entries, const TabRestoreService::Entries&());
 };
 

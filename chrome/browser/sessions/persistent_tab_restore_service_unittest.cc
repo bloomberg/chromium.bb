@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_utils.h"
@@ -79,7 +80,10 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     time_factory_ = new PersistentTabRestoreTimeFactory();
-    service_.reset(new PersistentTabRestoreService(profile(), time_factory_));
+    service_.reset(new PersistentTabRestoreService(
+        profile(),
+        make_scoped_ptr(new ChromeTabRestoreServiceClient(profile())),
+        time_factory_));
   }
 
   void TearDown() override {
@@ -117,7 +121,10 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     service_->Shutdown();
     content::RunAllBlockingPoolTasksUntilIdle();
     service_.reset();
-    service_.reset(new PersistentTabRestoreService(profile(), time_factory_));
+    service_.reset(new PersistentTabRestoreService(
+        profile(),
+        make_scoped_ptr(new ChromeTabRestoreServiceClient(profile())),
+        time_factory_));
     SynchronousLoadTabsFromLastSession();
   }
 

@@ -2642,6 +2642,8 @@
     'chrome_browser_session_sources': [
       'browser/sessions/base_session_service_delegate_impl.cc',
       'browser/sessions/base_session_service_delegate_impl.h',
+      'browser/sessions/chrome_tab_restore_service_client.cc',
+      'browser/sessions/chrome_tab_restore_service_client.h',
       'browser/sessions/session_data_deleter.cc',
       'browser/sessions/session_data_deleter.h',
       'browser/sessions/session_restore_android.cc',

@@ -34,7 +34,7 @@ class TabRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override;
+      content::BrowserContext* browser_context) const override;
   bool ServiceIsNULLWhileTesting() const override;
 };
 

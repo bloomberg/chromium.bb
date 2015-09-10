@@ -19,10 +19,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/base_session_service_delegate_impl.h"
-#include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "components/sessions/base_session_service.h"
 #include "components/sessions/base_session_service_commands.h"
+#include "components/sessions/core/session_constants.h"
 #include "components/sessions/session_command.h"
 #include "content/public/browser/session_storage_namespace.h"
 
@@ -119,7 +118,7 @@ class PersistentTabRestoreService::Delegate
     : public BaseSessionServiceDelegateImpl,
       public TabRestoreServiceHelper::Observer {
  public:
-  explicit Delegate(Profile* profile);
+  Delegate(Profile* profile, sessions::TabRestoreServiceClient* client);
 
   ~Delegate() override;
 
@@ -227,6 +226,9 @@ class PersistentTabRestoreService::Delegate
   // The associated profile.
   Profile* profile_;
 
+  // The associated client.
+  sessions::TabRestoreServiceClient* client_;
+
   TabRestoreServiceHelper* tab_restore_service_helper_;
 
   // The number of entries to write.
@@ -249,14 +251,16 @@ class PersistentTabRestoreService::Delegate
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PersistentTabRestoreService::Delegate::Delegate(Profile* profile)
+PersistentTabRestoreService::Delegate::Delegate(
+    Profile* profile,
+    sessions::TabRestoreServiceClient* client)
     : BaseSessionServiceDelegateImpl(true),
-      base_session_service_(
-          new sessions::BaseSessionService(
-              sessions::BaseSessionService::TAB_RESTORE,
-              profile->GetPath(),
-              this)),
+      base_session_service_(new sessions::BaseSessionService(
+          sessions::BaseSessionService::TAB_RESTORE,
+          profile->GetPath(),
+          this)),
       profile_(profile),
+      client_(client),
       tab_restore_service_helper_(NULL),
       entries_to_write_(0),
       entries_written_(0),
@@ -349,30 +353,14 @@ void PersistentTabRestoreService::Delegate::LoadTabsFromLastSession() {
     return;
   }
 
-#if !defined(ENABLE_SESSION_SERVICE)
-  // If sessions are not stored in the SessionService, default to
-  // |LOADED_LAST_SESSION| state.
-  load_state_ = LOADING | LOADED_LAST_SESSION;
-#else
   load_state_ = LOADING;
-
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfile(profile_);
-  Profile::ExitType exit_type = profile_->GetLastSessionExitType();
-  if (!profile_->restored_last_session() && session_service &&
-      (exit_type == Profile::EXIT_CRASHED ||
-       exit_type == Profile::EXIT_SESSION_ENDED)) {
-    // The previous session crashed and wasn't restored, or was a forced
-    // shutdown. Both of which won't have notified us of the browser close so
-    // that we need to load the windows from session service (which will have
-    // saved them).
-    session_service->GetLastSession(
+  if (client_->HasLastSession()) {
+    client_->GetLastSession(
         base::Bind(&Delegate::OnGotPreviousSession, base::Unretained(this)),
         &cancelable_task_tracker_);
   } else {
     load_state_ |= LOADED_LAST_SESSION;
   }
-#endif
 
   // Request the tabs closed in the last session. If the last session crashed,
   // this won't contain the tabs/window that were open at the point of the
@@ -451,8 +439,10 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
   // Determine the first navigation we'll persist.
   int valid_count_before_selected = 0;
   int first_index_to_persist = selected_index;
-  for (int i = selected_index - 1; i >= 0 &&
-       valid_count_before_selected < gMaxPersistNavigationCount; --i) {
+  for (int i = selected_index - 1;
+       i >= 0 &&
+       valid_count_before_selected < sessions::gMaxPersistNavigationCount;
+       --i) {
     if (ShouldTrackEntry(navigations[i].virtual_url())) {
       first_index_to_persist = i;
       valid_count_before_selected++;
@@ -491,7 +481,8 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
 
   // Then write the navigations.
   for (int i = first_index_to_persist, wrote_count = 0;
-       wrote_count < 2 * gMaxPersistNavigationCount && i < max_index; ++i) {
+       wrote_count < 2 * sessions::gMaxPersistNavigationCount && i < max_index;
+       ++i) {
     if (ShouldTrackEntry(navigations[i].virtual_url())) {
       base_session_service_->ScheduleCommand(
           CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation,
@@ -933,8 +924,10 @@ void PersistentTabRestoreService::Delegate::RemoveEntryByID(
 
 PersistentTabRestoreService::PersistentTabRestoreService(
     Profile* profile,
+    scoped_ptr<sessions::TabRestoreServiceClient> client,
     TimeFactory* time_factory)
-    : delegate_(new Delegate(profile)),
+    : client_(client.Pass()),
+      delegate_(new Delegate(profile, client_.get())),
       helper_(this, delegate_.get(), profile, time_factory) {
   delegate_->set_tab_restore_service_helper(&helper_);
 }
@@ -1018,9 +1011,4 @@ TabRestoreService::Entries* PersistentTabRestoreService::mutable_entries() {
 
 void PersistentTabRestoreService::PruneEntries() {
   helper_.PruneEntries();
-}
-
-KeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new PersistentTabRestoreService(static_cast<Profile*>(profile), NULL);
 }

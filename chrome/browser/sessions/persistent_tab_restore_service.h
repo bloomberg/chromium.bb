@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_helper.h"
+#include "components/sessions/core/tab_restore_service_client.h"
 
 class Profile;
 
@@ -19,8 +20,10 @@ class Profile;
 class PersistentTabRestoreService : public TabRestoreService {
  public:
   // Does not take ownership of |time_factory|.
-  PersistentTabRestoreService(Profile* profile,
-                              TimeFactory* time_factory);
+  PersistentTabRestoreService(
+      Profile* profile,
+      scoped_ptr<sessions::TabRestoreServiceClient> client,
+      TimeFactory* time_factory);
 
   ~PersistentTabRestoreService() override;
 
@@ -55,6 +58,7 @@ class PersistentTabRestoreService : public TabRestoreService {
   Entries* mutable_entries();
   void PruneEntries();
 
+  scoped_ptr<sessions::TabRestoreServiceClient> client_;
   scoped_ptr<Delegate> delegate_;
   TabRestoreServiceHelper helper_;
 

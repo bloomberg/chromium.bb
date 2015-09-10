@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
 #include "chrome/browser/sessions/persistent_tab_restore_service.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -144,7 +145,10 @@ class RecentTabsSubMenuModelTest
   static scoped_ptr<KeyedService> GetTabRestoreService(
       content::BrowserContext* browser_context) {
     return make_scoped_ptr(new PersistentTabRestoreService(
-        Profile::FromBrowserContext(browser_context), NULL));
+        Profile::FromBrowserContext(browser_context),
+        make_scoped_ptr(new ChromeTabRestoreServiceClient(
+            Profile::FromBrowserContext(browser_context))),
+        nullptr));
   }
 
   sync_driver::OpenTabsUIDelegate* GetOpenTabsDelegate() {

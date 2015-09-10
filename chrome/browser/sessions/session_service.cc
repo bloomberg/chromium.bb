@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
+#include "components/sessions/core/session_constants.h"
 #include "components/sessions/session_command.h"
 #include "components/sessions/session_types.h"
 #include "content/public/browser/navigation_details.h"
@@ -497,7 +498,7 @@ void SessionService::SetLastActiveTime(const SessionID& window_id,
 }
 
 base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
-    const SessionCallback& callback,
+    const sessions::GetLastSessionCallback& callback,
     base::CancelableTaskTracker* tracker) {
   // OnGotSessionCommands maps the SessionCommands to browser state, then run
   // the callback.
@@ -695,7 +696,7 @@ void SessionService::OnBrowserSetLastActive(Browser* browser) {
 }
 
 void SessionService::OnGotSessionCommands(
-    const SessionCallback& callback,
+    const sessions::GetLastSessionCallback& callback,
     ScopedVector<sessions::SessionCommand> commands) {
   ScopedVector<sessions::SessionWindow> valid_windows;
   SessionID::id_type active_window_id = 0;
@@ -719,9 +720,11 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
       sessions::CreateSetTabWindowCommand(window_id, session_id));
 
   const int current_index = tab->GetController().GetCurrentEntryIndex();
-  const int min_index = std::max(current_index - gMaxPersistNavigationCount, 0);
-  const int max_index = std::min(current_index + gMaxPersistNavigationCount,
-                                 tab->GetController().GetEntryCount());
+  const int min_index =
+      std::max(current_index - sessions::gMaxPersistNavigationCount, 0);
+  const int max_index =
+      std::min(current_index + sessions::gMaxPersistNavigationCount,
+               tab->GetController().GetEntryCount());
   const int pending_index = tab->GetController().GetPendingEntryIndex();
   if (tab_to_available_range) {
     (*tab_to_available_range)[session_id.id()] =

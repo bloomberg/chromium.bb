@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sessions/session_service_utils.h"
 
-const int gMaxPersistNavigationCount = 6;
-
 sessions::SessionWindow::WindowType WindowTypeForBrowserType(
     Browser::Type type) {
   switch (type) {

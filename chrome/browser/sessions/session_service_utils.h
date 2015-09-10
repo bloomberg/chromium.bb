@@ -8,10 +8,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "components/sessions/session_types.h"
 
-// The maximum number of navigation entries in each direction we'll persist for
-// chrome/Browser.
-extern const int gMaxPersistNavigationCount;
-
 // Convert back/forward between the Browser and SessionService window types.
 sessions::SessionWindow::WindowType WindowTypeForBrowserType(
     Browser::Type type);
