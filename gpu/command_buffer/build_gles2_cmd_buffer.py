@@ -3456,6 +3456,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoTransformFeedbackVaryings',
     'cmd_args':
         'GLuint program, const char** varyings, GLenum buffermode',
+    'expectation': False,
     'unsafe': True,
   },
   'Uniform1f': {'type': 'PUTXn', 'count': 1},

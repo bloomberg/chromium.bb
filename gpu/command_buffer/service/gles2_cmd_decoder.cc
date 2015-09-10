@@ -7925,8 +7925,6 @@ void GLES2DecoderImpl::DoTransformFeedbackVaryings(
     return;
   }
   program->TransformFeedbackVaryings(count, varyings, buffer_mode);
-  glTransformFeedbackVaryings(
-      program->service_id(), count, varyings, buffer_mode);
 }
 
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {

@@ -191,6 +191,16 @@ const std::string* Shader::GetUniformMappedName(
   return nullptr;
 }
 
+const std::string* Shader::GetVaryingMappedName(
+    const std::string& original_name) const {
+  for (VaryingMap::const_iterator it = varying_map_.begin();
+       it != varying_map_.end(); ++it) {
+    if (it->second.name == original_name)
+      return &(it->first);
+  }
+  return NULL;
+}
+
 const std::string* Shader::GetOriginalNameFromHashedName(
     const std::string& hashed_name) const {
   NameMap::const_iterator it = name_map_.find(hashed_name);

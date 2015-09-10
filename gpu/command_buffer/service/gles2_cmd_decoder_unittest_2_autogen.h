@@ -1256,8 +1256,6 @@ TEST_P(GLES2DecoderTest2, TexStorage3DValidArgs) {
 // TODO(gman): TexSubImage3D
 
 TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketValidArgs) {
-  EXPECT_CALL(*gl_, TransformFeedbackVaryings(kServiceProgramId, 1, _,
-                                              GL_INTERLEAVED_ATTRIBS));
   const uint32 kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};

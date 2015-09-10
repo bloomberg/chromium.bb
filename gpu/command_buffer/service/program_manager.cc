@@ -569,6 +569,37 @@ void Program::ExecuteBindAttribLocationCalls() {
   }
 }
 
+bool Program::ExecuteTransformFeedbackVaryingsCall() {
+  if (!transform_feedback_varyings_.empty()) {
+    Shader* vertex_shader = attached_shaders_[0].get();
+    if (!vertex_shader) {
+      set_log_info("TransformFeedbackVaryings: missing vertex shader");
+      return false;
+    }
+
+    std::vector<const char*> mapped_names;
+    mapped_names.reserve(transform_feedback_varyings_.size());
+    for (StringVector::const_iterator it =
+             transform_feedback_varyings_.begin();
+         it != transform_feedback_varyings_.end(); ++it) {
+      const std::string& orig = *it;
+      const std::string* mapped = vertex_shader->GetVaryingMappedName(orig);
+      if (!mapped) {
+        std::string log = "TransformFeedbackVaryings: no varying named " + orig;
+        set_log_info(log.c_str());
+        return false;
+      }
+      mapped_names.push_back(mapped->c_str());
+    }
+    glTransformFeedbackVaryings(service_id_,
+                                mapped_names.size(),
+                                &mapped_names.front(),
+                                transform_feedback_buffer_mode_);
+  }
+
+  return true;
+}
+
 bool Program::Link(ShaderManager* manager,
                    Program::VaryingsPackingOption varyings_packing_option,
                    const ShaderCacheCallback& shader_callback) {
@@ -660,6 +691,9 @@ bool Program::Link(ShaderManager* manager,
     }
 
     ExecuteBindAttribLocationCalls();
+    if (!ExecuteTransformFeedbackVaryingsCall()) {
+      return false;
+    }
     before_time = TimeTicks::Now();
     if (cache && gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary) {
       glProgramParameteri(service_id(),

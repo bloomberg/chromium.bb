@@ -95,6 +95,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   typedef std::vector<VertexAttrib> AttribInfoVector;
   typedef std::vector<int> SamplerIndices;
   typedef std::map<std::string, GLint> LocationMap;
+  typedef std::vector<std::string> StringVector;
 
   Program(ProgramManager* manager, GLuint service_id);
 
@@ -315,6 +316,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // This is called right before the glLink() call, but after shaders are
   // translated.
   void ExecuteBindAttribLocationCalls();
+
+  // The names of transform feedback varyings need to be hashed just
+  // like bound attributes' locations, just before the link call.
+  // Returns false upon failure.
+  bool ExecuteTransformFeedbackVaryingsCall();
 
   void AddUniformInfo(
       GLsizei size, GLenum type, GLint location, GLint fake_base_location,
