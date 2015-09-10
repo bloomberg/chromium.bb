@@ -268,7 +268,7 @@ SQLValue SQLiteStatement::getColumnValue(int col)
         case SQLITE_BLOB:       // SQLValue and JS don't represent blobs, so use TEXT -case
         case SQLITE_TEXT: {
             const UChar* string = reinterpret_cast<const UChar*>(sqlite3_value_text16(value));
-            unsigned length = WTF::lengthOfNullTerminatedString(string);
+            unsigned length = sqlite3_value_bytes16(value) / sizeof(UChar);
             return SQLValue(StringImpl::create8BitIfPossible(string, length));
         }
         case SQLITE_NULL:
