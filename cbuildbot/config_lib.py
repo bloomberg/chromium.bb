@@ -12,7 +12,6 @@ import json
 import os
 
 from chromite.cbuildbot import constants
-from chromite.lib import factory
 from chromite.lib import osutils
 
 
@@ -63,10 +62,12 @@ CONFIG_TYPE_DUMP_ORDER = (
     'cbuildbot',
 )
 
-
 # In the Json, this special build config holds the default values for all
 # other configs.
 DEFAULT_BUILD_CONFIG = '_default'
+
+# We cache the config we load from disk to avoid reparsing.
+_CACHED_CONFIG = None
 
 
 def IsPFQType(b_type):
@@ -1340,16 +1341,38 @@ def _CreateBuildConfig(name, default, build_dict, templates):
   return result
 
 
-@factory.CachedFunctionCall
+def ClearConfigCache():
+  """Clear the currently cached SiteConfig.
+
+  This is intended to be used very early in the startup, after we fetch/update
+  the site config information available to us.
+
+  However, this operation is never 100% safe, since the Chrome OS config, or an
+  outdated config was availble to any code that ran before (including on
+  import), and that code might have used or cached related values.
+  """
+  # pylint: disable=global-statement
+  global _CACHED_CONFIG
+  _CACHED_CONFIG = None
+
+
 def GetConfig():
   """Load the current SiteConfig.
 
   Returns:
     SiteConfig instance to use for this build.
   """
-  # If there is no site specific config, and default is allowed...
-  if not os.path.exists(constants.SITE_CONFIG_FILE):
-    # Fall back to default Chrome OS configuration.
-    return LoadConfigFromFile(constants.CHROMEOS_CONFIG_FILE)
+  # pylint: disable=global-statement
+  global _CACHED_CONFIG
 
-  return LoadConfigFromFile(constants.SITE_CONFIG_FILE)
+  if _CACHED_CONFIG is None:
+    if os.path.exists(constants.SITE_CONFIG_FILE):
+      # Use a site specific config, if present.
+      filename = constants.SITE_CONFIG_FILE
+    else:
+      # Fall back to default Chrome OS configuration.
+      filename = constants.CHROMEOS_CONFIG_FILE
+
+    _CACHED_CONFIG = LoadConfigFromFile(filename)
+
+  return _CACHED_CONFIG

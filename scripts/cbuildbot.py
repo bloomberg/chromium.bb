@@ -1050,6 +1050,8 @@ def _FetchInitialBootstrapConfigRepo(repo_url, branch_name):
   if branch_name:
     git.RunGit(constants.SITE_CONFIG_DIR, ['checkout', branch_name])
 
+  # Clear the cached SiteConfig, if there was one.
+  config_lib.ClearConfigCache()
 
 # TODO(build): This function is too damn long.
 def main(argv):
