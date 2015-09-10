@@ -15,10 +15,10 @@
 
 using content::Manifest;
 
-ManifestIconSelector::ManifestIconSelector(float preferred_icon_size_in_pixels,
-                                           float minimum_icon_size_in_pixels)
-    : preferred_icon_size_in_pixels_(preferred_icon_size_in_pixels),
-      minimum_icon_size_in_pixels_(minimum_icon_size_in_pixels) {
+ManifestIconSelector::ManifestIconSelector(int ideal_icon_size_in_px,
+                                           int minimum_icon_size_in_px)
+    : ideal_icon_size_in_px_(ideal_icon_size_in_px),
+      minimum_icon_size_in_px_(minimum_icon_size_in_px) {
 }
 
 bool ManifestIconSelector::IconSizesContainsPreferredSize(
@@ -26,7 +26,7 @@ bool ManifestIconSelector::IconSizesContainsPreferredSize(
   for (size_t i = 0; i < sizes.size(); ++i) {
     if (sizes[i].height() != sizes[i].width())
       continue;
-    if (sizes[i].width() == preferred_icon_size_in_pixels_)
+    if (sizes[i].width() == ideal_icon_size_in_px_)
       return true;
   }
 
@@ -38,7 +38,7 @@ bool ManifestIconSelector::IconSizesContainsBiggerThanMinimumSize(
   for (size_t i = 0; i < sizes.size(); ++i) {
     if (sizes[i].height() != sizes[i].width())
       continue;
-    if (sizes[i].width() >= minimum_icon_size_in_pixels_)
+    if (sizes[i].width() >= minimum_icon_size_in_px_)
       return true;
   }
   return false;
@@ -58,7 +58,7 @@ int ManifestIconSelector::FindBestMatchingIconForDensity(
     for (size_t j = 0; j < sizes.size(); ++j) {
       if (sizes[j].height() != sizes[j].width())
         continue;
-      int delta = sizes[j].width() - preferred_icon_size_in_pixels_;
+      int delta = sizes[j].width() - ideal_icon_size_in_px_;
       if (delta == 0)
         return i;
       if (best_delta > 0 && delta < 0)
@@ -163,23 +163,22 @@ std::vector<Manifest::Icon> ManifestIconSelector::FilterIconsByType(
 // static
 GURL ManifestIconSelector::FindBestMatchingIcon(
     const std::vector<Manifest::Icon>& unfiltered_icons,
-    const float preferred_icon_size_in_dp,
+    const int ideal_icon_size_in_dp,
     const gfx::Screen* screen) {
   const float device_scale_factor =
       screen->GetPrimaryDisplay().device_scale_factor();
-  const float preferred_icon_size_in_pixels =
-      preferred_icon_size_in_dp * device_scale_factor;
+  const int ideal_icon_size_in_px =
+      static_cast<int>(round(ideal_icon_size_in_dp * device_scale_factor));
 
-  const int minimum_scale_factor = std::max(
-      static_cast<int>(floor(device_scale_factor - 1)), 1);
-  const float minimum_icon_size_in_pixels =
-      preferred_icon_size_in_dp * minimum_scale_factor;
+  const float minimum_scale_factor = std::max(device_scale_factor - 1, 1.0f);
+  const int minimum_icon_size_in_px =
+      static_cast<int>(round(ideal_icon_size_in_dp * minimum_scale_factor));
 
   std::vector<Manifest::Icon> icons =
       ManifestIconSelector::FilterIconsByType(unfiltered_icons);
 
-  ManifestIconSelector selector(preferred_icon_size_in_pixels,
-                                minimum_icon_size_in_pixels);
+  ManifestIconSelector selector(ideal_icon_size_in_px,
+                                minimum_icon_size_in_px);
   int index = selector.FindBestMatchingIcon(icons, device_scale_factor);
   if (index == -1)
     return GURL();

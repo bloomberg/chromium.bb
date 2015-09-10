@@ -558,11 +558,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Test that bitmap sizes match expectations.
         int idealSize = getActivity().getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size);
-        assertTrue("Expected width: " + idealSize + ", Actual: "
-                + dataStorageFactory.mSplashImage.getWidth(),
-                Math.abs(idealSize - dataStorageFactory.mSplashImage.getWidth()) <= 1);
-        assertTrue("Expected height: " + idealSize + ", Actual: "
-                + dataStorageFactory.mSplashImage.getHeight(),
-                Math.abs(idealSize - dataStorageFactory.mSplashImage.getHeight()) <= 1);
+        assertEquals(idealSize, dataStorageFactory.mSplashImage.getWidth());
+        assertEquals(idealSize, dataStorageFactory.mSplashImage.getHeight());
     }
 }

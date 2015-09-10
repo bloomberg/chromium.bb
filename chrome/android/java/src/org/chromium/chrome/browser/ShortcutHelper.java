@@ -326,9 +326,9 @@ public class ShortcutHelper {
     }
 
     private static int getIdealSizeFromResource(Resources resources, int resource) {
-        int sizeInPx = resources.getDimensionPixelSize(resource);
+        float sizeInPx = resources.getDimension(resource);
         float density = resources.getDisplayMetrics().density;
-        return (int) (sizeInPx / density);
+        return Math.round(sizeInPx / density);
     }
 
     private static Bitmap getBitmapFromResourceId(Context context, int id, int density) {

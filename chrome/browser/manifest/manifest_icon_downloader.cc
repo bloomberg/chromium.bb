@@ -25,13 +25,12 @@ bool ManifestIconDownloader::Download(
 
   const float device_scale_factor =
       screen->GetPrimaryDisplay().device_scale_factor();
-  const float ideal_icon_size_in_px =
-      ideal_icon_size_in_dp * device_scale_factor;
+  const int ideal_icon_size_in_px =
+      static_cast<int>(round(ideal_icon_size_in_dp * device_scale_factor));
 
-  const int minimum_scale_factor = std::max(
-      static_cast<int>(floor(device_scale_factor - 1)), 1);
-  const float minimum_icon_size_in_px =
-      ideal_icon_size_in_dp * minimum_scale_factor;
+  const float minimum_scale_factor = std::max(device_scale_factor - 1, 1.0f);
+  const int minimum_icon_size_in_px =
+      static_cast<int>(round(ideal_icon_size_in_dp * minimum_scale_factor));
 
   web_contents->DownloadImage(
       icon_url,
