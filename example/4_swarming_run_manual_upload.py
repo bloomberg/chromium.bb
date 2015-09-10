@@ -83,7 +83,7 @@ def main():
     common.run(cmd, options.verbose)
     return 0
   except subprocess.CalledProcessError as e:
-    print e.returncode or 1
+    return e.returncode
 
 
 if __name__ == '__main__':
