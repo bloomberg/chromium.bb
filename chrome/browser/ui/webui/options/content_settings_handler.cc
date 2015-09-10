@@ -69,6 +69,35 @@ using extensions::APIPermission;
 
 namespace {
 
+struct ContentSettingWithExceptions {
+  ContentSettingsType type;
+  bool has_otr_exceptions;
+};
+
+const ContentSettingWithExceptions kContentTypesWithExceptions[] = {
+    // With OTR exceptions.
+    {CONTENT_SETTINGS_TYPE_COOKIES, true},
+    {CONTENT_SETTINGS_TYPE_IMAGES, true},
+    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, true},
+    {CONTENT_SETTINGS_TYPE_PLUGINS, true},
+    {CONTENT_SETTINGS_TYPE_POPUPS, true},
+    {CONTENT_SETTINGS_TYPE_FULLSCREEN, true},
+    {CONTENT_SETTINGS_TYPE_MOUSELOCK, true},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, true},
+    {CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, true},
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, true},
+#endif
+
+    // Without OTR exceptions.
+    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, false},
+    {CONTENT_SETTINGS_TYPE_GEOLOCATION, false},
+    {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, false},
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, false},
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, false},
+    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, false},
+};
+
 struct ContentSettingsTypeNameEntry {
   ContentSettingsType type;
   const char* name;
@@ -589,10 +618,17 @@ void ContentSettingsHandler::OnContentSettingChanged(
   const ContentSettingsDetails details(
       primary_pattern, secondary_pattern, content_type, resource_identifier);
   // TODO(estade): we pretend update_all() is always true.
-  if (details.update_all_types())
+  if (details.update_all_types()) {
     UpdateAllExceptionsViewsFromModel();
-  else
-    UpdateExceptionsViewFromModel(details.type());
+  } else {
+    for (ContentSettingWithExceptions content_setting_with_exceptions :
+         kContentTypesWithExceptions) {
+      if (content_setting_with_exceptions.type == details.type()) {
+        UpdateExceptionsViewFromModel(details.type());
+        break;
+      }
+    }
+  }
 }
 
 void ContentSettingsHandler::Observe(
@@ -712,9 +748,9 @@ void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
 }
 
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
-  for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
-       type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    UpdateExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
+  for (ContentSettingWithExceptions content_setting_with_exceptions :
+       kContentTypesWithExceptions) {
+    UpdateExceptionsViewFromModel(content_setting_with_exceptions.type);
   }
   // Zoom levels are not actually a content type so we need to handle them
   // separately.
@@ -722,89 +758,29 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
 }
 
 void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
-  for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
-       type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    UpdateOTRExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
+  for (ContentSettingWithExceptions content_setting_with_exceptions :
+       kContentTypesWithExceptions) {
+    if (content_setting_with_exceptions.has_otr_exceptions) {
+      UpdateExceptionsViewFromOTRHostContentSettingsMap(
+          content_setting_with_exceptions.type);
+    }
   }
 }
 
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     ContentSettingsType type) {
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      UpdateGeolocationExceptionsView();
-      break;
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      UpdateNotificationExceptionsView();
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      // The content settings type CONTENT_SETTINGS_TYPE_MEDIASSTREAM
-      // is deprecated.
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      CompareMediaExceptionsWithFlash(type);
-      UpdateExceptionsViewFromHostContentSettingsMap(type);
-      break;
-    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
-      // We don't yet support exceptions for mixed scripting.
-      break;
-    case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
-      // The content settings type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE
-      // is supposed to be set by policy only. Hence there is no user facing UI
-      // for this content type and we skip it here.
-      break;
-    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
-      // The RPH settings are retrieved separately.
-      break;
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      UpdateMIDISysExExceptionsView();
-      break;
-    case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
-      // The content settings type CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS is
-      // supposed to be set by flags and field trials only, thus there is no
-      // user facing UI for this content type and we skip it here.
-      break;
-    case CONTENT_SETTINGS_TYPE_APP_BANNER:
-      // The content settings type CONTENT_SETTINGS_TYPE_APP_BANNER is used to
-      // track whether app banners should be shown or not, and is not a user
-      // visible content setting.
-      break;
-    case CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT:
-      // The content settings type CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT is used
-      // to track engagement with various origins, and is not a user visible
-      // content setting.
-      break;
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      // Durable storage is not yet user visible. TODO(dgrogan): Make it so.
-      // https://crbug.com/482814
-      break;
-    default:
-      UpdateExceptionsViewFromHostContentSettingsMap(type);
-      break;
-  }
-}
-
-void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
-    ContentSettingsType type) {
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
-    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-    case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
-    case CONTENT_SETTINGS_TYPE_APP_BANNER:
-    case CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT:
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      break;
-    default:
-      UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
-      break;
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    UpdateGeolocationExceptionsView();
+  } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    UpdateNotificationExceptionsView();
+  } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+             type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+    CompareMediaExceptionsWithFlash(type);
+    UpdateExceptionsViewFromHostContentSettingsMap(type);
+  } else if (type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+    UpdateMIDISysExExceptionsView();
+  } else {
+    UpdateExceptionsViewFromHostContentSettingsMap(type);
   }
 }
 
