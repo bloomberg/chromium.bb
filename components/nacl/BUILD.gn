@@ -42,10 +42,7 @@ if (enable_nacl) {
     ]
 
     if (enable_nacl_untrusted) {
-      data_deps = [
-        # TODO(GYP): handle other architectures correctly.
-        "//ppapi/native_client:nacl_irt(//build/toolchain/nacl:irt_x64)",
-      ]
+      data_deps = [ "//ppapi/native_client:irt" ]
     }
     if (enable_pnacl) {
       data_deps += [
