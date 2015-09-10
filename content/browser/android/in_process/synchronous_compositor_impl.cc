@@ -290,8 +290,8 @@ void SynchronousCompositorImpl::SetIsActive(bool is_active) {
 void SynchronousCompositorImpl::OnComputeScroll(
     base::TimeTicks animation_time) {
   if (need_animate_input_) {
-    synchronous_input_handler_proxy_->SynchronouslyAnimate(animation_time);
     need_animate_input_ = false;
+    synchronous_input_handler_proxy_->SynchronouslyAnimate(animation_time);
   }
 }
 
