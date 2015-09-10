@@ -216,6 +216,7 @@ group("both_gn_and_gyp") {
   if (is_android) {
     deps += [
       "//base/android/linker:chromium_android_linker",
+      "//blimp/client:blimp_apk",
       "//build/android/gyp/test:hello_world",
       "//build/android/rezip",
       "//chrome/android:chrome_public_apk",
@@ -616,7 +617,6 @@ group("gn_only") {
     # and figure out how cross-platform they are
     deps += [
       ":gn_mojo_targets",
-      "//blimp",
       "//chrome/browser/resources:extension_resource_demo",
       "//chrome/installer/util:strings",
       "//chrome:main_dll",
@@ -698,10 +698,6 @@ group("gn_only") {
     if (is_linux && current_toolchain == host_toolchain) {
       deps += [ "//v8:d8" ]
     }
-  }
-
-  if (is_android) {
-    deps += [ "//blimp/client:blimp_apk" ]
   }
 
   if (is_mac) {

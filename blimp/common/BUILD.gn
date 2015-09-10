@@ -22,6 +22,5 @@ component("blimp_common") {
     "//skia",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//ui/native_theme",
   ]
 }

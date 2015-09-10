@@ -16,7 +16,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/native_theme/native_theme_switches.h"
 
 namespace {
 
@@ -254,8 +253,7 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   // When pinching in, only show the pinch-viewport overlay scrollbars if the
   // page scale is at least some threshold away from the minimum. i.e. don't
   // show the pinch scrollbars when at minimum scale.
-  // TODO(dtrainor): Update this since https://crrev.com/1267603004 landed.
-  // settings->scrollbar_show_scale_threshold = 1.05f;
+  settings->scrollbar_show_scale_threshold = 1.05f;
 #endif
 
   if (cmd.HasSwitch(switches::kEnableLowResTiling))
