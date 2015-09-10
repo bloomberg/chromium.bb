@@ -274,6 +274,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       write_len_(0),
       transaction_pattern_(PATTERN_UNDEFINED),
       total_received_bytes_(0),
+      total_sent_bytes_(0),
       websocket_handshake_stream_base_create_helper_(NULL),
       weak_factory_(this) {
   static_assert(HttpCache::Transaction::kNumValidationHeaders ==
@@ -526,6 +527,13 @@ int64 HttpCache::Transaction::GetTotalReceivedBytes() const {
   if (network_trans_)
     total_received_bytes += network_trans_->GetTotalReceivedBytes();
   return total_received_bytes;
+}
+
+int64_t HttpCache::Transaction::GetTotalSentBytes() const {
+  int64_t total_sent_bytes = total_sent_bytes_;
+  if (network_trans_)
+    total_sent_bytes += network_trans_->GetTotalSentBytes();
+  return total_sent_bytes;
 }
 
 void HttpCache::Transaction::DoneReading() {
@@ -2801,6 +2809,7 @@ void HttpCache::Transaction::ResetNetworkTransaction() {
   if (network_trans_->GetLoadTimingInfo(&load_timing))
     old_network_trans_load_timing_.reset(new LoadTimingInfo(load_timing));
   total_received_bytes_ += network_trans_->GetTotalReceivedBytes();
+  total_sent_bytes_ += network_trans_->GetTotalSentBytes();
   ConnectionAttempts attempts;
   network_trans_->GetConnectionAttempts(&attempts);
   for (const auto& attempt : attempts)

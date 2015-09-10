@@ -4,6 +4,8 @@
 
 #include "net/http/failing_http_transaction_factory.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -49,6 +51,7 @@ class FailingHttpTransaction : public HttpTransaction {
   void StopCaching() override;
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
   const HttpResponseInfo* GetResponseInfo() const override;
   LoadState GetLoadState() const override;
@@ -119,6 +122,10 @@ bool FailingHttpTransaction::GetFullRequestHeaders(
 }
 
 int64 FailingHttpTransaction::GetTotalReceivedBytes() const  {
+  return 0;
+}
+
+int64_t FailingHttpTransaction::GetTotalSentBytes() const {
   return 0;
 }
 

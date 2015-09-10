@@ -134,6 +134,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void StopCaching() override;
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
   void DoneReadingRedirectResponse() override;
 
@@ -279,6 +280,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // Keeps track of total received bytes over the network from transactions used
   // by this job that have already been destroyed.
   int64_t total_received_bytes_from_previous_transactions_;
+  // Keeps track of total sent bytes over the network from transactions used by
+  // this job that have already been destroyed.
+  int64_t total_sent_bytes_from_previous_transactions_;
 
   base::WeakPtrFactory<URLRequestHttpJob> weak_factory_;
 

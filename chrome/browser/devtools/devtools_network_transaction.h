@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_TRANSACTION_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_TRANSACTION_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
@@ -92,6 +94,7 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
   void StopCaching() override;
   bool GetFullRequestHeaders(net::HttpRequestHeaders* headers) const override;
   int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
   const net::HttpResponseInfo* GetResponseInfo() const override;
   net::LoadState GetLoadState() const override;

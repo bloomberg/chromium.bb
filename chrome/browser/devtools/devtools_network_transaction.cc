@@ -215,6 +215,10 @@ int64 DevToolsNetworkTransaction::GetTotalReceivedBytes() const {
   return network_transaction_->GetTotalReceivedBytes();
 }
 
+int64_t DevToolsNetworkTransaction::GetTotalSentBytes() const {
+  return network_transaction_->GetTotalSentBytes();
+}
+
 void DevToolsNetworkTransaction::DoneReading() {
   network_transaction_->DoneReading();
 }

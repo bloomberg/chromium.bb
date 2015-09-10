@@ -266,6 +266,13 @@ int64 URLRequest::GetTotalReceivedBytes() const {
   return job_->GetTotalReceivedBytes();
 }
 
+int64_t URLRequest::GetTotalSentBytes() const {
+  if (!job_.get())
+    return 0;
+
+  return job_->GetTotalSentBytes();
+}
+
 LoadStateWithParam URLRequest::GetLoadState() const {
   // The !blocked_by_.empty() check allows |this| to report it's blocked on a
   // delegate before it has been started.

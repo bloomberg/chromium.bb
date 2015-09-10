@@ -154,6 +154,10 @@ int64 URLRequestJob::GetTotalReceivedBytes() const {
   return 0;
 }
 
+int64_t URLRequestJob::GetTotalSentBytes() const {
+  return 0;
+}
+
 LoadState URLRequestJob::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }

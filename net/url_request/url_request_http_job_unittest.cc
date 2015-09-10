@@ -114,13 +114,23 @@ class URLRequestHttpJobWithMockSocketsTest : public ::testing::Test {
   scoped_ptr<TestURLRequestContext> context_;
 };
 
+const char kSimpleGetMockWrite[] =
+    "GET / HTTP/1.1\r\n"
+    "Host: www.example.com\r\n"
+    "Connection: keep-alive\r\n"
+    "User-Agent:\r\n"
+    "Accept-Encoding: gzip, deflate\r\n"
+    "Accept-Language: en-us,fr\r\n\r\n";
+
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
        TestContentLengthSuccessfulRequest) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
                                "Content-Length: 12\r\n\r\n"),
                       MockRead("Test Content")};
 
-  StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
@@ -135,11 +145,17 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
 
   EXPECT_TRUE(request->status().is_success());
   EXPECT_EQ(12, request->received_response_content_length());
-  EXPECT_EQ(51, network_delegate_.total_network_bytes_received());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
        TestContentLengthSuccessfulHttp09Request) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead("Test Content"),
                       MockRead(net::SYNCHRONOUS, net::OK)};
 
@@ -158,16 +174,23 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
 
   EXPECT_TRUE(request->status().is_success());
   EXPECT_EQ(12, request->received_response_content_length());
-  EXPECT_EQ(12, network_delegate_.total_network_bytes_received());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            network_delegate_.total_network_bytes_received());
 }
 
-TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthAbortedRequest) {
+TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthFailedRequest) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
                                "Content-Length: 20\r\n\r\n"),
                       MockRead("Test Content"),
                       MockRead(net::SYNCHRONOUS, net::ERR_FAILED)};
 
-  StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
@@ -182,17 +205,24 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthAbortedRequest) {
 
   EXPECT_EQ(URLRequestStatus::FAILED, request->status().status());
   EXPECT_EQ(12, request->received_response_content_length());
-  EXPECT_EQ(51, network_delegate_.total_network_bytes_received());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
        TestContentLengthCancelledRequest) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
                                "Content-Length: 20\r\n\r\n"),
                       MockRead("Test Content"),
                       MockRead(net::SYNCHRONOUS, net::ERR_IO_PENDING)};
 
-  StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
@@ -207,23 +237,41 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
 
   EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
   EXPECT_EQ(12, request->received_response_content_length());
-  EXPECT_EQ(51, network_delegate_.total_network_bytes_received());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
        TestNetworkBytesRedirectedRequest) {
-  MockRead redirect_read(
-      "HTTP/1.1 302 Found\r\n"
-      "Location: http://www.example.com\r\n\r\n");
-  StaticSocketDataProvider redirect_socket_data(&redirect_read, 1, nullptr, 0);
+  MockWrite redirect_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.redirect.com\r\n"
+                "Connection: keep-alive\r\n"
+                "User-Agent:\r\n"
+                "Accept-Encoding: gzip, deflate\r\n"
+                "Accept-Language: en-us,fr\r\n\r\n")};
+
+  MockRead redirect_reads[] = {
+      MockRead("HTTP/1.1 302 Found\r\n"
+               "Location: http://www.example.com\r\n\r\n"),
+  };
+  StaticSocketDataProvider redirect_socket_data(
+      redirect_reads, arraysize(redirect_reads), redirect_writes,
+      arraysize(redirect_writes));
   socket_factory_.AddSocketDataProvider(&redirect_socket_data);
 
-  MockRead response_reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
-                                        "Content-Length: 12\r\n\r\n"),
-                               MockRead("Test Content")};
-  StaticSocketDataProvider response_socket_data(
-      response_reads, arraysize(response_reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&response_socket_data);
+  MockWrite final_writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead final_reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                                     "Content-Length: 12\r\n\r\n"),
+                            MockRead("Test Content")};
+  StaticSocketDataProvider final_socket_data(
+      final_reads, arraysize(final_reads), final_writes,
+      arraysize(final_writes));
+  socket_factory_.AddSocketDataProvider(&final_socket_data);
 
   TestDelegate delegate;
   scoped_ptr<URLRequest> request =
@@ -237,13 +285,23 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
 
   EXPECT_TRUE(request->status().is_success());
   EXPECT_EQ(12, request->received_response_content_length());
-  EXPECT_EQ(107, network_delegate_.total_network_bytes_received());
+  // Should not include the redirect.
+  EXPECT_EQ(CountWriteBytes(final_writes, arraysize(final_writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(final_reads, arraysize(final_reads)),
+            request->GetTotalReceivedBytes());
+  // Should include the redirect as well as the final response.
+  EXPECT_EQ(CountReadBytes(redirect_reads, arraysize(redirect_reads)) +
+                CountReadBytes(final_reads, arraysize(final_reads)),
+            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
        TestNetworkBytesCancelledAfterHeaders) {
-  MockRead read("HTTP/1.1 200 OK\r\n\r\n");
-  StaticSocketDataProvider socket_data(&read, 1, nullptr, 0);
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n\r\n")};
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
@@ -257,7 +315,13 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
-  EXPECT_EQ(19, network_delegate_.total_network_bytes_received());
+  EXPECT_EQ(0, request->received_response_content_length());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
@@ -276,18 +340,14 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_EQ(0, request->received_response_content_length());
+  EXPECT_EQ(0, request->GetTotalSentBytes());
+  EXPECT_EQ(0, request->GetTotalReceivedBytes());
   EXPECT_EQ(0, network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
-  MockWrite writes[] = {MockWrite(
-      "GET / HTTP/1.1\r\n"
-      "Host: www.example.com\r\n"
-      "Connection: keep-alive\r\n"
-      "User-Agent:\r\n"
-      "Accept-Encoding: gzip, deflate\r\n"
-      "Accept-Language: en-us,fr\r\n\r\n")};
-
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead(
                           "HTTP/1.1 200 OK\r\n"
                           "Backoff: 3600\r\n"
@@ -334,13 +394,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderNotSecure) {
-  MockWrite writes[] = {MockWrite(
-      "GET / HTTP/1.1\r\n"
-      "Host: www.example.com\r\n"
-      "Connection: keep-alive\r\n"
-      "User-Agent:\r\n"
-      "Accept-Encoding: gzip, deflate\r\n"
-      "Accept-Language: en-us,fr\r\n\r\n")};
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead(
                           "HTTP/1.1 200 OK\r\n"
                           "Backoff: 3600\r\n"
@@ -368,13 +422,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderNotSecure) {
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
-  MockWrite writes[] = {MockWrite(
-      "GET / HTTP/1.1\r\n"
-      "Host: www.example.com\r\n"
-      "Connection: keep-alive\r\n"
-      "User-Agent:\r\n"
-      "Accept-Encoding: gzip, deflate\r\n"
-      "Accept-Language: en-us,fr\r\n\r\n")};
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead(
                           "HTTP/1.1 200 OK\r\n"
                           "Backoff: 3600\r\n"

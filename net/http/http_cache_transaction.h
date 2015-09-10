@@ -9,6 +9,7 @@
 #define NET_HTTP_HTTP_CACHE_TRANSACTION_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 
@@ -142,6 +143,7 @@ class HttpCache::Transaction : public HttpTransaction {
   void StopCaching() override;
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
   const HttpResponseInfo* GetResponseInfo() const override;
   LoadState GetLoadState() const override;
@@ -469,6 +471,7 @@ class HttpCache::Transaction : public HttpTransaction {
   base::TimeTicks send_request_since_;
 
   int64 total_received_bytes_;
+  int64_t total_sent_bytes_;
 
   // Load timing information for the last network request, if any.  Set in the
   // 304 and 206 response cases, as the network transaction may be destroyed

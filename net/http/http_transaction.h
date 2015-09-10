@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_TRANSACTION_H_
 #define NET_HTTP_HTTP_TRANSACTION_H_
 
+#include <stdint.h>
+
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
@@ -123,6 +125,9 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Get the number of bytes received from network.
   virtual int64 GetTotalReceivedBytes() const = 0;
+
+  // Get the number of bytes sent over the network.
+  virtual int64_t GetTotalSentBytes() const = 0;
 
   // Called to tell the transaction that we have successfully reached the end
   // of the stream. This is equivalent to performing an extra Read() at the end

@@ -198,6 +198,7 @@ URLRequestHttpJob::URLRequestHttpJob(
       http_user_agent_settings_(http_user_agent_settings),
       backoff_manager_(request->context()->backoff_manager()),
       total_received_bytes_from_previous_transactions_(0),
+      total_sent_bytes_from_previous_transactions_(0),
       weak_factory_(this) {
   URLRequestThrottlerManager* manager = request->context()->throttler_manager();
   if (manager)
@@ -425,6 +426,8 @@ void URLRequestHttpJob::DestroyTransaction() {
 
   total_received_bytes_from_previous_transactions_ +=
       transaction_->GetTotalReceivedBytes();
+  total_sent_bytes_from_previous_transactions_ +=
+      transaction_->GetTotalSentBytes();
   transaction_.reset();
   response_info_ = NULL;
   receive_headers_end_ = base::TimeTicks();
@@ -1368,6 +1371,13 @@ int64 URLRequestHttpJob::GetTotalReceivedBytes() const {
   if (transaction_)
     total_received_bytes += transaction_->GetTotalReceivedBytes();
   return total_received_bytes;
+}
+
+int64_t URLRequestHttpJob::GetTotalSentBytes() const {
+  int64_t total_sent_bytes = total_sent_bytes_from_previous_transactions_;
+  if (transaction_)
+    total_sent_bytes += transaction_->GetTotalSentBytes();
+  return total_sent_bytes;
 }
 
 void URLRequestHttpJob::DoneReading() {

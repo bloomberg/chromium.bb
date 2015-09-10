@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_NETWORK_TRANSACTION_H_
 #define NET_HTTP_HTTP_NETWORK_TRANSACTION_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -63,6 +65,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void StopCaching() override;
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
   const HttpResponseInfo* GetResponseInfo() const override;
   LoadState GetLoadState() const override;
@@ -319,8 +322,13 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   scoped_refptr<IOBuffer> read_buf_;
   int read_buf_len_;
 
-  // Total number of bytes received on streams for this transaction.
+  // Total number of bytes received on all destroyed HttpStreams for this
+  // transaction.
   int64 total_received_bytes_;
+
+  // Total number of bytes sent on all destroyed HttpStreams for this
+  // transaction.
+  int64_t total_sent_bytes_;
 
   // When the transaction started / finished sending the request, including
   // the body, if present.
