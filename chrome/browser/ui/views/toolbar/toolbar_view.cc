@@ -102,6 +102,15 @@ bool HasAshShell() {
 }
 #endif  // OS_CHROMEOS
 
+// Returns the y-position that will center an element of height
+// |child_height| inside an element of height |parent_height|. For
+// material design excess padding is placed below, for non-material
+// it is placed above.
+int CenteredChildY(int parent_height, int child_height) {
+  int roundoff_amount = ui::MaterialDesignController::IsModeMaterial() ? 0 : 1;
+  return (parent_height - child_height + roundoff_amount) / 2;
+}
+
 }  // namespace
 
 // static
@@ -553,11 +562,10 @@ void ToolbarView::Layout() {
   }
 
   // We assume all child elements except the location bar are the same height.
-  // Set child_y such that buttons appear vertically centered. We put any excess
-  // padding above the buttons.
+  // Set child_y such that buttons appear vertically centered.
   int child_height =
       std::min(back_->GetPreferredSize().height(), height());
-  int child_y = (height() - child_height + 1) / 2;
+  int child_y = CenteredChildY(height(), child_height);
 
   // If the window is maximized, we extend the back button to the left so that
   // clicking on the left-most pixel will activate the back button.
@@ -616,7 +624,8 @@ void ToolbarView::Layout() {
              location_bar_right_padding - next_element_x);
 
   int location_height = location_bar_->GetPreferredSize().height();
-  int location_y = (height() - location_height + 1) / 2;
+  int location_y = CenteredChildY(height(), location_height);
+
   location_bar_->SetBounds(next_element_x, location_y,
                            std::max(available_width, 0), location_height);
   next_element_x = location_bar_->bounds().right() + location_bar_right_padding;
@@ -763,15 +772,18 @@ int ToolbarView::PopupTopSpacing() const {
 
 gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
   if (is_display_mode_normal()) {
-    // For Material Design the size of ToolbarView is encoded as a constant in
-    // ThemeProperties. For non-material the size is based on the provided
-    // assets.
+    // For Material Design the size of the toolbar is computed using the size
+    // of the location bar and constant padding values. For non-material the
+    // size is based on the provided assets.
     if (ui::MaterialDesignController::IsModeMaterial()) {
       int content_height = std::max(back_->GetPreferredSize().height(),
                                     location_bar_->GetPreferredSize().height());
-      int padding = GetThemeProvider()->GetDisplayProperty(
-          ThemeProperties::PROPERTY_TOOLBAR_VIEW_VERTICAL_PADDING);
-      size.SetToMax(gfx::Size(0, content_height + (padding * 2)));
+      int top_padding = GetThemeProvider()->GetDisplayProperty(
+          ThemeProperties::PROPERTY_TOOLBAR_VIEW_TOP_VERTICAL_PADDING);
+      int bottom_padding = GetThemeProvider()->GetDisplayProperty(
+          ThemeProperties::PROPERTY_TOOLBAR_VIEW_BOTTOM_VERTICAL_PADDING);
+      size.SetToMax(
+          gfx::Size(0, content_height + top_padding + bottom_padding));
     } else {
       gfx::ImageSkia* normal_background =
           GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);

@@ -152,6 +152,9 @@ const int kOmniboxDropdownMinTextVerticalPadding[] = {3, 4, 8};
 // The spacing between a ToolbarButton's image and its border.
 const int kToolbarButtonBorderInset[] = {2, 6, 6};
 
+// The minimum bottom vertical padding of the toolbar.
+const int kToolbarViewBottomVerticalPadding[] = {5, 5, 5};
+
 // Non-ash uses a rounded content area with no shadow in the assets.
 const int kToolbarViewContentShadowHeight[] = {0, 0, 0};
 
@@ -172,8 +175,8 @@ const int kToolbarViewRightEdgeSpacing[] = {2, 4, 8};
 // The horizontal space between most items.
 const int kToolbarViewStandardSpacing[] = {3, 4, 8};
 
-// The minimal vertical padding of the toolbar.
-const int kToolbarViewVerticalPadding[] = {5, 4, 4};
+// The minimum top vertical padding of the toolbar.
+const int kToolbarViewTopVerticalPadding[] = {5, 4, 4};
 
 // ----------------------------------------------------------------------------
 
@@ -422,6 +425,8 @@ int ThemeProperties::GetDefaultDisplayProperty(int id) {
       return kOmniboxDropdownMinTextVerticalPadding[mode];
     case PROPERTY_TOOLBAR_BUTTON_BORDER_INSET:
       return kToolbarButtonBorderInset[mode];
+    case PROPERTY_TOOLBAR_VIEW_BOTTOM_VERTICAL_PADDING:
+      return kToolbarViewBottomVerticalPadding[mode];
     case PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
       return kToolbarViewContentShadowHeight[mode];
     case PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
@@ -436,8 +441,8 @@ int ThemeProperties::GetDefaultDisplayProperty(int id) {
       return kToolbarViewRightEdgeSpacing[mode];
     case PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING:
       return kToolbarViewStandardSpacing[mode];
-    case PROPERTY_TOOLBAR_VIEW_VERTICAL_PADDING:
-      return kToolbarViewVerticalPadding[mode];
+    case PROPERTY_TOOLBAR_VIEW_TOP_VERTICAL_PADDING:
+      return kToolbarViewTopVerticalPadding[mode];
     default:
       return -1;
   }
