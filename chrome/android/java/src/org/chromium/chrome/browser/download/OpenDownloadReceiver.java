@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import org.chromium.base.Log;
+
 /**
  * This {@link BroadcastReceiver} handles clicks to notifications that
  * downloads from the browser are in progress/complete.  Clicking on an
@@ -18,6 +20,7 @@ import android.net.Uri;
  * a complete, successful download will open the file.
  */
 public class OpenDownloadReceiver extends BroadcastReceiver {
+    private static final String TAG = "cr.DownloadReceiver";
 
     @Override
     public void onReceive(final Context context, Intent intent) {
@@ -58,6 +61,10 @@ public class OpenDownloadReceiver extends BroadcastReceiver {
     private void openDownloadsPage(Context context) {
         Intent pageView = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
         pageView.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(pageView);
+        try {
+            context.startActivity(pageView);
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Cannot find Downloads app", e);
+        }
     }
 }
