@@ -421,7 +421,7 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         if (isMainThread()) {
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         }
-        ThreadState::current()->scheduleV8FollowupGCIfNeeded();
+        ThreadState::current()->scheduleV8FollowupGCIfNeeded(ThreadState::V8MinorGC);
         break;
     case v8::kGCTypeMarkSweepCompact:
         TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
@@ -440,7 +440,7 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         if (isMainThread()) {
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         }
-        ThreadState::current()->scheduleV8FollowupGCIfNeeded();
+        ThreadState::current()->scheduleV8FollowupGCIfNeeded(ThreadState::V8MajorGC);
         break;
     default:
         ASSERT_NOT_REACHED();

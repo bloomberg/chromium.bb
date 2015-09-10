@@ -670,7 +670,7 @@ bool ThreadState::shouldForceConservativeGC()
     return judgeGCThreshold(32 * 1024 * 1024, 5.0);
 }
 
-void ThreadState::scheduleV8FollowupGCIfNeeded()
+void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
 {
     ASSERT(checkThread());
     Heap::reportMemoryUsageForTracing();
@@ -684,6 +684,8 @@ void ThreadState::scheduleV8FollowupGCIfNeeded()
 
     if (shouldScheduleV8FollowupGC())
         schedulePreciseGC();
+    else if (gcType == V8MinorGC)
+        scheduleIdleGC();
 }
 
 void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)

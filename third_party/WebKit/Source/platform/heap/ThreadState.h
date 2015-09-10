@@ -226,6 +226,11 @@ public:
     };
 #endif
 
+    enum V8GCType {
+        V8MinorGC,
+        V8MajorGC,
+    };
+
     // The NoAllocationScope class is used in debug mode to catch unwanted
     // allocations. E.g. allocations during GC.
     class NoAllocationScope final {
@@ -328,7 +333,7 @@ public:
     void scheduleIdleGC();
     void scheduleIdleLazySweep();
     void schedulePreciseGC();
-    void scheduleV8FollowupGCIfNeeded();
+    void scheduleV8FollowupGCIfNeeded(V8GCType);
     void schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio);
     void schedulePageNavigationGC();
     void scheduleGCIfNeeded();
