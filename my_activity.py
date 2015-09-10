@@ -95,6 +95,9 @@ gerrit_instances = [
     'url': 'chrome-internal-review.googlesource.com',
     'shorturl': 'crosreview.com/i',
   },
+  {
+    'url': 'android-review.googlesource.com',
+  },
 ]
 
 google_code_projects = [
