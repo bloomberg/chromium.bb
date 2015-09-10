@@ -1350,7 +1350,6 @@ test("net_unittests") {
     "//crypto",
     "//crypto:platform",
     "//crypto:test_support",
-    "//gin",
     "//net/base/registry_controlled_domains",
     "//sql",
     "//testing/gmock",
