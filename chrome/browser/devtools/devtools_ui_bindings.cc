@@ -401,6 +401,10 @@ void DevToolsUIBindings::WebSocketAPIChannel::DispatchOnClientHost(
 }
 
 void DevToolsUIBindings::WebSocketAPIChannel::ConnectionClosed() {
+  if (bindings_) {
+    bindings_->CallClientFunction("DevToolsAPI.frontendAPIDetached",
+                                  nullptr, nullptr, nullptr);
+  }
   if (attached_proxy_)
     attached_proxy_->ConnectionClosed();
 }
