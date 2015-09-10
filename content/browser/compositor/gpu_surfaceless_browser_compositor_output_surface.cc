@@ -5,6 +5,7 @@
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 
 #include "cc/output/compositor_frame.h"
+#include "cc/output/output_surface_client.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/buffer_queue.h"
 #include "content/browser/compositor/reflector_impl.h"
@@ -108,14 +109,18 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnSwapBuffersCompleted(
 #if defined(OS_MACOSX)
   NOTREACHED();
 #else
+  bool force_swap = false;
   if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
     result = gfx::SwapResult::SWAP_ACK;
     output_surface_->RecreateBuffers();
+    force_swap = true;
   }
   GpuBrowserCompositorOutputSurface::OnSwapBuffersCompleted(latency_info,
                                                             result);
+  if (force_swap)
+    client_->SetNeedsRedrawRect(gfx::Rect(SurfaceSize()));
 #endif
 }
 
