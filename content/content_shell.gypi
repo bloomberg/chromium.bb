@@ -108,6 +108,8 @@
         'shell/browser/layout_test/layout_test_android.h',
         'shell/browser/layout_test/layout_test_bluetooth_adapter_provider.cc',
         'shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h',
+        'shell/browser/layout_test/layout_test_bluetooth_chooser_factory.cc',
+        'shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h',
         'shell/browser/layout_test/layout_test_browser_context.cc',
         'shell/browser/layout_test/layout_test_browser_context.h',
         'shell/browser/layout_test/layout_test_browser_main.cc',

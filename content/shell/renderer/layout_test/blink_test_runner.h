@@ -96,6 +96,10 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorProfile(const std::string& name) override;
   void SetBluetoothMockDataSet(const std::string& name) override;
+  void SetBluetoothManualChooser() override;
+  std::vector<std::string> GetBluetoothManualChooserEvents() override;
+  void SendBluetoothManualChooserEvent(const std::string& event,
+                                       const std::string& argument) override;
   void SetGeofencingMockProvider(bool service_available) override;
   void ClearGeofencingMockProvider() override;
   void SetGeofencingMockPosition(double latitude, double longitude) override;

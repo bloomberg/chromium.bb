@@ -161,6 +161,21 @@ class WebTestDelegate {
   // Change the bluetooth test data while running a layout test.
   virtual void SetBluetoothMockDataSet(const std::string& data_set) = 0;
 
+  // Makes the Bluetooth chooser record its input and wait for instructions from
+  // the test program on how to proceed.
+  virtual void SetBluetoothManualChooser() = 0;
+
+  // Returns the events recorded since the last call to this function.
+  virtual std::vector<std::string> GetBluetoothManualChooserEvents() = 0;
+
+  // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
+  // event strings are:
+  //  * "cancel" - simulates the user canceling the chooser.
+  //  * "select" - simulates the user selecting a device whose device ID is in
+  //               |argument|.
+  virtual void SendBluetoothManualChooserEvent(const std::string& event,
+                                               const std::string& argument) = 0;
+
   // Enables mock geofencing service while running a layout test.
   // |service_available| indicates if the mock service should mock geofencing
   // being available or not.

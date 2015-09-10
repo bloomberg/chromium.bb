@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -363,6 +364,17 @@ bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {
   return main_window_ && web_contents == main_window_->web_contents();
 }
 
+scoped_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
+    WebContents* web_contents,
+    const BluetoothChooser::EventHandler& event_handler,
+    const GURL& origin) {
+  if (bluetooth_chooser_factory_) {
+    return bluetooth_chooser_factory_->RunBluetoothChooser(
+        web_contents, event_handler, origin);
+  }
+  return nullptr;
+}
+
 bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   bool handled = true;
@@ -387,6 +399,12 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
                         OnCloseRemainingWindows)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ResetDone, OnResetDone)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LeakDetectionDone, OnLeakDetectionDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetBluetoothManualChooser,
+                        OnSetBluetoothManualChooser)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_GetBluetoothManualChooserEvents,
+                        OnGetBluetoothManualChooserEvents)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SendBluetoothManualChooserEvent,
+                        OnSendBluetoothManualChooserEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -700,6 +718,47 @@ void BlinkTestController::OnLeakDetectionDone(
   CHECK(!crash_when_leak_found_);
 
   DiscardMainWindow();
+}
+
+void BlinkTestController::OnSetBluetoothManualChooser(bool enable) {
+  bluetooth_chooser_factory_.reset();
+  if (enable) {
+    bluetooth_chooser_factory_.reset(new LayoutTestBluetoothChooserFactory());
+  }
+}
+
+void BlinkTestController::OnGetBluetoothManualChooserEvents(
+    std::vector<std::string>* events) {
+  if (!bluetooth_chooser_factory_) {
+    printer_->AddErrorMessage(
+        "FAIL: Must call setBluetoothManualChooser before "
+        "getBluetoothManualChooserEvents.");
+    return;
+  }
+  *events = bluetooth_chooser_factory_->GetAndResetEvents();
+}
+
+void BlinkTestController::OnSendBluetoothManualChooserEvent(
+    const std::string& event_name,
+    const std::string& argument) {
+  if (!bluetooth_chooser_factory_) {
+    printer_->AddErrorMessage(
+        "FAIL: Must call setBluetoothManualChooser before "
+        "sendBluetoothManualChooserEvent.");
+    return;
+  }
+  BluetoothChooser::Event event;
+  if (event_name == "cancelled") {
+    event = BluetoothChooser::Event::CANCELLED;
+  } else if (event_name == "selected") {
+    event = BluetoothChooser::Event::SELECTED;
+  } else {
+    printer_->AddErrorMessage(base::StringPrintf(
+        "FAIL: Unexpected sendBluetoothManualChooserEvent() event name '%s'.",
+        event_name.c_str()));
+    return;
+  }
+  bluetooth_chooser_factory_->SendEvent(event, argument);
 }
 
 }  // namespace content

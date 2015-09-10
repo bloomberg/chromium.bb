@@ -295,6 +295,10 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetCustomTextOutput(std::string output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetBluetoothMockDataSet(const std::string& dataset_name);
+  void SetBluetoothManualChooser();
+  std::vector<std::string> GetBluetoothManualChooserEvents();
+  void SendBluetoothManualChooserEvent(const std::string& event,
+                                       const std::string& argument);
   void SetGeofencingMockProvider(bool service_available);
   void ClearGeofencingMockProvider();
   void SetGeofencingMockPosition(double latitude, double longitude);
@@ -566,8 +570,16 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetCustomTextOutput)
       .SetMethod("setViewSourceForFrame",
                  &TestRunnerBindings::SetViewSourceForFrame)
+      // The 4 Bluetooth functions are specified at
+      // https://webbluetoothcg.github.io/web-bluetooth/tests/.
       .SetMethod("setBluetoothMockDataSet",
                  &TestRunnerBindings::SetBluetoothMockDataSet)
+      .SetMethod("setBluetoothManualChooser",
+                 &TestRunnerBindings::SetBluetoothManualChooser)
+      .SetMethod("getBluetoothManualChooserEvents",
+                 &TestRunnerBindings::GetBluetoothManualChooserEvents)
+      .SetMethod("sendBluetoothManualChooserEvent",
+                 &TestRunnerBindings::SendBluetoothManualChooserEvent)
       .SetMethod("forceNextWebGLContextCreationToFail",
                  &TestRunnerBindings::ForceNextWebGLContextCreationToFail)
       .SetMethod("forceNextDrawingBufferCreationToFail",
@@ -1331,6 +1343,24 @@ void TestRunnerBindings::SetColorProfile(
 void TestRunnerBindings::SetBluetoothMockDataSet(const std::string& name) {
   if (runner_)
     runner_->SetBluetoothMockDataSet(name);
+}
+
+void TestRunnerBindings::SetBluetoothManualChooser() {
+  if (runner_)
+    runner_->SetBluetoothManualChooser();
+}
+
+std::vector<std::string> TestRunnerBindings::GetBluetoothManualChooserEvents() {
+  if (runner_)
+    return runner_->GetBluetoothManualChooserEvents();
+  return std::vector<std::string>(1, "No Test Runner");
+}
+
+void TestRunnerBindings::SendBluetoothManualChooserEvent(
+    const std::string& event,
+    const std::string& argument) {
+  if (runner_)
+    runner_->SendBluetoothManualChooserEvent(event, argument);
 }
 
 void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
@@ -2810,6 +2840,19 @@ void TestRunner::SetColorProfile(const std::string& name,
 
 void TestRunner::SetBluetoothMockDataSet(const std::string& name) {
   delegate_->SetBluetoothMockDataSet(name);
+}
+
+void TestRunner::SetBluetoothManualChooser() {
+  delegate_->SetBluetoothManualChooser();
+}
+
+std::vector<std::string> TestRunner::GetBluetoothManualChooserEvents() {
+  return delegate_->GetBluetoothManualChooserEvents();
+}
+
+void TestRunner::SendBluetoothManualChooserEvent(const std::string& event,
+                                                 const std::string& argument) {
+  delegate_->SendBluetoothManualChooserEvent(event, argument);
 }
 
 void TestRunner::SetGeofencingMockProvider(bool service_available) {

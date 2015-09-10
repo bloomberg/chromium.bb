@@ -197,6 +197,22 @@ void WebTestDelegateImpl::SetBluetoothMockDataSet(const std::string& data_set) {
   NOTIMPLEMENTED();
 }
 
+void WebTestDelegateImpl::SetBluetoothManualChooser() {
+  NOTIMPLEMENTED();
+}
+
+std::vector<std::string>
+WebTestDelegateImpl::GetBluetoothManualChooserEvents() {
+  NOTIMPLEMENTED();
+  return std::vector<std::string>();
+}
+
+void WebTestDelegateImpl::SendBluetoothManualChooserEvent(
+    const std::string& event,
+    const std::string& argument) {
+  NOTIMPLEMENTED();
+}
+
 void WebTestDelegateImpl::SetGeofencingMockProvider(bool service_available) {
   NOTIMPLEMENTED();
 }

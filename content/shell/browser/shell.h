@@ -135,6 +135,10 @@ class Shell : public WebContentsDelegate,
   void DidNavigateMainFramePostCommit(WebContents* web_contents) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source) override;
+  scoped_ptr<BluetoothChooser> RunBluetoothChooser(
+      WebContents* web_contents,
+      const BluetoothChooser::EventHandler& event_handler,
+      const GURL& origin) override;
 #if defined(OS_MACOSX)
   void HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;
