@@ -1,16 +1,16 @@
 <div id={{serviceId}} class="health-container">
   <div class="health-container-header">
-
     {{#if healthchecks.length}}
       {{#if health}}
-        <div style="float:left;">Service: <b>{{service}}</b> is <font class="color-quasi-healthy">healthy</font>.</div>
-        <button style="float:right;" class="header-service-status-button color-quasi-healthy">Click to Repair</button>
+        <div class="circle-quasi-healthy health-container-header-element"></div>
+        <div class="health-container-header-element"><b>{{service}}</b> is <font class="color-quasi-healthy">healthy</font>.</div>
       {{else}}
-        <div style="float:left;">Service: <b>{{service}}</b> is <font class="color-unhealthy">unhealthy</font>.</div>
-        <button style="float:right;" class="header-service-status-button color-unhealthy">Click to Repair</button>
+        <div class="circle-unhealthy health-container-header-element"></div>
+        <div class="health-container-header-element"><b>{{service}}</b> is <font class="color-unhealthy">unhealthy</font>.</div>
       {{/if}}
     {{else}}
-        <div style="float:left;">Service: <b>{{service}}</b> is <font class="color-healthy">healthy</font>.</div>
+        <div class="circle-healthy health-container-header-element"></div>
+        <div class="health-container-header-element"><b>{{service}}</b> is <font class="color-healthy">healthy</font>.</div>
     {{/if}}
 
     <!--
@@ -35,7 +35,10 @@
               <td>
                 <ul>
                   {{#each actions}}
-                    <li>{{this}}</li>
+                    <li>
+                      <button class="run-repair-action" action="{{this}}">Run</button>
+                      {{this}}
+                    </li>
                   {{/each}}
                 </ul>
               </td>
@@ -60,7 +63,10 @@
               <td>
                 <ul>
                   {{#each actions}}
-                    <li>{{this}}</li>
+                    <li>
+                      <button class="run-repair-action" action="{{this}}">Run</button>
+                      {{this}}
+                    </li>
                   {{/each}}
                 </ul>
               </td>

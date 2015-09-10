@@ -5,6 +5,9 @@
 'use strict';
 
 
+var HEALTH_DISPLAY_REFRESH_MS = 1000;
+
+
 $(document).ready(function() {
   // Setup the health status widget.
   $('#healthStatusDisplay').healthDisplay();
@@ -12,12 +15,17 @@ $(document).ready(function() {
 
   setInterval(function() {
     $('#healthStatusDisplay').healthDisplay('refreshHealthDisplay');
-  }, 3000);
+  }, HEALTH_DISPLAY_REFRESH_MS);
 
-  // Setup the action repair dialog popup.
-  // TODO(msartori): Implement crbug.com/520749.
-  $(document).on('click', '.header-service-status-button', function() {
-    // Get the service that this button corresponds to.
+  // Setup the log collection button.
+  $(document).on('click', '.collect-logs', function() {
+    console.log('Collecting logs!');
+  });
+
+  // Setup the repair action buttons
+  $(document).on('click', '.run-repair-action', function() {
+    // Retrieve the service and action for this repair button.
+    var action = $(this).attr('action');
     var service = $(this).closest('.health-container').attr('id');
     if (service.indexOf(SERVICE_CONTAINER_PREFIX) === 0) {
       service = service.replace(SERVICE_CONTAINER_PREFIX, '');
@@ -28,17 +36,21 @@ $(document).ready(function() {
       return;
     }
 
-    // Get the actions for this service.
-    var actions = $('#healthStatusDisplay').healthDisplay(
-        'getServiceActions', service);
+    function repairServiceCallback(response) {
+      $('#healthStatusDisplay').healthDisplay('markStale', response.service);
+    }
 
-    // Create and launch the action repair dialog.
-    var dialog = new ActionRepairDialog(service, actions);
-    dialog.submitHandler = function(service, action, args, kwargs) {
-      rpcRepairService(service, action, args, kwargs, function(response) {
-        $('#healthStatusDisplay').healthDisplay('markStale', response.service);
-      });
-    };
-    dialog.open();
+    rpcActionInfo(service, action, function(response) {
+      if (isEmpty(response.args) && isEmpty(response.kwargs)) {
+        rpcRepairService(service, action, [], {}, repairServiceCallback);
+        return;
+      }
+
+      var dialog = new ActionRepairDialog(service, response);
+      dialog.submitHandler = function(service, action, args, kwargs) {
+        rpcRepairService(service, action, args, kwargs, repairServiceCallback);
+      };
+      dialog.open();
+    });
   });
 });

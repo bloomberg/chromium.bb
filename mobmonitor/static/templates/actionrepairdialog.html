@@ -1,15 +1,6 @@
-<div id="actionRepairDialog" title="Setup Repair Actions">
-  <label for="actionlist">Choose an Action:</label>
-  <input list="actionlist" class="actionlist-dropdown">
-  <datalist id="actionlist">
-    {{#each actions}}
-      <option value={{this}}>
-    {{/each}}
-  </datalist>
-  <br><br>
-
-  <label for="actionDescription">Action Description:</label>
-  <textarea style="font-size:10pt" readonly name="actionDescription" id="actionDescription" class="actionDisplay">
+<div id="actionRepairDialog" title="Setup {{action}}">
+  <label for="actionDescription">Description:</label>
+  <textarea style="font-size:10pt" readonly name="actionDescription" id="actionDescription" class="actionDisplay">{{info}}
   </textarea><br><br>
 
   <label for="args">Arguments:</label><br>
@@ -19,11 +10,4 @@
   <label for="kwargs">Keyword Arguments:</label>
   <label for="kwargs" id="kwargsHelp" class="label-help">Help text for kwargs</label>
   <input style="font-size:10pt" type="text" name="kwargs" id="kwargs" value="" class="input-text">
-
-  <input type="button" name="stageButton" id="stageButton" value="Stage Action">
-  <br><br>
-
-  <label for="stagedActions">Actions to Execute:</label>
-  <textarea style="font-size:10pt" readonly name="stagedActions" id="stagedActions" class="actionDisplay">
-  </textarea>
 </div>

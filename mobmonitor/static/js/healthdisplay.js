@@ -4,7 +4,7 @@
 
 'use strict';
 
-var RECORD_TTL_MS = 15000;
+var RECORD_TTL_MS = 10000;
 
 
 $.widget('mobmonitor.healthDisplay', {

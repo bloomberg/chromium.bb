@@ -20,23 +20,23 @@ td {
 }
 
 .circle-healthy {
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
   background: green;
 }
 
 .circle-quasi-healthy {
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
   background: #CC7A00;
 }
 
 .circle-unhealthy {
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
   background: red;
 }
 
@@ -47,7 +47,7 @@ td {
   padding-right: 0px;
   padding-left: 0px;
   padding-bottom: 50px;
-  margin-bottom: 50px;
+  margin-bottom: 0px;
 }
 
 .site-header-title {
@@ -64,15 +64,8 @@ td {
   color: #ACD6FF;
 }
 
-/* Color Legend Settings */
-.color-legend-table {
-  background-color: #FFF;
-  border: 2px solid black;
-  margin: 0px auto;
-}
-
-.color-legend-table-header {
-  background-color: #FFFAAA;
+.collect-logs {
+  float: right;
 }
 
 /* Health Display Style Settings */
@@ -97,7 +90,9 @@ td {
   width: 100%;
 }
 
-.header-service-status-button {
+.health-container-header-element {
+  float: left;
+  margin: 10px;
 }
 
 .health-container-content {
@@ -121,6 +116,10 @@ td {
 
 .healthcheck {
   background-color: grey;
+}
+
+.run-repair-action {
+  margin-right: 5px;
 }
 
 .color-healthy {

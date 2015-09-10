@@ -34,8 +34,9 @@ HEALTHCHECK_STATUS = collections.namedtuple('healthcheck_status',
 
 HEALTH_CHECK_METHODS = ['Check', 'Diagnose']
 
-CHECK_INTERVAL_DEFAULT_SEC = 30
-HEALTH_CHECK_DEFAULT_ATTRIBUTES = {'CHECK_INTERVAL': CHECK_INTERVAL_DEFAULT_SEC}
+CHECK_INTERVAL_DEFAULT_SEC = 10
+HEALTH_CHECK_DEFAULT_ATTRIBUTES = {
+    'CHECK_INTERVAL_SEC': CHECK_INTERVAL_DEFAULT_SEC}
 
 CHECKFILE_DIR = '/etc/mobmonitor/checkfiles/'
 CHECKFILE_ENDING = '_check.py'
@@ -213,7 +214,7 @@ def ImportFile(service, modulepath):
 class CheckFileManager(object):
   """Manage the health checks that are associated with each service."""
 
-  def __init__(self, interval_sec=3, checkdir=CHECKFILE_DIR):
+  def __init__(self, interval_sec=1, checkdir=CHECKFILE_DIR):
     if not os.path.exists(checkdir):
       raise CollectionError('Check directory does not exist: %s' % checkdir)
 
@@ -287,7 +288,7 @@ class CheckFileManager(object):
             hcname, (None, None, None))
 
         if exec_time is None or force or (
-            etime > healthcheck.CHECK_INTERVAL + exec_time):
+            etime > healthcheck.CHECK_INTERVAL_SEC + exec_time):
           # Record the execution status.
           status = HEALTHCHECK_STATUS(hcname, True, IN_PROGRESS_DESCRIPTION,
                                       EMPTY_ACTIONS)

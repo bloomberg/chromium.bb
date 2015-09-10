@@ -35,7 +35,7 @@ class TestHealthCheck(object):
 class TestHealthCheckHasAttributes(object):
   """Test health check with attributes."""
 
-  CHECK_INTERVAL = 10
+  CHECK_INTERVAL_SEC = 10
 
   def Check(self):
     """Stub Check."""
@@ -390,15 +390,15 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
     """Test that we can apply attributes to a health check."""
     testhc = TestHealthCheck()
     result = manager.ApplyHealthCheckAttributes(testhc)
-    self.assertEquals(result.CHECK_INTERVAL,
+    self.assertEquals(result.CHECK_INTERVAL_SEC,
                       manager.CHECK_INTERVAL_DEFAULT_SEC)
 
   def testApplyHealthCheckAttributesHasAttrs(self):
     """Test that we do not override an acceptable attribute."""
     testhc = TestHealthCheckHasAttributes()
-    check_interval = testhc.CHECK_INTERVAL
+    check_interval = testhc.CHECK_INTERVAL_SEC
     result = manager.ApplyHealthCheckAttributes(testhc)
-    self.assertEquals(result.CHECK_INTERVAL, check_interval)
+    self.assertEquals(result.CHECK_INTERVAL_SEC, check_interval)
 
   def testImportFileAllHealthChecks(self):
     """Test that health checks and service name are collected."""
@@ -519,7 +519,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
   def testExecuteFresh(self):
     """Test executing a health check when the result is still fresh."""
     self.StartPatcher(mock.patch('time.time'))
-    exec_time_offset = TestHealthCheckHasAttributes.CHECK_INTERVAL / 2
+    exec_time_offset = TestHealthCheckHasAttributes.CHECK_INTERVAL_SEC / 2
     time.time.return_value = TEST_EXEC_TIME + exec_time_offset
 
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
@@ -541,7 +541,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
   def testExecuteStale(self):
     """Test executing a health check when the result is stale."""
     self.StartPatcher(mock.patch('time.time'))
-    exec_time_offset = TestHealthCheckHasAttributes.CHECK_INTERVAL * 2
+    exec_time_offset = TestHealthCheckHasAttributes.CHECK_INTERVAL_SEC * 2
     time.time.return_value = TEST_EXEC_TIME + exec_time_offset
 
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
@@ -586,7 +586,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
   def testExecuteForce(self):
     """Test executing a health check by ignoring the check interval."""
     self.StartPatcher(mock.patch('time.time'))
-    exec_time_offset = TestHealthCheckHasAttributes.CHECK_INTERVAL / 2
+    exec_time_offset = TestHealthCheckHasAttributes.CHECK_INTERVAL_SEC / 2
     time.time.return_value = TEST_EXEC_TIME + exec_time_offset
 
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
