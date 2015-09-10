@@ -169,7 +169,8 @@
     },
     'bubble': {
       'filepath': 'ui/views/bubble/|'\
-                  'chrome/browser/ui/views/bubble/',
+                  'chrome/browser/ui/views/bubble/|'\
+                  'components/bubble/',
     },
     'cache_storage': {
       'filepath': 'cache_storage',
@@ -912,7 +913,7 @@
     'autofill': ['bondd+autofillwatch@chromium.org',
                  'estade+watch@chromium.org',
                  'jdonnelly+autofillwatch@chromium.org',
-                 'rouslan+autofillwatch@chromium.org'],
+                 'rouslan+autofill@chromium.org'],
     'automation': ['robertshield@chromium.org'],
     'background_sync': ['jkarlin+watch@chromium.org'],
     'base_allocator': ['dmikurube@chromium.org',
@@ -930,7 +931,10 @@
                            'piman+watch@chromium.org'],
     'browser_resources': ['arv+watch@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
-    'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
+    'bubble': ['msw+watch@chromium.org',
+               'rouslan+bubble@chromium.org',
+               'hcarmona+bubble@chromium.org',
+               'groby+bubble@chromium.org'],
     'cache_storage': ['jkarlin+watch@chromium.org', 'nhiroki@chromium.org'],
     'cast': ['avayvod+watch@chromium.org',
              'imcheng+watch@chromium.org',
@@ -1115,7 +1119,7 @@
                       'nasko+codewatch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
                    'rlp+watch@chromium.org',
-                   'rouslan+spellwatch@chromium.org'],
+                   'rouslan+spell@chromium.org'],
     'streams': ['zork+watch@chromium.org'],
     'sync': ['tim+watch@chromium.org',
              'maxbogue+watch@chromium.org',
