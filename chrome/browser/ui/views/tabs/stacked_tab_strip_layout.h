@@ -25,13 +25,13 @@ class StackedTabStripLayout {
   static const int kAddTypePinned   = 1 << 0;
   static const int kAddTypeActive = 1 << 1;
 
-  // |size| is the size for tabs, |padding| the padding between consecutive
+  // |size| is the size for tabs, |overlap| the overlap between consecutive
   // tabs, |stacked_padding| the padding between stacked tabs,
   // |max_stacked_count| the maximum number of consecutive tabs that can be
   // stacked before they are placed on top of each other, |view_model| is the
   // ViewModel the bounds of the tabs are placed in.
   StackedTabStripLayout(const gfx::Size& size,
-                        int padding,
+                        int overlap,
                         int stacked_padding,
                         int max_stacked_count,
                         views::ViewModelBase* view_model);
@@ -173,7 +173,7 @@ class StackedTabStripLayout {
 
   // Width needed to display |count| tabs.
   int width_for_count(int count) const {
-    return (count * size_.width()) + (std::max(count - 1, 0) * padding_);
+    return (count * size_.width()) - (std::max(count - 1, 0) * overlap_);
   }
 
   // Padding needed for |count| stacked tabs.
@@ -201,13 +201,13 @@ class StackedTabStripLayout {
   int normal_tab_count() const { return tab_count() - pinned_tab_count_; }
 
   // Distance between one tab to the next.
-  int tab_offset() const { return size_.width() + padding_; }
+  int tab_offset() const { return size_.width() - overlap_; }
 
   // Size of tabs.
   const gfx::Size size_;
 
-  // Padding between tabs.
-  const int padding_;
+  // Overlap between tabs.
+  const int overlap_;
 
   // Padding between stacked tabs.
   const int stacked_padding_;

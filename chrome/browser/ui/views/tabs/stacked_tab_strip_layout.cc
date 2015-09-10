@@ -13,12 +13,12 @@
 using base::UserMetricsAction;
 
 StackedTabStripLayout::StackedTabStripLayout(const gfx::Size& size,
-                                             int padding,
+                                             int overlap,
                                              int stacked_padding,
                                              int max_stacked_count,
                                              views::ViewModelBase* view_model)
     : size_(size),
-      padding_(padding),
+      overlap_(overlap),
       stacked_padding_(stacked_padding),
       max_stacked_count_(max_stacked_count),
       view_model_(view_model),
@@ -324,7 +324,7 @@ void StackedTabStripLayout::MakeVisible(int index) {
   if (index <= active_index() || !requires_stacking() || !IsStacked(index))
     return;
 
-  int ideal_delta = width_for_count(index - active_index()) + padding_;
+  int ideal_delta = width_for_count(index - active_index()) - overlap_;
   if (ideal_x(index) - ideal_x(active_index()) == ideal_delta)
     return;
 
@@ -397,7 +397,7 @@ void StackedTabStripLayout::LayoutUsingCurrentBefore(int index) {
   for (int i = index - 1; i >= pinned_tab_count_; --i) {
     int max_x = x_ + width_for_count(i - pinned_tab_count_);
     if (i > pinned_tab_count_)
-      max_x += padding_;
+      max_x -= overlap_;
     max_x = std::min(max_x, ideal_x(i + 1) - stacked_padding_);
     SetIdealBoundsAt(
         i, std::min(max_x,
@@ -551,7 +551,7 @@ int StackedTabStripLayout::GetMaxX(int index) const {
   int trailing_offset = stacked_padding_for_count(trailing_count);
   int leading_size = width_for_count(leading_count) + x_;
   if (leading_count > 0)
-    leading_size += padding_;
+    leading_size -= overlap_;
   return std::min(width_ - trailing_offset - size_.width(), leading_size);
 }
 
