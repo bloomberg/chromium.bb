@@ -1893,11 +1893,11 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     # Ensure that 'osenv' is a list.
     if isinstance(extra['osenv'], str):
       extra['osenv'] = [extra['osenv']]
-    # ASan normally intercepts SIGSEGV and disables our SIGSEGV signal
-    # handler, which interferes with various NaCl tests, including the
-    # platform qualification test built into sel_ldr.  We fix this by
-    # telling ASan not to mess with SIGSEGV.
-    asan_options = ['handle_segv=0']
+    # ASan normally intercepts SIGSEGV and SIGFPE and disables our signal
+    # handlers, which interferes with various NaCl tests, including the
+    # platform qualification test built into sel_ldr.  We fix this by telling
+    # ASan not to mess with SIGSEGV or SIGFPE.
+    asan_options = ['handle_segv=0', 'handle_sigfpe=0']
     if env.Bit('host_mac') and int(platform.mac_ver()[0].split('.')[1]) < 7:
       # MacOS 10.6 has a bug in the libsandbox system library where it
       # makes a memcmp call that reads off the end of a malloc'd block.
