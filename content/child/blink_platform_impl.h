@@ -176,6 +176,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   virtual blink::WebString domCodeStringFromEnum(int dom_code);
   virtual int domEnumFromCodeString(const blink::WebString& codeString);
+  virtual blink::WebString domKeyStringFromEnum(int dom_key);
+  virtual int domKeyEnumFromString(const blink::WebString& key_string);
 
  private:
   void InternalInit();

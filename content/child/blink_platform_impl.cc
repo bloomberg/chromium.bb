@@ -1374,4 +1374,14 @@ int BlinkPlatformImpl::domEnumFromCodeString(const WebString& code) {
       code.utf8().data()));
 }
 
+WebString BlinkPlatformImpl::domKeyStringFromEnum(int dom_key) {
+  return WebString::fromUTF8(ui::KeycodeConverter::DomKeyToKeyString(
+      static_cast<ui::DomKey>(dom_key)));
+}
+
+int BlinkPlatformImpl::domKeyEnumFromString(const WebString& key_string) {
+  return static_cast<int>(
+      ui::KeycodeConverter::KeyStringToDomKey(key_string.utf8().data()));
+}
+
 }  // namespace content
