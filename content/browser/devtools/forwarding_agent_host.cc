@@ -22,28 +22,20 @@ void ForwardingAgentHost::DispatchOnClientHost(const std::string& message) {
 }
 
 void ForwardingAgentHost::ConnectionClosed() {
-  devtools::inspector::Client inspector(
-      base::Bind(&ForwardingAgentHost::DispatchOnClientHost,
-                 base::Unretained(this)));
-  inspector.Detached(devtools::inspector::DetachedParams::Create()
-      ->set_reason("Connection lost."));
-  delegate_.reset();
+  HostClosed();
 }
 
 void ForwardingAgentHost::Attach() {
-  if (delegate_)
-    delegate_->Attach(this);
+  delegate_->Attach(this);
 }
 
 void ForwardingAgentHost::Detach() {
-  if (delegate_)
-    delegate_->Detach();
+  delegate_->Detach();
 }
 
 bool ForwardingAgentHost::DispatchProtocolMessage(
     const std::string& message) {
-  if (delegate_)
-    delegate_->SendMessageToBackend(message);
+  delegate_->SendMessageToBackend(message);
   return true;
 }
 

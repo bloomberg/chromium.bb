@@ -394,10 +394,14 @@ void DevToolsAndroidBridge::AgentHostDelegate::Attach(
 void DevToolsAndroidBridge::AgentHostDelegate::Detach() {
   web_socket_.reset();
   device_ = nullptr;
+  proxy_ = nullptr;
 }
 
 void DevToolsAndroidBridge::AgentHostDelegate::SendMessageToBackend(
     const std::string& message) {
+  // We could have detached due to physical connection being closed.
+  if (!proxy_)
+    return;
   if (socket_opened_)
     web_socket_->SendFrame(message);
   else
@@ -420,8 +424,12 @@ void DevToolsAndroidBridge::AgentHostDelegate::OnFrameRead(
 }
 
 void DevToolsAndroidBridge::AgentHostDelegate::OnSocketClosed() {
-  if (proxy_)
-    proxy_->ConnectionClosed();
+  if (proxy_) {
+    std::string message = "{ \"method\": \"Inspector.detached\", "
+        "\"params\": { \"reason\": \"Connection lost.\"} }";
+    proxy_->DispatchOnClientHost(message);
+    Detach();
+  }
 }
 
 //// RemotePageTarget ----------------------------------------------
