@@ -9,6 +9,11 @@ import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 import("//ui/ozone/ozone.gni")
 
+declare_args() {
+  # TODO(slan): This most likely needs to be moved into a .gni file.
+  use_chromecast_webui = true
+}
+
 # TODO(slan): This target is being used far too broadly. We should reduce the
 # uses of this config to targets that actually need it. (b/23814594)
 config("config") {
@@ -74,6 +79,10 @@ executable("cast_shell") {
     "//content/public/app:both",
   ]
 
+  if (chromecast_branding != "public") {
+    deps += [ "//chromecast/internal:cast_shell_internal" ]
+  }
+
   if (ozone_platform_egltest) {
     deps += [ "//ui/ozone/platform/egltest:eglplatform_shim_x11" ]
   }
@@ -94,12 +103,6 @@ repack("cast_shell_pak") {
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
   ]
 
-  if (chromecast_branding != "public" && use_chromecast_webui) {
-    sources += [
-      # TODO(slan): Update these paths to be accurate for internal builds.
-    ]
-  }
-
   output = "$root_out_dir/assets/cast_shell.pak"
 
   deps = [
@@ -114,9 +117,22 @@ repack("cast_shell_pak") {
     "//ui/strings",
   ]
 
-  if (chromecast_branding != "public" && use_chromecast_webui) {
-    deps += [
-      # TODO(slan): Update these paths to be accurate for internal builds.
-    ]
+  if (chromecast_branding != "public") {
+    sources +=
+        [ "$root_gen_dir/chromecast/internal/shell/app/sound_resources.pak" ]
+
+    deps += [ "//chromecast/internal/shell/app:chromecast_sound_resources" ]
+
+    if (use_chromecast_webui) {
+      sources += [
+        "$root_gen_dir/chromecast/internal/webui/app_resources.pak",
+        "$root_gen_dir/chromecast/internal/webui/cast_webui_resources.pak",
+      ]
+
+      deps += [
+        "//chromecast/internal/webui:chromecast_app_resources",
+        "//chromecast/internal/webui:chromecast_webui_resources",
+      ]
+    }
   }
 }

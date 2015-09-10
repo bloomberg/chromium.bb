@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+config("public_config") {
+  include_dirs = [ "//chromecast/public" ]
+}
+
 source_set("public") {
   sources = [
     "cast_egl_platform.h",
@@ -18,4 +22,6 @@ source_set("public") {
     "task_runner.h",
     "video_plane.h",
   ]
+
+  public_configs = [ ":public_config" ]
 }

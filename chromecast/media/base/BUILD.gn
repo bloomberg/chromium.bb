@@ -34,6 +34,7 @@ source_set("base") {
   configs += [ "//chromecast:config" ]
 
   deps = [
+    ":libcast_media_default",
     "//base",
     "//chromecast/public",
     "//crypto",
@@ -43,15 +44,8 @@ source_set("base") {
     "//third_party/widevine/cdm:version_h",
   ]
 
-  if (chromecast_branding != "public") {
-    deps += [
-      "${libcast_media_target}",
-      # TODO(gyp): add dependency on internal/chromecast_internal:media_base_internal
-    ]
-  } else {
+  if (chromecast_branding == "public") {
     sources += [ "key_systems_common_simple.cc" ]
-
-    deps += [ ":libcast_media_default" ]
   }
 }
 
