@@ -284,6 +284,8 @@
         'browser/net/chrome_cookie_store_ios_client.mm',
         'browser/net/connection_type_observer_bridge.h',
         'browser/net/connection_type_observer_bridge.mm',
+        'browser/net/cookie_util.h',
+        'browser/net/cookie_util.mm',
         'browser/net/http_server_properties_manager_factory.cc',
         'browser/net/http_server_properties_manager_factory.h',
         'browser/net/image_fetcher.h',

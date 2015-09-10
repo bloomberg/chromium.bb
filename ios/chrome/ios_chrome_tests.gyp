@@ -43,6 +43,7 @@
         'browser/installation_notifier_unittest.mm',
         'browser/metrics/previous_session_info_unittest.mm',
         'browser/metrics/ios_stability_metrics_provider_unittest.mm',
+        'browser/net/cookie_util_unittest.mm',
         'browser/net/image_fetcher_unittest.mm',
         'browser/net/metrics_network_client_unittest.mm',
         'browser/net/retryable_url_fetcher_unittest.mm',
