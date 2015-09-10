@@ -40,16 +40,4 @@ class PageReloadCasesPageSet(story.StorySet):
     self.AddStory(_CreatePageClassWithReload(
         top_pages.GoogleWebSearchPage)(self, shared_desktop_state))
     self.AddStory(_CreatePageClassWithReload(
-        top_pages.GmailPage)(self, shared_desktop_state))
-    self.AddStory(_CreatePageClassWithReload(
-        top_pages.GoogleCalendarPage)(self, shared_desktop_state))
-    self.AddStory(_CreatePageClassWithReload(
         top_pages.GoogleDocPage)(self, shared_desktop_state))
-    self.AddStory(_CreatePageClassWithReload(
-        top_pages.GooglePlusPage)(self, shared_desktop_state))
-    self.AddStory(_CreatePageClassWithReload(
-        top_pages.YoutubePage)(self, shared_desktop_state))
-    self.AddStory(_CreatePageClassWithReload(
-        top_pages.WordpressPage)(self, shared_desktop_state))
-    self.AddStory(_CreatePageClassWithReload(
-        top_pages.FacebookPage)(self, shared_desktop_state))
