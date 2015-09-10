@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 from __future__ import with_statement
+import os
 import string
 import sys
 
@@ -49,6 +50,7 @@ def PathToGritId(path):
   table = string.maketrans(string.lowercase + '/.-', string.uppercase + '___')
   return 'IDR_POLYMER_1_0_' + path.translate(table)
 
+
 def SortKey(record):
   return (record, PathToGritId(record))
 
@@ -56,11 +58,25 @@ def SortKey(record):
 def ParseRecord(record):
   return record.strip()
 
+
+class FileNotFoundException(Exception):
+  pass
+
+
+_HERE = os.path.dirname(os.path.realpath(__file__))
+_POLYMER_DIR = os.path.join(_HERE, os.pardir, os.pardir,
+    'third_party', 'polymer', 'v1_0', 'components-chromium')
+
+
 def main(argv):
   with open(argv[1]) as f:
     records = [ParseRecord(r) for r in f if not r.isspace()]
   lines = { 'v_1_0': [] }
   for path in sorted(set(records), key=SortKey):
+    full_path = os.path.normpath(os.path.join(_POLYMER_DIR, path))
+    if not os.path.exists(full_path):
+      raise FileNotFoundException('%s not found' % full_path)
+
     template = DEFINITION_TEMPLATE_1_0
     lines['v_1_0'].append(
         template % (PathToGritId(path), path))
