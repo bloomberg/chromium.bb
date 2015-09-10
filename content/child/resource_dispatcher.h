@@ -203,7 +203,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void DispatchMessage(const IPC::Message& message);
 
   // Dispatch any deferred messages for the given request, provided it is not
-  // again in the deferred state.
+  // again in the deferred state. This method may mutate |pending_requests_|.
   void FlushDeferredMessages(int request_id);
 
   void ToResourceResponseInfo(const PendingRequestInfo& request_info,
