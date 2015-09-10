@@ -7,14 +7,13 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
 
 InMemoryTabRestoreService::InMemoryTabRestoreService(
     Profile* profile,
+    scoped_ptr<sessions::TabRestoreServiceClient> client,
     TabRestoreService::TimeFactory* time_factory)
-    : helper_(this, NULL, profile, time_factory) {
-}
+    : client_(client.Pass()),
+      helper_(this, NULL, profile, client_.get(), time_factory) {}
 
 InMemoryTabRestoreService::~InMemoryTabRestoreService() {}
 

@@ -7,11 +7,46 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/common/url_constants.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_metrics.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
+#endif
+
+namespace {
+
+void RecordAppLaunch(Profile* profile, const GURL& url) {
+#if defined(ENABLE_EXTENSIONS)
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)
+          ->enabled_extensions()
+          .GetAppByURL(url);
+  if (!extension)
+    return;
+
+  extensions::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED, extension->GetType());
+#endif  // defined(ENABLE_EXTENSIONS)
+}
+
+}  // namespace
 
 ChromeTabRestoreServiceClient::ChromeTabRestoreServiceClient(Profile* profile)
     : profile_(profile) {}
 
 ChromeTabRestoreServiceClient::~ChromeTabRestoreServiceClient() {}
+
+base::FilePath ChromeTabRestoreServiceClient::GetPathToSaveTo() {
+  return profile_->GetPath();
+}
+
+GURL ChromeTabRestoreServiceClient::GetNewTabURL() {
+  return GURL(chrome::kChromeUINewTabURL);
+}
 
 bool ChromeTabRestoreServiceClient::HasLastSession() {
 #if defined(ENABLE_SESSION_SERVICE)
@@ -38,4 +73,8 @@ void ChromeTabRestoreServiceClient::GetLastSession(
   SessionServiceFactory::GetForProfile(profile_)
       ->GetLastSession(callback, tracker);
 #endif
+}
+
+void ChromeTabRestoreServiceClient::OnTabRestored(const GURL& url) {
+  RecordAppLaunch(profile_, url);
 }

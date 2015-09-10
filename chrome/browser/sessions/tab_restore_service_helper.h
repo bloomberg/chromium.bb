@@ -27,6 +27,10 @@ class NavigationController;
 class WebContents;
 }
 
+namespace sessions {
+class TabRestoreServiceClient;
+}
+
 // Helper class used to implement InMemoryTabRestoreService and
 // PersistentTabRestoreService. See tab_restore_service.h for method-level
 // comments.
@@ -68,6 +72,7 @@ class TabRestoreServiceHelper {
   TabRestoreServiceHelper(TabRestoreService* tab_restore_service,
                           Observer* observer,
                           Profile* profile,
+                          sessions::TabRestoreServiceClient* client,
                           TimeFactory* time_factory);
 
   ~TabRestoreServiceHelper();
@@ -149,14 +154,14 @@ class TabRestoreServiceHelper {
   static bool ValidateWindow(Window* window);
 
   // Returns true if |tab| is one we care about restoring.
-  static bool IsTabInteresting(const Tab* tab);
+  bool IsTabInteresting(const Tab* tab);
 
   // Checks whether |window| is interesting --- if it only contains a single,
   // uninteresting tab, it's not interesting.
-  static bool IsWindowInteresting(const Window* window);
+  bool IsWindowInteresting(const Window* window);
 
   // Validates and checks |entry| for interesting.
-  static bool FilterEntry(Entry* entry);
+  bool FilterEntry(Entry* entry);
 
   // Finds tab entries with the old browser_id and sets it to the new one.
   void UpdateTabBrowserIDs(SessionID::id_type old_id,
@@ -170,6 +175,8 @@ class TabRestoreServiceHelper {
   Observer* const observer_;
 
   Profile* const profile_;
+
+  sessions::TabRestoreServiceClient* client_;
 
   // Set of entries. They are ordered from most to least recent.
   Entries entries_;

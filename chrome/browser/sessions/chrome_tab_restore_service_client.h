@@ -19,9 +19,12 @@ class ChromeTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
 
  private:
   // TabRestoreServiceClient:
+  base::FilePath GetPathToSaveTo() override;
+  GURL GetNewTabURL() override;
   bool HasLastSession() override;
   void GetLastSession(const sessions::GetLastSessionCallback& callback,
                       base::CancelableTaskTracker* tracker) override;
+  void OnTabRestored(const GURL& url) override;
 
   Profile* profile_;
 

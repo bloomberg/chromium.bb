@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/base_session_service_delegate_impl.h"
 #include "components/sessions/base_session_service.h"
 #include "components/sessions/base_session_service_commands.h"
@@ -118,7 +117,7 @@ class PersistentTabRestoreService::Delegate
     : public BaseSessionServiceDelegateImpl,
       public TabRestoreServiceHelper::Observer {
  public:
-  Delegate(Profile* profile, sessions::TabRestoreServiceClient* client);
+  explicit Delegate(sessions::TabRestoreServiceClient* client);
 
   ~Delegate() override;
 
@@ -223,9 +222,6 @@ class PersistentTabRestoreService::Delegate
  private:
   scoped_ptr<sessions::BaseSessionService> base_session_service_;
 
-  // The associated profile.
-  Profile* profile_;
-
   // The associated client.
   sessions::TabRestoreServiceClient* client_;
 
@@ -252,22 +248,17 @@ class PersistentTabRestoreService::Delegate
 };
 
 PersistentTabRestoreService::Delegate::Delegate(
-    Profile* profile,
     sessions::TabRestoreServiceClient* client)
     : BaseSessionServiceDelegateImpl(true),
       base_session_service_(new sessions::BaseSessionService(
           sessions::BaseSessionService::TAB_RESTORE,
-          profile->GetPath(),
+          client->GetPathToSaveTo(),
           this)),
-      profile_(profile),
       client_(client),
       tab_restore_service_helper_(NULL),
       entries_to_write_(0),
       entries_written_(0),
-      load_state_(NOT_LOADED) {
-  // We should never be created when incognito.
-  DCHECK(!profile->IsOffTheRecord());
-}
+      load_state_(NOT_LOADED) {}
 
 PersistentTabRestoreService::Delegate::~Delegate() {}
 
@@ -927,8 +918,8 @@ PersistentTabRestoreService::PersistentTabRestoreService(
     scoped_ptr<sessions::TabRestoreServiceClient> client,
     TimeFactory* time_factory)
     : client_(client.Pass()),
-      delegate_(new Delegate(profile, client_.get())),
-      helper_(this, delegate_.get(), profile, time_factory) {
+      delegate_(new Delegate(client_.get())),
+      helper_(this, delegate_.get(), profile, client_.get(), time_factory) {
   delegate_->set_tab_restore_service_helper(&helper_);
 }
 

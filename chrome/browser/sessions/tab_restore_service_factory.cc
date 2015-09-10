@@ -54,11 +54,12 @@ bool TabRestoreServiceFactory::ServiceIsNULLWhileTesting() const {
 KeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(!profile->IsOffTheRecord());
   scoped_ptr<sessions::TabRestoreServiceClient> client(
       new ChromeTabRestoreServiceClient(profile));
 
 #if defined(OS_ANDROID)
-  return new InMemoryTabRestoreService(profile, nullptr);
+  return new InMemoryTabRestoreService(profile, client.Pass(), nullptr);
 #else
   return new PersistentTabRestoreService(profile, client.Pass(), nullptr);
 #endif

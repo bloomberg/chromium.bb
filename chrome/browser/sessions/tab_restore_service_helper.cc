@@ -10,11 +10,10 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "chrome/common/url_constants.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
+#include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/session_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -23,35 +22,11 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_metrics.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #endif
 
 using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
-
-namespace {
-
-void RecordAppLaunch(Profile* profile, const TabRestoreService::Tab& tab) {
-#if defined(ENABLE_EXTENSIONS)
-  GURL url = tab.navigations.at(tab.current_navigation_index).virtual_url();
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)
-          ->enabled_extensions().GetAppByURL(url);
-  if (!extension)
-    return;
-
-  extensions::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED,
-      extension->GetType());
-#endif  // defined(ENABLE_EXTENSIONS)
-}
-
-}  // namespace
 
 // TabRestoreServiceHelper::Observer -------------------------------------------
 
@@ -72,10 +47,12 @@ TabRestoreServiceHelper::TabRestoreServiceHelper(
     TabRestoreService* tab_restore_service,
     Observer* observer,
     Profile* profile,
+    sessions::TabRestoreServiceClient* client,
     TabRestoreService::TimeFactory* time_factory)
     : tab_restore_service_(tab_restore_service),
       observer_(observer),
       profile_(profile),
+      client_(client),
       restoring_(false),
       time_factory_(time_factory) {
   DCHECK(tab_restore_service_);
@@ -257,7 +234,8 @@ std::vector<content::WebContents*> TabRestoreServiceHelper::RestoreEntryById(
             tab.user_agent_override);
         if (restored_tab) {
           restored_tab->GetController().LoadIfNecessary();
-          RecordAppLaunch(profile_, tab);
+          client_->OnTabRestored(
+              tab.navigations.at(tab.current_navigation_index).virtual_url());
           web_contents.push_back(restored_tab);
         }
       }
@@ -503,7 +481,8 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
                                             tab.user_agent_override);
     web_contents->GetController().LoadIfNecessary();
   }
-  RecordAppLaunch(profile_, tab);
+  client_->OnTabRestored(
+      tab.navigations.at(tab.current_navigation_index).virtual_url());
   if (contents)
     *contents = web_contents;
 
@@ -556,8 +535,7 @@ bool TabRestoreServiceHelper::IsTabInteresting(const Tab* tab) {
     return true;
 
   return tab->pinned ||
-      tab->navigations.at(0).virtual_url() !=
-          GURL(chrome::kChromeUINewTabURL);
+         tab->navigations.at(0).virtual_url() != client_->GetNewTabURL();
 }
 
 bool TabRestoreServiceHelper::IsWindowInteresting(const Window* window) {
