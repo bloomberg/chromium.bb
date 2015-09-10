@@ -210,8 +210,6 @@ class GNRoller(object):
     except Exception as _e:
       raise
 
-    TRY_JOB_RESULT_STATES = ('success', 'warnings', 'failure', 'skipped',
-                             'exception', 'retry', 'pending')
     try_job_results = patchset_data['try_job_results']
     if not try_job_results:
       print('No try jobs found on most recent patchset')
@@ -230,7 +228,9 @@ class GNRoller(object):
         print('Unexpected builder: %s')
         continue
 
-      state = TRY_JOB_RESULT_STATES[int(job['result'])]
+      TRY_JOB_RESULT_STATES = ('started', 'success', 'warnings', 'failure',
+                               'skipped', 'exception', 'retry', 'pending')
+      state = TRY_JOB_RESULT_STATES[int(job['result']) + 1]
       url_str = ' %s' % job['url']
       build = url_str.split('/')[-1]
 
