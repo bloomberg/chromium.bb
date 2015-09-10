@@ -211,22 +211,7 @@ jboolean ProfileSyncServiceAndroid::IsPassphraseRequired(JNIEnv* env, jobject) {
 jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForDecryption(
     JNIEnv* env, jobject obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // In case of CUSTOM_PASSPHRASE we always sync passwords. Prompt the user for
-  // a passphrase if cryptographer has any pending keys.
-  if (sync_service_->GetPassphraseType() == syncer::CUSTOM_PASSPHRASE) {
-    return !IsCryptographerReady(env, obj);
-  }
-  if (sync_service_->IsPassphraseRequiredForDecryption()) {
-    // Passwords datatype should never prompt for a passphrase, except when
-    // user is using a custom passphrase. Do not prompt for a passphrase if
-    // passwords are the only encrypted datatype. This prevents a temporary
-    // notification for passphrase  when PSS has not completed configuring
-    // DataTypeManager, after configuration password datatype shall be disabled.
-    const syncer::ModelTypeSet encrypted_types =
-        sync_service_->GetEncryptedDataTypes();
-    return !encrypted_types.Equals(syncer::ModelTypeSet(syncer::PASSWORDS));
-  }
-  return false;
+  return sync_service_->IsPassphraseRequiredForDecryption();
 }
 
 jboolean ProfileSyncServiceAndroid::IsUsingSecondaryPassphrase(
