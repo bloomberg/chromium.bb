@@ -108,6 +108,12 @@ public class PendingInvalidation {
                 invalidation.version != null ? invalidation.version : 0L, invalidation.payload);
     }
 
+    public String toDebugString() {
+        String payload = mPayload == null ? "null" : String.valueOf(mPayload.length());
+        return String.format(Locale.US, "objectSrc:%d,objectId:%s,version:%d,payload(length):%s",
+                mObjectSource, mObjectId, mVersion, payload);
+    }
+
     @VisibleForTesting
     @Override
     public boolean equals(Object other) {
