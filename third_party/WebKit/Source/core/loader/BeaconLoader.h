@@ -16,7 +16,7 @@ namespace blink {
 
 class Blob;
 class DOMArrayBufferView;
-class DOMFormData;
+class FormData;
 class KURL;
 class LocalFrame;
 class SecurityOrigin;
@@ -32,7 +32,7 @@ public:
     static bool sendBeacon(LocalFrame*, int, const KURL&, const String&, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtr<DOMArrayBufferView>, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, Blob*, int&);
-    static bool sendBeacon(LocalFrame*, int, const KURL&, DOMFormData*, int&);
+    static bool sendBeacon(LocalFrame*, int, const KURL&, FormData*, int&);
 
 private:
     class Sender;

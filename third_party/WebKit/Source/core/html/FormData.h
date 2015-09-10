@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMFormData_h
-#define DOMFormData_h
+#ifndef FormData_h
+#define FormData_h
 
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -51,18 +51,18 @@ class HTMLFormElement;
 // Typedef from FormData.idl:
 typedef FileOrUSVString FormDataEntryValue;
 
-class CORE_EXPORT DOMFormData final : public FormDataList, public ScriptWrappable, public PairIterable<String, FormDataEntryValue> {
+class CORE_EXPORT FormData final : public FormDataList, public ScriptWrappable, public PairIterable<String, FormDataEntryValue> {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static DOMFormData* create(HTMLFormElement* form = 0)
+    static FormData* create(HTMLFormElement* form = 0)
     {
-        return new DOMFormData(form);
+        return new FormData(form);
     }
 
-    static DOMFormData* create(const WTF::TextEncoding& encoding)
+    static FormData* create(const WTF::TextEncoding& encoding)
     {
-        return new DOMFormData(encoding);
+        return new FormData(encoding);
     }
 
     // FormData interface.
@@ -81,8 +81,8 @@ public:
     String decode(const CString& data) const;
 
 private:
-    explicit DOMFormData(const WTF::TextEncoding&);
-    explicit DOMFormData(HTMLFormElement*);
+    explicit FormData(const WTF::TextEncoding&);
+    explicit FormData(HTMLFormElement*);
     void setEntry(const Item&);
 
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
@@ -91,4 +91,4 @@ private:
 
 } // namespace blink
 
-#endif // DOMFormData_h
+#endif // FormData_h

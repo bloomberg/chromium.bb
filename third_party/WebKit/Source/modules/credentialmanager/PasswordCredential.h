@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class DOMFormData;
+class FormData;
 class FormDataOptions;
 class PasswordCredentialData;
 class WebPasswordCredential;
@@ -25,7 +25,7 @@ public:
     static PasswordCredential* create(WebPasswordCredential*);
 
     // PasswordCredential.idl
-    DOMFormData* toFormData(ScriptState*, const FormDataOptions&);
+    FormData* toFormData(ScriptState*, const FormDataOptions&);
 
     DECLARE_VIRTUAL_TRACE();
 

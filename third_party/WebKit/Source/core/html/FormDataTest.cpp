@@ -3,16 +3,15 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 
-#include "core/html/FormDataList.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
-TEST(DOMFormDataTest, opacityGet)
+TEST(FormDataTest, opacityGet)
 {
-    DOMFormData* fd = DOMFormData::create(UTF8Encoding());
+    FormData* fd = FormData::create(UTF8Encoding());
     fd->append("name1", "value1");
 
     FileOrUSVString result;
@@ -37,9 +36,9 @@ TEST(DOMFormDataTest, opacityGet)
     EXPECT_STREQ("value1", entry2.data().data());
 }
 
-TEST(DOMFormDataTest, opacityGetAll)
+TEST(FormDataTest, opacityGetAll)
 {
-    DOMFormData* fd = DOMFormData::create(UTF8Encoding());
+    FormData* fd = FormData::create(UTF8Encoding());
     fd->append("name1", "value1");
 
     HeapVector<FormDataEntryValue> results = fd->getAll("name1");
@@ -59,9 +58,9 @@ TEST(DOMFormDataTest, opacityGetAll)
     EXPECT_EQ(1u, fd->size());
 }
 
-TEST(DOMFormDataTest, opacityHas)
+TEST(FormDataTest, opacityHas)
 {
-    DOMFormData* fd = DOMFormData::create(UTF8Encoding());
+    FormData* fd = FormData::create(UTF8Encoding());
     fd->append("name1", "value1");
 
     EXPECT_TRUE(fd->has("name1"));

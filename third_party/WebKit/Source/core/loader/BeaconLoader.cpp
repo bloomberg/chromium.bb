@@ -13,7 +13,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/MixedContentChecker.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -37,12 +37,12 @@ protected:
     static unsigned long long beaconSize(const String&);
     static unsigned long long beaconSize(Blob*);
     static unsigned long long beaconSize(PassRefPtr<DOMArrayBufferView>);
-    static unsigned long long beaconSize(DOMFormData*);
+    static unsigned long long beaconSize(FormData*);
 
     static bool serialize(const String&, ResourceRequest&, int, int&);
     static bool serialize(Blob*, ResourceRequest&, int, int&);
     static bool serialize(PassRefPtr<DOMArrayBufferView>, ResourceRequest&, int, int&);
-    static bool serialize(DOMFormData*, ResourceRequest&, int, int&);
+    static bool serialize(FormData*, ResourceRequest&, int, int&);
 };
 
 template<typename Payload>
@@ -117,7 +117,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
-bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, DOMFormData* data, int& payloadLength)
+bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, FormData* data, int& payloadLength)
 {
     BeaconData<decltype(data)> beacon(data);
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
@@ -216,13 +216,13 @@ bool Beacon::serialize(PassRefPtr<DOMArrayBufferView> data, ResourceRequest& req
     return true;
 }
 
-unsigned long long Beacon::beaconSize(DOMFormData* data)
+unsigned long long Beacon::beaconSize(FormData*)
 {
-    // DOMFormData's size cannot be determined until serialized.
+    // FormData's size cannot be determined until serialized.
     return 0;
 }
 
-bool Beacon::serialize(DOMFormData* data, ResourceRequest& request, int allowance, int& payloadLength)
+bool Beacon::serialize(FormData* data, ResourceRequest& request, int allowance, int& payloadLength)
 {
     ASSERT(data);
     RefPtr<EncodedFormData> entityBody = data->createMultiPartFormData();

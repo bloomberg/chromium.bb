@@ -51,11 +51,11 @@ class Blob;
 class BlobDataHandle;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
-class DOMFormData;
 class Document;
 class DocumentParser;
 class ExceptionState;
 class ExecutionContext;
+class FormData;
 class ScriptState;
 class SharedBuffer;
 class Stream;
@@ -206,7 +206,7 @@ private:
     void send(Document*, ExceptionState&);
     void send(const String&, ExceptionState&);
     void send(Blob*, ExceptionState&);
-    void send(DOMFormData*, ExceptionState&);
+    void send(FormData*, ExceptionState&);
     void send(DOMArrayBuffer*, ExceptionState&);
     void send(DOMArrayBufferView*, ExceptionState&);
 

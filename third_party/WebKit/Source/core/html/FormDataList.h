@@ -32,7 +32,7 @@
 
 namespace blink {
 
-// TODO(tkent): Merge FormDataList into DOMFormData.
+// TODO(tkent): Merge FormDataList into FormData.
 class CORE_EXPORT FormDataList : public GarbageCollected<FormDataList> {
 public:
     class Item {

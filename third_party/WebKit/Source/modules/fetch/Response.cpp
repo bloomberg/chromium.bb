@@ -10,7 +10,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/ResponseInit.h"
@@ -130,7 +130,7 @@ Response* Response::create(ExecutionContext* context, const BodyInit& body, cons
         return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
     }
     if (body.isFormData()) {
-        DOMFormData* domFormData = body.getAsFormData();
+        FormData* domFormData = body.getAsFormData();
         OwnPtr<BlobData> blobData = BlobData::create();
         // FIXME: the same code exist in RequestInit::RequestInit().
         RefPtr<EncodedFormData> httpBody = domFormData->createMultiPartFormData();

@@ -50,7 +50,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -782,9 +782,9 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
     createRequest(httpBody.release(), exceptionState);
 }
 
-void XMLHttpRequest::send(DOMFormData* body, ExceptionState& exceptionState)
+void XMLHttpRequest::send(FormData* body, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p send() DOMFormData %p", this, body);
+    WTF_LOG(Network, "XMLHttpRequest %p send() FormData %p", this, body);
 
     if (!initSend(exceptionState))
         return;

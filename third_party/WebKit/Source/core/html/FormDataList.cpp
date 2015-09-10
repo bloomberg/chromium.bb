@@ -93,13 +93,13 @@ void FormDataList::appendKeyValuePairItemsTo(EncodedFormData* formData, const WT
                     // For file blob, use the filename (or relative path if it is present) as the name.
                     name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
 
-                    // If a filename is passed in DOMFormData.append(), use it
+                    // If a filename is passed in FormData.append(), use it
                     // instead of the file blob's name.
                     if (!item.filename().isNull())
                         name = item.filename();
                 } else {
                     // For non-file blob, use the filename if it is passed in
-                    // DOMFormData.append().
+                    // FormData.append().
                     if (!item.filename().isNull())
                         name = item.filename();
                     else

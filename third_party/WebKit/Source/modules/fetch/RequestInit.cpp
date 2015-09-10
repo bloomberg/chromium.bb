@@ -12,7 +12,7 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "core/fileapi/Blob.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/Headers.h"
@@ -51,7 +51,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         contentType = blobDataHandle->type();
         body = FetchBlobDataConsumerHandle::create(context, blobDataHandle.release());
     } else if (V8FormData::hasInstance(v8Body, isolate)) {
-        DOMFormData* domFormData = V8FormData::toImpl(v8::Local<v8::Object>::Cast(v8Body));
+        FormData* domFormData = V8FormData::toImpl(v8::Local<v8::Object>::Cast(v8Body));
         opaque = domFormData->opaque();
 
         RefPtr<EncodedFormData> formData = domFormData->createMultiPartFormData();

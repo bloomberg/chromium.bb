@@ -15,7 +15,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 #include "core/loader/BeaconLoader.h"
 
 namespace blink {

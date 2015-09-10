@@ -34,7 +34,7 @@
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -210,7 +210,7 @@ bool buildSearchString(const HTMLFormElement& form, Vector<char>* encodedString,
         if (control.isDisabledFormControl() || control.name().isNull())
             continue;
 
-        DOMFormData* formData = DOMFormData::create(encoding);
+        FormData* formData = FormData::create(encoding);
         if (!control.appendFormData(*formData, false))
             continue;
 

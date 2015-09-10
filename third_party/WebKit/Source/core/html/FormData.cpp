@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
@@ -42,9 +42,9 @@ namespace blink {
 
 namespace {
 
-class DOMFormDataIterationSource final : public PairIterable<String, FormDataEntryValue>::IterationSource {
+class FormDataIterationSource final : public PairIterable<String, FormDataEntryValue>::IterationSource {
 public:
-    DOMFormDataIterationSource(DOMFormData* formData) : m_formData(formData), m_current(0) { }
+    FormDataIterationSource(FormData* formData) : m_formData(formData), m_current(0) { }
 
     bool next(ScriptState* scriptState, String& key, FormDataEntryValue& value, ExceptionState& exceptionState) override
     {
@@ -69,19 +69,19 @@ public:
     }
 
 private:
-    const Member<DOMFormData> m_formData;
+    const Member<FormData> m_formData;
     size_t m_current;
 };
 
 } // namespace
 
-DOMFormData::DOMFormData(const WTF::TextEncoding& encoding)
+FormData::FormData(const WTF::TextEncoding& encoding)
     : FormDataList(encoding)
     , m_opaque(false)
 {
 }
 
-DOMFormData::DOMFormData(HTMLFormElement* form)
+FormData::FormData(HTMLFormElement* form)
     : FormDataList(UTF8Encoding())
     , m_opaque(false)
 {
@@ -95,12 +95,12 @@ DOMFormData::DOMFormData(HTMLFormElement* form)
     }
 }
 
-void DOMFormData::append(const String& name, const String& value)
+void FormData::append(const String& name, const String& value)
 {
     appendData(name, value);
 }
 
-void DOMFormData::append(ExecutionContext* context, const String& name, Blob* blob, const String& filename)
+void FormData::append(ExecutionContext* context, const String& name, Blob* blob, const String& filename)
 {
     if (blob) {
         if (blob->isFile()) {
@@ -120,7 +120,7 @@ void DOMFormData::append(ExecutionContext* context, const String& name, Blob* bl
     appendBlob(name, blob, filename);
 }
 
-void DOMFormData::deleteEntry(const String& name)
+void FormData::deleteEntry(const String& name)
 {
     const CString keyData = encodeAndNormalize(name);
     size_t i = 0;
@@ -133,7 +133,7 @@ void DOMFormData::deleteEntry(const String& name)
     }
 }
 
-void DOMFormData::get(const String& name, FormDataEntryValue& result)
+void FormData::get(const String& name, FormDataEntryValue& result)
 {
     if (m_opaque)
         return;
@@ -151,7 +151,7 @@ void DOMFormData::get(const String& name, FormDataEntryValue& result)
     }
 }
 
-HeapVector<FormDataEntryValue> DOMFormData::getAll(const String& name)
+HeapVector<FormDataEntryValue> FormData::getAll(const String& name)
 {
     HeapVector<FormDataEntryValue> results;
 
@@ -174,7 +174,7 @@ HeapVector<FormDataEntryValue> DOMFormData::getAll(const String& name)
     return results;
 }
 
-bool DOMFormData::has(const String& name)
+bool FormData::has(const String& name)
 {
     if (m_opaque)
         return false;
@@ -186,17 +186,17 @@ bool DOMFormData::has(const String& name)
     return false;
 }
 
-void DOMFormData::set(const String& name, const String& value)
+void FormData::set(const String& name, const String& value)
 {
     setEntry(Item(encodeAndNormalize(name), encodeAndNormalize(value)));
 }
 
-void DOMFormData::set(const String& name, Blob* blob, const String& filename)
+void FormData::set(const String& name, Blob* blob, const String& filename)
 {
     setEntry(Item(encodeAndNormalize(name), blob, filename));
 }
 
-void DOMFormData::setEntry(const Item& item)
+void FormData::setEntry(const Item& item)
 {
     const CString keyData = item.key();
     bool found = false;
@@ -217,17 +217,17 @@ void DOMFormData::setEntry(const Item& item)
     return;
 }
 
-String DOMFormData::decode(const CString& data) const
+String FormData::decode(const CString& data) const
 {
     return encoding().decode(data.data(), data.length());
 }
 
-PairIterable<String, FormDataEntryValue>::IterationSource* DOMFormData::startIteration(ScriptState*, ExceptionState&)
+PairIterable<String, FormDataEntryValue>::IterationSource* FormData::startIteration(ScriptState*, ExceptionState&)
 {
     if (m_opaque)
-        return new DOMFormDataIterationSource(new DOMFormData(nullptr));
+        return new FormDataIterationSource(new FormData(nullptr));
 
-    return new DOMFormDataIterationSource(this);
+    return new FormDataIterationSource(this);
 }
 
 } // namespace blink

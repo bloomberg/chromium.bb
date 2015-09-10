@@ -8,7 +8,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 #include "modules/credentialmanager/FormDataOptions.h"
 #include "modules/credentialmanager/PasswordCredentialData.h"
 #include "platform/credentialmanager/PlatformPasswordCredential.h"
@@ -41,9 +41,9 @@ PasswordCredential::PasswordCredential(const String& id, const String& password,
 {
 }
 
-DOMFormData* PasswordCredential::toFormData(ScriptState* scriptState, const FormDataOptions& options)
+FormData* PasswordCredential::toFormData(ScriptState* scriptState, const FormDataOptions& options)
 {
-    DOMFormData* fd = DOMFormData::create();
+    FormData* fd = FormData::create();
 
     String errorMessage;
     if (!scriptState->executionContext()->isPrivilegedContext(errorMessage))

@@ -6,8 +6,7 @@
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 
 #include "core/dom/DOMTypedArray.h"
-#include "core/html/DOMFormData.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/testing/DummyPageHolder.h"
@@ -262,7 +261,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromArrayBuffer)
 
 TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromSimpleFormData)
 {
-    DOMFormData* data = DOMFormData::create(UTF8Encoding());
+    FormData* data = FormData::create(UTF8Encoding());
     data->append("name1", "value1");
     data->append("name2", "value2");
     RefPtr<EncodedFormData> inputFormData = data->createMultiPartFormData();

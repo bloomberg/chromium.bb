@@ -35,7 +35,7 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
-#include "core/html/DOMFormData.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -209,7 +209,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
         }
     }
     WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataEncoder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.charset(), document.defaultCharset());
-    DOMFormData* domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
+    FormData* domFormData = FormData::create(dataEncoding.encodingForFormSubmission());
 
     bool containsPasswordData = false;
     for (unsigned i = 0; i < form->associatedElements().size(); ++i) {
