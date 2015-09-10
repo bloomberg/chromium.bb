@@ -178,6 +178,14 @@ declare_args() {
 # be non-global.
 using_new_global_compiler_configs = false
 
+# To assist in a multi-sided landing of updating the default optimization
+# config. When false, this file sets up the default optimization config to be
+# either "no_optimize" (debug) or "optimize" (release). When true it will
+# always set the config "default_optimization".
+#
+# TODO(brettw) remove this when all repos are updated.
+using_new_optimization_config = false
+
 # =============================================================================
 # OS DEFINITIONS
 # =============================================================================
