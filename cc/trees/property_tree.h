@@ -322,6 +322,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                                   TransformNode* target_node);
   void UpdateAnimationProperties(TransformNode* node,
                                  TransformNode* parent_node);
+  void UndoSnapping(TransformNode* node);
   void UpdateSnapping(TransformNode* node);
   void UpdateNodeAndAncestorsHaveIntegerTranslations(
       TransformNode* node,

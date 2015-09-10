@@ -88,12 +88,21 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
             MathUtil::MapClippedRect(clip_to_target, clip_node->data.clip));
       }
 
-      if (clip_node->data.requires_tight_clip_rect)
-        layer->set_clip_rect_in_target_space_from_property_trees(
-            combined_clip_rect_in_target_space);
-      else
-        layer->set_clip_rect_in_target_space_from_property_trees(
-            clip_rect_in_target_space);
+      if (clip_node->data.requires_tight_clip_rect) {
+        if (!combined_clip_rect_in_target_space.IsEmpty()) {
+          layer->set_clip_rect_in_target_space_from_property_trees(
+              combined_clip_rect_in_target_space);
+        } else {
+          layer->set_clip_rect_in_target_space_from_property_trees(gfx::Rect());
+        }
+      } else {
+        if (!clip_rect_in_target_space.IsEmpty()) {
+          layer->set_clip_rect_in_target_space_from_property_trees(
+              clip_rect_in_target_space);
+        } else {
+          layer->set_clip_rect_in_target_space_from_property_trees(gfx::Rect());
+        }
+      }
 
       gfx::Rect layer_content_rect = gfx::Rect(layer_bounds);
       gfx::Rect layer_content_bounds_in_target_space =

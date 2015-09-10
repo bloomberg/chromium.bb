@@ -181,6 +181,8 @@ void TransformTree::UpdateTransforms(int id) {
   if (node->data.needs_local_transform_update ||
       NeedsSourceToParentUpdate(node))
     UpdateLocalTransform(node);
+  else
+    UndoSnapping(node);
   UpdateScreenSpaceTransform(node, parent_node, target_node);
   UpdateSublayerScale(node);
   UpdateTargetSpaceTransform(node, target_node);
@@ -492,6 +494,14 @@ void TransformTree::UpdateAnimationProperties(TransformNode* node,
       max_ancestor_scale * node->data.local_starting_animation_scale;
 }
 
+void TransformTree::UndoSnapping(TransformNode* node) {
+  // to_parent transform has the scroll snap from previous frame baked in.
+  // We need to undo it and use the un-snapped transform to compute current
+  // target and screen space transforms.
+  node->data.to_parent.Translate(-node->data.scroll_snap.x(),
+                                 -node->data.scroll_snap.y());
+}
+
 void TransformTree::UpdateSnapping(TransformNode* node) {
   if (!node->data.scrolls || node->data.to_screen_is_animated ||
       !node->data.to_target.IsScaleOrTranslation()) {
@@ -516,8 +526,8 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
 
   // Now that we have our scroll delta, we must apply it to each of our
   // combined, to/from matrices.
+  node->data.to_target = rounded;
   node->data.to_parent.Translate(translation.x(), translation.y());
-  node->data.to_target.Translate(translation.x(), translation.y());
   node->data.from_target.matrix().postTranslate(-translation.x(),
                                                 -translation.y(), 0);
   node->data.to_screen.Translate(translation.x(), translation.y());
