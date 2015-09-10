@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -48,15 +49,15 @@ const char kEmptyUnencryptedConfiguration[] =
 scoped_ptr<base::DictionaryValue> ReadDictionaryFromJson(
     const std::string& json) {
   std::string error;
-  base::Value* root = base::JSONReader::DeprecatedReadAndReturnError(
+  scoped_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
       json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
 
   base::DictionaryValue* dict_ptr = nullptr;
   if (!root || !root->GetAsDictionary(&dict_ptr)) {
     NET_LOG(ERROR) << "Invalid JSON Dictionary: " << error;
-    delete root;
+    return nullptr;
   }
-
+  ignore_result(root.release());
   return make_scoped_ptr(dict_ptr);
 }
 

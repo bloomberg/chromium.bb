@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -214,13 +215,14 @@ class AutoConnectHandlerTest : public testing::Test {
     scoped_ptr<base::ListValue> network_configs(new base::ListValue);
     if (!network_configs_json.empty()) {
       std::string error;
-      base::Value* network_configs_value =
-          base::JSONReader::DeprecatedReadAndReturnError(
-              network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-              &error);
+      scoped_ptr<base::Value> network_configs_value =
+          base::JSONReader::ReadAndReturnError(network_configs_json,
+                                               base::JSON_ALLOW_TRAILING_COMMAS,
+                                               nullptr, &error);
       ASSERT_TRUE(network_configs_value) << error;
       base::ListValue* network_configs_list = nullptr;
       ASSERT_TRUE(network_configs_value->GetAsList(&network_configs_list));
+      ignore_result(network_configs_value.release());
       network_configs.reset(network_configs_list);
     }
 

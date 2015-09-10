@@ -31,18 +31,16 @@ namespace {
 // returns NULL.
 scoped_ptr<base::Value> ConvertStringToValue(const std::string& str,
                                              base::Value::Type type) {
-  base::Value* value;
+  scoped_ptr<base::Value> value;
   if (type == base::Value::TYPE_STRING) {
-    value = new base::StringValue(str);
+    value.reset(new base::StringValue(str));
   } else {
-    value = base::JSONReader::DeprecatedRead(str);
+    value = base::JSONReader::Read(str);
   }
+  if (value && value->GetType() != type)
+    return nullptr;
 
-  if (value == NULL || value->GetType() != type) {
-    delete value;
-    value = NULL;
-  }
-  return make_scoped_ptr(value);
+  return value;
 }
 
 // This class implements the translation of properties from the given
