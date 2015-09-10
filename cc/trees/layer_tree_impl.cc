@@ -124,10 +124,8 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   if (layer_id != outer_layer_id && layer_id != inner_layer_id)
     return;
 
-  if (!root_layer_scroll_offset_delegate_)
-    return;
-
-  UpdateRootScrollOffsetDelegate();
+  if (root_layer_scroll_offset_delegate_)
+    UpdateRootScrollOffsetDelegate();
 }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
@@ -441,12 +439,8 @@ void LayerTreeImpl::DidUpdatePageScale() {
 
   set_needs_update_draw_properties();
 
-  if (root_layer_scroll_offset_delegate_) {
-    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-        TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
-        current_page_scale_factor(), min_page_scale_factor_,
-        max_page_scale_factor_);
-  }
+  if (root_layer_scroll_offset_delegate_)
+    UpdateRootScrollOffsetDelegate();
 
   if (PageScaleLayer() && PageScaleLayer()->transform_tree_index() != -1) {
     TransformNode* node = property_trees_.transform_tree.Node(
@@ -1041,10 +1035,7 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
 
   if (root_layer_scroll_offset_delegate_) {
-    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-        TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
-        current_page_scale_factor(), min_page_scale_factor(),
-        max_page_scale_factor());
+    UpdateRootScrollOffsetDelegate();
 
     DistributeRootScrollOffset(
         root_layer_scroll_offset_delegate_->GetTotalScrollOffset());
@@ -1053,14 +1044,8 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
 
 void LayerTreeImpl::UpdateRootScrollOffsetDelegate() {
   DCHECK(root_layer_scroll_offset_delegate_);
-
-  gfx::ScrollOffset offset = InnerViewportScrollLayer()->CurrentScrollOffset();
-
-  if (OuterViewportScrollLayer())
-    offset += OuterViewportScrollLayer()->CurrentScrollOffset();
-
   root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-      offset, TotalMaxScrollOffset(), ScrollableSize(),
+      TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
       current_page_scale_factor(), min_page_scale_factor(),
       max_page_scale_factor());
 }
