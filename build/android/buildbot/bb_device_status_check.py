@@ -68,7 +68,7 @@ def _BatteryStatus(device, blacklist):
       if not battery.GetCharging():
         battery.SetCharging(True)
       if blacklist:
-        blacklist.Extend([device.GetDeviceSerial()])
+        blacklist.Extend([device.adb.GetDeviceSerial()])
 
   except device_errors.CommandFailedError:
     logging.exception('Failed to get battery information for %s',
@@ -255,11 +255,11 @@ def RecoverDevices(devices, blacklist):
       except device_errors.CommandFailedError:
         logging.exception('Failure while waiting for %s.', str(device))
         if blacklist:
-          blacklist.Extend([str(device)])
+          blacklist.Extend([device.adb.GetDeviceSerial()])
       except device_errors.CommandTimeoutError:
         logging.exception('Timed out while waiting for %s. ', str(device))
         if blacklist:
-          blacklist.Extend([str(device)])
+          blacklist.Extend([device.adb.GetDeviceSerial()])
 
   device_utils.DeviceUtils.parallel(devices).pMap(blacklisting_recovery)
 
