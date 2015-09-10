@@ -18,10 +18,6 @@ class CC_EXPORT DisplayItemListSettings {
 
   // If set, a picture will be cached inside the DisplayItemList.
   bool use_cached_picture;
-
-  // Settings that control sidecar data.
-  size_t max_sidecar_size;
-  void (*sidecar_destroyer)(void* sidecar);
 };
 
 }  // namespace cc

@@ -7,10 +7,7 @@
 namespace cc {
 
 DisplayItemListSettings::DisplayItemListSettings()
-    : use_cached_picture(false),
-      max_sidecar_size(0),
-      sidecar_destroyer([](void* sidecar) {}) {
-}
+    : use_cached_picture(false) {}
 
 DisplayItemListSettings::~DisplayItemListSettings() {
 }

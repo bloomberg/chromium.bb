@@ -10,8 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
-#include "cc/base/sidecar_list_container.h"
+#include "cc/base/list_container.h"
 #include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item.h"
 #include "skia/ext/refptr.h"
@@ -32,7 +31,7 @@ class CC_EXPORT DisplayItemList
       const DisplayItemListSettings& settings);
 
   // Creates a display item list with the given cull rect (if picture caching
-  // is used). The resulting display list will not support sidecar data.
+  // is used).
   static scoped_refptr<DisplayItemList> Create(gfx::Rect layer_rect,
                                                bool use_cached_picture);
 
@@ -82,9 +81,6 @@ class CC_EXPORT DisplayItemList
 
   void GatherDiscardableImages(const gfx::Size& grid_cell_size);
 
-  // Finds the sidecar for a display item in this list.
-  void* GetSidecar(DisplayItem* display_item);
-
  private:
   DisplayItemList(gfx::Rect layer_rect,
                   const DisplayItemListSettings& display_list_settings,
@@ -104,7 +100,7 @@ class CC_EXPORT DisplayItemList
   bool ProcessAppendedItemsCalled() const { return true; }
 #endif
 
-  SidecarListContainer<DisplayItem> items_;
+  ListContainer<DisplayItem> items_;
   skia::RefPtr<SkPicture> picture_;
 
   scoped_ptr<SkPictureRecorder> recorder_;

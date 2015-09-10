@@ -43,10 +43,7 @@ const int kDefaultNumDisplayItemsToReserve = 100;
 DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
                                  const DisplayItemListSettings& settings,
                                  bool retain_individual_display_items)
-    : items_(LargestDisplayItemSize(),
-             settings.max_sidecar_size,
-             kDefaultNumDisplayItemsToReserve,
-             settings.sidecar_destroyer),
+    : items_(LargestDisplayItemSize(), kDefaultNumDisplayItemsToReserve),
       use_cached_picture_(settings.use_cached_picture),
       retain_individual_display_items_(retain_individual_display_items),
       layer_rect_(layer_rect),
@@ -303,10 +300,6 @@ void DisplayItemList::GatherDiscardableImages(const gfx::Size& grid_cell_size) {
     return;
 
   images_->GatherImagesFromPicture(picture_.get(), layer_rect_);
-}
-
-void* DisplayItemList::GetSidecar(DisplayItem* display_item) {
-  return items_.GetSidecar(display_item);
 }
 
 }  // namespace cc

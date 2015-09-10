@@ -92,7 +92,6 @@
         'base/scoped_ptr_algorithm.h',
         'base/scoped_ptr_deque.h',
         'base/scoped_ptr_vector.h',
-        'base/sidecar_list_container.h',
         'base/simple_enclosed_region.cc',
         'base/simple_enclosed_region.h',
         'base/switches.cc',
