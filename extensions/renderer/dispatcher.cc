@@ -876,6 +876,9 @@ void Dispatcher::WebKitInitialized() {
       // Extension resources are HTTP-like and safe to expose to the fetch API.
       // The rules for the fetch API are consistent with XHR.
       WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI,
+      // Extension resources, when loaded as the top-level document, should
+      // bypass Blink's strict first-party origin checks.
+      WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel,
   };
 
   WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
