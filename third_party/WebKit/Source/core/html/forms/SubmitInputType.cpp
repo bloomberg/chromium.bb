@@ -34,7 +34,7 @@
 
 #include "core/InputTypeNames.h"
 #include "core/events/Event.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "platform/text/PlatformLocale.h"
@@ -53,12 +53,10 @@ const AtomicString& SubmitInputType::formControlType() const
     return InputTypeNames::submit;
 }
 
-bool SubmitInputType::appendFormData(FormDataList& encoding, bool) const
+void SubmitInputType::appendToFormData(FormData& formData, bool) const
 {
-    if (!element().isActivatedSubmit())
-        return false;
-    encoding.appendData(element().name(), element().valueWithDefault());
-    return true;
+    if (element().isActivatedSubmit())
+        formData.appendData(element().name(), element().valueWithDefault());
 }
 
 bool SubmitInputType::supportsRequired() const

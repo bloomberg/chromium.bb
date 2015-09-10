@@ -38,7 +38,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/FrameHost.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/forms/ButtonInputType.h"
@@ -167,11 +167,9 @@ bool InputType::isFormDataAppendable() const
     return !element().name().isEmpty();
 }
 
-bool InputType::appendFormData(FormDataList& encoding, bool) const
+void InputType::appendToFormData(FormData& formData, bool) const
 {
-    // Always successful.
-    encoding.appendData(element().name(), element().value());
-    return true;
+    formData.appendData(element().name(), element().value());
 }
 
 String InputType::resultForDialogSubmit() const

@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class FormDataList;
 class HTMLFormElement;
 class ValidationMessageClient;
 
@@ -81,9 +80,6 @@ public:
 
     virtual bool isSubmittableElement() { return true; }
 
-    // Override in derived classes to get the encoded name=value pair for submitting.
-    // Return true for a successful control (see HTML4-17.13.2).
-    bool appendFormData(FormDataList&, bool) override { return false; }
     virtual String resultForDialogSubmit();
 
     virtual bool canBeSuccessfulSubmitButton() const { return false; }

@@ -50,7 +50,7 @@ protected:
 private:
     FormControlState saveFormControlState() const final;
     void restoreFormControlState(const FormControlState&) final;
-    bool appendFormData(FormDataList&, bool) const final;
+    void appendToFormData(FormData&, bool) const final;
     void handleKeypressEvent(KeyboardEvent*) final;
     bool canSetStringValue() const final;
     void accessKeyAction(bool sendMouseEvents) final;

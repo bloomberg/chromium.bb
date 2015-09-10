@@ -45,7 +45,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -1161,27 +1161,18 @@ void HTMLSelectElement::parseMultipleAttribute(const AtomicString& value)
     lazyReattachIfAttached();
 }
 
-bool HTMLSelectElement::appendFormData(FormDataList& list, bool)
+void HTMLSelectElement::appendToFormData(FormData& formData, bool)
 {
     const AtomicString& name = this->name();
     if (name.isEmpty())
-        return false;
+        return;
 
-    bool successful = false;
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = listItems();
-
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
-        if (isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected() && !toHTMLOptionElement(*element).isDisabledFormControl()) {
-            list.appendData(name, toHTMLOptionElement(*element).value());
-            successful = true;
-        }
+        if (isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected() && !toHTMLOptionElement(*element).isDisabledFormControl())
+            formData.appendData(name, toHTMLOptionElement(*element).value());
     }
-
-    // It's possible that this is a menulist with multiple options and nothing
-    // will be submitted (!successful). We won't send a unselected non-disabled
-    // option as fallback. This behavior matches to other browsers.
-    return successful;
 }
 
 void HTMLSelectElement::resetImpl()

@@ -53,7 +53,7 @@ public:
 
     bool isEnumeratable() const override { return true; }
     bool isInteractiveContent() const override;
-    bool appendFormData(FormDataList&, bool) override;
+    void appendToFormData(FormData&, bool) override;
 
     // Implementations of constraint validation API.
     // Note that the object elements are always barred from constraint validation.

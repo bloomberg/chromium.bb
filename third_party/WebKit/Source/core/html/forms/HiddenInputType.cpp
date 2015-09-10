@@ -34,7 +34,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
 #include "wtf/PassOwnPtr.h"
@@ -97,13 +97,13 @@ void HiddenInputType::setValue(const String& sanitizedValue, bool, TextFieldEven
     element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 
-bool HiddenInputType::appendFormData(FormDataList& encoding, bool isMultipartForm) const
+void HiddenInputType::appendToFormData(FormData& formData, bool isMultipartForm) const
 {
     if (equalIgnoringCase(element().name(), "_charset_")) {
-        encoding.appendData(element().name(), String(encoding.encoding().name()));
-        return true;
+        formData.appendData(element().name(), String(formData.encoding().name()));
+        return;
     }
-    return InputType::appendFormData(encoding, isMultipartForm);
+    InputType::appendToFormData(formData, isMultipartForm);
 }
 
 bool HiddenInputType::shouldRespectHeightAndWidthAttributes()

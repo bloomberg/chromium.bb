@@ -47,7 +47,7 @@ private:
     ImageInputType(HTMLInputElement&);
     const AtomicString& formControlType() const override;
     bool isFormDataAppendable() const override;
-    bool appendFormData(FormDataList&, bool) const override;
+    void appendToFormData(FormData&, bool) const override;
     String resultForDialogSubmit() const override;
     bool supportsValidation() const override;
     LayoutObject* createLayoutObject(const ComputedStyle&) const override;

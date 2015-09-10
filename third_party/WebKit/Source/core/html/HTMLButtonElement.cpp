@@ -30,7 +30,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/events/KeyboardEvent.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/layout/LayoutButton.h"
 #include "wtf/StdLibExtras.h"
@@ -174,12 +174,10 @@ void HTMLButtonElement::setActivatedSubmit(bool flag)
     m_isActivatedSubmit = flag;
 }
 
-bool HTMLButtonElement::appendFormData(FormDataList& formData, bool)
+void HTMLButtonElement::appendToFormData(FormData& formData, bool)
 {
-    if (m_type != SUBMIT || name().isEmpty() || !m_isActivatedSubmit)
-        return false;
-    formData.appendData(name(), value());
-    return true;
+    if (m_type == SUBMIT && !name().isEmpty() && m_isActivatedSubmit)
+        formData.appendData(name(), value());
 }
 
 void HTMLButtonElement::accessKeyAction(bool sendMouseEvents)

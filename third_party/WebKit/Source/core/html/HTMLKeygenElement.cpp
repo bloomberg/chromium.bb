@@ -31,7 +31,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -97,17 +97,16 @@ void HTMLKeygenElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLFormControlElement::parseAttribute(name, value);
 }
 
-bool HTMLKeygenElement::appendFormData(FormDataList& encoding, bool)
+void HTMLKeygenElement::appendToFormData(FormData& formData, bool)
 {
     // Only RSA is supported at this time.
     const AtomicString& keyType = fastGetAttribute(keytypeAttr);
     if (!keyType.isNull() && !equalIgnoringCase(keyType, "rsa"))
-        return false;
+        return;
     String value = Platform::current()->signedPublicKeyAndChallengeString(shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document().baseURL());
     if (value.isNull())
-        return false;
-    encoding.appendData(name(), value.utf8());
-    return true;
+        return;
+    formData.appendData(name(), value.utf8());
 }
 
 const AtomicString& HTMLKeygenElement::formControlType() const

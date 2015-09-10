@@ -28,7 +28,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/fetch/ImageResource.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageFallbackHelper.h"
 #include "core/html/HTMLImageLoader.h"
@@ -64,25 +64,24 @@ bool ImageInputType::isFormDataAppendable() const
     return true;
 }
 
-bool ImageInputType::appendFormData(FormDataList& encoding, bool) const
+void ImageInputType::appendToFormData(FormData& formData, bool) const
 {
     if (!element().isActivatedSubmit())
-        return false;
+        return;
     const AtomicString& name = element().name();
     if (name.isEmpty()) {
-        encoding.appendData("x", m_clickLocation.x());
-        encoding.appendData("y", m_clickLocation.y());
-        return true;
+        formData.appendData("x", m_clickLocation.x());
+        formData.appendData("y", m_clickLocation.y());
+        return;
     }
 
     DEFINE_STATIC_LOCAL(String, dotXString, (".x"));
     DEFINE_STATIC_LOCAL(String, dotYString, (".y"));
-    encoding.appendData(name + dotXString, m_clickLocation.x());
-    encoding.appendData(name + dotYString, m_clickLocation.y());
+    formData.appendData(name + dotXString, m_clickLocation.x());
+    formData.appendData(name + dotYString, m_clickLocation.y());
 
     if (!element().value().isEmpty())
-        encoding.appendData(name, element().value());
-    return true;
+        formData.appendData(name, element().value());
 }
 
 String ImageInputType::resultForDialogSubmit() const

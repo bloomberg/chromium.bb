@@ -86,7 +86,7 @@ private:
     bool shouldRespectListAttribute() override;
     void listAttributeTargetChanged() override;
     void updatePlaceholderText() final;
-    bool appendFormData(FormDataList&, bool multipart) const override;
+    void appendToFormData(FormData&, bool multipart) const override;
     void subtreeHasChanged() final;
 
     // SpinButtonElement::SpinButtonOwner functions.

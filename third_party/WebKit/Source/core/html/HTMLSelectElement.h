@@ -186,7 +186,7 @@ private:
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     void didRecalcStyle(StyleRecalcChange) override;
     void detach(const AttachContext& = AttachContext()) override;
-    bool appendFormData(FormDataList&, bool) override;
+    void appendToFormData(FormData&, bool) override;
     void didAddUserAgentShadowRoot(ShadowRoot&) override;
 
     void defaultEventHandler(Event*) override;

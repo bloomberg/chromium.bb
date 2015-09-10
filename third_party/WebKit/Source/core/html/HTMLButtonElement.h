@@ -57,7 +57,7 @@ private:
     bool isPresentationAttribute(const QualifiedName&) const override;
     void defaultEventHandler(Event*) override;
 
-    bool appendFormData(FormDataList&, bool) override;
+    void appendToFormData(FormData&, bool) override;
 
     bool isEnumeratable() const override { return true; }
     bool supportLabels() const override { return true; }

@@ -43,7 +43,7 @@
 #include "core/events/TextEvent.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
@@ -472,13 +472,12 @@ void TextFieldInputType::updatePlaceholderText()
     placeholder->setTextContent(placeholderText);
 }
 
-bool TextFieldInputType::appendFormData(FormDataList& list, bool multipart) const
+void TextFieldInputType::appendToFormData(FormData& formData, bool isMultipart) const
 {
-    InputType::appendFormData(list, multipart);
+    InputType::appendToFormData(formData, isMultipart);
     const AtomicString& dirnameAttrValue = element().fastGetAttribute(dirnameAttr);
     if (!dirnameAttrValue.isNull())
-        list.appendData(dirnameAttrValue, element().directionForFormData());
-    return true;
+        formData.appendData(dirnameAttrValue, element().directionForFormData());
 }
 
 String TextFieldInputType::convertFromVisibleValue(const String& visibleValue) const

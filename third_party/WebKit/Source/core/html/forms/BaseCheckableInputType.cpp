@@ -34,7 +34,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/events/KeyboardEvent.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
 
@@ -52,12 +52,10 @@ void BaseCheckableInputType::restoreFormControlState(const FormControlState& sta
     element().setChecked(state[0] == "on");
 }
 
-bool BaseCheckableInputType::appendFormData(FormDataList& encoding, bool) const
+void BaseCheckableInputType::appendToFormData(FormData& formData, bool) const
 {
-    if (!element().checked())
-        return false;
-    encoding.appendData(element().name(), element().value());
-    return true;
+    if (element().checked())
+        formData.appendData(element().name(), element().value());
 }
 
 void BaseCheckableInputType::handleKeydownEvent(KeyboardEvent* event)

@@ -313,7 +313,7 @@ private:
 
     void attach(const AttachContext& = AttachContext()) final;
 
-    bool appendFormData(FormDataList&, bool) final;
+    void appendToFormData(FormData&, bool) final;
     String resultForDialogSubmit() final;
 
     bool canBeSuccessfulSubmitButton() const final;

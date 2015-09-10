@@ -41,7 +41,7 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
@@ -205,20 +205,19 @@ LayoutObject* HTMLTextAreaElement::createLayoutObject(const ComputedStyle&)
     return new LayoutTextControlMultiLine(this);
 }
 
-bool HTMLTextAreaElement::appendFormData(FormDataList& encoding, bool)
+void HTMLTextAreaElement::appendToFormData(FormData& formData, bool)
 {
     if (name().isEmpty())
-        return false;
+        return;
 
     document().updateLayout();
 
     const String& text = (m_wrap == HardWrap) ? valueWithHardLineBreaks() : value();
-    encoding.appendData(name(), text);
+    formData.appendData(name(), text);
 
     const AtomicString& dirnameAttrValue = fastGetAttribute(dirnameAttr);
     if (!dirnameAttrValue.isNull())
-        encoding.appendData(dirnameAttrValue, directionForFormData());
-    return true;
+        formData.appendData(dirnameAttrValue, directionForFormData());
 }
 
 void HTMLTextAreaElement::resetImpl()

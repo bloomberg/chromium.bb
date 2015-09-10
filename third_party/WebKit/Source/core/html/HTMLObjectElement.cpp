@@ -33,7 +33,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/Settings.h"
-#include "core/html/FormDataList.h"
+#include "core/html/FormData.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLMetaElement.h"
@@ -422,19 +422,17 @@ void HTMLObjectElement::didMoveToNewDocument(Document& oldDocument)
     HTMLPlugInElement::didMoveToNewDocument(oldDocument);
 }
 
-bool HTMLObjectElement::appendFormData(FormDataList& encoding, bool)
+void HTMLObjectElement::appendToFormData(FormData& formData, bool)
 {
     if (name().isEmpty())
-        return false;
+        return;
 
     Widget* widget = pluginWidget();
     if (!widget || !widget->isPluginView())
-        return false;
+        return;
     String value;
-    if (!toPluginView(widget)->getFormValue(value))
-        return false;
-    encoding.appendData(name(), value);
-    return true;
+    if (toPluginView(widget)->getFormValue(value))
+        formData.appendData(name(), value);
 }
 
 HTMLFormElement* HTMLObjectElement::formOwner() const

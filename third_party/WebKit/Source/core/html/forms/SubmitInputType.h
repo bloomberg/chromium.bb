@@ -42,7 +42,7 @@ public:
 private:
     SubmitInputType(HTMLInputElement& element) : BaseButtonInputType(element) { }
     const AtomicString& formControlType() const override;
-    bool appendFormData(FormDataList&, bool) const override;
+    void appendToFormData(FormData&, bool) const override;
     bool supportsRequired() const override;
     void handleDOMActivateEvent(Event*) override;
     bool canBeSuccessfulSubmitButton() override;
