@@ -8,7 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "tools/gn/switches.h"
 
@@ -124,7 +126,15 @@ void OutputString(const std::string& output, TextDecoration dec) {
     }
   }
 
-  ::WriteFile(hstdout, output.c_str(), static_cast<DWORD>(output.size()),
+  std::string tmpstr = output;
+  if (is_markdown && dec == DECORATION_YELLOW) {
+    // https://code.google.com/p/gitiles/issues/detail?id=77
+    // Gitiles will replace "--" with an em dash in non-code text.
+    // Figuring out all instances of this might be difficult, but we can
+    // at least escape the instances where this shows up in a heading.
+    base::ReplaceSubstringsAfterOffset(&tmpstr, 0, "--", "\\--");
+  }
+  ::WriteFile(hstdout, tmpstr.c_str(), static_cast<DWORD>(tmpstr.size()),
               &written, nullptr);
 
   if (is_markdown) {
@@ -162,7 +172,15 @@ void OutputString(const std::string& output, TextDecoration dec) {
     }
   }
 
-  WriteToStdOut(output.data());
+  std::string tmpstr = output;
+  if (is_markdown && dec == DECORATION_YELLOW) {
+    // https://code.google.com/p/gitiles/issues/detail?id=77
+    // Gitiles will replace "--" with an em dash in non-code text.
+    // Figuring out all instances of this might be difficult, but we can
+    // at least escape the instances where this shows up in a heading.
+    base::ReplaceSubstringsAfterOffset(&tmpstr, 0, "--", "\\--");
+  }
+  WriteToStdOut(tmpstr.data());
 
   if (is_markdown) {
     OutputMarkdownDec(dec);

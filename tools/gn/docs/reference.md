@@ -2,7 +2,7 @@
 
 *This page is automatically generated from* `gn help --markdown all`.
 
-## **--args**: Specifies build arguments overrides.
+## **\--args**: Specifies build arguments overrides.
 
 ```
   See "gn help buildargs" for an overview of how build arguments work.
@@ -40,7 +40,7 @@
 
 
 ```
-## **--[no]color**: Forces colored output on or off.
+## **\--[no]color**: Forces colored output on or off.
 
 ```
   Normally GN will try to detect whether it is outputting to a terminal
@@ -58,7 +58,7 @@
 
 
 ```
-## **--dotfile**: Override the name of the ".gn" file.
+## **\--dotfile**: Override the name of the ".gn" file.
 
 ```
   Normally GN loads the ".gn"file  from the source root for some basic
@@ -70,9 +70,9 @@
 
 
 ```
-## **--markdown**: write the output in the Markdown format.
+## **\--markdown**: write the output in the Markdown format.
 
-## **--[no]color**: Forces colored output on or off.
+## **\--[no]color**: Forces colored output on or off.
 
 ```
   Normally GN will try to detect whether it is outputting to a terminal
@@ -97,7 +97,7 @@
 
 
 ```
-## **--root**: Explicitly specify source root.
+## **\--root**: Explicitly specify source root.
 
 ```
   Normally GN will look up in the directory tree from the current
@@ -119,7 +119,7 @@
 
 
 ```
-## **--runtime-deps-list-file**: Save runtime dependencies for targets in file.
+## **\--runtime-deps-list-file**: Save runtime dependencies for targets in file.
 
 ```
   --runtime-deps-list-file=<filename>
@@ -154,7 +154,7 @@
 
 
 ```
-## **--time**: Outputs a summary of how long everything took.
+## **\--time**: Outputs a summary of how long everything took.
 
 ```
   Hopefully self-explanatory.
@@ -168,7 +168,7 @@
 
 
 ```
-## **--tracelog**: Writes a Chrome-compatible trace log to the given file.
+## **\--tracelog**: Writes a Chrome-compatible trace log to the given file.
 
 ```
   The trace log will show file loads, executions, scripts, and writes.
@@ -194,7 +194,7 @@
 
 
 ```
-## **gn args <out_dir> [--list] [--short] [--args]**
+## **gn args <out_dir> [\--list] [\--short] [\--args]**
 
 ```
   See also "gn help buildargs" for a more high-level overview of how
@@ -259,7 +259,7 @@
 
 
 ```
-## **gn check <out_dir> [<label_pattern>] [--force]**
+## **gn check <out_dir> [<label_pattern>] [\--force]**
 
 ```
   "gn check" is the same thing as "gn gen" with the "--check" flag
@@ -309,7 +309,7 @@
 
 
 ```
-## **gn desc <out_dir> <target label> [<what to show>] [--blame]**
+## **gn desc <out_dir> <target label> [<what to show>] [\--blame]**
 
 ```
   Displays information about a given labeled target for the given build.
@@ -474,7 +474,7 @@
 
 
 ```
-## **gn format [--dump-tree] [--in-place] [--stdin] BUILD.gn**
+## **gn format [\--dump-tree] [\--in-place] [\--stdin] BUILD.gn**
 
 ```
   Formats .gn file to a standard format.
@@ -538,7 +538,7 @@
 
 
 ```
-## **gn ls <out_dir> [<label_pattern>] [--all-toolchains] [--as=...]**
+## **gn ls <out_dir> [<label_pattern>] [\--all-toolchains] [\--as=...]**
 ```
       [--type=...] [--testonly=...]
 
@@ -642,7 +642,7 @@
 
 
 ```
-## **gn refs <out_dir> (<label_pattern>|<label>|<file>|@<response_file>)* [--all]**
+## **gn refs <out_dir> (<label_pattern>|<label>|<file>|@<response_file>)* [\--all]**
 ```
         [--all-toolchains] [--as=...] [--testonly=...] [--type=...]
 
@@ -4817,17 +4817,17 @@
 
 ```
 
-**  --args**: Specifies build arguments overrides.
-**  --color**: Force colored output.
-**  --dotfile**: Override the name of the ".gn" file.
-**  --markdown**: write the output in the Markdown format.
-**  --nocolor**: Force non-colored output.
+**  \--args**: Specifies build arguments overrides.
+**  \--color**: Force colored output.
+**  \--dotfile**: Override the name of the ".gn" file.
+**  \--markdown**: write the output in the Markdown format.
+**  \--nocolor**: Force non-colored output.
 **  -q**: Quiet mode. Don't print output on success.
-**  --root**: Explicitly specify source root.
-**  --runtime-deps-list-file**: Save runtime dependencies for targets in file.
-**  --time**: Outputs a summary of how long everything took.
-**  --tracelog**: Writes a Chrome-compatible trace log to the given file.
+**  \--root**: Explicitly specify source root.
+**  \--runtime-deps-list-file**: Save runtime dependencies for targets in file.
+**  \--time**: Outputs a summary of how long everything took.
+**  \--tracelog**: Writes a Chrome-compatible trace log to the given file.
 **  -v**: Verbose logging.
-**  --version**: Prints the GN version number and exits.
+**  \--version**: Prints the GN version number and exits.
 
 ```
