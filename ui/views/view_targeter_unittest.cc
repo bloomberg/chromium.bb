@@ -269,8 +269,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   ui::EventTargeter* targeter = root_view->targeter();
 
   // Define some gesture events for testing.
-  gfx::Rect bounding_box(gfx::Point(46, 46), gfx::Size(8, 8));
-  gfx::Point center_point(bounding_box.CenterPoint());
+  gfx::RectF bounding_box(gfx::PointF(46.f, 46.f), gfx::SizeF(8.f, 8.f));
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_bounding_box(bounding_box);
   GestureEventForTest tap(details);
@@ -374,8 +373,7 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
 
   // A gesture event located entirely within the contents view should
   // target the contents view.
-  gfx::Rect bounding_box(gfx::Point(96, 96), gfx::Size(8, 8));
-  gfx::Point center_point(bounding_box.CenterPoint());
+  gfx::RectF bounding_box(gfx::PointF(96.f, 96.f), gfx::SizeF(8.f, 8.f));
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_bounding_box(bounding_box);
   GestureEventForTest tap(details);
@@ -385,9 +383,8 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
   // A gesture event not located entirely within the contents view but
   // having its center within the contents view should target
   // the contents view.
-  bounding_box = gfx::Rect(gfx::Point(194, 100), gfx::Size(8, 8));
+  bounding_box = gfx::RectF(gfx::PointF(194.f, 100.f), gfx::SizeF(8.f, 8.f));
   details.set_bounding_box(bounding_box);
-  center_point = bounding_box.CenterPoint();
   tap = GestureEventForTest(details);
 
   EXPECT_EQ(content, targeter->FindTargetForEvent(root_view, &tap));
@@ -395,9 +392,8 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
   // A gesture event with its center not located within the contents
   // view but that overlaps the contents view by at least 60% should
   // target the contents view.
-  bounding_box = gfx::Rect(gfx::Point(50, 0), gfx::Size(400, 200));
+  bounding_box = gfx::RectF(gfx::PointF(50.f, 0.f), gfx::SizeF(400.f, 200.f));
   details.set_bounding_box(bounding_box);
-  center_point = bounding_box.CenterPoint();
   tap = GestureEventForTest(details);
 
   // This only applies if rect-based targeting is enabled.
@@ -411,9 +407,8 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
   // A gesture event not overlapping the contents view by at least
   // 60% and not having its center within the contents view should
   // be targeted to the root view.
-  bounding_box = gfx::Rect(gfx::Point(196, 100), gfx::Size(8, 8));
+  bounding_box = gfx::RectF(gfx::PointF(196.f, 100.f), gfx::SizeF(8.f, 8.f));
   details.set_bounding_box(bounding_box);
-  center_point = bounding_box.CenterPoint();
   tap = GestureEventForTest(details);
 
   EXPECT_EQ(widget.GetRootView(),
@@ -421,9 +416,8 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
 
   // A gesture event completely outside the contents view should be targeted
   // to the root view.
-  bounding_box = gfx::Rect(gfx::Point(205, 100), gfx::Size(8, 8));
+  bounding_box = gfx::RectF(gfx::PointF(205.f, 100.f), gfx::SizeF(8.f, 8.f));
   details.set_bounding_box(bounding_box);
-  center_point = bounding_box.CenterPoint();
   tap = GestureEventForTest(details);
 
   EXPECT_EQ(widget.GetRootView(),
@@ -431,18 +425,16 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
 
   // A gesture event with dimensions 1x1 located entirely within the
   // contents view should target the contents view.
-  bounding_box = gfx::Rect(gfx::Point(175, 100), gfx::Size(1, 1));
+  bounding_box = gfx::RectF(gfx::PointF(175.f, 100.f), gfx::SizeF(1.f, 1.f));
   details.set_bounding_box(bounding_box);
-  center_point = bounding_box.CenterPoint();
   tap = GestureEventForTest(details);
 
   EXPECT_EQ(content, targeter->FindTargetForEvent(root_view, &tap));
 
   // A gesture event with dimensions 1x1 located entirely outside the
   // contents view should be targeted to the root view.
-  bounding_box = gfx::Rect(gfx::Point(205, 100), gfx::Size(1, 1));
+  bounding_box = gfx::RectF(gfx::PointF(205.f, 100.f), gfx::SizeF(1.f, 1.f));
   details.set_bounding_box(bounding_box);
-  center_point = bounding_box.CenterPoint();
   tap = GestureEventForTest(details);
 
   EXPECT_EQ(widget.GetRootView(),
@@ -479,15 +471,15 @@ TEST_F(ViewTargeterTest, GestureEventCoordinateConversion) {
 
   // Define a GESTURE_TAP event with a bounding box centered at (60, 60)
   // in root view coordinates with width and height of 4.
-  gfx::Rect bounding_box(gfx::Point(58, 58), gfx::Size(4, 4));
-  gfx::Point center_point(bounding_box.CenterPoint());
+  gfx::RectF bounding_box(gfx::PointF(58.f, 58.f), gfx::SizeF(4.f, 4.f));
+  gfx::PointF center_point(bounding_box.CenterPoint());
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_bounding_box(bounding_box);
   GestureEventForTest tap(details);
 
   // Calculate the location of the gesture in each of the different
   // coordinate spaces.
-  gfx::Point location_in_root(center_point);
+  gfx::Point location_in_root(gfx::ToFlooredPoint(center_point));
   EXPECT_EQ(gfx::Point(60, 60), location_in_root);
   gfx::Point location_in_great_grandchild(
       ConvertPointFromWidgetToView(great_grandchild, location_in_root));

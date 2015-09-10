@@ -258,9 +258,8 @@ void BrowserWindow::Layout(views::View* host) {
   float inverse_device_pixel_ratio =
       1.0f / root_->viewport_metrics().device_pixel_ratio;
 
-  gfx::Rect omnibox_launcher_bounds =
-      gfx::ToEnclosingRect(gfx::ScaleRect(bounds_in_physical_pixels,
-                                          inverse_device_pixel_ratio));
+  gfx::Rect omnibox_launcher_bounds = gfx::ScaleToEnclosingRect(
+      bounds_in_physical_pixels, inverse_device_pixel_ratio);
   omnibox_launcher_bounds.Inset(10, 10, 10,
                                 omnibox_launcher_bounds.height() - 40);
   omnibox_launcher_->SetBoundsRect(omnibox_launcher_bounds);

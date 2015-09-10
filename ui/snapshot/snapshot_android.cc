@@ -43,7 +43,7 @@ static void MakeAsyncCopyRequest(
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   float device_scale_factor = display.device_scale_factor();
   gfx::Rect source_rect_in_pixel =
-      gfx::ToEnclosingRect(gfx::ScaleRect(source_rect, device_scale_factor));
+      gfx::ScaleToEnclosingRect(source_rect, device_scale_factor);
 
   // Account for the toolbar offset.
   gfx::Vector2dF offset = window->content_offset();
