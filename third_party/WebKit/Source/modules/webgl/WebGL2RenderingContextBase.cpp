@@ -522,6 +522,11 @@ bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName,
     if (!validateTexFuncLevel(functionName, target, level))
         return false;
 
+    if (!tex->isValid(target, level)) {
+        synthesizeGLError(GL_INVALID_OPERATION, "texSubImage3D", "no previously defined texture image");
+        return false;
+    }
+
     // Before checking if it is in the range, check if overflow happens first.
     Checked<GLint, RecordOverflow> maxX = xoffset, maxY = yoffset, maxZ = zoffset;
     maxX += width;
