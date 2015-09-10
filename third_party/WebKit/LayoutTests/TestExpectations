@@ -868,7 +868,12 @@ crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
-crbug.com/528122 [ Mac ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
+crbug.com/528122 [ Mac Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
+crbug.com/529996 fast/text/international/vertical-text-glyph-test.html [ Failure Pass ]
+crbug.com/529996 fast/text/international/text-combine-image-test.html [ Failure Pass ]
+crbug.com/529996 fast/css/font-weight-1.html [ Failure Pass ]
+crbug.com/529996 fast/writing-mode/english-lr-text.html [ Failure Pass ]
+crbug.com/529996 fast/text/orientation-sideways.html [ Failure Pass ]
 
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
