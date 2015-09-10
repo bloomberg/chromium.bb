@@ -226,9 +226,7 @@ void LayoutSVGShape::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 // while transformed to our coord system, return local coords
 void LayoutSVGShape::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
 {
-    LayoutRect rect = LayoutRect(paintInvalidationRectInLocalCoordinates());
-    if (!rect.isEmpty())
-        rects.append(rect);
+    rects.append(LayoutRect(paintInvalidationRectInLocalCoordinates()));
 }
 
 bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)

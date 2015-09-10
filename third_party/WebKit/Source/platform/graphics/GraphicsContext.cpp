@@ -486,9 +486,14 @@ void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int
     offset = focusRingOffset(offset);
     for (unsigned i = 0; i < rectCount; i++) {
         SkIRect r = rects[i];
+        if (r.isEmpty())
+            continue;
         r.inset(-offset, -offset);
         focusRingRegion.op(r, SkRegion::kUnion_Op);
     }
+
+    if (focusRingRegion.isEmpty())
+        return;
 
     if (focusRingRegion.isRect()) {
         drawFocusRingRect(SkRect::Make(focusRingRegion.getBounds()), color, width);

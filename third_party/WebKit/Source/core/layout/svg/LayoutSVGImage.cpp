@@ -197,9 +197,7 @@ void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
 void LayoutSVGImage::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
 {
     // this is called from paint() after the localTransform has already been applied
-    LayoutRect contentRect = LayoutRect(paintInvalidationRectInLocalCoordinates());
-    if (!contentRect.isEmpty())
-        rects.append(contentRect);
+    rects.append(LayoutRect(paintInvalidationRectInLocalCoordinates()));
 }
 
 } // namespace blink

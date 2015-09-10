@@ -91,15 +91,7 @@ void IntRect::unite(const IntRect& other)
         return;
     }
 
-    int left = std::min(x(), other.x());
-    int top = std::min(y(), other.y());
-    int right = std::max(maxX(), other.maxX());
-    int bottom = std::max(maxY(), other.maxY());
-
-    m_location.setX(left);
-    m_location.setY(top);
-    m_size.setWidth(right - left);
-    m_size.setHeight(bottom - top);
+    uniteEvenIfEmpty(other);
 }
 
 void IntRect::uniteIfNonZero(const IntRect& other)
@@ -112,6 +104,11 @@ void IntRect::uniteIfNonZero(const IntRect& other)
         return;
     }
 
+    uniteEvenIfEmpty(other);
+}
+
+void IntRect::uniteEvenIfEmpty(const IntRect& other)
+{
     int left = std::min(x(), other.x());
     int top = std::min(y(), other.y());
     int right = std::max(maxX(), other.maxX());
@@ -167,6 +164,19 @@ IntRect unionRect(const Vector<IntRect>& rects)
     size_t count = rects.size();
     for (size_t i = 0; i < count; ++i)
         result.unite(rects[i]);
+
+    return result;
+}
+
+IntRect unionRectEvenIfEmpty(const Vector<IntRect>& rects)
+{
+    size_t count = rects.size();
+    if (!count)
+        return IntRect();
+
+    IntRect result = rects[0];
+    for (size_t i = 1; i < count; ++i)
+        result.uniteEvenIfEmpty(rects[i]);
 
     return result;
 }

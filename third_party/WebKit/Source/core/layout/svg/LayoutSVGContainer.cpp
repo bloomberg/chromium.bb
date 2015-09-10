@@ -152,9 +152,7 @@ void LayoutSVGContainer::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 
 void LayoutSVGContainer::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
 {
-    LayoutRect contentRect = LayoutRect(paintInvalidationRectInLocalCoordinates());
-    if (!contentRect.isEmpty())
-        rects.append(contentRect);
+    rects.append(LayoutRect(paintInvalidationRectInLocalCoordinates()));
 }
 
 void LayoutSVGContainer::updateCachedBoundaries()

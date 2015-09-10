@@ -534,18 +534,14 @@ void LayoutInline::generateLineBoxRects(GeneratorContext& yield) const
     } else if (InlineFlowBox* curr = firstLineBox()) {
         for (; curr; curr = curr->nextLineBox())
             yield(LayoutRect(curr->topLeft(), curr->size()));
-    } else {
-        yield(LayoutRect());
     }
 }
 
 template<typename GeneratorContext>
 void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const LayoutInline* container) const
 {
-    if (!culledInlineFirstLineBox()) {
-        yield(LayoutRect());
+    if (!culledInlineFirstLineBox())
         return;
-    }
 
     bool isHorizontal = style()->isHorizontalWritingMode();
 
@@ -629,6 +625,8 @@ void LayoutInline::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accu
 {
     AbsoluteRectsGeneratorContext context(rects, accumulatedOffset);
     generateLineBoxRects(context);
+    if (rects.isEmpty())
+        context(LayoutRect());
 
     if (const LayoutBoxModelObject* continuation = this->continuation()) {
         if (continuation->isBox()) {
@@ -671,6 +669,8 @@ void LayoutInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 {
     AbsoluteQuadsGeneratorContext context(this, quads);
     generateLineBoxRects(context);
+    if (quads.isEmpty())
+        context(FloatRect());
 
     if (const LayoutBoxModelObject* continuation = this->continuation())
         continuation->absoluteQuads(quads, wasFixed);
@@ -1042,8 +1042,8 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
     if (outlineOutset) {
         Vector<LayoutRect> rects;
         addOutlineRectsForChildrenAndContinuations(rects, LayoutPoint());
-        LayoutRect outlineRect = unionRect(rects);
-        if (!outlineRect.isEmpty()) {
+        if (!rects.isEmpty()) {
+            LayoutRect outlineRect = unionRectEvenIfEmpty(rects);
             outlineRect.inflate(outlineOutset);
             overflowRect.unite(outlineRect);
         }
@@ -1343,31 +1343,15 @@ private:
     const LayoutPoint& m_accumulatedOffset;
 };
 
-class AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext : public AbsoluteLayoutRectsGeneratorContext {
-public:
-    AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext(Vector<LayoutRect>& rects, const LayoutPoint& accumulatedOffset)
-        : AbsoluteLayoutRectsGeneratorContext(rects, accumulatedOffset) { }
-
-    void operator()(const FloatRect& rect)
-    {
-        if (!rect.isEmpty())
-            AbsoluteLayoutRectsGeneratorContext::operator()(rect);
-    }
-    void operator()(const LayoutRect& rect)
-    {
-        if (!rect.isEmpty())
-            AbsoluteLayoutRectsGeneratorContext::operator()(FloatRect(rect));
-    }
-};
-
 } // unnamed namespace
 
 void LayoutInline::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
-    AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
+    AbsoluteLayoutRectsGeneratorContext context(rects, additionalOffset);
     generateLineBoxRects(context);
     addOutlineRectsForChildrenAndContinuations(rects, additionalOffset);
 }
+
 void LayoutInline::addOutlineRectsForChildrenAndContinuations(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     addOutlineRectsForNormalChildren(rects, additionalOffset);

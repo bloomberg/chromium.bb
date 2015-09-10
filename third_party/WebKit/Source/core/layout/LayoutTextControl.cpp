@@ -283,8 +283,7 @@ void LayoutTextControl::computePreferredLogicalWidths()
 
 void LayoutTextControl::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
-    if (!size().isEmpty())
-        rects.append(LayoutRect(additionalOffset, size()));
+    rects.append(LayoutRect(additionalOffset, size()));
 }
 
 LayoutObject* LayoutTextControl::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)

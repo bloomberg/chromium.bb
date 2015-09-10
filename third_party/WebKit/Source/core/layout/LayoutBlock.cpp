@@ -2578,10 +2578,9 @@ void LayoutBlock::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& 
         if (topMargin || bottomMargin) {
             LayoutRect rect(additionalOffset, size());
             rect.expandEdges(topMargin, 0, bottomMargin, 0);
-            if (!rect.isEmpty())
-                rects.append(rect);
+            rects.append(rect);
         }
-    } else if (size().width() && size().height()) {
+    } else if (!isAnonymous()) { // For anonymous blocks, the children add outline rects.
         rects.append(LayoutRect(additionalOffset, size()));
     }
 

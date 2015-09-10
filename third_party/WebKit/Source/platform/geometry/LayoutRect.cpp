@@ -90,11 +90,7 @@ void LayoutRect::unite(const LayoutRect& other)
         return;
     }
 
-    LayoutPoint newLocation(std::min(x(), other.x()), std::min(y(), other.y()));
-    LayoutPoint newMaxPoint(std::max(maxX(), other.maxX()), std::max(maxY(), other.maxY()));
-
-    m_location = newLocation;
-    m_size = newMaxPoint - newLocation;
+    uniteEvenIfEmpty(other);
 }
 
 void LayoutRect::uniteIfNonZero(const LayoutRect& other)
@@ -107,6 +103,11 @@ void LayoutRect::uniteIfNonZero(const LayoutRect& other)
         return;
     }
 
+    uniteEvenIfEmpty(other);
+}
+
+void LayoutRect::uniteEvenIfEmpty(const LayoutRect& other)
+{
     LayoutPoint newLocation(std::min(x(), other.x()), std::min(y(), other.y()));
     LayoutPoint newMaxPoint(std::max(maxX(), other.maxX()), std::max(maxY(), other.maxY()));
 
@@ -143,6 +144,19 @@ LayoutRect unionRect(const Vector<LayoutRect>& rects)
     size_t count = rects.size();
     for (size_t i = 0; i < count; ++i)
         result.unite(rects[i]);
+
+    return result;
+}
+
+LayoutRect unionRectEvenIfEmpty(const Vector<LayoutRect>& rects)
+{
+    size_t count = rects.size();
+    if (!count)
+        return LayoutRect();
+
+    LayoutRect result = rects[0];
+    for (size_t i = 1; i < count; ++i)
+        result.uniteEvenIfEmpty(rects[i]);
 
     return result;
 }

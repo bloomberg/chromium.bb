@@ -199,26 +199,19 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     if (paintFocusRing && !LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject))
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, paintInfo.phase, paintOffset))
-        return;
-
     Vector<LayoutRect> outlineRects;
     m_layoutObject.addOutlineRects(outlineRects, paintOffset);
+    if (outlineRects.isEmpty())
+        return;
+
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, paintInfo.phase, paintOffset))
+        return;
 
     Vector<IntRect> pixelSnappedOutlineRects;
     for (auto& r : outlineRects)
         pixelSnappedOutlineRects.append(pixelSnappedIntRect(r));
 
-    IntRect unitedOutlineRect = unionRect(pixelSnappedOutlineRects);
-    if (unitedOutlineRect.isEmpty()) {
-        if (paintFocusRing)
-            return;
-        // We need to draw an outline around an empty point.
-        IntRect emptyPointRect = pixelSnappedIntRect(LayoutRect(paintOffset, LayoutSize()));
-        pixelSnappedOutlineRects.append(emptyPointRect);
-        unitedOutlineRect = emptyPointRect;
-    }
-
+    IntRect unitedOutlineRect = unionRectEvenIfEmpty(pixelSnappedOutlineRects);
     IntRect bounds = unitedOutlineRect;
     bounds.inflate(m_layoutObject.styleRef().outlineOutsetExtent());
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, paintInfo.phase, bounds, paintOffset);

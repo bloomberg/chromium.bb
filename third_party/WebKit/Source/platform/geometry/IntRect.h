@@ -133,6 +133,10 @@ public:
     void unite(const IntRect&);
     void uniteIfNonZero(const IntRect&);
 
+    // Besides non-empty rects, this method also unites empty rects (as points or line segments).
+    // For example, union of (100, 100, 0x0) and (200, 200, 50x0) is (100, 100, 150x100).
+    void uniteEvenIfEmpty(const IntRect&);
+
     void inflateX(int dx)
     {
         m_location.setX(m_location.x() - dx);
@@ -186,6 +190,15 @@ inline IntRect unionRect(const IntRect& a, const IntRect& b)
 }
 
 PLATFORM_EXPORT IntRect unionRect(const Vector<IntRect>&);
+
+inline IntRect unionRectEvenIfEmpty(const IntRect& a, const IntRect& b)
+{
+    IntRect c = a;
+    c.uniteEvenIfEmpty(b);
+    return c;
+}
+
+PLATFORM_EXPORT IntRect unionRectEvenIfEmpty(const Vector<IntRect>&);
 
 inline bool operator==(const IntRect& a, const IntRect& b)
 {
