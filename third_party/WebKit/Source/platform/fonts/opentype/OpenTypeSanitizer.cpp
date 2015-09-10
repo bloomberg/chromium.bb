@@ -143,9 +143,11 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
     const uint32_t cblcTag = TABLE_TAG('C', 'B', 'L', 'C');
     const uint32_t colrTag = TABLE_TAG('C', 'O', 'L', 'R');
     const uint32_t cpalTag = TABLE_TAG('C', 'P', 'A', 'L');
+#if HB_VERSION_ATLEAST(1, 0, 0)
     const uint32_t gdefTag = TABLE_TAG('G', 'D', 'E', 'F');
     const uint32_t gposTag = TABLE_TAG('G', 'P', 'O', 'S');
     const uint32_t gsubTag = TABLE_TAG('G', 'S', 'U', 'B');
+#endif
 
     switch (tag) {
     // Google Color Emoji Tables
