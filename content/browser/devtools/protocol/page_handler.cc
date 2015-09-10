@@ -213,12 +213,14 @@ Response PageHandler::Reload(const bool* ignoreCache,
   if (!web_contents)
     return Response::InternalError("Could not connect to view");
 
-  // Handle in browser only if it is crashed.
-  if (!web_contents->IsCrashed())
+  if (web_contents->IsCrashed() ||
+      web_contents->GetController().GetVisibleEntry()->IsViewSourceMode()) {
+    web_contents->GetController().Reload(false);
+    return Response::OK();
+  } else {
+    // Handle reload in renderer except for crashed and view source mode.
     return Response::FallThrough();
-
-  web_contents->GetController().Reload(false);
-  return Response::OK();
+  }
 }
 
 Response PageHandler::Navigate(const std::string& url,
