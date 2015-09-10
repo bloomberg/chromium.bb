@@ -84,6 +84,9 @@ class KernelHandle : public sdk_util::RefObject {
 
   ScopedFilesystem filesystem_;
   ScopedNode node_;
+  sdk_util::SimpleLock input_lock_;
+  sdk_util::SimpleLock output_lock_;
+  // Protects the handle and attributes.
   sdk_util::SimpleLock handle_lock_;
   HandleAttr handle_attr_;
 

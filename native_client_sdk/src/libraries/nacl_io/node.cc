@@ -226,6 +226,10 @@ bool Node::IsaSock() {
   return GetType() == S_IFSOCK;
 }
 
+bool Node::IsSeekable() {
+  return !(IsaSock() || GetType() == S_IFIFO);
+}
+
 Error Node::Isatty() {
   return ENOTTY;
 }

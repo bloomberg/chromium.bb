@@ -65,6 +65,9 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
   off_t node_size;
 
   AUTO_LOCK(handle_lock_);
+  if (!node_->IsSeekable())
+    return ESPIPE;
+
   Error error = node_->GetSize(&node_size);
   if (error)
     return error;
@@ -101,9 +104,14 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
 }
 
 Error KernelHandle::Read(void* buf, size_t nbytes, int* cnt) {
-  AUTO_LOCK(handle_lock_);
+  sdk_util::AutoLock read_lock(handle_lock_);
   if (OpenMode() == O_WRONLY)
     return EACCES;
+  if (!node_->IsSeekable()){
+    read_lock.Unlock();
+    AUTO_LOCK(input_lock_);
+    return node_->Read(handle_attr_, buf, nbytes, cnt);
+  }
   Error error = node_->Read(handle_attr_, buf, nbytes, cnt);
   if (0 == error)
     handle_attr_.offs += *cnt;
@@ -111,9 +119,14 @@ Error KernelHandle::Read(void* buf, size_t nbytes, int* cnt) {
 }
 
 Error KernelHandle::Write(const void* buf, size_t nbytes, int* cnt) {
-  AUTO_LOCK(handle_lock_);
+  sdk_util::AutoLock write_lock(handle_lock_);
   if (OpenMode() == O_RDONLY)
     return EACCES;
+  if (!node_->IsSeekable()){
+    write_lock.Unlock();
+    AUTO_LOCK(output_lock_);
+    return node_->Write(handle_attr_, buf, nbytes, cnt);
+  }
   Error error = node_->Write(handle_attr_, buf, nbytes, cnt);
   if (0 == error)
     handle_attr_.offs += *cnt;
@@ -139,6 +152,9 @@ Error KernelHandle::Fcntl(int request, int* result, ...) {
 Error KernelHandle::VFcntl(int request, int* result, va_list args) {
   switch (request) {
     case F_GETFL: {
+      // Should not block, but could if blocked on Connect or Accept. This is
+      // acceptable.
+      AUTO_LOCK(handle_lock_);
       *result = handle_attr_.flags;
       return 0;
     }
@@ -190,7 +206,7 @@ Error KernelHandle::Recv(void* buf, size_t len, int flags, int* out_len) {
   if (OpenMode() == O_WRONLY)
     return EACCES;
 
-  AUTO_LOCK(handle_lock_);
+  AUTO_LOCK(input_lock_);
   return sock->Recv(handle_attr_, buf, len, flags, out_len);
 }
 
@@ -206,7 +222,7 @@ Error KernelHandle::RecvFrom(void* buf,
   if (OpenMode() == O_WRONLY)
     return EACCES;
 
-  AUTO_LOCK(handle_lock_);
+  AUTO_LOCK(input_lock_);
   return sock->RecvFrom(handle_attr_, buf, len, flags, src_addr, addrlen,
                         out_len);
 }
@@ -218,7 +234,7 @@ Error KernelHandle::Send(const void* buf, size_t len, int flags, int* out_len) {
   if (OpenMode() == O_RDONLY)
     return EACCES;
 
-  AUTO_LOCK(handle_lock_);
+  AUTO_LOCK(output_lock_);
   return sock->Send(handle_attr_, buf, len, flags, out_len);
 }
 
@@ -234,7 +250,7 @@ Error KernelHandle::SendTo(const void* buf,
   if (OpenMode() == O_RDONLY)
     return EACCES;
 
-  AUTO_LOCK(handle_lock_);
+  AUTO_LOCK(output_lock_);
   return sock->SendTo(handle_attr_, buf, len, flags, dest_addr, addrlen,
                       out_len);
 }

@@ -106,6 +106,7 @@ class Node : public sdk_util::RefObject {
   virtual bool IsaDir();
   virtual bool IsaFile();
   virtual bool IsaSock();
+  virtual bool IsSeekable();
 
   // Number of children for this node (directory)
   virtual int ChildCount();
