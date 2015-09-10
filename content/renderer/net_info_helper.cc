@@ -11,23 +11,23 @@ NetConnectionTypeToWebConnectionType(
     net::NetworkChangeNotifier::ConnectionType net_type) {
   switch (net_type) {
     case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-      return blink::ConnectionTypeUnknown;
+      return blink::WebConnectionTypeUnknown;
     case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-      return blink::ConnectionTypeEthernet;
+      return blink::WebConnectionTypeEthernet;
     case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      return blink::ConnectionTypeWifi;
+      return blink::WebConnectionTypeWifi;
     case net::NetworkChangeNotifier::CONNECTION_NONE:
-      return blink::ConnectionTypeNone;
+      return blink::WebConnectionTypeNone;
     case net::NetworkChangeNotifier::CONNECTION_2G:
     case net::NetworkChangeNotifier::CONNECTION_3G:
     case net::NetworkChangeNotifier::CONNECTION_4G:
-      return blink::ConnectionTypeCellular;
+      return blink::WebConnectionTypeCellular;
     case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      return blink::ConnectionTypeBluetooth;
+      return blink::WebConnectionTypeBluetooth;
   }
 
   NOTREACHED();
-  return blink::ConnectionTypeNone;
+  return blink::WebConnectionTypeNone;
 }
 
 }  // namespace content
