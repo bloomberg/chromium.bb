@@ -713,8 +713,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   MagnificationManager::Shutdown();
 
-  AccessibilityManager::Shutdown();
-
   media::SoundsManager::Shutdown();
 
   system::StatisticsProvider::GetInstance()->Shutdown();
@@ -749,6 +747,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We first call PostMainMessageLoopRun and then destroy UserManager, because
   // Ash needs to be closed before UserManager is destroyed.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+
+  AccessibilityManager::Shutdown();
 
   input_method::Shutdown();
 

@@ -943,6 +943,10 @@ void AccessibilityManager::ActiveUserChanged(const std::string& user_id) {
   SetProfile(ProfileManager::GetActiveUserProfile());
 }
 
+void AccessibilityManager::OnAppTerminating() {
+  session_state_observer_.reset();
+}
+
 void AccessibilityManager::SetProfileForTest(Profile* profile) {
   SetProfile(profile);
 }

@@ -63,8 +63,14 @@ void InitAfterFirstSessionStart() {
 
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  public:
-  AccessibilityDelegateImpl() {}
-  ~AccessibilityDelegateImpl() override {}
+  AccessibilityDelegateImpl() {
+    ash::Shell::GetInstance()->AddShellObserver(
+        chromeos::AccessibilityManager::Get());
+  }
+  ~AccessibilityDelegateImpl() override {
+    ash::Shell::GetInstance()->RemoveShellObserver(
+        chromeos::AccessibilityManager::Get());
+  }
 
   void ToggleHighContrast() override {
     DCHECK(chromeos::AccessibilityManager::Get());

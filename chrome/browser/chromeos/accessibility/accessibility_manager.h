@@ -8,6 +8,7 @@
 #include <set>
 
 #include "ash/session/session_state_observer.h"
+#include "ash/shell_observer.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
@@ -74,6 +75,7 @@ class AccessibilityManager
     : public content::NotificationObserver,
       public extensions::api::braille_display_private::BrailleObserver,
       public ash::SessionStateObserver,
+      public ash::ShellObserver,
       public input_method::InputMethodManager::Observer {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
@@ -163,6 +165,9 @@ class AccessibilityManager
 
   // SessionStateObserver overrides:
   void ActiveUserChanged(const std::string& user_id) override;
+
+  // ShellObserver overrides:
+  void OnAppTerminating() override;
 
   void SetProfileForTest(Profile* profile);
 
