@@ -140,9 +140,6 @@
     <messages fallback_to_english="true">
 
       <!-- Document Scan API strings. Please keep alphabetized. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_DOCUMENT_SCAN" desc="Permission string for access to document scanning.">
-        Access document scanners attached via USB or on the local network
-      </message>
 
       <!-- General extensions strings. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
@@ -188,73 +185,16 @@
         Could not unzip extension
       </message>
 
-      <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD" desc="Permission string for access to clipboard.">
-        Read data you copy and paste
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_DECLARATIVE_WEB_REQUEST" desc="Permission string for Declarative Web Request API.">
-        Block parts of web pages
-      </message>
       <message name="IDS_LOAD_STATE_PARAMETER_EXTENSION" desc="Parameter to IDS_LOAD_STATE_WAITING_FOR_DELEGATE when we are waiting for an extension. The variable is the extension name.">
         extension <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph>
       </message>
 
-      <!-- Bluetooth access permissions. Please keep alphabetized. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH" desc="Permission string for general access to the Bluetooth API.">
-        Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES" desc="Permission string for implementing Bluetooth profiles.">
-        Send messages to and receive messages from Bluetooth devices.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_PRIVATE" desc="Permission string for Bluetooth Private API.">
-        Control Bluetooth adapter state and pairing
-      </message>
-
       <!-- Host access permissions. Please keep alphabetized. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_1_HOST" desc="Permission string for access to data on one website.">
-        Read and change your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_1_HOST_READ_ONLY" desc="Permission string for read-only access to data on one website.">
-        Read your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_2_HOSTS" desc="Permission string for access to data on two websites.">
-        Read and change your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_2_HOSTS_READ_ONLY" desc="Permission string for read-only access to data on two websites.">
-        Read your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_3_HOSTS" desc="Permission string for access to data on three websites.">
-        Read and change your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_3_HOSTS_READ_ONLY" desc="Permission string for read-only access to data on three websites.">
-        Read your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN" desc="Permission string requesting access to data on a website and its sub-domains.">
         all <ph name="WEBSITE_1">$1<ex>google.com</ex></ph> sites
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN_LIST" desc="Single entry permission string requesting access to data on a website and its sub-domains.">
         All <ph name="WEBSITE_1">$1<ex>google.com</ex></ph> sites
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST" desc="Permission string for access to data for an arbitrary list of websites.">
-        Read and change your data on a number of websites
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST_READ_ONLY" desc="Permission string for read-only access to data for an arbitrary list of websites.">
-        Read your data on a number of websites
-      </message>
-
-      <!-- Media capture permissions. Please keep alphabetized. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE" desc="Permission string for access to audio capture devices.">
-        Use your microphone
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE" desc="Permission string for access to video capture devices.">
-        Use your camera
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE" desc="Permission string for access to both audio and video capture devices.">
-        Use your microphone and camera
-      </message>
-
-      <!-- Media galleries strings. Please keep alphabetized. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ" desc="Permission string for access to read all of the user's media galleries.">
-        Access photos, music, and other media from your computer
       </message>
 
       <!-- Policy strings. Please keep alphabetized. -->
@@ -269,37 +209,6 @@
       </message>
       <message name="IDS_EXTENSION_DISABLED_UPDATE_REQUIRED_BY_POLICY" desc="Error message when an extension doesn't meet minimum version required by administrator policy.">
         The administrator of this machine requires <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> to have a minimum version of <ph name="EXTENSION_VERSION">$2<ex>1.1.0</ex></ph>. It cannot be enabled until it has updated to that version (or higher).
-      </message>
-
-      <!-- Settings override strings. Please keep alphabetized. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE" desc="Permission string for home page override.">
-        Change your home page to: <ph name="HOME_PAGE">$1<ex>home.page.com/home.html</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE" desc="Permission string for search settings override.">
-        Change your search settings to: <ph name="SEARCH_HOST">$1<ex>url.search.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE" desc="Permission string for start page override.">
-        Change your start page to: <ph name="START_PAGE">$1<ex>start.page.com/start.html</ex></ph>
-      </message>
-
-      <!-- Sockets API strings. Please keep alphabetized. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE" desc="Permission string for network list access.">
-        Access list of network connections
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST" desc="Permission string for access to any device on the local network or internet.">
-        Exchange data with any device on the local network or internet
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN" desc="Permission string for access to any device within a single domains on the local network or internet.">
-        Exchange data with any device in the domain <ph name="DOMAIN">$1<ex>example.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS" desc="Permission string for access to any device within multiple domains on the local network or internet.">
-        Exchange data with any device in the domains: <ph name="DOMAINS">$1<ex>example.com example.org</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST" desc="Permission string for access to a single specific device on the local network or internet.">
-        Exchange data with the device named <ph name="HOSTNAME">$1<ex>foo.example.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS" desc="Permission string for access to multiple specific devices on the local network or internet.">
-        Exchange data with the devices named: <ph name="HOSTNAMES">$1<ex>foo.example.com bar.example.com</ex></ph>
       </message>
 
       <!--
@@ -350,32 +259,8 @@
         multiple {The application "<ph name="APP_NAME">{1}<ex>Chrome Dev Editor</ex></ph>" is requesting access to one or more of your devices.}
         other {UNUSED}}
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE" desc="Permission string for access to a specific USB device.">
-        Access any <ph name="PRODUCT_NAME_AND_VENDOR">$1<ex>SoundKnob from Griffin Technology</ex></ph> via USB
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST" desc="Permission string for access to a list of USB devices.">
-        Access any of these USB devices
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM" desc="Line item for a USB device listed under IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST.">
-        <ph name="PRODUCT_NAME_AND_VENDOR">$1<ex>SoundKnob from Griffin Technology</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_PRODUCT" desc="Line item for a USB device listed under IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST that has an unknown product ID.">
-        unknown devices from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_VENDOR" desc="Line item for a USB device listed under IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST that has an unknown vendor ID.">
-        devices from an unknown vendor
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PRODUCT_NAME_AND_VENDOR" desc="USB device name and vendor string, used in various permission messages for USB devices.">
+      <message name="IDS_EXTENSION_USB_DEVICE_PRODUCT_NAME_AND_VENDOR" desc="USB device name and vendor string, used in various permission messages for USB devices.">
         <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_SERIAL" desc="Permission string for accessing a USB device with a known vendor name, product name and serial number.">
-        <ph name="PRODUCT_NAME">$1<ex>Nexus 5</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Google Inc.</ex></ph> (serial number <ph name="SERIAL_NUMBER">$3<ex>ABCDEF123456</ex></ph>)
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_PRODUCT" desc="Permission string for access to a specific USB device with an unknown product ID.">
-        Access USB devices from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_VENDOR" desc="Permission string for acceess to a specific USB device with an unknown vendor ID.">
-        Access USB devices from an unknown vendor
       </message>
       <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the HID device selection dialog when the app will accept one or more selected devices. [ICU Syntax]">
       {0, select,
@@ -386,26 +271,6 @@
       {0, select,
        single {Select a USB device} multiple {Select USB devices}
        other {UNUSED}}
-      </message>
-
-      <!-- Extension permission strings. Please keep alphabetized. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_CONFIG" desc="Permission string for Networking Config API.">
-        Configure network connections
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE" desc="Permission string for Networking Private API.">
-        Manage network connections
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
-        Access your serial devices
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_U2F_DEVICES" desc="Warning message which indicates that an extension has access to Universal 2nd Factor devices.">
-        Access your Universal 2nd Factor devices
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_VPN" desc="Permission string for access to VPN API.">
-        Access your network traffic
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE" desc="Permission string for allowing websites to connect to extensions.">
-        Communicate with cooperating websites
       </message>
 
       <!-- Extension task manager strings. Please keep alphabetized. -->

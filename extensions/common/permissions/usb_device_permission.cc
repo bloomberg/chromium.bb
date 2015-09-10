@@ -38,7 +38,7 @@ PermissionIDSet UsbDevicePermission::GetPermissions() const {
           device::UsbIds::GetProductName(data.vendor_id(), data.product_id());
       if (product) {
         base::string16 product_name_and_vendor = l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PRODUCT_NAME_AND_VENDOR,
+            IDS_EXTENSION_USB_DEVICE_PRODUCT_NAME_AND_VENDOR,
             base::UTF8ToUTF16(product), base::UTF8ToUTF16(vendor));
         ids.insert(APIPermission::kUsbDevice, product_name_and_vendor);
       } else {
