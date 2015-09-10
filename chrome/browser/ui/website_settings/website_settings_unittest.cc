@@ -158,9 +158,11 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
   ContentSetting setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+#if defined(ENABLE_PLUGINS)
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+#endif
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);

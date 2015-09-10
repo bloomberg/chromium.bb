@@ -8,9 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
-#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "components/content_settings/core/browser/plugins_field_trial.h"
+#endif
 
 namespace content_settings {
 
@@ -45,6 +48,14 @@ const std::vector<std::string>& WhitelistedForWebUIAndExtensions() {
 #endif
   }
   return kWhitelistedForWebUIAndExtensions;
+}
+
+ContentSetting GetDefaultPluginsContentSetting() {
+#if defined(ENABLE_PLUGINS)
+  return PluginsFieldTrial::GetDefaultPluginsContentSetting();
+#else
+  return CONTENT_SETTING_BLOCK;
+#endif
 }
 
 }  // namespace
@@ -99,7 +110,7 @@ void ContentSettingsRegistry::Init() {
            CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::SYNCABLE,
            WhitelistedForWebUIAndExtensions());
   Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
-           PluginsFieldTrial::GetDefaultPluginsContentSetting(),
+           GetDefaultPluginsContentSetting(),
            WebsiteSettingsInfo::SYNCABLE, WhitelistedForWebUI());
   Register(CONTENT_SETTINGS_TYPE_POPUPS, "popups", CONTENT_SETTING_BLOCK,
            WebsiteSettingsInfo::SYNCABLE, WhitelistedForWebUIAndExtensions());

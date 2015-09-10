@@ -108,7 +108,6 @@
     'content_settings_unittest_sources': [
       'content_settings/core/browser/content_settings_mock_provider.cc',
       'content_settings/core/browser/content_settings_mock_provider.h',
-      'content_settings/core/browser/content_settings_provider_unittest.cc',
       'content_settings/core/browser/content_settings_registry_unittest.cc',
       'content_settings/core/browser/content_settings_rule_unittest.cc',
       'content_settings/core/browser/content_settings_utils_unittest.cc',
@@ -1351,6 +1350,7 @@
         }],
         ['enable_plugins == 1', {
           'sources': [
+            'content_settings/core/browser/content_settings_provider_unittest.cc',
             'content_settings/core/browser/plugins_field_trial_unittest.cc',
           ],
         }],

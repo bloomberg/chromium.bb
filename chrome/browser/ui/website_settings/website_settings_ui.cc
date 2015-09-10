@@ -241,7 +241,12 @@ int WebsiteSettingsUI::GetPermissionIconID(ContentSettingsType type,
       resource_id = use_blocked ? IDR_BLOCKED_POPUPS : IDR_ALLOWED_POPUPS;
       break;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
+#if defined(ENABLE_PLUGINS)
       resource_id = use_blocked ? IDR_BLOCKED_PLUGINS : IDR_ALLOWED_PLUGINS;
+#else
+      NOTREACHED();
+      resource_id = kInvalidResourceID;
+#endif
       break;
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       resource_id = use_blocked ? IDR_BLOCKED_LOCATION : IDR_ALLOWED_LOCATION;

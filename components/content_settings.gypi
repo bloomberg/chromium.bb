@@ -14,7 +14,6 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'content_settings_core_common',
-        'plugins_common',
         'pref_registry',
         'url_formatter/url_formatter.gyp:url_formatter',
       ],
@@ -58,12 +57,21 @@
         'content_settings/core/browser/host_content_settings_map.cc',
         'content_settings/core/browser/host_content_settings_map.h',
         'content_settings/core/browser/local_shared_objects_counter.h',
-        'content_settings/core/browser/plugins_field_trial.cc',
-        'content_settings/core/browser/plugins_field_trial.h',
         'content_settings/core/browser/website_settings_info.cc',
         'content_settings/core/browser/website_settings_info.h',
         'content_settings/core/browser/website_settings_registry.cc',
         'content_settings/core/browser/website_settings_registry.h',
+      ],
+      'conditions': [
+        ['enable_plugins == 1', {
+          'sources': [
+            'content_settings/core/browser/plugins_field_trial.cc',
+            'content_settings/core/browser/plugins_field_trial.h',
+          ],
+          'dependencies': [
+            'plugins_common',
+          ],
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
