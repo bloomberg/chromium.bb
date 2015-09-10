@@ -1624,15 +1624,33 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
     int render_process_id,
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+#if defined(ENABLE_EXTENSIONS)
+  // Check if this is an extension-related service worker, and, if so, if it's
+  // allowed (this can return false if, e.g., the extension is disabled).
+  // If it's not allowed, return immediately. We deliberately do *not* report
+  // to the TabSpecificContentSettings, since the service worker is blocked
+  // because of the extension, rather than because of the user's content
+  // settings.
+  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
+          scope, first_party_url, context, render_process_id,
+          render_frame_id)) {
+    return false;
+  }
+#endif
+
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   bool allow = io_data->GetCookieSettings()->IsSettingCookieAllowed(
       scope, first_party_url);
 
   // Record access to database for potential display in UI.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&TabSpecificContentSettings::ServiceWorkerAccessed,
-                 render_process_id, render_frame_id, scope, !allow));
+  // Only post the task if this is for a specific frame.
+  if (render_process_id != -1 && render_frame_id != -1) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TabSpecificContentSettings::ServiceWorkerAccessed,
+                   render_process_id, render_frame_id, scope, !allow));
+  }
   return allow;
 }
 

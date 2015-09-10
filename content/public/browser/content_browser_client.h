@@ -310,6 +310,8 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allow the embedder to control if a Service Worker can be associated
   // with the given scope.
+  // Invalid (-1) process/frame ids indicate this is for starting a service
+  // worker, which is not necessarily associated with a particular frame.
   // This is called on the IO thread.
   virtual bool AllowServiceWorker(const GURL& scope,
                                   const GURL& first_party,

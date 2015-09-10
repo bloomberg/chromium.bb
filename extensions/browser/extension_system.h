@@ -39,6 +39,7 @@ class ManagementPolicy;
 class OneShotEvent;
 class QuotaService;
 class RuntimeData;
+class ServiceWorkerManager;
 class SharedUserScriptMaster;
 class StateStore;
 
@@ -70,6 +71,9 @@ class ExtensionSystem : public KeyedService {
   // actions on extensions (install, uninstall, disable, etc.).
   // The ManagementPolicy is created at startup.
   virtual ManagementPolicy* management_policy() = 0;
+
+  // The ServiceWorkerManager is created at startup.
+  virtual ServiceWorkerManager* service_worker_manager() = 0;
 
   // The SharedUserScriptMaster is created at startup.
   virtual SharedUserScriptMaster* shared_user_script_master() = 0;

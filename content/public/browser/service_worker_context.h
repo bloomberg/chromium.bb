@@ -85,7 +85,8 @@ class ServiceWorkerContext {
 
   // Methods used in response to browsing data and quota manager requests.
   virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) = 0;
-  virtual void DeleteForOrigin(const GURL& origin_url) = 0;
+  virtual void DeleteForOrigin(const GURL& origin_url,
+                               const ResultCallback& callback) = 0;
 
   // Returns true if an active Service Worker registration exists that matches
   // |url|, and if |other_url| falls inside the scope of the same registration.
@@ -97,6 +98,9 @@ class ServiceWorkerContext {
       const GURL& url,
       const GURL& other_url,
       const CheckHasServiceWorkerCallback& callback) = 0;
+
+  // Stops all running workers on the given |origin|.
+  virtual void StopAllServiceWorkersForOrigin(const GURL& origin) = 0;
 
   // Stops all running service workers and unregisters all service worker
   // registrations. This method is used in LayoutTests to make sure that the

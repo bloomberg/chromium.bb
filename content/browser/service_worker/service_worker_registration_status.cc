@@ -33,6 +33,7 @@ void GetServiceWorkerRegistrationStatusResponse(
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
     case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
     case SERVICE_WORKER_ERROR_REDUNDANT:
+    case SERVICE_WORKER_ERROR_DISALLOWED:
       *error_type = WebServiceWorkerError::ErrorTypeInstall;
       return;
 

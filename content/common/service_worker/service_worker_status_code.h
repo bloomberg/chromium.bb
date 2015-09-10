@@ -69,6 +69,9 @@ enum ServiceWorkerStatusCode {
   // The worker is in REDUNDANT state.
   SERVICE_WORKER_ERROR_REDUNDANT,
 
+  // The worker was disallowed.
+  SERVICE_WORKER_ERROR_DISALLOWED,
+
   SERVICE_WORKER_ERROR_MAX_VALUE
 };
 

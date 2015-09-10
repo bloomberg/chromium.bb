@@ -48,6 +48,11 @@ class ChromeContentBrowserClientExtensionsPart
       content::ResourceContext* resource_context,
       const GURL& current_url,
       const GURL& new_url);
+  static bool AllowServiceWorker(const GURL& scope,
+                                 const GURL& first_party_url,
+                                 content::ResourceContext* context,
+                                 int render_process_id,
+                                 int render_frame_id);
 
   // Similiar to ChromeContentBrowserClient::ShouldAllowOpenURL(), but the
   // return value indicates whether to use |result| or not.

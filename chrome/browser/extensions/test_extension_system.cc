@@ -87,6 +87,10 @@ void TestExtensionSystem::SetExtensionService(ExtensionService* service) {
   extension_service_.reset(service);
 }
 
+ServiceWorkerManager* TestExtensionSystem::service_worker_manager() {
+  return nullptr;
+}
+
 SharedUserScriptMaster* TestExtensionSystem::shared_user_script_master() {
   return NULL;
 }

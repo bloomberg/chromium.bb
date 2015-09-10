@@ -35,6 +35,8 @@ void GetAllOriginsInfoCallback(
                           base::Bind(callback, result));
 }
 
+void EmptySuccessCallback(bool success) {}
+
 }  // namespace
 
 BrowsingDataServiceWorkerHelper::BrowsingDataServiceWorkerHelper(
@@ -78,7 +80,8 @@ void BrowsingDataServiceWorkerHelper::FetchServiceWorkerUsageInfoOnIOThread(
 void BrowsingDataServiceWorkerHelper::DeleteServiceWorkersOnIOThread(
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  service_worker_context_->DeleteForOrigin(origin);
+  service_worker_context_->DeleteForOrigin(origin,
+                                           base::Bind(&EmptySuccessCallback));
 }
 
 CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo::

@@ -21,6 +21,7 @@
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/service_worker_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/file_util.h"
 
@@ -98,6 +99,7 @@ void ShellExtensionSystem::Shutdown() {
 }
 
 void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
+  service_worker_manager_.reset(new ServiceWorkerManager(browser_context_));
   runtime_data_.reset(
       new RuntimeData(ExtensionRegistry::Get(browser_context_)));
   quota_service_.reset(new QuotaService);
@@ -114,6 +116,10 @@ RuntimeData* ShellExtensionSystem::runtime_data() {
 
 ManagementPolicy* ShellExtensionSystem::management_policy() {
   return nullptr;
+}
+
+ServiceWorkerManager* ShellExtensionSystem::service_worker_manager() {
+  return service_worker_manager_.get();
 }
 
 SharedUserScriptMaster* ShellExtensionSystem::shared_user_script_master() {

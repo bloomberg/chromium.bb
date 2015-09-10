@@ -30,6 +30,7 @@ class MockExtensionSystem : public ExtensionSystem {
   ExtensionService* extension_service() override;
   RuntimeData* runtime_data() override;
   ManagementPolicy* management_policy() override;
+  ServiceWorkerManager* service_worker_manager() override;
   SharedUserScriptMaster* shared_user_script_master() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;

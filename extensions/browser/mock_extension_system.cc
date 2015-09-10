@@ -30,6 +30,10 @@ ManagementPolicy* MockExtensionSystem::management_policy() {
   return nullptr;
 }
 
+ServiceWorkerManager* MockExtensionSystem::service_worker_manager() {
+  return nullptr;
+}
+
 SharedUserScriptMaster* MockExtensionSystem::shared_user_script_master() {
   return nullptr;
 }

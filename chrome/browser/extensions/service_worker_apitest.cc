@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace extensions {
@@ -124,6 +129,65 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, PostMessageToBackgroundClient) {
             ExecuteScriptInBackgroundPage(
                 GetSingleLoadedExtension()->id(),
                 "window.domAutomationController.send(message);"));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
+                       ServiceWorkerSuspensionOnExtensionUnload) {
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("service_worker").AppendASCII("suspended"));
+  ASSERT_TRUE(extension);
+  std::string extension_id = extension->id();
+
+  ExtensionTestMessageListener listener("registered", false);
+  GURL url = extension->GetResourceURL("/page.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  listener.WaitUntilSatisfied();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::string output;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(document.body.innerText);",
+      &output));
+  EXPECT_EQ("No Fetch Event yet.", output);
+
+  // Page must reload in order for the service worker to take control.
+  content::RunAllBlockingPoolTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  web_contents->GetController().Reload(true);
+  content::WaitForLoadStop(web_contents);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(document.body.innerText);",
+      &output));
+  EXPECT_EQ("Caught a fetch!", output);
+
+  extension_service()->DisableExtension(extension->id(),
+                                        Extension::DISABLE_USER_ACTION);
+  base::RunLoop().RunUntilIdle();
+  // When the extension is disabled, chrome closes any tabs open to its pages,
+  // so we have to navigate back by hand.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(content::PAGE_TYPE_ERROR,
+            web_contents->GetController().GetActiveEntry()->GetPageType());
+
+  extension_service()->EnableExtension(extension_id);
+  base::RunLoop().RunUntilIdle();
+
+  web_contents->GetController().Reload(true);
+  content::WaitForLoadStop(web_contents);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(document.body.innerText);",
+      &output));
+  EXPECT_EQ("Caught a fetch!", output);
 }
 
 }  // namespace extensions

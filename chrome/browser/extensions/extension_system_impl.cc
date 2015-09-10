@@ -43,6 +43,7 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/common/constants.h"
 
@@ -138,6 +139,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
   content_verifier_ = new ContentVerifier(
       profile_, new ChromeContentVerifierDelegate(profile_));
+
+  service_worker_manager_.reset(new ServiceWorkerManager(profile_));
 
   shared_user_script_master_.reset(new SharedUserScriptMaster(profile_));
 
@@ -242,6 +245,10 @@ void ExtensionSystemImpl::Shared::Shutdown() {
     extension_service_->Shutdown();
 }
 
+ServiceWorkerManager* ExtensionSystemImpl::Shared::service_worker_manager() {
+  return service_worker_manager_.get();
+}
+
 StateStore* ExtensionSystemImpl::Shared::state_store() {
   return state_store_.get();
 }
@@ -325,6 +332,10 @@ RuntimeData* ExtensionSystemImpl::runtime_data() {
 
 ManagementPolicy* ExtensionSystemImpl::management_policy() {
   return shared_->management_policy();
+}
+
+ServiceWorkerManager* ExtensionSystemImpl::service_worker_manager() {
+  return shared_->service_worker_manager();
 }
 
 SharedUserScriptMaster* ExtensionSystemImpl::shared_user_script_master() {

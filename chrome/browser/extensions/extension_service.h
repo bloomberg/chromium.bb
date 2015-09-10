@@ -62,8 +62,8 @@ class ExtensionErrorController;
 class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionUpdater;
-class OneShotEvent;
 class ExternalInstallManager;
+class OneShotEvent;
 class SharedModuleService;
 class UpdateObserver;
 }  // namespace extensions

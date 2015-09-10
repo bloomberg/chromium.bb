@@ -219,7 +219,7 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
   const Extension* new_extension =
       registry->enabled_extensions().GetExtensionOrAppByURL(url);
   if (new_extension && new_extension->is_hosted_app() &&
-      new_extension->id() == extensions::kWebStoreAppId &&
+      new_extension->id() == kWebStoreAppId &&
       !ProcessMap::Get(process_host->GetBrowserContext())
            ->Contains(new_extension->id(), process_host->GetID())) {
     return false;
@@ -234,21 +234,21 @@ bool ChromeContentBrowserClientExtensionsPart::IsIllegalOrigin(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Consider non-extension URLs safe; they will be checked elsewhere.
-  if (!origin.SchemeIs(extensions::kExtensionScheme))
+  if (!origin.SchemeIs(kExtensionScheme))
     return false;
 
   // If there is no extension installed for the URL, it couldn't have committed.
   // (If the extension was recently uninstalled, the tab would have closed.)
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  extensions::InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
-  const extensions::Extension* extension =
+  InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
+  const Extension* extension =
       extension_info_map->extensions().GetExtensionOrAppByURL(origin);
   if (!extension)
     return true;
 
   // Check for platform app origins.  These can only be committed by the app
   // itself, or by one if its guests if there are accessible_resources.
-  const extensions::ProcessMap& process_map = extension_info_map->process_map();
+  const ProcessMap& process_map = extension_info_map->process_map();
   if (extension->is_platform_app() &&
       !process_map.Contains(extension->id(), child_process_id)) {
     // This is a platform app origin not in the app's own process.  If there are
@@ -328,7 +328,7 @@ ChromeContentBrowserClientExtensionsPart::ShouldTryToUseExistingProcessHost(
       GetLoadedProfiles();
   for (size_t i = 0; i < profiles.size(); ++i) {
     ProcessManager* epm = ProcessManager::Get(profiles[i]);
-    for (extensions::ExtensionHost* host : epm->background_hosts())
+    for (ExtensionHost* host : epm->background_hosts())
       process_ids.insert(host->render_process_host()->GetID());
   }
 
@@ -359,16 +359,14 @@ bool ChromeContentBrowserClientExtensionsPart::
   // RenderFrameHostManager.
   const Extension* current_extension =
       registry->enabled_extensions().GetExtensionOrAppByURL(current_url);
-  if (current_extension &&
-      current_extension->is_hosted_app() &&
-      current_extension->id() != extensions::kWebStoreAppId)
+  if (current_extension && current_extension->is_hosted_app() &&
+      current_extension->id() != kWebStoreAppId)
     current_extension = NULL;
 
   const Extension* new_extension =
       registry->enabled_extensions().GetExtensionOrAppByURL(new_url);
-  if (new_extension &&
-      new_extension->is_hosted_app() &&
-      new_extension->id() != extensions::kWebStoreAppId)
+  if (new_extension && new_extension->is_hosted_app() &&
+      new_extension->id() != kWebStoreAppId)
     new_extension = NULL;
 
   // First do a process check.  We should force a BrowsingInstance swap if the
@@ -395,6 +393,27 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldSwapProcessesForRedirect(
   return CrossesExtensionProcessBoundary(
       io_data->GetExtensionInfoMap()->extensions(),
       current_url, new_url, false);
+}
+
+// static
+bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
+    const GURL& scope,
+    const GURL& first_party_url,
+    content::ResourceContext* context,
+    int render_process_id,
+    int render_frame_id) {
+  // We only care about extension urls.
+  // TODO(devlin): Also address chrome-extension-resource.
+  if (!first_party_url.SchemeIs(kExtensionScheme))
+    return true;
+
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+  InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
+  const Extension* extension =
+      extension_info_map->extensions().GetExtensionOrAppByURL(first_party_url);
+  // Don't allow a service worker for an extension url with no extension (this
+  // could happen in the case of, e.g., an unloaded extension).
+  return extension != nullptr;
 }
 
 // static

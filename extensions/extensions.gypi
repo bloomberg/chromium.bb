@@ -737,6 +737,8 @@
       'browser/script_executor.h',
       'browser/serial_extension_host_queue.cc',
       'browser/serial_extension_host_queue.h',
+      'browser/service_worker_manager.cc',
+      'browser/service_worker_manager.h',
       'browser/state_store.cc',
       'browser/state_store.h',
       'browser/suggest_permission_util.cc',

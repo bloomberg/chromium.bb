@@ -47,6 +47,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   ExtensionService* extension_service() override;
   RuntimeData* runtime_data() override;
   ManagementPolicy* management_policy() override;
+  ServiceWorkerManager* service_worker_manager() override;
   SharedUserScriptMaster* shared_user_script_master() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;
@@ -72,6 +73,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   // Data to be accessed on the IO thread. Must outlive process_manager_.
   scoped_refptr<InfoMap> info_map_;
 
+  scoped_ptr<ServiceWorkerManager> service_worker_manager_;
   scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<QuotaService> quota_service_;
   scoped_ptr<AppSorting> app_sorting_;

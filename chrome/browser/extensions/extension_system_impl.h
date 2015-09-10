@@ -34,6 +34,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   ExtensionService* extension_service() override;  // shared
   RuntimeData* runtime_data() override;            // shared
   ManagementPolicy* management_policy() override;  // shared
+  ServiceWorkerManager* service_worker_manager() override;  // shared
   SharedUserScriptMaster* shared_user_script_master() override;  // shared
   StateStore* state_store() override;                              // shared
   StateStore* rules_store() override;                              // shared
@@ -78,6 +79,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     ExtensionService* extension_service();
     RuntimeData* runtime_data();
     ManagementPolicy* management_policy();
+    ServiceWorkerManager* service_worker_manager();
     SharedUserScriptMaster* shared_user_script_master();
     InfoMap* info_map();
     QuotaService* quota_service();
@@ -95,6 +97,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
         state_store_notification_observer_;
     scoped_ptr<StateStore> rules_store_;
     scoped_ptr<NavigationObserver> navigation_observer_;
+    scoped_ptr<ServiceWorkerManager> service_worker_manager_;
     // Shared memory region manager for scripts statically declared in extension
     // manifests. This region is shared between all extensions.
     scoped_ptr<SharedUserScriptMaster> shared_user_script_master_;
