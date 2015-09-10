@@ -14,12 +14,20 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/crypto/proof_source_chromium.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 
 // The port the quic server will listen on.
 int32 FLAGS_port = 6121;
+
+net::ProofSource* CreateProofSource(const base::FilePath& cert_path,
+                                    const base::FilePath& key_path) {
+  net::ProofSourceChromium* proof_source = new net::ProofSourceChromium();
+  CHECK(proof_source->Initialize(cert_path, key_path));
+  return proof_source;
+}
 
 int main(int argc, char *argv[]) {
   base::AtExitManager exit_manager;
@@ -40,7 +48,9 @@ int main(int argc, char *argv[]) {
         "-h, --help                  show this help message and exit\n"
         "--port=<port>               specify the port to listen on\n"
         "--quic_in_memory_cache_dir  directory containing response data\n"
-        "                            to load\n";
+        "                            to load\n"
+        "--certificate_file=<file>   path to the certificate chain\n"
+        "--key_file=<file>           path to the pkcs8 private key\n";
     std::cout << help_str;
     exit(0);
   }
@@ -63,6 +73,17 @@ int main(int argc, char *argv[]) {
   net::QuicConfig config;
   net::tools::QuicSimpleServer server(config, net::QuicSupportedVersions());
   server.SetStrikeRegisterNoStartupPeriod();
+  if (!line->HasSwitch("certificate_file")) {
+    LOG(ERROR) << "missing --certificate_file";
+    return 1;
+  }
+  if (!line->HasSwitch("key_file")) {
+    LOG(ERROR) << "missing --key_file";
+    return 1;
+  }
+  server.SetProofSource(
+      CreateProofSource(line->GetSwitchValuePath("certificate_file"),
+                        line->GetSwitchValuePath("key_file")));
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {

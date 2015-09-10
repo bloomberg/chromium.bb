@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/crypto/proof_source_chromium.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_server.h"
@@ -21,23 +22,12 @@
 // The port the quic server will listen on.
 int32 FLAGS_port = 6121;
 
-// TODO(rtenneti): Enable the following code when Chromium has a working
-// ProofSourceChromium.
-#if 0
-// The directory containing certificate files.
-char* FLAGS_certificate_dir = nullptr;
-// The name of the file containing the intermediate certificate.
-char* FLAGS_intermediate_certificate_name = "intermediate.crt";
-// The name of the file containing the leaf certificate.
-char* FLAGS_leaf_certificate_name = "test.example.com";
-bool FLAGS_disable_permission_validation = true;
-
-ProofSource* CreateProofSource(const string& base_directory,
-                               const string& intermediate_cert_name,
-                               const string& leaf_cert_name) {
-  return new net::ProofSourceChromium();
+net::ProofSource* CreateProofSource(const base::FilePath& cert_path,
+                                    const base::FilePath& key_path) {
+  net::ProofSourceChromium* proof_source = new net::ProofSourceChromium();
+  CHECK(proof_source->Initialize(cert_path, key_path));
+  return proof_source;
 }
-#endif
 
 int main(int argc, char *argv[]) {
   base::AtExitManager exit_manager;
@@ -58,7 +48,9 @@ int main(int argc, char *argv[]) {
         "-h, --help                  show this help message and exit\n"
         "--port=<port>               specify the port to listen on\n"
         "--quic_in_memory_cache_dir  directory containing response data\n"
-        "                            to load\n";
+        "                            to load\n"
+        "--certificate_file=<file>   path to the certificate chain\n"
+        "--key_file=<file>           path to the pkcs8 private key\n";
     std::cout << help_str;
     exit(0);
   }
@@ -81,15 +73,17 @@ int main(int argc, char *argv[]) {
   net::QuicConfig config;
   net::tools::QuicServer server(config, net::QuicSupportedVersions());
   server.SetStrikeRegisterNoStartupPeriod();
-
-  // TODO(rtenneti): Enable the following code when Chromium has a working
-  // ProofSourceChromium.
-  // if (!FLAGS_certificate_dir.empty()) {
-  //    server.SetProofSource(CreateProofSource(
-  //        FLAGS_certificate_dir,
-  //        FLAGS_intermediate_certificate_name,
-  //        FLAGS_leaf_certificate_name));
-  // }
+  if (!line->HasSwitch("certificate_file")) {
+    LOG(ERROR) << "missing --certificate_file";
+    return 1;
+  }
+  if (!line->HasSwitch("key_file")) {
+    LOG(ERROR) << "missing --key_file";
+    return 1;
+  }
+  server.SetProofSource(
+      CreateProofSource(line->GetSwitchValuePath("certificate_file"),
+                        line->GetSwitchValuePath("key_file")));
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {
