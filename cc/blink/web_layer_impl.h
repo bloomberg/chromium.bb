@@ -58,6 +58,11 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
 
   CC_BLINK_EXPORT cc::Layer* layer() const;
 
+  // If set to true, content opaqueness cannot be changed using setOpaque.
+  // However, it can still be modified using SetContentsOpaque on the
+  // cc::Layer.
+  CC_BLINK_EXPORT void SetContentsOpaqueIsFixed(bool fixed);
+
   // WebLayer implementation.
   virtual int id() const;
   virtual void invalidateRect(const blink::WebRect&);
@@ -151,6 +156,8 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
  protected:
   scoped_refptr<cc::Layer> layer_;
   blink::WebLayerClient* web_layer_client_;
+
+  bool contents_opaque_is_fixed_;
 
  private:
   scoped_ptr<WebToCCAnimationDelegateAdapter> animation_delegate_adapter_;
