@@ -18,7 +18,8 @@ class OopifBasicPageSet(story.StorySet):
         'http://www.cnn.com',
         'http://www.ebay.com',
         'http://booking.com',
-        'http://www.rei.com/',
+        # Disabled because it causes flaky runs https://crbug.com/522870
+        #'http://www.rei.com/',
         'http://www.fifa.com/',
         # Disabled because it is flaky on Windows and Android
         #'http://arstechnica.com/',
