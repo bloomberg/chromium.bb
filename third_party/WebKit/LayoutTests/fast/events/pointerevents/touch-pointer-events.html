@@ -134,8 +134,7 @@ function testPEParamsMultiTouch(x, y) {
   eventSender.touchStart();
   shouldBeFalse("receivedPEsAtTarget[5].isPrimary");
   var idThird = receivedPEsAtTarget[5].pointerId;
-  //TODO(mustaq): Uncomment after committing crrev.com/1317733006.
-  //debug("receivedPEsAtTarget[5].pointerId=" + idThird)
+  debug("receivedPEsAtTarget[5].pointerId=" + idThird)
 
   eventSender.releaseTouchPoint(0);
   eventSender.touchEnd();
@@ -145,8 +144,7 @@ function testPEParamsMultiTouch(x, y) {
   eventSender.releaseTouchPoint(0);
   eventSender.touchEnd();
   shouldBeFalse("receivedPEsAtTarget[7].isPrimary");
-  //TODO(mustaq): Uncomment after committing crrev.com/1317733006.
-  //shouldBeEqualToNumber("receivedPEsAtTarget[7].pointerId", idThird);
+  shouldBeEqualToNumber("receivedPEsAtTarget[7].pointerId", idThird);
 
   eventSender.addTouchPoint(x, y);
   eventSender.touchStart();
