@@ -99,7 +99,7 @@ void TracingHandler::SetClient(scoped_ptr<Client> client) {
 }
 
 void TracingHandler::Detached() {
-  if (IsRecording())
+  if (did_initiate_recording_)
     DisableRecording(scoped_refptr<TracingController::TraceDataSink>());
 }
 
@@ -122,14 +122,6 @@ void TracingHandler::OnTraceComplete() {
 void TracingHandler::OnTraceToStreamComplete(const std::string& stream_handle) {
   client_->TracingComplete(
       TracingCompleteParams::Create()->set_stream(stream_handle));
-}
-
-Response TracingHandler::Start(DevToolsCommandId command_id,
-                               const std::string* categories,
-                               const std::string* options,
-                               const double* buffer_usage_reporting_interval) {
-  return Start(command_id, categories, options, buffer_usage_reporting_interval,
-               nullptr);
 }
 
 Response TracingHandler::Start(DevToolsCommandId command_id,
@@ -167,7 +159,7 @@ Response TracingHandler::Start(DevToolsCommandId command_id,
 }
 
 Response TracingHandler::End(DevToolsCommandId command_id) {
-  if (!IsRecording())
+  if (!did_initiate_recording_)
     return Response::InternalError("Tracing is not started");
 
   scoped_refptr<TracingController::TraceDataSink> proxy;

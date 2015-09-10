@@ -44,10 +44,6 @@ class TracingHandler {
   Response Start(DevToolsCommandId command_id,
                  const std::string* categories,
                  const std::string* options,
-                 const double* buffer_usage_reporting_interval);
-  Response Start(DevToolsCommandId command_id,
-                 const std::string* categories,
-                 const std::string* options,
                  const double* buffer_usage_reporting_interval,
                  const std::string* transfer_mode);
   Response End(DevToolsCommandId command_id);
@@ -59,7 +55,6 @@ class TracingHandler {
  private:
   void OnRecordingEnabled(DevToolsCommandId command_id);
   void OnBufferUsage(float percent_full, size_t approximate_event_count);
-
   void OnCategoriesReceived(DevToolsCommandId command_id,
                             const std::set<std::string>& category_set);
   void OnMemoryDumpFinished(DevToolsCommandId command_id,
@@ -67,10 +62,8 @@ class TracingHandler {
                             bool success);
 
   void SetupTimer(double usage_reporting_interval);
-
   void DisableRecording(
       const scoped_refptr<TracingController::TraceDataSink>& trace_data_sink);
-
   bool IsRecording() const;
 
   scoped_ptr<base::Timer> buffer_usage_poll_timer_;
