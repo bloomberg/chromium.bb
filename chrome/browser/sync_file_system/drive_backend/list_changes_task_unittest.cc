@@ -36,7 +36,8 @@ const char kUnregisteredAppID[] = "app_id unregistered";
 
 class ListChangesTaskTest : public testing::Test {
  public:
-  ListChangesTaskTest() {}
+  ListChangesTaskTest()
+      : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   ~ListChangesTaskTest() override {}
 
   void SetUp() override {
