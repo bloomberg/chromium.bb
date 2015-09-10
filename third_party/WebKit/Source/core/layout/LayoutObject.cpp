@@ -866,6 +866,16 @@ LayoutBlock* LayoutObject::containingBlockForAbsolutePosition() const
         if (o->canContainFixedPositionObjects())
             break;
 
+        // For relpositioned inlines, we return the nearest non-anonymous enclosing block. We don't try
+        // to return the inline itself.  This allows us to avoid having a positioned objects
+        // list in all LayoutInlines and lets us return a strongly-typed LayoutBlock* result
+        // from this method.  The container() method can actually be used to obtain the
+        // inline directly.
+        if (o->style()->hasInFlowPosition() && o->isInline() && !o->isReplaced()) {
+            o = o->containingBlock();
+            break;
+        }
+
         o = o->parent();
     }
 
