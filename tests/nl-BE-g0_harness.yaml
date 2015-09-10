@@ -35,7 +35,7 @@ tests:
     - ⠳ ⠱ ⠾
   - [beletselteken ..., ⠃⠑⠇⠑⠞⠎⠑⠇⠞⠑⠅⠑⠝ ⠲⠲⠲]
   - ['Vul in ei of ij: p..n, r..s.', ⠨⠧⠥⠇ ⠊⠝ ⠑⠊ ⠕⠋ ⠊⠚⠒ ⠏⠲⠲⠝⠂ ⠗⠲⠲⠎⠲]
-  - ['\'enkele aanhalingstekens\'', ⠄⠑⠝⠅⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠄]
+  - ['''enkele aanhalingstekens''', ⠄⠑⠝⠅⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠄]
   - ['"dubbele aanhalingstekens"', ⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶]
   - [“dubbele aanhalingstekens”, ⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶]
   - [(ronde haakjes), ⠦⠗⠕⠝⠙⠑ ⠓⠁⠁⠅⠚⠑⠎⠴]
@@ -121,7 +121,7 @@ tests:
   - [É-U, ⠘⠿⠤⠥]
   - [cañon, ⠉⠁⠻⠕⠝]
   - [α β γ, ⠰⠁ ⠰⠃ ⠰⠛] # Some Greek lowercase
-  - ['\'s morgens, baby\'s, Alex\' boeken, de jaren \'90', ⠄⠎ ⠍⠕⠗⠛⠑⠝⠎⠂ ⠃⠁⠃⠽⠄⠎⠂ ⠨⠁⠇⠑⠭⠄ ⠃⠕⠑⠅⠑⠝⠂ ⠙⠑ ⠚⠁⠗⠑⠝ ⠄⠼⠊⠚]
+  - ['''s morgens, baby''s, Alex'' boeken, de jaren ''90', ⠄⠎ ⠍⠕⠗⠛⠑⠝⠎⠂ ⠃⠁⠃⠽⠄⠎⠂ ⠨⠁⠇⠑⠭⠄ ⠃⠕⠑⠅⠑⠝⠂ ⠙⠑ ⠚⠁⠗⠑⠝ ⠄⠼⠊⠚]
   - [Een typist(e) moet heel precies werken., ⠨⠑⠑⠝ ⠞⠽⠏⠊⠎⠞⠦⠑⠴ ⠍⠕⠑⠞ ⠓⠑⠑⠇ ⠏⠗⠑⠉⠊⠑⠎ ⠺⠑⠗⠅⠑⠝⠲]
   - [31-07-2010, ⠼⠉⠁⠤⠼⠚⠛⠤⠼⠃⠚⠁⠚]
   - [31/07/2010, ⠼⠉⠁⠌⠼⠚⠛⠌⠼⠃⠚⠁⠚]
