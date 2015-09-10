@@ -7,7 +7,7 @@ var test = async_test('checks the video-only MediaRecorder API.');
 
 recorderOnDataAvailable = test.step_func(function(event) {
     assert_greater_than(event.data.size, 0, 'Recorded data size should be > 0');
-    assert_eq(recorder.state, "recording");
+    assert_equals(recorder.state, "recording");
 
     // TODO(mcasas): Let the test record for a while.
     // TODO(mcasas): Consider storing the recorded data and playing it back.
@@ -23,6 +23,7 @@ gotStream = test.step_func(function(s) {
     stream = s;
     assert_equals(stream.getAudioTracks().length, 0);
     assert_equals(stream.getVideoTracks().length, 1);
+    assert_equals(stream.getVideoTracks()[0].readyState, 'live');
 
     try {
         recorder = new MediaRecorder(stream);
@@ -30,10 +31,13 @@ gotStream = test.step_func(function(s) {
         assert_unreached('Exception while creating MediaRecorder: ' + e);
     }
 
-    assert_eq(recorder.state, "inactive");
+    assert_equals(recorder.state, "inactive");
     recorder.ondataavailable = recorderOnDataAvailable;
     recorder.onstop = recorderOnStop;
     recorder.start();
+
+    assert_equals(recorder.state, "recording");
+    test.done();
 });
 
 onError = test.step_func(function() {

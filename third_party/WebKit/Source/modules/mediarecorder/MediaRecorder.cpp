@@ -60,11 +60,10 @@ MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, con
     , m_state(State::Inactive)
     , m_dispatchScheduledEventRunner(this, &MediaRecorder::dispatchScheduledEvent)
 {
-    m_recorderHandler = adoptPtr(Platform::current()->createMediaRecorderHandler());
+    ASSERT(m_stream->getTracks().size());
 
-    // TODO(mcasas): Once http://crbug.com/262211 has landed the Chromium parts,
-    // and more concretetely the createMediaRecorderHandler() implementation,
-    // ASSERT() here for |m_recorderHandler|.
+    m_recorderHandler = adoptPtr(Platform::current()->createMediaRecorderHandler());
+    ASSERT(m_recorderHandler);
 
     // We deviate from the spec by not returning |UnsupportedOption|, see https://github.com/w3c/mediacapture-record/issues/18
     if (!m_recorderHandler) {
