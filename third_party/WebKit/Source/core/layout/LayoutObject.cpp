@@ -1193,8 +1193,10 @@ void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& pain
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this);
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        enclosingLayer()->setNeedsRepaint();
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer())
+            enclosingLayer->setNeedsRepaint();
+    }
 }
 
 LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
@@ -3304,7 +3306,7 @@ void LayoutObject::invalidateDisplayItemClientForNonCompositingDescendantsOf(con
         explicit Functor(const LayoutBoxModelObject& paintInvalidationContainer) : m_paintInvalidationContainer(paintInvalidationContainer) { }
         void operator()(LayoutObject& object) const override
         {
-            m_paintInvalidationContainer.invalidateDisplayItemClientOnBacking(object);
+            object.invalidateDisplayItemClients(m_paintInvalidationContainer);
         }
     private:
         const LayoutBoxModelObject& m_paintInvalidationContainer;

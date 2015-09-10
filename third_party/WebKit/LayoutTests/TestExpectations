@@ -743,6 +743,9 @@ crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailur
 crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ ImageOnlyFailure ]
 crbug.com/506525 [ XP ] virtual/spv2/paint/masks/fieldset-mask.html [ Skip ]
 
+crbug.com/509179 fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
+crbug.com/509179 fast/forms/submit/submit-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
+
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
 crbug.com/400829 media/video-object-fit.html [ ImageOnlyFailure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ ImageOnlyFailure ]
