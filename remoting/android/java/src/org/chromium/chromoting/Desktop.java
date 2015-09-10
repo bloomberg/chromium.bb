@@ -253,6 +253,7 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
 
         // Dispatch the back button to the system to handle navigation
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            JniInterface.disconnectFromHost();
             return super.dispatchKeyEvent(event);
         }
 
