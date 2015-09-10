@@ -244,7 +244,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
   ChromeMetricsServiceClient::RegisterPrefs(registry);
-  ChromeTracingDelegate::RegisterPrefs(registry);
   chrome_prefs::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterPrefsForRecoveryComponent(registry);
@@ -300,6 +299,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if !defined(OS_ANDROID)
   AutomaticProfileResetterFactory::RegisterPrefs(registry);
   BackgroundModeManager::RegisterPrefs(registry);
+  ChromeTracingDelegate::RegisterPrefs(registry);
   RegisterBrowserPrefs(registry);
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
