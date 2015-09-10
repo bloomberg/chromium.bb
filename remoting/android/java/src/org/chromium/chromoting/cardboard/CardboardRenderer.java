@@ -75,9 +75,9 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     private PointF mEyeMenuBarPosition;
 
     private Desktop mDesktop;
-    private EyePoint mEyePoint;
     private MenuBar mMenuBar;
     private Photosphere mPhotosphere;
+    private Cursor mCursor;
 
     // Lock for eye position related operations.
     // This protects access to mEyeDesktopPosition.
@@ -108,6 +108,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
             @Override
             public void run() {
                 mDesktop.reloadTexture();
+                mCursor.reloadTexture();
             }
         });
     }
@@ -123,10 +124,10 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         // Enable depth testing.
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        mEyePoint = new EyePoint();
         mDesktop = new Desktop();
         mMenuBar = new MenuBar(mActivity);
         mPhotosphere = new Photosphere(mActivity);
+        mCursor = new Cursor();
 
         attachRedrawCallback();
     }
@@ -162,6 +163,8 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mEyeMenuBarPosition = getLookingPosition(MENU_BAR_POSITION_Z);
         mDesktop.maybeLoadDesktopTexture();
         mPhotosphere.maybeLoadTextureAndCleanImage();
+        mCursor.maybeLoadTexture(mDesktop);
+        mCursor.moveTo(getMouseCoordinates());
     }
 
     @Override
@@ -174,21 +177,42 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mProjectionMatrix = eye.getPerspective(Z_NEAR, Z_FAR);
 
         drawDesktop();
-        drawEyePoint();
         drawMenuBar();
         drawPhotosphere();
+        drawCursor();
     }
 
     @Override
     public void onRendererShutdown() {
         mDesktop.cleanup();
-        mEyePoint.cleanup();
         mMenuBar.cleanup();
         mPhotosphere.cleanup();
+        mCursor.cleanup();
     }
 
     @Override
     public void onFinishFrame(Viewport viewport) {
+    }
+
+    private void drawCursor() {
+        if (!isLookingAtDesktop() || (isMenuBarVisible() && isLookingAtMenuBar())
+                || !mCursor.hasImageFrame()) {
+            return;
+        }
+
+        float eyePointX = clamp(mEyeDesktopPosition.x, -mDesktop.getHalfWidth(),
+                mDesktop.getHalfWidth());
+        float eyePointY = clamp(mEyeDesktopPosition.y, -mDesktop.getHalfHeight(),
+                mDesktop.getHalfHeight());
+
+        Matrix.setIdentityM(mEyePointModelMatrix, 0);
+        Matrix.translateM(mEyePointModelMatrix, 0, eyePointX , eyePointY, DESKTOP_POSITION_Z);
+
+        Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mViewMatrix, 0, mEyePointModelMatrix, 0);
+        Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mProjectionMatrix,
+                0, mEyePointCombinedMatrix, 0);
+
+        mCursor.draw(mEyePointCombinedMatrix);
     }
 
     private void drawPhotosphere() {
@@ -217,25 +241,6 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
                 0, mDesktopCombinedMatrix, 0);
 
         mDesktop.draw(mDesktopCombinedMatrix, mMenuBarVisible);
-    }
-
-    private void drawEyePoint() {
-        if (!isLookingAtDesktop() || (isMenuBarVisible() && isLookingAtMenuBar())) {
-            return;
-        }
-
-        float eyePointX = clamp(mEyeDesktopPosition.x, -mDesktop.getHalfWidth(),
-                mDesktop.getHalfWidth());
-        float eyePointY = clamp(mEyeDesktopPosition.y, -mDesktop.getHalfHeight(),
-                mDesktop.getHalfHeight());
-        Matrix.setIdentityM(mEyePointModelMatrix, 0);
-        Matrix.translateM(mEyePointModelMatrix, 0, eyePointX, eyePointY,
-                DESKTOP_POSITION_Z);
-        Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mViewMatrix, 0, mEyePointModelMatrix, 0);
-        Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mProjectionMatrix,
-                0, mEyePointCombinedMatrix, 0);
-
-        mEyePoint.draw(mEyePointCombinedMatrix);
     }
 
     private void drawMenuBar() {
