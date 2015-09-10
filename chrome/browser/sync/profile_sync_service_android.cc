@@ -183,24 +183,24 @@ jint ProfileSyncServiceAndroid::GetAuthError(JNIEnv* env, jobject) {
 jboolean ProfileSyncServiceAndroid::IsEncryptEverythingEnabled(
     JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->EncryptEverythingEnabled();
+  return sync_service_->IsEncryptEverythingEnabled();
 }
 
 jboolean ProfileSyncServiceAndroid::IsSyncInitialized(JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->backend_initialized();
+  return sync_service_->IsBackendInitialized();
 }
 
 jboolean ProfileSyncServiceAndroid::IsFirstSetupInProgress(
     JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->FirstSetupInProgress();
+  return sync_service_->IsFirstSetupInProgress();
 }
 
 jboolean ProfileSyncServiceAndroid::IsEncryptEverythingAllowed(
     JNIEnv* env, jobject obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->EncryptEverythingAllowed();
+  return sync_service_->IsEncryptEverythingAllowed();
 }
 
 jboolean ProfileSyncServiceAndroid::IsPassphraseRequired(JNIEnv* env, jobject) {

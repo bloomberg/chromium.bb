@@ -255,7 +255,7 @@ TEST_F(StartupControllerTest, ResetDuringSetup) {
   controller()->Reset(syncer::UserTypes());
 
   // From the UI's point of view, setup is still in progress.
-  EXPECT_TRUE(controller()->setup_in_progress());
+  EXPECT_TRUE(controller()->IsSetupInProgress());
 }
 
 }  // namespace browser_sync

@@ -457,7 +457,7 @@ void SyncSetupHandler::SyncStartupFailed() {
 
 void SyncSetupHandler::SyncStartupCompleted() {
   ProfileSyncService* service = GetSyncService();
-  DCHECK(service->backend_initialized());
+  DCHECK(service->IsBackendInitialized());
 
   // Stop a timer to handle timeout in waiting for checking network connection.
   backend_start_timer_.reset();
@@ -501,7 +501,7 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
 
   // If the sync engine has shutdown for some reason, just close the sync
   // dialog.
-  if (!service || !service->backend_initialized()) {
+  if (!service || !service->IsBackendInitialized()) {
     CloseUI();
     return;
   }
@@ -522,7 +522,7 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
   // Don't allow "encrypt all" if the ProfileSyncService doesn't allow it.
   // The UI is hidden, but the user may have enabled it e.g. by fiddling with
   // the web inspector.
-  if (!service->EncryptEverythingAllowed())
+  if (!service->IsEncryptEverythingAllowed())
     configuration.encrypt_all = false;
 
   // Note: Data encryption will not occur until configuration is complete
@@ -697,7 +697,7 @@ void SyncSetupHandler::CloseSyncSetup() {
           // Sign out the user on desktop Chrome if they click cancel during
           // initial setup.
           // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.
-          if (sync_service->FirstSetupInProgress()) {
+          if (sync_service->IsFirstSetupInProgress()) {
             SigninManagerFactory::GetForProfile(GetProfile())->SignOut(
                 signin_metrics::ABORT_SIGNIN);
           }
@@ -803,7 +803,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
       GetProfile())->IsAuthenticated());
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
-  if (!service->backend_initialized()) {
+  if (!service->IsBackendInitialized()) {
     service->RequestStart();
 
     // See if it's even possible to bring up the sync backend - if not
@@ -825,8 +825,8 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
   // longer need a SyncStartupTracker.
   sync_startup_tracker_.reset();
   configuring_sync_ = true;
-  DCHECK(service->backend_initialized()) <<
-      "Cannot configure sync until the sync backend is initialized";
+  DCHECK(service->IsBackendInitialized())
+      << "Cannot configure sync until the sync backend is initialized";
 
   // Setup args for the sync configure screen:
   //   syncAllDataTypes: true if the user wants to sync everything
@@ -860,8 +860,9 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
   args.SetBoolean("passphraseFailed", passphrase_failed);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean("syncNothing", false);  // Always false during initial setup.
-  args.SetBoolean("encryptAllData", service->EncryptEverythingEnabled());
-  args.SetBoolean("encryptAllDataAllowed", service->EncryptEverythingAllowed());
+  args.SetBoolean("encryptAllData", service->IsEncryptEverythingEnabled());
+  args.SetBoolean("encryptAllDataAllowed",
+                  service->IsEncryptEverythingAllowed());
 
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForDecryption(), because we want to show the passphrase

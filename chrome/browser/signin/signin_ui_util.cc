@@ -84,7 +84,7 @@ base::string16 GetSigninMenuLabel(Profile* profile) {
 
   // Even if the user is signed in, don't display the "signed in as..."
   // label if we're still setting up sync.
-  if (!service || !service->FirstSetupInProgress()) {
+  if (!service || !service->IsFirstSetupInProgress()) {
     std::string username;
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfileIfExists(profile);

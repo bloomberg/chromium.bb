@@ -214,23 +214,24 @@ class SyncSetupHandlerTest : public testing::Test {
   // Setup the expectations for calls made when displaying the config page.
   void SetDefaultExpectationsForConfigPage() {
     EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_pss_, GetRegisteredDataTypes()).
-        WillRepeatedly(Return(GetAllTypes()));
-    EXPECT_CALL(*mock_pss_, GetPreferredDataTypes()).
-        WillRepeatedly(Return(GetAllTypes()));
-    EXPECT_CALL(*mock_pss_, GetActiveDataTypes()).
-        WillRepeatedly(Return(GetAllTypes()));
-    EXPECT_CALL(*mock_pss_, EncryptEverythingAllowed()).
-        WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_pss_, EncryptEverythingEnabled()).
-        WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_pss_, GetRegisteredDataTypes())
+        .WillRepeatedly(Return(GetAllTypes()));
+    EXPECT_CALL(*mock_pss_, GetPreferredDataTypes())
+        .WillRepeatedly(Return(GetAllTypes()));
+    EXPECT_CALL(*mock_pss_, GetActiveDataTypes())
+        .WillRepeatedly(Return(GetAllTypes()));
+    EXPECT_CALL(*mock_pss_, IsEncryptEverythingAllowed())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_pss_, IsEncryptEverythingEnabled())
+        .WillRepeatedly(Return(false));
   }
 
   void SetupInitializedProfileSyncService() {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync backend.
     ASSERT_TRUE(mock_signin_->IsInitialized());
-    EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_pss_, IsBackendInitialized())
+        .WillRepeatedly(Return(true));
   }
 
   void ExpectConfig() {
@@ -362,7 +363,7 @@ TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
 
   // We're simulating a user setting up sync, which would cause the backend to
   // kick off initialization, but not download user data types. The sync
@@ -389,8 +390,7 @@ TEST_F(SyncSetupHandlerTest,
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   // Sync backend is stopped initially, and will start up.
-  EXPECT_CALL(*mock_pss_, backend_initialized())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
   SetDefaultExpectationsForConfigPage();
 
   handler_->OpenSyncSetup();
@@ -407,8 +407,7 @@ TEST_F(SyncSetupHandlerTest,
   Mock::VerifyAndClearExpectations(mock_pss_);
   // Now, act as if the ProfileSyncService has started up.
   SetDefaultExpectationsForConfigPage();
-  EXPECT_CALL(*mock_pss_, backend_initialized())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(true));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   NotifySyncListeners();
@@ -441,7 +440,7 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, backend_initialized())
+  EXPECT_CALL(*mock_pss_, IsBackendInitialized())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
   SetDefaultExpectationsForConfigPage();
@@ -467,7 +466,7 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
 
   handler_->OpenSyncSetup();
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
@@ -577,7 +576,7 @@ TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, EncryptEverythingAllowed())
+  EXPECT_CALL(*mock_pss_, IsEncryptEverythingAllowed())
       .WillRepeatedly(Return(true));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, EnableEncryptEverything());
@@ -780,7 +779,7 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
 
 #if defined(OS_CHROMEOS)
   // On ChromeOS, auth errors are ignored - instead we just try to start the
@@ -939,8 +938,8 @@ TEST_F(SyncSetupHandlerTest, ShowSetupEncryptAll) {
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   SetDefaultExpectationsForConfigPage();
-  EXPECT_CALL(*mock_pss_, EncryptEverythingEnabled()).
-      WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsEncryptEverythingEnabled())
+      .WillRepeatedly(Return(true));
 
   // This should display the sync setup dialog (not login).
   handler_->OpenSyncSetup();
@@ -959,8 +958,8 @@ TEST_F(SyncSetupHandlerTest, ShowSetupEncryptAllDisallowed) {
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   SetDefaultExpectationsForConfigPage();
-  EXPECT_CALL(*mock_pss_, EncryptEverythingAllowed()).
-      WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsEncryptEverythingAllowed())
+      .WillRepeatedly(Return(false));
 
   // This should display the sync setup dialog (not login).
   handler_->OpenSyncSetup();
@@ -983,8 +982,8 @@ TEST_F(SyncSetupHandlerTest, TurnOnEncryptAllDisallowed) {
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  EXPECT_CALL(*mock_pss_, EncryptEverythingAllowed()).
-      WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsEncryptEverythingAllowed())
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, EnableEncryptEverything()).Times(0);
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
   handler_->HandleConfigure(&list_args);

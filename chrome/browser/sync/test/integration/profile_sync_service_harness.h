@@ -76,7 +76,7 @@ class ProfileSyncServiceHarness {
 
   // Blocks the caller until the sync backend is initialized or some end state
   // (e.g., auth error) is reached. Returns true if and only if the backend
-  // initialized successfully. See ProfileSyncService's backend_initialized()
+  // initialized successfully. See ProfileSyncService's IsBackendInitialized()
   // method for the definition of backend initialization.
   bool AwaitBackendInitialization();
 

@@ -184,7 +184,7 @@ class SYNC_EXPORT SyncEncryptionHandler {
 
   // Whether encryption of all datatypes is enabled. If false, only sensitive
   // types are encrypted.
-  virtual bool EncryptEverythingEnabled() const = 0;
+  virtual bool IsEncryptEverythingEnabled() const = 0;
 
   // Returns the current state of the passphrase needed to decrypt the
   // bag of encryption keys in the nigori node.

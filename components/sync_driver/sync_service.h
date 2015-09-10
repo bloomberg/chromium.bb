@@ -156,7 +156,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // if the user is customizing sync after already completing setup once).
   // SyncService uses this to determine if it's OK to start syncing, or if the
   // user is still setting up the initial sync configuration.
-  virtual bool FirstSetupInProgress() const = 0;
+  virtual bool IsFirstSetupInProgress() const = 0;
 
   // Called by the UI to notify the SyncService that UI is visible so it will
   // not start syncing. This tells sync whether it's safe to start downloading
@@ -169,7 +169,7 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual void SetSetupInProgress(bool setup_in_progress) = 0;
 
   // Used by tests.
-  virtual bool setup_in_progress() const = 0;
+  virtual bool IsSetupInProgress() const = 0;
 
   // Whether the data types active for the current mode have finished
   // configuration.
@@ -181,7 +181,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // Returns true if the SyncBackendHost has told us it's ready to accept
   // changes. This should only be used for sync's internal configuration logic
   // (such as deciding when to prompt for an encryption passphrase).
-  virtual bool backend_initialized() const = 0;
+  virtual bool IsBackendInitialized() const = 0;
 
   // Return the active OpenTabsUIDelegate. If sessions is not enabled or not
   // currently syncing, returns nullptr.
@@ -205,7 +205,7 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual void EnableEncryptEverything() = 0;
 
   // Returns true if we are currently set to encrypt all the sync data.
-  virtual bool EncryptEverythingEnabled() const = 0;
+  virtual bool IsEncryptEverythingEnabled() const = 0;
 
   // Asynchronously sets the passphrase to |passphrase| for encryption. |type|
   // specifies whether the passphrase is a custom passphrase or the GAIA

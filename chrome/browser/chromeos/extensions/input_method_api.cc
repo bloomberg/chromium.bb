@@ -166,7 +166,7 @@ ExtensionFunction::ResponseAction GetEncryptSyncEnabledFunction::Run() {
   if (!profile_sync_service)
     return RespondNow(Error("Sync service is not ready for current profile."));
   scoped_ptr<base::Value> ret(new base::FundamentalValue(
-      profile_sync_service->EncryptEverythingEnabled()));
+      profile_sync_service->IsEncryptEverythingEnabled()));
   return RespondNow(OneArgument(ret.Pass()));
 #endif
 }

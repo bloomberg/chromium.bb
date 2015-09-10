@@ -108,8 +108,8 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
             CheckedTextView view = (CheckedTextView) super.getView(position, convertView, parent);
             PassphraseType positionType = getType(position);
             PassphraseType currentType = getCurrentTypeFromArguments();
-            Set<PassphraseType> allowedTypes = currentType.getAllowedTypes(
-                    getEncryptEverythingAllowedFromArguments());
+            Set<PassphraseType> allowedTypes =
+                    currentType.getAllowedTypes(getIsEncryptEverythingAllowedFromArguments());
 
             // Set the item to checked it if it is the currently selected encryption type.
             view.setChecked(positionType == currentType);
@@ -126,16 +126,16 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
 
     private static final String ARG_PASSPHRASE_TIME = "arg_passphrase_time";
 
-    private static final String ARG_ENCRYPT_EVERYTHING_ALLOWED = "arg_encrypt_everything_allowed";
+    private static final String ARG_IS_ENCRYPT_EVERYTHING_ALLOWED =
+            "arg_is_encrypt_everything_allowed";
 
-    static PassphraseTypeDialogFragment create(PassphraseType currentType,
-                                               long passphraseTime,
-                                               boolean encryptEverythingAllowed) {
+    static PassphraseTypeDialogFragment create(
+            PassphraseType currentType, long passphraseTime, boolean isEncryptEverythingAllowed) {
         PassphraseTypeDialogFragment dialog = new PassphraseTypeDialogFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_CURRENT_TYPE, currentType);
         args.putLong(ARG_PASSPHRASE_TIME, passphraseTime);
-        args.putBoolean(ARG_ENCRYPT_EVERYTHING_ALLOWED, encryptEverythingAllowed);
+        args.putBoolean(ARG_IS_ENCRYPT_EVERYTHING_ALLOWED, isEncryptEverythingAllowed);
         dialog.setArguments(args);
         return dialog;
     }
@@ -173,8 +173,8 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         // We know this conversion from long to int is safe, because it represents very small
         // enum values.
         PassphraseType type = PassphraseType.fromInternalValue((int) typeId);
-        boolean encryptEverythingAllowed = getEncryptEverythingAllowedFromArguments();
-        if (currentType.getAllowedTypes(encryptEverythingAllowed).contains(type)) {
+        boolean isEncryptEverythingAllowed = getIsEncryptEverythingAllowedFromArguments();
+        if (currentType.getAllowedTypes(isEncryptEverythingAllowed).contains(type)) {
             if (typeId != currentType.internalValue()) {
                 Listener listener = (Listener) getTargetFragment();
                 listener.onPassphraseTypeSelected(type);
@@ -198,7 +198,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         return df.format(new Date(passphraseTime));
     }
 
-    private boolean getEncryptEverythingAllowedFromArguments() {
-        return getArguments().getBoolean(ARG_ENCRYPT_EVERYTHING_ALLOWED);
+    private boolean getIsEncryptEverythingAllowedFromArguments() {
+        return getArguments().getBoolean(ARG_IS_ENCRYPT_EVERYTHING_ALLOWED);
     }
 }

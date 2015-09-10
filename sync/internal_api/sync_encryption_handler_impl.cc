@@ -636,7 +636,7 @@ void SyncEncryptionHandlerImpl::EnableEncryptEverything() {
     ReEncryptEverything(&trans);
 }
 
-bool SyncEncryptionHandlerImpl::EncryptEverythingEnabled() const {
+bool SyncEncryptionHandlerImpl::IsEncryptEverythingEnabled() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return encrypt_everything_;
 }

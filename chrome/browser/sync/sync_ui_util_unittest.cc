@@ -213,7 +213,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
     case STATUS_CASE_SETUP_IN_PROGRESS: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillRepeatedly(Return(false));
-      EXPECT_CALL(service, FirstSetupInProgress())
+      EXPECT_CALL(service, IsFirstSetupInProgress())
                   .WillRepeatedly(Return(true));
       browser_sync::SyncBackendHost::Status status;
       EXPECT_CALL(service, QueryDetailedSyncStatus(_))
@@ -224,7 +224,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
    case STATUS_CASE_SETUP_ERROR: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillRepeatedly(Return(false));
-      EXPECT_CALL(service, FirstSetupInProgress())
+      EXPECT_CALL(service, IsFirstSetupInProgress())
                   .WillRepeatedly(Return(false));
       EXPECT_CALL(service, HasUnrecoverableError())
                   .WillRepeatedly(Return(true));

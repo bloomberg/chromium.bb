@@ -118,7 +118,7 @@ void FakeSyncEncryptionHandler::EnableEncryptEverything() {
       OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
 }
 
-bool FakeSyncEncryptionHandler::EncryptEverythingEnabled() const {
+bool FakeSyncEncryptionHandler::IsEncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 

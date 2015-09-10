@@ -238,7 +238,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
   } else {
     // Either show auth error information with a link to re-login, auth in prog,
     // or provide a link to continue with setup.
-    if (service->FirstSetupInProgress()) {
+    if (service->IsFirstSetupInProgress()) {
       result_type = PRE_SYNCED;
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);

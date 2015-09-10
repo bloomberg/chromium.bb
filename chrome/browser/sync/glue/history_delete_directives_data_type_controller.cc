@@ -29,7 +29,7 @@ HistoryDeleteDirectivesDataTypeController::
 }
 
 bool HistoryDeleteDirectivesDataTypeController::ReadyForStart() const {
-  return !sync_client_->GetSyncService()->EncryptEverythingEnabled();
+  return !sync_client_->GetSyncService()->IsEncryptEverythingEnabled();
 }
 
 bool HistoryDeleteDirectivesDataTypeController::StartModels() {

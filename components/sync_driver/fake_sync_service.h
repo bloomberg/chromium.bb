@@ -40,19 +40,19 @@ class FakeSyncService : public sync_driver::SyncService {
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
   void SetSyncSetupCompleted() override;
-  bool FirstSetupInProgress() const override;
+  bool IsFirstSetupInProgress() const override;
   void SetSetupInProgress(bool setup_in_progress) override;
-  bool setup_in_progress() const override;
+  bool IsSetupInProgress() const override;
   bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
   bool HasUnrecoverableError() const override;
-  bool backend_initialized() const override;
+  bool IsBackendInitialized() const override;
   OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
   void EnableEncryptEverything() override;
-  bool EncryptEverythingEnabled() const override;
+  bool IsEncryptEverythingEnabled() const override;
   void SetEncryptionPassphrase(const std::string& passphrase,
                                PassphraseType type) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;

@@ -104,7 +104,7 @@ class TestSyncServiceObserver : public sync_driver::SyncServiceObserver {
   explicit TestSyncServiceObserver(ProfileSyncService* service)
       : service_(service), first_setup_in_progress_(false) {}
   void OnStateChanged() override {
-    first_setup_in_progress_ = service_->FirstSetupInProgress();
+    first_setup_in_progress_ = service_->IsFirstSetupInProgress();
   }
   bool first_setup_in_progress() const { return first_setup_in_progress_; }
  private:

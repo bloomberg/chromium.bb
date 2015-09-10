@@ -387,7 +387,7 @@ void ProfileSyncService::Initialize() {
 }
 
 void ProfileSyncService::TrySyncDatatypePrefRecovery() {
-  DCHECK(!backend_initialized());
+  DCHECK(!IsBackendInitialized());
   if (!HasSyncSetupCompleted())
     return;
 
@@ -1073,7 +1073,7 @@ void ProfileSyncService::PostBackendInitialization() {
     UpdateLastSyncedTime();
   }
 
-  if (startup_controller_->auto_start_enabled() && !FirstSetupInProgress()) {
+  if (startup_controller_->auto_start_enabled() && !IsFirstSetupInProgress()) {
     // Backend is initialized but we're not in sync setup, so this must be an
     // autostart - mark our sync setup as completed and we'll start syncing
     // below.
@@ -1086,7 +1086,7 @@ void ProfileSyncService::PostBackendInitialization() {
   if (HasSyncSetupCompleted()) {
     ConfigureDataTypeManager();
   } else {
-    DCHECK(FirstSetupInProgress());
+    DCHECK(IsFirstSetupInProgress());
   }
 
   NotifyObservers();
@@ -1359,7 +1359,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // TODO(lipalani) : if setup in progress we want to display these
       // actions in the popup. The current experience might not be optimal for
       // the user. We just dismiss the dialog.
-      if (startup_controller_->setup_in_progress()) {
+      if (startup_controller_->IsSetupInProgress()) {
         RequestStop(CLEAR_DATA);
         expect_sync_configuration_aborted_ = true;
       }
@@ -1635,8 +1635,8 @@ bool ProfileSyncService::auto_start_enabled() const {
   return startup_controller_->auto_start_enabled();
 }
 
-bool ProfileSyncService::setup_in_progress() const {
-  return startup_controller_->setup_in_progress();
+bool ProfileSyncService::IsSetupInProgress() const {
+  return startup_controller_->IsSetupInProgress();
 }
 
 bool ProfileSyncService::QueryDetailedSyncStatus(
@@ -1656,17 +1656,17 @@ const AuthError& ProfileSyncService::GetAuthError() const {
   return last_auth_error_;
 }
 
-bool ProfileSyncService::FirstSetupInProgress() const {
-  return !HasSyncSetupCompleted() && startup_controller_->setup_in_progress();
+bool ProfileSyncService::IsFirstSetupInProgress() const {
+  return !HasSyncSetupCompleted() && startup_controller_->IsSetupInProgress();
 }
 
 void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
   // This method is a no-op if |setup_in_progress_| remains unchanged.
-  if (startup_controller_->setup_in_progress() == setup_in_progress)
+  if (startup_controller_->IsSetupInProgress() == setup_in_progress)
     return;
 
   startup_controller_->set_setup_in_progress(setup_in_progress);
-  if (!setup_in_progress && backend_initialized())
+  if (!setup_in_progress && IsBackendInitialized())
     ReconfigureDatatypeManager();
   NotifyObservers();
 }
@@ -1685,7 +1685,7 @@ bool ProfileSyncService::IsSignedIn() const {
   return !signin_->GetAccountIdToUse().empty();
 }
 
-bool ProfileSyncService::backend_initialized() const {
+bool ProfileSyncService::IsBackendInitialized() const {
   return backend_initialized_;
 }
 
@@ -1894,7 +1894,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   // start syncing data until the user is done configuring encryption options,
   // etc. ReconfigureDatatypeManager() will get called again once the UI calls
   // SetSetupInProgress(false).
-  if (backend_mode_ == SYNC && startup_controller_->setup_in_progress())
+  if (backend_mode_ == SYNC && startup_controller_->IsSetupInProgress())
     return;
 
   bool restart = false;
@@ -2079,7 +2079,7 @@ void ProfileSyncService::ConsumeCachedPassphraseIfPossible() {
   // If no cached passphrase, or sync backend hasn't started up yet, just exit.
   // If the backend isn't running yet, OnBackendInitialized() will call this
   // method again after the backend starts up.
-  if (cached_passphrase_.empty() || !backend_initialized())
+  if (cached_passphrase_.empty() || !IsBackendInitialized())
     return;
 
   // Backend is up and running, so we can consume the cached passphrase.
@@ -2129,7 +2129,7 @@ void ProfileSyncService::RequestAccessToken() {
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
                                                  PassphraseType type) {
   // This should only be called when the backend has been initialized.
-  DCHECK(backend_initialized());
+  DCHECK(IsBackendInitialized());
   DCHECK(!(type == IMPLICIT && IsUsingSecondaryPassphrase())) <<
       "Data is already encrypted using an explicit passphrase";
   DCHECK(!(type == EXPLICIT &&
@@ -2164,22 +2164,22 @@ bool ProfileSyncService::SetDecryptionPassphrase(
   }
 }
 
-bool ProfileSyncService::EncryptEverythingAllowed() const {
+bool ProfileSyncService::IsEncryptEverythingAllowed() const {
   return encrypt_everything_allowed_;
 }
 
 void ProfileSyncService::SetEncryptEverythingAllowed(bool allowed) {
-  DCHECK(allowed || !backend_initialized() || !EncryptEverythingEnabled());
+  DCHECK(allowed || !IsBackendInitialized() || !IsEncryptEverythingEnabled());
   encrypt_everything_allowed_ = allowed;
 }
 
 void ProfileSyncService::EnableEncryptEverything() {
-  DCHECK(EncryptEverythingAllowed());
+  DCHECK(IsEncryptEverythingAllowed());
 
-  // Tests override backend_initialized() to always return true, so we
+  // Tests override IsBackendInitialized() to always return true, so we
   // must check that instead of |backend_initialized_|.
   // TODO(akalin): Fix the above. :/
-  DCHECK(backend_initialized());
+  DCHECK(IsBackendInitialized());
   // TODO(atwilson): Persist the encryption_pending_ flag to address the various
   // problems around cancelling encryption in the background (crbug.com/119649).
   if (!encrypt_everything_)
@@ -2193,7 +2193,7 @@ bool ProfileSyncService::encryption_pending() const {
   return encryption_pending_;
 }
 
-bool ProfileSyncService::EncryptEverythingEnabled() const {
+bool ProfileSyncService::IsEncryptEverythingEnabled() const {
   DCHECK(backend_initialized_);
   return encrypt_everything_ || encryption_pending_;
 }
@@ -2227,7 +2227,7 @@ void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
 #if defined(OS_CHROMEOS)
   RefreshSpareBootstrapToken(password);
 #endif
-  if (!backend_initialized() || GetAuthError().state() != AuthError::NONE) {
+  if (!IsBackendInitialized() || GetAuthError().state() != AuthError::NONE) {
     // Track the fact that we're still waiting for auth to complete.
     is_auth_in_progress_ = true;
   }

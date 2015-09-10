@@ -26,7 +26,7 @@ class DummyEntryptionHandler : public syncer::SyncEncryptionHandler {
                                bool is_explicit) override {}
   void SetDecryptionPassphrase(const std::string& passphrase) override {}
   void EnableEncryptEverything() override {}
-  bool EncryptEverythingEnabled() const override { return false; }
+  bool IsEncryptEverythingEnabled() const override { return false; }
   syncer::PassphraseType GetPassphraseType() const override {
     return syncer::KEYSTORE_PASSPHRASE;
   }

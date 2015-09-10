@@ -124,7 +124,8 @@ class SyncServerStatusChecker : public net::URLFetcherDelegate {
 };
 
 bool IsEncryptionComplete(const ProfileSyncService* service) {
-  return service->EncryptEverythingEnabled() && !service->encryption_pending();
+  return service->IsEncryptEverythingEnabled() &&
+         !service->encryption_pending();
 }
 
 // Helper class to wait for encryption to complete.

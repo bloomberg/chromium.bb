@@ -36,7 +36,7 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
                                bool is_explicit) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
-  bool EncryptEverythingEnabled() const override;
+  bool IsEncryptEverythingEnabled() const override;
   PassphraseType GetPassphraseType() const override;
 
   // NigoriHandler implemenation.

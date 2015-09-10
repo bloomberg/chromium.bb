@@ -171,7 +171,7 @@ void SyncSetupService::PrepareForFirstSyncSetup() {
 }
 
 void SyncSetupService::CommitChanges() {
-  if (sync_service_->FirstSetupInProgress()) {
+  if (sync_service_->IsFirstSetupInProgress()) {
     // Turn on the sync setup completed flag only if the user did not turn sync
     // off.
     if (sync_service_->CanSyncStart()) {
@@ -183,7 +183,7 @@ void SyncSetupService::CommitChanges() {
 }
 
 bool SyncSetupService::HasUncommittedChanges() {
-  return sync_service_->setup_in_progress();
+  return sync_service_->IsSetupInProgress();
 }
 
 void SyncSetupService::SetSyncEnabledWithoutChangingDatatypes(

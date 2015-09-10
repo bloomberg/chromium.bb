@@ -72,8 +72,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(GetJsController, base::WeakPtr<syncer::JsController>());
   MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
 
-  MOCK_CONST_METHOD0(EncryptEverythingAllowed, bool());
-  MOCK_CONST_METHOD0(EncryptEverythingEnabled, bool());
+  MOCK_CONST_METHOD0(IsEncryptEverythingAllowed, bool());
+  MOCK_CONST_METHOD0(IsEncryptEverythingEnabled, bool());
   MOCK_METHOD0(EnableEncryptEverything, void());
 
   MOCK_METHOD1(ChangePreferredDataTypes,
@@ -87,11 +87,11 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(QueryDetailedSyncStatus,
                bool(browser_sync::SyncBackendHost::Status* result));
   MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
-  MOCK_CONST_METHOD0(FirstSetupInProgress, bool());
+  MOCK_CONST_METHOD0(IsFirstSetupInProgress, bool());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, base::string16());
   MOCK_CONST_METHOD0(HasUnrecoverableError, bool());
   MOCK_CONST_METHOD0(IsSyncActive, bool());
-  MOCK_CONST_METHOD0(backend_initialized, bool());
+  MOCK_CONST_METHOD0(IsBackendInitialized, bool());
   MOCK_CONST_METHOD0(IsSyncRequested, bool());
   MOCK_CONST_METHOD0(waiting_for_auth, bool());
   MOCK_METHOD1(OnActionableError, void(const syncer::SyncProtocolError&));

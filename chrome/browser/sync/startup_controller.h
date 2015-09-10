@@ -63,7 +63,7 @@ class StartupController {
   void Reset(const syncer::ModelTypeSet registered_types);
 
   void set_setup_in_progress(bool in_progress);
-  bool setup_in_progress() const { return setup_in_progress_; }
+  bool IsSetupInProgress() const { return setup_in_progress_; }
   bool auto_start_enabled() const { return auto_start_enabled_; }
   base::Time start_backend_time() const { return start_backend_time_; }
   std::string GetBackendInitializationStateString() const;

@@ -73,7 +73,7 @@ void OneClickSigninSyncObserver::OnStateChanged() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&CloseTab, base::Unretained(web_contents())));
   } else {
-    if (sync_service->FirstSetupInProgress()) {
+    if (sync_service->IsFirstSetupInProgress()) {
       // Sync setup has not completed yet. Wait for it to complete.
       return;
     }

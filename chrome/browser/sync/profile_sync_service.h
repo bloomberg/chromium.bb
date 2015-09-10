@@ -151,7 +151,7 @@ class EncryptedData;
 //    * GetPreferredDataTypes()
 //    * GetActiveDataTypes()
 //    * IsUsingSecondaryPassphrase()
-//    * EncryptEverythingEnabled()
+//    * IsEncryptEverythingEnabled()
 //    * IsPassphraseRequired()/IsPassphraseRequiredForDecryption()
 //
 //   The "sync everything" state cannot be read from ProfileSyncService, but
@@ -260,19 +260,19 @@ class ProfileSyncService : public sync_driver::SyncService,
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
   void SetSyncSetupCompleted() override;
-  bool FirstSetupInProgress() const override;
+  bool IsFirstSetupInProgress() const override;
   void SetSetupInProgress(bool setup_in_progress) override;
-  bool setup_in_progress() const override;
+  bool IsSetupInProgress() const override;
   bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
   bool HasUnrecoverableError() const override;
-  bool backend_initialized() const override;
+  bool IsBackendInitialized() const override;
   sync_driver::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
   void EnableEncryptEverything() override;
-  bool EncryptEverythingEnabled() const override;
+  bool IsEncryptEverythingEnabled() const override;
   void SetEncryptionPassphrase(const std::string& passphrase,
                                PassphraseType type) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override
@@ -451,7 +451,7 @@ class ProfileSyncService : public sync_driver::SyncService,
                             const std::string& message) override;
 
   // The functions below (until ActivateDataType()) should only be
-  // called if backend_initialized() is true.
+  // called if IsBackendInitialized() is true.
 
   // TODO(akalin): These two functions are used only by
   // ProfileSyncServiceHarness.  Figure out a different way to expose
@@ -506,7 +506,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Returns true if encrypting all the sync data is allowed. If this method
   // returns false, EnableEncryptEverything() should not be called.
-  virtual bool EncryptEverythingAllowed() const;
+  virtual bool IsEncryptEverythingAllowed() const;
 
   // Sets whether encrypting all the sync data is allowed or not.
   virtual void SetEncryptEverythingAllowed(bool allowed);

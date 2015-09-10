@@ -92,7 +92,7 @@ bool PrecacheManager::IsPrecachingAllowed() const {
 }
 
 PrecacheManager::AllowedType PrecacheManager::PrecachingAllowed() const {
-  if (!(sync_service_ && sync_service_->backend_initialized()))
+  if (!(sync_service_ && sync_service_->IsBackendInitialized()))
     return AllowedType::PENDING;
 
   // SyncService delegates to SyncPrefs, which must be called on the UI thread.

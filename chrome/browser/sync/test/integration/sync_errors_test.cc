@@ -29,7 +29,7 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    return !service()->setup_in_progress() &&
+    return !service()->IsSetupInProgress() &&
            !service()->HasSyncSetupCompleted();
   }
 

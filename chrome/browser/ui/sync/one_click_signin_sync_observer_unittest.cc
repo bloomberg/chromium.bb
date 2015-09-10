@@ -54,7 +54,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
         new OneClickTestProfileSyncService(static_cast<Profile*>(profile)));
   }
 
-  bool FirstSetupInProgress() const override {
+  bool IsFirstSetupInProgress() const override {
     return first_setup_in_progress_;
   }
 

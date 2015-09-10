@@ -74,15 +74,15 @@ public enum PassphraseType implements Parcelable {
     /**
      * Get the types that are allowed to be enabled from the current type.
      *
-     * @param encryptEverythingAllowed Whether encrypting all data is allowed.
+     * @param isEncryptEverythingAllowed Whether encrypting all data is allowed.
      */
-    public Set<PassphraseType> getAllowedTypes(boolean encryptEverythingAllowed) {
+    public Set<PassphraseType> getAllowedTypes(boolean isEncryptEverythingAllowed) {
         Set<PassphraseType> allowedTypes = new HashSet<>();
         switch (this) {
             case IMPLICIT_PASSPHRASE:  // Intentional fall through.
             case KEYSTORE_PASSPHRASE:
                 allowedTypes.add(this);
-                if (encryptEverythingAllowed) {
+                if (isEncryptEverythingAllowed) {
                     allowedTypes.add(CUSTOM_PASSPHRASE);
                 }
                 break;
