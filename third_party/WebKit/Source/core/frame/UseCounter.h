@@ -743,7 +743,6 @@ public:
         DOMStringList_Contains_Method_Location = 849,
         NavigatorVibrate = 850,
         NavigatorVibrateSubFrame = 851,
-        PermissionStatusStatus = 852,
         V8XPathEvaluator_Constructor = 853,
         V8XPathEvaluator_CreateExpression_Method = 854,
         V8XPathEvaluator_CreateNSResolver_Method = 855,

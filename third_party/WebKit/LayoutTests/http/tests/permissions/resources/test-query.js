@@ -27,7 +27,7 @@ async_test(function(test) {
 async_test(function(test) {
     navigator.permissions.query({name:'geolocation'}).then(function(result) {
         assert_true(result instanceof PermissionStatus);
-        assert_equals(result.status, 'denied');
+        assert_equals(result.state, 'denied');
         test.done();
     }).catch(function() {
         assert_unreached('querying geolocation permission should not fail.')
@@ -37,19 +37,19 @@ async_test(function(test) {
 async_test(function(test) {
     navigator.permissions.query({name:'midi'}).then(function(result) {
         assert_true(result instanceof PermissionStatus);
-        assert_equals(result.status, 'denied');
+        assert_equals(result.state, 'denied');
 
         // Test for sysex=false.
         return navigator.permissions.query({name:'midi', sysex: false});
     }).then(function(result) {
         assert_true(result instanceof PermissionStatus);
-        assert_equals(result.status, 'denied');
+        assert_equals(result.state, 'denied');
 
         // Test for sysex=true.
         return navigator.permissions.query({name:'midi', sysex: true});
     }).then(function(result) {
         assert_true(result instanceof PermissionStatus);
-        assert_equals(result.status, 'denied');
+        assert_equals(result.state, 'denied');
         test.done();
     }).catch(function() {
         assert_unreached('querying midi permission should not fail.')
@@ -59,7 +59,7 @@ async_test(function(test) {
 async_test(function(test) {
     navigator.permissions.query({name:'notifications'}).then(function(result) {
         assert_true(result instanceof PermissionStatus);
-        assert_equals(result.status, 'denied');
+        assert_equals(result.state, 'denied');
         test.done();
     }).catch(function() {
         assert_unreached('querying notifications permission should not fail.')
@@ -83,7 +83,7 @@ async_test(function(test) {
         return navigator.permissions.query({name:'push', userVisibleOnly: true});
     }).then(function(result) {
         assert_true(result instanceof PermissionStatus);
-        assert_equals(result.status, 'denied');
+        assert_equals(result.state, 'denied');
         test.done();
     }).catch(function() {
         assert_unreached('querying push permission should not fail.')

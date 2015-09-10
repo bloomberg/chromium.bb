@@ -457,7 +457,6 @@ interface PeriodicSyncRegistration
 interface PermissionStatus
     getter onchange
     getter state
-    getter status
     method constructor
     setter onchange
 interface Permissions
