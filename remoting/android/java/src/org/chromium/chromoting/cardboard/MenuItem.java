@@ -43,8 +43,8 @@ public class MenuItem {
             + "void main() {"
             + "  vec4 texture = texture2D(u_Texture, v_TexCoordinate);"
             + "  if (v_selected > 0.5) {"
-            // TODO(shichengfeng): Fix the red color value.
-            + "    gl_FragColor = vec4(2.0, texture.g, texture.b, texture.a);"
+            + "    gl_FragColor = vec4(texture.r + 0.5, texture.g + 0.5,"
+            + "        texture.b + 0.5, texture.a);"
             + "  } else {"
             + "    gl_FragColor = texture;"
             + "  }"
