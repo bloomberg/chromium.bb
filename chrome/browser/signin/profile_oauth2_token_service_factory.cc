@@ -8,7 +8,6 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -17,13 +16,16 @@
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #else
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #endif
 
 ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "ProfileOAuth2TokenService",
         BrowserContextDependencyManager::GetInstance()) {
+#if !defined(OS_ANDROID)
   DependsOn(GlobalErrorServiceFactory::GetInstance());
+#endif
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(SigninErrorControllerFactory::GetInstance());

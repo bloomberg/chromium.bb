@@ -53,7 +53,6 @@
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
@@ -128,6 +127,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -228,7 +228,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(USE_AURA)
   GesturePrefsObserverFactoryAura::GetInstance();
 #endif
+#if !defined(OS_ANDROID)
   GlobalErrorServiceFactory::GetInstance();
+#endif
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
 #if defined(ENABLE_EXTENSIONS)

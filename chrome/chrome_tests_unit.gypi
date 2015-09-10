@@ -221,7 +221,6 @@
       'browser/signin/account_reconcilor_unittest.cc',
       'browser/signin/chrome_signin_client_unittest.cc',
       'browser/signin/local_auth_unittest.cc',
-      'browser/signin/signin_global_error_unittest.cc',
       'browser/signin/signin_manager_unittest.cc',
       'browser/signin/signin_tracker_unittest.cc',
       'browser/signin/test_signin_client_builder.cc',
@@ -284,7 +283,6 @@
       'browser/ui/bookmarks/bookmark_editor_unittest.cc',
       'browser/ui/bookmarks/bookmark_ui_utils_unittest.cc',
       'browser/ui/bookmarks/recently_used_folders_combo_model_unittest.cc',
-      'browser/ui/browser_unittest.cc',
       'browser/ui/chrome_select_file_policy_unittest.cc',
       # It is safe to list */cocoa/* files in the "common" file list
       # without an explicit exclusion since gyp is smart enough to
@@ -479,7 +477,6 @@
       'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell_unittest.mm',
       'browser/ui/cocoa/wrench_menu/wrench_menu_controller_unittest.mm',
       'browser/ui/find_bar/find_backend_unittest.cc',
-      'browser/ui/global_error/global_error_service_unittest.cc',
       'browser/ui/login/login_prompt_unittest.cc',
       'browser/ui/passwords/manage_passwords_bubble_model_unittest.cc',
       'browser/ui/passwords/manage_passwords_icon_mock.cc',
@@ -1525,11 +1522,13 @@
       'browser/ui/browser_command_controller_unittest.cc',
       'browser/ui/browser_instant_controller_unittest.cc',
       'browser/ui/browser_iterator_unittest.cc',
+      'browser/ui/browser_unittest.cc',
       'browser/ui/cocoa/autofill/new_credit_card_bubble_cocoa_unittest.mm',
       'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
       'browser/ui/content_settings/content_setting_image_model_unittest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_state_unittest.cc',
       'browser/ui/extensions/extension_action_view_controller_unittest.cc',
+      'browser/ui/global_error/global_error_service_unittest.cc',
       'browser/ui/omnibox/clipboard_utils_unittest.cc',
       'browser/ui/omnibox/omnibox_controller_unittest.cc',
       'browser/ui/omnibox/omnibox_edit_unittest.cc',
@@ -1598,6 +1597,7 @@
     # Everything but Android, ChromeOS and iOS (iOS is handled separately).
     'chrome_unit_tests_non_android_or_chromeos_sources': [
       'browser/signin/cross_device_promo_unittest.cc',
+      'browser/signin/signin_global_error_unittest.cc',
       'browser/sync/sync_global_error_unittest.cc',
       'browser/upgrade_detector_impl_unittest.cc',
     ],
@@ -2442,7 +2442,6 @@
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
           'sources!': [
-            'browser/signin/signin_global_error_unittest.cc',
             'browser/signin/signin_manager_unittest.cc',
             'browser/signin/signin_names_io_thread_unittest.cc',
           ],

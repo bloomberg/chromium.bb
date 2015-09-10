@@ -11,10 +11,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 
-// Both tests below require a tab strip, so skip the file entirely on platforms
-// without one.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-
 using content::SiteInstance;
 using content::WebContents;
 using content::WebContentsTester;
@@ -172,5 +168,3 @@ TEST_F(BrowserBookmarkBarTest, StateOnActiveTabChanged) {
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
   EXPECT_EQ(BookmarkBar::SHOW, window_bookmark_bar_state());
 }
-
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)

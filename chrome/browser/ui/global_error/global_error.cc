@@ -52,13 +52,8 @@ bool GlobalErrorWithStandardBubble::HasShownBubbleView() {
 
 void GlobalErrorWithStandardBubble::ShowBubbleView(Browser* browser) {
   has_shown_bubble_view_ = true;
-#if defined(OS_ANDROID)
-  // http://crbug.com/136506
-  NOTIMPLEMENTED() << "Chrome for Android doesn't support global errors";
-#else
   bubble_view_ =
       GlobalErrorBubbleViewBase::ShowStandardBubbleView(browser, AsWeakPtr());
-#endif
 }
 
 GlobalErrorBubbleViewBase* GlobalErrorWithStandardBubble::GetBubbleView() {
