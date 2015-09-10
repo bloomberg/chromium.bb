@@ -1,6 +1,0 @@
-include_rules = [
-  "+gin",
-  "+third_party/WebKit/public",
-  "+third_party/mojo/src/mojo/public",
-  "+v8/include",
-]

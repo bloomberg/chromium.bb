@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -59,7 +58,6 @@
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
@@ -565,10 +563,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
     // should get error pages.
     new NetErrorHelper(render_frame);
   }
-
-  // Set up a mojo service to test if this page is a distiller page.
-  new dom_distiller::DistillerJsRenderFrameObserver(
-      render_frame, chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
 
   PasswordAutofillAgent* password_autofill_agent =
       new PasswordAutofillAgent(render_frame);
