@@ -1797,8 +1797,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   process_power_collector_.reset();
 
 #if !defined(OS_IOS)
-  webusb_browser_client_.reset();
   webusb_detector_.reset();
+  webusb_browser_client_.reset();
 #endif
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)

@@ -19,7 +19,7 @@ class WebUsbBrowserClient;
 
 class WebUsbDetector : public device::UsbService::Observer {
  public:
-  WebUsbDetector(WebUsbBrowserClient* webusb_browser_client);
+  explicit WebUsbDetector(WebUsbBrowserClient* webusb_browser_client);
 
   ~WebUsbDetector() override;
 
