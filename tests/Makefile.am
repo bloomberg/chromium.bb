@@ -244,7 +244,17 @@ dist_yaml_TESTS =				\
 	nocross_harness.yaml			\
 	pl-pl-comp8_harness.yaml		\
 	sr-g1_harness.yaml			\
-	ta-ta-g1_harness.yaml
+	ta-ta-g1_harness.yaml			\
+	en-ueb-g1_harness.txt.bak.yaml			\
+	en-ueb-g2-dictionary_harness.txt.bak.yaml	\
+	en-us-g2-dictionary_harness.txt.bak.yaml	\
+	en-us-g2-end-emphasis_harness.txt.bak.yaml	\
+	ethio-g1_harness.txt.bak.yaml			\
+	ko-2006-g2_harness.txt.bak.yaml			\
+	ko-g2_harness.txt.bak.yaml			\
+	nl-BE-g1_harness.txt.bak.yaml			\
+	nl-NL-g0_harness.yaml				\
+	ta-ta-g1_harness.txt.bak.yaml
 
 TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER = ./check_yaml
