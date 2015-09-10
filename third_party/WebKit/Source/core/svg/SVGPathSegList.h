@@ -165,7 +165,8 @@ private:
     //
     // SVGPathSegList is either owned by SVGAnimatedPath or SVGPathSegListTearOff.
     // Both keep |contextElement| alive, so this ptr is always valid.
-    RawPtrWillBeMember<SVGPathElement> m_contextElement;
+    GC_PLUGIN_IGNORE("528275")
+    SVGPathElement* m_contextElement;
 
     mutable OwnPtr<SVGPathByteStream> m_byteStream;
     bool m_listSyncedToByteStream;

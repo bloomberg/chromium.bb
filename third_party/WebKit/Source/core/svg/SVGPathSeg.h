@@ -163,7 +163,8 @@ protected:
 
 private:
     RawPtrWillBeMember<SVGPropertyBase> m_ownerList;
-    RawPtrWillBeMember<SVGElement> m_contextElement;
+    GC_PLUGIN_IGNORE("528275")
+    SVGElement* m_contextElement;
 };
 
 class SVGPathSegSingleCoordinate : public SVGPathSeg {

@@ -88,10 +88,7 @@ public:
         m_ownerList = ownerList;
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_ownerList);
-    }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit SVGPropertyBase(AnimatedPropertyType type)
@@ -103,7 +100,11 @@ protected:
 private:
     const AnimatedPropertyType m_type;
 
-    RawPtrWillBeMember<SVGPropertyBase> m_ownerList;
+    // Oilpan: the back reference to the owner should be a Member, but this can create
+    // cycles when SVG properties meet the off-heap InterpolationValue hierarchy.
+    // Not tracing it is safe, albeit an undesirable state of affairs.
+    GC_PLUGIN_IGNORE("528275")
+    SVGPropertyBase* m_ownerList;
 };
 
 }

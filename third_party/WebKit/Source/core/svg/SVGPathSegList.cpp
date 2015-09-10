@@ -58,7 +58,6 @@ SVGPathSegList::~SVGPathSegList()
 
 DEFINE_TRACE(SVGPathSegList)
 {
-    visitor->trace(m_contextElement);
     SVGListPropertyHelper<SVGPathSegList, SVGPathSeg>::trace(visitor);
 }
 
