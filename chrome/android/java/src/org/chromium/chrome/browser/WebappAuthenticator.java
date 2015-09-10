@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.util.Log;
 
 import org.chromium.base.SecureRandomInitializer;
@@ -54,7 +55,14 @@ public class WebappAuthenticator {
      * @return true if the MAC is a valid MAC for the URL, false otherwise.
      */
     public static boolean isUrlValid(Context context, String url, byte[] mac) {
-        byte[] goodMac = getMacForUrl(context, url);
+        byte[] goodMac = null;
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525785
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            goodMac = getMacForUrl(context, url);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         if (goodMac == null) {
             return false;
         }

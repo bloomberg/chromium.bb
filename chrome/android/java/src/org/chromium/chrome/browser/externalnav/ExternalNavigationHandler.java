@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.StrictMode;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.webkit.WebView;
@@ -250,9 +251,18 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
+        boolean canResolveActivity = false;
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/527415
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            canResolveActivity = mDelegate.canResolveActivity(intent);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+
         // check whether the intent can be resolved. If not, we will see
         // whether we can download it from the Market.
-        if (!mDelegate.canResolveActivity(intent)) {
+        if (!canResolveActivity) {
             if (hasBrowserFallbackUrl) {
                 return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
             }

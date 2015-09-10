@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.StrictMode;
 
 import org.chromium.base.annotations.CalledByNative;
 
@@ -115,8 +116,14 @@ public abstract class PathUtils {
     @SuppressWarnings("unused")
     @CalledByNative
     private static String getDownloadsDirectory(Context appContext) {
-        return Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS).getPath();
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/508615
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS).getPath();
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**

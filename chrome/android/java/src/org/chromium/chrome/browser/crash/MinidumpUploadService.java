@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -76,19 +77,25 @@ public class MinidumpUploadService extends IntentService {
     public void onCreate() {
         super.onCreate();
         if (isMiniDumpCleanNeeded()) {
-            final CrashFileManager crashFileManager =
-                    new CrashFileManager(getApplicationContext().getCacheDir());
-            // Cleaning minidumps in a background not to block the Ui thread.
-            // NOTE: {@link CrashFileManager#cleanAllMiniDumps()} is not thread-safe and can
-            // possibly result in race condition by calling from multiple threads. However, this
-            // should only result in warning messages in logs.
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
-                    crashFileManager.cleanAllMiniDumps();
-                    return null;
-                }
-            }.execute();
+            // Temporarily allowing disk access while fixing. TODO: http://crbug.com/527429
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            try {
+                final CrashFileManager crashFileManager =
+                        new CrashFileManager(getApplicationContext().getCacheDir());
+                // Cleaning minidumps in a background not to block the Ui thread.
+                // NOTE: {@link CrashFileManager#cleanAllMiniDumps()} is not thread-safe and can
+                // possibly result in race condition by calling from multiple threads. However, this
+                // should only result in warning messages in logs.
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        crashFileManager.cleanAllMiniDumps();
+                        return null;
+                    }
+                }.execute();
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
         }
     }
 

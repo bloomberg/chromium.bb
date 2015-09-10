@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -141,6 +142,9 @@ public class FullScreenActivityTab extends ChromeTab {
         File tabFile = getTabFile(activityDirectory, getId());
 
         FileOutputStream foutput = null;
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
         try {
             foutput = new FileOutputStream(tabFile);
             TabState.saveState(foutput, getState(), false);
@@ -150,6 +154,7 @@ public class FullScreenActivityTab extends ChromeTab {
             Log.e(TAG, "Failed to save out tab state.", exception);
         } finally {
             StreamUtil.closeQuietly(foutput);
+            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 
