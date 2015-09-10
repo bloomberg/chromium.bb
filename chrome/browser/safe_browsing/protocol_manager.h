@@ -153,12 +153,14 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   static void RecordGetHashResult(bool is_download,
                                   ResultType result_type);
 
-  // Record HTTP response code when there's no error in fetching hash results,
-  // and the error code, when there is.
-  // |status| represents the status of the HTTP request, and |response code|
-  // represents the HTTP response code received from the server.
-  static void RecordGetHashResponseOrErrorCode(net::URLRequestStatus status,
-                                               int response_code);
+  // Record HTTP response code when there's no error in fetching an HTTP
+  // request, and the error code, when there is.
+  // |metric_name| is the name of the UMA metric to record the response code or
+  // error code against, |status| represents the status of the HTTP request, and
+  // |response code| represents the HTTP response code received from the server.
+  static void RecordHttpResponseOrErrorCode(
+      const char* metric_name, const net::URLRequestStatus& status,
+      int response_code);
 
   // Returns whether another update is currently scheduled.
   bool IsUpdateScheduled() const;

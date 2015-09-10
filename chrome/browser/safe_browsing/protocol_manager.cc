@@ -7,7 +7,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
@@ -71,7 +71,7 @@ static const int kSbMaxUpdateWaitSec = 30;
 // Maximum back off multiplier.
 static const size_t kSbMaxBackOff = 8;
 
-const char kUmaHashResponseMetric[] = "SB2.GetHashResponseOrErrorCode";
+const char kUmaHashResponseMetricName[] = "SB2.GetHashResponseOrErrorCode";
 
 // The default SBProtocolManagerFactory.
 class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
@@ -163,11 +163,11 @@ void SafeBrowsingProtocolManager::RecordGetHashResult(
   }
 }
 
-void SafeBrowsingProtocolManager::RecordGetHashResponseOrErrorCode(
-    net::URLRequestStatus status, int response_code) {
+void SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
+    const char* metric_name, const net::URLRequestStatus& status,
+    int response_code) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(
-      kUmaHashResponseMetric,
-      status.is_success() ? response_code : status.error());
+      metric_name, status.is_success() ? response_code : status.error());
 }
 
 bool SafeBrowsingProtocolManager::IsUpdateScheduled() const {
@@ -250,7 +250,8 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
   HashRequests::iterator it = hash_requests_.find(source);
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
-  RecordGetHashResponseOrErrorCode(status, response_code);
+  RecordHttpResponseOrErrorCode(
+      kUmaHashResponseMetricName, status, response_code);
   if (it != hash_requests_.end()) {
     // GetHash response.
     fetcher.reset(it->first);

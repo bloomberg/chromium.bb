@@ -38628,6 +38628,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientPhishing.ClientModelDownloadResponseOrErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>vakh@google.com</owner>
+  <summary>
+    Response or error codes from the SafeBrowsing service. Logged after a
+    request for the client side model finishes to capture the response code or
+    the error code for that HTTP request.
+  </summary>
+</histogram>
+
 <histogram name="SBClientPhishing.ClientModelStatus"
     enum="SBClientPhishingClientModelStatus">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

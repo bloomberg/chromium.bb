@@ -38,6 +38,8 @@ const char ModelLoader::kClientModelFinchExperiment[] =
     "ClientSideDetectionModel";
 const char ModelLoader::kClientModelFinchParam[] =
     "ModelNum";
+const char kUmaModelDownloadResponseMetricName[] =
+    "SBClientPhishing.ClientModelDownloadResponseOrErrorCode";
 
 
 // static
@@ -125,8 +127,8 @@ void ModelLoader::OnURLFetchComplete(const net::URLFetcher* source) {
   net::URLRequestStatus status = source->GetStatus();
   const bool is_success = status.is_success();
   const int response_code = source->GetResponseCode();
-  SafeBrowsingProtocolManager::RecordGetHashResponseOrErrorCode(
-      status, response_code);
+  SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
+      kUmaModelDownloadResponseMetricName, status, response_code);
 
   // max_age is valid iff !0.
   base::TimeDelta max_age;
