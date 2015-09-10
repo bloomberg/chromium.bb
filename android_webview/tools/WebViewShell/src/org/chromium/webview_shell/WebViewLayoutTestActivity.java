@@ -6,6 +6,7 @@ package org.chromium.webview_shell;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
@@ -32,6 +33,7 @@ public class WebViewLayoutTestActivity extends Activity {
 
     private WebView mWebView;
     private boolean mFinished = false;
+    private boolean mGrantPermission = false;
 
     private static final String[] AUTOMATICALLY_GRANT =
             { PermissionRequest.RESOURCE_VIDEO_CAPTURE, PermissionRequest.RESOURCE_AUDIO_CAPTURE };
@@ -56,14 +58,27 @@ public class WebViewLayoutTestActivity extends Activity {
             public void onGeolocationPermissionsShowPrompt(String origin,
                     GeolocationPermissions.Callback callback) {
                 mConsoleLog.append("onGeolocationPermissionsShowPrompt" + "\n");
-                callback.invoke(origin, false /* allow */, false);
-                mConsoleLog.append("invoked GeolocationPermissions.Callback with allow set to "
-                        + "false" + "\n");
+                if (mGrantPermission) {
+                    mConsoleLog.append("geolocation request granted" + "\n");
+                    callback.invoke(origin, true /* allow */, false);
+                } else {
+                    mConsoleLog.append("geolocation request denied" + "\n");
+                    callback.invoke(origin, false /* allow */, false);
+                }
             }
 
             @Override
             public void onPermissionRequest(PermissionRequest request) {
-                request.grant(AUTOMATICALLY_GRANT);
+                mConsoleLog.append("onPermissionRequest: "
+                        + TextUtils.join(",", request.getResources()) + "\n");
+                if (mGrantPermission) {
+                    mConsoleLog.append("request granted: "
+                            + TextUtils.join(",", AUTOMATICALLY_GRANT) + "\n");
+                    request.grant(AUTOMATICALLY_GRANT);
+                } else {
+                    mConsoleLog.append("request denied" + "\n");
+                    request.deny();
+                }
             }
 
             @Override
@@ -100,9 +115,15 @@ public class WebViewLayoutTestActivity extends Activity {
         mWebView.requestFocus();
     }
 
+    public void setGrantPermission(boolean allow) {
+        mGrantPermission = allow;
+    }
+
     private void initializeSettings(WebSettings settings) {
         settings.setJavaScriptEnabled(true);
         settings.setGeolocationEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
     }
 
     private void finishTest() {
