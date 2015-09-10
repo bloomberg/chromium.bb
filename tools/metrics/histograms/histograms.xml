@@ -57844,15 +57844,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="375" label="GUEST_VIEW_INTERNAL_ON_RESIZE"/>
   <int value="376" label="LANGUAGE_SETTINGS_PRIVATE_ON_INPUT_METHOD_ADDED"/>
   <int value="377" label="LANGUAGE_SETTINGS_PRIVATE_ON_INPUT_METHOD_REMOVED"/>
-  <int value="379"
+  <int value="378"
       label="LANGUAGE_SETTINGS_PRIVATE_ON_SPELLCHECK_DICTIONARIES_CHANGED"/>
-  <int value="380"
+  <int value="379"
       label="LANGUAGE_SETTINGS_PRIVATE_ON_CUSTOM_DICTIONARY_CHANGED"/>
-  <int value="381" label="CAST_DEVICES_PRIVATE_ON_UPDATE_DEVICES_REQUESTED"/>
-  <int value="382" label="CAST_DEVICES_PRIVATE_ON_START_CAST"/>
-  <int value="383" label="CAST_DEVICES_PRIVATE_ON_STOP_CAST"/>
-  <int value="384" label="CERTIFICATEPROVIDER_ON_CERTIFICATES_REQUESTED"/>
-  <int value="385" label="CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED"/>
+  <int value="380" label="CAST_DEVICES_PRIVATE_ON_UPDATE_DEVICES_REQUESTED"/>
+  <int value="381" label="CAST_DEVICES_PRIVATE_ON_START_CAST"/>
+  <int value="382" label="CAST_DEVICES_PRIVATE_ON_STOP_CAST"/>
+  <int value="383" label="CERTIFICATEPROVIDER_ON_CERTIFICATES_REQUESTED"/>
+  <int value="384" label="CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
