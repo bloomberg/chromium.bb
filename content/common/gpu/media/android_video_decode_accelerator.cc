@@ -108,6 +108,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
                                                Client* client) {
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("media", "AVDA::Initialize");
 
   client_ = client;
   codec_ = VideoCodecProfileToVideoCodec(profile);
@@ -167,6 +168,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
 
 void AndroidVideoDecodeAccelerator::DoIOTask() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("media", "AVDA::DoIOTask");
   if (state_ == ERROR) {
     return;
   }
@@ -177,6 +179,7 @@ void AndroidVideoDecodeAccelerator::DoIOTask() {
 
 void AndroidVideoDecodeAccelerator::QueueInput() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("media", "AVDA::QueueInput");
   if (bitstreams_notified_in_advance_.size() > kMaxBitstreamsNotifiedInAdvance)
     return;
   if (pending_bitstream_buffers_.empty())
@@ -197,6 +200,8 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   media::BitstreamBuffer bitstream_buffer =
       pending_bitstream_buffers_.front().first;
   pending_bitstream_buffers_.pop();
+  TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
+                 pending_bitstream_buffers_.size());
 
   if (bitstream_buffer.id() == -1) {
     media_codec_->QueueEOS(input_buf_index);
@@ -243,6 +248,7 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
 
 void AndroidVideoDecodeAccelerator::DequeueOutput() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("media", "AVDA::DequeueOutput");
   if (picturebuffers_requested_ && output_picture_buffers_.empty())
     return;
 
@@ -258,9 +264,13 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
     size_t offset = 0;
     size_t size = 0;
 
+    TRACE_EVENT_BEGIN0("media", "AVDA::DequeueOutputBuffer");
     media::MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
         NoWaitTimeOut(), &buf_index, &offset, &size, &presentation_timestamp,
         &eos, NULL);
+    TRACE_EVENT_END2("media", "AVDA::DequeueOutputBuffer", "status", status,
+                     "presentation_timestamp (ms)",
+                     presentation_timestamp.InMilliseconds());
     switch (status) {
       case media::MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
       case media::MEDIA_CODEC_ERROR:
@@ -317,7 +327,10 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
   //    opaque/non-standard format.  It's not possible to negotiate the decoder
   //    to emit a specific colorspace, even using HW CSC.  b/10706245
   // So, we live with these two extra copies per picture :(
-  media_codec_->ReleaseOutputBuffer(buf_index, true);
+  {
+    TRACE_EVENT0("media", "AVDA::ReleaseOutputBuffer");
+    media_codec_->ReleaseOutputBuffer(buf_index, true);
+  }
 
   if (eos) {
     base::MessageLoop::current()->PostTask(
@@ -359,6 +372,7 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(bitstream_id, -1);
   DCHECK(!free_picture_ids_.empty());
+  TRACE_EVENT0("media", "AVDA::SendCurrentSurfaceToClient");
 
   RETURN_ON_FAILURE(make_context_current_.Run(),
                     "Failed to make this decoder's GL context current.",
@@ -366,9 +380,13 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
 
   int32 picture_buffer_id = free_picture_ids_.front();
   free_picture_ids_.pop();
+  TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
+  {
+    TRACE_EVENT0("media", "AVDA::UpdateTexImage");
+    surface_texture_->UpdateTexImage();
+  }
   float transfrom_matrix[16];
-  surface_texture_->UpdateTexImage();
   surface_texture_->GetTransformMatrix(transfrom_matrix);
 
   OutputBufferMap::const_iterator i =
@@ -435,6 +453,8 @@ void AndroidVideoDecodeAccelerator::Decode(
 
   pending_bitstream_buffers_.push(
       std::make_pair(bitstream_buffer, base::Time::Now()));
+  TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
+                 pending_bitstream_buffers_.size());
 
   DoIOTask();
 }
@@ -457,6 +477,7 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     // about "zombies" for why we maintain this set in the first place.
     dismissed_picture_ids_.erase(id);
   }
+  TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
   RETURN_ON_FAILURE(output_picture_buffers_.size() >= kNumPictureBuffers,
                     "Invalid picture buffers were passed.",
@@ -477,6 +498,7 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
     return;
 
   free_picture_ids_.push(picture_buffer_id);
+  TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
   DoIOTask();
 }
@@ -490,6 +512,7 @@ void AndroidVideoDecodeAccelerator::Flush() {
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(surface_texture_.get());
+  TRACE_EVENT0("media", "AVDA::ConfigureMediaCodec");
 
   gfx::ScopedJavaSurface surface(surface_texture_.get());
 
@@ -509,6 +532,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
 
 void AndroidVideoDecodeAccelerator::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("media", "AVDA::Reset");
 
   while (!pending_bitstream_buffers_.empty()) {
     int32 bitstream_buffer_id = pending_bitstream_buffers_.front().first.id();
@@ -522,6 +546,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
                      bitstream_buffer_id));
     }
   }
+  TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount", 0);
   bitstreams_notified_in_advance_.clear();
 
   for (OutputBufferMap::iterator it = output_picture_buffers_.begin();
