@@ -396,47 +396,47 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
 int ThemeProperties::GetDefaultDisplayProperty(int id) {
   int mode = ui::MaterialDesignController::GetMode();
   switch (id) {
-    case ThemeProperties::NTP_BACKGROUND_ALIGNMENT:
+    case NTP_BACKGROUND_ALIGNMENT:
       return kDefaultDisplayPropertyNTPAlignment;
-    case ThemeProperties::NTP_BACKGROUND_TILING:
+    case NTP_BACKGROUND_TILING:
       return kDefaultDisplayPropertyNTPTiling;
-    case ThemeProperties::NTP_LOGO_ALTERNATE:
+    case NTP_LOGO_ALTERNATE:
       return kDefaultDisplayPropertyNTPAlternateLogo;
-    case ThemeProperties::PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING:
+    case PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING:
       return kIconLabelViewTrailingPadding[mode];
-    case ThemeProperties::PROPERTY_LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING:
+    case PROPERTY_LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING:
       return kLocationBarBubbleHorizontalPadding[mode];
-    case ThemeProperties::PROPERTY_LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
+    case PROPERTY_LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
       return kLocationBarBubbleVerticalPadding[mode];
-    case ThemeProperties::PROPERTY_LOCATION_BAR_HEIGHT:
+    case PROPERTY_LOCATION_BAR_HEIGHT:
       return kLocationBarHeight[mode];
-    case ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING:
+    case PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING:
       return kLocationBarHorizontalPadding[mode];
-    case ThemeProperties::PROPERTY_LOCATION_BAR_VERTICAL_PADDING:
+    case PROPERTY_LOCATION_BAR_VERTICAL_PADDING:
       return kLocationBarVerticalPadding[mode];
-    case ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_BORDER_INTERIOR:
+    case PROPERTY_OMNIBOX_DROPDOWN_BORDER_INTERIOR:
       return kOmniboxDropdownBorderInterior[mode];
-    case ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_ICON_VERTICAL_PADDING:
+    case PROPERTY_OMNIBOX_DROPDOWN_MIN_ICON_VERTICAL_PADDING:
       return kOmniboxDropdownMinIconVerticalPadding[mode];
-    case ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_TEXT_VERTICAL_PADDING:
+    case PROPERTY_OMNIBOX_DROPDOWN_MIN_TEXT_VERTICAL_PADDING:
       return kOmniboxDropdownMinTextVerticalPadding[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET:
+    case PROPERTY_TOOLBAR_BUTTON_BORDER_INSET:
       return kToolbarButtonBorderInset[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
+    case PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
       return kToolbarViewContentShadowHeight[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
+    case PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
       return kToolbarViewContentShadowHeightAsh[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_ELEMENT_PADDING:
+    case PROPERTY_TOOLBAR_VIEW_ELEMENT_PADDING:
       return kToolbarViewElementPadding[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING:
+    case PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING:
       return kToolbarViewLeftEdgeSpacing[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING:
+    case PROPERTY_TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING:
       return kToolbarViewLocationBarRightPadding[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING:
+    case PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING:
       return kToolbarViewRightEdgeSpacing[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING:
+    case PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING:
       return kToolbarViewStandardSpacing[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_VERTICAL_PADDING:
+    case PROPERTY_TOOLBAR_VIEW_VERTICAL_PADDING:
       return kToolbarViewVerticalPadding[mode];
     default:
       return -1;
