@@ -97,14 +97,10 @@ class FakePicturePile : public PicturePile {
     client_.add_draw_image(image, point, default_paint_);
   }
 
-  void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {
-    add_draw_bitmap_with_paint(bitmap, point, default_paint_);
-  }
-
-  void add_draw_bitmap_with_paint(const SkBitmap& bitmap,
-                                  const gfx::Point& point,
-                                  const SkPaint& paint) {
-    client_.add_draw_bitmap(bitmap, point, paint);
+  void add_draw_image_with_paint(const SkImage* image,
+                                 const gfx::Point& point,
+                                 const SkPaint& paint) {
+    client_.add_draw_image(image, point, paint);
   }
 
   void set_default_paint(const SkPaint& paint) { default_paint_ = paint; }

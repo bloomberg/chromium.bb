@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -2340,22 +2341,21 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(2, 2);
-  {
-    SkAutoLockPixels lock(bitmap);
-    SkCanvas canvas(bitmap);
-    canvas.drawPoint(0, 0, SK_ColorGREEN);
-    canvas.drawPoint(0, 1, SK_ColorBLUE);
-    canvas.drawPoint(1, 0, SK_ColorBLUE);
-    canvas.drawPoint(1, 1, SK_ColorGREEN);
-  }
+  skia::RefPtr<SkSurface> surface =
+      skia::AdoptRef(SkSurface::NewRasterN32Premul(2, 2));
+  ASSERT_NE(surface, nullptr);
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->drawPoint(0, 0, SK_ColorGREEN);
+  canvas->drawPoint(0, 1, SK_ColorBLUE);
+  canvas->drawPoint(1, 0, SK_ColorBLUE);
+  canvas->drawPoint(1, 1, SK_ColorGREEN);
+  skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
 
   scoped_ptr<FakePicturePile> recording =
       FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint paint;
   paint.setFilterQuality(kLow_SkFilterQuality);
-  recording->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
+  recording->add_draw_image_with_paint(image.get(), gfx::Point(), paint);
   recording->Rerecord();
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);
@@ -2392,22 +2392,21 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(2, 2);
-  {
-    SkAutoLockPixels lock(bitmap);
-    SkCanvas canvas(bitmap);
-    canvas.drawPoint(0, 0, SK_ColorGREEN);
-    canvas.drawPoint(0, 1, SK_ColorBLUE);
-    canvas.drawPoint(1, 0, SK_ColorBLUE);
-    canvas.drawPoint(1, 1, SK_ColorGREEN);
-  }
+  skia::RefPtr<SkSurface> surface =
+      skia::AdoptRef(SkSurface::NewRasterN32Premul(2, 2));
+  ASSERT_NE(surface, nullptr);
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->drawPoint(0, 0, SK_ColorGREEN);
+  canvas->drawPoint(0, 1, SK_ColorBLUE);
+  canvas->drawPoint(1, 0, SK_ColorBLUE);
+  canvas->drawPoint(1, 1, SK_ColorGREEN);
+  skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
 
   scoped_ptr<FakePicturePile> recording =
       FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint paint;
   paint.setFilterQuality(kLow_SkFilterQuality);
-  recording->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
+  recording->add_draw_image_with_paint(image.get(), gfx::Point(), paint);
   recording->Rerecord();
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);

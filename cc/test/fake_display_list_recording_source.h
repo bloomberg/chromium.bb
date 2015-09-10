@@ -87,29 +87,6 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     client_.add_draw_image_with_transform(image, transform, default_paint_);
   }
 
-  // TODO(fmalita): we should be able to remove a bunch (all?) of
-  // add_draw_bitmap* variants at this point.
-  void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {
-    client_.add_draw_bitmap(bitmap, point, default_paint_);
-  }
-
-  void add_draw_bitmap_with_transform(const SkBitmap& bitmap,
-                                      const gfx::Transform& transform) {
-    client_.add_draw_bitmap_with_transform(bitmap, transform, default_paint_);
-  }
-
-  void add_draw_bitmap_with_paint(const SkBitmap& bitmap,
-                                  const gfx::Point& point,
-                                  const SkPaint& paint) {
-    client_.add_draw_bitmap(bitmap, point, paint);
-  }
-
-  void add_draw_bitmap_with_paint_and_transform(const SkBitmap& bitmap,
-                                                const gfx::Transform& transform,
-                                                const SkPaint& paint) {
-    client_.add_draw_bitmap_with_transform(bitmap, transform, paint);
-  }
-
   void set_default_paint(const SkPaint& paint) { default_paint_ = paint; }
 
   void set_reported_memory_usage(size_t reported_memory_usage) {

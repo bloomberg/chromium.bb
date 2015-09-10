@@ -28,6 +28,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 namespace cc {
 namespace {
@@ -1481,9 +1482,13 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     SCOPED_TRACE(resolutions[i]);
 
     // Make a RasterSource that will draw a blue bitmap image.
-    SkBitmap blue_bitmap;
-    blue_bitmap.allocN32Pixels(size.width(), size.height(), true);
-    blue_bitmap.eraseColor(SK_ColorBLUE);
+    skia::RefPtr<SkSurface> surface = skia::AdoptRef(
+        SkSurface::NewRasterN32Premul(size.width(), size.height()));
+    ASSERT_NE(surface, nullptr);
+    surface->getCanvas()->clear(SK_ColorBLUE);
+    skia::RefPtr<SkImage> blue_image =
+        skia::AdoptRef(surface->newImageSnapshot());
+
     scoped_ptr<FakeDisplayListRecordingSource> recording_source =
         FakeDisplayListRecordingSource::CreateFilledRecordingSource(size);
     recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
@@ -1492,7 +1497,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     SkPaint paint;
     paint.setColor(SK_ColorGREEN);
     recording_source->add_draw_rect_with_paint(gfx::Rect(size), paint);
-    recording_source->add_draw_bitmap(blue_bitmap, gfx::Point());
+    recording_source->add_draw_image(blue_image.get(), gfx::Point());
     recording_source->Rerecord();
     scoped_refptr<DisplayListRasterSource> raster =
         DisplayListRasterSource::CreateFromDisplayListRecordingSource(

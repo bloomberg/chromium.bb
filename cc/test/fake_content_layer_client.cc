@@ -13,21 +13,6 @@
 
 namespace cc {
 
-FakeContentLayerClient::BitmapData::BitmapData(const SkBitmap& bitmap,
-                                               const gfx::Point& point,
-                                               const SkPaint& paint)
-    : bitmap(bitmap), point(point), paint(paint) {
-}
-
-FakeContentLayerClient::BitmapData::BitmapData(const SkBitmap& bitmap,
-                                               const gfx::Transform& transform,
-                                               const SkPaint& paint)
-    : bitmap(bitmap), transform(transform), paint(paint) {
-}
-
-FakeContentLayerClient::BitmapData::~BitmapData() {
-}
-
 FakeContentLayerClient::ImageData::ImageData(const SkImage* img,
                                              const gfx::Point& point,
                                              const SkPaint& paint)
@@ -62,11 +47,6 @@ void FakeContentLayerClient::PaintContents(
     const gfx::RectF& draw_rect = it->first;
     const SkPaint& paint = it->second;
     canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
-  }
-
-  for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
-      it != draw_bitmaps_.end(); ++it) {
-    canvas->drawBitmap(it->bitmap, it->point.x(), it->point.y(), &it->paint);
   }
 
   for (ImageVector::const_iterator it = draw_images_.begin();
@@ -112,23 +92,6 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     picture = skia::AdoptRef(recorder.endRecordingAsPicture());
     auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
     item->SetNew(picture.Pass());
-  }
-
-  for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
-       it != draw_bitmaps_.end(); ++it) {
-    if (!it->transform.IsIdentity()) {
-      auto* item = display_list->CreateAndAppendItem<TransformDisplayItem>();
-      item->SetNew(it->transform);
-    }
-    canvas = skia::SharePtr(
-        recorder.beginRecording(it->bitmap.width(), it->bitmap.height()));
-    canvas->drawBitmap(it->bitmap, it->point.x(), it->point.y(), &it->paint);
-    picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
-    item->SetNew(picture.Pass());
-    if (!it->transform.IsIdentity()) {
-      display_list->CreateAndAppendItem<EndTransformDisplayItem>();
-    }
   }
 
   for (ImageVector::const_iterator it = draw_images_.begin();
