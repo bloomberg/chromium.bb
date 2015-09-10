@@ -62,6 +62,7 @@
         "latest_toolchain": false,
         "lkgm_manifest": "LKGM/lkgm.xml",
         "manifest": "default.xml",
+        "manifest_branch": null,
         "manifest_repo_url": "https://chromium.googlesource.com/chromiumos/manifest",
         "manifest_version": false,
         "master": false,

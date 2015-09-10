@@ -630,6 +630,9 @@ def DefaultSettings():
       # manifests.
       manifest_version=False,
 
+      # Use a different branch of the project manifest for the build.
+      manifest_branch=None,
+
       # Use the Last Known Good Manifest blessed by Paladin.
       use_lkgm=False,
 
