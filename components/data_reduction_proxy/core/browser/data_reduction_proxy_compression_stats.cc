@@ -674,15 +674,16 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
   DCHECK(data_usage_map_last_updated_.is_null());
   DCHECK(data_usage_map_.empty());
 
+  // We currently do not break down by connection type. However, we use a schema
+  // that makes it easy to transition to a connection based breakdown without
+  // requiring a data migration.
+  DCHECK(data_usage->connection_usage_size() == 0 ||
+         data_usage->connection_usage_size() == 1);
   for (auto connection_usage : data_usage->connection_usage()) {
-    ConnectionType type = connection_usage.connection_type();
-    scoped_ptr<SiteUsageMap> site_usage_map(new SiteUsageMap());
-
     for (auto site_usage : connection_usage.site_usage()) {
-      site_usage_map->set(site_usage.site_url(),
+      data_usage_map_.set(site_usage.hostname(),
                           make_scoped_ptr(new PerSiteDataUsage(site_usage)));
     }
-    data_usage_map_.set(type, site_usage_map.Pass());
   }
 
   data_usage_map_last_updated_ =
@@ -1135,20 +1136,15 @@ void DataReductionProxyCompressionStats::RecordDataUsage(
 
   std::string normalized_host = NormalizeHostname(data_usage_host);
 
-  auto i =
-      data_usage_map_.add(connection_type_, make_scoped_ptr(new SiteUsageMap));
-  SiteUsageMap* site_usage_map = i.first->second;
-
-  auto j = site_usage_map->add(normalized_host,
+  auto j = data_usage_map_.add(normalized_host,
                                make_scoped_ptr(new PerSiteDataUsage()));
   PerSiteDataUsage* per_site_usage = j.first->second;
-
-  per_site_usage->set_site_url(normalized_host);
-  data_usage_map_last_updated_ = base::Time::Now();
+  per_site_usage->set_hostname(normalized_host);
   per_site_usage->set_original_size(per_site_usage->original_size() +
                                     original_size);
   per_site_usage->set_data_used(per_site_usage->data_used() + data_used);
 
+  data_usage_map_last_updated_ = base::Time::Now();
   data_usage_map_is_dirty_ = true;
 }
 
@@ -1159,15 +1155,11 @@ void DataReductionProxyCompressionStats::PersistDataUsage() {
     scoped_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
     data_usage_bucket->set_last_updated_timestamp(
         data_usage_map_last_updated_.ToInternalValue());
+    PerConnectionDataUsage* connection_usage =
+        data_usage_bucket->add_connection_usage();
     for (auto i = data_usage_map_.begin(); i != data_usage_map_.end(); ++i) {
-      SiteUsageMap* site_usage_map = i->second;
-      PerConnectionDataUsage* connection_usage =
-          data_usage_bucket->add_connection_usage();
-      connection_usage->set_connection_type(connection_type_);
-      for (auto j = site_usage_map->begin(); j != site_usage_map->end(); ++j) {
         PerSiteDataUsage* per_site_usage = connection_usage->add_site_usage();
-        per_site_usage->CopyFrom(*(j->second));
-      }
+        per_site_usage->CopyFrom(*(i->second));
     }
     service_->StoreCurrentDataUsageBucket(data_usage_bucket.Pass());
   }

@@ -47,7 +47,9 @@ class DataUsageStore {
   void StoreCurrentDataUsageBucket(const DataUsageBucket& current_bucket);
 
   // Returns whether |time| is within the current interval. Each hour is
-  // divided into |kDataUsageBucketLengthMins| minute long intervals.
+  // divided into |kDataUsageBucketLengthMins| minute long intervals. Returns
+  // true if |time| has NULL time since an uninitialized bucket can be assigned
+  // to any interval.
   static bool IsInCurrentInterval(const base::Time& time);
 
  private:

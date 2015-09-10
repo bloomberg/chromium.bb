@@ -59,8 +59,6 @@ class DataReductionProxyCompressionStats
  public:
   typedef base::ScopedPtrHashMap<std::string, scoped_ptr<PerSiteDataUsage>>
       SiteUsageMap;
-  typedef base::ScopedPtrHashMap<ConnectionType, scoped_ptr<SiteUsageMap>>
-      DataUsageMap;
 
   // Collects and store data usage and compression statistics. Basic data usage
   // stats are stored in browser preferences. More detailed stats broken down
@@ -239,7 +237,12 @@ class DataReductionProxyCompressionStats
   ConnectionType connection_type_;
 
   // Maintains detailed data usage for current interval.
-  DataUsageMap data_usage_map_;
+  SiteUsageMap data_usage_map_;
+
+  // Time when |data_usage_map_| was last updated. Contains NULL time if
+  // |data_usage_map_| does not have any data. This could happen either because
+  // current data usage has not yet been loaded from storage, or because
+  // no data usage has ever been recorded.
   base::Time data_usage_map_last_updated_;
 
   // Tracks whether |data_usage_map_| has changes that have not yet been

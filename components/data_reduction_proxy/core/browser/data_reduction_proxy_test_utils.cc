@@ -173,12 +173,11 @@ MockDataReductionProxyService::MockDataReductionProxyService(
     : DataReductionProxyService(settings,
                                 prefs,
                                 request_context,
-                                make_scoped_ptr(new DataStore()),
+                                make_scoped_ptr(new TestDataStore()),
                                 task_runner,
                                 task_runner,
                                 task_runner,
-                                base::TimeDelta()) {
-}
+                                base::TimeDelta()) {}
 
 MockDataReductionProxyService::~MockDataReductionProxyService() {
 }
@@ -542,7 +541,7 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
   } else {
     return make_scoped_ptr(new DataReductionProxyService(
         settings, simple_pref_service_.get(), request_context_getter_.get(),
-        make_scoped_ptr(new DataStore()), task_runner_, task_runner_,
+        make_scoped_ptr(new TestDataStore()), task_runner_, task_runner_,
         task_runner_, base::TimeDelta()));
   }
 }

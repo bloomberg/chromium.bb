@@ -23,17 +23,26 @@ enum ConnectionType {
 // Contains data usage for an interval of time.
 message DataUsageBucket {
   repeated PerConnectionDataUsage connection_usage = 1;
+
+  // Timestamp of the last update that was included in this bucket.
   optional int64 last_updated_timestamp = 2;
 }
 
 message PerConnectionDataUsage {
-  required ConnectionType connection_type = 1;
-  repeated PerSiteDataUsage site_usage = 2;
+  repeated PerSiteDataUsage site_usage = 1;
 }
 
 // Data usage for a specific site.
 message PerSiteDataUsage {
-  required string site_url = 1;
+  // Full hostname of the site without scheme, port, and trailing slashes.
+  // Eg: For page "http://www.finance.google.com/index.html?a=b", hostname will
+  // be "www.finance.google.com".
+  required string hostname = 1;
+
+  // Total data used in bytes when browsing this site.
   required int64 data_used = 2;
+
+  // Amount of data that would have been used to browse this site without
+  // employing any data saving techniques.
   required int64 original_size = 3;
 }
