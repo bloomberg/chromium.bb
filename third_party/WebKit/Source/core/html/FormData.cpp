@@ -218,6 +218,26 @@ void FormData::setEntry(const Item& item)
     return;
 }
 
+void FormData::appendData(const String& key, const String& value)
+{
+    m_items.append(Item(encodeAndNormalize(key), encodeAndNormalize(value)));
+}
+
+void FormData::appendData(const String& key, const CString& value)
+{
+    m_items.append(Item(encodeAndNormalize(key), value));
+}
+
+void FormData::appendData(const String& key, int value)
+{
+    m_items.append(Item(encodeAndNormalize(key), encodeAndNormalize(String::number(value))));
+}
+
+void FormData::appendBlob(const String& key, Blob* blob, const String& filename)
+{
+    m_items.append(Item(encodeAndNormalize(key), blob, filename));
+}
+
 String FormData::decode(const CString& data) const
 {
     return encoding().decode(data.data(), data.length());

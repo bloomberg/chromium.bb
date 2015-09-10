@@ -60,23 +60,6 @@ public:
 
     using FormDataListItems = HeapVector<FormDataList::Item>;
 
-    void appendData(const String& key, const String& value)
-    {
-        appendItem(Item(encodeAndNormalize(key), encodeAndNormalize(value)));
-    }
-    void appendData(const String& key, const CString& value)
-    {
-        appendItem(Item(encodeAndNormalize(key), value));
-    }
-    void appendData(const String& key, int value)
-    {
-        appendItem(Item(encodeAndNormalize(key), encodeAndNormalize(String::number(value))));
-    }
-    void appendBlob(const String& key, Blob* blob, const String& filename = String())
-    {
-        appendItem(Item(encodeAndNormalize(key), blob, filename));
-    }
-
     size_t size() const { return m_items.size(); }
 
     const FormDataListItems& items() const { return m_items; }
@@ -91,8 +74,6 @@ protected:
     FormDataListItems m_items;
 
 private:
-    void appendItem(const Item&);
-
     WTF::TextEncoding m_encoding;
 };
 

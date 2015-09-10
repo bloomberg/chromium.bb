@@ -32,11 +32,6 @@ FormDataList::FormDataList(const WTF::TextEncoding& c)
 {
 }
 
-void FormDataList::appendItem(const FormDataList::Item& item)
-{
-    m_items.append(item);
-}
-
 File* FormDataList::Item::file() const
 {
     ASSERT(blob());

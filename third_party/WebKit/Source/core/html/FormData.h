@@ -66,7 +66,7 @@ public:
         return new FormData(encoding);
     }
 
-    // FormData interface.
+    // FormData IDL interface.
     void append(const String& name, const String& value);
     void append(ExecutionContext*, const String& name, Blob*, const String& filename = String());
     void deleteEntry(const String& name);
@@ -76,9 +76,17 @@ public:
     void set(const String& name, const String& value);
     void set(const String& name, Blob*, const String& filename = String());
 
+    // Internal functions.
+
     void makeOpaque() { m_opaque = true; }
     bool opaque() const { return m_opaque; }
 
+    // TODO(tkent): Rename appendFoo functions to |append| for consistency with
+    // public function.
+    void appendData(const String& key, const String& value);
+    void appendData(const String& key, const CString& value);
+    void appendData(const String& key, int value);
+    void appendBlob(const String& key, Blob*, const String& filename = String());
     String decode(const CString& data) const;
 
     PassRefPtr<EncodedFormData> createFormData(EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
