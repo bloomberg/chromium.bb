@@ -181,9 +181,6 @@ class ExecutiveTest(unittest.TestCase):
         self.assertFalse(executive.check_running_pid(100000))
 
     def test_running_pids(self):
-        if sys.platform in ("win32", "cygwin"):
-            return  # This function isn't implemented on Windows yet.
-
         executive = Executive()
         pids = executive.running_pids()
         self.assertIn(os.getpid(), pids)

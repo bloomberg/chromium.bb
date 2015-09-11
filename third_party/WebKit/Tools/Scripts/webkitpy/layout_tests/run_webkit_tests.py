@@ -35,6 +35,7 @@ import sys
 import traceback
 
 from webkitpy.common.host import Host
+from webkitpy.common.system.executive import Executive
 from webkitpy.layout_tests.controllers.manager import Manager
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import configuration_options, platform_options
@@ -66,16 +67,7 @@ def main(argv, stdout, stderr):
         return test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
     try:
-        run_details = run(port, options, args, stderr)
-        if ((run_details.exit_code not in test_run_results.ERROR_CODES or
-             run_details.exit_code == test_run_results.EARLY_EXIT_STATUS) and
-            not run_details.initial_results.keyboard_interrupted):
-            bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
-            bot_printer.print_results(run_details)
-            gen_dash_board = DashBoardGenerator(port)
-            gen_dash_board.generate()
-
-        return run_details.exit_code
+        return run(port, options, args, stderr, stdout).exit_code
 
     # We need to still handle KeyboardInterrupt, atleast for webkitpy unittest cases.
     except KeyboardInterrupt:
@@ -365,20 +357,47 @@ def _set_up_derived_options(port, options, args):
     if not options.skipped:
         options.skipped = 'default'
 
-def run(port, options, args, logging_stream):
+
+def _run_tests(port, options, args, printer):
+    _set_up_derived_options(port, options, args)
+    manager = Manager(port, options, printer)
+    printer.print_config(port.results_directory())
+    return manager.run(args)
+
+
+def run(port, options, args, logging_stream, stdout):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG if options.debug_rwt_logging else logging.INFO)
 
+    printer = printing.Printer(port, options, logging_stream, logger=logger)
     try:
-        printer = printing.Printer(port, options, logging_stream, logger=logger)
+        run_details = _run_tests(port, options, args, printer)
+        printer.flush()
 
-        _set_up_derived_options(port, options, args)
-        manager = Manager(port, options, printer)
-        printer.print_config(port.results_directory())
+        if (not options.dry_run and
+                (run_details.exit_code not in test_run_results.ERROR_CODES or
+                 run_details.exit_code == test_run_results.EARLY_EXIT_STATUS) and
+                not run_details.initial_results.keyboard_interrupted):
+            bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
+            bot_printer.print_results(run_details)
+            stdout.flush()
 
-        run_details = manager.run(args)
+            _log.debug("Generating dashboard...")
+            gen_dash_board = DashBoardGenerator(port)
+            gen_dash_board.generate()
+            _log.debug("Dashboard generated.")
+
+        _log.debug("")
         _log.debug("Testing completed, Exit status: %d" % run_details.exit_code)
+
+        # Temporary process dump for debugging windows timeout issues, see crbug.com/522396.
+        _log.debug("")
+        _log.debug("Process dump:")
+        for process in Executive().process_dump():
+            _log.debug("\t%s" % process)
+
         return run_details
+
     finally:
         printer.cleanup()
 

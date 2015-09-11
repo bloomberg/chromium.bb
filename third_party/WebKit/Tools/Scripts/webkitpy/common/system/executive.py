@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import StringIO
+import csv
 import errno
 import logging
 import multiprocessing
@@ -233,29 +234,51 @@ class Executive(object):
         except OSError:
             return False
 
+    def _running_processes(self):
+        processes = []
+        if sys.platform in ("win32", "cygwin"):
+            tasklist_process = self.popen(['tasklist', '/fo', 'csv'],
+                                          stdout=self.PIPE, stderr=self.PIPE)
+            stdout, _ = tasklist_process.communicate()
+            stdout_reader = csv.reader(stdout.splitlines())
+            for line in stdout_reader:
+                processes.append([column for column in line])
+        else:
+            ps_process = self.popen(['ps', '-eo', 'pid,comm'],
+                                    stdout=self.PIPE, stderr=self.PIPE)
+            stdout, _ = ps_process.communicate()
+            for line in stdout.splitlines():
+                # In some cases the line can contain one or more
+                # leading white-spaces, so strip it before split.
+                pid, process_name = line.strip().split(' ', 1)
+                processes.append([process_name, pid])
+        return processes
+
     def running_pids(self, process_name_filter=None):
         if not process_name_filter:
             process_name_filter = lambda process_name: True
 
         running_pids = []
-
-        if sys.platform in ("win32", "cygwin"):
-            # FIXME: running_pids isn't implemented on Windows yet...
-            return []
-
-        ps_process = self.popen(['ps', '-eo', 'pid,comm'], stdout=self.PIPE, stderr=self.PIPE)
-        stdout, _ = ps_process.communicate()
-        for line in stdout.splitlines():
+        for line in self._running_processes():
             try:
-                # In some cases the line can contain one or more
-                # leading white-spaces, so strip it before split.
-                pid, process_name = line.strip().split(' ', 1)
+                process_name = line[0]
+                pid = line[1]
                 if process_name_filter(process_name):
                     running_pids.append(int(pid))
             except ValueError, e:
                 pass
 
         return sorted(running_pids)
+
+    def process_dump(self):
+        ps_process = None
+        if sys.platform in ("win32", "cygwin"):
+            ps_process = self.popen(['tasklist', '/v'], stdout=self.PIPE, stderr=self.PIPE)
+        else:
+            ps_process = self.popen(['ps', 'aux'], stdout=self.PIPE, stderr=self.PIPE)
+
+        stdout, _ = ps_process.communicate()
+        return [line.strip() for line in stdout.splitlines()]
 
     def wait_newest(self, process_name_filter=None):
         if not process_name_filter:

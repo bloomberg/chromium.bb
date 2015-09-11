@@ -87,7 +87,9 @@ def passing_run(extra_args=None, port_obj=None, tests_included=False, host=None,
         port_obj.host.port_factory.get = lambda *args, **kwargs: port_obj
 
     logging_stream = StringIO.StringIO()
-    run_details = run_webkit_tests.run(port_obj, options, parsed_args, logging_stream=logging_stream)
+    stdout = StringIO.StringIO()
+    run_details = run_webkit_tests.run(port_obj, options, parsed_args,
+                                       logging_stream=logging_stream, stdout=stdout)
     return run_details.exit_code == 0
 
 
@@ -110,7 +112,9 @@ def run_and_capture(port_obj, options, parsed_args, shared_port=True):
     try:
         oc.capture_output()
         logging_stream = StringIO.StringIO()
-        run_details = run_webkit_tests.run(port_obj, options, parsed_args, logging_stream=logging_stream)
+        stdout = StringIO.StringIO()
+        run_details = run_webkit_tests.run(port_obj, options, parsed_args,
+                                           logging_stream=logging_stream, stdout=stdout)
     finally:
         oc.restore_output()
     return (run_details, logging_stream)
@@ -145,8 +149,10 @@ def get_test_results(args, host=None, port_obj=None):
     oc = outputcapture.OutputCapture()
     oc.capture_output()
     logging_stream = StringIO.StringIO()
+    stdout = StringIO.StringIO()
     try:
-        run_details = run_webkit_tests.run(port_obj, options, parsed_args, logging_stream=logging_stream)
+        run_details = run_webkit_tests.run(port_obj, options, parsed_args,
+                                           logging_stream=logging_stream, stdout=stdout)
     finally:
         oc.restore_output()
 
@@ -190,9 +196,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_basic(self):
         options, args = parse_args(tests_included=True)
         logging_stream = StringIO.StringIO()
+        stdout = StringIO.StringIO()
         host = MockHost()
         port_obj = host.port_factory.get(options.platform, options)
-        details = run_webkit_tests.run(port_obj, options, args, logging_stream)
+        details = run_webkit_tests.run(port_obj, options, args, logging_stream, stdout=stdout)
 
         # These numbers will need to be updated whenever we add new tests.
         self.assertEqual(details.initial_results.total, test.TOTAL_TESTS)
@@ -881,7 +888,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         port_obj = host.port_factory.get(port_name=options.platform, options=options)
         logging_stream = StringIO.StringIO()
-        run_webkit_tests.run(port_obj, options, parsed_args, logging_stream=logging_stream)
+        stdout = StringIO.StringIO()
+        run_webkit_tests.run(port_obj, options, parsed_args,
+                             logging_stream=logging_stream, stdout=stdout)
         self.assertTrue('text.html passed' in logging_stream.getvalue())
         self.assertTrue('image.html passed' in logging_stream.getvalue())
 
@@ -898,6 +907,19 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, _, _ = logging_run(['--write-full-results-to', '/tmp/full_results.json'], host=host)
         self.assertEqual(details.exit_code, 0)
         self.assertTrue(host.filesystem.exists('/tmp/full_results.json'))
+
+    def test_buildbot_results_are_printed_on_early_exit(self):
+        stdout = StringIO.StringIO()
+        stderr = StringIO.StringIO()
+        res = run_webkit_tests.main(['--platform', 'test', '--exit-after-n-failures', '1',
+                                     'failures/unexpected/missing_text.html',
+                                     'failures/unexpected/missing_image.html'],
+                                    stdout, stderr)
+        self.assertEqual(res, test_run_results.EARLY_EXIT_STATUS)
+        self.assertEqual(stdout.getvalue(),
+                         ('\n'
+                          'Regressions: Unexpected missing results (1)\n'
+                          '  failures/unexpected/missing_image.html [ Missing ]\n\n'))
 
 
 class EndToEndTest(unittest.TestCase):
@@ -943,7 +965,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 8)
+        self.assertEqual(len(file_list), 9)
         self.assertBaselines(file_list, "passes/image", [".txt", ".png"], err)
         self.assertBaselines(file_list, "failures/expected/missing_image", [".txt", ".png"], err)
 
@@ -958,7 +980,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 3)
-        self.assertEqual(len(file_list), 10)
+        self.assertEqual(len(file_list), 11)
         self.assertBaselines(file_list, "failures/unexpected/missing_text", [".txt"], err)
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_image", [".png"], err)
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_render_tree_dump", [".txt"], err)
@@ -984,7 +1006,7 @@ Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
             tests_included=True, host=host, new_results=True,  port_obj=port)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 7)
+        self.assertEqual(len(file_list), 8)
         self.assertFalse(any('failures/unexpected/missing_text-expected' in file for file in file_list))
         self.assertFalse(any('failures/unexpected/missing_image-expected' in file for file in file_list))
         self.assertFalse(any('failures/unexpected/missing_render_tree_dump-expected' in file for file in file_list))
@@ -1010,7 +1032,7 @@ Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
             tests_included=True, host=host, new_results=True,  port_obj=port)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 11)
+        self.assertEqual(len(file_list), 12)
         self.assertBaselines(file_list, "failures/unexpected/missing_text", [".txt"], err)
         self.assertBaselines(file_list, "failures/unexpected/missing_image", [".png"], err)
         self.assertBaselines(file_list, "failures/unexpected/missing_render_tree_dump", [".txt"], err)
@@ -1024,7 +1046,7 @@ Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 8)
+        self.assertEqual(len(file_list), 9)
         self.assertBaselines(file_list,
             "platform/test-mac-leopard/passes/image", [".txt", ".png"], err)
         self.assertBaselines(file_list,
@@ -1041,49 +1063,35 @@ class PortTest(unittest.TestCase):
 
 class MainTest(unittest.TestCase):
     def test_exception_handling(self):
-        orig_run_fn = run_webkit_tests.run
+        orig_run_fn = run_webkit_tests._run_tests
 
         # unused args pylint: disable=W0613
-        def interrupting_run(port, options, args, stderr):
+        def interrupting_run(port, options, args, printer):
             raise KeyboardInterrupt
 
-        def successful_run(port, options, args, stderr):
+        def successful_run(port, options, args, printer):
 
             class FakeRunDetails(object):
                 exit_code = test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
             return FakeRunDetails()
 
-        def exception_raising_run(port, options, args, stderr):
+        def exception_raising_run(port, options, args, printer):
             assert False
 
         stdout = StringIO.StringIO()
         stderr = StringIO.StringIO()
         try:
-            run_webkit_tests.run = interrupting_run
+            run_webkit_tests._run_tests = interrupting_run
             res = run_webkit_tests.main([], stdout, stderr)
             self.assertEqual(res, test_run_results.INTERRUPTED_EXIT_STATUS)
 
-            run_webkit_tests.run = successful_run
+            run_webkit_tests._run_tests = successful_run
             res = run_webkit_tests.main(['--platform', 'test'], stdout, stderr)
             self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
 
-            run_webkit_tests.run = exception_raising_run
+            run_webkit_tests._run_tests = exception_raising_run
             res = run_webkit_tests.main([], stdout, stderr)
             self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
         finally:
-            run_webkit_tests.run = orig_run_fn
-
-    def test_buildbot_results_are_printed_on_early_exit(self):
-        # unused args pylint: disable=W0613
-        stdout = StringIO.StringIO()
-        stderr = StringIO.StringIO()
-        res = run_webkit_tests.main(['--platform', 'test', '--exit-after-n-failures', '1',
-                                     'failures/unexpected/missing_text.html',
-                                     'failures/unexpected/missing_image.html'],
-                                    stdout, stderr)
-        self.assertEqual(res, test_run_results.EARLY_EXIT_STATUS)
-        self.assertEqual(stdout.getvalue(),
-                ('\n'
-                 'Regressions: Unexpected missing results (1)\n'
-                 '  failures/unexpected/missing_image.html [ Missing ]\n\n'))
+            run_webkit_tests._run_tests = orig_run_fn
