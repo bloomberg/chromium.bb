@@ -35,7 +35,7 @@ const int kDefaultCursorSize = 64;
 std::vector<skia::RefPtr<SkSurface>> GetCursorBuffers(
     const scoped_refptr<ui::MockDrmDevice> drm) {
   std::vector<skia::RefPtr<SkSurface>> cursor_buffers;
-  for (const skia::RefPtr<SkSurface>& cursor_buffer : drm->buffers()) {
+  for (const auto& cursor_buffer : drm->buffers()) {
     if (cursor_buffer->width() == kDefaultCursorSize &&
         cursor_buffer->height() == kDefaultCursorSize) {
       cursor_buffers.push_back(cursor_buffer);

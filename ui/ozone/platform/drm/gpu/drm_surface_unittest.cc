@@ -29,6 +29,20 @@ const uint32_t kDefaultConnector = 2;
 const size_t kPlanesPerCrtc = 1;
 const uint32_t kDefaultCursorSize = 64;
 
+std::vector<skia::RefPtr<SkSurface>> GetFramebuffers(ui::MockDrmDevice* drm) {
+  std::vector<skia::RefPtr<SkSurface>> framebuffers;
+  for (const auto& buffer : drm->buffers()) {
+    // Skip destroyed buffers and cursor buffers.
+    if (!buffer || (buffer->width() == kDefaultCursorSize &&
+                    buffer->height() == kDefaultCursorSize))
+      continue;
+
+    framebuffers.push_back(buffer);
+  }
+
+  return framebuffers;
+}
+
 }  // namespace
 
 class DrmSurfaceTest : public testing::Test {
@@ -91,11 +105,13 @@ void DrmSurfaceTest::TearDown() {
 TEST_F(DrmSurfaceTest, CheckFBIDOnSwap) {
   surface_->PresentCanvas(gfx::Rect());
   drm_->RunCallbacks();
-  // Framebuffer ID 1 is allocated in SetUp for the buffer used to modeset.
-  EXPECT_EQ(2u, drm_->current_framebuffer());
+
+  // Framebuffer ID 1 is allocated in SetUp for the buffer used to modeset and
+  // framebuffer ID 2 is used when the window to display mapping is done.
+  EXPECT_EQ(3u, drm_->current_framebuffer());
   surface_->PresentCanvas(gfx::Rect());
   drm_->RunCallbacks();
-  EXPECT_EQ(3u, drm_->current_framebuffer());
+  EXPECT_EQ(4u, drm_->current_framebuffer());
 }
 
 TEST_F(DrmSurfaceTest, CheckSurfaceContents) {
@@ -109,15 +125,8 @@ TEST_F(DrmSurfaceTest, CheckSurfaceContents) {
   drm_->RunCallbacks();
 
   SkBitmap image;
-  std::vector<skia::RefPtr<SkSurface>> framebuffers;
-  for (const auto& buffer : drm_->buffers()) {
-    // Skip cursor buffers.
-    if (buffer->width() == kDefaultCursorSize &&
-        buffer->height() == kDefaultCursorSize)
-      continue;
-
-    framebuffers.push_back(buffer);
-  }
+  std::vector<skia::RefPtr<SkSurface>> framebuffers =
+      GetFramebuffers(drm_.get());
 
   // Buffer 0 is the modesetting buffer, buffer 2 is the frontbuffer and buffer
   // 1 is the backbuffer.
@@ -161,15 +170,8 @@ TEST_F(DrmSurfaceTest, CheckSurfaceContentsAfter2QueuedPresents) {
   drm_->RunCallbacks();
 
   SkBitmap image;
-  std::vector<skia::RefPtr<SkSurface>> framebuffers;
-  for (const auto& buffer : drm_->buffers()) {
-    // Skip cursor buffers.
-    if (buffer->width() == kDefaultCursorSize &&
-        buffer->height() == kDefaultCursorSize)
-      continue;
-
-    framebuffers.push_back(buffer);
-  }
+  std::vector<skia::RefPtr<SkSurface>> framebuffers =
+      GetFramebuffers(drm_.get());
 
   // Buffer 0 is the modesetting buffer, buffer 2 is the backbuffer and buffer
   // 1 is the frontbuffer.

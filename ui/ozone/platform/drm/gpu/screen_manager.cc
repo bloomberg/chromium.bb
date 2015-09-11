@@ -292,10 +292,20 @@ void ScreenManager::UpdateControllerToWindowMapping() {
   // Apply the new mapping to all windows.
   for (auto pair : window_map_) {
     auto it = window_to_controller_map.find(pair.second);
+    HardwareDisplayController* controller = nullptr;
     if (it != window_to_controller_map.end())
-      pair.second->SetController(it->second);
-    else
-      pair.second->SetController(nullptr);
+      controller = it->second;
+
+    bool should_enable =
+        controller && pair.second->GetController() != controller;
+    pair.second->SetController(controller);
+
+    // If we're moving windows between controllers modeset the controller
+    // otherwise the controller may be waiting for a page flip while the window
+    // tries to schedule another buffer.
+    if (should_enable)
+      EnableController(controller, controller->origin(),
+                       controller->get_mode());
   }
 }
 
