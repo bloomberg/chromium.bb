@@ -38,6 +38,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -309,6 +310,18 @@ TEST_F(DocumentTest, FrameTimingRelayout)
     EXPECT_TRUE(document().view()->frameTimingRequestsDirty());
 }
 
+TEST_F(DocumentTest, OutgoingReferrer)
+{
+    document().setURL(KURL(KURL(), "https://www.example.com/hoge#fuga?piyo"));
+    document().setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
+    EXPECT_EQ("https://www.example.com/hoge", document().outgoingReferrer());
+}
 
+TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin)
+{
+    document().setURL(KURL(KURL(), "https://www.example.com/hoge#fuga?piyo"));
+    document().setSecurityOrigin(SecurityOrigin::createUnique());
+    EXPECT_EQ(String(), document().outgoingReferrer());
+}
 
 } // namespace blink

@@ -3071,6 +3071,11 @@ void Document::processReferrerPolicy(const String& policy)
 
 String Document::outgoingReferrer()
 {
+    if (securityOrigin()->isUnique()) {
+        // Return |no-referrer|.
+        return String();
+    }
+
     // See http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources
     // for why we walk the parent chain for srcdoc documents.
     Document* referrerDocument = this;
