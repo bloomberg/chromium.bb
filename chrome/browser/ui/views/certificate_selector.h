@@ -39,8 +39,6 @@ class CertificateSelector : public views::DialogDelegateView,
   // to the WebContentsDelegate. https://crbug.com/456255.
   static bool CanShow(content::WebContents* web_contents);
 
-  class CertificateTableModel;
-
   // |web_contents| must not be null.
   CertificateSelector(const net::CertificateList& certificates,
                       content::WebContents* web_contents);
@@ -81,7 +79,15 @@ class CertificateSelector : public views::DialogDelegateView,
   void InitWithText(scoped_ptr<views::View> text_label);
 
  private:
-  const net::CertificateList certificates_;
+  class CertificateTableModel;
+
+  net::CertificateList certificates_;
+
+  // Whether to show the provider column in the table or not. Certificates
+  // provided by the platform show the empty string as provider. That column is
+  // shown only if there is at least one non-empty provider, i.e. non-platform
+  // certificate.
+  bool show_provider_column_ = false;
   scoped_ptr<CertificateTableModel> model_;
 
   content::WebContents* const web_contents_;

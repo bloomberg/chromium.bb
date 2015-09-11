@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/certificate_selector.h"
 
 #include <stddef.h>  // For size_t.
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -26,6 +27,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
+#endif
+
 namespace chrome {
 
 const int CertificateSelector::kTableViewWidth = 400;
@@ -33,7 +41,9 @@ const int CertificateSelector::kTableViewHeight = 100;
 
 class CertificateSelector::CertificateTableModel : public ui::TableModel {
  public:
-  explicit CertificateTableModel(const net::CertificateList& certificates);
+  // |certs| and |provider_names| must have the same size.
+  CertificateTableModel(const net::CertificateList& certs,
+                        const std::vector<std::string>& provider_names);
 
   // ui::TableModel:
   int RowCount() override;
@@ -41,48 +51,104 @@ class CertificateSelector::CertificateTableModel : public ui::TableModel {
   void SetObserver(ui::TableModelObserver* observer) override;
 
  private:
-  std::vector<base::string16> items_;
+  struct Row {
+    base::string16 subject;
+    base::string16 issuer;
+    base::string16 provider;
+  };
+  std::vector<Row> rows_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateTableModel);
 };
 
 CertificateSelector::CertificateTableModel::CertificateTableModel(
-    const net::CertificateList& certificates) {
-  for (const scoped_refptr<net::X509Certificate>& cert : certificates) {
-    items_.push_back(l10n_util::GetStringFUTF16(
-        IDS_CERT_SELECTOR_TABLE_CERT_FORMAT,
-        base::UTF8ToUTF16(cert->subject().GetDisplayName()),
-        base::UTF8ToUTF16(cert->issuer().GetDisplayName())));
+    const net::CertificateList& certs,
+    const std::vector<std::string>& provider_names) {
+  DCHECK_EQ(certs.size(), provider_names.size());
+  for (size_t i = 0; i < certs.size(); i++) {
+    net::X509Certificate* cert = certs[i].get();
+    Row row;
+    row.subject = base::UTF8ToUTF16(cert->subject().GetDisplayName());
+    row.issuer = base::UTF8ToUTF16(cert->issuer().GetDisplayName());
+    row.provider = base::UTF8ToUTF16(provider_names[i]);
+    rows_.push_back(row);
   }
 }
 
 int CertificateSelector::CertificateTableModel::RowCount() {
-  return items_.size();
+  return rows_.size();
 }
 
 base::string16 CertificateSelector::CertificateTableModel::GetText(
     int index,
     int column_id) {
-  DCHECK_EQ(column_id, 0);
   DCHECK_GE(index, 0);
-  DCHECK_LT(static_cast<size_t>(index), items_.size());
+  DCHECK_LT(static_cast<size_t>(index), rows_.size());
 
-  return items_[index];
+  const Row& row = rows_[index];
+  switch (column_id) {
+    case IDS_CERT_SELECTOR_SUBJECT_COLUMN:
+      return row.subject;
+    case IDS_CERT_SELECTOR_ISSUER_COLUMN:
+      return row.issuer;
+    case IDS_CERT_SELECTOR_PROVIDER_COLUMN:
+      return row.provider;
+    default:
+      NOTREACHED();
+  }
+  return base::string16();
 }
 
 void CertificateSelector::CertificateTableModel::SetObserver(
-    ui::TableModelObserver* observer) {
-}
+    ui::TableModelObserver* observer) {}
 
 CertificateSelector::CertificateSelector(
     const net::CertificateList& certificates,
     content::WebContents* web_contents)
-    : certificates_(certificates),
-      model_(new CertificateTableModel(certificates)),
-      web_contents_(web_contents),
-      table_(nullptr),
-      view_cert_button_(nullptr) {
+    : web_contents_(web_contents), table_(nullptr), view_cert_button_(nullptr) {
   CHECK(web_contents_);
+
+  // |provider_names| and |certificates_| are parallel arrays.
+  // The entry at index |i| is the provider name for |certificates_[i]|.
+  std::vector<std::string> provider_names;
+#if defined(OS_CHROMEOS)
+  chromeos::CertificateProviderService* service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistryFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+
+  for (const auto& cert : certificates) {
+    std::string provider_name;
+    bool has_extension = false;
+    std::string extension_id;
+    if (service->LookUpCertificate(*cert, &has_extension, &extension_id)) {
+      if (!has_extension) {
+        // This certificate was provided by an extension but isn't provided by
+        // any extension currently. Don't expose it to the user.
+        continue;
+      }
+      const auto extension = extension_registry->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::ENABLED);
+      if (!extension) {
+        // This extension was unloaded in the meantime. Don't show the
+        // certificate.
+        continue;
+      }
+      provider_name = extension->short_name();
+      show_provider_column_ = true;
+    }  // Otherwise the certificate is provided by the platform.
+
+    certificates_.push_back(cert);
+    provider_names.push_back(provider_name);
+  }
+#else
+  provider_names.assign(certificates.size(), std::string());
+  certificates_ = certificates;
+#endif
+
+  model_.reset(new CertificateTableModel(certificates_, provider_names));
 }
 
 CertificateSelector::~CertificateSelector() {
@@ -121,7 +187,14 @@ void CertificateSelector::InitWithText(scoped_ptr<views::View> text_label) {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   std::vector<ui::TableColumn> columns;
-  columns.push_back(ui::TableColumn());
+  columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_SUBJECT_COLUMN,
+                                    ui::TableColumn::LEFT, -1, 0.4f));
+  columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_ISSUER_COLUMN,
+                                    ui::TableColumn::LEFT, -1, 0.2f));
+  if (show_provider_column_) {
+    columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_PROVIDER_COLUMN,
+                                      ui::TableColumn::LEFT, -1, 0.4f));
+  }
   table_ = new views::TableView(model_.get(), columns, views::TEXT_ONLY,
                                 true /* single_selection */);
   table_->SetObserver(this);

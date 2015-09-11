@@ -2770,8 +2770,14 @@ Even if you have downloaded files from this website before, the website might ha
 
       <!-- Win certificate selector dialog strings.  -->
       <if expr="toolkit_views">
-        <message name="IDS_CERT_SELECTOR_TABLE_CERT_FORMAT" desc="Format for a certificate row in the certificate selector table.">
-          <ph name="SUBJECT">$1<ex>FOAF ME Cert http://foaf.me/test</ex></ph> (<ph name="ISSUER">$2<ex>FOAF.ME</ex></ph>)
+        <message name="IDS_CERT_SELECTOR_SUBJECT_COLUMN" desc="The text of the header for the certificate subject column in the certificate selector dialog.">
+          Subject
+        </message>
+        <message name="IDS_CERT_SELECTOR_ISSUER_COLUMN" desc="The text of the header for the certificate issuer column in the certificate selector dialog.">
+          Issuer
+        </message>
+        <message name="IDS_CERT_SELECTOR_PROVIDER_COLUMN" desc="The text of the header for the certificate provider column in the certificate selector dialog.">
+          Provider
         </message>
       </if>
 
