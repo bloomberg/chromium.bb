@@ -80,11 +80,8 @@ struct ResourceResponse;
 enum CreateRenderFrameFlags {
   // The RFH will be initially placed on the swapped out hosts list.
   CREATE_RF_SWAPPED_OUT = 1 << 0,
-  // The new RenderFrame is being created for a navigation of the
-  // top-level frame.
-  CREATE_RF_FOR_MAIN_FRAME_NAVIGATION = 1 << 1,
   // The RenderFrame is initially hidden.
-  CREATE_RF_HIDDEN = 1 << 2,
+  CREATE_RF_HIDDEN = 1 << 1,
 };
 
 class CONTENT_EXPORT RenderFrameHostImpl

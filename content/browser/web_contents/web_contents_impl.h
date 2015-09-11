@@ -593,8 +593,9 @@ class CONTENT_EXPORT WebContentsImpl
       RenderViewHost* render_view_host,
       int opener_frame_routing_id,
       int proxy_routing_id,
-      const FrameReplicationState& replicated_frame_state,
-      bool for_main_frame_navigation) override;
+      const FrameReplicationState& replicated_frame_state) override;
+  void CreateRenderWidgetHostViewForRenderManager(
+      RenderViewHost* render_view_host) override;
   bool CreateRenderFrameForRenderManager(
       RenderFrameHost* render_frame_host,
       int proxy_routing_id,

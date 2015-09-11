@@ -1378,7 +1378,9 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
   accessibility_reset_token_ = 0;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
+      frame_tree_node_->frame_tree()
+          ->GetMainFrame()
+          ->render_view_host_->GetView());
 
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
   if ((accessibility_mode != AccessibilityModeOff) && view &&
@@ -1982,7 +1984,9 @@ const ui::AXTree* RenderFrameHostImpl::GetAXTreeForTesting() {
 BrowserAccessibilityManager*
     RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
+      frame_tree_node_->frame_tree()
+          ->GetMainFrame()
+          ->render_view_host_->GetView());
   if (view &&
       !browser_accessibility_manager_ &&
       !no_create_browser_accessibility_manager_for_testing_) {

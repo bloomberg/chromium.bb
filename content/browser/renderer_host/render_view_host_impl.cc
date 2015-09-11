@@ -297,8 +297,18 @@ bool RenderViewHostImpl::CreateRenderView(
 
   set_renderer_initialized(true);
 
-  GpuSurfaceTracker::Get()->SetSurfaceHandle(
-      surface_id(), GetCompositingSurface());
+  // If this is not an active RenderView, then we need to create a
+  // handle with NULL_TRANSPORT type. Active RenderViews will implement
+  // GetCompositingSurface() in the RenderWidgetHostView delegate which returns
+  // the appropriate surface type.
+  if (proxy_route_id != MSG_ROUTING_NONE) {
+    GpuSurfaceTracker::Get()->SetSurfaceHandle(
+        surface_id(),
+        gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT));
+  } else {
+    GpuSurfaceTracker::Get()->SetSurfaceHandle(surface_id(),
+                                               GetCompositingSurface());
+  }
 
   // Ensure the RenderView starts with a next_page_id larger than any existing
   // page ID it might be asked to render.

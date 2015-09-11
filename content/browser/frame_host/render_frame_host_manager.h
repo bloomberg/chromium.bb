@@ -116,15 +116,14 @@ class CONTENT_EXPORT RenderFrameHostManager {
     // corresponding to this view host. If this method is not called and the
     // process is not shared, then the WebContentsImpl will act as though the
     // renderer is not running (i.e., it will render "sad tab"). This method is
-    // automatically called from LoadURL. |for_main_frame_navigation| indicates
-    // whether this RenderViewHost is used to render a top-level frame, so the
-    // appropriate RenderWidgetHostView type is used.
+    // automatically called from LoadURL.
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host,
         int opener_frame_routing_id,
         int proxy_routing_id,
-        const FrameReplicationState& replicated_frame_state,
-        bool for_main_frame_navigation) = 0;
+        const FrameReplicationState& replicated_frame_state) = 0;
+    virtual void CreateRenderWidgetHostViewForRenderManager(
+        RenderViewHost* render_view_host) = 0;
     virtual bool CreateRenderFrameForRenderManager(
         RenderFrameHost* render_frame_host,
         int proxy_routing_id,
@@ -612,8 +611,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // |pending_render_frame_host_| while respecting the opener route if needed
   // and stores it in pending_render_frame_host_.
   void CreatePendingRenderFrameHost(SiteInstance* old_instance,
-                                    SiteInstance* new_instance,
-                                    bool is_main_frame);
+                                    SiteInstance* new_instance);
 
   // Ensure that we have created all needed proxies for a new RFH with
   // SiteInstance |new_instance|: (1) create swapped-out RVHs and proxies for
@@ -665,8 +663,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // out state.  Returns early if the RenderViewHost has already been
   // initialized for another RenderFrameHost.
   bool InitRenderView(RenderViewHostImpl* render_view_host,
-                      int proxy_routing_id,
-                      bool for_main_frame_navigation);
+                      int proxy_routing_id);
 
   // Initialization for RenderFrameHost uses the same sequence as InitRenderView
   // above.

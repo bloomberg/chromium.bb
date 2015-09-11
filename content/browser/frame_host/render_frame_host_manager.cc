@@ -401,8 +401,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // soon anyway, and we don't have the NavigationEntry for this host.
     delegate_->CreateRenderViewForRenderManager(
         render_frame_host_->render_view_host(), MSG_ROUTING_NONE,
-        MSG_ROUTING_NONE, frame_tree_node_->current_replication_state(),
-        frame_tree_node_->IsMainFrame());
+        MSG_ROUTING_NONE, frame_tree_node_->current_replication_state());
   }
 
   // If the renderer isn't live, then try to create a new one to satisfy this
@@ -421,8 +420,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     CreateOpenerProxies(dest_render_frame_host->GetSiteInstance(),
                         frame_tree_node_);
     if (!InitRenderView(dest_render_frame_host->render_view_host(),
-                        MSG_ROUTING_NONE,
-                        frame_tree_node_->IsMainFrame()))
+                        MSG_ROUTING_NONE))
       return nullptr;
 
     // Now that we've created a new renderer, be sure to hide it if it isn't
@@ -1058,8 +1056,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   if (!navigation_rfh->IsRenderFrameLive()) {
     // Recreate the opener chain.
     CreateOpenerProxies(navigation_rfh->GetSiteInstance(), frame_tree_node_);
-    if (!InitRenderView(navigation_rfh->render_view_host(), MSG_ROUTING_NONE,
-                        frame_tree_node_->IsMainFrame())) {
+    if (!InitRenderView(navigation_rfh->render_view_host(), MSG_ROUTING_NONE)) {
       return nullptr;
     }
 
@@ -1562,12 +1559,8 @@ const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
 
 void RenderFrameHostManager::CreatePendingRenderFrameHost(
     SiteInstance* old_instance,
-    SiteInstance* new_instance,
-    bool is_main_frame) {
+    SiteInstance* new_instance) {
   int create_render_frame_flags = 0;
-  if (is_main_frame)
-    create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
-
   if (delegate_->IsHidden())
     create_render_frame_flags |= CREATE_RF_HIDDEN;
 
@@ -1691,8 +1684,6 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
   int create_render_frame_flags = 0;
-  if (frame_tree_node_->IsMainFrame())
-    create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
   if (delegate_->IsHidden())
     create_render_frame_flags |= CREATE_RF_HIDDEN;
   speculative_render_frame_host_ =
@@ -1737,6 +1728,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   // remove it from the list of proxy hosts below if it will be active.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
   if (proxy && proxy->render_frame_host()) {
+    RenderViewHost* render_view_host = proxy->GetRenderViewHost();
     CHECK(!swapped_out_forbidden);
     if (view_routing_id_ptr)
       *view_routing_id_ptr = proxy->GetRenderViewHost()->GetRoutingID();
@@ -1749,6 +1741,10 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       proxy_hosts_->Remove(instance->GetId());
       // NB |proxy| is deleted at this point.
     }
+    // If we are reusing the RenderViewHost and it doesn't already have a
+    // RenderWidgetHostView, we need to create one if this is the main frame.
+    if (!render_view_host->GetView() && frame_tree_node_->IsMainFrame())
+      delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
   } else {
     // Create a new RenderFrameHost if we don't find an existing one.
 
@@ -1785,8 +1781,17 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
     }
 
-    success = InitRenderView(render_view_host, proxy_routing_id,
-                             !!(flags & CREATE_RF_FOR_MAIN_FRAME_NAVIGATION));
+    if (frame_tree_node_->IsMainFrame()) {
+      success = InitRenderView(render_view_host, proxy_routing_id);
+
+      // If we are reusing the RenderViewHost and it doesn't already have a
+      // RenderWidgetHostView, we need to create one if this is the main frame.
+      if (!swapped_out && !render_view_host->GetView())
+        delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
+    } else {
+      DCHECK(render_view_host->IsRenderViewLive());
+    }
+
     if (success) {
       // Remember that InitRenderView also created the RenderFrameProxy.
       if (swapped_out)
@@ -1871,7 +1876,7 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
 
   if (SiteIsolationPolicy::IsSwappedOutStateForbidden() &&
       frame_tree_node_->IsMainFrame()) {
-    InitRenderView(render_view_host, proxy->GetRoutingID(), true);
+    InitRenderView(render_view_host, proxy->GetRoutingID());
     proxy->set_render_frame_proxy_created(true);
   } else {
     proxy->InitRenderFrameProxy();
@@ -1906,7 +1911,7 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
   if (!proxy)
     return;
 
-  InitRenderView(render_view_host, proxy->GetRoutingID(), false);
+  InitRenderView(render_view_host, proxy->GetRoutingID());
   proxy->set_render_frame_proxy_created(true);
 }
 
@@ -1941,8 +1946,7 @@ void RenderFrameHostManager::SetRWHViewForInnerContents(
 
 bool RenderFrameHostManager::InitRenderView(
     RenderViewHostImpl* render_view_host,
-    int proxy_routing_id,
-    bool for_main_frame_navigation) {
+    int proxy_routing_id) {
   // Ensure the renderer process is initialized before creating the
   // RenderView.
   if (!render_view_host->GetProcess()->Init())
@@ -1979,7 +1983,7 @@ bool RenderFrameHostManager::InitRenderView(
 
   return delegate_->CreateRenderViewForRenderManager(
       render_view_host, opener_frame_routing_id, proxy_routing_id,
-      frame_tree_node_->current_replication_state(), for_main_frame_navigation);
+      frame_tree_node_->current_replication_state());
 }
 
 bool RenderFrameHostManager::InitRenderFrame(
@@ -2295,8 +2299,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     // CancelPending(), otherwise CancelPending may clear the pending_web_ui_
     // and the page will not have its bindings set appropriately.
     SetPendingWebUI(dest_url, bindings);
-    CreatePendingRenderFrameHost(current_instance, new_instance.get(),
-                                 frame_tree_node_->IsMainFrame());
+    CreatePendingRenderFrameHost(current_instance, new_instance.get());
     if (!pending_render_frame_host_)
       return nullptr;
 
@@ -2576,11 +2579,8 @@ void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
       // Create a swapped out RenderView in the given SiteInstance if none
       // exists. Since an opener can point to a subframe, do this on the root
       // frame of the current opener's frame tree.
-      frame_tree->root()->render_manager()->
-          CreateRenderFrame(instance, nullptr,
-                            CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
-                            CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
-                            nullptr);
+      frame_tree->root()->render_manager()->CreateRenderFrame(
+          instance, nullptr, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN, nullptr);
     }
   }
 }

@@ -4166,9 +4166,7 @@ int WebContentsImpl::CreateSwappedOutRenderView(
     GetRenderManager()->CreateRenderFrameProxy(instance);
   } else {
     GetRenderManager()->CreateRenderFrame(
-        instance, nullptr,
-        CREATE_RF_SWAPPED_OUT | CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
-            CREATE_RF_HIDDEN,
+        instance, nullptr, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
         &render_view_routing_id);
   }
   return render_view_routing_id;
@@ -4341,24 +4339,13 @@ NavigationEntry*
   return controller_.GetLastCommittedEntry();
 }
 
-bool WebContentsImpl::CreateRenderViewForRenderManager(
-    RenderViewHost* render_view_host,
-    int opener_frame_routing_id,
-    int proxy_routing_id,
-    const FrameReplicationState& replicated_frame_state,
-    bool for_main_frame_navigation) {
-  TRACE_EVENT0("browser,navigation",
-               "WebContentsImpl::CreateRenderViewForRenderManager");
-  // Can be NULL during tests.
-  RenderWidgetHostViewBase* rwh_view;
-  // TODO(kenrb): RenderWidgetHostViewChildFrame special casing is temporary
-  // until RenderWidgetHost is attached to RenderFrameHost. We need to special
-  // case this because RWH is still a base class of RenderViewHost, and child
-  // frame RWHVs are unique in that they do not have their own WebContents.
+void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
+    RenderViewHost* render_view_host) {
+  RenderWidgetHostViewBase* rwh_view = nullptr;
   bool is_guest_in_site_per_process =
       !!browser_plugin_guest_.get() &&
       BrowserPluginGuestMode::UseCrossProcessFramesForGuests();
-  if (!for_main_frame_navigation || is_guest_in_site_per_process) {
+  if (is_guest_in_site_per_process) {
     RenderWidgetHostViewChildFrame* rwh_view_child =
         new RenderWidgetHostViewChildFrame(render_view_host);
     rwh_view = rwh_view_child;
@@ -4369,6 +4356,18 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   // Now that the RenderView has been created, we need to tell it its size.
   if (rwh_view)
     rwh_view->SetSize(GetSizeForNewRenderView());
+}
+
+bool WebContentsImpl::CreateRenderViewForRenderManager(
+    RenderViewHost* render_view_host,
+    int opener_frame_routing_id,
+    int proxy_routing_id,
+    const FrameReplicationState& replicated_frame_state) {
+  TRACE_EVENT0("browser,navigation",
+               "WebContentsImpl::CreateRenderViewForRenderManager");
+
+  if (proxy_routing_id == MSG_ROUTING_NONE)
+    CreateRenderWidgetHostViewForRenderManager(render_view_host);
 
   // Make sure we use the correct starting page_id in the new RenderView.
   UpdateMaxPageIDIfNecessary(render_view_host);
@@ -4389,6 +4388,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Force a ViewMsg_Resize to be sent, needed to make plugins show up on
   // linux. See crbug.com/83941.
+  RenderWidgetHostView* rwh_view = render_view_host->GetView();
   if (rwh_view) {
     if (RenderWidgetHost* render_widget_host = rwh_view->GetRenderWidgetHost())
       render_widget_host->WasResized();
@@ -4441,7 +4441,7 @@ WebContentsAndroid* WebContentsImpl::GetWebContentsAndroid() {
 bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
   return CreateRenderViewForRenderManager(
       GetRenderViewHost(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-      frame_tree_.root()->current_replication_state(), true);
+      frame_tree_.root()->current_replication_state());
 }
 
 #elif defined(OS_MACOSX)
