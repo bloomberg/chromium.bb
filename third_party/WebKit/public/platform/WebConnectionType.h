@@ -43,18 +43,7 @@ enum WebConnectionType {
     WebConnectionTypeOther,
     WebConnectionTypeNone,
     WebConnectionTypeUnknown,
-    WebConnectionTypeLast = WebConnectionTypeUnknown,
-
-    // TODO(jkarlin): Remove these after the browser only uses the Web* prefixes.
-    ConnectionTypeCellular = WebConnectionTypeCellular,
-    ConnectionTypeBluetooth,
-    ConnectionTypeEthernet,
-    ConnectionTypeWifi,
-    ConnectionTypeWimax,
-    ConnectionTypeOther,
-    ConnectionTypeNone,
-    ConnectionTypeUnknown,
-    ConnectionTypeLast = ConnectionTypeUnknown
+    WebConnectionTypeLast = WebConnectionTypeUnknown
 };
 
 } // namespace blink
