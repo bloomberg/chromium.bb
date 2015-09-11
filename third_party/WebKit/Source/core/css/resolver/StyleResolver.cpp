@@ -306,6 +306,7 @@ bool StyleResolver::hasRulesForId(const AtomicString& id) const
 
 void StyleResolver::addToStyleSharingList(Element& element)
 {
+    ASSERT(RuntimeEnabledFeatures::styleSharingEnabled());
     // Never add elements to the style sharing list if we're not in a recalcStyle,
     // otherwise we could leave stale pointers in there.
     if (!document().inStyleRecalc())
@@ -527,7 +528,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
 
     ElementResolveContext elementContext(*element);
 
-    if (sharingBehavior == AllowStyleSharing && (defaultParent || elementContext.parentStyle())) {
+    if (RuntimeEnabledFeatures::styleSharingEnabled() && sharingBehavior == AllowStyleSharing && (defaultParent || elementContext.parentStyle())) {
         SharedStyleFinder styleFinder(elementContext, m_features, m_siblingRuleSet.get(), m_uncommonAttributeRuleSet.get(), *this);
         if (RefPtr<ComputedStyle> sharedStyle = styleFinder.findSharedStyle())
             return sharedStyle.release();
@@ -1287,7 +1288,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyApply, 1);
 
-    unsigned cacheHash = matchResult.isCacheable() ? computeMatchedPropertiesHash(matchResult.matchedProperties().data(), matchResult.matchedProperties().size()) : 0;
+    unsigned cacheHash = RuntimeEnabledFeatures::styleMatchedPropertiesCacheEnabled() && matchResult.isCacheable() ? computeMatchedPropertiesHash(matchResult.matchedProperties().data(), matchResult.matchedProperties().size()) : 0;
     bool applyInheritedOnly = false;
     const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult.matchedProperties()) : 0;
 
@@ -1372,6 +1373,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     loadPendingResources(state);
 
     if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(*state.style(), *state.parentStyle())) {
+        ASSERT(RuntimeEnabledFeatures::styleMatchedPropertiesCacheEnabled());
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded, 1);
         m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(), cacheHash, matchResult.matchedProperties());
     }
