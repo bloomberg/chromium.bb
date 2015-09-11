@@ -60,3 +60,6 @@ AppViewTest.KillGuestCommunicatingWithWrongAppView
 
 # https://crbug.com/519087
 ExtensionTabsTest.GetAllWindowsAllTypes
+
+# https://crbug.com/530404
+WakeEventPageTest.ClosedEventPage
