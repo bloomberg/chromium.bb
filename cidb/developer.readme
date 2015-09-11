@@ -12,12 +12,15 @@ $ lib/cidb_integration_test --debug --no-wipe
 The test logs the path to the temporary working directory at the end.
 
 You can launch the mysqld server again to play with the database in its final
-state. If `tmpdir` is the temporary directory left behind by the test, Inside
-the chroot, run:
+state. You'll have to fish out the temp directory that it created -- it will
+look something like /tmp/chromite.test_no_cleanup3WqzmO/chromite.testYypd_c/
+
+Set your local tmpdir variable to the path that you found, and run
+(inside the chroot):
 
 $ /usr/sbin/mysqld --no-defaults --datadir ${tmpdir}/mysqld_dir --socket \
     ${tmpdir}/mysqld_dir/mysqld.socket --port 8440 --pid-file \
-    ${tmpdir}/mysqld_dir/mysqld.pid --tmpdir ${tmpdir}/mysqld_dir/tmp
+    ${tmpdir}/mysqld_dir/mysqld.pid --tmpdir ${tmpdir}/mysqld_dir/tmp &
 
 You can connect to this instance using mysql client.
 

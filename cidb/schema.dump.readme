@@ -1,15 +1,15 @@
 These instructions assume you have a full chromiumos checkout at
 ~/chromiumos/
 
-To generate a schema dump, run
-  $ lib/cidb_integration_test.py CIDBMigrationsTest.testMigrations --no-wipe
-to bring the test database instance to the latest schema (as reflected in your
-source tree).
+To generate a schema dump, run this inside the chroot:
+  $ lib/cidb_integration_test CIDBMigrationsTest.testMigrations --no-wipe
+
 Then, follow the instructions in the developer.readme to re-launch the mysqld
-daemon from the temporary directory and dump the schema using:
+daemon from the temporary directory and dump the schema using (again, inside the
+chroot):
 
 $ mysqldump -u root -S ${tmpdir}/mysqld_dir/mysqld.socket --no-data \
     --single-transaction cidb | grep -v '^--' \
-    > ~/chromiumos/chromite/cidb/schema.dump
+    > ~/trunk/chromite/cidb/schema.dump
 
 Remember to cleanup the temporary directory when you're done.

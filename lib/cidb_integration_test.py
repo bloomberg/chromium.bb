@@ -195,6 +195,56 @@ class CIDBAPITest(CIDBIntegrationTest):
     current_db_time = db.GetTime()
     self.assertEqual(type(current_db_time), datetime.datetime)
 
+  def testBuildMessages(self):
+    db = self._PrepareFreshDatabase(42)
+    self.assertEqual([], db.GetBuildMessages(1))
+    master_build_id = db.InsertBuild('builder name',
+                                     constants.WATERFALL_TRYBOT,
+                                     1,
+                                     'master',
+                                     'hostname')
+    slave_build_id = db.InsertBuild('slave builder name',
+                                    constants.WATERFALL_TRYBOT,
+                                    2,
+                                    'slave',
+                                    'slave hostname',
+                                    master_build_id=master_build_id)
+    db.InsertBuildMessage(master_build_id)
+    db.InsertBuildMessage(master_build_id, 'message_type', 'message_subtype',
+                          'message_value')
+    for i in range(10):
+      db.InsertBuildMessage(slave_build_id,
+                            'message_type', 'message_subtype', str(i))
+
+    master_messages = db.GetBuildMessages(master_build_id)
+    slave_messages = db.GetSlaveBuildMessages(master_build_id)
+
+    self.assertEqual(2, len(master_messages))
+    self.assertEqual(10, len(slave_messages))
+
+    mm2 = master_messages[1]
+    mm2.pop('timestamp')
+    self.assertEqual({'build_id': master_build_id,
+                      'build_config': 'master',
+                      'waterfall': constants.WATERFALL_TRYBOT,
+                      'builder_name': 'builder name',
+                      'build_number': 1L,
+                      'message_type': 'message_type',
+                      'message_subtype': 'message_subtype',
+                      'message_value': 'message_value'},
+                     mm2)
+    sm10 = slave_messages[9]
+    sm10.pop('timestamp')
+    self.assertEqual({'build_id': slave_build_id,
+                      'build_config': 'slave',
+                      'waterfall': constants.WATERFALL_TRYBOT,
+                      'builder_name': 'slave builder name',
+                      'build_number': 2L,
+                      'message_type': 'message_type',
+                      'message_subtype': 'message_subtype',
+                      'message_value': '9'},
+                     sm10)
+
   def testGetKeyVals(self):
     db = self._PrepareFreshDatabase(40)
     # In production we would never insert into this table from a bot, but for

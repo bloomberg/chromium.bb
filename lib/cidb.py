@@ -565,6 +565,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'SELECT c.id, b.id, action, c.reason, build_config, '
       'change_number, patch_number, change_source, timestamp FROM '
       'clActionTable c JOIN buildTable b ON build_id = b.id ')
+  _SQL_FETCH_MESSAGES = (
+      'SELECT build_id, build_config, waterfall, builder_name, build_number, '
+      'message_type, message_subtype, message_value, timestamp FROM '
+      'buildMessageTable c JOIN buildTable b ON build_id = b.id ')
   _DATE_FORMAT = '%Y-%m-%d'
 
   NUM_RESULTS_NO_LIMIT = -1
@@ -729,6 +733,30 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
               'outer_failure_id': outer_failure_id,
               'extra_info': extra_info}
     return self._Insert('failureTable', values)
+
+  @minimum_schema(42)
+  def InsertBuildMessage(self, build_id, message_type=None,
+                         message_subtype=None, message_value=None):
+    """Insert a build message into database.
+
+    Args:
+      build_id: primary key of build recording this message.
+      message_type: Optional str name of message type.
+      message_subtype: Optional str name of message subtype.
+      message_value: Optional value of message.
+    """
+    if message_type:
+      message_type = message_type[:240]
+    if message_subtype:
+      message_subtype = message_subtype[:240]
+    if message_value:
+      message_value = message_value[:480]
+
+    values = {'build_id': build_id,
+              'message_type': message_type,
+              'message_subtype': message_subtype,
+              'message_value': message_value}
+    return self._Insert('buildMessageTable', values)
 
   @minimum_schema(2)
   def UpdateMetadata(self, build_id, metadata):
@@ -1149,6 +1177,43 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute('SELECT k, v FROM keyvalTable').fetchall()
     return dict(results)
 
+  @minimum_schema(42)
+  def GetBuildMessages(self, build_id):
+    """Gets build messages from buildMessageTable.
+
+    Args:
+      build_id: The build to get messages for.
+
+    Returns:
+      A list of build message dictionaries, where each dictionary contains
+      keys build_id, build_config, builder_name, build_number, message_type,
+      message_subtype, message_value, timestamp.
+    """
+    return self._GetBuildMessagesWithClause('build_id = %s' % build_id)
+
+  @minimum_schema(42)
+  def GetSlaveBuildMessages(self, master_build_id):
+    """Gets build messages from buildMessageTable.
+
+    Args:
+      master_build_id: The build to get all slave messages for.
+
+    Returns:
+      A list of build message dictionaries, where each dictionary contains
+      keys build_id, build_config, waterfall, builder_name, build_number,
+      message_type, message_subtype, message_value, timestamp.
+    """
+    return self._GetBuildMessagesWithClause(
+        'master_build_id = %s' % master_build_id)
+
+  def _GetBuildMessagesWithClause(self, clause):
+    """Private helper method for fetching build messages."""
+    columns = ['build_id', 'build_config', 'waterfall', 'builder_name',
+               'build_number', 'message_type', 'message_subtype',
+               'message_value', 'timestamp']
+    results = self._Execute('%s WHERE %s' % (self._SQL_FETCH_MESSAGES,
+                                             clause)).fetchall()
+    return [dict(zip(columns, values)) for values in results]
 
 def _INV():
   raise AssertionError('CIDB connection factory has been invalidated.')
