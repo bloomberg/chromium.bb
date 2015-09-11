@@ -160,9 +160,11 @@ source_set("ffmpeg_internal") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
-    ":ffmpegsumo_warnings",
     "//build/config/compiler:no_chromium_code",
+    # These must be after no_chromium_code for warning flags to be ordered
+    # correctly.
     "//build/config/compiler:no_incompatible_pointer_warnings",
+    ":ffmpegsumo_warnings",
   ]
 
   # Since we are not often debugging FFmpeg, and performance is
