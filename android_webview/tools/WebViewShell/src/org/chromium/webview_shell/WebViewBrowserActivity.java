@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.view.KeyEvent;
@@ -61,6 +62,9 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
         setContentView(R.layout.activity_webview_browser);
         mWebView = (WebView) findViewById(R.id.webview);
         WebSettings settings = mWebView.getSettings();
