@@ -67,3 +67,7 @@ WakeEventPageTest.ClosedEventPage
 # https://crbug.com/530696
 PolicyTest.ForceSafeSearch
 PolicyTest.URLBlacklist
+
+# https://crbug.com/530727
+MaterialPDFExtensionTest.Bookmark
+MaterialPDFExtensionTest.WhitespaceTitle
