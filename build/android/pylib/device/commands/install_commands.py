@@ -33,7 +33,7 @@ def InstallCommands(device):
   if device.IsUserBuild():
     raise device_errors.CommandFailedError(
         'chromium_commands currently requires a userdebug build.',
-        device_serial=device.GetDeviceSerial())
+        device_serial=device.adb.GetDeviceSerial())
 
   chromium_commands_jar_path = os.path.join(
       constants.GetOutDirectory(), constants.SDK_BUILD_JAVALIB_DIR,
