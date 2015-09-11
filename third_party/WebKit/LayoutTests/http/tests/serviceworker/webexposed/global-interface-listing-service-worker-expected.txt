@@ -437,6 +437,11 @@ interface NotificationEvent
     getter action
     getter notification
     method constructor
+interface PerformanceObserverEntryList
+    method constructor
+    method getEntries
+    method getEntriesByName
+    method getEntriesByType
 interface PeriodicSyncEvent
     getter registration
     method constructor

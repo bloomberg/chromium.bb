@@ -116,6 +116,7 @@ ForceOverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
 PathOpsSVGClipping status=stable
+PerformanceObserver status=experimental
 Permissions status=stable
 PermissionsRequestRevoke status=experimental
 PointerEvent

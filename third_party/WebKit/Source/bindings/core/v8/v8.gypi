@@ -150,6 +150,8 @@
             'V8PagePopupControllerBinding.h',
             'V8PerContextData.cpp',
             'V8PerContextData.h',
+            'V8PerformanceObserverCallback.cpp',
+            'V8PerformanceObserverCallback.h',
             'V8PerIsolateData.cpp',
             'V8PerIsolateData.h',
             'V8PersistentValueVector.h',

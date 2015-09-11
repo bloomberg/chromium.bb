@@ -42,10 +42,22 @@ namespace blink {
 class ScriptState;
 class ScriptValue;
 
+using PerformanceEntryType = unsigned char;
+using PerformanceEntryTypeMask = unsigned char;
+
 class CORE_EXPORT PerformanceEntry : public GarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~PerformanceEntry();
+
+    enum EntryType {
+        Invalid = 0,
+        Composite = 1 << 1,
+        Mark = 1 << 2,
+        Measure = 1 << 3,
+        Render = 1 << 4,
+        Resource = 1 << 5,
+    };
 
     String name() const;
     String entryType() const;
@@ -54,16 +66,20 @@ public:
 
     ScriptValue toJSONForBinding(ScriptState*) const;
 
-    virtual bool isResource() { return false; }
-    virtual bool isRender() { return false; }
-    virtual bool isComposite() { return false; }
-    virtual bool isMark() { return false; }
-    virtual bool isMeasure() { return false; }
+    PerformanceEntryType entryTypeEnum() const { return m_entryTypeEnum; }
+
+    bool isResource() const { return m_entryTypeEnum == Resource; }
+    bool isRender()  const { return m_entryTypeEnum == Render; }
+    bool isComposite()  const { return m_entryTypeEnum == Composite; }
+    bool isMark()  const { return m_entryTypeEnum == Mark; }
+    bool isMeasure()  const { return m_entryTypeEnum == Measure; }
 
     static bool startTimeCompareLessThan(PerformanceEntry* a, PerformanceEntry* b)
     {
         return a->startTime() < b->startTime();
     }
+
+    static EntryType toEntryTypeEnum(const String& entryType);
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -75,6 +91,7 @@ private:
     const String m_entryType;
     const double m_startTime;
     const double m_duration;
+    const PerformanceEntryType m_entryTypeEnum;
 };
 
 } // namespace blink

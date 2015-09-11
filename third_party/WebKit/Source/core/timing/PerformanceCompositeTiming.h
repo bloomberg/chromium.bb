@@ -51,8 +51,6 @@ public:
 
     unsigned sourceFrame() const;
 
-    bool isComposite() override { return true; }
-
     DECLARE_VIRTUAL_TRACE();
 
 private:

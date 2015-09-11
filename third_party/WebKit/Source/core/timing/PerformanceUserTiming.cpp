@@ -76,20 +76,20 @@ const RestrictedKeyMap& restrictedKeyMap()
 
 } // namespace anonymous
 
-UserTiming::UserTiming(PerformanceBase* performance)
-    : m_performance(performance)
+UserTiming::UserTiming(PerformanceBase& performance)
+    : m_performance(&performance)
 {
 }
 
-static void insertPerformanceEntry(PerformanceEntryMap& performanceEntryMap, PerformanceEntry* entry)
+static void insertPerformanceEntry(PerformanceEntryMap& performanceEntryMap, PerformanceEntry& entry)
 {
-    PerformanceEntryMap::iterator it = performanceEntryMap.find(entry->name());
+    PerformanceEntryMap::iterator it = performanceEntryMap.find(entry.name());
     if (it != performanceEntryMap.end()) {
-        it->value.append(entry);
+        it->value.append(&entry);
     } else {
         PerformanceEntryVector vector(1);
-        vector[0] = entry;
-        performanceEntryMap.set(entry->name(), vector);
+        vector[0] = Member<PerformanceEntry>(entry);
+        performanceEntryMap.set(entry.name(), vector);
     }
 }
 
@@ -104,17 +104,19 @@ static void clearPeformanceEntries(PerformanceEntryMap& performanceEntryMap, con
         performanceEntryMap.remove(name);
 }
 
-void UserTiming::mark(const String& markName, ExceptionState& exceptionState)
+PerformanceEntry* UserTiming::mark(const String& markName, ExceptionState& exceptionState)
 {
     if (restrictedKeyMap().contains(markName)) {
         exceptionState.throwDOMException(SyntaxError, "'" + markName + "' is part of the PerformanceTiming interface, and cannot be used as a mark name.");
-        return;
+        return nullptr;
     }
 
     TRACE_EVENT_COPY_MARK("blink.user_timing", markName.utf8().data());
     double startTime = m_performance->now();
-    insertPerformanceEntry(m_marksMap, PerformanceMark::create(markName, startTime));
+    PerformanceEntry* entry = PerformanceMark::create(markName, startTime);
+    insertPerformanceEntry(m_marksMap, *entry);
     Platform::current()->histogramCustomCounts("PLT.UserTiming_Mark", static_cast<int>(startTime), 0, 600000, 100);
+    return entry;
 }
 
 void UserTiming::clearMarks(const String& markName)
@@ -140,7 +142,7 @@ double UserTiming::findExistingMarkStartTime(const String& markName, ExceptionSt
     return 0.0;
 }
 
-void UserTiming::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState& exceptionState)
+PerformanceEntry* UserTiming::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState& exceptionState)
 {
     double startTime = 0.0;
     double endTime = 0.0;
@@ -151,14 +153,14 @@ void UserTiming::measure(const String& measureName, const String& startMark, con
         endTime = m_performance->now();
         startTime = findExistingMarkStartTime(startMark, exceptionState);
         if (exceptionState.hadException())
-            return;
+            return nullptr;
     } else {
         endTime = findExistingMarkStartTime(endMark, exceptionState);
         if (exceptionState.hadException())
-            return;
+            return nullptr;
         startTime = findExistingMarkStartTime(startMark, exceptionState);
         if (exceptionState.hadException())
-            return;
+            return nullptr;
     }
 
     // User timing events are stored as integer milliseconds from the start of
@@ -170,9 +172,11 @@ void UserTiming::measure(const String& measureName, const String& startMark, con
     TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0("blink.user_timing", measureName.utf8().data(), WTF::StringHash::hash(measureName), startTimeMonotonic);
     TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0("blink.user_timing", measureName.utf8().data(), WTF::StringHash::hash(measureName), endTimeMonotonic);
 
-    insertPerformanceEntry(m_measuresMap, PerformanceMeasure::create(measureName, startTime, endTime));
+    PerformanceEntry* entry = PerformanceMeasure::create(measureName, startTime, endTime);
+    insertPerformanceEntry(m_measuresMap, *entry);
     if (endTime >= startTime)
         Platform::current()->histogramCustomCounts("PLT.UserTiming_MeasureDuration", static_cast<int>(endTime - startTime), 0, 600000, 100);
+    return entry;
 }
 
 void UserTiming::clearMeasures(const String& measureName)

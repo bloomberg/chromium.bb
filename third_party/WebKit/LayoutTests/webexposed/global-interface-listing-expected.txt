@@ -3643,6 +3643,15 @@ interface PerformanceNavigation
     getter redirectCount
     getter type
     method constructor
+interface PerformanceObserver
+    method constructor
+    method disconnect
+    method observe
+interface PerformanceObserverEntryList
+    method constructor
+    method getEntries
+    method getEntriesByName
+    method getEntriesByType
 interface PerformanceRenderTiming
     getter sourceFrame
     method constructor

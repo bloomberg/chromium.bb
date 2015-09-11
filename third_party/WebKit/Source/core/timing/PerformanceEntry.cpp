@@ -41,6 +41,7 @@ PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, 
     , m_entryType(entryType)
     , m_startTime(startTime)
     , m_duration(finishTime - startTime)
+    , m_entryTypeEnum(toEntryTypeEnum(entryType))
 {
 }
 
@@ -66,6 +67,21 @@ double PerformanceEntry::startTime() const
 double PerformanceEntry::duration() const
 {
     return m_duration;
+}
+
+PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(const String& entryType)
+{
+    if (equalIgnoringCase(entryType, "composite"))
+        return Composite;
+    if (equalIgnoringCase(entryType, "mark"))
+        return Mark;
+    if (equalIgnoringCase(entryType, "measure"))
+        return Measure;
+    if (equalIgnoringCase(entryType, "render"))
+        return Render;
+    if (equalIgnoringCase(entryType, "resource"))
+        return Resource;
+    return Invalid;
 }
 
 ScriptValue PerformanceEntry::toJSONForBinding(ScriptState* scriptState) const

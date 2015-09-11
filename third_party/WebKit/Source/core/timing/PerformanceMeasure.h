@@ -41,8 +41,6 @@ public:
         return new PerformanceMeasure(name, startTime, endTime);
     }
 
-    bool isMeasure() override { return true; }
-
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         PerformanceEntry::trace(visitor);

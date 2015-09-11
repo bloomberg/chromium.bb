@@ -35,6 +35,7 @@
 #include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "core/timing/PerformanceEntry.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -44,11 +45,13 @@ namespace blink {
 
 class Document;
 class ExceptionState;
+class PerformanceObserver;
 class PerformanceTiming;
 class ResourceTimingInfo;
 class UserTiming;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
+using PerformanceObservers = HeapListHashSet<Member<PerformanceObserver>>;
 
 class CORE_EXPORT PerformanceBase : public RefCountedGarbageCollectedEventTargetWithInlineData<PerformanceBase> {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PerformanceBase);
@@ -89,15 +92,27 @@ public:
     void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState&);
     void clearMeasures(const String& measureName);
 
+    void unregisterPerformanceObserver(PerformanceObserver&);
+    void registerPerformanceObserver(PerformanceObserver&);
+    void updatePerformanceObserverFilterOptions();
+    void activateObserver(PerformanceObserver&);
+    void resumeSuspendedObservers();
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
+
     explicit PerformanceBase(double timeOrigin);
     bool isResourceTimingBufferFull();
-    void addResourceTimingBuffer(PerformanceEntry*);
+    void addResourceTimingBuffer(PerformanceEntry&);
 
     bool isFrameTimingBufferFull();
-    void addFrameTimingBuffer(PerformanceEntry*);
+    void addFrameTimingBuffer(PerformanceEntry&);
+
+    void notifyObserversOfEntry(PerformanceEntry&);
+    bool hasObserverFor(PerformanceEntry::EntryType);
+
+    void deliverObservationsTimerFired(Timer<PerformanceBase>*);
 
     PerformanceEntryVector m_frameTimingBuffer;
     unsigned m_frameTimingBufferSize;
@@ -106,6 +121,12 @@ protected:
     double m_timeOrigin;
 
     Member<UserTiming> m_userTiming;
+
+    PerformanceEntryTypeMask m_observerFilterOptions;
+    PerformanceObservers m_observers;
+    PerformanceObservers m_activeObservers;
+    PerformanceObservers m_suspendedObservers;
+    Timer<PerformanceBase> m_deliverObservationsTimer;
 };
 
 } // namespace blink

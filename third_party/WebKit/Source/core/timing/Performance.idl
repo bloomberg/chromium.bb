@@ -35,7 +35,9 @@
 // would allow the WorkerPerformance interface to be merged into this.
 // TODO(philipj): None of the optional DOMString arguments in this interface
 // should have a default value.
-interface Performance : EventTarget {
+[
+  GarbageCollected
+] interface Performance : EventTarget {
     DOMHighResTimeStamp now();
 
     // Performance Timeline

@@ -51,8 +51,6 @@ public:
 
     unsigned sourceFrame() const;
 
-    bool isRender() override { return true; }
-
     DECLARE_VIRTUAL_TRACE();
 
 private:

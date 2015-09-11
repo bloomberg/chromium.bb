@@ -192,6 +192,8 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/DateComponents.h"
@@ -4975,6 +4977,8 @@ void Document::tasksWereResumed()
         m_scriptedAnimationController->resume();
 
     MutationObserver::resumeSuspendedObservers();
+    if (m_domWindow)
+        DOMWindowPerformance::performance(*m_domWindow)->resumeSuspendedObservers();
 }
 
 // FIXME: suspendScheduledTasks(), resumeScheduledTasks(), tasksNeedSuspension()
