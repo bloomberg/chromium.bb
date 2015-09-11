@@ -1377,18 +1377,19 @@ VisiblePosition nextSentencePosition(const VisiblePosition& c)
     return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
 
-VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> startOfParagraphAlgorithm(const VisiblePositionTemplate<Strategy>& c, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    Position p = c.deepEquivalent();
+    const PositionAlgorithm<Strategy> p = c.deepEquivalent();
     Node* startNode = p.anchorNode();
 
     if (!startNode)
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
-        return createVisiblePosition(positionBeforeNode(startNode));
+        return createVisiblePosition(PositionAlgorithm<Strategy>::beforeNode(startNode));
 
-    Element* startBlock = enclosingBlock(startNode);
+    Element* startBlock = enclosingBlock(PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(startNode), CannotCrossEditingBoundary);
 
     Node* node = startNode;
     ContainerNode* highestRoot = highestEditableRoot(p);
@@ -1402,18 +1403,18 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
             break;
         if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
             while (n && n->hasEditableStyle() != startNodeIsEditable)
-                n = NodeTraversal::previousPostOrder(*n, startBlock);
+                n = Strategy::previousPostOrder(*n, startBlock);
             if (!n || !n->isDescendantOf(highestRoot))
                 break;
         }
         LayoutObject* r = n->layoutObject();
         if (!r) {
-            n = NodeTraversal::previousPostOrder(*n, startBlock);
+            n = Strategy::previousPostOrder(*n, startBlock);
             continue;
         }
         const ComputedStyle& style = r->styleRef();
         if (style.visibility() != VISIBLE) {
-            n = NodeTraversal::previousPostOrder(*n, startBlock);
+            n = Strategy::previousPostOrder(*n, startBlock);
             continue;
         }
 
@@ -1431,25 +1432,35 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
                     i = max(0, o);
                 while (--i >= 0) {
                     if ((*text)[i] == '\n')
-                        return createVisiblePosition(Position(toText(n), i + 1));
+                        return createVisiblePosition(PositionAlgorithm<Strategy>(toText(n), i + 1));
                 }
             }
             node = n;
             offset = 0;
-            n = NodeTraversal::previousPostOrder(*n, startBlock);
+            n = Strategy::previousPostOrder(*n, startBlock);
         } else if (editingIgnoresContent(n) || isRenderedTableElement(n)) {
             node = n;
             type = PositionAnchorType::BeforeAnchor;
-            n = n->previousSibling() ? n->previousSibling() : NodeTraversal::previousPostOrder(*n, startBlock);
+            n = n->previousSibling() ? n->previousSibling() : Strategy::previousPostOrder(*n, startBlock);
         } else {
-            n = NodeTraversal::previousPostOrder(*n, startBlock);
+            n = Strategy::previousPostOrder(*n, startBlock);
         }
     }
 
     if (type == PositionAnchorType::OffsetInAnchor)
-        return createVisiblePosition(Position(node, offset));
+        return createVisiblePosition(PositionAlgorithm<Strategy>(node, offset));
 
-    return createVisiblePosition(Position(node, type));
+    return createVisiblePosition(PositionAlgorithm<Strategy>(node, type));
+}
+
+VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
+{
+    return startOfParagraphAlgorithm<EditingStrategy>(c, boundaryCrossingRule);
+}
+
+VisiblePositionInComposedTree startOfParagraph(const VisiblePositionInComposedTree& c, EditingBoundaryCrossingRule boundaryCrossingRule)
+{
+    return startOfParagraphAlgorithm<EditingInComposedTreeStrategy>(c, boundaryCrossingRule);
 }
 
 template <typename Strategy>

@@ -601,6 +601,31 @@ TEST_F(VisibleUnitsTest, startOfLine)
     EXPECT_EQ(PositionInComposedTree(one, 0), startOfLine(createVisiblePositionInComposedTree(*seven, 1)).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, startOfParagraph)
+{
+    const char* bodyContent = "<b id=zero>0</b><a id=host><b id=one>1</b><b id=two>22</b></a><b id=three>333</b>";
+    const char* shadowContent = "<p><content select=#two></content></p><p><content select=#one></content></p>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* zero = document().getElementById("zero")->firstChild();
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+
+    EXPECT_EQ(Position(zero, 0), startOfParagraph(createVisiblePositionInDOMTree(*one, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one, 0), startOfParagraph(createVisiblePositionInComposedTree(*one, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(zero, 0), startOfParagraph(createVisiblePositionInDOMTree(*two, 2)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(two, 0), startOfParagraph(createVisiblePositionInComposedTree(*two, 2)).deepEquivalent());
+
+    // DOM version of |startOfParagraph()| doesn't take account contents in
+    // shadow tree.
+    EXPECT_EQ(Position(zero, 0), startOfParagraph(createVisiblePositionInDOMTree(*three, 2)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), startOfParagraph(createVisiblePositionInComposedTree(*three, 2)).deepEquivalent());
+}
+
 TEST_F(VisibleUnitsTest, startOfSentence)
 {
     const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a>";

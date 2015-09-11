@@ -157,7 +157,11 @@ VisiblePosition leftBoundaryOfLine(const VisiblePosition&, TextDirection);
 VisiblePosition rightBoundaryOfLine(const VisiblePosition&, TextDirection);
 
 // paragraphs (perhaps a misnomer, can be divided by line break elements)
-VisiblePosition startOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+// TODO(yosin) Since return value of |startOfParagraph()| with |VisiblePosition|
+// isn't defined well on composed tree, we should not use it for a position in
+// composed tree.
+CORE_EXPORT VisiblePosition startOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT VisiblePositionInComposedTree startOfParagraph(const VisiblePositionInComposedTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT VisiblePosition endOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT VisiblePositionInComposedTree endOfParagraph(const VisiblePositionInComposedTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 VisiblePosition startOfNextParagraph(const VisiblePosition&);
