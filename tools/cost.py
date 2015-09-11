@@ -23,13 +23,19 @@ CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 _EPOCH = datetime.datetime.utcfromtimestamp(0)
 
+# Type of bucket to use.
+MAJOR_OS, MAJOR_OS_ASAN, MINOR_OS, MINOR_OS_GPU = range(4)
 
-def do_bucket(items, bucket_major_os, bucket_gpu):
+
+def do_bucket(items, bucket_type):
+  """Categorizes the tasks based on one of the bucket type defined above."""
   out = {}
   for task in items:
     if 'heartbeat:1' in task['tags']:
       # Skip heartbeats.
       continue
+
+    is_asan = 'asan:1' in task['tags']
     os_tag = None
     gpu_tag = None
     for t in task['tags']:
@@ -39,14 +45,22 @@ def do_bucket(items, bucket_major_os, bucket_gpu):
           # GPU tests still specify Linux.
           # TODO(maruel): Fix the recipe.
           os_tag = 'Ubuntu'
-        if bucket_major_os:
-          os_tag = os_tag.split('-')[0]
       elif t.startswith('gpu:'):
         gpu_tag = t[4:]
+
+    if bucket_type in (MAJOR_OS, MAJOR_OS_ASAN):
+      os_tag = os_tag.split('-')[0]
     tag = os_tag
-    if bucket_gpu and gpu_tag and gpu_tag != 'none':
+    if bucket_type == MINOR_OS_GPU and gpu_tag and gpu_tag != 'none':
       tag += ' gpu:' + gpu_tag
+    if bucket_type == MAJOR_OS_ASAN and is_asan:
+      tag += ' ASan'
     out.setdefault(tag, []).append(task)
+
+    # Also create global buckets for ASan.
+    if bucket_type == MAJOR_OS_ASAN:
+      tag = '(any OS) ASan' if is_asan else '(any OS) Not ASan'
+      out.setdefault(tag, []).append(task)
   return out
 
 
@@ -280,10 +294,10 @@ def stats(tasks, show_cost):
         pending_total, pending_avg, pending_med, pending_p99))
 
 
-def present_data(items, bucket_major_os, bucket_gpu, show_cost):
+def present_task_types(items, bucket_type, show_cost):
   cost = '    Usage Cost $USD' if show_cost else ''
   print('      Nb of Tasks              Total Duration%s' % cost)
-  buckets = do_bucket(items, bucket_major_os, bucket_gpu)
+  buckets = do_bucket(items, bucket_type)
   for index, (bucket, tasks) in enumerate(sorted(buckets.iteritems())):
     if index:
       print('')
@@ -293,6 +307,33 @@ def present_data(items, bucket_major_os, bucket_gpu, show_cost):
     print('')
   print('Global:')
   stats(items, show_cost)
+
+
+def present_users(items):
+  users = {}
+  for task in items:
+    user = ''
+    for tag in task['tags']:
+      if tag.startswith('user:'):
+        if tag[5:]:
+          user = tag[5:]
+          break
+      if tag == 'purpose:CI':
+        user = 'CI'
+        break
+      if tag == 'heartbeat:1':
+        user = 'heartbeat'
+        break
+    if user:
+      users.setdefault(user, 0)
+      users[user] += 1
+  maxlen = max(len(i) for i in users)
+  maxusers = 100
+  for index, (name, tasks) in enumerate(
+      sorted(users.iteritems(), key=lambda x: -x[1])):
+    if index == maxusers:
+      break
+    print('%3d  %-*s: %d' % (index + 1, maxlen, name, tasks))
 
 
 def main():
@@ -306,16 +347,34 @@ def main():
   parser.add_option(
       '--end', help='End date in UTC; defaults to --start+1 day')
   parser.add_option(
-      '--broad', action='store_true', help='Strip OS version from buckets')
-  parser.add_option(
-      '--gpu', action='store_true', help='Buckets per GPU')
-  parser.add_option(
       '--no-cost', action='store_false', dest='cost', default=True,
       help='Strip $ from display')
   parser.add_option(
-      '--json', default='stats.json',
+      '--users', action='store_true', help='Display top users instead')
+  parser.add_option(
+      '--json', default='tasks.json',
       help='File containing raw data; default: %default')
   parser.add_option('-v', '--verbose', action='count', default=0)
+
+  group = optparse.OptionGroup(parser, 'Grouping')
+  group.add_option(
+      '--major-os', action='store_const',
+      dest='bucket', const=MAJOR_OS, default=MAJOR_OS,
+      help='Classify by OS type, independent of OS version (default)')
+  group.add_option(
+      '--minor-os', action='store_const',
+      dest='bucket', const=MINOR_OS,
+      help='Classify by minor OS version')
+  group.add_option(
+      '--gpu', action='store_const',
+      dest='bucket', const=MINOR_OS_GPU,
+      help='Classify by minor OS version and GPU type when requested')
+  group.add_option(
+      '--asan', action='store_const',
+      dest='bucket', const=MAJOR_OS_ASAN,
+      help='Classify by major OS version and ASAN')
+  parser.add_option_group(group)
+
   options, args = parser.parse_args()
 
   if args:
@@ -337,7 +396,11 @@ def main():
         parse_time(last['created_ts']) - parse_time(first['created_ts'])
         ))
   print('')
-  present_data(items, options.broad, options.gpu, options.cost)
+
+  if options.users:
+    present_users(items)
+  else:
+    present_task_types(items, options.bucket, options.cost)
   return 0
 
 
