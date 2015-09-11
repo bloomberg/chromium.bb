@@ -557,7 +557,7 @@ lou_indexTables(const char ** tables)
 static List *
 listFiles(char * searchPath)
 {
-  List * list;
+  List * list = NULL;
   char * dirName;
   DIR * dir;
   struct dirent * file;

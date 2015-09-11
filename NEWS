@@ -7,6 +7,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   Thanks to Christian Egli
 
 ** Bug fixes
+- Fix a bug in the findtable code. Thanks to Michael Katzmann for the
+  report.
 
 ** Other changes
 
