@@ -20,6 +20,11 @@ function BackgroundTest() {
 BackgroundTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
+  /** @override */
+  setUp: function() {
+    global.backgroundObj.forceChromeVoxNextActive();
+  },
+
   /**
    * @return {!MockFeedback}
    */
@@ -338,4 +343,28 @@ TEST_F('BackgroundTest', 'BrailleRouting', function() {
             });
         mockFeedback.replay();
       });
+});
+
+TEST_F('BackgroundTest', 'FocusInputElement', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+    function() {/*!
+      <input id="name" value="Lancelot">
+      <input id="quest" value="Grail">
+      <input id="color" value="Blue">
+    */},
+    function(rootNode) {
+      var name = rootNode.find({ attributes: { value: 'Lancelot' } });
+      var quest = rootNode.find({ attributes: { value: 'Grail' } });
+      var color = rootNode.find({ attributes: { value: 'Blue' } });
+
+      mockFeedback.call(quest.focus.bind(quest))
+          .expectSpeech('Grail', 'Edit text')
+          .call(color.focus.bind(color))
+          .expectSpeech('Blue', 'Edit text')
+          .call(name.focus.bind(name))
+          .expectNextSpeechUtteranceIsNot('Blue')
+          .expectSpeech('Lancelot', 'Edit text');
+      mockFeedback.replay();
+    }.bind(this));
 });

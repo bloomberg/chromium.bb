@@ -141,6 +141,37 @@ MockFeedback.prototype = {
   },
 
   /**
+   * Adds an expectation that the next spoken utterances do *not* match
+   * the given arguments.
+   *
+   * This is only guaranteed to work for the immediately following utterance.
+   * If you use it to check an utterance other than the immediately following
+   * one the results may be flaky.
+   *
+   * @param {...(string|RegExp)} var_args One or more utterance to add as
+   *     negative expectations.
+   * @return {MockFeedback} |this| for chaining
+   */
+  expectNextSpeechUtteranceIsNot: function() {
+    assertFalse(this.replaying_);
+    Array.prototype.forEach.call(arguments, function(text) {
+      this.pendingActions_.push({
+        perform: function() {
+          if (this.pendingUtterances_.length == 0)
+            return false;
+          if (MockFeedback.matchAndConsume_(
+                  text, {}, this.pendingUtterances_)) {
+            throw new Error('Got disallowed utterance "' + text + '".');
+          }
+          return true;
+        }.bind(this),
+        toString: function() { return 'Do not speak \'' + text + '\''; }
+      });
+    }.bind(this));
+    return this;
+  },
+
+  /**
    * Adds an expectation for braille output.
    * @param {string|RegExp} text
    * @param {Object=} opt_props Additional properties to match in the
