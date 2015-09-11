@@ -128,6 +128,7 @@ source_set("blink_headers") {
     "platform/WebPrivateOwnPtr.h",
     "platform/WebHTTPHeaderVisitor.h",
     "platform/WebScrollbar.h",
+    "platform/WebMediaRecorder.h",
     "platform/WebMediaStream.h",
     "platform/WebServiceWorkerRegistration.h",
     "platform/WebRect.h",

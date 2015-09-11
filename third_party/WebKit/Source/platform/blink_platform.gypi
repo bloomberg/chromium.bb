@@ -297,6 +297,7 @@
       'exported/WebMediaDeviceInfo.cpp',
       'exported/WebMediaPlayerClient.cpp',
       'exported/WebMediaPlayerEncryptedMediaClient.cpp',
+      'exported/WebMediaRecorderHandler.cpp',
       'exported/WebMediaStream.cpp',
       'exported/WebMediaStreamSource.cpp',
       'exported/WebMediaStreamTrack.cpp',
