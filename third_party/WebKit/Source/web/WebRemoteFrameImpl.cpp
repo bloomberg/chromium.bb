@@ -285,6 +285,11 @@ v8::Local<v8::Context> WebRemoteFrameImpl::mainWorldScriptContext() const
     return v8::Local<v8::Context>();
 }
 
+v8::Local<v8::Context> WebRemoteFrameImpl::deprecatedMainWorldScriptContext() const
+{
+    return toV8Context(frame(), DOMWrapperWorld::mainWorld());
+}
+
 void WebRemoteFrameImpl::reload(bool ignoreCache)
 {
     ASSERT_NOT_REACHED();

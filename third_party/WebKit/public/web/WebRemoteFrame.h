@@ -44,6 +44,11 @@ public:
     virtual void didStartLoading() = 0;
     virtual void didStopLoading() = 0;
 
+    // Temporary method to allow embedders to get the script context of a
+    // remote frame. This should only be used by legacy code that has not yet
+    // migrated over to the new OOPI infrastructure.
+    virtual v8::Local<v8::Context> deprecatedMainWorldScriptContext() const = 0;
+
 protected:
     explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) { }
 };
