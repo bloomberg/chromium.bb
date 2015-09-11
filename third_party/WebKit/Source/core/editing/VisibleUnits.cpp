@@ -725,21 +725,22 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
     return createVisiblePosition(charIt.endPosition());
 }
 
-static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunction searchFunction)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTemplate<Strategy>& c, BoundarySearchFunction searchFunction)
 {
-    Position pos = c.deepEquivalent();
+    PositionAlgorithm<Strategy> pos = c.deepEquivalent();
     Node* boundary = parentEditingBoundary(pos);
     if (!boundary)
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
     Document& d = boundary->document();
-    Position start(pos.parentAnchoredEquivalent());
+    const PositionAlgorithm<Strategy> start(pos.parentAnchoredEquivalent());
 
     Vector<UChar, 1024> string;
     unsigned prefixLength = 0;
 
     if (requiresContextForWordBoundary(characterAfter(c))) {
-        SimplifiedBackwardsTextIterator backwardsIterator(Position::firstPositionInNode(&d), start);
+        SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(PositionAlgorithm<Strategy>::firstPositionInNode(&d), start);
         while (!backwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
             backwardsIterator.prependTextTo(characters);
@@ -753,20 +754,22 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         }
     }
 
-    Position searchStart = Position::editingPositionOf(start.anchorNode(), start.offsetInContainerNode());
-    Position searchEnd = Position::lastPositionInNode(boundary);
-    TextIterator it(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+    const PositionAlgorithm<Strategy> searchStart = PositionAlgorithm<Strategy>::editingPositionOf(start.anchorNode(), start.offsetInContainerNode());
+    const PositionAlgorithm<Strategy> searchEnd = PositionAlgorithm<Strategy>::lastPositionInNode(boundary);
+    TextIteratorAlgorithm<Strategy> it(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     const unsigned invalidOffset = static_cast<unsigned>(-1);
     unsigned next = invalidOffset;
     bool needMoreContext = false;
     while (!it.atEnd()) {
         // Keep asking the iterator for chunks until the search function
-        // returns an end value not equal to the length of the string passed to it.
+        // returns an end value not equal to the length of the string passed to
+        // it.
         bool inTextSecurityMode = it.node() && it.node()->layoutObject() && it.node()->layoutObject()->style()->textSecurity() != TSNONE;
         if (!inTextSecurityMode) {
             it.text().appendTextTo(string);
         } else {
-            // Treat bullets used in the text security mode as regular characters when looking for boundaries
+            // Treat bullets used in the text security mode as regular
+            // characters when looking for boundaries
             Vector<UChar, 1024> iteratorString;
             iteratorString.fill('x', it.length());
             string.append(iteratorString.data(), iteratorString.size());
@@ -777,8 +780,9 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         it.advance();
     }
     if (needMoreContext) {
-        // The last search returned the end of the buffer and asked for more context,
-        // but there is no further text. Force a search with what's available.
+        // The last search returned the end of the buffer and asked for more
+        // context, but there is no further text. Force a search with what's
+        // available.
         next = searchFunction(string.data(), string.size(), prefixLength, DontHaveMoreContext, needMoreContext);
         ASSERT(!needMoreContext);
     }
@@ -786,14 +790,17 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     if (it.atEnd() && next == string.size()) {
         pos = it.startPositionInCurrentContainer();
     } else if (next != invalidOffset && next != prefixLength) {
-        // Use the character iterator to translate the next value into a DOM position.
-        CharacterIterator charIt(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+        // Use the character iterator to translate the next value into a DOM
+        // position.
+        CharacterIteratorAlgorithm<Strategy> charIt(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
         charIt.advance(next - prefixLength - 1);
         pos = charIt.endPosition();
 
         if (charIt.characterAt(0) == '\n') {
-            // FIXME: workaround for collapsed range (where only start position is correct) emitted for some emitted newlines (see rdar://5192593)
-            VisiblePosition visPos = createVisiblePosition(pos);
+            // TODO(yosin) workaround for collapsed range (where only start
+            // position is correct) emitted for some emitted newlines
+            // (see rdar://5192593)
+            const VisiblePositionTemplate<Strategy> visPos = createVisiblePosition(pos);
             if (visPos.deepEquivalent() == createVisiblePosition(charIt.startPosition()).deepEquivalent()) {
                 charIt.advance(1);
                 pos = charIt.startPosition();
@@ -1314,10 +1321,22 @@ static unsigned endSentenceBoundary(const UChar* characters, unsigned length, un
     return iterator->next();
 }
 
-// FIXME: This includes the space after the punctuation that marks the end of the sentence.
-VisiblePosition endOfSentence(const VisiblePosition& c)
+// TODO(yosin) This includes the space after the punctuation that marks the end
+// of the sentence.
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> endOfSentenceAlgorithm(const VisiblePositionTemplate<Strategy>& c)
 {
     return nextBoundary(c, endSentenceBoundary);
+}
+
+VisiblePosition endOfSentence(const VisiblePosition& c)
+{
+    return endOfSentenceAlgorithm<EditingStrategy>(c);
+}
+
+VisiblePositionInComposedTree endOfSentence(const VisiblePositionInComposedTree& c)
+{
+    return endOfSentenceAlgorithm<EditingInComposedTreeStrategy>(c);
 }
 
 static unsigned previousSentencePositionBoundary(const UChar* characters, unsigned length, unsigned, BoundarySearchContextAvailability, bool&)

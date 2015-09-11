@@ -125,6 +125,7 @@ VisiblePosition leftWordPosition(const VisiblePosition&, bool skipsSpaceWhenMovi
 CORE_EXPORT VisiblePosition startOfSentence(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInComposedTree startOfSentence(const VisiblePositionInComposedTree&);
 CORE_EXPORT VisiblePosition endOfSentence(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInComposedTree endOfSentence(const VisiblePositionInComposedTree&);
 VisiblePosition previousSentencePosition(const VisiblePosition&);
 VisiblePosition nextSentencePosition(const VisiblePosition&);
 

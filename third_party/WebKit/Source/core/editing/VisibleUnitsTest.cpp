@@ -182,6 +182,39 @@ TEST_F(VisibleUnitsTest, endOfParagraph)
     EXPECT_EQ(PositionInComposedTree(two->firstChild(), 2), endOfParagraph(createVisiblePositionInComposedTree(*two->firstChild(), 2)).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, endOfSentence)
+{
+    const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a>";
+    const char* shadowContent = "<p><i id=three>333</i> <content select=#two></content> <content select=#one></content> <i id=four>4444</i></p>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = shadowRoot->getElementById("three")->firstChild();
+    Node* four = shadowRoot->getElementById("four")->firstChild();
+
+    EXPECT_EQ(Position(two, 2), endOfSentence(createVisiblePositionInDOMTree(*one, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 4), endOfSentence(createVisiblePositionInComposedTree(*one, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(two, 2), endOfSentence(createVisiblePositionInDOMTree(*one, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 4), endOfSentence(createVisiblePositionInComposedTree(*one, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(two, 2), endOfSentence(createVisiblePositionInDOMTree(*two, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 4), endOfSentence(createVisiblePositionInComposedTree(*two, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(two, 2), endOfSentence(createVisiblePositionInDOMTree(*two, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 4), endOfSentence(createVisiblePositionInComposedTree(*two, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(four, 4), endOfSentence(createVisiblePositionInDOMTree(*three, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 4), endOfSentence(createVisiblePositionInComposedTree(*three, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(four, 4), endOfSentence(createVisiblePositionInDOMTree(*four, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 4), endOfSentence(createVisiblePositionInComposedTree(*four, 1)).deepEquivalent());
+}
+
 TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContent)
 {
     const char* bodyContent = "<a id=host><b id=one contenteditable>1</b><b id=two>22</b></a>";
