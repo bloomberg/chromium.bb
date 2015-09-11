@@ -7,6 +7,8 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 executable("test_runner") {
   output_name = "layout_test_runner"
+  testonly = true
+
   sources = [
     "launcher.cc",
     "launcher.h",
@@ -37,6 +39,8 @@ executable("test_runner") {
 }
 
 mojo_native_application("web_view_test_runner") {
+  testonly = true
+
   sources = [
     "test_runner_application_delegate.cc",
     "test_runner_application_delegate.h",
@@ -46,6 +50,7 @@ mojo_native_application("web_view_test_runner") {
   deps = [
     "//base",
     "//components/html_viewer/public/interfaces",
+    "//components/test_runner",
     "//components/view_manager/public/cpp",
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
@@ -53,7 +58,6 @@ mojo_native_application("web_view_test_runner") {
     "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/converters/geometry",
-    "//net",
     "//ui/gfx/geometry",
     "//url",
   ]

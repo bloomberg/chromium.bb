@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/test_runner/test_info_extractor.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "components/web_view/public/cpp/web_view.h"
@@ -67,8 +68,7 @@ class TestRunnerApplicationDelegate
   mojo::View* content_;
   scoped_ptr<WebView> web_view_;
 
-  base::CommandLine::StringVector cmdline_args_;
-  size_t cmdline_position_;
+  scoped_ptr<test_runner::TestInfoExtractor> test_extractor_;
 
   mojo::WeakBindingSet<LayoutTestRunner> layout_test_runner_;
 

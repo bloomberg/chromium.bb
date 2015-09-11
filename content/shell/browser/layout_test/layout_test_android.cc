@@ -17,13 +17,6 @@
 
 namespace {
 
-// Path to search for when translating a layout test path to an URL.
-const char kAndroidLayoutTestPath[] =
-    "/data/local/tmp/third_party/WebKit/LayoutTests/";
-
-// The base URL from which layout tests are being served on Android.
-const char kAndroidLayoutTestBase[] = "http://127.0.0.1:8000/all-tests/";
-
 base::FilePath GetTestFilesDirectory(JNIEnv* env) {
   ScopedJavaLocalRef<jstring> directory =
       content::Java_ShellLayoutTestUtils_getApplicationFilesDirectory(
@@ -44,17 +37,6 @@ scoped_ptr<base::MessagePump> CreateMessagePumpForUI() {
 }  // namespace
 
 namespace content {
-
-bool GetTestUrlForAndroid(std::string& path_or_url, GURL* url) {
-  if (path_or_url.find(kAndroidLayoutTestPath) == std::string::npos)
-    return false;
-
-  std::string test_location(kAndroidLayoutTestBase);
-  test_location.append(path_or_url.substr(strlen(kAndroidLayoutTestPath)));
-
-  *url = GURL(test_location);
-  return true;
-}
 
 void EnsureInitializeForAndroidLayoutTests() {
   JNIEnv* env = base::android::AttachCurrentThread();

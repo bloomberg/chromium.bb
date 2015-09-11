@@ -1,6 +1,7 @@
 include_rules = [
   "+cc",
   "+gin",
+  "+net/base",
   "+skia",
   "+third_party/skia",
   "+third_party/WebKit/public/platform",

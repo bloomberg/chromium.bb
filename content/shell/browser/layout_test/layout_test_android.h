@@ -11,11 +11,6 @@ class GURL;
 
 namespace content {
 
-// On Android, all passed tests will be paths to a local temporary directory.
-// However, because we can't transfer all test files to the device, translate
-// those paths to a local, forwarded URL so the host can serve them.
-bool GetTestUrlForAndroid(std::string& path_or_url, GURL* url);
-
 // Initialize the nested message loop and FIFOs for Android, and verify that
 // all has been set up using a few appropriate CHECK()s.
 void EnsureInitializeForAndroidLayoutTests();
