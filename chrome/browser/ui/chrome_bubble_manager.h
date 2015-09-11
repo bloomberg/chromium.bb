@@ -32,7 +32,22 @@ class ChromeBubbleManager : public BubbleManager,
       const content::LoadCommittedDetails& load_details) override;
 
  private:
+  class ChromeBubbleMetrics : public BubbleManager::BubbleManagerObserver {
+   public:
+    ChromeBubbleMetrics() {}
+    ~ChromeBubbleMetrics() override {}
+
+    // BubbleManager::BubbleManagerObserver:
+    void OnBubbleNeverShown(BubbleReference bubble) override;
+    void OnBubbleClosed(BubbleReference bubble,
+                        BubbleCloseReason reason) override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ChromeBubbleMetrics);
+  };
+
   TabStripModel* tab_strip_model_;
+  ChromeBubbleMetrics chrome_bubble_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBubbleManager);
 };

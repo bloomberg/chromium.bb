@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/bubble/bubble_close_reason.h"
 #include "components/bubble/bubble_reference.h"
@@ -20,6 +21,25 @@ class BubbleDelegate;
 // TODO(hcarmona): Handle simultaneous bubbles. http://crbug.com/366937
 class BubbleManager {
  public:
+  // This interface should be used to observe the manager. This is useful when
+  // collecting metrics.
+  class BubbleManagerObserver {
+   public:
+    BubbleManagerObserver() {}
+    virtual ~BubbleManagerObserver() {}
+
+    // Called when a bubble is asked to be displayed but never shown.
+    // ex: a bubble chained on destruction will not be shown.
+    virtual void OnBubbleNeverShown(BubbleReference bubble) = 0;
+
+    // Called when a bubble is closed. The reason for closing is provided.
+    virtual void OnBubbleClosed(BubbleReference bubble,
+                                BubbleCloseReason reason) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(BubbleManagerObserver);
+  };
+
   // Should be instantiated on the UI thread.
   BubbleManager();
   virtual ~BubbleManager();
@@ -38,6 +58,16 @@ class BubbleManager {
   // Notify all bubbles that their anchor or parent may have changed.
   void UpdateAllBubbleAnchors();
 
+  // Add an observer for this BubbleManager.
+  void AddBubbleManagerObserver(BubbleManagerObserver* observer);
+
+  // Remove an observer from this BubbleManager.
+  void RemoveBubbleManagerObserver(BubbleManagerObserver* observer);
+
+ protected:
+  // Will close any open bubbles and prevent new ones from being shown.
+  void FinalizePendingRequests();
+
  private:
   enum ManagerStates {
     SHOW_BUBBLES,
@@ -47,6 +77,8 @@ class BubbleManager {
 
   // Show any bubbles that were added to |show_queue_|.
   void ShowPendingBubbles();
+
+  base::ObserverList<BubbleManagerObserver> observers_;
 
   // Verify that functions that affect the UI are done on the same thread.
   base::ThreadChecker thread_checker_;

@@ -8,6 +8,10 @@
 // List of reasons why a bubble might close. These correspond to various events
 // from the UI. Not all platforms will receive all events.
 enum BubbleCloseReason {
+  // The bubble WILL be closed regardless of return value for |ShouldClose|.
+  // Ex: The bubble's parent window is being destroyed.
+  BUBBLE_CLOSE_FORCED,
+
   // Bubble was closed without any user interaction.
   BUBBLE_CLOSE_FOCUS_LOST,
 
@@ -32,10 +36,6 @@ enum BubbleCloseReason {
 
   // The user selected a negative response in the bubble.
   BUBBLE_CLOSE_CANCELED,
-
-  // The bubble WILL be closed regardless of return value for |ShouldClose|.
-  // Ex: The bubble's parent window is being destroyed.
-  BUBBLE_CLOSE_FORCED,
 };
 
 #endif  // COMPONENTS_BUBBLE_BUBBLE_CLOSE_REASON_H_

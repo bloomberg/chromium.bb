@@ -28,6 +28,12 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
   // Returns true if the UI was updated.
   bool UpdateBubbleUi();
 
+  // Used to identify a bubble for collecting metrics.
+  std::string GetName() const;
+
+  // Used for collecting metrics.
+  base::TimeDelta GetVisibleTime() const;
+
  private:
   friend class BubbleManager;
 
@@ -48,6 +54,9 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
 
   // Verify that functions that affect the UI are done on the same thread.
   base::ThreadChecker thread_checker_;
+
+  // To keep track of the amount of time a bubble was visible.
+  base::TimeTicks show_time_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleController);
 };

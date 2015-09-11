@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_DELEGATE_H_
 #define COMPONENTS_BUBBLE_BUBBLE_DELEGATE_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "components/bubble/bubble_close_reason.h"
 
@@ -31,6 +33,9 @@ class BubbleDelegate {
   // in |BuildBubbleUi|.
   // Return true to indicate the UI was updated.
   virtual bool UpdateBubbleUi(BubbleUi* bubble_ui);
+
+  // Used to identify a bubble for collecting metrics.
+  virtual std::string GetName() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BubbleDelegate);

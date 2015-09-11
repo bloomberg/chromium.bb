@@ -3162,6 +3162,72 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bubbles.Close.Accepted" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>An open bubble was closed because the user accepted it.</summary>
+</histogram>
+
+<histogram name="Bubbles.Close.Canceled" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>
+    An open bubble was closed because the user didn't accept it.
+  </summary>
+</histogram>
+
+<histogram name="Bubbles.Close.FocusLost" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>An open bubble was closed because of a focus change.</summary>
+</histogram>
+
+<histogram name="Bubbles.Close.Forced" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>An open bubble was forced to close.</summary>
+</histogram>
+
+<histogram name="Bubbles.Close.FullscreenToggled" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>
+    An open bubble was dismissed because fullscreen was toggled.
+  </summary>
+</histogram>
+
+<histogram name="Bubbles.Close.Navigated" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>
+    An open bubble was dismissed because the page was navigated.
+  </summary>
+</histogram>
+
+<histogram name="Bubbles.Close.TabDetached" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>An open bubble was closed because a tab was detached.</summary>
+</histogram>
+
+<histogram name="Bubbles.Close.TabSwitched" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>An open bubble was closed because a tab was switched.</summary>
+</histogram>
+
+<histogram name="Bubbles.Close.UserDismissed" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>
+    An open bubble was dismissed by the user without making a decission.
+  </summary>
+</histogram>
+
+<histogram name="Bubbles.DisplayTime.All" units="milliseconds">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>
+    Log the amount of time any bubble was visible. Only bubbles that are shown
+    will have a visible time.
+  </summary>
+</histogram>
+
+<histogram name="Bubbles.NeverShown" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>A bubble was given to the bubble manager but not shown.</summary>
+</histogram>
+
 <histogram name="Canvas.ContextType" enum="CanvasContextType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -54174,6 +54240,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="QUIC_STREAM_FACTORY"/>
   <int value="2" label="HTTP_STREAM_FACTORY_IMPL_JOB_ALT"/>
   <int value="3" label="HTTP_STREAM_FACTORY_IMPL_JOB_MAIN"/>
+</enum>
+
+<enum name="BubbleType" type="int">
+  <int value="0" label="Unknown Bubble"/>
+  <int value="1" label="Mock Bubble"/>
 </enum>
 
 <enum name="CacheResult" type="int">
