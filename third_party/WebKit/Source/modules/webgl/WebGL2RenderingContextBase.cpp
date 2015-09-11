@@ -477,9 +477,30 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
     tex->setTexStorageInfo(target, levels, internalformat, width, height, depth);
 }
 
+bool WebGL2RenderingContextBase::validateTexImage3D(const char* functionName, GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type)
+{
+    switch (target) {
+    case GL_TEXTURE_3D:
+    case GL_TEXTURE_2D_ARRAY:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
+
+    if (!validateTexFuncLevel(functionName, target, level))
+        return false;
+
+    if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
+        return false;
+
+    return true;
+}
+
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost())
+    if (isContextLost() || !validateTexImage3D("texImage3D", target, level, internalformat, format, type)
+        || !validateTexFuncData("texImage3D", level, width, height, format, type, pixels, NullAllowed))
         return;
 
     void* data = pixels ? pixels->baseAddress() : 0;
@@ -582,7 +603,8 @@ void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, G
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, width, height, depth))
+    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, width, height, depth)
+        || !validateTexFuncData("texSubImage3D", level, width, height, format, type, pixels, NullAllowed))
         return;
 
     // FIXME: Ensure pixels is large enough to contain the desired texture dimensions.

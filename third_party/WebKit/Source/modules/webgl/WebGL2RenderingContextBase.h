@@ -188,6 +188,7 @@ protected:
         TexStorageType3D,
     };
     bool validateTexStorage(const char*, GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, TexStorageType);
+    bool validateTexImage3D(const char* functionName, GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type);
     bool validateTexSubImage3D(const char*, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth);
 
     ScriptValue getInt64Parameter(ScriptState*, GLenum);
