@@ -76,6 +76,11 @@
   -webkit-appearance: none;
 }
 
+#search-term input[type='search']::-webkit-search-cancel-button {
+  display: block;
+  width: 20px;
+}
+
 paper-icon-button {
   --iron-icon-height: 20px;
   --iron-icon-width: 20px;
