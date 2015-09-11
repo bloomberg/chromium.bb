@@ -25,7 +25,6 @@ import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
-import org.chromium.android_webview.AwWebViewLifecycleObserver;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
@@ -363,7 +362,6 @@ public class AwContentsTest extends AwTestBase {
     @Feature({"AndroidWebView", "setNetworkAvailable"})
     @SmallTest
     public void testSetNetworkAvailable() throws Throwable {
-        AwWebViewLifecycleObserver.setHasNetworkStatePermission(false);
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
         String script = "navigator.onLine";
@@ -384,7 +382,6 @@ public class AwContentsTest extends AwTestBase {
         setNetworkAvailableOnUiThread(awContents, true);
         assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
                 script));
-        AwWebViewLifecycleObserver.setHasNetworkStatePermission(true);
     }
 
 
