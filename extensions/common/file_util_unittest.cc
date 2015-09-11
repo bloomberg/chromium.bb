@@ -27,13 +27,13 @@ namespace extensions {
 namespace {
 
 scoped_refptr<Extension> LoadExtensionManifest(
-    base::DictionaryValue* manifest,
+    const base::DictionaryValue& manifest,
     const base::FilePath& manifest_dir,
     Manifest::Location location,
     int extra_flags,
     std::string* error) {
   scoped_refptr<Extension> extension =
-      Extension::Create(manifest_dir, location, *manifest, extra_flags, error);
+      Extension::Create(manifest_dir, location, manifest, extra_flags, error);
   return extension;
 }
 
@@ -49,11 +49,8 @@ scoped_refptr<Extension> LoadExtensionManifest(
     return NULL;
   CHECK_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   return LoadExtensionManifest(
-      static_cast<base::DictionaryValue*>(result.get()),
-      manifest_dir,
-      location,
-      extra_flags,
-      error);
+      *base::DictionaryValue::From(result.Pass()).get(), manifest_dir, location,
+      extra_flags, error);
 }
 
 }  // namespace
@@ -294,7 +291,7 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   std::string error;
   std::vector<extensions::InstallWarning> warnings;
   scoped_refptr<Extension> extension = LoadExtensionManifest(
-      value.get(), temp.path(), Manifest::UNPACKED, 0, &error);
+      *value.get(), temp.path(), Manifest::UNPACKED, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
   EXPECT_FALSE(
@@ -308,8 +305,8 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   scripts->Clear();
   scripts->Append(new base::StringValue("http://google.com/foo.js"));
 
-  extension = LoadExtensionManifest(
-      value.get(), temp.path(), Manifest::UNPACKED, 0, &error);
+  extension = LoadExtensionManifest(*value.get(), temp.path(),
+                                    Manifest::UNPACKED, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
   warnings.clear();

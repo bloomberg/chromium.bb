@@ -60,8 +60,7 @@ scoped_ptr<base::ListValue> LoadSchemaList(const std::string& name,
 
   CHECK(result.get()) << error_message << " for schema " << schema;
   CHECK(result->IsType(base::Value::TYPE_LIST)) << " for schema " << schema;
-  return scoped_ptr<base::ListValue>(static_cast<base::ListValue*>(
-      result.release()));
+  return base::ListValue::From(result.Pass());
 }
 
 const base::DictionaryValue* FindListItem(const base::ListValue* list,

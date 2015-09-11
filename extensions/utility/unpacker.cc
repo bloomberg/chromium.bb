@@ -112,7 +112,7 @@ Unpacker::Unpacker(const base::FilePath& working_dir,
 Unpacker::~Unpacker() {
 }
 
-base::DictionaryValue* Unpacker::ReadManifest() {
+scoped_ptr<base::DictionaryValue> Unpacker::ReadManifest() {
   base::FilePath manifest_path = extension_dir_.Append(kManifestFilename);
   if (!base::PathExists(manifest_path)) {
     SetError(errors::kInvalidManifest);
@@ -132,7 +132,7 @@ base::DictionaryValue* Unpacker::ReadManifest() {
     return NULL;
   }
 
-  return static_cast<base::DictionaryValue*>(root.release());
+  return base::DictionaryValue::From(root.Pass());
 }
 
 bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
@@ -161,7 +161,7 @@ bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
 
 bool Unpacker::Run() {
   // Parse the manifest.
-  parsed_manifest_.reset(ReadManifest());
+  parsed_manifest_ = ReadManifest();
   if (!parsed_manifest_.get())
     return false;  // Error was already reported.
 
@@ -253,8 +253,8 @@ bool Unpacker::AddDecodedImage(const base::FilePath& path) {
 bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
   std::string error;
   JSONFileValueDeserializer deserializer(message_path);
-  scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
-      deserializer.Deserialize(NULL, &error)));
+  scoped_ptr<base::DictionaryValue> root = base::DictionaryValue::From(
+      make_scoped_ptr(deserializer.Deserialize(NULL, &error)));
   if (!root.get()) {
     base::string16 messages_file = message_path.LossyDisplayName();
     if (error.empty()) {

@@ -30,7 +30,7 @@ void JSONFeatureProviderSource::LoadJSON(int resource_id) {
   scoped_ptr<base::DictionaryValue> value_as_dict;
   if (value) {
     CHECK(value->IsType(base::Value::TYPE_DICTIONARY)) << name_;
-    value_as_dict.reset(static_cast<base::DictionaryValue*>(value.release()));
+    value_as_dict = base::DictionaryValue::From(value.Pass());
   } else {
     // There was some error loading the features file.
     // http://crbug.com/176381

@@ -55,8 +55,7 @@ class Unpacker {
   bool DumpMessageCatalogsToFile();
 
   // Parse the manifest.json file inside the extension (not in the header).
-  // Caller takes ownership of return value.
-  base::DictionaryValue* ReadManifest();
+  scoped_ptr<base::DictionaryValue> ReadManifest();
 
   // Parse all _locales/*/messages.json files inside the extension.
   bool ReadAllMessageCatalogs(const std::string& default_locale);

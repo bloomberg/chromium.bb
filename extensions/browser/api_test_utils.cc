@@ -24,11 +24,7 @@ scoped_ptr<base::Value> ParseJSON(const std::string& data) {
 }
 
 scoped_ptr<base::ListValue> ParseList(const std::string& data) {
-  scoped_ptr<base::Value> result = ParseJSON(data);
-  scoped_ptr<base::ListValue> list_result;
-  if (result->GetAsList(nullptr))
-    list_result.reset(static_cast<base::ListValue*>(result.release()));
-  return list_result;
+  return base::ListValue::From(ParseJSON(data));
 }
 
 // This helps us be able to wait until an UIThreadExtensionFunction calls
@@ -75,11 +71,7 @@ namespace extensions {
 namespace api_test_utils {
 
 scoped_ptr<base::DictionaryValue> ParseDictionary(const std::string& data) {
-  scoped_ptr<base::Value> result = ParseJSON(data);
-  scoped_ptr<base::DictionaryValue> dict_result;
-  if (result->GetAsDictionary(nullptr))
-    dict_result.reset(static_cast<base::DictionaryValue*>(result.release()));
-  return dict_result;
+  return base::DictionaryValue::From(ParseJSON(data));
 }
 
 bool GetBoolean(const base::DictionaryValue* val, const std::string& key) {

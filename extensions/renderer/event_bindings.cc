@@ -265,7 +265,7 @@ void EventBindings::AttachFilteredEvent(
       args.GetReturnValue().Set(static_cast<int32_t>(-1));
       return;
     }
-    filter.reset(static_cast<base::DictionaryValue*>(filter_value.release()));
+    filter = base::DictionaryValue::From(filter_value.Pass());
   }
 
   // Hold onto a weak reference to |filter| so that it can be used after passing

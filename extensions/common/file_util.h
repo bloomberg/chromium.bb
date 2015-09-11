@@ -59,11 +59,12 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_root,
 
 // Loads an extension manifest from the specified directory. Returns NULL
 // on failure, with a description of the error in |error|.
-base::DictionaryValue* LoadManifest(const base::FilePath& extension_root,
-                                    std::string* error);
+scoped_ptr<base::DictionaryValue> LoadManifest(
+    const base::FilePath& extension_root,
+    std::string* error);
 
 // Convenience overload for specifying a manifest filename.
-base::DictionaryValue* LoadManifest(
+scoped_ptr<base::DictionaryValue> LoadManifest(
     const base::FilePath& extension_root,
     const base::FilePath::CharType* manifest_filename,
     std::string* error);

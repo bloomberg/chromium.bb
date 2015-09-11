@@ -351,6 +351,16 @@ bool BinaryValue::Equals(const Value* other) const {
 
 ///////////////////// DictionaryValue ////////////////////
 
+// static
+scoped_ptr<DictionaryValue> DictionaryValue::From(scoped_ptr<Value> value) {
+  DictionaryValue* out;
+  if (value && value->GetAsDictionary(&out)) {
+    ignore_result(value.release());
+    return make_scoped_ptr(out);
+  }
+  return nullptr;
+}
+
 DictionaryValue::DictionaryValue()
     : Value(TYPE_DICTIONARY) {
 }
@@ -869,6 +879,16 @@ bool DictionaryValue::Equals(const Value* other) const {
 }
 
 ///////////////////// ListValue ////////////////////
+
+// static
+scoped_ptr<ListValue> ListValue::From(scoped_ptr<Value> value) {
+  ListValue* out;
+  if (value && value->GetAsList(&out)) {
+    ignore_result(value.release());
+    return make_scoped_ptr(out);
+  }
+  return nullptr;
+}
 
 ListValue::ListValue() : Value(TYPE_LIST) {
 }

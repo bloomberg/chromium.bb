@@ -209,6 +209,9 @@ class BASE_EXPORT BinaryValue: public Value {
 // are |std::string|s and should be UTF-8 encoded.
 class BASE_EXPORT DictionaryValue : public Value {
  public:
+  // Returns |value| if it is a dictionary, nullptr otherwise.
+  static scoped_ptr<DictionaryValue> From(scoped_ptr<Value> value);
+
   DictionaryValue();
   ~DictionaryValue() override;
 
@@ -386,6 +389,9 @@ class BASE_EXPORT ListValue : public Value {
  public:
   typedef ValueVector::iterator iterator;
   typedef ValueVector::const_iterator const_iterator;
+
+  // Returns |value| if it is a list, nullptr otherwise.
+  static scoped_ptr<ListValue> From(scoped_ptr<Value> value);
 
   ListValue();
   ~ListValue() override;

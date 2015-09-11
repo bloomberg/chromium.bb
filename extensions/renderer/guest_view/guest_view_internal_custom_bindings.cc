@@ -151,9 +151,8 @@ void GuestViewInternalCustomBindings::AttachGuest(
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     scoped_ptr<base::Value> params_as_value(
         converter->FromV8Value(args[2], context()->v8_context()));
-    CHECK(params_as_value->IsType(base::Value::TYPE_DICTIONARY));
-    params.reset(
-        static_cast<base::DictionaryValue*>(params_as_value.release()));
+    params = base::DictionaryValue::From(params_as_value.Pass());
+    CHECK(params);
   }
 
   // Add flag to |params| to indicate that the element size is specified in
@@ -226,9 +225,8 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     scoped_ptr<base::Value> params_as_value(
         converter->FromV8Value(args[2], context()->v8_context()));
-    CHECK(params_as_value->IsType(base::Value::TYPE_DICTIONARY));
-    params.reset(
-        static_cast<base::DictionaryValue*>(params_as_value.release()));
+    params = base::DictionaryValue::From(params_as_value.Pass());
+    CHECK(params);
   }
 
   // Add flag to |params| to indicate that the element size is specified in
