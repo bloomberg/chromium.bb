@@ -52,7 +52,7 @@ public:
         if (m_current >= m_formData->size())
             return false;
 
-        const FormDataList::Item& entry = m_formData->items()[m_current++];
+        const FormData::Item& entry = m_formData->items()[m_current++];
         key = m_formData->decode(entry.key());
         if (entry.isString()) {
             value.setUSVString(m_formData->decode(entry.data()));
@@ -99,7 +99,6 @@ FormData::FormData(HTMLFormElement* form)
 DEFINE_TRACE(FormData)
 {
     visitor->trace(m_items);
-    FormDataList::trace(visitor);
 }
 
 void FormData::append(const String& name, const String& value)
@@ -342,6 +341,34 @@ PairIterable<String, FormDataEntryValue>::IterationSource* FormData::startIterat
         return new FormDataIterationSource(new FormData(nullptr));
 
     return new FormDataIterationSource(this);
+}
+
+// ----------------------------------------------------------------
+
+DEFINE_TRACE(FormData::Item)
+{
+    visitor->trace(m_blob);
+}
+
+File* FormData::Item::file() const
+{
+    ASSERT(blob());
+    // The spec uses the passed filename when inserting entries into the list.
+    // Here, we apply the filename (if present) as an override when extracting
+    // items.
+    // FIXME: Consider applying the name during insertion.
+
+    if (blob()->isFile()) {
+        File* file = toFile(blob());
+        if (filename().isNull())
+            return file;
+        return file->clone(filename());
+    }
+
+    String filename = m_filename;
+    if (filename.isNull())
+        filename = "blob";
+    return File::create(filename, currentTimeMS(), blob()->blobDataHandle());
 }
 
 } // namespace blink

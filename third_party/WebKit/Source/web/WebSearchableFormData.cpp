@@ -213,7 +213,7 @@ bool buildSearchString(const HTMLFormElement& form, Vector<char>* encodedString,
         FormData* formData = FormData::create(encoding);
         control.appendToFormData(*formData, false);
 
-        for (const FormDataList::Item& item : formData->items()) {
+        for (const auto& item : formData->items()) {
             if (!encodedString->isEmpty())
                 encodedString->append('&');
             FormDataEncoder::encodeStringAsFormData(*encodedString, item.key());

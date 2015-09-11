@@ -35,7 +35,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CoreExport.h"
-#include "core/html/FormDataList.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
@@ -49,7 +48,7 @@ class HTMLFormElement;
 // Typedef from FormData.idl:
 typedef FileOrUSVString FormDataEntryValue;
 
-class CORE_EXPORT FormData final : public FormDataList, public ScriptWrappable, public PairIterable<String, FormDataEntryValue> {
+class CORE_EXPORT FormData final : public GarbageCollected<FormData>, public ScriptWrappable, public PairIterable<String, FormDataEntryValue> {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
@@ -62,7 +61,7 @@ public:
     {
         return new FormData(encoding);
     }
-    DECLARE_VIRTUAL_TRACE();
+    DECLARE_TRACE();
 
     // FormData IDL interface.
     void append(const String& name, const String& value);
@@ -80,8 +79,8 @@ public:
     bool opaque() const { return m_opaque; }
 
     const WTF::TextEncoding& encoding() const { return m_encoding; }
-    using FormDataListItems = HeapVector<FormDataList::Item>;
-    const FormDataListItems& items() const { return m_items; }
+    class Item;
+    const HeapVector<Item>& items() const { return m_items; }
     size_t size() const { return m_items.size(); }
     // TODO(tkent): Rename appendFoo functions to |append| for consistency with
     // public function.
@@ -102,10 +101,34 @@ private:
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 
     WTF::TextEncoding m_encoding;
-    FormDataListItems m_items;
+    HeapVector<Item> m_items;
     bool m_opaque;
 };
 
+class FormData::Item {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    Item(const CString& key, const CString& data) : m_key(key), m_data(data) { }
+    Item(const CString& key, Blob* blob, const String& filename) : m_key(key), m_blob(blob), m_filename(filename) { }
+    DECLARE_TRACE();
+
+    bool isString() const { return !m_blob; }
+    bool isFile() const { return m_blob; }
+    const CString& key() const { return m_key; }
+    const CString& data() const { return m_data; }
+    Blob* blob() const { return m_blob.get(); }
+    File* file() const;
+    const String& filename() const { return m_filename; }
+
+private:
+    CString m_key;
+    CString m_data;
+    Member<Blob> m_blob;
+    String m_filename;
+};
+
 } // namespace blink
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::FormData::Item);
 
 #endif // FormData_h

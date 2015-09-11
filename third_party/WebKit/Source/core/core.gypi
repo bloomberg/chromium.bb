@@ -2605,8 +2605,6 @@
             'html/FormAssociatedElement.cpp',
             'html/FormData.cpp',
             'html/FormData.h',
-            'html/FormDataList.cpp',
-            'html/FormDataList.h',
             'html/HTMLAllCollection.cpp',
             'html/HTMLAllCollection.h',
             'html/HTMLAnchorElement.cpp',
