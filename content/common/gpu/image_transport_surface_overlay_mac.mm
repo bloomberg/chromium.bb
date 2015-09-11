@@ -221,7 +221,7 @@ void ImageTransportSurfaceOverlayMac::ScheduleOverlayPlaneForPartialDamage(
       pending_overlay_planes_.push_back(linked_ptr<OverlayPlane>(
           new OverlayPlane(OverlayPlane::ROOT_PARTIAL_DAMAGE, 0,
                            base::ScopedCFTypeRef<IOSurfaceRef>(),
-                           accumulated_damage_dip_rect_, gfx::Rect())));
+                           accumulated_damage_dip_rect_, gfx::RectF())));
     }
     return;
   }

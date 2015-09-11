@@ -193,7 +193,7 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     gfx::Rect fixed_point_rect;
     if (hw_plane->type() != HardwareDisplayPlane::kDummy) {
       const gfx::Size& size = plane.buffer->GetSize();
-      gfx::RectF crop_rect = plane.crop_rect;
+      gfx::RectF crop_rect = gfx::RectF(plane.crop_rect);
       crop_rect.Scale(size.width(), size.height());
 
       // This returns a number in 16.16 fixed point, required by the DRM overlay

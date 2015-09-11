@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/ozone_export.h"
 
