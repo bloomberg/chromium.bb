@@ -93,9 +93,7 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#if !defined(OS_IOS)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
-#endif
 #endif
 #endif
 
@@ -114,9 +112,7 @@
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
-#endif
-
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+#else
 #include "chrome/browser/signin/cross_device_promo_factory.h"
 #endif
 
@@ -201,7 +197,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   CookieSettingsFactory::GetInstance();
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   CrossDevicePromoFactory::GetInstance();
 #endif
 #if defined(ENABLE_NOTIFICATIONS)
@@ -249,7 +245,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   chromeos::ManagerPasswordServiceFactory::GetInstance();
 #endif
   SupervisedUserServiceFactory::GetInstance();
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   SupervisedUserSyncServiceFactory::GetInstance();
 #endif
 #endif
@@ -293,9 +289,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   policy::UserNetworkConfigurationUpdaterFactory::GetInstance();
 #else
   policy::UserCloudPolicyManagerFactory::GetInstance();
-#if !defined(OS_IOS)
   policy::UserPolicySigninServiceFactory::GetInstance();
-#endif
 #endif
   policy::PolicyHeaderServiceFactory::GetInstance();
   policy::SchemaRegistryServiceFactory::GetInstance();
