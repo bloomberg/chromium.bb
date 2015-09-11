@@ -1035,8 +1035,8 @@ public:
 
     // Used by unit tests so that all parsing will be main thread for
     // controlling parsing and chunking precisely.
-    static void setThreadedParsingEnabledForUnitTestsOnly(bool enabled);
-    static bool threadedParsingEnabledForUnitTestsOnly();
+    static void setThreadedParsingEnabledForTesting(bool);
+    static bool threadedParsingEnabledForTesting();
 
     void incrementNodeCount() { m_nodeCount++; }
     void decrementNodeCount()

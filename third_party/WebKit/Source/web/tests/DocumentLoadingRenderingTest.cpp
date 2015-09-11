@@ -5,9 +5,11 @@
 #include "config.h"
 
 #include "core/dom/Document.h"
-#include "core/page/Page.h"
+#include "core/frame/FrameView.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
+#include "web/tests/sim/SimCompositor.h"
+#include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimLayerTreeView.h"
 #include "web/tests/sim/SimNetwork.h"
 #include "web/tests/sim/SimRequest.h"
@@ -20,14 +22,16 @@ class DocumentLoadingRenderingTest : public ::testing::Test {
 protected:
     DocumentLoadingRenderingTest()
         : m_webViewClient(m_layerTreeView)
+        , m_compositor(m_layerTreeView)
     {
         m_webViewHelper.initialize(true, nullptr, &m_webViewClient);
-        Document::setThreadedParsingEnabledForUnitTestsOnly(false);
+        m_compositor.setWebViewImpl(webView());
+        Document::setThreadedParsingEnabledForTesting(false);
     }
 
     virtual ~DocumentLoadingRenderingTest()
     {
-        Document::setThreadedParsingEnabledForUnitTestsOnly(true);
+        Document::setThreadedParsingEnabledForTesting(true);
     }
 
     void loadURL(const String& url)
@@ -35,14 +39,23 @@ protected:
         WebURLRequest request;
         request.initialize();
         request.setURL(KURL(ParsedURLString, url));
-        m_webViewHelper.webViewImpl()->mainFrameImpl()->loadRequest(request);
+        webView().mainFrameImpl()->loadRequest(request);
     }
 
-    Document& document() { return *toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame())->document(); }
+    Document& document()
+    {
+        return *webView().mainFrameImpl()->frame()->document();
+    }
+
+    WebViewImpl& webView()
+    {
+        return *m_webViewHelper.webViewImpl();
+    }
 
     SimNetwork m_network;
     SimLayerTreeView m_layerTreeView;
     SimWebViewClient m_webViewClient;
+    SimCompositor m_compositor;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
@@ -198,6 +211,76 @@ TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded)
     secondCssResource.write("body { color: red; }");
     secondCssResource.finish();
     EXPECT_TRUE(m_layerTreeView.needsAnimate());
+}
+
+TEST_F(DocumentLoadingRenderingTest, ShouldNotPaintIframeContentWithPendingSheets)
+{
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest frameResource("https://example.com/frame.html", "text/html");
+    SimRequest cssResource("https://example.com/test.css", "text/css");
+
+    loadURL("https://example.com/test.html");
+
+    webView().resize(WebSize(800, 600));
+
+    mainResource.start();
+    mainResource.write(
+        "<!DOCTYPE html>"
+        "<iframe src=frame.html style='border: none'></iframe>"
+        "<p style='transform: translateZ(0)'>Hello World</p>"
+    );
+    mainResource.finish();
+
+    // Main page is ready to begin painting as there's no pending sheets.
+    // The frame is not yet loaded, so we only paint the top level page.
+    auto frame1 = m_compositor.beginFrame();
+    EXPECT_TRUE(frame1.containsText());
+
+    frameResource.start();
+    frameResource.write(
+        "<!DOCTYPE html>"
+        "<style>html { background: pink }</style>"
+        "<link rel=stylesheet href=test.css>"
+        "<p style='background: yellow;'>Hello World</p>"
+        "<div style='transform: translateZ(0); background: green;'>"
+        "    <p style='background: blue;'>Hello Layer</p>"
+        "    <div style='position: relative; background: red;'>Hello World</div>"
+        "</div>"
+    );
+    frameResource.finish();
+
+    // Trigger a layout with pending sheets. For example a page could trigger
+    // this by doing offsetTop in a setTimeout, or by a parent frame executing
+    // script that touched offsetTop in the child frame.
+    LocalFrame* childFrame = toLocalFrame(document().frame()->tree().firstChild());
+    childFrame->document()->updateLayoutIgnorePendingStylesheets();
+
+    auto frame2 = m_compositor.beginFrame();
+
+    // The child frame still has pending sheets, and the parent frame has no
+    // invalid paint so we shouldn't draw any text.
+    EXPECT_FALSE(frame2.containsText());
+
+    // 1 for the main frame background (white),
+    // 1 for the iframe background (pink)
+    // 1 for the composited transform layer in the iframe (green).
+    // TODO(esprehn): Why FOUC the background (borders, etc.) of iframes and
+    // composited layers? Seems like a bug.
+    EXPECT_EQ(3, frame2.drawCount());
+    EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "white"));
+    EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "pink"));
+    EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "green"));
+
+    // Finish loading the sheets in the child frame. After it should issue a
+    // paint invalidation for every layer since frame2 painted them but skipped
+    // painting the real content to avoid FOUC.
+    cssResource.start();
+    cssResource.finish();
+
+    // First frame where all frames are loaded, should paint the text in the
+    // child frame.
+    auto frame3 = m_compositor.beginFrame();
+    EXPECT_TRUE(frame3.containsText());
 }
 
 } // namespace blink

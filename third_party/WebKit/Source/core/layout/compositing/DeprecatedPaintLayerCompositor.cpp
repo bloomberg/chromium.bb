@@ -73,7 +73,7 @@ DeprecatedPaintLayerCompositor::DeprecatedPaintLayerCompositor(LayoutView& layou
     , m_compositing(false)
     , m_rootShouldAlwaysCompositeDirty(true)
     , m_needsUpdateFixedBackground(false)
-    , m_isTrackingPaintInvalidations(false)
+    , m_isTrackingPaintInvalidations(layoutView.frameView()->isTrackingPaintInvalidations())
     , m_inOverlayFullscreenVideo(false)
     , m_needsUpdateDescendantDependentFlags(false)
     , m_rootLayerAttachment(RootLayerUnattached)

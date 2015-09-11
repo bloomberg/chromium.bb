@@ -64,6 +64,8 @@
 
 namespace blink {
 
+static bool s_drawDebugRedFill = true;
+
 // TODO(wangxianzhu): Remove this when we no longer invalidate rects.
 struct PaintInvalidationTrackingInfo {
     Vector<FloatRect> invalidationRects;
@@ -147,6 +149,11 @@ GraphicsLayer::~GraphicsLayer()
 
     resetTrackedPaintInvalidations();
     ASSERT(!m_parent);
+}
+
+void GraphicsLayer::setDrawDebugRedFillForTesting(bool enabled)
+{
+    s_drawDebugRedFill = enabled;
 }
 
 void GraphicsLayer::setParent(GraphicsLayer* layer)
@@ -290,7 +297,7 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
 #ifndef NDEBUG
-    if (m_displayItemList && contentsOpaque()) {
+    if (m_displayItemList && contentsOpaque() && s_drawDebugRedFill) {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
         FloatRect rect(FloatPoint(), size());
         if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::DebugRedFill)) {
@@ -458,6 +465,14 @@ WebLayer* GraphicsLayer::contentsLayerIfRegistered()
 void GraphicsLayer::resetTrackedPaintInvalidations()
 {
     paintInvalidationTrackingMap().remove(this);
+}
+
+bool GraphicsLayer::hasTrackedPaintInvalidations() const
+{
+    PaintInvalidationTrackingMap::iterator it = paintInvalidationTrackingMap().find(this);
+    if (it != paintInvalidationTrackingMap().end())
+        return !it->value.invalidationRects.isEmpty();
+    return false;
 }
 
 void GraphicsLayer::trackPaintInvalidationRect(const FloatRect& rect)

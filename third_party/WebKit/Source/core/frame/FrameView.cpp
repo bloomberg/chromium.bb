@@ -108,6 +108,8 @@ using namespace HTMLNames;
 static const unsigned maxUpdateWidgetsIterations = 2;
 static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
+static bool s_initialTrackAllPaintInvalidations = false;
+
 FrameView::FrameView(LocalFrame* frame)
     : m_frame(frame)
     , m_displayMode(WebDisplayModeBrowser)
@@ -206,7 +208,7 @@ void FrameView::reset()
     m_safeToPropagateScrollToParent = true;
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
-    m_isTrackingPaintInvalidations = false;
+    m_isTrackingPaintInvalidations = s_initialTrackAllPaintInvalidations;
     m_lastPaintTime = 0;
     m_isPainting = false;
     m_visuallyNonEmptyCharacterCount = 0;
@@ -2802,6 +2804,11 @@ IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
     }
 
     return parentPoint;
+}
+
+void FrameView::setInitialTracksPaintInvalidationsForTesting(bool trackPaintInvalidations)
+{
+    s_initialTrackAllPaintInvalidations = trackPaintInvalidations;
 }
 
 void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)

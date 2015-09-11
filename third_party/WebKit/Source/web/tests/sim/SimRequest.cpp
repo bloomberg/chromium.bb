@@ -28,6 +28,11 @@ SimRequest::SimRequest(String url, String mimeType)
     SimNetwork::current().addRequest(*this);
 }
 
+SimRequest::~SimRequest()
+{
+    ASSERT(!m_isReady);
+}
+
 void SimRequest::didReceiveResponse(WebURLLoaderClient* client, WebURLLoader* loader, const WebURLResponse& response)
 {
     m_client = client;
