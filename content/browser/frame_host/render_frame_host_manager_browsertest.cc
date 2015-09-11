@@ -1520,6 +1520,40 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   crash_observer2.Wait();
 }
 
+// Ensure that renderer-side debug URLs don't take effect on crashed renderers,
+// even when going back/forward.
+// See https://crbug.com/477606.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       IgnoreForwardToRendererDebugURLsWhenCrashed) {
+  // Visit a WebUI page with bindings.
+  GURL webui_url = GURL(std::string(kChromeUIScheme) + "://" +
+                        std::string(kChromeUIGpuHost));
+  NavigateToURL(shell(), webui_url);
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+
+  // Visit a debug URL that manages to commit, then go back.
+  NavigateToURL(shell(), GURL(kChromeUIDumpURL));
+  TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+  shell()->web_contents()->GetController().GoBack();
+  back_nav_load_observer.Wait();
+
+  // Crash the renderer of the WebUI page.
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(
+      NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
+  crash_observer.Wait();
+
+  // Going forward with no live renderer should have no effect, and should not
+  // crash.
+  EXPECT_TRUE(shell()->web_contents()->GetController().CanGoForward());
+  shell()->web_contents()->GetController().GoForward();
+  EXPECT_FALSE(shell()->web_contents()->GetController().GetPendingEntry());
+  EXPECT_TRUE(shell()->web_contents()->GetController().CanGoForward());
+}
+
 // The test fails with Android ASAN with changes in v8 that seem unrelated.
 //   See http://crbug.com/428329.
 #if defined(OS_ANDROID) && defined(THREAD_SANITIZER)

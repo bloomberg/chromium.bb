@@ -670,16 +670,6 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       return;
   }
 
-  // Any renderer-side debug URLs or javascript: URLs should be ignored if the
-  // renderer process is not live, unless it is the initial navigation of the
-  // tab.
-  if (IsRendererDebugURL(params.url)) {
-    // TODO(creis): Find the RVH for the correct frame.
-    if (!delegate_->GetRenderViewHost()->IsRenderViewLive() &&
-        !IsInitialNavigation())
-      return;
-  }
-
   // Checks based on params.load_type.
   switch (params.load_type) {
     case LOAD_TYPE_DEFAULT:
@@ -1733,6 +1723,18 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
   if (!pending_entry_) {
     CHECK_NE(pending_entry_index_, -1);
     pending_entry_ = entries_[pending_entry_index_];
+  }
+
+  // Any renderer-side debug URLs or javascript: URLs should be ignored if the
+  // renderer process is not live, unless it is the initial navigation of the
+  // tab.
+  if (IsRendererDebugURL(pending_entry_->GetURL())) {
+    // TODO(creis): Find the RVH for the correct frame.
+    if (!delegate_->GetRenderViewHost()->IsRenderViewLive() &&
+        !IsInitialNavigation()) {
+      DiscardNonCommittedEntries();
+      return;
+    }
   }
 
   // This call does not support re-entrancy.  See http://crbug.com/347742.
