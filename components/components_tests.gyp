@@ -215,6 +215,9 @@
     'cronet_unittest_sources': [
       'cronet/histogram_manager_unittest.cc',
     ],
+    'data_use_measurement_unittest_sources': [
+      'data_use_measurement/content/data_use_measurement_unittest.cc',
+    ],
     'enhanced_bookmarks_unittest_sources': [
       'enhanced_bookmarks/enhanced_bookmark_model_unittest.cc',
       'enhanced_bookmarks/image_store_ios_unittest.mm',
@@ -792,6 +795,7 @@
         '<@(crash_unittest_sources)',
         '<@(crx_file_unittest_sources)',
         '<@(data_reduction_proxy_unittest_sources)',
+        '<@(data_use_measurement_unittest_sources)',
         '<@(device_event_log_unittest_sources)',
         '<@(dom_distiller_unittest_sources)',
         '<@(domain_reliability_unittest_sources)',
@@ -890,6 +894,7 @@
         'components.gyp:data_reduction_proxy_core_browser',
         'components.gyp:data_reduction_proxy_core_common',
         'components.gyp:data_reduction_proxy_test_support',
+        'components.gyp:data_use_measurement_core',
         'components.gyp:device_event_log_component',
         'components.gyp:dom_distiller_core',
         'components.gyp:dom_distiller_protos',
@@ -1039,6 +1044,7 @@
             'components.gyp:certificate_transparency',
             'components.gyp:crash_test_support',
             'components.gyp:data_reduction_proxy_content_browser',
+            'components.gyp:data_use_measurement_content',
             'components.gyp:devtools_http_handler',
             'components.gyp:dom_distiller_content_browser',
             'components.gyp:error_page_renderer',

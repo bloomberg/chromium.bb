@@ -2213,6 +2213,7 @@
             '../components/components.gyp:autofill_content_test_support',
             '../components/components.gyp:component_metrics_proto',
             '../components/components.gyp:data_reduction_proxy_test_support',
+            '../components/components.gyp:data_use_measurement_core',
             '../components/components.gyp:safe_json_test_support',
             '../components/components.gyp:webdata_services_test_support',
             '../components/components_strings.gyp:components_strings',

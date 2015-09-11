@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/suggestions_store.h"
@@ -263,6 +264,8 @@ scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
     const GURL& url) {
   scoped_ptr<net::URLFetcher> request =
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      request.get(), data_use_measurement::DataUseUserData::SUGGESTIONS);
   request->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request->SetRequestContext(url_request_context_);
   // Add Chrome experiment state to the request headers.

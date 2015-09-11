@@ -3236,6 +3236,7 @@
             '../components/components.gyp:browsing_data',
             '../components/components.gyp:certificate_reporting',
             '../components/components.gyp:data_reduction_proxy_content_browser',
+            '../components/components.gyp:data_use_measurement_content',
             '../components/components.gyp:devtools_discovery',
             '../components/components.gyp:devtools_http_handler',
             '../components/components.gyp:dom_distiller_content_browser',

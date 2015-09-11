@@ -5935,6 +5935,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataUse.MessageSize" units="bytes">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The request and reponse size of the messages exchanged by a service. It is
+    logged when the URLReqeust of a service is completed. The service name is
+    added as a suffix to this histogram name.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.MessageSize.AllServices" enum="DataUseServices">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The request and reponse size of the messages exchanged by all the services.
+    Whenever a URLRequest of a service is completed, the number of exchanged
+    bytes is logged in this histogram. The buckets in this histogram are
+    services, so it makes it possible to compare the use of different services
+    in different conditions. Different conditions are added as suffixes to this
+    histogram. If the OS is not Android all the requests are considered
+    foreground.
+  </summary>
+</histogram>
+
 <histogram name="DataUse.Sync.Download.Bytes" enum="SyncModelTypes">
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -5980,6 +6004,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Number of uploaded entities of different data types in Sync service for sent
     commits. Updated when a commit message is sent to sync server.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.TrafficSize.System" units="bytes">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total data use of Chrome's services. There is no ResourceRequestInfo
+    attached to these requests. If the OS is not Android all the requests are
+    considered foreground.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.TrafficSize.User" units="bytes">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total amount of data use of Chrome for user traffic. This traffic has
+    content::ResourceRequestInfo attached to its request. If the OS is not
+    Android all the requests are considered foreground.
   </summary>
 </histogram>
 
@@ -55632,6 +55676,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Arrived at settings menu by another path: entered on, exited on"/>
 </enum>
 
+<enum name="DataUseServices" type="int">
+  <int value="0" label="Not Tagged"/>
+  <int value="1" label="Suggestions Service"/>
+</enum>
+
 <enum name="DecodedImageType" type="int">
   <int value="0" label="kImageUnknown"/>
   <int value="1" label="kImageJPEG"/>
@@ -75270,6 +75319,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Fallback" label="Fallback data reduction proxy"/>
   <affected-histogram
       name="DataReductionProxy.RequestCompletionErrorCodes.MainFrame"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataUse.Dimensions" separator=".">
+  <suffix name="Upstream.Background.NotCellular"/>
+  <suffix name="Upstream.Background.Cellular"/>
+  <suffix name="Upstream.Foreground.NotCellular"/>
+  <suffix name="Upstream.Foreground.Cellular"/>
+  <suffix name="Downstream.Background.NotCellular"/>
+  <suffix name="Downstream.Background.Cellular"/>
+  <suffix name="Downstream.Foreground.NotCellular"/>
+  <suffix name="Downstream.Foreground.Cellular"/>
+  <affected-histogram name="DataUse.MessageSize.AllServices"/>
+  <affected-histogram name="DataUse.TrafficSize.System"/>
+  <affected-histogram name="DataUse.TrafficSize.User"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataUse.Service.Types" separator=".">
+  <suffix name="NotTagged"/>
+  <suffix name="Suggestions"/>
+  <affected-histogram name="DataUse.MessageSize"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DefaultAppsExperiment">
