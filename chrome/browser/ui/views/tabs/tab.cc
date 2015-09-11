@@ -70,51 +70,52 @@ const int kDropShadowHeight = 4;
 const int kPulseDurationMs = 200;
 
 // Width of touch tabs.
-static const int kTouchWidth = 120;
+const int kTouchWidth = 120;
 
-static const int kToolbarOverlap = 1;
-static const int kFaviconTitleSpacing = 4;
-static const int kAfterTitleSpacing = 3;
-static const int kStandardTitleWidth = 175;
+const int kToolbarOverlap = 1;
+const int kFaviconTitleSpacing = 4;
+const int kAfterTitleSpacing = 3;
+const int kStandardTitleWidth = 175;
 
-// Width of pinned-tabs.
-const int kPinnedTabWidth = 64;
+// Width of the content inside a pinned tab.
+int kPinnedTabContentWidth = 25;
 
 // When a non-pinned tab becomes a pinned tab the width of the tab animates. If
-// the width of a pinned tab is >= kPinnedTabRendererAsNormalTabWidth then the
-// tab is rendered as a normal tab. This is done to avoid having the title
-// immediately disappear when transitioning a tab from normal to pinned tab.
-static const int kPinnedTabRendererAsNormalTabWidth = kPinnedTabWidth + 30;
+// the width of a pinned tab is at least kPinnedTabExtraWidthToRenderAsNormal
+// larger than the desired pinned tab width then the tab is rendered as a normal
+// tab. This is done to avoid having the title immediately disappear when
+// transitioning a tab from normal to pinned tab.
+const int kPinnedTabExtraWidthToRenderAsNormal = 30;
 
 // How opaque to make the hover state (out of 1).
-static const double kHoverOpacity = 0.33;
+const double kHoverOpacity = 0.33;
 
 // Opacity for non-active selected tabs.
-static const double kSelectedTabOpacity = .45;
+const double kSelectedTabOpacity = .45;
 
 // Selected (but not active) tabs have their throb value scaled down by this.
-static const double kSelectedTabThrobScale = .5;
+const double kSelectedTabThrobScale = .5;
 
 // Durations for the various parts of the pinned tab title animation.
-static const int kPinnedTitleChangeAnimationDuration1MS = 1600;
-static const int kPinnedTitleChangeAnimationStart1MS = 0;
-static const int kPinnedTitleChangeAnimationEnd1MS = 1900;
-static const int kPinnedTitleChangeAnimationDuration2MS = 0;
-static const int kPinnedTitleChangeAnimationDuration3MS = 550;
-static const int kPinnedTitleChangeAnimationStart3MS = 150;
-static const int kPinnedTitleChangeAnimationEnd3MS = 800;
-static const int kPinnedTitleChangeAnimationIntervalMS = 40;
+const int kPinnedTitleChangeAnimationDuration1MS = 1600;
+const int kPinnedTitleChangeAnimationStart1MS = 0;
+const int kPinnedTitleChangeAnimationEnd1MS = 1900;
+const int kPinnedTitleChangeAnimationDuration2MS = 0;
+const int kPinnedTitleChangeAnimationDuration3MS = 550;
+const int kPinnedTitleChangeAnimationStart3MS = 150;
+const int kPinnedTitleChangeAnimationEnd3MS = 800;
+const int kPinnedTitleChangeAnimationIntervalMS = 40;
 
 // Offset from the right edge for the start of the pinned title change
 // animation.
-static const int kPinnedTitleChangeInitialXOffset = 6;
+const int kPinnedTitleChangeInitialXOffset = 6;
 
 // Radius of the radial gradient used for pinned title change animation.
-static const int kPinnedTitleChangeGradientRadius = 20;
+const int kPinnedTitleChangeGradientRadius = 20;
 
 // Colors of the gradient used during the pinned title change animation.
-static const SkColor kPinnedTitleChangeGradientColor1 = SK_ColorWHITE;
-static const SkColor kPinnedTitleChangeGradientColor2 =
+const SkColor kPinnedTitleChangeGradientColor1 = SK_ColorWHITE;
+const SkColor kPinnedTitleChangeGradientColor2 =
     SkColorSetARGB(0, 255, 255, 255);
 
 // Max number of images to cache. This has to be at least two since rounding
@@ -610,35 +611,25 @@ int Tab::GetWidthOfLargestSelectableRegion() const {
   return std::min(indicator_left, close_button_left);
 }
 
-// static
-gfx::Size Tab::GetBasicMinimumUnselectedSize() {
-  InitTabResources();
-
-  gfx::Size minimum_size;
-  minimum_size.set_width(kLeftPadding + kRightPadding);
-  // Since we use image images, the real minimum height of the image is
-  // defined most accurately by the height of the end cap images.
-  minimum_size.set_height(tab_active_.image_l->height());
-  return minimum_size;
-}
-
 gfx::Size Tab::GetMinimumUnselectedSize() {
-  return GetBasicMinimumUnselectedSize();
+  // Since we use images, the real minimum height of the image is
+  // defined most accurately by the height of the end cap images.
+  InitTabResources();
+  int height = tab_active_.image_l->height();
+  return gfx::Size(kLeftPadding + kRightPadding, height);
 }
 
 // static
 gfx::Size Tab::GetMinimumSelectedSize() {
-  gfx::Size minimum_size = GetBasicMinimumUnselectedSize();
-  minimum_size.set_width(
-      kLeftPadding + gfx::kFaviconSize + kRightPadding);
+  gfx::Size minimum_size = GetMinimumUnselectedSize();
+  minimum_size.Enlarge(gfx::kFaviconSize, 0);
   return minimum_size;
 }
 
 // static
 gfx::Size Tab::GetStandardSize() {
-  gfx::Size standard_size = GetBasicMinimumUnselectedSize();
-  standard_size.set_width(
-      standard_size.width() + kFaviconTitleSpacing + kStandardTitleWidth);
+  gfx::Size standard_size = GetMinimumUnselectedSize();
+  standard_size.Enlarge(kFaviconTitleSpacing + kStandardTitleWidth, 0);
   return standard_size;
 }
 
@@ -649,7 +640,7 @@ int Tab::GetTouchWidth() {
 
 // static
 int Tab::GetPinnedWidth() {
-  return kPinnedTabWidth;
+  return GetMinimumUnselectedSize().width() + kPinnedTabContentWidth;
 }
 
 // static
@@ -822,8 +813,7 @@ void Tab::Layout() {
   }
 
   // Size the title to fill the remaining width and use all available height.
-  bool show_title =
-      !data().pinned || width() >= kPinnedTabRendererAsNormalTabWidth;
+  const bool show_title = ShouldRenderAsNormalTab();
   if (show_title) {
     int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
     int title_width = lb.width() - title_left;
@@ -1018,15 +1008,15 @@ void Tab::GetAccessibleState(ui::AXViewState* state) {
 // Tab, private
 
 void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds) const {
-  if (!data().pinned || width() >= kPinnedTabRendererAsNormalTabWidth)
+  if (ShouldRenderAsNormalTab())
     return;
-  const int pinned_delta =
-      kPinnedTabRendererAsNormalTabWidth - GetPinnedWidth();
   const int ideal_delta = width() - GetPinnedWidth();
   const int ideal_x = (GetPinnedWidth() - bounds->width()) / 2;
-  bounds->set_x(bounds->x() + static_cast<int>(
-      (1 - static_cast<float>(ideal_delta) / static_cast<float>(pinned_delta)) *
-      (ideal_x - bounds->x())));
+  bounds->set_x(
+      bounds->x() + static_cast<int>(
+          (1 - static_cast<float>(ideal_delta) /
+              static_cast<float>(kPinnedTabExtraWidthToRenderAsNormal)) *
+          (ideal_x - bounds->x())));
 }
 
 void Tab::DataChanged(const TabRendererData& old) {
@@ -1058,8 +1048,7 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
   const SkColor title_color = GetThemeProvider()->GetColor(IsSelected() ?
       ThemeProperties::COLOR_TAB_TEXT :
       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-  title_->SetVisible(!data().pinned ||
-                     width() > kPinnedTabRendererAsNormalTabWidth);
+  title_->SetVisible(ShouldRenderAsNormalTab());
   title_->SetEnabledColor(title_color);
 
   if (show_icon)
@@ -1418,10 +1407,10 @@ void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
 }
 
 int Tab::IconCapacity() const {
-  if (height() < GetMinimumUnselectedSize().height())
+  const gfx::Size min_size(GetMinimumUnselectedSize());
+  if (height() < min_size.height())
     return 0;
-  const int available_width =
-      std::max(0, width() - kLeftPadding - kRightPadding);
+  const int available_width = std::max(0, width() - min_size.width());
   const int width_per_icon = gfx::kFaviconSize;
   const int kPaddingBetweenIcons = 2;
   if (available_width >= width_per_icon &&
@@ -1451,6 +1440,11 @@ bool Tab::ShouldShowCloseBox() const {
 
   return chrome::ShouldTabShowCloseButton(
       IconCapacity(), data().pinned, IsActive());
+}
+
+bool Tab::ShouldRenderAsNormalTab() const {
+  return !data().pinned ||
+      (width() >= (GetPinnedWidth() + kPinnedTabExtraWidthToRenderAsNormal));
 }
 
 double Tab::GetThrobValue() {
