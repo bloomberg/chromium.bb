@@ -171,13 +171,6 @@ HostWindow* DeprecatedPaintLayerScrollableArea::hostWindow() const
     return nullptr;
 }
 
-GraphicsLayer* DeprecatedPaintLayerScrollableArea::layerForScrollbarContainer() const
-{
-    if (layer()->isRootLayer())
-        return box().frame()->host()->visualViewport().layerForScrollbarContainer();
-    return layerForContainer();
-}
-
 GraphicsLayer* DeprecatedPaintLayerScrollableArea::layerForScrolling() const
 {
     return layer()->hasCompositedDeprecatedPaintLayerMapping() ? layer()->compositedDeprecatedPaintLayerMapping()->scrollingContentsLayer() : 0;

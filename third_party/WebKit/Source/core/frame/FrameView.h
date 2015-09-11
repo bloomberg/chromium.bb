@@ -350,7 +350,6 @@ public:
     IntRect scrollableAreaBoundingBox() const override;
     bool scrollAnimatorEnabled() const override;
     bool usesCompositedScrolling() const override;
-    GraphicsLayer* layerForScrollbarContainer() const override;
     GraphicsLayer* layerForScrolling() const override;
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;

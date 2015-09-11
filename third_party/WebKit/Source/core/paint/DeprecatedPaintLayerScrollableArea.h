@@ -86,7 +86,6 @@ public:
 
     HostWindow* hostWindow() const override;
 
-    GraphicsLayer* layerForScrollbarContainer() const override;
     GraphicsLayer* layerForScrolling() const override;
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;

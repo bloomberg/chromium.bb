@@ -672,13 +672,6 @@ bool FrameView::usesCompositedScrolling() const
     return false;
 }
 
-GraphicsLayer* FrameView::layerForScrollbarContainer() const
-{
-    if (m_frame->isMainFrame())
-        return page()->frameHost().visualViewport().layerForScrollbarContainer();
-    return layerForContainer();
-}
-
 GraphicsLayer* FrameView::layerForScrolling() const
 {
     LayoutView* layoutView = this->layoutView();
