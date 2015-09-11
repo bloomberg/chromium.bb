@@ -71,3 +71,6 @@ PolicyTest.URLBlacklist
 # https://crbug.com/530727
 MaterialPDFExtensionTest.Bookmark
 MaterialPDFExtensionTest.WhitespaceTitle
+
+# https://crbug.com/530729
+SiteDetailsBrowserTest.ManyCrossSiteIframes
