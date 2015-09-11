@@ -283,8 +283,9 @@ void HTMLFrame::Bind(web_view::FrameTreeServerPtr frame_tree_server,
                      mojo::InterfaceRequest<web_view::FrameTreeClient>
                          frame_tree_client_request) {
   DCHECK(IsLocal());
-  // TODO(sky): error handling.
   server_ = frame_tree_server.Pass();
+  server_.set_connection_error_handler(
+      base::Bind(&HTMLFrame::Close, base::Unretained(this)));
   frame_tree_client_binding_.reset(new mojo::Binding<web_view::FrameTreeClient>(
       this, frame_tree_client_request.Pass()));
 }
