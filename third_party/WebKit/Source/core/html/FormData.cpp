@@ -254,7 +254,7 @@ String FormData::decode(const CString& data) const
     return encoding().decode(data.data(), data.length());
 }
 
-PassRefPtr<EncodedFormData> FormData::createFormData(EncodedFormData::EncodingType encodingType)
+PassRefPtr<EncodedFormData> FormData::encodeFormData(EncodedFormData::EncodingType encodingType)
 {
     RefPtr<EncodedFormData> formData = EncodedFormData::create();
     Vector<char> encodedData;
@@ -264,7 +264,7 @@ PassRefPtr<EncodedFormData> FormData::createFormData(EncodedFormData::EncodingTy
     return formData.release();
 }
 
-PassRefPtr<EncodedFormData> FormData::createMultiPartFormData()
+PassRefPtr<EncodedFormData> FormData::encodeMultiPartFormData()
 {
     RefPtr<EncodedFormData> formData = EncodedFormData::create();
     formData->setBoundary(FormDataEncoder::generateUniqueBoundaryString());

@@ -90,8 +90,8 @@ public:
     void appendBlob(const String& key, Blob*, const String& filename = String());
     String decode(const CString& data) const;
 
-    PassRefPtr<EncodedFormData> createFormData(EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
-    PassRefPtr<EncodedFormData> createMultiPartFormData();
+    PassRefPtr<EncodedFormData> encodeFormData(EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
+    PassRefPtr<EncodedFormData> encodeMultiPartFormData();
 
 private:
     explicit FormData(const WTF::TextEncoding&);

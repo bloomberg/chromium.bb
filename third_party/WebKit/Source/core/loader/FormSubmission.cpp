@@ -229,10 +229,10 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
     String boundary;
 
     if (isMultiPartForm) {
-        formData = domFormData->createMultiPartFormData();
+        formData = domFormData->encodeMultiPartFormData();
         boundary = formData->boundary().data();
     } else {
-        formData = domFormData->createFormData(attributes.method() == GetMethod ? EncodedFormData::FormURLEncoded : EncodedFormData::parseEncodingType(encodingType));
+        formData = domFormData->encodeFormData(attributes.method() == GetMethod ? EncodedFormData::FormURLEncoded : EncodedFormData::parseEncodingType(encodingType));
         if (copiedAttributes.method() == PostMethod && isMailtoForm) {
             // Convert the form data into a string that we put into the URL.
             appendMailtoPostFormDataToURL(actionURL, *formData, encodingType);

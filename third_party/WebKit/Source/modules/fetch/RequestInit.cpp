@@ -54,7 +54,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         FormData* domFormData = V8FormData::toImpl(v8::Local<v8::Object>::Cast(v8Body));
         opaque = domFormData->opaque();
 
-        RefPtr<EncodedFormData> formData = domFormData->createMultiPartFormData();
+        RefPtr<EncodedFormData> formData = domFormData->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();

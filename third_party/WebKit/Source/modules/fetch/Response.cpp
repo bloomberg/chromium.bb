@@ -133,7 +133,7 @@ Response* Response::create(ExecutionContext* context, const BodyInit& body, cons
         FormData* domFormData = body.getAsFormData();
         OwnPtr<BlobData> blobData = BlobData::create();
         // FIXME: the same code exist in RequestInit::RequestInit().
-        RefPtr<EncodedFormData> httpBody = domFormData->createMultiPartFormData();
+        RefPtr<EncodedFormData> httpBody = domFormData->encodeMultiPartFormData();
         for (size_t i = 0; i < httpBody->elements().size(); ++i) {
             const FormDataElement& element = httpBody->elements()[i];
             switch (element.m_type) {

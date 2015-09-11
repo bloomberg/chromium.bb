@@ -264,7 +264,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromSimpleFormData)
     FormData* data = FormData::create(UTF8Encoding());
     data->append("name1", "value1");
     data->append("name2", "value2");
-    RefPtr<EncodedFormData> inputFormData = data->createMultiPartFormData();
+    RefPtr<EncodedFormData> inputFormData = data->encodeMultiPartFormData();
 
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(document(), inputFormData);
     OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);

@@ -225,7 +225,7 @@ unsigned long long Beacon::beaconSize(FormData*)
 bool Beacon::serialize(FormData* data, ResourceRequest& request, int allowance, int& payloadLength)
 {
     ASSERT(data);
-    RefPtr<EncodedFormData> entityBody = data->createMultiPartFormData();
+    RefPtr<EncodedFormData> entityBody = data->encodeMultiPartFormData();
     unsigned long long entitySize = entityBody->sizeInBytes();
     if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
         return false;
