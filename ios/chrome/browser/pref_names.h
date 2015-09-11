@@ -13,7 +13,6 @@ namespace prefs {
 extern const char kAcceptLanguages[];
 extern const char kDefaultCharset[];
 extern const char kEnableDoNotTrack[];
-extern const char kEnableReferrers[];
 extern const char kHttpServerProperties[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kSearchSuggestEnabled[];

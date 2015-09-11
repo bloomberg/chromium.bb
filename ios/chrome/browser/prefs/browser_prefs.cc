@@ -84,7 +84,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
 #endif
 
-  registry->RegisterBooleanPref(ios::prefs::kEnableReferrers, true);
   registry->RegisterBooleanPref(
       ios::prefs::kEnableDoNotTrack, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
