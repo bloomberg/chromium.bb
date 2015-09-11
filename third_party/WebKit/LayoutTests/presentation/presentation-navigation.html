@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+if (location.href.endsWith('#after-reload')) {
+  test(function() {
+    assert_equals(navigator.presentation.defaultRequest, null);
+  }, "Test that navigator.defaultRequest isn't kept alive after reload.")
+} else {
+  navigator.presentation.defaultRequest = new PresentationRequest("https://example.org");
+
+  location.href += '#after-reload';
+  location.reload();
+}
+
+</script>
+</body>
+</html>
