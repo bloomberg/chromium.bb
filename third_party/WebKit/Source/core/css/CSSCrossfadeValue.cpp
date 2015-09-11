@@ -84,6 +84,18 @@ static ImageResource* cachedImageForCSSValue(CSSValue* value, Document* document
     return nullptr;
 }
 
+static Image* renderableImageForCSSValue(CSSValue* value, const LayoutObject* layoutObject)
+{
+    ImageResource* cachedImage = cachedImageForCSSValue(value, &layoutObject->document());
+
+    // If the image can be rendered at 1 zoom it will have non-empty dimension
+    // and should be able to render at other scales as well.
+    if (!cachedImage || !cachedImage->canRender(*layoutObject, 1))
+        return nullptr;
+
+    return cachedImage->imageForLayoutObject(layoutObject);
+}
+
 CSSCrossfadeValue::~CSSCrossfadeValue()
 {
     if (m_cachedFromImage)
@@ -107,23 +119,22 @@ String CSSCrossfadeValue::customCSSText() const
 
 IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* layoutObject)
 {
-    float percentage = m_percentageValue->getFloatValue();
-    float inversePercentage = 1 - percentage;
+    Image* fromImage = renderableImageForCSSValue(m_fromValue.get(), layoutObject);
+    Image* toImage = renderableImageForCSSValue(m_toValue.get(), layoutObject);
 
-    Document* document = &layoutObject->document();
-    ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
-    ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);
-
-    if (!cachedFromImage || !cachedToImage)
+    if (!fromImage || !toImage)
         return IntSize();
 
-    IntSize fromImageSize = cachedFromImage->imageForLayoutObject(layoutObject)->size();
-    IntSize toImageSize = cachedToImage->imageForLayoutObject(layoutObject)->size();
+    IntSize fromImageSize = fromImage->size();
+    IntSize toImageSize = toImage->size();
 
     // Rounding issues can cause transitions between images of equal size to return
     // a different fixed size; avoid performing the interpolation if the images are the same size.
     if (fromImageSize == toImageSize)
         return fromImageSize;
+
+    float percentage = m_percentageValue->getFloatValue();
+    float inversePercentage = 1 - percentage;
 
     return IntSize(fromImageSize.width() * inversePercentage + toImageSize.width() * percentage,
         fromImageSize.height() * inversePercentage + toImageSize.height() * percentage);
@@ -169,15 +180,8 @@ PassRefPtr<Image> CSSCrossfadeValue::image(LayoutObject* layoutObject, const Int
     if (size.isEmpty())
         return nullptr;
 
-    Document* document = &layoutObject->document();
-    ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
-    ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);
-
-    if (!cachedFromImage || !cachedToImage)
-        return Image::nullImage();
-
-    Image* fromImage = cachedFromImage->imageForLayoutObject(layoutObject);
-    Image* toImage = cachedToImage->imageForLayoutObject(layoutObject);
+    Image* fromImage = renderableImageForCSSValue(m_fromValue.get(), layoutObject);
+    Image* toImage = renderableImageForCSSValue(m_toValue.get(), layoutObject);
 
     if (!fromImage || !toImage)
         return Image::nullImage();
