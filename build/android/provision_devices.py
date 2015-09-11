@@ -53,11 +53,9 @@ class _PHASES(object):
 
 
 def ProvisionDevices(args):
-  if args.blacklist_file:
-    blacklist = device_blacklist.Blacklist(args.blacklist_file)
-  else:
-    # TODO(jbudorick): Remove once the bots have switched over.
-    blacklist = device_blacklist.Blacklist(device_blacklist.BLACKLIST_JSON)
+  blacklist = (device_blacklist.Blacklist(args.blacklist_file)
+               if args.blacklist_file
+               else None)
 
   devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
   if args.device:
@@ -69,7 +67,7 @@ def ProvisionDevices(args):
   parallel_devices.pMap(ProvisionDevice, blacklist, args)
   if args.auto_reconnect:
     _LaunchHostHeartbeat()
-  blacklisted_devices = blacklist.Read()
+  blacklisted_devices = blacklist.Read() if blacklist else []
   if args.output_device_blacklist:
     with open(args.output_device_blacklist, 'w') as f:
       json.dump(blacklisted_devices, f)

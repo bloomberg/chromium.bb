@@ -894,13 +894,10 @@ def _GetAttachedDevices(blacklist_file, test_device):
   Returns:
     A list of attached devices.
   """
-  if not blacklist_file:
-    # TODO(jbudorick): Remove this once bots pass the blacklist file.
-    blacklist_file = device_blacklist.BLACKLIST_JSON
-    logging.warning('Using default device blacklist %s',
-                    device_blacklist.BLACKLIST_JSON)
+  blacklist = (device_blacklist.Blacklist(blacklist_file)
+               if blacklist_file
+               else None)
 
-  blacklist = device_blacklist.Blacklist(blacklist_file)
   attached_devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
   if test_device:
     test_device = [d for d in attached_devices if d == test_device]

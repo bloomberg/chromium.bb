@@ -162,7 +162,7 @@ def RunTestSuites(options, suites, suites_options=None):
   if not suites_options:
     suites_options = {}
 
-  args = ['--verbose']
+  args = ['--verbose', '--blacklist-file', 'out/bad_devices.json']
   if options.target == 'Release':
     args.append('--release')
   if options.asan:
@@ -207,7 +207,10 @@ def InstallApk(options, test, print_step=False):
   if print_step:
     bb_annotations.PrintNamedStep('install_%s' % test.name.lower())
 
-  args = ['--apk_package', test.apk_package]
+  args = [
+      '--apk_package', test.apk_package,
+      '--blacklist-file', 'out/bad_devices.json',
+  ]
   if options.target == 'Release':
     args.append('--release')
   args.append(test.apk)
@@ -230,7 +233,10 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
 
   if test.apk:
     InstallApk(options, test)
-  args = ['--test-apk', test.test_apk, '--verbose']
+  args = [
+      '--test-apk', test.test_apk, '--verbose',
+      '--blacklist-file', 'out/bad_devices.json'
+  ]
   if test.test_data:
     args.extend(['--test_data', test.test_data])
   if options.target == 'Release':
@@ -434,7 +440,10 @@ def ProvisionDevices(options):
     # Restart adb to work around bugs, sleep to wait for usb discovery.
     device_utils.RestartServer()
     RunCmd(['sleep', '1'])
-  provision_cmd = ['build/android/provision_devices.py', '-t', options.target]
+  provision_cmd = [
+      'build/android/provision_devices.py', '-t', options.target,
+      '--blacklist-file', 'out/bad_devices.json'
+  ]
   if options.auto_reconnect:
     provision_cmd.append('--auto-reconnect')
   if options.skip_wipe:
@@ -446,7 +455,10 @@ def ProvisionDevices(options):
 
 def DeviceStatusCheck(options):
   bb_annotations.PrintNamedStep('device_status_check')
-  cmd = ['build/android/buildbot/bb_device_status_check.py']
+  cmd = [
+      'build/android/buildbot/bb_device_status_check.py',
+      '--blacklist-file', 'out/bad_devices.json',
+  ]
   if options.restart_usb:
     cmd.append('--restart-usb')
   RunCmd(cmd, halt_on_failure=True)
@@ -494,17 +506,23 @@ def RunGPUTests(options):
           '--os-type',
           'android',
           '--test-machine-name',
-          EscapeBuilderName(builder_name)])
+          EscapeBuilderName(builder_name),
+          '--android-blacklist-file',
+          'out/bad_devices.json'])
 
   bb_annotations.PrintNamedStep('webgl_conformance_tests')
   RunCmd(['content/test/gpu/run_gpu_test.py', '-v',
           '--browser=android-content-shell', 'webgl_conformance',
-          '--webgl-conformance-version=1.0.1'])
+          '--webgl-conformance-version=1.0.1',
+          '--android-blacklist-file',
+          'out/bad_devices.json'])
 
   bb_annotations.PrintNamedStep('android_webview_webgl_conformance_tests')
   RunCmd(['content/test/gpu/run_gpu_test.py', '-v',
           '--browser=android-webview-shell', 'webgl_conformance',
-          '--webgl-conformance-version=1.0.1'])
+          '--webgl-conformance-version=1.0.1',
+          '--android-blacklist-file',
+          'out/bad_devices.json'])
 
   bb_annotations.PrintNamedStep('gpu_rasterization_tests')
   RunCmd(['content/test/gpu/run_gpu_test.py',
@@ -514,7 +532,9 @@ def RunGPUTests(options):
           '--build-revision',
           str(revision),
           '--test-machine-name',
-          EscapeBuilderName(builder_name)])
+          EscapeBuilderName(builder_name),
+          '--android-blacklist-file',
+          'out/bad_devices.json'])
 
 
 def RunPythonUnitTests(_options):

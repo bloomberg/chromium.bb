@@ -235,10 +235,9 @@ def main():
                          'crash stacks.')
   options, _ = parser.parse_args()
 
-  if options.blacklist_file:
-    blacklist = device_blacklist.Blacklist(options.blacklist_file)
-  else:
-    blacklist = None
+  blacklist = (device_blacklist.Blacklist(options.blacklist_file)
+               if options.blacklist_file
+               else None)
 
   if options.device:
     devices = [device_utils.DeviceUtils(options.device)]
