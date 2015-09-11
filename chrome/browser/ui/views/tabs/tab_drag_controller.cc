@@ -1773,7 +1773,6 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
     bool got_touch_point = ui::GestureRecognizer::Get()->
         GetLastTouchPointForTarget(widget_window, &touch_point_f);
     CHECK(got_touch_point);
-    // TODO(tdresser): Switch to using gfx::PointF. See crbug.com/337824.
     gfx::Point touch_point = gfx::ToFlooredPoint(touch_point_f);
     wm::ConvertPointToScreen(widget_window->GetRootWindow(), &touch_point);
     return touch_point;

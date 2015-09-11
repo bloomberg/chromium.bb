@@ -263,8 +263,6 @@ class EVENTS_EXPORT LocatedEvent : public Event {
   float x() const { return location_.x(); }
   float y() const { return location_.y(); }
   void set_location(const gfx::PointF& location) { location_ = location; }
-  // TODO(tdresser): Always return floating point location. See
-  // crbug.com/337824.
   gfx::Point location() const { return gfx::ToFlooredPoint(location_); }
   const gfx::PointF& location_f() const { return location_; }
   void set_root_location(const gfx::PointF& root_location) {
@@ -285,8 +283,6 @@ class EVENTS_EXPORT LocatedEvent : public Event {
   template <class T> void ConvertLocationToTarget(T* source, T* target) {
     if (!target || target == source)
       return;
-    // TODO(tdresser): Rewrite ConvertPointToTarget to use PointF. See
-    // crbug.com/337824.
     gfx::Point offset = gfx::ToFlooredPoint(location_);
     T::ConvertPointToTarget(source, target, &offset);
     gfx::Vector2d diff = gfx::ToFlooredPoint(location_) - offset;

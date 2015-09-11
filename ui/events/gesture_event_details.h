@@ -37,7 +37,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     oldest_touch_id_ = oldest_touch_id;
   }
 
-  // TODO(tdresser): Return RectF. See crbug.com/337824.
   const gfx::Rect bounding_box() const {
     return ToEnclosingRect(bounding_box_);
   }
