@@ -25,6 +25,26 @@ function lookupDefaultZoom(streamInfo) {
 }
 
 /**
+ * Returns a promise that will resolve to the initial zoom factor
+ * upon starting the plugin. This may differ from the default zoom
+ * if, for example, the page is zoomed before the plugin is run.
+ * @param {!Object} streamInfo The stream object pointing to the data contained
+ *     in the PDF.
+ * @return {Promise<number>} A promise that will resolve to the initial zoom
+ *     factor.
+ */
+function lookupInitialZoom(streamInfo) {
+  // Webviews don't run in tabs so |streamInfo.tabId| is -1 when running within
+  // a webview.
+  if (!chrome.tabs || streamInfo.tabId < 0)
+    return Promise.resolve(1);
+
+  return new Promise(function(resolve, reject) {
+    chrome.tabs.getZoom(streamInfo.tabId, resolve);
+  });
+}
+
+/**
  * A class providing an interface to the browser.
  */
 class BrowserApi {
@@ -33,11 +53,14 @@ class BrowserApi {
    * @param {!Object} streamInfo The stream object which points to the data
    *     contained in the PDF.
    * @param {number} defaultZoom The default browser zoom.
+   * @param {number} initialZoom The initial browser zoom
+   *     upon starting the plugin.
    * @param {boolean} manageZoom Whether to manage zoom.
    */
-  constructor(streamInfo, defaultZoom, manageZoom) {
+  constructor(streamInfo, defaultZoom, initialZoom, manageZoom) {
     this.streamInfo_ = streamInfo;
     this.defaultZoom_ = defaultZoom;
+    this.initialZoom_ = initialZoom;
     this.manageZoom_ = manageZoom;
   }
 
@@ -48,8 +71,12 @@ class BrowserApi {
    * @param {boolean} manageZoom Whether to manage zoom.
    */
   static create(streamInfo, manageZoom) {
-    return lookupDefaultZoom(streamInfo).then(function(defaultZoom) {
-      return new BrowserApi(streamInfo, defaultZoom, manageZoom);
+    return Promise.all([
+        lookupDefaultZoom(streamInfo),
+        lookupInitialZoom(streamInfo)
+    ]).then(function(zoomFactors) {
+      return new BrowserApi(
+          streamInfo, zoomFactors[0], zoomFactors[1], manageZoom);
     });
   }
 
@@ -89,6 +116,14 @@ class BrowserApi {
    */
   getDefaultZoom() {
     return this.defaultZoom_;
+  }
+
+  /**
+   * Returns the initial browser zoom factor.
+   * @return {number} The initial browser zoom factor.
+   */
+  getInitialZoom() {
+    return this.initialZoom_;
   }
 
   /**

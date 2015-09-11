@@ -13,12 +13,12 @@ class ZoomManager {
    * @param {!Viewport} viewport A Viewport for which to manage zoom.
    * @param {Function} setBrowserZoomFunction A function that sets the browser
    *     zoom to the provided value.
-   * @param {number} defaultZoom The default browser zoom level.
+   * @param {number} initialZoom The initial browser zoom level.
    */
-  constructor(viewport, setBrowserZoomFunction, defaultZoom) {
+  constructor(viewport, setBrowserZoomFunction, initialZoom) {
     this.viewport_ = viewport;
     this.setBrowserZoomFunction_ = setBrowserZoomFunction;
-    this.browserZoom_ = defaultZoom;
+    this.browserZoom_ = initialZoom;
     this.changingBrowserZoom_ = null;
   }
 
