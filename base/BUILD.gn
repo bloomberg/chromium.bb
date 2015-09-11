@@ -64,8 +64,6 @@ component("base") {
   sources = [
     "allocator/allocator_extension.cc",
     "allocator/allocator_extension.h",
-    "allocator/type_profiler_control.cc",
-    "allocator/type_profiler_control.h",
     "android/animation_frame_time_histogram.cc",
     "android/animation_frame_time_histogram.h",
     "android/apk_assets.cc",
@@ -728,8 +726,6 @@ component("base") {
     set_sources_assignment_filter(sources_assignment_filter)
 
     sources -= [
-      "allocator/type_profiler_control.cc",
-      "allocator/type_profiler_control.h",
       "async_socket_io_handler_posix.cc",
       "cpu.cc",
       "files/file_enumerator_posix.cc",

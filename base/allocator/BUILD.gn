@@ -100,7 +100,7 @@ if (use_allocator == "tcmalloc") {
     check_includes = false
 
     sources = [
-      # Generated for our configuration from tcmalloc"s build
+      # Generated for our configuration from tcmalloc's build
       # and checked in.
       "$tcmalloc_dir/src/config.h",
       "$tcmalloc_dir/src/config_android.h",
@@ -151,8 +151,6 @@ if (use_allocator == "tcmalloc") {
 
       # #included by debugallocation_shim.cc
       #"$tcmalloc_dir/src/debugallocation.cc",
-      "$tcmalloc_dir/src/deep-heap-profile.cc",
-      "$tcmalloc_dir/src/deep-heap-profile.h",
       "$tcmalloc_dir/src/free_list.cc",
       "$tcmalloc_dir/src/free_list.h",
       "$tcmalloc_dir/src/heap-profile-table.cc",

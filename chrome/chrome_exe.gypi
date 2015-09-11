@@ -9,11 +9,6 @@
       'type': 'none',
       'dependencies': [ 'chrome_initial', ],
       'conditions': [
-        ['OS=="linux" and clang_type_profiler==1', {
-          'dependencies!': [
-            '<(DEPTH)/base/allocator/allocator.gyp:type_profiler',
-          ],
-        }],
         ['OS == "win"', {
           'actions': [
             {

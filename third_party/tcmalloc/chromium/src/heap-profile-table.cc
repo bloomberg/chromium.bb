@@ -92,9 +92,6 @@ DEFINE_int32(heap_check_max_leaks,
 // header of the dumped heap profile
 static const char kProfileHeader[] = "heap profile: ";
 static const char kProcSelfMapsHeader[] = "\nMAPPED_LIBRARIES:\n";
-#if defined(TYPE_PROFILING)
-static const char kTypeProfileStatsHeader[] = "type statistics:\n";
-#endif  // defined(TYPE_PROFILING)
 
 //----------------------------------------------------------------------
 
@@ -361,29 +358,6 @@ void HeapProfileTable::DumpMarkedObjects(AllocationMark mark,
   RawClose(fd);
 }
 
-#if defined(TYPE_PROFILING)
-void HeapProfileTable::DumpTypeStatistics(const char* file_name) const {
-  RawFD fd = RawOpenForWriting(file_name);
-  if (fd == kIllegalRawFD) {
-    RAW_LOG(ERROR, "Failed dumping type statistics to %s", file_name);
-    return;
-  }
-
-  AddressMap<TypeCount>* type_size_map;
-  type_size_map = new(alloc_(sizeof(AddressMap<TypeCount>)))
-      AddressMap<TypeCount>(alloc_, dealloc_);
-  address_map_->Iterate(TallyTypesItererator, type_size_map);
-
-  RawWrite(fd, kTypeProfileStatsHeader, strlen(kTypeProfileStatsHeader));
-  const DumpArgs args(fd, NULL);
-  type_size_map->Iterate<const DumpArgs&>(DumpTypesIterator, args);
-  RawClose(fd);
-
-  type_size_map->~AddressMap<TypeCount>();
-  dealloc_(type_size_map);
-}
-#endif  // defined(TYPE_PROFILING)
-
 void HeapProfileTable::IterateOrderedAllocContexts(
     AllocContextIterator callback) const {
   Bucket** list = MakeSortedBucketList();
@@ -450,41 +424,6 @@ void HeapProfileTable::DumpBucketIterator(const Bucket* bucket,
   args->buflen = UnparseBucket(*bucket, args->buf, args->buflen, args->bufsize,
                                "", NULL);
 }
-
-#if defined(TYPE_PROFILING)
-// static
-void HeapProfileTable::TallyTypesItererator(
-    const void* ptr,
-    AllocValue* value,
-    AddressMap<TypeCount>* type_size_map) {
-  const std::type_info* type = LookupType(ptr);
-
-  const void* key = NULL;
-  if (type)
-    key = type->name();
-
-  TypeCount* count = type_size_map->FindMutable(key);
-  if (count) {
-    count->bytes += value->bytes;
-    ++count->objects;
-  } else {
-    type_size_map->Insert(key, TypeCount(value->bytes, 1));
-  }
-}
-
-// static
-void HeapProfileTable::DumpTypesIterator(const void* ptr,
-                                         TypeCount* count,
-                                         const DumpArgs& args) {
-  char buf[1024];
-  int len;
-  const char* mangled_type_name = static_cast<const char*>(ptr);
-  len = snprintf(buf, sizeof(buf), "%6d: %8" PRId64 " @ %s\n",
-                 count->objects, count->bytes,
-                 mangled_type_name ? mangled_type_name : "(no_typeinfo)");
-  RawWrite(args.fd, buf, len);
-}
-#endif  // defined(TYPE_PROFILING)
 
 inline
 void HeapProfileTable::DumpNonLiveIterator(const void* ptr, AllocValue* v,

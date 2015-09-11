@@ -18,8 +18,6 @@
           '../build/build_config.h',
           'allocator/allocator_extension.cc',
           'allocator/allocator_extension.h',
-          'allocator/type_profiler_control.cc',
-          'allocator/type_profiler_control.h',
           'android/animation_frame_time_histogram.cc',
           'android/animation_frame_time_histogram.h',
           'android/apk_assets.cc',
@@ -795,8 +793,6 @@
           ],
           ['>(nacl_untrusted_build)==1', {
             'sources!': [
-               'allocator/type_profiler_control.cc',
-               'allocator/type_profiler_control.h',
                'base_paths.cc',
                'cpu.cc',
                'debug/stack_trace.cc',

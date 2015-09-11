@@ -60,10 +60,6 @@
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
-#if defined(TYPE_PROFILING)
-#include "base/allocator/type_profiler.h"
-#include "base/allocator/type_profiler_tcmalloc.h"
-#endif
 #endif
 
 #if !defined(OS_IOS)
@@ -464,13 +460,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // implement this EnableTerminationOnOutOfMemory() function.  Whateverz.
     // This works for now.
 #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
-
-#if defined(TYPE_PROFILING)
-    base::type_profiler::InterceptFunctions::SetFunctions(
-        base::type_profiler::NewInterceptForTCMalloc,
-        base::type_profiler::DeleteInterceptForTCMalloc);
-#endif
-
     // For tcmalloc, we need to tell it to behave like new.
     tc_set_new_mode(1);
 

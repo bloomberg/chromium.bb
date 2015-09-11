@@ -517,12 +517,6 @@
       # This is intended for iOS builds only.
       'use_system_libcxx%': 0,
 
-      # Use a modified version of Clang to intercept allocated types and sizes
-      # for allocated objects. clang_type_profiler=1 implies clang=1.
-      # See http://dev.chromium.org/developers/deep-memory-profiler/cpp-object-type-identifier
-      # TODO(dmikurube): Support mac.  See http://crbug.com/123758#c11
-      'clang_type_profiler%': 0,
-
       # Set to true to instrument the code with function call logger.
       # See src/third_party/cygprofile/cyg-profile.cc for details.
       'order_profiling%': 0,
@@ -1205,7 +1199,6 @@
     'use_prebuilt_instrumented_libraries%': '<(use_prebuilt_instrumented_libraries)',
     'use_custom_libcxx%': '<(use_custom_libcxx)',
     'use_system_libcxx%': '<(use_system_libcxx)',
-    'clang_type_profiler%': '<(clang_type_profiler)',
     'order_profiling%': '<(order_profiling)',
     'order_text_section%': '<(order_text_section)',
     'enable_extensions%': '<(enable_extensions)',
@@ -2281,23 +2274,6 @@
         'v8_target_arch': 'arm64',
       }],
 
-      ['OS=="linux" and clang_type_profiler==1', {
-        'clang%': 1,
-        'clang_use_chrome_plugins%': 0,
-        'conditions': [
-          ['host_arch=="x64"', {
-            'make_clang_dir%': 'third_party/llvm-allocated-type/Linux_x64',
-          }],
-          ['host_arch=="ia32"', {
-            # 32-bit Clang is unsupported.  It may not build.  Put your 32-bit
-            # Clang in this directory at your own risk if needed for some
-            # purpose (e.g. to compare 32-bit and 64-bit behavior like memory
-            # usage).  Any failure by this compiler should not close the tree.
-            'make_clang_dir%': 'third_party/llvm-allocated-type/Linux_ia32',
-          }],
-        ],
-      }],
-
       # On valgrind bots, override the optimizer settings so we don't inline too
       # much and make the stacks harder to figure out.
       #
@@ -2673,18 +2649,6 @@
       ['OS=="win" and asan==1 and component=="shared_library"', {
         'dependencies': [
           '<(DEPTH)/build/win/asan.gyp:asan_dynamic_runtime',
-        ],
-      }],
-      ['OS=="linux" and use_allocator!="none" and clang_type_profiler==1', {
-        'cflags_cc!': ['-fno-rtti'],
-        'cflags_cc+': [
-          '-frtti',
-          '-gline-tables-only',
-          '-fintercept-allocation-functions',
-        ],
-        'defines': ['TYPE_PROFILING'],
-        'dependencies': [
-          '<(DEPTH)/base/allocator/allocator.gyp:type_profiler',
         ],
       }],
       ['branding=="Chrome"', {

@@ -11,7 +11,6 @@ import("//build/config/ios/ios_sdk.gni")
 
 assert(host_os == "mac")
 
-import("//build/toolchain/clang.gni")
 import("//build/toolchain/goma.gni")
 
 if (use_goma) {
