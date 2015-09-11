@@ -52,9 +52,15 @@ public:
     void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
     void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length) override;
 
-    // Handling of the default request.
-    PresentationRequest* defaultRequest() const;
-    void setDefaultRequest(PresentationRequest*);
+    // Called by the Presentation object to advertize itself to the controller.
+    // The Presentation object is kept as a WeakMember in order to avoid keeping
+    // it alive when it is no longer in the tree.
+    void setPresentation(Presentation*);
+
+    // Called by the Presentation object when the default request is updated
+    // in order to notify the client about the change of default presentation
+    // url.
+    void setDefaultRequestUrl(const KURL&);
 
     // Handling of running sessions.
     void registerSession(PresentationSession*);
@@ -76,7 +82,8 @@ private:
     WebPresentationClient* m_client;
 
     // Default PresentationRequest used by the embedder.
-    PersistentWillBeMember<PresentationRequest> m_defaultRequest;
+    // PersistentWillBeMember<PresentationRequest> m_defaultRequest;
+    WeakMember<Presentation> m_presentation;
 
     // The presentation sessions associated with that frame.
     // TODO(mlamouri): the PresentationController will keep any created session

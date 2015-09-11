@@ -56,7 +56,7 @@ WebPresentationClient* PresentationController::client()
 
 DEFINE_TRACE(PresentationController)
 {
-    visitor->trace(m_defaultRequest);
+    visitor->trace(m_presentation);
     visitor->trace(m_sessions);
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
     LocalFrameLifecycleObserver::trace(visitor);
@@ -64,7 +64,9 @@ DEFINE_TRACE(PresentationController)
 
 void PresentationController::didStartDefaultSession(WebPresentationSessionClient* sessionClient)
 {
-    PresentationSession::take(this, adoptPtr(sessionClient), m_defaultRequest);
+    if (!m_presentation || !m_presentation->defaultRequest())
+        return;
+    PresentationSession::take(this, adoptPtr(sessionClient), m_presentation->defaultRequest());
 }
 
 void PresentationController::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState state)
@@ -97,20 +99,18 @@ void PresentationController::didReceiveSessionBinaryMessage(WebPresentationSessi
     session->didReceiveBinaryMessage(data, length);
 }
 
-PresentationRequest* PresentationController::defaultRequest() const
+void PresentationController::setPresentation(Presentation* presentation)
 {
-    return m_defaultRequest;
+    m_presentation = presentation;
 }
 
-void PresentationController::setDefaultRequest(PresentationRequest* request)
+void PresentationController::setDefaultRequestUrl(const KURL& url)
 {
-    m_defaultRequest = request;
-
     if (!m_client)
         return;
 
-    if (m_defaultRequest)
-        m_client->setDefaultPresentationUrl(m_defaultRequest->url().string());
+    if (url.isValid())
+        m_client->setDefaultPresentationUrl(url.string());
     else
         m_client->setDefaultPresentationUrl(blink::WebString());
 }

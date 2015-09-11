@@ -35,7 +35,7 @@ class Presentation final
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Presentation* create(LocalFrame*);
-    ~Presentation() override;
+    ~Presentation() override = default;
 
     // EventTarget implementation.
     const AtomicString& interfaceName() const override;
@@ -53,6 +53,9 @@ private:
 
     // The session object provided to the presentation page. Not supported.
     Member<PresentationSession> m_session;
+
+    // Default PresentationRequest used by the embedder.
+    Member<PresentationRequest> m_defaultRequest;
 };
 
 } // namespace blink

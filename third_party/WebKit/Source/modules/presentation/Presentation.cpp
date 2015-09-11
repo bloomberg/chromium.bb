@@ -18,16 +18,16 @@ Presentation::Presentation(LocalFrame* frame)
 {
 }
 
-Presentation::~Presentation()
-{
-}
-
 // static
 Presentation* Presentation::create(LocalFrame* frame)
 {
     ASSERT(frame);
 
-    return new Presentation(frame);
+    Presentation* presentation = new Presentation(frame);
+    PresentationController* controller = PresentationController::from(*frame);
+    ASSERT(controller);
+    controller->setPresentation(presentation);
+    return presentation;
 }
 
 const AtomicString& Presentation::interfaceName() const
@@ -45,28 +45,27 @@ ExecutionContext* Presentation::executionContext() const
 DEFINE_TRACE(Presentation)
 {
     visitor->trace(m_session);
+    visitor->trace(m_defaultRequest);
     RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
 PresentationRequest* Presentation::defaultRequest() const
 {
-    if (!frame())
-        return nullptr;
-
-    PresentationController* controller = PresentationController::from(*frame());
-    return controller ? controller->defaultRequest() : nullptr;
+    return m_defaultRequest;
 }
 
 void Presentation::setDefaultRequest(PresentationRequest* request)
 {
+    m_defaultRequest = request;
+
     if (!frame())
         return;
 
     PresentationController* controller = PresentationController::from(*frame());
     if (!controller)
         return;
-    controller->setDefaultRequest(request);
+    controller->setDefaultRequestUrl(request ? request->url() : KURL());
 }
 
 PresentationSession* Presentation::session() const
