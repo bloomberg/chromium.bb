@@ -127,6 +127,7 @@ class SortHelper {
              prefService:g_browser_process->local_state()
                     path:prefs::kTaskManagerWindowPlacement]);
     }
+    [[self window] setExcludedFromWindowsMenu:YES];
     [self showWindow:self];
   }
   return self;
