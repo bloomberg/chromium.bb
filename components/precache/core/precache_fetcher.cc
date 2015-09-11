@@ -29,12 +29,15 @@ using net::URLFetcher;
 
 namespace precache {
 
-// LOAD_DO_NOT_*_COOKIES is for privacy reasons. If a user clears their
-// cookies, but a tracking beacon is prefetched and the beacon specifies its
-// source URL in a URL param, the beacon site would be able to rebuild a
-// profile of the user.
-const int kNoCookies =
-    net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+// The following flags are for privacy reasons. For example, if a user clears
+// their cookies, but a tracking beacon is prefetched and the beacon specifies
+// its source URL in a URL param, the beacon site would be able to rebuild a
+// profile of the user. All three flags should occur together, or not at all,
+// per
+// https://groups.google.com/a/chromium.org/d/topic/net-dev/vvcodRV6SdM/discussion.
+const int kNoTracking =
+    net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+    net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
 namespace {
 
@@ -156,7 +159,7 @@ void PrecacheFetcher::Fetcher::LoadFromCache() {
   fetch_stage_ = FetchStage::CACHE;
   url_fetcher_cache_ = URLFetcher::Create(url_, URLFetcher::GET, this);
   url_fetcher_cache_->SetRequestContext(request_context_);
-  url_fetcher_cache_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE | kNoCookies);
+  url_fetcher_cache_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE | kNoTracking);
   scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
   url_fetcher_cache_->SaveResponseWithWriter(null_writer.Pass());
   url_fetcher_cache_->Start();
@@ -170,7 +173,7 @@ void PrecacheFetcher::Fetcher::LoadFromNetwork() {
     // LOAD_VALIDATE_CACHE allows us to refresh Date headers for resources
     // already in the cache. The Date headers are updated from 304s as well as
     // 200s.
-    url_fetcher_network_->SetLoadFlags(net::LOAD_VALIDATE_CACHE | kNoCookies);
+    url_fetcher_network_->SetLoadFlags(net::LOAD_VALIDATE_CACHE | kNoTracking);
     // We don't need a copy of the response body for resource requests. The
     // request is issued only to populate the browser cache.
     scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
@@ -178,7 +181,7 @@ void PrecacheFetcher::Fetcher::LoadFromNetwork() {
   } else {
     // Config and manifest requests do not need to be revalidated. It's okay if
     // they expire from the cache minutes after we request them.
-    url_fetcher_network_->SetLoadFlags(kNoCookies);
+    url_fetcher_network_->SetLoadFlags(kNoTracking);
   }
   url_fetcher_network_->Start();
 }

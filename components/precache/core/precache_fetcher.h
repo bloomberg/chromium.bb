@@ -26,7 +26,7 @@ class URLRequestContextGetter;
 namespace precache {
 
 // Visible for testing.
-extern const int kNoCookies;
+extern const int kNoTracking;
 
 // Public interface to code that fetches resources that the user is likely to
 // want to fetch in the future, putting them in the network stack disk cache.
