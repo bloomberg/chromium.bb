@@ -410,9 +410,6 @@ deps_os = {
     'src/third_party/fontconfig/src':
      Var('chromium_git') + '/external/fontconfig.git' + '@' + 'f16c3118e25546c1b749f9823c51827a60aeb5c1',
 
-    'src/third_party/stp/src':
-     Var('chromium_git') + '/external/github.com/stp/stp.git' + '@' + 'fc94a599207752ab4d64048204f0c88494811b62',
-
     # ANGLE uses dEQP for GPU testing
     'src/third_party/deqp/src':
      Var('deqp_url') + '@' + Var('deqp_revision'),
@@ -809,5 +806,3 @@ hooks = [
     ],
   },
 ]
-
-

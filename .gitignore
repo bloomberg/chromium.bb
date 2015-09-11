@@ -383,7 +383,6 @@ v8.log
 /third_party/skia
 /third_party/smhasher/src
 /third_party/snappy/src
-/third_party/stp/src
 /third_party/swiftshader/include/
 /third_party/syzygy
 /third_party/syzygy/binaries
