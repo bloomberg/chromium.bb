@@ -839,7 +839,7 @@
                   'content/common/gpu/media/|'\
                   'content/renderer/media/|'\
                   'media/base/android/|'\
-                  'media/video/|'\
+                  'media/capture/|'\
                   'video.*_accelerat',
     },
     'webrtc_browser_tests': {
@@ -1157,8 +1157,7 @@
     'views_core': ['tdanderson+views@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'groby+virtualkb@chromium.org'],
-    'webrtc_media': ['wjia+watch@chromium.org',
-                     'mcasas+watch@chromium.org',
+    'webrtc_media': ['mcasas+watch@chromium.org',
                      'posciak+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org',
                              'tnakamura+watch@chromium.org'],
