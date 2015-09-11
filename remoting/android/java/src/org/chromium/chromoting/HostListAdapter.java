@@ -5,35 +5,49 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
+import android.text.format.DateUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
-
 /** Describes the appearance and behavior of each host list entry. */
 class HostListAdapter extends ArrayAdapter<HostInfo> {
-    public HostListAdapter(Context context, int textViewResourceId, HostInfo[] hosts) {
-        super(context, textViewResourceId, hosts);
+    public HostListAdapter(Context context, HostInfo[] hosts) {
+        super(context, -1, R.id.host_label, hosts);
     }
 
     /** Generates a View corresponding to this particular host. */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        TextView target = (TextView) super.getView(position, convertView, parent);
-
         final HostInfo host = getItem(position);
+        int desiredLayoutId = host.isOnline ? R.layout.host_online : R.layout.host_offline;
 
-        target.setText(host.name);
-        target.setCompoundDrawablesWithIntrinsicBounds(
-                host.isOnline ? R.drawable.ic_host_online : R.drawable.ic_host_offline, 0, 0, 0);
-
-        if (!host.isOnline) {
-            target.setTextColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
-                    R.color.host_offline_text));
+        if (convertView != null && convertView.getId() != desiredLayoutId) {
+            convertView = null;
+        }
+        if (convertView == null) {
+            LayoutInflater inflater =
+                    (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            convertView = inflater.inflate(desiredLayoutId, null);
         }
 
-        return target;
+        TextView label = (TextView) convertView.findViewById(R.id.host_label);
+        label.setText(host.name);
+
+        if (!host.isOnline) {
+            String offlineReasonText = host.getHostOfflineReasonText(getContext());
+            CharSequence lastSeenText =
+                    DateUtils.getRelativeDateTimeString(getContext(), host.updatedTime.getTime(),
+                            DateUtils.SECOND_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0);
+            String statusText = getContext().getString(
+                    R.string.host_status_line, lastSeenText, offlineReasonText);
+
+            TextView status = (TextView) convertView.findViewById(R.id.host_status);
+            status.setText(statusText);
+        }
+
+        return convertView;
     }
 }

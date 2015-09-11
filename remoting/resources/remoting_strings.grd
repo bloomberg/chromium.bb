@@ -862,12 +862,28 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Label for general-purpose OK buttons." name="IDS_OK">
         OK
       </message>
-      <message desc="Modified version of the host name shown for hosts that are not currently accessible and for which no last-online status is available." name="IDS_OFFLINE">
-        <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (offline)
-      </message>
-      <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDS_LAST_ONLINE">
-        <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (last online <ph name="DATE_OR_TIME">$2<ex>1/6/2013 or 11:23:32 AM</ex></ph>)
-      </message>
+      <if expr="is_android">
+        <message desc="This string represents a host status line, which is shown below the host name for offline hosts.  The status line consists of 1) a host offline status (i.e. a specific 'Host failed to read the policy.' or 'Invalid host owner.' or a generic 'Host if offline.') and 2) statement when the host was last seen online (i.e. 'Last seen online 20 minutes ago.')."
+                 name="IDS_HOST_STATUS_LINE" formatter_data="android_java">
+          <ph name="OPTIONAL_OFFLINE_REASON">%2$s<ex>Host failed to read the policy.</ex></ph>  Last seen online <ph name="RELATIVE_TIMESTAMP">%1$s<ex>yesterday</ex></ph>.
+        </message>
+        <message desc="Content description (used for accessibility) of a host icon representing an online host."
+                 name="IDS_HOST_ICON_ONLINE_DESCRIPTION" formatter_data="android_java">
+          Online.
+        </message>
+        <message desc="Content description (used for accessibility) of a host icon representing an offline host."
+                 name="IDS_HOST_ICON_OFFLINE_DESCRIPTION" formatter_data="android_java">
+          Offline.
+        </message>
+      </if>
+      <if expr="not is_android">
+        <message desc="Modified version of the host name shown for hosts that are not currently accessible and for which no last-online status is available." name="IDS_OFFLINE">
+          <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (offline)
+        </message>
+        <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDS_LAST_ONLINE">
+          <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (last online <ph name="DATE_OR_TIME">$2<ex>1/6/2013 or 11:23:32 AM</ex></ph>)
+        </message>
+      </if>
       <message desc="Error message indicating that the host is offline, because the host failed to initialize (i.e. failed to generate a host certificate, run out of memory early during startup, failed to set up inter-process communication, etc.)."
                name="IDS_OFFLINE_REASON_INITIALIZATION_FAILED" formatter_data="android_java">
         Host initialization failed.

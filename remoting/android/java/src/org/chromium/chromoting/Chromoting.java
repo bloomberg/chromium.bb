@@ -11,14 +11,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,7 +33,6 @@ import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 
 /**
  * The user interface for querying and displaying a user's host list from the directory server. It
@@ -371,22 +368,8 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
         if (host.isOnline) {
             connectToHost(host);
         } else {
-            String tooltip = getHostOfflineTooltip(host.hostOfflineReason);
+            String tooltip = host.getHostOfflineReasonText(this);
             Toast.makeText(this, tooltip, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private String getHostOfflineTooltip(String hostOfflineReason) {
-        if (TextUtils.isEmpty(hostOfflineReason)) {
-            return getString(R.string.host_offline_tooltip);
-        }
-        try {
-            String resourceName = "offline_reason_" + hostOfflineReason.toLowerCase(Locale.ENGLISH);
-            int resourceId = getResources().getIdentifier(resourceName, "string",
-                    getPackageName());
-            return getString(resourceId);
-        } catch (Resources.NotFoundException ignored) {
-            return getString(R.string.offline_reason_unknown, hostOfflineReason);
         }
     }
 
@@ -530,7 +513,7 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
         if (mRefreshButton != null) {
             mRefreshButton.setEnabled(mAccount != null);
         }
-        ArrayAdapter<HostInfo> displayer = new HostListAdapter(this, R.layout.host, mHosts);
+        ArrayAdapter<HostInfo> displayer = new HostListAdapter(this, mHosts);
         Log.i("hostlist", "About to populate host list display");
         mHostListView.setAdapter(displayer);
     }
