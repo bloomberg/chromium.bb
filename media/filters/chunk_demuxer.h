@@ -243,10 +243,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // it can accept a new segment.
   // Some pending frames can be emitted during that process. These frames are
   // applied |timestamp_offset|.
-  void Abort(const std::string& id,
-             base::TimeDelta append_window_start,
-             base::TimeDelta append_window_end,
-             base::TimeDelta* timestamp_offset);
+  void ResetParserState(const std::string& id,
+                        base::TimeDelta append_window_start,
+                        base::TimeDelta append_window_end,
+                        base::TimeDelta* timestamp_offset);
 
   // Remove buffers between |start| and |end| for the source buffer
   // associated with |id|.

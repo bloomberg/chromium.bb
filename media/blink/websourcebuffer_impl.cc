@@ -110,13 +110,19 @@ void WebSourceBufferImpl::append(
     *timestamp_offset = timestamp_offset_.InSecondsF();
 }
 
+// TODO(servolk): WebSourceBuffer::abort is being renamed into
+// resetParserState and will be removed soon
 void WebSourceBufferImpl::abort() {
-  demuxer_->Abort(id_,
-                  append_window_start_, append_window_end_,
-                  &timestamp_offset_);
+  resetParserState();
+}
 
-  // TODO(wolenetz): abort should be able to modify the caller timestamp offset
-  // (just like WebSourceBufferImpl::append).
+void WebSourceBufferImpl::resetParserState() {
+  demuxer_->ResetParserState(id_,
+                             append_window_start_, append_window_end_,
+                             &timestamp_offset_);
+
+  // TODO(wolenetz): resetParserState should be able to modify the caller
+  // timestamp offset (just like WebSourceBufferImpl::append).
   // See http://crbug.com/370229 for further details.
 }
 

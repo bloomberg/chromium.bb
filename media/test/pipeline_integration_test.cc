@@ -498,7 +498,7 @@ class MockMediaSource {
   void Seek(base::TimeDelta seek_time, int new_position, int seek_append_size) {
     chunk_demuxer_->StartWaitingForSeek(seek_time);
 
-    chunk_demuxer_->Abort(
+    chunk_demuxer_->ResetParserState(
         kSourceId,
         base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
 
@@ -562,7 +562,7 @@ class MockMediaSource {
   void Shutdown() {
     if (!chunk_demuxer_)
       return;
-    chunk_demuxer_->Abort(
+    chunk_demuxer_->ResetParserState(
         kSourceId,
         base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
     chunk_demuxer_->Shutdown();

@@ -3029,13 +3029,13 @@ TEST_F(ChunkDemuxerTest, IsParsingMediaSegmentMidMediaSegment) {
   // Confirm we're in the middle of parsing a media segment.
   ASSERT_TRUE(demuxer_->IsParsingMediaSegment(kSourceId));
 
-  demuxer_->Abort(kSourceId,
-                  append_window_start_for_next_append_,
-                  append_window_end_for_next_append_,
-                  &timestamp_offset_map_[kSourceId]);
+  demuxer_->ResetParserState(kSourceId,
+                             append_window_start_for_next_append_,
+                             append_window_end_for_next_append_,
+                             &timestamp_offset_map_[kSourceId]);
 
-  // After Abort(), parsing should no longer be in the middle of a media
-  // segment.
+  // After ResetParserState(), parsing should no longer be in the middle of a
+  // media segment.
   ASSERT_FALSE(demuxer_->IsParsingMediaSegment(kSourceId));
 }
 
@@ -3068,14 +3068,14 @@ TEST_F(ChunkDemuxerTest, EmitBuffersDuringAbort) {
   // Confirm we're in the middle of parsing a media segment.
   ASSERT_TRUE(demuxer_->IsParsingMediaSegment(kSourceId));
 
-  // Abort on the Mpeg2 TS parser triggers the emission of the last video
-  // buffer which is pending in the stream parser.
+  // ResetParserState on the Mpeg2 TS parser triggers the emission of the last
+  // video buffer which is pending in the stream parser.
   Ranges<base::TimeDelta> range_before_abort =
       demuxer_->GetBufferedRanges(kSourceId);
-  demuxer_->Abort(kSourceId,
-                  append_window_start_for_next_append_,
-                  append_window_end_for_next_append_,
-                  &timestamp_offset_map_[kSourceId]);
+  demuxer_->ResetParserState(kSourceId,
+                             append_window_start_for_next_append_,
+                             append_window_end_for_next_append_,
+                             &timestamp_offset_map_[kSourceId]);
   Ranges<base::TimeDelta> range_after_abort =
       demuxer_->GetBufferedRanges(kSourceId);
 
@@ -3116,12 +3116,12 @@ TEST_F(ChunkDemuxerTest, SeekCompleteDuringAbort) {
   // abort.
   Seek(base::TimeDelta::FromMilliseconds(4110));
 
-  // Abort on the Mpeg2 TS parser triggers the emission of the last video
-  // buffer which is pending in the stream parser.
-  demuxer_->Abort(kSourceId,
-                  append_window_start_for_next_append_,
-                  append_window_end_for_next_append_,
-                  &timestamp_offset_map_[kSourceId]);
+  // ResetParserState on the Mpeg2 TS parser triggers the emission of the last
+  // video buffer which is pending in the stream parser.
+  demuxer_->ResetParserState(kSourceId,
+                             append_window_start_for_next_append_,
+                             append_window_end_for_next_append_,
+                             &timestamp_offset_map_[kSourceId]);
 }
 
 #endif
