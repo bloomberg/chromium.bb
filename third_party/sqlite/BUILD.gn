@@ -10,12 +10,6 @@ declare_args() {
 }
 
 if (!use_system_sqlite) {
-  # TODO(shess): This cannot possibly be the right thing to do.  AFAICT it is
-  # only necessary so that WebDatabase can #include <sqlite3.h>.
-  config("sqlite_config") {
-    include_dirs = [ "." ]
-  }
-
   config("sqlite_warnings") {
     cflags = []
     if (is_clang) {
@@ -177,14 +171,14 @@ if (!use_system_sqlite) {
     public_deps = [
       ":chromium_sqlite3",
     ]
-    public_configs = [
-      ":sqlite_export",
-      ":sqlite_config",
-    ]
+    public_configs = [ ":sqlite_export" ]
   }
 
   if (is_linux) {
     executable("sqlite_shell") {
+      # So shell.c can find the correct sqlite3.h.
+      include_dirs = [ "amalgamation" ]
+
       sources = [
         "src/src/shell.c",
         "src/src/shell_icu_linux.c",

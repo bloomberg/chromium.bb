@@ -150,12 +150,6 @@
             '../icu/icu.gyp:icui18n',
             '../icu/icu.gyp:icuuc',
           ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '.',
-              '../..',
-            ],
-          },
           'msvs_disabled_warnings': [
             4244, 4267,
           ],
@@ -221,6 +215,10 @@
           'dependencies': [
             '../icu/icu.gyp:icuuc',
             'sqlite',
+          ],
+          # So shell.c can find the correct sqlite3.h.
+          'include_dirs': [
+            'amalgamation',
           ],
           'sources': [
             'src/src/shell.c',
