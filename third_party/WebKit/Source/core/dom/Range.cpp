@@ -135,6 +135,14 @@ Range::~Range()
 }
 #endif
 
+void Range::dispose()
+{
+#if ENABLE(OILPAN)
+    // A prompt detach from the owning Document helps avoid GC overhead.
+    m_ownerDocument->detachRange(this);
+#endif
+}
+
 void Range::setDocument(Document& document)
 {
     ASSERT(m_ownerDocument != document);

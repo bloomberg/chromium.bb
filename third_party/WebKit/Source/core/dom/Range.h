@@ -64,6 +64,7 @@ public:
 #if !ENABLE(OILPAN) || !defined(NDEBUG)
     ~Range();
 #endif
+    void dispose();
 
     Document& ownerDocument() const { ASSERT(m_ownerDocument); return *m_ownerDocument.get(); }
     Node* startContainer() const { return m_start.container(); }

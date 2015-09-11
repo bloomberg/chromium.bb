@@ -116,6 +116,8 @@ private:
     void didCheckCancel(int sequence);
     void didCheck(int sequence, const Vector<TextCheckingResult>&);
 
+    void clearProcessingRequest();
+
     RawPtrWillBeMember<LocalFrame> m_frame;
     LocalFrame& frame() const
     {

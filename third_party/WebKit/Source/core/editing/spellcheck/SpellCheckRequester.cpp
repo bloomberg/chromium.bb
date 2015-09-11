@@ -211,6 +211,17 @@ void SpellCheckRequester::invokeRequest(PassRefPtrWillBeRawPtr<SpellCheckRequest
     client().requestCheckingOfString(m_processingRequest);
 }
 
+void SpellCheckRequester::clearProcessingRequest()
+{
+    // This assumes that m_processingRequest's Ranges aren't shared.
+    if (m_processingRequest->checkingRange())
+        m_processingRequest->checkingRange()->dispose();
+    if (m_processingRequest->paragraphRange())
+        m_processingRequest->paragraphRange()->dispose();
+
+    m_processingRequest.clear();
+}
+
 void SpellCheckRequester::enqueueRequest(PassRefPtrWillBeRawPtr<SpellCheckRequest> request)
 {
     ASSERT(request);
@@ -251,7 +262,7 @@ void SpellCheckRequester::didCheck(int sequence, const Vector<TextCheckingResult
     if (m_lastProcessedSequence < sequence)
         m_lastProcessedSequence = sequence;
 
-    m_processingRequest.clear();
+    clearProcessingRequest();
     if (!m_requestQueue.isEmpty())
         m_timerToProcessQueuedRequest.startOneShot(0, FROM_HERE);
 }
