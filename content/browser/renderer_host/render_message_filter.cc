@@ -141,6 +141,9 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
         RenderWidgetResizeHelper::Get()->PostRendererProcessMsg(
             render_process_id_, message))
 #endif
+    // NB: The SyncAllocateSharedMemory, SyncAllocateGpuMemoryBuffer, and
+    // DeletedGpuMemoryBuffer IPCs are handled here for renderer processes. For
+    // non-renderer child processes, they are handled in ChildProcessHostImpl.
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         ChildProcessHostMsg_SyncAllocateSharedMemory, OnAllocateSharedMemory)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(

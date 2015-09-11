@@ -233,6 +233,10 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP(ChildProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
+      // NB: The SyncAllocateSharedMemory, SyncAllocateGpuMemoryBuffer, and
+      // DeletedGpuMemoryBuffer IPCs are handled here for non-renderer child
+      // processes. For renderer processes, they are handled in
+      // RenderMessageFilter.
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
                           OnAllocateSharedMemory)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
