@@ -92,10 +92,6 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       has_render_view_(has_render_view),
       is_in_destruction_(false),
       initialized_(false),
-      last_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      last_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
-      last_input_flags_(0),
-      last_can_compose_inline_(true),
       guest_proxy_routing_id_(MSG_ROUTING_NONE),
       last_drag_status_(blink::WebDragStatusUnknown),
       seen_embedder_system_drag_ended_(false),
@@ -574,12 +570,8 @@ void BrowserPluginGuest::SendTextInputTypeChangedToView(
     return;
   }
 
-  ViewHostMsg_TextInputState_Params params;
-  params.type = last_text_input_type_;
-  params.mode = last_input_mode_;
-  params.flags = last_input_flags_;
-  params.can_compose_inline = last_can_compose_inline_;
-  guest_rwhv->TextInputStateChanged(params);
+  if (last_text_input_state_.get())
+    guest_rwhv->TextInputStateChanged(*last_text_input_state_);
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
@@ -976,10 +968,7 @@ void BrowserPluginGuest::OnTakeFocus(bool reverse) {
 void BrowserPluginGuest::OnTextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
   // Save the state of text input so we can restore it on focus.
-  last_text_input_type_ = params.type;
-  last_input_mode_ = params.mode;
-  last_input_flags_ = params.flags;
-  last_can_compose_inline_ = params.can_compose_inline;
+  last_text_input_state_.reset(new ViewHostMsg_TextInputState_Params(params));
 
   SendTextInputTypeChangedToView(
       static_cast<RenderWidgetHostViewBase*>(

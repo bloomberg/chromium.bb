@@ -431,10 +431,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   bool initialized_;
 
   // Text input type states.
-  ui::TextInputType last_text_input_type_;
-  ui::TextInputMode last_input_mode_;
-  int last_input_flags_;
-  bool last_can_compose_inline_;
+  // Using scoped_ptr to avoid including the header file: view_messages.h.
+  scoped_ptr<const ViewHostMsg_TextInputState_Params> last_text_input_state_;
 
   // The is the routing ID for a swapped out RenderView for the guest
   // WebContents in the embedder's process.
