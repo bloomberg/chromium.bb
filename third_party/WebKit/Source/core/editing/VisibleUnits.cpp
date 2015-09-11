@@ -1097,16 +1097,18 @@ VisiblePositionInComposedTree endOfLine(const VisiblePositionInComposedTree& cur
     return endOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition);
 }
 
-static bool inSameLogicalLine(const VisiblePosition& a, const VisiblePosition& b)
+template <typename Strategy>
+static bool inSameLogicalLine(const VisiblePositionTemplate<Strategy>& a, const VisiblePositionTemplate<Strategy>& b)
 {
     return a.isNotNull() && logicalStartOfLine(a).deepEquivalent() == logicalStartOfLine(b).deepEquivalent();
 }
 
-VisiblePosition logicalEndOfLine(const VisiblePosition& currentPosition)
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> logicalEndOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& currentPosition)
 {
     // TODO(yosin) this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-    VisiblePosition visPos = endPositionForLine(currentPosition, UseLogicalOrdering);
+    VisiblePositionTemplate<Strategy> visPos = endPositionForLine(currentPosition, UseLogicalOrdering);
 
     // Make sure the end of line is at the same line as the given input
     // position. For a wrapping line, the logical end position for the
@@ -1121,10 +1123,20 @@ VisiblePosition logicalEndOfLine(const VisiblePosition& currentPosition)
 
     if (ContainerNode* editableRoot = highestEditableRoot(currentPosition.deepEquivalent())) {
         if (!editableRoot->contains(visPos.deepEquivalent().computeContainerNode()))
-            return createVisiblePosition(lastPositionInNode(editableRoot));
+            return createVisiblePosition(PositionAlgorithm<Strategy>::lastPositionInNode(editableRoot));
     }
 
     return honorEditingBoundaryAtOrAfter(visPos, currentPosition.deepEquivalent());
+}
+
+VisiblePosition logicalEndOfLine(const VisiblePosition& currentPosition)
+{
+    return logicalEndOfLineAlgorithm<EditingStrategy>(currentPosition);
+}
+
+VisiblePositionInComposedTree logicalEndOfLine(const VisiblePositionInComposedTree& currentPosition)
+{
+    return logicalEndOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition);
 }
 
 template <typename Strategy>

@@ -152,7 +152,11 @@ bool isEndOfLine(const VisiblePosition&);
 // it for shadow tree.
 CORE_EXPORT VisiblePosition logicalStartOfLine(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInComposedTree logicalStartOfLine(const VisiblePositionInComposedTree&);
-VisiblePosition logicalEndOfLine(const VisiblePosition&);
+// TODO(yosin) Return values of |VisiblePosition| version of
+// |logicalEndOfLine()| with shadow tree isn't defined well. We should not use
+// it for shadow tree.
+CORE_EXPORT VisiblePosition logicalEndOfLine(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInComposedTree logicalEndOfLine(const VisiblePositionInComposedTree&);
 bool isLogicalEndOfLine(const VisiblePosition&);
 VisiblePosition leftBoundaryOfLine(const VisiblePosition&, TextDirection);
 VisiblePosition rightBoundaryOfLine(const VisiblePosition&, TextDirection);
