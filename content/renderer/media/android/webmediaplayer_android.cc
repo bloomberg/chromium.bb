@@ -829,6 +829,9 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
 void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
   buffered_[0].end = duration() * percentage / 100;
   did_loading_progress_ = true;
+
+  if (percentage == 100 && network_state_ < WebMediaPlayer::NetworkStateLoaded)
+    UpdateNetworkState(WebMediaPlayer::NetworkStateLoaded);
 }
 
 void WebMediaPlayerAndroid::OnSeekRequest(const base::TimeDelta& time_to_seek) {
