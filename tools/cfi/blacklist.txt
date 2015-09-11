@@ -41,10 +41,6 @@ type:mojo::test::*
 # https://crbug.com/520760
 fun:*MessageScannerImpl*MessageScannerImpl*
 
-# invalid typedef for MessagePumpForIO
-# https://crbug.com/520732
-fun:*ToPumpIO*
-
 #############################################################################
 # Base class's constructor accesses a derived class.
 
