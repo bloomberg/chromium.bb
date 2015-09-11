@@ -93,13 +93,13 @@ public:
         ResetCaretBlink
     };
 
-    Element* rootEditableElement() const { return m_selection.rootEditableElement(); }
+    Element* rootEditableElement() const { return selection().rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
     ContainerNode* rootEditableElementOrTreeScopeRootNode() const;
 
-    bool hasEditableStyle() const { return m_selection.hasEditableStyle(); }
-    bool isContentEditable() const { return m_selection.isContentEditable(); }
-    bool isContentRichlyEditable() const { return m_selection.isContentRichlyEditable(); }
+    bool hasEditableStyle() const { return selection().hasEditableStyle(); }
+    bool isContentEditable() const { return selection().isContentEditable(); }
+    bool isContentRichlyEditable() const { return selection().isContentRichlyEditable(); }
 
     void moveTo(const VisiblePosition&, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
     void moveTo(const VisiblePosition&, const VisiblePosition&, EUserTriggered = NotUserTriggered);
@@ -121,9 +121,9 @@ public:
 
     bool contains(const LayoutPoint&);
 
-    SelectionType selectionType() const { return m_selection.selectionType(); }
+    SelectionType selectionType() const { return selection().selectionType(); }
 
-    TextAffinity affinity() const { return m_selection.affinity(); }
+    TextAffinity affinity() const { return selection().affinity(); }
 
     bool modify(EAlteration, SelectionDirection, TextGranularity, EUserTriggered = NotUserTriggered);
     enum VerticalDirection { DirectionUp, DirectionDown };
@@ -144,10 +144,10 @@ public:
     void setBase(const VisiblePosition&, EUserTriggered = NotUserTriggered);
     void setExtent(const VisiblePosition&, EUserTriggered = NotUserTriggered);
 
-    Position base() const { return m_selection.base(); }
-    Position extent() const { return m_selection.extent(); }
-    Position start() const { return m_selection.start(); }
-    Position end() const { return m_selection.end(); }
+    Position base() const { return selection().base(); }
+    Position extent() const { return selection().extent(); }
+    Position start() const { return selection().start(); }
+    Position end() const { return selection().end(); }
 
     // Return the layoutObject that is responsible for painting the caret (in the selection start node)
     LayoutBlock* caretLayoutObject() const;
@@ -158,12 +158,12 @@ public:
     void didChangeFocus();
     void willBeModified(EAlteration, SelectionDirection);
 
-    bool isNone() const { return m_selection.isNone(); }
-    bool isCaret() const { return m_selection.isCaret(); }
-    bool isRange() const { return m_selection.isRange(); }
-    bool isCaretOrRange() const { return m_selection.isCaretOrRange(); }
+    bool isNone() const { return selection().isNone(); }
+    bool isCaret() const { return selection().isCaret(); }
+    bool isRange() const { return selection().isRange(); }
+    bool isCaretOrRange() const { return selection().isCaretOrRange(); }
     bool isInPasswordField() const;
-    bool isDirectional() const { return m_selection.isDirectional(); }
+    bool isDirectional() const { return selection().isDirectional(); }
 
     // If this FrameSelection has a logical range which is still valid, this function return its clone. Otherwise,
     // the return value from underlying VisibleSelection's firstRange() is returned.
