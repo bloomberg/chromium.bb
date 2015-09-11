@@ -41,6 +41,3 @@ crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
 
 crbug.com/506186 accessibility/axobjectcache-leaks-node.html [ Failure ]
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
-
-crbug.com/529370 animations/svg-attribute-interpolation/svg-d-interpolation.html [ Failure ]
-crbug.com/529370 virtual/threaded/animations/svg-attribute-interpolation/svg-d-interpolation.html [ Failure ]
