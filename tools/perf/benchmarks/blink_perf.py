@@ -14,6 +14,7 @@ from telemetry.page import shared_page_state
 from telemetry import story
 from telemetry.value import list_of_scalar_values
 
+from benchmarks import pywebsocket_server
 from page_sets import webgl_supported_shared_state
 
 
@@ -121,6 +122,28 @@ class _BlinkPerfFullFrameMeasurement(_BlinkPerfMeasurement):
     # Full layout measurement needs content_shell with internals testing API.
     assert 'content-shell' in options.browser_type
     options.AppendExtraBrowserArgs(['--expose-internals-for-testing'])
+
+
+class _BlinkPerfPywebsocketMeasurement(_BlinkPerfMeasurement):
+  def CustomizeBrowserOptions(self, options):
+    super(_BlinkPerfPywebsocketMeasurement, self).CustomizeBrowserOptions(
+        options)
+    # Cross-origin accesses are needed to run benchmarks spanning two servers,
+    # the Telemetry's HTTP server and the pywebsocket server.
+    options.AppendExtraBrowserArgs(['--disable-web-security'])
+
+
+class _SharedPywebsocketPageState(shared_page_state.SharedPageState):
+  """Runs a pywebsocket server."""
+  def __init__(self, test, finder_options, user_story_set):
+    super(_SharedPywebsocketPageState, self).__init__(
+        test, finder_options, user_story_set)
+    self._pywebsocket_server = pywebsocket_server.PywebsocketServer()
+    self.platform.StartLocalServer(self._pywebsocket_server)
+
+  def TearDownState(self):
+    super(_SharedPywebsocketPageState, self).TearDownState()
+    self._pywebsocket_server.Close()
 
 
 class BlinkPerfBindings(perf_benchmark.PerfBenchmark):
@@ -301,3 +324,20 @@ class BlinkPerfXMLHttpRequest(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'XMLHttpRequest')
     return CreateStorySetFromPath(path, SKIPPED_FILE)
+
+
+# Disabled on Windows and ChromeOS due to https://crbug.com/521887
+# Disabled on reference builds due to https://crbug.com/530374
+@benchmark.Disabled('win', 'chromeos', 'reference')
+class BlinkPerfPywebsocket(perf_benchmark.PerfBenchmark):
+  tag = 'pywebsocket'
+  test = _BlinkPerfPywebsocketMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.pywebsocket'
+
+  def CreateStorySet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Pywebsocket')
+    return CreateStorySetFromPath(path, SKIPPED_FILE,
+        shared_page_state_class=_SharedPywebsocketPageState)
