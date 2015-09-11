@@ -1553,7 +1553,7 @@ IntRect LayoutText::linesBoundingBox() const
     return result;
 }
 
-LayoutRect LayoutText::linesVisualOverflowBoundingBox() const
+LayoutRect LayoutText::visualOverflowRect() const
 {
     if (!firstTextBox())
         return LayoutRect();
@@ -1582,7 +1582,7 @@ LayoutRect LayoutText::clippedOverflowRectForPaintInvalidation(const LayoutBoxMo
     if (style()->visibility() != VISIBLE)
         return LayoutRect();
 
-    LayoutRect paintInvalidationRect(linesVisualOverflowBoundingBox());
+    LayoutRect paintInvalidationRect(visualOverflowRect());
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
     return paintInvalidationRect;
 }

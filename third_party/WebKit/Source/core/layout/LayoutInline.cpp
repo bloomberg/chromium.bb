@@ -959,12 +959,10 @@ LayoutRect LayoutInline::culledInlineVisualOverflowBoundingBox() const
             if (!currInline->alwaysCreateLineBoxes())
                 result.uniteIfNonZero(currInline->culledInlineVisualOverflowBoundingBox());
             else if (!currInline->hasSelfPaintingLayer())
-                result.uniteIfNonZero(currInline->linesVisualOverflowBoundingBox());
+                result.uniteIfNonZero(currInline->visualOverflowRect());
         } else if (curr->isText()) {
-            // FIXME; Overflow from text boxes is lost. We will need to cache this information in
-            // InlineTextBoxes.
             LayoutText* currText = toLayoutText(curr);
-            result.uniteIfNonZero(currText->linesVisualOverflowBoundingBox());
+            result.uniteIfNonZero(currText->visualOverflowRect());
         }
     }
     return result;
@@ -1032,15 +1030,25 @@ LayoutRect LayoutInline::clippedOverflowRectForPaintInvalidation(const LayoutBox
 
 LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    const LayoutBoxModelObject* continuation = this->continuation();
-    if ((!firstLineBoxIncludingCulling() && !continuation) || style()->visibility() != VISIBLE)
+    if (style()->visibility() != VISIBLE)
         return LayoutRect();
 
-    LayoutRect overflowRect(linesVisualOverflowBoundingBox());
+    LayoutRect overflowRect(visualOverflowRect());
+    if (overflowRect.isEmpty())
+        return overflowRect;
 
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, overflowRect, paintInvalidationState);
+    return overflowRect;
+}
+
+LayoutRect LayoutInline::visualOverflowRect() const
+{
+    LayoutRect overflowRect = linesVisualOverflowBoundingBox();
     LayoutUnit outlineOutset = style()->outlineOutsetExtent();
     if (outlineOutset) {
         Vector<LayoutRect> rects;
+        // We have already included outline extents of line boxes in linesVisualOverflowBoundingBox(),
+        // so the following just add outline rects for children and continuations.
         addOutlineRectsForChildrenAndContinuations(rects, LayoutPoint());
         if (!rects.isEmpty()) {
             LayoutRect outlineRect = unionRectEvenIfEmpty(rects);
@@ -1048,8 +1056,6 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
             overflowRect.unite(outlineRect);
         }
     }
-
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, overflowRect, paintInvalidationState);
     return overflowRect;
 }
 

@@ -65,7 +65,7 @@ public:
     LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const final;
 
     IntRect linesBoundingBox() const;
-    LayoutRect linesVisualOverflowBoundingBox() const;
+    LayoutRect visualOverflowRect() const final;
 
     InlineFlowBox* createAndAppendInlineFlowBox();
 
@@ -125,6 +125,9 @@ private:
     LayoutRect culledInlineVisualOverflowBoundingBox() const;
     InlineBox* culledInlineFirstLineBox() const;
     InlineBox* culledInlineLastLineBox() const;
+
+    // For visualOverflowRect() only, to get bounding box of visual overflow of line boxes.
+    LayoutRect linesVisualOverflowBoundingBox() const;
 
     template<typename GeneratorContext>
     void generateLineBoxRects(GeneratorContext& yield) const;

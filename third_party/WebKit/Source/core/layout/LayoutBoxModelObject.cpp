@@ -447,7 +447,7 @@ bool LayoutBoxModelObject::hasNonEmptyLayoutSize() const
                     return true;
             } else if (object->isLayoutInline()) {
                 const LayoutInline& layoutInline = toLayoutInline(*object);
-                if (!layoutInline.linesVisualOverflowBoundingBox().isEmpty())
+                if (!layoutInline.linesBoundingBox().isEmpty())
                     return true;
             } else {
                 ASSERT(object->isText());

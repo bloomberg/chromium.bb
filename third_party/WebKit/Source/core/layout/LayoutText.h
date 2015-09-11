@@ -132,7 +132,9 @@ public:
         TextDirection);
 
     virtual IntRect linesBoundingBox() const;
-    LayoutRect linesVisualOverflowBoundingBox() const;
+
+    // Returns the bounding box of visual overflow rects of all line boxes.
+    LayoutRect visualOverflowRect() const;
 
     FloatPoint firstRunOrigin() const;
     float firstRunX() const;

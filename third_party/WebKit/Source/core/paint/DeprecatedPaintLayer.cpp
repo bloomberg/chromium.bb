@@ -2054,38 +2054,7 @@ bool DeprecatedPaintLayer::intersectsDamageRect(const LayoutRect& layerBounds, c
 
 LayoutRect DeprecatedPaintLayer::logicalBoundingBox() const
 {
-    // There are three special cases we need to consider.
-    // (1) Inline Flows.  For inline flows we will create a bounding box that fully encompasses all of the lines occupied by the
-    // inline.  In other words, if some <span> wraps to three lines, we'll create a bounding box that fully encloses the
-    // line boxes of all three lines (including overflow on those lines).
-    // (2) Left/Top Overflow.  The width/height of layers already includes right/bottom overflow.  However, in the case of left/top
-    // overflow, we have to create a bounding box that will extend to include this overflow.
-    // (3) Floats.  When a layer has overhanging floats that it paints, we need to make sure to include these overhanging floats
-    // as part of our bounding box.  We do this because we are the responsible layer for both hit testing and painting those
-    // floats.
-    LayoutRect result;
-    if (layoutObject()->isInline() && layoutObject()->isLayoutInline()) {
-        result = toLayoutInline(layoutObject())->linesVisualOverflowBoundingBox();
-    } else if (layoutObject()->isTableRow()) {
-        // Our bounding box is just the union of all of our cells' border/overflow rects.
-        for (LayoutObject* child = layoutObject()->slowFirstChild(); child; child = child->nextSibling()) {
-            if (child->isTableCell()) {
-                LayoutRect bbox = toLayoutBox(child)->borderBoxRect();
-                result.unite(bbox);
-                LayoutRect overflowRect = layoutBox()->visualOverflowRect();
-                if (bbox != overflowRect)
-                    result.unite(overflowRect);
-            }
-        }
-    } else {
-        LayoutBox* box = layoutBox();
-        ASSERT(box);
-        result = box->borderBoxRect();
-        result.unite(box->visualOverflowRect());
-    }
-
-    ASSERT(layoutObject()->view());
-    return result;
+    return layoutObject()->visualOverflowRect();
 }
 
 static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, LayoutObject* layoutObjects)
