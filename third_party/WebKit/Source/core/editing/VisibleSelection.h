@@ -254,6 +254,9 @@ private:
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.
+CORE_EXPORT EphemeralRange firstEphemeralRangeOf(const VisibleSelection&);
+
+// TODO(sof): move more firstRangeOf() uses to be over EphemeralRange instead.
 CORE_EXPORT PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection&);
 
 } // namespace blink

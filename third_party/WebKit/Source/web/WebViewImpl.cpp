@@ -2356,8 +2356,9 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (info.value.isEmpty())
         return info;
 
-    if (RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection.selection())) {
-        PlainTextRange plainTextRange(PlainTextRange::create(*element, *range.get()));
+    EphemeralRange firstRange = firstEphemeralRangeOf(selection.selection());
+    if (firstRange.isNotNull()) {
+        PlainTextRange plainTextRange(PlainTextRange::create(*element, firstRange));
         if (plainTextRange.isNotNull()) {
             info.selectionStart = plainTextRange.start();
             info.selectionEnd = plainTextRange.end();

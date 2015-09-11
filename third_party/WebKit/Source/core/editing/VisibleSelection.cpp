@@ -221,13 +221,18 @@ PositionInComposedTree VisibleSelection::endInComposedTree() const
     return m_endInComposedTree;
 }
 
-PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection& selection)
+EphemeralRange firstEphemeralRangeOf(const VisibleSelection& selection)
 {
     if (selection.isNone())
-        return nullptr;
+        return EphemeralRange();
     Position start = selection.start().parentAnchoredEquivalent();
     Position end = selection.end().parentAnchoredEquivalent();
-    return Range::create(*start.document(), start, end);
+    return EphemeralRange(start, end);
+}
+
+PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection& selection)
+{
+    return createRange(firstEphemeralRangeOf(selection));
 }
 
 EphemeralRange VisibleSelection::toNormalizedEphemeralRange() const

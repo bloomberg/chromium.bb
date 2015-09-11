@@ -377,12 +377,12 @@ PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
 
 PlainTextRange InputMethodController::getSelectionOffsets() const
 {
-    RefPtrWillBeRawPtr<Range> range = firstRangeOf(frame().selection().selection());
-    if (!range)
+    EphemeralRange range = firstEphemeralRangeOf(frame().selection().selection());
+    if (range.isNull())
         return PlainTextRange();
     ContainerNode* editable = frame().selection().rootEditableElementOrTreeScopeRootNode();
     ASSERT(editable);
-    return PlainTextRange::create(*editable, *range.get());
+    return PlainTextRange::create(*editable, range);
 }
 
 bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionOffsets)
