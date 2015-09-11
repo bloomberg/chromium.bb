@@ -79,7 +79,7 @@ per-file network_hints*=jar@chromium.org
 per-file network_hints*=ttuttle@chromium.org
 
 per-file dom_distiller*=bengr@chromium.org
-per-file dom_distiller*=cjhopman@chromium.org
+per-file dom_distiller*=mdjones@chromium.org
 per-file dom_distiller*=nyquist@chromium.org
 
 per-file domain_reliability.gypi=davidben@chromium.org
@@ -145,8 +145,8 @@ per-file json_schema.gypi=mpcomplete@chromium.org
 per-file keyed_service.gypi=erg@chromium.org
 per-file keyed_service.gypi=phajdan.jr@chromium.org
 
-per-file leveldb_proto*=cjhopman@chromium.org
 per-file leveldb_proto*=mathp@chromium.org
+per-file leveldb_proto*=nyquist@chromium.org
 
 per-file login*=alemate@chromium.org
 per-file login*=antrim@chromium.org
