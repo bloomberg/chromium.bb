@@ -278,8 +278,6 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
   // Drop any pending navigation requests.
   navigate_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  scoped_ptr<FrameUserData> user_data;
-  mojo::ViewTreeClientPtr view_tree_client;
   tree_->delegate_->CanNavigateFrame(
       this, request.Pass(),
       base::Bind(&Frame::OnCanNavigateFrame,
