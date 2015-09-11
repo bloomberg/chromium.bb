@@ -91,9 +91,9 @@ bool LayoutSVGTransformableContainer::calculateLocalTransform()
         FloatSize translation(
             useElement->x()->currentValue()->value(lengthContext),
             useElement->y()->currentValue()->value(lengthContext));
-        if (translation != m_lastTranslation)
+        if (translation != m_additionalTranslation)
             m_needsTransformUpdate = true;
-        m_lastTranslation = translation;
+        m_additionalTranslation = translation;
     }
 
     m_didTransformToRootUpdate = m_needsTransformUpdate || SVGLayoutSupport::transformToRootChanged(parent());
@@ -101,7 +101,7 @@ bool LayoutSVGTransformableContainer::calculateLocalTransform()
         return false;
 
     m_localTransform = element->calculateAnimatedLocalTransform();
-    m_localTransform.translate(m_lastTranslation.width(), m_lastTranslation.height());
+    m_localTransform.translate(m_additionalTranslation.width(), m_additionalTranslation.height());
     m_needsTransformUpdate = false;
     return true;
 }
