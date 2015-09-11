@@ -63,7 +63,9 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 using mojo::AxProvider;
 using mojo::Rect;
@@ -648,6 +650,13 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
   // can go ahead and navigate locally.
   if (info.urlRequest.extraData()) {
     DCHECK_EQ(blink::WebNavigationPolicyCurrentTab, info.defaultPolicy);
+    return blink::WebNavigationPolicyCurrentTab;
+  }
+
+  // about:blank is treated as the same origin and is always allowed for
+  // frames.
+  if (parent_ && info.urlRequest.url() == GURL(url::kAboutBlankURL) &&
+      info.defaultPolicy == blink::WebNavigationPolicyCurrentTab) {
     return blink::WebNavigationPolicyCurrentTab;
   }
 
