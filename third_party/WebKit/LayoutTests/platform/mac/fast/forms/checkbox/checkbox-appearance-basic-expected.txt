@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x160
-  LayoutBlockFlow {HTML} at (0,0) size 800x160
-    LayoutBlockFlow {BODY} at (8,8) size 784x144
+layer at (0,0) size 800x158
+  LayoutBlockFlow {HTML} at (0,0) size 800x158
+    LayoutBlockFlow {BODY} at (8,8) size 784x142
       LayoutBlockFlow {INPUT} at (4,4) size 12x12
       LayoutText {#text} at (20,0) size 4x18
         text run at (20,0) width 4: " "
@@ -35,10 +35,10 @@ layer at (0,0) size 800x160
       LayoutText {#text} at (80,80) size 4x18
         text run at (80,80) width 4: " "
       LayoutBR {BR} at (84,80) size 0x18
-      LayoutBlockFlow {INPUT} at (6,114) size 21x21
-      LayoutText {#text} at (33,118) size 4x18
-        text run at (33,118) width 4: " "
-      LayoutBlockFlow {INPUT} at (45,108) size 28x28
-      LayoutText {#text} at (81,118) size 4x18
-        text run at (81,118) width 4: " "
-      LayoutBR {BR} at (85,118) size 0x18
+      LayoutBlockFlow {INPUT} at (6,114) size 19x19
+      LayoutText {#text} at (31,116) size 4x18
+        text run at (31,116) width 4: " "
+      LayoutBlockFlow {INPUT} at (43,108) size 26x26
+      LayoutText {#text} at (77,116) size 4x18
+        text run at (77,116) width 4: " "
+      LayoutBR {BR} at (81,116) size 0x18
