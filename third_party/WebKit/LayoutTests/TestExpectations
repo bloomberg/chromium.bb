@@ -1515,8 +1515,6 @@ crbug.com/521764 [ Win10 ] fast/loader/javascript-detached-frame-no-crash.html [
 crbug.com/521764 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/canvas-resize-reset.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] transitions/equivalent-background-image-no-transition.html [ Pass Timeout ]
 
-crbug.com/529845 svg/stroke/zero-length-subpaths-linecap-rendering.svg [ NeedsRebaseline ]
-
 # GrGLConvolutionEffect optimization causes blink layout test image differences
 crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline ]
