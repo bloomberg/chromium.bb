@@ -181,7 +181,14 @@ cr.define('downloads', function() {
         this.$['downloads-list'].insertBefore(item, before);
       }
 
-      this.hasDownloads_ = this.size_() > 0;
+      var hasDownloads = this.size_() > 0;
+      if (!hasDownloads) {
+        var isSearching = this.actionService_.isSearching();
+        var messageToShow = isSearching ? 'noSearchResults' : 'noDownloads';
+        this.$['no-downloads'].querySelector('span').textContent =
+            loadTimeData.getString(messageToShow);
+      }
+      this.hasDownloads_ = hasDownloads;
 
       if (loadTimeData.getBoolean('allowDeletingHistory'))
         this.$.toolbar.downloadsShowing = this.hasDownloads_;

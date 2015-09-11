@@ -1891,6 +1891,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_DOWNLOAD_STATUS_CANCELLED" desc="Text that appears under the downloaded files that have been canceled.">
         Canceled
       </message>
+      <!-- TODO(dbeam): can this be merged with IDS_DOWNLOAD_FILE_REMOVED? -->
       <message name="IDS_DOWNLOAD_STATUS_REMOVED" desc="Text that appears under the downloaded files that have been removed.">
         Removed
       </message>
@@ -2052,8 +2053,8 @@ Even if you have downloaded files from this website before, the website might ha
         Canceled
       </message>
       <message name="IDS_DOWNLOAD_FILE_REMOVED"
-               desc="Text that appears next to the downloaded files that have been removed">
-        Removed
+               desc="Text that appears when a downloaded file has been deleted from the user's computer.">
+        Deleted
       </message>
       <message name="IDS_DOWNLOAD_TAB_PROGRESS_STATUS_TIME_UNKNOWN"
                desc="The status text for a download in progress in the download manager. This includes information such as speed and received byte counts and is used when we do not know the remaining time">
@@ -2078,6 +2079,10 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER"
                desc="Open downloads folder link">
         Open downloads folder
+      </message>
+      <message name="IDS_DOWNLOAD_MORE_ACTIONS"
+               desc="Tooltip of a button on the downloads page that shows a menu with actions like 'Open downloads folder' or 'Clear all'">
+        More actions...
       </message>
       <message name="IDS_DOWNLOAD_BY_EXTENSION"
                desc="Indicates which extension downloaded this file.">

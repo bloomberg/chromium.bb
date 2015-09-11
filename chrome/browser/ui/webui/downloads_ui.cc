@@ -96,6 +96,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
     source->AddLocalizedString("controlledByUrl",
                                IDS_DOWNLOAD_BY_EXTENSION_URL);
+    source->AddLocalizedString("moreActions", IDS_DOWNLOAD_MORE_ACTIONS);
     source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
     source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
 
