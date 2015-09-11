@@ -1702,10 +1702,8 @@ void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, We
         return;
     }
 
-    if (buffer && (offset + size > buffer->getSize())) {
-        synthesizeGLError(GL_INVALID_VALUE, "bindBufferRange", "buffer overflow");
+    if (!validateAndUpdateBufferBindBaseTarget("bindBufferRange", target, index, buffer))
         return;
-    }
 
     webContext()->bindBufferRange(target, index, objectOrZero(buffer), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size));
 }
