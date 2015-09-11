@@ -51,6 +51,17 @@ NSArray* FindDescendantsOfClass(UIView* root, Class klass) {
   return descendants;
 }
 
+// Returns true if |item|'s action name contains |actionName|.
+bool ItemActionMatchesName(UIBarButtonItem* item, NSString* actionName) {
+  SEL itemAction = [item action];
+  if (!itemAction)
+    return false;
+  NSString* itemActionName = NSStringFromSelector(itemAction);
+
+  // We don't do a strict string match for the action name.
+  return [itemActionName rangeOfString:actionName].location != NSNotFound;
+}
+
 // Finds all UIToolbarItems associated with a given UIToolbar |toolbar| with
 // action selectors with a name that containts the action name specified by
 // |actionName|.
@@ -59,13 +70,7 @@ NSArray* FindToolbarItemsForActionName(UIToolbar* toolbar,
   NSMutableArray* toolbarItems = [NSMutableArray array];
 
   for (UIBarButtonItem* item in [toolbar items]) {
-    SEL itemAction = [item action];
-    if (!itemAction)
-      continue;
-    NSString* itemActionName = NSStringFromSelector(itemAction);
-
-    // We don't do a strict string match for the action name.
-    if ([itemActionName rangeOfString:actionName].location != NSNotFound)
+    if (ItemActionMatchesName(item, actionName))
       [toolbarItems addObject:item];
   }
 
@@ -86,6 +91,32 @@ NSArray* FindDescendantToolbarItemsForActionName(UIView* root,
 
   return descendants;
 }
+
+#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
+NSArray* FindDescendantToolbarItemsForActionName(
+    UITextInputAssistantItem* inputAssistantItem,
+    NSString* actionName) {
+  NSMutableArray* toolbarItems = [NSMutableArray array];
+
+  base::scoped_nsobject<NSMutableArray> buttonGroupsGroup(
+      [[NSMutableArray alloc] init]);
+  if (inputAssistantItem.leadingBarButtonGroups)
+    [buttonGroupsGroup addObject:inputAssistantItem.leadingBarButtonGroups];
+  if (inputAssistantItem.trailingBarButtonGroups)
+    [buttonGroupsGroup addObject:inputAssistantItem.trailingBarButtonGroups];
+  for (NSArray* buttonGroups in buttonGroupsGroup.get()) {
+    for (UIBarButtonItemGroup* group in buttonGroups) {
+      NSArray* items = group.barButtonItems;
+      for (UIBarButtonItem* item in items) {
+        if (ItemActionMatchesName(item, actionName))
+          [toolbarItems addObject:item];
+      }
+    }
+  }
+
+  return toolbarItems;
+}
+#endif
 
 // Computes the frame of each part of the accessory view of the keyboard. It is
 // assumed that the keyboard has either two parts (when it is split) or one part
@@ -376,12 +407,23 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 }
 
 - (BOOL)executeFormAssistAction:(NSString*)actionName {
-  UIView* inputAccessoryView = [self.webViewProxy getKeyboardAccessory];
-  if (!inputAccessoryView)
-    return NO;
-
-  NSArray* descendants =
-      FindDescendantToolbarItemsForActionName(inputAccessoryView, actionName);
+  NSArray* descendants = nil;
+  if (base::ios::IsRunningOnIOS9OrLater() && IsIPadIdiom()) {
+#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
+    UITextInputAssistantItem* inputAssistantItem =
+        [self.webViewProxy inputAssistantItem];
+    if (!inputAssistantItem)
+      return NO;
+    descendants =
+        FindDescendantToolbarItemsForActionName(inputAssistantItem, actionName);
+#endif
+  } else {
+    UIView* inputAccessoryView = [self.webViewProxy getKeyboardAccessory];
+    if (!inputAccessoryView)
+      return NO;
+    descendants =
+        FindDescendantToolbarItemsForActionName(inputAccessoryView, actionName);
+  }
 
   if (![descendants count])
     return NO;
