@@ -4,7 +4,6 @@ include_rules = [
   "+jni",
   "+mojo/common",
   "+third_party/apple_apsl",
-  "+third_party/libevent",
   "+third_party/mojo/src/mojo/public",
   "+third_party/nss",
   "+third_party/protobuf/src/google/protobuf",
