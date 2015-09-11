@@ -236,7 +236,7 @@ double Animation::unlimitedCurrentTimeInternal() const
         : calculateCurrentTime();
 }
 
-void Animation::preCommit(int compositorGroup, bool startOnCompositor)
+bool Animation::preCommit(int compositorGroup, bool startOnCompositor)
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand, DoNotSetCompositorPending);
 
@@ -250,14 +250,14 @@ void Animation::preCommit(int compositorGroup, bool startOnCompositor)
     bool shouldCancel = (!playing() && m_compositorState) || changed;
     bool shouldStart = playing() && (!m_compositorState || changed);
 
+    if (shouldCancel && shouldStart && m_compositorState && m_compositorState->pendingAction == Start) {
+        // Restarting but still waiting for a start time.
+        return false;
+    }
+
     if (shouldCancel) {
         cancelAnimationOnCompositor();
         m_compositorState = nullptr;
-    }
-
-    if (m_compositorState && m_compositorState->pendingAction == Start) {
-        // Still waiting for a start time.
-        return;
     }
 
     ASSERT(!m_compositorState || !std::isnan(m_compositorState->startTime));
@@ -278,6 +278,8 @@ void Animation::preCommit(int compositorGroup, bool startOnCompositor)
                 cancelIncompatibleAnimationsOnCompositor();
         }
     }
+
+    return true;
 }
 
 void Animation::postCommit(double timelineTime)
@@ -741,7 +743,7 @@ void Animation::setCompositorPending(bool effectChanged)
         return;
     }
 
-    if (effectChanged || !m_compositorState
+    if (!m_compositorState || m_compositorState->effectChanged
         || !playing() || m_compositorState->playbackRate != m_playbackRate
         || m_compositorState->startTime != m_startTime) {
         m_compositorPending = true;

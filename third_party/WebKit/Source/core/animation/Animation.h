@@ -162,7 +162,8 @@ public:
 
     bool affects(const Element&, CSSPropertyID) const;
 
-    void preCommit(int compositorGroup, bool startOnCompositor);
+    // Returns whether we should continue with the commit for this animation or wait until next commit.
+    bool preCommit(int compositorGroup, bool startOnCompositor);
     void postCommit(double timelineTime);
 
     unsigned sequenceNumber() const { return m_sequenceNumber; }

@@ -62,6 +62,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
     bool startedSynchronizedOnCompositor = false;
 
     HeapVector<Member<Animation>> animations;
+    HeapVector<Member<Animation>> deferred;
     animations.swap(m_pending);
     int compositorGroup = ++m_compositorGroup;
     if (compositorGroup == 0) {
@@ -71,13 +72,16 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
 
     for (auto& animation : animations) {
         bool hadCompositorAnimation = animation->hasActiveAnimationsOnCompositor();
-        animation->preCommit(compositorGroup, startOnCompositor);
-        if (animation->hasActiveAnimationsOnCompositor() && !hadCompositorAnimation) {
-            startedSynchronizedOnCompositor = true;
-        }
+        if (animation->preCommit(compositorGroup, startOnCompositor)) {
+            if (animation->hasActiveAnimationsOnCompositor() && !hadCompositorAnimation) {
+                startedSynchronizedOnCompositor = true;
+            }
 
-        if (animation->playing() && !animation->hasStartTime()) {
-            waitingForStartTime.append(animation.get());
+            if (animation->playing() && !animation->hasStartTime()) {
+                waitingForStartTime.append(animation.get());
+            }
+        } else {
+            deferred.append(animation);
         }
     }
 
@@ -103,6 +107,11 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
         animation->postCommit(animation->timeline()->currentTimeInternal());
 
     ASSERT(m_pending.isEmpty());
+    for (auto& animation : deferred)
+        animation->setCompositorPending();
+#if ENABLE(ASSERT)
+    size_t pendingSize = m_pending.size();
+#endif
 
     if (startedSynchronizedOnCompositor)
         return true;
@@ -119,7 +128,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
     // If not, go ahead and start any animations that were waiting.
     notifyCompositorAnimationStarted(monotonicallyIncreasingTime());
 
-    ASSERT(m_pending.isEmpty());
+    ASSERT(pendingSize == m_pending.size());
     return false;
 }
 
