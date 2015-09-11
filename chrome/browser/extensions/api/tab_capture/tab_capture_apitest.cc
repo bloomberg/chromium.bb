@@ -302,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TabIndicator DISABLED_TabIndicator
 #else
-#define MAYBE_TabIndicator TabIndicator
+// Also flaky everywhere else: https://crbug.com/530657
+#define MAYBE_TabIndicator DISABLED_TabIndicator
 #endif
 // Tests that the tab indicator (in the tab strip) is shown during tab capture.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
