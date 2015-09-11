@@ -31,8 +31,11 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
+// The current version number of the login database schema.
 const int kCurrentVersionNumber = 14;
-static const int kCompatibleVersionNumber = 1;
+// The oldest version of the schema such that a legacy Chrome client using that
+// version can still read/write the current database.
+static const int kCompatibleVersionNumber = 14;
 
 base::Pickle SerializeVector(const std::vector<base::string16>& vec) {
   base::Pickle p;
@@ -425,7 +428,8 @@ bool LoginDatabase::Init() {
   }
 
   // If the file on disk is an older database version, bring it up to date.
-  if (!MigrateOldVersionsAsNeeded()) {
+  if (meta_table_.GetVersionNumber() < kCurrentVersionNumber &&
+      !MigrateOldVersionsAsNeeded()) {
     LogDatabaseInitError(MIGRATION_ERROR);
     UMA_HISTOGRAM_SPARSE_SLOWLY("PasswordManager.LoginDatabaseFailedVersion",
                                 meta_table_.GetVersionNumber());
@@ -604,6 +608,12 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       meta_table_.SetVersionNumber(14);
       // Fall through.
     }
+    // -------------------------------------------------------------------------
+    // DO NOT FORGET to update |kCompatibleVersionNumber| if you add a migration
+    // step that is a breaking change. This is needed so that an older version
+    // of the browser can fail with a meaningful error when opening a newer
+    // database, as opposed to failing on the first database operation.
+    // -------------------------------------------------------------------------
     case kCurrentVersionNumber:
       // Already up to date
       return true;
