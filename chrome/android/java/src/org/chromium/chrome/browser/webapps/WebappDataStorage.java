@@ -36,7 +36,7 @@ public class WebappDataStorage {
     private final SharedPreferences mPreferences;
 
     /**
-     * Opens an instance of WebappDataStorage for the webapp specified.
+     * Opens an instance of WebappDataStorage for the web app specified.
      * @param context  The context to open the SharedPreferences.
      * @param webappId The ID of the web app which is being opened.
      */
@@ -57,7 +57,7 @@ public class WebappDataStorage {
      * Asynchronously retrieves the time which this WebappDataStorage was last
      * opened using {@link WebappDataStorage#open(Context, String)}.
      * @param context  The context to read the SharedPreferences file.
-     * @param webappId The ID of the webapp the used time is being read for.
+     * @param webappId The ID of the web app the used time is being read for.
      * @param callback Called when the last used time has been retrieved.
      */
     public static void getLastUsedTime(final Context context, final String webappId,
@@ -79,6 +79,17 @@ public class WebappDataStorage {
     }
 
     /**
+     * Deletes the data for a web app by clearing all the information inside the SharedPreferences
+     * file. This does NOT delete the file itself but the file is left empty.
+     * @param context  The context to read the SharedPreferences file.
+     * @param webappId The ID of the web app being deleted.
+     */
+    static void deleteDataForWebapp(final Context context, final String webappId) {
+        assert !ThreadUtils.runningOnUiThread();
+        openSharedPreferences(context, webappId).edit().clear().commit();
+    }
+
+    /**
      * Sets the factory used to generate WebappDataStorage objects.
      */
     @VisibleForTesting
@@ -86,9 +97,13 @@ public class WebappDataStorage {
         sFactory = factory;
     }
 
-    protected WebappDataStorage(Context context, String webappId) {
-        mPreferences = context.getApplicationContext().getSharedPreferences(
+    private static SharedPreferences openSharedPreferences(Context context, String webappId) {
+        return context.getApplicationContext().getSharedPreferences(
                 SHARED_PREFS_FILE_PREFIX + webappId, Context.MODE_PRIVATE);
+    }
+
+    protected WebappDataStorage(Context context, String webappId) {
+        mPreferences = openSharedPreferences(context, webappId);
     }
 
     /*

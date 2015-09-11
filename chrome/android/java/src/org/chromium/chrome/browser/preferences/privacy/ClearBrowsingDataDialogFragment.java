@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.TextView;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -279,5 +280,10 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment
                 getActivity().getString(R.string.clear_browsing_data_progress_title),
                 getActivity().getString(R.string.clear_browsing_data_progress_message), true,
                 false);
+    }
+
+    @VisibleForTesting
+    ProgressDialog getProgressDialog() {
+        return mProgressDialog;
     }
 }

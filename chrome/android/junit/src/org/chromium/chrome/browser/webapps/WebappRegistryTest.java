@@ -19,8 +19,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -82,13 +84,7 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testWebappIdsRetrieval() throws Exception {
-        final Set<String> expected = new HashSet<String>();
-        expected.add("first");
-        expected.add("second");
-
-        mSharedPreferences.edit()
-                .putStringSet(WebappRegistry.KEY_WEBAPP_SET, expected)
-                .commit();
+        final Set<String> expected = addWebappsToRegistry("first", "second");
 
         WebappRegistry.getRegisteredWebappIds(Robolectric.application,
                 new WebappRegistry.FetchCallback() {
@@ -107,12 +103,7 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testWebappIdsRetrievalRegisterRetrival() throws Exception {
-        final Set<String> expected = new HashSet<String>();
-        expected.add("first");
-
-        mSharedPreferences.edit()
-                .putStringSet(WebappRegistry.KEY_WEBAPP_SET, expected)
-                .commit();
+        final Set<String> expected = addWebappsToRegistry("first");
 
         WebappRegistry.getRegisteredWebappIds(Robolectric.application,
                 new WebappRegistry.FetchCallback() {
@@ -148,5 +139,61 @@ public class WebappRegistryTest {
         Robolectric.runUiThreadTasks();
 
         assertTrue(mCallbackCalled);
+    }
+
+    @Test
+    @Feature({"Webapp"})
+    public void testUnregisterRunsCallback() throws Exception {
+        WebappRegistry.unregisterAllWebapps(Robolectric.application, new Runnable() {
+            @Override
+            public void run() {
+                mCallbackCalled = true;
+            }
+        });
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
+        assertTrue(mCallbackCalled);
+    }
+
+    @Test
+    @Feature({"Webapp"})
+    public void testUnregisterClearsRegistry() throws Exception {
+        addWebappsToRegistry("test");
+
+        WebappRegistry.unregisterAllWebapps(Robolectric.application, null);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+
+        assertTrue(getRegisteredWebapps().isEmpty());
+    }
+
+    @Test
+    @Feature({"Webapp"})
+    public void testUnregisterClearsWebappDataStorage() throws Exception {
+        addWebappsToRegistry("test");
+        SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+                WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
+        webAppPrefs.edit()
+                .putLong(WebappDataStorage.KEY_LAST_USED, 100L)
+                .commit();
+
+        WebappRegistry.unregisterAllWebapps(Robolectric.application, null);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+
+        Map<String, ?> actual = webAppPrefs.getAll();
+        assertTrue(actual.isEmpty());
+    }
+
+    private Set<String> addWebappsToRegistry(String... webapps) {
+        final Set<String> expected = new HashSet<String>(Arrays.asList(webapps));
+        mSharedPreferences.edit()
+                .putStringSet(WebappRegistry.KEY_WEBAPP_SET, expected)
+                .commit();
+        return expected;
+    }
+
+    private Set<String> getRegisteredWebapps() {
+        return mSharedPreferences.getStringSet(
+                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
     }
 }

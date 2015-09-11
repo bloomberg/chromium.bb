@@ -71,6 +71,7 @@
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
 #include "components/precache/content/precache_manager.h"
 #endif
@@ -760,6 +761,15 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
   }
 
+#if defined(OS_ANDROID)
+  if (remove_mask & REMOVE_WEBAPP_DATA) {
+    waiting_for_clear_webapp_data_ = true;
+    WebappRegistry::UnregisterWebapps(
+        base::Bind(&BrowsingDataRemover::OnClearedWebappData,
+                   base::Unretained(this)));
+  }
+#endif
+
   // Record the combined deletion of cookies and cache.
   CookieOrCacheDeletionChoice choice = NEITHER_COOKIES_NOR_CACHE;
   if (remove_mask & REMOVE_COOKIES &&
@@ -840,6 +850,7 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_pnacl_cache_ &&
 #if defined(OS_ANDROID)
          !waiting_for_clear_precache_history_ &&
+         !waiting_for_clear_webapp_data_ &&
 #endif
 #if defined(ENABLE_WEBRTC)
          !waiting_for_clear_webrtc_logs_ &&
@@ -1130,6 +1141,12 @@ void BrowsingDataRemover::OnClearedWebRtcLogs() {
 void BrowsingDataRemover::OnClearedPrecacheHistory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_precache_history_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::OnClearedWebappData() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_webapp_data_ = false;
   NotifyAndDeleteIfDone();
 }
 #endif
