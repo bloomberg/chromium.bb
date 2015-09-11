@@ -5,6 +5,8 @@
 #ifndef IPC_IPC_CHANNEL_H_
 #define IPC_IPC_CHANNEL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #if defined(OS_POSIX)
@@ -79,7 +81,7 @@ class IPC_EXPORT Channel : public Endpoint {
     // The message contains just the process id (pid).
     // The message has a special routing_id (MSG_ROUTING_NONE)
     // and type (HELLO_MESSAGE_TYPE).
-    HELLO_MESSAGE_TYPE = kuint16max,
+    HELLO_MESSAGE_TYPE = UINT16_MAX,
     // The CLOSE_FD_MESSAGE_TYPE is used in the IPC class to
     // work around a bug in sendmsg() on Mac. When an FD is sent
     // over the socket, a CLOSE_FD_MESSAGE is sent with hops = 2.

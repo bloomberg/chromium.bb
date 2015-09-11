@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <limits>
 #include <sstream>
 #include <string>
 
@@ -40,7 +41,7 @@ namespace {
 
 TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
   // This was BUG 984408.
-  uint32_t v1 = kuint32max - 1;
+  uint32_t v1 = std::numeric_limits<uint32_t>::max() - 1;
   int v2 = 666;
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
   EXPECT_TRUE(m.WriteInt(v1));
@@ -53,7 +54,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
 
 TEST(IPCMessageIntegrity, ReadBeyondBufferStr16) {
   // This was BUG 984408.
-  uint32_t v1 = kuint32max - 1;
+  uint32_t v1 = std::numeric_limits<uint32_t>::max() - 1;
   int v2 = 777;
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
   EXPECT_TRUE(m.WriteInt(v1));

@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
@@ -302,7 +301,7 @@ enum SpecialRoutingIDs {
   MSG_ROUTING_NONE = -2,
 
   // indicates a general message not sent to a particular tab.
-  MSG_ROUTING_CONTROL = kint32max,
+  MSG_ROUTING_CONTROL = INT32_MAX,
 };
 
 #define IPC_REPLY_ID 0xFFFFFFF0  // Special message id for replies
