@@ -5,16 +5,22 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.os.AsyncTask;
 import android.security.KeyChain;
 import android.security.KeyChainAliasCallback;
 import android.security.KeyChainException;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.net.AndroidPrivateKey;
 import org.chromium.net.DefaultAndroidKeyStore;
@@ -213,6 +219,71 @@ public class SSLClientCertificateRequest {
     }
 
     /**
+     * Wrapper class for the static KeyChain#choosePrivateKeyAlias method to facilitate testing.
+     */
+    @VisibleForTesting
+    static class KeyChainCertSelectionWrapper {
+        private final Activity mActivity;
+        private final KeyChainAliasCallback mCallback;
+        private final String[] mKeyTypes;
+        private final Principal[] mPrincipalsForCallback;
+        private final String mHostName;
+        private final int mPort;
+        private final String mAlias;
+
+        public KeyChainCertSelectionWrapper(Activity activity, KeyChainAliasCallback callback,
+                String[] keyTypes, Principal[] principalsForCallback, String hostName, int port,
+                String alias) {
+            mActivity = activity;
+            mCallback = callback;
+            mKeyTypes = keyTypes;
+            mPrincipalsForCallback = principalsForCallback;
+            mHostName = hostName;
+            mPort = port;
+            mAlias = alias;
+        }
+
+        /**
+         * Calls KeyChain#choosePrivateKeyAlias with the provided arguments.
+         */
+        public void choosePrivateKeyAlias() throws ActivityNotFoundException {
+            KeyChain.choosePrivateKeyAlias(mActivity, mCallback, mKeyTypes, mPrincipalsForCallback,
+                    mHostName, mPort, mAlias);
+        }
+    }
+
+    /**
+     * Dialog that explains to the user that client certificates aren't supported on their operating
+     * system. Separated out into its own class to allow Robolectric unit testing of
+     * maybeShowCertSelection without depending on Chrome resources.
+     */
+    @VisibleForTesting
+    static class CertSelectionFailureDialog {
+        private final Activity mActivity;
+
+        public CertSelectionFailureDialog(Activity activity) {
+            mActivity = activity;
+        }
+
+        /**
+         * Builds and shows the dialog.
+         */
+        public void show() {
+            final AlertDialog.Builder builder =
+                    new AlertDialog.Builder(mActivity, R.style.AlertDialogTheme);
+            builder.setTitle(R.string.client_cert_unsupported_title)
+                    .setMessage(R.string.client_cert_unsupported_message)
+                    .setNegativeButton(R.string.close,
+                            new OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Do nothing
+                                }
+                            });
+            builder.show();
+        }
+    }
+
+    /**
      * Create a new asynchronous request to select a client certificate.
      *
      * @param nativePtr         The native object responsible for this request.
@@ -259,8 +330,10 @@ public class SSLClientCertificateRequest {
                 KeyChainCertSelectionCallback callback =
                         new KeyChainCertSelectionCallback(activity.getApplicationContext(),
                             nativePtr);
-                KeyChain.choosePrivateKeyAlias(activity, callback, keyTypes, principalsForCallback,
-                        hostName, port, null);
+                KeyChainCertSelectionWrapper keyChain = new KeyChainCertSelectionWrapper(activity,
+                        callback, keyTypes, principalsForCallback, hostName, port, null);
+                maybeShowCertSelection(keyChain, callback,
+                        new CertSelectionFailureDialog(activity));
             }
         };
 
@@ -295,6 +368,26 @@ public class SSLClientCertificateRequest {
 
         // We've taken ownership of the native ssl request object.
         return true;
+    }
+
+    /**
+     * Attempt to show the certificate selection dialog and shows the provided
+     * CertSelectionFailureDialog if the platform's cert selection activity can't be found.
+     */
+    @VisibleForTesting
+    static void maybeShowCertSelection(KeyChainCertSelectionWrapper keyChain,
+            KeyChainAliasCallback callback, CertSelectionFailureDialog failureDialog) {
+        try {
+            keyChain.choosePrivateKeyAlias();
+        } catch (ActivityNotFoundException e) {
+            // This exception can be hit when a platform is missing the activity to select
+            // a client certificate. It gets handled here to avoid a crash.
+            // Complete the callback without selecting a certificate.
+            callback.alias(null);
+            // Show a dialog letting the user know that the system does not support
+            // client certificate selection.
+            failureDialog.show();
+        }
     }
 
     public static void notifyClientCertificatesChangedOnIOThread() {
