@@ -743,6 +743,29 @@ bool SVGUseElement::selfHasRelativeLengths() const
     return m_targetElementInstance->hasRelativeLengths();
 }
 
+FloatRect SVGUseElement::getBBox()
+{
+    document().updateLayoutIgnorePendingStylesheets();
+
+    if (!layoutObject())
+        return FloatRect();
+
+    LayoutSVGTransformableContainer& transformableContainer = toLayoutSVGTransformableContainer(*layoutObject());
+    // Don't apply the additional translation if the oBB is invalid.
+    if (!transformableContainer.isObjectBoundingBoxValid())
+        return FloatRect();
+
+    // TODO(fs): Preferably this would just use objectBoundingBox() (and hence
+    // don't need to override SVGGraphicsElement::getBBox at all) and be
+    // correct without additional work. That will not work out ATM without
+    // additional quirks. The problem stems from including the additional
+    // translation directly on the LayoutObject corresponding to the
+    // SVGUseElement.
+    FloatRect bbox = transformableContainer.objectBoundingBox();
+    bbox.move(transformableContainer.additionalTranslation());
+    return bbox;
+}
+
 void SVGUseElement::dispatchPendingEvent(SVGUseEventSender* eventSender)
 {
     ASSERT_UNUSED(eventSender, eventSender == &svgUseLoadEventSender());

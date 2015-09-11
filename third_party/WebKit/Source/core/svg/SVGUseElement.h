@@ -63,6 +63,8 @@ public:
 private:
     explicit SVGUseElement(Document&);
 
+    FloatRect getBBox() override;
+
     bool isPresentationAttribute(const QualifiedName&) const override;
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
