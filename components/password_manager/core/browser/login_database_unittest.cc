@@ -1205,30 +1205,47 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
   password_form.password_value = ASCIIToUTF16("password_2");
   EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
+  // -- Group of accounts that are reusing password #3.
+  // HTTP sites identified by different IP addresses, so they should not be
+  // considered a public suffix match.
+  password_form.signon_realm = "http://1.2.3.4/";
+  password_form.origin = GURL("http://1.2.3.4/");
+  password_form.username_value = ASCIIToUTF16("username_10");
+  password_form.password_value = ASCIIToUTF16("password_3");
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  password_form.signon_realm = "http://2.2.3.4/";
+  password_form.origin = GURL("http://2.2.3.4/");
+  password_form.username_value = ASCIIToUTF16("username_11");
+  password_form.password_value = ASCIIToUTF16("password_3");
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
   // -- Not HTML form based logins or blacklisted logins. Should be ignored.
   PasswordForm ignored_form;
   ignored_form.scheme = PasswordForm::SCHEME_HTML;
   ignored_form.signon_realm = "http://example.org/";
   ignored_form.origin = GURL("http://example.org/blacklist");
   ignored_form.blacklisted_by_user = true;
-  ignored_form.username_value = ASCIIToUTF16("username_1");
-  ignored_form.password_value = ASCIIToUTF16("password_2");
+  ignored_form.username_value = ASCIIToUTF16("username_x");
+  ignored_form.password_value = ASCIIToUTF16("password_y");
   EXPECT_EQ(AddChangeForForm(ignored_form), db().AddLogin(ignored_form));
 
   ignored_form.scheme = PasswordForm::SCHEME_BASIC;
   ignored_form.signon_realm = "http://example.org/HTTP Auth Realm";
   ignored_form.origin = GURL("http://example.org/");
   ignored_form.blacklisted_by_user = false;
-  ignored_form.username_value = ASCIIToUTF16("username_1");
-  ignored_form.password_value = ASCIIToUTF16("password_2");
   EXPECT_EQ(AddChangeForForm(ignored_form), db().AddLogin(ignored_form));
 
   ignored_form.scheme = PasswordForm::SCHEME_HTML;
   ignored_form.signon_realm = "android://hash@com.example/";
   ignored_form.origin = GURL();
   ignored_form.blacklisted_by_user = false;
-  ignored_form.username_value = ASCIIToUTF16("username_1");
-  ignored_form.password_value = ASCIIToUTF16("password_2");
+  EXPECT_EQ(AddChangeForForm(ignored_form), db().AddLogin(ignored_form));
+
+  ignored_form.scheme = PasswordForm::SCHEME_HTML;
+  ignored_form.signon_realm = "federation://example.com/federation.com";
+  ignored_form.origin = GURL("https://example.com/");
+  ignored_form.blacklisted_by_user = false;
   EXPECT_EQ(AddChangeForForm(ignored_form), db().AddLogin(ignored_form));
 
   base::HistogramTester histogram_tester;
@@ -1237,23 +1254,23 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
   const std::string kPrefix("PasswordManager.AccountsReusingPassword.");
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   kPrefix + "FromHttpRealm.OnHttpRealmWithSameHost"),
-              testing::ElementsAre(base::Bucket(0, 4), base::Bucket(1, 2)));
+              testing::ElementsAre(base::Bucket(0, 6), base::Bucket(1, 2)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   kPrefix + "FromHttpRealm.OnHttpsRealmWithSameHost"),
-              testing::ElementsAre(base::Bucket(0, 2), base::Bucket(1, 4)));
+              testing::ElementsAre(base::Bucket(0, 4), base::Bucket(1, 4)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   kPrefix + "FromHttpRealm.OnPSLMatchingRealm"),
-              testing::ElementsAre(base::Bucket(0, 3), base::Bucket(1, 2),
+              testing::ElementsAre(base::Bucket(0, 5), base::Bucket(1, 2),
                                    base::Bucket(2, 1)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   kPrefix + "FromHttpRealm.OnHttpsRealmWithDifferentHost"),
-              testing::ElementsAre(base::Bucket(0, 2), base::Bucket(2, 4)));
+              testing::ElementsAre(base::Bucket(0, 4), base::Bucket(2, 4)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   kPrefix + "FromHttpRealm.OnHttpRealmWithDifferentHost"),
-              testing::ElementsAre(base::Bucket(1, 5), base::Bucket(3, 1)));
+              testing::ElementsAre(base::Bucket(1, 7), base::Bucket(3, 1)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   kPrefix + "FromHttpRealm.OnAnyRealmWithDifferentHost"),
-              testing::ElementsAre(base::Bucket(1, 2), base::Bucket(3, 3),
+              testing::ElementsAre(base::Bucket(1, 4), base::Bucket(3, 3),
                                    base::Bucket(5, 1)));
 
   EXPECT_THAT(histogram_tester.GetAllSamples(

@@ -25,7 +25,6 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
-#include "url/origin.h"
 #include "url/url_constants.h"
 
 using autofill::PasswordForm;
@@ -194,68 +193,130 @@ void LogNumberOfAccountsReusingPassword(const std::string& suffix,
                     1, max, bucket_count);
 }
 
-// TODO(engedy): Extend url::Origin with an IsScheme() method instead.
-// See: https://crbug.com/517560.
-bool HasScheme(const url::Origin& origin, const char* scheme) {
-  return base::LowerCaseEqualsASCII(origin.scheme(), scheme);
-}
-
 // Records password reuse metrics given the |signon_realms| corresponding to a
 // set of accounts that reuse the same password. See histograms.xml for details.
-void LogPasswordReuseMetrics(const std::vector<url::Origin>& signon_realms) {
-  for (const url::Origin& source_realm : signon_realms) {
-    int same_host_http = 0;
-    int same_host_https = 0;
-    int psl_matching = 0;  // PSL match always implies the scheme is the same.
-    int different_host_http = 0;
-    int different_host_https = 0;
+void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
+  struct StatisticsPerScheme {
+    StatisticsPerScheme() : num_total_accounts(0) {}
 
-    for (const url::Origin& target_realm : signon_realms) {
-      if (&target_realm == &source_realm)
-        continue;
-      if (source_realm.host() == target_realm.host()) {
-        if (HasScheme(target_realm, url::kHttpScheme))
-          ++same_host_http;
-        else if (HasScheme(target_realm, url::kHttpsScheme))
-          ++same_host_https;
-      } else if (IsPublicSuffixDomainMatch(source_realm.Serialize(),
-                                           target_realm.Serialize())) {
-        ++psl_matching;
-      } else if (HasScheme(target_realm, url::kHttpScheme)) {
-        ++different_host_http;
-      } else if (HasScheme(target_realm, url::kHttpsScheme)) {
-        ++different_host_https;
-      }
-    }
+    // The number of accounts for each registry controlled domain.
+    std::map<std::string, int> num_accounts_per_registry_controlled_domain;
 
-    std::string source_realm_kind;
-    if (HasScheme(source_realm, url::kHttpScheme))
-      source_realm_kind = "FromHttpRealm";
-    else if (HasScheme(source_realm, url::kHttpsScheme))
-      source_realm_kind = "FromHttpsRealm";
-    else
+    // The number of accounts for each domain.
+    std::map<std::string, int> num_accounts_per_domain;
+
+    // Total number of accounts with this scheme. This equals the sum of counts
+    // in either of the above maps.
+    int num_total_accounts;
+  };
+
+  // The scheme (i.e. protocol) of the origin, not PasswordForm::scheme.
+  enum Scheme { SCHEME_HTTP, SCHEME_HTTPS };
+  const Scheme kAllSchemes[] = {SCHEME_HTTP, SCHEME_HTTPS};
+
+  StatisticsPerScheme statistics[arraysize(kAllSchemes)];
+  std::map<std::string, std::string> domain_to_registry_controlled_domain;
+
+  for (const std::string& signon_realm : signon_realms) {
+    const GURL signon_realm_url(signon_realm);
+    const std::string domain = signon_realm_url.host();
+    if (domain.empty())
       continue;
 
-    LogNumberOfAccountsReusingPassword(
-        source_realm_kind + ".OnHttpRealmWithSameHost", same_host_http,
-        HistogramSize::SMALL);
-    LogNumberOfAccountsReusingPassword(
-        source_realm_kind + ".OnHttpsRealmWithSameHost", same_host_https,
-        HistogramSize::SMALL);
-    LogNumberOfAccountsReusingPassword(
-        source_realm_kind + ".OnPSLMatchingRealm", psl_matching,
-        HistogramSize::SMALL);
+    if (!domain_to_registry_controlled_domain.count(domain)) {
+      domain_to_registry_controlled_domain[domain] =
+          GetRegistryControlledDomain(signon_realm_url);
+      if (domain_to_registry_controlled_domain[domain].empty())
+        domain_to_registry_controlled_domain[domain] = domain;
+    }
+    const std::string& registry_controlled_domain =
+        domain_to_registry_controlled_domain[domain];
 
-    LogNumberOfAccountsReusingPassword(
-        source_realm_kind + ".OnHttpRealmWithDifferentHost",
-        different_host_http, HistogramSize::LARGE);
-    LogNumberOfAccountsReusingPassword(
-        source_realm_kind + ".OnHttpsRealmWithDifferentHost",
-        different_host_https, HistogramSize::LARGE);
+    Scheme scheme = SCHEME_HTTP;
+    COMPILE_ASSERT(arraysize(kAllSchemes) == 2, "Update this logic");
+    if (signon_realm_url.SchemeIs(url::kHttpsScheme))
+      scheme = SCHEME_HTTPS;
+    else if (!signon_realm_url.SchemeIs(url::kHttpScheme))
+      continue;
 
-    LogNumberOfAccountsReusingPassword(
-        source_realm_kind + ".OnAnyRealmWithDifferentHost",
-        different_host_http + different_host_https, HistogramSize::LARGE);
+    statistics[scheme].num_accounts_per_domain[domain]++;
+    statistics[scheme].num_accounts_per_registry_controlled_domain
+        [registry_controlled_domain]++;
+    statistics[scheme].num_total_accounts++;
+  }
+
+  // For each "source" account of either scheme, count the number of "target"
+  // accounts reusing the same password (of either scheme).
+  for (const Scheme scheme : kAllSchemes) {
+    for (const auto& kv : statistics[scheme].num_accounts_per_domain) {
+      const std::string& domain(kv.first);
+      const int num_accounts_per_domain(kv.second);
+      const std::string& registry_controlled_domain =
+          domain_to_registry_controlled_domain[domain];
+
+      Scheme other_scheme = scheme == SCHEME_HTTP ? SCHEME_HTTPS : SCHEME_HTTP;
+      COMPILE_ASSERT(arraysize(kAllSchemes) == 2, "Update |other_scheme|");
+
+      // Discount the account at hand from the number of accounts with the same
+      // domain and scheme.
+      int num_accounts_for_same_domain[arraysize(kAllSchemes)] = {};
+      num_accounts_for_same_domain[scheme] =
+          statistics[scheme].num_accounts_per_domain[domain] - 1;
+      num_accounts_for_same_domain[other_scheme] =
+          statistics[other_scheme].num_accounts_per_domain[domain];
+
+      // By definition, a PSL match requires the scheme to be the same.
+      int num_psl_matching_accounts =
+          statistics[scheme].num_accounts_per_registry_controlled_domain
+              [registry_controlled_domain] -
+          statistics[scheme].num_accounts_per_domain[domain];
+
+      // Discount PSL matches from the number of accounts with different domains
+      // but the same scheme.
+      int num_accounts_for_different_domain[arraysize(kAllSchemes)] = {};
+      num_accounts_for_different_domain[scheme] =
+          statistics[scheme].num_total_accounts -
+          statistics[scheme].num_accounts_per_registry_controlled_domain
+              [registry_controlled_domain];
+      num_accounts_for_different_domain[other_scheme] =
+          statistics[other_scheme].num_total_accounts -
+          statistics[other_scheme].num_accounts_per_domain[domain];
+
+      std::string source_realm_kind =
+          scheme == SCHEME_HTTP ? "FromHttpRealm" : "FromHttpsRealm";
+      COMPILE_ASSERT(arraysize(kAllSchemes) == 2, "Update |source_realm_kind|");
+
+      // So far, the calculation has been carried out once per "source" domain,
+      // but the metrics need to be recorded on a per-account basis. The set of
+      // metrics are the same for all accounts for the same domain, so simply
+      // report them as many times as accounts.
+      for (int i = 0; i < num_accounts_per_domain; ++i) {
+        LogNumberOfAccountsReusingPassword(
+            source_realm_kind + ".OnHttpRealmWithSameHost",
+            num_accounts_for_same_domain[SCHEME_HTTP], HistogramSize::SMALL);
+        LogNumberOfAccountsReusingPassword(
+            source_realm_kind + ".OnHttpsRealmWithSameHost",
+            num_accounts_for_same_domain[SCHEME_HTTPS], HistogramSize::SMALL);
+        LogNumberOfAccountsReusingPassword(
+            source_realm_kind + ".OnPSLMatchingRealm",
+            num_psl_matching_accounts, HistogramSize::SMALL);
+
+        LogNumberOfAccountsReusingPassword(
+            source_realm_kind + ".OnHttpRealmWithDifferentHost",
+            num_accounts_for_different_domain[SCHEME_HTTP],
+            HistogramSize::LARGE);
+        LogNumberOfAccountsReusingPassword(
+            source_realm_kind + ".OnHttpsRealmWithDifferentHost",
+            num_accounts_for_different_domain[SCHEME_HTTPS],
+            HistogramSize::LARGE);
+
+        LogNumberOfAccountsReusingPassword(
+            source_realm_kind + ".OnAnyRealmWithDifferentHost",
+            num_accounts_for_different_domain[SCHEME_HTTP] +
+                num_accounts_for_different_domain[SCHEME_HTTPS],
+            HistogramSize::LARGE);
+      }
+    }
   }
 }
 
@@ -733,7 +794,7 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
       db_.GetUniqueStatement("SELECT signon_realm, password_value FROM logins "
                              "WHERE blacklisted_by_user = 0 AND scheme = 0"));
 
-  std::map<base::string16, std::vector<url::Origin>> passwords_to_realms;
+  std::map<base::string16, std::vector<std::string>> passwords_to_realms;
   while (form_based_passwords_statement.Step()) {
     std::string signon_realm = form_based_passwords_statement.ColumnString(0);
     base::string16 decrypted_password;
@@ -742,8 +803,7 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
     if (!IsValidAndroidFacetURI(signon_realm) &&
         DecryptedString(form_based_passwords_statement.ColumnString(1),
                         &decrypted_password) == ENCRYPTION_RESULT_SUCCESS) {
-      passwords_to_realms[decrypted_password].push_back(
-          url::Origin(GURL(signon_realm)));
+      passwords_to_realms[decrypted_password].push_back(signon_realm);
     }
   }
 
