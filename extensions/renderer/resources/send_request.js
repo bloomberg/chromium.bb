@@ -109,8 +109,6 @@ function prepareRequest(args, argSchemas) {
 // |optArgs| is an object with optional parameters as follows:
 // - customCallback: a callback that should be called instead of the standard
 //   callback.
-// - nativeFunction: the v8 native function to handle the request, or
-//   StartRequest if missing.
 // - forIOThread: true if this function should be handled on the browser IO
 //   thread.
 // - preserveNullInObjects: true if it is safe for null to be in objects.
@@ -126,19 +124,12 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
     request.customCallback = optArgs.customCallback;
   }
 
-  var nativeFunction = optArgs.nativeFunction || natives.StartRequest;
-
-  var requestId = natives.GetNextRequestId();
+  var hasCallback = request.callback || optArgs.customCallback;
+  var requestId =
+      natives.StartRequest(functionName, request.args, hasCallback,
+                           optArgs.forIOThread, optArgs.preserveNullInObjects);
   request.id = requestId;
   requests[requestId] = request;
-
-  var hasCallback = request.callback || optArgs.customCallback;
-  return nativeFunction(functionName,
-                        request.args,
-                        requestId,
-                        hasCallback,
-                        optArgs.forIOThread,
-                        optArgs.preserveNullInObjects);
 }
 
 function getCalledSendRequest() {

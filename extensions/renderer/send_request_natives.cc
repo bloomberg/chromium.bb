@@ -16,9 +16,6 @@ namespace extensions {
 SendRequestNatives::SendRequestNatives(RequestSender* request_sender,
                                        ScriptContext* context)
     : ObjectBackedNativeHandler(context), request_sender_(request_sender) {
-  RouteFunction("GetNextRequestId",
-                base::Bind(&SendRequestNatives::GetNextRequestId,
-                           base::Unretained(this)));
   RouteFunction(
       "StartRequest",
       base::Bind(&SendRequestNatives::StartRequest, base::Unretained(this)));
@@ -27,22 +24,18 @@ SendRequestNatives::SendRequestNatives(RequestSender* request_sender,
       base::Bind(&SendRequestNatives::GetGlobal, base::Unretained(this)));
 }
 
-void SendRequestNatives::GetNextRequestId(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  args.GetReturnValue().Set(
-      static_cast<int32_t>(request_sender_->GetNextRequestId()));
-}
-
 // Starts an API request to the browser, with an optional callback.  The
 // callback will be dispatched to EventBindings::HandleResponse.
 void SendRequestNatives::StartRequest(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(6, args.Length());
+  CHECK_EQ(5, args.Length());
   std::string name = *v8::String::Utf8Value(args[0]);
-  int request_id = args[2]->Int32Value();
-  bool has_callback = args[3]->BooleanValue();
-  bool for_io_thread = args[4]->BooleanValue();
-  bool preserve_null_in_objects = args[5]->BooleanValue();
+  bool has_callback = args[2]->BooleanValue();
+  bool for_io_thread = args[3]->BooleanValue();
+  bool preserve_null_in_objects = args[4]->BooleanValue();
+
+  int request_id = request_sender_->GetNextRequestId();
+  args.GetReturnValue().Set(static_cast<int32_t>(request_id));
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 

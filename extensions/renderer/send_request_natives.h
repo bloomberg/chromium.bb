@@ -19,8 +19,6 @@ class SendRequestNatives : public ObjectBackedNativeHandler {
   SendRequestNatives(RequestSender* request_sender, ScriptContext* context);
 
  private:
-  void GetNextRequestId(const v8::FunctionCallbackInfo<v8::Value>& args);
-
   // Starts an API request to the browser, with an optional callback.  The
   // callback will be dispatched to EventBindings::HandleResponse.
   void StartRequest(const v8::FunctionCallbackInfo<v8::Value>& args);
