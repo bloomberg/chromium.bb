@@ -152,7 +152,7 @@ then
   fi
 fi
 
-find "$base_dir" -iname "*.pyc" -exec rm {} \;
+find "$base_dir" -iname "*.pyc" -exec rm -f {} \;
 
 # Initialize/update virtualenv.
 cd $base_dir
