@@ -334,6 +334,7 @@ interface Cache
     method delete
     method keys
     method match
+    method matchAll
     method put
 interface CacheStorage
     method constructor
@@ -933,11 +934,6 @@ interface Element
     getter localName
     getter namespaceURI
     getter nextElementSibling
-    getter offsetHeight
-    getter offsetLeft
-    getter offsetParent
-    getter offsetTop
-    getter offsetWidth
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
@@ -1234,30 +1230,6 @@ interface HTMLAnchorElement
     setter text
     setter type
     setter username
-interface HTMLAppletElement
-    getter align
-    getter alt
-    getter archive
-    getter code
-    getter codeBase
-    getter height
-    getter hspace
-    getter name
-    getter object
-    getter vspace
-    getter width
-    method constructor
-    setter align
-    setter alt
-    setter archive
-    setter code
-    setter codeBase
-    setter height
-    setter hspace
-    setter name
-    setter object
-    setter vspace
-    setter width
 interface HTMLAreaElement
     getter alt
     getter coords
@@ -2714,6 +2686,9 @@ interface ImageBitmap
 interface ImageData
     getter height
     getter width
+    method constructor
+interface InputDeviceCapabilities
+    getter firesTouchEvents
     method constructor
 interface KeyboardEvent
     attribute DOM_KEY_LOCATION_LEFT
@@ -4852,6 +4827,7 @@ interface TreeWalker
     setter currentNode
 interface UIEvent
     getter detail
+    getter sourceCapabilities
     getter view
     getter which
     method constructor
