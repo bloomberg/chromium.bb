@@ -14,30 +14,24 @@ If you need to reconfigure your build be sure to run "make distclean" first.
 
 -----
 To request change review:
-0. Get access to a read-write copy of source.
-   Owners at http://code.google.com/p/google-breakpad/ are able to grant
-   this access.
+0. Get a copy of depot_tools repo.
+   http://dev.chromium.org/developers/how-tos/install-depot-tools
 
-1. Check out a read-write copy of source using instructions at
-   http://code.google.com/p/google-breakpad/source/checkout
+1. Create a new directory for checking out the source code.
+   mkdir breakpad && cd breakpad
 
-2. Make changes. Build and test your changes.
+2. Run the `fetch` tool from depot_tools to download all the source repos.
+   fetch breakpad
+
+3. Make changes. Build and test your changes.
    For core code like processor use methods above.
    For linux/mac/windows, there are test targets in each project file.
 
-3. Download http://codereview.appspot.com/static/upload.py
-
-4. Run upload.py from the 'src' directory:
-   upload.py --server=codereview.chromium.org
-
+4. Commit your changes to your local repo and upload them to the server.
+   http://dev.chromium.org/developers/contributing-code
+   e.g. git commit ... && git cl upload ...
    You will be prompted for credential and a description.
 
-5. At http://breakpad.appspot.com you'll find your issue listed; click on it,
-   and select Publish+Mail, and enter in the code reviewer and CC
+5. At https://codereview.chromium.org/ you'll find your issue listed; click on
+   it, and select Publish+Mail, and enter in the code reviewer and CC
    google-breakpad-dev@googlegroups.com
-
-6. When applying code review feedback, specify the '-i' option when running
-   upload.py again and pass the issue number so it updates the existing issue,
-   rather than creating a new one.
-   Be sure to rerun upload.py from the same directory as you did for previous
-   uploads to allow for proper diff calculations.
