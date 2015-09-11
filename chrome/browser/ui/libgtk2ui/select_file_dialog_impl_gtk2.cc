@@ -386,8 +386,8 @@ GtkWidget* SelectFileDialogImplGTK::CreateFileOpenHelper(
   GtkWidget* dialog =
       gtk_file_chooser_dialog_new(title.c_str(), NULL,
                                   GTK_FILE_CHOOSER_ACTION_OPEN,
-                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                  "_Cancel", GTK_RESPONSE_CANCEL,
+                                  "_Open", GTK_RESPONSE_ACCEPT,
                                   NULL);
   SetGtkTransientForAura(dialog, parent);
   AddFilters(GTK_FILE_CHOOSER(dialog));
@@ -422,12 +422,12 @@ GtkWidget* SelectFileDialogImplGTK::CreateSelectFolderDialog(
   }
   std::string accept_button_label = (type == SELECT_UPLOAD_FOLDER) ?
       l10n_util::GetStringUTF8(IDS_SELECT_UPLOAD_FOLDER_DIALOG_UPLOAD_BUTTON) :
-      GTK_STOCK_OPEN;
+      "_Open";
 
   GtkWidget* dialog =
       gtk_file_chooser_dialog_new(title_string.c_str(), NULL,
                                   GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                  "_Cancel", GTK_RESPONSE_CANCEL,
                                   accept_button_label.c_str(),
                                   GTK_RESPONSE_ACCEPT,
                                   NULL);
@@ -482,8 +482,8 @@ GtkWidget* SelectFileDialogImplGTK::CreateSaveAsDialog(const std::string& title,
   GtkWidget* dialog =
       gtk_file_chooser_dialog_new(title_string.c_str(), NULL,
                                   GTK_FILE_CHOOSER_ACTION_SAVE,
-                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                  GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+                                  "_Cancel", GTK_RESPONSE_CANCEL,
+                                  "_Save", GTK_RESPONSE_ACCEPT,
                                   NULL);
   SetGtkTransientForAura(dialog, parent);
 

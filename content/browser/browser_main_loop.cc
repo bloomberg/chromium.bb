@@ -241,6 +241,8 @@ static void GLibLogHandler(const gchar* log_domain,
     LOG(ERROR) << message << " (http://bugs.chromium.org/329991)";
   } else if (strstr(message, "Cannot do system-bus activation with no user")) {
     LOG(ERROR) << message << " (http://crbug.com/431005)";
+  } else if (strstr(message, "deprecated")) {
+    LOG(ERROR) << message;
   } else {
     LOG(DFATAL) << log_domain << ": " << message;
   }

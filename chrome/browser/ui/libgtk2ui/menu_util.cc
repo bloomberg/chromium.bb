@@ -12,6 +12,8 @@
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/models/menu_model.h"
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
 namespace libgtk2ui {
 
 GtkWidget* BuildMenuItemWithImage(const std::string& label, GtkWidget* image) {
@@ -139,7 +141,8 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
         else
           menu_item = BuildMenuItemWithLabel(label);
         if (GTK_IS_IMAGE_MENU_ITEM(menu_item)) {
-          SetAlwaysShowImage(menu_item);
+          gtk_image_menu_item_set_always_show_image(
+              GTK_IMAGE_MENU_ITEM(menu_item), TRUE);
         }
         break;
       }

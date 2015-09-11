@@ -19,11 +19,8 @@ void OwnedWidgetGtk::Own(GtkWidget* widget) {
     return;
 
   DCHECK(!widget_);
-  // We want to make sure that Own() was called properly, right after the
-  // widget was created. There should be a floating reference.
-  DCHECK(g_object_is_floating(widget));
 
-  // Sink the floating reference, we should now own this reference.
+  // Keep a reference
   g_object_ref_sink(widget);
   widget_ = widget;
 }

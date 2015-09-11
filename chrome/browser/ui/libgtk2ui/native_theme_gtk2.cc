@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_menu_subclasses.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
@@ -18,32 +19,21 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 
+
 namespace {
 
 // Theme colors returned by GetSystemColor().
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
-
-const GdkColor kURLTextColor = GDK_COLOR_RGB(0x0b, 0x80, 0x43);
-
-GdkColor GdkAlphaBlend(GdkColor foreground,
-                       GdkColor background,
-                       SkAlpha alpha) {
-  return libgtk2ui::SkColorToGdkColor(
-      color_utils::AlphaBlend(libgtk2ui::GdkColorToSkColor(foreground),
-                              libgtk2ui::GdkColorToSkColor(background), alpha));
-}
+const SkColor kURLTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
 
 // Generates the normal URL color, a green color used in unhighlighted URL
 // text. It is a mix of |kURLTextColor| and the current text color.  Unlike the
 // selected text color, it is more important to match the qualities of the
 // foreground typeface color instead of taking the background into account.
-GdkColor NormalURLColor(GdkColor foreground) {
-  color_utils::HSL fg_hsl;
-  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(foreground), &fg_hsl);
-
-  color_utils::HSL hue_hsl;
-  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(kURLTextColor),
-                            &hue_hsl);
+SkColor NormalURLColor(SkColor foreground) {
+  color_utils::HSL fg_hsl, hue_hsl;
+  color_utils::SkColorToHSL(foreground, &fg_hsl);
+  color_utils::SkColorToHSL(kURLTextColor, &hue_hsl);
 
   // Only allow colors that have a fair amount of saturation in them (color vs
   // white). This means that our output color will always be fairly green.
@@ -58,7 +48,7 @@ GdkColor NormalURLColor(GdkColor foreground) {
     l = (fg_hsl.l + hue_hsl.l) / 2;
 
   color_utils::HSL output = { hue_hsl.h, s, l };
-  return libgtk2ui::SkColorToGdkColor(color_utils::HSLToSkColor(output, 255));
+  return color_utils::HSLToSkColor(output, 255);
 }
 
 // Generates the selected URL color, a green color used on URL text in the
@@ -66,18 +56,11 @@ GdkColor NormalURLColor(GdkColor foreground) {
 // |kURLTextColor|, the current text color, and the background color (the
 // select highlight). It is more important to contrast with the background
 // saturation than to look exactly like the foreground color.
-GdkColor SelectedURLColor(GdkColor foreground, GdkColor background) {
-  color_utils::HSL fg_hsl;
-  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(foreground),
-                            &fg_hsl);
-
-  color_utils::HSL bg_hsl;
-  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(background),
-                            &bg_hsl);
-
-  color_utils::HSL hue_hsl;
-  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(kURLTextColor),
-                            &hue_hsl);
+SkColor SelectedURLColor(SkColor foreground, SkColor background) {
+  color_utils::HSL fg_hsl, bg_hsl, hue_hsl;
+  color_utils::SkColorToHSL(foreground, &fg_hsl);
+  color_utils::SkColorToHSL(background, &bg_hsl);
+  color_utils::SkColorToHSL(kURLTextColor, &hue_hsl);
 
   // The saturation of the text should be opposite of the background, clamped
   // to 0.2-0.8. We make sure it's greater than 0.2 so there's some color, but
@@ -91,12 +74,7 @@ GdkColor SelectedURLColor(GdkColor foreground, GdkColor background) {
   double l = std::max(0.1, std::min(0.9, opposite_l));
 
   color_utils::HSL output = { hue_hsl.h, s, l };
-  return libgtk2ui::SkColorToGdkColor(color_utils::HSLToSkColor(output, 255));
-}
-
-GdkColor GetReadableColor(SkColor color, const GdkColor& background) {
-  return libgtk2ui::SkColorToGdkColor(color_utils::GetReadableColor(
-      color, libgtk2ui::GdkColorToSkColor(background)));
+  return color_utils::HSLToSkColor(output, 255);
 }
 
 }  // namespace
@@ -104,64 +82,100 @@ GdkColor GetReadableColor(SkColor color, const GdkColor& background) {
 
 namespace libgtk2ui {
 
+enum WidgetState {
+  NORMAL = 0,
+  ACTIVE = 1,
+  PRELIGHT = 2,
+  SELECTED = 3,
+  INSENSITIVE = 4,
+};
+
+#if GTK_MAJOR_VERSION == 2
+// Same order as enum WidgetState above
+const GtkStateType stateMap[] = {
+  GTK_STATE_NORMAL,
+  GTK_STATE_ACTIVE,
+  GTK_STATE_PRELIGHT,
+  GTK_STATE_SELECTED,
+  GTK_STATE_INSENSITIVE,
+};
+
+
+SkColor GetFGColor(GtkWidget* widget, WidgetState state) {
+  return GdkColorToSkColor(gtk_rc_get_style(widget)->fg[stateMap[state]]);
+}
+SkColor GetBGColor(GtkWidget* widget, WidgetState state) {
+  return GdkColorToSkColor(gtk_rc_get_style(widget)->bg[stateMap[state]]);
+}
+
+SkColor GetTextColor(GtkWidget* widget, WidgetState state) {
+  return GdkColorToSkColor(gtk_rc_get_style(widget)->text[stateMap[state]]);
+}
+SkColor GetTextAAColor(GtkWidget* widget, WidgetState state) {
+  return GdkColorToSkColor(gtk_rc_get_style(widget)->text_aa[stateMap[state]]);
+}
+SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
+  return GdkColorToSkColor(gtk_rc_get_style(widget)->base[stateMap[state]]);
+}
+
+
+#else
+// Same order as enum WidgetState above
+const GtkStateFlags stateMap[] = {
+  GTK_STATE_FLAG_NORMAL,
+  GTK_STATE_FLAG_ACTIVE,
+  GTK_STATE_FLAG_PRELIGHT,
+  GTK_STATE_FLAG_SELECTED,
+  GTK_STATE_FLAG_INSENSITIVE,
+};
+
+
+SkColor GetFGColor(GtkWidget* widget, WidgetState state) {
+  GdkRGBA color;
+  gtk_style_context_get_color(
+      gtk_widget_get_style_context(widget), stateMap[state], &color);
+  return SkColorSetRGB(color.red * 255, color.green * 255, color.blue * 255);
+}
+SkColor GetBGColor(GtkWidget* widget, WidgetState state) {
+  GdkRGBA color;
+
+  G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+  gtk_style_context_get_background_color(
+      gtk_widget_get_style_context(widget), stateMap[state], &color);
+  G_GNUC_END_IGNORE_DEPRECATIONS
+
+  // Hack for default color
+  if (color.alpha == 0.0)
+    color = {1, 1, 1, 1};
+
+  return SkColorSetRGB(color.red * 255, color.green * 255, color.blue * 255);
+}
+
+SkColor GetTextColor(GtkWidget* widget, WidgetState state) {
+  return GetFGColor(widget, state);
+}
+SkColor GetTextAAColor(GtkWidget* widget, WidgetState state) {
+  return GetFGColor(widget, state);
+}
+SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
+  return GetBGColor(widget, state);
+}
+
+#endif
+
+
 // static
 NativeThemeGtk2* NativeThemeGtk2::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeGtk2, s_native_theme, ());
   return &s_native_theme;
 }
 
-NativeThemeGtk2::NativeThemeGtk2()
-    : fake_window_(NULL),
-      fake_tooltip_(NULL),
-      fake_menu_item_(NULL) {
-}
+// Constructors automatically called
+NativeThemeGtk2::NativeThemeGtk2() {}
+// This doesn't actually get called
+NativeThemeGtk2::~NativeThemeGtk2() {}
 
-NativeThemeGtk2::~NativeThemeGtk2() {
-  if (fake_window_)
-    gtk_widget_destroy(fake_window_);
-  if (fake_tooltip_)
-    gtk_widget_destroy(fake_tooltip_);
 
-  fake_entry_.Destroy();
-  fake_label_.Destroy();
-  fake_button_.Destroy();
-  fake_tree_.Destroy();
-  fake_menu_.Destroy();
-}
-
-gfx::Size NativeThemeGtk2::GetPartSize(Part part,
-                                       State state,
-                                       const ExtraParams& extra) const {
-  if (part == kComboboxArrow)
-    return gfx::Size(12, 12);
-
-  return ui::NativeThemeBase::GetPartSize(part, state, extra);
-}
-
-void NativeThemeGtk2::Paint(SkCanvas* canvas,
-                            Part part,
-                            State state,
-                            const gfx::Rect& rect,
-                            const ExtraParams& extra) const {
-  if (rect.IsEmpty())
-    return;
-
-  switch (part) {
-    case kComboboxArrow:
-      PaintComboboxArrow(canvas, GetGtkState(state), rect);
-      return;
-
-    default:
-      NativeThemeBase::Paint(canvas, part, state, rect, extra);
-  }
-}
-
-SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
-  if (color_id == kColorId_BlueButtonShadowColor)
-    return SK_ColorTRANSPARENT;
-
-  return GdkColorToSkColor(GetSystemGdkColor(color_id));
-}
 
 void NativeThemeGtk2::PaintMenuPopupBackground(
     SkCanvas* canvas,
@@ -213,208 +227,203 @@ void NativeThemeGtk2::PaintMenuItemBackground(
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
-GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
+SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
+  if (color_id == kColorId_BlueButtonShadowColor)
+    return SK_ColorTRANSPARENT;
+
   const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
   const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
+
   switch (color_id) {
     // Windows
     case kColorId_WindowBackground:
-      return GetWindowStyle()->bg[GTK_STATE_NORMAL];
+      return GetBGColor(GetWindow(), SELECTED);
 
     // Dialogs
     case kColorId_DialogBackground:
-      return GetWindowStyle()->bg[GTK_STATE_NORMAL];
+      return GetBGColor(GetWindow(), NORMAL);
 
     // FocusableBorder
     case kColorId_FocusedBorderColor:
-      return GetEntryStyle()->bg[GTK_STATE_SELECTED];
+      return GetBGColor(GetEntry(), SELECTED);
     case kColorId_UnfocusedBorderColor:
-      return GetEntryStyle()->text_aa[GTK_STATE_NORMAL];
+      return GetTextAAColor(GetEntry(), NORMAL);
 
     // MenuItem
     case kColorId_EnabledMenuItemForegroundColor:
     case kColorId_DisabledEmphasizedMenuItemForegroundColor:
-      return GetMenuItemStyle()->text[GTK_STATE_NORMAL];
+      return GetTextColor(GetMenuItem(), NORMAL);
     case kColorId_DisabledMenuItemForegroundColor:
-      return GetMenuItemStyle()->text[GTK_STATE_INSENSITIVE];
+      return GetTextColor(GetMenuItem(), INSENSITIVE);
     case kColorId_SelectedMenuItemForegroundColor:
-      return GetMenuItemStyle()->text[GTK_STATE_SELECTED];
+      return GetTextColor(GetMenuItem(), SELECTED);
     case kColorId_FocusedMenuItemBackgroundColor:
-      return GetMenuItemStyle()->bg[GTK_STATE_SELECTED];
+      return GetBGColor(GetMenuItem(), SELECTED);
     case kColorId_HoverMenuItemBackgroundColor:
-      return GetMenuItemStyle()->bg[GTK_STATE_PRELIGHT];
+      return GetBGColor(GetMenuItem(), PRELIGHT);
     case kColorId_FocusedMenuButtonBorderColor:
-      return GetEntryStyle()->bg[GTK_STATE_NORMAL];
+      return GetBGColor(GetEntry(), NORMAL);
     case kColorId_HoverMenuButtonBorderColor:
-      return GetEntryStyle()->text_aa[GTK_STATE_PRELIGHT];
+      return GetTextAAColor(GetEntry(), PRELIGHT);
     case kColorId_MenuBorderColor:
     case kColorId_EnabledMenuButtonBorderColor:
     case kColorId_MenuSeparatorColor: {
-      return GetMenuItemStyle()->text[GTK_STATE_INSENSITIVE];
+      return GetTextColor(GetMenuItem(), INSENSITIVE);
     }
     case kColorId_MenuBackgroundColor:
-      return GetMenuStyle()->bg[GTK_STATE_NORMAL];
+      return GetBGColor(GetMenu(), NORMAL);
 
     // Label
     case kColorId_LabelEnabledColor:
-      return GetLabelStyle()->text[GTK_STATE_NORMAL];
+      return GetTextColor(GetEntry(), NORMAL);
     case kColorId_LabelDisabledColor:
-      return GetLabelStyle()->text[GTK_STATE_INSENSITIVE];
+      return GetTextColor(GetLabel(), INSENSITIVE);
     case kColorId_LabelBackgroundColor:
-      return GetWindowStyle()->bg[GTK_STATE_NORMAL];
+      return GetBGColor(GetWindow(), NORMAL);
 
     // Button
     case kColorId_ButtonBackgroundColor:
-      return GetButtonStyle()->bg[GTK_STATE_NORMAL];
+      return GetBGColor(GetButton(), NORMAL);
     case kColorId_ButtonEnabledColor:
     case kColorId_BlueButtonEnabledColor:
-      return GetButtonStyle()->text[GTK_STATE_NORMAL];
+      return GetTextColor(GetButton(), NORMAL);
     case kColorId_ButtonDisabledColor:
     case kColorId_BlueButtonDisabledColor:
-      return GetButtonStyle()->text[GTK_STATE_INSENSITIVE];
+      return GetTextColor(GetButton(), INSENSITIVE);
     case kColorId_ButtonHighlightColor:
-      return GetButtonStyle()->base[GTK_STATE_SELECTED];
+      return GetBaseColor(GetButton(), SELECTED);
     case kColorId_ButtonHoverColor:
     case kColorId_BlueButtonHoverColor:
-      return GetButtonStyle()->text[GTK_STATE_PRELIGHT];
+      return GetTextColor(GetButton(), PRELIGHT);
     case kColorId_ButtonHoverBackgroundColor:
-      return GetButtonStyle()->bg[GTK_STATE_PRELIGHT];
+      return GetBGColor(GetButton(), PRELIGHT);
     case kColorId_BlueButtonPressedColor:
-      return GetButtonStyle()->text[GTK_STATE_ACTIVE];
+      return GetTextColor(GetButton(), ACTIVE);
     case kColorId_BlueButtonShadowColor:
       // Should be handled in GetSystemColor().
       NOTREACHED();
-      return GetButtonStyle()->text[GTK_STATE_NORMAL];
+      return GetTextColor(GetButton(), NORMAL);
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
-      return GetEntryStyle()->text[GTK_STATE_NORMAL];
+      return GetTextColor(GetEntry(), NORMAL);
     case kColorId_TextfieldDefaultBackground:
-      return GetEntryStyle()->base[GTK_STATE_NORMAL];
+      return GetBaseColor(GetEntry(), NORMAL);
     case kColorId_TextfieldReadOnlyColor:
-      return GetEntryStyle()->text[GTK_STATE_INSENSITIVE];
+      return GetTextColor(GetEntry(), INSENSITIVE);
     case kColorId_TextfieldReadOnlyBackground:
-      return GetEntryStyle()->base[GTK_STATE_INSENSITIVE];
+      return GetBaseColor(GetEntry(), INSENSITIVE);
     case kColorId_TextfieldSelectionColor:
-      return GetEntryStyle()->text[GTK_STATE_SELECTED];
+      return GetTextColor(GetEntry(), SELECTED);
     case kColorId_TextfieldSelectionBackgroundFocused:
-      return GetEntryStyle()->base[GTK_STATE_SELECTED];
+      return GetBaseColor(GetEntry(), SELECTED);
 
     // Tooltips
     case kColorId_TooltipBackground:
-      return GetTooltipStyle()->bg[GTK_STATE_NORMAL];
+      return GetBGColor(GetTooltip(), NORMAL);
     case kColorId_TooltipText:
-      return GetTooltipStyle()->fg[GTK_STATE_NORMAL];
+      return GetFGColor(GetTooltip(), NORMAL);
 
     // Trees and Tables (implemented on GTK using the same class)
     case kColorId_TableBackground:
     case kColorId_TreeBackground:
-      return GetTreeStyle()->bg[GTK_STATE_NORMAL];
+      return GetBGColor(GetTree(), NORMAL);
     case kColorId_TableText:
     case kColorId_TreeText:
-      return GetTreeStyle()->text[GTK_STATE_NORMAL];
+      return GetTextColor(GetTree(), NORMAL);
     case kColorId_TableSelectedText:
     case kColorId_TableSelectedTextUnfocused:
     case kColorId_TreeSelectedText:
     case kColorId_TreeSelectedTextUnfocused:
-      return GetTreeStyle()->text[GTK_STATE_SELECTED];
+      return GetTextColor(GetTree(), SELECTED);
     case kColorId_TableSelectionBackgroundFocused:
     case kColorId_TableSelectionBackgroundUnfocused:
     case kColorId_TreeSelectionBackgroundFocused:
     case kColorId_TreeSelectionBackgroundUnfocused:
-      return GetTreeStyle()->bg[GTK_STATE_SELECTED];
+      return GetBGColor(GetTree(), SELECTED);
     case kColorId_TreeArrow:
-      return GetTreeStyle()->fg[GTK_STATE_NORMAL];
+      return GetFGColor(GetTree(), NORMAL);
     case kColorId_TableGroupingIndicatorColor:
-      return GetTreeStyle()->text_aa[GTK_STATE_NORMAL];
+      return GetTextAAColor(GetTree(), NORMAL);
 
       // Results Table
     case kColorId_ResultsTableNormalBackground:
-      return GetEntryStyle()->base[GTK_STATE_NORMAL];
-    case kColorId_ResultsTableHoveredBackground: {
-      GtkStyle* entry_style = GetEntryStyle();
-      return GdkAlphaBlend(
-          entry_style->base[GTK_STATE_NORMAL],
-          entry_style->base[GTK_STATE_SELECTED], 0x80);
-    }
+      return GetBaseColor(GetEntry(), NORMAL);
+    case kColorId_ResultsTableHoveredBackground:
+      return color_utils::AlphaBlend(GetBaseColor(GetEntry(), NORMAL),
+                                     GetBaseColor(GetEntry(), SELECTED),
+                                     0x80);
     case kColorId_ResultsTableSelectedBackground:
-      return GetEntryStyle()->base[GTK_STATE_SELECTED];
+      return GetBaseColor(GetEntry(), SELECTED);
     case kColorId_ResultsTableNormalText:
     case kColorId_ResultsTableHoveredText:
-      return GetEntryStyle()->text[GTK_STATE_NORMAL];
+      return GetTextColor(GetEntry(), NORMAL);
     case kColorId_ResultsTableSelectedText:
-      return GetEntryStyle()->text[GTK_STATE_SELECTED];
+      return GetTextColor(GetEntry(), SELECTED);
     case kColorId_ResultsTableNormalDimmedText:
-    case kColorId_ResultsTableHoveredDimmedText: {
-      GtkStyle* entry_style = GetEntryStyle();
-      return GdkAlphaBlend(
-          entry_style->text[GTK_STATE_NORMAL],
-          entry_style->base[GTK_STATE_NORMAL], 0x80);
-    }
-    case kColorId_ResultsTableSelectedDimmedText: {
-      GtkStyle* entry_style = GetEntryStyle();
-      return GdkAlphaBlend(
-          entry_style->text[GTK_STATE_SELECTED],
-          entry_style->base[GTK_STATE_NORMAL], 0x80);
-    }
+    case kColorId_ResultsTableHoveredDimmedText:
+      return color_utils::AlphaBlend(GetTextColor(GetEntry(), NORMAL),
+                                     GetBaseColor(GetEntry(), NORMAL),
+                                     0x80);
+    case kColorId_ResultsTableSelectedDimmedText:
+      return color_utils::AlphaBlend(GetTextColor(GetEntry(), SELECTED),
+                                     GetBaseColor(GetEntry(), NORMAL),
+                                     0x80);
     case kColorId_ResultsTableNormalUrl:
-    case kColorId_ResultsTableHoveredUrl: {
-      return NormalURLColor(GetEntryStyle()->text[GTK_STATE_NORMAL]);
-    }
-    case kColorId_ResultsTableSelectedUrl: {
-      GtkStyle* entry_style = GetEntryStyle();
-      return SelectedURLColor(entry_style->text[GTK_STATE_SELECTED],
-                              entry_style->base[GTK_STATE_SELECTED]);
-    }
-    case kColorId_ResultsTableNormalDivider: {
-      GtkStyle* win_style = GetWindowStyle();
-      return GdkAlphaBlend(win_style->text[GTK_STATE_NORMAL],
-                           win_style->bg[GTK_STATE_NORMAL], 0x34);
-    }
-    case kColorId_ResultsTableHoveredDivider: {
-      GtkStyle* win_style = GetWindowStyle();
-      return GdkAlphaBlend(win_style->text[GTK_STATE_PRELIGHT],
-                           win_style->bg[GTK_STATE_PRELIGHT], 0x34);
-    }
-    case kColorId_ResultsTableSelectedDivider: {
-      GtkStyle* win_style = GetWindowStyle();
-      return GdkAlphaBlend(win_style->text[GTK_STATE_SELECTED],
-                           win_style->bg[GTK_STATE_SELECTED], 0x34);
-    }
+    case kColorId_ResultsTableHoveredUrl:
+      return NormalURLColor(GetTextColor(GetEntry(), NORMAL));
+
+    case kColorId_ResultsTableSelectedUrl:
+      return SelectedURLColor(GetTextColor(GetEntry(), SELECTED),
+                              GetBaseColor(GetEntry(), SELECTED));
+    case kColorId_ResultsTableNormalDivider:
+      return color_utils::AlphaBlend(GetTextColor(GetWindow(), NORMAL),
+                                     GetBGColor(GetWindow(), NORMAL),
+                                     0x34);
+    case kColorId_ResultsTableHoveredDivider:
+      return color_utils::AlphaBlend(GetTextColor(GetWindow(), PRELIGHT),
+                                     GetBGColor(GetWindow(), PRELIGHT),
+                                     0x34);
+    case kColorId_ResultsTableSelectedDivider:
+      return color_utils::AlphaBlend(GetTextColor(GetWindow(), SELECTED),
+                                     GetBGColor(GetWindow(), SELECTED),
+                                     0x34);
+
     case kColorId_ResultsTablePositiveText: {
-      return GetReadableColor(kPositiveTextColor,
-                              GetEntryStyle()->base[GTK_STATE_NORMAL]);
+      return color_utils::GetReadableColor(kPositiveTextColor,
+                                           GetBaseColor(GetEntry(), NORMAL));
     }
     case kColorId_ResultsTablePositiveHoveredText: {
-      return GetReadableColor(kPositiveTextColor,
-                              GetEntryStyle()->base[GTK_STATE_PRELIGHT]);
+      return color_utils::GetReadableColor(kPositiveTextColor,
+                                           GetBaseColor(GetEntry(), PRELIGHT));
     }
     case kColorId_ResultsTablePositiveSelectedText: {
-      return GetReadableColor(kPositiveTextColor,
-                              GetEntryStyle()->base[GTK_STATE_SELECTED]);
+      return color_utils::GetReadableColor(kPositiveTextColor,
+                                           GetBaseColor(GetEntry(), SELECTED));
     }
     case kColorId_ResultsTableNegativeText: {
-      return GetReadableColor(kNegativeTextColor,
-                              GetEntryStyle()->base[GTK_STATE_NORMAL]);
+      return color_utils::GetReadableColor(kNegativeTextColor,
+                                           GetBaseColor(GetEntry(), NORMAL));
     }
     case kColorId_ResultsTableNegativeHoveredText: {
-      return GetReadableColor(kNegativeTextColor,
-                              GetEntryStyle()->base[GTK_STATE_PRELIGHT]);
+      return color_utils::GetReadableColor(kNegativeTextColor,
+                                           GetBaseColor(GetEntry(), PRELIGHT));
     }
     case kColorId_ResultsTableNegativeSelectedText: {
-      return GetReadableColor(kNegativeTextColor,
-                              GetEntryStyle()->base[GTK_STATE_SELECTED]);
+      return color_utils::GetReadableColor(kNegativeTextColor,
+                                           GetBaseColor(GetEntry(), SELECTED));
     }
 
     // Throbber
     case kColorId_ThrobberSpinningColor:
     case kColorId_ThrobberLightColor: {
-      return GetEntryStyle()->bg[GTK_STATE_SELECTED];
+      return GetBGColor(GetEntry(), SELECTED);
     }
 
     case kColorId_ThrobberWaitingColor: {
-      return GdkAlphaBlend(GetEntryStyle()->bg[GTK_STATE_SELECTED],
-                           GetWindowStyle()->bg[GTK_STATE_NORMAL], 0xff / 2);
+      return color_utils::AlphaBlend(GetBGColor(GetEntry(), SELECTED),
+                                     GetBGColor(GetWindow(), NORMAL),
+                                     0x80);
     }
 
     case kColorId_Amber:
@@ -425,118 +434,76 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       break;
   }
 
-  return SkColorToGdkColor(kInvalidColorIdColor);
+  return kInvalidColorIdColor;
 }
 
-GtkWidget* NativeThemeGtk2::GetRealizedWindow() const {
-  if (!fake_window_) {
-    fake_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_realize(fake_window_);
+GtkWidget* NativeThemeGtk2::GetWindow() const {
+  if (!fake_window_.get()) {
+    fake_window_.Own(chrome_gtk_frame_new());
+    gtk_widget_realize(fake_window_.get());
   }
 
-  return fake_window_;
+  return fake_window_.get();
 }
 
-GtkStyle* NativeThemeGtk2::GetWindowStyle() const {
-  return gtk_rc_get_style(GetRealizedWindow());
-}
-
-GtkStyle* NativeThemeGtk2::GetEntryStyle() const {
+GtkWidget* NativeThemeGtk2::GetEntry() const {
   if (!fake_entry_.get()) {
     fake_entry_.Own(gtk_entry_new());
 
     // The fake entry needs to be in the window so it can be realized so we can
     // use the computed parts of the style.
-    gtk_container_add(GTK_CONTAINER(GetRealizedWindow()), fake_entry_.get());
+    gtk_container_add(GTK_CONTAINER(GetWindow()), fake_entry_.get());
     gtk_widget_realize(fake_entry_.get());
   }
-  return gtk_rc_get_style(fake_entry_.get());
+
+  return fake_entry_.get();
 }
 
-GtkStyle* NativeThemeGtk2::GetLabelStyle() const {
+GtkWidget* NativeThemeGtk2::GetLabel() const {
   if (!fake_label_.get())
     fake_label_.Own(gtk_label_new(""));
 
-  return gtk_rc_get_style(fake_label_.get());
+  return fake_label_.get();
 }
 
-GtkStyle* NativeThemeGtk2::GetButtonStyle() const {
+GtkWidget* NativeThemeGtk2::GetButton() const {
   if (!fake_button_.get())
     fake_button_.Own(gtk_button_new());
 
-  return gtk_rc_get_style(fake_button_.get());
+  return fake_button_.get();
 }
 
-GtkStyle* NativeThemeGtk2::GetTreeStyle() const {
+GtkWidget* NativeThemeGtk2::GetTree() const {
   if (!fake_tree_.get())
     fake_tree_.Own(gtk_tree_view_new());
 
-  return gtk_rc_get_style(fake_tree_.get());
+  return fake_tree_.get();
 }
 
-GtkStyle* NativeThemeGtk2::GetTooltipStyle() const {
-  if (!fake_tooltip_) {
-    fake_tooltip_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_set_name(fake_tooltip_, "gtk-tooltip");
-    gtk_widget_realize(fake_tooltip_);
+GtkWidget* NativeThemeGtk2::GetTooltip() const {
+  if (!fake_tooltip_.get()) {
+    fake_tooltip_.Own(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    gtk_widget_set_name(fake_tooltip_.get(), "gtk-tooltip");
+    gtk_widget_realize(fake_tooltip_.get());
   }
-  return gtk_rc_get_style(fake_tooltip_);
+
+  return fake_tooltip_.get();
 }
 
-GtkStyle* NativeThemeGtk2::GetMenuStyle() const {
+GtkWidget* NativeThemeGtk2::GetMenu() const {
   if (!fake_menu_.get())
     fake_menu_.Own(gtk_custom_menu_new());
-  return gtk_rc_get_style(fake_menu_.get());
+
+  return fake_menu_.get();
 }
 
-GtkStyle* NativeThemeGtk2::GetMenuItemStyle() const {
-  if (!fake_menu_item_) {
-    if (!fake_menu_.get())
-      fake_menu_.Own(gtk_custom_menu_new());
-
-    fake_menu_item_ = gtk_custom_menu_item_new();
-    gtk_menu_shell_append(GTK_MENU_SHELL(fake_menu_.get()), fake_menu_item_);
+GtkWidget* NativeThemeGtk2::GetMenuItem() const {
+  if (!fake_menu_item_.get()) {
+    fake_menu_item_.Own(gtk_custom_menu_item_new());
+    gtk_menu_shell_append(GTK_MENU_SHELL(GetMenu()), fake_menu_item_.get());
   }
 
-  return gtk_rc_get_style(fake_menu_item_);
-}
-
-void NativeThemeGtk2::PaintComboboxArrow(SkCanvas* canvas,
-                                         GtkStateType state,
-                                         const gfx::Rect& rect) const {
-  GdkPixmap* pm = gdk_pixmap_new(gtk_widget_get_window(GetRealizedWindow()),
-                                 rect.width(),
-                                 rect.height(),
-                                 -1);
-  // Paint the background.
-  gtk_paint_flat_box(GetWindowStyle(),
-                     pm,
-                     state,
-                     GTK_SHADOW_NONE,
-                     NULL,
-                     GetRealizedWindow(),
-                     NULL, 0, 0, rect.width(), rect.height());
-  gtk_paint_arrow(GetWindowStyle(),
-                  pm,
-                  state,
-                  GTK_SHADOW_NONE,
-                  NULL,
-                  GetRealizedWindow(),
-                  NULL,
-                  GTK_ARROW_DOWN,
-                  true,
-                  0, 0, rect.width(), rect.height());
-  GdkPixbuf* pb = gdk_pixbuf_get_from_drawable(NULL,
-                                               pm,
-                                               gdk_drawable_get_colormap(pm),
-                                               0, 0,
-                                               0, 0,
-                                               rect.width(), rect.height());
-  SkBitmap arrow = GdkPixbufToImageSkia(pb);
-  canvas->drawBitmap(arrow, rect.x(), rect.y());
-
-  g_object_unref(pb);
-  g_object_unref(pm);
+  return fake_menu_item_.get();
 }
 
 }  // namespace libgtk2ui

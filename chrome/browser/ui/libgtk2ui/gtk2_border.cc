@@ -16,7 +16,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/native_theme_delegate.h"
@@ -25,46 +24,6 @@ using views::Button;
 using views::NativeThemeDelegate;
 
 namespace libgtk2ui {
-
-namespace {
-
-const int kNumberOfFocusedStates = 2;
-
-class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
- public:
-  ButtonImageSkiaSource(const Gtk2UI* gtk2_ui,
-                        const GtkStateType state,
-                        const bool focused,
-                        const bool call_to_action,
-                        const gfx::Size& size)
-      : gtk2_ui_(gtk2_ui),
-        state_(state),
-        focused_(focused),
-        call_to_action_(call_to_action),
-        size_(size) {
-  }
-
-  ~ButtonImageSkiaSource() override {}
-
-  gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    int w = size_.width() * scale;
-    int h = size_.height() * scale;
-    return gfx::ImageSkiaRep(
-        gtk2_ui_->DrawGtkButtonBorder(state_, focused_, call_to_action_, w, h),
-        scale);
-  }
-
- private:
-  const Gtk2UI* gtk2_ui_;
-  const GtkStateType state_;
-  const bool focused_;
-  const bool call_to_action_;
-  const gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(ButtonImageSkiaSource);
-};
-
-}  // namespace
 
 Gtk2Border::Gtk2Border(Gtk2UI* gtk2_ui,
                        views::LabelButton* owning_button,
@@ -119,7 +78,7 @@ gfx::Size Gtk2Border::GetMinimumSize() const {
 
 void Gtk2Border::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK_EQ(observed_theme, NativeThemeGtk2::instance());
-  for (int i = 0; i < kNumberOfFocusedStates; ++i) {
+  for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < views::Button::STATE_COUNT; ++j) {
       button_images_[i][j] = gfx::ImageSkia();
     }
@@ -141,16 +100,11 @@ void Gtk2Border::PaintState(const ui::NativeTheme::State state,
     gfx::ImageSkia* image = &button_images_[focused][views_state];
 
     if (image->isNull() || image->size() != rect.size()) {
-      bool call_to_action = owning_button_->GetClassName() ==
-          views::BlueButton::kViewClassName;
-      GtkStateType gtk_state = GetGtkState(state);
-      *image = gfx::ImageSkia(
-          new ButtonImageSkiaSource(gtk2_ui_,
-                                    gtk_state,
-                                    focused,
-                                    call_to_action,
-                                    rect.size()),
-          rect.size());
+      *image = gfx::ImageSkia::CreateFrom1xBitmap(
+          gtk2_ui_->DrawGtkButtonBorder(owning_button_->GetClassName(),
+                                        state,
+                                        rect.width(),
+                                        rect.height()));
     }
     canvas->DrawImageInt(*image, rect.x(), rect.y());
   }

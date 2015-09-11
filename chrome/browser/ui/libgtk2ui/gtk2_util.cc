@@ -71,11 +71,6 @@ std::string GetDesktopName(base::Environment* env) {
 #endif
 }
 
-void SetAlwaysShowImage(GtkWidget* image_menu_item) {
-  gtk_image_menu_item_set_always_show_image(
-      GTK_IMAGE_MENU_ITEM(image_menu_item), TRUE);
-}
-
 guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {
   // The second parameter is false because accelerator keys are expressed in
   // terms of the non-shift-modified key.
@@ -133,17 +128,6 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog) {
 
 void ClearAuraTransientParent(GtkWidget* dialog) {
   g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, NULL);
-}
-
-GtkStateType GetGtkState(ui::NativeTheme::State state) {
-  switch (state) {
-    case ui::NativeTheme::kDisabled:  return GTK_STATE_INSENSITIVE;
-    case ui::NativeTheme::kHovered:   return GTK_STATE_PRELIGHT;
-    case ui::NativeTheme::kNormal:    return GTK_STATE_NORMAL;
-    case ui::NativeTheme::kPressed:   return GTK_STATE_ACTIVE;
-    case ui::NativeTheme::kNumStates: NOTREACHED();
-  }
-  return GTK_STATE_NORMAL;
 }
 
 }  // namespace libgtk2ui

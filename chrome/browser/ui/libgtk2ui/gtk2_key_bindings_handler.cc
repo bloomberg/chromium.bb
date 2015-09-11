@@ -61,7 +61,14 @@ bool Gtk2KeyBindingsHandler::MatchEvent(
   edit_commands_.clear();
   // If this key event matches a predefined key binding, corresponding signal
   // will be emitted.
-  gtk_bindings_activate_event(GTK_OBJECT(handler_.get()), &gdk_event);
+
+  gtk_bindings_activate_event(
+#if GDK_MAJOR_VERSION >= 3
+      G_OBJECT(handler_.get()),
+#else
+      GTK_OBJECT(handler_.get()),
+#endif
+      &gdk_event);
 
   bool matched = !edit_commands_.empty();
   if (edit_commands)
@@ -123,7 +130,7 @@ void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
     gdk_event->group = 0;
   }
 
-  gdk_event->keyval = GDK_VoidSymbol;
+  gdk_event->keyval = GDK_KEY_VoidSymbol;
   gdk_keymap_translate_keyboard_state(
       keymap,
       gdk_event->hardware_keycode,

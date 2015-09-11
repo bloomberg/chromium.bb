@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
 G_BEGIN_DECLS
 
 // MetaFrames declaration

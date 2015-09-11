@@ -488,6 +488,18 @@ void PrintDialogGtk2::OnResponse(GtkWidget* dialog, int response_id) {
   }
 }
 
+
+
+static void OnJobCompletedThunk(GtkPrintJob* print_job,
+                                gpointer user_data,
+#if GTK_MAJOR_VERSION == 2
+                                GError* error
+#else
+                                const GError* error
+#endif
+                                ) {
+  static_cast<PrintDialogGtk2*>(user_data)->OnJobCompleted(print_job, error);
+}
 void PrintDialogGtk2::SendDocumentToPrinter(
     const base::string16& document_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -512,14 +524,8 @@ void PrintDialogGtk2::SendDocumentToPrinter(
   gtk_print_job_send(print_job, OnJobCompletedThunk, this, NULL);
 }
 
-// static
-void PrintDialogGtk2::OnJobCompletedThunk(GtkPrintJob* print_job,
-                                         gpointer user_data,
-                                         GError* error) {
-  static_cast<PrintDialogGtk2*>(user_data)->OnJobCompleted(print_job, error);
-}
-
-void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
+void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job,
+                                     const GError* error) {
   if (error)
     LOG(ERROR) << "Printing failed: " << error->message;
   if (print_job)

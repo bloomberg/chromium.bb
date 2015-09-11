@@ -12,6 +12,8 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image_skia.h"
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
 namespace libgtk2ui {
 
 Gtk2StatusIcon::Gtk2StatusIcon(const gfx::ImageSkia& image,
