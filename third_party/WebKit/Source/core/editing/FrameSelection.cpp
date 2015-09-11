@@ -1999,7 +1999,7 @@ void FrameSelection::showTreeForThis() const
 DEFINE_TRACE(FrameSelection)
 {
     visitor->trace(m_frame);
-    visitor->trace(selection());
+    visitor->trace(m_selection);
     visitor->trace(m_originalBase);
     visitor->trace(m_logicalRange);
     visitor->trace(m_previousCaretNode);
