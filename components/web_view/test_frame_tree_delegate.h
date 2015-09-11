@@ -26,7 +26,11 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
 
   mojo::ApplicationImpl* app() { return app_; }
 
-  void WaitForCreateFrame();
+  // Runs a message loop until DidCreateFrame() is called, returning the
+  // Frame supplied to DidCreateFrame().
+  Frame* WaitForCreateFrame();
+
+  // Wires for DidDestroyFrame() to be called with |frame|.
   void WaitForDestroyFrame(Frame* frame);
 
   // TestFrameTreeDelegate:
@@ -51,6 +55,7 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
   bool waiting_for_create_frame_;
   Frame* waiting_for_destroy_frame_;
   scoped_ptr<base::RunLoop> run_loop_;
+  Frame* most_recent_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeDelegate);
 };

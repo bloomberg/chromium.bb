@@ -353,20 +353,19 @@ Frame* Frame::FindFrameWithIdFromSameApp(uint32_t frame_id) {
     return this;  // Common case.
 
   Frame* frame = FindFrame(frame_id);
-  if (frame && frame->frame_tree_client_) {
-    // The frame has it's own client/server pair. It should make requests using
-    // the server it has rather than an ancestor.
-    DVLOG(1) << "ignoring request for a frame that has its own client.";
+  if (!frame)
     return nullptr;
-  }
 
-  if (frame && frame->app_id_ != app_id_) {
-    // An app is trying to send a message from another frame.
-    DVLOG(1) << "ignoring request for a frame from another app.";
-    return nullptr;
+  for (Frame* test_frame = frame; test_frame != this;
+       test_frame = test_frame->parent()) {
+    if (test_frame->frame_tree_client_) {
+      // The frame has it's own client/server pair. It should make requests
+      // using
+      // the server it has rather than an ancestor.
+      DVLOG(1) << "ignoring request for a frame that has its own client.";
+      return nullptr;
+    }
   }
-
-  // TODO(sky): deal with kInvalidContentHandlerID?
 
   return frame;
 }
@@ -522,7 +521,7 @@ void Frame::RequestNavigate(NavigationTargetType target_type,
     // |target_frame| is allowed to come from another connection.
     Frame* target_frame = tree_->root()->FindFrame(target_frame_id);
     if (!target_frame) {
-      DVLOG(1) << "RequestNavigate EXIT_FRAME with no matching frame";
+      DVLOG(1) << "RequestNavigate EXISTING_FRAME with no matching frame";
       return;
     }
     if (target_frame != tree_->root()) {

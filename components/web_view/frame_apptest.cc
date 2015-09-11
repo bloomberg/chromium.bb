@@ -217,7 +217,12 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   FrameTree* frame_tree() { return frame_tree_.get(); }
   ViewAndFrame* root_view_and_frame() { return root_view_and_frame_.get(); }
 
-  scoped_ptr<ViewAndFrame> CreateChildViewAndFrame(ViewAndFrame* parent) {
+  mojo::Binding<FrameTreeServer>* frame_tree_server_binding(Frame* frame) {
+    return frame->frame_tree_server_binding_.get();
+  }
+
+  // Creates a new shared frame as a child of |parent|.
+  Frame* CreateSharedFrame(ViewAndFrame* parent) {
     mojo::View* child_frame_view = parent->view()->connection()->CreateView();
     parent->view()->AddChild(child_frame_view);
     mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties;
@@ -225,15 +230,21 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     parent->frame_tree_server()->OnCreatedFrame(
         child_frame_view->parent()->id(), child_frame_view->id(),
         client_properties.Pass());
-    frame_tree_delegate()->WaitForCreateFrame();
-    if (HasFatalFailure())
+    Frame* frame = frame_tree_delegate()->WaitForCreateFrame();
+    return HasFatalFailure() ? nullptr : frame;
+  }
+
+  scoped_ptr<ViewAndFrame> CreateChildViewAndFrame(ViewAndFrame* parent) {
+    // All frames start out initially shared.
+    Frame* child_frame = CreateSharedFrame(parent);
+    if (!child_frame)
       return nullptr;
 
     // Navigate the child frame, which should trigger a new ViewAndFrame.
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(application_impl()->url());
     parent->frame_tree_server()->RequestNavigate(
-        NAVIGATION_TARGET_TYPE_EXISTING_FRAME, child_frame_view->id(),
+        NAVIGATION_TARGET_TYPE_EXISTING_FRAME, child_frame->id(),
         request.Pass());
     return WaitForViewAndFrame();
   }
@@ -373,6 +384,23 @@ TEST_F(FrameTest, DisconnectingViewDestroysFrame) {
   ASSERT_NO_FATAL_FAILURE(frame_tree_delegate()->WaitForDestroyFrame(
       frame_tree()->root()->children()[0]));
   ASSERT_EQ(0u, frame_tree()->root()->children().size());
+}
+
+TEST_F(FrameTest, CantSendProgressChangeTargettingWrongApp) {
+  ASSERT_FALSE(frame_tree()->root()->IsLoading());
+
+  scoped_ptr<ViewAndFrame> child_view_and_frame(
+      CreateChildViewAndFrame(root_view_and_frame()));
+  ASSERT_TRUE(child_view_and_frame);
+
+  Frame* shared_frame = CreateSharedFrame(child_view_and_frame.get());
+
+  // Send LoadingStarted() from the root targetting a frame from another
+  // connection. It should be ignored (not update the loading status).
+  root_view_and_frame()->frame_tree_server()->LoadingStarted(
+      shared_frame->id());
+  frame_tree_server_binding(frame_tree()->root())->WaitForIncomingMethodCall();
+  EXPECT_FALSE(frame_tree()->root()->IsLoading());
 }
 
 }  // namespace web_view

@@ -13,16 +13,21 @@ namespace web_view {
 TestFrameTreeDelegate::TestFrameTreeDelegate(mojo::ApplicationImpl* app)
     : app_(app),
       waiting_for_create_frame_(false),
-      waiting_for_destroy_frame_(nullptr) {}
+      waiting_for_destroy_frame_(nullptr),
+      most_recent_frame_(nullptr) {}
 
 TestFrameTreeDelegate::~TestFrameTreeDelegate() {}
 
-void TestFrameTreeDelegate::WaitForCreateFrame() {
-  ASSERT_FALSE(is_waiting());
+Frame* TestFrameTreeDelegate::WaitForCreateFrame() {
+  if (is_waiting()) {
+    ADD_FAILURE() << "already waiting";
+    return nullptr;
+  }
   waiting_for_create_frame_ = true;
   run_loop_.reset(new base::RunLoop);
   run_loop_->Run();
   run_loop_.reset();
+  return most_recent_frame_;
 }
 
 void TestFrameTreeDelegate::WaitForDestroyFrame(Frame* frame) {
@@ -60,8 +65,10 @@ void TestFrameTreeDelegate::CanNavigateFrame(
 void TestFrameTreeDelegate::DidStartNavigation(Frame* frame) {}
 
 void TestFrameTreeDelegate::DidCreateFrame(Frame* frame) {
-  if (waiting_for_create_frame_)
+  if (waiting_for_create_frame_) {
+    most_recent_frame_ = frame;
     run_loop_->Quit();
+  }
 }
 
 void TestFrameTreeDelegate::DidDestroyFrame(Frame* frame) {

@@ -17,6 +17,7 @@
 
 namespace web_view {
 
+class FrameTest;
 class FrameTree;
 class FrameTreeClient;
 class FrameUserData;
@@ -106,6 +107,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   double GatherProgress(int* frame_count) const;
 
  private:
+  friend class FrameTest;
   friend class FrameTree;
 
   // Identifies whether the FrameTreeClient is from the same app or a different
