@@ -56,7 +56,7 @@ wrong.
 The variable `sources` has a special rule: when assigning to it, a list
 of exclusion patterns is applied to it. This is designed to
 automatically filter out some types of files. See `gn help
-set_sources_assignment_filter` and `gn help patterns` for more.
+set_sources_assignment_filter` and `gn help label_pattern` for more.
 
 ### Strings
 
@@ -246,7 +246,7 @@ means to look for the thing named "test\_support" in
 
 When loading a build file, if it doesn't exist in the given location
 relative to the source root, GN will look in the secondary tree in
-`tools/gn/secondary`. This structure of this tree mirrors the main
+`tools/gn/secondary`. The structure of this tree mirrors the main
 repository and is a way to add build files for directories that may be
 pulled from other repositories where we can't easily check in BUILD
 files.
@@ -260,7 +260,7 @@ below).
 "//base/test:test_support(//build/toolchain/win:msvc)"
 ```
 
-In this case it will look for the a toolchain definition called "msvc"
+In this case it will look for the toolchain definition called "msvc"
 in the file `//build/toolchain/win` to know how to compile this target.
 
 If you want to refer to something in the same buildfile, you can omit
@@ -380,7 +380,6 @@ more help) are:
     preferrable over a real static library since it will build faster).
   * `static_library`: A .lib or .a file (normally you'll want a
     source\_set instead).
-  * `test`: Generates an executable but annotates it as a test.
 
 You can extend this to make custom target types using templates (see below).
 
@@ -672,7 +671,8 @@ Patterns are used to generate the output file names for a given set of
 inputs for custom target types, and to automatically remove files from
 the `sources` variable (see `gn help set_sources_assignment_filter`).
 
-They are like simple regular expressions. See `gn help patterns` for more.
+They are like simple regular expressions. See `gn help label_pattern`
+for more.
 
 ### Executing scripts
 

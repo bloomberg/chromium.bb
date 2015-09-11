@@ -2157,8 +2157,8 @@
   have globally unique names, or you will get collisions.
 
   Access the invoking name in your template via the implicit
-  "target_name" variable. This should also be the basis of how other
-  targets that a template expands to to ensure uniquness.
+  "target_name" variable. This should also be the basis for how other
+  targets that a template expands to ensure uniqueness.
 
   A typical example would be a template that defines an action to
   generate some source files, and a source_set to compile that source.
