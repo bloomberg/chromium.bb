@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
 #include "content/common/media/video_capture_messages.h"
@@ -34,13 +35,33 @@ class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureMessageFilter);
 };
 
-class VideoCaptureImplTest : public ::testing::Test {
+struct BufferReceivedTestArg {
+  BufferReceivedTestArg(media::VideoPixelFormat pixel_format,
+                        const std::vector<gpu::MailboxHolder>& mailbox_holders)
+      : pixel_format(pixel_format), mailbox_holders(mailbox_holders) {}
+
+  BufferReceivedTestArg(media::VideoPixelFormat pixel_format)
+      : pixel_format(pixel_format) {}
+
+  media::VideoPixelFormat pixel_format;
+  std::vector<gpu::MailboxHolder> mailbox_holders;
+};
+
+static const BufferReceivedTestArg kBufferFormats[]  = {
+  BufferReceivedTestArg(media::PIXEL_FORMAT_I420),
+  BufferReceivedTestArg(
+      media::PIXEL_FORMAT_ARGB,
+      std::vector<gpu::MailboxHolder>(
+          1, gpu::MailboxHolder(gpu::Mailbox::Generate(), 0, 0)))};
+
+class VideoCaptureImplTest :
+    public ::testing::TestWithParam<BufferReceivedTestArg> {
  public:
   class MockVideoCaptureImpl : public VideoCaptureImpl {
    public:
     MockVideoCaptureImpl(const media::VideoCaptureSessionId id,
                          VideoCaptureMessageFilter* filter)
-        : VideoCaptureImpl(id, filter) {
+        : VideoCaptureImpl(id, filter), received_buffer_count_(0) {
     }
     ~MockVideoCaptureImpl() override {}
 
@@ -72,7 +93,6 @@ class VideoCaptureImplTest : public ::testing::Test {
                             const media::VideoCaptureParams& params) {
       // Do not call OnStateChanged(VIDEO_CAPTURE_STATE_STARTED) here, as this
       // does not accurately reflect the behavior of the VideoCaptureHost.
-      capture_params_ = params;
     }
 
     void DevicePauseCapture(int device_id) {}
@@ -84,7 +104,9 @@ class VideoCaptureImplTest : public ::testing::Test {
     void DeviceReceiveEmptyBuffer(int device_id,
                                   int buffer_id,
                                   uint32 sync_point,
-                                  double consumer_resource_utilization) {}
+                                  double consumer_resource_utilization) {
+      received_buffer_count_++;
+    }
 
     void DeviceGetSupportedFormats(int device_id,
                                    media::VideoCaptureSessionId session_id) {
@@ -102,12 +124,10 @@ class VideoCaptureImplTest : public ::testing::Test {
       OnStateChanged(state);
     }
 
-    const media::VideoCaptureParams& capture_params() const {
-      return capture_params_;
-    }
+    int received_buffer_count() const { return received_buffer_count_; }
 
    private:
-    media::VideoCaptureParams capture_params_;
+    int received_buffer_count_;
   };
 
   VideoCaptureImplTest() {
@@ -153,6 +173,25 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   void StopCapture() { video_capture_impl_->StopCapture(); }
+
+  void NewBuffer(int buffer_id, const base::SharedMemory& shm) {
+    video_capture_impl_->OnBufferCreated(
+        base::SharedMemory::DuplicateHandle(shm.handle()),
+        shm.mapped_size(), buffer_id);
+  }
+
+  void BufferReceived(int buffer_id, const gfx::Size& size,
+                      media::VideoPixelFormat pixel_format,
+                      const std::vector<gpu::MailboxHolder>& mailbox_holders) {
+    video_capture_impl_->OnBufferReceived(
+        buffer_id, base::TimeTicks::Now(), base::DictionaryValue(),
+        pixel_format, media::VideoFrame::STORAGE_SHMEM, size,
+        gfx::Rect(size), mailbox_holders);
+  }
+
+  void BufferDestroyed(int buffer_id) {
+    video_capture_impl_->OnBufferDestroyed(buffer_id);
+  }
 
   void DeInit() {
     video_capture_impl_->DeInit();
@@ -226,6 +265,60 @@ TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
   Init();
   GetDeviceFormatsInUse();
   DeInit();
+}
+
+TEST_P(VideoCaptureImplTest, BufferReceivedWithFormat) {
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(1);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(1);
+  EXPECT_CALL(*this, OnFrameReady(_, _)).Times(1);
+
+  const BufferReceivedTestArg& buffer_arg = GetParam();
+  const gfx::Size size(1280, 720);
+
+  // Create a fake shared memory for buffer.
+  base::SharedMemory shm;
+  const size_t frame_size = media::VideoFrame::AllocationSize(
+      buffer_arg.pixel_format, size);
+  ASSERT_TRUE(shm.CreateAndMapAnonymous(frame_size));
+
+  media::VideoCaptureParams params;
+  params.requested_format = media::VideoCaptureFormat(
+      size, 30, buffer_arg.pixel_format);
+
+  Init();
+  StartCapture(params);
+  NewBuffer(0, shm);
+  BufferReceived(0, size, buffer_arg.pixel_format, buffer_arg.mailbox_holders);
+  StopCapture();
+  BufferDestroyed(0);
+  DeInit();
+}
+
+INSTANTIATE_TEST_CASE_P(I420AndARGB,
+                        VideoCaptureImplTest,
+                        testing::ValuesIn(kBufferFormats));
+
+TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(1);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(1);
+  EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
+
+  // Create a fake shared memory for buffer.
+  base::SharedMemory shm;
+  const size_t i420_frame_size = media::VideoFrame::AllocationSize(
+      media::PIXEL_FORMAT_I420, params_large_.requested_format.frame_size);
+  ASSERT_TRUE(shm.CreateAndMapAnonymous(i420_frame_size));
+
+  Init();
+  StartCapture(params_large_);
+  NewBuffer(0, shm);
+  StopCapture();
+  BufferReceived(0, params_large_.requested_format.frame_size,
+                 media::PIXEL_FORMAT_I420, std::vector<gpu::MailboxHolder>());
+  BufferDestroyed(0);
+  DeInit();
+
+  EXPECT_EQ(this->video_capture_impl_->received_buffer_count(), 1);
 }
 
 TEST_F(VideoCaptureImplTest, EndedBeforeStop) {
