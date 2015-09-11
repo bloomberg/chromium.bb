@@ -314,8 +314,10 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     // boundary, selection for the DOM tree is shrunk while that for the
     // composed tree is not. Additionally, this case occurs in some edge cases.
     // See also: editing/pasteboard/4076267-3.html
-    if (VisibleSelection::InDOMTree::equalSelections(oldSelection, m_selection))
+    if (VisibleSelection::InDOMTree::equalSelections(oldSelection, m_selection)) {
+        m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
         return;
+    }
     m_frame->editor().respondToChangedSelection(oldSelection, options);
     if (userTriggered == UserTriggered) {
         ScrollAlignment alignment;

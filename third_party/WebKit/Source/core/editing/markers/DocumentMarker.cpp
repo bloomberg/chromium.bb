@@ -68,7 +68,7 @@ inline DocumentMarkerDescription* toDocumentMarkerDescription(DocumentMarkerDeta
 
 class DocumentMarkerTextMatch final : public DocumentMarkerDetails {
 public:
-    static PassRefPtrWillBeRawPtr<DocumentMarkerTextMatch> instanceFor(bool);
+    static PassRefPtrWillBeRawPtr<DocumentMarkerTextMatch> create(bool);
 
     bool activeMatch() const { return m_match; }
     bool isTextMatch() const override { return true; }
@@ -82,7 +82,7 @@ private:
     bool m_match;
 };
 
-PassRefPtrWillBeRawPtr<DocumentMarkerTextMatch> DocumentMarkerTextMatch::instanceFor(bool match)
+PassRefPtrWillBeRawPtr<DocumentMarkerTextMatch> DocumentMarkerTextMatch::create(bool match)
 {
     DEFINE_STATIC_REF_WILL_BE_PERSISTENT(DocumentMarkerTextMatch, trueInstance, (adoptRefWillBeNoop(new DocumentMarkerTextMatch(true))));
     DEFINE_STATIC_REF_WILL_BE_PERSISTENT(DocumentMarkerTextMatch, falseInstance, (adoptRefWillBeNoop(new DocumentMarkerTextMatch(false))));
@@ -95,6 +95,41 @@ inline DocumentMarkerTextMatch* toDocumentMarkerTextMatch(DocumentMarkerDetails*
         return static_cast<DocumentMarkerTextMatch*>(details);
     return 0;
 }
+
+class TextCompositionMarkerDetails final : public DocumentMarkerDetails {
+public:
+    static PassRefPtrWillBeRawPtr<TextCompositionMarkerDetails> create(Color underlineColor, bool thick, Color backgroundColor);
+
+    bool isComposition() const override { return true; }
+    Color underlineColor() const { return m_underlineColor; }
+    bool thick() const { return m_thick; }
+    Color backgroundColor() const { return m_backgroundColor; }
+
+private:
+    TextCompositionMarkerDetails(Color underlineColor, bool thick, Color backgroundColor)
+        : m_underlineColor(underlineColor)
+        , m_backgroundColor(backgroundColor)
+        , m_thick(thick)
+    {
+    }
+
+    Color m_underlineColor;
+    Color m_backgroundColor;
+    bool m_thick;
+};
+
+PassRefPtrWillBeRawPtr<TextCompositionMarkerDetails> TextCompositionMarkerDetails::create(Color underlineColor, bool thick, Color backgroundColor)
+{
+    return adoptRefWillBeNoop(new TextCompositionMarkerDetails(underlineColor, thick, backgroundColor));
+}
+
+inline TextCompositionMarkerDetails* toTextCompositionMarkerDetails(DocumentMarkerDetails* details)
+{
+    if (details && details->isComposition())
+        return static_cast<TextCompositionMarkerDetails*>(details);
+    return nullptr;
+}
+
 
 DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned endOffset, const String& description, uint32_t hash)
     : m_type(type)
@@ -109,7 +144,16 @@ DocumentMarker::DocumentMarker(unsigned startOffset, unsigned endOffset, bool ac
     : m_type(DocumentMarker::TextMatch)
     , m_startOffset(startOffset)
     , m_endOffset(endOffset)
-    , m_details(DocumentMarkerTextMatch::instanceFor(activeMatch))
+    , m_details(DocumentMarkerTextMatch::create(activeMatch))
+    , m_hash(0)
+{
+}
+
+DocumentMarker::DocumentMarker(unsigned startOffset, unsigned endOffset, Color underlineColor, bool thick, Color backgroundColor)
+    : m_type(DocumentMarker::Composition)
+    , m_startOffset(startOffset)
+    , m_endOffset(endOffset)
+    , m_details(TextCompositionMarkerDetails::create(underlineColor, thick, backgroundColor))
     , m_hash(0)
 {
 }
@@ -131,7 +175,7 @@ void DocumentMarker::shiftOffsets(int delta)
 
 void DocumentMarker::setActiveMatch(bool active)
 {
-    m_details = DocumentMarkerTextMatch::instanceFor(active);
+    m_details = DocumentMarkerTextMatch::create(active);
 }
 
 const String& DocumentMarker::description() const
@@ -146,6 +190,27 @@ bool DocumentMarker::activeMatch() const
     if (DocumentMarkerTextMatch* details = toDocumentMarkerTextMatch(m_details.get()))
         return details->activeMatch();
     return false;
+}
+
+Color DocumentMarker::underlineColor() const
+{
+    if (TextCompositionMarkerDetails* details = toTextCompositionMarkerDetails(m_details.get()))
+        return details->underlineColor();
+    return Color::transparent;
+}
+
+bool DocumentMarker::thick() const
+{
+    if (TextCompositionMarkerDetails* details = toTextCompositionMarkerDetails(m_details.get()))
+        return details->thick();
+    return false;
+}
+
+Color DocumentMarker::backgroundColor() const
+{
+    if (TextCompositionMarkerDetails* details = toTextCompositionMarkerDetails(m_details.get()))
+        return details->backgroundColor();
+    return Color::transparent;
 }
 
 DEFINE_TRACE(DocumentMarker)

@@ -6,9 +6,7 @@
 #include "core/paint/InlineTextBoxPainter.h"
 
 #include "core/editing/CompositionUnderline.h"
-#include "core/editing/CompositionUnderlineRangeFilter.h"
 #include "core/editing/Editor.h"
-#include "core/editing/InputMethodController.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/frame/LocalFrame.h"
@@ -48,6 +46,11 @@ static bool paintsMarkerHighlights(const LayoutObject& layoutObject)
     return layoutObject.node() && layoutObject.document().markers().hasMarkers(layoutObject.node());
 }
 
+static bool paintsCompositionMarkers(const LayoutObject& layoutObject)
+{
+    return layoutObject.node() && layoutObject.document().markers().markersFor(layoutObject.node(), DocumentMarker::Composition).size() > 0;
+}
+
 void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_inlineTextBox.isLineBreak() || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.layoutObject()) || m_inlineTextBox.layoutObject().style()->visibility() != VISIBLE || m_inlineTextBox.truncation() == cFullTruncation || !m_inlineTextBox.len())
@@ -77,10 +80,6 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     }
 
-    // Determine whether or not we have composition underlines to draw.
-    bool containsComposition = m_inlineTextBox.layoutObject().node() && m_inlineTextBox.layoutObject().frame()->inputMethodController().compositionNode() == m_inlineTextBox.layoutObject().node();
-    bool useCustomUnderlines = containsComposition && m_inlineTextBox.layoutObject().frame()->inputMethodController().compositionUsesCustomUnderlines();
-
     // The text clip phase already has a DrawingRecorder. Text clips are initiated only in BoxPainter::paintLayerExtended, which is already
     // within a DrawingRecorder.
     Optional<DrawingRecorder> drawingRecorder;
@@ -89,7 +88,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             return;
         LayoutRect paintRect(logicalVisualOverflow);
         m_inlineTextBox.logicalRectToPhysicalRect(paintRect);
-        if (paintInfo.phase != PaintPhaseSelection && (haveSelection || containsComposition || paintsMarkerHighlights(m_inlineTextBox.layoutObject())))
+        if (paintInfo.phase != PaintPhaseSelection && (haveSelection || paintsMarkerHighlights(m_inlineTextBox.layoutObject())))
             paintRect.unite(m_inlineTextBox.localSelectionRect(m_inlineTextBox.start(), m_inlineTextBox.start() + m_inlineTextBox.len()));
         paintRect.moveBy(adjustedPaintOffset);
         drawingRecorder.emplace(*paintInfo.context, m_inlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), FloatRect(paintRect));
@@ -151,13 +150,9 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     // 1. Paint backgrounds behind text if needed. Examples of such backgrounds include selection
     // and composition highlights.
     if (paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && !isPrinting) {
-        if (containsComposition) {
-            paintCompositionBackgrounds(context, boxOrigin, styleToUse, font, useCustomUnderlines);
-        }
-
         paintDocumentMarkers(context, boxOrigin, styleToUse, font, true);
 
-        if (haveSelection && !useCustomUnderlines) {
+        if (haveSelection && !paintsCompositionMarkers(m_inlineTextBox.layoutObject())) {
             if (combinedText)
                 paintSelection<InlineTextBoxPainter::PaintOptions::CombinedText>(context, boxRect, styleToUse, font, selectionStyle.fillColor, combinedText);
             else
@@ -241,20 +236,8 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
     }
 
-    if (paintInfo.phase == PaintPhaseForeground) {
+    if (paintInfo.phase == PaintPhaseForeground)
         paintDocumentMarkers(context, boxOrigin, styleToUse, font, false);
-
-        // Paint custom underlines for compositions.
-        if (useCustomUnderlines) {
-            const Vector<CompositionUnderline>& underlines = m_inlineTextBox.layoutObject().frame()->inputMethodController().customCompositionUnderlines();
-            CompositionUnderlineRangeFilter filter(underlines, m_inlineTextBox.start(), m_inlineTextBox.end());
-            for (CompositionUnderlineRangeFilter::ConstIterator it = filter.begin(); it != filter.end(); ++it) {
-                if (it->color == Color::transparent)
-                    continue;
-                paintCompositionUnderline(context, boxOrigin, *it);
-            }
-        }
-    }
 
     if (shouldRotate)
         context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
@@ -273,27 +256,11 @@ unsigned InlineTextBoxPainter::underlinePaintEnd(const CompositionUnderline& und
     return paintEnd;
 }
 
-void InlineTextBoxPainter::paintCompositionBackgrounds(GraphicsContext* pt, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font, bool useCustomUnderlines)
-{
-    if (useCustomUnderlines) {
-        // Paint custom background highlights for compositions.
-        const Vector<CompositionUnderline>& underlines = m_inlineTextBox.layoutObject().frame()->inputMethodController().customCompositionUnderlines();
-        CompositionUnderlineRangeFilter filter(underlines, m_inlineTextBox.start(), m_inlineTextBox.end());
-        for (CompositionUnderlineRangeFilter::ConstIterator it = filter.begin(); it != filter.end(); ++it) {
-            if (it->backgroundColor == Color::transparent)
-                continue;
-            paintSingleCompositionBackgroundRun(pt, boxOrigin, style, font, it->backgroundColor, underlinePaintStart(*it), underlinePaintEnd(*it));
-        }
-
-    } else {
-        paintSingleCompositionBackgroundRun(pt, boxOrigin, style, font, LayoutTheme::theme().platformDefaultCompositionBackgroundColor(),
-            m_inlineTextBox.layoutObject().frame()->inputMethodController().compositionStart(),
-            m_inlineTextBox.layoutObject().frame()->inputMethodController().compositionEnd());
-    }
-}
-
 void InlineTextBoxPainter::paintSingleCompositionBackgroundRun(GraphicsContext* context, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font, Color backgroundColor, int startPos, int endPos)
 {
+    if (backgroundColor == Color::transparent)
+        return;
+
     int sPos = std::max(startPos - static_cast<int>(m_inlineTextBox.start()), 0);
     int ePos = std::min(endPos - static_cast<int>(m_inlineTextBox.start()), static_cast<int>(m_inlineTextBox.len()));
     if (sPos >= ePos)
@@ -329,6 +296,8 @@ void InlineTextBoxPainter::paintDocumentMarkers(GraphicsContext* pt, const Layou
             if (!background)
                 continue;
             break;
+        case DocumentMarker::Composition:
+            break;
         default:
             continue;
         }
@@ -353,6 +322,15 @@ void InlineTextBoxPainter::paintDocumentMarkers(GraphicsContext* pt, const Layou
             break;
         case DocumentMarker::TextMatch:
             m_inlineTextBox.paintTextMatchMarker(pt, boxOrigin, marker, style, font);
+            break;
+        case DocumentMarker::Composition:
+            {
+                CompositionUnderline underline(marker->startOffset(), marker->endOffset(), marker->underlineColor(), marker->thick(), marker->backgroundColor());
+                if (background)
+                    paintSingleCompositionBackgroundRun(pt, boxOrigin, style, font, underline.backgroundColor, underlinePaintStart(underline), underlinePaintEnd(underline));
+                else
+                    paintCompositionUnderline(pt, boxOrigin, underline);
+            }
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -764,6 +742,9 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
 
 void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext* ctx, const LayoutPoint& boxOrigin, const CompositionUnderline& underline)
 {
+    if (underline.color == Color::transparent)
+        return;
+
     if (m_inlineTextBox.truncation() == cFullTruncation)
         return;
 

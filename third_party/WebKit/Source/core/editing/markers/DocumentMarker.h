@@ -24,6 +24,7 @@
 #define DocumentMarker_h
 
 #include "core/CoreExport.h"
+#include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "wtf/VectorTraits.h"
 #include "wtf/text/WTFString.h"
@@ -43,6 +44,7 @@ public:
         GramarMarkerIndex,
         TextMatchMarkerIndex,
         InvisibleSpellcheckMarkerIndex,
+        CompositionMarkerIndex,
         MarkerTypeIndexesCount
     };
 
@@ -50,7 +52,8 @@ public:
         Spelling = 1 << SpellingMarkerIndex,
         Grammar = 1 << GramarMarkerIndex,
         TextMatch = 1 << TextMatchMarkerIndex,
-        InvisibleSpellcheck = 1 << InvisibleSpellcheckMarkerIndex
+        InvisibleSpellcheck = 1 << InvisibleSpellcheckMarkerIndex,
+        Composition = 1 << CompositionMarkerIndex,
     };
 
     class MarkerTypes {
@@ -72,7 +75,7 @@ public:
     class AllMarkers : public MarkerTypes {
     public:
         AllMarkers()
-            : MarkerTypes(Spelling | Grammar | TextMatch | InvisibleSpellcheck)
+            : MarkerTypes(Spelling | Grammar | TextMatch | InvisibleSpellcheck | Composition)
         {
         }
     };
@@ -95,6 +98,8 @@ public:
 
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description, uint32_t hash);
     DocumentMarker(unsigned startOffset, unsigned endOffset, bool activeMatch);
+    DocumentMarker(unsigned startOffset, unsigned endOffset, Color underlineColor, bool thick, Color backgroundColor);
+
     DocumentMarker(const DocumentMarker&);
 
     MarkerType type() const { return m_type; }
@@ -104,6 +109,9 @@ public:
 
     const String& description() const;
     bool activeMatch() const;
+    Color underlineColor() const;
+    bool thick() const;
+    Color backgroundColor() const;
     DocumentMarkerDetails* details() const;
 
     void setActiveMatch(bool);
@@ -148,6 +156,7 @@ public:
     virtual ~DocumentMarkerDetails();
     virtual bool isDescription() const { return false; }
     virtual bool isTextMatch() const { return false; }
+    virtual bool isComposition() const { return false; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };

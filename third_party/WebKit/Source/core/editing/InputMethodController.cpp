@@ -29,15 +29,17 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/Range.h"
 #include "core/dom/Text.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/commands/TypingCommand.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/CompositionEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
 
 namespace blink {
@@ -62,8 +64,8 @@ PassOwnPtrWillBeRawPtr<InputMethodController> InputMethodController::create(Loca
 
 InputMethodController::InputMethodController(LocalFrame& frame)
     : m_frame(&frame)
-    , m_compositionStart(0)
-    , m_compositionEnd(0)
+    , m_isDirty(false)
+    , m_hasComposition(false)
 {
 }
 
@@ -73,7 +75,7 @@ InputMethodController::~InputMethodController()
 
 bool InputMethodController::hasComposition() const
 {
-    return m_compositionNode && m_compositionNode->isContentEditable();
+    return m_hasComposition;
 }
 
 inline Editor& InputMethodController::editor() const
@@ -83,8 +85,19 @@ inline Editor& InputMethodController::editor() const
 
 void InputMethodController::clear()
 {
-    m_compositionNode = nullptr;
-    m_customCompositionUnderlines.clear();
+    m_hasComposition = false;
+    if (m_compositionRange) {
+        m_compositionRange->setStart(frame().document(), 0);
+        m_compositionRange->collapse(true);
+    }
+    frame().document()->markers().removeMarkers(DocumentMarker::Composition);
+    m_isDirty = false;
+}
+
+void InputMethodController::documentDetached()
+{
+    clear();
+    m_compositionRange = nullptr;
 }
 
 bool InputMethodController::insertTextForConfirmedComposition(const String& text)
@@ -109,7 +122,7 @@ bool InputMethodController::confirmComposition()
 {
     if (!hasComposition())
         return false;
-    return finishComposition(m_compositionNode->data().substring(m_compositionStart, m_compositionEnd - m_compositionStart), ConfirmComposition);
+    return confirmComposition(plainText(compositionEphemeralRange()));
 }
 
 bool InputMethodController::confirmComposition(const String& text)
@@ -149,13 +162,12 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
         return;
 
     // Check if selection start and selection end are valid.
-    Position start = frame().selection().start();
-    Position end = frame().selection().end();
-    if (start.computeContainerNode() == m_compositionNode
-        && end.computeContainerNode() == m_compositionNode
-        && static_cast<unsigned>(start.computeOffsetInContainerNode()) >= m_compositionStart
-        && static_cast<unsigned>(end.computeOffsetInContainerNode()) <= m_compositionEnd)
-        return;
+    FrameSelection& selection = frame().selection();
+    if (!selection.isNone() && !m_compositionRange->collapsed()) {
+        if (selection.start().compareTo(m_compositionRange->startPosition()) >= 0
+            && selection.end().compareTo(m_compositionRange->endPosition()) <= 0)
+            return;
+    }
 
     cancelComposition();
     frame().chromeClient().didCancelCompositionOnSelectionChange();
@@ -186,17 +198,19 @@ bool InputMethodController::finishComposition(const String& text, FinishComposit
         target->dispatchEvent(event);
     }
 
+    bool dirty = m_isDirty || plainText(compositionEphemeralRange()) != text;
+
     // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
     // will delete the old composition with an optimized replace operation.
-    if (text.isEmpty() && mode != CancelComposition) {
+    if (text.isEmpty() && mode != CancelComposition && dirty) {
         ASSERT(frame().document());
         TypingCommand::deleteSelection(*frame().document(), 0);
     }
 
-    m_compositionNode = nullptr;
-    m_customCompositionUnderlines.clear();
+    clear();
 
-    insertTextForConfirmedComposition(text);
+    if (dirty)
+        insertTextForConfirmedComposition(text);
 
     if (mode == CancelComposition) {
         // An open typing command that disagrees about current selection would cause issues with typing later on.
@@ -227,15 +241,15 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         // 1. Starting a new composition.
         //    Send a compositionstart and a compositionupdate event when this function creates
         //    a new composition node, i.e.
-        //    m_compositionNode == 0 && !text.isEmpty().
+        //    !hasComposition() && !text.isEmpty().
         //    Sending a compositionupdate event at this time ensures that at least one
         //    compositionupdate event is dispatched.
         // 2. Updating the existing composition node.
         //    Send a compositionupdate event when this function updates the existing composition
-        //    node, i.e. m_compositionNode != 0 && !text.isEmpty().
+        //    node, i.e. hasComposition() && !text.isEmpty().
         // 3. Canceling the ongoing composition.
         //    Send a compositionend event when function deletes the existing composition node, i.e.
-        //    m_compositionNode != 0 && test.isEmpty().
+        //    !hasComposition() && test.isEmpty().
         RefPtrWillBeRawPtr<CompositionEvent> event = nullptr;
         if (!hasComposition()) {
             // We should send a compositionstart event only when the given text is not empty because this
@@ -261,8 +275,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         TypingCommand::deleteSelection(*frame().document(), TypingCommand::PreventSpellChecking);
     }
 
-    m_compositionNode = nullptr;
-    m_customCompositionUnderlines.clear();
+    clear();
 
     if (text.isEmpty())
         return;
@@ -285,14 +298,13 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (baseOffset + text.length() != extentOffset)
         return;
 
-    m_compositionNode = toText(baseNode);
-    m_compositionStart = baseOffset;
-    m_compositionEnd = extentOffset;
-    m_customCompositionUnderlines = underlines;
-    for (auto& underline : m_customCompositionUnderlines) {
-        underline.startOffset += baseOffset;
-        underline.endOffset += baseOffset;
-    }
+    m_isDirty = true;
+    m_hasComposition = true;
+    if (!m_compositionRange)
+        m_compositionRange = Range::create(baseNode->document());
+    m_compositionRange->setStart(baseNode, baseOffset);
+    m_compositionRange->setEnd(baseNode, extentOffset);
+
     if (baseNode->layoutObject())
         baseNode->layoutObject()->setShouldDoFullPaintInvalidation();
 
@@ -300,61 +312,67 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
     RefPtrWillBeRawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
     frame().selection().setSelectedRange(selectedRange.get(), TextAffinity::Downstream, FrameSelection::NonDirectional, NotUserTriggered);
+
+    if (underlines.isEmpty()) {
+        frame().document()->markers().addCompositionMarker(m_compositionRange->startPosition(), m_compositionRange->endPosition(), Color::black, false, LayoutTheme::theme().platformDefaultCompositionBackgroundColor());
+        return;
+    }
+    for (const auto& underline : underlines) {
+        unsigned underlineStart = baseOffset + underline.startOffset;
+        unsigned underlineEnd = baseOffset + underline.endOffset;
+        EphemeralRange ephemeralLineRange = EphemeralRange(Position(baseNode, underlineStart), Position(baseNode, underlineEnd));
+        if (ephemeralLineRange.isNull())
+            continue;
+        frame().document()->markers().addCompositionMarker(ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(), underline.color, underline.thick, underline.backgroundColor);
+    }
 }
 
 void InputMethodController::setCompositionFromExistingText(const Vector<CompositionUnderline>& underlines, unsigned compositionStart, unsigned compositionEnd)
 {
     Element* editable = frame().selection().rootEditableElement();
-    Position base = mostForwardCaretPosition(frame().selection().base());
-    Node* baseNode = base.anchorNode();
-    if (baseNode && editable->firstChild() == baseNode && editable->lastChild() == baseNode && baseNode->isTextNode()) {
-        m_compositionNode = nullptr;
-        m_customCompositionUnderlines.clear();
-
-        if (!base.isOffsetInAnchor())
-            return;
-        if (baseNode != frame().selection().extent().anchorNode())
-            return;
-
-        m_compositionNode = toText(baseNode);
-        const EphemeralRange range = PlainTextRange(compositionStart, compositionEnd).createRange(*editable);
-        if (range.isNull())
-            return;
-
-        m_compositionStart = range.startPosition().computeOffsetInContainerNode();
-        m_compositionEnd = range.endPosition().computeOffsetInContainerNode();
-        m_customCompositionUnderlines = underlines;
-        size_t numUnderlines = m_customCompositionUnderlines.size();
-        for (size_t i = 0; i < numUnderlines; ++i) {
-            m_customCompositionUnderlines[i].startOffset += m_compositionStart;
-            m_customCompositionUnderlines[i].endOffset += m_compositionStart;
-        }
-        if (baseNode->layoutObject())
-            baseNode->layoutObject()->setShouldDoFullPaintInvalidation();
+    if (!editable)
         return;
+
+    const EphemeralRange range = PlainTextRange(compositionStart, compositionEnd).createRange(*editable);
+    if (range.isNull())
+        return;
+
+    const Position start = range.startPosition();
+    if (editableRootForPosition(start) != editable)
+        return;
+
+    const Position end = range.endPosition();
+    if (editableRootForPosition(end) != editable)
+        return;
+
+    clear();
+
+    for (const auto& underline : underlines) {
+        unsigned underlineStart = compositionStart + underline.startOffset;
+        unsigned underlineEnd = compositionStart + underline.endOffset;
+        EphemeralRange ephemeralLineRange = PlainTextRange(underlineStart, underlineEnd).createRange(*editable);
+        if (ephemeralLineRange.isNull())
+            continue;
+        frame().document()->markers().addCompositionMarker(ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(), underline.color, underline.thick, underline.backgroundColor);
     }
 
-    Editor::RevealSelectionScope revealSelectionScope(&editor());
-    SelectionOffsetsScope selectionOffsetsScope(this);
-    setSelectionOffsets(PlainTextRange(compositionStart, compositionEnd));
-    setComposition(frame().selectedText(), underlines, 0, 0);
+    m_hasComposition = true;
+    if (!m_compositionRange)
+        m_compositionRange = Range::create(range.document());
+    m_compositionRange->setStart(range.startPosition());
+    m_compositionRange->setEnd(range.endPosition());
 }
 
 EphemeralRange InputMethodController::compositionEphemeralRange() const
 {
     if (!hasComposition())
         return EphemeralRange();
-    unsigned length = m_compositionNode->length();
-    unsigned start = std::min(m_compositionStart, length);
-    unsigned end = std::min(std::max(start, m_compositionEnd), length);
-    if (start >= end)
-        return EphemeralRange();
-    return EphemeralRange(Position(m_compositionNode.get(), start), Position(m_compositionNode.get(), end));
+    return EphemeralRange(m_compositionRange.get());
 }
 
 PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
 {
-    return createRange(compositionEphemeralRange());
+    return hasComposition() ? m_compositionRange : nullptr;
 }
 
 PlainTextRange InputMethodController::getSelectionOffsets() const
@@ -422,7 +440,7 @@ void InputMethodController::extendSelectionAndDelete(int before, int after)
 DEFINE_TRACE(InputMethodController)
 {
     visitor->trace(m_frame);
-    visitor->trace(m_compositionNode);
+    visitor->trace(m_compositionRange);
 }
 
 } // namespace blink

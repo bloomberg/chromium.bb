@@ -108,6 +108,7 @@
 #include "core/editing/DragCaretController.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/InputMethodController.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
@@ -2178,6 +2179,8 @@ void Document::detach(const AttachContext& context)
     styleEngine().didDetach();
 
     frameHost()->eventHandlerRegistry().documentDetached(*this);
+
+    m_frame->inputMethodController().documentDetached();
 
     // If this Document is associated with a live DocumentLoader, the
     // DocumentLoader will take care of clearing the FetchContext. Deferring
