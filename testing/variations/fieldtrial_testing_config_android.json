@@ -108,6 +108,11 @@
             }
         }
     ],
+    "DataCompressionProxyPromoVisibility": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "DataReductionProxyConfigService": [
         {
             "group_name": "Enabled"
