@@ -279,9 +279,6 @@ void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // event (including tab reload).
   if (web_cache_render_process_observer_)
     web_cache_render_process_observer_->ExecutePendingClearCache();
-  // Let translate_helper do any preparatory work for loading a URL.
-  if (translate_helper_)
-    translate_helper_->PrepareForUrl(url);
 }
 
 void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
@@ -344,6 +341,13 @@ void ChromeRenderViewObserver::DidStopLoading() {
       base::TimeDelta::FromMilliseconds(
           render_view()->GetContentStateImmediately() ? 0
                                                       : kDelayForCaptureMs));
+}
+
+void ChromeRenderViewObserver::DidStartProvisionalLoad(
+    blink::WebLocalFrame* frame) {
+  // Let translate_helper do any preparatory work for loading a URL.
+  if (translate_helper_)
+    translate_helper_->PrepareForUrl(frame->document().url());
 }
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(

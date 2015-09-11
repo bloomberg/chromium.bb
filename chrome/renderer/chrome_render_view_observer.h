@@ -99,6 +99,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
+  void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
   void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                 bool is_new_navigation) override;
   void Navigate(const GURL& url) override;
