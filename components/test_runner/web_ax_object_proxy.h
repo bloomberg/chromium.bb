@@ -149,6 +149,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   void Decrement();
   void ShowMenu();
   void Press();
+  bool SetValue(const std::string& value);
   bool IsEqual(v8::Local<v8::Object> proxy);
   void SetNotificationListener(v8::Local<v8::Function> callback);
   void UnsetNotificationListener();

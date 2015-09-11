@@ -574,6 +574,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("decrement", &WebAXObjectProxy::Decrement)
       .SetMethod("showMenu", &WebAXObjectProxy::ShowMenu)
       .SetMethod("press", &WebAXObjectProxy::Press)
+      .SetMethod("setValue", &WebAXObjectProxy::SetValue)
       .SetMethod("isEqual", &WebAXObjectProxy::IsEqual)
       .SetMethod("setNotificationListener",
                  &WebAXObjectProxy::SetNotificationListener)
@@ -1251,6 +1252,15 @@ void WebAXObjectProxy::ShowMenu() {
 void WebAXObjectProxy::Press() {
   accessibility_object_.updateLayoutAndCheckValidity();
   accessibility_object_.press();
+}
+
+bool WebAXObjectProxy::SetValue(const std::string& value) {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  if (!accessibility_object_.canSetValueAttribute())
+    return false;
+
+  accessibility_object_.setValue(blink::WebString::fromUTF8(value));
+  return true;
 }
 
 bool WebAXObjectProxy::IsEqual(v8::Local<v8::Object> proxy) {
