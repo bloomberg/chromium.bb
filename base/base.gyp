@@ -693,6 +693,8 @@
         }],
         ['OS == "ios" and _toolset != "host"', {
           'sources/': [
+            # iOS does not support FilePathWatcher.
+            ['exclude', '^files/file_path_watcher_unittest\\.cc$'],
             # Only test the iOS-meaningful portion of memory and process_utils.
             ['exclude', '^memory/discardable_shared_memory_unittest\\.cc$'],
             ['exclude', '^memory/shared_memory_unittest\\.cc$'],
@@ -908,8 +910,8 @@
         'test/gtest_xml_util.h',
         'test/histogram_tester.cc',
         'test/histogram_tester.h',
-	'test/icu_test_util.cc',
-	'test/icu_test_util.h',
+        'test/icu_test_util.cc',
+        'test/icu_test_util.h',
         'test/ios/wait_util.h',
         'test/ios/wait_util.mm',
         'test/launcher/test_launcher.cc',

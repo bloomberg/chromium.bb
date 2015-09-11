@@ -210,6 +210,7 @@ class DnsConfigServicePosix::Watcher {
                                 DNS_CONFIG_WATCH_FAILED_TO_START_CONFIG,
                                 DNS_CONFIG_WATCH_MAX);
     }
+#if !defined(OS_IOS)
     if (!hosts_watcher_.Watch(
             base::FilePath(service_->file_path_hosts_), false,
             base::Bind(&Watcher::OnHostsChanged, base::Unretained(this)))) {
@@ -219,6 +220,7 @@ class DnsConfigServicePosix::Watcher {
                                 DNS_CONFIG_WATCH_FAILED_TO_START_HOSTS,
                                 DNS_CONFIG_WATCH_MAX);
     }
+#endif
     return success;
   }
 
@@ -249,7 +251,9 @@ class DnsConfigServicePosix::Watcher {
 
   DnsConfigServicePosix* service_;
   DnsConfigWatcher config_watcher_;
+#if !defined(OS_IOS)
   base::FilePathWatcher hosts_watcher_;
+#endif
 
   base::WeakPtrFactory<Watcher> weak_factory_;
 

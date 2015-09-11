@@ -901,10 +901,9 @@
               ['include', '^process/memory_stubs\.cc$'],
               ['include', '^process/process_handle_posix\.cc$'],
               ['include', '^process/process_metrics\\.cc$'],
+              # Exclude unsupported features on iOS.
+              ['exclude', '^files/file_path_watcher.*'],
               ['exclude', '^threading/platform_thread_internal_posix\\.(h|cc)'],
-              ['exclude', 'files/file_path_watcher_fsevents.cc'],
-              ['exclude', 'files/file_path_watcher_fsevents.h'],
-              ['include', 'files/file_path_watcher_mac.cc'],
             ],
             'sources': [
               'process/memory_stubs.cc',

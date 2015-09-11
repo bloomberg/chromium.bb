@@ -644,13 +644,15 @@ component("base") {
 
   if (is_ios) {
     sources -= [
+      "files/file_path_watcher.cc",
+      "files/file_path_watcher.h",
+      "files/file_path_watcher_fsevents.cc",
+      "files/file_path_watcher_fsevents.h",
+      "files/file_path_watcher_kqueue.cc",
+      "files/file_path_watcher_kqueue.h",
       "message_loop/message_pump_libevent.cc",
       "message_loop/message_pump_libevent.h",
     ]
-
-    set_sources_assignment_filter([])
-    sources += [ "files/file_path_watcher_mac.cc" ]
-    set_sources_assignment_filter(sources_assignment_filter)
   }
 
   sources -= [
@@ -1483,6 +1485,7 @@ test("base_unittests") {
 
   if (is_ios) {
     sources -= [
+      "files/file_path_watcher_unittest.cc",
       "memory/discardable_shared_memory_unittest.cc",
       "memory/shared_memory_unittest.cc",
       "process/memory_unittest.cc",
