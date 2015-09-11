@@ -84,6 +84,8 @@ void UnregisterCallbackToClosure(
 
 #if defined(ENABLE_BACKGROUND)
 bool UseBackgroundMode() {
+  // Note: if push is ever enabled in incognito, the background mode integration
+  // should not be enabled for it.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisablePushApiBackgroundMode))
     return false;
@@ -745,15 +747,6 @@ void PushMessagingServiceImpl::SetContentSettingChangedCallbackForTesting(
 
 void PushMessagingServiceImpl::Shutdown() {
   GetGCMDriver()->RemoveAppHandler(kPushMessagingAppIdentifierPrefix);
-  profile_->GetHostContentSettingsMap()->RemoveObserver(this);
-#if defined(ENABLE_BACKGROUND)
-  // TODO(mvanouwerkerk): Ensure Push API unregisters correctly from Background
-  // Mode - crbug.com/527036.
-  if (UseBackgroundMode() && g_browser_process->background_mode_manager()) {
-    g_browser_process->background_mode_manager()->UnregisterTrigger(profile_,
-                                                                    this);
-  }
-#endif  // defined(ENABLE_BACKGROUND)
 }
 
 // BackgroundTrigger methods ---------------------------------------------------
