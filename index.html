@@ -243,16 +243,6 @@ The green box should be 80% the height of the blue box, with a minimum height
 of 300px.  But in Chrome, the green box height is always 300px.</p>
 
 <h3>
-    <a name="bugfix-frameInvalidation">bugfix/frameInvalidation</a>
-    (Imran Haider)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FframeInvalidation">view changes</a>]</span>
-</h3>
-<p>Open <a href="repros/frameInvalidation.html">this link</a> in Chrome.  The
-whole square should be blinking red, but due to an invalidation bug in Chrome,
-only part of the square blinks.  Resizing the window will refresh the whole
-square.</p>
-
-<h3>
     <a name="bugfix-iframeZoom">bugfix/iframeZoom</a>
     (Shezan Baig; D34484409)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FiframeZoom">view changes</a>]</span>
@@ -600,6 +590,9 @@ behavior with and without the patch applied.</p>
 <h1>Retired Branches</h1>
 
 <h2><a name="retired-45.0.2454.85">Retired at 44.0.2454.85</a></h2>
+
+<h3><a name="bugfix-frameInvalidation">bugfix/frameInvalidation</a> (Imran Haider)</h3>
+<p>Retired because the issue appears to be fixed upstream.</p>
 
 <h3><a name="bugfix-doubleMouseWheel">bugfix/doubleMouseWheel</a> (Imran Haider)</h3>
 <p>Retired because the issue appears to be fixed upstream.</p>
