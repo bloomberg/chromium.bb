@@ -73,6 +73,7 @@
       'trace_event/process_memory_dump_unittest.cc',
       'trace_event/process_memory_maps_dump_provider_unittest.cc',
       'trace_event/process_memory_totals_dump_provider_unittest.cc',
+      'trace_event/trace_config_memory_test_util.h',
       'trace_event/trace_config_unittest.cc',
       'trace_event/trace_event_argument_unittest.cc',
       'trace_event/trace_event_memory_unittest.cc',

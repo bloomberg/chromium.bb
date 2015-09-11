@@ -105,6 +105,7 @@ source_set("trace_event_unittests") {
     "process_memory_dump_unittest.cc",
     "process_memory_maps_dump_provider_unittest.cc",
     "process_memory_totals_dump_provider_unittest.cc",
+    "trace_config_memory_test_util.h",
     "trace_config_unittest.cc",
     "trace_event_argument_unittest.cc",
     "trace_event_memory_unittest.cc",

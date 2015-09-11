@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_config_memory_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,10 +30,6 @@ namespace trace_event {
 namespace {
 MemoryDumpArgs g_high_detail_args = {MemoryDumpArgs::LevelOfDetail::HIGH};
 MemoryDumpArgs g_low_detail_args = {MemoryDumpArgs::LevelOfDetail::LOW};
-const char kTraceConfigWithTriggersFmt[] =
-    "{\"included_categories\":[\"%s\"],\"memory_dump_config\":{\"triggers\":["
-    "{\"mode\":\"light\", \"periodic_interval_ms\":1},"
-    "{\"mode\":\"detailed\", \"periodic_interval_ms\":5}]}}";
 }  // namespace
 
 // GTest matchers for MemoryDumpRequestArgs arguments.
@@ -116,7 +113,7 @@ class MemoryDumpManagerTest : public testing::Test {
                                         TraceLog::RECORDING_MODE);
   }
 
-  void EnableTracingWithTraceConfig(const char* trace_config) {
+  void EnableTracingWithTraceConfig(const std::string& trace_config) {
     TraceLog::GetInstance()->SetEnabled(TraceConfig(trace_config),
                                         TraceLog::RECORDING_MODE);
   }
@@ -586,6 +583,46 @@ TEST_F(MemoryDumpManagerTest, CallbackCalledOnFailure) {
   EXPECT_FALSE(last_callback_success_);
 }
 
+// Checks that is the MemoryDumpManager is initialized after tracing already
+// began, it will still late-join the party (real use case: startup tracing).
+TEST_F(MemoryDumpManagerTest, InitializedAfterStartOfTracing) {
+  MockMemoryDumpProvider mdp;
+  mdm_->RegisterDumpProvider(&mdp);
+  EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
+
+  // First check that a RequestGlobalDump() issued before the MemoryDumpManager
+  // initialization gets NACK-ed cleanly.
+  {
+    EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
+    EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(0);
+    RunLoop run_loop;
+    MemoryDumpCallback callback =
+        Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
+             MessageLoop::current()->task_runner(), run_loop.QuitClosure());
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                            g_high_detail_args, callback);
+    run_loop.Run();
+    EXPECT_FALSE(last_callback_success_);
+  }
+
+  // Now late-initialize the MemoryDumpManager and check that the
+  // RequestGlobalDump completes successfully.
+  {
+    EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(1);
+    EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
+    InitializeMemoryDumpManager(false /* is_coordinator */);
+    RunLoop run_loop;
+    MemoryDumpCallback callback =
+        Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
+             MessageLoop::current()->task_runner(), run_loop.QuitClosure());
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                            g_high_detail_args, callback);
+    run_loop.Run();
+    EXPECT_TRUE(last_callback_success_);
+  }
+  DisableTracing();
+}
+
 // This test (and the MemoryDumpManagerTestCoordinator below) crystallizes the
 // expectations of the chrome://tracing UI and chrome telemetry w.r.t. periodic
 // dumps in memory-infra, handling gracefully the transition between the legacy
@@ -610,9 +647,8 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectations) {
   // Enabling memory-infra with the new (JSON) TraceConfig in a non-coordinator
   // process with a fully defined trigger config should NOT enable any periodic
   // dumps.
-  const std::string kTraceConfigWithTriggers = StringPrintf(
-      kTraceConfigWithTriggersFmt, MemoryDumpManager::kTraceCategory);
-  EnableTracingWithTraceConfig(kTraceConfigWithTriggers.c_str());
+  EnableTracingWithTraceConfig(
+      TraceConfigMemoryTestUtil::GetTraceConfig_PeriodicTriggers(1, 5));
   EXPECT_FALSE(IsPeriodicDumpingEnabled());
   DisableTracing();
 }
@@ -632,9 +668,8 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   // process without specifying any "memory_dump_config" section should enable
   // periodic dumps. This is to preserve the behavior chrome://tracing UI, that
   // is: ticking memory-infra should dump periodically with the default config.
-  const std::string kTraceConfigWithNoMemorDumpConfig = StringPrintf(
-      "{\"included_categories\":[\"%s\"]}", MemoryDumpManager::kTraceCategory);
-  EnableTracingWithTraceConfig(kTraceConfigWithNoMemorDumpConfig.c_str());
+  EnableTracingWithTraceConfig(
+      TraceConfigMemoryTestUtil::GetTraceConfig_NoTriggers());
   EXPECT_TRUE(IsPeriodicDumpingEnabled());
   DisableTracing();
 
@@ -642,10 +677,8 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   // process with an empty "memory_dump_config" should NOT enable periodic
   // dumps. This is the way telemetry is supposed to use memory-infra with
   // only explicitly triggered dumps.
-  const std::string kTraceConfigWithNoTriggers = StringPrintf(
-      "{\"included_categories\":[\"%s\"], \"memory_dump_config\":{}",
-      MemoryDumpManager::kTraceCategory);
-  EnableTracingWithTraceConfig(kTraceConfigWithNoTriggers.c_str());
+  EnableTracingWithTraceConfig(
+      TraceConfigMemoryTestUtil::GetTraceConfig_EmptyTriggers());
   EXPECT_FALSE(IsPeriodicDumpingEnabled());
   DisableTracing();
 
@@ -655,12 +688,17 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   RunLoop run_loop;
   auto quit_closure = run_loop.QuitClosure();
 
-  // The expected sequence with config of light=1ms, heavy=5ms is H,L,L,L,H,...
+  const int kHeavyDumpRate = 5;
+  const int kLightDumpPeriodMs = 1;
+  const int kHeavyDumpPeriodMs = kHeavyDumpRate * kLightDumpPeriodMs;
+  // The expected sequence with light=1ms, heavy=5ms is H,L,L,L,L,H,...
   testing::InSequence sequence;
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsHighDetailArgs(), _));
-  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLowDetailArgs(), _)).Times(3);
+  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLowDetailArgs(), _))
+      .Times(kHeavyDumpRate - 1);
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsHighDetailArgs(), _));
-  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLowDetailArgs(), _)).Times(2);
+  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLowDetailArgs(), _))
+      .Times(kHeavyDumpRate - 2);
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLowDetailArgs(), _))
       .WillOnce(Invoke([quit_closure](const MemoryDumpRequestArgs& args,
                                       const MemoryDumpCallback& callback) {
@@ -670,9 +708,9 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   // Swallow all the final spurious calls until tracing gets disabled.
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(_, _)).Times(AnyNumber());
 
-  const std::string kTraceConfigWithTriggers = StringPrintf(
-      kTraceConfigWithTriggersFmt, MemoryDumpManager::kTraceCategory);
-  EnableTracingWithTraceConfig(kTraceConfigWithTriggers.c_str());
+  EnableTracingWithTraceConfig(
+      TraceConfigMemoryTestUtil::GetTraceConfig_PeriodicTriggers(
+          kLightDumpPeriodMs, kHeavyDumpPeriodMs));
   run_loop.Run();
   DisableTracing();
 }

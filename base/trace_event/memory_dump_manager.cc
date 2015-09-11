@@ -56,7 +56,7 @@ void RequestPeriodicGlobalDump() {
                                ? MemoryDumpArgs::LevelOfDetail::HIGH
                                : MemoryDumpArgs::LevelOfDetail::LOW;
 
-    if (++g_periodic_dumps_count == g_heavy_dumps_rate - 1)
+    if (++g_periodic_dumps_count == g_heavy_dumps_rate)
       g_periodic_dumps_count = 0;
   }
 
@@ -109,8 +109,7 @@ MemoryDumpManager::MemoryDumpManager()
       is_coordinator_(false),
       memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
-      skip_core_dumpers_auto_registration_for_testing_(false),
-      disable_periodic_dumps_for_testing_(false) {
+      skip_core_dumpers_auto_registration_for_testing_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
 }
 
@@ -426,11 +425,9 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   // TODO(primiano): This is a temporary hack to disable periodic memory dumps
   // when running memory benchmarks until telemetry uses TraceConfig to
   // enable/disable periodic dumps. See crbug.com/529184 .
-  // The same mechanism should be used to disable periodic dumps in tests.
   if (!is_coordinator_ ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          "enable-memory-benchmarking") ||
-      disable_periodic_dumps_for_testing_) {
+          "enable-memory-benchmarking")) {
     return;
   }
 

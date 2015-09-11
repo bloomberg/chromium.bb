@@ -1,9 +1,10 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config.h"
+#include "base/trace_event/trace_config_memory_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -19,45 +20,6 @@ const char kDefaultTraceConfigString[] =
     "\"excluded_categories\":[\"*Debug\",\"*Test\"],"
     "\"record_mode\":\"record-until-full\""
   "}";
-
-const char kMemoryDumpTraceConfigString[] =
-  "{"
-    "\"enable_argument_filter\":false,"
-    "\"enable_sampling\":false,"
-    "\"enable_systrace\":false,"
-    "\"included_categories\":["
-      "\"disabled-by-default-memory-infra\""
-    "],"
-    "\"memory_dump_config\":{"
-      "\"triggers\":["
-        "{"
-          "\"mode\":\"light\","
-          "\"periodic_interval_ms\":200"
-        "},"
-        "{"
-          "\"mode\":\"detailed\","
-          "\"periodic_interval_ms\":2000"
-        "}"
-      "]"
-    "},"
-    "\"record_mode\":\"record-until-full\""
-  "}";
-
-const char kTraceConfigStringWithEmptyTriggers[] =
-  "{"
-    "\"enable_argument_filter\":false,"
-    "\"enable_sampling\":false,"
-    "\"enable_systrace\":false,"
-    "\"included_categories\":["
-      "\"disabled-by-default-memory-infra\""
-    "],"
-    "\"memory_dump_config\":{"
-      "\"triggers\":["
-      "]"
-    "},"
-    "\"record_mode\":\"record-until-full\""
-  "}";
-
 }  // namespace
 
 TEST(TraceConfigTest, TraceConfigFromValidLegacyFormat) {
@@ -528,8 +490,10 @@ TEST(TraceConfigTest, SetTraceOptionValues) {
 }
 
 TEST(TraceConfigTest, TraceConfigFromMemoryConfigString) {
-  TraceConfig tc(kMemoryDumpTraceConfigString);
-  EXPECT_STREQ(kMemoryDumpTraceConfigString, tc.ToString().c_str());
+  std::string tc_str =
+      TraceConfigMemoryTestUtil::GetTraceConfig_PeriodicTriggers(200, 2000);
+  TraceConfig tc(tc_str);
+  EXPECT_EQ(tc_str, tc.ToString());
   EXPECT_TRUE(tc.IsCategoryGroupEnabled(MemoryDumpManager::kTraceCategory));
   EXPECT_EQ(2u, tc.memory_dump_config_.size());
 
@@ -544,8 +508,9 @@ TEST(TraceConfigTest, TraceConfigFromMemoryConfigString) {
 
 TEST(TraceConfigTest, EmptyMemoryDumpConfigTest) {
   // Empty trigger list should also be specified when converting back to string.
-  TraceConfig tc(kTraceConfigStringWithEmptyTriggers);
-  EXPECT_STREQ(kTraceConfigStringWithEmptyTriggers, tc.ToString().c_str());
+  TraceConfig tc(TraceConfigMemoryTestUtil::GetTraceConfig_EmptyTriggers());
+  EXPECT_EQ(TraceConfigMemoryTestUtil::GetTraceConfig_EmptyTriggers(),
+            tc.ToString());
   EXPECT_EQ(0u, tc.memory_dump_config_.size());
 }
 

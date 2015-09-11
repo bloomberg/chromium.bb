@@ -9,6 +9,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "base/trace_event/trace_config_memory_test_util.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -69,10 +70,6 @@ class MemoryTracingTest : public ContentBrowserTest {
     last_callback_dump_guid_ = 0;
     last_callback_success_ = false;
 
-    // TODO(primiano): This should be done via TraceConfig.
-    // See https://goo.gl/5Hj3o0.
-    MemoryDumpManager::GetInstance()->DisablePeriodicDumpsForTesting();
-
     mock_dump_provider_.reset(new MockDumpProvider());
     MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         mock_dump_provider_.get());
@@ -87,9 +84,12 @@ class MemoryTracingTest : public ContentBrowserTest {
   }
 
   void EnableMemoryTracing() {
+    // Enable tracing without periodic dumps.
+    base::trace_event::TraceConfig trace_config(
+        base::trace_event::TraceConfigMemoryTestUtil::
+            GetTraceConfig_EmptyTriggers());
+
     base::RunLoop run_loop;
-    std::string category_filter = MemoryDumpManager::kTraceCategory;
-    base::trace_event::TraceConfig trace_config(category_filter, "");
     bool success = TracingController::GetInstance()->EnableRecording(
       trace_config, run_loop.QuitClosure());
     EXPECT_TRUE(success);
