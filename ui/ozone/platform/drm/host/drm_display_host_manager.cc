@@ -73,7 +73,8 @@ base::FilePath GetPrimaryDisplayCardPath() {
     VPLOG_IF(1, ret) << "Failed to get DRM resources for '" << card_path << "'";
   }
 
-  return base::FilePath();
+  LOG(FATAL) << "Failed to open primary graphics device.";
+  return base::FilePath();  // Not reached.
 }
 
 base::FilePath GetVgemCardPath() {
