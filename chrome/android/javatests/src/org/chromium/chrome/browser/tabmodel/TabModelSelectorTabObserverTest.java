@@ -11,13 +11,13 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -59,6 +59,11 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
         };
 
         TabModelOrderController orderController = new TabModelOrderController(mSelector);
+        TabContentManager tabContentManager =
+                new TabContentManager(getInstrumentation().getTargetContext(), null, false);
+        TabPersistentStore tabPersistentStore = new TabPersistentStore(mSelector, 0,
+                getInstrumentation().getTargetContext(), null, null);
+
         TabModelDelegate delegate = new TabModelDelegate() {
             @Override
             public void selectModel(boolean incognito) {
@@ -94,29 +99,19 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
                 return false;
             }
         };
-        mNormalTabModel = new TabModelBase(false, orderController, delegate) {
+        mNormalTabModel = new TabModelImpl(false, null, null, orderController, tabContentManager,
+                tabPersistentStore, delegate) {
             @Override
-            protected boolean createTabWithWebContents(boolean incognito, WebContents webContents,
-                    int parentId) {
+            public boolean supportsPendingClosures() {
                 return false;
-            }
-
-            @Override
-            protected Tab createNewTabForDevTools(String url) {
-                return null;
             }
         };
 
-        mIncognitoTabModel = new TabModelBase(true, orderController, delegate) {
+        mIncognitoTabModel = new TabModelImpl(true, null, null, orderController, tabContentManager,
+                tabPersistentStore, delegate) {
             @Override
-            protected boolean createTabWithWebContents(boolean incognito, WebContents webContents,
-                    int parentId) {
+            public boolean supportsPendingClosures() {
                 return false;
-            }
-
-            @Override
-            protected Tab createNewTabForDevTools(String url) {
-                return null;
             }
         };
 
