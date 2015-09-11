@@ -68,6 +68,7 @@ cr.define('downloads', function() {
     /** @private */
     toggleShowingSearch_: function() {
       this.showingSearch_ = !this.showingSearch_;
+      this.$['search-button'].disabled = this.showingSearch_;
 
       if (this.showingSearch_) {
         this.$['search-input'].focus();
