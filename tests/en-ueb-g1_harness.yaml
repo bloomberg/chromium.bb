@@ -51,10 +51,12 @@ tests:
   - - one italic word
     - ⠕⠝⠑ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙
     - typeform: '000011111100000'
+      # Emphasis doesn't always work
       xfail: true
   - - two italic words
     - ⠨⠂⠞⠺⠕ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎
     - typeform: '1111111111000000'
+      # Emphasis doesn't always work
       xfail: true
   - - three italic words
     - ⠨⠶⠞⠓⠗⠑⠑ ⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎⠨⠄
@@ -62,10 +64,12 @@ tests:
   - - one bold word
     - ⠕⠝⠑ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙
     - typeform: '0000444400000'
+      # Emphasis doesn't always work
       xfail: true
   - - two bold words
     - ⠘⠂⠞⠺⠕ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙⠎
     - typeform: '44444444000000'
+      # Emphasis doesn't always work
       xfail: true
   - - three bold words
     - ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄
@@ -73,10 +77,12 @@ tests:
   - - one underlined word
     - ⠕⠝⠑ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙
     - typeform: '0000222222222200000'
+      # Emphasis doesn't always work
       xfail: true
   - - two underlined words
     - ⠸⠂⠞⠺⠕ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎
     - typeform: '22222222222222000000'
+      # Emphasis doesn't always work
       xfail: true
   - - three underlined words
     - ⠸⠶⠞⠓⠗⠑⠑ ⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎⠸⠄
