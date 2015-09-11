@@ -24,7 +24,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include "core/css/invalidation/DescendantInvalidationSet.h"
+#include "core/css/invalidation/InvalidationSet.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -48,7 +48,7 @@ public:
     bool hasDocumentSecurityOrigin;
 };
 
-using InvalidationSetVector = WillBeHeapVector<RefPtrWillBeMember<DescendantInvalidationSet>, 8>;
+using InvalidationSetVector = WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>, 8>;
 
 class CORE_EXPORT RuleFeatureSet {
     DISALLOW_ALLOCATION();
@@ -98,11 +98,11 @@ public:
     WillBeHeapVector<RuleFeature> uncommonAttributeRules;
 
 protected:
-    DescendantInvalidationSet* invalidationSetForSelector(const CSSSelector&);
+    InvalidationSet* invalidationSetForSelector(const CSSSelector&);
 
 private:
-    using InvalidationSetMap = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<DescendantInvalidationSet>>;
-    using PseudoTypeInvalidationSetMap = WillBeHeapHashMap<CSSSelector::PseudoType, RefPtrWillBeMember<DescendantInvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+    using InvalidationSetMap = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<InvalidationSet>>;
+    using PseudoTypeInvalidationSetMap = WillBeHeapHashMap<CSSSelector::PseudoType, RefPtrWillBeMember<InvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
 
     struct FeatureMetadata {
         DISALLOW_ALLOCATION();
@@ -123,10 +123,10 @@ private:
 
     void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&);
 
-    DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
-    DescendantInvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName);
-    DescendantInvalidationSet& ensureIdInvalidationSet(const AtomicString& attributeName);
-    DescendantInvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType);
+    InvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
+    InvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName);
+    InvalidationSet& ensureIdInvalidationSet(const AtomicString& attributeName);
+    InvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType);
 
     void updateInvalidationSets(const RuleData&);
     void updateInvalidationSetsForContentAttribute(const RuleData&);
@@ -162,7 +162,7 @@ private:
 
     std::pair<const CSSSelector*, UseFeaturesType> extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&, bool negated);
 
-    void addFeaturesToInvalidationSet(DescendantInvalidationSet&, const InvalidationSetFeatures&);
+    void addFeaturesToInvalidationSet(InvalidationSet&, const InvalidationSetFeatures&);
     void addFeaturesToInvalidationSets(const CSSSelector&, InvalidationSetFeatures&);
 
     void addClassToInvalidationSet(const AtomicString& className, Element&);

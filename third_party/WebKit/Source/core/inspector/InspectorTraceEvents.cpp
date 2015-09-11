@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/animation/Animation.h"
 #include "core/animation/KeyframeEffect.h"
-#include "core/css/invalidation/DescendantInvalidationSet.h"
+#include "core/css/invalidation/InvalidationSet.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/events/Event.h"
@@ -159,7 +159,7 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
 
 }
 
-PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::fillCommonPart(Element& element, const DescendantInvalidationSet& invalidationSet, const char* invalidatedSelector)
+PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::fillCommonPart(Element& element, const InvalidationSet& invalidationSet, const char* invalidatedSelector)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(element.document().frame()));
@@ -176,35 +176,35 @@ const char InspectorScheduleStyleInvalidationTrackingEvent::Class[] = "class";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Id[] = "id";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Pseudo[] = "pseudo";
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::idChange(Element& element, const DescendantInvalidationSet& invalidationSet, const AtomicString& id)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::idChange(Element& element, const InvalidationSet& invalidationSet, const AtomicString& id)
 {
     RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Id);
     value->setString("changedId", id);
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::classChange(Element& element, const DescendantInvalidationSet& invalidationSet, const AtomicString& className)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::classChange(Element& element, const InvalidationSet& invalidationSet, const AtomicString& className)
 {
     RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Class);
     value->setString("changedClass", className);
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::attributeChange(Element& element, const DescendantInvalidationSet& invalidationSet, const QualifiedName& attributeName)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::attributeChange(Element& element, const InvalidationSet& invalidationSet, const QualifiedName& attributeName)
 {
     RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Attribute);
     value->setString("changedAttribute", attributeName.toString());
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::pseudoChange(Element& element, const DescendantInvalidationSet& invalidationSet, CSSSelector::PseudoType pseudoType)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::pseudoChange(Element& element, const InvalidationSet& invalidationSet, CSSSelector::PseudoType pseudoType)
 {
     RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Attribute);
     value->setString("changedPseudo", pseudoTypeToString(pseudoType));
     return value.release();
 }
 
-String descendantInvalidationSetToIdString(const DescendantInvalidationSet& set)
+String descendantInvalidationSetToIdString(const InvalidationSet& set)
 {
     return toHexString(&set);
 }
@@ -231,7 +231,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvali
     return fillCommonPart(element, reason);
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::selectorPart(Element& element, const char* reason, const DescendantInvalidationSet& invalidationSet, const String& selectorPart)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::selectorPart(Element& element, const char* reason, const InvalidationSet& invalidationSet, const String& selectorPart)
 {
     RefPtr<TracedValue> value = fillCommonPart(element, reason);
     value->beginArray("invalidationList");
@@ -241,7 +241,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvali
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::invalidationList(Element& element, const WillBeHeapVector<RefPtrWillBeMember<DescendantInvalidationSet> >& invalidationList)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::invalidationList(Element& element, const WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>>& invalidationList)
 {
     RefPtr<TracedValue> value = fillCommonPart(element, ElementHasPendingInvalidationList);
     value->beginArray("invalidationList");

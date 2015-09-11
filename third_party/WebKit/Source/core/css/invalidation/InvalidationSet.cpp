@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/css/invalidation/DescendantInvalidationSet.h"
+#include "core/css/invalidation/InvalidationSet.h"
 
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
@@ -46,12 +46,12 @@ static const unsigned char* s_tracingEnabled = nullptr;
     if (UNLIKELY(*s_tracingEnabled)) \
         TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, reason, invalidationSet, singleSelectorPart);
 
-void DescendantInvalidationSet::cacheTracingFlag()
+void InvalidationSet::cacheTracingFlag()
 {
     s_tracingEnabled = TRACE_EVENT_API_GET_CATEGORY_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
 }
 
-DescendantInvalidationSet::DescendantInvalidationSet()
+InvalidationSet::InvalidationSet()
     : m_allDescendantsMightBeInvalid(false)
     , m_customPseudoInvalid(false)
     , m_treeBoundaryCrossing(false)
@@ -59,7 +59,7 @@ DescendantInvalidationSet::DescendantInvalidationSet()
 {
 }
 
-bool DescendantInvalidationSet::invalidatesElement(Element& element) const
+bool InvalidationSet::invalidatesElement(Element& element) const
 {
     if (m_allDescendantsMightBeInvalid)
         return true;
@@ -96,7 +96,7 @@ bool DescendantInvalidationSet::invalidatesElement(Element& element) const
     return false;
 }
 
-void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
+void InvalidationSet::combine(const InvalidationSet& other)
 {
     // No longer bother combining data structures, since the whole subtree is deemed invalid.
     if (wholeSubtreeInvalid())
@@ -137,63 +137,63 @@ void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
     }
 }
 
-WillBeHeapHashSet<AtomicString>& DescendantInvalidationSet::ensureClassSet()
+WillBeHeapHashSet<AtomicString>& InvalidationSet::ensureClassSet()
 {
     if (!m_classes)
         m_classes = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
     return *m_classes;
 }
 
-WillBeHeapHashSet<AtomicString>& DescendantInvalidationSet::ensureIdSet()
+WillBeHeapHashSet<AtomicString>& InvalidationSet::ensureIdSet()
 {
     if (!m_ids)
         m_ids = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
     return *m_ids;
 }
 
-WillBeHeapHashSet<AtomicString>& DescendantInvalidationSet::ensureTagNameSet()
+WillBeHeapHashSet<AtomicString>& InvalidationSet::ensureTagNameSet()
 {
     if (!m_tagNames)
         m_tagNames = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
     return *m_tagNames;
 }
 
-WillBeHeapHashSet<AtomicString>& DescendantInvalidationSet::ensureAttributeSet()
+WillBeHeapHashSet<AtomicString>& InvalidationSet::ensureAttributeSet()
 {
     if (!m_attributes)
         m_attributes = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
     return *m_attributes;
 }
 
-void DescendantInvalidationSet::addClass(const AtomicString& className)
+void InvalidationSet::addClass(const AtomicString& className)
 {
     if (wholeSubtreeInvalid())
         return;
     ensureClassSet().add(className);
 }
 
-void DescendantInvalidationSet::addId(const AtomicString& id)
+void InvalidationSet::addId(const AtomicString& id)
 {
     if (wholeSubtreeInvalid())
         return;
     ensureIdSet().add(id);
 }
 
-void DescendantInvalidationSet::addTagName(const AtomicString& tagName)
+void InvalidationSet::addTagName(const AtomicString& tagName)
 {
     if (wholeSubtreeInvalid())
         return;
     ensureTagNameSet().add(tagName);
 }
 
-void DescendantInvalidationSet::addAttribute(const AtomicString& attribute)
+void InvalidationSet::addAttribute(const AtomicString& attribute)
 {
     if (wholeSubtreeInvalid())
         return;
     ensureAttributeSet().add(attribute);
 }
 
-void DescendantInvalidationSet::setWholeSubtreeInvalid()
+void InvalidationSet::setWholeSubtreeInvalid()
 {
     if (m_allDescendantsMightBeInvalid)
         return;
@@ -208,7 +208,7 @@ void DescendantInvalidationSet::setWholeSubtreeInvalid()
     m_attributes = nullptr;
 }
 
-DEFINE_TRACE(DescendantInvalidationSet)
+DEFINE_TRACE(InvalidationSet)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_classes);
@@ -218,7 +218,7 @@ DEFINE_TRACE(DescendantInvalidationSet)
 #endif
 }
 
-void DescendantInvalidationSet::toTracedValue(TracedValue* value) const
+void InvalidationSet::toTracedValue(TracedValue* value) const
 {
     value->beginDictionary();
 
@@ -265,10 +265,10 @@ void DescendantInvalidationSet::toTracedValue(TracedValue* value) const
 }
 
 #ifndef NDEBUG
-void DescendantInvalidationSet::show() const
+void InvalidationSet::show() const
 {
     RefPtr<TracedValue> value = TracedValue::create();
-    value->beginArray("DescendantInvalidationSet");
+    value->beginArray("InvalidationSet");
     toTracedValue(value.get());
     value->endArray();
     fprintf(stderr, "%s\n", value->asTraceFormat().ascii().data());

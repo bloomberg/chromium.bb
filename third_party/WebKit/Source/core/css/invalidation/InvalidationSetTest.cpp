@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/css/invalidation/DescendantInvalidationSet.h"
+#include "core/css/invalidation/InvalidationSet.h"
 
 #include <gtest/gtest.h>
 
 namespace blink {
 
 // Once we setWholeSubtreeInvalid, we should not keep the HashSets.
-TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddBefore)
+TEST(InvalidationSetTest, SubtreeInvalid_AddBefore)
 {
-    RefPtrWillBeRawPtr<DescendantInvalidationSet> set = DescendantInvalidationSet::create();
+    RefPtrWillBeRawPtr<InvalidationSet> set = InvalidationSet::create();
     set->addClass("a");
     set->setWholeSubtreeInvalid();
 
@@ -20,9 +20,9 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddBefore)
 }
 
 // Don't (re)create HashSets if we've already setWholeSubtreeInvalid.
-TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddAfter)
+TEST(InvalidationSetTest, SubtreeInvalid_AddAfter)
 {
-    RefPtrWillBeRawPtr<DescendantInvalidationSet> set = DescendantInvalidationSet::create();
+    RefPtrWillBeRawPtr<InvalidationSet> set = InvalidationSet::create();
     set->setWholeSubtreeInvalid();
     set->addTagName("a");
 
@@ -30,10 +30,10 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddAfter)
 }
 
 // No need to keep the HashSets when combining with a wholeSubtreeInvalid set.
-TEST(DescendantInvalidationSetTest, SubtreeInvalid_Combine_1)
+TEST(InvalidationSetTest, SubtreeInvalid_Combine_1)
 {
-    RefPtrWillBeRawPtr<DescendantInvalidationSet> set1 = DescendantInvalidationSet::create();
-    RefPtrWillBeRawPtr<DescendantInvalidationSet> set2 = DescendantInvalidationSet::create();
+    RefPtrWillBeRawPtr<InvalidationSet> set1 = InvalidationSet::create();
+    RefPtrWillBeRawPtr<InvalidationSet> set2 = InvalidationSet::create();
 
     set1->addId("a");
     set2->setWholeSubtreeInvalid();
@@ -45,10 +45,10 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_Combine_1)
 }
 
 // No need to add HashSets from combining set when we already have wholeSubtreeInvalid.
-TEST(DescendantInvalidationSetTest, SubtreeInvalid_Combine_2)
+TEST(InvalidationSetTest, SubtreeInvalid_Combine_2)
 {
-    RefPtrWillBeRawPtr<DescendantInvalidationSet> set1 = DescendantInvalidationSet::create();
-    RefPtrWillBeRawPtr<DescendantInvalidationSet> set2 = DescendantInvalidationSet::create();
+    RefPtrWillBeRawPtr<InvalidationSet> set1 = InvalidationSet::create();
+    RefPtrWillBeRawPtr<InvalidationSet> set2 = InvalidationSet::create();
 
     set1->setWholeSubtreeInvalid();
     set2->addAttribute("a");
@@ -59,9 +59,9 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_Combine_2)
     ASSERT_TRUE(set1->isEmpty());
 }
 
-TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddCustomPseudoBefore)
+TEST(InvalidationSetTest, SubtreeInvalid_AddCustomPseudoBefore)
 {
-    RefPtrWillBeRawPtr<DescendantInvalidationSet> set = DescendantInvalidationSet::create();
+    RefPtrWillBeRawPtr<InvalidationSet> set = InvalidationSet::create();
     set->setCustomPseudoInvalid();
     ASSERT_FALSE(set->isEmpty());
 
@@ -70,9 +70,9 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddCustomPseudoBefore)
 }
 
 #ifndef NDEBUG
-TEST(DescendantInvalidationSetTest, ShowDebug)
+TEST(InvalidationSetTest, ShowDebug)
 {
-    RefPtrWillBeRawPtr<DescendantInvalidationSet> set = DescendantInvalidationSet::create();
+    RefPtrWillBeRawPtr<InvalidationSet> set = InvalidationSet::create();
     set->show();
 }
 #endif // NDEBUG

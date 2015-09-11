@@ -16,7 +16,7 @@
 namespace blink {
 class Animation;
 class CSSStyleSheetResource;
-class DescendantInvalidationSet;
+class InvalidationSet;
 class Document;
 class Element;
 class Event;
@@ -59,13 +59,13 @@ public:
     static const char Id[];
     static const char Pseudo[];
 
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> attributeChange(Element&, const DescendantInvalidationSet&, const QualifiedName&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> classChange(Element&, const DescendantInvalidationSet&, const AtomicString&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> idChange(Element&, const DescendantInvalidationSet&, const AtomicString&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> pseudoChange(Element&, const DescendantInvalidationSet&, CSSSelector::PseudoType);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> attributeChange(Element&, const InvalidationSet&, const QualifiedName&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> classChange(Element&, const InvalidationSet&, const AtomicString&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> idChange(Element&, const InvalidationSet&, const AtomicString&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> pseudoChange(Element&, const InvalidationSet&, CSSSelector::PseudoType);
 
 private:
-    static PassRefPtr<TracedValue> fillCommonPart(Element&, const DescendantInvalidationSet&, const char* invalidatedSelector);
+    static PassRefPtr<TracedValue> fillCommonPart(Element&, const InvalidationSet&, const char* invalidatedSelector);
 };
 
 #define TRACE_SCHEDULE_STYLE_INVALIDATION(element, invalidationSet, changeType, ...) \
@@ -82,7 +82,7 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Node*, const StyleChangeReasonForTracing&);
 };
 
-String descendantInvalidationSetToIdString(const DescendantInvalidationSet&);
+String descendantInvalidationSetToIdString(const InvalidationSet&);
 
 class InspectorStyleInvalidatorInvalidateEvent {
     STATIC_ONLY(InspectorStyleInvalidatorInvalidateEvent);
@@ -96,8 +96,8 @@ public:
     static const char PreventStyleSharingForParent[];
 
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Element&, const char* reason);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> selectorPart(Element&, const char* reason, const DescendantInvalidationSet&, const String&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> invalidationList(Element&, const WillBeHeapVector<RefPtrWillBeMember<DescendantInvalidationSet> >&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> invalidationList(Element&, const WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>>&);
 
 private:
     static PassRefPtr<TracedValue> fillCommonPart(Element&, const char* reason);

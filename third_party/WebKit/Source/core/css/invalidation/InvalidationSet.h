@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DescendantInvalidationSet_h
-#define DescendantInvalidationSet_h
+#ifndef InvalidationSet_h
+#define InvalidationSet_h
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -47,19 +47,19 @@ class TracedValue;
 
 // Tracks data to determine which elements of a DOM subtree need to have style
 // recalculated.
-class CORE_EXPORT DescendantInvalidationSet final : public RefCountedWillBeGarbageCollected<DescendantInvalidationSet> {
-    WTF_MAKE_NONCOPYABLE(DescendantInvalidationSet);
+class CORE_EXPORT InvalidationSet final : public RefCountedWillBeGarbageCollected<InvalidationSet> {
+    WTF_MAKE_NONCOPYABLE(InvalidationSet);
 public:
-    static PassRefPtrWillBeRawPtr<DescendantInvalidationSet> create()
+    static PassRefPtrWillBeRawPtr<InvalidationSet> create()
     {
-        return adoptRefWillBeNoop(new DescendantInvalidationSet);
+        return adoptRefWillBeNoop(new InvalidationSet);
     }
 
     static void cacheTracingFlag();
 
     bool invalidatesElement(Element&) const;
 
-    void combine(const DescendantInvalidationSet& other);
+    void combine(const InvalidationSet& other);
 
     void addClass(const AtomicString& className);
     void addId(const AtomicString& id);
@@ -89,7 +89,7 @@ public:
 #endif
 
 private:
-    DescendantInvalidationSet();
+    InvalidationSet();
 
     WillBeHeapHashSet<AtomicString>& ensureClassSet();
     WillBeHeapHashSet<AtomicString>& ensureIdSet();
@@ -117,4 +117,4 @@ private:
 
 } // namespace blink
 
-#endif // DescendantInvalidationSet_h
+#endif // InvalidationSet_h
