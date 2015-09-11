@@ -23,6 +23,16 @@ class StateStore {
  public:
   using IncidentDigest = uint32_t;
 
+  // The result of state store initialization. Values here are used for UMA so
+  // they must not be changed.
+  enum InitializationResult {
+    PSS_NULL = 0,     // The platform state store was absent or not supported.
+    PSS_EMPTY = 1,    // The platform state store was empty and the pref wasn't.
+    PSS_DIFFERS = 2,  // The platform state store differed from the preference.
+    PSS_MATCHES = 3,  // The platform state store matched the preference.
+    NUM_INITIALIZATION_RESULTS = 4,
+  };
+
   // An object through which modifications to a StateStore can be made. Changes
   // are visible to the StateStore immediately and are written to persistent
   // storage when the instance is destroyed (or shortly thereafter). Only one

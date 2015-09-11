@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/state_store.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -109,13 +110,20 @@ StateStore::StateStore(Profile* profile)
   Transaction transaction(this);
   scoped_ptr<base::DictionaryValue> value_dict(
       platform_state_store::Load(profile_));
-  if (value_dict) {
-    if (value_dict->empty())
-      transaction.ClearAll();
-    else if (!incidents_sent_ || !incidents_sent_->Equals(value_dict.get()))
-      transaction.ReplacePrefDict(value_dict.Pass());
-  }
 
+  InitializationResult state_store_init_result = PSS_MATCHES;
+  if (!value_dict) {
+    state_store_init_result = PSS_NULL;
+  } else if (value_dict->empty()) {
+    if (incidents_sent_ && !incidents_sent_->empty())
+      state_store_init_result = PSS_EMPTY;
+    transaction.ClearAll();
+  } else if (!incidents_sent_ || !incidents_sent_->Equals(value_dict.get())) {
+    state_store_init_result = PSS_DIFFERS;
+    transaction.ReplacePrefDict(value_dict.Pass());
+  }
+  UMA_HISTOGRAM_ENUMERATION("SBIRS.StateStoreInit", state_store_init_result,
+                            NUM_INITIALIZATION_RESULTS);
   if (incidents_sent_)
     CleanLegacyValues(&transaction);
 }

@@ -39102,6 +39102,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The elapsed time to upload a safe browsing incident report.</summary>
 </histogram>
 
+<histogram name="SBIRS.StateStoreInitResult" enum="StateStoreInitResult">
+  <owner>proberge@google.com</owner>
+  <summary>
+    The result of initializing the state store and comparing the preferences to
+    the platform-specific state store.
+  </summary>
+</histogram>
+
 <histogram name="SBIRS.UploadResult" enum="ReportProcessingResult">
   <owner>caitkp@google.com</owner>
   <summary>
@@ -72410,6 +72418,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="Connected"/>
   <int value="8" label="Closed"/>
   <int value="9" label="Failed"/>
+</enum>
+
+<enum name="StateStoreInitResult" type="int">
+  <int value="0"
+      label="Kept pref: platform-specific store non-existent or not
+             supported."/>
+  <int value="1" label="Erased pref: platform-specific store was empty"/>
+  <int value="2" label="Overwrote pref: platform-specific store differed"/>
+  <int value="3" label="No pref change: was equal to platform-specific store"/>
 </enum>
 
 <enum name="SuggestAppsDialogCloseReason" type="int">
