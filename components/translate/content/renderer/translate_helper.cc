@@ -79,8 +79,8 @@ scoped_ptr<translate::RendererCldDataProvider> CreateDataProvider(
     content::RenderViewObserver* render_view_observer) {
   translate::RendererCldUtils::ConfigureDefaultDataProvider();
   return scoped_ptr<translate::RendererCldDataProvider>(
-      translate::RendererCldDataProviderFactory::Get()
-          ->CreateRendererCldDataProvider());
+      translate::RendererCldDataProviderFactory::Get()->
+      CreateRendererCldDataProvider(render_view_observer));
 }
 
 // Returns whether the page associated with |document| is a candidate for
