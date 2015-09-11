@@ -4,6 +4,8 @@
 
 #include "content/public/common/dwrite_font_platform_win.h"
 
+#include <windows.h>
+
 #include <dwrite.h>
 #include <map>
 #include <string>
@@ -21,11 +23,13 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -940,10 +944,27 @@ bool FontCollectionLoader::LoadCacheFile() {
 
   base::SharedMemory* shared_mem = new base::SharedMemory(
       font_cache_handle, true);
-  // Map while file
+  // Map the cache file into memory.
   shared_mem->Map(0);
 
   cache_.reset(shared_mem);
+
+  if (base::StartsWith(base::FieldTrialList::FindFullName("LightSpeed"),
+                       "PrefetchDWriteFontCache",
+                       base::CompareCase::SENSITIVE)) {
+    // Prefetch the cache, to avoid unordered IO when it is used.
+    // PrefetchVirtualMemory() is loaded dynamically because it is only
+    // available from Win8.
+    decltype(PrefetchVirtualMemory)* prefetch_virtual_memory =
+        reinterpret_cast<decltype(PrefetchVirtualMemory)*>(::GetProcAddress(
+            ::GetModuleHandle(L"kernel32.dll"), "PrefetchVirtualMemory"));
+    if (prefetch_virtual_memory != NULL) {
+      WIN32_MEMORY_RANGE_ENTRY memory_range;
+      memory_range.VirtualAddress = shared_mem->memory();
+      memory_range.NumberOfBytes = shared_mem->mapped_size();
+      prefetch_virtual_memory(::GetCurrentProcess(), 1, &memory_range, 0);
+    }
+  }
 
   if (!ValidateAndLoadCacheMap()) {
     cache_.reset();
