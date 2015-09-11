@@ -27,10 +27,6 @@ enum NetworkPredictionOptions {
 void RegisterPredictionOptionsProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry);
 
-// Migrate prefs::kNetworkPredictionEnabled user setting (if exists) to
-// prefs::kNetworkPredictionOptions (if does not have user setting).
-void MigrateNetworkPredictionUserPrefs(PrefService* pref_service);
-
 // The following two global functions determine whether prefetching
 // and prerendering are enabled, based on preferences and network type.
 

@@ -566,15 +566,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   translate::TranslatePrefs::MigrateUserPrefs(profile_prefs,
                                               prefs::kAcceptLanguages);
 
-#if !defined(OS_ANDROID)
-  // Added 08/2014.
-  // Migrate kNetworkPredictionEnabled to kNetworkPredictionOptions when not on
-  // Android.  On Android, platform-specific code performs preference migration.
-  // TODO(bnc): https://crbug.com/401970  Remove migration code one year after
-  // M38.
-  chrome_browser_net::MigrateNetworkPredictionUserPrefs(profile_prefs);
-#endif
-
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
   // Added 02/2015.
   MigrateGoogleNowPrefs(profile);
