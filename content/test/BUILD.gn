@@ -611,13 +611,6 @@ test("content_unittests") {
       sources +=
           [ "../browser/media/capture/desktop_capture_device_aura_unittest.cc" ]
     }
-  } else {
-    if (enable_plugins) {
-      # This file is added only when plugins are enabled, but we don't want it
-      # unless webrtc is also enabled.
-      sources -=
-          [ "../renderer/media/pepper_to_video_track_adapter_unittest.cc" ]
-    }
   }
 
   if (enable_web_speech) {

@@ -702,6 +702,7 @@
       'browser/speech/google_streaming_remote_engine_unittest.cc',
       'browser/speech/speech_recognizer_impl_unittest.cc',
     ],
+    # Put WebRTC-related sources in the plugin+WebRTC section below.
     'content_unittests_plugins_sources': [
       'browser/plugin_loader_posix_unittest.cc',
       'browser/renderer_host/pepper/browser_ppapi_host_test.cc',
@@ -711,7 +712,6 @@
       'browser/renderer_host/pepper/pepper_printing_host_unittest.cc',
       'browser/renderer_host/pepper/quota_reservation_unittest.cc',
       'child/npapi/plugin_lib_unittest.cc',
-      'renderer/media/pepper_to_video_track_adapter_unittest.cc',
       'renderer/npapi/webplugin_impl_unittest.cc',
       'renderer/pepper/event_conversion_unittest.cc',
       'renderer/pepper/host_var_tracker_unittest.cc',
@@ -720,6 +720,7 @@
       'renderer/pepper/plugin_instance_throttler_impl_unittest.cc',
       'renderer/pepper/v8_var_converter_unittest.cc',
     ],
+    # WebRTC-specific sources. Put WebRTC plugin-related stuff further below.
     'content_unittests_webrtc_sources': [
       'browser/media/webrtc_internals_unittest.cc',
       'browser/renderer_host/media/webrtc_identity_service_host_unittest.cc',
@@ -750,7 +751,6 @@
       'renderer/media/speech_recognition_audio_sink_unittest.cc',
       'renderer/media/user_media_client_impl_unittest.cc',
       'renderer/media/video_track_recorder_unittest.cc',
-      'renderer/media/video_track_to_pepper_adapter_unittest.cc',
       'renderer/media/webrtc/media_stream_remote_video_source_unittest.cc',
       'renderer/media/webrtc/media_stream_track_metrics_unittest.cc',
       'renderer/media/webrtc/peer_connection_dependency_factory_unittest.cc',
@@ -765,6 +765,10 @@
       'renderer/media/webrtc_local_audio_track_unittest.cc',
       'renderer/media/webrtc_uma_histograms_unittest.cc',
       'renderer/p2p/ipc_network_manager_unittest.cc',
+    ],
+    'content_unittests_plugin_webrtc_sources': [
+      'renderer/media/pepper_to_video_track_adapter_unittest.cc',
+      'renderer/media/video_track_to_pepper_adapter_unittest.cc',
     ],
     'content_unittests_android_sources': [
       'browser/android/java/gin_java_method_invocation_helper_unittest.cc',
@@ -1096,10 +1100,9 @@
             '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
           ]
-        }, {
-          'sources!': [
-            'renderer/media/pepper_to_video_track_adapter_unittest.cc',
-          ],
+        }],
+        ['enable_webrtc==1 and enable_plugins==1', {
+          'sources': [ '<@(content_unittests_plugin_webrtc_sources)' ],
         }],
         ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
           'sources': [

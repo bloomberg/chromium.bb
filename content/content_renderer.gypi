@@ -653,8 +653,6 @@
       'renderer/media/video_track_adapter.h',
       'renderer/media/video_track_recorder.cc',
       'renderer/media/video_track_recorder.h',
-      'renderer/media/video_track_to_pepper_adapter.cc',
-      'renderer/media/video_track_to_pepper_adapter.h',
       'renderer/media/webaudio_capturer_source.cc',
       'renderer/media/webaudio_capturer_source.h',
       'renderer/media/webrtc/media_stream_remote_video_source.cc',
@@ -667,8 +665,6 @@
       'renderer/media/webrtc/stun_field_trial.h',
       'renderer/media/webrtc/track_observer.cc',
       'renderer/media/webrtc/track_observer.h',
-      'renderer/media/pepper_to_video_track_adapter.cc',
-      'renderer/media/pepper_to_video_track_adapter.h',
       'renderer/media/webrtc/webrtc_audio_sink_adapter.cc',
       'renderer/media/webrtc/webrtc_audio_sink_adapter.h',
       'renderer/media/webrtc/webrtc_local_audio_track_adapter.cc',
@@ -717,6 +713,10 @@
     ],
     # Stuff only used when both WebRTC and plugins are enabled.
     'private_renderer_plugin_webrtc_sources': [
+      'renderer/media/pepper_to_video_track_adapter.cc',
+      'renderer/media/pepper_to_video_track_adapter.h',
+      'renderer/media/video_track_to_pepper_adapter.cc',
+      'renderer/media/video_track_to_pepper_adapter.h',
       'renderer/pepper/pepper_media_stream_audio_track_host.cc',
       'renderer/pepper/pepper_media_stream_audio_track_host.h',
       'renderer/pepper/pepper_media_stream_track_host_base.cc',
@@ -758,10 +758,10 @@
     ['OS=="android"', {
       'sources!': [
         'renderer/media/audio_decoder.cc',
-        'renderer/media/video_track_recorder.cc',
-        'renderer/media/video_track_recorder.h',
         'renderer/media/media_recorder_handler.cc',
         'renderer/media/media_recorder_handler.h',
+        'renderer/media/video_track_recorder.cc',
+        'renderer/media/video_track_recorder.h',
         'renderer/usb/type_converters.cc',
         'renderer/usb/type_converters.h',
         'renderer/usb/web_usb_client_impl.cc',
@@ -797,14 +797,6 @@
         '../media/cast/cast.gyp:cast_sender',
       ]
     }],
-    # TODO(jrg): remove the OS=="android" section?
-    # http://crbug.com/113172
-    # Understand better how media_stream_ is tied into Chromium.
-    ['enable_webrtc==0 and OS=="android"', {
-      'sources/': [
-        ['exclude', '^renderer/media/media_stream_'],
-      ],
-    }],
     ['enable_webrtc==1', {
       'dependencies': [
         '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
@@ -824,6 +816,15 @@
         'renderer/media/webrtc_logging.h',
         'renderer/media/webrtc_logging_noop.cc',
       ],
+      # TODO(jrg): Understand better how media_stream_ is tied into Chromium,
+      # and maybe remove the OS=="android" section? http://crbug.com/113172
+      'conditions': [
+        ['OS=="android"', {
+          'sources/': [
+            ['exclude', '^renderer/media/media_stream_'],
+          ],
+        }],
+      ],
     }],
     ['enable_plugins==1', {
       'sources': [
@@ -840,23 +841,17 @@
             'renderer/pepper/video_encoder_shim.h',
           ],
         }],
+        ['enable_webrtc==1', {
+          'sources': [
+            '<@(private_renderer_plugin_webrtc_sources)',
+          ],
+        }],
       ],
       'dependencies': [
         '../ppapi/ppapi_internal.gyp:ppapi_host',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../third_party/libyuv/libyuv.gyp:libyuv',
-      ],
-    }, {  # enable_plugins==0
-      'sources!': [
-        # These are not in the plugins sources list since it also requires webrtc.
-        'renderer/media/pepper_to_video_track_adapter.cc',
-        'renderer/media/pepper_to_video_track_adapter.h',
-      ],
-    }],
-    ['enable_plugins==1 and enable_webrtc==1', {
-      'sources': [
-        '<@(private_renderer_plugin_webrtc_sources)',
       ],
     }],
     ['enable_pepper_cdms != 1', {
