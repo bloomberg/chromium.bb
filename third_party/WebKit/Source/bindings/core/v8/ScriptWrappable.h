@@ -180,8 +180,25 @@ private:
 
     static void firstWeakCallback(const v8::WeakCallbackInfo<ScriptWrappable>& data)
     {
-        data.GetParameter()->disposeWrapper(data);
-        data.SetSecondPassCallback(secondWeakCallback);
+        auto scriptWrappable = data.GetParameter();
+        scriptWrappable->disposeWrapper(data);
+
+        auto wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(data.GetInternalField(v8DOMWrapperTypeIndex));
+        if (wrapperTypeInfo->isGarbageCollected()) {
+            // derefObject() for garbage collected objects is very cheap, so
+            // we don't delay derefObject to the second pass.
+            //
+            // More importantly, we've already disposed the wrapper at this
+            // moment, so the ScriptWrappable may have already been collected
+            // by GC by the second pass.  We shouldn't use a pointer to the
+            // ScriptWrappable in secondWeakCallback in case of garbage
+            // collected objects.  Thus calls derefObject right now.
+            wrapperTypeInfo->derefObject(scriptWrappable);
+        } else {
+            // For reference counted objects, let's delay the destruction of
+            // the object to the second pass.
+            data.SetSecondPassCallback(secondWeakCallback);
+        }
     }
 
     static void secondWeakCallback(const v8::WeakCallbackInfo<ScriptWrappable>& data)
@@ -190,8 +207,8 @@ private:
         // inside data.GetParameter()->deref(), which causes Node destructions. We should
         // make Node destructions incremental.
         auto scriptWrappable = reinterpret_cast<ScriptWrappable*>(data.GetInternalField(v8DOMWrapperObjectIndex));
-        auto typeInfo = reinterpret_cast<WrapperTypeInfo*>(data.GetInternalField(v8DOMWrapperTypeIndex));
-        typeInfo->derefObject(scriptWrappable);
+        auto wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(data.GetInternalField(v8DOMWrapperTypeIndex));
+        wrapperTypeInfo->derefObject(scriptWrappable);
     }
 
     v8::Persistent<v8::Object> m_wrapper;
@@ -204,7 +221,7 @@ private:
 // All the derived classes of ScriptWrappable, regardless of directly or
 // indirectly, must write this macro in the class definition as long as the
 // class has a corresponding .idl file.
-#define DEFINE_WRAPPERTYPEINFO()                \
+#define DEFINE_WRAPPERTYPEINFO() \
 public: \
     const WrapperTypeInfo* wrapperTypeInfo() const override \
     { \

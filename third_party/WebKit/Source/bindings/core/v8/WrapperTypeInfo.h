@@ -126,30 +126,33 @@ struct WrapperTypeInfo {
         return domTemplateFunction(isolate);
     }
 
+    bool isGarbageCollected() const
+    {
+        return (gcType == GarbageCollectedObject
+#if ENABLE(OILPAN)
+                || gcType == WillBeGarbageCollectedObject
+#endif
+                );
+    }
+
     void refObject(ScriptWrappable* scriptWrappable) const
     {
-        if (gcType == GarbageCollectedObject) {
+        if (isGarbageCollected()) {
             ThreadState::current()->persistentAllocated();
-        } else if (gcType == WillBeGarbageCollectedObject) {
-#if ENABLE(OILPAN)
-            ThreadState::current()->persistentAllocated();
-#endif
+        } else {
+            ASSERT(refObjectFunction);
+            refObjectFunction(scriptWrappable);
         }
-        ASSERT(refObjectFunction);
-        refObjectFunction(scriptWrappable);
     }
 
     void derefObject(ScriptWrappable* scriptWrappable) const
     {
-        if (gcType == GarbageCollectedObject) {
+        if (isGarbageCollected()) {
             ThreadState::current()->persistentFreed();
-        } else if (gcType == WillBeGarbageCollectedObject) {
-#if ENABLE(OILPAN)
-            ThreadState::current()->persistentFreed();
-#endif
+        } else {
+            ASSERT(derefObjectFunction);
+            derefObjectFunction(scriptWrappable);
         }
-        ASSERT(derefObjectFunction);
-        derefObjectFunction(scriptWrappable);
     }
 
     void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) const
