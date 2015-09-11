@@ -219,6 +219,8 @@
     { "name": "passwords.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "myaccount.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "contributor.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "fi.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "xn--7xa.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     // Other Google-related domains that must use HTTPS.
     { "name": "google", "include_subdomains": true, "mode": "force-https", "pins": "google" },
@@ -1832,7 +1834,6 @@
     { "name": "narodniki.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "netrider.net.au", "include_subdomains": true, "mode": "force-https" },
     { "name": "niloxy.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "noobs-r-us.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "nowhere.dk", "include_subdomains": true, "mode": "force-https" },
     { "name": "perfectionis.me", "include_subdomains": true, "mode": "force-https" },
     { "name": "phryanjr.com", "include_subdomains": true, "mode": "force-https" },
@@ -3623,7 +3624,8 @@
     { "name": "vmrdev.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "vulnerability.ch", "include_subdomains": true, "mode": "force-https" },
     { "name": "xiaolan.me", "include_subdomains": true, "mode": "force-https" },
-    { "name": "xiaoxiao.im", "include_subdomains": true, "mode": "force-https" }
+    { "name": "xiaoxiao.im", "include_subdomains": true, "mode": "force-https" },
+    { "name": "hana.ondemand.com", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
