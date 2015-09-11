@@ -118,6 +118,9 @@ public class GetStatusTest extends CronetTestBase {
             fail();
         } catch (AssertionError e) {
             // Expected.
+        } catch (IllegalArgumentException e) {
+            // If assertions are disabled, an IllegalArgumentException should be thrown.
+            assertEquals("No request status found.", e.getMessage());
         }
 
         try {
@@ -125,7 +128,9 @@ public class GetStatusTest extends CronetTestBase {
             fail();
         } catch (AssertionError e) {
             // Expected.
+        } catch (IllegalArgumentException e) {
+            // If assertions are disabled, an IllegalArgumentException should be thrown.
+            assertEquals("No request status found.", e.getMessage());
         }
     }
-
 }
