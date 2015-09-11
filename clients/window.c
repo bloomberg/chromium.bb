@@ -4738,7 +4738,7 @@ menu_button_handler(struct widget *widget,
 		/* Either relase after press-drag-release or
 		 * click-motion-click. */
 		menu->func(menu->user_data, input, menu->current);
-		input_ungrab(input);
+		input_ungrab(menu->input);
 		menu_destroy(menu);
 	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		menu->release_count++;
