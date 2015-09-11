@@ -213,16 +213,16 @@ bool buildSearchString(const HTMLFormElement& form, Vector<char>* encodedString,
         FormData* formData = FormData::create(encoding);
         control.appendToFormData(*formData, false);
 
-        for (const auto& item : formData->items()) {
+        for (const auto& entry : formData->entries()) {
             if (!encodedString->isEmpty())
                 encodedString->append('&');
-            FormDataEncoder::encodeStringAsFormData(*encodedString, item.key());
+            FormDataEncoder::encodeStringAsFormData(*encodedString, entry.key());
             encodedString->append('=');
             if (&control == textElement) {
                 encodedString->append("{searchTerms}", 13);
                 isElementFound = true;
             } else {
-                FormDataEncoder::encodeStringAsFormData(*encodedString, item.data());
+                FormDataEncoder::encodeStringAsFormData(*encodedString, entry.data());
             }
         }
     }

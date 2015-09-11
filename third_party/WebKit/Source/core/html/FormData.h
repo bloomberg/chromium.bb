@@ -79,9 +79,9 @@ public:
     bool opaque() const { return m_opaque; }
 
     const WTF::TextEncoding& encoding() const { return m_encoding; }
-    class Item;
-    const HeapVector<Item>& items() const { return m_items; }
-    size_t size() const { return m_items.size(); }
+    class Entry;
+    const HeapVector<Entry>& entries() const { return m_entries; }
+    size_t size() const { return m_entries.size(); }
     // TODO(tkent): Rename appendFoo functions to |append| for consistency with
     // public function.
     void appendData(const String& key, const String& value);
@@ -95,20 +95,22 @@ public:
 private:
     explicit FormData(const WTF::TextEncoding&);
     explicit FormData(HTMLFormElement*);
-    void setEntry(const Item&);
+    void setEntry(const Entry&);
     CString encodeAndNormalize(const String& key) const;
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 
     WTF::TextEncoding m_encoding;
-    HeapVector<Item> m_items;
+    HeapVector<Entry> m_entries;
     bool m_opaque;
 };
 
-class FormData::Item {
+// Represents entry, which is a pair of a name and a value.
+// https://xhr.spec.whatwg.org/#concept-formdata-entry
+class FormData::Entry {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    Item(const CString& key, const CString& data) : m_key(key), m_data(data) { }
-    Item(const CString& key, Blob* blob, const String& filename) : m_key(key), m_blob(blob), m_filename(filename) { }
+    Entry(const CString& key, const CString& data) : m_key(key), m_data(data) { }
+    Entry(const CString& key, Blob* blob, const String& filename) : m_key(key), m_blob(blob), m_filename(filename) { }
     DECLARE_TRACE();
 
     bool isString() const { return !m_blob; }
@@ -128,6 +130,6 @@ private:
 
 } // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::FormData::Item);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::FormData::Entry);
 
 #endif // FormData_h
