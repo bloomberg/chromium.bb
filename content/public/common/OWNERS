@@ -15,7 +15,6 @@ per-file *param_traits*.h=tsepez@chromium.org
 per-file *param_traits*.h=wfh@chromium.org
 
 # DirectWrite
-per-file dwrite_font_platform_win.h=shrikant@chromium.org
 per-file dwrite_font_platform_win.h=scottmg@chromium.org
 
 # Changes to Mojo interfaces require a security review to avoid
