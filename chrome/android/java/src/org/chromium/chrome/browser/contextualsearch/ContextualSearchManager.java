@@ -962,7 +962,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
         tabModelSelector.openNewTab(
                 new LoadUrlParams(url),
-                TabLaunchType.FROM_MENU_OR_OVERVIEW,
+                TabLaunchType.FROM_LINK,
                 tabModelSelector.getCurrentTab(),
                 tabModelSelector.isIncognitoSelected());
     }
