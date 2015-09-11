@@ -6,4 +6,6 @@ stanisc@chromium.org
 tim@chromium.org
 zea@chromium.org
 
+per-file profile_sync_service_android*=maxbogue@chromium.org
+per-file profile_sync_service_android*=nyquist@chromium.org
 per-file sync_policy_handler*=atwilson@chromium.org
