@@ -8,6 +8,8 @@
 description('Check stepUp() and stepDown() behavior for number type.');
 
 var input = document.createElement('input');
+var changeEventCounter = 0;
+input.onchange = function() { ++changeEventCounter; };
 
 function setInputAttributes(min, max, step, value) {
     input.min = min;
@@ -116,6 +118,10 @@ shouldBe('stepUp("5.005", "0.005", "", 12)', '"5.065"');
 shouldBe('stepUpExplicitBounds("4", "9", "0.005", "5.005", 2)', '"5.015"');
 shouldBe('stepUpExplicitBounds("4", "9", "0.005", "5.005", 11)', '"5.06"');
 shouldBe('stepUpExplicitBounds("4", "9", "0.005", "5.005", 12)', '"5.065"');
+
+debug('');
+debug('This test should not dispatch any |change| events.');
+shouldBe('changeEventCounter', '0');
 </script>
 </body>
 </html>

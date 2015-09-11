@@ -789,13 +789,13 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
         if (newValue > stepRange.maximum())
             newValue = stepRange.maximum();
 
-        setValueAsDecimal(newValue, count == 1 || count == -1 ? DispatchChangeEvent : DispatchNoEvent, IGNORE_EXCEPTION);
+        setValueAsDecimal(newValue, count == 1 || count == -1 ? eventBehavior : DispatchNoEvent, IGNORE_EXCEPTION);
         if (count > 1) {
-            applyStep(newValue, count - 1, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
+            applyStep(newValue, count - 1, AnyIsDefaultStep, eventBehavior, IGNORE_EXCEPTION);
             return;
         }
         if (count < -1) {
-            applyStep(newValue, count + 1, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
+            applyStep(newValue, count + 1, AnyIsDefaultStep, eventBehavior, IGNORE_EXCEPTION);
             return;
         }
     } else {
