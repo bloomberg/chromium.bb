@@ -47,15 +47,14 @@
       'target_name': 'sqlite',
       'conditions': [
         [ 'chromeos==1' , {
-            'defines': [
-                # Despite obvious warnings about not using this flag
-                # in deployment, we are turning off sync in ChromeOS
-                # and relying on the underlying journaling filesystem
-                # to do error recovery properly.  It's much faster.
-                'SQLITE_NO_SYNC',
-                ],
-          },
-        ],
+          'defines': [
+            # Despite obvious warnings about not using this flag in deployment,
+            # we are turning off sync in ChromeOS and relying on the underlying
+            # journaling filesystem to do error recovery properly.  It's much
+            # faster.
+            'SQLITE_NO_SYNC',
+          ],
+        }],
         ['os_posix == 1', {
           'defines': [
             # Allow xSleep() call on Unix to use usleep() rather than sleep().
@@ -64,12 +63,24 @@
             # profile databases are mostly exclusive, but renderer databases may
             # allow for contention.
             'HAVE_USLEEP=1',
+            # Use pread/pwrite directly rather than emulating them.
+            'USE_PREAD=1',
           ],
         }],
         ['OS == "linux" or OS == "android"', {
           'defines': [
             # Linux provides fdatasync(), a faster equivalent of fsync().
             'fdatasync=fdatasync',
+          ],
+        }],
+        # SQLite wants to track malloc sizes.  On OSX it uses malloc_size(), on
+        # Windows _msize(), elsewhere it handles it manually by enlarging the
+        # malloc and injecting a field.  Enable malloc_usable_size() for Linux.
+        # NOTE(shess): Android does _not_ export malloc_usable_size().
+        ['OS == "linux"', {
+          'defines': [
+            'HAVE_MALLOC_H',
+            'HAVE_MALLOC_USABLE_SIZE',
           ],
         }],
         ['use_system_sqlite', {

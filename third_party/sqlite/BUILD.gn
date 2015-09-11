@@ -49,13 +49,43 @@ if (!use_system_sqlite) {
     cflags = []
     defines = [
       "SQLITE_ENABLE_FTS3",
+
+      # New unicode61 tokenizer with built-in tables.
       "SQLITE_DISABLE_FTS3_UNICODE",
+
+      # Chromium currently does not enable fts4, disable extra code.
       "SQLITE_DISABLE_FTS4_DEFERRED",
       "SQLITE_ENABLE_ICU",
       "SQLITE_ENABLE_MEMORY_MANAGEMENT",
       "SQLITE_SECURE_DELETE",
+
+      # Custom flag to tweak pcache pools.
+      # TODO(shess): This shouldn't use faux-SQLite naming.
       "SQLITE_SEPARATE_CACHE_POOLS",
+
+      # TODO(shess): SQLite adds mutexes to protect structures which cross
+      # threads.  In theory Chromium should be able to turn this off for a
+      # slight speed boost.
       "THREADSAFE",
+
+      # SQLite can spawn threads to sort in parallel if configured
+      # appropriately.  Chromium doesn't configure SQLite for that, and would
+      # prefer to control distribution to worker threads.
+      "SQLITE_MAX_WORKER_THREADS=0",
+
+      # Use a read-only memory map when mmap'ed I/O is enabled to prevent memory
+      # stompers from directly corrupting the database.
+      # TODO(shess): Upstream the ability to use this define.
+      "SQLITE_MMAP_READ_ONLY=1",
+
+      # NOTE(shess): Some defines can affect the amalgamation.  Those should be
+      # added to google_generate_amalgamation.sh, and the amalgamation
+      # re-generated.  Usually this involves disabling features which include
+      # keywords or syntax, for instance SQLITE_OMIT_VIRTUALTABLE omits the
+      # virtual table syntax entirely.  Missing an item usually results in
+      # syntax working but execution failing.  Review:
+      #   src/src/parse.py
+      #   src/tool/mkkeywordhash.c
     ]
     if (is_component_build) {
       if (is_win) {
@@ -75,16 +105,30 @@ if (!use_system_sqlite) {
     if (is_posix) {
       defines += [
         # Allow xSleep() call on Unix to use usleep() rather than sleep(), so it
-        # will have microsecond precision.  Should only affect contended databases
-        # via the busy callback.  Browser profile databases are mostly exclusive,
-        # but renderer databases may allow for contention.
+        # will have microsecond precision.  Should only affect contended
+        # databases via the busy callback.  Browser profile databases are mostly
+        # exclusive, but renderer databases may allow for contention.
         "HAVE_USLEEP=1",
+
+        # Use pread/pwrite directly rather than emulating them.
+        "USE_PREAD=1",
       ]
     }
     if (is_linux || is_android) {
       defines += [
         # Linux provides fdatasync(), a faster equivalent of fsync().
         "fdatasync=fdatasync",
+      ]
+    }
+
+    # SQLite wants to track malloc sizes.  On OSX it uses malloc_size(), on
+    # Windows _msize(), elsewhere it handles it manually by enlarging the malloc
+    # and injecting a field.  Enable malloc_usable_size() for Linux.
+    # NOTE(shess): Android does _not_ export malloc_usable_size().
+    if (is_linux) {
+      defines += [
+        "HAVE_MALLOC_H",
+        "HAVE_MALLOC_USABLE_SIZE",
       ]
     }
 
@@ -130,8 +174,13 @@ if (!use_system_sqlite) {
   # This is used to allow the SQLITE_API definition to be different when
   # building sqlite3.c than it is when clients include sqlite3.h.
   group("sqlite") {
-    public_deps = [ ":chromium_sqlite3" ]
-    public_configs = [ ":sqlite_export", ":sqlite_config" ]
+    public_deps = [
+      ":chromium_sqlite3",
+    ]
+    public_configs = [
+      ":sqlite_export",
+      ":sqlite_config",
+    ]
   }
 
   if (is_linux) {
@@ -181,14 +230,8 @@ if (use_system_sqlite) {
       defines = [
         # Necessary to statically compile the extension.
         "SQLITE_CORE",
-        "SQLITE_DISABLE_FTS3_UNICODE",
-        "SQLITE_DISABLE_FTS4_DEFERRED",
-        "SQLITE_ENABLE_FTS3",
         "SQLITE_ENABLE_ICU",
         "SQLITE_ENABLE_MEMORY_MANAGEMENT",
-        "SQLITE_SECURE_DELETE",
-        "SQLITE_SEPARATE_CACHE_POOLS",
-        "THREADSAFE",
       ]
       sources = [
         "src/ext/icu/icu.c",
