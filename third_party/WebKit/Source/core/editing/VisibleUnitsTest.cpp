@@ -296,6 +296,47 @@ TEST_F(VisibleUnitsTest, isEndOfParagraph)
     EXPECT_TRUE(isEndOfParagraph(createVisiblePositionInComposedTree(*three, 3)));
 }
 
+TEST_F(VisibleUnitsTest, isStartOfLine)
+{
+    const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
+    const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+    Node* four = document().getElementById("four")->firstChild();
+    Node* five = shadowRoot->getElementById("five")->firstChild();
+    Node* six = shadowRoot->getElementById("six")->firstChild();
+    Node* seven = shadowRoot->getElementById("seven")->firstChild();
+
+    EXPECT_TRUE(isStartOfLine(createVisiblePositionInDOMTree(*one, 0)));
+    EXPECT_TRUE(isStartOfLine(createVisiblePositionInComposedTree(*one, 0)));
+
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInDOMTree(*one, 1)));
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInComposedTree(*one, 1)));
+
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInDOMTree(*two, 0)));
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInComposedTree(*two, 0)));
+
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInDOMTree(*three, 0)));
+    EXPECT_TRUE(isStartOfLine(createVisiblePositionInComposedTree(*three, 0)));
+
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInDOMTree(*four, 0)));
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInComposedTree(*four, 0)));
+
+    EXPECT_TRUE(isStartOfLine(createVisiblePositionInDOMTree(*five, 0)));
+    EXPECT_TRUE(isStartOfLine(createVisiblePositionInComposedTree(*five, 0)));
+
+    EXPECT_TRUE(isStartOfLine(createVisiblePositionInDOMTree(*six, 0)));
+    EXPECT_TRUE(isStartOfLine(createVisiblePositionInComposedTree(*six, 0)));
+
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInDOMTree(*seven, 0)));
+    EXPECT_FALSE(isStartOfLine(createVisiblePositionInComposedTree(*seven, 0)));
+}
+
 TEST_F(VisibleUnitsTest, leftPositionOf)
 {
     const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";

@@ -1162,9 +1162,20 @@ bool inSameLine(const VisiblePositionInComposedTree& position1, const VisiblePos
     return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
 }
 
-bool isStartOfLine(const VisiblePosition& p)
+template <typename Strategy>
+bool isStartOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& p)
 {
     return p.isNotNull() && p.deepEquivalent() == startOfLine(p).deepEquivalent();
+}
+
+bool isStartOfLine(const VisiblePosition& p)
+{
+    return isStartOfLineAlgorithm<EditingStrategy>(p);
+}
+
+bool isStartOfLine(const VisiblePositionInComposedTree& p)
+{
+    return isStartOfLineAlgorithm<EditingInComposedTreeStrategy>(p);
 }
 
 bool isEndOfLine(const VisiblePosition& p)

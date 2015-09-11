@@ -144,7 +144,8 @@ CORE_EXPORT bool inSameLine(const VisiblePosition&, const VisiblePosition&);
 CORE_EXPORT bool inSameLine(const VisiblePositionInComposedTree&, const VisiblePositionInComposedTree&);
 CORE_EXPORT bool inSameLine(const PositionWithAffinity&, const PositionWithAffinity&);
 CORE_EXPORT bool inSameLine(const PositionInComposedTreeWithAffinity&, const PositionInComposedTreeWithAffinity&);
-bool isStartOfLine(const VisiblePosition&);
+CORE_EXPORT bool isStartOfLine(const VisiblePosition&);
+CORE_EXPORT bool isStartOfLine(const VisiblePositionInComposedTree&);
 bool isEndOfLine(const VisiblePosition&);
 // TODO(yosin) Return values of |VisiblePosition| version of
 // |logicalStartOfLine()| with shadow tree isn't defined well. We should not use
