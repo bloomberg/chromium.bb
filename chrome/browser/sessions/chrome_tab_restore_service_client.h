@@ -19,6 +19,8 @@ class ChromeTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
 
  private:
   // TabRestoreServiceClient:
+  bool ShouldTrackURLForRestore(const GURL& url) override;
+  base::SequencedWorkerPool* GetBlockingPool() override;
   base::FilePath GetPathToSaveTo() override;
   GURL GetNewTabURL() override;
   bool HasLastSession() override;

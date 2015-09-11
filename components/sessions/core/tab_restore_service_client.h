@@ -12,6 +12,7 @@
 
 namespace base {
 class CancelableTaskTracker;
+class SequencedWorkerPool;
 }
 
 namespace sessions {
@@ -34,6 +35,13 @@ typedef base::Callback<void(ScopedVector<SessionWindow>, SessionID::id_type)>
 class TabRestoreServiceClient {
  public:
   virtual ~TabRestoreServiceClient() {}
+
+  // Returns whether a given URL should be tracked for restoring.
+  virtual bool ShouldTrackURLForRestore(const GURL& url) = 0;
+
+  // Get the sequenced worker pool for running tasks on the backend thread as
+  // long as the system is not shutting down.
+  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   // Returns the path of the directory to save state into.
   virtual base::FilePath GetPathToSaveTo() = 0;

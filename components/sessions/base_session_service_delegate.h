@@ -11,8 +11,6 @@ namespace base {
 class SequencedWorkerPool;
 }
 
-class GURL;
-
 namespace sessions {
 
 // The BaseSessionServiceDelegate decouples the BaseSessionService from
@@ -25,18 +23,15 @@ class BaseSessionServiceDelegate {
   // long as the system is not shutting down.
   virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
-  // Tests if a given URL should be tracked.
-  virtual bool ShouldTrackEntry(const GURL& url) = 0;
-
   // Returns true if save operations can be performed as a delayed task - which
   // is usually only used by unit tests.
   virtual bool ShouldUseDelayedSave() = 0;
 
   // Called when commands are about to be written to disc.
-  virtual void OnWillSaveCommands() = 0;
+  virtual void OnWillSaveCommands() {}
 
   // Called when commands were saved to disc.
-  virtual void OnSavedCommands() = 0;
+  virtual void OnSavedCommands() {}
 
  protected:
   virtual ~BaseSessionServiceDelegate() {}

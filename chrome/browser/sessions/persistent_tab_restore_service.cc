@@ -17,9 +17,9 @@
 #include "base/stl_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/sessions/base_session_service_delegate_impl.h"
 #include "components/sessions/base_session_service.h"
 #include "components/sessions/base_session_service_commands.h"
+#include "components/sessions/base_session_service_delegate.h"
 #include "components/sessions/core/session_constants.h"
 #include "components/sessions/session_command.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -112,16 +112,18 @@ const size_t kMaxEntries = TabRestoreServiceHelper::kMaxEntries;
 // PersistentTabRestoreService::Delegate ---------------------------------------
 
 // This restore service will create and own a BaseSessionService and implement
-// the required BaseSessionServiceDelegateImpl.
+// the required sessions::BaseSessionServiceDelegate.
 class PersistentTabRestoreService::Delegate
-    : public BaseSessionServiceDelegateImpl,
+    : public sessions::BaseSessionServiceDelegate,
       public TabRestoreServiceHelper::Observer {
  public:
   explicit Delegate(sessions::TabRestoreServiceClient* client);
 
   ~Delegate() override;
 
-  // BaseSessionServiceDelegateImpl:
+  // sessions::BaseSessionServiceDelegate:
+  base::SequencedWorkerPool* GetBlockingPool() override;
+  bool ShouldUseDelayedSave() override;
   void OnWillSaveCommands() override;
 
   // TabRestoreServiceHelper::Observer:
@@ -220,10 +222,10 @@ class PersistentTabRestoreService::Delegate
                        std::vector<TabRestoreService::Entry*>* entries);
 
  private:
-  scoped_ptr<sessions::BaseSessionService> base_session_service_;
-
   // The associated client.
   sessions::TabRestoreServiceClient* client_;
+
+  scoped_ptr<sessions::BaseSessionService> base_session_service_;
 
   TabRestoreServiceHelper* tab_restore_service_helper_;
 
@@ -249,18 +251,26 @@ class PersistentTabRestoreService::Delegate
 
 PersistentTabRestoreService::Delegate::Delegate(
     sessions::TabRestoreServiceClient* client)
-    : BaseSessionServiceDelegateImpl(true),
+    : client_(client),
       base_session_service_(new sessions::BaseSessionService(
           sessions::BaseSessionService::TAB_RESTORE,
-          client->GetPathToSaveTo(),
+          client_->GetPathToSaveTo(),
           this)),
-      client_(client),
       tab_restore_service_helper_(NULL),
       entries_to_write_(0),
       entries_written_(0),
       load_state_(NOT_LOADED) {}
 
 PersistentTabRestoreService::Delegate::~Delegate() {}
+
+base::SequencedWorkerPool*
+PersistentTabRestoreService::Delegate::GetBlockingPool() {
+  return client_->GetBlockingPool();
+}
+
+bool PersistentTabRestoreService::Delegate::ShouldUseDelayedSave() {
+  return true;
+}
 
 void PersistentTabRestoreService::Delegate::OnWillSaveCommands() {
   const Entries& entries = tab_restore_service_helper_->entries();
@@ -434,7 +444,7 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
        i >= 0 &&
        valid_count_before_selected < sessions::gMaxPersistNavigationCount;
        --i) {
-    if (ShouldTrackEntry(navigations[i].virtual_url())) {
+    if (client_->ShouldTrackURLForRestore(navigations[i].virtual_url())) {
       first_index_to_persist = i;
       valid_count_before_selected++;
     }
@@ -474,7 +484,7 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
   for (int i = first_index_to_persist, wrote_count = 0;
        wrote_count < 2 * sessions::gMaxPersistNavigationCount && i < max_index;
        ++i) {
-    if (ShouldTrackEntry(navigations[i].virtual_url())) {
+    if (client_->ShouldTrackURLForRestore(navigations[i].virtual_url())) {
       base_session_service_->ScheduleCommand(
           CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation,
                                            tab.id,
@@ -541,9 +551,10 @@ int PersistentTabRestoreService::Delegate::GetSelectedNavigationIndexToPersist(
   int max_index = static_cast<int>(navigations.size());
 
   // Find the first navigation to persist. We won't persist the selected
-  // navigation if ShouldTrackEntry returns false.
+  // navigation if client_->ShouldTrackURLForRestore returns false.
   while (selected_index >= 0 &&
-         !ShouldTrackEntry(navigations[selected_index].virtual_url())) {
+         !client_->ShouldTrackURLForRestore(
+             navigations[selected_index].virtual_url())) {
     selected_index--;
   }
 
@@ -553,7 +564,8 @@ int PersistentTabRestoreService::Delegate::GetSelectedNavigationIndexToPersist(
   // Couldn't find a navigation to persist going back, go forward.
   selected_index = tab.current_navigation_index + 1;
   while (selected_index < max_index &&
-         !ShouldTrackEntry(navigations[selected_index].virtual_url())) {
+         !client_->ShouldTrackURLForRestore(
+             navigations[selected_index].virtual_url())) {
     selected_index++;
   }
 

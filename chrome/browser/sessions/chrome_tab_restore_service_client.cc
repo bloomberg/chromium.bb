@@ -8,6 +8,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_constants.h"
@@ -39,6 +40,15 @@ ChromeTabRestoreServiceClient::ChromeTabRestoreServiceClient(Profile* profile)
     : profile_(profile) {}
 
 ChromeTabRestoreServiceClient::~ChromeTabRestoreServiceClient() {}
+
+bool ChromeTabRestoreServiceClient::ShouldTrackURLForRestore(const GURL& url) {
+  return ::ShouldTrackURLForRestore(url);
+}
+
+base::SequencedWorkerPool* ChromeTabRestoreServiceClient::GetBlockingPool() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return content::BrowserThread::GetBlockingPool();
+}
 
 base::FilePath ChromeTabRestoreServiceClient::GetPathToSaveTo() {
   return profile_->GetPath();

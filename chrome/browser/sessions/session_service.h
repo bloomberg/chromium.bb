@@ -15,12 +15,13 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/sessions/base_session_service_delegate_impl.h"
+#include "chrome/browser/sessions/session_common_utils.h"
 #include "chrome/browser/sessions/session_service_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sessions/base_session_service_delegate.h"
 #include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/session_service_commands.h"
 #include "content/public/browser/notification_observer.h"
@@ -60,7 +61,7 @@ struct SessionWindow;
 // flushed to |SessionBackend| and written to a file. Every so often
 // |SessionService| rebuilds the contents of the file from the open state of the
 // browser.
-class SessionService : public BaseSessionServiceDelegateImpl,
+class SessionService : public sessions::BaseSessionServiceDelegate,
                        public KeyedService,
                        public content::NotificationObserver,
                        public chrome::BrowserListObserver {
@@ -214,7 +215,9 @@ class SessionService : public BaseSessionServiceDelegateImpl,
       const sessions::GetLastSessionCallback& callback,
       base::CancelableTaskTracker* tracker);
 
-  // BaseSessionServiceDelegateImpl:
+  // sessions::BaseSessionServiceDelegate:
+  base::SequencedWorkerPool* GetBlockingPool() override;
+  bool ShouldUseDelayedSave() override;
   void OnSavedCommands() override;
 
  private:
@@ -334,6 +337,10 @@ class SessionService : public BaseSessionServiceDelegateImpl,
 
   // The profile. This may be null during testing.
   Profile* profile_;
+
+  // Whether to use delayed save. Set to false when constructed with a FilePath
+  // (which should only be used for testing).
+  bool should_use_delayed_save_;
 
   // The owned BaseSessionService.
   scoped_ptr<sessions::BaseSessionService> base_session_service_;
