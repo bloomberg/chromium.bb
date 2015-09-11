@@ -10,8 +10,6 @@
 /** @typedef {chrome.networkingPrivate.DeviceStateProperties} */
 var DeviceStateProperties;
 
-(function() {
-
 Polymer({
   is: 'network-summary-item',
 
@@ -132,9 +130,8 @@ Polymer({
    * @private
    */
   getDeviceEnabledButtonClass_: function(deviceState) {
-    var visible = deviceState &&
-        deviceState.Type != CrOnc.Type.ETHERNET &&
-        deviceState.Type != CrOnc.Type.VPN;
+    var visible = deviceState && deviceState.Type != CrOnc.Type.ETHERNET &&
+                  deviceState.Type != CrOnc.Type.VPN;
     return visible ? '' : 'invisible';
   },
 
@@ -197,7 +194,7 @@ Polymer({
    * @private
    */
   onKnownNetworksClicked_: function() {
-    MoreRouting.navigateTo('internet-known-networks', {type: CrOnc.Type.WI_FI});
+    this.fire('show-known-networks', {type: CrOnc.Type.WI_FI});
   },
 
   /**
@@ -233,4 +230,3 @@ Polymer({
     this.$.details.classList.toggle('selectable', selectable);
   },
 });
-})();

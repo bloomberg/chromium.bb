@@ -117,15 +117,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS"
                  file="settings_page/settings_page.css"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_CSS"
-                 file="settings_page/settings_page_header.css"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_HTML"
-                 file="settings_page/settings_page_header.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_JS"
-                 file="settings_page/settings_page_header.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_BREADCRUMB_CSS"
                  file="settings_ui/breadcrumb.css"
                  type="chrome_html" />

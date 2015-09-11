@@ -2,14 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#titleDiv {
-  margin-bottom: 10px;
-}
-
-#titleDiv span {
-  font-size: 24px;
-}
-
 #outerDiv {
   margin: 0 40px;
 }

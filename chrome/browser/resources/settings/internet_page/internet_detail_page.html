@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
@@ -20,10 +19,8 @@
   <link rel="import" type="css" href="internet_detail_page.css">
   <template>
     <paper-material class="layout vertical">
-      <!-- Title section: Back + Icon + name + connection state. -->
+      <!-- Title section: Icon + name + connection state. -->
       <div id="titleDiv" class="layout horizontal center">
-        <paper-icon-button icon="arrow-back" on-click="navigateBack_">
-        </paper-icon-button>
         <cr-network-icon id="networkIcon" network-state="[[networkState]]">
         </cr-network-icon>
         <span id="networkName">[[getStateName_(networkState)]]</span>

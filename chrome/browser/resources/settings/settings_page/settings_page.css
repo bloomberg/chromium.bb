@@ -33,11 +33,6 @@
   width: 760px;
 }
 
-cr-settings-page-header {
-  margin-bottom: 30px;
-  min-height: 24px;
-}
-
 cr-settings-checkbox {
   -webkit-margin-end: 10px;
   -webkit-margin-start: 0;

@@ -20,4 +20,54 @@
  */
 Polymer({
   is: 'cr-settings-internet-page',
+
+  properties: {
+    /**
+     * The current active route.
+     */
+    currentRoute: {
+      type: Array,
+      notify: true,
+    },
+
+    /**
+     * The network GUID for the detail subpage.
+     */
+    detailGuid: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * The network type for the known networks subpage.
+     */
+    knownNetworksType: {
+      type: String,
+      value: '',
+    },
+  },
+
+  /** @private */
+  onBackTap_: function() {
+    this.$.pages.back();
+  },
+
+  /**
+   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
+   * @private
+   */
+  onShowDetail_: function(event) {
+    this.detailGuid = event.detail.GUID;
+    this.$.pages.setSubpageChain(['network-detail']);
+  },
+
+  /**
+   * @param {!{detail: {type: string}}} event
+   * @private
+   */
+  onShowKnownNetworks_: function(event) {
+    this.knownNetworksType = event.detail.type;
+    this.$.pages.setSubpageChain(['known-networks']);
+  },
+
 });

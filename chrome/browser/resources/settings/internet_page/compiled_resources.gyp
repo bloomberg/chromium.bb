@@ -7,7 +7,13 @@
       'target_name': 'internet_page',
       'variables': {
         'depends': [
+          '../../../../../ui/webui/resources/cr_elements/v1_0/network/cr_onc_types.js',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../settings_page/settings_animated_pages.js'
+        ],
+        'externs': [
+          '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
@@ -20,7 +26,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -34,7 +39,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -48,7 +52,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -62,7 +65,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -76,7 +78,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -90,7 +91,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -104,7 +104,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -118,7 +117,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -132,7 +130,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -146,7 +143,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -160,7 +156,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
@@ -174,7 +169,6 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/externs/more_routing_externs.js',
           '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },

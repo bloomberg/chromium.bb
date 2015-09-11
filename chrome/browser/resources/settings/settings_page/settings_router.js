@@ -118,6 +118,20 @@ Polymer({
       subpage: ['site-settings'],
       subpageTitles: ['siteSettings'],
     },
+    {
+      url: '/networkDetail',
+      page: 'basic',
+      section: 'internet',
+      subpage: ['network-detail'],
+      subpageTitles: ['internetDetailPageTitle'],
+    },
+    {
+      url: '/knownNetworks',
+      page: 'basic',
+      section: 'internet',
+      subpage: ['known-networks'],
+      subpageTitles: ['internetKnownNetworksPageTitle'],
+    },
   ],
 
   /**

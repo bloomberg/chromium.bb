@@ -3,11 +3,6 @@
 <link rel="import" href="chrome://md-settings/advanced_page/advanced_page.html">
 <link rel="import" href="chrome://md-settings/basic_page/basic_page.html">
 
-<if expr="chromeos">
-<link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
-<link rel="import" href="chrome://md-settings/internet_page/internet_known_networks_page.html">
-</if>
-
 <dom-module id="cr-settings-main">
   <link rel="import" type="css" href="settings_main.css">
   <template>
@@ -23,18 +18,6 @@
             expand-container="{{expandContainer}}"
             current-route="{{currentRoute}}">
         </cr-settings-advanced-page>
-<if expr="chromeos">
-        <!-- TODO(tommycli): Move these to be subpages of Internet. -->
-        <cr-settings-internet-detail-page data-route-page="internet-detail"
-            subpage="true" guid="[[params.guid]]"
-            selected-page="[[selectedPage]]">
-        </cr-settings-internet-detail-page>
-          <cr-settings-internet-known-networks-page
-              data-route-page="internet-known-networks"
-              subpage="true" network-type="[[params.type]]"
-              selected-page="[[selectedPage]]">
-          </cr-settings-internet-known-networks-page>
-</if>
       </iron-pages>
     </div>
   </template>

@@ -15,64 +15,6 @@ Polymer({
 
   properties: {
     /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'internet-known-networks',
-      readOnly: true
-    },
-
-    /**
-     * Route for the page.
-     */
-    route: {
-      type: String,
-      value: ''
-    },
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: false
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() {
-        return loadTimeData.getString('internetKnownNetworksPageTitle');
-      }
-    },
-
-    /**
-     * Reflects the selected settings page. We use this to extract networkType
-     * from window.location.href when this page is navigated to. This is a
-     * workaround for a bug in the 1.0 version of more-routing where
-     * selected-params='{{params}}' is not correctly setting params in
-     * settings_main.html. TODO(stevenjb): Remove once more-routing is fixed.
-     * @type {?{PAGE_ID: string}}
-     */
-    selectedPage: {
-      type: Object,
-      value: null,
-      observer: 'selectedPageChanged_'
-    },
-
-    /**
-     * Name of the 'core-icon' to show.
-     */
-    icon: {
-      type: String,
-      value: 'settings-ethernet',
-      readOnly: true
-    },
-
-    /**
      * The type of networks to list.
      * @type {chrome.networkingPrivate.NetworkType}
      */
@@ -130,21 +72,6 @@ Polymer({
   },
 
   /**
-   * Polymer selectedPage changed method. TODO(stevenjb): Remove, see above.
-   */
-  selectedPageChanged_: function() {
-    if ((this.selectedPage && this.selectedPage.PAGE_ID) != this.PAGE_ID)
-      return;
-    var href = window.location.href;
-    var idx = href.lastIndexOf('/');
-    var type = href.slice(idx + 1);
-    if (type) {
-      this.networkType =
-          /** @type {chrome.networkingPrivate.NetworkType} */(type);
-    }
-  },
-
-  /**
    * networkingPrivate.onNetworksChanged event callback.
    * @param {!Array<string>} networkIds The list of changed network GUIDs.
    * @private
@@ -175,8 +102,7 @@ Polymer({
    * @private
    */
   onListItemSelected_: function(event) {
-    var state = event.detail;
-    MoreRouting.navigateTo('internet-detail', {guid: state.GUID});
+    this.fire('show-detail', event.detail);
   },
 
   /**
@@ -204,12 +130,4 @@ Polymer({
     var onc = {Priority: preferred ? 0 : 1};
     chrome.networkingPrivate.setProperties(state.GUID, onc);
   },
-
-  /**
-   * Navigate to the previous page.
-   * @private
-   */
-  navigateBack_: function() {
-    MoreRouting.navigateTo('internet');
-  }
 });

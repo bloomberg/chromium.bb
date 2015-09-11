@@ -31,7 +31,6 @@ Polymer({
      */
     currentRouteTitles: {
       type: Object,
-      observer: 'currentRouteTitlesChanged_',
     },
   },
 

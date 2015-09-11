@@ -170,7 +170,7 @@ Polymer({
       this.connectToNetwork_(state);
       return;
     }
-    MoreRouting.navigateTo('internet-detail', {guid: state.GUID});
+    this.fire('show-detail', state);
   },
 
   /**

@@ -20,65 +20,6 @@ Polymer({
 
   properties: {
     /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'internet-detail',
-      readOnly: true
-    },
-
-    /**
-     * Route for the page.
-     */
-    route: {
-      type: String,
-      value: ''
-    },
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: false
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() {
-        return loadTimeData.getString('internetDetailPageTitle');
-      }
-    },
-
-    /**
-     * Reflects the selected settings page. We use this to extract guid from
-     * window.location.href when this page is navigated to. This is a
-     * workaround for a bug in the 1.0 version of more-routing where
-     * selected-params='{{params}}' is not correctly setting params in
-     * settings_main.html. TODO(stevenjb): Remove once more-routing is fixed.
-     * @type {?{PAGE_ID: string}}
-     */
-    selectedPage: {
-      type: Object,
-      value: null,
-      observer: 'selectedPageChanged_'
-    },
-
-    /**
-     * Name of the 'core-icon' to show. TODO(stevenjb): Update this with the
-     * icon for the active internet connection.
-     */
-    icon: {
-      type: String,
-      value: 'settings-ethernet',
-      readOnly: true
-    },
-
-    /**
      * The network GUID to display details for.
      */
     guid: {
@@ -175,18 +116,6 @@ Polymer({
   },
 
   /**
-   * Polymer guid changed method. TODO(stevenjb): Remove, see TODO above.
-   */
-  selectedPageChanged_: function() {
-    if ((this.selectedPage && this.selectedPage.PAGE_ID) != this.PAGE_ID)
-      return;
-    var href = window.location.href;
-    var idx = href.lastIndexOf('/');
-    var guid = href.slice(idx + 1);
-    this.guid = guid;
-  },
-
-  /**
    * Polymer networkState changed method.
    */
   networkStateChanged_: function() {
@@ -262,7 +191,7 @@ Polymer({
     if (!properties) {
       // If state becomes null (i.e. the network is no longer visible), close
       // the page.
-      this.navigateBack_();
+      this.fire('close');
     }
   },
 
@@ -731,14 +660,6 @@ Polymer({
     if (!state || state.Type != 'Cellular')
       return false;
     return CrOnc.getActiveValue(state, 'Cellular.Family') == 'GSM';
-  },
-
-  /**
-   * Navigate to the previous page.
-   * @private
-   */
-  navigateBack_: function() {
-    MoreRouting.navigateTo('internet');
   },
 
   /**

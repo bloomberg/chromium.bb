@@ -14,8 +14,11 @@
   <template>
 <if expr="chromeos">
     <cr-settings-section route="internet" icon="settings-ethernet"
-        i18n-values="page-title:internetPageTitle">
-      <cr-settings-internet-page></cr-settings-internet-page>
+        i18n-values="page-title:internetPageTitle"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="internet">
+      <cr-settings-internet-page current-route="{{currentRoute}}">
+      </cr-settings-internet-page>
     </cr-settings-section>
 </if>
     <cr-settings-section route="appearance" icon="home"
