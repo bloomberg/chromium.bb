@@ -559,6 +559,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
     // and the idea is to simplify the audio conversion since each Convert()
     // call will then render exactly one ProvideInput() call.
     // in_params.sample_rate()
+    input_parameters = in_params;
     frames_per_buffer =
         ((in_params.sample_rate() * chunk_duration_ms) / 1000.0) + 0.5;
     input_parameters.set_frames_per_buffer(frames_per_buffer);
