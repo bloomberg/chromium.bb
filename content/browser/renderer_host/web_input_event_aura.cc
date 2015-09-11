@@ -48,6 +48,22 @@ blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
   return static_cast<blink::WebInputEvent::Modifiers>(0);
 }
 
+blink::WebPointerProperties::PointerType EventPointerTypeToWebPointerType(
+    ui::EventPointerType pointer_type) {
+  switch (pointer_type) {
+    case ui::EventPointerType::POINTER_TYPE_UNKNOWN:
+      return blink::WebPointerProperties::PointerType::PointerTypeUnknown;
+    case ui::EventPointerType::POINTER_TYPE_MOUSE:
+      return blink::WebPointerProperties::PointerType::PointerTypeMouse;
+    case ui::EventPointerType::POINTER_TYPE_PEN:
+      return blink::WebPointerProperties::PointerType::PointerTypePen;
+    case ui::EventPointerType::POINTER_TYPE_TOUCH:
+      return blink::WebPointerProperties::PointerType::PointerTypeTouch;
+  }
+  NOTREACHED() << "Unexpected EventPointerType";
+  return blink::WebPointerProperties::PointerType::PointerTypeUnknown;
+}
+
 }  // namespace
 
 #if defined(OS_WIN)
@@ -379,6 +395,12 @@ blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(
       break;
   }
 
+  webkit_event.tiltX = roundf(event.pointer_details().tilt_x());
+  webkit_event.tiltY = roundf(event.pointer_details().tilt_y());
+  webkit_event.force = event.pointer_details().force();
+  webkit_event.pointerType =
+      EventPointerTypeToWebPointerType(event.pointer_details().pointer_type());
+
   return webkit_event;
 }
 
@@ -401,6 +423,12 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
 
   webkit_event.wheelTicksX = webkit_event.deltaX / kPixelsPerTick;
   webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
+
+  webkit_event.tiltX = roundf(event.pointer_details().tilt_x());
+  webkit_event.tiltY = roundf(event.pointer_details().tilt_y());
+  webkit_event.force = event.pointer_details().force();
+  webkit_event.pointerType =
+      EventPointerTypeToWebPointerType(event.pointer_details().pointer_type());
 
   return webkit_event;
 }
