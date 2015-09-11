@@ -5,6 +5,7 @@
 #ifndef DragEvent_h
 #define DragEvent_h
 
+#include "core/CoreExport.h"
 #include "core/events/DragEventInit.h"
 #include "core/events/MouseEvent.h"
 
@@ -12,7 +13,7 @@ namespace blink {
 
 class DataTransfer;
 
-class DragEvent final : public MouseEvent {
+class CORE_EXPORT DragEvent final : public MouseEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
