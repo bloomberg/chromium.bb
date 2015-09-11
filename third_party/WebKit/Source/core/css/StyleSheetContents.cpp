@@ -460,7 +460,7 @@ Node* StyleSheetContents::singleOwnerNode() const
 {
     StyleSheetContents* root = rootStyleSheet();
     if (!root->hasOneClient())
-        return 0;
+        return nullptr;
     if (root->m_loadingClients.size())
         return (*root->m_loadingClients.begin())->ownerNode();
     return (*root->m_completedClients.begin())->ownerNode();
@@ -513,7 +513,7 @@ bool StyleSheetContents::hasFailedOrCanceledSubresources() const
 Document* StyleSheetContents::clientSingleOwnerDocument() const
 {
     if (!m_hasSingleOwnerDocument || clientSize() <= 0)
-        return 0;
+        return nullptr;
 
     if (m_loadingClients.size())
         return (*m_loadingClients.begin())->ownerDocument();
@@ -522,7 +522,7 @@ Document* StyleSheetContents::clientSingleOwnerDocument() const
 
 StyleSheetContents* StyleSheetContents::parentStyleSheet() const
 {
-    return m_ownerRule ? m_ownerRule->parentStyleSheet() : 0;
+    return m_ownerRule ? m_ownerRule->parentStyleSheet() : nullptr;
 }
 
 void StyleSheetContents::registerClient(CSSStyleSheet* sheet)

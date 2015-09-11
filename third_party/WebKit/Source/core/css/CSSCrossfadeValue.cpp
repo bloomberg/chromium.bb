@@ -63,12 +63,12 @@ static bool subimageKnownToBeOpaque(CSSValue* value, const LayoutObject* layoutO
 static ImageResource* cachedImageForCSSValue(CSSValue* value, Document* document)
 {
     if (!value)
-        return 0;
+        return nullptr;
 
     if (value->isImageValue()) {
         StyleFetchedImage* styleImageResource = toCSSImageValue(value)->cachedImage(document);
         if (!styleImageResource)
-            return 0;
+            return nullptr;
 
         return styleImageResource->cachedImage();
     }
@@ -76,12 +76,12 @@ static ImageResource* cachedImageForCSSValue(CSSValue* value, Document* document
     if (value->isImageGeneratorValue()) {
         toCSSImageGeneratorValue(value)->loadSubimages(document);
         // FIXME: Handle CSSImageGeneratorValue (and thus cross-fades with gradients and canvas).
-        return 0;
+        return nullptr;
     }
 
     ASSERT_NOT_REACHED();
 
-    return 0;
+    return nullptr;
 }
 
 CSSCrossfadeValue::~CSSCrossfadeValue()

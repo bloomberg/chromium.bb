@@ -45,7 +45,7 @@ public:
 
     HTMLStyleElement* getNamedItem(const AtomicString&) const;
 
-    Document* document() { return m_treeScope ? &m_treeScope->document() : 0; }
+    Document* document() { return m_treeScope ? &m_treeScope->document() : nullptr; }
 
 #if !ENABLE(OILPAN)
     void detachFromDocument();

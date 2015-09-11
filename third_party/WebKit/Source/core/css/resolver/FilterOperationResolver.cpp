@@ -101,7 +101,7 @@ void FilterOperationResolver::createFilterOperations(const CSSValue& inValue, co
             continue;
         }
 
-        CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->item(0)) : 0;
+        CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->item(0)) : nullptr;
         switch (filterValue->functionType()) {
         case CSSValueGrayscale:
         case CSSValueSepia:

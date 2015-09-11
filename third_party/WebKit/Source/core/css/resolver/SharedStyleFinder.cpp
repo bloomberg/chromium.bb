@@ -306,7 +306,7 @@ inline Element* SharedStyleFinder::findElementForStyleSharing() const
         return &candidate;
     }
     m_styleResolver->addToStyleSharingList(element());
-    return 0;
+    return nullptr;
 }
 
 bool SharedStyleFinder::matchesRuleSet(RuleSet* ruleSet)
@@ -322,7 +322,7 @@ ComputedStyle* SharedStyleFinder::findSharedStyle()
     INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleLookups, 1);
 
     if (!element().supportsStyleSharing())
-        return 0;
+        return nullptr;
 
     // Cache whether context.element() is affected by any known class selectors.
     m_elementAffectedByClassRules = element().hasClass() && classNamesAffectedByRules(element().classNames());
@@ -332,25 +332,25 @@ ComputedStyle* SharedStyleFinder::findSharedStyle()
     if (!shareElement) {
         if (m_styleResolver->stats() && m_styleResolver->stats()->allCountersEnabled() && documentContainsValidCandidate())
             INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleMissed, 1);
-        return 0;
+        return nullptr;
     }
 
     INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleFound, 1);
 
     if (matchesRuleSet(m_siblingRuleSet)) {
         INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedBySiblingRules, 1);
-        return 0;
+        return nullptr;
     }
 
     if (matchesRuleSet(m_uncommonAttributeRuleSet)) {
         INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedByUncommonAttributeRules, 1);
-        return 0;
+        return nullptr;
     }
 
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
     if (!element().parentElementOrShadowRoot()->childrenSupportStyleSharing()) {
         INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedByParent, 1);
-        return 0;
+        return nullptr;
     }
 
     return shareElement->mutableComputedStyle();

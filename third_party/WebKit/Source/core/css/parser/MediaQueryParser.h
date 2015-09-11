@@ -80,7 +80,7 @@ private:
     void skipUntilBlockEnd(CSSParserTokenType, const CSSParserToken&);
     void done(CSSParserTokenType, const CSSParserToken&);
 
-    typedef void (MediaQueryParser::*State)(CSSParserTokenType, const CSSParserToken&);
+    using State = void (MediaQueryParser::*)(CSSParserTokenType, const CSSParserToken&);
 
     void setStateAndRestrict(State, MediaQuery::Restrictor);
     void handleBlocks(const CSSParserToken&);

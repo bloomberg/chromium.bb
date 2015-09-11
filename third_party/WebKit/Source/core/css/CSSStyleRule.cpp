@@ -32,7 +32,7 @@
 
 namespace blink {
 
-typedef HashMap<const CSSStyleRule*, String> SelectorTextCache;
+using SelectorTextCache = HashMap<const CSSStyleRule*, String>;
 static SelectorTextCache& selectorTextCache()
 {
     DEFINE_STATIC_LOCAL(SelectorTextCache, cache, ());

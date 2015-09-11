@@ -68,10 +68,10 @@ private:
     RawPtrWillBeMember<Document> m_document;
     OwnPtr<MediaQueryEvaluator> m_evaluator;
 
-    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<MediaQueryList>> MediaQueryListSet;
+    using MediaQueryListSet = WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<MediaQueryList>>;
     MediaQueryListSet m_mediaLists;
 
-    typedef WillBeHeapLinkedHashSet<RefPtrWillBeMember<MediaQueryListListener>> ViewportListenerSet;
+    using ViewportListenerSet = WillBeHeapLinkedHashSet<RefPtrWillBeMember<MediaQueryListListener>>;
     ViewportListenerSet m_viewportListeners;
 };
 

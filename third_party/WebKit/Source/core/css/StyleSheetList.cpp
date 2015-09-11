@@ -64,14 +64,14 @@ unsigned StyleSheetList::length()
 StyleSheet* StyleSheetList::item(unsigned index)
 {
     const WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& sheets = styleSheets();
-    return index < sheets.size() ? sheets[index].get() : 0;
+    return index < sheets.size() ? sheets[index].get() : nullptr;
 }
 
 HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const
 {
 #if !ENABLE(OILPAN)
     if (!m_treeScope)
-        return 0;
+        return nullptr;
 #endif
 
     // IE also supports retrieving a stylesheet by name, using the name/id of the <style> tag
@@ -81,7 +81,7 @@ HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const
     // But unicity of stylesheet ids is good practice anyway ;)
     // FIXME: We should figure out if we should change this or fix the spec.
     Element* element = m_treeScope->getElementById(name);
-    return isHTMLStyleElement(element) ? toHTMLStyleElement(element) : 0;
+    return isHTMLStyleElement(element) ? toHTMLStyleElement(element) : nullptr;
 }
 
 CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
@@ -90,7 +90,7 @@ CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
         UseCounter::count(*document(), UseCounter::StyleSheetListAnonymousNamedGetter);
     HTMLStyleElement* item = getNamedItem(name);
     if (!item)
-        return 0;
+        return nullptr;
     return item->sheet();
 }
 

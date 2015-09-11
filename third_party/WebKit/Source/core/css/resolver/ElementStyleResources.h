@@ -41,8 +41,8 @@ class FilterOperation;
 class StyleImage;
 class TextLinkColors;
 
-typedef WillBeHeapHashMap<RawPtrWillBeMember<FilterOperation>, RefPtrWillBeMember<CSSSVGDocumentValue>> PendingSVGDocumentMap;
-typedef WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<CSSValue>> PendingImagePropertyMap;
+using PendingSVGDocumentMap = WillBeHeapHashMap<RawPtrWillBeMember<FilterOperation>, RefPtrWillBeMember<CSSSVGDocumentValue>>;
+using PendingImagePropertyMap = WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<CSSValue>>;
 
 // Holds information about resources, requested by stylesheets.
 // Lifetime: per-element style resolve.

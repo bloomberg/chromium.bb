@@ -42,7 +42,7 @@ StyleRuleImport::StyleRuleImport(const String& href, PassRefPtrWillBeRawPtr<Medi
     , m_styleSheetClient(this)
     , m_strHref(href)
     , m_mediaQueries(media)
-    , m_resource(0)
+    , m_resource(nullptr)
     , m_loading(false)
 {
     if (!m_mediaQueries)
@@ -74,7 +74,7 @@ void StyleRuleImport::setCSSStyleSheet(const String& href, const KURL& baseURL, 
 
     CSSParserContext context = m_parentStyleSheet ? m_parentStyleSheet->parserContext() : strictCSSParserContext();
     context.setCharset(charset);
-    Document* document = m_parentStyleSheet ? m_parentStyleSheet->singleOwnerDocument() : 0;
+    Document* document = m_parentStyleSheet ? m_parentStyleSheet->singleOwnerDocument() : nullptr;
     if (!baseURL.isNull()) {
         context.setBaseURL(baseURL);
         if (document)

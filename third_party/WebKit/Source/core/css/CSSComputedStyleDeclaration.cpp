@@ -528,7 +528,7 @@ const ComputedStyle* CSSComputedStyleDeclaration::computeComputedStyle() const
 Node* CSSComputedStyleDeclaration::styledNode() const
 {
     if (!m_node)
-        return 0;
+        return nullptr;
     if (m_node->isElementNode()) {
         if (PseudoElement* element = toElement(m_node)->pseudoElement(m_pseudoElementSpecifier))
             return element;
@@ -639,7 +639,7 @@ PassRefPtrWillBeRawPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::cop
 
 CSSRule* CSSComputedStyleDeclaration::parentRule() const
 {
-    return 0;
+    return nullptr;
 }
 
 String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)

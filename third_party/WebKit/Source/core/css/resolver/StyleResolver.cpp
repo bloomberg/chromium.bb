@@ -1290,7 +1290,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     unsigned cacheHash = RuntimeEnabledFeatures::styleMatchedPropertiesCacheEnabled() && matchResult.isCacheable() ? computeMatchedPropertiesHash(matchResult.matchedProperties().data(), matchResult.matchedProperties().size()) : 0;
     bool applyInheritedOnly = false;
-    const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult.matchedProperties()) : 0;
+    const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult.matchedProperties()) : nullptr;
 
     if (cachedMatchedProperties && MatchedPropertiesCache::isCacheable(*state.style(), *state.parentStyle())) {
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheHit, 1);

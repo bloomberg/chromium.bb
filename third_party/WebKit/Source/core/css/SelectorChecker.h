@@ -54,7 +54,7 @@ public:
     public:
         // Initial selector constructor
         SelectorCheckingContext(Element* element, VisitedMatchType visitedMatchType)
-            : selector(0)
+            : selector(nullptr)
             , element(element)
             , previousElement(nullptr)
             , scope(nullptr)

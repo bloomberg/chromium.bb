@@ -50,7 +50,7 @@ struct SizeAndCount {
     int count;
 };
 
-typedef HashMap<const LayoutObject*, SizeAndCount> LayoutObjectSizeCountMap;
+using LayoutObjectSizeCountMap = HashMap<const LayoutObject*, SizeAndCount>;
 
 class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
 public:

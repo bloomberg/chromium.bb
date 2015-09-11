@@ -66,18 +66,18 @@ const CachedMatchedProperties* MatchedPropertiesCache::find(unsigned hash, const
 
     Cache::iterator it = m_cache.find(hash);
     if (it == m_cache.end())
-        return 0;
+        return nullptr;
     CachedMatchedProperties* cacheItem = it->value.get();
     ASSERT(cacheItem);
 
     size_t size = properties.size();
     if (size != cacheItem->matchedProperties.size())
-        return 0;
+        return nullptr;
     if (cacheItem->computedStyle->insideLink() != styleResolverState.style()->insideLink())
-        return 0;
+        return nullptr;
     for (size_t i = 0; i < size; ++i) {
         if (properties[i] != cacheItem->matchedProperties[i])
-            return 0;
+            return nullptr;
     }
     return cacheItem;
 }

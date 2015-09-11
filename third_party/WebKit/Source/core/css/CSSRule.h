@@ -79,11 +79,11 @@ public:
     CSSStyleSheet* parentStyleSheet() const
     {
         if (m_parentIsRule)
-            return m_parentRule ? m_parentRule->parentStyleSheet() : 0;
+            return m_parentRule ? m_parentRule->parentStyleSheet() : nullptr;
         return m_parentStyleSheet;
     }
 
-    CSSRule* parentRule() const { return m_parentIsRule ? m_parentRule : 0; }
+    CSSRule* parentRule() const { return m_parentIsRule ? m_parentRule : nullptr; }
 
     // NOTE: Just calls notImplemented().
     void setCSSText(const String&);

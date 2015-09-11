@@ -120,7 +120,7 @@ StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(Document* document, float
         }
     }
 
-    return (m_imageSet && m_imageSet->isImageResourceSet()) ? toStyleFetchedImageSet(m_imageSet) : 0;
+    return (m_imageSet && m_imageSet->isImageResourceSet()) ? toStyleFetchedImageSet(m_imageSet) : nullptr;
 }
 
 StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(Document* document, float deviceScaleFactor)

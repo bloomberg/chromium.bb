@@ -78,8 +78,8 @@ private:
         : CSSImageGeneratorValue(CrossfadeClass)
         , m_fromValue(fromValue)
         , m_toValue(toValue)
-        , m_cachedFromImage(0)
-        , m_cachedToImage(0)
+        , m_cachedFromImage(nullptr)
+        , m_cachedToImage(nullptr)
         , m_crossfadeSubimageObserver(this) { }
 
     class CrossfadeSubimageObserverProxy final : public ImageResourceClient {

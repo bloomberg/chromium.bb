@@ -129,7 +129,7 @@ private:
     void loadInternal(ExecutionContext*);
     ScriptPromise fontStatusPromise(ScriptState*);
 
-    typedef ScriptPromiseProperty<RawPtrWillBeMember<FontFace>, RawPtrWillBeMember<FontFace>, Member<DOMException>> LoadedProperty;
+    using LoadedProperty = ScriptPromiseProperty<RawPtrWillBeMember<FontFace>, RawPtrWillBeMember<FontFace>, Member<DOMException>>;
 
     AtomicString m_family;
     String m_otsParseMessage;
@@ -148,7 +148,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<LoadFontCallback>> m_callbacks;
 };
 
-typedef WillBeHeapVector<RefPtrWillBeMember<FontFace>> FontFaceArray;
+using FontFaceArray = WillBeHeapVector<RefPtrWillBeMember<FontFace>>;
 
 } // namespace blink
 

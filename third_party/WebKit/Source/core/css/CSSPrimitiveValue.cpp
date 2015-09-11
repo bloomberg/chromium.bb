@@ -48,7 +48,7 @@ namespace {
 const int maxValueForCssLength = INT_MAX / kFixedPointDenominator - 2;
 const int minValueForCssLength = INT_MIN / kFixedPointDenominator + 2;
 
-typedef HashMap<String, CSSPrimitiveValue::UnitType> StringToUnitTable;
+using StringToUnitTable = HashMap<String, CSSPrimitiveValue::UnitType>;
 
 StringToUnitTable createStringToUnitTable()
 {
@@ -156,7 +156,7 @@ bool CSSPrimitiveValue::colorIsDerivedFromElement() const
     }
 }
 
-typedef HashMap<const CSSPrimitiveValue*, String> CSSTextCache;
+using CSSTextCache = HashMap<const CSSPrimitiveValue*, String>;
 static CSSTextCache& cssTextCache()
 {
     AtomicallyInitializedStaticReference(ThreadSpecific<CSSTextCache>, cache, new ThreadSpecific<CSSTextCache>());

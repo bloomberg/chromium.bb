@@ -236,7 +236,7 @@ template<class CSSRuleCollection>
 CSSRule* ElementRuleCollector::findStyleRule(CSSRuleCollection* cssRules, StyleRule* styleRule)
 {
     if (!cssRules)
-        return 0;
+        return nullptr;
     CSSRule* result = 0;
     for (unsigned i = 0; i < cssRules->length() && !result; ++i) {
         CSSRule* cssRule = cssRules->item(i);

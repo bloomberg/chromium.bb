@@ -35,7 +35,7 @@
 namespace blink {
 
 MatchedProperties::MatchedProperties()
-    : possiblyPaddedMember(0)
+    : possiblyPaddedMember(nullptr)
 {
 }
 

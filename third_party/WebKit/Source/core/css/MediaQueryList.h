@@ -82,7 +82,7 @@ private:
 
     RefPtrWillBeMember<MediaQueryMatcher> m_matcher;
     RefPtrWillBeMember<MediaQuerySet> m_media;
-    typedef WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener>> ListenerList;
+    using ListenerList = WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener>>;
     ListenerList m_listeners;
     bool m_matchesDirty;
     bool m_matches;

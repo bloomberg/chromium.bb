@@ -77,7 +77,7 @@ private:
     CSSParserToken blockStart(CSSParserTokenType blockType, CSSParserTokenType, CSSParserString);
     CSSParserToken blockEnd(CSSParserTokenType, CSSParserTokenType startType);
 
-    typedef CSSParserToken (CSSTokenizer::*CodePoint)(UChar);
+    using CodePoint = CSSParserToken (CSSTokenizer::*)(UChar);
 
     static const CodePoint codePoints[];
     Vector<CSSParserTokenType> m_blockStack;

@@ -63,7 +63,7 @@ String CSSMediaRule::cssText() const
 MediaList* CSSMediaRule::media() const
 {
     if (!mediaQueries())
-        return 0;
+        return nullptr;
     if (!m_mediaCSSOMWrapper)
         m_mediaCSSOMWrapper = MediaList::create(mediaQueries(), const_cast<CSSMediaRule*>(this));
     return m_mediaCSSOMWrapper.get();

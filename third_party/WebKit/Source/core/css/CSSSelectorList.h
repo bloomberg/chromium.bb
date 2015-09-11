@@ -36,7 +36,7 @@ class CSSParserSelector;
 class CORE_EXPORT CSSSelectorList {
     WTF_MAKE_FAST_ALLOCATED(CSSSelectorList);
 public:
-    CSSSelectorList() : m_selectorArray(0) { }
+    CSSSelectorList() : m_selectorArray(nullptr) { }
     CSSSelectorList(const CSSSelectorList&);
 
     ~CSSSelectorList();

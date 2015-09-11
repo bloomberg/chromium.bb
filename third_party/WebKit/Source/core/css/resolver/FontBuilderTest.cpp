@@ -32,8 +32,8 @@ private:
     OwnPtr<DummyPageHolder> m_dummy;
 };
 
-typedef void (*BuilderFunc)(FontBuilder&);
-typedef void (*DescriptionFunc)(FontDescription&);
+using BuilderFunc = void (*)(FontBuilder&);
+using DescriptionFunc = void (*)(FontDescription&);
 
 struct FunctionPair {
     FunctionPair(DescriptionFunc base, BuilderFunc value)

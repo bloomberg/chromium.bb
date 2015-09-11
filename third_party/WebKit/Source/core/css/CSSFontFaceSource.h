@@ -65,7 +65,7 @@ protected:
     CSSFontFaceSource();
     virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) = 0;
 
-    typedef HashMap<unsigned, RefPtr<SimpleFontData>> FontDataTable; // The hash key is composed of size synthetic styles.
+    using FontDataTable = HashMap<unsigned, RefPtr<SimpleFontData>>; // The hash key is composed of size synthetic styles.
 
     RawPtrWillBeMember<CSSFontFace> m_face; // Our owning font face.
     FontDataTable m_fontDataTable;

@@ -154,7 +154,7 @@ void CSSKeyframesRule::deleteRule(const String& s)
 CSSKeyframeRule* CSSKeyframesRule::findRule(const String& s)
 {
     int i = m_keyframesRule->findKeyframeIndex(s);
-    return (i >= 0) ? item(i) : 0;
+    return (i >= 0) ? item(i) : nullptr;
 }
 
 String CSSKeyframesRule::cssText() const
@@ -185,7 +185,7 @@ unsigned CSSKeyframesRule::length() const
 CSSKeyframeRule* CSSKeyframesRule::item(unsigned index) const
 {
     if (index >= length())
-        return 0;
+        return nullptr;
 
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
     RefPtrWillBeMember<CSSKeyframeRule>& rule = m_childRuleCSSOMWrappers[index];

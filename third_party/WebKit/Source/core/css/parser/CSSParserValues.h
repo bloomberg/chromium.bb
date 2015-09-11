@@ -87,7 +87,7 @@ public:
 
     unsigned size() const { return m_values.size(); }
     unsigned currentIndex() { return m_current; }
-    CSSParserValue* current() { return m_current < m_values.size() ? &m_values[m_current] : 0; }
+    CSSParserValue* current() { return m_current < m_values.size() ? &m_values[m_current] : nullptr; }
     CSSParserValue* next() { ++m_current; return current(); }
     CSSParserValue* previous()
     {
@@ -103,7 +103,7 @@ public:
             m_current = index;
     }
 
-    CSSParserValue* valueAt(unsigned i) { return i < m_values.size() ? &m_values[i] : 0; }
+    CSSParserValue* valueAt(unsigned i) { return i < m_values.size() ? &m_values[i] : nullptr; }
 
     void clearAndLeakValues() { m_values.clear(); m_current = 0;}
     void destroyAndClear();

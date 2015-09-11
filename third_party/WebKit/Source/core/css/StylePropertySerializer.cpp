@@ -137,7 +137,7 @@ const CSSValue* StylePropertySerializer::StylePropertySetForSerializer::getPrope
 {
     int index = findPropertyIndex(propertyID);
     if (index == -1)
-        return 0;
+        return nullptr;
     StylePropertySerializer::PropertyValueForSerializer value = propertyAt(index);
     return value.value();
 }

@@ -177,7 +177,7 @@ WebDisplayMode MediaValuesCached::displayMode() const
 
 Document* MediaValuesCached::document() const
 {
-    return 0;
+    return nullptr;
 }
 
 bool MediaValuesCached::hasValues() const

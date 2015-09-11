@@ -67,9 +67,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSSegmentedFontFace>> TraitsMap;
-    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<TraitsMap>, CaseFoldingHash> FamilyToTraitsMap;
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<const StyleRuleFontFace>, RefPtrWillBeMember<FontFace>> StyleRuleToFontFace;
+    using TraitsMap = WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSSegmentedFontFace>>;
+    using FamilyToTraitsMap = WillBeHeapHashMap<String, OwnPtrWillBeMember<TraitsMap>, CaseFoldingHash>;
+    using StyleRuleToFontFace = WillBeHeapHashMap<RawPtrWillBeMember<const StyleRuleFontFace>, RefPtrWillBeMember<FontFace>>;
     FamilyToTraitsMap m_fontFaces;
     FamilyToTraitsMap m_fonts;
     StyleRuleToFontFace m_styleRuleToFontFace;

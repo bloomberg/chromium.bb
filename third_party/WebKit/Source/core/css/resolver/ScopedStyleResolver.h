@@ -82,7 +82,7 @@ private:
 
     WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>> m_authorStyleSheets;
 
-    typedef WillBeHeapHashMap<const StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes>> KeyframesRuleMap;
+    using KeyframesRuleMap = WillBeHeapHashMap<const StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes>>;
     KeyframesRuleMap m_keyframesRuleMap;
 
     class RuleSubSet final : public NoBaseWillBeGarbageCollected<RuleSubSet> {
@@ -106,7 +106,7 @@ private:
         {
         }
     };
-    typedef WillBeHeapVector<OwnPtrWillBeMember<RuleSubSet>> CSSStyleSheetRuleSubSet;
+    using CSSStyleSheetRuleSubSet = WillBeHeapVector<OwnPtrWillBeMember<RuleSubSet>>;
 
     OwnPtrWillBeMember<CSSStyleSheetRuleSubSet> m_treeBoundaryCrossingRuleSet;
 };

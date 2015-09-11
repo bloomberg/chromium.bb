@@ -133,7 +133,7 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
 {
     TraitsMap* familyFontFaces = m_fontFaces.get(family);
     if (!familyFontFaces || familyFontFaces->isEmpty())
-        return 0;
+        return nullptr;
 
     FamilyToTraitsMap::AddResult traitsResult = m_fonts.add(family, nullptr);
     if (!traitsResult.storedValue->value)

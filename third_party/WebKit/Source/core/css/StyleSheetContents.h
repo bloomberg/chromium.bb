@@ -176,7 +176,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport>> m_importRules;
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleNamespace>> m_namespaceRules;
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> m_childRules;
-    typedef HashMap<AtomicString, AtomicString> PrefixNamespaceURIMap;
+    using PrefixNamespaceURIMap = HashMap<AtomicString, AtomicString>;
     PrefixNamespaceURIMap m_namespaces;
     AtomicString m_defaultNamespace;
 

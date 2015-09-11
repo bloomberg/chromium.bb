@@ -109,7 +109,7 @@ Image* CSSImageGeneratorValue::getImage(LayoutObject* layoutObject, const IntSiz
 
     // Don't generate an image for empty sizes.
     if (size.isEmpty())
-        return 0;
+        return nullptr;
 
     // Look up the image in our cache.
     return m_images.get(size);

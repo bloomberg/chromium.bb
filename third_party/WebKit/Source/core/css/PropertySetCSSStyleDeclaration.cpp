@@ -262,7 +262,7 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID u
 StyleSheetContents* AbstractPropertySetCSSStyleDeclaration::contextStyleSheet() const
 {
     CSSStyleSheet* cssStyleSheet = parentStyleSheet();
-    return cssStyleSheet ? cssStyleSheet->contents() : 0;
+    return cssStyleSheet ? cssStyleSheet->contents() : nullptr;
 }
 
 bool AbstractPropertySetCSSStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, const CSSValue* propertyValue) const
@@ -323,7 +323,7 @@ void StyleRuleCSSStyleDeclaration::didMutate(MutationType type)
 
 CSSStyleSheet* StyleRuleCSSStyleDeclaration::parentStyleSheet() const
 {
-    return m_parentRule ? m_parentRule->parentStyleSheet() : 0;
+    return m_parentRule ? m_parentRule->parentStyleSheet() : nullptr;
 }
 
 void StyleRuleCSSStyleDeclaration::reattach(MutableStylePropertySet& propertySet)
@@ -364,7 +364,7 @@ void InlineCSSStyleDeclaration::didMutate(MutationType type)
 
 CSSStyleSheet* InlineCSSStyleDeclaration::parentStyleSheet() const
 {
-    return m_parentElement ? &m_parentElement->document().elementSheet() : 0;
+    return m_parentElement ? &m_parentElement->document().elementSheet() : nullptr;
 }
 
 #if !ENABLE(OILPAN)

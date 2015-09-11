@@ -423,13 +423,13 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSS
     if (currentValue->getValueID() == CSSValueSpan) {
         isSpanPosition = true;
         ++it;
-        currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : 0;
+        currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : nullptr;
     }
 
     if (currentValue && currentValue->isNumber()) {
         gridLineNumber = currentValue->getIntValue();
         ++it;
-        currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : 0;
+        currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : nullptr;
     }
 
     if (currentValue && currentValue->isCustomIdent()) {

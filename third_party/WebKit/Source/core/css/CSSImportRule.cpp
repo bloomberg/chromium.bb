@@ -81,7 +81,7 @@ String CSSImportRule::cssText() const
 CSSStyleSheet* CSSImportRule::styleSheet() const
 {
     if (!m_importRule->styleSheet())
-        return 0;
+        return nullptr;
 
     if (!m_styleSheetCSSOMWrapper)
         m_styleSheetCSSOMWrapper = CSSStyleSheet::create(m_importRule->styleSheet(), const_cast<CSSImportRule*>(this));

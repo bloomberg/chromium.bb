@@ -129,8 +129,8 @@ struct CSSMediaSourceData : public RefCountedWillBeGarbageCollected<CSSMediaSour
 };
 
 struct CSSRuleSourceData;
-typedef WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData>> RuleSourceDataList;
-typedef WillBeHeapVector<SourceRange> SelectorRangeList;
+using RuleSourceDataList = WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData>>;
+using SelectorRangeList = WillBeHeapVector<SourceRange>;
 
 struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSourceData> {
     static PassRefPtrWillBeRawPtr<CSSRuleSourceData> create(StyleRule::Type type)

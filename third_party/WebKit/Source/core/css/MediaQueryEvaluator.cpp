@@ -62,8 +62,8 @@ using namespace MediaFeatureNames;
 
 enum MediaFeaturePrefix { MinPrefix, MaxPrefix, NoPrefix };
 
-typedef bool (*EvalFunc)(const MediaQueryExpValue&, MediaFeaturePrefix, const MediaValues&);
-typedef HashMap<StringImpl*, EvalFunc> FunctionMap;
+using EvalFunc = bool (*)(const MediaQueryExpValue&, MediaFeaturePrefix, const MediaValues&);
+using FunctionMap = HashMap<StringImpl*, EvalFunc>;
 static FunctionMap* gFunctionMap;
 
 MediaQueryEvaluator::MediaQueryEvaluator(bool mediaFeatureResult)

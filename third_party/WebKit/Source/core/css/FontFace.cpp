@@ -564,7 +564,7 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
         OwnPtrWillBeRawPtr<CSSFontFaceSource> source = nullptr;
 
         if (!item->isLocal()) {
-            Settings* settings = document ? document->frame() ? document->frame()->settings() : 0 : 0;
+            const Settings* settings = document ? document->settings() : nullptr;
             bool allowDownloading = settings && settings->downloadableBinaryFontsEnabled();
             if (allowDownloading && item->isSupportedFormat() && document) {
                 FontResource* fetched = item->fetch(document);

@@ -52,7 +52,7 @@ ScopedStyleResolver* ScopedStyleResolver::parent() const
         if (ScopedStyleResolver* resolver = scope->scopedStyleResolver())
             return resolver;
     }
-    return 0;
+    return nullptr;
 }
 
 void ScopedStyleResolver::addKeyframeRules(const RuleSet& ruleSet)

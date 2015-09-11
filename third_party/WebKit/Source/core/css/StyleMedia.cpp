@@ -41,7 +41,7 @@ StyleMedia::StyleMedia(LocalFrame* frame)
 
 AtomicString StyleMedia::type() const
 {
-    FrameView* view = m_frame ? m_frame->view() : 0;
+    FrameView* view = m_frame ? m_frame->view() : nullptr;
     if (view)
         return view->mediaType();
 

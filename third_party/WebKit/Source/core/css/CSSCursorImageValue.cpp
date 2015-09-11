@@ -41,7 +41,7 @@ namespace blink {
 static inline SVGCursorElement* resourceReferencedByCursorElement(const String& url, TreeScope& treeScope)
 {
     Element* element = SVGURIReference::targetElementFromIRIString(url, treeScope);
-    return isSVGCursorElement(element) ? toSVGCursorElement(element) : 0;
+    return isSVGCursorElement(element) ? toSVGCursorElement(element) : nullptr;
 }
 
 CSSCursorImageValue::CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
@@ -60,12 +60,9 @@ CSSCursorImageValue::~CSSCursorImageValue()
     if (!isSVGCursor())
         return;
 
-    HashSet<SVGElement*>::const_iterator it = m_referencedElements.begin();
-    HashSet<SVGElement*>::const_iterator end = m_referencedElements.end();
     String url = toCSSImageValue(m_imageValue.get())->url();
 
-    for (; it != end; ++it) {
-        SVGElement* referencedElement = *it;
+    for (SVGElement* referencedElement : m_referencedElements) {
         referencedElement->cursorImageValueRemoved();
         if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, referencedElement->treeScope()))
             cursorElement->removeClient(referencedElement);
@@ -149,7 +146,7 @@ StyleImage* CSSCursorImageValue::cachedImage(Document* document, float deviceSca
 
     if (m_image && m_image->isImageResource())
         return toStyleFetchedImage(m_image);
-    return 0;
+    return nullptr;
 }
 
 StyleImage* CSSCursorImageValue::cachedOrPendingImage(float deviceScaleFactor)

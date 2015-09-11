@@ -239,7 +239,7 @@ CSSRule* CSSStyleSheet::item(unsigned index)
 {
     unsigned ruleCount = length();
     if (index >= ruleCount)
-        return 0;
+        return nullptr;
 
     if (m_childRuleCSSOMWrappers.isEmpty())
         m_childRuleCSSOMWrappers.grow(ruleCount);
@@ -389,7 +389,7 @@ bool CSSStyleSheet::isLoading() const
 MediaList* CSSStyleSheet::media() const
 {
     if (!m_mediaQueries)
-        return 0;
+        return nullptr;
 
     if (!m_mediaCSSOMWrapper)
         m_mediaCSSOMWrapper = MediaList::create(m_mediaQueries.get(), const_cast<CSSStyleSheet*>(this));
@@ -398,7 +398,7 @@ MediaList* CSSStyleSheet::media() const
 
 CSSStyleSheet* CSSStyleSheet::parentStyleSheet() const
 {
-    return m_ownerRule ? m_ownerRule->parentStyleSheet() : 0;
+    return m_ownerRule ? m_ownerRule->parentStyleSheet() : nullptr;
 }
 
 Document* CSSStyleSheet::ownerDocument() const
@@ -406,7 +406,7 @@ Document* CSSStyleSheet::ownerDocument() const
     const CSSStyleSheet* root = this;
     while (root->parentStyleSheet())
         root = root->parentStyleSheet();
-    return root->ownerNode() ? &root->ownerNode()->document() : 0;
+    return root->ownerNode() ? &root->ownerNode()->document() : nullptr;
 }
 
 void CSSStyleSheet::setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allowedOrigin)

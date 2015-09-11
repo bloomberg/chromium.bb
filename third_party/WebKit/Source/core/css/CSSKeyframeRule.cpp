@@ -35,7 +35,7 @@
 namespace blink {
 
 CSSKeyframeRule::CSSKeyframeRule(StyleRuleKeyframe* keyframe, CSSKeyframesRule* parent)
-    : CSSRule(0)
+    : CSSRule(nullptr)
     , m_keyframe(keyframe)
 {
     setParentRule(parent);

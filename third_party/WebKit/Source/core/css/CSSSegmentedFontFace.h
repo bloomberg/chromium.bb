@@ -76,7 +76,7 @@ private:
     void pruneTable();
     bool isValid() const;
 
-    typedef WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>> FontFaceList;
+    using FontFaceList = WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>;
 
     RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
     FontTraits m_traits;

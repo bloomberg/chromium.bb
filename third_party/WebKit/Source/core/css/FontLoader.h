@@ -44,7 +44,7 @@ private:
     Timer<FontLoader> m_beginLoadingTimer;
 
     struct FontToLoad;
-    typedef Vector<OwnPtr<FontToLoad>> FontsToLoadVector;
+    using FontsToLoadVector = Vector<OwnPtr<FontToLoad>>;
     FontsToLoadVector m_fontsToBeginLoading;
     RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
     RawPtrWillBeWeakMember<Document> m_document;

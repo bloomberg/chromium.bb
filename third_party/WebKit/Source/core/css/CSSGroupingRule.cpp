@@ -131,7 +131,7 @@ unsigned CSSGroupingRule::length() const
 CSSRule* CSSGroupingRule::item(unsigned index) const
 {
     if (index >= length())
-        return 0;
+        return nullptr;
     ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
     RefPtrWillBeMember<CSSRule>& rule = m_childRuleCSSOMWrappers[index];
     if (!rule)

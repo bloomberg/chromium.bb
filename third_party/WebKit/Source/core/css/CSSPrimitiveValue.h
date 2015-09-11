@@ -133,8 +133,8 @@ public:
         LengthUnitTypeCount,
     };
 
-    typedef Vector<double, CSSPrimitiveValue::LengthUnitTypeCount> CSSLengthArray;
-    typedef BitVector CSSLengthTypeArray;
+    using CSSLengthArray = Vector<double, CSSPrimitiveValue::LengthUnitTypeCount>;
+    using CSSLengthTypeArray = BitVector;
 
     void accumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
     void accumulateLengthArray(CSSLengthArray&, CSSLengthTypeArray&, double multiplier = 1) const;
@@ -320,8 +320,8 @@ private:
     } m_value;
 };
 
-typedef CSSPrimitiveValue::CSSLengthArray CSSLengthArray;
-typedef CSSPrimitiveValue::CSSLengthTypeArray CSSLengthTypeArray;
+using CSSLengthArray = CSSPrimitiveValue::CSSLengthArray;
+using CSSLengthTypeArray = CSSPrimitiveValue::CSSLengthTypeArray;
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, isPrimitiveValue());
 

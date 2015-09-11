@@ -75,7 +75,7 @@ enum RuleMatchingBehavior {
 
 const unsigned styleSharingListSize = 15;
 const unsigned styleSharingMaxDepth = 32;
-typedef WillBeHeapDeque<RawPtrWillBeMember<Element>, styleSharingListSize> StyleSharingList;
+using StyleSharingList = WillBeHeapDeque<RawPtrWillBeMember<Element>, styleSharingListSize>;
 using ActiveInterpolationsMap = HashMap<PropertyHandle, Vector<RefPtr<Interpolation>, 1>>;
 
 // This class selects a ComputedStyle for a given element based on a collection of stylesheets.

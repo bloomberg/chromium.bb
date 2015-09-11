@@ -556,7 +556,7 @@ private:
             return leftSide;
         if (rightSide->category() == CalcNumber)
             return rightSide;
-        return 0;
+        return nullptr;
     }
 
     double evaluate(double leftSide, double rightSide) const

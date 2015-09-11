@@ -39,7 +39,7 @@ class RuleSet;
 class SelectorFilter;
 class StaticCSSRuleList;
 
-typedef unsigned CascadeOrder;
+using CascadeOrder = unsigned;
 
 const CascadeOrder ignoreCascadeOrder = 0;
 

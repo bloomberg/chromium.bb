@@ -72,7 +72,7 @@ StyleFetchedImage* CSSImageValue::cachedImage(Document* document, const Resource
             m_image = StyleFetchedImage::create(cachedImage.get(), document);
     }
 
-    return (m_image && m_image->isImageResource()) ? toStyleFetchedImage(m_image) : 0;
+    return (m_image && m_image->isImageResource()) ? toStyleFetchedImage(m_image) : nullptr;
 }
 
 void CSSImageValue::restoreCachedResourceIfNeeded(Document& document)
