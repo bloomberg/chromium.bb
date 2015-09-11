@@ -1190,9 +1190,20 @@ bool isStartOfLine(const VisiblePositionInComposedTree& p)
     return isStartOfLineAlgorithm<EditingInComposedTreeStrategy>(p);
 }
 
-bool isEndOfLine(const VisiblePosition& p)
+template <typename Strategy>
+bool isEndOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& p)
 {
     return p.isNotNull() && p.deepEquivalent() == endOfLine(p).deepEquivalent();
+}
+
+bool isEndOfLine(const VisiblePosition& p)
+{
+    return isEndOfLineAlgorithm<EditingStrategy>(p);
+}
+
+bool isEndOfLine(const VisiblePositionInComposedTree& p)
+{
+    return isEndOfLineAlgorithm<EditingInComposedTreeStrategy>(p);
 }
 
 bool isLogicalEndOfLine(const VisiblePosition& p)
