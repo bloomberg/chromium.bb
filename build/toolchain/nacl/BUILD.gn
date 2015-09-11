@@ -153,13 +153,19 @@ nacl_toolchain("irt_x86") {
   ar = toolprefix + "ar"
   readelf = toolprefix + "readelf"
 
+  tls_edit_label =
+      "//native_client/src/tools/tls_edit:tls_edit($host_toolchain)"
+  host_toolchain_out_dir =
+      rebase_path(get_label_info(tls_edit_label, "root_out_dir"),
+                  root_build_dir)
+
   # Some IRT implementations (notably, Chromium's) contain C++ code,
   # so we need to link w/ the C++ linker.
-  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
+  ld = "${python_path} ${link_irt} --tls-edit=${host_toolchain_out_dir}/tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
 
   # TODO(ncbray): depend on link script
   deps = [
-    "//native_client/src/tools/tls_edit:tls_edit($host_toolchain)",
+    tls_edit_label,
   ]
 }
 
