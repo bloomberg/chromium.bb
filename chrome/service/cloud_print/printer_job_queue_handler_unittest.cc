@@ -51,22 +51,25 @@ class TimeProviderMock : public PrinterJobQueueHandler::TimeProvider {
 
 class PrinterJobQueueHandlerTest : public ::testing::Test {
  protected:
-  base::Value* data_;
-  base::DictionaryValue* json_data_;
-  void SetUp() override {
-    base::JSONReader json_reader;
-    data_ = json_reader.DeprecatedRead(kJobListResponse);
-    data_->GetAsDictionary(&json_data_);
+  scoped_ptr<base::Value> data_;
+
+  const base::DictionaryValue* GetAsDictionary() const {
+    const base::DictionaryValue* json_data_ = nullptr;
+    EXPECT_TRUE(data_->GetAsDictionary(&json_data_));
+    return json_data_;
   }
 
-  void TearDown() override { delete data_; }
+  void SetUp() override {
+    base::JSONReader json_reader;
+    data_ = json_reader.Read(kJobListResponse);
+  }
 };
 
 TEST_F(PrinterJobQueueHandlerTest, BasicJobReadTest) {
   PrinterJobQueueHandler job_queue_handler;
   std::vector<JobDetails> jobs;
 
-  job_queue_handler.GetJobsFromQueue(json_data_, &jobs);
+  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
 
   ASSERT_EQ((size_t)3, jobs.size());
 
@@ -99,7 +102,7 @@ TEST_F(PrinterJobQueueHandlerTest, PreferNonFailureTest) {
   job_queue_handler.JobFetchFailed("__testjob1");
 
   std::vector<JobDetails> jobs;
-  job_queue_handler.GetJobsFromQueue(json_data_, &jobs);
+  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
 
   EXPECT_EQ(std::string("__testjob2"), jobs[0].job_id_);
   EXPECT_EQ(base::TimeDelta(), jobs[0].time_remaining_);
@@ -128,7 +131,7 @@ TEST_F(PrinterJobQueueHandlerTest, PreferNoTimeTest) {
     job_queue_handler.JobFetchFailed("__testjob3");
 
   std::vector<JobDetails> jobs;
-  job_queue_handler.GetJobsFromQueue(json_data_, &jobs);
+  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
 
   EXPECT_EQ(base::TimeDelta(), jobs[0].time_remaining_);
   EXPECT_EQ(std::string("__testjob1"), jobs[0].job_id_);
@@ -158,8 +161,7 @@ TEST_F(PrinterJobQueueHandlerTest, PreferLowerTimeTest) {
     job_queue_handler.JobFetchFailed("__testjob3");
 
   std::vector<JobDetails> jobs;
-  job_queue_handler.GetJobsFromQueue(json_data_,
-                                                   &jobs);
+  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
 
   base::TimeDelta time_to_wait = jobs[0].time_remaining_;
   EXPECT_NE(base::TimeDelta(), time_to_wait);
@@ -169,8 +171,7 @@ TEST_F(PrinterJobQueueHandlerTest, PreferLowerTimeTest) {
       .WillByDefault(Return(base::Time::UnixEpoch() +
                             base::TimeDelta::FromSeconds(4) + time_to_wait));
 
-  job_queue_handler.GetJobsFromQueue(json_data_,
-                                     &jobs);
+  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
 
   EXPECT_EQ(base::TimeDelta(), jobs[0].time_remaining_);
   EXPECT_EQ(std::string("__testjob2"),  jobs[0].job_id_);
