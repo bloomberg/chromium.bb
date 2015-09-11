@@ -1733,10 +1733,10 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
             diff.setNeedsPaintInvalidationLayer();
     }
 
-    if (diff.textOrColorChanged() && !diff.needsPaintInvalidation()) {
+    if (diff.textDecorationOrColorChanged() && !diff.needsPaintInvalidation()) {
         if (style()->hasBorder() || style()->hasOutline()
             || style()->isBackgroundColorCurrentColor()
-            || (isText() && !toLayoutText(this)->isAllCollapsibleWhitespace()))
+            || (isText() && !isBR()))
             diff.setNeedsPaintInvalidationObject();
     }
 

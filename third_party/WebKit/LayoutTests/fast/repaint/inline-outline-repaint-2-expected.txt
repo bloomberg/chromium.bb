@@ -13,7 +13,8 @@
         "LayoutInline SPAN",
         "InlineFlowBox",
         "LayoutText #text",
-        "InlineTextBox 'Test'"
+        "InlineTextBox 'Test'",
+        "LayoutText #text"
       ]
     }
   ]
