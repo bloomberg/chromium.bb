@@ -73,6 +73,9 @@ bool PresentationRequest::addEventListener(const AtomicString& eventType, PassRe
 
 bool PresentationRequest::hasPendingActivity() const
 {
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+        return false;
+
     // Prevents garbage collecting of this object when not hold by another
     // object but still has listeners registered.
     return hasEventListeners();
