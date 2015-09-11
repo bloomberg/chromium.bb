@@ -337,6 +337,35 @@ TEST_F(VisibleUnitsTest, isStartOfLine)
     EXPECT_FALSE(isStartOfLine(createVisiblePositionInComposedTree(*seven, 0)));
 }
 
+TEST_F(VisibleUnitsTest, isStartOfParagraph)
+{
+    const char* bodyContent = "<b id=zero>0</b><a id=host><b id=one>1</b><b id=two>22</b></a><b id=three>333</b>";
+    const char* shadowContent = "<p><content select=#two></content></p><p><content select=#one></content></p>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* zero = document().getElementById("zero")->firstChild();
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+
+    EXPECT_TRUE(isStartOfParagraph(createVisiblePositionInDOMTree(*zero, 0)));
+    EXPECT_TRUE(isStartOfParagraph(createVisiblePositionInComposedTree(*zero, 0)));
+
+    EXPECT_FALSE(isStartOfParagraph(createVisiblePositionInDOMTree(*one, 0)));
+    EXPECT_TRUE(isStartOfParagraph(createVisiblePositionInComposedTree(*one, 0)));
+
+    EXPECT_FALSE(isStartOfParagraph(createVisiblePositionInDOMTree(*one, 1)));
+    EXPECT_FALSE(isStartOfParagraph(createVisiblePositionInComposedTree(*one, 1)));
+
+    EXPECT_FALSE(isStartOfParagraph(createVisiblePositionInDOMTree(*two, 0)));
+    EXPECT_TRUE(isStartOfParagraph(createVisiblePositionInComposedTree(*two, 0)));
+
+    EXPECT_FALSE(isStartOfParagraph(createVisiblePositionInDOMTree(*three, 0)));
+    EXPECT_TRUE(isStartOfParagraph(createVisiblePositionInComposedTree(*three, 0)));
+}
+
 TEST_F(VisibleUnitsTest, leftPositionOf)
 {
     const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";

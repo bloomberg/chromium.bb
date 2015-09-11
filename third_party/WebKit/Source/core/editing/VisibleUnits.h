@@ -168,7 +168,8 @@ CORE_EXPORT VisiblePositionInComposedTree endOfParagraph(const VisiblePositionIn
 VisiblePosition startOfNextParagraph(const VisiblePosition&);
 VisiblePosition previousParagraphPosition(const VisiblePosition&, LayoutUnit x);
 VisiblePosition nextParagraphPosition(const VisiblePosition&, LayoutUnit x);
-bool isStartOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT bool isStartOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT bool isStartOfParagraph(const VisiblePositionInComposedTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT bool isEndOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT bool isEndOfParagraph(const VisiblePositionInComposedTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 bool inSameParagraph(const VisiblePosition&, const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);

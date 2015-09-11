@@ -1578,9 +1578,20 @@ bool inSameParagraph(const VisiblePosition& a, const VisiblePosition& b, Editing
     return a.isNotNull() && startOfParagraph(a, boundaryCrossingRule).deepEquivalent() == startOfParagraph(b, boundaryCrossingRule).deepEquivalent();
 }
 
-bool isStartOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+template <typename Strategy>
+static bool isStartOfParagraphAlgorithm(const VisiblePositionTemplate<Strategy>& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     return pos.isNotNull() && pos.deepEquivalent() == startOfParagraph(pos, boundaryCrossingRule).deepEquivalent();
+}
+
+bool isStartOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+{
+    return isStartOfParagraphAlgorithm<EditingStrategy>(pos, boundaryCrossingRule);
+}
+
+bool isStartOfParagraph(const VisiblePositionInComposedTree& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+{
+    return isStartOfParagraphAlgorithm<EditingInComposedTreeStrategy>(pos, boundaryCrossingRule);
 }
 
 template <typename Strategy>
