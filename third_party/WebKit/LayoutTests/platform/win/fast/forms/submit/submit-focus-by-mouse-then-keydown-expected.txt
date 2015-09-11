@@ -12,6 +12,7 @@
         "LayoutButton INPUT",
         "LayoutBlockFlow (anonymous)",
         "LayoutText #text",
+        "InlineTextBox 'Submit'",
         "LayoutButton INPUT"
       ]
     }

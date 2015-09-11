@@ -12,6 +12,7 @@
         "LayoutButton BUTTON",
         "LayoutBlockFlow (anonymous)",
         "LayoutText #text",
+        "InlineTextBox 'Reset'",
         "LayoutButton BUTTON"
       ]
     }
