@@ -875,7 +875,7 @@ void RendererBlinkPlatformImpl::sampleGamepads(WebGamepads& gamepads) {
 
 WebMediaRecorderHandler*
 RendererBlinkPlatformImpl::createMediaRecorderHandler() {
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   return new content::MediaRecorderHandler();
 #else
   return nullptr;
