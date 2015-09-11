@@ -8,10 +8,7 @@
       "children": [
         {
           "position": [8, 8],
-          "bounds": [700, 525],
-          "paintInvalidationClients": [
-            "LayoutVideo VIDEO id='v'"
-          ]
+          "bounds": [700, 525]
         },
         {
           "shouldFlattenTransform": false,
@@ -26,7 +23,7 @@
               "bounds": [700, 520],
               "drawsContent": true,
               "repaintRects": [
-                [599, 493, 24, 24],
+                [628, 493, 24, 24],
                 [570, 493, 89, 24],
                 [570, 493, 89, 24],
                 [570, 493, 24, 24],

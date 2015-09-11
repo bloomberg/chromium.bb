@@ -8,43 +8,32 @@
       "children": [
         {
           "position": [8, 8],
-          "bounds": [320, 240]
+          "bounds": [700, 525]
         },
         {
           "shouldFlattenTransform": false,
           "children": [
             {
               "position": [8, 8],
-              "bounds": [320, 240],
+              "bounds": [700, 525],
               "drawsContent": true
             },
             {
               "position": [8, 8],
-              "bounds": [320, 235],
+              "bounds": [700, 520],
               "drawsContent": true,
               "repaintRects": [
-                [229, 208, 50, 24],
-                [194, 205, 36, 30],
-                [159, 212, 28, 15],
-                [159, 205, 27, 22],
-                [118, 208, 33, 24],
-                [47, 208, 111, 24],
-                [47, 208, 111, 24],
-                [47, 208, 32, 24],
-                [14, 205, 30, 30]
+                [628, 493, 24, 24],
+                [570, 493, 89, 24],
+                [570, 493, 89, 24],
+                [570, 493, 24, 24],
+                [535, 490, 35, 30]
               ],
               "paintInvalidationClients": [
-                "InlineTextBox ''",
-                "RootInlineBox",
                 "LayoutButton INPUT",
                 "LayoutSlider INPUT",
                 "LayoutFlexibleBox DIV",
-                "LayoutBlockFlow DIV id='thumb'",
-                "LayoutBlockFlow (anonymous)",
-                "LayoutText #text",
-                "InlineTextBox '0:00'",
-                "LayoutButton INPUT",
-                "LayoutSlider INPUT"
+                "LayoutBlockFlow DIV id='thumb'"
               ]
             }
           ]
