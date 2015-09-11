@@ -337,7 +337,7 @@ long UnserializeString(IMkvReader* pReader, long long pos, long long size,
 
   unsigned char* const buf = reinterpret_cast<unsigned char*>(str);
 
-  const long status = pReader->Read(pos, size, buf);
+  const long status = pReader->Read(pos, static_cast<long>(size), buf);
 
   if (status) {
     delete[] str;
@@ -523,7 +523,7 @@ long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
   long long end = (available >= 1024) ? 1024 : available;
 
   // Scan until we find what looks like the first byte of the EBML header.
-  const int kMaxScanBytes = (available >= 1024) ? 1024 : available;
+  const long long kMaxScanBytes = (available >= 1024) ? 1024 : available;
   const unsigned char kEbmlByte0 = 0x1A;
   unsigned char scan_byte = 0;
 
