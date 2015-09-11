@@ -88,9 +88,6 @@ private:
     // Since it's floating-point, it has sub-sample accuracy.
     double m_virtualReadIndex;
 
-    // This synchronizes process().
-    mutable Mutex m_processLock;
-
     // Stores sample-accurate values calculated according to frequency and detune.
     AudioFloatArray m_phaseIncrements;
     AudioFloatArray m_detuneValues;

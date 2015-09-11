@@ -103,6 +103,10 @@ protected:
 
     void notifyEnded();
 
+    // This synchronizes with process() and any other method that needs to be synchronized like
+    // setBuffer for AudioBufferSource.
+    mutable Mutex m_processLock;
+
     // m_startTime is the time to start playing based on the context's timeline (0 or a time less than the context's current time means "now").
     double m_startTime; // in seconds
 

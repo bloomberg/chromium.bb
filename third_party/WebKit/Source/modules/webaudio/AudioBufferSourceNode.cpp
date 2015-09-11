@@ -482,6 +482,10 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
         return;
     }
 
+    // This synchronizes with process(). updateSchedulingInfo will read some of the variables being
+    // set here.
+    MutexLocker processLocker(m_processLock);
+
     m_isDurationGiven = isDurationGiven;
     m_isGrain = true;
     m_grainOffset = grainOffset;
