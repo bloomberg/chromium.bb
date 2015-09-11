@@ -104,6 +104,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   webkit_event.nativeKeyCode =
     ui::KeycodeConverter::DomCodeToNativeKeycode(event.code());
   webkit_event.domCode = static_cast<int>(event.code());
+  webkit_event.domKey = static_cast<int>(event.GetDomKey());
   webkit_event.unmodifiedText[0] = event.GetUnmodifiedText();
   webkit_event.text[0] = event.GetText();
 
@@ -296,6 +297,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(const ui::KeyEvent& event) {
         MakeWebKeyboardEventFromNativeEvent(event.native_event()));
     webkit_event.modifiers |= DomCodeToWebInputEventModifiers(event.code());
     webkit_event.domCode = static_cast<int>(event.code());
+    webkit_event.domKey = static_cast<int>(event.GetDomKey());
     return webkit_event;
   }
 #endif

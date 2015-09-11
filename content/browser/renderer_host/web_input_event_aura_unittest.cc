@@ -35,6 +35,7 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
               webkit_event.modifiers);
     EXPECT_EQ(static_cast<int>(ui::DomCode::CONTROL_LEFT),
               webkit_event.domCode);
+    EXPECT_EQ(static_cast<int>(ui::DomKey::CONTROL), webkit_event.domKey);
   }
   {
     // Release left Ctrl.
@@ -45,6 +46,7 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
     EXPECT_EQ(blink::WebInputEvent::IsLeft, webkit_event.modifiers);
     EXPECT_EQ(static_cast<int>(ui::DomCode::CONTROL_LEFT),
               webkit_event.domCode);
+    EXPECT_EQ(static_cast<int>(ui::DomKey::CONTROL), webkit_event.domKey);
   }
   {
     // Press right Ctrl.
@@ -66,6 +68,7 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
     EXPECT_EQ(blink::WebInputEvent::IsRight, webkit_event.modifiers);
     EXPECT_EQ(static_cast<int>(ui::DomCode::CONTROL_RIGHT),
               webkit_event.domCode);
+    EXPECT_EQ(static_cast<int>(ui::DomKey::CONTROL), webkit_event.domKey);
   }
 #if defined(USE_X11)
   const int kLocationModifiers =
