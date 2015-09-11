@@ -1705,6 +1705,8 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
   // to save, and since this is an update, it should know not to save as a new
   // login.
   EXPECT_FALSE(form_manager.IsNewLogin());
+  EXPECT_FALSE(
+      form_manager.is_possible_change_password_form_without_username());
 
   // By now, the PasswordFormManager should have promoted the new password value
   // already to be the current password, and should no longer maintain any info
@@ -1723,6 +1725,67 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
   Mock::VerifyAndClearExpectations(mock_store());
 
   // No meta-information should be updated, only the password.
+  EXPECT_EQ(credentials.new_password_value, new_credentials.password_value);
+  EXPECT_EQ(saved_match()->username_element, new_credentials.username_element);
+  EXPECT_EQ(saved_match()->password_element, new_credentials.password_element);
+  EXPECT_EQ(saved_match()->submit_element, new_credentials.submit_element);
+}
+
+TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
+  // Add a new password field to the test form. The PasswordFormManager should
+  // save the password from this field, instead of the current password field.
+  observed_form()->new_password_element = ASCIIToUTF16("NewPasswd");
+
+  // Given that |observed_form| was most likely a change password form, it
+  // should not serve as a source for updating meta-information stored with the
+  // old credentials, such as element names, as they are likely going to be
+  // different between change password and login forms. To test this in depth,
+  // forcibly wipe |submit_element|, which should normally trigger updating this
+  // field from |observed_form| in the UpdateLogin() step as a special case. We
+  // will verify in the end that this did not happen.
+  saved_match()->submit_element.clear();
+
+  client()->set_is_update_password_ui_enabled(true);
+  PasswordFormManager form_manager(password_manager(), client(),
+                                   client()->driver(), *observed_form(), false);
+
+  SimulateMatchingPhase(&form_manager, RESULT_MATCH_FOUND);
+  // User submits current and new credentials to the observed form.
+  PasswordForm credentials(*observed_form());
+  // The |username_value| contains a text that's unlikely to be real username.
+  credentials.username_value = ASCIIToUTF16("3");
+  credentials.password_value = saved_match()->password_value;
+  credentials.new_password_value = ASCIIToUTF16("test2");
+  credentials.preferred = true;
+  form_manager.ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  // Successful login. The PasswordManager would instruct PasswordFormManager
+  // to save, and since this is an update, it should know not to save as a new
+  // login.
+  EXPECT_FALSE(form_manager.IsNewLogin());
+  EXPECT_TRUE(form_manager.is_possible_change_password_form_without_username());
+
+  // By now, the PasswordFormManager should have promoted the new password value
+  // already to be the current password, and should no longer maintain any info
+  // about the new password.
+  EXPECT_EQ(saved_match()->username_value,
+            form_manager.pending_credentials().username_value);
+  EXPECT_EQ(credentials.new_password_value,
+            form_manager.pending_credentials().password_value);
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
+
+  // Trigger saving to exercise some special case handling in UpdateLogin().
+  PasswordForm new_credentials;
+  EXPECT_CALL(*mock_store(), UpdateLogin(_))
+      .WillOnce(SaveArg<0>(&new_credentials));
+
+  form_manager.Update(form_manager.pending_credentials());
+  Mock::VerifyAndClearExpectations(mock_store());
+
+  // No meta-information should be updated, only the password.
+  EXPECT_EQ(saved_match()->username_value, new_credentials.username_value);
   EXPECT_EQ(credentials.new_password_value, new_credentials.password_value);
   EXPECT_EQ(saved_match()->username_element, new_credentials.username_element);
   EXPECT_EQ(saved_match()->password_element, new_credentials.password_element);

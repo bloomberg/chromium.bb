@@ -69,6 +69,19 @@ bool AreStringsEqualOrEmpty(const base::string16& s1,
   return s1.empty() || s2.empty() || s1 == s2;
 }
 
+bool DoesStringContainOnlyDigits(const base::string16& s) {
+  for (auto c : s) {
+    if (!base::IsAsciiDigit(c))
+      return false;
+  }
+  return true;
+}
+
+// Heuristics to determine that a string is very unlikely to be a username.
+bool IsProbablyNotUsername(const base::string16& s) {
+  return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -92,6 +105,8 @@ PasswordFormManager::PasswordFormManager(
       password_manager_(password_manager),
       preferred_match_(nullptr),
       is_ignorable_change_password_form_(false),
+      is_possible_change_password_form_without_username_(
+          observed_form.IsPossibleChangePasswordFormWithoutUsername()),
       state_(PRE_MATCHING_PHASE),
       client_(client),
       manager_action_(kManagerActionNone),
@@ -237,7 +252,17 @@ void PasswordFormManager::ProvisionallySave(
     OtherPossibleUsernamesAction action) {
   DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
   DCHECK_NE(RESULT_NO_MATCH, DoesManage(credentials));
-  provisionally_saved_form_.reset(new PasswordForm(credentials));
+
+  scoped_ptr<autofill::PasswordForm> mutable_provisionally_saved_form(
+      new PasswordForm(credentials));
+  if (credentials.IsPossibleChangePasswordForm() &&
+      !credentials.username_value.empty() &&
+      IsProbablyNotUsername(credentials.username_value)) {
+    mutable_provisionally_saved_form->username_value.clear();
+    mutable_provisionally_saved_form->username_element.clear();
+    is_possible_change_password_form_without_username_ = true;
+  }
+  provisionally_saved_form_ = mutable_provisionally_saved_form.Pass();
   other_possible_username_action_ = action;
 
   if (HasCompletedMatching())

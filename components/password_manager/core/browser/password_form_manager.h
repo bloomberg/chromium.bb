@@ -213,6 +213,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
 
+  bool is_possible_change_password_form_without_username() const {
+    return is_possible_change_password_form_without_username_;
+  }
+
   // Use this to wipe copies of |pending_credentials_| from the password store
   // (and |best_matches_| as well. It will only wipe if:
   // 1. The stored password differs from the one in |pending_credentials_|.
@@ -431,6 +435,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // If the submitted form is for a change password form and the username
   // doesn't match saved credentials.
   bool is_ignorable_change_password_form_;
+
+  // True if we consider this form to be a change password form without username
+  // field. We use only client heuristics, so it could include signup forms.
+  // The value of this variable is calculated based not only on information from
+  // |observed_form_| but also on the credentials that the user submitted.
+  bool is_possible_change_password_form_without_username_;
 
   typedef enum {
     PRE_MATCHING_PHASE,  // Have not yet invoked a GetLogins query to find

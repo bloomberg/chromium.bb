@@ -393,8 +393,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
 
   // Create the pending credential item, save button and refusal combobox.
   ManagePasswordItemsView* item = nullptr;
-  if (!parent->model()->pending_password()
-           .IsPossibleChangePasswordFormWithoutUsername()) {
+  if (!parent->model()->pending_password().username_value.empty()) {
     std::vector<const autofill::PasswordForm*> credentials(
         1, &parent->model()->pending_password());
     item = new ManagePasswordItemsView(parent_->model(), credentials);

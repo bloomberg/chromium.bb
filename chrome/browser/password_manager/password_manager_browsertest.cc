@@ -2099,4 +2099,53 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 #endif
 
+// TODO(dvadym): Turn on this test when Change password UI will be implemented
+// for Mac. http://crbug.com/359315
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       ChangePwdWhenTheFormContainNotUsernameTextfield) {
+  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
+  // At first let us save credentials to the PasswordManager.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.password_value = base::ASCIIToUTF16("pw");
+  signin_form.username_value = base::ASCIIToUTF16("temp");
+  password_store->AddLogin(signin_form);
+
+  // Check that password update bubble is shown.
+  NavigateToFile("/password/password_form.html");
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit_change_password =
+      "document.getElementById('chg_text_field').value = '3';"
+      "document.getElementById('chg_password_withtext_field').value"
+      " = 'random';"
+      "document.getElementById('chg_new_password_withtext_username_1').value"
+      " = 'new_pw';"
+      "document.getElementById('chg_new_password_withtext_username_2').value"
+      " = 'new_pw';"
+      "document.getElementById('chg_submit_withtext_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
+                                     fill_and_submit_change_password));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingUpdatePrompt());
+
+  const autofill::PasswordForm stored_form =
+      password_store->stored_passwords().begin()->second[0];
+  prompt_observer->AcceptUpdatePrompt(stored_form);
+  // Spin the message loop to make sure the password store had a chance to
+  // update the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
+                             base::ASCIIToUTF16("new_pw"));
+}
+#endif
+
 }  // namespace password_manager

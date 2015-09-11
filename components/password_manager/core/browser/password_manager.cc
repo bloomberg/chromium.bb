@@ -533,8 +533,8 @@ bool PasswordManager::CanProvisionalManagerSave() {
 bool PasswordManager::ShouldPromptUserToSavePassword() const {
   return !client_->IsAutomaticPasswordSavingEnabled() &&
          (provisional_save_manager_->IsNewLogin() ||
-          provisional_save_manager_->observed_form()
-              .IsPossibleChangePasswordFormWithoutUsername() ||
+          provisional_save_manager_
+              ->is_possible_change_password_form_without_username() ||
           (provisional_save_manager_->password_overridden() &&
            client_->IsUpdatePasswordUIEnabled())) &&
          !provisional_save_manager_->has_generated_password() &&
@@ -668,8 +668,8 @@ void PasswordManager::OnLoginSuccessful() {
       logger->LogMessage(Logger::STRING_DECISION_ASK);
     bool update_password =
         (!provisional_save_manager_->best_matches().empty() &&
-         provisional_save_manager_->observed_form()
-             .IsPossibleChangePasswordFormWithoutUsername()) ||
+         provisional_save_manager_
+             ->is_possible_change_password_form_without_username()) ||
         provisional_save_manager_->password_overridden();
     if (client_->PromptUserToSaveOrUpdatePassword(
             provisional_save_manager_.Pass(),
