@@ -91,11 +91,15 @@ bool ChannelReader::TranslateInputData(const char* input_data,
 
   // Dispatch all complete messages in the data buffer.
   while (p < end) {
-    const char* message_tail = Message::FindNext(p, end);
-    if (message_tail) {
-      int len = static_cast<int>(message_tail - p);
+    Message::NextMessageInfo info;
+    Message::FindNext(p, end, &info);
+    if (info.message_found) {
+      int pickle_len = static_cast<int>(info.pickle_end - p);
+      Message translated_message(p, pickle_len);
 
-      Message translated_message(p, len);
+      // TODO(erikchen): Make attachments for info.attachment_ids.
+      // http://crbug.com/493414.
+
       if (!GetNonBrokeredAttachments(&translated_message))
         return false;
 
@@ -109,7 +113,7 @@ bool ChannelReader::TranslateInputData(const char* input_data,
         if (blocked_ids.empty()) {
           // Dispatch the message and continue the loop.
           DispatchMessage(&translated_message);
-          p = message_tail;
+          p = info.message_end;
           continue;
         }
 
@@ -120,7 +124,7 @@ bool ChannelReader::TranslateInputData(const char* input_data,
       // Make a deep copy of |translated_message| to add to the queue.
       scoped_ptr<Message> m(new Message(translated_message));
       queued_messages_.push_back(m.release());
-      p = message_tail;
+      p = info.message_end;
     } else {
       // Last message is partial.
       break;

@@ -4,6 +4,8 @@
 
 #include "ipc/ipc_message.h"
 
+#include <limits.h>
+
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -126,6 +128,57 @@ void Message::set_received_time(int64_t time) const {
   received_time_ = time;
 }
 #endif
+
+Message::NextMessageInfo::NextMessageInfo()
+    : message_found(false), pickle_end(nullptr), message_end(nullptr) {}
+Message::NextMessageInfo::~NextMessageInfo() {}
+
+// static
+void Message::FindNext(const char* range_start,
+                       const char* range_end,
+                       NextMessageInfo* info) {
+  DCHECK(info);
+  const char* pickle_end =
+      base::Pickle::FindNext(sizeof(Header), range_start, range_end);
+  if (!pickle_end)
+    return;
+  info->pickle_end = pickle_end;
+
+#if USE_ATTACHMENT_BROKER
+  // The data is not copied.
+  size_t pickle_len = static_cast<size_t>(pickle_end - range_start);
+  Message message(range_start, static_cast<int>(pickle_len));
+  int num_attachments = message.header()->num_brokered_attachments;
+
+  // Check for possible overflows.
+  size_t max_size_t = std::numeric_limits<size_t>::max();
+  if (num_attachments >= max_size_t / BrokerableAttachment::kNonceSize)
+    return;
+
+  size_t attachment_length = num_attachments * BrokerableAttachment::kNonceSize;
+  if (pickle_len > max_size_t - attachment_length)
+    return;
+
+  // Check whether the range includes the attachments.
+  size_t buffer_length = static_cast<size_t>(range_end - range_start);
+  if (buffer_length < attachment_length + pickle_len)
+    return;
+
+  for (int i = 0; i < num_attachments; ++i) {
+    const char* attachment_start =
+        pickle_end + i * BrokerableAttachment::kNonceSize;
+    BrokerableAttachment::AttachmentId id(attachment_start,
+                                          BrokerableAttachment::kNonceSize);
+    info->attachment_ids.push_back(id);
+  }
+  info->message_end =
+      pickle_end + num_attachments * BrokerableAttachment::kNonceSize;
+#else
+  info->message_end = pickle_end;
+#endif  // USE_ATTACHMENT_BROKER
+
+  info->message_found = true;
+}
 
 bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
   // We write the index of the descriptor so that we don't have to

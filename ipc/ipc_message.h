@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
+#include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
 
 #if !defined(NDEBUG)
@@ -166,11 +167,33 @@ class IPC_EXPORT Message : public base::Pickle {
   static void Log(std::string* name, const Message* msg, std::string* l) {
   }
 
-  // Find the end of the message data that starts at range_start.  Returns NULL
-  // if the entire message is not found in the given data range.
-  static const char* FindNext(const char* range_start, const char* range_end) {
-    return base::Pickle::FindNext(sizeof(Header), range_start, range_end);
-  }
+  // The static method FindNext() returns several pieces of information, which
+  // are aggregated into an instance of this struct.
+  struct NextMessageInfo {
+    NextMessageInfo();
+    ~NextMessageInfo();
+
+    // Whether an entire message was found in the given memory range.
+    bool message_found;
+    // Only filled in if |message_found| is true.
+    // The start address is passed into FindNext() by the caller, so isn't
+    // repeated in this struct. The end address of the pickle should be used to
+    // construct a base::Pickle.
+    const char* pickle_end;
+    // Only filled in if |message_found| is true.
+    // The end address of the message should be used to determine the start
+    // address of the next message.
+    const char* message_end;
+    // If the message has brokerable attachments, this vector will contain the
+    // ids of the brokerable attachments. The caller of FindNext() is
+    // responsible for adding the attachments to the message.
+    std::vector<BrokerableAttachment::AttachmentId> attachment_ids;
+  };
+
+  // |info| is an output parameter and must not be nullptr.
+  static void FindNext(const char* range_start,
+                       const char* range_end,
+                       NextMessageInfo* info);
 
   // WriteAttachment appends |attachment| to the end of the set. It returns
   // false iff the set is full.
