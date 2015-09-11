@@ -228,11 +228,6 @@ void FormData::appendData(const String& key, const String& value)
     m_items.append(Item(encodeAndNormalize(key), encodeAndNormalize(value)));
 }
 
-void FormData::appendData(const String& key, const CString& value)
-{
-    m_items.append(Item(encodeAndNormalize(key), value));
-}
-
 void FormData::appendData(const String& key, int value)
 {
     m_items.append(Item(encodeAndNormalize(key), encodeAndNormalize(String::number(value))));

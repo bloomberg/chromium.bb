@@ -104,9 +104,8 @@ void HTMLKeygenElement::appendToFormData(FormData& formData, bool)
     if (!keyType.isNull() && !equalIgnoringCase(keyType, "rsa"))
         return;
     String value = Platform::current()->signedPublicKeyAndChallengeString(shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document().baseURL());
-    if (value.isNull())
-        return;
-    formData.appendData(name(), value.utf8());
+    if (!value.isNull())
+        formData.appendData(name(), value);
 }
 
 const AtomicString& HTMLKeygenElement::formControlType() const

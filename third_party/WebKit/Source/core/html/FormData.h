@@ -85,7 +85,6 @@ public:
     // TODO(tkent): Rename appendFoo functions to |append| for consistency with
     // public function.
     void appendData(const String& key, const String& value);
-    void appendData(const String& key, const CString& value);
     void appendData(const String& key, int value);
     void appendBlob(const String& key, Blob*, const String& filename = String());
     String decode(const CString& data) const;
