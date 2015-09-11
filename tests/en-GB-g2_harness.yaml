@@ -225,7 +225,7 @@ tests:
       # FIXME: the original json based test only specified one cursor
       # position to be tested. Since I don't know the expected result
       # I'm setting this test to xfail
-      xfail: true
+      xfail: Test incomplete
   - # An example to reproduce:
     # https://bugzilla.gnome.org/show_bug.cgi?id=651217 note that the
     # braille cursor is very squeued. computer cursor is at pos 13,
@@ -237,7 +237,7 @@ tests:
       # FIXME: the original json based test only specified one cursor
       # position to be tested. Since I don't know the expected result
       # I'm setting this test to xfail
-      xfail: true
+      xfail: Test incomplete
   - # this testcase tests cursor position when mode is 0. The word
     # about is contracted to ab. The user presses cursor routing 1 on
     # their display, which should land on letter b, but instead it
