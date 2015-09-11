@@ -373,8 +373,7 @@ bool LinuxSandbox::seccomp_bpf_with_tsync_supported() const {
 
 bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   (void) process_type;
-#if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
-    !defined(THREAD_SANITIZER)
+#if !defined(ANY_OF_AMTLU_SANITIZER)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNoSandbox)) {
     return false;
