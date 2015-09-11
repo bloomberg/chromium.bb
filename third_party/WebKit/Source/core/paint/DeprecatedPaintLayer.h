@@ -96,6 +96,10 @@ private:
 // scrolling (through DeprecatedPaintLayerScrollableArea)
 // along with some optimizations are all handled by DeprecatedPaintLayer.
 //
+// The class is central to painting and hit-testing: it implements the painting
+// order through DeprecatedPaintLayerStackingNode and handle lots of complex
+// graphics operations LayoutObjects don't handle (e.g. 'filter' and 'opacity').
+//
 // The class is DEPRECATED, which means that we would like to remove it. The
 // reason for removal is that it has been a dumping ground for features for too
 // long and is the wrong level of abstraction, bearing no correspondence to any

@@ -63,9 +63,65 @@ enum ContentChangeType {
 
 class InlineFlowBox;
 
-// This class is the base for all objects that adhere to the CSS box model as described
-// at http://www.w3.org/TR/CSS21/box.html
-
+// This class is the base class for all CSS objects.
+//
+// All CSS objects follow the box model object:
+// http://www.w3.org/TR/CSS21/box.html
+//
+// This class actually doesn't have the box model but it exposes some common
+// functions or concepts that sub-classes can extend upon. For example, there
+// are accessors for margins, borders, paddings and borderBoundingBox().
+//
+// The reason for this partial implementation is that the 2 classes inheriting
+// from it (LayoutBox and LayoutInline) have different requirements but need to
+// have a DeprecatedPaintLayer.
+// For a full implementation of the box model, see LayoutBox.
+//
+// An important member of this class is DeprecatedPaintLayer. This class is
+// central to painting and hit-testing (see its class comment).
+// DeprecatedPaintLayers are instantiated for several reasons based on the
+// return value of layerTypeRequired().
+//
+// In order to fully understand LayoutBoxModelObject and the inherited classes,
+// we need to introduce the concept of coordinate systems.
+// There is 3 main coordinate systems:
+// - physical coordinates: it is the coordinate system used for painting and
+//   correspond to physical direction as seen on the physical display (screen,
+//   printed page). In CSS, 'top', 'right', 'bottom', 'left' are all in physical
+//   coordinates. The code matches this convention too.
+//
+// - logical coordinates: this is the coordinate system used for layout. It is
+//   determined by 'writing-mode' and 'direction'. Any property using 'before',
+//   'after', 'start' or 'end' is in logical coordinates. Those are also named
+//   respectively 'logical top', 'logical bottom', 'logical left' and
+//   'logical right'.
+//
+// Example with writing-mode: vertical-rl; direction: ltr;
+//
+//                    'top' / 'start' side
+//
+//                     block-flow direction
+//           <------------------------------------ |
+//           ------------------------------------- |
+//           |        c   |          s           | |
+// 'left'    |        o   |          o           | |   inline     'right'
+//    /      |        n   |          m           | |  direction      /
+// 'after'   |        t   |          e           | |              'before'
+//  side     |        e   |                      | |                side
+//           |        n   |                      | |
+//           |        t   |                      | |
+//           ------------------------------------- v
+//
+//                 'bottom' / 'end' side
+//
+// See https://drafts.csswg.org/css-writing-modes-3/#text-flow for some
+// extra details.
+//
+// - physical coordinates with flipped block-flow direction: those are physical
+//   coordinates but we flipped the block direction. See
+//   LayoutBox::noOverflowRect.
+//   TODO(jchaffraix): I don't fully understand why we need this coordinate
+//   system someone should fill in those details.
 class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 public:
     LayoutBoxModelObject(ContainerNode*);
@@ -97,6 +153,9 @@ public:
 
     virtual void updateFromStyle();
 
+    // The type of DeprecatedPaintLayer to instantiate.
+    // Any value returned from this function other than NoDeprecatedPaintLayer
+    // will populate |m_layer|.
     virtual DeprecatedPaintLayerType layerTypeRequired() const = 0;
 
     // This will work on inlines to return the bounding box of all of the lines' border boxes.
@@ -119,8 +178,8 @@ public:
     LayoutUnit computedCSSPaddingStart() const { return computedCSSPadding(style()->paddingStart()); }
     LayoutUnit computedCSSPaddingEnd() const { return computedCSSPadding(style()->paddingEnd()); }
 
-    // These functions are used during layout. Table cells
-    // override them to include some extra intrinsic padding.
+    // These functions are used during layout. Table cells override them to
+    // include the intrinsic padding (see explanations in LayoutTableCell).
     virtual LayoutUnit paddingTop() const { return computedCSSPaddingTop(); }
     virtual LayoutUnit paddingBottom() const { return computedCSSPaddingBottom(); }
     virtual LayoutUnit paddingLeft() const { return computedCSSPaddingLeft(); }
@@ -272,6 +331,8 @@ private:
     LayoutUnit computedCSSPadding(const Length&) const;
     bool isBoxModelObject() const final { return true; }
 
+    // The DeprecatedPaintLayer associated with this object.
+    // |m_layer| can be nullptr depending on the return value of layerTypeRequired().
     OwnPtr<DeprecatedPaintLayer> m_layer;
 };
 
