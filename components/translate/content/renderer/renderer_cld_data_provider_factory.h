@@ -9,10 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
 
-namespace content {
-class RenderViewObserver;
-}
-
 namespace translate {
 
 // A factory for the Renderer side of CLD Data Providers. The embedder should
@@ -31,8 +27,7 @@ class RendererCldDataProviderFactory {
   // is suitable only when CLD data has been statically linked.
   // Every invocation creates a new provider; the caller is responsible for
   // deleting the object when it is no longer needed.
-  virtual scoped_ptr<RendererCldDataProvider> CreateRendererCldDataProvider(
-      content::RenderViewObserver* render_view_observer);
+  virtual scoped_ptr<RendererCldDataProvider> CreateRendererCldDataProvider();
 
   // Returns true if and only if the current instance for this process is not
   // NULL.
