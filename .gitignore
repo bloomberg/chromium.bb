@@ -65,6 +65,11 @@ stamp-h1
 *.vcproj
 *.vcxproj
 
+# Ignore GYP generated Makefiles
+src/Makefile
+*.Makefile
+*.target.mk
+
 # Ignore compiled Python files.
 *.pyc
 
