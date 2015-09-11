@@ -198,7 +198,17 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   if (FAILED(sample->GetPointer(&buffer)))
     return S_FALSE;
 
-  observer_->FrameReceived(buffer, length);
+  REFERENCE_TIME start_time, end_time;
+  base::TimeTicks timestamp;
+  if (SUCCEEDED(sample->GetTime(&start_time, &end_time))) {
+    DCHECK(start_time <= end_time);
+    timestamp += base::TimeDelta::FromMicroseconds(start_time / 10);
+  } else {
+    timestamp = base::TimeTicks::Now();
+  }
+
+
+  observer_->FrameReceived(buffer, length, timestamp);
   return S_OK;
 }
 
