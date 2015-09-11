@@ -55,6 +55,7 @@
     shouldBeEqualToString("CSS.escape('-9a')", "-\\39 a");
 
     shouldBeEqualToString("CSS.escape('-')", "\\-");
+    shouldBeEqualToString("CSS.escape('-a')", "-a");
     shouldBeEqualToString("CSS.escape('--')", "--");
     shouldBeEqualToString("CSS.escape('--a')", "--a");
 
