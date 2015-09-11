@@ -586,6 +586,9 @@ Background.prototype = {
    * @param {chrome.automation.TreeChange} treeChange
    */
   onTreeChange: function(treeChange) {
+    if (this.mode_ === ChromeVoxMode.CLASSIC)
+      return;
+
     var node = treeChange.target;
     if (!node.containerLiveStatus)
       return;
