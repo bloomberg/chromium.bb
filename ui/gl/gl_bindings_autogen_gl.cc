@@ -26,6 +26,7 @@ DriverGL g_driver_gl;
 void DriverGL::InitializeStaticBindings() {
   fn.glActiveTextureFn = reinterpret_cast<glActiveTextureProc>(
       GetGLProcAddress("glActiveTexture"));
+  fn.glApplyFramebufferAttachmentCMAAINTELFn = 0;
   fn.glAttachShaderFn =
       reinterpret_cast<glAttachShaderProc>(GetGLProcAddress("glAttachShader"));
   fn.glBeginQueryFn = 0;
@@ -528,6 +529,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   ext.b_GL_IMG_multisampled_render_to_texture =
       extensions.find("GL_IMG_multisampled_render_to_texture ") !=
       std::string::npos;
+  ext.b_GL_INTEL_framebuffer_CMAA =
+      extensions.find("GL_INTEL_framebuffer_CMAA ") != std::string::npos;
   ext.b_GL_KHR_blend_equation_advanced =
       extensions.find("GL_KHR_blend_equation_advanced ") != std::string::npos;
   ext.b_GL_KHR_robustness =
@@ -545,6 +548,14 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_OES_mapbuffer ") != std::string::npos;
   ext.b_GL_OES_vertex_array_object =
       extensions.find("GL_OES_vertex_array_object ") != std::string::npos;
+
+  debug_fn.glApplyFramebufferAttachmentCMAAINTELFn = 0;
+  if (ext.b_GL_INTEL_framebuffer_CMAA) {
+    fn.glApplyFramebufferAttachmentCMAAINTELFn =
+        reinterpret_cast<glApplyFramebufferAttachmentCMAAINTELProc>(
+            GetGLProcAddress("glApplyFramebufferAttachmentCMAAINTEL"));
+    DCHECK(fn.glApplyFramebufferAttachmentCMAAINTELFn);
+  }
 
   debug_fn.glBeginQueryFn = 0;
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
@@ -2118,6 +2129,13 @@ static void GL_BINDING_CALL Debug_glActiveTexture(GLenum texture) {
   GL_SERVICE_LOG("glActiveTexture"
                  << "(" << GLEnums::GetStringEnum(texture) << ")");
   g_driver_gl.debug_fn.glActiveTextureFn(texture);
+}
+
+static void GL_BINDING_CALL Debug_glApplyFramebufferAttachmentCMAAINTEL(void) {
+  GL_SERVICE_LOG("glApplyFramebufferAttachmentCMAAINTEL"
+                 << "("
+                 << ")");
+  g_driver_gl.debug_fn.glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
 static void GL_BINDING_CALL Debug_glAttachShader(GLuint program,
@@ -5022,6 +5040,12 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glActiveTextureFn = fn.glActiveTextureFn;
     fn.glActiveTextureFn = Debug_glActiveTexture;
   }
+  if (!debug_fn.glApplyFramebufferAttachmentCMAAINTELFn) {
+    debug_fn.glApplyFramebufferAttachmentCMAAINTELFn =
+        fn.glApplyFramebufferAttachmentCMAAINTELFn;
+    fn.glApplyFramebufferAttachmentCMAAINTELFn =
+        Debug_glApplyFramebufferAttachmentCMAAINTEL;
+  }
   if (!debug_fn.glAttachShaderFn) {
     debug_fn.glAttachShaderFn = fn.glAttachShaderFn;
     fn.glAttachShaderFn = Debug_glAttachShader;
@@ -6250,6 +6274,10 @@ void DriverGL::ClearBindings() {
 
 void GLApiBase::glActiveTextureFn(GLenum texture) {
   driver_->fn.glActiveTextureFn(texture);
+}
+
+void GLApiBase::glApplyFramebufferAttachmentCMAAINTELFn(void) {
+  driver_->fn.glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
 void GLApiBase::glAttachShaderFn(GLuint program, GLuint shader) {
@@ -7987,6 +8015,12 @@ GLenum GLApiBase::glWaitSyncFn(GLsync sync,
 void TraceGLApi::glActiveTextureFn(GLenum texture) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glActiveTexture")
   gl_api_->glActiveTextureFn(texture);
+}
+
+void TraceGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glApplyFramebufferAttachmentCMAAINTEL")
+  gl_api_->glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
 void TraceGLApi::glAttachShaderFn(GLuint program, GLuint shader) {
@@ -10047,6 +10081,13 @@ GLenum TraceGLApi::glWaitSyncFn(GLsync sync,
 void NoContextGLApi::glActiveTextureFn(GLenum texture) {
   NOTREACHED() << "Trying to call glActiveTexture() without current GL context";
   LOG(ERROR) << "Trying to call glActiveTexture() without current GL context";
+}
+
+void NoContextGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
+  NOTREACHED() << "Trying to call glApplyFramebufferAttachmentCMAAINTEL() "
+                  "without current GL context";
+  LOG(ERROR) << "Trying to call glApplyFramebufferAttachmentCMAAINTEL() "
+                "without current GL context";
 }
 
 void NoContextGLApi::glAttachShaderFn(GLuint program, GLuint shader) {

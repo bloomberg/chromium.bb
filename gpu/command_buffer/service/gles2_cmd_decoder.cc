@@ -1060,6 +1060,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoConsumeTextureCHROMIUM(GLenum target, const GLbyte* key);
   void DoCreateAndConsumeTextureCHROMIUM(GLenum target, const GLbyte* key,
     GLuint client_id);
+  void DoApplyScreenSpaceAntialiasingCHROMIUM();
 
   bool DoIsValuebufferCHROMIUM(GLuint client_id);
   void DoBindValueBufferCHROMIUM(GLenum target, GLuint valuebuffer);
@@ -13845,6 +13846,13 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureCHROMIUM(GLenum target,
   }
 
   texture_ref = texture_manager()->Consume(client_id, texture);
+}
+
+void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
+  // Apply CMAA(Conservative Morphological Anti-Aliasing) algorithm to the
+  // color attachments of currently bound draw framebuffer.
+  // Reference GL_INTEL_framebuffer_CMAA for details.
+  glApplyFramebufferAttachmentCMAAINTEL();
 }
 
 bool GLES2DecoderImpl::DoIsValuebufferCHROMIUM(GLuint client_id) {

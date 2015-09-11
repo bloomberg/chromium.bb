@@ -1079,4 +1079,5 @@ GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
   return 0;
 }
 void GLES2InterfaceStub::BlendBarrierKHR() {}
+void GLES2InterfaceStub::ApplyScreenSpaceAntialiasingCHROMIUM() {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

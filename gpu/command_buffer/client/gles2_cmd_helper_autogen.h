@@ -2955,4 +2955,12 @@ void BlendBarrierKHR() {
   }
 }
 
+void ApplyScreenSpaceAntialiasingCHROMIUM() {
+  gles2::cmds::ApplyScreenSpaceAntialiasingCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::ApplyScreenSpaceAntialiasingCHROMIUM>();
+  if (c) {
+    c->Init();
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

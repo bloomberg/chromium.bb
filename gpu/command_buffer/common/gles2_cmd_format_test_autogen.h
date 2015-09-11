@@ -5086,4 +5086,15 @@ TEST_F(GLES2FormatTest, BlendBarrierKHR) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, ApplyScreenSpaceAntialiasingCHROMIUM) {
+  cmds::ApplyScreenSpaceAntialiasingCHROMIUM& cmd =
+      *GetBufferAs<cmds::ApplyScreenSpaceAntialiasingCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd);
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::ApplyScreenSpaceAntialiasingCHROMIUM::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

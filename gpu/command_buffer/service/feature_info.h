@@ -42,6 +42,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool multisampled_render_to_texture;
     // Use the IMG GLenum values and functions rather than EXT.
     bool use_img_for_multisampled_render_to_texture;
+    bool chromium_screen_space_antialiasing;
     bool oes_standard_derivatives;
     bool oes_egl_image_external;
     bool oes_depth24;

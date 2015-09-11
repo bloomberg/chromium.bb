@@ -16,6 +16,7 @@ namespace gfx {
 class GLContext;
 
 typedef void(GL_BINDING_CALL* glActiveTextureProc)(GLenum texture);
+typedef void(GL_BINDING_CALL* glApplyFramebufferAttachmentCMAAINTELProc)(void);
 typedef void(GL_BINDING_CALL* glAttachShaderProc)(GLuint program,
                                                   GLuint shader);
 typedef void(GL_BINDING_CALL* glBeginQueryProc)(GLenum target, GLuint id);
@@ -977,6 +978,7 @@ struct ExtensionsGL {
   bool b_GL_EXT_texture_storage;
   bool b_GL_EXT_timer_query;
   bool b_GL_IMG_multisampled_render_to_texture;
+  bool b_GL_INTEL_framebuffer_CMAA;
   bool b_GL_KHR_blend_equation_advanced;
   bool b_GL_KHR_robustness;
   bool b_GL_NV_blend_equation_advanced;
@@ -990,6 +992,8 @@ struct ExtensionsGL {
 
 struct ProcsGL {
   glActiveTextureProc glActiveTextureFn;
+  glApplyFramebufferAttachmentCMAAINTELProc
+      glApplyFramebufferAttachmentCMAAINTELFn;
   glAttachShaderProc glAttachShaderFn;
   glBeginQueryProc glBeginQueryFn;
   glBeginTransformFeedbackProc glBeginTransformFeedbackFn;
@@ -1302,6 +1306,7 @@ class GL_EXPORT GLApi {
   virtual ~GLApi();
 
   virtual void glActiveTextureFn(GLenum texture) = 0;
+  virtual void glApplyFramebufferAttachmentCMAAINTELFn(void) = 0;
   virtual void glAttachShaderFn(GLuint program, GLuint shader) = 0;
   virtual void glBeginQueryFn(GLenum target, GLuint id) = 0;
   virtual void glBeginTransformFeedbackFn(GLenum primitiveMode) = 0;
@@ -2119,6 +2124,8 @@ class GL_EXPORT GLApi {
 }  // namespace gfx
 
 #define glActiveTexture ::gfx::g_current_gl_context->glActiveTextureFn
+#define glApplyFramebufferAttachmentCMAAINTEL \
+  ::gfx::g_current_gl_context->glApplyFramebufferAttachmentCMAAINTELFn
 #define glAttachShader ::gfx::g_current_gl_context->glAttachShaderFn
 #define glBeginQuery ::gfx::g_current_gl_context->glBeginQueryFn
 #define glBeginTransformFeedback \

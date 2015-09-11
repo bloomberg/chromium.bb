@@ -336,3 +336,6 @@ GL_APICALL GLenum	GL_APIENTRY glGetGraphicsResetStatusKHR (void);
 
 // Extension KHR_blend_equation_advanced
 GL_APICALL void GL_APIENTRY glBlendBarrierKHR (void);
+
+// Extension GL_CHROMIUM_screen_space_antialiasing
+GL_APICALL void GL_APIENTRY glApplyScreenSpaceAntialiasingCHROMIUM (void);

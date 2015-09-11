@@ -1721,5 +1721,8 @@ GLenum MojoGLES2Impl::GetGraphicsResetStatusKHR() {
 void MojoGLES2Impl::BlendBarrierKHR() {
   NOTREACHED() << "Unimplemented BlendBarrierKHR.";
 }
+void MojoGLES2Impl::ApplyScreenSpaceAntialiasingCHROMIUM() {
+  NOTREACHED() << "Unimplemented ApplyScreenSpaceAntialiasingCHROMIUM.";
+}
 
 }  // namespace mojo

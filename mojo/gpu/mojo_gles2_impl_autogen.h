@@ -815,6 +815,7 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                                           GLenum coverMode) override;
   GLenum GetGraphicsResetStatusKHR() override;
   void BlendBarrierKHR() override;
+  void ApplyScreenSpaceAntialiasingCHROMIUM() override;
 
  private:
   MojoGLES2Context context_;

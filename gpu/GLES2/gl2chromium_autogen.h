@@ -354,5 +354,7 @@
   GLES2_GET_FUN(StencilThenCoverStrokePathCHROMIUM)
 #define glGetGraphicsResetStatusKHR GLES2_GET_FUN(GetGraphicsResetStatusKHR)
 #define glBlendBarrierKHR GLES2_GET_FUN(BlendBarrierKHR)
+#define glApplyScreenSpaceAntialiasingCHROMIUM \
+  GLES2_GET_FUN(ApplyScreenSpaceAntialiasingCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

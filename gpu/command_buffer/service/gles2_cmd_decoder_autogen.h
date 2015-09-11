@@ -5066,6 +5066,24 @@ error::Error GLES2DecoderImpl::HandleBlendBarrierKHR(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleApplyScreenSpaceAntialiasingCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::ApplyScreenSpaceAntialiasingCHROMIUM& c =
+      *static_cast<const gles2::cmds::ApplyScreenSpaceAntialiasingCHROMIUM*>(
+          cmd_data);
+  (void)c;
+  if (!features().chromium_screen_space_antialiasing) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glApplyScreenSpaceAntialiasingCHROMIUM",
+                       "function not available");
+    return error::kNoError;
+  }
+
+  DoApplyScreenSpaceAntialiasingCHROMIUM();
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:

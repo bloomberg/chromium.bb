@@ -130,6 +130,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_core_framebuffer_multisample(false),
       multisampled_render_to_texture(false),
       use_img_for_multisampled_render_to_texture(false),
+      chromium_screen_space_antialiasing(false),
       oes_standard_derivatives(false),
       oes_egl_image_external(false),
       oes_depth24(false),
@@ -731,6 +732,11 @@ void FeatureInfo::InitializeFeatures() {
           GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT);
       AddExtensionString("GL_EXT_multisampled_render_to_texture");
     }
+  }
+
+  if (extensions.Contains("GL_INTEL_framebuffer_CMAA")) {
+    feature_flags_.chromium_screen_space_antialiasing = true;
+    AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");
   }
 
   if (extensions.Contains("GL_OES_depth24") || gfx::HasDesktopGLFeatures() ||

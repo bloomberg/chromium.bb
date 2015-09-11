@@ -258,6 +258,9 @@ DELEGATE_TO_GL_5(renderbufferStorageMultisampleCHROMIUM,
 
 DELEGATE_TO_GL_1(activeTexture, ActiveTexture, WGC3Denum)
 
+DELEGATE_TO_GL(applyScreenSpaceAntialiasingCHROMIUM,
+               ApplyScreenSpaceAntialiasingCHROMIUM);
+
 DELEGATE_TO_GL_2(attachShader, AttachShader, WebGLId, WebGLId)
 
 DELEGATE_TO_GL_3(bindAttribLocation, BindAttribLocation, WebGLId,

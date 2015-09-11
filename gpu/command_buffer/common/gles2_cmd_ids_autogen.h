@@ -316,7 +316,8 @@
   OP(CoverStrokePathCHROMIUM)                  /* 557 */ \
   OP(StencilThenCoverFillPathCHROMIUM)         /* 558 */ \
   OP(StencilThenCoverStrokePathCHROMIUM)       /* 559 */ \
-  OP(BlendBarrierKHR)                          /* 560 */
+  OP(BlendBarrierKHR)                          /* 560 */ \
+  OP(ApplyScreenSpaceAntialiasingCHROMIUM)     /* 561 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

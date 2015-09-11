@@ -50,6 +50,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
 
   virtual void activeTexture(blink::WGC3Denum texture);
+  virtual void applyScreenSpaceAntialiasingCHROMIUM();
   virtual void attachShader(blink::WebGLId program, blink::WebGLId shader);
   virtual void bindAttribLocation(blink::WebGLId program,
                                   blink::WGC3Duint index,

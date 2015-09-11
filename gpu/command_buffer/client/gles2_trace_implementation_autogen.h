@@ -786,4 +786,5 @@ void StencilThenCoverStrokePathCHROMIUM(GLuint path,
                                         GLenum coverMode) override;
 GLenum GetGraphicsResetStatusKHR() override;
 void BlendBarrierKHR() override;
+void ApplyScreenSpaceAntialiasingCHROMIUM() override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_AUTOGEN_H_
