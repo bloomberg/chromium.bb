@@ -18,10 +18,6 @@ source_set("media") {
     "media_pipeline_host.h",
   ]
 
-  if (chromecast_branding == "public" && !is_android) {
-    sources += [ "cast_browser_cdm_factory_simple.cc" ]
-  }
-
   deps = [
     "//base",
     "//chromecast/base",

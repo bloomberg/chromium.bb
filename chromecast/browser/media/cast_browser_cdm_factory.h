@@ -30,13 +30,13 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
       const ::media::SessionExpirationUpdateCB& session_expiration_update_cb)
       override;
 
+  // Provides a platform-specific BrowserCdm instance.
+  virtual scoped_ptr<BrowserCdmCast> CreatePlatformBrowserCdm(
+      const CastKeySystem& key_system);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CastBrowserCdmFactory);
 };
-
-// Allow platform-specific CDMs to be provided.
-scoped_ptr<BrowserCdmCast> CreatePlatformBrowserCdm(
-    const CastKeySystem& key_system);
 
 }  // namespace media
 }  // namespace chromecast

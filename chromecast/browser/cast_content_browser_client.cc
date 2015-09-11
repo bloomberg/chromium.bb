@@ -50,6 +50,8 @@
 #if defined(OS_ANDROID)
 #include "components/crash/browser/crash_dump_manager_android.h"
 #include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
+#else
+#include "chromecast/browser/media/cast_browser_cdm_factory.h"
 #endif  // defined(OS_ANDROID)
 
 namespace chromecast {
@@ -88,6 +90,11 @@ CastContentBrowserClient::CreateAudioManagerFactory() {
 scoped_refptr<media::CmaMediaPipelineClient>
 CastContentBrowserClient::CreateCmaMediaPipelineClient() {
   return make_scoped_refptr(new media::CmaMediaPipelineClient());
+}
+
+scoped_ptr<::media::BrowserCdmFactory>
+CastContentBrowserClient::CreateBrowserCdmFactory() {
+  return make_scoped_ptr(new media::CastBrowserCdmFactory());
 }
 #endif
 

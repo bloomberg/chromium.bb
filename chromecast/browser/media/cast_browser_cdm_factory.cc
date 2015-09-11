@@ -53,5 +53,10 @@ scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
   return scoped_ptr< ::media::BrowserCdm>();
 }
 
+scoped_ptr<BrowserCdmCast> CastBrowserCdmFactory::CreatePlatformBrowserCdm(
+    const CastKeySystem& key_system) {
+  return scoped_ptr<BrowserCdmCast>();
+}
+
 }  // namespace media
 }  // namespace chromecast

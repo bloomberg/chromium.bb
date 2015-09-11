@@ -413,13 +413,6 @@
             'common/platform_client_auth_simple.cc',
             'renderer/cast_content_renderer_client_simple.cc',
           ],
-          'conditions': [
-            ['OS!="android"', {
-              'sources': [
-                'browser/media/cast_browser_cdm_factory_simple.cc',
-              ],
-            }],
-          ],
         }],
         # ExternalMetrics not necessary on Android and (as of this writing) uses
         # non-portable filesystem operations. Also webcrypto is not used on

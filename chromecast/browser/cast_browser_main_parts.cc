@@ -55,7 +55,6 @@
 #include "media/base/android/media_client_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #else
-#include "chromecast/browser/media/cast_browser_cdm_factory.h"
 #include "chromecast/net/network_change_notifier_factory_cast.h"
 #endif
 
@@ -307,8 +306,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(OS_ANDROID)
   ::media::SetMediaClientAndroid(new media::CastMediaClientAndroid());
 #else
-  if (cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
-    ::media::SetBrowserCdmFactory(new media::CastBrowserCdmFactory());
+  if (cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline)) {
+    scoped_ptr<::media::BrowserCdmFactory> cdm_factory =
+        cast_browser_process_->browser_client()->CreateBrowserCdmFactory();
+    ::media::SetBrowserCdmFactory(cdm_factory.release());
+  }
 #endif  // defined(OS_ANDROID)
 
   cast_browser_process_->SetConnectivityChecker(

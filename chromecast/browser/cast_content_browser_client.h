@@ -21,6 +21,7 @@ class CrashHandlerHostLinux;
 
 namespace media {
 class AudioManagerFactory;
+class BrowserCdmFactory;
 }
 
 namespace metrics {
@@ -71,6 +72,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // instance.
   virtual scoped_refptr<media::CmaMediaPipelineClient>
   CreateCmaMediaPipelineClient();
+
+  // Creates and returns a factory used for creating BrowserCdm instances for
+  // playing protected content. This is called once per browser lifetime.
+  virtual scoped_ptr<::media::BrowserCdmFactory> CreateBrowserCdmFactory();
 #endif
 
   // Performs cleanup for process exit (but before AtExitManager cleanup).
