@@ -21,6 +21,7 @@
 #ifndef TextCheckingHelper_h
 #define TextCheckingHelper_h
 
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
@@ -28,7 +29,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class LocalFrame;
 class Range;
 class SpellCheckerClient;
@@ -38,13 +38,14 @@ struct TextCheckingResult;
 class TextCheckingParagraph {
     STACK_ALLOCATED();
 public:
-    explicit TextCheckingParagraph(PassRefPtrWillBeRawPtr<Range> checkingRange);
+    explicit TextCheckingParagraph(const EphemeralRange& checkingRange);
+    TextCheckingParagraph(const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange);
     TextCheckingParagraph(PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange);
     ~TextCheckingParagraph();
 
     int rangeLength() const;
-    PassRefPtrWillBeRawPtr<Range> subrange(int characterOffset, int characterCount) const;
-    int offsetTo(const Position&, ExceptionState&) const;
+    EphemeralRange subrange(int characterOffset, int characterCount) const;
+    int offsetTo(const Position&) const;
     void expandRangeToNextEnd();
 
     const String& text() const;
@@ -59,19 +60,21 @@ public:
     int checkingLength() const;
 
     bool checkingRangeCovers(int location, int length) const { return location < checkingEnd() && location + length > checkingStart(); }
-    PassRefPtrWillBeRawPtr<Range> paragraphRange() const;
-    PassRefPtrWillBeRawPtr<Range> checkingRange() const { return m_checkingRange; }
+    EphemeralRange paragraphRange() const;
+    void setParagraphRange(const EphemeralRange&);
+
+    EphemeralRange checkingRange() const { return m_checkingRange; }
 
 private:
     void invalidateParagraphRangeValues();
-    PassRefPtrWillBeRawPtr<Range> offsetAsRange() const;
+    EphemeralRange offsetAsRange() const;
 
     bool isTextEmpty() const { return text().isEmpty(); }
     bool isRangeEmpty() const { return checkingStart() >= checkingEnd(); }
 
-    RefPtrWillBeMember<Range> m_checkingRange;
-    mutable RefPtrWillBeMember<Range> m_paragraphRange;
-    mutable RefPtrWillBeMember<Range> m_offsetAsRange;
+    EphemeralRange m_checkingRange;
+    mutable EphemeralRange m_paragraphRange;
+    mutable EphemeralRange m_offsetAsRange;
     mutable String m_text;
     mutable int m_checkingStart;
     mutable int m_checkingEnd;
@@ -85,10 +88,10 @@ public:
     TextCheckingHelper(SpellCheckerClient&, const Position& start, const Position& end);
     ~TextCheckingHelper();
 
-    String findFirstMisspelling(int& firstMisspellingOffset, bool markAll, RefPtrWillBeRawPtr<Range>& firstMisspellingRange);
+    String findFirstMisspelling(int& firstMisspellingOffset, bool markAll);
     String findFirstMisspellingOrBadGrammar(bool checkGrammar, bool& outIsSpelling, int& outFirstFoundOffset, GrammarDetail& outGrammarDetail);
     String findFirstBadGrammar(GrammarDetail& outGrammarDetail, int& outGrammarPhraseOffset, bool markAll);
-    void markAllMisspellings(RefPtrWillBeRawPtr<Range>& firstMisspellingRange);
+    bool markAllMisspellings();
     void markAllBadGrammar();
 
 private:
@@ -101,7 +104,7 @@ private:
 };
 
 void checkTextOfParagraph(TextCheckerClient&, const String&, TextCheckingTypeMask, Vector<TextCheckingResult>&);
-void expandRangeToSentenceBoundary(Range&);
+EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange&);
 bool unifiedTextCheckerEnabled(const LocalFrame*);
 
 } // namespace blink
