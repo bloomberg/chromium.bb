@@ -27,7 +27,7 @@ class DesktopMediaListView : public views::View,
                        scoped_ptr<DesktopMediaList> media_list);
   ~DesktopMediaListView() override;
 
-  void StartUpdating(content::DesktopMediaID::Id dialog_window_id);
+  void StartUpdating(content::DesktopMediaID dialog_window_id);
 
   // Called by DesktopMediaSourceView when selection has changed.
   void OnSelectionChanged();

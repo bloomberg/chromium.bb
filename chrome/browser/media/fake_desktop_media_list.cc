@@ -47,7 +47,7 @@ void FakeDesktopMediaList::SetUpdatePeriod(base::TimeDelta period) {}
 void FakeDesktopMediaList::SetThumbnailSize(const gfx::Size& thumbnail_size) {}
 
 void FakeDesktopMediaList::SetViewDialogWindowId(
-    content::DesktopMediaID::Id dialog_id) {}
+    content::DesktopMediaID dialog_id) {}
 
 void FakeDesktopMediaList::StartUpdating(DesktopMediaListObserver* observer) {
   observer_ = observer;

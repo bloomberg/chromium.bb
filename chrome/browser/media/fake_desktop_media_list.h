@@ -23,7 +23,7 @@ class FakeDesktopMediaList : public DesktopMediaList {
   // DesktopMediaList implementation:
   void SetUpdatePeriod(base::TimeDelta period) override;
   void SetThumbnailSize(const gfx::Size& thumbnail_size) override;
-  void SetViewDialogWindowId(content::DesktopMediaID::Id dialog_id) override;
+  void SetViewDialogWindowId(content::DesktopMediaID dialog_id) override;
   void StartUpdating(DesktopMediaListObserver* observer) override;
   int GetSourceCount() const override;
   const Source& GetSource(int index) const override;

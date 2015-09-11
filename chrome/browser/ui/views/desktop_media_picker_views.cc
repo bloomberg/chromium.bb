@@ -210,7 +210,7 @@ DesktopMediaListView::DesktopMediaListView(
 
 DesktopMediaListView::~DesktopMediaListView() {}
 
-void DesktopMediaListView::StartUpdating(DesktopMediaID::Id dialog_window_id) {
+void DesktopMediaListView::StartUpdating(DesktopMediaID dialog_window_id) {
   media_list_->SetViewDialogWindowId(dialog_window_id);
   media_list_->StartUpdating(this);
 }
@@ -425,19 +425,19 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // in its own top-level window, so in that case it needs to be filtered out of
   // the list of top-level windows available for capture, and to achieve that
   // the Id is passed to DesktopMediaList.
-  DesktopMediaID::Id dialog_window_id = 0;
+  DesktopMediaID dialog_window_id;
   if (!modal_dialog) {
+    dialog_window_id = DesktopMediaID::RegisterAuraWindow(
+        DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow());
+
+    bool is_ash_window = false;
 #if defined(USE_ASH)
-    if (chrome::IsNativeWindowInAsh(widget->GetNativeWindow())) {
-      dialog_window_id =
-          DesktopMediaID::RegisterAuraWindow(
-              DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow()).aura_id;
-      DCHECK_NE(dialog_window_id, 0);
-    }
+    is_ash_window = chrome::IsNativeWindowInAsh(widget->GetNativeWindow());
 #endif
 
-    if (dialog_window_id == 0) {
-      dialog_window_id = AcceleratedWidgetToDesktopMediaId(
+    // Set native window ID if the windows is outside Ash.
+    if (!is_ash_window) {
+      dialog_window_id.id = AcceleratedWidgetToDesktopMediaId(
           widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
     }
   }

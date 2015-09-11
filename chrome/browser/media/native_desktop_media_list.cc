@@ -238,7 +238,7 @@ NativeDesktopMediaList::NativeDesktopMediaList(
       window_capturer_(window_capturer.Pass()),
       update_period_(base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       thumbnail_size_(100, 100),
-      view_dialog_id_(-1),
+      view_dialog_id_(content::DesktopMediaID::TYPE_NONE, -1),
       observer_(NULL),
       weak_factory_(this) {
   base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
@@ -261,7 +261,7 @@ void NativeDesktopMediaList::SetThumbnailSize(
 }
 
 void NativeDesktopMediaList::SetViewDialogWindowId(
-    content::DesktopMediaID::Id dialog_id) {
+    content::DesktopMediaID dialog_id) {
   view_dialog_id_ = dialog_id;
 }
 
@@ -288,7 +288,7 @@ const DesktopMediaList::Source& NativeDesktopMediaList::GetSource(
 void NativeDesktopMediaList::Refresh() {
   capture_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Worker::Refresh, base::Unretained(worker_.get()),
-                            thumbnail_size_, view_dialog_id_));
+                            thumbnail_size_, view_dialog_id_.id));
 }
 
 void NativeDesktopMediaList::OnSourcesList(

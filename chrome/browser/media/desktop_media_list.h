@@ -45,10 +45,7 @@ class DesktopMediaList {
 
   // Sets ID of the hosting desktop picker dialog. The window with this ID will
   // be filtered out from the list of sources.
-  //
-  // TODO(miu): The entire DesktopMediaID, not just the Id field should be
-  // passed here.  http://crbug.com/513490
-  virtual void SetViewDialogWindowId(content::DesktopMediaID::Id dialog_id) = 0;
+  virtual void SetViewDialogWindowId(content::DesktopMediaID dialog_id) = 0;
 
   // Starts updating the model. The model is initially empty, so OnSourceAdded()
   // notifications will be generated for each existing source as it is

@@ -42,7 +42,7 @@ DesktopMediaListAsh::DesktopMediaListAsh(int source_types)
     : source_types_(source_types),
       update_period_(base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       thumbnail_size_(100, 100),
-      view_dialog_id_(-1),
+      view_dialog_id_(content::DesktopMediaID::TYPE_NONE, -1),
       observer_(NULL),
       pending_window_capture_requests_(0),
       weak_factory_(this) {
@@ -61,7 +61,7 @@ void DesktopMediaListAsh::SetThumbnailSize(
 }
 
 void DesktopMediaListAsh::SetViewDialogWindowId(
-    content::DesktopMediaID::Id dialog_id) {
+    content::DesktopMediaID dialog_id) {
   view_dialog_id_ = dialog_id;
 }
 
@@ -160,7 +160,7 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
       continue;
     content::DesktopMediaID id = content::DesktopMediaID::RegisterAuraWindow(
         content::DesktopMediaID::TYPE_WINDOW, *it);
-    if (id.aura_id == view_dialog_id_)
+    if (id.aura_id == view_dialog_id_.aura_id)
       continue;
     SourceDescription window_source(id, (*it)->title());
     sources->push_back(window_source);
