@@ -94,6 +94,11 @@ void URLRequestContextStorage::set_transport_security_state(
   transport_security_state_.reset(transport_security_state);
 }
 
+void URLRequestContextStorage::set_http_network_session(
+    scoped_ptr<HttpNetworkSession> http_network_session) {
+  http_network_session_ = http_network_session.Pass();
+}
+
 void URLRequestContextStorage::set_http_transaction_factory(
     HttpTransactionFactory* http_transaction_factory) {
   context_->set_http_transaction_factory(http_transaction_factory);

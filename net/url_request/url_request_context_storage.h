@@ -18,6 +18,7 @@ class CookieStore;
 class FtpTransactionFactory;
 class HostResolver;
 class HttpAuthHandlerFactory;
+class HttpNetworkSession;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
@@ -59,6 +60,8 @@ class NET_EXPORT URLRequestContextStorage {
   void set_cookie_store(CookieStore* cookie_store);
   void set_transport_security_state(
       TransportSecurityState* transport_security_state);
+  void set_http_network_session(
+      scoped_ptr<HttpNetworkSession> http_network_session);
   void set_http_transaction_factory(
       HttpTransactionFactory* http_transaction_factory);
   void set_job_factory(URLRequestJobFactory* job_factory);
@@ -67,6 +70,12 @@ class NET_EXPORT URLRequestContextStorage {
   void set_http_user_agent_settings(
       HttpUserAgentSettings* http_user_agent_settings);
   void set_sdch_manager(scoped_ptr<SdchManager> sdch_manager);
+
+  // Everything else can be access through the URLRequestContext, but this
+  // cannot.  Having an accessor for it makes usage a little cleaner.
+  HttpNetworkSession* http_network_session() const {
+    return http_network_session_.get();
+  }
 
  private:
   // We use a raw pointer to prevent reference cycles, since
@@ -89,6 +98,10 @@ class NET_EXPORT URLRequestContextStorage {
   scoped_ptr<HttpUserAgentSettings> http_user_agent_settings_;
   scoped_refptr<CookieStore> cookie_store_;
   scoped_ptr<TransportSecurityState> transport_security_state_;
+
+  // Not actually pointed at by the URLRequestContext, but may be used (but not
+  // owned) by the HttpTransactionFactory.
+  scoped_ptr<HttpNetworkSession> http_network_session_;
 
   scoped_ptr<HttpTransactionFactory> http_transaction_factory_;
   scoped_ptr<URLRequestJobFactory> job_factory_;

@@ -55,7 +55,7 @@ class SpdyStreamTest : public ::testing::Test,
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair("www.example.org", 80),
                        ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
-    return CreateInsecureSpdySession(session_, key, BoundNetLog());
+    return CreateInsecureSpdySession(session_.get(), key, BoundNetLog());
   }
 
   void TearDown() override { base::MessageLoop::current()->RunUntilIdle(); }
@@ -99,7 +99,7 @@ class SpdyStreamTest : public ::testing::Test,
 
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
-  scoped_refptr<HttpNetworkSession> session_;
+  scoped_ptr<HttpNetworkSession> session_;
 
  private:
   // Used by Add{Read,Write}() above.

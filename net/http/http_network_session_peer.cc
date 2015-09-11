@@ -14,8 +14,7 @@
 
 namespace net {
 
-HttpNetworkSessionPeer::HttpNetworkSessionPeer(
-    const scoped_refptr<HttpNetworkSession>& session)
+HttpNetworkSessionPeer::HttpNetworkSessionPeer(HttpNetworkSession* session)
     : session_(session) {}
 
 HttpNetworkSessionPeer::~HttpNetworkSessionPeer() {}

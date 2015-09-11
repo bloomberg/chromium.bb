@@ -26,7 +26,6 @@
 #include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
-#include "net/log/net_log.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class GURL;
@@ -67,9 +66,8 @@ class GCMInternalsBuilder {
   virtual scoped_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      const scoped_refptr<net::HttpNetworkSession>& gcm_network_session,
-      const scoped_refptr<net::HttpNetworkSession>& http_network_session,
-      net::NetLog* net_log,
+      net::HttpNetworkSession* gcm_network_session,
+      net::HttpNetworkSession* http_network_session,
       GCMStatsRecorder* recorder);
 };
 
@@ -336,12 +334,12 @@ class GCMClientImpl
   // resetting and loading from the store again and again.
   bool gcm_store_reset_;
 
-  scoped_refptr<net::HttpNetworkSession> network_session_;
-  net::BoundNetLog net_log_;
+  scoped_ptr<net::HttpNetworkSession> network_session_;
   scoped_ptr<ConnectionFactory> connection_factory_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // Controls receiving and sending of packets and reliable message queueing.
+  // Must be destroyed before |network_session_|.
   scoped_ptr<MCSClient> mcs_client_;
 
   scoped_ptr<CheckinRequest> checkin_request_;

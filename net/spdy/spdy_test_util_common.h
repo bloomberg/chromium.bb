@@ -193,9 +193,9 @@ struct SpdySessionDependencies {
 
   ~SpdySessionDependencies();
 
-  static HttpNetworkSession* SpdyCreateSession(
+  static scoped_ptr<HttpNetworkSession> SpdyCreateSession(
       SpdySessionDependencies* session_deps);
-  static HttpNetworkSession* SpdyCreateSessionDeterministic(
+  static scoped_ptr<HttpNetworkSession> SpdyCreateSessionDeterministic(
       SpdySessionDependencies* session_deps);
   static HttpNetworkSession::Params CreateSessionParams(
       SpdySessionDependencies* session_deps);
@@ -243,7 +243,7 @@ bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key);
 // session pool in |http_session|. A SPDY session for |key| must not
 // already exist.
 base::WeakPtr<SpdySession> CreateInsecureSpdySession(
-    const scoped_refptr<HttpNetworkSession>& http_session,
+    HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log);
 
@@ -252,14 +252,14 @@ base::WeakPtr<SpdySession> CreateInsecureSpdySession(
 // not already exist. The session will be created but close in the
 // next event loop iteration.
 base::WeakPtr<SpdySession> TryCreateInsecureSpdySessionExpectingFailure(
-    const scoped_refptr<HttpNetworkSession>& http_session,
+    HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     Error expected_error,
     const BoundNetLog& net_log);
 
 // Like CreateInsecureSpdySession(), but uses TLS.
 base::WeakPtr<SpdySession> CreateSecureSpdySession(
-    const scoped_refptr<HttpNetworkSession>& http_session,
+    HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log);
 

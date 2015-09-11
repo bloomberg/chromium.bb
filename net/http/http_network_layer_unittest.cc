@@ -45,7 +45,7 @@ class HttpNetworkLayerTest : public PlatformTest {
     session_params.ssl_config_service = ssl_config_service_.get();
     session_params.http_server_properties =
         http_server_properties_.GetWeakPtr();
-    network_session_ = new HttpNetworkSession(session_params);
+    network_session_.reset(new HttpNetworkSession(session_params));
     factory_.reset(new HttpNetworkLayer(network_session_.get()));
   }
 
@@ -259,7 +259,7 @@ class HttpNetworkLayerTest : public PlatformTest {
   scoped_ptr<TransportSecurityState> transport_security_state_;
   scoped_ptr<ProxyService> proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
-  scoped_refptr<HttpNetworkSession> network_session_;
+  scoped_ptr<HttpNetworkSession> network_session_;
   scoped_ptr<HttpNetworkLayer> factory_;
   HttpServerPropertiesImpl http_server_properties_;
 };

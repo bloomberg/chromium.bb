@@ -383,9 +383,12 @@ class ProfileIOData {
   // URLRequests may be accessing.
   void DestroyResourceContext();
 
-  // Creates network session and main network transaction factory.
+  scoped_ptr<net::HttpNetworkSession> CreateHttpNetworkSession(
+      const ProfileParams& profile_params) const;
+
+  // Creates main network transaction factory.
   scoped_ptr<net::HttpCache> CreateMainHttpFactory(
-      const ProfileParams* profile_params,
+      net::HttpNetworkSession* session,
       net::HttpCache::BackendFactory* main_backend) const;
 
   // Creates network transaction factory.

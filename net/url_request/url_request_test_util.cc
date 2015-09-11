@@ -111,9 +111,11 @@ void TestURLRequestContext::Init() {
     params.network_delegate = network_delegate();
     params.http_server_properties = http_server_properties();
     params.net_log = net_log();
-    context_storage_.set_http_transaction_factory(new HttpCache(
-        new HttpNetworkSession(params),
-        HttpCache::DefaultBackend::InMemory(0)));
+    context_storage_.set_http_network_session(
+        make_scoped_ptr(new HttpNetworkSession(params)));
+    context_storage_.set_http_transaction_factory(
+        new HttpCache(context_storage_.http_network_session(),
+                      HttpCache::DefaultBackend::InMemory(0), false));
   }
   // In-memory cookie store.
   if (!cookie_store())

@@ -259,7 +259,7 @@ class QuicNetworkTransactionTest
       params_.next_protos = NextProtosWithSpdyAndQuic(true, true);
     }
 
-    session_ = new HttpNetworkSession(params_);
+    session_.reset(new HttpNetworkSession(params_));
     session_->quic_stream_factory()->set_require_confirmation(false);
     ASSERT_EQ(params_.quic_socket_receive_buffer_size,
               session_->quic_stream_factory()->socket_receive_buffer_size());
@@ -366,7 +366,7 @@ class QuicNetworkTransactionTest
 
   MockClock* clock_;  // Owned by QuicStreamFactory after CreateSession.
   QuicTestPacketMaker maker_;
-  scoped_refptr<HttpNetworkSession> session_;
+  scoped_ptr<HttpNetworkSession> session_;
   MockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockHostResolver host_resolver_;
