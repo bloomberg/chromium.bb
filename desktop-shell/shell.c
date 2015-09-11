@@ -481,6 +481,25 @@ get_output_work_area(struct desktop_shell *shell,
 	}
 }
 
+static struct shell_surface *
+find_toplevel_surface(struct shell_surface *in_surface)
+{
+	struct shell_surface *surface = in_surface;
+
+	if (!surface)
+		return NULL;
+
+	while (surface->parent)
+		surface = get_shell_surface(surface->parent);
+
+	/* If no top level surface was found, just use whatever surface was
+	   originally provided. */
+	if (!surface || surface->type != SHELL_SURFACE_TOPLEVEL)
+		surface = in_surface;
+
+	return surface;
+}
+
 static void
 send_configure_for_surface(struct shell_surface *shsurf)
 {
@@ -1769,6 +1788,8 @@ surface_move(struct shell_surface *shsurf, struct weston_pointer *pointer,
 
 	if (!shsurf)
 		return -1;
+
+	shsurf = find_toplevel_surface(shsurf);
 
 	if (shsurf->grabbed ||
 	    shsurf->state.fullscreen || shsurf->state.maximized)
@@ -4993,6 +5014,8 @@ surface_rotate(struct shell_surface *surface, struct weston_pointer *pointer)
 	struct rotate_grab *rotate;
 	float dx, dy;
 	float r;
+
+	surface = find_toplevel_surface(surface);
 
 	rotate = malloc(sizeof *rotate);
 	if (!rotate)
