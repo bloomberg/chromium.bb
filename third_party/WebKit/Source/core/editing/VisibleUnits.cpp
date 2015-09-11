@@ -1000,6 +1000,11 @@ VisiblePosition logicalStartOfLine(const VisiblePosition& currentPosition)
     return createVisiblePosition(logicalStartOfLineAlgorithm<EditingStrategy>(currentPosition.toPositionWithAffinity()));
 }
 
+VisiblePositionInComposedTree logicalStartOfLine(const VisiblePositionInComposedTree& currentPosition)
+{
+    return createVisiblePosition(logicalStartOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition.toPositionWithAffinity()));
+}
+
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> endPositionForLine(const VisiblePositionTemplate<Strategy>& c, LineEndpointComputationMode mode)
 {

@@ -342,6 +342,52 @@ TEST_F(VisibleUnitsTest, localCaretRectOfPosition)
     EXPECT_EQ(layoutRectFromDOMTree, layoutRectFromComposedTree);
 }
 
+TEST_F(VisibleUnitsTest, logicalStartOfLine)
+{
+    const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
+    const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+    Node* four = document().getElementById("four")->firstChild();
+    Node* five = shadowRoot->getElementById("five")->firstChild();
+    Node* six = shadowRoot->getElementById("six")->firstChild();
+    Node* seven = shadowRoot->getElementById("seven")->firstChild();
+
+    EXPECT_EQ(Position(one, 0), logicalStartOfLine(createVisiblePositionInDOMTree(*one, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*one, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), logicalStartOfLine(createVisiblePositionInDOMTree(*one, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*one, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), logicalStartOfLine(createVisiblePositionInDOMTree(*two, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(five, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*two, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(five, 0), logicalStartOfLine(createVisiblePositionInDOMTree(*two, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(five, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*two, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(five, 0), logicalStartOfLine(createVisiblePositionInDOMTree(*three, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*three, 1)).deepEquivalent());
+
+    // TODO(yosin) logicalStartOfLine(four, 1) -> (two, 2) is a broken result.
+    // We keep it as a marker for future change.
+    EXPECT_EQ(Position(two, 2), logicalStartOfLine(createVisiblePositionInDOMTree(*four, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*four, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(five, 0), logicalStartOfLine(createVisiblePositionInDOMTree(*five, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(five, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*five, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(six, 0), logicalStartOfLine(createVisiblePositionInDOMTree(*six, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(six, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*six, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), logicalStartOfLine(createVisiblePositionInDOMTree(*seven, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(one, 0), logicalStartOfLine(createVisiblePositionInComposedTree(*seven, 1)).deepEquivalent());
+}
+
 TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor)
 {
     const char* bodyContent = "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";
