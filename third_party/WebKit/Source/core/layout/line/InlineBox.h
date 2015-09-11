@@ -275,7 +275,7 @@ public:
     LineLayoutBoxModel boxModelObject() const
     {
         if (!lineLayoutItem().isText())
-            return LineLayoutBoxModel(toLayoutBoxModelObject(&layoutObject()));
+            return LineLayoutBoxModel(toLayoutBoxModelObject(&m_layoutObject));
         return LineLayoutBoxModel(nullptr);
     }
 
