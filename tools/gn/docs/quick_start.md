@@ -50,6 +50,10 @@ on how to use these in your code. (Note that you have to specify the
 build directory for this command because the available arguments can
 change according to what's set.
 
+Chrome developers can also read the [Chrome-specific build
+configuration](http://www.chromium.org/developers/gn-build-configuration)
+instructions for more information.
+
 ## Cross-compiling to a target OS or architecture
 
 Run `gn args out/Default` (substituting your build directory as needed) and

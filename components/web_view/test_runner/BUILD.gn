@@ -32,8 +32,8 @@ executable("test_runner") {
 
   if (is_linux) {
     data_deps += [
-      "//breakpad:dump_syms",
-      "//breakpad:minidump_stackwalk",
+      "//breakpad:dump_syms($host_toolchain)",
+      "//breakpad:minidump_stackwalk($host_toolchain)",
     ]
   }
 }

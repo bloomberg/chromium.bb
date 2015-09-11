@@ -269,6 +269,8 @@ if (enable_nacl) {
 } else {
   group("nacl") {
   }
+  group("nacl_helper") {
+  }
 }
 
 source_set("nacl_switches") {
