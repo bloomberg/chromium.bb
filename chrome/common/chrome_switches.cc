@@ -1341,8 +1341,12 @@ bool MdSettingsEnabled() {
 }
 
 bool MediaRouterEnabled() {
+#if defined(ENABLE_MEDIA_ROUTER)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMediaRouter);
+#else
+  return false;
+#endif
 }
 
 bool PdfMaterialUIEnabled() {
