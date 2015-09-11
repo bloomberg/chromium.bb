@@ -47,8 +47,10 @@ template<typename Type> Type* SafeArrayAlloc(unsigned long long num_elements,
   const unsigned long long num_bytes = num_elements * element_size;
   if (element_size > (kMaxAllocSize / num_elements))
     return NULL;
+  if (num_bytes != static_cast<size_t>(num_bytes))
+    return NULL;
 
-  return new (std::nothrow) Type[num_bytes];
+  return new (std::nothrow) Type[static_cast<size_t>(num_bytes)];
 }
 
 void GetVersion(int& major, int& minor, int& build, int& revision) {
