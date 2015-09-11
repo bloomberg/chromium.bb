@@ -255,16 +255,14 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
         return;
 
     // Select the document body.
-    RefPtrWillBeRawPtr<Range> range(document->createRange());
-    TrackExceptionState exceptionState;
-    range->selectNodeContents(document->body(), exceptionState);
+    if (document->body()) {
+        const EphemeralRange range = EphemeralRange::rangeOfContents(*document->body());
 
-    if (!exceptionState.hadException()) {
         // The text iterator will walk nodes giving us text. This is similar to
         // the plainText() function in core/editing/TextIterator.h, but we implement the maximum
         // size and also copy the results directly into a wstring, avoiding the
         // string conversion.
-        for (TextIterator it(range->startPosition(), range->endPosition()); !it.atEnd(); it.advance()) {
+        for (TextIterator it(range.startPosition(), range.endPosition()); !it.atEnd(); it.advance()) {
             it.text().appendTextToStringBuilder(output, 0, maxChars - output.length());
             if (output.length() >= maxChars)
                 return; // Filled up the buffer.
