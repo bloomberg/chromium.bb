@@ -156,12 +156,14 @@ AppShimController::AppShimController()
       attention_request_id_(0) {
   // Since AppShimController is created before the main message loop starts,
   // NSApp will not be set, so use sharedApplication.
-  [[NSApplication sharedApplication] setDelegate:delegate_];
+  NSApplication* sharedApplication = [NSApplication sharedApplication];
+  [sharedApplication setDelegate:delegate_];
 }
 
 AppShimController::~AppShimController() {
   // Un-set the delegate since NSApplication does not retain it.
-  [[NSApplication sharedApplication] setDelegate:nil];
+  NSApplication* sharedApplication = [NSApplication sharedApplication];
+  [sharedApplication setDelegate:nil];
 }
 
 void AppShimController::OnPingChromeReply(bool success) {
