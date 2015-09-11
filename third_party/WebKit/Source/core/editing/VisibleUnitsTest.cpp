@@ -448,4 +448,36 @@ TEST_F(VisibleUnitsTest, startOfDocument)
     EXPECT_EQ(PositionInComposedTree(two, 0), startOfDocument(createVisiblePositionInComposedTree(*two, 1)).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, startOfSentence)
+{
+    const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a>";
+    const char* shadowContent = "<p><i id=three>333</i> <content select=#two></content> <content select=#one></content> <i id=four>4444</i></p>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = shadowRoot->getElementById("three")->firstChild();
+    Node* four = shadowRoot->getElementById("four")->firstChild();
+
+    EXPECT_EQ(Position(one, 0), startOfSentence(createVisiblePositionInDOMTree(*one, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), startOfSentence(createVisiblePositionInComposedTree(*one, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), startOfSentence(createVisiblePositionInDOMTree(*one, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), startOfSentence(createVisiblePositionInComposedTree(*one, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), startOfSentence(createVisiblePositionInDOMTree(*two, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), startOfSentence(createVisiblePositionInComposedTree(*two, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), startOfSentence(createVisiblePositionInDOMTree(*two, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), startOfSentence(createVisiblePositionInComposedTree(*two, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(three, 0), startOfSentence(createVisiblePositionInDOMTree(*three, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), startOfSentence(createVisiblePositionInComposedTree(*three, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(three, 0), startOfSentence(createVisiblePositionInDOMTree(*four, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), startOfSentence(createVisiblePositionInComposedTree(*four, 1)).deepEquivalent());
+}
+
 } // namespace blink

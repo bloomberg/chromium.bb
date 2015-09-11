@@ -651,21 +651,22 @@ enum BoundarySearchContextAvailability { DontHaveMoreContext, MayHaveMoreContext
 
 typedef unsigned (*BoundarySearchFunction)(const UChar*, unsigned length, unsigned offset, BoundarySearchContextAvailability, bool& needMoreContext);
 
-static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearchFunction searchFunction)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionTemplate<Strategy>& c, BoundarySearchFunction searchFunction)
 {
-    Position pos = c.deepEquivalent();
+    const PositionAlgorithm<Strategy> pos = c.deepEquivalent();
     Node* boundary = parentEditingBoundary(pos);
     if (!boundary)
-        return VisiblePosition();
+        return VisiblePositionTemplate<Strategy>();
 
-    Position start = Position::editingPositionOf(boundary, 0).parentAnchoredEquivalent();
-    Position end = pos.parentAnchoredEquivalent();
+    const PositionAlgorithm<Strategy> start = PositionAlgorithm<Strategy>::editingPositionOf(boundary, 0).parentAnchoredEquivalent();
+    const PositionAlgorithm<Strategy> end = pos.parentAnchoredEquivalent();
 
     Vector<UChar, 1024> string;
     unsigned suffixLength = 0;
 
     if (requiresContextForWordBoundary(characterBefore(c))) {
-        TextIterator forwardsIterator(end, Position::afterNode(boundary));
+        TextIteratorAlgorithm<Strategy> forwardsIterator(end, PositionAlgorithm<Strategy>::afterNode(boundary));
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
             forwardsIterator.text().appendTextTo(characters);
@@ -678,16 +679,18 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         }
     }
 
-    SimplifiedBackwardsTextIterator it(start, end);
+    SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(start, end);
     unsigned next = 0;
     bool needMoreContext = false;
     while (!it.atEnd()) {
         bool inTextSecurityMode = it.node() && it.node()->layoutObject() && it.node()->layoutObject()->style()->textSecurity() != TSNONE;
-        // iterate to get chunks until the searchFunction returns a non-zero value.
+        // iterate to get chunks until the searchFunction returns a non-zero
+        // value.
         if (!inTextSecurityMode) {
             it.prependTextTo(string);
         } else {
-            // Treat bullets used in the text security mode as regular characters when looking for boundaries
+            // Treat bullets used in the text security mode as regular
+            // characters when looking for boundaries
             Vector<UChar, 1024> iteratorString;
             iteratorString.fill('x', it.length());
             string.prepend(iteratorString.data(), iteratorString.size());
@@ -698,8 +701,9 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         it.advance();
     }
     if (needMoreContext) {
-        // The last search returned the beginning of the buffer and asked for more context,
-        // but there is no earlier text. Force a search with what's available.
+        // The last search returned the beginning of the buffer and asked for
+        // more context, but there is no earlier text. Force a search with
+        // what's available.
         next = searchFunction(string.data(), string.size(), string.size() - suffixLength, DontHaveMoreContext, needMoreContext);
         ASSERT(!needMoreContext);
     }
@@ -710,13 +714,14 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     Node* node = it.startContainer();
     if (node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) {
         // The next variable contains a usable index into a text node
-        return createVisiblePosition(Position(node, next));
+        return createVisiblePosition(PositionAlgorithm<Strategy>(node, next));
     }
 
-    // Use the character iterator to translate the next value into a DOM position.
-    BackwardsCharacterIterator charIt(start, end);
+    // Use the character iterator to translate the next value into a DOM
+    // position.
+    BackwardsCharacterIteratorAlgorithm<Strategy> charIt(start, end);
     charIt.advance(string.size() - suffixLength - next);
-    // FIXME: charIt can get out of shadow host.
+    // TODO(yosin) charIt can get out of shadow host.
     return createVisiblePosition(charIt.endPosition());
 }
 
@@ -1287,9 +1292,20 @@ static unsigned startSentenceBoundary(const UChar* characters, unsigned length, 
     return iterator->preceding(length);
 }
 
-VisiblePosition startOfSentence(const VisiblePosition& c)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> startOfSentenceAlgorithm(const VisiblePositionTemplate<Strategy>& c)
 {
     return previousBoundary(c, startSentenceBoundary);
+}
+
+VisiblePosition startOfSentence(const VisiblePosition& c)
+{
+    return startOfSentenceAlgorithm<EditingStrategy>(c);
+}
+
+VisiblePositionInComposedTree startOfSentence(const VisiblePositionInComposedTree& c)
+{
+    return startOfSentenceAlgorithm<EditingInComposedTreeStrategy>(c);
 }
 
 static unsigned endSentenceBoundary(const UChar* characters, unsigned length, unsigned, BoundarySearchContextAvailability, bool&)
