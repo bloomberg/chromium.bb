@@ -512,7 +512,8 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
 
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-1");
-  EXPECT_EQ(++expected_cache_size, estimator.cached_network_qualities_.size());
+  ++expected_cache_size;
+  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
 
   // Entry will be added for (3G, "test1").
   // Also, set the network quality for (3G, "test1") so that it is stored in
@@ -523,7 +524,8 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
       NetworkQualityEstimator::Observation(500, base::TimeTicks::Now()));
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-2");
-  EXPECT_EQ(++expected_cache_size, estimator.cached_network_qualities_.size());
+  ++expected_cache_size;
+  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
 
   // Entry will not be added for (3G, "test2").
   estimator.SimulateNetworkChangeTo(
