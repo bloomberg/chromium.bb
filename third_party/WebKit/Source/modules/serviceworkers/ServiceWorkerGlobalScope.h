@@ -34,6 +34,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebServiceWorkerRegistration.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -48,7 +49,6 @@ class ServiceWorkerClients;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
 class WaitUntilObserver;
-class WebServiceWorkerRegistration;
 class WorkerThreadStartupData;
 
 typedef RequestOrUSVString RequestInfo;
@@ -74,7 +74,7 @@ public:
 
     ScriptPromise skipWaiting(ScriptState*);
 
-    void setRegistration(WebServiceWorkerRegistration*);
+    void setRegistration(WebServiceWorkerRegistration::Handle*);
 
     // EventTarget
     bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;

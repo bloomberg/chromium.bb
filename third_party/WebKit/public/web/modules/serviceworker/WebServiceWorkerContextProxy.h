@@ -33,14 +33,15 @@
 
 #include "public/platform/WebGeofencingEventType.h"
 #include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/modules/navigator_services/WebServicePortCallbacks.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
 namespace blink {
 
 struct WebCircularGeofencingRegion;
 struct WebCrossOriginServiceWorkerClient;
 struct WebNotificationData;
-class WebServiceWorkerRegistration;
 class WebServiceWorkerRequest;
 class WebString;
 struct WebSyncRegistration;
@@ -51,7 +52,12 @@ class WebServiceWorkerContextProxy {
 public:
     virtual ~WebServiceWorkerContextProxy() { }
 
-    virtual void setRegistration(WebServiceWorkerRegistration*) = 0;
+    // TODO(nhiroki): Remove after two-sided patches land.
+    // (http://crbug.com/523904).
+    void setRegistration(WebServiceWorkerRegistration* registration) { setRegistration(createHandle(adoptWebPtr(registration))); }
+    virtual WebServiceWorkerRegistration::Handle* createHandle(WebPassOwnPtr<WebServiceWorkerRegistration>) = 0;
+
+    virtual void setRegistration(WebServiceWorkerRegistration::Handle*) = 0;
     virtual void dispatchActivateEvent(int eventID) = 0;
     // FIXME: This needs to pass the active service worker info.
     virtual void dispatchInstallEvent(int installEventID) = 0;

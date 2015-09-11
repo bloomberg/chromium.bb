@@ -24,6 +24,9 @@ class ScriptPromise;
 class ScriptState;
 class WebServiceWorkerProvider;
 
+// The implementation of a service worker registration object in Blink. Actual
+// registration representation is in the embedder and this class accesses it
+// via WebServiceWorkerRegistration::Handle object.
 class ServiceWorkerRegistration final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerRegistration>
     , public ActiveDOMObject
@@ -43,7 +46,7 @@ public:
     void setWaiting(WebServiceWorker*) override;
     void setActive(WebServiceWorker*) override;
 
-    static ServiceWorkerRegistration* create(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
+    static ServiceWorkerRegistration* create(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration::Handle>);
 
     ServiceWorker* installing() { return m_installing; }
     ServiceWorker* waiting() { return m_waiting; }
@@ -51,7 +54,7 @@ public:
 
     String scope() const;
 
-    WebServiceWorkerRegistration* webRegistration() { return m_outerRegistration.get(); }
+    WebServiceWorkerRegistration* webRegistration() { return m_handle->registration(); }
 
     ScriptPromise update(ScriptState*);
     ScriptPromise unregister(ScriptState*);
@@ -65,13 +68,15 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
+    ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration::Handle>);
 
     // ActiveDOMObject overrides.
     bool hasPendingActivity() const override;
     void stop() override;
 
-    OwnPtr<WebServiceWorkerRegistration> m_outerRegistration;
+    // A handle to the registration representation in the embedder.
+    OwnPtr<WebServiceWorkerRegistration::Handle> m_handle;
+
     WebServiceWorkerProvider* m_provider;
     Member<ServiceWorker> m_installing;
     Member<ServiceWorker> m_waiting;
@@ -83,7 +88,7 @@ private:
 class ServiceWorkerRegistrationArray {
     STATIC_ONLY(ServiceWorkerRegistrationArray);
 public:
-    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, Vector<OwnPtr<WebServiceWorkerRegistration>>* webServiceWorkerRegistrations)
+    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, Vector<OwnPtr<WebServiceWorkerRegistration::Handle>>* webServiceWorkerRegistrations)
     {
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
         for (auto& registration : *webServiceWorkerRegistrations)

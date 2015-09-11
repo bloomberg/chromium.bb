@@ -58,17 +58,35 @@
 
 namespace blink {
 
+// TODO(nhiroki): Remove after two-sided patches land (http://crbug.com/523904)
+class HandleImpl : public WebServiceWorkerRegistration::Handle {
+public:
+    explicit HandleImpl(WebPassOwnPtr<WebServiceWorkerRegistration> registration)
+        : m_registration(registration.release()) { }
+    explicit HandleImpl(PassOwnPtr<WebServiceWorkerRegistration> registration)
+        : m_registration(registration) { }
+    virtual WebServiceWorkerRegistration* registration() { return m_registration.get(); }
+
+private:
+    OwnPtr<WebServiceWorkerRegistration> m_registration;
+};
+
 class RegistrationCallback : public WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks {
 public:
     explicit RegistrationCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
     ~RegistrationCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration> registration) override
+    WebPassOwnPtr<WebServiceWorkerRegistration::Handle> createHandle(WebPassOwnPtr<WebServiceWorkerRegistration> registration) override
+    {
+        return adoptWebPtr(new HandleImpl(registration));
+    }
+
+    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), registration.release()));
+        m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), handle.release()));
     }
 
     void onError(const WebServiceWorkerError& error) override
@@ -89,17 +107,23 @@ public:
         : m_resolver(resolver) { }
     ~GetRegistrationCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration> r) override
+    WebPassOwnPtr<WebServiceWorkerRegistration::Handle> createHandle(WebPassOwnPtr<WebServiceWorkerRegistration> webPassRegistration) override
     {
-        OwnPtr<WebServiceWorkerRegistration> registration = r.release();
+        OwnPtr<WebServiceWorkerRegistration> registration = webPassRegistration.release();
+        return adoptWebPtr(registration ? new HandleImpl(registration.release()) : nullptr);
+    }
+
+    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> webPassHandle) override
+    {
+        OwnPtr<WebServiceWorkerRegistration::Handle> handle = webPassHandle.release();
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        if (!registration) {
+        if (!handle) {
             // Resolve the promise with undefined.
             m_resolver->resolve();
             return;
         }
-        m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), registration.release()));
+        m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), handle.release()));
     }
 
     void onError(const WebServiceWorkerError& error) override
@@ -120,17 +144,28 @@ public:
         : m_resolver(resolver) { }
     ~GetRegistrationsCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webPassRegistrations) override
+    WebPassOwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>> createHandles(WebPassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webPassRegistrations) override
     {
-        Vector<OwnPtr<WebServiceWorkerRegistration>> registrations;
-        OwnPtr<WebVector<WebServiceWorkerRegistration*>> webRegistrations = webPassRegistrations.release();
-        for (auto& registration : *webRegistrations) {
-            registrations.append(adoptPtr(registration));
+        OwnPtr<WebVector<WebServiceWorkerRegistration*>> registrations = webPassRegistrations.release();
+        WebVector<WebServiceWorkerRegistration::Handle*>* handles(new WebVector<WebServiceWorkerRegistration::Handle*>(registrations->size()));
+        for (size_t i = 0; i < registrations->size(); ++i) {
+            WebServiceWorkerRegistration* registration = (*registrations)[i];
+            (*handles)[i] = new HandleImpl(adoptWebPtr(registration));
+        }
+        return adoptWebPtr(handles);
+    }
+
+    void onSuccess(WebPassOwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>> webPassRegistrations) override
+    {
+        Vector<OwnPtr<WebServiceWorkerRegistration::Handle>> handles;
+        OwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>> webRegistrations = webPassRegistrations.release();
+        for (auto& handle : *webRegistrations) {
+            handles.append(adoptPtr(handle));
         }
 
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(ServiceWorkerRegistrationArray::take(m_resolver.get(), &registrations));
+        m_resolver->resolve(ServiceWorkerRegistrationArray::take(m_resolver.get(), &handles));
     }
 
     void onError(const WebServiceWorkerError& error) override
@@ -151,12 +186,17 @@ public:
         : m_ready(ready) { }
     ~GetRegistrationForReadyCallback() override { }
 
-    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration> registration) override
+    WebPassOwnPtr<WebServiceWorkerRegistration::Handle> createHandle(WebPassOwnPtr<WebServiceWorkerRegistration> registration) override
+    {
+        return adoptWebPtr(new HandleImpl(registration));
+    }
+
+    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
     {
         ASSERT(m_ready->state() == ReadyProperty::Pending);
 
         if (m_ready->executionContext() && !m_ready->executionContext()->activeDOMObjectsAreStopped())
-            m_ready->resolve(ServiceWorkerRegistration::create(m_ready->executionContext(), registration.release()));
+            m_ready->resolve(ServiceWorkerRegistration::create(m_ready->executionContext(), handle.release()));
     }
 
 private:

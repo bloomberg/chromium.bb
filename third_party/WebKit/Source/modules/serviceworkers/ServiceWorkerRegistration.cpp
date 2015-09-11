@@ -62,18 +62,17 @@ void ServiceWorkerRegistration::setActive(WebServiceWorker* serviceWorker)
     m_active = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
-ServiceWorkerRegistration* ServiceWorkerRegistration::create(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> webRegistration)
+ServiceWorkerRegistration* ServiceWorkerRegistration::create(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
 {
-    if (!webRegistration)
-        return nullptr;
-    ServiceWorkerRegistration* registration = new ServiceWorkerRegistration(executionContext, webRegistration);
+    ASSERT(handle);
+    ServiceWorkerRegistration* registration = new ServiceWorkerRegistration(executionContext, handle);
     registration->suspendIfNeeded();
     return registration;
 }
 
 String ServiceWorkerRegistration::scope() const
 {
-    return m_outerRegistration->scope().string();
+    return m_handle->registration()->scope().string();
 }
 
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* scriptState)
@@ -86,7 +85,7 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* scriptState)
         return promise;
     }
 
-    m_outerRegistration->update(m_provider, new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver));
+    m_handle->registration()->update(m_provider, new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver));
     return promise;
 }
 
@@ -100,24 +99,24 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
         return promise;
     }
 
-    m_outerRegistration->unregister(m_provider, new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
+    m_handle->registration()->unregister(m_provider, new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
     return promise;
 }
 
-ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> outerRegistration)
+ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
     : ActiveDOMObject(executionContext)
-    , m_outerRegistration(outerRegistration)
+    , m_handle(handle)
     , m_provider(nullptr)
     , m_stopped(false)
 {
-    ASSERT(m_outerRegistration);
-    ASSERT(!m_outerRegistration->proxy());
+    ASSERT(m_handle);
+    ASSERT(!m_handle->registration()->proxy());
 
     if (!executionContext)
         return;
     if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext))
         m_provider = client->provider();
-    m_outerRegistration->setProxy(this);
+    m_handle->registration()->setProxy(this);
 }
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration()
@@ -144,7 +143,7 @@ void ServiceWorkerRegistration::stop()
     if (m_stopped)
         return;
     m_stopped = true;
-    m_outerRegistration->proxyStopped();
+    m_handle->registration()->proxyStopped();
 }
 
 } // namespace blink
