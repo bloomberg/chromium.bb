@@ -2119,6 +2119,7 @@ end_busy_cursor(struct weston_compositor *compositor, struct wl_client *client)
 
 		grab = (struct shell_grab *) pointer->grab;
 		if (grab->grab.interface == &busy_cursor_grab_interface &&
+		    grab->shsurf->resource &&
 		    wl_resource_get_client(grab->shsurf->resource) == client) {
 			shell_grab_end(grab);
 			free(grab);
