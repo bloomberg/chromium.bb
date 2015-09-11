@@ -105,9 +105,6 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
       frame_(nullptr),
       delete_callback_(delete_callback),
       factory_(factory) {
-  // TODO(sky): nuke headless. We're not going to care about it anymore.
-  DCHECK(!global_state_->is_headless());
-
   connection->AddService<web_view::FrameTreeClient>(this);
   connection->AddService<AxProvider>(this);
   connection->AddService<mojo::ViewTreeClient>(this);

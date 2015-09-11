@@ -53,7 +53,6 @@ class GlobalState {
   void InitIfNecessary(const gfx::Size& screen_size_in_pixels,
                        float device_pixel_ratio);
 
-  bool is_headless() const { return is_headless_; }
   bool did_init() const { return did_init_; }
 
   const gfx::Size& screen_size_in_pixels() const {
@@ -83,8 +82,6 @@ class GlobalState {
   mojo::ApplicationImpl* app_;
 
   resource_provider::ResourceLoader resource_loader_;
-
-  const bool is_headless_;
 
   // True once we've completed init.
   bool did_init_;

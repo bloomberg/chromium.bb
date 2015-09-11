@@ -34,9 +34,6 @@ namespace {
 // Disables support for (unprefixed) Encrypted Media Extensions.
 const char kDisableEncryptedMedia[] = "disable-encrypted-media";
 
-// Prevents creation of any output surface.
-const char kIsHeadless[] = "is-headless";
-
 // Specifies the flags passed to JS engine.
 const char kJavaScriptFlags[] = "js-flags";
 
@@ -64,14 +61,10 @@ std::set<std::string> GetResourcePaths() {
 GlobalState::GlobalState(mojo::ApplicationImpl* app)
     : app_(app),
       resource_loader_(app->shell(), GetResourcePaths()),
-      is_headless_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(kIsHeadless)),
       did_init_(false),
       device_pixel_ratio_(1.f),
       discardable_memory_allocator_(kDesiredMaxMemory),
       compositor_thread_("compositor thread") {
-  if (is_headless_)
-    InitIfNecessary(gfx::Size(1024, 1024), 1.f);
 }
 
 GlobalState::~GlobalState() {
@@ -130,15 +123,13 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   if (command_line->HasSwitch(kDisableEncryptedMedia))
     blink::WebRuntimeFeatures::enableEncryptedMedia(false);
 
-  if (!is_headless_) {
-    base::File pak_file = resource_loader_.ReleaseFile(kResourceResourcesPak);
-    base::File pak_file_2 = pak_file.Duplicate();
-    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        pak_file.Pass(), base::MemoryMappedFile::Region::kWholeFile);
-    // TODO(sky): why is this always using 100?
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
+  base::File pak_file = resource_loader_.ReleaseFile(kResourceResourcesPak);
+  base::File pak_file_2 = pak_file.Duplicate();
+  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+      pak_file.Pass(), base::MemoryMappedFile::Region::kWholeFile);
+  // TODO(sky): why is this always using 100?
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
       pak_file_2.Pass(), ui::SCALE_FACTOR_100P);
-  }
 
   compositor_thread_.Start();
 
