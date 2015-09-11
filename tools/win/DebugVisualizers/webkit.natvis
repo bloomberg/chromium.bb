@@ -111,8 +111,13 @@
       <Item Name="y">y</Item>
     </Expand>
   </Type>
+  <!-- Component build version -->
   <Type Name="blink::WebString">
     <DisplayString>{(blink_platform.dll!WTF::StringImpl*)(m_private.m_storage)}</DisplayString>
+  </Type>
+  <!-- Non-component build version -->
+  <Type Name="blink::WebString">
+    <DisplayString>{(WTF::StringImpl*)(m_private.m_storage)}</DisplayString>
   </Type>
   <Type Name="blink::QualifiedName">
     <DisplayString Condition="m_impl.m_ptr == 0">(null)</DisplayString>
