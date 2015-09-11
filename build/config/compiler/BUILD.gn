@@ -199,9 +199,9 @@ config("compiler") {
       ldflags += [ "-Wl,--fatal-warnings" ]
     }
 
-    # Common options for AddressSanitizer, LeakSanitizer, ThreadSanitizer and
-    # MemorySanitizer
-    if (using_sanitizer) {
+    # Common options for AddressSanitizer, LeakSanitizer, ThreadSanitizer,
+    # MemorySanitizer and non-official CFI builds.
+    if (using_sanitizer || (is_cfi && !is_official_build)) {
       cflags += [
         "-fno-omit-frame-pointer",
         "-gline-tables-only",
@@ -238,6 +238,57 @@ config("compiler") {
         "-fsanitize-memory-track-origins=$msan_track_origins",
         "-fsanitize-blacklist=$msan_blacklist_path",
       ]
+    }
+    if (is_cfi && !is_nacl) {
+      cfi_blacklist_path =
+          rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
+      cflags += [
+        "-flto",
+        "-fsanitize=cfi-vcall",
+        "-fsanitize=cfi-derived-cast",
+        "-fsanitize=cfi-unrelated-cast",
+        "-fsanitize-blacklist=$cfi_blacklist_path",
+      ]
+      ldflags += [
+        "-flto",
+        "-fsanitize=cfi-vcall",
+        "-fsanitize=cfi-derived-cast",
+        "-fsanitize=cfi-unrelated-cast",
+      ]
+
+      # Apply a lower LTO optimization level in non-official builds.
+      if (!is_official_build) {
+        if (is_linux) {
+          ldflags += [ "-Wl,-plugin-opt,O1" ]
+        } else if (is_mac) {
+          ldflags += [ "-Wl,-mllvm,-O1" ]
+        }
+      }
+
+      # Work-around for http://openradar.appspot.com/20356002
+      if (is_mac) {
+        ldflags += [ "-Wl,-all_load" ]
+      }
+
+      # Without this flag, LTO produces a .text section that is larger
+      # than the maximum call displacement, preventing the linker from
+      # relocating calls (http://llvm.org/PR22999).
+      if (current_cpu == "arm") {
+        ldflags += [ "-Wl,-plugin-opt,-function-sections" ]
+      }
+
+      if (use_cfi_diag) {
+        cflags += [
+          "-fno-sanitize-trap=cfi",
+          "-fsanitize-recover=cfi",
+        ]
+        ldflags += [
+          "-fno-sanitize-trap=cfi",
+          "-fsanitize-recover=cfi",
+        ]
+      } else {
+        defines += [ "CFI_ENFORCEMENT" ]
+      }
     }
 
     if (use_custom_libcxx) {
@@ -466,7 +517,7 @@ config("compiler") {
       "-Wl,-z,now",
       "-Wl,-z,relro",
     ]
-    if (!using_sanitizer) {
+    if (!using_sanitizer && !use_cfi_diag) {
       ldflags += [ "-Wl,-z,defs" ]
     }
   }
@@ -1103,11 +1154,14 @@ config("rtti") {
   }
 }
 config("no_rtti") {
-  if (is_win) {
-    cflags_cc = [ "/GR-" ]
-  } else {
-    cflags_cc = [ "-fno-rtti" ]
-    cflags_objcc = cflags_cc
+  # CFI diagnostics require RTTI.
+  if (!use_cfi_diag) {
+    if (is_win) {
+      cflags_cc = [ "/GR-" ]
+    } else {
+      cflags_cc = [ "-fno-rtti" ]
+      cflags_objcc = cflags_cc
+    }
   }
 }
 
