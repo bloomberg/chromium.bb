@@ -268,6 +268,34 @@ TEST_F(VisibleUnitsTest, inSameLine)
     EXPECT_TRUE(inSameLine(createVisiblePositionInComposedTree(*two->firstChild(), 0), createVisiblePositionInComposedTree(*four->firstChild(), 0)));
 }
 
+TEST_F(VisibleUnitsTest, isEndOfParagraph)
+{
+    const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a><b id=three>333</b>";
+    const char* shadowContent = "<p><content select=#two></content></p><p><content select=#one></content></p>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+
+    EXPECT_FALSE(isEndOfParagraph(createVisiblePositionInDOMTree(*one, 0)));
+    EXPECT_FALSE(isEndOfParagraph(createVisiblePositionInComposedTree(*one, 0)));
+
+    EXPECT_FALSE(isEndOfParagraph(createVisiblePositionInDOMTree(*one, 1)));
+    EXPECT_TRUE(isEndOfParagraph(createVisiblePositionInComposedTree(*one, 1)));
+
+    EXPECT_FALSE(isEndOfParagraph(createVisiblePositionInDOMTree(*two, 2)));
+    EXPECT_TRUE(isEndOfParagraph(createVisiblePositionInComposedTree(*two, 2)));
+
+    EXPECT_FALSE(isEndOfParagraph(createVisiblePositionInDOMTree(*three, 0)));
+    EXPECT_FALSE(isEndOfParagraph(createVisiblePositionInComposedTree(*three, 0)));
+
+    EXPECT_TRUE(isEndOfParagraph(createVisiblePositionInDOMTree(*three, 3)));
+    EXPECT_TRUE(isEndOfParagraph(createVisiblePositionInComposedTree(*three, 3)));
+}
+
 TEST_F(VisibleUnitsTest, leftPositionOf)
 {
     const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";

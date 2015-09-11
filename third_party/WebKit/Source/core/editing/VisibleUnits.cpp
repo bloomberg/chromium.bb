@@ -1556,9 +1556,20 @@ bool isStartOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule 
     return pos.isNotNull() && pos.deepEquivalent() == startOfParagraph(pos, boundaryCrossingRule).deepEquivalent();
 }
 
-bool isEndOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+template <typename Strategy>
+static bool isEndOfParagraphAlgorithm(const VisiblePositionTemplate<Strategy>& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     return pos.isNotNull() && pos.deepEquivalent() == endOfParagraph(pos, boundaryCrossingRule).deepEquivalent();
+}
+
+bool isEndOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+{
+    return isEndOfParagraphAlgorithm<EditingStrategy>(pos, boundaryCrossingRule);
+}
+
+bool isEndOfParagraph(const VisiblePositionInComposedTree& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+{
+    return isEndOfParagraphAlgorithm<EditingInComposedTreeStrategy>(pos, boundaryCrossingRule);
 }
 
 VisiblePosition previousParagraphPosition(const VisiblePosition& p, LayoutUnit x)
