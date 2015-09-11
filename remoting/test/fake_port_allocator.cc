@@ -103,6 +103,7 @@ FakePortAllocator::FakePortAllocator(
       network_manager_(network_manager.Pass()),
       socket_factory_(socket_factory.Pass()) {
   set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
+            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
             cricket::PORTALLOCATOR_ENABLE_IPV6 |
             cricket::PORTALLOCATOR_DISABLE_STUN |
             cricket::PORTALLOCATOR_DISABLE_RELAY);

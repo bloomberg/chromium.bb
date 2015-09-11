@@ -226,8 +226,11 @@ PepperPortAllocator::PepperPortAllocator(
       network_manager_(network_manager.Pass()),
       socket_factory_(socket_factory.Pass()) {
   // TCP transport is disabled becase PseudoTCP works poorly over
-  // it.
+  // it. ENABLE_SHARED_UFRAG flag is specified so that the same
+  // username fragment is shared between all candidates for this
+  // channel.
   set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
+            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG|
             cricket::PORTALLOCATOR_ENABLE_IPV6);
 }
 

@@ -143,8 +143,10 @@ scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
 
   // We always use PseudoTcp to provide a reliable channel. It provides poor
   // performance when combined with TCP-based transport, so we have to disable
-  // TCP ports.
+  // TCP ports. ENABLE_SHARED_UFRAG flag is specified so that the same username
+  // fragment is shared between all candidates for this channel.
   int flags = cricket::PORTALLOCATOR_DISABLE_TCP |
+              cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
               cricket::PORTALLOCATOR_ENABLE_IPV6;
 
   if (!(network_settings.flags & NetworkSettings::NAT_TRAVERSAL_STUN))
