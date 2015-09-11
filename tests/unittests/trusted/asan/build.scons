@@ -10,15 +10,9 @@ if not env.Bit('asan'):
 
 asan_test_exe = env.ComponentProgram('asan_test', 'asan_test.c')
 
-if env.Bit('host_mac'):
-  expected_exit_status = 'trusted_sigabrt'
-else:
-  expected_exit_status = '1'
-
-
 node = env.CommandTest(
     'asan_test.out',
     command=[asan_test_exe],
-    exit_status=expected_exit_status,
+    exit_status='1',
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_asan_test')
