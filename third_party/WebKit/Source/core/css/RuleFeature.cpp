@@ -413,8 +413,8 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
                 features.insertionPointCrossing = true;
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 ASSERT(supportsInvalidationWithSelectorList(current->pseudoType()));
-                for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
-                    addFeaturesToInvalidationSets(*selector, features);
+                for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
+                    addFeaturesToInvalidationSets(*subSelector, features);
             }
         }
 
@@ -498,8 +498,8 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, Ru
         if (!selectorList)
             continue;
 
-        for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
-            collectFeaturesFromSelector(*selector, metadata);
+        for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
+            collectFeaturesFromSelector(*subSelector, metadata);
     }
 
     ASSERT(!maxDirectAdjacentSelectors);
