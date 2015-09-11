@@ -22,13 +22,11 @@
 #include "core/html/FormDataList.h"
 
 #include "core/fileapi/File.h"
-#include "platform/text/LineEnding.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
 
-FormDataList::FormDataList(const WTF::TextEncoding& c)
-    : m_encoding(c)
+FormDataList::FormDataList()
 {
 }
 
@@ -53,15 +51,8 @@ File* FormDataList::Item::file() const
     return File::create(filename, currentTimeMS(), blob()->blobDataHandle());
 }
 
-CString FormDataList::encodeAndNormalize(const String& string) const
-{
-    CString encodedString = m_encoding.encode(string, WTF::EntitiesForUnencodables);
-    return normalizeLineEndingsToCRLF(encodedString);
-}
-
 DEFINE_TRACE(FormDataList)
 {
-    visitor->trace(m_items);
 }
 
 DEFINE_TRACE(FormDataList::Item)

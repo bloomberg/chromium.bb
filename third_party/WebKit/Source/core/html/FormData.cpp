@@ -36,7 +36,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFormElement.h"
 #include "platform/network/FormDataEncoder.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/text/LineEnding.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -77,13 +77,13 @@ private:
 } // namespace
 
 FormData::FormData(const WTF::TextEncoding& encoding)
-    : FormDataList(encoding)
+    : m_encoding(encoding)
     , m_opaque(false)
 {
 }
 
 FormData::FormData(HTMLFormElement* form)
-    : FormDataList(UTF8Encoding())
+    : m_encoding(UTF8Encoding())
     , m_opaque(false)
 {
     if (!form)
@@ -94,6 +94,12 @@ FormData::FormData(HTMLFormElement* form)
         if (!toHTMLElement(element)->isDisabledFormControl())
             element->appendToFormData(*this, true);
     }
+}
+
+DEFINE_TRACE(FormData)
+{
+    visitor->trace(m_items);
+    FormDataList::trace(visitor);
 }
 
 void FormData::append(const String& name, const String& value)
@@ -236,6 +242,12 @@ void FormData::appendData(const String& key, int value)
 void FormData::appendBlob(const String& key, Blob* blob, const String& filename)
 {
     m_items.append(Item(encodeAndNormalize(key), blob, filename));
+}
+
+CString FormData::encodeAndNormalize(const String& string) const
+{
+    CString encodedString = m_encoding.encode(string, WTF::EntitiesForUnencodables);
+    return normalizeLineEndingsToCRLF(encodedString);
 }
 
 String FormData::decode(const CString& data) const

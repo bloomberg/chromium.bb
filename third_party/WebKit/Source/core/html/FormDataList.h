@@ -27,7 +27,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/text/CString.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 
@@ -58,23 +57,10 @@ public:
         String m_filename;
     };
 
-    using FormDataListItems = HeapVector<FormDataList::Item>;
-
-    size_t size() const { return m_items.size(); }
-
-    const FormDataListItems& items() const { return m_items; }
-    const WTF::TextEncoding& encoding() const { return m_encoding; }
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    explicit FormDataList(const WTF::TextEncoding&);
-    CString encodeAndNormalize(const String& key) const;
-
-    FormDataListItems m_items;
-
-private:
-    WTF::TextEncoding m_encoding;
+    explicit FormDataList();
 };
 
 } // namespace blink

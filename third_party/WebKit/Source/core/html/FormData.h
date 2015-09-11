@@ -39,10 +39,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
-
-namespace WTF {
-class TextEncoding;
-}
+#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 
@@ -65,6 +62,7 @@ public:
     {
         return new FormData(encoding);
     }
+    DECLARE_VIRTUAL_TRACE();
 
     // FormData IDL interface.
     void append(const String& name, const String& value);
@@ -81,6 +79,10 @@ public:
     void makeOpaque() { m_opaque = true; }
     bool opaque() const { return m_opaque; }
 
+    const WTF::TextEncoding& encoding() const { return m_encoding; }
+    using FormDataListItems = HeapVector<FormDataList::Item>;
+    const FormDataListItems& items() const { return m_items; }
+    size_t size() const { return m_items.size(); }
     // TODO(tkent): Rename appendFoo functions to |append| for consistency with
     // public function.
     void appendData(const String& key, const String& value);
@@ -96,8 +98,11 @@ private:
     explicit FormData(const WTF::TextEncoding&);
     explicit FormData(HTMLFormElement*);
     void setEntry(const Item&);
-
+    CString encodeAndNormalize(const String& key) const;
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+
+    WTF::TextEncoding m_encoding;
+    FormDataListItems m_items;
     bool m_opaque;
 };
 
