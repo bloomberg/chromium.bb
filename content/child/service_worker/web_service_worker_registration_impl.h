@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
@@ -23,11 +24,11 @@ class ThreadSafeSender;
 struct ServiceWorkerObjectInfo;
 
 class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
-    : NON_EXPORTED_BASE(public blink::WebServiceWorkerRegistration) {
+    : NON_EXPORTED_BASE(public blink::WebServiceWorkerRegistration),
+      public base::RefCounted<WebServiceWorkerRegistrationImpl> {
  public:
   explicit WebServiceWorkerRegistrationImpl(
       scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref);
-  virtual ~WebServiceWorkerRegistrationImpl();
 
   void SetInstalling(blink::WebServiceWorker* service_worker);
   void SetWaiting(blink::WebServiceWorker* service_worker);
@@ -46,7 +47,23 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
   int64 registration_id() const;
 
+  using WebServiceWorkerRegistrationHandle =
+      blink::WebServiceWorkerRegistration::Handle;
+
+  // Creates WebServiceWorkerRegistrationHandle object that owns a reference to
+  // this WebServiceWorkerRegistrationImpl object.
+  blink::WebPassOwnPtr<WebServiceWorkerRegistrationHandle> CreateHandle();
+
+  // Same with CreateHandle(), but returns a raw pointer to the handle w/ its
+  // ownership instead. The caller must manage the ownership. This function must
+  // be used only for passing the handle to Blink API that does not support
+  // blink::WebPassOwnPtr.
+  WebServiceWorkerRegistrationHandle* CreateLeakyHandle();
+
  private:
+  friend class base::RefCounted<WebServiceWorkerRegistrationImpl>;
+  virtual ~WebServiceWorkerRegistrationImpl();
+
   enum QueuedTaskType {
     INSTALLING,
     WAITING,

@@ -13,6 +13,26 @@
 
 namespace content {
 
+namespace {
+
+class HandleImpl : public blink::WebServiceWorkerRegistration::Handle {
+ public:
+  explicit HandleImpl(WebServiceWorkerRegistrationImpl* registration)
+      : registration_(registration) {}
+  virtual ~HandleImpl() {}
+
+  virtual blink::WebServiceWorkerRegistration* registration() {
+    return registration_.get();
+  }
+
+ private:
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration_;
+
+  DISALLOW_COPY_AND_ASSIGN(HandleImpl);
+};
+
+}  // namespace
+
 WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(
     QueuedTaskType type,
     blink::WebServiceWorker* worker)
@@ -31,14 +51,6 @@ WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   dispatcher->AddServiceWorkerRegistration(handle_ref_->handle_id(), this);
-}
-
-WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  if (dispatcher)
-    dispatcher->RemoveServiceWorkerRegistration(handle_ref_->handle_id());
-  ClearQueuedTasks();
 }
 
 void WebServiceWorkerRegistrationImpl::SetInstalling(
@@ -139,6 +151,24 @@ void WebServiceWorkerRegistrationImpl::unregister(
 
 int64 WebServiceWorkerRegistrationImpl::registration_id() const {
   return handle_ref_->registration_id();
+}
+
+blink::WebPassOwnPtr<blink::WebServiceWorkerRegistration::Handle>
+WebServiceWorkerRegistrationImpl::CreateHandle() {
+  return blink::adoptWebPtr(new HandleImpl(this));
+}
+
+blink::WebServiceWorkerRegistration::Handle*
+WebServiceWorkerRegistrationImpl::CreateLeakyHandle() {
+  return new HandleImpl(this);
+}
+
+WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  if (dispatcher)
+    dispatcher->RemoveServiceWorkerRegistration(handle_ref_->handle_id());
+  ClearQueuedTasks();
 }
 
 }  // namespace content

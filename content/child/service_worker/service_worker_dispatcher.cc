@@ -297,7 +297,7 @@ WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
   return new WebServiceWorkerImpl(handle_ref.Pass(), thread_safe_sender_.get());
 }
 
-scoped_ptr<blink::WebServiceWorkerRegistration>
+scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerDispatcher::CreateRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
@@ -307,7 +307,7 @@ ServiceWorkerDispatcher::CreateRegistration(
       attrs, false /* adopt_handle */);
 }
 
-scoped_ptr<blink::WebServiceWorkerRegistration>
+scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerDispatcher::AdoptRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
@@ -386,8 +386,7 @@ void ServiceWorkerDispatcher::OnRegistered(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(
-      blink::adoptWebPtr(AdoptRegistration(info, attrs).release()));
+  callbacks->onSuccess(AdoptRegistration(info, attrs)->CreateHandle());
   pending_registration_callbacks_.Remove(request_id);
 }
 
@@ -447,11 +446,11 @@ void ServiceWorkerDispatcher::OnDidGetRegistration(
   if (!callbacks)
     return;
 
-  scoped_ptr<blink::WebServiceWorkerRegistration> registration;
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration;
   if (info.handle_id != kInvalidServiceWorkerHandleId)
     registration = AdoptRegistration(info, attrs);
 
-  callbacks->onSuccess(blink::adoptWebPtr(registration.release()));
+  callbacks->onSuccess(registration ? registration->CreateHandle() : nullptr);
   pending_get_registration_callbacks_.Remove(request_id);
 }
 
@@ -475,7 +474,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
   if (!callbacks)
     return;
 
-  typedef blink::WebVector<blink::WebServiceWorkerRegistration*>
+  typedef blink::WebVector<blink::WebServiceWorkerRegistration::Handle*>
       WebServiceWorkerRegistrationArray;
   scoped_ptr<WebServiceWorkerRegistrationArray> registrations(
       new WebServiceWorkerRegistrationArray(infos.size()));
@@ -483,7 +482,11 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
     if (infos[i].handle_id != kInvalidServiceWorkerHandleId) {
       ServiceWorkerRegistrationObjectInfo info(infos[i]);
       ServiceWorkerVersionAttributes attr(attrs[i]);
-      (*registrations)[i] = AdoptRegistration(info, attr).release();
+
+      // WebServiceWorkerGetRegistrationsCallbacks cannot receive an array of
+      // WebPassOwnPtr<WebServiceWorkerRegistration::Handle>, so create leaky
+      // handles instead.
+      (*registrations)[i] = AdoptRegistration(info, attr)->CreateLeakyHandle();
     }
   }
 
@@ -510,8 +513,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistrationForReady(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(
-      blink::adoptWebPtr(AdoptRegistration(info, attrs).release()));
+  callbacks->onSuccess(AdoptRegistration(info, attrs)->CreateHandle());
   get_for_ready_callbacks_.Remove(request_id);
 }
 
@@ -776,19 +778,19 @@ void ServiceWorkerDispatcher::RemoveServiceWorkerRegistration(
   registrations_.erase(registration_handle_id);
 }
 
-scoped_ptr<blink::WebServiceWorkerRegistration>
+scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerDispatcher::CreateRegistrationInternal(
     scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref,
     const ServiceWorkerVersionAttributes& attrs,
     bool adopt_handle) {
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration.
-  WebServiceWorkerRegistrationImpl* registration =
-      new WebServiceWorkerRegistrationImpl(handle_ref.Pass());
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
+      new WebServiceWorkerRegistrationImpl(handle_ref.Pass()));
   registration->SetInstalling(GetServiceWorker(attrs.installing, adopt_handle));
   registration->SetWaiting(GetServiceWorker(attrs.waiting, adopt_handle));
   registration->SetActive(GetServiceWorker(attrs.active, adopt_handle));
-  return scoped_ptr<blink::WebServiceWorkerRegistration>(registration);
+  return registration.Pass();
 }
 
 }  // namespace content

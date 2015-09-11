@@ -682,9 +682,15 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
 
   // Register a registration and its version attributes with the dispatcher
   // living on the worker thread.
-  scoped_ptr<blink::WebServiceWorkerRegistration> registration(
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
       dispatcher->CreateRegistration(info, attrs));
-  proxy_->setRegistration(registration.release());
+
+  // WebServiceWorkerContextProxy::setRegistration cannot receive
+  // WebPassOwnPtr<WebServiceWorkerRegistrationImpl> yet, so pass a leaky handle
+  // for now.
+  // TODO(nhiroki): Make WebServiceWorkerContextProxy::setRegistration receive
+  // WebPassOwnPtr.
+  proxy_->setRegistration(registration->CreateLeakyHandle());
 }
 
 void ServiceWorkerContextClient::OnActivateEvent(int request_id) {
