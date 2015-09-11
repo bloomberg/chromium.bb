@@ -100,13 +100,6 @@ enum NativeScrollBehavior { "disable-native-scroll", "perform-before-native-scro
     readonly attribute long clientLeft;
     readonly attribute long clientWidth;
     readonly attribute long clientHeight;
-    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
-    // FIXME: offset* should only be on HTMLElement. crbug.com/504578
-    [DeprecateAs=ElementOffsetParent, PerWorldBindings] readonly attribute Element? offsetParent;
-    [DeprecateAs=ElementOffsetTop] readonly attribute long offsetTop;
-    [DeprecateAs=ElementOffsetLeft] readonly attribute long offsetLeft;
-    [DeprecateAs=ElementOffsetWidth] readonly attribute long offsetWidth;
-    [DeprecateAs=ElementOffsetHeight] readonly attribute long offsetHeight;
 
     // Scroll Customization API. See crbug.com/410974 for details.
     [RuntimeEnabled=ScrollCustomization] void setApplyScroll(ScrollStateCallback scrollStateCallback, NativeScrollBehavior nativeScrollBehavior);

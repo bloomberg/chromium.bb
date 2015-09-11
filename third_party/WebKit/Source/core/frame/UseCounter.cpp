@@ -942,21 +942,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case MediaStreamEnded:
         return "'MediaStream.ended' is deprecated and will be removed in M47, around November 2015. Please use 'MediaStream.active' instead.";
 
-    case ElementOffsetParent:
-        return "'Element.offsetParent' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
-
-    case ElementOffsetTop:
-        return "'Element.offsetTop' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
-
-    case ElementOffsetLeft:
-        return "'Element.offsetLeft' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
-
-    case ElementOffsetWidth:
-        return "'Element.offsetWidth' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
-
-    case ElementOffsetHeight:
-        return "'Element.offsetHeight' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
-
     case PrefixedPerformanceClearResourceTimings:
         return replacedBy("Performance.webkitClearResourceTimings", "Performance.clearResourceTimings");
 

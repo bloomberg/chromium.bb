@@ -1213,11 +1213,6 @@ interface Element
     getter localName
     getter namespaceURI
     getter nextElementSibling
-    getter offsetHeight
-    getter offsetLeft
-    getter offsetParent
-    getter offsetTop
-    getter offsetWidth
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
