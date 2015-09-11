@@ -23,7 +23,7 @@
 
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap_real.h"
-#include "nacl_io/nacl_abi_dirent.h"
+#include "nacl_io/nacl_abi_types.h"
 #include "nacl_io/osmman.h"
 
 namespace {

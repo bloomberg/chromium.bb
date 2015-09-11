@@ -22,6 +22,7 @@
 
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/log.h"
+#include "nacl_io/nacl_abi_types.h"
 
 /*
  * The following macros are used to interfact with IRT interfaces.
@@ -77,6 +78,47 @@
                                 sizeof(supplied_struct));              \
     assert(bytes == sizeof(supplied_struct));                          \
   } while (false)
+
+
+void stat_to_nacl_stat(const struct stat* buf, nacl_irt_stat_t* nacl_buf) {
+  memset(nacl_buf, 0, sizeof(struct nacl_abi_stat));
+  nacl_buf->nacl_abi_st_dev = buf->st_dev;
+  nacl_buf->nacl_abi_st_ino = buf->st_ino;
+  nacl_buf->nacl_abi_st_mode = buf->st_mode;
+  nacl_buf->nacl_abi_st_nlink = buf->st_nlink;
+  nacl_buf->nacl_abi_st_uid = buf->st_uid;
+  nacl_buf->nacl_abi_st_gid = buf->st_gid;
+  nacl_buf->nacl_abi_st_rdev = buf->st_rdev;
+  nacl_buf->nacl_abi_st_size = buf->st_size;
+  nacl_buf->nacl_abi_st_blksize = buf->st_blksize;
+  nacl_buf->nacl_abi_st_blocks = buf->st_blocks;
+  nacl_buf->nacl_abi_st_atime = buf->st_atim.tv_sec;
+  nacl_buf->nacl_abi_st_atimensec = buf->st_atim.tv_nsec;
+  nacl_buf->nacl_abi_st_mtime = buf->st_mtim.tv_sec;
+  nacl_buf->nacl_abi_st_mtimensec = buf->st_mtim.tv_nsec;
+  nacl_buf->nacl_abi_st_ctime = buf->st_ctim.tv_sec;
+  nacl_buf->nacl_abi_st_ctimensec = buf->st_ctim.tv_nsec;
+}
+
+void nacl_stat_to_stat(const nacl_irt_stat_t* nacl_buf, struct stat* buf) {
+  memset(buf, 0, sizeof(struct stat));
+  buf->st_dev = nacl_buf->nacl_abi_st_dev;
+  buf->st_ino = nacl_buf->nacl_abi_st_ino;
+  buf->st_mode = nacl_buf->nacl_abi_st_mode;
+  buf->st_nlink = nacl_buf->nacl_abi_st_nlink;
+  buf->st_uid = nacl_buf->nacl_abi_st_uid;
+  buf->st_gid = nacl_buf->nacl_abi_st_gid;
+  buf->st_rdev = nacl_buf->nacl_abi_st_rdev;
+  buf->st_size = nacl_buf->nacl_abi_st_size;
+  buf->st_blksize = nacl_buf->nacl_abi_st_blksize;
+  buf->st_blocks = nacl_buf->nacl_abi_st_blocks;
+  buf->st_atim.tv_sec = nacl_buf->nacl_abi_st_atime;
+  buf->st_atim.tv_nsec = nacl_buf->nacl_abi_st_atimensec;
+  buf->st_mtim.tv_sec = nacl_buf->nacl_abi_st_mtime;
+  buf->st_mtim.tv_nsec = nacl_buf->nacl_abi_st_mtimensec;
+  buf->st_ctim.tv_sec = nacl_buf->nacl_abi_st_ctime;
+  buf->st_ctim.tv_nsec = nacl_buf->nacl_abi_st_ctimensec;
+}
 
 /*
  * IRT interfaces as declared in irt.h.
@@ -145,8 +187,13 @@ static int ext_seek(int fd, nacl_irt_off_t offset, int whence,
   ERRNO_RTN(*new_offset);
 }
 
-static int ext_fstat(int fd, nacl_irt_stat_t *buf) {
-  ERRNO_RTN(ki_fstat(fd, (struct stat*)buf));
+static int ext_fstat(int fd, nacl_irt_stat_t *nacl_buf) {
+  struct stat buf;
+  if (ki_fstat(fd, &buf)) {
+    return errno;
+  }
+  stat_to_nacl_stat(&buf, nacl_buf);
+  return 0;
 }
 
 static int ext_getdents(int fd, struct dirent *ents, size_t count,
@@ -216,8 +263,13 @@ static int ext_open(const char *pathname, int oflag, mode_t cmode, int *newfd) {
   ERRNO_RTN(*newfd);
 }
 
-static int ext_stat(const char *pathname, nacl_irt_stat_t *buf) {
-  ERRNO_RTN(ki_stat(pathname, (struct stat*)buf));
+static int ext_stat(const char *pathname, nacl_irt_stat_t *nacl_buf) {
+  struct stat buf;
+  if (ki_stat(pathname, &buf)) {
+    return errno;
+  }
+  stat_to_nacl_stat(&buf, nacl_buf);
+  return 0;
 }
 
 static int ext_mkdir(const char *pathname, mode_t mode) {
@@ -246,8 +298,13 @@ static int ext_truncate(const char *pathname, nacl_irt_off_t length) {
   ERRNO_RTN(ki_truncate(pathname, length));
 }
 
-static int ext_lstat(const char *pathname, nacl_irt_stat_t *buf) {
-  ERRNO_RTN(ki_lstat(pathname, (struct stat*)buf));
+static int ext_lstat(const char *pathname, nacl_irt_stat_t *nacl_buf) {
+  struct stat buf;
+  if (ki_lstat(pathname, &buf)) {
+    return errno;
+  }
+  stat_to_nacl_stat(&buf, nacl_buf);
+  return 0;
 }
 
 static int ext_link(const char *pathname, const char *newpath) {
@@ -298,7 +355,14 @@ void _real_exit(int status) {
 
 int _real_fstat(int fd, struct stat *buf) {
   INIT_INTERFACE_ENOSYS(s_irt_fdio);
-  return s_irt_fdio.interface.fstat(fd, (nacl_irt_stat_t*)buf);
+  nacl_irt_stat_t nacl_buf;
+  int err = s_irt_fdio.interface.fstat(fd, &nacl_buf);
+  if (err) {
+    errno = err;
+    return -1;
+  }
+  nacl_stat_to_stat(&nacl_buf, buf);
+  return 0;
 }
 
 int _real_getdents(int fd, void *nacl_buf, size_t nacl_count, size_t *nread) {
