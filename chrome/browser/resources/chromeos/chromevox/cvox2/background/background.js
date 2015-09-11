@@ -452,6 +452,9 @@ Background.prototype = {
    * @param {Object} evt
    */
   onFocus: function(evt) {
+    // Invalidate any previous editable text handler state.
+    this.editableTextHandler = null;
+
     var node = evt.target;
 
     // It almost never makes sense to place focus directly on a rootWebArea.
@@ -544,6 +547,10 @@ Background.prototype = {
               textChangeEvent.end,
               evt.target.state['protected'],
               cvox.ChromeVox.tts);
+
+      // Ignore the first text selection changed event which gets fired after
+      // the focus event.
+      return;
     }
 
     this.editableTextHandler.changed(textChangeEvent);
