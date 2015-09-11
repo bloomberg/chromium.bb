@@ -245,4 +245,9 @@ tests:
     - about
     - ⠁⠃
     - cursorPos: [0,1,2,3,4]
-      xfail: true
+      # FIXME: for some reason this test passes and fails when run in
+      # the Python based harness tests. At the moment we do not know
+      # why it passes in the yaml tests. Is this a problem in the
+      # Python bindings, a problem in the way tests are run in
+      # brl_checks.c or in check_yaml.c?
+      xfail: off
