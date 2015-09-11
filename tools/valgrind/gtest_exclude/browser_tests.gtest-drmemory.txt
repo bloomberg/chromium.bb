@@ -63,3 +63,7 @@ ExtensionTabsTest.GetAllWindowsAllTypes
 
 # https://crbug.com/530404
 WakeEventPageTest.ClosedEventPage
+
+# https://crbug.com/530696
+PolicyTest.ForceSafeSearch
+PolicyTest.URLBlacklist
