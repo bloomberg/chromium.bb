@@ -167,7 +167,7 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   gfx::RectF GetTransformedBoundsInRootWindow(aura::Window* window) {
-    gfx::RectF bounds = gfx::Rect(window->bounds().size());
+    gfx::RectF bounds = gfx::RectF(gfx::SizeF(window->bounds().size()));
     aura::Window* root = window->GetRootWindow();
     CHECK(window->layer());
     CHECK(root->layer());

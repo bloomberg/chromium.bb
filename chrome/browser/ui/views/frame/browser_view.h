@@ -114,10 +114,9 @@ class BrowserView : public BrowserWindow,
 
   // Paints a 1 device-pixel-thick horizontal line (regardless of device scale
   // factor) flush with the bottom of |bounds|.
-  static void Paint1pxHorizontalLine(
-    gfx::Canvas* canvas,
-    SkColor color,
-    gfx::RectF bounds);
+  static void Paint1pxHorizontalLine(gfx::Canvas* canvas,
+                                     SkColor color,
+                                     const gfx::Rect& bounds);
 
   // Returns a Browser instance of this view.
   Browser* browser() { return browser_.get(); }

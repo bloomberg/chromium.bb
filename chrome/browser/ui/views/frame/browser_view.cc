@@ -214,8 +214,9 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     BrowserView::Paint1pxHorizontalLine(
-        canvas, separator_color, gfx::RectF(0, 0, view->width(),
-        views::NonClientFrameView::kClientEdgeThickness));
+        canvas, separator_color,
+        gfx::Rect(0, 0, view->width(),
+                  views::NonClientFrameView::kClientEdgeThickness));
   } else {
     PaintHorizontalBorder(canvas, view, true, separator_color);
   }
@@ -547,20 +548,20 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
 }
 
 // static
-void BrowserView::Paint1pxHorizontalLine(
-    gfx::Canvas* canvas,
-    SkColor color,
-    gfx::RectF bounds) {
+void BrowserView::Paint1pxHorizontalLine(gfx::Canvas* canvas,
+                                         SkColor color,
+                                         const gfx::Rect& bounds) {
   canvas->Save();
   SkScalar scale_factor = 1.0f / canvas->image_scale();
   canvas->sk_canvas()->scale(scale_factor, scale_factor);
 
-  bounds.Scale(canvas->image_scale(), canvas->image_scale());
-  bounds.Inset(0, bounds.height() - 1, 0, 0);
+  gfx::RectF line_rect =
+      gfx::ScaleRect(gfx::RectF(bounds), canvas->image_scale());
+  line_rect.Inset(0, bounds.height() - 1, 0, 0);
 
   SkPaint paint;
   paint.setColor(color);
-  canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(bounds), paint);
+  canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(line_rect), paint);
   canvas->Restore();
 }
 
