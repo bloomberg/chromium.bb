@@ -50,7 +50,8 @@ deps = {
 
   # Linux syscall support.
   "src/src/third_party/lss":
-    "http://linux-syscall-support.googlecode.com/svn/trunk/lss@24",
+    "https://chromium.googlesource.com/linux-syscall-support/" +
+      "@9292030109847793f7a6689adac1ddafb412fe14"
 }
 
 hooks = [
