@@ -8,7 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/notification/download_group_notification.h"
 #include "chrome/browser/download/notification/download_item_notification.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
@@ -85,8 +84,6 @@ DownloadNotificationManagerForProfile::DownloadNotificationManagerForProfile(
     : profile_(profile),
       parent_manager_(parent_manager),
       items_deleter_(&items_) {
-  group_notification_.reset(
-      new DownloadGroupNotification(profile_, this));
 }
 
 DownloadNotificationManagerForProfile::
@@ -101,13 +98,11 @@ void DownloadNotificationManagerForProfile::OnDownloadUpdated(
   DCHECK(items_.find(changed_download) != items_.end());
 
   items_[changed_download]->OnDownloadUpdated(changed_download);
-  group_notification_->OnDownloadUpdated(changed_download);
 }
 
 void DownloadNotificationManagerForProfile::OnDownloadOpened(
     content::DownloadItem* changed_download) {
   items_[changed_download]->OnDownloadUpdated(changed_download);
-  group_notification_->OnDownloadUpdated(changed_download);
 }
 
 void DownloadNotificationManagerForProfile::OnDownloadRemoved(
@@ -121,7 +116,6 @@ void DownloadNotificationManagerForProfile::OnDownloadRemoved(
 
   // notify
   item->OnDownloadRemoved(download);
-  group_notification_->OnDownloadRemoved(download);
 
   // This removing might be initiated from DownloadNotificationItem, so delaying
   // deleting for item to do remaining cleanups.
@@ -138,7 +132,6 @@ void DownloadNotificationManagerForProfile::OnDownloadDestroyed(
   items_.erase(download);
 
   item->OnDownloadRemoved(download);
-  group_notification_->OnDownloadRemoved(download);
 
   // This removing might be initiated from DownloadNotificationItem, so delaying
   // deleting for item to do remaining cleanups.
@@ -159,11 +152,4 @@ void DownloadNotificationManagerForProfile::OnNewDownloadReady(
   // constructor.
   DownloadItemNotification* item = new DownloadItemNotification(download, this);
   items_.insert(std::make_pair(download, item));
-
-  group_notification_->OnDownloadAdded(download);
-}
-
-DownloadGroupNotification*
-DownloadNotificationManagerForProfile::GetGroupNotification() const {
-  return group_notification_.get();
 }

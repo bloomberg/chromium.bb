@@ -1050,8 +1050,6 @@
       'browser/download/download_shelf.h',
       'browser/download/download_shelf_context_menu.cc',
       'browser/download/download_shelf_context_menu.h',
-      'browser/download/notification/download_group_notification.cc',
-      'browser/download/notification/download_group_notification.h',
       'browser/download/notification/download_item_notification.cc',
       'browser/download/notification/download_item_notification.h',
       'browser/download/notification/download_notification.cc',

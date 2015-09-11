@@ -12,7 +12,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/notification/download_group_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -733,9 +732,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   EXPECT_EQ(1u, downloads.size());
   content::DownloadItem* download1or2 = downloads[0];
 
-  // Starts the 2nd download and waits for 2 notifications (normal and
-  // grouped one).
-  NotificationAddObserver download_start_notification_observer2(2);
+  // Starts the 2nd download and waits for a notification.
+  NotificationAddObserver download_start_notification_observer2;
   ui_test_utils::NavigateToURL(browser(), url2);
   EXPECT_TRUE(download_start_notification_observer2.Wait());
 
@@ -748,33 +746,21 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   EXPECT_NE(download1, download2);
   EXPECT_TRUE(download1 == download1or2 || download2 == download1or2);
 
-  // Confirms that there is only one group notification.
+  // Confirms that there are 2 notifications.
   message_center::NotificationList::Notifications
       visible_notifications = GetMessageCenter()->GetVisibleNotifications();
-  EXPECT_EQ(3u, visible_notifications.size());
+  EXPECT_EQ(2u, visible_notifications.size());
 
   std::string notification_id2;
-  std::string notification_id_group;
   for (auto notification : visible_notifications) {
     if (notification->id() == notification_id1) {
       continue;
     } else if (notification->type() ==
                message_center::NOTIFICATION_TYPE_PROGRESS) {
       notification_id2 = (notification->id());
-    } else if (notification->type() ==
-               message_center::NOTIFICATION_TYPE_MULTIPLE) {
-      notification_id_group = (notification->id());
     }
   }
   EXPECT_TRUE(!notification_id2.empty());
-  EXPECT_TRUE(!notification_id_group.empty());
-  EXPECT_NE(notification_id2, notification_id_group);
-
-  // Confirms the types of download notifications are correct.
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_MULTIPLE,
-            GetNotification(notification_id_group)->type());
-  EXPECT_EQ(2u, GetNotification(notification_id_group)->items().size());
-  EXPECT_EQ(2u, GetNotification(notification_id_group)->items().size());
 
   // Requests to complete the downloads.
   ui_test_utils::NavigateToURL(
@@ -788,9 +774,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   }
 
   visible_notifications = GetMessageCenter()->GetVisibleNotifications();
-  EXPECT_EQ(3u, visible_notifications.size());
-  EXPECT_TRUE(IsInNotifications(visible_notifications,
-                                notification_id_group));
+  EXPECT_EQ(2u, visible_notifications.size());
   EXPECT_TRUE(IsInNotifications(visible_notifications,
                                 notification_id1));
   EXPECT_TRUE(IsInNotifications(visible_notifications,
@@ -801,13 +785,6 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
             GetNotification(notification_id1)->type());
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id2)->type());
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_MULTIPLE,
-            GetNotification(notification_id_group)->type());
-  EXPECT_EQ(2u, GetNotification(notification_id_group)->items().size());
-  EXPECT_EQ(DownloadGroupNotification::TruncateFileName(download2),
-            GetNotification(notification_id_group)->items()[0].title);
-  EXPECT_EQ(DownloadGroupNotification::TruncateFileName(download1),
-            GetNotification(notification_id_group)->items()[1].title);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
@@ -1156,26 +1133,12 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   ASSERT_EQ(1u, downloads.size());
 
   // Second user starts another download.
-  NotificationAddObserver download_start_notification_observer3(2);
+  NotificationAddObserver download_start_notification_observer3;
   ui_test_utils::NavigateToURL(browser2, url);
   download_start_notification_observer3.Wait();
-  std::string notification_id_user2_2;
-  std::string notification_id_user2_group;
-  {
-    auto added_notification_ids =
-        download_start_notification_observer3.notification_ids();
-    EXPECT_EQ(2u, added_notification_ids.size());
-    for (auto notification_id : added_notification_ids) {
-      if (GetNotification(notification_id)->type() ==
-              message_center::NOTIFICATION_TYPE_MULTIPLE) {
-        notification_id_user2_group = notification_id;
-      } else {
-        notification_id_user2_2 = notification_id;
-      }
-    }
-  }
+  std::string notification_id_user2_2 =
+      download_start_notification_observer3.notification_id();
   EXPECT_FALSE(notification_id_user2_2.empty());
-  EXPECT_FALSE(notification_id_user2_group.empty());
 
   // Confirms that the second user has 2 downloads.
   downloads.clear();
@@ -1197,11 +1160,6 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   // Normal notification for user1.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id_user1)->type());
-  // Group notification for user2.
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_MULTIPLE,
-            GetNotification(notification_id_user2_group)->type());
-  EXPECT_EQ(2u,
-            GetNotification(notification_id_user2_group)->items().size());
   // Normal notification for user2.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id_user2_1)->type());
@@ -1228,11 +1186,6 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
             GetNotification(notification_id_user1)->type());
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id_user2_1)->type());
-  // There is still a group notification.
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_MULTIPLE,
-            GetNotification(notification_id_user2_group)->type());
-  EXPECT_EQ(2u,
-            GetNotification(notification_id_user2_group)->items().size());
   // Normal notifications for user2.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id_user2_1)->type());
