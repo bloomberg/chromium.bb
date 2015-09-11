@@ -8,7 +8,6 @@
 #include <stack>
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -99,7 +98,7 @@ void WinVistaCondVar::TimedWait(const TimeDelta& max_time) {
   DWORD timeout = static_cast<DWORD>(max_time.InMilliseconds());
   CRITICAL_SECTION* cs = user_lock_.lock_.native_handle();
 
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
   user_lock_.CheckHeldAndUnmark();
 #endif
 

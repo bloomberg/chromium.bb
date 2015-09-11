@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <sys/time.h>
 
-#include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -16,7 +15,7 @@ namespace base {
 
 ConditionVariable::ConditionVariable(Lock* user_lock)
     : user_mutex_(user_lock->lock_.native_handle())
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
     , user_lock_(user_lock)
 #endif
 {
@@ -62,12 +61,12 @@ ConditionVariable::~ConditionVariable() {
 
 void ConditionVariable::Wait() {
   base::ThreadRestrictions::AssertWaitAllowed();
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
   user_lock_->CheckHeldAndUnmark();
 #endif
   int rv = pthread_cond_wait(&condition_, user_mutex_);
   DCHECK_EQ(0, rv);
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
   user_lock_->CheckUnheldAndMark();
 #endif
 }
@@ -80,7 +79,7 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   relative_time.tv_nsec =
       (usecs % Time::kMicrosecondsPerSecond) * Time::kNanosecondsPerMicrosecond;
 
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
   user_lock_->CheckHeldAndUnmark();
 #endif
 
@@ -118,7 +117,7 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
 #endif  // OS_MACOSX
 
   DCHECK(rv == 0 || rv == ETIMEDOUT);
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
   user_lock_->CheckUnheldAndMark();
 #endif
 }
