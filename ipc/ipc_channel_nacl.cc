@@ -141,6 +141,7 @@ ChannelNacl::ChannelNacl(const IPC::ChannelHandle& channel_handle,
 }
 
 ChannelNacl::~ChannelNacl() {
+  CleanUp();
   Close();
 }
 

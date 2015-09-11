@@ -204,6 +204,7 @@ ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
 
 ChannelPosix::~ChannelPosix() {
   in_dtor_ = true;
+  CleanUp();
   Close();
 }
 

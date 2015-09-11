@@ -20,8 +20,7 @@ ChannelReader::ChannelReader(Listener* listener) : listener_(listener) {
 }
 
 ChannelReader::~ChannelReader() {
-  if (!blocked_ids_.empty())
-    StopObservingAttachmentBroker();
+  DCHECK(blocked_ids_.empty());
 }
 
 ChannelReader::DispatchState ChannelReader::ProcessIncomingMessages() {
@@ -60,6 +59,13 @@ bool ChannelReader::IsInternalMessage(const Message& m) {
 bool ChannelReader::IsHelloMessage(const Message& m) {
   return m.routing_id() == MSG_ROUTING_NONE &&
       m.type() == Channel::HELLO_MESSAGE_TYPE;
+}
+
+void ChannelReader::CleanUp() {
+  if (!blocked_ids_.empty()) {
+    StopObservingAttachmentBroker();
+    blocked_ids_.clear();
+  }
 }
 
 bool ChannelReader::TranslateInputData(const char* input_data,

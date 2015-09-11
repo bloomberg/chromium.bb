@@ -54,6 +54,7 @@ ChannelWin::ChannelWin(const IPC::ChannelHandle& channel_handle,
 }
 
 ChannelWin::~ChannelWin() {
+  CleanUp();
   Close();
 }
 
