@@ -1069,6 +1069,11 @@ TEST(AutofillProfileTest, CanonicalizeProfileString) {
   EXPECT_EQ(ASCIIToUTF16("mid island plaza"),
             AutofillProfile::CanonicalizeProfileString(base::WideToUTF16(
                 L"Mid\x2013Island\x2003 Plaza")));
+
+  // Newline character removed.
+  EXPECT_EQ(ASCIIToUTF16("1600 amphitheatre pkwy app 2"),
+            AutofillProfile::CanonicalizeProfileString(
+                ASCIIToUTF16("1600 amphitheatre pkwy \n App. 2")));
 }
 
 }  // namespace autofill

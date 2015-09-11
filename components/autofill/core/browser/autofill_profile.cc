@@ -526,13 +526,24 @@ void AutofillProfile::OverwriteWith(const AutofillProfile& profile,
   // first name, last name).
   CollapseCompoundFieldTypes(&field_types);
 
-  // TODO(isherman): Revisit this decision in the context of i18n and storing
-  // full addresses rather than storing 1-to-2 lines of an address.
-  // For addresses, do the opposite: transfer individual address lines, rather
-  // than full addresses.
+  // Remove ADDRESS_HOME_STREET_ADDRESS to ensure a merge of the address line by
+  // line. See comment below.
   field_types.erase(ADDRESS_HOME_STREET_ADDRESS);
 
   l10n::CaseInsensitiveCompare compare;
+
+  // Special case for addresses. With the whole address comparison, it is now
+  // necessary to make sure to keep the best address format: both lines used.
+  // This is because some sites might not have an address line 2 and the
+  // previous value should not be replaced with an empty string in that case.
+  if (compare.StringsEqual(
+          CanonicalizeProfileString(
+              profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)),
+          CanonicalizeProfileString(GetRawInfo(ADDRESS_HOME_STREET_ADDRESS))) &&
+      profile.GetRawInfo(ADDRESS_HOME_LINE2) == base::UTF8ToUTF16("")) {
+    field_types.erase(ADDRESS_HOME_LINE1);
+    field_types.erase(ADDRESS_HOME_LINE2);
+  }
 
   for (ServerFieldTypeSet::const_iterator iter = field_types.begin();
        iter != field_types.end(); ++iter) {
@@ -554,12 +565,15 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
   ServerFieldTypeSet field_types, other_field_types;
   GetNonEmptyTypes(app_locale, &field_types);
   profile.GetNonEmptyTypes(app_locale, &other_field_types);
-  // See note in OverwriteWith.
+  // The address needs to be compared line by line to take into account the
+  // logic for empty fields implemented in the loop.
   field_types.erase(ADDRESS_HOME_STREET_ADDRESS);
   l10n::CaseInsensitiveCompare compare;
   for (ServerFieldType field_type : field_types) {
     if (other_field_types.count(field_type)) {
       AutofillType type = AutofillType(field_type);
+      // Special cases for name and phone. If the whole/full value matches, skip
+      // the individual fields comparison.
       if (type.group() == NAME &&
           compare.StringsEqual(
               profile.GetInfo(AutofillType(NAME_FULL), app_locale),
@@ -572,6 +586,24 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
               profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
               base::UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
               app_locale)) {
+        continue;
+      }
+      // Special case for the address because the comparison uses canonicalized
+      // values. Start by comparing the address line by line. If it fails, make
+      // sure that the address as a whole is different before returning false.
+      // It is possible that the user put the info from line 2 on line 1 because
+      // of a certain form for example.
+      if (field_type == ADDRESS_HOME_LINE1 ||
+          field_type == ADDRESS_HOME_LINE2) {
+        if (!compare.StringsEqual(
+                CanonicalizeProfileString(profile.GetRawInfo(field_type)),
+                CanonicalizeProfileString(GetRawInfo(field_type))) &&
+            !compare.StringsEqual(CanonicalizeProfileString(profile.GetRawInfo(
+                                      ADDRESS_HOME_STREET_ADDRESS)),
+                                  CanonicalizeProfileString(GetRawInfo(
+                                      ADDRESS_HOME_STREET_ADDRESS)))) {
+          return false;
+        }
         continue;
       }
       if (!compare.StringsEqual(profile.GetRawInfo(field_type),
@@ -698,6 +730,7 @@ base::string16 AutofillProfile::CanonicalizeProfileString(
         }
         break;
 
+      case U_CONTROL_CHAR:  // To escape the '\n' character.
       case U_SPACE_SEPARATOR:
       case U_LINE_SEPARATOR:
       case U_PARAGRAPH_SEPARATOR:
