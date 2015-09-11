@@ -404,27 +404,21 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (cursorPos) {
     if (xfail != check_cursor_pos(tables_list, word, cursorPos)) {
-      char *error_msg = "Failure";
-      if (xfail)
-	error_msg = "Unexpected Pass";
-      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
+      error_at_line(0, 0, file_name, event.start_mark.line,
+		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
   } else if (hyphenation) {
     if (xfail != check_hyphenation(tables_list, word, translation)) {
-      char *error_msg = "Failure";
-      if (xfail)
-	error_msg = "Unexpected Pass";
-      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
+      error_at_line(0, 0, file_name, event.start_mark.line,
+		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
   } else {
     if (xfail != check_with_mode(tables_list, word, typeform,
 				 translation, translation_mode, direction)) {
-      char *error_msg = "Failure";
-      if (xfail)
-	error_msg = "Unexpected Pass";
-      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
+      error_at_line(0, 0, file_name, event.start_mark.line,
+		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
   }
