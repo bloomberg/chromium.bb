@@ -1010,7 +1010,6 @@
             '../components/components.gyp:cryptauth',
             '../components/components.gyp:cryptauth_proto',
             '../remoting/remoting.gyp:remoting_it2me_host_static',
-            '../third_party/libevent/libevent.gyp:libevent',
             '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
           ],
           'sources': [

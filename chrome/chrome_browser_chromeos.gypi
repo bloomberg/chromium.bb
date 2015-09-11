@@ -1142,7 +1142,6 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../third_party/libevent/libevent.gyp:libevent',
         '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/protobuf/protobuf.gyp:protoc#host',
