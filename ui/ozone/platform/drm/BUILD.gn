@@ -153,6 +153,7 @@ if (ozone_platform_drm) {
     deps = [
       "//skia",
       "//testing/gtest",
+      "//ui/gfx",
       "//ui/ozone",
     ]
 
