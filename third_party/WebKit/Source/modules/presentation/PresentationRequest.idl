@@ -9,6 +9,7 @@
     Constructor(DOMString url),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
+    ActiveDOMObject,
     GarbageCollected,
     RuntimeEnabled=Presentation,
     MeasureAs=PresentationRequestConstructor
