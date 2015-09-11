@@ -975,6 +975,11 @@ VisiblePosition startOfLine(const VisiblePosition& currentPosition)
     return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity()));
 }
 
+VisiblePositionInComposedTree startOfLine(const VisiblePositionInComposedTree& currentPosition)
+{
+    return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity()));
+}
+
 template <typename Strategy>
 static PositionWithAffinityTemplate<Strategy> logicalStartOfLineAlgorithm(const PositionWithAffinityTemplate<Strategy>& c)
 {

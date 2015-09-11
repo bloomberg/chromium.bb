@@ -130,7 +130,10 @@ VisiblePosition previousSentencePosition(const VisiblePosition&);
 VisiblePosition nextSentencePosition(const VisiblePosition&);
 
 // lines
-VisiblePosition startOfLine(const VisiblePosition&);
+// TODO(yosin) Return values of |VisiblePosition| version of |startOfLine()|
+// with shadow tree isn't defined well. We should not use it for shadow tree.
+CORE_EXPORT VisiblePosition startOfLine(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInComposedTree startOfLine(const VisiblePositionInComposedTree&);
 // TODO(yosin) Return values of |VisiblePosition| version of |endOfLine()| with
 // shadow tree isn't defined well. We should not use it for shadow tree.
 CORE_EXPORT VisiblePosition endOfLine(const VisiblePosition&);
