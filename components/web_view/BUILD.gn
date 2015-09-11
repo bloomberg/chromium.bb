@@ -93,6 +93,7 @@ mojo_native_application("apptests") {
 
   sources = [
     "frame_apptest.cc",
+    "web_view_apptest.cc",
   ]
 
   deps = [
@@ -101,12 +102,16 @@ mojo_native_application("apptests") {
     "//base",
     "//base/test:test_config",
     "//components/view_manager/public/cpp",
+    "//components/view_manager/public/cpp/tests:test_support",
     "//components/view_manager/public/interfaces",
+    "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
+    "//mojo/util:filename_util",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
+    "//url:url",
   ]
 
   data_deps = [ "//components/view_manager" ]

@@ -92,6 +92,7 @@ if config.target_os != config.OS_ANDROID:
     {
       'test': 'mojo:web_view_apptests',
       'type': 'gtest_isolated',
-      'args': ['--use-headless-config']
+      'args': ['--use-x11-test-config',
+               '--override-use-gl-with-osmesa-for-tests']
     },
   ]

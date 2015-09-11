@@ -10,5 +10,6 @@ include_rules = [
   "+mojo/converters/geometry",
   "+mojo/services/network/public/interfaces",
   "+mojo/services/tracing/public/interfaces",
+  "+mojo/util",
   "+third_party/mojo/src/mojo/public",
 ]
