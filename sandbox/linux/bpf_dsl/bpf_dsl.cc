@@ -17,72 +17,30 @@ namespace sandbox {
 namespace bpf_dsl {
 namespace {
 
-class AllowResultExprImpl : public internal::ResultExprImpl {
+class ReturnResultExprImpl : public internal::ResultExprImpl {
  public:
-  AllowResultExprImpl() {}
+  explicit ReturnResultExprImpl(uint32_t ret) : ret_(ret) {}
 
   CodeGen::Node Compile(PolicyCompiler* pc) const override {
-    return pc->Return(SECCOMP_RET_ALLOW);
+    return pc->Return(ret_);
   }
 
-  bool IsAllow() const override { return true; }
+  bool IsAllow() const override { return IsAction(SECCOMP_RET_ALLOW); }
 
- private:
-  ~AllowResultExprImpl() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(AllowResultExprImpl);
-};
-
-class ErrorResultExprImpl : public internal::ResultExprImpl {
- public:
-  explicit ErrorResultExprImpl(int err) : err_(err) {
-    CHECK(err_ >= ErrorCode::ERR_MIN_ERRNO && err_ <= ErrorCode::ERR_MAX_ERRNO);
-  }
-
-  CodeGen::Node Compile(PolicyCompiler* pc) const override {
-    return pc->Return(SECCOMP_RET_ERRNO + err_);
-  }
-
-  bool IsDeny() const override { return true; }
-
- private:
-  ~ErrorResultExprImpl() override {}
-
-  int err_;
-
-  DISALLOW_COPY_AND_ASSIGN(ErrorResultExprImpl);
-};
-
-class KillResultExprImpl : public internal::ResultExprImpl {
- public:
-  KillResultExprImpl() {}
-
-  CodeGen::Node Compile(PolicyCompiler* pc) const override {
-    return pc->Return(SECCOMP_RET_KILL);
-  }
-
-  bool IsDeny() const override { return true; }
-
- private:
-  ~KillResultExprImpl() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(KillResultExprImpl);
-};
-
-class TraceResultExprImpl : public internal::ResultExprImpl {
- public:
-  TraceResultExprImpl(uint16_t aux) : aux_(aux) {}
-
-  CodeGen::Node Compile(PolicyCompiler* pc) const override {
-    return pc->Return(SECCOMP_RET_TRACE + aux_);
+  bool IsDeny() const override {
+    return IsAction(SECCOMP_RET_ERRNO) || IsAction(SECCOMP_RET_KILL);
   }
 
  private:
-  ~TraceResultExprImpl() override {}
+  ~ReturnResultExprImpl() override {}
 
-  uint16_t aux_;
+  bool IsAction(uint32_t action) const {
+    return (ret_ & SECCOMP_RET_ACTION) == action;
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(TraceResultExprImpl);
+  uint32_t ret_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReturnResultExprImpl);
 };
 
 class TrapResultExprImpl : public internal::ResultExprImpl {
@@ -281,19 +239,20 @@ BoolExpr ArgEq(int num, size_t size, uint64_t mask, uint64_t val) {
 }  // namespace internal
 
 ResultExpr Allow() {
-  return ResultExpr(new const AllowResultExprImpl());
+  return ResultExpr(new const ReturnResultExprImpl(SECCOMP_RET_ALLOW));
 }
 
 ResultExpr Error(int err) {
-  return ResultExpr(new const ErrorResultExprImpl(err));
+  CHECK(err >= ErrorCode::ERR_MIN_ERRNO && err <= ErrorCode::ERR_MAX_ERRNO);
+  return ResultExpr(new const ReturnResultExprImpl(SECCOMP_RET_ERRNO + err));
 }
 
 ResultExpr Kill() {
-  return ResultExpr(new const KillResultExprImpl());
+  return ResultExpr(new const ReturnResultExprImpl(SECCOMP_RET_KILL));
 }
 
 ResultExpr Trace(uint16_t aux) {
-  return ResultExpr(new const TraceResultExprImpl(aux));
+  return ResultExpr(new const ReturnResultExprImpl(SECCOMP_RET_TRACE + aux));
 }
 
 ResultExpr Trap(TrapRegistry::TrapFnc trap_func, const void* aux) {
