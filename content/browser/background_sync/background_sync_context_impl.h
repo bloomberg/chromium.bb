@@ -49,6 +49,8 @@ class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
   ~BackgroundSyncContextImpl() override;
 
  private:
+  friend class BackgroundSyncServiceImplTest;
+
   void CreateBackgroundSyncManager(
       const scoped_refptr<ServiceWorkerContextWrapper>& context);
 

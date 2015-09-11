@@ -28,14 +28,17 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
   ~BackgroundSyncProvider() override;
 
   // blink::WebSyncProvider implementation
+  // TODO(jkarlin) convert int64_t handle_id to int handle_id in all
+  // WebSyncProvider functions.
   void registerBackgroundSync(
       const blink::WebSyncRegistration* options,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       bool requested_from_service_worker,
       blink::WebSyncRegistrationCallbacks* callbacks);
+  // TODO(jkarlin) remove |tag| parameter.
   void unregisterBackgroundSync(
       blink::WebSyncRegistration::Periodicity periodicity,
-      int64_t id,
+      int64_t handle_id,
       const blink::WebString& tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncUnregistrationCallbacks* callbacks);
@@ -52,6 +55,13 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
       blink::WebSyncRegistration::Periodicity periodicity,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetPermissionStatusCallbacks* callbacks);
+  // TODO(jkarlin): Rename to releaseRegistrationHandle.
+  void releaseRegistration(int64_t handle_id);
+
+  void DuplicateRegistrationHandle(
+      int handle_id,
+      const BackgroundSyncService::DuplicateRegistrationHandleCallback&
+          callback);
 
  private:
   // Callback handlers

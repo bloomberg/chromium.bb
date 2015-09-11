@@ -171,9 +171,11 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     mojo::InterfaceRequest<BackgroundSyncService> service_request =
         mojo::GetProxy(&service_ptr_);
     // Create a new BackgroundSyncServiceImpl bound to the dummy channel
-    service_impl_.reset(new BackgroundSyncServiceImpl(
-        background_sync_context_.get(), service_request.Pass()));
+    background_sync_context_->CreateService(service_request.Pass());
     base::RunLoop().RunUntilIdle();
+
+    service_impl_ = *background_sync_context_->services_.begin();
+    ASSERT_TRUE(service_impl_);
   }
 
   // Helpers for testing BackgroundSyncServiceImpl methods
@@ -199,7 +201,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
       const BackgroundSyncService::UnregisterCallback& callback) {
     service_impl_->Unregister(
         BackgroundSyncPeriodicity::BACKGROUND_SYNC_PERIODICITY_ONE_SHOT,
-        sync->id, sync->tag, sw_registration_id_, callback);
+        sync->handle_id, sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -229,7 +231,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   int64 sw_registration_id_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_;
   BackgroundSyncServicePtr service_ptr_;
-  scoped_ptr<BackgroundSyncServiceImpl> service_impl_;
+  BackgroundSyncServiceImpl*
+      service_impl_;  // Owned by background_sync_context_
   SyncRegistrationPtr default_sync_registration_;
 };
 
@@ -292,7 +295,7 @@ TEST_F(BackgroundSyncServiceImplTest, Unregister) {
       default_sync_registration_.Clone(),
       base::Bind(&ErrorCallback, &unregister_called, &unregister_error));
   EXPECT_TRUE(unregister_called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NOT_FOUND,
+  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NOT_ALLOWED,
             unregister_error);
 }
 

@@ -352,12 +352,19 @@ void ServiceWorkerContextClient::workerContextStarted(
   // willDestroyWorkerContext.
   context_.reset(new WorkerContextData(this));
 
+  ServiceWorkerRegistrationObjectInfo registration_info;
+  ServiceWorkerVersionAttributes version_attrs;
+  provider_context_->GetRegistrationInfoAndVersionAttributes(&registration_info,
+                                                             &version_attrs);
+  DCHECK_NE(registration_info.registration_id,
+            kInvalidServiceWorkerRegistrationId);
+
   // Register Mojo services.
   context_->service_registry.ServiceRegistry::AddService(
       base::Bind(&ServicePortDispatcherImpl::Create,
                  context_->proxy_weak_factory.GetWeakPtr()));
-  context_->service_registry.ServiceRegistry::AddService(
-      base::Bind(&BackgroundSyncClientImpl::Create));
+  context_->service_registry.ServiceRegistry::AddService(base::Bind(
+      &BackgroundSyncClientImpl::Create, registration_info.registration_id));
 
   SetRegistrationInServiceWorkerGlobalScope();
 

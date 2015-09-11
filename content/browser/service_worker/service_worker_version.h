@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "content/browser/background_sync/background_sync_registration_handle.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/background_sync_service.mojom.h"
@@ -209,7 +210,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // notify completion.
   //
   // This must be called when the status() is ACTIVATED.
-  void DispatchSyncEvent(SyncRegistrationPtr registration,
+  void DispatchSyncEvent(BackgroundSyncRegistrationHandle::HandleId handle_id,
                          const StatusCallback& callback);
 
   // Sends notificationclick event to the associated embedded worker and

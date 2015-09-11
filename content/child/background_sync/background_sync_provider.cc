@@ -61,7 +61,7 @@ void BackgroundSyncProvider::registerBackgroundSync(
 
 void BackgroundSyncProvider::unregisterBackgroundSync(
     blink::WebSyncRegistration::Periodicity periodicity,
-    int64_t id,
+    int64_t handle_id,
     const blink::WebString& tag,
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebSyncUnregistrationCallbacks* callbacks) {
@@ -74,7 +74,7 @@ void BackgroundSyncProvider::unregisterBackgroundSync(
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
   GetBackgroundSyncServicePtr()->Unregister(
-      mojo::ConvertTo<BackgroundSyncPeriodicity>(periodicity), id, tag.utf8(),
+      mojo::ConvertTo<BackgroundSyncPeriodicity>(periodicity), handle_id,
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::UnregisterCallback,
                  base::Unretained(this), base::Passed(callbacksPtr.Pass())));
@@ -137,6 +137,18 @@ void BackgroundSyncProvider::getPermissionStatus(
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::GetPermissionStatusCallback,
                  base::Unretained(this), base::Passed(callbacksPtr.Pass())));
+}
+
+void BackgroundSyncProvider::releaseRegistration(int64_t handle_id) {
+  GetBackgroundSyncServicePtr()->ReleaseRegistration(handle_id);
+}
+
+void BackgroundSyncProvider::DuplicateRegistrationHandle(
+    int handle_id,
+    const BackgroundSyncService::DuplicateRegistrationHandleCallback&
+        callback) {
+  GetBackgroundSyncServicePtr()->DuplicateRegistrationHandle(handle_id,
+                                                             callback);
 }
 
 void BackgroundSyncProvider::RegisterCallback(

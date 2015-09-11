@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration_options.h"
@@ -18,6 +19,9 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
  public:
   using RegistrationId = int64_t;
   static const RegistrationId kInitialId;
+
+  BackgroundSyncRegistration() = default;
+  ~BackgroundSyncRegistration() = default;
 
   bool Equals(const BackgroundSyncRegistration& other) const;
   bool IsValid() const;
@@ -37,6 +41,8 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   BackgroundSyncRegistrationOptions options_;
   RegistrationId id_ = kInvalidRegistrationId;
   SyncState sync_state_ = SYNC_STATE_PENDING;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRegistration);
 };
 
 }  // namespace content

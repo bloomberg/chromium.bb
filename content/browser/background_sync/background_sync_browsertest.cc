@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
+#include "content/browser/background_sync/background_sync_registration_handle.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -60,9 +61,9 @@ void OneShotPendingCallback(
 void OneShotPendingDidGetSyncRegistration(
     const base::Callback<void(bool)>& callback,
     BackgroundSyncStatus error_type,
-    const BackgroundSyncRegistration& registration) {
+    scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle) {
   ASSERT_EQ(BACKGROUND_SYNC_STATUS_OK, error_type);
-  callback.Run(registration.sync_state() == SYNC_STATE_PENDING);
+  callback.Run(registration_handle->sync_state() == SYNC_STATE_PENDING);
 }
 
 void OneShotPendingDidGetSWRegistration(
@@ -155,6 +156,8 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   bool PopConsole(const std::string& expected_msg);
   bool RegisterServiceWorker();
   bool RegisterOneShot(const std::string& tag);
+  bool UnregisterOneShot(const std::string& tag);
+  bool UnregisterOneShotTwice(const std::string& tag);
   bool GetRegistrationOneShot(const std::string& tag);
   bool GetRegistrationsOneShot(const std::vector<std::string>& expected_tags);
   bool CompleteDelayedOneShot();
@@ -221,6 +224,21 @@ bool BackgroundSyncBrowserTest::RegisterOneShot(const std::string& tag) {
   EXPECT_TRUE(
       RunScript(BuildScriptString("registerOneShot", tag), &script_result));
   return script_result == BuildExpectedResult(tag, "registered");
+}
+
+bool BackgroundSyncBrowserTest::UnregisterOneShot(const std::string& tag) {
+  std::string script_result;
+  EXPECT_TRUE(
+      RunScript(BuildScriptString("unregisterOneShot", tag), &script_result));
+  return script_result == BuildExpectedResult(tag, "unregistered");
+}
+
+bool BackgroundSyncBrowserTest::UnregisterOneShotTwice(const std::string& tag) {
+  std::string script_result;
+  EXPECT_TRUE(RunScript(BuildScriptString("unregisterOneShotTwice", tag),
+                        &script_result));
+  return script_result ==
+         BuildExpectedResult(tag, "failed to unregister twice");
 }
 
 bool BackgroundSyncBrowserTest::GetRegistrationOneShot(const std::string& tag) {
@@ -372,6 +390,34 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, GetRegistrations) {
     EXPECT_TRUE(RegisterOneShot(tag));
 
   EXPECT_TRUE(GetRegistrationsOneShot(registered_tags));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, Unregister) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetOnline(false);
+  EXPECT_TRUE(RegisterOneShot("foo"));
+  EXPECT_TRUE(UnregisterOneShot("foo"));
+  EXPECT_FALSE(GetRegistrationOneShot("foo"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, UnregisterTwice) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetOnline(false);
+  EXPECT_TRUE(RegisterOneShot("foo"));
+  EXPECT_TRUE(UnregisterOneShotTwice("foo"));
+  EXPECT_FALSE(GetRegistrationOneShot("foo"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, UnregisterMidSync) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  EXPECT_TRUE(RegisterOneShot("unregister"));
+  EXPECT_TRUE(PopConsole("ok - unregister completed"));
 }
 
 }  // namespace

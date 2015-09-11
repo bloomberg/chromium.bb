@@ -4,9 +4,10 @@
 
 #include "content/browser/background_sync/background_sync_service_impl.h"
 
+#include "background_sync_registration_handle.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
-#include "content/browser/background_sync/background_sync_registration.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -28,9 +29,10 @@ BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
   return out;
 }
 
-SyncRegistrationPtr ToMojoRegistration(const BackgroundSyncRegistration& in) {
+SyncRegistrationPtr ToMojoRegistration(
+    const BackgroundSyncRegistrationHandle& in) {
   SyncRegistrationPtr out(content::SyncRegistration::New());
-  out->id = in.id();
+  out->handle_id = in.handle_id();
   out->tag = in.options()->tag;
   out->min_period_ms = in.options()->min_period;
   out->periodicity = static_cast<content::BackgroundSyncPeriodicity>(
@@ -88,6 +90,7 @@ COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_PERIODICITY_MAX,
 
 BackgroundSyncServiceImpl::~BackgroundSyncServiceImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(background_sync_context_->background_sync_manager());
 }
 
 BackgroundSyncServiceImpl::BackgroundSyncServiceImpl(
@@ -129,16 +132,23 @@ void BackgroundSyncServiceImpl::Register(content::SyncRegistrationPtr options,
 
 void BackgroundSyncServiceImpl::Unregister(
     BackgroundSyncPeriodicity periodicity,
-    int64_t id,
-    const mojo::String& tag,
+    BackgroundSyncRegistrationHandle::HandleId handle_id,
     int64_t sw_registration_id,
     const UnregisterCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
-  background_sync_manager->Unregister(
-      sw_registration_id, tag, content::SYNC_ONE_SHOT, id,
+
+  BackgroundSyncRegistrationHandle* registration =
+      active_handles_.Lookup(handle_id);
+  if (!registration) {
+    callback.Run(BACKGROUND_SYNC_ERROR_NOT_ALLOWED);
+    return;
+  }
+
+  registration->Unregister(
+      sw_registration_id,
       base::Bind(&BackgroundSyncServiceImpl::OnUnregisterResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -184,12 +194,57 @@ void BackgroundSyncServiceImpl::GetPermissionStatus(
   callback.Run(BACKGROUND_SYNC_ERROR_NONE, PERMISSION_STATUS_GRANTED);
 }
 
+void BackgroundSyncServiceImpl::DuplicateRegistrationHandle(
+    BackgroundSyncRegistrationHandle::HandleId handle_id,
+    const DuplicateRegistrationHandleCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BackgroundSyncManager* background_sync_manager =
+      background_sync_context_->background_sync_manager();
+  DCHECK(background_sync_manager);
+
+  scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle =
+      background_sync_manager->DuplicateRegistrationHandle(handle_id);
+
+  BackgroundSyncRegistrationHandle* handle_ptr = registration_handle.get();
+
+  if (!registration_handle) {
+    callback.Run(BACKGROUND_SYNC_ERROR_NOT_FOUND,
+                 SyncRegistrationPtr(content::SyncRegistration::New()));
+    return;
+  }
+
+  active_handles_.AddWithID(registration_handle.release(),
+                            handle_ptr->handle_id());
+  SyncRegistrationPtr mojoResult = ToMojoRegistration(*handle_ptr);
+  callback.Run(BACKGROUND_SYNC_ERROR_NONE, mojoResult.Pass());
+}
+
+void BackgroundSyncServiceImpl::ReleaseRegistration(
+    BackgroundSyncRegistrationHandle::HandleId handle_id) {
+  if (!active_handles_.Lookup(handle_id)) {
+    // TODO(jkarlin): Abort client.
+    LOG(WARNING) << "Client attempted to release non-existing registration";
+    return;
+  }
+
+  active_handles_.Remove(handle_id);
+}
+
 void BackgroundSyncServiceImpl::OnRegisterResult(
     const RegisterCallback& callback,
     BackgroundSyncStatus status,
-    const BackgroundSyncRegistration& result) {
+    scoped_ptr<BackgroundSyncRegistrationHandle> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SyncRegistrationPtr mojoResult = ToMojoRegistration(result);
+  BackgroundSyncRegistrationHandle* result_ptr = result.get();
+
+  if (status != BACKGROUND_SYNC_STATUS_OK) {
+    callback.Run(static_cast<content::BackgroundSyncError>(status),
+                 SyncRegistrationPtr(content::SyncRegistration::New()));
+    return;
+  }
+
+  active_handles_.AddWithID(result.release(), result_ptr->handle_id());
+  SyncRegistrationPtr mojoResult = ToMojoRegistration(*result_ptr);
   callback.Run(static_cast<content::BackgroundSyncError>(status),
                mojoResult.Pass());
 }
@@ -204,11 +259,17 @@ void BackgroundSyncServiceImpl::OnUnregisterResult(
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
     const GetRegistrationsCallback& callback,
     BackgroundSyncStatus status,
-    const std::vector<BackgroundSyncRegistration>& result_registrations) {
+    scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>
+        result_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::Array<content::SyncRegistrationPtr> mojo_registrations(0);
-  for (const auto& registration : result_registrations)
-    mojo_registrations.push_back(ToMojoRegistration(registration));
+  for (BackgroundSyncRegistrationHandle* registration : *result_registrations) {
+    active_handles_.AddWithID(registration, registration->handle_id());
+    mojo_registrations.push_back(ToMojoRegistration(*registration));
+  }
+
+  result_registrations->weak_clear();
+
   callback.Run(static_cast<content::BackgroundSyncError>(status),
                mojo_registrations.Pass());
 }

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/child/worker_task_runner.h"
+#include "content/common/background_sync_service.mojom.h"
 #include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncProvider.h"
 
@@ -57,6 +58,14 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
       blink::WebSyncRegistration::Periodicity periodicity,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetPermissionStatusCallbacks* callbacks);
+  void releaseRegistration(int64_t handle_id);
+
+  // Given |handle_id|, ask the provider for a new handle with the same
+  // underlying registration.
+  void DuplicateRegistrationHandle(
+      int64 handle_id,
+      const BackgroundSyncService::DuplicateRegistrationHandleCallback&
+          callback);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;

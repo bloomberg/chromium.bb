@@ -826,8 +826,9 @@ void ServiceWorkerVersion::DispatchFetchEvent(
   }
 }
 
-void ServiceWorkerVersion::DispatchSyncEvent(SyncRegistrationPtr registration,
-                                             const StatusCallback& callback) {
+void ServiceWorkerVersion::DispatchSyncEvent(
+    BackgroundSyncRegistrationHandle::HandleId handle_id,
+    const StatusCallback& callback) {
   OnBeginEvent();
   DCHECK_EQ(ACTIVATED, status()) << status();
   if (running_status() != RUNNING) {
@@ -835,7 +836,7 @@ void ServiceWorkerVersion::DispatchSyncEvent(SyncRegistrationPtr registration,
     StartWorker(base::Bind(
         &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
         base::Bind(&self::DispatchSyncEvent, weak_factory_.GetWeakPtr(),
-                   base::Passed(registration.Pass()), callback)));
+                   handle_id, callback)));
     return;
   }
 
@@ -849,8 +850,8 @@ void ServiceWorkerVersion::DispatchSyncEvent(SyncRegistrationPtr registration,
   }
 
   background_sync_dispatcher_->Sync(
-      registration.Pass(), base::Bind(&self::OnSyncEventFinished,
-                                      weak_factory_.GetWeakPtr(), request_id));
+      handle_id, base::Bind(&self::OnSyncEventFinished,
+                            weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::DispatchNotificationClickEvent(

@@ -17,19 +17,24 @@ class CONTENT_EXPORT BackgroundSyncClientImpl
     : public NON_EXPORTED_BASE(BackgroundSyncServiceClient) {
  public:
   static void Create(
+      int64_t service_worker_registration_id,
       mojo::InterfaceRequest<BackgroundSyncServiceClient> request);
 
   ~BackgroundSyncClientImpl() override;
 
  private:
   using SyncCallback = mojo::Callback<void(ServiceWorkerEventStatus)>;
-  explicit BackgroundSyncClientImpl(
+  BackgroundSyncClientImpl(
+      int64_t service_worker_registration_id,
       mojo::InterfaceRequest<BackgroundSyncServiceClient> request);
 
   // BackgroundSyncServiceClient methods:
-  void Sync(content::SyncRegistrationPtr registration,
-            const SyncCallback& callback) override;
+  void Sync(int handle_id, const SyncCallback& callback) override;
+  void SyncDidGetRegistration(const SyncCallback& callback,
+                              BackgroundSyncError error,
+                              const SyncRegistrationPtr& registration);
 
+  int64_t service_worker_registration_id_;
   mojo::StrongBinding<BackgroundSyncServiceClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncClientImpl);

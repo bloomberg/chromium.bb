@@ -9,6 +9,7 @@
 // "delay" - Delays finishing the sync event with event.waitUntil.
 //           Send a postMessage of "completeDelayedOneShot" to finish the
 //           event.
+// "unregister" - Unregisters the sync registration from within the sync event.
 
 'use strict';
 
@@ -39,6 +40,21 @@ this.onmessage = function(event) {
 }
 
 this.onsync = function(event) {
+  var eventProperties = [
+    // Extract name from toString result: "[object <Class>]"
+    Object.prototype.toString.call(event).match(/\s([a-zA-Z]+)/)[1],
+    (typeof event.waitUntil)
+  ];
+
+  if (eventProperties[0] != 'SyncEvent') {
+    sendMessageToClients('sync', 'error - wrong event type');
+    return;
+  }
+
+  if (eventProperties[1] != 'function') {
+    sendMessageToClients('sync', 'error - wrong wait until type');
+  }
+
   if (event.registration === undefined) {
     sendMessageToClients('sync', 'error - event missing registration');
     return;
@@ -57,6 +73,14 @@ this.onsync = function(event) {
       rejectCallback = reject;
     });
     event.waitUntil(syncPromise);
+    return;
+  }
+
+  if (tag === 'unregister') {
+    event.waitUntil(event.registration.unregister()
+      .then(function() {
+        sendMessageToClients('sync', 'ok - unregister completed');
+      }));
     return;
   }
 

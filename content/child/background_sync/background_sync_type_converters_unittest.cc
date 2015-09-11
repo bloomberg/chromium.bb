@@ -74,7 +74,7 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultBlinkToMojoConversion) {
   content::SyncRegistrationPtr out =
       ConvertTo<content::SyncRegistrationPtr>(in);
 
-  ASSERT_EQ(blink::WebSyncRegistration::UNREGISTERED_SYNC_ID, out->id);
+  ASSERT_EQ(blink::WebSyncRegistration::UNREGISTERED_SYNC_ID, out->handle_id);
   ASSERT_EQ(content::BACKGROUND_SYNC_PERIODICITY_ONE_SHOT, out->periodicity);
   ASSERT_EQ("", out->tag);
   ASSERT_EQ(0UL, out->min_period_ms);
@@ -90,7 +90,7 @@ TEST(BackgroundSyncTypeConverterTest, TestFullPeriodicBlinkToMojoConversion) {
   content::SyncRegistrationPtr out =
       ConvertTo<content::SyncRegistrationPtr>(in);
 
-  ASSERT_EQ(7, out->id);
+  ASSERT_EQ(7, out->handle_id);
   ASSERT_EQ(content::BACKGROUND_SYNC_PERIODICITY_PERIODIC, out->periodicity);
   ASSERT_EQ("BlinkToMojo", out->tag);
   ASSERT_EQ(12340000UL, out->min_period_ms);
@@ -108,7 +108,7 @@ TEST(BackgroundSyncTypeConverterTest, TestFullOneShotBlinkToMojoConversion) {
   content::SyncRegistrationPtr out =
       ConvertTo<content::SyncRegistrationPtr>(in);
 
-  ASSERT_EQ(7, out->id);
+  ASSERT_EQ(7, out->handle_id);
   ASSERT_EQ(content::BACKGROUND_SYNC_PERIODICITY_ONE_SHOT, out->periodicity);
   ASSERT_EQ("BlinkToMojo", out->tag);
   ASSERT_EQ(12340000UL, out->min_period_ms);
@@ -135,7 +135,7 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultMojoToBlinkConversion) {
 TEST(BackgroundSyncTypeConverterTest, TestFullPeriodicMojoToBlinkConversion) {
   content::SyncRegistrationPtr in(
       content::SyncRegistration::New());
-  in->id = 41;
+  in->handle_id = 41;
   in->periodicity = content::BACKGROUND_SYNC_PERIODICITY_PERIODIC;
   in->tag = mojo::String("MojoToBlink");
   in->min_period_ms = 43210000;
@@ -157,7 +157,7 @@ TEST(BackgroundSyncTypeConverterTest, TestFullPeriodicMojoToBlinkConversion) {
 TEST(BackgroundSyncTypeConverterTest, TestFullOneShotMojoToBlinkConversion) {
   content::SyncRegistrationPtr in(
       content::SyncRegistration::New());
-  in->id = 41;
+  in->handle_id = 41;
   in->periodicity = content::BACKGROUND_SYNC_PERIODICITY_ONE_SHOT;
   in->tag = mojo::String("MojoToBlink");
   in->min_period_ms = 43210000;

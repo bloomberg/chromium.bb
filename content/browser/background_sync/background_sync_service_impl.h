@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_SERVICE_IMPL_H_
 
-#include <vector>
-
+#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/common/background_sync_service.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -28,15 +28,13 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
  private:
   friend class BackgroundSyncServiceImplTest;
 
-
   // BackgroundSyncService methods:
   void Register(content::SyncRegistrationPtr options,
                 int64_t sw_registration_id,
                 bool requested_from_service_worker,
                 const RegisterCallback& callback) override;
   void Unregister(BackgroundSyncPeriodicity periodicity,
-                  int64_t id,
-                  const mojo::String& tag,
+                  BackgroundSyncRegistrationHandle::HandleId handle_id,
                   int64_t sw_registration_id,
                   const UnregisterCallback& callback) override;
   void GetRegistration(BackgroundSyncPeriodicity periodicity,
@@ -50,16 +48,21 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
       BackgroundSyncPeriodicity periodicity,
       int64_t sw_registration_id,
       const GetPermissionStatusCallback& callback) override;
+  void DuplicateRegistrationHandle(
+      BackgroundSyncRegistrationHandle::HandleId handle_id,
+      const DuplicateRegistrationHandleCallback& callback) override;
+  void ReleaseRegistration(
+      BackgroundSyncRegistrationHandle::HandleId handle_id) override;
 
   void OnRegisterResult(const RegisterCallback& callback,
                         BackgroundSyncStatus status,
-                        const BackgroundSyncRegistration& result);
+                        scoped_ptr<BackgroundSyncRegistrationHandle> result);
   void OnUnregisterResult(const UnregisterCallback& callback,
                           BackgroundSyncStatus status);
   void OnGetRegistrationsResult(
       const GetRegistrationsCallback& callback,
       BackgroundSyncStatus status,
-      const std::vector<BackgroundSyncRegistration>& result);
+      scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>> result);
 
   // Called when an error is detected on binding_.
   void OnConnectionError();
@@ -68,6 +71,9 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   BackgroundSyncContextImpl* background_sync_context_;
 
   mojo::Binding<BackgroundSyncService> binding_;
+
+  // The registrations that the client might reference.
+  IDMap<BackgroundSyncRegistrationHandle, IDMapOwnPointer> active_handles_;
 
   base::WeakPtrFactory<BackgroundSyncServiceImpl> weak_ptr_factory_;
 

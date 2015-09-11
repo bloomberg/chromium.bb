@@ -42,6 +42,45 @@ function registerOneShot(tag) {
     .catch(sendErrorToTest);
 }
 
+function unregisterOneShot(tag) {
+  navigator.serviceWorker.ready
+    .then(function(swRegistration) {
+      return swRegistration.sync.getRegistration(tag);
+    })
+    .then(function(syncRegistration) {
+      if (!syncRegistration) {
+        sendResultToTest('error - ' + tag + ' not found');
+        return;
+      }
+      return syncRegistration.unregister();
+    })
+    .then(function() {
+      sendResultToTest('ok - ' + tag + ' unregistered');
+    })
+    .catch(sendErrorToTest);
+}
+
+function unregisterOneShotTwice(tag) {
+  navigator.serviceWorker.ready
+    .then(function(swRegistration) {
+      return swRegistration.sync.getRegistration(tag);
+    })
+    .then(function(syncRegistration) {
+      if (!syncRegistration) {
+        sendResultToTest('error - ' + tag + ' not found');
+        return;
+      }
+      return syncRegistration.unregister();
+    })
+    .then(function() {
+      return syncRegistration.unregister();
+    })
+    .then(sendErrorToTest, function() {
+      sendResultToTest('ok - ' + tag + ' failed to unregister twice');
+    })
+    .catch(sendErrorToTest);
+}
+
 function getRegistrationOneShot(tag) {
   navigator.serviceWorker.ready
     .then(function(swRegistration) {

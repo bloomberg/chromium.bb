@@ -75,6 +75,24 @@ class CallbackThreadAdapter : public WebCallbacksMatcher<X>::WebCallbacks {
 LazyInstance<ThreadLocalPointer<BackgroundSyncProviderThreadProxy>>::Leaky
     g_sync_provider_tls = LAZY_INSTANCE_INITIALIZER;
 
+void DuplicateRegistrationHandleCallbackOnSWThread(
+    const BackgroundSyncService::DuplicateRegistrationHandleCallback& callback,
+    BackgroundSyncError error,
+    SyncRegistrationPtr registration) {
+  callback.Run(error, registration.Pass());
+}
+
+void DuplicateRegistrationHandleCallbackOnMainThread(
+    int worker_thread_id,
+    const BackgroundSyncService::DuplicateRegistrationHandleCallback& callback,
+    BackgroundSyncError error,
+    SyncRegistrationPtr registration) {
+  WorkerTaskRunner::Instance()->PostTask(
+      worker_thread_id,
+      base::Bind(&DuplicateRegistrationHandleCallbackOnSWThread, callback,
+                 error, base::Passed(registration.Pass())));
+}
+
 }  // anonymous namespace
 
 // static
@@ -185,6 +203,24 @@ void BackgroundSyncProviderThreadProxy::getPermissionStatus(
           service_worker_registration,
           new CallbackThreadAdapter<blink::WebSyncGetPermissionStatusCallbacks>(
               make_scoped_ptr(callbacks), WorkerThread::GetCurrentId())));
+}
+
+void BackgroundSyncProviderThreadProxy::releaseRegistration(int64_t handle_id) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&BackgroundSyncProvider::releaseRegistration,
+                            base::Unretained(sync_provider_), handle_id));
+}
+
+void BackgroundSyncProviderThreadProxy::DuplicateRegistrationHandle(
+    int64 handle_id,
+    const BackgroundSyncService::DuplicateRegistrationHandleCallback&
+        callback) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BackgroundSyncProvider::DuplicateRegistrationHandle,
+                 base::Unretained(sync_provider_), handle_id,
+                 base::Bind(&DuplicateRegistrationHandleCallbackOnMainThread,
+                            WorkerThread::GetCurrentId(), callback)));
 }
 
 void BackgroundSyncProviderThreadProxy::WillStopCurrentWorkerThread() {

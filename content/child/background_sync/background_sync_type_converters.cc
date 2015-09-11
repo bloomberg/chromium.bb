@@ -95,7 +95,7 @@ scoped_ptr<blink::WebSyncRegistration> TypeConverter<
          const content::SyncRegistrationPtr& input) {
   scoped_ptr<blink::WebSyncRegistration> result(
       new blink::WebSyncRegistration());
-  result->id = input->id;
+  result->id = input->handle_id;
   result->periodicity =
       ConvertTo<blink::WebSyncRegistration::Periodicity>(input->periodicity);
   result->tag = blink::WebString::fromUTF8(input->tag);
@@ -114,7 +114,7 @@ content::SyncRegistrationPtr TypeConverter<
         const blink::WebSyncRegistration& input) {
   content::SyncRegistrationPtr result(
       content::SyncRegistration::New());
-  result->id = input.id;
+  result->handle_id = input.id;
   result->periodicity =
       ConvertTo<content::BackgroundSyncPeriodicity>(input.periodicity);
   result->tag = input.tag.utf8();
