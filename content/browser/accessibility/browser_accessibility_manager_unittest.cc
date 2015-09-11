@@ -961,25 +961,110 @@ TEST(BrowserAccessibilityManagerTest, NextPreviousInTreeOrder) {
           nullptr,
           new CountedBrowserAccessibilityFactory()));
 
-  BrowserAccessibility* root_accessible = manager->GetRoot();
-  BrowserAccessibility* node2_accessible = root_accessible->PlatformGetChild(0);
-  BrowserAccessibility* node3_accessible = root_accessible->PlatformGetChild(1);
-  BrowserAccessibility* node4_accessible =
-      node3_accessible->PlatformGetChild(0);
-  BrowserAccessibility* node5_accessible = root_accessible->PlatformGetChild(2);
+  auto root_accessible = manager->GetRoot();
+  auto node2_accessible = root_accessible->PlatformGetChild(0);
+  auto node3_accessible = root_accessible->PlatformGetChild(1);
+  auto node4_accessible = node3_accessible->PlatformGetChild(0);
+  auto node5_accessible = root_accessible->PlatformGetChild(2);
 
-  ASSERT_EQ(nullptr, manager->NextInTreeOrder(nullptr));
-  ASSERT_EQ(node2_accessible, manager->NextInTreeOrder(root_accessible));
-  ASSERT_EQ(node3_accessible, manager->NextInTreeOrder(node2_accessible));
-  ASSERT_EQ(node4_accessible, manager->NextInTreeOrder(node3_accessible));
-  ASSERT_EQ(node5_accessible, manager->NextInTreeOrder(node4_accessible));
-  ASSERT_EQ(nullptr, manager->NextInTreeOrder(node5_accessible));
+  EXPECT_EQ(nullptr, manager->NextInTreeOrder(nullptr));
+  EXPECT_EQ(node2_accessible, manager->NextInTreeOrder(root_accessible));
+  EXPECT_EQ(node3_accessible, manager->NextInTreeOrder(node2_accessible));
+  EXPECT_EQ(node4_accessible, manager->NextInTreeOrder(node3_accessible));
+  EXPECT_EQ(node5_accessible, manager->NextInTreeOrder(node4_accessible));
+  EXPECT_EQ(nullptr, manager->NextInTreeOrder(node5_accessible));
 
-  ASSERT_EQ(nullptr, manager->PreviousInTreeOrder(nullptr));
-  ASSERT_EQ(node4_accessible, manager->PreviousInTreeOrder(node5_accessible));
-  ASSERT_EQ(node3_accessible, manager->PreviousInTreeOrder(node4_accessible));
-  ASSERT_EQ(node2_accessible, manager->PreviousInTreeOrder(node3_accessible));
-  ASSERT_EQ(root_accessible, manager->PreviousInTreeOrder(node2_accessible));
+  EXPECT_EQ(nullptr, manager->PreviousInTreeOrder(nullptr));
+  EXPECT_EQ(node4_accessible, manager->PreviousInTreeOrder(node5_accessible));
+  EXPECT_EQ(node3_accessible, manager->PreviousInTreeOrder(node4_accessible));
+  EXPECT_EQ(node2_accessible, manager->PreviousInTreeOrder(node3_accessible));
+  EXPECT_EQ(root_accessible, manager->PreviousInTreeOrder(node2_accessible));
+}
+
+TEST(BrowserAccessibilityManagerTest, NextPreviousTextOnlyObject) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+
+  ui::AXNodeData node2;
+  node2.id = 2;
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData text1;
+  text1.id = 3;
+  text1.role = ui::AX_ROLE_STATIC_TEXT;
+  root.child_ids.push_back(3);
+
+  ui::AXNodeData node3;
+  node3.id = 4;
+  root.child_ids.push_back(4);
+
+  ui::AXNodeData text2;
+  text2.id = 5;
+  text2.role = ui::AX_ROLE_STATIC_TEXT;
+  node3.child_ids.push_back(5);
+
+  ui::AXNodeData node4;
+  node4.id = 6;
+  node3.child_ids.push_back(6);
+
+  ui::AXNodeData text3;
+  text3.id = 7;
+  text3.role = ui::AX_ROLE_STATIC_TEXT;
+  node3.child_ids.push_back(7);
+
+  ui::AXNodeData node5;
+  node5.id = 8;
+  root.child_ids.push_back(8);
+
+  ui::AXNodeData text4;
+  text4.id = 9;
+  text4.role = ui::AX_ROLE_LINE_BREAK;
+  node5.child_ids.push_back(9);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, node2, node3, node4, node5,
+              text1, text2, text3, text4),
+          nullptr,
+          new CountedBrowserAccessibilityFactory()));
+
+  auto root_accessible = manager->GetRoot();
+  auto node2_accessible = root_accessible->PlatformGetChild(0);
+  auto text1_accessible = root_accessible->PlatformGetChild(1);
+  auto node3_accessible = root_accessible->PlatformGetChild(2);
+  auto text2_accessible = node3_accessible->PlatformGetChild(0);
+  auto node4_accessible = node3_accessible->PlatformGetChild(1);
+  auto text3_accessible = node3_accessible->PlatformGetChild(2);
+  auto node5_accessible = root_accessible->PlatformGetChild(3);
+  auto text4_accessible = node5_accessible->PlatformGetChild(0);
+
+  EXPECT_EQ(nullptr, manager->NextTextOnlyObject(nullptr));
+  EXPECT_EQ(text1_accessible, manager->NextTextOnlyObject(root_accessible));
+  EXPECT_EQ(text1_accessible, manager->NextTextOnlyObject(node2_accessible));
+  EXPECT_EQ(text2_accessible, manager->NextTextOnlyObject(text1_accessible));
+  EXPECT_EQ(text2_accessible, manager->NextTextOnlyObject(node3_accessible));
+  EXPECT_EQ(text3_accessible, manager->NextTextOnlyObject(text2_accessible));
+  EXPECT_EQ(text3_accessible, manager->NextTextOnlyObject(node4_accessible));
+  EXPECT_EQ(text4_accessible, manager->NextTextOnlyObject(text3_accessible));
+  EXPECT_EQ(text4_accessible, manager->NextTextOnlyObject(node5_accessible));
+  EXPECT_EQ(nullptr, manager->NextTextOnlyObject(text4_accessible));
+
+  EXPECT_EQ(nullptr, manager->PreviousTextOnlyObject(nullptr));
+  EXPECT_EQ(
+      text3_accessible, manager->PreviousTextOnlyObject(text4_accessible));
+  EXPECT_EQ(
+      text3_accessible, manager->PreviousTextOnlyObject(node5_accessible));
+  EXPECT_EQ(
+      text2_accessible, manager->PreviousTextOnlyObject(text3_accessible));
+  EXPECT_EQ(
+      text2_accessible, manager->PreviousTextOnlyObject(node4_accessible));
+  EXPECT_EQ(
+      text1_accessible, manager->PreviousTextOnlyObject(text2_accessible));
+  EXPECT_EQ(
+      text1_accessible, manager->PreviousTextOnlyObject(node3_accessible));
+  EXPECT_EQ(nullptr, manager->PreviousTextOnlyObject(node2_accessible));
+  EXPECT_EQ(nullptr, manager->PreviousTextOnlyObject(root_accessible));
 }
 
 TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {

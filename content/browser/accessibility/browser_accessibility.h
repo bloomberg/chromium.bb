@@ -93,13 +93,13 @@ class CONTENT_EXPORT BrowserAccessibility {
   // platform.
   bool PlatformIsChildOfLeaf() const;
 
-  // Return the previous sibling of this object, or NULL if it's the first
-  // child of its parent.
-  BrowserAccessibility* GetPreviousSibling();
+  BrowserAccessibility* GetPreviousSibling() const;
+  BrowserAccessibility* GetNextSibling() const;
 
-  // Return the next sibling of this object, or NULL if it's the last child
-  // of its parent.
-  BrowserAccessibility* GetNextSibling();
+  // Returns nullptr if there are no children.
+  BrowserAccessibility* PlatformDeepestFirstChild() const;
+  // Returns nullptr if there are no children.
+  BrowserAccessibility* PlatformDeepestLastChild() const;
 
   // Returns the bounds of this object in coordinates relative to the
   // top-left corner of the overall web area.

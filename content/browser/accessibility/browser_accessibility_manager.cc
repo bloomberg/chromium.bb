@@ -470,37 +470,55 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
-    BrowserAccessibility* node) {
+    BrowserAccessibility* node) const {
   if (!node)
-    return NULL;
+    return nullptr;
 
-  if (node->PlatformChildCount() > 0)
+  if (node->PlatformChildCount())
     return node->PlatformGetChild(0);
+
   while (node) {
-    if (node->GetParent() &&
-        node->GetIndexInParent() <
-            static_cast<int>(node->GetParent()->PlatformChildCount()) - 1) {
-      return node->GetParent()->PlatformGetChild(node->GetIndexInParent() + 1);
-    }
+    auto sibling = node->GetNextSibling();
+    if (sibling)
+      return sibling;
+
     node = node->GetParent();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
-    BrowserAccessibility* node) {
+    BrowserAccessibility* node) const {
   if (!node)
-    return NULL;
+    return nullptr;
 
-  if (node->GetParent() && node->GetIndexInParent() > 0) {
-    node = node->GetParent()->PlatformGetChild(node->GetIndexInParent() - 1);
-    while (node->PlatformChildCount() > 0)
-      node = node->PlatformGetChild(node->PlatformChildCount() - 1);
-    return node;
-  }
+  auto sibling = node->GetPreviousSibling();
+  if (!sibling)
+    return node->GetParent();
 
-  return node->GetParent();
+  if (sibling->PlatformChildCount())
+    return sibling->PlatformDeepestLastChild();
+
+  return sibling;
+}
+
+BrowserAccessibility* BrowserAccessibilityManager::PreviousTextOnlyObject(
+    BrowserAccessibility* node) const {
+      BrowserAccessibility* previous_node = PreviousInTreeOrder(node);
+  while (previous_node && !previous_node->IsTextOnlyObject())
+    previous_node = PreviousInTreeOrder(previous_node);
+
+  return previous_node;
+}
+
+BrowserAccessibility* BrowserAccessibilityManager::NextTextOnlyObject(
+    BrowserAccessibility* node) const {
+  BrowserAccessibility* next_node = NextInTreeOrder(node);
+  while (next_node && !next_node->IsTextOnlyObject())
+    next_node = NextInTreeOrder(next_node);
+
+  return next_node;
 }
 
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,

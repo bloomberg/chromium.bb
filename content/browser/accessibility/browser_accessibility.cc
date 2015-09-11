@@ -123,14 +123,14 @@ bool BrowserAccessibility::PlatformIsChildOfLeaf() const {
   return false;
 }
 
-BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() {
+BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() const {
   if (GetParent() && GetIndexInParent() > 0)
     return GetParent()->InternalGetChild(GetIndexInParent() - 1);
 
-  return NULL;
+  return nullptr;
 }
 
-BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
+BrowserAccessibility* BrowserAccessibility::GetNextSibling() const {
   if (GetParent() &&
       GetIndexInParent() >= 0 &&
       GetIndexInParent() < static_cast<int>(
@@ -138,7 +138,29 @@ BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
     return GetParent()->InternalGetChild(GetIndexInParent() + 1);
   }
 
-  return NULL;
+  return nullptr;
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformDeepestFirstChild() const {
+  if (!PlatformChildCount())
+    return nullptr;
+
+  auto deepest_child = PlatformGetChild(0);
+  while (deepest_child->PlatformChildCount())
+    deepest_child = deepest_child->PlatformGetChild(0);
+
+  return deepest_child;
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformDeepestLastChild() const {
+  if (!PlatformChildCount())
+    return nullptr;
+
+  auto deepest_child = PlatformGetChild(PlatformChildCount() - 1);
+  while (deepest_child->PlatformChildCount())
+    deepest_child = deepest_child->PlatformGetChild(PlatformChildCount() - 1);
+
+  return deepest_child;
 }
 
 uint32 BrowserAccessibility::InternalChildCount() const {

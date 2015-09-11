@@ -252,8 +252,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   virtual bool UseRootScrollOffsetsWhenComputingBounds();
 
   // Walk the tree.
-  BrowserAccessibility* NextInTreeOrder(BrowserAccessibility* node);
-  BrowserAccessibility* PreviousInTreeOrder(BrowserAccessibility* node);
+  BrowserAccessibility* NextInTreeOrder(BrowserAccessibility* node) const;
+  BrowserAccessibility* PreviousInTreeOrder(BrowserAccessibility* node) const;
+  BrowserAccessibility* NextTextOnlyObject(BrowserAccessibility* node) const;
+  BrowserAccessibility* PreviousTextOnlyObject(
+      BrowserAccessibility* node) const;
 
   // AXTreeDelegate implementation.
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
