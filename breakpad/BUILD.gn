@@ -773,6 +773,13 @@ if (is_win) {
     public_configs = [ ":client_config" ]
   }
 
+  config("breakpad_handler_warnings") {
+    if (is_clang) {
+      # See https://code.google.com/p/google-breakpad/issues/detail?id=658.
+      cflags = [ "-Wno-reorder" ]
+    }
+  }
+
   source_set("breakpad_handler") {
     configs += [ ":handler_config" ]
     if (is_win) {
@@ -797,13 +804,6 @@ if (is_win) {
       "src/common/windows/string_utils-inl.h",
       "src/google_breakpad/common/minidump_format.h",
     ]
-    config("breakpad_handler_warnings") {
-      if (is_clang) {
-        # See https://code.google.com/p/google-breakpad/issues/detail?id=658.
-        cflags = [ "-Wno-reorder" ]
-      }
-    }
-
     configs += [ ":breakpad_handler_warnings" ]
   }
 
