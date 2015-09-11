@@ -30,6 +30,7 @@ class WebBatteryStatus;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
+class WebMediaRecorderHandler;
 class WebServiceWorkerCacheStorage;
 }
 
@@ -130,6 +131,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual void sampleGamepads(blink::WebGamepads&);
   virtual blink::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
+  virtual blink::WebMediaRecorderHandler* createMediaRecorderHandler();
   virtual blink::WebMediaStreamCenter* createMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client);
   virtual bool processMemorySizesInBytes(

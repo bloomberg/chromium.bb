@@ -324,7 +324,7 @@ VideoTrackRecorder::VideoTrackRecorder(
       encoder_(new VpxEncoder(on_encoded_video_callback)) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.isNull());
-  DCHECK(track.extraData());
+  DCHECK(track_.extraData());
 
   // StartFrameEncode() will be called on Render IO thread.
   AddToVideoTrack(this,

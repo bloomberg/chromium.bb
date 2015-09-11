@@ -78,11 +78,14 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
 
   const WebString bad_mime_type(base::UTF8ToUTF16("video/unsupportedcodec"));
   EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(bad_mime_type));
+
+  const WebString empty_mime_type(base::UTF8ToUTF16(""));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(empty_mime_type));
 }
 
 // Checks that the initialization-destruction sequence works fine.
 TEST_F(MediaRecorderHandlerTest, InitializeStartStop) {
-  const WebString mime_type(base::UTF8ToUTF16("video/vp8"));
+  const WebString mime_type(base::UTF8ToUTF16(""));
   EXPECT_TRUE(media_recorder_handler_->initialize(this,
                                                  registry_.test_stream(),
                                                  mime_type));

@@ -5,15 +5,17 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_RECORDER_HANDLER_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_RECORDER_HANDLER_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaRecorderHandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 
 namespace blink {
+class WebMediaRecorderHandlerClient;
 class WebString;
 }  // namespace blink
 
@@ -35,21 +37,22 @@ class VideoTrackRecorder;
 // All methods are called on the same thread as construction and destruction,
 // i.e. the Main Render thread.
 // TODO(mcasas): Implement audio recording.
-class CONTENT_EXPORT MediaRecorderHandler final {
+class CONTENT_EXPORT MediaRecorderHandler final
+    : public NON_EXPORTED_BASE(blink::WebMediaRecorderHandler) {
  public:
   MediaRecorderHandler();
-  ~MediaRecorderHandler();
+  ~MediaRecorderHandler() override;
 
   // See above, these methods should override blink::WebMediaRecorderHandler.
-  bool canSupportMimeType(const blink::WebString& mimeType);
+  bool canSupportMimeType(const blink::WebString& mimeType) override;
   bool initialize(blink::WebMediaRecorderHandlerClient* client,
                   const blink::WebMediaStream& media_stream,
-                  const blink::WebString& mimeType);
-  bool start();
-  bool start(int timeslice);
-  void stop();
-  void pause();
-  void resume();
+                  const blink::WebString& mimeType) override;
+  bool start() override;
+  bool start(int timeslice) override;
+  void stop() override;
+  void pause() override;
+  void resume() override;
 
  private:
   friend class MediaRecorderHandlerTest;

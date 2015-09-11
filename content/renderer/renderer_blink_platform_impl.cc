@@ -55,6 +55,7 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_decoder.h"
+#include "content/renderer/media/media_recorder_handler.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -140,6 +141,7 @@ using blink::WebGamepad;
 using blink::WebGamepads;
 using blink::WebIDBFactory;
 using blink::WebMIDIAccessor;
+using blink::WebMediaRecorderHandler;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamCenterClient;
 using blink::WebMimeRegistry;
@@ -867,6 +869,17 @@ void RendererBlinkPlatformImpl::sampleGamepads(WebGamepads& gamepads) {
   if (!observer)
     return;
   static_cast<RendererGamepadProvider*>(observer)->SampleGamepads(gamepads);
+}
+
+//------------------------------------------------------------------------------
+
+WebMediaRecorderHandler*
+RendererBlinkPlatformImpl::createMediaRecorderHandler() {
+#if !defined(OS_ANDROID)
+  return new content::MediaRecorderHandler();
+#else
+  return nullptr;
+#endif
 }
 
 //------------------------------------------------------------------------------

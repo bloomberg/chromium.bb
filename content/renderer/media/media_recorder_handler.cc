@@ -10,6 +10,7 @@
 #include "content/renderer/media/video_track_recorder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/webm_muxer.h"
+#include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
@@ -29,8 +30,8 @@ MediaRecorderHandler::~MediaRecorderHandler() {
 bool MediaRecorderHandler::canSupportMimeType(
     const blink::WebString& mimeType) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  // TODO(mcasas): For the time being only "video/vp8" is supported.
-  return mimeType.utf8().compare("video/vp8") == 0;
+  // TODO(mcasas): For the time being only empty or "video/vp8" are supported.
+  return mimeType.isEmpty() || mimeType.utf8().compare("video/vp8") == 0;
 }
 
 bool MediaRecorderHandler::initialize(
