@@ -79,6 +79,10 @@ void SegmentedString::append(const SegmentedSubstring& s)
 void SegmentedString::push(UChar c)
 {
     ASSERT(c);
+
+    // pushIfPossible attempts to rewind the pointer in the SegmentedSubstring,
+    // however it will fail if the SegmentedSubstring is empty, or
+    // when we prepended some text while consuming a SegmentedSubstring by document.write().
     if (m_currentString.pushIfPossible(c)) {
         m_currentChar = c;
         return;

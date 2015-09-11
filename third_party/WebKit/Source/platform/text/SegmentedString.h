@@ -91,8 +91,10 @@ public:
             if (m_data.string8Ptr == m_string.characters8())
                 return false;
 
+            if (*(m_data.string8Ptr - 1) != c)
+                return false;
+
             --m_data.string8Ptr;
-            ASSERT(*m_data.string8Ptr == c);
             ++m_length;
             return true;
         }
@@ -100,8 +102,10 @@ public:
         if (m_data.string16Ptr == m_string.characters16())
             return false;
 
+        if (*(m_data.string16Ptr - 1) != c)
+            return false;
+
         --m_data.string16Ptr;
-        ASSERT(*m_data.string16Ptr == static_cast<LChar>(c));
         ++m_length;
         return true;
     }
