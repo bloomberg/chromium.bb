@@ -1314,8 +1314,10 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
                                                                  &params);
 
   params.ssl_session_cache_shard = GetSSLSessionCacheShard();
-  params.socket_performance_watcher_factory =
-      io_thread->globals()->network_quality_estimator.get();
+  if (!IsOffTheRecord()) {
+    params.socket_performance_watcher_factory =
+        io_thread->globals()->network_quality_estimator.get();
+  }
   if (data_reduction_proxy_io_data_.get())
     params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
 
