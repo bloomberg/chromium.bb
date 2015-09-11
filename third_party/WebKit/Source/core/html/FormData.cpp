@@ -271,63 +271,65 @@ PassRefPtr<EncodedFormData> FormData::createMultiPartFormData()
     formData->setBoundary(FormDataEncoder::generateUniqueBoundaryString());
     Vector<char> encodedData;
     for (const Item& item : items()) {
-            // TODO(tkent): Intentional wrong indentation in order to make a
-            // diff smaller. Fix this later.
-            Vector<char> header;
-            FormDataEncoder::beginMultiPartHeader(header, formData->boundary().data(), item.key());
+        Vector<char> header;
+        FormDataEncoder::beginMultiPartHeader(header, formData->boundary().data(), item.key());
 
-            // If the current type is blob, then we also need to include the filename.
-            if (item.blob()) {
-                String name;
-                if (item.blob()->isFile()) {
-                    File* file = toFile(item.blob());
-                    // For file blob, use the filename (or relative path if it is present) as the name.
-                    name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
+        // If the current type is blob, then we also need to include the
+        // filename.
+        if (item.blob()) {
+            String name;
+            if (item.blob()->isFile()) {
+                File* file = toFile(item.blob());
+                // For file blob, use the filename (or relative path if it is
+                // present) as the name.
+                name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
 
-                    // If a filename is passed in FormData.append(), use it
-                    // instead of the file blob's name.
-                    if (!item.filename().isNull())
-                        name = item.filename();
-                } else {
-                    // For non-file blob, use the filename if it is passed in
-                    // FormData.append().
-                    if (!item.filename().isNull())
-                        name = item.filename();
-                    else
-                        name = "blob";
-                }
-
-                // We have to include the filename=".." part in the header, even if the filename is empty
-                FormDataEncoder::addFilenameToMultiPartHeader(header, encoding(), name);
-
-                // Add the content type if available, or "application/octet-stream" otherwise (RFC 1867).
-                String contentType;
-                if (item.blob()->type().isEmpty())
-                    contentType = "application/octet-stream";
-                else
-                    contentType = item.blob()->type();
-                FormDataEncoder::addContentTypeToMultiPartHeader(header, contentType.latin1());
-            }
-
-            FormDataEncoder::finishMultiPartHeader(header);
-
-            // Append body
-            formData->appendData(header.data(), header.size());
-            if (item.blob()) {
-                if (item.blob()->hasBackingFile()) {
-                    File* file = toFile(item.blob());
-                    // Do not add the file if the path is empty.
-                    if (!file->path().isEmpty())
-                        formData->appendFile(file->path());
-                    if (!file->fileSystemURL().isEmpty())
-                        formData->appendFileSystemURL(file->fileSystemURL());
-                } else {
-                    formData->appendBlob(item.blob()->uuid(), item.blob()->blobDataHandle());
-                }
+                // If a filename is passed in FormData.append(), use it instead
+                // of the file blob's name.
+                if (!item.filename().isNull())
+                    name = item.filename();
             } else {
-                formData->appendData(item.data().data(), item.data().length());
+                // For non-file blob, use the filename if it is passed in
+                // FormData.append().
+                if (!item.filename().isNull())
+                    name = item.filename();
+                else
+                    name = "blob";
             }
-            formData->appendData("\r\n", 2);
+
+            // We have to include the filename=".." part in the header, even if
+            // the filename is empty.
+            FormDataEncoder::addFilenameToMultiPartHeader(header, encoding(), name);
+
+            // Add the content type if available, or "application/octet-stream"
+            // otherwise (RFC 1867).
+            String contentType;
+            if (item.blob()->type().isEmpty())
+                contentType = "application/octet-stream";
+            else
+                contentType = item.blob()->type();
+            FormDataEncoder::addContentTypeToMultiPartHeader(header, contentType.latin1());
+        }
+
+        FormDataEncoder::finishMultiPartHeader(header);
+
+        // Append body
+        formData->appendData(header.data(), header.size());
+        if (item.blob()) {
+            if (item.blob()->hasBackingFile()) {
+                File* file = toFile(item.blob());
+                // Do not add the file if the path is empty.
+                if (!file->path().isEmpty())
+                    formData->appendFile(file->path());
+                if (!file->fileSystemURL().isEmpty())
+                    formData->appendFileSystemURL(file->fileSystemURL());
+            } else {
+                formData->appendBlob(item.blob()->uuid(), item.blob()->blobDataHandle());
+            }
+        } else {
+            formData->appendData(item.data().data(), item.data().length());
+        }
+        formData->appendData("\r\n", 2);
     }
     FormDataEncoder::addBoundaryToMultiPartHeader(encodedData, formData->boundary().data(), true);
     formData->appendData(encodedData.data(), encodedData.size());
