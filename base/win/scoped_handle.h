@@ -27,9 +27,13 @@ namespace win {
 
 // Generic wrapper for raw handles that takes care of closing handles
 // automatically. The class interface follows the style of
-// the ScopedFILE class with one addition:
+// the ScopedFILE class with two additions:
 //   - IsValid() method can tolerate multiple invalid handle values such as NULL
 //     and INVALID_HANDLE_VALUE (-1) for Win32 handles.
+//   - Set() (and the constructors and assignment operators that call it)
+//     preserve the Windows LastError code. This ensures that GetLastError() can
+//     be called after stashing a handle in a GenericScopedHandle object. Doing
+//     this explicitly is necessary because of bug 528394 and VC++ 2015.
 template <class Traits, class Verifier>
 class GenericScopedHandle {
   MOVE_ONLY_TYPE_FOR_CPP_03(GenericScopedHandle, RValue)
@@ -66,6 +70,8 @@ class GenericScopedHandle {
 
   void Set(Handle handle) {
     if (handle_ != handle) {
+      // Preserve old LastError to avoid bug 528394.
+      auto last_error = ::GetLastError();
       Close();
 
       if (Traits::IsHandleValid(handle)) {
@@ -73,6 +79,7 @@ class GenericScopedHandle {
         Verifier::StartTracking(handle, this, BASE_WIN_GET_CALLER,
                                 tracked_objects::GetProgramCounter());
       }
+      ::SetLastError(last_error);
     }
   }
 
