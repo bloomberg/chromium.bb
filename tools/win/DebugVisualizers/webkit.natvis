@@ -92,9 +92,9 @@
     <DisplayString>({x}, {y}) x ({width}, {height})</DisplayString>
     <Expand>
       <Item Name="x">x</Item>
-      <Item Name="y">x</Item>
-      <Item Name="width">x</Item>
-      <Item Name="height">x</Item>
+      <Item Name="y">y</Item>
+      <Item Name="width">width</Item>
+      <Item Name="height">height</Item>
       <Synthetic Name="right">
         <DisplayString>{x + width}</DisplayString>
       </Synthetic>
