@@ -165,6 +165,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
  protected:
   CastContentBrowserClient();
 
+  URLRequestContextFactory* url_request_context_factory() const {
+    return url_request_context_factory_.get();
+  }
+
  private:
   void AddNetworkHintsMessageFilter(int render_process_id,
                                     net::URLRequestContext* context);
