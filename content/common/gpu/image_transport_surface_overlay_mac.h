@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_OVERLAY_MAC_H_
 #define CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_OVERLAY_MAC_H_
 
-#include <deque>
+#include <list>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
@@ -63,9 +63,14 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   ~ImageTransportSurfaceOverlayMac() override;
 
-  void ScheduleOverlayPlaneForPartialDamage(const gfx::Rect& pixel_damage_rect);
-  gfx::SwapResult SwapBuffersInternal();
-  static void UpdateCALayerTree(CALayer* root_layer, PendingSwap* swap);
+  gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
+
+  void UpdateRootAndPartialDamagePlanes(
+      const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes,
+      const gfx::Rect& dip_damage_rect);
+  void UpdateOverlayPlanes(
+      const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes);
+  void UpdateCALayerTree();
 
   // Returns true if the front of |pending_swaps_| has completed, or has timed
   // out by |now|.
@@ -94,7 +99,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   scoped_ptr<ImageTransportHelper> helper_;
   base::scoped_nsobject<CAContext> ca_context_;
-  base::scoped_nsobject<CALayer> layer_;
+  base::scoped_nsobject<CALayer> ca_root_layer_;
 
   gfx::Size pixel_size_;
   float scale_factor_;
@@ -104,9 +109,8 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // targeting.
   GLint gl_renderer_id_;
 
-  // Weak pointer to the image provided when ScheduleOverlayPlane is called. Is
-  // consumed and reset when SwapBuffers is called. For now, only one overlay
-  // plane is supported.
+  // Overlay planes that have been scheduled, but have not had a subsequent
+  // SwapBuffers call made yet.
   std::vector<linked_ptr<OverlayPlane>> pending_overlay_planes_;
 
   // A queue of all frames that have been created by SwapBuffersInternal but
@@ -114,9 +118,10 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // every swap and also by a callback.
   std::deque<linked_ptr<PendingSwap>> pending_swaps_;
 
-  // The union of the damage rects of SwapBuffersInternal since the last
-  // non-partial swap.
-  gfx::Rect accumulated_damage_dip_rect_;
+  // The planes that are currently being displayed on the screen.
+  linked_ptr<OverlayPlane> current_root_plane_;
+  std::list<linked_ptr<OverlayPlane>> current_partial_damage_planes_;
+  std::list<linked_ptr<OverlayPlane>> current_overlay_planes_;
 
   // The time of the last swap was issued. If this is more than two vsyncs, then
   // use the simpler non-smooth animation path.
