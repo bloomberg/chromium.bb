@@ -28,7 +28,7 @@ namespace metrics {
 namespace {
 
 enum RendererType {
-  RENDERER_TYPE_RENDERER,
+  RENDERER_TYPE_RENDERER = 1,
   RENDERER_TYPE_EXTENSION, //  Not used, but needed for correct histogram count.
   // NOTE: Add new action types only immediately above this line. Also,
   // make sure the enum list in tools/metrics/histograms/histograms.xml is
