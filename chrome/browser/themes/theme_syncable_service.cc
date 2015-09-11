@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_syncable_service.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -235,6 +236,7 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
       if (!extensions_service->pending_extension_manager()->AddFromSync(
               id,
               update_url,
+              base::Version(),
               &IsTheme,
               kRemoteInstall,
               kInstalledByCustodian)) {

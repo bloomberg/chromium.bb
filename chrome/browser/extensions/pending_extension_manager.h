@@ -71,12 +71,12 @@ class PendingExtensionManager {
   // if the extension is pending from another source which overrides
   // sync installs (such as a policy extension) or if the extension
   // is already installed.
-  //
-  // TODO(akalin): Replace |install_silently| with a list of
-  // pre-enabled permissions.
+  // After installation, the extension will be granted permissions iff
+  // |version| is valid and matches the actual installed version.
   bool AddFromSync(
       const std::string& id,
       const GURL& update_url,
+      const base::Version& version,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool remote_install,
       bool installed_by_custodian);

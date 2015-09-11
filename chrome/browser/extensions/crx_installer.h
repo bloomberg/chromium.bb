@@ -133,9 +133,14 @@ class CrxInstaller
   bool hash_check_failed() const { return hash_check_failed_; }
   void set_hash_check_failed(bool val) { hash_check_failed_ = val; }
 
-  void set_expected_version(const Version& val) {
-    expected_version_.reset(new Version(val));
-    expected_version_strict_checking_ = true;
+  // Set the exact version the installed extension should have. If
+  // |fail_install_if_unexpected| is true, installation will fail if the actual
+  // version doesn't match. If it is false, the installation will still
+  // be performed, but the extension will not be granted any permissions.
+  void set_expected_version(const base::Version& val,
+                            bool fail_install_if_unexpected) {
+    expected_version_ = val;
+    fail_install_if_unexpected_version_ = fail_install_if_unexpected;
   }
 
   bool delete_source() const { return delete_source_; }
@@ -206,7 +211,9 @@ class CrxInstaller
 
   const Extension* extension() { return install_checker_.extension().get(); }
 
-  const std::string& current_version() const { return current_version_; }
+  // The currently installed version of the extension, for updates. Will be
+  // invalid if this isn't an update.
+  const base::Version& current_version() const { return current_version_; }
 
  private:
   friend class ::ExtensionServiceTest;
@@ -322,16 +329,20 @@ class CrxInstaller
   // the |expected_manifest_|.
   WebstoreInstaller::ManifestCheckLevel expected_manifest_check_level_;
 
-  // If non-NULL, contains the expected version of the extension we're
-  // installing.  Important for external sources, where claiming the wrong
-  // version could cause unnecessary unpacking of an extension at every
-  // restart.
-  scoped_ptr<Version> expected_version_;
+  // If valid, specifies the minimum version we'll install. Installation will
+  // fail if the actual version is smaller.
+  base::Version minimum_version_;
 
-  // If true, the actual version should be same with the |expected_version_|,
-  // Otherwise the actual version should be equal to or newer than
-  // the |expected_version_|.
-  bool expected_version_strict_checking_;
+  // If valid, contains the expected version of the extension we're installing.
+  // Important for external sources, where claiming the wrong version could
+  // cause unnecessary unpacking of an extension at every restart.
+  // See also |fail_install_if_unexpected_version_|!
+  base::Version expected_version_;
+
+  // If true, installation will fail if the actual version doesn't match
+  // |expected_version_|. If false, the extension will still be installed, but
+  // not granted any permissions.
+  bool fail_install_if_unexpected_version_;
 
   // Whether manual extension installation is enabled. We can't just check this
   // before trying to install because themes are special-cased to always be
@@ -354,9 +365,9 @@ class CrxInstaller
   // transformations like localization have taken place.
   scoped_ptr<Manifest> original_manifest_;
 
-  // If non-empty, contains the current version of the extension we're
+  // If valid, contains the current version of the extension we're
   // installing (for upgrades).
-  std::string current_version_;
+  base::Version current_version_;
 
   // The icon we will display in the installation UI, if any.
   scoped_ptr<SkBitmap> install_icon_;

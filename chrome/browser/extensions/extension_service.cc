@@ -518,26 +518,30 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
     return false;
   }
 
-  scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::Create(this, scoped_ptr<ExtensionInstallPrompt>()));
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
   installer->set_expected_id(id);
   installer->set_expected_hash(file.expected_hash);
   int creation_flags = Extension::NO_FLAGS;
   if (pending_extension_info) {
     installer->set_install_source(pending_extension_info->install_source());
     installer->set_allow_silent_install(true);
-    if (pending_extension_info->remote_install())
+    // If the extension came in disabled due to a permission increase, then
+    // don't grant it all the permissions. crbug.com/484214
+    bool has_permissions_increase =
+        extensions::ExtensionPrefs::Get(profile_)->HasDisableReason(
+            id, Extension::DISABLE_PERMISSIONS_INCREASE);
+    const base::Version& expected_version = pending_extension_info->version();
+    if (has_permissions_increase ||
+        pending_extension_info->remote_install() ||
+        !expected_version.IsValid()) {
       installer->set_grant_permissions(false);
+    } else {
+      installer->set_expected_version(expected_version,
+                                      false /* fail_install_if_unexpected */);
+    }
     creation_flags = pending_extension_info->creation_flags();
     if (pending_extension_info->mark_acknowledged())
       external_install_manager_->AcknowledgeExternalExtension(id);
-
-    // If the extension came in disabled due to a permission increase, then
-    // don't grant it all the permissions. crbug.com/484214
-    if (extensions::ExtensionPrefs::Get(profile_)->HasDisableReason(
-            id, Extension::DISABLE_PERMISSIONS_INCREASE)) {
-      installer->set_grant_permissions(false);
-    }
   } else if (extension) {
     installer->set_install_source(extension->location());
   }
@@ -1731,8 +1735,6 @@ void ExtensionService::OnExtensionInstalled(
   } else {
     // Requirement is supported now, remove the corresponding disable reason
     // instead.
-    extension_prefs_->RemoveDisableReason(
-        id, Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
     disable_reasons &= ~Extension::DISABLE_UNSUPPORTED_REQUIREMENT;
   }
 
@@ -1741,8 +1743,6 @@ void ExtensionService::OnExtensionInstalled(
   if (extensions::ExtensionManagementFactory::GetForBrowserContext(profile())
           ->CheckMinimumVersion(extension, nullptr)) {
     // And remove the corresponding disable reason.
-    extension_prefs_->RemoveDisableReason(
-        id, Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY);
     disable_reasons &= ~Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY;
   }
 
@@ -2163,7 +2163,8 @@ bool ExtensionService::OnExternalExtensionFileFound(
   scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
   installer->set_install_source(location);
   installer->set_expected_id(id);
-  installer->set_expected_version(*version);
+  installer->set_expected_version(*version,
+                                  true /* fail_install_if_unexpected */);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_EXTERNAL_FILE);
   installer->set_install_immediately(install_immediately);
   installer->set_creation_flags(creation_flags);

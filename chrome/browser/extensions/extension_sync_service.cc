@@ -392,6 +392,7 @@ void ExtensionSyncService::ApplySyncData(
     if (!extension_service()->pending_extension_manager()->AddFromSync(
             id,
             extension_sync_data.update_url(),
+            extension_sync_data.version(),
             extensions::sync_helper::IsSyncable,
             extension_sync_data.remote_install(),
             extension_sync_data.installed_by_custodian())) {

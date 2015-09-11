@@ -89,6 +89,7 @@ bool PendingExtensionManager::HasPendingExtensionFromSync() const {
 bool PendingExtensionManager::AddFromSync(
     const std::string& id,
     const GURL& update_url,
+    const base::Version& version,
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
     bool remote_install,
     bool installed_by_custodian) {
@@ -121,7 +122,7 @@ bool PendingExtensionManager::AddFromSync(
   return AddExtensionImpl(id,
                           std::string(),
                           update_url,
-                          Version(),
+                          version,
                           should_allow_install,
                           kIsFromSync,
                           kSyncLocation,

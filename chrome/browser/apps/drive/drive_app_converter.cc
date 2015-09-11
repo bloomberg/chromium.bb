@@ -195,7 +195,7 @@ void DriveAppConverter::OnFinishCrxInstall(const std::string& extension_id,
   }
 
   extension_ = crx_installer_->extension();
-  is_new_install_ = success && crx_installer_->current_version().empty();
+  is_new_install_ = success && !crx_installer_->current_version().IsValid();
   PostInstallCleanUp();
 
   base::ResetAndReturn(&finished_callback_).Run(this, success);
