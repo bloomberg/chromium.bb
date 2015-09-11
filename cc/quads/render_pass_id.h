@@ -20,6 +20,8 @@ class CC_EXPORT RenderPassId {
   RenderPassId(int layer_id, size_t index) : layer_id(layer_id), index(index) {}
   void* AsTracingId() const;
 
+  bool IsValid() const { return layer_id >= 0; }
+
   bool operator==(const RenderPassId& other) const {
     return layer_id == other.layer_id && index == other.index;
   }

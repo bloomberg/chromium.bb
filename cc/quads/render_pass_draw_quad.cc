@@ -28,7 +28,7 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const FilterOperations& filters,
                                 const gfx::Vector2dF& filters_scale,
                                 const FilterOperations& background_filters) {
-  DCHECK_GT(render_pass_id.layer_id, 0);
+  DCHECK(render_pass_id.IsValid());
 
   gfx::Rect opaque_rect;
   bool needs_blending = false;
@@ -58,7 +58,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 const FilterOperations& filters,
                                 const gfx::Vector2dF& filters_scale,
                                 const FilterOperations& background_filters) {
-  DCHECK_GT(render_pass_id.layer_id, 0);
+  DCHECK(render_pass_id.IsValid());
 
   DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, opaque_rect,
                    visible_rect, needs_blending);

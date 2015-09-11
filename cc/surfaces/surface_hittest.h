@@ -12,10 +12,14 @@
 
 namespace gfx {
 class Point;
+class Transform;
 }
 
 namespace cc {
+class DrawQuad;
+class QuadList;
 class RenderPass;
+class RenderPassId;
 class SurfaceManager;
 
 // Performs a hittest in surface quads.
@@ -27,19 +31,28 @@ class CC_SURFACES_EXPORT SurfaceHittest {
   // Hittests against Surface with SurfaceId |surface_id|, return the contained
   // surface that the point is hitting and the |transformed_point| in the
   // surface space.
-  SurfaceId Hittest(SurfaceId surface_id,
-                    const gfx::Point& point,
-                    gfx::Point* transformed_point);
+  SurfaceId GetTargetSurfaceAtPoint(SurfaceId surface_id,
+                                    const gfx::Point& point,
+                                    gfx::Point* transformed_point);
 
  private:
-  bool HittestInternal(SurfaceId surface_id,
-                       const RenderPass* render_pass,
-                       const gfx::Point& point,
-                       SurfaceId* out_surface_id,
-                       gfx::Point* out_transformed_point);
+  bool GetTargetSurfaceAtPointInternal(
+      SurfaceId surface_id,
+      const RenderPassId& render_pass_id,
+      const gfx::Point& point_in_root_target,
+      std::set<const RenderPass*>* referenced_passes,
+      SurfaceId* out_surface_id,
+      gfx::Point* out_transformed_point);
+
+  const RenderPass* GetRenderPassForSurfaceById(
+      SurfaceId surface_id,
+      const RenderPassId& render_pass_id);
+
+  bool PointInQuad(const DrawQuad* quad,
+                   const gfx::Point& point_in_render_pass_space,
+                   gfx::Point* point_in_quad_space);
 
   SurfaceManager* const manager_;
-  std::set<const RenderPass*> referenced_passes_;
 };
 }  // namespace cc
 

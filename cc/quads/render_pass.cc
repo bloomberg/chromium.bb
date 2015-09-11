@@ -144,7 +144,7 @@ void RenderPass::SetNew(RenderPassId id,
                         const gfx::Rect& output_rect,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target) {
-  DCHECK_GT(id.layer_id, 0);
+  DCHECK(id.IsValid());
   DCHECK(damage_rect.IsEmpty() || output_rect.Contains(damage_rect))
       << "damage_rect: " << damage_rect.ToString()
       << " output_rect: " << output_rect.ToString();
@@ -163,7 +163,7 @@ void RenderPass::SetAll(RenderPassId id,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target,
                         bool has_transparent_background) {
-  DCHECK_GT(id.layer_id, 0);
+  DCHECK(id.IsValid());
 
   this->id = id;
   this->output_rect = output_rect;

@@ -16,9 +16,112 @@
 
 namespace cc {
 namespace {
-const RenderPass* GetRootRenderPass(SurfaceManager* manager,
-                                    SurfaceId surface_id) {
-  Surface* surface = manager->GetSurfaceForId(surface_id);
+}
+
+SurfaceHittest::SurfaceHittest(SurfaceManager* manager) : manager_(manager) {}
+
+SurfaceHittest::~SurfaceHittest() {}
+
+SurfaceId SurfaceHittest::GetTargetSurfaceAtPoint(
+    SurfaceId surface_id,
+    const gfx::Point& point,
+    gfx::Point* transformed_point) {
+  SurfaceId hittest_surface_id = surface_id;
+
+  if (transformed_point)
+    *transformed_point = point;
+
+  std::set<const RenderPass*> referenced_passes;
+  GetTargetSurfaceAtPointInternal(surface_id, RenderPassId(), point,
+                                  &referenced_passes, &hittest_surface_id,
+                                  transformed_point);
+
+  return hittest_surface_id;
+}
+
+bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
+    SurfaceId surface_id,
+    const RenderPassId& render_pass_id,
+    const gfx::Point& point_in_root_target,
+    std::set<const RenderPass*>* referenced_passes,
+    SurfaceId* out_surface_id,
+    gfx::Point* out_transformed_point) {
+  const RenderPass* render_pass =
+      GetRenderPassForSurfaceById(surface_id, render_pass_id);
+  if (!render_pass)
+    return false;
+
+  // To avoid an infinite recursion, we need to skip the RenderPass if it's
+  // already been referenced.
+  if (referenced_passes->find(render_pass) != referenced_passes->end())
+    return false;
+
+  referenced_passes->insert(render_pass);
+
+  // The |transform_to_root_target| matrix cannot be inverted if it has a
+  // z-scale of 0 or due to floating point errors.
+  gfx::Transform transform_from_root_target;
+  if (!render_pass->transform_to_root_target.GetInverse(
+          &transform_from_root_target)) {
+    return false;
+  }
+
+  gfx::Point point_in_render_pass_space(point_in_root_target);
+  transform_from_root_target.TransformPoint(&point_in_render_pass_space);
+
+  for (const DrawQuad* quad : render_pass->quad_list) {
+    gfx::Point point_in_quad_space;
+    if (!PointInQuad(quad, point_in_render_pass_space, &point_in_quad_space))
+      continue;
+
+    if (quad->material == DrawQuad::SURFACE_CONTENT) {
+      // We've hit a SurfaceDrawQuad, we need to recurse into this
+      // Surface.
+      const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
+
+      gfx::Point point_in_child_space(point_in_quad_space);
+      if (GetTargetSurfaceAtPointInternal(
+              surface_quad->surface_id, RenderPassId(), point_in_quad_space,
+              referenced_passes, out_surface_id, &point_in_child_space)) {
+        *out_transformed_point = point_in_child_space;
+        return true;
+      }
+
+      continue;
+    }
+
+    if (quad->material == DrawQuad::RENDER_PASS) {
+      // We've hit a RenderPassDrawQuad, we need to recurse into this
+      // RenderPass.
+      const RenderPassDrawQuad* render_quad =
+          RenderPassDrawQuad::MaterialCast(quad);
+
+      gfx::Point point_in_child_space(point_in_root_target);
+      if (GetTargetSurfaceAtPointInternal(
+              surface_id, render_quad->render_pass_id, point_in_root_target,
+              referenced_passes, out_surface_id, &point_in_child_space)) {
+        *out_transformed_point = point_in_child_space;
+        return true;
+      }
+
+      continue;
+    }
+
+    // We've hit a different type of quad in the current Surface,
+    // there's no need to iterate anymore, this is the quad that
+    // receives the event;
+    *out_surface_id = surface_id;
+    return true;
+  }
+
+  // No quads were found beneath the provided |point|.
+  return false;
+}
+
+const RenderPass* SurfaceHittest::GetRenderPassForSurfaceById(
+    SurfaceId surface_id,
+    const RenderPassId& render_pass_id) {
+  Surface* surface = manager_->GetSurfaceForId(surface_id);
   if (!surface)
     return nullptr;
 
@@ -28,126 +131,43 @@ const RenderPass* GetRootRenderPass(SurfaceManager* manager,
 
   const DelegatedFrameData* frame_data =
       surface_frame->delegated_frame_data.get();
-  return frame_data->render_pass_list.empty()
-             ? nullptr
-             : frame_data->render_pass_list.back();
-}
-}
+  if (frame_data->render_pass_list.empty())
+    return nullptr;
 
-SurfaceHittest::SurfaceHittest(SurfaceManager* manager) : manager_(manager) {}
+  if (!render_pass_id.IsValid())
+    return frame_data->render_pass_list.back();
 
-SurfaceHittest::~SurfaceHittest() {}
+  for (const auto* render_pass : frame_data->render_pass_list) {
+    if (render_pass->id == render_pass_id)
+      return render_pass;
+  }
 
-SurfaceId SurfaceHittest::Hittest(SurfaceId surface_id,
-                                  const gfx::Point& point,
-                                  gfx::Point* transformed_point) {
-  SurfaceId hittest_surface_id = surface_id;
-
-  if (transformed_point)
-    *transformed_point = point;
-
-  HittestInternal(surface_id, GetRootRenderPass(manager_, surface_id), point,
-                  &hittest_surface_id, transformed_point);
-
-  referenced_passes_.clear();
-
-  return hittest_surface_id;
+  return nullptr;
 }
 
-bool SurfaceHittest::HittestInternal(SurfaceId surface_id,
-                                     const RenderPass* render_pass,
-                                     const gfx::Point& point,
-                                     SurfaceId* out_surface_id,
-                                     gfx::Point* out_transformed_point) {
-  // To avoid an infinite recursion, we need to skip the RenderPass if it's
-  // already been referenced.
-  if (referenced_passes_.find(render_pass) != referenced_passes_.end())
-    return false;
-  referenced_passes_.insert(render_pass);
-
-  gfx::Transform transform_from_root_target;
-  if (!render_pass ||
-      !render_pass->transform_to_root_target.GetInverse(
-          &transform_from_root_target)) {
+bool SurfaceHittest::PointInQuad(const DrawQuad* quad,
+                                 const gfx::Point& point_in_render_pass_space,
+                                 gfx::Point* point_in_quad_space) {
+  // First we test against the clip_rect. The clip_rect is in target space, so
+  // we can test the point directly.
+  if (quad->shared_quad_state->is_clipped &&
+      !quad->shared_quad_state->clip_rect.Contains(
+          point_in_render_pass_space)) {
     return false;
   }
 
-  gfx::Point point_in_target_space(point);
-  transform_from_root_target.TransformPoint(&point_in_target_space);
-
-  for (const auto* quad : render_pass->quad_list) {
-    // First we test against the clip_rect. The clip_rect is in target space, so
-    // we can test the point directly.
-    if (!quad->shared_quad_state->is_clipped ||
-        quad->shared_quad_state->clip_rect.Contains(point_in_target_space)) {
-      // We now transform the point to content space and test if it hits the
-      // rect.
-      gfx::Transform target_to_quad_transform;
-      if (quad->shared_quad_state->quad_to_target_transform.GetInverse(
-              &target_to_quad_transform)) {
-        gfx::Point transformed_point(point_in_target_space);
-        target_to_quad_transform.TransformPoint(&transformed_point);
-
-        if (quad->rect.Contains(transformed_point)) {
-          if (quad->material == DrawQuad::SURFACE_CONTENT) {
-            // We've hit a SurfaceDrawQuad, we need to recurse into this
-            // Surface.
-            const SurfaceDrawQuad* surface_quad =
-                SurfaceDrawQuad::MaterialCast(quad);
-
-            gfx::Point point_in_current_surface;
-            if (out_transformed_point) {
-              point_in_current_surface = *out_transformed_point;
-              *out_transformed_point = transformed_point;
-            }
-
-            if (HittestInternal(
-                    surface_quad->surface_id,
-                    GetRootRenderPass(manager_, surface_quad->surface_id),
-                    transformed_point, out_surface_id, out_transformed_point)) {
-              return true;
-            } else {
-              if (out_transformed_point)
-                *out_transformed_point = point_in_current_surface;
-            }
-          } else if (quad->material == DrawQuad::RENDER_PASS) {
-            // We've hit a RenderPassDrawQuad, we need to recurse into this
-            // RenderPass.
-            const RenderPassDrawQuad* render_quad =
-                RenderPassDrawQuad::MaterialCast(quad);
-
-            Surface* surface = manager_->GetSurfaceForId(surface_id);
-            const CompositorFrame* surface_frame = surface->GetEligibleFrame();
-            DCHECK(surface_frame);
-            const DelegatedFrameData* frame_data =
-                surface_frame->delegated_frame_data.get();
-
-            const RenderPass* quad_render_pass = nullptr;
-            for (const auto* render_pass : frame_data->render_pass_list) {
-              if (render_pass->id == render_quad->render_pass_id) {
-                quad_render_pass = render_pass;
-                break;
-              }
-            }
-
-            if (quad_render_pass &&
-                HittestInternal(surface_id, quad_render_pass,
-                                point_in_target_space, out_surface_id,
-                                out_transformed_point)) {
-              return true;
-            }
-          } else {
-            // We've hit a different type of quad in the current Surface,
-            // there's no need to iterate anymore, this is the quad that
-            // receives the event;
-            *out_surface_id = surface_id;
-            return true;
-          }
-        }
-      }
-    }
+  // We now transform the point to content space and test if it hits the
+  // rect.
+  gfx::Transform target_to_quad_transform;
+  if (!quad->shared_quad_state->quad_to_target_transform.GetInverse(
+          &target_to_quad_transform)) {
+    return false;
   }
 
-  return false;
+  *point_in_quad_space = point_in_render_pass_space;
+  target_to_quad_transform.TransformPoint(point_in_quad_space);
+
+  return quad->rect.Contains(*point_in_quad_space);
 }
+
 }  // namespace cc
