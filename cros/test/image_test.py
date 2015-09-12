@@ -206,9 +206,13 @@ class LinkageTest(image_test_lib.NonForgivingImageTestCase):
     # When chrome is built with USE="pgo_generate", rootfs chrome is actually a
     # symlink to a real binary which is in the stateful partition. So we do not
     # check for a valid chrome binary in that case.
-    if (not self._IsPackageMerged('chromeos-base/chromeos-chrome[pgo_generate]')
-        and self._IsPackageMerged('chromeos-base/chromeos-chrome')):
-      binaries.append('opt/google/chrome/chrome')
+    if not self._IsPackageMerged('chromeos-base/chromeos-chrome[pgo_generate]'):
+      if self._IsPackageMerged('chromeos-base/chromeos-chrome[app_shell]'):
+        binaries.append('opt/google/chrome/app_shell')
+      elif self._IsPackageMerged('chromeos-base/chromeos-chrome[envoy]'):
+        binaries.append('opt/google/chrome/envoy_shell')
+      elif self._IsPackageMerged('chromeos-base/chromeos-chrome'):
+        binaries.append('opt/google/chrome/chrome')
 
     binaries = [os.path.join(image_test_lib.ROOT_A, x) for x in binaries]
 
