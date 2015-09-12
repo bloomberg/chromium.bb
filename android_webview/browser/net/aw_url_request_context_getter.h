@@ -65,15 +65,13 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   void InitializeURLRequestContext();
 
   const base::FilePath cache_path_;
-
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::HttpNetworkSession> http_network_session_;
-  scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   scoped_refptr<net::CookieStore> cookie_store_;
-  scoped_ptr<net::URLRequestJobFactory> job_factory_;
-  scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
+  scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_ptr<net::URLRequestJobFactory> job_factory_;
+  scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
+  scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
 
   // ProtocolHandlers and interceptors are stored here between
   // SetHandlersAndInterceptors() and the first GetURLRequestContext() call.

@@ -57,7 +57,6 @@
 #include "net/base/sdch_manager.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/sdch/sdch_owner.h"
 #include "net/ssl/channel_id_service.h"
@@ -538,22 +537,22 @@ void ProfileImplIOData::InitializeInternal(
   set_channel_id_service(channel_id_service);
   main_context->set_channel_id_service(channel_id_service);
 
+  scoped_ptr<net::HttpCache> main_cache;
   {
     // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 HttpCache construction"));
-    net::HttpCache::BackendFactory* main_backend(
+    net::HttpCache::DefaultBackend* main_backend =
         new net::HttpCache::DefaultBackend(
             net::DISK_CACHE,
             ChooseCacheBackendType(),
             lazy_params_->cache_path,
             lazy_params_->cache_max_size,
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
-    http_network_session_ = CreateHttpNetworkSession(*profile_params);
-    main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
-                                               main_backend);
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+    main_cache = CreateMainHttpFactory(profile_params, main_backend);
   }
 
+  main_http_factory_.reset(main_cache.release());
   main_context->set_http_transaction_factory(main_http_factory_.get());
 
 #if !defined(DISABLE_FTP_SUPPORT)
@@ -665,7 +664,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
       partition_descriptor.path.Append(chrome::kCacheDirname);
 
   // Use a separate HTTP disk cache for isolated apps.
-  net::HttpCache::BackendFactory* app_backend;
+  net::HttpCache::BackendFactory* app_backend = NULL;
   if (partition_descriptor.in_memory) {
     app_backend = net::HttpCache::DefaultBackend::InMemory(0);
   } else {
@@ -676,8 +675,10 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
         app_cache_max_size_,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   }
+  net::HttpNetworkSession* main_network_session =
+      main_http_factory_->GetSession();
   scoped_ptr<net::HttpCache> app_http_cache =
-      CreateHttpFactory(http_network_session_.get(), app_backend);
+      CreateHttpFactory(main_network_session, app_backend);
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
   if (partition_descriptor.in_memory) {
@@ -757,8 +758,10 @@ ProfileImplIOData::InitializeMediaRequestContext(
           cache_path,
           cache_max_size,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  net::HttpNetworkSession* main_network_session =
+      main_http_factory_->GetSession();
   scoped_ptr<net::HttpCache> media_http_cache =
-      CreateHttpFactory(http_network_session_.get(), media_backend);
+      CreateHttpFactory(main_network_session, media_backend);
 
   // Transfer ownership of the cache to MediaRequestContext.
   context->SetHttpTransactionFactory(media_http_cache.Pass());

@@ -7031,14 +7031,12 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
       default_context_.http_auth_handler_factory();
   params.network_delegate = &default_network_delegate_;
   params.http_server_properties = default_context_.http_server_properties();
-  scoped_ptr<HttpNetworkSession> network_session(
-      new HttpNetworkSession(params));
   scoped_ptr<HttpNetworkLayer> network_layer(
-      new HttpNetworkLayer(network_session.get()));
+      new HttpNetworkLayer(new HttpNetworkSession(params)));
   network_layer->OnSuspend();
 
   HttpCache http_cache(network_layer.release(), default_context_.net_log(),
-                       HttpCache::DefaultBackend::InMemory(0), true);
+                       HttpCache::DefaultBackend::InMemory(0));
 
   TestURLRequestContext context(true);
   context.set_http_transaction_factory(&http_cache);
@@ -8082,10 +8080,9 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   params.http_server_properties = default_context_.http_server_properties();
   params.ssl_session_cache_shard = "alternate";
 
-  scoped_ptr<HttpNetworkSession> network_session(
-      new HttpNetworkSession(params));
   scoped_ptr<HttpCache> cache(new HttpCache(
-      network_session.get(), HttpCache::DefaultBackend::InMemory(0), false));
+      new HttpNetworkSession(params),
+      HttpCache::DefaultBackend::InMemory(0)));
 
   default_context_.set_http_transaction_factory(cache.get());
 

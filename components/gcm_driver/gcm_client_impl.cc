@@ -255,15 +255,16 @@ scoped_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
 scoped_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      net::HttpNetworkSession* gcm_network_session,
-      net::HttpNetworkSession* http_network_session,
+      const scoped_refptr<net::HttpNetworkSession>& gcm_network_session,
+      const scoped_refptr<net::HttpNetworkSession>& http_network_session,
+      net::NetLog* net_log,
       GCMStatsRecorder* recorder) {
   return make_scoped_ptr<ConnectionFactory>(
       new ConnectionFactoryImpl(endpoints,
                                 backoff_policy,
                                 gcm_network_session,
                                 http_network_session,
-                                nullptr,
+                                net_log,
                                 recorder));
 }
 
@@ -325,7 +326,7 @@ void GCMClientImpl::Initialize(
       url_request_context_getter_->GetURLRequestContext()->
           GetNetworkSessionParams();
   DCHECK(network_session_params);
-  network_session_.reset(new net::HttpNetworkSession(*network_session_params));
+  network_session_ = new net::HttpNetworkSession(*network_session_params);
 
   chrome_build_info_ = chrome_build_info;
 
@@ -482,10 +483,11 @@ void GCMClientImpl::InitializeMCSClient() {
   connection_factory_ = internals_builder_->BuildConnectionFactory(
       endpoints,
       GetGCMBackoffPolicy(),
-      network_session_.get(),
+      network_session_,
       url_request_context_getter_->GetURLRequestContext()
           ->http_transaction_factory()
           ->GetSession(),
+      net_log_.net_log(),
       &recorder_);
   connection_factory_->SetConnectionListener(this);
   mcs_client_ = internals_builder_->BuildMCSClient(

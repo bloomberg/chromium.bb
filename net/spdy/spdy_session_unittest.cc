@@ -135,8 +135,8 @@ class SpdySessionTest : public PlatformTest,
 
   void CreateInsecureSpdySession() {
     DCHECK(!session_);
-    session_ = ::net::CreateInsecureSpdySession(http_session_.get(), key_,
-                                                log_.bound());
+    session_ =
+        ::net::CreateInsecureSpdySession(http_session_, key_, log_.bound());
   }
 
   void StallSessionSend() {
@@ -174,7 +174,7 @@ class SpdySessionTest : public PlatformTest,
 
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
-  scoped_ptr<HttpNetworkSession> http_session_;
+  scoped_refptr<HttpNetworkSession> http_session_;
   base::WeakPtr<SpdySession> session_;
   SpdySessionPool* spdy_session_pool_;
   GURL test_url_;
@@ -314,7 +314,7 @@ TEST_P(SpdySessionTest, GoAwayImmediatelyWithNoActiveStreams) {
   CreateNetworkSession();
 
   session_ = TryCreateInsecureSpdySessionExpectingFailure(
-      http_session_.get(), key_, ERR_CONNECTION_CLOSED, BoundNetLog());
+      http_session_, key_, ERR_CONNECTION_CLOSED, BoundNetLog());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(session_);
@@ -2192,7 +2192,7 @@ TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
 
   CreateNetworkSession();
 
-  session_ = CreateSecureSpdySession(http_session_.get(), key_, BoundNetLog());
+  session_ = CreateSecureSpdySession(http_session_, key_, BoundNetLog());
 
   EXPECT_TRUE(session_->VerifyDomainAuthentication("www.example.org"));
   EXPECT_TRUE(session_->VerifyDomainAuthentication("mail.example.org"));
@@ -2222,7 +2222,7 @@ TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
 
   CreateNetworkSession();
 
-  session_ = CreateSecureSpdySession(http_session_.get(), key_, BoundNetLog());
+  session_ = CreateSecureSpdySession(http_session_, key_, BoundNetLog());
 
   EXPECT_TRUE(session_->VerifyDomainAuthentication("www.example.org"));
   EXPECT_TRUE(session_->VerifyDomainAuthentication("mail.example.org"));
@@ -2967,8 +2967,8 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Create an idle SPDY session.
   SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED);
-  base::WeakPtr<SpdySession> session1 = ::net::CreateInsecureSpdySession(
-      http_session_.get(), key1, BoundNetLog());
+  base::WeakPtr<SpdySession> session1 =
+      ::net::CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
   EXPECT_FALSE(pool->IsStalled());
 
   // Set up an alias for the idle SPDY session, increasing its ref count to 2.

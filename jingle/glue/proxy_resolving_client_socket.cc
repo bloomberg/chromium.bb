@@ -90,7 +90,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
         reference_params->use_alternative_services;
   }
 
-  network_session_.reset(new net::HttpNetworkSession(session_params));
+  network_session_ = new net::HttpNetworkSession(session_params);
 }
 
 ProxyResolvingClientSocket::~ProxyResolvingClientSocket() {

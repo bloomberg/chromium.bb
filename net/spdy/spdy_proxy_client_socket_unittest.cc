@@ -123,7 +123,7 @@ class SpdyProxyClientSocketTest
   BoundTestNetLog net_log_;
 
  private:
-  scoped_ptr<HttpNetworkSession> session_;
+  scoped_refptr<HttpNetworkSession> session_;
   scoped_refptr<IOBuffer> read_buf_;
   SpdySessionDependencies session_deps_;
   MockConnect connect_data_;
@@ -147,6 +147,7 @@ INSTANTIATE_TEST_CASE_P(NextProto,
 
 SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
     : spdy_util_(GetParam()),
+      session_(NULL),
       read_buf_(NULL),
       session_deps_(GetParam()),
       connect_data_(SYNCHRONOUS, OK),
@@ -188,8 +189,9 @@ void SpdyProxyClientSocketTest::Initialize(MockRead* reads,
       &session_deps_);
 
   // Creates the SPDY session and stream.
-  spdy_session_ = CreateInsecureSpdySession(
-      session_.get(), endpoint_spdy_session_key_, BoundNetLog());
+  spdy_session_ =
+      CreateInsecureSpdySession(
+          session_, endpoint_spdy_session_key_, BoundNetLog());
   base::WeakPtr<SpdyStream> spdy_stream(
       CreateStreamSynchronously(
           SPDY_BIDIRECTIONAL_STREAM, spdy_session_, url_, LOWEST,

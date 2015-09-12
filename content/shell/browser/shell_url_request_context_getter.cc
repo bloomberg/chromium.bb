@@ -199,11 +199,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     network_session_params.host_resolver =
         url_request_context_->host_resolver();
 
-    storage_->set_http_network_session(
-        make_scoped_ptr(new net::HttpNetworkSession(network_session_params)));
     net::HttpCache* main_cache = new net::HttpCache(
-        storage_->http_network_session(), main_backend,
-        true /* set_up_quic_server_info */);
+        network_session_params, main_backend);
     storage_->set_http_transaction_factory(main_cache);
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(

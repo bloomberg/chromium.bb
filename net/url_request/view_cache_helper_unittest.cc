@@ -31,10 +31,8 @@ class TestURLRequestContext : public URLRequestContext {
 };
 
 TestURLRequestContext::TestURLRequestContext()
-    : cache_(new MockNetworkLayer(),
-             nullptr,
-             HttpCache::DefaultBackend::InMemory(0),
-             true) {
+    : cache_(new MockNetworkLayer(), NULL,
+             HttpCache::DefaultBackend::InMemory(0)) {
   set_http_transaction_factory(&cache_);
 }
 

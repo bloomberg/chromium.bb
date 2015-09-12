@@ -26,10 +26,17 @@ class NET_EXPORT HttpNetworkLayer
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // Construct a HttpNetworkLayer with an existing HttpNetworkSession which
-  // contains a valid ProxyService. The HttpNetworkLayer must be destroyed
-  // before |session|.
+  // contains a valid ProxyService.
   explicit HttpNetworkLayer(HttpNetworkSession* session);
   ~HttpNetworkLayer() override;
+
+  // Create a transaction factory that instantiate a network layer over an
+  // existing network session. Network session contains some valuable
+  // information (e.g. authentication data) that we want to share across
+  // multiple network layers. This method exposes the implementation details
+  // of a network layer, use this method with an existing network layer only
+  // when network session is shared.
+  static HttpTransactionFactory* CreateFactory(HttpNetworkSession* session);
 
   // HttpTransactionFactory methods:
   int CreateTransaction(RequestPriority priority,
@@ -42,7 +49,7 @@ class NET_EXPORT HttpNetworkLayer
   void OnResume() override;
 
  private:
-  HttpNetworkSession* const session_;
+  const scoped_refptr<HttpNetworkSession> session_;
   bool suspended_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkLayer);

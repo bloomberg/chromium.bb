@@ -135,11 +135,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
                                            net::CACHE_BACKEND_DEFAULT,
                                            cache_path, 0, cache_task_runner_);
 
-    storage_->set_http_network_session(
-        make_scoped_ptr(new net::HttpNetworkSession(network_session_params)));
     net::HttpCache* main_cache =
-        new net::HttpCache(storage_->http_network_session(), main_backend,
-                           true /* set_up_quic_server_info */);
+        new net::HttpCache(network_session_params, main_backend);
     storage_->set_http_transaction_factory(main_cache);
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(

@@ -217,10 +217,9 @@ class GCMClient {
   // |chrome_build_info|: chrome info, i.e., version, channel and etc.
   // |store_path|: path to the GCM store.
   // |blocking_task_runner|: for running blocking file tasks.
-  // |url_request_context_getter|: for url requests. The GCMClient must be
-  //     deleted before the Getter's underlying URLRequestContext.
+  // |url_request_context_getter|: for url requests.
   // |delegate|: the delegate whose methods will be called asynchronously in
-  //     response to events and messages.
+  //             response to events and messages.
   virtual void Initialize(
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,

@@ -63,8 +63,8 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
 
-  scoped_ptr<HttpNetworkSession> session =
-      SpdySessionDependencies::SpdyCreateSession(&session_deps);
+  scoped_refptr<HttpNetworkSession>
+      session(SpdySessionDependencies::SpdyCreateSession(&session_deps));
   HttpStreamFactoryImpl* factory =
       static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory());
 

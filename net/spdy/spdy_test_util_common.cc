@@ -415,27 +415,26 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol,
 SpdySessionDependencies::~SpdySessionDependencies() {}
 
 // static
-scoped_ptr<HttpNetworkSession> SpdySessionDependencies::SpdyCreateSession(
+HttpNetworkSession* SpdySessionDependencies::SpdyCreateSession(
     SpdySessionDependencies* session_deps) {
   HttpNetworkSession::Params params = CreateSessionParams(session_deps);
   params.client_socket_factory = session_deps->socket_factory.get();
-  scoped_ptr<HttpNetworkSession> http_session(new HttpNetworkSession(params));
+  HttpNetworkSession* http_session = new HttpNetworkSession(params);
   SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
   pool_peer.SetEnableSendingInitialData(false);
-  return http_session.Pass();
+  return http_session;
 }
 
 // static
-scoped_ptr<HttpNetworkSession>
-SpdySessionDependencies::SpdyCreateSessionDeterministic(
+HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
     SpdySessionDependencies* session_deps) {
   HttpNetworkSession::Params params = CreateSessionParams(session_deps);
   params.client_socket_factory =
       session_deps->deterministic_socket_factory.get();
-  scoped_ptr<HttpNetworkSession> http_session(new HttpNetworkSession(params));
+  HttpNetworkSession* http_session = new HttpNetworkSession(params);
   SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
   pool_peer.SetEnableSendingInitialData(false);
-  return http_session.Pass();
+  return http_session;
 }
 
 // static
@@ -499,14 +498,12 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   params.enable_spdy_ping_based_connection_checking = false;
   params.spdy_default_protocol = protocol;
   params.http_server_properties = http_server_properties();
-  storage_.set_http_network_session(
-      make_scoped_ptr(new HttpNetworkSession(params)));
-  SpdySessionPoolPeer pool_peer(
-      storage_.http_network_session()->spdy_session_pool());
+  scoped_refptr<HttpNetworkSession> network_session(
+      new HttpNetworkSession(params));
+  SpdySessionPoolPeer pool_peer(network_session->spdy_session_pool());
   pool_peer.SetEnableSendingInitialData(false);
-  storage_.set_http_transaction_factory(
-      new HttpCache(storage_.http_network_session(),
-                    HttpCache::DefaultBackend::InMemory(0), false));
+  storage_.set_http_transaction_factory(new HttpCache(
+      network_session.get(), HttpCache::DefaultBackend::InMemory(0)));
 }
 
 SpdyURLRequestContext::~SpdyURLRequestContext() {
@@ -520,7 +517,7 @@ bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key) {
 namespace {
 
 base::WeakPtr<SpdySession> CreateSpdySessionHelper(
-    HttpNetworkSession* http_session,
+    const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log,
     Error expected_status,
@@ -581,7 +578,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 }  // namespace
 
 base::WeakPtr<SpdySession> CreateInsecureSpdySession(
-    HttpNetworkSession* http_session,
+    const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log) {
   return CreateSpdySessionHelper(http_session, key, net_log,
@@ -589,7 +586,7 @@ base::WeakPtr<SpdySession> CreateInsecureSpdySession(
 }
 
 base::WeakPtr<SpdySession> TryCreateInsecureSpdySessionExpectingFailure(
-    HttpNetworkSession* http_session,
+    const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     Error expected_error,
     const BoundNetLog& net_log) {
@@ -599,7 +596,7 @@ base::WeakPtr<SpdySession> TryCreateInsecureSpdySessionExpectingFailure(
 }
 
 base::WeakPtr<SpdySession> CreateSecureSpdySession(
-    HttpNetworkSession* http_session,
+    const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log) {
   return CreateSpdySessionHelper(http_session, key, net_log,

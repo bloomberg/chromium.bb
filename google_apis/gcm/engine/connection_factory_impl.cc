@@ -16,7 +16,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
-#include "net/log/net_log.h"
 #include "net/proxy/proxy_info.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -48,8 +47,8 @@ bool ShouldRestorePreviousBackoff(const base::TimeTicks& login_time,
 ConnectionFactoryImpl::ConnectionFactoryImpl(
     const std::vector<GURL>& mcs_endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    net::HttpNetworkSession* gcm_network_session,
-    net::HttpNetworkSession* http_network_session,
+    const scoped_refptr<net::HttpNetworkSession>& gcm_network_session,
+    const scoped_refptr<net::HttpNetworkSession>& http_network_session,
     net::NetLog* net_log,
     GCMStatsRecorder* recorder)
   : mcs_endpoints_(mcs_endpoints),
@@ -69,8 +68,8 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
     listener_(NULL),
     weak_ptr_factory_(this) {
   DCHECK_GE(mcs_endpoints_.size(), 1U);
-  DCHECK(!http_network_session_ ||
-         (gcm_network_session_ != http_network_session_));
+  DCHECK(!http_network_session_.get() ||
+         (gcm_network_session_.get() != http_network_session_.get()));
 }
 
 ConnectionFactoryImpl::~ConnectionFactoryImpl() {
@@ -458,7 +457,7 @@ void ConnectionFactoryImpl::OnProxyResolveDone(int status) {
   gcm_network_session_->ssl_config_service()->GetSSLConfig(&ssl_config);
   status = net::InitSocketHandleForTlsConnect(
       net::HostPortPair::FromURL(GetCurrentEndpoint()),
-      gcm_network_session_,
+      gcm_network_session_.get(),
       proxy_info_,
       ssl_config,
       ssl_config,
@@ -559,7 +558,7 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
 }
 
 void ConnectionFactoryImpl::ReportSuccessfulProxyConnection() {
-  if (gcm_network_session_ && gcm_network_session_->proxy_service())
+  if (gcm_network_session_.get() && gcm_network_session_->proxy_service())
     gcm_network_session_->proxy_service()->ReportSuccess(proxy_info_, NULL);
 }
 
@@ -575,7 +574,7 @@ void ConnectionFactoryImpl::CloseSocket() {
 }
 
 void ConnectionFactoryImpl::RebuildNetworkSessionAuthCache() {
-  if (!http_network_session_ || !http_network_session_->http_auth_cache())
+  if (!http_network_session_.get() || !http_network_session_->http_auth_cache())
     return;
 
   gcm_network_session_->http_auth_cache()->UpdateAllFrom(

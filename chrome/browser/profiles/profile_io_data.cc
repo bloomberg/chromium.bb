@@ -66,7 +66,6 @@
 #include "net/base/network_quality_estimator.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_persister.h"
@@ -1302,12 +1301,13 @@ void ProfileIOData::DestroyResourceContext() {
   resource_context_.reset();
 }
 
-scoped_ptr<net::HttpNetworkSession> ProfileIOData::CreateHttpNetworkSession(
-    const ProfileParams& profile_params) const {
+scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
+    const ProfileParams* profile_params,
+    net::HttpCache::BackendFactory* main_backend) const {
   net::HttpNetworkSession::Params params;
   net::URLRequestContext* context = main_request_context();
 
-  IOThread* const io_thread = profile_params.io_thread;
+  IOThread* const io_thread = profile_params->io_thread;
 
   io_thread->InitializeNetworkSessionParams(&params);
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(context,
@@ -1321,19 +1321,11 @@ scoped_ptr<net::HttpNetworkSession> ProfileIOData::CreateHttpNetworkSession(
   if (data_reduction_proxy_io_data_.get())
     params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
 
-  return scoped_ptr<net::HttpNetworkSession>(
-      new net::HttpNetworkSession(params));
-}
-
-scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
-    net::HttpNetworkSession* session,
-    net::HttpCache::BackendFactory* main_backend) const {
-  net::URLRequestContext* context = main_request_context();
+  net::HttpNetworkSession* session = new net::HttpNetworkSession(params);
   return scoped_ptr<net::HttpCache>(new net::HttpCache(
       new DevToolsNetworkTransactionFactory(
           network_controller_handle_.GetController(), session),
-      context->net_log(), main_backend,
-      true /* set_up_quic_server_info */));
+      context->net_log(), main_backend));
 }
 
 scoped_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
@@ -1342,8 +1334,7 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
   return scoped_ptr<net::HttpCache>(new net::HttpCache(
       new DevToolsNetworkTransactionFactory(
           network_controller_handle_.GetController(), shared_session),
-      shared_session->net_log(), backend,
-      true /* set_up_quic_server_info */));
+      shared_session->net_log(), backend));
 }
 
 void ProfileIOData::SetCookieSettingsForTesting(

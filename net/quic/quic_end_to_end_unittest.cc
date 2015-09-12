@@ -48,7 +48,7 @@ const char kResponseBody[] = "some arbitrary response body";
 // Factory for creating HttpTransactions, used by TestTransactionConsumer.
 class TestTransactionFactory : public HttpTransactionFactory {
  public:
-  explicit TestTransactionFactory(const HttpNetworkSession::Params& params)
+  TestTransactionFactory(const HttpNetworkSession::Params& params)
       : session_(new HttpNetworkSession(params)) {}
 
   ~TestTransactionFactory() override {}
@@ -65,7 +65,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
   HttpNetworkSession* GetSession() override { return session_.get(); };
 
  private:
-  scoped_ptr<HttpNetworkSession> session_;
+  scoped_refptr<HttpNetworkSession> session_;
 };
 
 }  // namespace

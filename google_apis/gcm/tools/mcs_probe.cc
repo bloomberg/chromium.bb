@@ -229,7 +229,7 @@ class MCSProbe {
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
   scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
   scoped_ptr<net::HostMappingRules> host_mapping_rules_;
-  scoped_ptr<net::HttpNetworkSession> network_session_;
+  scoped_refptr<net::HttpNetworkSession> network_session_;
   scoped_ptr<net::ProxyService> proxy_service_;
 
   FakeGCMStatsRecorder recorder_;
@@ -293,7 +293,7 @@ void MCSProbe::Start() {
   connection_factory_.reset(
       new ConnectionFactoryImpl(endpoints,
                                 kDefaultBackoffPolicy,
-                                network_session_.get(),
+                                network_session_,
                                 NULL,
                                 &net_log_,
                                 &recorder_));
@@ -403,7 +403,7 @@ void MCSProbe::BuildNetworkSession() {
   session_params.net_log = &net_log_;
   session_params.proxy_service = proxy_service_.get();
 
-  network_session_.reset(new net::HttpNetworkSession(session_params));
+  network_session_ = new net::HttpNetworkSession(session_params);
 }
 
 void MCSProbe::ErrorCallback() {

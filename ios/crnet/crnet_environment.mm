@@ -446,12 +446,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
         base::WorkerPool::GetTaskRunner(true));
   }
 
-  // TODO(mmenke):  These really shouldn't be leaked.
-  //                See https://crbug.com/523858.
-  net::HttpNetworkSession* http_network_session =
-      new net::HttpNetworkSession(params);
-  net::HttpCache* main_cache = new net::HttpCache(
-      http_network_session, main_backend, true /* set_up_quic_server_info */);
+  net::HttpCache* main_cache = new net::HttpCache(params, main_backend);
   main_context_->set_http_transaction_factory(main_cache);
 
   // Cookies

@@ -70,7 +70,6 @@
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
@@ -1494,10 +1493,8 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       context, &system_params);
 
-  globals->system_http_network_session.reset(
-      new net::HttpNetworkSession(system_params));
   globals->system_http_transaction_factory.reset(
-      new net::HttpNetworkLayer(globals->system_http_network_session.get()));
+      new net::HttpNetworkLayer(new net::HttpNetworkSession(system_params)));
   context->set_http_transaction_factory(
       globals->system_http_transaction_factory.get());
 
@@ -1547,16 +1544,15 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
   tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::ConstructProxyScriptFetcherContext2"));
-  globals->proxy_script_fetcher_http_network_session.reset(
+  scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile3(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::ConstructProxyScriptFetcherContext3"));
-  globals->proxy_script_fetcher_http_transaction_factory.reset(
-      new net::HttpNetworkLayer(
-          globals->proxy_script_fetcher_http_network_session.get()));
+  globals->proxy_script_fetcher_http_transaction_factory
+      .reset(new net::HttpNetworkLayer(network_session.get()));
   context->set_http_transaction_factory(
       globals->proxy_script_fetcher_http_transaction_factory.get());
 

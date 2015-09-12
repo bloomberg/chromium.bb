@@ -57,7 +57,8 @@ class TransportSecurityState;
 
 // This class holds session objects used by HttpNetworkTransaction objects.
 class NET_EXPORT HttpNetworkSession
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : public base::RefCounted<HttpNetworkSession>,
+      NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   struct NET_EXPORT Params {
     Params();
@@ -139,7 +140,6 @@ class NET_EXPORT HttpNetworkSession
   };
 
   explicit HttpNetworkSession(const Params& params);
-  ~HttpNetworkSession();
 
   HttpAuthCache* http_auth_cache() { return &http_auth_cache_; }
   SSLClientAuthCache* ssl_client_auth_cache() {
@@ -212,7 +212,10 @@ class NET_EXPORT HttpNetworkSession
   bool HasSpdyExclusion(HostPortPair host_port_pair) const;
 
  private:
+  friend class base::RefCounted<HttpNetworkSession>;
   friend class HttpNetworkSessionPeer;
+
+  ~HttpNetworkSession();
 
   ClientSocketPoolManager* GetSocketPoolManager(SocketPoolType pool_type);
 

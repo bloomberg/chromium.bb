@@ -22,11 +22,11 @@ namespace net {
 HttpNetworkLayer::HttpNetworkLayer(HttpNetworkSession* session)
     : session_(session),
       suspended_(false) {
-  DCHECK(session_);
+  DCHECK(session_.get());
 #if defined(OS_WIN)
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+ base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+ if (power_monitor)
+   power_monitor->AddObserver(this);
 #endif
 }
 
@@ -36,6 +36,14 @@ HttpNetworkLayer::~HttpNetworkLayer() {
   if (power_monitor)
     power_monitor->RemoveObserver(this);
 #endif
+}
+
+// static
+HttpTransactionFactory* HttpNetworkLayer::CreateFactory(
+    HttpNetworkSession* session) {
+  DCHECK(session);
+
+  return new HttpNetworkLayer(session);
 }
 
 int HttpNetworkLayer::CreateTransaction(RequestPriority priority,
@@ -51,13 +59,13 @@ HttpCache* HttpNetworkLayer::GetCache() {
   return NULL;
 }
 
-HttpNetworkSession* HttpNetworkLayer::GetSession() {
-  return session_;
-}
+HttpNetworkSession* HttpNetworkLayer::GetSession() { return session_.get(); }
 
 void HttpNetworkLayer::OnSuspend() {
   suspended_ = true;
-  session_->CloseIdleConnections();
+
+  if (session_.get())
+    session_->CloseIdleConnections();
 }
 
 void HttpNetworkLayer::OnResume() {

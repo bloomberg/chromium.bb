@@ -32,7 +32,6 @@ class DomainReliabilityMonitor;
 namespace net {
 class CookieCryptoDelegate;
 class FtpTransactionFactory;
-class HttpNetworkSession;
 class HttpServerProperties;
 class HttpServerPropertiesManager;
 class HttpTransactionFactory;
@@ -216,7 +215,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_refptr<JsonPrefStore> network_json_store_;
 
-  mutable scoped_ptr<net::HttpNetworkSession> http_network_session_;
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
 

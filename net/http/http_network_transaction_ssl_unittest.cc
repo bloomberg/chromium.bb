@@ -127,7 +127,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   StaticSocketDataProvider data3(NULL, 0, NULL, 0);
   mock_socket_factory_.AddSocketDataProvider(&data3);
 
-  scoped_ptr<HttpNetworkSession> session(
+  scoped_refptr<HttpNetworkSession> session(
       new HttpNetworkSession(session_params_));
   scoped_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));

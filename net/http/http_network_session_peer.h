@@ -18,8 +18,8 @@ class ProxyService;
 
 class NET_EXPORT_PRIVATE HttpNetworkSessionPeer {
  public:
-  // |session| should outlive the HttpNetworkSessionPeer.
-  explicit HttpNetworkSessionPeer(HttpNetworkSession* session);
+  explicit HttpNetworkSessionPeer(
+      const scoped_refptr<HttpNetworkSession>& session);
   ~HttpNetworkSessionPeer();
 
   void SetClientSocketPoolManager(
@@ -32,7 +32,7 @@ class NET_EXPORT_PRIVATE HttpNetworkSessionPeer {
       scoped_ptr<HttpStreamFactory> http_stream_factory_for_websocket);
 
  private:
-  HttpNetworkSession* const session_;
+  const scoped_refptr<HttpNetworkSession> session_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkSessionPeer);
 };

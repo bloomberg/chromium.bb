@@ -89,7 +89,7 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   net::CompletionCallback proxy_resolve_callback_;
   net::CompletionCallback connect_callback_;
 
-  scoped_ptr<net::HttpNetworkSession> network_session_;
+  scoped_refptr<net::HttpNetworkSession> network_session_;
 
   // The transport socket.
   scoped_ptr<net::ClientSocketHandle> transport_;

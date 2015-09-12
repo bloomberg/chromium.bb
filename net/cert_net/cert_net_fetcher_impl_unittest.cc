@@ -48,11 +48,10 @@ class RequestContext : public URLRequestContext {
     params.proxy_service = proxy_service();
     params.ssl_config_service = ssl_config_service();
     params.http_server_properties = http_server_properties();
-    storage_.set_http_network_session(
-        make_scoped_ptr(new HttpNetworkSession(params)));
+    scoped_refptr<HttpNetworkSession> network_session(
+        new HttpNetworkSession(params));
     storage_.set_http_transaction_factory(new HttpCache(
-        storage_.http_network_session(), HttpCache::DefaultBackend::InMemory(0),
-        false /* set_up_quic_server_info */));
+        network_session.get(), HttpCache::DefaultBackend::InMemory(0)));
     URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl();
     storage_.set_job_factory(job_factory);
   }

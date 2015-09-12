@@ -249,9 +249,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
 
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
-  http_network_session_ = CreateHttpNetworkSession(*profile_params);
-  main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
-                                             main_backend);
+  main_http_factory_ = CreateMainHttpFactory(profile_params, main_backend);
 
   main_context->set_http_transaction_factory(main_http_factory_.get());
 #if !defined(DISABLE_FTP_SUPPORT)
@@ -350,8 +348,10 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   // Use a separate in-memory cache for the app.
   net::HttpCache::BackendFactory* app_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
+  net::HttpNetworkSession* main_network_session =
+      main_http_factory_->GetSession();
   scoped_ptr<net::HttpCache> app_http_cache =
-      CreateHttpFactory(http_network_session_.get(), app_backend);
+      CreateHttpFactory(main_network_session, app_backend);
 
   context->SetHttpTransactionFactory(app_http_cache.Pass());
 

@@ -90,8 +90,7 @@ class SpdyHttpStreamTest : public testing::Test,
         new SequencedSocketData(reads, reads_count, writes, writes_count));
     session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    session_ =
-        CreateInsecureSpdySession(http_session_.get(), key, BoundNetLog());
+    session_ = CreateInsecureSpdySession(http_session_, key, BoundNetLog());
   }
 
   void TestSendCredentials(
@@ -103,7 +102,7 @@ class SpdyHttpStreamTest : public testing::Test,
   TestNetLog net_log_;
   SpdySessionDependencies session_deps_;
   scoped_ptr<SequencedSocketData> sequenced_data_;
-  scoped_ptr<HttpNetworkSession> http_session_;
+  scoped_refptr<HttpNetworkSession> http_session_;
   base::WeakPtr<SpdySession> session_;
 
  private:

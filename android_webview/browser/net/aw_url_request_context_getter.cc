@@ -182,10 +182,11 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
     const base::FilePath& cache_path, net::CookieStore* cookie_store,
     scoped_ptr<net::ProxyConfigService> config_service)
     : cache_path_(cache_path),
-      net_log_(new net::NetLog()),
-      proxy_config_service_(config_service.Pass()),
       cookie_store_(cookie_store),
-      http_user_agent_settings_(new AwHttpUserAgentSettings()) {
+      net_log_(new net::NetLog()) {
+  proxy_config_service_ = config_service.Pass();
+  http_user_agent_settings_.reset(
+      new AwHttpUserAgentSettings());
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -230,19 +231,17 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   PopulateNetworkSessionParams(url_request_context_.get(),
                                &network_session_params);
 
-  http_network_session_.reset(
-      new net::HttpNetworkSession(network_session_params));
-  main_http_factory_.reset(new net::HttpCache(
-      http_network_session_.get(),
+  net::HttpCache* main_cache = new net::HttpCache(
+      network_session_params,
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
           net::CACHE_BACKEND_SIMPLE,
           cache_path_,
           20 * 1024 * 1024,  // 20M
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)),
-      true /* set_up_quic_server_info */));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
 
-  url_request_context_->set_http_transaction_factory(main_http_factory_.get());
+  main_http_factory_.reset(main_cache);
+  url_request_context_->set_http_transaction_factory(main_cache);
 
   job_factory_ = CreateJobFactory(&protocol_handlers_,
                                   request_interceptors_.Pass());
