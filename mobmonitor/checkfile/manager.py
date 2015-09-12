@@ -387,16 +387,19 @@ class CheckFileManager(object):
 
     return self.service_states.get(service, SERVICE_STATUS(service, False, []))
 
-  def ActionInfo(self, service, action):
+  def ActionInfo(self, service, healthcheck, action):
     """Describes a currently valid action for the given service and healthcheck.
 
     An action is valid if the following hold:
       The |service| is recognized and is in an unhealthy or quasi-healthy state.
+      The |healthcheck| is recognized and is in an unhealthy or quasi-healthy
+        state and it belongs to |service|.
       The |action| is one specified as a suitable repair action by the
         Diagnose method of some non-healthy healthcheck of |service|.
 
     Args:
       service: A string. The name of a service being monitored.
+      healthcheck: A string. The name of a healthcheck belonging to |service|.
       action: A string. The name of an action returned by some healthcheck's
         Diagnose method.
 
@@ -415,18 +418,20 @@ class CheckFileManager(object):
     elif isServiceHealthy(status):
       return ACTION_INFO(action, 'Service is healthy.', [], {})
 
-    def FindAction():
-      for hc in status.healthchecks:
-        if isHealthcheckHealthy(hc):
-          continue
-        for a in hc.actions:
-          if a.__name__ == action:
-            return a
-      return None
+    hc = [x for x in status.healthchecks if x.name == healthcheck]
+    if not hc:
+      return ACTION_INFO(action, 'Healthcheck not recognized.', [], {})
+    hc = hc[0]
+    if isHealthcheckHealthy(hc):
+      return ACTION_INFO(action, 'Healthcheck is healthy.', [], {})
 
-    func = FindAction()
+    func = None
+    for a in hc.actions:
+      if a.__name__ == action:
+        func = a
+        break
 
-    if not func:
+    if func is None:
       return ACTION_INFO(action, 'Action not recognized.', [], {})
 
     # Collect information on the repair action.
@@ -445,11 +450,12 @@ class CheckFileManager(object):
 
     return ACTION_INFO(action, info, args, kwargs)
 
-  def RepairService(self, service, action, args, kwargs):
+  def RepairService(self, service, healthcheck, action, args, kwargs):
     """Execute the repair action on the specified service.
 
     Args:
       service: The name of the service to be repaired.
+      healthcheck: The particular healthcheck we are repairing.
       action: The name of the action to execute.
       args: A list of positional arguments for the given repair action.
       kwargs: A dictionary of keyword arguments for the given repair action.
@@ -464,14 +470,18 @@ class CheckFileManager(object):
     elif isServiceHealthy(status):
       return self.GetStatus(service)
 
-    # Check that at least one unhealthy/quasi-healthy check specifies this
-    # repair action. Actions are assumed to be service-centric at this point.
+    # No repair occurs if the healthcheck is not specifed or perfectly healthy.
+    hc = [x for x in status.healthchecks if x.name == healthcheck]
+    if not hc or isHealthcheckHealthy(hc[0]):
+      return SERVICE_STATUS(healthcheck, False, [])
+    hc = hc[0]
+
+    # Get the repair action from the healthcheck.
     repair_func = None
-    for hc in status.healthchecks:
-      for action_func in hc.actions:
-        if action == action_func.__name__:
-          repair_func = action_func
-          break
+    for a in hc.actions:
+      if a.__name__ == action:
+        repair_func = a
+        break
 
     # TODO (msartori): Implement crbug.com/503373
     if repair_func is not None:

@@ -13,20 +13,26 @@ function rpcGetStatus(service, callback) {
   $.getJSON('/GetStatus', {service: service}, callback);
 }
 
-function rpcActionInfo(service, action, callback) {
+function rpcActionInfo(service, healthcheck, action, callback) {
   var data = {
     service: service,
+    healthcheck: healthcheck,
     action: action
   };
 
   $.getJSON('/ActionInfo', data, callback);
 }
 
-function rpcRepairService(service, action, args, kwargs, callback) {
+function rpcRepairService(service, healthcheck, action,
+                          args, kwargs, callback) {
 
   if (isEmpty(service))
     throw new InvalidRpcArgumentError(
         'Must specify service in RepairService RPC');
+
+  if (isEmpty(healthcheck))
+    throw new InvalidRpcArgumentError(
+        'Must specify healthcheck in RepairService RPC');
 
   if (isEmpty(action))
     throw new InvalidRpcArgumentError(
@@ -34,6 +40,7 @@ function rpcRepairService(service, action, args, kwargs, callback) {
 
   var data = {
     service: service,
+    healthcheck: healthcheck,
     action: action,
     args: JSON.stringify(args),
     kwargs: JSON.stringify(kwargs)

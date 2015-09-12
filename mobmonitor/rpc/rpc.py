@@ -105,7 +105,7 @@ class RpcExecutor(object):
 
     return self.Execute('GetStatus', service=service)
 
-  def ActionInfo(self, service=None, action=None):
+  def ActionInfo(self, service=None, healthcheck=None, action=None):
     """Collect argument and usage information for |action|.
 
     See checkfile.manager.ActionInfo for more documentation on the
@@ -113,7 +113,8 @@ class RpcExecutor(object):
 
     Args:
       service: A string. The name of a service being monitored.
-      action: A string. The name of an action returned by some healthcheck's
+      healthcheck: A string. The name of a healthcheck belonging to |service|.
+      action: A string. The name of an action returned by |healthcheck|'s
         Diagnose method.
 
     Returns:
@@ -123,18 +124,22 @@ class RpcExecutor(object):
         args: A list of the positional arguments for |action|.
         kwargs: A dictionary of default arguments for |action|.
     """
-    if service is None or action is None:
-      raise RpcError('ActionInfo requires both the service'
-                     ' and action to be provided.'
-                     ' Given: service=%s action=%s' % (service, action))
+    if any([x is None for x in [service, healthcheck, action]]):
+      raise RpcError('ActionInfo requires the service, the healthcheck'
+                     ' and the action to be provided.'
+                     ' Given: service=%s healthcheck=%s action=%s' % (
+                         service, healthcheck, action))
 
-    return self.Execute('ActionInfo', service=service, action=action)
+    return self.Execute('ActionInfo', service=service, healthcheck=healthcheck,
+                        action=action)
 
-  def RepairService(self, service=None, action=None, args=None, kwargs=None):
+  def RepairService(self, service=None, healthcheck=None, action=None,
+                    args=None, kwargs=None):
     """Apply the specified action to the specified service.
 
     Args:
       service: A string. The service to repair.
+      healthcheck: A string. The healthcheck of |service| that we are fixing.
       action: A string. The action to take.
       args: The positional argument inputs to the repair action.
       kwargs: The keyword argument inputs to the repair action.
@@ -142,13 +147,15 @@ class RpcExecutor(object):
     Returns:
       The same output of running get_status(service=service).
     """
-    if service is None or action is None:
-      raise RpcError('repair_service requires both the service'
-                     ' and action to be provided.'
-                     ' Given: service="%s" action="%s"' % (service, action))
+    if any([x is None for x in [service, healthcheck, action]]):
+      raise RpcError('RepairService requires the service, the healthcheck'
+                     ' and the action to be provided.'
+                     ' Given: service=%s healthcheck=%s action=%s' % (
+                         service, healthcheck, action))
 
     args = [] if args is None else args
     kwargs = {} if kwargs is None else kwargs
 
-    return self.Execute('RepairService', service=service, action=action,
-                        args=args, kwargs=kwargs)
+    return self.Execute('RepairService', service=service,
+                        healthcheck=healthcheck, action=action, args=args,
+                        kwargs=kwargs)

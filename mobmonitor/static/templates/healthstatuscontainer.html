@@ -30,7 +30,7 @@
             <td class="bold healthcheck-table-column2">Recommended Action(s)</td>
           </tr>
           {{#each errors}}
-            <tr>
+            <tr class="healthcheck-info" hcname="{{name}}">
               <td>{{description}}</td>
               <td>
                 <ul>
@@ -58,7 +58,7 @@
             <td class="bold healthcheck-table-column2">Recommended Action(s)</td>
           </tr>
           {{#each warnings}}
-            <tr>
+            <tr class="healthcheck-info" hcname="{{name}}">
               <td>{{description}}</td>
               <td>
                 <ul>

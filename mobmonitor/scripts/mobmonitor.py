@@ -75,26 +75,28 @@ class MobMonitorRoot(object):
     return json.dumps(result)
 
   @cherrypy.expose
-  def ActionInfo(self, service, action):
+  def ActionInfo(self, service, healthcheck, action):
     """Return usage and argument information for |action|.
 
     Args:
       service: A string. The name of a service being monitored.
+      healthcheck: A string. The name of the healthcheck the action belongs to.
       action: A string. The name of an action specified by some healthcheck's
         Diagnose method.
 
     Returns:
       TBD
     """
-    result = self.checkfile_manager.ActionInfo(service, action)
+    result = self.checkfile_manager.ActionInfo(service, healthcheck, action)
     return json.dumps(manager.MapActionInfoToDict(result))
 
   @cherrypy.expose
-  def RepairService(self, service, action, args, kwargs):
+  def RepairService(self, service, healthcheck, action, args, kwargs):
     """Execute the repair action on the specified service.
 
     Args:
       service: The service that the specified action will be applied to.
+      healthcheck: The particular healthcheck we are repairing.
       action: The action to be applied.
       args: A list of the positional arguments for the given repair action.
       kwargs: A dictionary of keyword arguments for the given repair action.
@@ -105,7 +107,8 @@ class MobMonitorRoot(object):
     args = json.loads(args.replace('\'', '"'))
     kwargs = json.loads(kwargs.replace('\'', '"'))
 
-    status = self.checkfile_manager.RepairService(service, action, args, kwargs)
+    status = self.checkfile_manager.RepairService(service, healthcheck, action,
+                                                  args, kwargs)
     return json.dumps(manager.MapServiceStatusToDict(status))
 
 

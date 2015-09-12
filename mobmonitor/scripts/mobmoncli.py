@@ -56,12 +56,13 @@ class MobMonCli(object):
     self.host = host
     self.port = remote_access.NormalizePort(port)
 
-  def ExecuteRequest(self, request, service, action, inputs):
+  def ExecuteRequest(self, request, service, healthcheck, action, inputs):
     """Execute the request if an appropriate RPC function is defined.
 
     Args:
       request: The name of the RPC.
       service: The name of the service involved in the RPC.
+      healthcheck: The name of the healthcheck involved in the RPC.
       action: The action to be performed.
       inputs: A string. The inputs of the specified repair action.
     """
@@ -79,17 +80,20 @@ class MobMonCli(object):
       return rpcexec.GetStatus(service=service)
 
     if 'ActionInfo' == request:
-      return rpcexec.ActionInfo(service=service, action=action)
+      return rpcexec.ActionInfo(service=service, healthcheck=healthcheck,
+                                action=action)
 
     if 'RepairService' == request:
-      return rpcexec.RepairService(service=service, action=action, args=args,
-                                   kwargs=kwargs)
+      return rpcexec.RepairService(service=service, healthcheck=healthcheck,
+                                   action=action, args=args, kwargs=kwargs)
 
 
 def ParseArguments(argv):
   parser = commandline.ArgumentParser()
   parser.add_argument('request', choices=rpc.RPC_LIST)
   parser.add_argument('-s', '--service', help='The service to act upon.')
+  parser.add_argument('-c', '--healthcheck',
+                      help='The healthcheck to act upon.')
   parser.add_argument('-a', '--action', help='The action to execute.')
   parser.add_argument('--host', default='localhost',
                       help='The hostname of the Mob* Monitor.')
@@ -115,7 +119,8 @@ def main(argv):
 
   cli = MobMonCli(options.host, options.port)
   result = cli.ExecuteRequest(options.request, options.service,
-                              options.action, options.inputs)
+                              options.healthcheck, options.action,
+                              options.inputs)
 
   print(result)
 

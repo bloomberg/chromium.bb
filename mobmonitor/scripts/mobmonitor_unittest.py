@@ -38,11 +38,11 @@ class MockCheckFileManager(object):
 
     return self.service_statuses[0]
 
-  def ActionInfo(self, _service, _action):
+  def ActionInfo(self, _service, _healthcheck, _action):
     """Mock ActionInfo response."""
     return self.action_info
 
-  def RepairService(self, _service, _action, _args, _kwargs):
+  def RepairService(self, _service, _healthcheck, _action, _args, _kwargs):
     """Mock RepairService response."""
     return self.service_statuses[0]
 
@@ -93,7 +93,9 @@ class MobMonitorRootTest(cros_test_lib.MockTempDirTestCase):
 
     expect = {'action': 'DummyAction', 'info': '', 'args': ['x'], 'kwargs': {}}
     self.assertEquals(expect,
-                      json.loads(root.ActionInfo('service2', 'DummyAction')))
+                      json.loads(root.ActionInfo('service2',
+                                                 'dummy_healthcheck',
+                                                 'DummyAction')))
 
   def testRepairService(self):
     """Test the RepairService RPC."""
@@ -107,6 +109,7 @@ class MobMonitorRootTest(cros_test_lib.MockTempDirTestCase):
     string_kwargs = '{"a": 1}'
     self.assertEquals(expect,
                       json.loads(root.RepairService('dummy_service',
+                                                    'dummy_healthcheck',
                                                     'dummy_action',
                                                     string_args,
                                                     string_kwargs)))

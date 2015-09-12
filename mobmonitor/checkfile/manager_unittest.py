@@ -741,6 +741,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     cfm.service_states[TEST_SERVICE_NAME] = healthy_status
 
     self.assertEquals(healthy_status, cfm.RepairService(TEST_SERVICE_NAME,
+                                                        'HealthcheckName',
                                                         'RepairFuncName',
                                                         [], {}))
 
@@ -751,7 +752,8 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertFalse(TEST_SERVICE_NAME in cfm.service_states)
 
     expected = manager.SERVICE_STATUS(TEST_SERVICE_NAME, False, [])
-    result = cfm.RepairService(TEST_SERVICE_NAME, 'DummyAction', [], {})
+    result = cfm.RepairService(TEST_SERVICE_NAME, 'DummyHealthcheck',
+                               'DummyAction', [], {})
     self.assertEquals(expected, result)
 
   def testRepairServiceInvalidAction(self):
@@ -772,7 +774,8 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertFalse(status.health)
     self.assertEquals(1, len(status.healthchecks))
 
-    status = cfm.RepairService(TEST_SERVICE_NAME, 'Blah', [], {})
+    status = cfm.RepairService(TEST_SERVICE_NAME, hcobj.__class__.__name__,
+                               'Blah', [], {})
     self.assertFalse(status.health)
     self.assertEquals(1, len(status.healthchecks))
 
@@ -794,7 +797,8 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertFalse(status.health)
     self.assertEquals(1, len(status.healthchecks))
 
-    status = cfm.RepairService(TEST_SERVICE_NAME, 'Repair', [1, 2, 3], {})
+    status = cfm.RepairService(TEST_SERVICE_NAME, hcobj.__class__.__name__,
+                               'Repair', [1, 2, 3], {})
     self.assertFalse(status.health)
     self.assertEquals(1, len(status.healthchecks))
 
@@ -816,7 +820,9 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertFalse(status.health)
     self.assertEquals(1, len(status.healthchecks))
 
-    status = cfm.RepairService(TEST_SERVICE_NAME, hcobj.Repair.__name__,
+    status = cfm.RepairService(TEST_SERVICE_NAME,
+                               hcobj.__class__.__name__,
+                               hcobj.Repair.__name__,
                                [], {})
     self.assertTrue(status.health)
     self.assertEquals(0, len(status.healthchecks))
@@ -829,7 +835,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
 
     expect = manager.ACTION_INFO('test', 'Service not recognized.',
                                  [], {})
-    result = cfm.ActionInfo(TEST_SERVICE_NAME, 'test')
+    result = cfm.ActionInfo(TEST_SERVICE_NAME, 'test', 'test')
     self.assertEquals(expect, result)
 
   def testActionInfoServiceHealthy(self):
@@ -841,7 +847,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
 
     expect = manager.ACTION_INFO('test', 'Service is healthy.',
                                  [], {})
-    result = cfm.ActionInfo(TEST_SERVICE_NAME, 'test')
+    result = cfm.ActionInfo(TEST_SERVICE_NAME, 'test', 'test')
     self.assertEquals(expect, result)
 
   def testActionInfoActionNonExistent(self):
@@ -859,7 +865,8 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     cfm.service_states[TEST_SERVICE_NAME] = unhealthy_status
 
     expect = manager.ACTION_INFO('test', 'Action not recognized.', [], {})
-    result = cfm.ActionInfo(TEST_SERVICE_NAME, 'test')
+    result = cfm.ActionInfo(TEST_SERVICE_NAME, hcobj.__class__.__name__,
+                            'test')
     self.assertEquals(expect, result)
 
   def testActionInfo(self):
@@ -867,38 +874,41 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
 
     hcobj = TestHealthCheckMultipleActions()
+    hcname = hcobj.__class__.__name__
     actions = [hcobj.NoParams, hcobj.PositionalParams, hcobj.DefaultParams,
                hcobj.MixedParams]
 
-    cfm.service_checks[TEST_SERVICE_NAME] = {
-        hcobj.__class__.__name__: (TEST_MTIME, hcobj)}
+    cfm.service_checks[TEST_SERVICE_NAME] = {hcname: (TEST_MTIME, hcobj)}
 
     unhealthy_status = manager.SERVICE_STATUS(
         TEST_SERVICE_NAME, False,
-        [manager.HEALTHCHECK_STATUS(hcobj.__class__.__name__,
-                                    False, 'Always fails', actions)])
+        [manager.HEALTHCHECK_STATUS(hcname, False, 'Always fails', actions)])
     cfm.service_states[TEST_SERVICE_NAME] = unhealthy_status
 
     # Test ActionInfo when the action has no parameters.
     expect = manager.ACTION_INFO('NoParams', 'NoParams Action.', [], {})
-    self.assertEquals(expect, cfm.ActionInfo(TEST_SERVICE_NAME, 'NoParams'))
+    self.assertEquals(expect,
+                      cfm.ActionInfo(TEST_SERVICE_NAME, hcname, 'NoParams'))
 
     # Test ActionInfo when the action has only positional parameters.
     expect = manager.ACTION_INFO('PositionalParams', 'PositionalParams Action.',
                                  ['x', 'y', 'z'], {})
     self.assertEquals(expect,
-                      cfm.ActionInfo(TEST_SERVICE_NAME, 'PositionalParams'))
+                      cfm.ActionInfo(TEST_SERVICE_NAME,
+                                     hcname, 'PositionalParams'))
 
     # Test ActionInfo when the action has only default parameters.
     expect = manager.ACTION_INFO('DefaultParams', 'DefaultParams Action.',
                                  [], {'x': 1, 'y': 2, 'z': 3})
     self.assertEquals(expect,
-                      cfm.ActionInfo(TEST_SERVICE_NAME, 'DefaultParams'))
+                      cfm.ActionInfo(TEST_SERVICE_NAME,
+                                     hcname, 'DefaultParams'))
 
     # Test ActionInfo when the action has positional and default parameters.
     expect = manager.ACTION_INFO('MixedParams', 'MixedParams Action.',
                                  ['x', 'y'], {'z': 1})
-    self.assertEquals(expect, cfm.ActionInfo(TEST_SERVICE_NAME, 'MixedParams'))
+    self.assertEquals(expect, cfm.ActionInfo(TEST_SERVICE_NAME,
+                                             hcname, 'MixedParams'))
 
 
 @cros_test_lib.NetworkTest()

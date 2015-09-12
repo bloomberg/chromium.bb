@@ -46,14 +46,14 @@ class MobMonCliTest(cros_test_lib.MockTestCase):
   def testBadRequest(self):
     """Test that we error when an unrecognized request is passed."""
     with self.assertRaises(rpc.RpcError):
-      self.cli.ExecuteRequest('InvalidRequest', 'TestService', '', '')
+      self.cli.ExecuteRequest('InvalidRequest', 'TestService', '', '', '')
 
   def testGetServiceList(self):
     """Test that we correctly execute a GetServiceList RPC."""
     with mock.patch('chromite.mobmonitor.rpc.rpc.RpcExecutor') as rpc_executor:
       mock_executor = mock.MagicMock()
       rpc_executor.return_value = mock_executor
-      self.cli.ExecuteRequest('GetServiceList', 'TestService', '', '')
+      self.cli.ExecuteRequest('GetServiceList', 'TestService', '', '', '')
       self.assertTrue(mock_executor.GetServiceList.called)
 
   def testGetStatus(self):
@@ -61,7 +61,7 @@ class MobMonCliTest(cros_test_lib.MockTestCase):
     with mock.patch('chromite.mobmonitor.rpc.rpc.RpcExecutor') as rpc_executor:
       mock_executor = mock.MagicMock()
       rpc_executor.return_value = mock_executor
-      self.cli.ExecuteRequest('GetStatus', 'TestService', '', '')
+      self.cli.ExecuteRequest('GetStatus', 'TestService', '', '', '')
       self.assertTrue(mock_executor.GetStatus.called)
 
   def testActionInfo(self):
@@ -69,7 +69,8 @@ class MobMonCliTest(cros_test_lib.MockTestCase):
     with mock.patch('chromite.mobmonitor.rpc.rpc.RpcExecutor') as rpc_executor:
       mock_executor = mock.MagicMock()
       rpc_executor.return_value = mock_executor
-      self.cli.ExecuteRequest('ActionInfo', 'TestService', 'action', '')
+      self.cli.ExecuteRequest('ActionInfo', 'TestService',
+                              'healthcheck', 'action', '')
       self.assertTrue(mock_executor.ActionInfo.called)
 
   def testRepairService(self):
@@ -77,5 +78,5 @@ class MobMonCliTest(cros_test_lib.MockTestCase):
     with mock.patch('chromite.mobmonitor.rpc.rpc.RpcExecutor') as rpc_executor:
       mock_executor = mock.MagicMock()
       rpc_executor.return_value = mock_executor
-      self.cli.ExecuteRequest('RepairService', 'TestService', '', '')
+      self.cli.ExecuteRequest('RepairService', 'TestService', '', '', '')
       self.assertTrue(mock_executor.RepairService.called)

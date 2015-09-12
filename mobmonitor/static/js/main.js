@@ -26,6 +26,7 @@ $(document).ready(function() {
   $(document).on('click', '.run-repair-action', function() {
     // Retrieve the service and action for this repair button.
     var action = $(this).attr('action');
+    var healthcheck = $(this).closest('.healthcheck-info').attr('hcname');
     var service = $(this).closest('.health-container').attr('id');
     if (service.indexOf(SERVICE_CONTAINER_PREFIX) === 0) {
       service = service.replace(SERVICE_CONTAINER_PREFIX, '');
@@ -40,15 +41,17 @@ $(document).ready(function() {
       $('#healthStatusDisplay').healthDisplay('markStale', response.service);
     }
 
-    rpcActionInfo(service, action, function(response) {
+    rpcActionInfo(service, healthcheck, action, function(response) {
       if (isEmpty(response.args) && isEmpty(response.kwargs)) {
-        rpcRepairService(service, action, [], {}, repairServiceCallback);
+        rpcRepairService(service, healthcheck, action,
+                         [], {}, repairServiceCallback);
         return;
       }
 
       var dialog = new ActionRepairDialog(service, response);
       dialog.submitHandler = function(service, action, args, kwargs) {
-        rpcRepairService(service, action, args, kwargs, repairServiceCallback);
+        rpcRepairService(service, healthcheck, action,
+                         args, kwargs, repairServiceCallback);
       };
       dialog.open();
     });
