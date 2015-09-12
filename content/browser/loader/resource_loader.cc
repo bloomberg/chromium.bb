@@ -71,14 +71,9 @@ void GetSSLStatusForRequest(const GURL& url,
   StoreSignedCertificateTimestamps(ssl_info.signed_certificate_timestamps,
                                    child_id, &signed_certificate_timestamp_ids);
 
-  ssl_status->cert_id = cert_id;
-  ssl_status->cert_status = ssl_info.cert_status;
-  ssl_status->security_bits = ssl_info.security_bits;
-  ssl_status->connection_status = ssl_info.connection_status;
-  ssl_status->signed_certificate_timestamp_ids =
-      signed_certificate_timestamp_ids;
-  ssl_status->security_style =
-      SSLPolicy::GetSecurityStyleForResource(url, *ssl_status);
+  *ssl_status = SSLStatus(SSLPolicy::GetSecurityStyleForResource(
+                              url, cert_id, ssl_info.cert_status),
+                          cert_id, signed_certificate_timestamp_ids, ssl_info);
 }
 
 void PopulateResourceResponse(ResourceRequestInfoImpl* info,

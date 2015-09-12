@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
+#include "net/cert/cert_status_flags.h"
 
 class GURL;
 
@@ -50,7 +51,8 @@ class SSLPolicy {
   // not take into account any of the page- or host-level state such as
   // mixed content or whether the host has run insecure content.
   static SecurityStyle GetSecurityStyleForResource(const GURL& url,
-                                                   const SSLStatus& ssl);
+                                                   int cert_id,
+                                                   net::CertStatus cert_status);
 
  private:
   enum OnCertErrorInternalOptionsMask {

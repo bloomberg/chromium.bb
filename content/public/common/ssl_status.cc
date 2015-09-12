@@ -4,6 +4,8 @@
 
 #include "content/public/common/ssl_status.h"
 
+#include "net/ssl/ssl_info.h"
+
 namespace content {
 
 SSLStatus::SSLStatus()
@@ -14,6 +16,19 @@ SSLStatus::SSLStatus()
       connection_status(0),
       content_status(NORMAL_CONTENT) {
 }
+
+SSLStatus::SSLStatus(SecurityStyle security_style,
+                     int cert_id,
+                     const SignedCertificateTimestampIDStatusList&
+                         signed_certificate_timestamp_ids,
+                     const net::SSLInfo& ssl_info)
+    : security_style(security_style),
+      cert_id(cert_id),
+      cert_status(ssl_info.cert_status),
+      security_bits(ssl_info.security_bits),
+      connection_status(ssl_info.connection_status),
+      content_status(NORMAL_CONTENT),
+      signed_certificate_timestamp_ids(signed_certificate_timestamp_ids) {}
 
 SSLStatus::~SSLStatus() {}
 
