@@ -58,9 +58,9 @@ using base::UserMetricsAction;
 namespace {
 
 // Padding around the "content" of a tab, occupied by the tab border graphics.
-const int kLeftPadding = 22;
+const int kLeftPadding = 20;
 const int kTopPadding = 4;
-const int kRightPadding = 17;
+const int kRightPadding = 20;
 const int kBottomPadding = 2;
 
 // Height of the shadow at the top of the tab image assets.
@@ -73,8 +73,10 @@ const int kPulseDurationMs = 200;
 const int kTouchWidth = 120;
 
 const int kToolbarOverlap = 1;
+const int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
 const int kFaviconTitleSpacing = 4;
 const int kAfterTitleSpacing = 3;
+const int kCloseButtonRightPaddingOverlap = 3;
 const int kStandardTitleWidth = 175;
 
 // Width of the content inside a pinned tab.
@@ -763,7 +765,12 @@ void Tab::Layout() {
 
   lb.Inset(kLeftPadding, kTopPadding, kRightPadding, kBottomPadding);
   showing_icon_ = ShouldShowIcon();
-  favicon_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
+  // See comments in IconCapacity().
+  const int extra_padding =
+      (controller_->ShouldHideCloseButtonForInactiveTabs() ||
+       (IconCapacity() < 3)) ? 0 : kExtraLeftPaddingToBalanceCloseButtonPadding;
+  const int start = lb.x() + extra_padding;
+  favicon_bounds_.SetRect(start, lb.y(), 0, 0);
   if (showing_icon_) {
     favicon_bounds_.set_size(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
     favicon_bounds_.set_y(lb.y() + (lb.height() - gfx::kFaviconSize + 1) / 2);
@@ -784,10 +791,11 @@ void Tab::Layout() {
     const gfx::Size close_button_size(close_button_->GetPreferredSize());
     const int top = lb.y() + (lb.height() - close_button_size.height() + 1) / 2;
     const int left = kAfterTitleSpacing;
-    const int bottom = height() - (close_button_size.height() + top);
-    const int right = kRightPadding;
+    const int close_button_end = lb.right() + kCloseButtonRightPaddingOverlap;
     close_button_->SetPosition(
-        gfx::Point(lb.right() - close_button_size.width() - left, 0));
+        gfx::Point(close_button_end - close_button_size.width() - left, 0));
+    const int bottom = height() - close_button_size.height() - top;
+    const int right = width() - close_button_end;
     close_button_->SetBorder(
         views::Border::CreateEmptyBorder(top, left, bottom, right));
     close_button_->SizeToPreferredSize();
@@ -815,8 +823,9 @@ void Tab::Layout() {
   // Size the title to fill the remaining width and use all available height.
   const bool show_title = ShouldRenderAsNormalTab();
   if (show_title) {
-    int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
-    int title_width = lb.width() - title_left;
+    int title_left = showing_icon_ ?
+        (favicon_bounds_.right() + kFaviconTitleSpacing) : start;
+    int title_width = lb.right() - title_left;
     if (showing_media_indicator_) {
       title_width =
           media_indicator_button_->x() - kAfterTitleSpacing - title_left;
@@ -1411,13 +1420,23 @@ int Tab::IconCapacity() const {
   if (height() < min_size.height())
     return 0;
   const int available_width = std::max(0, width() - min_size.width());
-  const int width_per_icon = gfx::kFaviconSize;
-  const int kPaddingBetweenIcons = 2;
-  if (available_width >= width_per_icon &&
-      available_width < (width_per_icon + kPaddingBetweenIcons)) {
-    return 1;
-  }
-  return available_width / (width_per_icon + kPaddingBetweenIcons);
+  // All icons are the same size as the favicon.
+  const int icon_width = gfx::kFaviconSize;
+  // We need enough space to display the icons flush against each other.
+  const int visible_icons = available_width / icon_width;
+  // When the close button will be visible on inactive tabs, we add additional
+  // padding to the left of the favicon to balance the whitespace inside the
+  // non-hovered close button image; otherwise, the tab contents look too close
+  // to the left edge.  If the tab close button isn't visible on inactive tabs,
+  // we let the tab contents take the full width of the tab, to maximize visible
+  // content on tiny tabs.  We base the determination on the inactive tab close
+  // button state so that when a tab is activated its contents don't suddenly
+  // shift.
+  if (visible_icons < 3)
+    return visible_icons;
+  const int padding = controller_->ShouldHideCloseButtonForInactiveTabs() ?
+      0 : kExtraLeftPaddingToBalanceCloseButtonPadding;
+  return (available_width - padding) / icon_width;
 }
 
 bool Tab::ShouldShowIcon() const {
