@@ -1181,7 +1181,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   {
     host_impl_->active_tree()->PushPageScaleFromMainThread(
         page_scale_factor, min_page_scale, max_page_scale);
-    host_impl_->SetPageScaleOnActiveTree(page_scale_factor);
+    host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
@@ -1209,7 +1209,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   {
     host_impl_->active_tree()->PushPageScaleFromMainThread(
         page_scale_factor, min_page_scale, max_page_scale);
-    host_impl_->SetPageScaleOnActiveTree(page_scale_factor);
+    host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
@@ -1447,7 +1447,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoomWheelBubbleBetweenViewports) {
   float page_scale_factor = 2.f;
   host_impl_->active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, min_page_scale, max_page_scale);
-  host_impl_->SetPageScaleOnActiveTree(page_scale_factor);
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 
   // Scroll by a small amount, there should be no bubbling up to the inner
   // viewport.
@@ -2227,7 +2227,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
 
     // Changing page scale triggers scrollbar animation.
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 4.f);
-    host_impl_->SetPageScaleOnActiveTree(1.1f);
+    host_impl_->active_tree()->SetPageScaleOnActiveTree(1.1f);
     EXPECT_FALSE(did_request_animate_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
@@ -2442,7 +2442,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   // Likewise if set from the main thread.
   host_impl_->ProcessScrollDeltas();
   host_impl_->active_tree()->PushPageScaleFromMainThread(4.f, 0.5f, 4.f);
-  host_impl_->SetPageScaleOnActiveTree(4.f);
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(4.f);
   {
     CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
@@ -4143,7 +4143,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
 
     // Scrolling should be adjusted from viewport space.
     host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 2.f, 2.f);
-    host_impl_->SetPageScaleOnActiveTree(2.f);
+    host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
 
     scroll_delta = gfx::Vector2d(0, -2);
     EXPECT_EQ(InputHandler::SCROLL_STARTED,
@@ -4591,11 +4591,11 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
   EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
   EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
-  host_impl_->SetPageScaleOnActiveTree(2.f * 1.5f);
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f * 1.5f);
   EXPECT_EQ(3.f, scroll_delegate.page_scale_factor());
   EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
   EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
-  host_impl_->SetPageScaleOnActiveTree(2.f);
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
   EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
@@ -8164,7 +8164,7 @@ TEST_F(LayerTreeHostImplTest, WheelScrollWithPageScaleFactorOnInnerLayer) {
   {
     host_impl_->active_tree()->PushPageScaleFromMainThread(
         page_scale_factor, min_page_scale, max_page_scale);
-    host_impl_->SetPageScaleOnActiveTree(page_scale_factor);
+    host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;

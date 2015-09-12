@@ -307,7 +307,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
 
       EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
       EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
-      impl->SetPageScaleOnActiveTree(impl_scale_);
+      impl->active_tree()->SetPageScaleOnActiveTree(impl_scale_);
       EXPECT_EQ(impl_scale_, impl->active_tree()->page_scale_delta());
       EXPECT_EQ(impl_scale_, impl->active_tree()->current_page_scale_factor());
 
@@ -327,7 +327,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
 
       EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
       EXPECT_EQ(impl_scale_, impl->active_tree()->current_page_scale_factor());
-      impl->SetPageScaleOnActiveTree(impl_scale_ * impl_scale_);
+      impl->active_tree()->SetPageScaleOnActiveTree(impl_scale_ * impl_scale_);
       EXPECT_EQ(impl_scale_, impl->active_tree()->page_scale_delta());
       EXPECT_EQ(impl_scale_ * impl_scale_,
                 impl->active_tree()->current_page_scale_factor());
@@ -906,7 +906,7 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
       ASSERT_TRUE(active_root);
       ASSERT_TRUE(active_scroll_layer);
       active_scroll_layer->ScrollBy(impl_thread_scroll_);
-      impl->SetPageScaleOnActiveTree(impl_scale_);
+      impl->active_tree()->SetPageScaleOnActiveTree(impl_scale_);
     }
   }
 

@@ -1500,7 +1500,7 @@ TEST_F(LayerTreeImplTest,
   host_impl().SetDeviceScaleFactor(device_scale_factor);
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, page_scale_factor);
-  host_impl().SetPageScaleOnActiveTree(page_scale_factor);
+  host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
                                                       Layer::INVALID_ID);
@@ -1959,7 +1959,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   host_impl().SetDeviceScaleFactor(device_scale_factor);
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, page_scale_factor);
-  host_impl().SetPageScaleOnActiveTree(page_scale_factor);
+  host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
                                                       Layer::INVALID_ID);

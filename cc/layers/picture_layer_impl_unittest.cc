@@ -265,7 +265,7 @@ class PictureLayerImplTest : public testing::Test {
       float starting_animation_contents_scale,
       bool animating_transform_to_screen) {
     host_impl_.SetDeviceScaleFactor(device_scale_factor);
-    host_impl_.SetPageScaleOnActiveTree(page_scale_factor);
+    host_impl_.active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 
     gfx::Transform scale_transform;
     scale_transform.Scale(ideal_contents_scale, ideal_contents_scale);

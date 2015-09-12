@@ -451,8 +451,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
-  void SetPageScaleOnActiveTree(float page_scale_factor);
-
   const gfx::Transform& DrawTransform() const;
 
   scoped_ptr<ScrollAndScaleSet> ProcessScrollDeltas();

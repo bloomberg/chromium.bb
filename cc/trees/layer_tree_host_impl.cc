@@ -2262,10 +2262,6 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
   SetFullRootLayerDamage();
 }
 
-void LayerTreeHostImpl::SetPageScaleOnActiveTree(float page_scale_factor) {
-  active_tree_->SetPageScaleOnActiveTree(page_scale_factor);
-}
-
 const gfx::Rect LayerTreeHostImpl::ViewportRectForTilePriority() const {
   if (viewport_rect_for_tile_priority_.IsEmpty())
     return DeviceViewport();
