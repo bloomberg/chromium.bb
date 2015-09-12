@@ -22,7 +22,8 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #  - toolchain_os  (What "current_os" should be set to when invoking a
 #                   build using this toolchain.)
 #
-# Optional parameters:
+# Optional parameters that control the tools:
+#
 #  - libs_section_prefix
 #  - libs_section_postfix
 #      The contents of these strings, if specified, will be placed around
@@ -45,12 +46,6 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #      for an executable, rather than using no extension; targets will
 #      still be able to override the extension using the output_extension
 #      variable.
-#  - is_clang
-#      Whether to use clang instead of gcc.
-#  - is_component_build
-#      Whether to forcibly enable or disable component builds for this
-#      toolchain; if not specified, the toolchain will inherit the
-#      default setting.
 #  - rebuild_define
 #      The contents of this string, if specified, will be passed as a #define
 #      to the toolchain. It can be used to force recompiles whenever a
@@ -63,6 +58,18 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #      Location of the strip executable. When specified, strip will be run on
 #      all shared libraries and executables as they are built. The pre-stripped
 #      artifacts will be put in lib.stripped/ and exe.stripped/.
+#
+# Optional build argument contols.
+#
+#  - clear_sanitizers
+#      When set to true, is_asan, is_msan, etc.will all be set to false. Often
+#      secondary toolchains do not want to run with sanitizers.
+#  - is_clang
+#      Whether to use clang instead of gcc.
+#  - is_component_build
+#      Whether to forcibly enable or disable component builds for this
+#      toolchain; if not specified, the toolchain will inherit the
+#      default setting.
 template("gcc_toolchain") {
   toolchain(target_name) {
     assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
@@ -309,16 +316,22 @@ template("gcc_toolchain") {
       target_os = target_os
       target_cpu = target_cpu
 
-      if (defined(invoker.is_clang)) {
-        is_clang = invoker.is_clang
-      }
-      if (defined(invoker.is_component_build)) {
-        is_component_build = invoker.is_component_build
+      forward_variables_from(invoker,
+                             [
+                               "is_clang",
+                               "is_component_build",
+                             ])
+
+      if (defined(invoker.clear_sanitizers) && invoker.clear_sanitizers) {
+        is_asan = false
+        is_cfi = false
+        is_lsan = false
+        is_msan = false
+        is_syzyasan = false
+        is_tsan = false
       }
     }
 
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
+    forward_variables_from(invoker, [ "deps" ])
   }
 }
