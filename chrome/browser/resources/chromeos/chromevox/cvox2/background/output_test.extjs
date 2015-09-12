@@ -144,12 +144,9 @@ TEST_F('OutputE2ETest', 'InLineTextBoxValueGetsIgnored', function() {
       assertEquals('staticText', el.role);
       range = cursors.Range.fromNode(el);
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'OK|', 'spans_': [
+      assertEqualsJSON({string_: 'OK', 'spans_': [
         // Attributes.
-        {value: 'value', start: 0, end: 2},
-
-        // The name is an empty string.
-        {value: 'name', start: 3, end: 3}
+        {value: 'name', start: 0, end: 2}
       ]}, o.speechOutputForTest);
       checkBrailleOutput(
           'OK',
@@ -362,7 +359,7 @@ TEST_F('OutputE2ETest', 'Tree', function() {
     var range = cursors.Range.fromNode(el);
     var o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON(
-        {string_: '|Tree|with 3 items|Tree item|Expanded| 1 of 3 | level 1 |a|',
+        {string_: '|Tree|with 3 items|Tree item|Expanded| 1 of 3 | level 1 |a',
         spans_: [
           // Enter rule.
 
@@ -371,8 +368,7 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           {value: 'state', start: 29, end: 37},
 
           // InLineTextBox.
-          {value: 'value', start: 57, end: 58},
-          {value: 'name', start: 59, end: 59}
+          {value: 'name', start: 57, end: 58}
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
     checkBrailleOutput(
@@ -386,7 +382,7 @@ TEST_F('OutputE2ETest', 'Tree', function() {
     var range = cursors.Range.fromNode(el);
     var o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON(
-        {string_: '|Tree|with 3 items|Tree item| 2 of 3 | level 1 |b|',
+        {string_: '|Tree|with 3 items|Tree item| 2 of 3 | level 1 |b',
         spans_: [
           // Enter rule.
 
@@ -394,8 +390,7 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           {value: 'role','start': 19, end: 28},
 
           // InLineTextBox.
-          {value: 'value', start: 48, end: 49},
-          {value: 'name', start: 50, end: 50}
+          {value: 'name', start: 48, end: 49}
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
     checkBrailleOutput(
@@ -409,7 +404,7 @@ TEST_F('OutputE2ETest', 'Tree', function() {
     var range = cursors.Range.fromNode(el);
     var o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON(
-        {string_: '|Tree|with 3 items|Tree item|Collapsed| 3 of 3 | level 1 |c|',
+        {string_: '|Tree|with 3 items|Tree item|Collapsed| 3 of 3 | level 1 |c',
         spans_: [
           // Enter rule.
 
@@ -418,8 +413,7 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           {value: 'state', start: 29, end: 38},
 
           // InLineTextBox.
-          {value: 'value', start: 58, end: 59},
-          {value: 'name', start: 60, end: 60}
+          {value: 'name', start: 58, end: 59}
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
     checkBrailleOutput(

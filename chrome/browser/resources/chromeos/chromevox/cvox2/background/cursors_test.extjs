@@ -31,6 +31,7 @@ CursorsTest.prototype = {
     window.CHARACTER = cursors.Unit.CHARACTER;
     window.WORD = cursors.Unit.WORD;
     window.LINE = cursors.Unit.LINE;
+    window.DOM_NODE = cursors.Unit.DOM_NODE;
     window.BOUND = cursors.Movement.BOUND;
     window.DIRECTIONAL = cursors.Movement.DIRECTIONAL;
   },
@@ -118,6 +119,11 @@ CursorsTest.prototype = {
 
 simpleDoc: function() {/*!
     <p>start <span>same line</span>
+    <p>end
+  */},
+
+  multiInlineDoc: function() {/*!
+    <p style='max-width: 5px'>start diff line</p>
     <p>end
   */}
 };
@@ -267,3 +273,22 @@ TEST_F('CursorsTest', 'LineRange', function() {
   ], this.RANGE);
 });
       
+TEST_F('CursorsTest', 'DontSplitOnNodeNavigation', function() {
+  this.runWithLoadedTree(this.multiInlineDoc, function(root) {
+    var para = root.firstChild;
+    assertEquals('paragraph', para.role);
+    var cursor = new cursors.Cursor(para, 0);
+    cursor = cursor.move(DOM_NODE, DIRECTIONAL, FORWARD);
+    assertEquals('staticText', cursor.node.role);
+    assertEquals('end', cursor.node.value);
+
+    cursor = cursor.move(DOM_NODE, DIRECTIONAL, BACKWARD);
+    assertEquals('staticText', cursor.node.role);
+    assertEquals('start diff line', cursor.node.value);
+    
+    assertEquals('inlineTextBox', cursor.node.firstChild.role);
+    assertEquals('start ', cursor.node.firstChild.value);
+    assertEquals('diff ', cursor.node.firstChild.nextSibling.value);
+    assertEquals('line', cursor.node.lastChild.value);
+  });
+});

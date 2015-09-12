@@ -34,6 +34,9 @@ cursors.Unit = {
   /** A leaf node. */
   NODE: 'node',
 
+  /** A leaf DOM-node. */
+  DOM_NODE: 'dom_node',
+
   /** Formed by a set of leaf nodes that are inline. */
   LINE: 'line'
 };
@@ -134,7 +137,8 @@ cursors.Cursor.prototype = {
     var newNode = this.node_;
     var newIndex = this.index_;
 
-    if (unit != Unit.NODE && newIndex === cursors.NODE_INDEX)
+    if ((unit != Unit.NODE || unit != Unit.DOM_NODE) &&
+        newIndex === cursors.NODE_INDEX)
       newIndex = 0;
 
     switch (unit) {
@@ -211,13 +215,16 @@ cursors.Cursor.prototype = {
         }
         break;
       case Unit.NODE:
+      case Unit.DOM_NODE:
         switch (movement) {
           case Movement.BOUND:
             newIndex = dir == Dir.FORWARD ? this.getText().length - 1 : 0;
             break;
           case Movement.DIRECTIONAL:
+            var pred = unit == Unit.NODE ?
+                AutomationPredicate.leaf : AutomationPredicate.leafDomNode;
             newNode = AutomationUtil.findNextNode(
-                newNode, dir, AutomationPredicate.leaf) || this.node_;
+                newNode, dir, pred) || this.node_;
             newIndex = cursors.NODE_INDEX;
             break;
         }
@@ -378,6 +385,7 @@ cursors.Range.prototype = {
         newEnd = newStart.move(unit, Movement.BOUND, Dir.FORWARD);
         break;
       case Unit.NODE:
+      case Unit.DOM_NODE:
         newStart = newStart.move(unit, Movement.DIRECTIONAL, dir);
         newEnd = newStart;
         break;

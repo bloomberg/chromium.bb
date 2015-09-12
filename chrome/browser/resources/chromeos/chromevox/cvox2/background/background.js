@@ -276,10 +276,10 @@ Background.prototype = {
         predErrorMsg = 'no_previous_visited_link';
         break;
       case 'nextElement':
-        current = current.move(cursors.Unit.NODE, Dir.FORWARD);
+        current = current.move(cursors.Unit.DOM_NODE, Dir.FORWARD);
         break;
       case 'previousElement':
-        current = current.move(cursors.Unit.NODE, Dir.BACKWARD);
+        current = current.move(cursors.Unit.DOM_NODE, Dir.BACKWARD);
         break;
       case 'goToBeginning':
         var node =

@@ -158,6 +158,17 @@ AutomationPredicate.leafWithText = function(node) {
 };
 
 /**
+ * Matches against non-inline textbox 'nodes' which have an equivalent in the
+ *     DOM.
+ * @param {chrome.automation.AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.leafDomNode = function(node) {
+  return AutomationPredicate.leaf(node) ||
+      node.role == RoleType.staticText;
+};
+
+/**
  * @param {chrome.automation.AutomationNode} first
  * @param {chrome.automation.AutomationNode} second
  * @return {boolean}
