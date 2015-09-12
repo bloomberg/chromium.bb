@@ -49,11 +49,11 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       &contents->GetController());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  notification_source);
-  NavigationEntry* active_entry = originating_web_contents ?
-      originating_web_contents->GetController().GetActiveEntry() :
-      contents->GetController().GetActiveEntry();
-  if (active_entry)
-    initial_page_host_ = active_entry->GetURL().host();
+  NavigationEntry* last_entry = originating_web_contents ?
+      originating_web_contents->GetController().GetLastCommittedEntry() :
+      contents->GetController().GetLastCommittedEntry();
+  if (last_entry)
+    initial_page_host_ = last_entry->GetURL().host();
 }
 
 DownloadRequestLimiter::TabDownloadState::~TabDownloadState() {
