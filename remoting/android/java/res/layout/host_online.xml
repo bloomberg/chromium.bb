@@ -13,6 +13,7 @@
      - Left edge of the image is 16dp from the left edge of the screen
      - Right edge of the text is 16dp from the right edge of the screen
      - The height of the list item is 48dp
+     - Vertical text padding: top = 16dp, bottom = 20dp
 
      TODO(lukasza): Temporary UI spec violation:  The left edge of the text is
      not exactly 72dp from the left edge of the screen.  Instead of 72dp we
@@ -30,5 +31,7 @@
         android:minHeight="48dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="20dp"
         android:textColor="?android:attr/textColorPrimary"
         style="?android:attr/textAppearanceMedium"/>
