@@ -29,6 +29,8 @@ def main_run(args):
         '--verbose',
         '--flakiness-dashboard-server=http://test-results.appspot.com',
         '--json-results-file', tempfile_path,
+        '--blacklist-file',
+        os.path.join(args.paths['checkout'], 'out', 'bad_devices.json'),
     ]
     if filter_tests:
       cmd.extend(['--gtest-filter', ':'.join(filter_tests)])
