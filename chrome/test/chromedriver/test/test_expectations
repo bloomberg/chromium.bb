@@ -221,6 +221,8 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
         'ClickScrollingTest.testShouldBeAbleToClickElementInAFrameThatIsOutOfView',
         'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInAFrameThatIsOutOfView',
         'FormHandlingTest.handleFormWithJavascriptAction',
+        'TypingTest.testShouldReportKeyCodeOfArrowKeysUpDownEvents',
+        'TypingTest.testShouldReportKeyCodeOfArrowKeys',
     ]
 )
 

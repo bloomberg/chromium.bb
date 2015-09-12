@@ -129,8 +129,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'PerfTest.testSessionStartTime',
         'PerfTest.testSessionStopTime',
         'PerfTest.testColdExecuteScript',
-        # https://code.google.com/p/chromedriver/issues/detail?id=459
-        'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         # Android doesn't support multiple sessions on one device.
         'SessionHandlingTest.testGetSessions',
         # Android doesn't use the chrome://print dialog.
