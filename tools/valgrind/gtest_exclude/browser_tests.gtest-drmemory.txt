@@ -63,6 +63,7 @@ ExtensionTabsTest.GetAllWindowsAllTypes
 
 # https://crbug.com/530404
 WakeEventPageTest.ClosedEventPage
+WakeEventPageTest.OpenEventPage
 
 # https://crbug.com/530696
 PolicyTest.ForceSafeSearch
