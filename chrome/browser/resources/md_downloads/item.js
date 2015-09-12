@@ -34,12 +34,6 @@ cr.define('downloads', function() {
         },
       },
 
-      scrollbarWidth: {
-        observer: 'onScrollbarWidthChange_',
-        type: Number,
-        value: 0,
-      },
-
       completelyOnDisk_: {
         computed: 'computeCompletelyOnDisk_(' +
             'data_.state, data_.file_externally_removed)',
@@ -324,20 +318,6 @@ cr.define('downloads', function() {
     /** @private */
     onSaveDangerous_: function() {
       this.actionService_.saveDangerous(this.data_.id);
-    },
-
-    /** @private */
-    onScrollbarWidthChange_: function() {
-      if (!this.$)
-        return;
-
-      var endCap = this.$['end-cap'];
-      endCap.style.flexBasis = '';
-
-      if (this.scrollbarWidth) {
-        var basis = parseInt(getComputedStyle(endCap).flexBasis, 10);
-        endCap.style.flexBasis = basis - this.scrollbarWidth + 'px';
-      }
     },
 
     /** @private */

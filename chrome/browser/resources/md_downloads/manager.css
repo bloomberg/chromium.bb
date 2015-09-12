@@ -18,6 +18,7 @@
 #panel {
   --paper-header-panel-standard-container: {
     display: flex;
+    overflow-y: overlay;
   };
 }
 
