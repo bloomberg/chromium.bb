@@ -135,6 +135,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // CRWWebUIManager object for loading WebUI pages.
   base::scoped_nsobject<CRWWebUIManager> _webUIManager;
+
+  // Whether the pending navigation has been directly cancelled in
+  // |decidePolicyForNavigationAction| or |decidePolicyForNavigationResponse|.
+  // Cancelled navigations should be simply discarded without handling any
+  // specific error.
+  BOOL _pendingNavigationCancelled;
 }
 
 // Response's MIME type of the last known navigation.
@@ -1171,7 +1177,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                                         targetFrame:&targetFrame
                                         isLinkClick:isLinkClick];
 
-  allowLoad = allowLoad && self.webStateImpl->ShouldAllowRequest(request);
+  if (allowLoad) {
+    allowLoad = self.webStateImpl->ShouldAllowRequest(request);
+    _pendingNavigationCancelled = !allowLoad;
+  }
 
   decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
                             : WKNavigationActionPolicyCancel);
@@ -1197,9 +1206,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   if (navigationResponse.isForMainFrame)
     self.documentMIMEType = navigationResponse.response.MIMEType;
 
-  BOOL allowNavigation =
-      navigationResponse.canShowMIMEType &&
-      self.webStateImpl->ShouldAllowResponse(navigationResponse.response);
+  BOOL allowNavigation = navigationResponse.canShowMIMEType;
+  if (allowNavigation) {
+    allowNavigation =
+        self.webStateImpl->ShouldAllowResponse(navigationResponse.response);
+    _pendingNavigationCancelled = !allowNavigation;
+  }
 
   handler(allowNavigation ? WKNavigationResponsePolicyAllow
                           : WKNavigationResponsePolicyCancel);
@@ -1256,6 +1268,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     didFailProvisionalNavigation:(WKNavigation *)navigation
                        withError:(NSError *)error {
   [self discardPendingReferrerString];
+
+  if (_pendingNavigationCancelled) {
+    // Directly cancelled navigations are simply discarded without handling
+    // their potential errors.
+    _pendingNavigationCancelled = NO;
+    return;
+  }
 
   error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
 
