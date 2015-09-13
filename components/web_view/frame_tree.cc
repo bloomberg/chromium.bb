@@ -4,10 +4,8 @@
 
 #include "components/web_view/frame_tree.h"
 
-#include "base/command_line.h"
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
-#include "components/web_view/web_view_switches.h"
 
 namespace web_view {
 
@@ -38,12 +36,6 @@ FrameTree::~FrameTree() {
   // as to see if it is the root).
   delete root_;
   root_ = nullptr;
-}
-
-// static
-bool FrameTree::AlwaysCreateNewFrameTree() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      web_view::switches::kOOPIFAlwaysCreateNewFrameTree);
 }
 
 Frame* FrameTree::CreateSharedFrame(

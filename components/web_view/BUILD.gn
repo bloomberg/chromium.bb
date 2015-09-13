@@ -25,6 +25,8 @@ source_set("lib") {
     "frame_tree_delegate.cc",
     "frame_tree_delegate.h",
     "frame_user_data.h",
+    "frame_utils.cc",
+    "frame_utils.h",
     "pending_web_view_load.cc",
     "pending_web_view_load.h",
     "web_view_application_delegate.cc",

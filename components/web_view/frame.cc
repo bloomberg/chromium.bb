@@ -15,6 +15,7 @@
 #include "components/web_view/frame_tree.h"
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
+#include "components/web_view/frame_utils.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 
 using mojo::View;
@@ -288,8 +289,7 @@ void Frame::OnCanNavigateFrame(uint32_t app_id,
                                FrameTreeClient* frame_tree_client,
                                scoped_ptr<FrameUserData> user_data,
                                mojo::ViewTreeClientPtr view_tree_client) {
-  if (app_id == app_id_ && app_id != mojo::Shell::kInvalidContentHandlerID &&
-      !FrameTree::AlwaysCreateNewFrameTree()) {
+  if (AreAppIdsEqual(app_id, app_id_)) {
     // The app currently rendering the frame will continue rendering it. In this
     // case we do not use the ViewTreeClient (because the app has a View already
     // and ends up reusing it).

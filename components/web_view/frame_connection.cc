@@ -11,6 +11,7 @@
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "components/web_view/frame_tree.h"
+#include "components/web_view/frame_utils.h"
 #include "components/web_view/test_runner/public/interfaces/layout_test_runner.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -32,9 +33,8 @@ void OnGotContentHandlerForFrame(
     const FrameTreeDelegate::CanNavigateFrameCallback& callback,
     scoped_ptr<FrameConnection> connection) {
   mojo::ViewTreeClientPtr view_tree_client;
-  if (existing_content_handler_id != connection->GetContentHandlerID() ||
-      existing_content_handler_id == mojo::Shell::kInvalidContentHandlerID ||
-      FrameTree::AlwaysCreateNewFrameTree()) {
+  if (!AreAppIdsEqual(existing_content_handler_id,
+                      connection->GetContentHandlerID())) {
     view_tree_client = connection->GetViewTreeClient();
   }
   FrameConnection* connection_ptr = connection.get();

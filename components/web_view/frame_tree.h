@@ -40,10 +40,6 @@ class FrameTree {
             const Frame::ClientPropertyMap& client_properties);
   ~FrameTree();
 
-  // Returns true if there should be a distinct renderer per frame. This is
-  // useful for testing.
-  static bool AlwaysCreateNewFrameTree();
-
   const Frame* root() const { return root_; }
   Frame* root() { return root_; }
   uint32_t change_id() const { return change_id_; }
