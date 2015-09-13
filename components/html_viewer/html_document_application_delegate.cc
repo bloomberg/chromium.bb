@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "components/html_viewer/global_state.h"
-#include "components/html_viewer/html_document_oopif.h"
+#include "components/html_viewer/html_document.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -72,8 +72,8 @@ HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
   // Deleting the documents is going to trigger a callback to
   // OnHTMLDocumentDeleted() and remove from |documents_|. Copy the set so we
   // don't have to worry about the set being modified out from under us.
-  std::set<HTMLDocumentOOPIF*> documents2(documents2_);
-  for (HTMLDocumentOOPIF* doc : documents2)
+  std::set<HTMLDocument*> documents2(documents2_);
+  for (HTMLDocument* doc : documents2)
     doc->Destroy();
   DCHECK(documents2_.empty());
 }
@@ -146,7 +146,7 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
 }
 
 void HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2(
-    HTMLDocumentOOPIF* document) {
+    HTMLDocument* document) {
   DCHECK(documents2_.count(document) > 0);
   documents2_.erase(document);
 }
@@ -159,7 +159,7 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
     mojo::URLResponsePtr response) {
   // HTMLDocument is destroyed when the hosting view is destroyed, or
   // explicitly from our destructor.
-  HTMLDocumentOOPIF* document = new HTMLDocumentOOPIF(
+  HTMLDocument* document = new HTMLDocument(
       &app_, connection, response.Pass(), global_state_,
       base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2,
                  base::Unretained(this)),

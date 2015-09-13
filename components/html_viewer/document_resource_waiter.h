@@ -18,21 +18,20 @@ class View;
 
 namespace html_viewer {
 
-class HTMLDocumentOOPIF;
+class HTMLDocument;
 class HTMLFrameTreeManager;
 class GlobalState;
 
 // DocumentResourceWaiter waits for the necessary resources needed to load an
-// HTMLDocument. Once ready it calls to HTMLDocumentOOPIF::Load(). Once
-// ready it is assumed HTMLDocument will call back for the FrameTreeClient and
-// FrameData.
+// HTMLDocument. Once ready it calls to HTMLDocument::Load(). Once ready it is
+// assumed HTMLDocument will call back for the FrameTreeClient and FrameData.
 class DocumentResourceWaiter : public web_view::FrameTreeClient,
                                public HTMLFrameTreeManagerObserver,
                                public mojo::ViewObserver {
  public:
   DocumentResourceWaiter(GlobalState* global_state,
                          mojo::URLResponsePtr response,
-                         HTMLDocumentOOPIF* document);
+                         HTMLDocument* document);
   ~DocumentResourceWaiter() override;
 
   // Releases all the resources that have been accumulated.
@@ -91,7 +90,7 @@ class DocumentResourceWaiter : public web_view::FrameTreeClient,
   void OnHTMLFrameTreeManagerDestroyed() override;
 
   GlobalState* global_state_;
-  HTMLDocumentOOPIF* document_;
+  HTMLDocument* document_;
   mojo::URLResponsePtr response_;
   mojo::View* root_;
   web_view::FrameTreeServerPtr server_;

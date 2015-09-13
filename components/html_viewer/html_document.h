@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_OOPIF_H_
-#define COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_OOPIF_H_
+#ifndef COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_H_
+#define COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_H_
 
 #include <set>
 
@@ -48,7 +48,7 @@ class WebLayerTreeViewImpl;
 // HTMLDocument is deleted in one of two ways:
 // . When the View the HTMLDocument is embedded in is destroyed.
 // . Explicitly by way of Destroy().
-class HTMLDocumentOOPIF
+class HTMLDocument
     : public mojo::ViewTreeDelegate,
       public HTMLFrameDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
@@ -57,18 +57,18 @@ class HTMLDocumentOOPIF
       public mojo::InterfaceFactory<devtools_service::DevToolsAgent>,
       public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
-  using DeleteCallback = base::Callback<void(HTMLDocumentOOPIF*)>;
+  using DeleteCallback = base::Callback<void(HTMLDocument*)>;
 
   // Load a new HTMLDocument with |response|.
   // |html_document_app| is the application this app was created in, and
   // |connection| the specific connection triggering this new instance.
   // |setup| is used to obtain init type state (such as resources).
-  HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
-                    mojo::ApplicationConnection* connection,
-                    mojo::URLResponsePtr response,
-                    GlobalState* setup,
-                    const DeleteCallback& delete_callback,
-                    HTMLFactory* factory);
+  HTMLDocument(mojo::ApplicationImpl* html_document_app,
+               mojo::ApplicationConnection* connection,
+               mojo::URLResponsePtr response,
+               GlobalState* setup,
+               const DeleteCallback& delete_callback,
+               HTMLFactory* factory);
 
   // Deletes this object.
   void Destroy();
@@ -100,7 +100,7 @@ class HTMLDocumentOOPIF
     scoped_ptr<ViewTreeDelegateImpl> view_tree_delegate_impl;
   };
 
-  ~HTMLDocumentOOPIF() override;
+  ~HTMLDocument() override;
 
   void Load();
 
@@ -171,9 +171,9 @@ class HTMLDocumentOOPIF
   mojo::InterfaceRequest<devtools_service::DevToolsAgent>
       devtools_agent_request_;
 
-  DISALLOW_COPY_AND_ASSIGN(HTMLDocumentOOPIF);
+  DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };
 
 }  // namespace html_viewer
 
-#endif  // COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_OOPIF_H_
+#endif  // COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_H_

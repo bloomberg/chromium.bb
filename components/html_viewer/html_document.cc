@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/html_viewer/html_document_oopif.h"
+#include "components/html_viewer/html_document.h"
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -46,7 +46,7 @@ bool IsTestInterfaceEnabled() {
 }  // namespace
 
 // A ViewTreeDelegate implementation that delegates to a (swappable) delegate.
-// This is used when one HTMLDocumentOOPIF takes over for another delegate
+// This is used when one HTMLDocument takes over for another delegate
 // (OnSwap()).
 class ViewTreeDelegateImpl : public mojo::ViewTreeDelegate {
  public:
@@ -69,20 +69,19 @@ class ViewTreeDelegateImpl : public mojo::ViewTreeDelegate {
   DISALLOW_COPY_AND_ASSIGN(ViewTreeDelegateImpl);
 };
 
-HTMLDocumentOOPIF::BeforeLoadCache::BeforeLoadCache() {
-}
+HTMLDocument::BeforeLoadCache::BeforeLoadCache() {}
 
-HTMLDocumentOOPIF::BeforeLoadCache::~BeforeLoadCache() {
+HTMLDocument::BeforeLoadCache::~BeforeLoadCache() {
   STLDeleteElements(&ax_provider_requests);
   STLDeleteElements(&test_interface_requests);
 }
 
-HTMLDocumentOOPIF::TransferableState::TransferableState()
+HTMLDocument::TransferableState::TransferableState()
     : owns_view_tree_connection(false), root(nullptr) {}
 
-HTMLDocumentOOPIF::TransferableState::~TransferableState() {}
+HTMLDocument::TransferableState::~TransferableState() {}
 
-void HTMLDocumentOOPIF::TransferableState::Move(TransferableState* other) {
+void HTMLDocument::TransferableState::Move(TransferableState* other) {
   owns_view_tree_connection = other->owns_view_tree_connection;
   root = other->root;
   view_tree_delegate_impl = other->view_tree_delegate_impl.Pass();
@@ -91,12 +90,12 @@ void HTMLDocumentOOPIF::TransferableState::Move(TransferableState* other) {
   other->owns_view_tree_connection = false;
 }
 
-HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
-                                     mojo::ApplicationConnection* connection,
-                                     mojo::URLResponsePtr response,
-                                     GlobalState* global_state,
-                                     const DeleteCallback& delete_callback,
-                                     HTMLFactory* factory)
+HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
+                           mojo::ApplicationConnection* connection,
+                           mojo::URLResponsePtr response,
+                           GlobalState* global_state,
+                           const DeleteCallback& delete_callback,
+                           HTMLFactory* factory)
     : app_refcount_(html_document_app->app_lifetime_helper()
                         ->CreateAppRefCount()),
       html_document_app_(html_document_app),
@@ -116,7 +115,7 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
       new DocumentResourceWaiter(global_state_, response.Pass(), this));
 }
 
-void HTMLDocumentOOPIF::Destroy() {
+void HTMLDocument::Destroy() {
   if (resource_waiter_) {
     mojo::View* root = resource_waiter_->root();
     if (root) {
@@ -140,13 +139,13 @@ void HTMLDocumentOOPIF::Destroy() {
   }
 }
 
-HTMLDocumentOOPIF::~HTMLDocumentOOPIF() {
+HTMLDocument::~HTMLDocument() {
   delete_callback_.Run(this);
 
   STLDeleteElements(&ax_providers_);
 }
 
-void HTMLDocumentOOPIF::Load() {
+void HTMLDocument::Load() {
   DCHECK(resource_waiter_ && resource_waiter_->is_ready());
 
   // Note: |view| is null if we're taking over for an existing frame.
@@ -189,23 +188,23 @@ void HTMLDocumentOOPIF::Load() {
   frame_->web_frame()->toWebLocalFrame()->loadRequest(web_request);
 }
 
-HTMLDocumentOOPIF::BeforeLoadCache* HTMLDocumentOOPIF::GetBeforeLoadCache() {
+HTMLDocument::BeforeLoadCache* HTMLDocument::GetBeforeLoadCache() {
   CHECK(!did_finish_local_frame_load_);
   if (!before_load_cache_.get())
     before_load_cache_.reset(new BeforeLoadCache);
   return before_load_cache_.get();
 }
 
-void HTMLDocumentOOPIF::OnEmbed(View* root) {
+void HTMLDocument::OnEmbed(View* root) {
   transferable_state_.root = root;
   resource_waiter_->SetRoot(root);
 }
 
-void HTMLDocumentOOPIF::OnConnectionLost(mojo::ViewTreeConnection* connection) {
+void HTMLDocument::OnConnectionLost(mojo::ViewTreeConnection* connection) {
   delete this;
 }
 
-void HTMLDocumentOOPIF::OnFrameDidFinishLoad() {
+void HTMLDocument::OnFrameDidFinishLoad() {
   did_finish_local_frame_load_ = true;
   scoped_ptr<BeforeLoadCache> before_load_cache = before_load_cache_.Pass();
   if (!before_load_cache)
@@ -223,22 +222,21 @@ void HTMLDocumentOOPIF::OnFrameDidFinishLoad() {
   }
 }
 
-mojo::ApplicationImpl* HTMLDocumentOOPIF::GetApp() {
+mojo::ApplicationImpl* HTMLDocument::GetApp() {
   return html_document_app_;
 }
 
-HTMLFactory* HTMLDocumentOOPIF::GetHTMLFactory() {
+HTMLFactory* HTMLDocument::GetHTMLFactory() {
   return factory_;
 }
 
-void HTMLDocumentOOPIF::OnFrameSwappedToRemote() {
-  // When the frame becomes remote HTMLDocumentOOPIF is no longer needed.
+void HTMLDocument::OnFrameSwappedToRemote() {
+  // When the frame becomes remote HTMLDocument is no longer needed.
   frame_ = nullptr;
   Destroy();
 }
 
-void HTMLDocumentOOPIF::OnSwap(HTMLFrame* frame,
-                               HTMLFrameDelegate* old_delegate) {
+void HTMLDocument::OnSwap(HTMLFrame* frame, HTMLFrameDelegate* old_delegate) {
   DCHECK(frame->IsLocal());
   DCHECK(frame->view());
   DCHECK(!frame_);
@@ -250,8 +248,7 @@ void HTMLDocumentOOPIF::OnSwap(HTMLFrame* frame,
     transferable_state_.owns_view_tree_connection = false;
     transferable_state_.root = frame->view();
   } else {
-    HTMLDocumentOOPIF* old_document =
-        static_cast<HTMLDocumentOOPIF*>(old_delegate);
+    HTMLDocument* old_document = static_cast<HTMLDocument*>(old_delegate);
     transferable_state_.Move(&old_document->transferable_state_);
     if (transferable_state_.view_tree_delegate_impl)
       transferable_state_.view_tree_delegate_impl->set_delegate(this);
@@ -260,13 +257,13 @@ void HTMLDocumentOOPIF::OnSwap(HTMLFrame* frame,
   }
 }
 
-void HTMLDocumentOOPIF::OnFrameDestroyed() {
+void HTMLDocument::OnFrameDestroyed() {
   if (!transferable_state_.owns_view_tree_connection)
     delete this;
 }
 
-void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
-                               mojo::InterfaceRequest<AxProvider> request) {
+void HTMLDocument::Create(mojo::ApplicationConnection* connection,
+                          mojo::InterfaceRequest<AxProvider> request) {
   if (!did_finish_local_frame_load_) {
     // Cache AxProvider interface requests until the document finishes loading.
     auto cached_request = new mojo::InterfaceRequest<AxProvider>();
@@ -278,8 +275,8 @@ void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
   }
 }
 
-void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
-                               mojo::InterfaceRequest<TestHTMLViewer> request) {
+void HTMLDocument::Create(mojo::ApplicationConnection* connection,
+                          mojo::InterfaceRequest<TestHTMLViewer> request) {
   CHECK(IsTestInterfaceEnabled());
   if (!did_finish_local_frame_load_) {
     auto cached_request = new mojo::InterfaceRequest<TestHTMLViewer>();
@@ -291,7 +288,7 @@ void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
   }
 }
 
-void HTMLDocumentOOPIF::Create(
+void HTMLDocument::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<web_view::FrameTreeClient> request) {
   if (frame_) {
@@ -301,7 +298,7 @@ void HTMLDocumentOOPIF::Create(
   resource_waiter_->Bind(request.Pass());
 }
 
-void HTMLDocumentOOPIF::Create(
+void HTMLDocument::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) {
   if (frame_) {
@@ -312,7 +309,7 @@ void HTMLDocumentOOPIF::Create(
   }
 }
 
-void HTMLDocumentOOPIF::Create(
+void HTMLDocument::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
   DCHECK(!transferable_state_.view_tree_delegate_impl);

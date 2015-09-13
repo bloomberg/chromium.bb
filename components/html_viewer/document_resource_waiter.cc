@@ -5,7 +5,7 @@
 #include "components/html_viewer/document_resource_waiter.h"
 
 #include "components/html_viewer/global_state.h"
-#include "components/html_viewer/html_document_oopif.h"
+#include "components/html_viewer/html_document.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/view_manager/public/cpp/view.h"
 
@@ -15,7 +15,7 @@ namespace html_viewer {
 
 DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
                                                mojo::URLResponsePtr response,
-                                               HTMLDocumentOOPIF* document)
+                                               HTMLDocument* document)
     : global_state_(global_state),
       document_(document),
       response_(response.Pass()),
@@ -93,8 +93,8 @@ void DocumentResourceWaiter::UpdateIsReady() {
   // is not necessary is ViewConnectType is USE_EXISTING, which means the
   // application is not asked for a ViewTreeClient. The metrics are necessary
   // to initialize ResourceBundle. If USE_EXISTING is true, it means a View has
-  // already been provided to another HTMLDocumentOOPIF and there is no need to
-  // wait for metrics.
+  // already been provided to another HTMLDocument and there is no need to wait
+  // for metrics.
   bool is_ready =
       (!frame_data_.is_null() &&
        ((view_connect_type_ == web_view::VIEW_CONNECT_TYPE_USE_EXISTING) ||

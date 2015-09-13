@@ -19,7 +19,7 @@
 namespace html_viewer {
 
 class GlobalState;
-class HTMLDocumentOOPIF;
+class HTMLDocument;
 
 // ApplicationDelegate created by the content handler for a specific url.
 class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
@@ -50,7 +50,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
-  void OnHTMLDocumentDeleted2(HTMLDocumentOOPIF* document);
+  void OnHTMLDocumentDeleted2(HTMLDocument* document);
   void OnResponseReceived(scoped_ptr<mojo::AppRefCount> app_refcount,
                           mojo::URLLoaderPtr loader,
                           mojo::ApplicationConnection* connection,
@@ -72,7 +72,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
 
   // As we create HTMLDocuments they are added here. They are removed when the
   // HTMLDocument is deleted.
-  std::set<HTMLDocumentOOPIF*> documents2_;
+  std::set<HTMLDocument*> documents2_;
 
   HTMLFactory* html_factory_;
 
