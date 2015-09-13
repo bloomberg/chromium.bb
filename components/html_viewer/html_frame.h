@@ -145,8 +145,6 @@ class HTMLFrame : public blink::WebFrameClient,
  protected:
   virtual ~HTMLFrame();
 
-  // TODO(sky): move implementations to match new position.
-
   // WebFrameClient methods:
   virtual blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
@@ -207,11 +205,11 @@ class HTMLFrame : public blink::WebFrameClient,
   // connection.
   HTMLFrame* GetLocalRoot();
 
-  // Gets the FrameTreeServer to use for this frame.
-  web_view::FrameTreeServer* GetFrameTreeServer();
-
   // Returns the ApplicationImpl from the local root's delegate.
   mojo::ApplicationImpl* GetLocalRootApp();
+
+  // Gets the FrameTreeServer to use for this frame.
+  web_view::FrameTreeServer* GetFrameTreeServer();
 
   void SetView(mojo::View* view);
 

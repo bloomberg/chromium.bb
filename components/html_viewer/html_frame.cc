@@ -279,6 +279,182 @@ HTMLFrame::~HTMLFrame() {
   }
 }
 
+blink::WebMediaPlayer* HTMLFrame::createMediaPlayer(
+    blink::WebLocalFrame* frame,
+    const blink::WebURL& url,
+    blink::WebMediaPlayerClient* client,
+    blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
+    blink::WebContentDecryptionModule* initial_cdm) {
+  return global_state()->media_factory()->CreateMediaPlayer(
+      frame, url, client, encrypted_client, initial_cdm,
+      GetLocalRootApp()->shell());
+}
+
+blink::WebFrame* HTMLFrame::createChildFrame(
+    blink::WebLocalFrame* parent,
+    blink::WebTreeScopeType scope,
+    const blink::WebString& frame_name,
+    blink::WebSandboxFlags sandbox_flags) {
+  DCHECK(IsLocal());  // Can't create children of remote frames.
+  DCHECK_EQ(parent, web_frame_);
+  DCHECK(view_);  // If we're local we have to have a view.
+  // Create the view that will house the frame now. We embed once we know the
+  // url (see decidePolicyForNavigation()).
+  mojo::View* child_view = view_->connection()->CreateView();
+  ReplicatedFrameState child_state;
+  child_state.name = frame_name;
+  child_state.tree_scope = scope;
+  child_state.sandbox_flags = sandbox_flags;
+  mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties;
+  client_properties.mark_non_null();
+  ClientPropertiesFromReplicatedFrameState(child_state, &client_properties);
+
+  child_view->SetVisible(true);
+  view_->AddChild(child_view);
+
+  GetLocalRoot()->server_->OnCreatedFrame(id_, child_view->id(),
+                                          client_properties.Pass());
+
+  HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id(),
+                                 child_view, client_properties, nullptr);
+  params.allow_local_shared_frame = true;
+  HTMLFrame* child_frame =
+      GetLocalRoot()->delegate_->GetHTMLFactory()->CreateHTMLFrame(&params);
+  child_frame->owned_view_.reset(new mojo::ScopedViewPtr(child_view));
+  return child_frame->web_frame_;
+}
+
+void HTMLFrame::frameDetached(blink::WebFrame* web_frame,
+                              blink::WebFrameClient::DetachType type) {
+  if (type == blink::WebFrameClient::DetachType::Swap) {
+    web_frame->close();
+    return;
+  }
+
+  DCHECK(type == blink::WebFrameClient::DetachType::Remove);
+  FrameDetachedImpl(web_frame);
+}
+
+blink::WebCookieJar* HTMLFrame::cookieJar(blink::WebLocalFrame* frame) {
+  // TODO(darin): Blink does not fallback to the Platform provided WebCookieJar.
+  // Either it should, as it once did, or we should find another solution here.
+  return blink::Platform::current()->cookieJar();
+}
+
+blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
+    const NavigationPolicyInfo& info) {
+  // If we have extraData() it means we already have the url response
+  // (presumably because we are being called via Navigate()). In that case we
+  // can go ahead and navigate locally.
+  if (info.urlRequest.extraData()) {
+    DCHECK_EQ(blink::WebNavigationPolicyCurrentTab, info.defaultPolicy);
+    return blink::WebNavigationPolicyCurrentTab;
+  }
+
+  // about:blank is treated as the same origin and is always allowed for
+  // frames.
+  if (parent_ && info.urlRequest.url() == GURL(url::kAboutBlankURL) &&
+      info.defaultPolicy == blink::WebNavigationPolicyCurrentTab) {
+    return blink::WebNavigationPolicyCurrentTab;
+  }
+
+  // Ask the FrameTreeServer to handle the navigation. By returning
+  // WebNavigationPolicyIgnore the load is suppressed.
+  mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
+  GetLocalRoot()->server_->RequestNavigate(
+      WebNavigationPolicyToNavigationTarget(info.defaultPolicy), id_,
+      url_request.Pass());
+  return blink::WebNavigationPolicyIgnore;
+}
+
+void HTMLFrame::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
+  static bool recorded = false;
+  if (!recorded && startup_performance_data_collector_) {
+    startup_performance_data_collector_->SetFirstWebContentsMainFrameLoadTime(
+        base::Time::Now().ToInternalValue());
+    recorded = true;
+  }
+}
+
+void HTMLFrame::didAddMessageToConsole(const blink::WebConsoleMessage& message,
+                                       const blink::WebString& source_name,
+                                       unsigned source_line,
+                                       const blink::WebString& stack_trace) {
+  VLOG(1) << "[" << source_name.utf8() << "(" << source_line << ")] "
+          << message.text.utf8();
+}
+
+void HTMLFrame::didFinishLoad(blink::WebLocalFrame* frame) {
+  if (GetLocalRoot() == this)
+    delegate_->OnFrameDidFinishLoad();
+}
+
+void HTMLFrame::didNavigateWithinPage(blink::WebLocalFrame* frame,
+                                      const blink::WebHistoryItem& history_item,
+                                      blink::WebHistoryCommitType commit_type) {
+  GetLocalRoot()->server_->DidNavigateLocally(id_,
+                                              history_item.urlString().utf8());
+}
+
+void HTMLFrame::didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame) {
+  static bool recorded = false;
+  if (!recorded && startup_performance_data_collector_) {
+    startup_performance_data_collector_->SetFirstVisuallyNonEmptyLayoutTime(
+        base::Time::Now().ToInternalValue());
+    recorded = true;
+  }
+}
+
+blink::WebGeolocationClient* HTMLFrame::geolocationClient() {
+  if (!geolocation_client_impl_)
+    geolocation_client_impl_.reset(new GeolocationClientImpl);
+  return geolocation_client_impl_.get();
+}
+
+blink::WebEncryptedMediaClient* HTMLFrame::encryptedMediaClient() {
+  return global_state()->media_factory()->GetEncryptedMediaClient();
+}
+
+void HTMLFrame::didStartLoading(bool to_different_document) {
+  GetLocalRoot()->server_->LoadingStarted(id_);
+}
+
+void HTMLFrame::didStopLoading() {
+  GetLocalRoot()->server_->LoadingStopped(id_);
+}
+
+void HTMLFrame::didChangeLoadProgress(double load_progress) {
+  GetLocalRoot()->server_->ProgressChanged(id_, load_progress);
+}
+
+void HTMLFrame::didChangeName(blink::WebLocalFrame* frame,
+                              const blink::WebString& name) {
+  state_.name = name;
+  GetLocalRoot()->server_->SetClientProperty(id_, kPropertyFrameName,
+                                             FrameNameToClientProperty(name));
+}
+
+void HTMLFrame::didCommitProvisionalLoad(
+    blink::WebLocalFrame* frame,
+    const blink::WebHistoryItem& item,
+    blink::WebHistoryCommitType commit_type) {
+  state_.origin = FrameOrigin(frame);
+  GetLocalRoot()->server_->SetClientProperty(
+      id_, kPropertyFrameOrigin, FrameOriginToClientProperty(frame));
+}
+
+void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,
+                                const blink::WebString& title,
+                                blink::WebTextDirection direction) {
+  // TODO(beng): handle |direction|.
+  mojo::String formatted;
+  if (!title.isNull()) {
+    formatted =
+        mojo::String::From(base::string16(title).substr(0, kMaxTitleChars));
+  }
+  GetLocalRoot()->server_->TitleChanged(id_, formatted);
+}
+
 void HTMLFrame::Bind(web_view::FrameTreeServerPtr frame_tree_server,
                      mojo::InterfaceRequest<web_view::FrameTreeClient>
                          frame_tree_client_request) {
@@ -580,182 +756,6 @@ void HTMLFrame::OnWillNavigate(uint32_t target_frame_id) {
       target != frame_tree_manager_->local_root_) {
     target->SwapToRemote();
   }
-}
-
-blink::WebMediaPlayer* HTMLFrame::createMediaPlayer(
-    blink::WebLocalFrame* frame,
-    const blink::WebURL& url,
-    blink::WebMediaPlayerClient* client,
-    blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-    blink::WebContentDecryptionModule* initial_cdm) {
-  return global_state()->media_factory()->CreateMediaPlayer(
-      frame, url, client, encrypted_client, initial_cdm,
-      GetLocalRootApp()->shell());
-}
-
-blink::WebFrame* HTMLFrame::createChildFrame(
-    blink::WebLocalFrame* parent,
-    blink::WebTreeScopeType scope,
-    const blink::WebString& frame_name,
-    blink::WebSandboxFlags sandbox_flags) {
-  DCHECK(IsLocal());  // Can't create children of remote frames.
-  DCHECK_EQ(parent, web_frame_);
-  DCHECK(view_);  // If we're local we have to have a view.
-  // Create the view that will house the frame now. We embed once we know the
-  // url (see decidePolicyForNavigation()).
-  mojo::View* child_view = view_->connection()->CreateView();
-  ReplicatedFrameState child_state;
-  child_state.name = frame_name;
-  child_state.tree_scope = scope;
-  child_state.sandbox_flags = sandbox_flags;
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties;
-  client_properties.mark_non_null();
-  ClientPropertiesFromReplicatedFrameState(child_state, &client_properties);
-
-  child_view->SetVisible(true);
-  view_->AddChild(child_view);
-
-  GetLocalRoot()->server_->OnCreatedFrame(id_, child_view->id(),
-                                          client_properties.Pass());
-
-  HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id(),
-                                 child_view, client_properties, nullptr);
-  params.allow_local_shared_frame = true;
-  HTMLFrame* child_frame =
-      GetLocalRoot()->delegate_->GetHTMLFactory()->CreateHTMLFrame(&params);
-  child_frame->owned_view_.reset(new mojo::ScopedViewPtr(child_view));
-  return child_frame->web_frame_;
-}
-
-void HTMLFrame::frameDetached(blink::WebFrame* web_frame,
-                              blink::WebFrameClient::DetachType type) {
-  if (type == blink::WebFrameClient::DetachType::Swap) {
-    web_frame->close();
-    return;
-  }
-
-  DCHECK(type == blink::WebFrameClient::DetachType::Remove);
-  FrameDetachedImpl(web_frame);
-}
-
-blink::WebCookieJar* HTMLFrame::cookieJar(blink::WebLocalFrame* frame) {
-  // TODO(darin): Blink does not fallback to the Platform provided WebCookieJar.
-  // Either it should, as it once did, or we should find another solution here.
-  return blink::Platform::current()->cookieJar();
-}
-
-blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
-    const NavigationPolicyInfo& info) {
-  // If we have extraData() it means we already have the url response
-  // (presumably because we are being called via Navigate()). In that case we
-  // can go ahead and navigate locally.
-  if (info.urlRequest.extraData()) {
-    DCHECK_EQ(blink::WebNavigationPolicyCurrentTab, info.defaultPolicy);
-    return blink::WebNavigationPolicyCurrentTab;
-  }
-
-  // about:blank is treated as the same origin and is always allowed for
-  // frames.
-  if (parent_ && info.urlRequest.url() == GURL(url::kAboutBlankURL) &&
-      info.defaultPolicy == blink::WebNavigationPolicyCurrentTab) {
-    return blink::WebNavigationPolicyCurrentTab;
-  }
-
-  // Ask the FrameTreeServer to handle the navigation. By returning
-  // WebNavigationPolicyIgnore the load is suppressed.
-  mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
-  GetLocalRoot()->server_->RequestNavigate(
-      WebNavigationPolicyToNavigationTarget(info.defaultPolicy), id_,
-      url_request.Pass());
-  return blink::WebNavigationPolicyIgnore;
-}
-
-void HTMLFrame::didAddMessageToConsole(const blink::WebConsoleMessage& message,
-                                       const blink::WebString& source_name,
-                                       unsigned source_line,
-                                       const blink::WebString& stack_trace) {
-  VLOG(1) << "[" << source_name.utf8() << "(" << source_line << ")] "
-          << message.text.utf8();
-}
-
-void HTMLFrame::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
-  static bool recorded = false;
-  if (!recorded && startup_performance_data_collector_) {
-    startup_performance_data_collector_->SetFirstWebContentsMainFrameLoadTime(
-        base::Time::Now().ToInternalValue());
-    recorded = true;
-  }
-}
-
-void HTMLFrame::didFinishLoad(blink::WebLocalFrame* frame) {
-  if (GetLocalRoot() == this)
-    delegate_->OnFrameDidFinishLoad();
-}
-
-void HTMLFrame::didNavigateWithinPage(blink::WebLocalFrame* frame,
-                                      const blink::WebHistoryItem& history_item,
-                                      blink::WebHistoryCommitType commit_type) {
-  GetLocalRoot()->server_->DidNavigateLocally(id_,
-                                              history_item.urlString().utf8());
-}
-
-void HTMLFrame::didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame) {
-  static bool recorded = false;
-  if (!recorded && startup_performance_data_collector_) {
-    startup_performance_data_collector_->SetFirstVisuallyNonEmptyLayoutTime(
-        base::Time::Now().ToInternalValue());
-    recorded = true;
-  }
-}
-
-blink::WebGeolocationClient* HTMLFrame::geolocationClient() {
-  if (!geolocation_client_impl_)
-    geolocation_client_impl_.reset(new GeolocationClientImpl);
-  return geolocation_client_impl_.get();
-}
-
-blink::WebEncryptedMediaClient* HTMLFrame::encryptedMediaClient() {
-  return global_state()->media_factory()->GetEncryptedMediaClient();
-}
-
-void HTMLFrame::didStartLoading(bool to_different_document) {
-  GetLocalRoot()->server_->LoadingStarted(id_);
-}
-
-void HTMLFrame::didStopLoading() {
-  GetLocalRoot()->server_->LoadingStopped(id_);
-}
-
-void HTMLFrame::didChangeLoadProgress(double load_progress) {
-  GetLocalRoot()->server_->ProgressChanged(id_, load_progress);
-}
-
-void HTMLFrame::didChangeName(blink::WebLocalFrame* frame,
-                              const blink::WebString& name) {
-  state_.name = name;
-  GetLocalRoot()->server_->SetClientProperty(id_, kPropertyFrameName,
-                                             FrameNameToClientProperty(name));
-}
-
-void HTMLFrame::didCommitProvisionalLoad(
-    blink::WebLocalFrame* frame,
-    const blink::WebHistoryItem& item,
-    blink::WebHistoryCommitType commit_type) {
-  state_.origin = FrameOrigin(frame);
-  GetLocalRoot()->server_->SetClientProperty(
-      id_, kPropertyFrameOrigin, FrameOriginToClientProperty(frame));
-}
-
-void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,
-                                const blink::WebString& title,
-                                blink::WebTextDirection direction) {
-  // TODO(beng): handle |direction|.
-  mojo::String formatted;
-  if (!title.isNull()) {
-    formatted =
-        mojo::String::From(base::string16(title).substr(0, kMaxTitleChars));
-  }
-  GetLocalRoot()->server_->TitleChanged(id_, formatted);
 }
 
 void HTMLFrame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {
