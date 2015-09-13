@@ -4,6 +4,7 @@
     <title>Notifications: Should be able to focus window in onclick event.</title>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
+    <script src="../resources/permissions-helper.js"></script>
   </head>
   <body>
     <script>
@@ -13,36 +14,36 @@
       if (window.testRunner) {
           testRunner.setCanOpenWindows();
           testRunner.setCloseRemainingWindowsWhenComplete();
-          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
       }
 
       async_test(function(test) {
-          if (Notification.permission != 'granted') {
-              assert_unreached('No permission has been granted for displaying notifications.');
-              return;
-          }
+          PermissionsHelper.setPermission('notifications', 'granted').then(test.step_func(function() {
+              if (Notification.permission != 'granted') {
+                  assert_unreached('No permission has been granted for displaying notifications.');
+                  return;
+              }
 
-          window.addEventListener('focus', function() {
-              test.done();
-          });
+              window.addEventListener('focus', test.step_func(function() {
+                  test.done();
+              }));
 
-          var childWindow = window.open('about:blank');
-          childWindow.focus();
+              var childWindow = window.open('about:blank');
+              childWindow.focus();
 
-          var notification = new Notification('My Notification');
-          notification.addEventListener('show', function() {
-              if (window.testRunner)
-                  testRunner.simulateWebNotificationClick('My Notification');
-          });
+              var notification = new Notification('My Notification');
+              notification.addEventListener('show', test.step_func(function() {
+                  if (window.testRunner)
+                      testRunner.simulateWebNotificationClick('My Notification');
+              }));
 
-          notification.addEventListener('click', function() {
-              window.focus();
-          });
+              notification.addEventListener('click', test.step_func(function() {
+                  window.focus();
+              }));
 
-          notification.addEventListener('error', function() {
-              assert_unreached('The error event should not be thrown.');
-          });
-
+              notification.addEventListener('error', test.step_func(function() {
+                  assert_unreached('The error event should not be thrown.');
+              }));
+          }));
       }, 'Clicking on a notification enables it to focus the window it was created from.');
     </script>
     <script src="resources/click-focus-test.js"></script>

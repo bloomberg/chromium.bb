@@ -4,6 +4,7 @@
     <title>Notifications: Requesting permission using the Promise return value.</title>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
+    <script src="../resources/permissions-helper.js"></script>
   </head>
   <body>
     <script>
@@ -15,9 +16,9 @@
         return Notification.requestPermission().then(permission => {
           assert_equals(permission, 'denied');
 
-          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
+          return PermissionsHelper.setPermission('notifications', 'granted');
+        }).then(function() {
           return Notification.requestPermission();
-
         }).then(permission => {
           assert_equals(permission, 'granted');
         });
@@ -34,20 +35,19 @@
           callbackPermission = value;
         }
 
-        testRunner.setPermission('notifications', 'denied', location.origin, location.origin);
+        return PermissionsHelper.setPermission('notifications', 'denied').then(function() {
+          return Notification.requestPermission(permissionCallback).then(permission => {
+            assert_equals(permission, 'denied');
+            assert_equals(permission, callbackPermission);
 
-        return Notification.requestPermission(permissionCallback).then(permission => {
-          assert_equals(permission, 'denied');
-          assert_equals(permission, callbackPermission);
-
-          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          return Notification.requestPermission(permissionCallback);
-
-        }).then(permission => {
-          assert_equals(permission, 'granted');
-          assert_equals(permission, callbackPermission);
-        });
-
+            return PermissionsHelper.setPermission('notifications', 'granted');
+          }).then(function() {
+            return Notification.requestPermission(permissionCallback);
+          }).then(permission => {
+            assert_equals(permission, 'granted');
+            assert_equals(permission, callbackPermission);
+          });
+        })
       }, 'Requesting permission returns a promise, maintains the callback behaviour.');
     </script>
   </body>

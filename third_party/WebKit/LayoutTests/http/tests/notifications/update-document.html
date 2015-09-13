@@ -5,6 +5,7 @@
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
     <script src="resources/test-helpers.js"></script>
+    <script src="../resources/permissions-helper.js"></script>
   </head>
   <body>
     <script>
@@ -12,9 +13,11 @@
       // property in the constructor's options. When the test is being ran
       // manually, grant Notification permission first and verify that only a
       // single notification will be shown at the end of the test.
-      if (window.testRunner)
-          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
+      PermissionsHelper.setPermission('notifications', 'granted').then(function() {
+          var script = document.createElement('script');
+          script.src = 'resources/update-event-test.js';
+          document.body.appendChild(script);
+      });
     </script>
-    <script src="resources/update-event-test.js"></script>
   </body>
 </html>
