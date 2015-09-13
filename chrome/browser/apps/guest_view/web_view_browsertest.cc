@@ -2266,7 +2266,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
              NO_TEST_SERVER);
 }
 
-#if defined(NDEBUG)
+#ifndef NDEBUG
 // Test is failing in debug: https://crbug.com/530593
 #define MAYBE_Dialog_TestConfirmDialogDefaultGCCancel \
     DISABLED_Dialog_TestConfirmDialogDefaultGCCancel
