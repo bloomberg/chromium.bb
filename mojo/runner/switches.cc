@@ -19,6 +19,10 @@ const char kContentHandlers[] = "content-handlers";
 // transient applications. Not for user use.
 const char kDeleteAfterLoad[] = "delete-after-load";
 
+// Force dynamically loaded apps or services to be loaded irrespective of cache
+// instructions.
+const char kDisableCache[] = "disable-cache";
+
 // Enables the sandbox on this process.
 const char kEnableSandbox[] = "enable-sandbox";
 

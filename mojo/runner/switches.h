@@ -13,6 +13,7 @@ extern const char kApp[];
 extern const char kChildProcess[];
 extern const char kContentHandlers[];
 extern const char kDeleteAfterLoad[];
+extern const char kDisableCache[];
 extern const char kEnableSandbox[];
 extern const char kForceInProcess[];
 extern const char kHelp[];

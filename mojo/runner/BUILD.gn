@@ -96,6 +96,8 @@ source_set("in_process_native_runner") {
 
 source_set("lib") {
   sources = [
+    "about_fetcher.cc",
+    "about_fetcher.h",
     "child_process.cc",
     "child_process.h",
     "child_process_host.cc",
@@ -110,6 +112,8 @@ source_set("lib") {
     "scoped_user_data_dir.h",
     "task_runners.cc",
     "task_runners.h",
+    "url_resolver.cc",
+    "url_resolver.h",
   ]
 
   deps = [
@@ -123,7 +127,6 @@ source_set("lib") {
     "//components/devtools_service/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
-    "//mojo/fetcher",
     "//mojo/message_pump",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
@@ -416,8 +419,7 @@ mojom("child_process_bindings") {
 
 test("mojo_runner_unittests") {
   sources = [
-    "../fetcher/about_fetcher_unittest.cc",
-    "../fetcher/url_resolver_unittest.cc",
+    "about_fetcher_unittest.cc",
     "child_process_host_unittest.cc",
     "data_pipe_peek_unittest.cc",
     "in_process_native_runner_unittest.cc",
@@ -427,6 +429,7 @@ test("mojo_runner_unittests") {
     "shell_test_base_android.cc",
     "shell_test_base_unittest.cc",
     "shell_test_main.cc",
+    "url_resolver_unittest.cc",
   ]
 
   deps = [

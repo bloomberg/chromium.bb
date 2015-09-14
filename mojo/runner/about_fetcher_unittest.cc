@@ -6,7 +6,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -14,16 +13,14 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/fetcher/about_fetcher.h"
-#include "mojo/fetcher/base_application_fetcher.h"
+#include "mojo/runner/about_fetcher.h"
 #include "mojo/runner/context.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
-#include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace fetcher {
+namespace runner {
 namespace {
 
 class TestContentHandler : public ApplicationDelegate,
@@ -68,6 +65,30 @@ class TestContentHandler : public ApplicationDelegate,
   WeakBindingSet<ContentHandler> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
+};
+
+class TestApplicationManagerDelegate
+    : public shell::ApplicationManager::Delegate {
+ public:
+  TestApplicationManagerDelegate() {}
+  ~TestApplicationManagerDelegate() override {}
+
+ private:
+  // Overridden from ApplicationManager::Delegate:
+  GURL ResolveMappings(const GURL& url) override { return url; }
+  GURL ResolveMojoURL(const GURL& url) override { return url; }
+  bool CreateFetcher(
+      const GURL& url,
+      const shell::Fetcher::FetchCallback& loader_callback) override {
+    if (url.SchemeIs(AboutFetcher::kAboutScheme)) {
+      AboutFetcher::Start(url, loader_callback);
+      return true;
+    }
+
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestApplicationManagerDelegate);
 };
 
 class TestLoader : public shell::ApplicationLoader {
@@ -122,11 +143,8 @@ class AboutFetcherTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    runner::Context::EnsureEmbedderIsInitialized();
-    base::FilePath shell_dir;
-    PathService::Get(base::DIR_MODULE, &shell_dir);
-    application_manager_.reset(new shell::ApplicationManager(
-        make_scoped_ptr(new BaseApplicationFetcher(shell_dir))));
+    Context::EnsureEmbedderIsInitialized();
+    application_manager_.reset(new shell::ApplicationManager(&test_delegate_));
     application_manager_->SetLoaderForURL(
         make_scoped_ptr(new TestLoader(&html_content_handler_)),
         GURL("test:html_content_handler"));
@@ -138,6 +156,7 @@ class AboutFetcherTest : public testing::Test {
 
  private:
   base::ShadowingAtExitManager at_exit_;
+  TestApplicationManagerDelegate test_delegate_;
   TestContentHandler html_content_handler_;
   base::MessageLoop loop_;
   scoped_ptr<shell::ApplicationManager> application_manager_;
@@ -164,5 +183,5 @@ TEST_F(AboutFetcherTest, UnrecognizedURL) {
 }
 
 }  // namespace
-}  // namespace fetcher
+}  // namespace runner
 }  // namespace mojo

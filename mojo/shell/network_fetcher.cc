@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/network_fetcher.h"
+#include "mojo/shell/network_fetcher.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -27,7 +27,7 @@
 #include "mojo/shell/switches.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 
 NetworkFetcher::NetworkFetcher(bool disable_cache,
                                mojo::URLRequestPtr request,
@@ -208,14 +208,14 @@ std::string NetworkFetcher::MimeType() {
 
 bool NetworkFetcher::HasMojoMagic() {
   std::string magic;
-  return shell::BlockingPeekNBytes(response_->body.get(), &magic,
-                                   strlen(kMojoMagic), kPeekTimeout) &&
+  return BlockingPeekNBytes(response_->body.get(), &magic, strlen(kMojoMagic),
+                            kPeekTimeout) &&
          magic == kMojoMagic;
 }
 
 bool NetworkFetcher::PeekFirstLine(std::string* line) {
-  return shell::BlockingPeekLine(response_->body.get(), line, kMaxShebangLength,
-                                 kPeekTimeout);
+  return BlockingPeekLine(response_->body.get(), line, kMaxShebangLength,
+                          kPeekTimeout);
 }
 
 void NetworkFetcher::StartNetworkRequest(mojo::URLRequestPtr request,
@@ -254,5 +254,5 @@ void NetworkFetcher::OnLoadComplete(URLResponsePtr response) {
   loader_callback_.Run(owner.Pass());
 }
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo

@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/process_control.mojom.h"
@@ -18,7 +17,6 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/fetcher/base_application_fetcher.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
@@ -154,15 +152,9 @@ void MojoShellContext::SetApplicationsForTest(
   g_applications_for_test = apps;
 }
 
-MojoShellContext::MojoShellContext() {
+MojoShellContext::MojoShellContext()
+    : application_manager_(new mojo::shell::ApplicationManager(this)) {
   proxy_.Get().reset(new Proxy(this));
-
-  // Construct with an empty filepath since mojo: urls can't be registered now
-  // the url scheme registry is locked.
-  scoped_ptr<mojo::fetcher::BaseApplicationFetcher> fetcher(
-      new mojo::fetcher::BaseApplicationFetcher(base::FilePath()));
-  application_manager_.reset(
-      new mojo::shell::ApplicationManager(fetcher.Pass()));
 
   application_manager_->set_default_loader(
       scoped_ptr<mojo::shell::ApplicationLoader>(new DefaultApplicationLoader));
@@ -246,6 +238,20 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
   params->set_on_application_end(base::Bind(&base::DoNothing));
   params->set_connect_callback(callback);
   application_manager_->ConnectToApplication(params.Pass());
+}
+
+GURL MojoShellContext::ResolveMappings(const GURL& url) {
+  return url;
+}
+
+GURL MojoShellContext::ResolveMojoURL(const GURL& url) {
+  return url;
+}
+
+bool MojoShellContext::CreateFetcher(
+    const GURL& url,
+    const mojo::shell::Fetcher::FetchCallback& loader_callback) {
+  return false;
 }
 
 }  // namespace content

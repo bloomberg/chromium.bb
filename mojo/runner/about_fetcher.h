@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_FETCHER_ABOUT_FETCHER_H_
-#define MOJO_FETCHER_ABOUT_FETCHER_H_
+#ifndef MOJO_RUNNER_ABOUT_FETCHER_H_
+#define MOJO_RUNNER_ABOUT_FETCHER_H_
 
 #include "mojo/shell/fetcher.h"
 
@@ -12,7 +12,7 @@
 #include "url/gurl.h"
 
 namespace mojo {
-namespace fetcher {
+namespace runner {
 
 // Implements Fetcher for about: URLs.
 class AboutFetcher : public shell::Fetcher {
@@ -52,7 +52,7 @@ class AboutFetcher : public shell::Fetcher {
   DISALLOW_COPY_AND_ASSIGN(AboutFetcher);
 };
 
-}  // namespace fetcher
+}  // namespace runner
 }  // namespace mojo
 
-#endif  // MOJO_FETCHER_ABOUT_FETCHER_H_
+#endif  // MOJO_RUNNER_ABOUT_FETCHER_H_
