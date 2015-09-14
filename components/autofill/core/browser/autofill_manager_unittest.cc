@@ -628,7 +628,7 @@ class AutofillManagerTest : public testing::Test {
                               const FormData& form,
                               const FormFieldData& field) {
     autofill_manager_->OnQueryFormFieldAutofill(query_id, form, field,
-                                                gfx::Rect());
+                                                gfx::RectF());
   }
 
   void GetAutofillSuggestions(const FormData& form,
