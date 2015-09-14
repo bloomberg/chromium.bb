@@ -56,7 +56,7 @@ void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationB
 
     context()->deferredTaskHandler().setAudioThread(currentThread());
 
-    if (!context()->isInitialized()) {
+    if (!context()->isDestinationInitialized()) {
         destinationBus->zero();
         return;
     }

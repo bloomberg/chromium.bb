@@ -83,7 +83,6 @@ AbstractAudioContext* AbstractAudioContext::create(Document& document, Exception
 AbstractAudioContext::AbstractAudioContext(Document* document)
     : ActiveDOMObject(document)
     , m_isCleared(false)
-    , m_isInitialized(false)
     , m_destinationNode(nullptr)
     , m_isResolvingResumePromises(false)
     , m_connectionCount(0)
@@ -101,7 +100,6 @@ AbstractAudioContext::AbstractAudioContext(Document* document)
 AbstractAudioContext::AbstractAudioContext(Document* document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
     : ActiveDOMObject(document)
     , m_isCleared(false)
-    , m_isInitialized(false)
     , m_destinationNode(nullptr)
     , m_isResolvingResumePromises(false)
     , m_connectionCount(0)
@@ -122,7 +120,7 @@ AbstractAudioContext::~AbstractAudioContext()
 {
     deferredTaskHandler().contextWillBeDestroyed();
     // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
-    ASSERT(!m_isInitialized);
+    ASSERT(!isDestinationInitialized());
     ASSERT(!m_activeSourceNodes.size());
     ASSERT(!m_finishedSourceHandlers.size());
     ASSERT(!m_isResolvingResumePromises);
@@ -131,7 +129,7 @@ AbstractAudioContext::~AbstractAudioContext()
 
 void AbstractAudioContext::initialize()
 {
-    if (isInitialized())
+    if (isDestinationInitialized())
         return;
 
     FFTFrame::initialize();
@@ -139,7 +137,6 @@ void AbstractAudioContext::initialize()
 
     if (m_destinationNode.get()) {
         m_destinationNode->handler().initialize();
-        m_isInitialized = true;
     }
 }
 
@@ -156,10 +153,8 @@ void AbstractAudioContext::uninitialize()
 {
     ASSERT(isMainThread());
 
-    if (!isInitialized())
+    if (!isDestinationInitialized())
         return;
-
-    m_isInitialized = false;
 
     // This stops the audio thread and all audio rendering.
     if (m_destinationNode)

@@ -100,13 +100,18 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    bool isInitialized() const { return m_isInitialized; }
+    // Is the destination node initialized and ready to handle audio?
+    bool isDestinationInitialized() const
+    {
+        AudioDestinationNode* dest = destination();
+        return dest ? dest->audioDestinationHandler().isInitialized() : false;
+    }
 
     // Document notification
     void stop() final;
     bool hasPendingActivity() const override;
 
-    AudioDestinationNode* destination() { return m_destinationNode.get(); }
+    AudioDestinationNode* destination() const { return m_destinationNode.get(); }
 
     size_t currentSampleFrame() const
     {
@@ -259,9 +264,6 @@ private:
     void clear();
 
     void throwExceptionForClosedState(ExceptionState&);
-
-    // Set to true when the destination node has been initialized and is ready to process data.
-    bool m_isInitialized;
 
     // When the context goes away, there might still be some sources which
     // haven't finished playing.  Make sure to release them here.

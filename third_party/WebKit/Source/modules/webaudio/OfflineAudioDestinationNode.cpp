@@ -113,7 +113,7 @@ void OfflineAudioDestinationHandler::offlineRenderInternal()
     if (!m_renderBus)
         return;
 
-    bool isAudioContextInitialized = context()->isInitialized();
+    bool isAudioContextInitialized = context()->isDestinationInitialized();
     ASSERT(isAudioContextInitialized);
     if (!isAudioContextInitialized)
         return;
