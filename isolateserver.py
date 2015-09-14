@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 import base64
 import functools
@@ -994,7 +994,9 @@ class IsolateServer(StorageApi):
     response = self.do_fetch(source_url, digest, offset)
 
     if not response:
-      raise IOError('Attempted to fetch from %s; no data exist.' % source_url)
+      raise IOError(
+          'Attempted to fetch from %s; no data exist: %s / %s.' % (
+            source_url, self._namespace, digest))
 
     # for DB uploads
     content = response.get('content')

@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 import logging
 import optparse
@@ -251,23 +251,24 @@ def run_tha_test(
             results = None
 
         if results:
-          output_data = {
-            'hash': results[0][0],
-            'namespace': storage.namespace,
-            'storage': storage.location,
-          }
-          sys.stdout.flush()
-          # TODO(maruel): Skip this when result_json is set. swarming.py needs
-          # to be updated first.
-          data = tools.format_json(output_data, dense=True)
-          print('[run_isolated_out_hack]%s[/run_isolated_out_hack]' % data)
           if result_json:
-            output_data = {
+            data = {
               'isolated': results[0][0],
               'isolatedserver': storage.location,
               'namespace': storage.namespace,
             }
-            tools.write_json(result_json, output_data, dense=True)
+            tools.write_json(result_json, data, dense=True)
+          else:
+            data = {
+              'hash': results[0][0],
+              'namespace': storage.namespace,
+              'storage': storage.location,
+            }
+            sys.stdout.flush()
+            print(
+                '[run_isolated_out_hack]%s[/run_isolated_out_hack]' %
+                tools.format_json(data, dense=True))
+          logging.info('%s', data)
 
     finally:
       try:
