@@ -197,6 +197,7 @@ exec_script_whitelist = [
   "//third_party/WebKit/Source/platform/platform.gni",
   "//third_party/WebKit/Source/web/BUILD.gn",
   "//third_party/WebKit/Source/wtf/BUILD.gn",
+  "//third_party/WebKit/public/BUILD.gn",
   "//tools/gn/BUILD.gn",
   "//tools/gn/build_settings.h",
   "//tools/gn/command_help.cc",
