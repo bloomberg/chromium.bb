@@ -21,6 +21,7 @@ import sys
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(THIS_DIR))
+BLINK_DIR = os.path.join(SRC_DIR, 'third_party', 'WebKit')
 sys.path.insert(0, os.path.join(SRC_DIR, 'third_party', 'colorama', 'src'))
 
 import colorama
@@ -80,7 +81,11 @@ class Error(Exception):
 
 def get_isolates():
   """Returns the list of all isolate files."""
-  files = subprocess.check_output(['git', 'ls-files'], cwd=SRC_DIR).splitlines()
+
+  def git_ls_files(cwd):
+    return subprocess.check_output(['git', 'ls-files'], cwd=cwd).splitlines()
+
+  files = git_ls_files(SRC_DIR) + git_ls_files(BLINK_DIR)
   return [os.path.basename(f) for f in files if f.endswith('.isolate')]
 
 
