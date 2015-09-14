@@ -261,7 +261,7 @@ void GpuChildThread::OnInitialize() {
       channel(), watchdog_thread_.get(),
       base::ThreadTaskRunnerHandle::Get().get(),
       ChildProcess::current()->io_task_runner(),
-      ChildProcess::current()->GetShutDownEvent(), GetAttachmentBroker(),
+      ChildProcess::current()->GetShutDownEvent(),
       sync_point_manager_, gpu_memory_buffer_factory_));
 
 #if defined(USE_OZONE)

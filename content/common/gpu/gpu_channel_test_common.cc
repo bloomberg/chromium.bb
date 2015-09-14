@@ -22,7 +22,6 @@ TestGpuChannelManager::TestGpuChannelManager(
                         task_runner,
                         io_task_runner,
                         nullptr,
-                        nullptr,
                         sync_point_manager,
                         gpu_memory_buffer_factory),
       sink_(sink) {}
@@ -83,9 +82,7 @@ base::ProcessId TestGpuChannel::GetClientPID() const {
   return base::kNullProcessId;
 }
 
-IPC::ChannelHandle TestGpuChannel::Init(
-    base::WaitableEvent* shutdown_event,
-    IPC::AttachmentBroker* attachment_broker) {
+IPC::ChannelHandle TestGpuChannel::Init(base::WaitableEvent* shutdown_event) {
   filter_->OnFilterAdded(sink_);
   return IPC::ChannelHandle(channel_id());
 }

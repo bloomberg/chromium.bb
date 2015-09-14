@@ -60,8 +60,7 @@ class TestGpuChannel : public GpuChannel {
 
   base::ProcessId GetClientPID() const override;
 
-  IPC::ChannelHandle Init(base::WaitableEvent* shutdown_event,
-                          IPC::AttachmentBroker* attachment_broker) override;
+  IPC::ChannelHandle Init(base::WaitableEvent* shutdown_event) override;
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;

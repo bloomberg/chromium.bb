@@ -32,8 +32,7 @@ class ChannelWin : public Channel,
   // |broker| must outlive the newly created object.
   ChannelWin(const IPC::ChannelHandle& channel_handle,
              Mode mode,
-             Listener* listener,
-             AttachmentBroker* broker);
+             Listener* listener);
   ~ChannelWin() override;
 
   // Channel implementation
@@ -132,9 +131,6 @@ class ChannelWin : public Channel,
   int32_t client_secret_;
 
   scoped_ptr<base::ThreadChecker> thread_check_;
-
-  // |broker_| must outlive this instance.
-  AttachmentBroker* broker_;
 
   base::WeakPtrFactory<ChannelWin> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ChannelWin);

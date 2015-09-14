@@ -130,8 +130,7 @@ ChannelNacl::ChannelNacl(const IPC::ChannelHandle& channel_handle,
       waiting_connect_(true),
       pipe_(-1),
       pipe_name_(channel_handle.name),
-      weak_ptr_factory_(this),
-      broker_(broker) {
+      weak_ptr_factory_(this) {
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
     const char *modestr = (mode_ & MODE_SERVER_FLAG) ? "server" : "client";
@@ -225,7 +224,7 @@ bool ChannelNacl::Send(Message* message) {
 }
 
 AttachmentBroker* ChannelNacl::GetAttachmentBroker() {
-  return broker_;
+  return nullptr;
 }
 
 void ChannelNacl::DidRecvMsg(scoped_ptr<MessageContents> contents) {

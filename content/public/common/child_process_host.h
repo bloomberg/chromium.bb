@@ -71,10 +71,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // On failure, returns an empty FilePath.
   static base::FilePath GetChildPath(int flags);
 
-  // Returns an AttachmentBroker used to broker attachments of IPC messages to
-  // child processes.
-  static IPC::AttachmentBrokerPrivileged* GetAttachmentBroker();
-
   // Send the shutdown message to the child process.
   // Does not check with the delegate's CanShutdown.
   virtual void ForceShutdown() = 0;

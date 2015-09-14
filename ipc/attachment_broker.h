@@ -50,6 +50,12 @@ class IPC_EXPORT AttachmentBroker : public Listener {
         const BrokerableAttachment::AttachmentId& id) = 0;
   };
 
+  // Each process has at most one attachment broker. The process is responsible
+  // for ensuring that |broker| stays alive for as long as the process is
+  // sending/receiving ipc messages.
+  static void SetGlobal(AttachmentBroker* broker);
+  static AttachmentBroker* GetGlobal();
+
   AttachmentBroker();
   ~AttachmentBroker() override;
 

@@ -6,7 +6,22 @@
 
 #include <algorithm>
 
+namespace {
+IPC::AttachmentBroker* g_attachment_broker = nullptr;
+}
+
 namespace IPC {
+
+// static
+void AttachmentBroker::SetGlobal(AttachmentBroker* broker) {
+  CHECK(!g_attachment_broker);
+  g_attachment_broker = broker;
+}
+
+// static
+AttachmentBroker* AttachmentBroker::GetGlobal() {
+  return g_attachment_broker;
+}
 
 AttachmentBroker::AttachmentBroker() {}
 AttachmentBroker::~AttachmentBroker() {}

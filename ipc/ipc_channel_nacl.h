@@ -120,9 +120,6 @@ class ChannelNacl : public Channel,
 
   base::WeakPtrFactory<ChannelNacl> weak_ptr_factory_;
 
-  // |broker_| must outlive this instance.
-  AttachmentBroker* broker_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelNacl);
 };
 

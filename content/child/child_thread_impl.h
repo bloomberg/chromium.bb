@@ -87,7 +87,6 @@ class CONTENT_EXPORT ChildThreadImpl
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
 #endif
-  IPC::AttachmentBroker* GetAttachmentBroker() override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 

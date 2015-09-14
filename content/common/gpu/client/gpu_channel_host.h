@@ -21,7 +21,6 @@
 #include "content/common/gpu/gpu_stream_priority.h"
 #include "content/common/message_router.h"
 #include "gpu/config/gpu_info.h"
-#include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
@@ -59,8 +58,7 @@ namespace content {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
 
-class CONTENT_EXPORT GpuChannelHostFactory
-    : virtual public IPC::SupportsAttachmentBrokering {
+class CONTENT_EXPORT GpuChannelHostFactory {
  public:
   virtual ~GpuChannelHostFactory() {}
 

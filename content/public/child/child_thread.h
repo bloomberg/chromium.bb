@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_CHILD_CHILD_THREAD_H_
 
 #include "content/common/content_export.h"
-#include "ipc/attachment_broker.h"
 #include "ipc/ipc_sender.h"
 
 #if defined(OS_WIN)
@@ -17,9 +16,7 @@ namespace content {
 
 // An abstract base class that contains logic shared between most child
 // processes of the embedder.
-class CONTENT_EXPORT ChildThread
-    : public IPC::Sender,
-      virtual public IPC::SupportsAttachmentBrokering {
+class CONTENT_EXPORT ChildThread : public IPC::Sender {
  public:
   // Returns the one child thread for this process.  Note that this can only be
   // accessed when running on the child thread itself.

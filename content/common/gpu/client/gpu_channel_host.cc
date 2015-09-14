@@ -79,9 +79,9 @@ void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
   // since we need to filter everything to route it to the right thread.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       factory_->GetIOThreadTaskRunner();
-  channel_ = IPC::SyncChannel::Create(
-      channel_handle, IPC::Channel::MODE_CLIENT, NULL, io_task_runner.get(),
-      true, shutdown_event, factory_->GetAttachmentBroker());
+  channel_ =
+      IPC::SyncChannel::Create(channel_handle, IPC::Channel::MODE_CLIENT, NULL,
+                               io_task_runner.get(), true, shutdown_event);
 
   sync_filter_ = channel_->CreateSyncMessageFilter();
 

@@ -357,15 +357,14 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
     scoped_refptr<base::SequencedTaskRunner> io_task_runner = GetIOTaskRunner();
     DCHECK(io_task_runner);
-    channel_->Init(IPC::ChannelMojo::CreateClientFactory(
-                       io_task_runner, channel_name_, attachment_broker_.get()),
-                   create_pipe_now);
+    channel_->Init(
+        IPC::ChannelMojo::CreateClientFactory(io_task_runner, channel_name_),
+        create_pipe_now);
     return;
   }
 
   VLOG(1) << "Mojo is disabled on child";
-  channel_->Init(channel_name_, IPC::Channel::MODE_CLIENT, create_pipe_now,
-                 attachment_broker_.get());
+  channel_->Init(channel_name_, IPC::Channel::MODE_CLIENT, create_pipe_now);
 }
 
 void ChildThreadImpl::Init(const Options& options) {
@@ -380,16 +379,22 @@ void ChildThreadImpl::Init(const Options& options) {
   // the logger, and the logger does not like being created on the IO thread.
   IPC::Logging::GetInstance();
 #endif
+
+#if defined(OS_WIN)
+  // The only reason a global would already exist is if the thread is being run
+  // in the browser process because of a command line switch.
+  if (!IPC::AttachmentBroker::GetGlobal()) {
+    attachment_broker_.reset(new IPC::AttachmentBrokerUnprivilegedWin());
+    IPC::AttachmentBroker::SetGlobal(attachment_broker_.get());
+  }
+#endif
+
   channel_ =
       IPC::SyncChannel::Create(this, ChildProcess::current()->io_task_runner(),
                                ChildProcess::current()->GetShutDownEvent());
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (!IsInBrowserProcess())
     IPC::Logging::GetInstance()->SetIPCSender(this);
-#endif
-
-#if defined(OS_WIN)
-  attachment_broker_.reset(new IPC::AttachmentBrokerUnprivilegedWin());
 #endif
 
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
@@ -564,10 +569,6 @@ void ChildThreadImpl::ReleaseCachedFonts() {
   Send(new ChildProcessHostMsg_ReleaseCachedFonts());
 }
 #endif
-
-IPC::AttachmentBroker* ChildThreadImpl::GetAttachmentBroker() {
-  return attachment_broker_.get();
-}
 
 MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(base::MessageLoop::current() == message_loop());

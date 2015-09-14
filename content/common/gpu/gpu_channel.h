@@ -45,7 +45,6 @@ class SubscriptionRefSet;
 }
 
 namespace IPC {
-class AttachmentBroker;
 class MessageFilter;
 }
 
@@ -79,8 +78,7 @@ class CONTENT_EXPORT GpuChannel
 
   // Initializes the IPC channel. Caller takes ownership of the client FD in
   // the returned handle and is responsible for closing it.
-  virtual IPC::ChannelHandle Init(base::WaitableEvent* shutdown_event,
-                                  IPC::AttachmentBroker* attachment_broker);
+  virtual IPC::ChannelHandle Init(base::WaitableEvent* shutdown_event);
 
   // Get the GpuChannelManager that owns this channel.
   GpuChannelManager* gpu_channel_manager() const {

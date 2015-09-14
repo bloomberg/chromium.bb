@@ -38,6 +38,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
@@ -182,8 +183,7 @@ int ChannelPosix::global_pid_ = 0;
 
 ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
                            Mode mode,
-                           Listener* listener,
-                           AttachmentBroker* broker)
+                           Listener* listener)
     : ChannelReader(listener),
       mode_(mode),
       peer_pid_(base::kNullProcessId),
@@ -192,8 +192,7 @@ ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
       message_send_bytes_written_(0),
       pipe_name_(channel_handle.name),
       in_dtor_(false),
-      must_unlink_(false),
-      broker_(broker) {
+      must_unlink_(false) {
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
     const char *modestr = (mode_ & MODE_SERVER_FLAG) ? "server" : "client";
@@ -524,7 +523,7 @@ bool ChannelPosix::Send(Message* message) {
 }
 
 AttachmentBroker* ChannelPosix::GetAttachmentBroker() {
-  return broker_;
+  return AttachmentBroker::GetGlobal();
 }
 
 int ChannelPosix::GetClientFileDescriptor() const {
@@ -1023,7 +1022,7 @@ scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
                                     Listener* listener,
                                     AttachmentBroker* broker) {
   return make_scoped_ptr(
-      new ChannelPosix(channel_handle, mode, listener, broker));
+      new ChannelPosix(channel_handle, mode, listener));
 }
 
 // static

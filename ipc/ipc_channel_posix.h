@@ -29,8 +29,7 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // |broker| must outlive the newly created object.
   ChannelPosix(const IPC::ChannelHandle& channel_handle,
                Mode mode,
-               Listener* listener,
-               AttachmentBroker* broker);
+               Listener* listener);
   ~ChannelPosix() override;
 
   // Channel implementation
@@ -181,9 +180,6 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // If non-zero, overrides the process ID sent in the hello message.
   static int global_pid_;
 #endif  // OS_LINUX
-
-  // |broker_| must outlive this instance.
-  AttachmentBroker* broker_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelPosix);
 };

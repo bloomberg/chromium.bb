@@ -203,7 +203,7 @@ TEST_F(IPCChannelPosixTest, BasicListen) {
   SetUpSocket(&handle, IPC::Channel::MODE_NAMED_SERVER);
   unlink(handle.name.c_str());
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      handle, IPC::Channel::MODE_NAMED_SERVER, NULL, nullptr));
+      handle, IPC::Channel::MODE_NAMED_SERVER, NULL));
   ASSERT_TRUE(channel->Connect());
   ASSERT_TRUE(channel->AcceptsConnections());
   ASSERT_FALSE(channel->HasAcceptedConnection());
@@ -222,7 +222,7 @@ TEST_F(IPCChannelPosixTest, BasicConnected) {
   base::FileDescriptor fd(pipe_fds[0], false);
   IPC::ChannelHandle handle(socket_name, fd);
   scoped_ptr<IPC::ChannelPosix> channel(
-      new IPC::ChannelPosix(handle, IPC::Channel::MODE_SERVER, NULL, nullptr));
+      new IPC::ChannelPosix(handle, IPC::Channel::MODE_SERVER, NULL));
   ASSERT_TRUE(channel->Connect());
   ASSERT_FALSE(channel->AcceptsConnections());
   channel->Close();
@@ -231,7 +231,7 @@ TEST_F(IPCChannelPosixTest, BasicConnected) {
   // Make sure that we can use the socket that is created for us by
   // a standard channel.
   scoped_ptr<IPC::ChannelPosix> channel2(new IPC::ChannelPosix(
-      socket_name, IPC::Channel::MODE_SERVER, NULL, nullptr));
+      socket_name, IPC::Channel::MODE_SERVER, NULL));
   ASSERT_TRUE(channel2->Connect());
   ASSERT_FALSE(channel2->AcceptsConnections());
 }
@@ -244,11 +244,11 @@ TEST_F(IPCChannelPosixTest, SendHangTest) {
   IPCChannelPosixTestListener in_listener(true);
   IPC::ChannelHandle in_handle("IN");
   scoped_ptr<IPC::ChannelPosix> in_chan(new IPC::ChannelPosix(
-      in_handle, IPC::Channel::MODE_SERVER, &in_listener, nullptr));
+      in_handle, IPC::Channel::MODE_SERVER, &in_listener));
   IPC::ChannelHandle out_handle(
       "OUT", base::FileDescriptor(in_chan->TakeClientFileDescriptor()));
   scoped_ptr<IPC::ChannelPosix> out_chan(new IPC::ChannelPosix(
-      out_handle, IPC::Channel::MODE_CLIENT, &out_listener, nullptr));
+      out_handle, IPC::Channel::MODE_CLIENT, &out_listener));
   ASSERT_TRUE(in_chan->Connect());
   ASSERT_TRUE(out_chan->Connect());
   in_chan->Close();  // simulate remote process dying at an unfortunate time.
@@ -269,11 +269,11 @@ TEST_F(IPCChannelPosixTest, AcceptHangTest) {
   IPCChannelPosixTestListener in_listener(true);
   IPC::ChannelHandle in_handle("IN");
   scoped_ptr<IPC::ChannelPosix> in_chan(new IPC::ChannelPosix(
-      in_handle, IPC::Channel::MODE_SERVER, &in_listener, nullptr));
+      in_handle, IPC::Channel::MODE_SERVER, &in_listener));
   IPC::ChannelHandle out_handle(
       "OUT", base::FileDescriptor(in_chan->TakeClientFileDescriptor()));
   scoped_ptr<IPC::ChannelPosix> out_chan(new IPC::ChannelPosix(
-      out_handle, IPC::Channel::MODE_CLIENT, &out_listener, nullptr));
+      out_handle, IPC::Channel::MODE_CLIENT, &out_listener));
   ASSERT_TRUE(in_chan->Connect());
   in_chan->Close();  // simulate remote process dying at an unfortunate time.
   ASSERT_FALSE(out_chan->Connect());
@@ -292,7 +292,7 @@ TEST_F(IPCChannelPosixTest, MAYBE_AdvancedConnected) {
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   SetUpSocket(&chan_handle, IPC::Channel::MODE_NAMED_SERVER);
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener, nullptr));
+      chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener));
   ASSERT_TRUE(channel->Connect());
   ASSERT_TRUE(channel->AcceptsConnections());
   ASSERT_FALSE(channel->HasAcceptedConnection());
@@ -328,7 +328,7 @@ TEST_F(IPCChannelPosixTest, MAYBE_ResetState) {
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   SetUpSocket(&chan_handle, IPC::Channel::MODE_NAMED_SERVER);
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener, nullptr));
+      chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener));
   ASSERT_TRUE(channel->Connect());
   ASSERT_TRUE(channel->AcceptsConnections());
   ASSERT_FALSE(channel->HasAcceptedConnection());
@@ -364,7 +364,7 @@ TEST_F(IPCChannelPosixTest, BadChannelName) {
   // Test empty name
   IPC::ChannelHandle handle("");
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      handle, IPC::Channel::MODE_NAMED_SERVER, NULL, nullptr));
+      handle, IPC::Channel::MODE_NAMED_SERVER, NULL));
   ASSERT_FALSE(channel->Connect());
 
   // Test name that is too long.
@@ -378,7 +378,7 @@ TEST_F(IPCChannelPosixTest, BadChannelName) {
   EXPECT_GE(strlen(kTooLongName), IPC::kMaxSocketNameLength);
   IPC::ChannelHandle handle2(kTooLongName);
   scoped_ptr<IPC::ChannelPosix> channel2(new IPC::ChannelPosix(
-      handle2, IPC::Channel::MODE_NAMED_SERVER, NULL, nullptr));
+      handle2, IPC::Channel::MODE_NAMED_SERVER, NULL));
   EXPECT_FALSE(channel2->Connect());
 }
 
@@ -394,7 +394,7 @@ TEST_F(IPCChannelPosixTest, MAYBE_MultiConnection) {
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   SetUpSocket(&chan_handle, IPC::Channel::MODE_NAMED_SERVER);
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener, nullptr));
+      chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener));
   ASSERT_TRUE(channel->Connect());
   ASSERT_TRUE(channel->AcceptsConnections());
   ASSERT_FALSE(channel->HasAcceptedConnection());
@@ -430,9 +430,9 @@ TEST_F(IPCChannelPosixTest, DoubleServer) {
   IPCChannelPosixTestListener listener2(false);
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_SERVER, &listener, nullptr));
+      chan_handle, IPC::Channel::MODE_SERVER, &listener));
   scoped_ptr<IPC::ChannelPosix> channel2(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_SERVER, &listener2, nullptr));
+      chan_handle, IPC::Channel::MODE_SERVER, &listener2));
   ASSERT_TRUE(channel->Connect());
   ASSERT_FALSE(channel2->Connect());
 }
@@ -442,7 +442,7 @@ TEST_F(IPCChannelPosixTest, BadMode) {
   IPCChannelPosixTestListener listener(false);
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_NONE, &listener, nullptr));
+      chan_handle, IPC::Channel::MODE_NONE, &listener));
   ASSERT_FALSE(channel->Connect());
 }
 
@@ -454,7 +454,7 @@ TEST_F(IPCChannelPosixTest, IsNamedServerInitialized) {
   ASSERT_FALSE(IPC::Channel::IsNamedServerInitialized(
       connection_socket_name));
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener, nullptr));
+      chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener));
   ASSERT_TRUE(IPC::Channel::IsNamedServerInitialized(
       connection_socket_name));
   channel->Close();
@@ -470,7 +470,7 @@ MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
   IPC::ChannelHandle handle(IPCChannelPosixTest::GetConnectionSocketName());
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      handle, IPC::Channel::MODE_NAMED_CLIENT, &listener, nullptr));
+      handle, IPC::Channel::MODE_NAMED_CLIENT, &listener));
   EXPECT_TRUE(channel->Connect());
   IPCChannelPosixTest::SpinRunLoop(TestTimeouts::action_max_timeout());
   EXPECT_EQ(IPCChannelPosixTestListener::MESSAGE_RECEIVED, listener.status());
@@ -484,7 +484,7 @@ MULTIPROCESS_TEST_MAIN(IPCChannelPosixFailConnectionProc) {
   IPC::ChannelHandle handle(IPCChannelPosixTest::GetConnectionSocketName());
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);
   scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      handle, IPC::Channel::MODE_NAMED_CLIENT, &listener, nullptr));
+      handle, IPC::Channel::MODE_NAMED_CLIENT, &listener));
 
   // In this case connect may succeed or fail depending on if the packet
   // actually gets sent at sendmsg. Since we never delay on send, we may not

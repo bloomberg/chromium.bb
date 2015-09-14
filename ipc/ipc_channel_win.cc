@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/scoped_handle.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_attachment_set.h"
@@ -38,8 +39,7 @@ ChannelWin::State::~State() {
 
 ChannelWin::ChannelWin(const IPC::ChannelHandle& channel_handle,
                        Mode mode,
-                       Listener* listener,
-                       AttachmentBroker* broker)
+                       Listener* listener)
     : ChannelReader(listener),
       input_state_(this),
       output_state_(this),
@@ -48,7 +48,6 @@ ChannelWin::ChannelWin(const IPC::ChannelHandle& channel_handle,
       processing_incoming_(false),
       validate_client_(false),
       client_secret_(0),
-      broker_(broker),
       weak_factory_(this) {
   CreatePipe(channel_handle, mode);
 }
@@ -107,11 +106,12 @@ bool ChannelWin::ProcessMessageForDelivery(Message* message) {
   // both Send() and ProcessMessageForDelivery() may be re-entrant. Brokered
   // attachments must be sent before the Message itself.
   if (message->HasBrokerableAttachments()) {
-    DCHECK(broker_);
+    DCHECK(GetAttachmentBroker());
     DCHECK(peer_pid_ != base::kNullProcessId);
     for (const BrokerableAttachment* attachment :
          message->attachment_set()->PeekBrokerableAttachments()) {
-      if (!broker_->SendAttachmentToProcess(attachment, peer_pid_)) {
+      if (!GetAttachmentBroker()->SendAttachmentToProcess(attachment,
+                                                          peer_pid_)) {
         delete message;
         return false;
       }
@@ -161,7 +161,7 @@ void ChannelWin::FlushPrelimQueue() {
 }
 
 AttachmentBroker* ChannelWin::GetAttachmentBroker() {
-  return broker_;
+  return AttachmentBroker::GetGlobal();
 }
 
 base::ProcessId ChannelWin::GetPeerPID() const {
@@ -567,7 +567,7 @@ scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
                                     Listener* listener,
                                     AttachmentBroker* broker) {
   return scoped_ptr<Channel>(
-      new ChannelWin(channel_handle, mode, listener, broker));
+      new ChannelWin(channel_handle, mode, listener));
 }
 
 // static

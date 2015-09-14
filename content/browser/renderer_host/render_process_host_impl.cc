@@ -737,14 +737,12 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
 
     return IPC::ChannelProxy::Create(
         IPC::ChannelMojo::CreateServerFactory(
-            mojo_task_runner, channel_id,
-            content::ChildProcessHost::GetAttachmentBroker()),
+            mojo_task_runner, channel_id),
         this, runner.get());
   }
 
   return IPC::ChannelProxy::Create(
-      channel_id, IPC::Channel::MODE_SERVER, this, runner.get(),
-      content::ChildProcessHost::GetAttachmentBroker());
+      channel_id, IPC::Channel::MODE_SERVER, this, runner.get());
 }
 
 void RenderProcessHostImpl::CreateMessageFilters() {

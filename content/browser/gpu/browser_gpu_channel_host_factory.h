@@ -31,7 +31,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) override;
-  IPC::AttachmentBroker* GetAttachmentBroker() override;
 
   int GpuProcessHostId() { return gpu_host_id_; }
 #if !defined(OS_ANDROID)

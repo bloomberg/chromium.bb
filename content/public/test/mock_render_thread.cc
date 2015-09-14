@@ -189,10 +189,6 @@ void MockRenderThread::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
-IPC::AttachmentBroker* MockRenderThread::GetAttachmentBroker() {
-  return nullptr;
-}
-
 ServiceRegistry* MockRenderThread::GetServiceRegistry() {
   return NULL;
 }

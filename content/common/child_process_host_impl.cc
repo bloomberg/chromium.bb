@@ -18,6 +18,7 @@
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
@@ -35,12 +36,33 @@
 #include "ipc/attachment_broker_privileged_win.h"
 #endif  // OS_LINUX
 
-#if defined(OS_WIN)
-base::LazyInstance<IPC::AttachmentBrokerPrivilegedWin>::Leaky
-    g_attachment_broker = LAZY_INSTANCE_INITIALIZER;
-#endif  // defined(OS_WIN)
-
 namespace {
+
+#if USE_ATTACHMENT_BROKER
+// This class is wrapped in a singleton to ensure that its constructor is only
+// called once. The constructor creates an attachment broker and
+// sets it as the global broker.
+class AttachmentBrokerWrapper {
+ public:
+  AttachmentBrokerWrapper() {
+    IPC::AttachmentBroker::SetGlobal(&attachment_broker_);
+  }
+
+  IPC::AttachmentBrokerPrivileged* GetAttachmentBroker() {
+    return &attachment_broker_;
+  }
+
+ private:
+  IPC::AttachmentBrokerPrivilegedWin attachment_broker_;
+};
+
+base::LazyInstance<AttachmentBrokerWrapper>::Leaky
+    g_attachment_broker_wrapper = LAZY_INSTANCE_INITIALIZER;
+
+IPC::AttachmentBrokerPrivileged* GetAttachmentBroker() {
+  return g_attachment_broker_wrapper.Get().GetAttachmentBroker();
+}
+#endif  // USE_ATTACHMENT_BROKER
 
 // Global atomic to generate child process unique IDs.
 base::StaticAtomicSequenceNumber g_unique_id;
@@ -83,15 +105,6 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
   return child_path;
 }
 
-// static
-IPC::AttachmentBrokerPrivileged* ChildProcessHost::GetAttachmentBroker() {
-#if USE_ATTACHMENT_BROKER
-  return &g_attachment_broker.Get();
-#else
-  return nullptr;
-#endif  // USE_ATTACHMENT_BROKER
-}
-
 ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
     : delegate_(delegate),
       opening_channel_(false) {
@@ -102,7 +115,7 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
 #if USE_ATTACHMENT_BROKER
-  g_attachment_broker.Get().DeregisterCommunicationChannel(channel_.get());
+  GetAttachmentBroker()->DeregisterCommunicationChannel(channel_.get());
 #endif
   for (size_t i = 0; i < filters_.size(); ++i) {
     filters_[i]->OnChannelClosing();
@@ -123,12 +136,11 @@ void ChildProcessHostImpl::ForceShutdown() {
 
 std::string ChildProcessHostImpl::CreateChannel() {
   channel_id_ = IPC::Channel::GenerateVerifiedChannelID(std::string());
-  channel_ =
-      IPC::Channel::CreateServer(channel_id_, this, GetAttachmentBroker());
+  channel_ = IPC::Channel::CreateServer(channel_id_, this);
   if (!channel_->Connect())
     return std::string();
 #if USE_ATTACHMENT_BROKER
-  g_attachment_broker.Get().RegisterCommunicationChannel(channel_.get());
+  GetAttachmentBroker()->RegisterCommunicationChannel(channel_.get());
 #endif
 
   for (size_t i = 0; i < filters_.size(); ++i)

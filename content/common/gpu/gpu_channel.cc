@@ -648,16 +648,15 @@ GpuChannel::~GpuChannel() {
     preempting_flag_->Reset();
 }
 
-IPC::ChannelHandle GpuChannel::Init(base::WaitableEvent* shutdown_event,
-                                    IPC::AttachmentBroker* attachment_broker) {
+IPC::ChannelHandle GpuChannel::Init(base::WaitableEvent* shutdown_event) {
   DCHECK(shutdown_event);
   DCHECK(!channel_);
 
   IPC::ChannelHandle channel_handle(channel_id_);
 
-  channel_ = IPC::SyncChannel::Create(channel_handle, IPC::Channel::MODE_SERVER,
-                                      this, io_task_runner_, false,
-                                      shutdown_event, attachment_broker);
+  channel_ =
+      IPC::SyncChannel::Create(channel_handle, IPC::Channel::MODE_SERVER, this,
+                               io_task_runner_, false, shutdown_event);
 
 #if defined(OS_POSIX)
   // On POSIX, pass the renderer-side FD. Also mark it as auto-close so

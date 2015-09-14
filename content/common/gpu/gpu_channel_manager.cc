@@ -35,7 +35,6 @@ GpuChannelManager::GpuChannelManager(
     base::SingleThreadTaskRunner* task_runner,
     base::SingleThreadTaskRunner* io_task_runner,
     base::WaitableEvent* shutdown_event,
-    IPC::AttachmentBroker* broker,
     gpu::SyncPointManager* sync_point_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : task_runner_(task_runner),
@@ -48,7 +47,6 @@ GpuChannelManager::GpuChannelManager(
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
       sync_point_manager_(sync_point_manager),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
-      attachment_broker_(broker),
       weak_factory_(this) {
   DCHECK(task_runner);
   DCHECK(io_task_runner);
@@ -171,8 +169,7 @@ void GpuChannelManager::OnEstablishChannel(int client_id,
   scoped_ptr<GpuChannel> channel = CreateGpuChannel(
       share_group, mailbox_manager, client_id, client_tracing_id,
       allow_future_sync_points, allow_real_time_streams);
-  IPC::ChannelHandle channel_handle =
-      channel->Init(shutdown_event_, attachment_broker_);
+  IPC::ChannelHandle channel_handle = channel->Init(shutdown_event_);
 
   gpu_channels_.set(client_id, channel.Pass());
 
