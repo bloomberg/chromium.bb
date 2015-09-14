@@ -23,27 +23,26 @@
 namespace gpu {
 namespace gles2 {
 
-class AllSamplesPassedQuery : public QueryManager::Query {
+class AbstractIntegerQuery : public QueryManager::Query {
  public:
-  AllSamplesPassedQuery(
+  AbstractIntegerQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
   bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   void Pause() override;
   void Resume() override;
-  bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
  protected:
-  ~AllSamplesPassedQuery() override;
+  ~AbstractIntegerQuery() override;
+  bool AreAllResultsAvailable();
 
- private:
-  // Service side query id.
+  // Service side query ids.
   std::vector<GLuint> service_ids_;
 };
 
-AllSamplesPassedQuery::AllSamplesPassedQuery(
+AbstractIntegerQuery::AbstractIntegerQuery(
     QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
     : Query(manager, target, shm_id, shm_offset) {
   GLuint service_id = 0;
@@ -52,7 +51,7 @@ AllSamplesPassedQuery::AllSamplesPassedQuery(
   service_ids_.push_back(service_id);
 }
 
-bool AllSamplesPassedQuery::Begin() {
+bool AbstractIntegerQuery::Begin() {
   MarkAsActive();
   // Delete all but the first one when beginning a new query.
   if (service_ids_.size() > 1) {
@@ -63,22 +62,22 @@ bool AllSamplesPassedQuery::Begin() {
   return true;
 }
 
-bool AllSamplesPassedQuery::End(base::subtle::Atomic32 submit_count) {
+bool AbstractIntegerQuery::End(base::subtle::Atomic32 submit_count) {
   EndQueryHelper(target());
   return AddToPendingQueue(submit_count);
 }
 
-bool AllSamplesPassedQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+bool AbstractIntegerQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
   NOTREACHED();
   return false;
 }
 
-void AllSamplesPassedQuery::Pause() {
+void AbstractIntegerQuery::Pause() {
   MarkAsPaused();
   EndQueryHelper(target());
 }
 
-void AllSamplesPassedQuery::Resume() {
+void AbstractIntegerQuery::Resume() {
   MarkAsActive();
 
   GLuint service_id = 0;
@@ -88,11 +87,46 @@ void AllSamplesPassedQuery::Resume() {
   BeginQueryHelper(target(), service_ids_.back());
 }
 
-bool AllSamplesPassedQuery::Process(bool did_finish) {
+void AbstractIntegerQuery::Destroy(bool have_context) {
+  if (have_context && !IsDeleted()) {
+    glDeleteQueries(service_ids_.size(), &service_ids_[0]);
+    service_ids_.clear();
+    MarkAsDeleted();
+  }
+}
+
+AbstractIntegerQuery::~AbstractIntegerQuery() {
+}
+
+bool AbstractIntegerQuery::AreAllResultsAvailable() {
   GLuint available = 0;
   glGetQueryObjectuiv(
       service_ids_.back(), GL_QUERY_RESULT_AVAILABLE_EXT, &available);
-  if (!available) {
+  return !!available;
+}
+
+class BooleanQuery : public AbstractIntegerQuery {
+ public:
+  BooleanQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  bool Process(bool did_finish) override;
+
+ protected:
+  ~BooleanQuery() override;
+};
+
+BooleanQuery::BooleanQuery(
+    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
+    : AbstractIntegerQuery(manager, target, shm_id, shm_offset) {
+}
+
+BooleanQuery::~BooleanQuery() {
+}
+
+bool BooleanQuery::Process(bool did_finish) {
+  if (!AreAllResultsAvailable()) {
+    // Must return true to avoid generating an error at the command
+    // buffer level.
     return true;
   }
   for (const GLuint& service_id : service_ids_) {
@@ -104,15 +138,37 @@ bool AllSamplesPassedQuery::Process(bool did_finish) {
   return MarkAsCompleted(0);
 }
 
-void AllSamplesPassedQuery::Destroy(bool have_context) {
-  if (have_context && !IsDeleted()) {
-    glDeleteQueries(service_ids_.size(), &service_ids_[0]);
-    service_ids_.clear();
-    MarkAsDeleted();
-  }
+class SummedIntegerQuery : public AbstractIntegerQuery {
+ public:
+  SummedIntegerQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  bool Process(bool did_finish) override;
+
+ protected:
+  ~SummedIntegerQuery() override;
+};
+
+SummedIntegerQuery::SummedIntegerQuery(
+    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
+    : AbstractIntegerQuery(manager, target, shm_id, shm_offset) {
 }
 
-AllSamplesPassedQuery::~AllSamplesPassedQuery() {
+SummedIntegerQuery::~SummedIntegerQuery() {
+}
+
+bool SummedIntegerQuery::Process(bool did_finish) {
+  if (!AreAllResultsAvailable()) {
+    // Must return true to avoid generating an error at the command
+    // buffer level.
+    return true;
+  }
+  GLuint summed_result = 0;
+  for (const GLuint& service_id : service_ids_) {
+    GLuint result = 0;
+    glGetQueryObjectuiv(service_id, GL_QUERY_RESULT_EXT, &result);
+    summed_result += result;
+  }
+  return MarkAsCompleted(summed_result);
 }
 
 class CommandsIssuedQuery : public QueryManager::Query {
@@ -705,9 +761,15 @@ QueryManager::Query* QueryManager::CreateQuery(
     case GL_TIMESTAMP:
       query = new TimeStampQuery(this, target, shm_id, shm_offset);
       break;
-    default: {
-      query = new AllSamplesPassedQuery(this, target, shm_id, shm_offset);
+    case GL_ANY_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
+      query = new BooleanQuery(this, target, shm_id, shm_offset);
       break;
+    case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
+      query = new SummedIntegerQuery(this, target, shm_id, shm_offset);
+      break;
+    default: {
+      NOTREACHED();
     }
   }
   std::pair<QueryMap::iterator, bool> result =
