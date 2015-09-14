@@ -178,18 +178,21 @@ void KeyframeEffect::applyEffects()
     ASSERT(iteration >= 0);
     OwnPtr<Vector<RefPtr<Interpolation>>> interpolations = m_sampledEffect ? m_sampledEffect->mutableInterpolations() : nullptr;
     // FIXME: Handle iteration values which overflow int.
-    m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), interpolations);
+    bool changed = m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), interpolations);
     if (m_sampledEffect) {
         m_sampledEffect->setInterpolations(interpolations.release());
     } else if (interpolations && !interpolations->isEmpty()) {
         SampledEffect* sampledEffect = SampledEffect::create(this, interpolations.release());
         m_sampledEffect = sampledEffect;
         ensureAnimationStack(m_target).add(sampledEffect);
+        changed = true;
     } else {
         return;
     }
 
-    m_target->setNeedsAnimationStyleRecalc();
+    if (changed)
+        m_target->setNeedsAnimationStyleRecalc();
+
     if (m_target->isSVGElement())
         m_sampledEffect->applySVGUpdate(toSVGElement(*m_target));
 }

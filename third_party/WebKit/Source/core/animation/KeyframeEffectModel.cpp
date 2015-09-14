@@ -61,16 +61,22 @@ void KeyframeEffectModelBase::setFrames(KeyframeVector& keyframes)
     m_keyframes = keyframes;
     m_keyframeGroups = nullptr;
     m_interpolationEffect = nullptr;
+    m_lastFraction = std::numeric_limits<double>::quiet_NaN();
 }
 
-void KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>& result) const
+bool KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>& result) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
     ensureKeyframeGroups();
     ensureInterpolationEffect();
 
-    return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
+    bool changed = iteration != m_lastIteration || fraction != m_lastFraction || iterationDuration != m_lastIterationDuration;
+    m_lastIteration = iteration;
+    m_lastFraction = fraction;
+    m_lastIterationDuration = iterationDuration;
+    m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
+    return changed;
 }
 
 void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element, const ComputedStyle* baseStyle)

@@ -85,7 +85,7 @@ public:
     }
 
     // EffectModel implementation.
-    void sample(int iteration, double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>&) const override;
+    bool sample(int iteration, double fraction, double iterationDuration, OwnPtr<Vector<RefPtr<Interpolation>>>&) const override;
 
     bool isKeyframeEffectModel() const override { return true; }
 
@@ -118,7 +118,11 @@ public:
 
 protected:
     KeyframeEffectModelBase(PassRefPtr<TimingFunction> neutralKeyframeEasing)
-        : m_neutralKeyframeEasing(neutralKeyframeEasing)
+        : m_lastIteration(0)
+        , m_lastFraction(std::numeric_limits<double>::quiet_NaN())
+        , m_lastIterationDuration(0)
+        , m_neutralKeyframeEasing(neutralKeyframeEasing)
+        , m_hasSyntheticKeyframes(false)
     {
     }
 
@@ -136,6 +140,9 @@ protected:
     using KeyframeGroupMap = HashMap<PropertyHandle, OwnPtr<PropertySpecificKeyframeGroup>>;
     mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
     mutable RefPtr<InterpolationEffect> m_interpolationEffect;
+    mutable int m_lastIteration;
+    mutable double m_lastFraction;
+    mutable double m_lastIterationDuration;
     RefPtr<TimingFunction> m_neutralKeyframeEasing;
 
     mutable bool m_hasSyntheticKeyframes;

@@ -59,7 +59,7 @@ void InertEffect::sample(OwnPtr<Vector<RefPtr<Interpolation>>>& result)
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    return m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), result);
+    m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), result);
 }
 
 double InertEffect::calculateTimeToEffectChange(bool, double, double) const
