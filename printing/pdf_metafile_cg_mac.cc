@@ -70,7 +70,7 @@ void RotatePage(CGContextRef context, const CGRect rect, int num_rotations) {
     default:
       NOTREACHED();
       break;
-  };
+  }
 }
 
 }  // namespace
@@ -128,7 +128,7 @@ bool PdfMetafileCg::Init() {
 }
 
 bool PdfMetafileCg::InitFromData(const void* src_buffer,
-                                 uint32 src_buffer_size) {
+                                 uint32_t src_buffer_size) {
   DCHECK(!context_.get());
   DCHECK(!pdf_data_.get());
 
@@ -295,23 +295,23 @@ gfx::Rect PdfMetafileCg::GetPageBounds(unsigned int page_number) const {
   return gfx::Rect(page_rect);
 }
 
-uint32 PdfMetafileCg::GetDataSize() const {
+uint32_t PdfMetafileCg::GetDataSize() const {
   // PDF data is only valid/complete once the context is released.
   DCHECK(!context_);
 
   if (!pdf_data_)
     return 0;
-  return static_cast<uint32>(CFDataGetLength(pdf_data_));
+  return static_cast<uint32_t>(CFDataGetLength(pdf_data_));
 }
 
-bool PdfMetafileCg::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
+bool PdfMetafileCg::GetData(void* dst_buffer, uint32_t dst_buffer_size) const {
   // PDF data is only valid/complete once the context is released.
   DCHECK(!context_);
   DCHECK(pdf_data_);
   DCHECK(dst_buffer);
   DCHECK_GT(dst_buffer_size, 0U);
 
-  uint32 data_size = GetDataSize();
+  uint32_t data_size = GetDataSize();
   if (dst_buffer_size > data_size) {
     return false;
   }

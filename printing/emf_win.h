@@ -56,7 +56,7 @@ class PRINTING_EXPORT Emf : public Metafile {
   // Metafile methods.
   bool Init() override;
   bool InitFromData(const void* src_buffer,
-                    uint32 src_buffer_size) override;
+                    uint32_t src_buffer_size) override;
 
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
@@ -68,8 +68,8 @@ class PRINTING_EXPORT Emf : public Metafile {
   bool FinishPage() override;
   bool FinishDocument() override;
 
-  uint32 GetDataSize() const override;
-  bool GetData(void* buffer, uint32 size) const override;
+  uint32_t GetDataSize() const override;
+  bool GetData(void* buffer, uint32_t size) const override;
 
   // Should be passed to Playback to keep the exact same size.
   gfx::Rect GetPageBounds(unsigned int page_number) const override;

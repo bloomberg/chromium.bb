@@ -23,7 +23,7 @@ namespace {
 // destructor.
 class DisableFontSmoothing {
  public:
-  explicit DisableFontSmoothing() : enable_again_(false) {
+  DisableFontSmoothing() : enable_again_(false) {
     BOOL enabled;
     if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0) &&
         enabled) {
@@ -77,7 +77,7 @@ bool Image::LoadMetafile(const Metafile& metafile) {
 
   bool success = metafile.Playback(hdc.Get(), NULL);
 
-  row_length_ = size_.width() * sizeof(uint32);
+  row_length_ = size_.width() * sizeof(uint32_t);
   size_t bytes = row_length_ * size_.height();
   DCHECK(bytes);
 

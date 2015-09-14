@@ -113,7 +113,6 @@ class RasterBitmap {
     RECT rect = bitmap_rect.ToRECT();
     ::FillRect(context_.Get(), &rect,
                static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH)));
-
   }
 
   ~RasterBitmap() {
@@ -139,7 +138,7 @@ class RasterBitmap {
 
 namespace printing {
 
-bool DIBFormatNativelySupported(HDC dc, uint32 escape, const BYTE* bits,
+bool DIBFormatNativelySupported(HDC dc, uint32_t escape, const BYTE* bits,
                                 int size) {
   BOOL supported = FALSE;
   if (ExtEscape(dc, QUERYESCSUPPORT, sizeof(escape),
@@ -185,7 +184,7 @@ bool Emf::Init() {
   return hdc_ != NULL;
 }
 
-bool Emf::InitFromData(const void* src_buffer, uint32 src_buffer_size) {
+bool Emf::InitFromData(const void* src_buffer, uint32_t src_buffer_size) {
   DCHECK(!emf_ && !hdc_);
   emf_ = SetEnhMetaFileBits(src_buffer_size,
                             reinterpret_cast<const BYTE*>(src_buffer));
@@ -254,15 +253,15 @@ HDC Emf::context() const {
   return hdc_;
 }
 
-uint32 Emf::GetDataSize() const {
+uint32_t Emf::GetDataSize() const {
   DCHECK(emf_ && !hdc_);
   return GetEnhMetaFileBits(emf_, 0, NULL);
 }
 
-bool Emf::GetData(void* buffer, uint32 size) const {
+bool Emf::GetData(void* buffer, uint32_t size) const {
   DCHECK(emf_ && !hdc_);
   DCHECK(buffer && size);
-  uint32 size2 =
+  uint32_t size2 =
       GetEnhMetaFileBits(emf_, size, reinterpret_cast<BYTE*>(buffer));
   DCHECK(size2 == size);
   return size2 == size && size2 != 0;
@@ -530,7 +529,8 @@ scoped_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
     page_bounds = gfx::Rect(1, 1);
   }
 
-  float scale = sqrt(float(raster_area_in_pixels) / page_size.GetArea());
+  float scale = sqrt(
+      static_cast<float>(raster_area_in_pixels) / page_size.GetArea());
   page_size.set_width(std::max<int>(1, page_size.width() * scale));
   page_size.set_height(std::max<int>(1, page_size.height() * scale));
 
@@ -552,8 +552,10 @@ scoped_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
 
   ::ModifyWorldTransform(hdc, NULL, MWT_IDENTITY);
   XFORM xform = {
-    float(page_bounds.width()) / bitmap_rect.width(), 0,
-    0, float(page_bounds.height()) / bitmap_rect.height(),
+    static_cast<float>(page_bounds.width()) / bitmap_rect.width(),
+    0,
+    0,
+    static_cast<float>(page_bounds.height()) / bitmap_rect.height(),
     static_cast<float>(page_bounds.x()),
     static_cast<float>(page_bounds.y()),
   };

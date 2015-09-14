@@ -91,22 +91,22 @@ double Image::PercentageDifferent(const Image& rhs) const {
   int pixels_different = 0;
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      uint32 lhs_pixel = pixel_at(x, y);
-      uint32 rhs_pixel = rhs.pixel_at(x, y);
+      uint32_t lhs_pixel = pixel_at(x, y);
+      uint32_t rhs_pixel = rhs.pixel_at(x, y);
       if (lhs_pixel != rhs_pixel)
         ++pixels_different;
     }
 
     // Look for extra right lhs pixels. They should be white.
     for (int x = width; x < size_.width(); ++x) {
-      uint32 lhs_pixel = pixel_at(x, y);
+      uint32_t lhs_pixel = pixel_at(x, y);
       if (lhs_pixel != Color(SK_ColorWHITE))
         ++pixels_different;
     }
 
     // Look for extra right rhs pixels. They should be white.
     for (int x = width; x < rhs.size_.width(); ++x) {
-      uint32 rhs_pixel = rhs.pixel_at(x, y);
+      uint32_t rhs_pixel = rhs.pixel_at(x, y);
       if (rhs_pixel != Color(SK_ColorWHITE))
         ++pixels_different;
     }
@@ -115,7 +115,7 @@ double Image::PercentageDifferent(const Image& rhs) const {
   // Look for extra bottom lhs pixels. They should be white.
   for (int y = height; y < size_.height(); ++y) {
     for (int x = 0; x < size_.width(); ++x) {
-      uint32 lhs_pixel = pixel_at(x, y);
+      uint32_t lhs_pixel = pixel_at(x, y);
       if (lhs_pixel != Color(SK_ColorWHITE))
         ++pixels_different;
     }
@@ -124,7 +124,7 @@ double Image::PercentageDifferent(const Image& rhs) const {
   // Look for extra bottom rhs pixels. They should be white.
   for (int y = height; y < rhs.size_.height(); ++y) {
     for (int x = 0; x < rhs.size_.width(); ++x) {
-      uint32 rhs_pixel = rhs.pixel_at(x, y);
+      uint32_t rhs_pixel = rhs.pixel_at(x, y);
       if (rhs_pixel != Color(SK_ColorWHITE))
         ++pixels_different;
     }
@@ -144,7 +144,7 @@ bool Image::LoadPng(const std::string& compressed) {
       reinterpret_cast<const unsigned char*>(compressed.c_str()),
       compressed.size(), gfx::PNGCodec::FORMAT_BGRA, &data_, &w, &h);
   size_.SetSize(w, h);
-  row_length_ = size_.width() * sizeof(uint32);
+  row_length_ = size_.width() * sizeof(uint32_t);
   return success;
 }
 
@@ -152,7 +152,7 @@ bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
   PdfMetafileSkia metafile;
   if (!metafile.InitFromData(data.data(),
-                             base::checked_cast<uint32>(data.size())))
+                             base::checked_cast<uint32_t>(data.size())))
     return false;
   return LoadMetafile(metafile);
 }

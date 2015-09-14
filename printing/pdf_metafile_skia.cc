@@ -84,7 +84,7 @@ bool PdfMetafileSkia::Init() {
 // Metafile::InitFromData is orthogonal to what the rest of
 // PdfMetafileSkia does.
 bool PdfMetafileSkia::InitFromData(const void* src_buffer,
-                                   uint32 src_buffer_size) {
+                                   uint32_t src_buffer_size) {
   data_->pdf_data_.reset(new SkMemoryStream(src_buffer, src_buffer_size, true));
   return true;
 }
@@ -153,14 +153,14 @@ bool PdfMetafileSkia::FinishDocument() {
   return true;
 }
 
-uint32 PdfMetafileSkia::GetDataSize() const {
+uint32_t PdfMetafileSkia::GetDataSize() const {
   if (!data_->pdf_data_)
     return 0;
-  return base::checked_cast<uint32>(data_->pdf_data_->getLength());
+  return base::checked_cast<uint32_t>(data_->pdf_data_->getLength());
 }
 
 bool PdfMetafileSkia::GetData(void* dst_buffer,
-                              uint32 dst_buffer_size) const {
+                              uint32_t dst_buffer_size) const {
   if (!data_->pdf_data_)
     return false;
   return WriteAssetToBuffer(data_->pdf_data_.get(), dst_buffer,
@@ -215,7 +215,8 @@ bool PdfMetafileSkia::RenderPage(unsigned int page_number,
     size_t length = data_->pdf_data_->getLength();
     std::vector<uint8_t> buffer(length);
     (void)WriteAssetToBuffer(data_->pdf_data_.get(), &buffer[0], length);
-    data_->pdf_cg_.InitFromData(&buffer[0], base::checked_cast<uint32>(length));
+    data_->pdf_cg_.InitFromData(&buffer[0],
+                                base::checked_cast<uint32_t>(length));
   }
   return data_->pdf_cg_.RenderPage(page_number, context, rect, params);
 }

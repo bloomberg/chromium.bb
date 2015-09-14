@@ -28,7 +28,7 @@ void PrintSettingsInitializerMac::InitPrintSettings(
                                                        &resolution_count);
   if (status == noErr) {
     // Resolution indexes are 1-based.
-    for (uint32 i = 1; i <= resolution_count; ++i) {
+    for (uint32_t i = 1; i <= resolution_count; ++i) {
       PMResolution resolution;
       PMPrinterGetIndexedPrinterResolution(printer, i, &resolution);
       if (resolution.hRes > best_resolution.hRes)

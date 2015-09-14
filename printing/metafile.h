@@ -107,7 +107,8 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   // Initializes the metafile with the data in |src_buffer|. Returns true
   // on success.
   // Note: It should only be called from within the browser process.
-  virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size) = 0;
+  virtual bool InitFromData(const void* src_buffer,
+                            uint32_t src_buffer_size) = 0;
 
   // Prepares a context for rendering a new page with the given |page_size|,
   // |content_area| and  a |scale_factor| to use for the drawing. The units are
@@ -127,12 +128,12 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
 
   // Returns the size of the underlying data stream. Only valid after Close()
   // has been called.
-  virtual uint32 GetDataSize() const = 0;
+  virtual uint32_t GetDataSize() const = 0;
 
   // Copies the first |dst_buffer_size| bytes of the underlying data stream into
   // |dst_buffer|. This function should ONLY be called after Close() is invoked.
   // Returns true if the copy succeeds.
-  virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const = 0;
+  virtual bool GetData(void* dst_buffer, uint32_t dst_buffer_size) const = 0;
 
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const = 0;
   virtual unsigned int GetPageCount() const = 0;

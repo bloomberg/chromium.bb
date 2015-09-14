@@ -45,13 +45,14 @@ class EmfPrintingTest : public testing::Test, public PrintingContext::Delegate {
   std::string GetAppLocale() override { return std::string(); }
 };
 
-const uint32 EMF_HEADER_SIZE = 128;
+const uint32_t EMF_HEADER_SIZE = 128;
+const int ONE_MB = 1024 * 1024;
 
 }  // namespace
 
 TEST(EmfTest, DC) {
   // Simplest use case.
-  uint32 size;
+  uint32_t size;
   std::vector<char> data;
   {
     Emf emf;
@@ -133,7 +134,7 @@ TEST_F(EmfPrintingTest, PageBreak) {
       CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL));
   if (!dc.Get())
     return;
-  uint32 size;
+  uint32_t size;
   std::vector<char> data;
   {
     Emf emf;
@@ -178,7 +179,7 @@ TEST(EmfTest, FileBackedEmf) {
   base::FilePath metafile_path;
   EXPECT_TRUE(base::CreateTemporaryFileInDir(scratch_metafile_dir.path(),
                                              &metafile_path));
-  uint32 size;
+  uint32_t size;
   std::vector<char> data;
   {
     Emf emf;
@@ -192,7 +193,7 @@ TEST(EmfTest, FileBackedEmf) {
     EXPECT_TRUE(emf.GetDataAsVector(&data));
     EXPECT_EQ(data.size(), size);
   }
-  int64 file_size = 0;
+  int64_t file_size = 0;
   base::GetFileSize(metafile_path, &file_size);
   EXPECT_EQ(size, file_size);
 
@@ -224,9 +225,9 @@ TEST(EmfTest, RasterizeMetafile) {
   raster = emf.RasterizeMetafile(20);
   EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
 
-  raster = emf.RasterizeMetafile(16 * 1024 * 1024);
+  raster = emf.RasterizeMetafile(16 * ONE_MB);
   // Expected size about 64MB.
-  EXPECT_LE(abs(int(raster->GetDataSize()) - 64 * 1024 * 1024), 1024 * 1024);
+  EXPECT_LE(abs(static_cast<int>(raster->GetDataSize()) - 64 * ONE_MB), ONE_MB);
   // Bounds should still be the same.
   EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
 }

@@ -36,7 +36,7 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
 
   // Metafile methods.
   bool Init() override;
-  bool InitFromData(const void* src_buffer, uint32 src_buffer_size) override;
+  bool InitFromData(const void* src_buffer, uint32_t src_buffer_size) override;
 
   bool StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
@@ -44,8 +44,8 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   bool FinishPage() override;
   bool FinishDocument() override;
 
-  uint32 GetDataSize() const override;
-  bool GetData(void* dst_buffer, uint32 dst_buffer_size) const override;
+  uint32_t GetDataSize() const override;
+  bool GetData(void* dst_buffer, uint32_t dst_buffer_size) const override;
 
   gfx::Rect GetPageBounds(unsigned int page_number) const override;
   unsigned int GetPageCount() const override;

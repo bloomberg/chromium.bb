@@ -20,7 +20,7 @@ bool Image::LoadMetafile(const Metafile& metafile) {
     return false;
 
   size_ = rect.size();
-  row_length_ = size_.width() * sizeof(uint32);
+  row_length_ = size_.width() * sizeof(uint32_t);
   size_t bytes = row_length_ * size_.height();
   DCHECK(bytes);
 

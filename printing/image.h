@@ -53,18 +53,18 @@ class PRINTING_EXPORT Image {
   double PercentageDifferent(const Image& rhs) const;
 
   // Returns the 0x0RGB or 0xARGB value of the pixel at the given location.
-  uint32 Color(uint32 color) const {
+  uint32_t Color(uint32_t color) const {
     if (ignore_alpha_)
       return color & 0xFFFFFF;  // Strip out A.
     else
       return color;
   }
 
-  uint32 pixel_at(int x, int y) const {
+  uint32_t pixel_at(int x, int y) const {
     DCHECK(x >= 0 && x < size_.width());
     DCHECK(y >= 0 && y < size_.height());
-    const uint32* data = reinterpret_cast<const uint32*>(&*data_.begin());
-    const uint32* data_row = data + y * row_length_ / sizeof(uint32);
+    const uint32_t* data = reinterpret_cast<const uint32_t*>(&*data_.begin());
+    const uint32_t* data_row = data + y * row_length_ / sizeof(uint32_t);
     return Color(data_row[x]);
   }
 
@@ -85,7 +85,7 @@ class PRINTING_EXPORT Image {
   // Length of a line in bytes.
   int row_length_;
 
-  // Actual bitmap data in arrays of RGBAs (so when loaded as uint32, it's
+  // Actual bitmap data in arrays of RGBAs (so when loaded as uint32_t, it's
   // 0xABGR).
   std::vector<unsigned char> data_;
 
