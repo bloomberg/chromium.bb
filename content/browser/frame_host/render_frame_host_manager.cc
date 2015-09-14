@@ -2579,8 +2579,13 @@ void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
       // Create a swapped out RenderView in the given SiteInstance if none
       // exists. Since an opener can point to a subframe, do this on the root
       // frame of the current opener's frame tree.
-      frame_tree->root()->render_manager()->CreateRenderFrame(
-          instance, nullptr, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN, nullptr);
+      if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
+        frame_tree->root()->render_manager()->CreateRenderFrameProxy(instance);
+      } else {
+        frame_tree->root()->render_manager()->CreateRenderFrame(
+            instance, nullptr, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
+            nullptr);
+      }
     }
   }
 }
