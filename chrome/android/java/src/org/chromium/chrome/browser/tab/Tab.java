@@ -596,9 +596,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             } else {
                 rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_SHOWN_IN_FOREGROUND_APP;
                 showSadTab();
-                // TODO(jaekyun): This isn't needed anymore because a histogram
-                // "Tab.RendererCrashStatus" is recorded.
-                UmaSessionStats.logRendererCrash(mWindowAndroid.getActivity().get());
+                // This is necessary to correlate histogram data with stability counts.
+                UmaSessionStats.logRendererCrash();
             }
             RecordHistogram.recordEnumeratedHistogram(
                     "Tab.RendererCrashStatus", rendererCrashStatus, TAB_RENDERER_CRASH_STATUS_MAX);

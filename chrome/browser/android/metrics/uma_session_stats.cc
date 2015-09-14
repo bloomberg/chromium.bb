@@ -114,22 +114,13 @@ static void UpdateMetricsServiceState(JNIEnv* env,
 }
 
 // Renderer process crashed in the foreground.
-static void LogRendererCrash(JNIEnv* env,
-                             const JavaParamRef<jclass>& clazz,
-                             jboolean is_paused) {
+static void LogRendererCrash(JNIEnv*, const JavaParamRef<jclass>&) {
   DCHECK(g_browser_process);
-
-  if (!is_paused) {
-    // Increment the renderer crash count in stability metrics.
-    PrefService* pref = g_browser_process->local_state();
-    DCHECK(pref);
-    int value = pref->GetInteger(prefs::kStabilityRendererCrashCount);
-    pref->SetInteger(prefs::kStabilityRendererCrashCount, value + 1);
-  }
-
-  // Note: When we are paused, any UI metric we increment may not make it to
-  // the disk before we are killed. Treat the count below as a lower bound.
-  content::RecordAction(base::UserMetricsAction("MobileRendererCrashed"));
+  // Increment the renderer crash count in stability metrics.
+  PrefService* pref = g_browser_process->local_state();
+  DCHECK(pref);
+  int value = pref->GetInteger(prefs::kStabilityRendererCrashCount);
+  pref->SetInteger(prefs::kStabilityRendererCrashCount, value + 1);
 }
 
 static void RegisterExternalExperiment(JNIEnv* env,
