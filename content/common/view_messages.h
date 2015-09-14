@@ -64,6 +64,7 @@
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_MACOSX)
+#include "third_party/WebKit/public/platform/mac/MacScrollTypes.h"
 #include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
 #endif
 
