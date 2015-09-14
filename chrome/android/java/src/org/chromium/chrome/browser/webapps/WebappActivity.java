@@ -102,15 +102,12 @@ public class WebappActivity extends FullScreenActivity {
         getActivityTab().addObserver(createTabObserver());
         getActivityTab().getChromeWebContentsDelegateAndroid().setDisplayMode(
                 (int) WebDisplayMode.Standalone);
-        updateTaskDescription();
     }
 
     @Override
     public void preInflationStartup() {
         WebappInfo info = WebappInfo.create(getIntent());
         if (info != null) mWebappInfo.copy(info);
-
-        updateTaskDescription();
 
         mCleanupTask = new WebappDirectoryManager(getActivityDirectory(),
                 WEBAPP_SCHEME, FeatureUtilities.isDocumentModeEligible(this));
@@ -151,12 +148,16 @@ public class WebappActivity extends FullScreenActivity {
 
     @Override
     public void onResume() {
-        if (!isFinishing() && getIntent() != null) {
-            // Avoid situations where Android starts two Activities with the same data.
-            DocumentUtils.finishOtherTasksWithData(getIntent().getData(), getTaskId());
+        if (!isFinishing()) {
+            if (getIntent() != null) {
+                // Avoid situations where Android starts two Activities with the same data.
+                DocumentUtils.finishOtherTasksWithData(getIntent().getData(), getTaskId());
+            }
+            updateTaskDescription();
         }
         super.onResume();
     }
+
     @Override
     protected int getControlContainerLayoutId() {
         return R.layout.webapp_control_container;
