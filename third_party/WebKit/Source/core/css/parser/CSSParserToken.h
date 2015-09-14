@@ -106,6 +106,8 @@ public:
     CSSPrimitiveValue::UnitType unitType() const { return static_cast<CSSPrimitiveValue::UnitType>(m_unit); }
     UChar32 unicodeRangeStart() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRange.start; }
     UChar32 unicodeRangeEnd() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRange.end; }
+    CSSValueID id() const;
+    CSSValueID functionId() const;
 
     CSSPropertyID parseAsUnresolvedCSSPropertyID() const;
 
@@ -134,6 +136,7 @@ private:
         UChar m_delimiter;
         HashTokenType m_hashTokenType;
         double m_numericValue;
+        mutable int m_id;
 
         struct {
             UChar32 start;

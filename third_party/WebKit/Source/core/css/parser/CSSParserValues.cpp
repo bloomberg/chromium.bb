@@ -65,7 +65,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             value.id = CSSValueInvalid;
             value.isInt = false;
 
-            CSSValueID id = cssValueKeywordID(token.value());
+            CSSValueID id = token.functionId();
             if (id == CSSValueCalc || id == CSSValueWebkitCalc) {
                 value.m_unit = CSSParserValue::CalcFunction;
                 value.calcFunction = new CSSParserCalcFunction(range.consumeBlock());
@@ -108,7 +108,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             break;
         }
         case IdentToken: {
-            value.id = cssValueKeywordID(token.value());
+            value.id = token.id();
             value.isInt = false;
             value.m_unit = CSSParserValue::Identifier;
             value.string = token.value();

@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/css/MediaQueryExp.h"
 
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/Decimal.h"
@@ -189,8 +188,6 @@ MediaQueryExp::MediaQueryExp(const String& mediaFeature, const MediaQueryExpValu
 {
 }
 
-CSSValueID cssValueKeywordID(const CSSParserString&);
-
 PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>& tokenList)
 {
     ASSERT(!mediaFeature.isNull());
@@ -205,7 +202,7 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
         CSSParserToken token = tokenList.first();
 
         if (token.type() == IdentToken) {
-            CSSValueID ident = cssValueKeywordID(token.value());
+            CSSValueID ident = token.id();
             if (!featureWithValidIdent(lowerMediaFeature, ident))
                 return nullptr;
             expValue.id = ident;

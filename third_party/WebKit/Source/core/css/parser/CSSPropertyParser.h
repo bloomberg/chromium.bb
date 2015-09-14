@@ -26,6 +26,7 @@
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSPropertySourceData.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/Length.h"
 
 namespace blink {
@@ -72,17 +73,18 @@ public:
     };
 
     static bool parseValue(CSSPropertyID, bool important,
-        CSSParserValueList*, const CSSParserContext&,
+        const CSSParserTokenRange&, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
 
     static bool isSystemColor(CSSValueID);
     static bool isColorKeyword(CSSValueID);
 
 private:
-    CSSPropertyParser(CSSParserValueList*, const CSSParserContext&,
+    CSSPropertyParser(CSSParserValueList*, const CSSParserTokenRange&, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
 
     bool parseValue(CSSPropertyID, bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID);
 
     bool inShorthand() const { return m_inParseShorthand; }
     bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
@@ -100,9 +102,9 @@ private:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseValidPrimitive(CSSValueID ident, CSSParserValue*);
 
     bool parseShorthand(CSSPropertyID, const StylePropertyShorthand&, bool important);
+    bool parseShorthand(CSSPropertyID, bool important);
     bool parse4Values(CSSPropertyID, const CSSPropertyID* properties, bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> parseContent();
-    PassRefPtrWillBeRawPtr<CSSValue> parseQuotes();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseAttr(CSSParserValueList* args);
 
@@ -240,8 +242,6 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseImageSet(CSSParserValueList*);
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseWillChange();
-
     PassRefPtrWillBeRawPtr<CSSValueList> parseFilter();
     PassRefPtrWillBeRawPtr<CSSFunctionValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSValueID);
 
@@ -285,7 +285,6 @@ private:
         Orientation,
     };
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parsePage();
     PassRefPtrWillBeRawPtr<CSSValueList> parseSize();
     SizeParameterType parseSizeParameter(CSSValueList* parsedValues, CSSParserValue*, SizeParameterType prevParamType);
 
@@ -366,6 +365,7 @@ private:
 private:
     // Inputs:
     CSSParserValueList* m_valueList;
+    CSSParserTokenRange m_range;
     const CSSParserContext& m_context;
 
     // Outputs:
