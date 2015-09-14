@@ -145,3 +145,29 @@ nexe = env.ComponentProgram('rlimit_test',
 node = env.CommandSelLdrTestNacl('rlimit_test.out', nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_rlimit_test')
+
+# We must actually translate from a pexe to a nexe for this next test.
+if env.Bit('pnacl_generate_pexe') and 'TRUSTED_ENV' in env:
+  loader_env = env.Clone();
+  # The default for nonsfi is "noirt" -- but here, we are using a custom IRT.
+  loader_env['TRANSLATEFLAGS'].remove('--noirt')
+  # Since we are building this nexe a bit differently compared to the others,
+  # the environment must be cloned to avoid messing it up for anyone else.
+  nexe = loader_env.ComponentProgram('example_irt_caller_test',
+                                     'example_irt_caller_test.cc')
+
+  nexe = loader_env.GetTranslatedNexe(nexe)
+
+  trusted_env = loader_env['TRUSTED_ENV']
+
+  extra_libs = ['irt_nonsfi', 'nacl_random_private', 'nonsfi_elf_loader',
+                'platform']
+  example_ldr = trusted_env.ComponentProgram('example_loader',
+      'example_loader.cc',
+      EXTRA_LIBS=extra_libs)
+
+  node = loader_env.CommandTest('example_irt_caller_test.out',
+                                [example_ldr, nexe])
+
+  loader_env.AddNodeToTestSuite(node, ['small_tests'],
+                                'run_example_irt_caller_test')
