@@ -342,13 +342,17 @@ void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext* graphicsContext, 
 
     switch (side) {
     case BSBottom:
-    case BSTop:
-        graphicsContext->drawLine(IntPoint(x1, (y1 + y2) / 2), IntPoint(x2, (y1 + y2) / 2));
+    case BSTop: {
+        int midY = y1 + thickness / 2;
+        graphicsContext->drawLine(IntPoint(x1, midY), IntPoint(x2, midY));
         break;
+    }
     case BSRight:
-    case BSLeft:
-        graphicsContext->drawLine(IntPoint((x1 + x2) / 2, y1), IntPoint((x1 + x2) / 2, y2));
+    case BSLeft: {
+        int midX = x1 + thickness / 2;
+        graphicsContext->drawLine(IntPoint(midX, y1), IntPoint(midX, y2));
         break;
+    }
     }
     graphicsContext->setShouldAntialias(wasAntialiased);
     graphicsContext->setStrokeStyle(oldStrokeStyle);
