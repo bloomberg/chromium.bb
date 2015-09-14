@@ -8,9 +8,10 @@
 // This file defines the types and structs used to issue memory dump requests.
 // These are also used in the IPCs for coordinating inter-process memory dumps.
 
+#include <string>
+
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/trace_event/memory_dump_provider.h"
 
 namespace base {
 namespace trace_event {
@@ -25,11 +26,18 @@ enum class MemoryDumpType {
   LAST = EXPLICITLY_TRIGGERED // For IPC macros.
 };
 
-// Returns the name in string for the dump type given.
-BASE_EXPORT const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type);
+// Tells the MemoryDumpProvider(s) how much detailed their dumps should be.
+// MemoryDumpProvider instances must guarantee that level of detail does not
+// affect the total size reported in the root node, but only the granularity of
+// the child MemoryAllocatorDump(s).
+enum class MemoryDumpLevelOfDetail {
+  LIGHT,           // Few entries, typically a fixed number, per dump.
+  DETAILED,        // Unrestricted amount of entries per dump.
+  LAST = DETAILED  // For IPC Macros.
+};
 
-using MemoryDumpCallback = Callback<void(uint64 dump_guid, bool success)>;
-
+// Initial request arguments for a global memory dump. (see
+// MemoryDumpManager::RequestGlobalMemoryDump()).
 struct BASE_EXPORT MemoryDumpRequestArgs {
   // Globally unique identifier. In multi-process dumps, all processes issue a
   // local dump with the same guid. This allows the trace importers to
@@ -37,9 +45,18 @@ struct BASE_EXPORT MemoryDumpRequestArgs {
   uint64 dump_guid;
 
   MemoryDumpType dump_type;
-
-  MemoryDumpArgs dump_args;
+  MemoryDumpLevelOfDetail level_of_detail;
 };
+
+using MemoryDumpCallback = Callback<void(uint64 dump_guid, bool success)>;
+
+BASE_EXPORT const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type);
+
+BASE_EXPORT const char* MemoryDumpLevelOfDetailToString(
+    const MemoryDumpLevelOfDetail& level_of_detail);
+
+BASE_EXPORT MemoryDumpLevelOfDetail
+StringToMemoryDumpLevelOfDetail(const std::string& str);
 
 }  // namespace trace_event
 }  // namespace base

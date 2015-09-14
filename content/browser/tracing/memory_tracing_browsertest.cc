@@ -38,9 +38,9 @@ class MockDumpProvider : public base::trace_event::MemoryDumpProvider {
 class MemoryTracingTest : public ContentBrowserTest {
  public:
   void DoRequestGlobalDump(const base::trace_event::MemoryDumpCallback& cb) {
-    MemoryDumpArgs dump_args = { MemoryDumpArgs::LevelOfDetail::HIGH };
     MemoryDumpManager::GetInstance()->RequestGlobalDump(
-        MemoryDumpType::EXPLICITLY_TRIGGERED, dump_args, cb);
+        MemoryDumpType::EXPLICITLY_TRIGGERED,
+        base::trace_event::MemoryDumpLevelOfDetail::DETAILED, cb);
   }
 
   // Used as callback argument for MemoryDumpManager::RequestGlobalDump():

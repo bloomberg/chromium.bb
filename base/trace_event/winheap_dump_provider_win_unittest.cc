@@ -15,7 +15,7 @@ namespace trace_event {
 
 TEST(WinHeapDumpProviderTest, OnMemoryDump) {
   ProcessMemoryDump pmd(make_scoped_refptr(new MemoryDumpSessionState()));
-  MemoryDumpArgs dump_args = {MemoryDumpArgs::LevelOfDetail::HIGH};
+  MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
 
   WinHeapDumpProvider* winheap_dump_provider =
       WinHeapDumpProvider::GetInstance();

@@ -168,7 +168,7 @@ ProcessMemoryMapsDumpProvider::~ProcessMemoryMapsDumpProvider() {
 bool ProcessMemoryMapsDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
                                                  ProcessMemoryDump* pmd) {
   // Snapshot of memory maps is not taken for light dump requests.
-  if (args.level_of_detail == MemoryDumpArgs::LevelOfDetail::LOW)
+  if (args.level_of_detail == MemoryDumpLevelOfDetail::LIGHT)
     return true;
 
   uint32 res = 0;

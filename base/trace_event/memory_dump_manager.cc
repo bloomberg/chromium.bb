@@ -48,21 +48,20 @@ uint32 g_heavy_dumps_rate = 0;
 MemoryDumpManager* g_instance_for_testing = nullptr;
 
 void RequestPeriodicGlobalDump() {
-  MemoryDumpArgs::LevelOfDetail dump_level_of_detail;
+  MemoryDumpLevelOfDetail level_of_detail;
   if (g_heavy_dumps_rate == 0) {
-    dump_level_of_detail = MemoryDumpArgs::LevelOfDetail::LOW;
+    level_of_detail = MemoryDumpLevelOfDetail::LIGHT;
   } else {
-    dump_level_of_detail = g_periodic_dumps_count == 0
-                               ? MemoryDumpArgs::LevelOfDetail::HIGH
-                               : MemoryDumpArgs::LevelOfDetail::LOW;
+    level_of_detail = g_periodic_dumps_count == 0
+                          ? MemoryDumpLevelOfDetail::DETAILED
+                          : MemoryDumpLevelOfDetail::LIGHT;
 
     if (++g_periodic_dumps_count == g_heavy_dumps_rate)
       g_periodic_dumps_count = 0;
   }
 
-  MemoryDumpArgs dump_args = {dump_level_of_detail};
   MemoryDumpManager::GetInstance()->RequestGlobalDump(
-      MemoryDumpType::PERIODIC_INTERVAL, dump_args);
+      MemoryDumpType::PERIODIC_INTERVAL, level_of_detail);
 }
 
 }  // namespace
@@ -204,9 +203,10 @@ void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
   mdp_iter->unregistered = true;
 }
 
-void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
-                                          const MemoryDumpArgs& dump_args,
-                                          const MemoryDumpCallback& callback) {
+void MemoryDumpManager::RequestGlobalDump(
+    MemoryDumpType dump_type,
+    MemoryDumpLevelOfDetail level_of_detail,
+    const MemoryDumpCallback& callback) {
   // Bail out immediately if tracing is not enabled at all.
   if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_))) {
     if (!callback.is_null())
@@ -230,13 +230,14 @@ void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
 
   // The delegate will coordinate the IPC broadcast and at some point invoke
   // CreateProcessDump() to get a dump for the current process.
-  MemoryDumpRequestArgs args = {guid, dump_type, dump_args};
+  MemoryDumpRequestArgs args = {guid, dump_type, level_of_detail};
   delegate->RequestGlobalMemoryDump(args, callback);
 }
 
-void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
-                                          const MemoryDumpArgs& dump_args) {
-  RequestGlobalDump(dump_type, dump_args, MemoryDumpCallback());
+void MemoryDumpManager::RequestGlobalDump(
+    MemoryDumpType dump_type,
+    MemoryDumpLevelOfDetail level_of_detail) {
+  RequestGlobalDump(dump_type, level_of_detail, MemoryDumpCallback());
 }
 
 void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
@@ -319,8 +320,9 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
   bool dump_successful = false;
 
   if (!skip_dump) {
-    dump_successful = mdp->OnMemoryDump(pmd_async_state->req_args.dump_args,
-                                        &pmd_async_state->process_memory_dump);
+    MemoryDumpArgs args = {pmd_async_state->req_args.level_of_detail};
+    dump_successful =
+        mdp->OnMemoryDump(args, &pmd_async_state->process_memory_dump);
   }
 
   {
@@ -448,7 +450,7 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   DCHECK_LE(config_list.size(), 2u);
   for (const TraceConfig::MemoryDumpTriggerConfig& config : config_list) {
     DCHECK(config.periodic_interval_ms);
-    if (config.level_of_detail == MemoryDumpArgs::LevelOfDetail::HIGH)
+    if (config.level_of_detail == MemoryDumpLevelOfDetail::DETAILED)
       heavy_dump_period_ms = config.periodic_interval_ms;
     min_timer_period_ms =
         std::min(min_timer_period_ms, config.periodic_interval_ms);

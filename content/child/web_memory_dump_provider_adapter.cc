@@ -23,11 +23,13 @@ bool WebMemoryDumpProviderAdapter::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   blink::WebMemoryDumpLevelOfDetail level;
   switch (args.level_of_detail) {
-    case base::trace_event::MemoryDumpArgs::LevelOfDetail::LOW:
-      level = blink::WebMemoryDumpLevelOfDetail::Low;
+    case base::trace_event::MemoryDumpLevelOfDetail::LIGHT:
+      // TODO(primiano): switch to actual constant once the corresponding
+      // rename lands in blink and rolls.
+      level = static_cast<blink::WebMemoryDumpLevelOfDetail>(0);
       break;
-    case base::trace_event::MemoryDumpArgs::LevelOfDetail::HIGH:
-      level = blink::WebMemoryDumpLevelOfDetail::High;
+    case base::trace_event::MemoryDumpLevelOfDetail::DETAILED:
+      level = static_cast<blink::WebMemoryDumpLevelOfDetail>(1);
       break;
     default:
       NOTREACHED();

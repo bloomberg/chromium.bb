@@ -211,10 +211,9 @@ Response TracingHandler::RequestMemoryDump(DevToolsCommandId command_id) {
   if (!IsRecording())
     return Response::InternalError("Tracing is not started");
 
-  base::trace_event::MemoryDumpArgs dump_args = {
-      base::trace_event::MemoryDumpArgs::LevelOfDetail::HIGH};
   base::trace_event::MemoryDumpManager::GetInstance()->RequestGlobalDump(
-      base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED, dump_args,
+      base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
       base::Bind(&TracingHandler::OnMemoryDumpFinished,
                  weak_factory_.GetWeakPtr(), command_id));
   return Response::OK();

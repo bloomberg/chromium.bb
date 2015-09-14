@@ -11,6 +11,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
@@ -44,16 +45,14 @@ const char kMemoryDumpConfigParam[] = "memory_dump_config";
 const char kTriggersParam[] = "triggers";
 const char kPeriodicIntervalParam[] = "periodic_interval_ms";
 const char kModeParam[] = "mode";
-const char kDetailedParam[] = "detailed";
-const char kLightParam[] = "light";
 
 // Default configuration of memory dumps.
 const TraceConfig::MemoryDumpTriggerConfig kDefaultHeavyMemoryDumpTrigger = {
     2000,  // periodic_interval_ms
-    MemoryDumpArgs::LevelOfDetail::HIGH};
+    MemoryDumpLevelOfDetail::DETAILED};
 const TraceConfig::MemoryDumpTriggerConfig kDefaultLightMemoryDumpTrigger = {
     250,  // periodic_interval_ms
-    MemoryDumpArgs::LevelOfDetail::LOW};
+    MemoryDumpLevelOfDetail::LIGHT};
 
 }  // namespace
 
@@ -465,7 +464,6 @@ void TraceConfig::SetMemoryDumpConfig(
       continue;
 
     MemoryDumpTriggerConfig dump_config;
-    std::string dump_type;
     int interval = 0;
 
     if (!trigger->GetInteger(kPeriodicIntervalParam, &interval)) {
@@ -473,14 +471,10 @@ void TraceConfig::SetMemoryDumpConfig(
     }
     DCHECK_GT(interval, 0);
     dump_config.periodic_interval_ms = static_cast<uint32>(interval);
-    dump_config.level_of_detail = MemoryDumpArgs::LevelOfDetail::LOW;
-
-    if (trigger->GetString(kModeParam, &dump_type)) {
-      if (dump_type == kDetailedParam) {
-        dump_config.level_of_detail = MemoryDumpArgs::LevelOfDetail::HIGH;
-      }
-    }
-
+    std::string level_of_detail_str;
+    trigger->GetString(kModeParam, &level_of_detail_str);
+    dump_config.level_of_detail =
+        StringToMemoryDumpLevelOfDetail(level_of_detail_str);
     memory_dump_config_.push_back(dump_config);
   }
 }
@@ -541,17 +535,8 @@ void TraceConfig::ToDict(base::DictionaryValue& dict) const {
           new base::DictionaryValue());
       trigger_dict->SetInteger(kPeriodicIntervalParam,
                                static_cast<int>(config.periodic_interval_ms));
-
-      switch (config.level_of_detail) {
-        case MemoryDumpArgs::LevelOfDetail::LOW:
-          trigger_dict->SetString(kModeParam, kLightParam);
-          break;
-        case MemoryDumpArgs::LevelOfDetail::HIGH:
-          trigger_dict->SetString(kModeParam, kDetailedParam);
-          break;
-        default:
-          NOTREACHED();
-      }
+      trigger_dict->SetString(
+          kModeParam, MemoryDumpLevelOfDetailToString(config.level_of_detail));
       triggers_list->Append(trigger_dict.Pass());
     }
 

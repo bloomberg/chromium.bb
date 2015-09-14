@@ -126,7 +126,7 @@ TEST(MemoryAllocatorDumpTest, GuidGeneration) {
 TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   FakeMemoryAllocatorDumpProvider fmadp;
   ProcessMemoryDump pmd(make_scoped_refptr(new MemoryDumpSessionState()));
-  MemoryDumpArgs dump_args = {MemoryDumpArgs::LevelOfDetail::HIGH};
+  MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
 
   fmadp.OnMemoryDump(dump_args, &pmd);
 

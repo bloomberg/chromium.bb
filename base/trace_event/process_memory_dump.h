@@ -25,12 +25,8 @@ class ConvertableToTraceFormat;
 class MemoryDumpManager;
 class MemoryDumpSessionState;
 
-// ProcessMemoryDump is as a strongly typed container which enforces the data
-// model for each memory dump and holds the dumps produced by the
-// MemoryDumpProvider(s) for a specific process.
-// At trace generation time (i.e. when AsValue() is called), ProcessMemoryDump
-// will compose a key-value dictionary of the various dumps obtained at trace
-// dump point time.
+// ProcessMemoryDump is as a strongly typed container which holds the dumps
+// produced by the MemoryDumpProvider(s) for a specific process.
 class BASE_EXPORT ProcessMemoryDump {
  public:
   struct MemoryAllocatorDumpEdge {

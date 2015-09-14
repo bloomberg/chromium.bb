@@ -7,23 +7,17 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
+#include "base/trace_event/memory_dump_request_args.h"
 
 namespace base {
 namespace trace_event {
 
 class ProcessMemoryDump;
 
-// Contains information about the type of memory dump the MemoryDumpProvider
-// should generate on dump request. This is to control the size of dumps
-// generated.
+// Args passed to OnMemoryDump(). This is to avoid rewriting all the subclasses
+// in the codebase when extending the MemoryDumpProvider API.
 struct MemoryDumpArgs {
-  enum class LevelOfDetail {
-    LOW,
-    HIGH,
-    LAST = HIGH  // For IPC Macros.
-  };
-
-  LevelOfDetail level_of_detail;
+  MemoryDumpLevelOfDetail level_of_detail;
 };
 
 // The contract interface that memory dump providers must implement.

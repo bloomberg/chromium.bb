@@ -498,11 +498,11 @@ TEST(TraceConfigTest, TraceConfigFromMemoryConfigString) {
   EXPECT_EQ(2u, tc.memory_dump_config_.size());
 
   EXPECT_EQ(200u, tc.memory_dump_config_[0].periodic_interval_ms);
-  EXPECT_EQ(MemoryDumpArgs::LevelOfDetail::LOW,
+  EXPECT_EQ(MemoryDumpLevelOfDetail::LIGHT,
             tc.memory_dump_config_[0].level_of_detail);
 
   EXPECT_EQ(2000u, tc.memory_dump_config_[1].periodic_interval_ms);
-  EXPECT_EQ(MemoryDumpArgs::LevelOfDetail::HIGH,
+  EXPECT_EQ(MemoryDumpLevelOfDetail::DETAILED,
             tc.memory_dump_config_[1].level_of_detail);
 }
 

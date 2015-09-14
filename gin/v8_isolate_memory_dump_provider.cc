@@ -104,8 +104,7 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
                         heap_statistics.total_heap_size() - known_spaces_size);
 
   // If light dump is requested, then object statistics are not dumped
-  if (args.level_of_detail ==
-      base::trace_event::MemoryDumpArgs::LevelOfDetail::LOW)
+  if (args.level_of_detail == base::trace_event::MemoryDumpLevelOfDetail::LIGHT)
     return;
 
   // Dump statistics of the heap's live objects from last GC.

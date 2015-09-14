@@ -27,27 +27,14 @@ using testing::Return;
 
 namespace base {
 namespace trace_event {
-namespace {
-MemoryDumpArgs g_high_detail_args = {MemoryDumpArgs::LevelOfDetail::HIGH};
-MemoryDumpArgs g_low_detail_args = {MemoryDumpArgs::LevelOfDetail::LOW};
-}  // namespace
 
 // GTest matchers for MemoryDumpRequestArgs arguments.
-MATCHER(IsHighDetail, "") {
-  return arg.level_of_detail == MemoryDumpArgs::LevelOfDetail::HIGH;
+MATCHER(IsDetailedDump, "") {
+  return arg.level_of_detail == MemoryDumpLevelOfDetail::DETAILED;
 }
 
-MATCHER(IsLowDetail, "") {
-  return arg.level_of_detail == MemoryDumpArgs::LevelOfDetail::LOW;
-}
-
-// GTest matchers for MemoryDumpArgs arguments.
-MATCHER(IsHighDetailArgs, "") {
-  return arg.dump_args.level_of_detail == MemoryDumpArgs::LevelOfDetail::HIGH;
-}
-
-MATCHER(IsLowDetailArgs, "") {
-  return arg.dump_args.level_of_detail == MemoryDumpArgs::LevelOfDetail::LOW;
+MATCHER(IsLightDump, "") {
+  return arg.level_of_detail == MemoryDumpLevelOfDetail::LIGHT;
 }
 
 // Testing MemoryDumpManagerDelegate which, by default, short-circuits dump
@@ -151,7 +138,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(0);
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          g_high_detail_args);
+                          MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 
   // Now repeat enabling the memory category and check that the dumper is
@@ -161,7 +148,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(3).WillRepeatedly(Return(true));
   for (int i = 0; i < 3; ++i)
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 
   mdm_->UnregisterDumpProvider(&mdp);
@@ -172,7 +159,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          g_high_detail_args);
+                          MemoryDumpLevelOfDetail::DETAILED);
   TraceLog::GetInstance()->SetDisabled();
 }
 
@@ -185,9 +172,9 @@ TEST_F(MemoryDumpManagerTest, CheckMemoryDumpArgs) {
   mdm_->RegisterDumpProvider(&mdp);
   EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
-  EXPECT_CALL(mdp, OnMemoryDump(IsHighDetail(), _)).WillOnce(Return(true));
+  EXPECT_CALL(mdp, OnMemoryDump(IsDetailedDump(), _)).WillOnce(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          g_high_detail_args);
+                          MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
   mdm_->UnregisterDumpProvider(&mdp);
 
@@ -196,9 +183,9 @@ TEST_F(MemoryDumpManagerTest, CheckMemoryDumpArgs) {
   mdm_->RegisterDumpProvider(&mdp);
   EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
-  EXPECT_CALL(mdp, OnMemoryDump(IsLowDetail(), _)).WillOnce(Return(true));
+  EXPECT_CALL(mdp, OnMemoryDump(IsLightDump(), _)).WillOnce(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          g_low_detail_args);
+                          MemoryDumpLevelOfDetail::LIGHT);
   DisableTracing();
   mdm_->UnregisterDumpProvider(&mdp);
 }
@@ -231,7 +218,7 @@ TEST_F(MemoryDumpManagerTest, SharedSessionState) {
 
   for (int i = 0; i < 2; ++i)
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
 
   DisableTracing();
 }
@@ -249,7 +236,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   EXPECT_CALL(mdp1, OnMemoryDump(_, _)).WillOnce(Return(true));
   EXPECT_CALL(mdp2, OnMemoryDump(_, _)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          g_high_detail_args);
+                          MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 
   // Invert: enable mdp1 and disable mdp2.
@@ -260,7 +247,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(0);
   EXPECT_CALL(mdp2, OnMemoryDump(_, _)).WillOnce(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          g_high_detail_args);
+                          MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 
   // Enable both mdp1 and mdp2.
@@ -270,7 +257,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   EXPECT_CALL(mdp1, OnMemoryDump(_, _)).WillOnce(Return(true));
   EXPECT_CALL(mdp2, OnMemoryDump(_, _)).WillOnce(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          g_high_detail_args);
+                          MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 }
 
@@ -287,7 +274,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).WillOnce(Return(true));
     EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
     DisableTracing();
   }
 
@@ -298,7 +285,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
     EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
     DisableTracing();
   }
 
@@ -310,7 +297,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
     EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
     DisableTracing();
   }
 
@@ -323,7 +310,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).WillOnce(Return(true));
     EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
     DisableTracing();
   }
 }
@@ -370,7 +357,7 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
                MessageLoop::current()->task_runner(), run_loop.QuitClosure());
       EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
       mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                              g_high_detail_args, callback);
+                              MemoryDumpLevelOfDetail::DETAILED, callback);
       // This nested message loop (|run_loop|) will quit if and only if the
       // |callback| passed to RequestGlobalDump() is invoked.
       run_loop.Run();
@@ -425,7 +412,7 @@ TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
 
   for (int i = 0; i < kNumDumps; i++) {
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
   }
 
   DisableTracing();
@@ -461,7 +448,7 @@ TEST_F(MemoryDumpManagerTest, RegisterDumperWhileDumping) {
 
   for (int i = 0; i < 4; i++) {
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
   }
 
   DisableTracing();
@@ -497,7 +484,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileDumping) {
 
   for (int i = 0; i < 4; i++) {
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args);
+                            MemoryDumpLevelOfDetail::DETAILED);
   }
 
   DisableTracing();
@@ -550,7 +537,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
 
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          g_high_detail_args, callback);
+                          MemoryDumpLevelOfDetail::DETAILED, callback);
 
   run_loop.Run();
 
@@ -577,7 +564,7 @@ TEST_F(MemoryDumpManagerTest, CallbackCalledOnFailure) {
         Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
              MessageLoop::current()->task_runner(), run_loop.QuitClosure());
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args, callback);
+                            MemoryDumpLevelOfDetail::DETAILED, callback);
     run_loop.Run();
   }
   EXPECT_FALSE(last_callback_success_);
@@ -600,7 +587,7 @@ TEST_F(MemoryDumpManagerTest, InitializedAfterStartOfTracing) {
         Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
              MessageLoop::current()->task_runner(), run_loop.QuitClosure());
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args, callback);
+                            MemoryDumpLevelOfDetail::DETAILED, callback);
     run_loop.Run();
     EXPECT_FALSE(last_callback_success_);
   }
@@ -616,7 +603,7 @@ TEST_F(MemoryDumpManagerTest, InitializedAfterStartOfTracing) {
         Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
              MessageLoop::current()->task_runner(), run_loop.QuitClosure());
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                            g_high_detail_args, callback);
+                            MemoryDumpLevelOfDetail::DETAILED, callback);
     run_loop.Run();
     EXPECT_TRUE(last_callback_success_);
   }
@@ -693,13 +680,13 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   const int kHeavyDumpPeriodMs = kHeavyDumpRate * kLightDumpPeriodMs;
   // The expected sequence with light=1ms, heavy=5ms is H,L,L,L,L,H,...
   testing::InSequence sequence;
-  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsHighDetailArgs(), _));
-  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLowDetailArgs(), _))
+  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsDetailedDump(), _));
+  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLightDump(), _))
       .Times(kHeavyDumpRate - 1);
-  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsHighDetailArgs(), _));
-  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLowDetailArgs(), _))
+  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsDetailedDump(), _));
+  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLightDump(), _))
       .Times(kHeavyDumpRate - 2);
-  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLowDetailArgs(), _))
+  EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLightDump(), _))
       .WillOnce(Invoke([quit_closure](const MemoryDumpRequestArgs& args,
                                       const MemoryDumpCallback& callback) {
         ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
