@@ -58,7 +58,8 @@ void FontFallbackList::invalidate(PassRefPtrWillBeRawPtr<FontSelector> fontSelec
     m_cachedPrimarySimpleFontData = 0;
     m_familyIndex = 0;
     m_hasLoadingFallback = false;
-    m_fontSelector = fontSelector;
+    if (m_fontSelector != fontSelector)
+        m_fontSelector = fontSelector;
     m_fontSelectorVersion = m_fontSelector ? m_fontSelector->version() : 0;
     m_generation = FontCache::fontCache()->generation();
     m_cachingWordShaper.clear();
