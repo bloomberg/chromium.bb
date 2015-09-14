@@ -73,13 +73,9 @@ void RootFrameViewport::setScrollPosition(const DoublePoint& position, ScrollTyp
 {
     updateScrollAnimator();
 
-    // TODO(bokan): Support smooth scrolling the visual viewport.
+    // TODO(bokan): Support composited smooth scrolling the visual viewport.
     if (scrollBehavior == ScrollBehaviorAuto)
         scrollBehavior = scrollBehaviorStyle();
-    if (scrollBehavior == ScrollBehaviorSmooth) {
-        layoutViewport().setScrollPosition(position, scrollType, scrollBehavior);
-        return;
-    }
 
     if (scrollType == ProgrammaticScroll && !layoutViewport().isProgrammaticallyScrollable())
         return;
@@ -279,18 +275,6 @@ bool RootFrameViewport::scrollAnimatorEnabled() const
 HostWindow* RootFrameViewport::hostWindow() const
 {
     return layoutViewport().hostWindow();
-}
-
-void RootFrameViewport::serviceScrollAnimations(double monotonicTime)
-{
-    ScrollableArea::serviceScrollAnimations(monotonicTime);
-    layoutViewport().serviceScrollAnimations(monotonicTime);
-}
-
-void RootFrameViewport::updateCompositorScrollAnimations()
-{
-    ScrollableArea::updateCompositorScrollAnimations();
-    layoutViewport().updateCompositorScrollAnimations();
 }
 
 DEFINE_TRACE(RootFrameViewport)

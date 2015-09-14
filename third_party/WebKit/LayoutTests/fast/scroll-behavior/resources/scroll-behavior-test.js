@@ -54,6 +54,10 @@ ScrollBehaviorTest.prototype.startNextTestCase = function() {
         return;
     }
     var testCase = this.testCases[this.currentTestCase];
+    if (testCase.pageScaleFactor && window.internals) {
+        internals.setPageScaleFactor(testCase.pageScaleFactor);
+    }
+
     var isSmoothTest = (testCase.js == "smooth" || (testCase.css == "smooth" && testCase.js != "instant"));
 
     this.asyncTest = async_test("Scroll x:" + testCase.x + ", y:" + testCase.y + ", smooth:" + isSmoothTest);
@@ -120,12 +124,14 @@ ScrollBehaviorTest.prototype.allTestCasesComplete = function() {
 // waitForEnd - (must be provided for smooth scrolls) Whether the test runner should
 //              wait until the scroll is complete, rather than only waiting until
 //              the scroll is underway.
+// pageScaleFactor - (optional) if set, applies pinch-zoom by the given factor.
 function ScrollBehaviorTestCase(testData) {
     this.js = testData.js;
     this.css = testData.css;
     this.waitForEnd = testData.waitForEnd;
     this.x = testData.x;
     this.y = testData.y;
+    this.pageScaleFactor = testData.pageScaleFactor;
 }
 
 ScrollBehaviorTestCase.prototype.setStartPosition = function(startPosition) {

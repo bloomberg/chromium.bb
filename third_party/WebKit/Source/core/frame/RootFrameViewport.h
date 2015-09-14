@@ -66,8 +66,6 @@ public:
     ScrollResultOneDimensional userScroll(ScrollDirectionPhysical, ScrollGranularity, float delta = 1) override;
     bool scrollAnimatorEnabled() const override;
     HostWindow* hostWindow() const override;
-    void serviceScrollAnimations(double) override;
-    void updateCompositorScrollAnimations() override;
     ScrollBehavior scrollBehaviorStyle() const override;
 
 private:

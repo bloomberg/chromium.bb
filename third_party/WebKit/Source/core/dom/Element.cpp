@@ -938,13 +938,13 @@ void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions)
     LocalFrame* frame = document().frame();
     if (!frame)
         return;
-    ScrollableArea* layoutViewport = frame->view() ? frame->view()->layoutViewportScrollableArea() : 0;
-    if (!layoutViewport)
+    ScrollableArea* viewport = frame->view() ? frame->view()->scrollableArea() : 0;
+    if (!viewport)
         return;
 
-    double newScaledLeft = left * frame->pageZoomFactor() + layoutViewport->scrollPositionDouble().x();
-    double newScaledTop = top * frame->pageZoomFactor() + layoutViewport->scrollPositionDouble().y();
-    layoutViewport->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop), ProgrammaticScroll, scrollBehavior);
+    double newScaledLeft = left * frame->pageZoomFactor() + viewport->scrollPositionDouble().x();
+    double newScaledTop = top * frame->pageZoomFactor() + viewport->scrollPositionDouble().y();
+    viewport->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop), ProgrammaticScroll, scrollBehavior);
 }
 
 void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
@@ -954,17 +954,17 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
     LocalFrame* frame = document().frame();
     if (!frame)
         return;
-    ScrollableArea* layoutViewport = frame->view() ? frame->view()->layoutViewportScrollableArea() : 0;
-    if (!layoutViewport)
+    ScrollableArea* viewport = frame->view() ? frame->view()->scrollableArea() : 0;
+    if (!viewport)
         return;
 
-    double scaledLeft = layoutViewport->scrollPositionDouble().x();
-    double scaledTop = layoutViewport->scrollPositionDouble().y();
+    double scaledLeft = viewport->scrollPositionDouble().x();
+    double scaledTop = viewport->scrollPositionDouble().y();
     if (scrollToOptions.hasLeft())
         scaledLeft = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) * frame->pageZoomFactor();
     if (scrollToOptions.hasTop())
         scaledTop = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) * frame->pageZoomFactor();
-    layoutViewport->setScrollPosition(DoublePoint(scaledLeft, scaledTop), ProgrammaticScroll, scrollBehavior);
+    viewport->setScrollPosition(DoublePoint(scaledLeft, scaledTop), ProgrammaticScroll, scrollBehavior);
 }
 
 void Element::incrementProxyCount()
