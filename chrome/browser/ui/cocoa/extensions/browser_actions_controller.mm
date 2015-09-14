@@ -668,7 +668,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
 - (void)updateButtonOpacity {
   for (BrowserActionButton* button in buttons_.get()) {
-    NSRect buttonFrame = [button frame];
+    NSRect buttonFrame = [button frameAfterAnimation];
     if (NSContainsRect([containerView_ bounds], buttonFrame)) {
       if ([button alphaValue] != 1.0)
         [button setAlphaValue:1.0];
