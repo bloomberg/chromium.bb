@@ -22,6 +22,9 @@ document.body.offsetTop;
 
 test(function() {
     assert_true(!!window.internals, "This test only works with internals exposed present");
+}, "internals are exposed");
+
+test(function() {
     assert_equals(getComputedStyle(r1).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t1.className = "t1";
@@ -30,7 +33,6 @@ test(function() {
 }, ":-webkit-any() with universal selector");
 
 test(function() {
-    assert_true(!!window.internals, "This test only works with internals exposed present");
     assert_equals(getComputedStyle(r2).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t2.className = "t2";
@@ -39,8 +41,6 @@ test(function() {
 }, "Nested :-webkit-any() with universal selector");
 
 test(function() {
-    assert_true(!!window.internals, "This test only works with internals exposed present");
-
     r3.focus();
     assert_equals(getComputedStyle(r3).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 

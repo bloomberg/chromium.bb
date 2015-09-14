@@ -1,19 +1,16 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
+<script src="../../../resources/js-test.js"></script>
 <style>
     body { color: black; }
-    .match+div div+div { color: green; }
+    .match + .sibling div+div { color: green; }
 </style>
 <div>
     <div id="top"></div>
-    <div>
+    <div class="sibling">
         <div></div>
         <div id="green"></div>
     </div>
     <div>
-        <div></div>
-        <div></div>
-        <div></div>
         <div></div>
     </div>
 </div>
