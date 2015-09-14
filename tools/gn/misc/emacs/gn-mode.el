@@ -132,6 +132,7 @@ variable name or the '{{' and '}}' which surround it."
   (setq-local comment-use-syntax t)
   (setq-local comment-start "#")
   (setq-local comment-end "")
+  (setq-local indent-tabs-mode nil)
 
   (setq-local fill-paragraph-function 'gn-fill-paragraph)
 
