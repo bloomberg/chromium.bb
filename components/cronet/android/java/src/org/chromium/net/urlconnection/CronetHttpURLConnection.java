@@ -9,7 +9,6 @@ import android.util.Pair;
 import org.chromium.base.Log;
 import org.chromium.net.ExtendedResponseInfo;
 import org.chromium.net.ResponseInfo;
-import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlRequestContext;
 import org.chromium.net.UrlRequestException;
@@ -258,11 +257,10 @@ class CronetHttpURLConnection extends HttpURLConnection {
         }
         if (doOutput) {
             if (mOutputStream != null) {
-                mRequest.setUploadDataProvider(
-                        (UploadDataProvider) mOutputStream, mMessageLoop);
+                mRequest.setUploadDataProvider(mOutputStream.getUploadDataProvider(), mMessageLoop);
                 if (getRequestProperty(CONTENT_LENGTH) == null && !isChunkedUpload()) {
                     addRequestProperty(CONTENT_LENGTH,
-                            Long.toString(((UploadDataProvider) mOutputStream).getLength()));
+                            Long.toString(mOutputStream.getUploadDataProvider().getLength()));
                 }
                 // Tells mOutputStream that startRequest() has been called, so
                 // the underlying implementation can prepare for reading if needed.
@@ -418,7 +416,7 @@ class CronetHttpURLConnection extends HttpURLConnection {
         return -1;
     }
 
-    private class CronetUrlRequestListener implements UrlRequestListener {
+    private class CronetUrlRequestListener extends UrlRequestListener {
         public CronetUrlRequestListener() {
         }
 

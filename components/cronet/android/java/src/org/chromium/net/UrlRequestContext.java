@@ -29,7 +29,7 @@ public abstract class UrlRequestContext {
      * Executor, int priority)}.
      *
      * @param url {@link java.net.URL} for the request.
-     * @param listener callback interface that gets called on different events.
+     * @param listener callback class that gets called on different events.
      * @param executor {@link Executor} on which all callbacks will be called.
      * @return new request.
      */
@@ -43,7 +43,7 @@ public abstract class UrlRequestContext {
      * and causing exceptions during shutdown.
      *
      * @param url {@link java.net.URL} for the request.
-     * @param listener callback interface that gets called on different events.
+     * @param listener callback class that gets called on different events.
      * @param executor {@link Executor} on which all callbacks will be called.
      * @param priority priority of the request which should be one of the
      *         {@link UrlRequest#REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*}

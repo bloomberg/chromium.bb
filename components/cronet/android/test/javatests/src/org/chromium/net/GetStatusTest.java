@@ -16,7 +16,7 @@ import org.chromium.net.TestUrlRequestListener.ResponseStep;
 public class GetStatusTest extends CronetTestBase {
     private CronetTestActivity mActivity;
 
-    private static class TestStatusListener implements StatusListener {
+    private static class TestStatusListener extends StatusListener {
         boolean mOnStatusCalled = false;
         int mStatus = Integer.MAX_VALUE;
         private final ConditionVariable mBlock = new ConditionVariable();

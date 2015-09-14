@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * Interface allowing the embedder to provide an upload body to
+ * Abstract class allowing the embedder to provide an upload body to
  * {@link UrlRequest}. It supports both non-chunked (size known in advanced) and
  * chunked (size not known in advance) uploads. Be aware that not all servers
  * support chunked uploads.
@@ -16,13 +16,13 @@ import java.nio.ByteBuffer;
  * <p>An upload is either always chunked, across multiple uploads if the data
  * ends up being sent more than once, or never chunked.
  */
-public interface UploadDataProvider {
+public abstract class UploadDataProvider {
     /**
      * If this is a non-chunked upload, returns the length of the upload. Must
      * always return -1 if this is a chunked upload.
      * @return the length of the upload for non-chunked uploads, -1 otherwise.
      */
-    public long getLength();
+    public abstract long getLength();
 
     /**
      * Reads upload data into {@code byteBuffer}. Upon completion, the buffer's
@@ -42,7 +42,7 @@ public interface UploadDataProvider {
      * @param byteBuffer The buffer to copy the read bytes into.
      * @throws IOException if any IOException occurred during the process.
      */
-    public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
+    public abstract void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
             throws IOException;
 
     /**
@@ -65,6 +65,5 @@ public interface UploadDataProvider {
      *         completed, successfully or otherwise.
      * @throws IOException if any IOException occurred during the process.
      */
-    public void rewind(UploadDataSink uploadDataSink)
-            throws IOException;
+    public abstract void rewind(UploadDataSink uploadDataSink) throws IOException;
 }

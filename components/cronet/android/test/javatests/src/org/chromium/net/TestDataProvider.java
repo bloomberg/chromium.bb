@@ -12,7 +12,7 @@ import java.util.concurrent.Executor;
 /**
  * An UploadDataProvider implementation used in tests.
  */
-class TestUploadDataProvider implements UploadDataProvider {
+class TestUploadDataProvider extends UploadDataProvider {
     // Indicates whether all success callbacks are synchronous or asynchronous.
     // Doesn't apply to errors.
     enum SuccessCallbackMode {

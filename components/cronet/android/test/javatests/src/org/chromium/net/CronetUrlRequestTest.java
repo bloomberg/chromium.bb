@@ -1358,7 +1358,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testUploadExecutorShutdown() throws Exception {
-        class HangingUploadDataProvider implements UploadDataProvider {
+        class HangingUploadDataProvider extends UploadDataProvider {
             UploadDataSink mUploadDataSink;
             ByteBuffer mByteBuffer;
             ConditionVariable mReadCalled = new ConditionVariable(false);

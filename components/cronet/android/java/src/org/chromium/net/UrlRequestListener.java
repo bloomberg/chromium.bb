@@ -7,7 +7,7 @@ package org.chromium.net;
 import java.nio.ByteBuffer;
 
 /**
- * Users of Cronet implement this interface to receive callbacks indicating the
+ * Users of Cronet extend this class to receive callbacks indicating the
  * progress of a {@link UrlRequest} being processed. An instance of this class
  * is passed in when the {@code UrlRequest} is created by
  * {@link UrlRequestContext#createRequest}
@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
  * {@link java.util.concurrent.Executor} used during construction of the
  * {@code UrlRequest}.
  */
-public interface UrlRequestListener {
+public abstract class UrlRequestListener {
     /**
      * Called whenever a redirect is encountered. This will only be called
      * between the call to {@link UrlRequest#start} and
@@ -32,9 +32,8 @@ public interface UrlRequestListener {
      * @param info Response information.
      * @param newLocationUrl Location where request is redirected.
      */
-    public void onReceivedRedirect(UrlRequest request,
-            ResponseInfo info,
-            String newLocationUrl);
+    public abstract void onReceivedRedirect(
+            UrlRequest request, ResponseInfo info, String newLocationUrl);
 
     /**
      * Called when the final set of headers, after all redirects, is received.
@@ -49,7 +48,7 @@ public interface UrlRequestListener {
      * @param request Request that started to get response.
      * @param info Response information.
      */
-    public void onResponseStarted(UrlRequest request, ResponseInfo info);
+    public abstract void onResponseStarted(UrlRequest request, ResponseInfo info);
 
     /**
      * Called whenever part of the response body has been read. Only part of
@@ -67,9 +66,8 @@ public interface UrlRequestListener {
      * @param byteBuffer The buffer that was passed in to
      *     {@link UrlRequest#read}, now containing the received data.
      */
-    public void onReadCompleted(UrlRequest request,
-            ResponseInfo info,
-            ByteBuffer byteBuffer);
+    public abstract void onReadCompleted(
+            UrlRequest request, ResponseInfo info, ByteBuffer byteBuffer);
 
     /**
      * Called when request is completed successfully, no callbacks will be
@@ -78,7 +76,7 @@ public interface UrlRequestListener {
      * @param request Request that succeeded.
      * @param info Response information.
      */
-    public void onSucceeded(UrlRequest request, ExtendedResponseInfo info);
+    public abstract void onSucceeded(UrlRequest request, ExtendedResponseInfo info);
 
     /**
      * Called if request failed for any reason after start(). Once
@@ -89,7 +87,5 @@ public interface UrlRequestListener {
      * @param info Response information.
      * @param error information about error.
      */
-    public void onFailed(UrlRequest request,
-            ResponseInfo info,
-            UrlRequestException error);
+    public abstract void onFailed(UrlRequest request, ResponseInfo info, UrlRequestException error);
 }

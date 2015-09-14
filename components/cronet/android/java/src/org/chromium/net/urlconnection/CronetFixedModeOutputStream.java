@@ -5,6 +5,7 @@
 package org.chromium.net.urlconnection;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
     private final MessageLoop mMessageLoop;
     private final long mContentLength;
     private final ByteBuffer mBuffer;
+    private final UploadDataProvider mUploadDataProvider = new UploadDataProviderImpl();
     private long mBytesWritten;
 
     /**
@@ -129,37 +131,44 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
     }
 
     @Override
-    public long getLength() {
-        return mContentLength;
+    UploadDataProvider getUploadDataProvider() {
+        return mUploadDataProvider;
     }
 
-    @Override
-    public void read(final UploadDataSink uploadDataSink, final ByteBuffer byteBuffer) {
-        int availableSpace = byteBuffer.capacity() - byteBuffer.position();
-        if (availableSpace < mBuffer.position()) {
-            // byteBuffer does not have enough capacity, so only put a portion
-            // of mBuffer in it.
-            byteBuffer.put(mBuffer.array(), 0, availableSpace);
-            mBuffer.position(availableSpace);
-            // Move remaining buffer to the head of the buffer for use in the
-            // next read call.
-            mBuffer.compact();
-        } else {
-            // byteBuffer has enough capacity to hold the content of mBuffer.
-            mBuffer.flip();
-            byteBuffer.put(mBuffer);
-            // Reuse this buffer.
-            mBuffer.clear();
-            // Quit message loop so embedder can write more data.
-            mMessageLoop.quit();
+    private class UploadDataProviderImpl extends UploadDataProvider {
+        @Override
+        public long getLength() {
+            return mContentLength;
         }
-        uploadDataSink.onReadSucceeded(false);
-    }
 
-    @Override
-    public void rewind(UploadDataSink uploadDataSink) {
-        uploadDataSink.onRewindError(new HttpRetryException(
-                "Cannot retry streamed Http body", -1));
+        @Override
+        public void read(final UploadDataSink uploadDataSink, final ByteBuffer byteBuffer) {
+            int availableSpace = byteBuffer.capacity() - byteBuffer.position();
+            if (availableSpace < mBuffer.position()) {
+                // byteBuffer does not have enough capacity, so only put a portion
+                // of mBuffer in it.
+                byteBuffer.put(mBuffer.array(), 0, availableSpace);
+                mBuffer.position(availableSpace);
+                // Move remaining buffer to the head of the buffer for use in the
+                // next read call.
+                mBuffer.compact();
+            } else {
+                // byteBuffer has enough capacity to hold the content of mBuffer.
+                mBuffer.flip();
+                byteBuffer.put(mBuffer);
+                // Reuse this buffer.
+                mBuffer.clear();
+                // Quit message loop so embedder can write more data.
+                mMessageLoop.quit();
+            }
+            uploadDataSink.onReadSucceeded(false);
+        }
+
+        @Override
+        public void rewind(UploadDataSink uploadDataSink) {
+            uploadDataSink.onRewindError(
+                    new HttpRetryException("Cannot retry streamed Http body", -1));
+        }
     }
 
     /**

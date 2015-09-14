@@ -4,6 +4,7 @@
 
 package org.chromium.net.urlconnection;
 
+import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ final class CronetBufferedOutputStream extends CronetOutputStream {
     // If content length is not passed in the constructor, this is -1.
     private final int mInitialContentLength;
     private final CronetHttpURLConnection mConnection;
+    private final UploadDataProvider mUploadDataProvider = new UploadDataProviderImpl();
     // Internal buffer that is used to buffer the request body.
     private ByteBuffer mBuffer;
     private boolean mConnected = false;
@@ -131,33 +133,40 @@ final class CronetBufferedOutputStream extends CronetOutputStream {
     }
 
     @Override
-    public long getLength() {
-        // This method is supposed to be called just before starting the request.
-        // If content length is not initially passed in, the number of bytes
-        // written will be used as the content length.
-        // TODO(xunjieli): Think of a less fragile way, since getLength() can be
-        // potentially called in other places in the future.
-        if (mInitialContentLength == -1) {
-            return mBuffer.position();
-        }
-        return mInitialContentLength;
+    UploadDataProvider getUploadDataProvider() {
+        return mUploadDataProvider;
     }
 
-    @Override
-    public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) {
-        int availableSpace = byteBuffer.capacity() - byteBuffer.position();
-        if (availableSpace  < mBuffer.limit() - mBuffer.position()) {
-            byteBuffer.put(mBuffer.array(), mBuffer.position(), availableSpace);
-            mBuffer.position(mBuffer.position() + availableSpace);
-        } else {
-            byteBuffer.put(mBuffer);
+    private class UploadDataProviderImpl extends UploadDataProvider {
+        @Override
+        public long getLength() {
+            // This method is supposed to be called just before starting the request.
+            // If content length is not initially passed in, the number of bytes
+            // written will be used as the content length.
+            // TODO(xunjieli): Think of a less fragile way, since getLength() can be
+            // potentially called in other places in the future.
+            if (mInitialContentLength == -1) {
+                return mBuffer.position();
+            }
+            return mInitialContentLength;
         }
-        uploadDataSink.onReadSucceeded(false);
-    }
 
-    @Override
-    public void rewind(UploadDataSink uploadDataSink) {
-        mBuffer.position(0);
-        uploadDataSink.onRewindSucceeded();
+        @Override
+        public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) {
+            int availableSpace = byteBuffer.capacity() - byteBuffer.position();
+            if (availableSpace < mBuffer.limit() - mBuffer.position()) {
+                byteBuffer.put(mBuffer.array(), mBuffer.position(), availableSpace);
+                mBuffer.position(mBuffer.position() + availableSpace);
+            } else {
+                byteBuffer.put(mBuffer);
+            }
+            uploadDataSink.onReadSucceeded(false);
+        }
+
+        @Override
+        public void rewind(UploadDataSink uploadDataSink) {
+            mBuffer.position(0);
+            uploadDataSink.onRewindSucceeded();
+        }
     }
 }

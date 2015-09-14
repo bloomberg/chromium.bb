@@ -8,10 +8,10 @@ API as well as support for the [java.net.HttpURLConnection] API.
 This document gives a brief introduction to using these two Java APIs.
 
 ### Basics
-First you will need to implement the `UrlRequestListener` interface to handle
+First you will need to extend `UrlRequestListener` to handle
 events during the lifetime of a request. For example:
 
-    class MyListener implements UrlRequestListener {
+    class MyListener extends UrlRequestListener {
         @Override
         public void onReceivedRedirect(UrlRequest request,
                 ResponseInfo responseInfo, String newLocationUrl) {
@@ -77,11 +77,11 @@ Make a request like this:
             "https://www.example.com", listener, executor);
     request.start();
 
-In the above example, `MyListener` implements the `UrlRequestListener`
-interface. The request is started asynchronously. When the response is ready
-(fully or partially), and in the event of failures or redirects,
-`listener`'s methods will be invoked on `executor`'s thread to inform the
-client of the request state and/or response information.
+In the above example, `MyListener` extends `UrlRequestListener`. The request
+is started asynchronously. When the response is ready (fully or partially), and
+in the event of failures or redirects, `listener`'s methods will be invoked on
+`executor`'s thread to inform the client of the request state and/or response
+information.
 
 ### Downloading Data
 When Cronet fetches response headers from the server or gets them from the
@@ -89,9 +89,7 @@ cache, `UrlRequestListener.onResponseStarted` will be invoked. To read the
 response body, the client should call `UrlRequest.read` and supply a
 [ByteBuffer] for Cronet to fill. Once a portion or all of
 the response body is read, `UrlRequestListener.onReadCompleted` will be invoked.
-The client may consume the data, or copy the contents of the `byteBuffer`
-elsewhere for use later. The data in `byteBuffer` is only guaranteed to be
-valid for the duration of the `UrlRequestListener.onReadCompleted` callback.
+The client may then read and consume the data within `byteBuffer`.
 Once the client is ready to consume more data, the client should call
 `UrlRequest.read` again. The process continues until
 `UrlRequestListener.onSucceeded` or `UrlRequestListener.onFailed` is invoked,
@@ -103,8 +101,8 @@ which signals the completion of the request.
     request.setUploadDataProvider(myUploadDataProvider, executor);
     request.start();
 
-In the above example, `MyUploadDataProvider` implements the
-`UploadDataProvider` interface. When Cronet is ready to send the request body,
+In the above example, `MyUploadDataProvider` extends `UploadDataProvider`.
+When Cronet is ready to send the request body,
 `myUploadDataProvider.read(UploadDataSink uploadDataSink,
 ByteBuffer byteBuffer)` will be invoked. The client will need to write the
 request body into `byteBuffer`. Once the client is done writing into

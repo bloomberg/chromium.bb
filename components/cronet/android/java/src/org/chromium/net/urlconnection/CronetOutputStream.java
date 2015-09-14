@@ -13,7 +13,7 @@ import java.io.OutputStream;
  * An abstract class of {@link OutputStream} that concrete implementations must
  * extend in order to be used in {@link CronetHttpURLConnection}.
  */
-abstract class CronetOutputStream extends OutputStream implements UploadDataProvider {
+abstract class CronetOutputStream extends OutputStream {
     /**
      * Tells the underlying implementation that connection has been established.
      * Used in {@link CronetHttpURLConnection}.
@@ -25,4 +25,9 @@ abstract class CronetOutputStream extends OutputStream implements UploadDataProv
      * Used in {@link CronetHttpURLConnection}.
      */
     abstract void checkReceivedEnoughContent() throws IOException;
+
+    /**
+     * Returns {@link UploadDataProvider} implementation.
+     */
+    abstract UploadDataProvider getUploadDataProvider();
 }

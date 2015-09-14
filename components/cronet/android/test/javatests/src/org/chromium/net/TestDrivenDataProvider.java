@@ -17,7 +17,7 @@ import java.util.concurrent.Executor;
  * Chunked mode is not supported here, since the main interest is to test
  * different order of init/read/rewind calls.
  */
-class TestDrivenDataProvider implements UploadDataProvider {
+class TestDrivenDataProvider extends UploadDataProvider {
     private final Executor mExecutor;
     private final List<byte[]> mReads;
     private final ConditionVariable mWaitForReadRequest =

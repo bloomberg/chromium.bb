@@ -23,7 +23,7 @@ import java.util.concurrent.ThreadFactory;
  * method to block thread until the request completes on another thread.
  * Allows to cancel, block request or throw an exception from an arbitrary step.
  */
-class TestUrlRequestListener implements UrlRequestListener {
+class TestUrlRequestListener extends UrlRequestListener {
     public ArrayList<ResponseInfo> mRedirectResponseInfoList =
             new ArrayList<ResponseInfo>();
     public ArrayList<String> mRedirectUrlList = new ArrayList<String>();

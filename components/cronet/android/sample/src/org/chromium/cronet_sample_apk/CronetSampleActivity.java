@@ -47,7 +47,7 @@ public class CronetSampleActivity extends Activity {
     private TextView mResultText;
     private TextView mReceiveDataText;
 
-    class SimpleUrlRequestListener implements UrlRequestListener {
+    class SimpleUrlRequestListener extends UrlRequestListener {
         private ByteArrayOutputStream mBytesReceived = new ByteArrayOutputStream();
         private WritableByteChannel mReceiveChannel = Channels.newChannel(mBytesReceived);
 
@@ -115,7 +115,7 @@ public class CronetSampleActivity extends Activity {
         }
     }
 
-    static class SimpleUploadDataProvider implements UploadDataProvider {
+    static class SimpleUploadDataProvider extends UploadDataProvider {
         private byte[] mUploadData;
         private int mOffset;
 
