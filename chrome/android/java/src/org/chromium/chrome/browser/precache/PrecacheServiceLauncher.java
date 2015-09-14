@@ -23,7 +23,9 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.precache.DeviceState;
 
+import java.util.ArrayDeque;
 import java.util.EnumSet;
+import java.util.Queue;
 
 /**
  * BroadcastReceiver that determines when conditions are right for precaching, and starts the
@@ -52,6 +54,8 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     private DeviceState mDeviceState = DeviceState.getInstance();
 
     private PrecacheLauncher mPrecacheLauncher = PrecacheLauncher.get();
+
+    private Queue<Integer> mFailureReasonsToRecord = new ArrayDeque<Integer>();
 
     @VisibleForTesting
     void setDeviceState(DeviceState deviceState) {
@@ -153,11 +157,21 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
      *
      * @param context The context passed to onReceive().
      */
-    private void recordFailureReasons(Context context) {
-        if (!LibraryLoader.isInitialized()) return;
-
+    @VisibleForTesting
+    void recordFailureReasons(Context context) {
         int reasons = FailureReason.bitValue(failureReasons(context));
-        RecordHistogram.recordSparseSlowlyHistogram("Precache.Fetch.FailureReasons", reasons);
+
+        // Queue up this failure reason, for the next time we are able to record it in UMA.
+        mFailureReasonsToRecord.add(reasons);
+
+        // If native libraries are loaded, then we are able to flush our queue to UMA.
+        if (LibraryLoader.isInitialized()) {
+            Integer reasonsToRecord;
+            while ((reasonsToRecord = mFailureReasonsToRecord.poll()) != null) {
+                RecordHistogram.recordSparseSlowlyHistogram(
+                        "Precache.Fetch.FailureReasons", reasonsToRecord);
+            }
+        }
     }
 
     @Override
