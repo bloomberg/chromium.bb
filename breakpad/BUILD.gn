@@ -262,7 +262,7 @@ if (current_toolchain == host_toolchain && is_mac) {
       # not crash at -Os.  To play it safe, dump_syms is always built
       # at -O0 until this can be sorted out.
       # http://code.google.com/p/google-breakpad/issues/detail?id=329
-      configs -= [ "//build/config/compiler:optimize" ]
+      configs -= [ "//build/config/compiler:default_optimization" ]
       cflags += [ "-O0" ]
     }
 

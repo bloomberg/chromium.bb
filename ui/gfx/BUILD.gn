@@ -329,7 +329,7 @@ component("gfx") {
     }
 
     if (!is_debug) {
-      configs -= [ "//build/config/compiler:optimize" ]
+      configs -= [ "//build/config/compiler:default_optimization" ]
       configs += [ "//build/config/compiler:optimize_max" ]
     }
 

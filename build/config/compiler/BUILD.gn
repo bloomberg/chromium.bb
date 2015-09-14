@@ -4,6 +4,9 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/compiler/compiler.gni")
+import("//build/toolchain/ccache.gni")
+
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
 }
@@ -16,9 +19,6 @@ if (is_posix) {
 if (is_win) {
   import("//build/config/win/visual_studio_version.gni")
 }
-
-import("//build/toolchain/ccache.gni")
-import("//build/config/sanitizers/sanitizers.gni")
 
 declare_args() {
   # Normally, Android builds are lightly optimized, even for debug builds, to
@@ -82,11 +82,6 @@ config("default_include_dirs") {
     "//",
     root_gen_dir,
   ]
-}
-
-# TODO(GYP) bug 527515: is_ubsan, is_ubsan_vptr
-if (!is_win) {
-  using_sanitizer = is_asan || is_lsan || is_tsan || is_msan
 }
 
 # compiler ---------------------------------------------------------------------
@@ -1211,14 +1206,15 @@ config("no_incompatible_pointer_warnings") {
 
 # Optimization -----------------------------------------------------------------
 #
-# Note that BUILDCONFIG.gn sets up a variable "default_optimization_config"
-# which it will assign to the config it implicitly applies to every target. If
-# you want to override the optimization level for your target, remove this
-# config (which will expand differently for debug or release builds), and then
-# add back the one you want to override it with:
+# The BUILDCONFIG file sets the "default_optimization" config on targets by
+# default. It will be equivalent to either "optimize" (release) or
+# "no_optimize" (debug) optimization configs.
 #
-#   configs -= default_optimization_config
-#   configs += [ "//build/config/compiler/optimize_max" ]
+# You can override the optimization level on a per-target basis by removing the
+# default config and then adding the named one you want:
+#
+#   configs -= [ "//build/config/compiler:default_optimization" ]
+#   configs += [ "//build/config/compiler:optimize_max" ]
 
 # Shared settings for both "optimize" and "optimize_max" configs.
 # IMPORTANT: On Windows "/O1" and "/O2" must go before the common flags.
@@ -1301,43 +1297,57 @@ if (is_win) {
   }
 }
 
-# Default "optimization on" config. On Windows, this favors size over speed.
+# Default "optimization on" config. Set up variables so the
+# "default_optimization" config can re-use these settings.
+if (is_win) {
+  # Favor size over speed, /O1 must be before the common flags. The GYP
+  # build also specifies /Os and /GF but these are implied by /O1.
+  optimize_cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
+} else if (is_android || is_ios) {
+  # Favor size over speed.
+  optimize_cflags = [ "-Os" ] + common_optimize_on_cflags
+} else {
+  # Linux & Mac favor speed over size.
+  # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
+  # explore favoring size over speed in this case as well.
+  optimize_cflags = [ "-O2" ] + common_optimize_on_cflags
+}
+optimize_ldflags = common_optimize_on_ldflags
+
 config("optimize") {
-  if (is_win) {
-    # Favor size over speed, /O1 must be before the common flags. The GYP
-    # build also specifies /Os and /GF but these are implied by /O1.
-    cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
-  } else if (is_android || is_ios) {
-    cflags = [ "-Os" ] + common_optimize_on_cflags  # Favor size over speed.
-  } else {
-    cflags = [ "-O2" ] + common_optimize_on_cflags
-  }
-  ldflags = common_optimize_on_ldflags
+  cflags = optimize_cflags
+  ldflags = optimize_ldflags
 }
 
-# Turn off optimizations.
-config("no_optimize") {
-  if (is_win) {
-    cflags = [
-      "/Od",  # Disable optimization.
-      "/Ob0",  # Disable all inlining (on by default).
-      "/RTC1",  # Runtime checks for stack frame and uninitialized variables.
-    ]
-  } else if (is_android && !android_full_debug) {
-    # On Android we kind of optimize some things that don't affect debugging
-    # much even when optimization is disabled to get the binary size down.
-    cflags = [
-      "-Os",
-      "-fdata-sections",
-      "-ffunction-sections",
-    ]
-    if (!using_sanitizer) {
-      cflags += [ "-fomit-frame-pointer" ]
-    }
-    ldflags = common_optimize_on_ldflags
-  } else {
-    cflags = [ "-O0" ]
+# Turn off optimizations. Set up variables so the
+# "default_optimization" config can re-use these settings.
+if (is_win) {
+  no_optimize_cflags = [
+    "/Od",  # Disable optimization.
+    "/Ob0",  # Disable all inlining (on by default).
+    "/RTC1",  # Runtime checks for stack frame and uninitialized variables.
+  ]
+  no_optimize_ldflags = []
+} else if (is_android && !android_full_debug) {
+  # On Android we kind of optimize some things that don't affect debugging
+  # much even when optimization is disabled to get the binary size down.
+  no_optimize_cflags = [
+    "-Os",
+    "-fdata-sections",
+    "-ffunction-sections",
+  ]
+  if (!using_sanitizer) {
+    no_optimize_cflags += [ "-fomit-frame-pointer" ]
   }
+  no_optimize_ldflags = common_optimize_on_ldflags
+} else {
+  no_optimize_cflags = [ "-O0" ]
+  no_optimize_ldflags = []
+}
+
+config("no_optimize") {
+  cflags = no_optimize_cflags
+  ldflags = no_optimize_ldflags
 }
 
 # Turns up the optimization level. On Windows, this implies whole program
@@ -1368,53 +1378,105 @@ config("optimize_max") {
   }
 }
 
+# The default optimization applied to all targets. This will be equivalent to
+# either "optimize" or "no_optimize", depending on the build flags.
+config("default_optimization") {
+  if (is_debug) {
+    cflags = no_optimize_cflags
+    ldflags = no_optimize_ldflags
+  } else {
+    cflags = optimize_cflags
+    ldflags = optimize_ldflags
+  }
+}
+
 # Symbols ----------------------------------------------------------------------
 
-config("symbols") {
-  if (is_win) {
-    import("//build/toolchain/goma.gni")
-    if (use_goma) {
-      cflags = [ "/Z7" ]  # No PDB file
-    } else {
-      cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
-    }
-    if (is_win_fastlink) {
-      # Tell VS 2015+ to create a PDB that references debug
-      # information in .obj and .lib files instead of copying
-      # it all. This flag is incompatible with /PROFILE
-      ldflags = [ "/DEBUG:FASTLINK" ]
-    } else {
-      ldflags = [ "/DEBUG" ]
-    }
+# The BUILDCONFIG file sets the "default_symbols" config on targets by
+# default. It will be equivalent to one the three specific symbol levels.
+#
+# You can override the symbol level on a per-target basis by removing the
+# default config and then adding the named one you want:
+#
+#   configs -= [ "//build/config/compiler:default_symbols" ]
+#   configs += [ "//build/config/compiler:symbols" ]
+
+# Full symbols.
+if (is_win) {
+  import("//build/toolchain/goma.gni")
+  if (use_goma) {
+    symbols_cflags = [ "/Z7" ]  # No PDB file
   } else {
-    cflags = [ "-g2" ]
-    if (use_debug_fission) {
-      cflags += [ "-gsplit-dwarf" ]
-    }
+    symbols_cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
   }
+  if (is_win_fastlink) {
+    # Tell VS 2015+ to create a PDB that references debug
+    # information in .obj and .lib files instead of copying
+    # it all. This flag is incompatible with /PROFILE
+    symbols_ldflags = [ "/DEBUG:FASTLINK" ]
+  } else {
+    symbols_ldflags = [ "/DEBUG" ]
+  }
+} else {
+  symbols_cflags = [ "-g2" ]
+  if (use_debug_fission) {
+    symbols_cflags += [ "-gsplit-dwarf" ]
+  }
+  symbols_ldflags = []
+}
+
+config("symbols") {
+  cflags = symbols_cflags
+  ldflags = symbols_ldflags
+}
+
+# Minimal symbols.
+if (is_win) {
+  # Linker symbols for backtraces only.
+  minimal_symbols_cflags = []
+  if (is_win_fastlink) {
+    # Tell VS 2015+ to create a PDB that references debug
+    # information in .obj and .lib files instead of copying
+    # it all. This flag is incompatible with /PROFILE
+    minimal_symbols_ldflags = [ "/DEBUG:FASTLINK" ]
+  } else {
+    minimal_symbols_ldflags = [ "/DEBUG" ]
+  }
+} else {
+  minimal_symbols_cflags = [ "-g1" ]
+  if (use_debug_fission) {
+    minimal_symbols_cflags += [ "-gsplit-dwarf" ]
+  }
+  minimal_symbols_ldflags = []
 }
 
 config("minimal_symbols") {
-  if (is_win) {
-    # Linker symbols for backtraces only.
-    if (is_win_fastlink) {
-      # Tell VS 2015+ to create a PDB that references debug
-      # information in .obj and .lib files instead of copying
-      # it all. This flag is incompatible with /PROFILE
-      ldflags = [ "/DEBUG:FASTLINK" ]
-    } else {
-      ldflags = [ "/DEBUG" ]
-    }
-  } else {
-    cflags = [ "-g1" ]
-    if (use_debug_fission) {
-      cflags += [ "-gsplit-dwarf" ]
-    }
-  }
+  cflags = minimal_symbols_cflags
+  ldflags = minimal_symbols_ldflags
+}
+
+# No symbols.
+if (is_win) {
+  no_symbols_cflags = []
+} else {
+  no_symbols_cflags = [ "-g0" ]
 }
 
 config("no_symbols") {
-  if (!is_win) {
-    cflags = [ "-g0" ]
+  cflags = no_symbols_cflags
+}
+
+# Default symbols.
+config("default_symbols") {
+  if (symbol_level == 0) {
+    cflags = no_symbols_cflags
+  } else if (symbol_level == 1) {
+    cflags = minimal_symbols_cflags
+    ldflags = minimal_symbols_ldflags
+  } else if (symbol_level == 2) {
+    cflags = symbols_cflags
+    ldflags = symbols_ldflags
+  } else {
+    assert(false)
   }
 }

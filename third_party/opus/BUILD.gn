@@ -99,7 +99,7 @@ source_set("opus") {
 
   if (!is_debug && is_posix &&
       (current_cpu == "arm" || current_cpu == "arm64")) {
-    configs -= [ "//build/config/compiler:optimize" ]
+    configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 

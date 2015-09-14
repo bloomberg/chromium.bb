@@ -287,7 +287,7 @@ if (use_allocator == "tcmalloc") {
     # Make sure the allocation library is optimized as much as possible when
     # we"re in release mode.
     if (!is_debug) {
-      configs -= [ "//build/config/compiler:optimize" ]
+      configs -= [ "//build/config/compiler:default_optimization" ]
       configs += [ "//build/config/compiler:optimize_max" ]
     }
 
@@ -306,7 +306,7 @@ source_set("allocator_extension_thunks") {
     "allocator_extension_thunks.h",
   ]
   if (is_android && !is_debug) {
-    configs -= [ "//build/config/compiler:optimize" ]
+    configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 }

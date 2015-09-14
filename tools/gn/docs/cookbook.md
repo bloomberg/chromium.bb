@@ -166,7 +166,7 @@ places are noted in the table below.
 | `arm_neon` (0/1)                                | `arm_use_neon` (true/false)                | `//build/config/arm.gni`                       |
 | `arm_neon_optional` (0/1)                       | `arm_optionally_use_neon` (true/false)     | `//build/config/arm.gni`                       |
 | `arm_version`                                   | `arm_version`                              | `//build/config/arm.gni`                       |
-| `asan` (0/1)                                    | `is_asan` (true/false)                     | (global)                                       |
+| `asan` (0/1)                                    | `is_asan` (true/false)                     | `//build/config/sanitizers/sanitizers.gni`     |
 | `branding` ("Chromium"/"Chrome")                | `is_chrome_branded` (true/false)           | `//build/config/chrome_build.gni`              |
 | `build_for_tool=="drmemory"`                    | `enable_iterator_debugging=false`          | (internal to `//build/config/BUILD.gn`)        |
 | `build_for_tool=="tsan"`                        | `enable_iterator_debugging=false`          | (internal to `//build/config/BUILD.gn`)        |
@@ -177,22 +177,22 @@ places are noted in the table below.
 | `component` ("shared_library"/"static_library") | `is_component_build` (true/false)          | (global)                                       |
 | `desktop_linux` (0/1)                           | `is_desktop_linux` (true/false)            | (global)                                       |
 | `disable_glibcxx_debug` (0/1)                   | `enable_iterator_debugging` (true/false)   | (internal to `//build/config/BUILD.gn`)        |
-| `fastbuild` (0/1/2)                             | `symbol_level` (2/1/0 — values inverted) | (global)                                       |
+| `fastbuild` (0/1/2)                             | `symbol_level` (2/1/0 — values inverted)   | `//build/config/compiler/compiler.gni`         |
 | `gomadir`                                       | `goma_dir`                                 | `//build/toolchain/goma.gni`                   |
 | `ios_deployment_target` (string)                | `ios_deployment_target`                    | `//build/config/ios/ios_sdk.gni`               |
 | `GYP_MSVS_OVERRIDE_PATH` environment variable   | `visual_studio_path`                       | `//build/config/win/visual_studio_version.gni` |
 | `GYP_MSVS_VERSION` environment variable         | (none)                                     |                                                |
 | `ios_sdk_path`                                  | `ios_sdk_path` and `use_ios_simulator`     | `//build/config/ios/ios_sdk.gni`               |
-| `lsan` (0/1)                                    | `is_lsan` (true/false)                     | (global)                                       |
+| `lsan` (0/1)                                    | `is_lsan` (true/false)                     | `//build/config/sanitizers/sanitizers.gni`     |
 | `mac_sdk_min`                                   | `mac_sdk_min`                              | `//build/config/mac/mac_sdk.gni`               |
 | `mac_sdk_path`                                  | `mac_sdk_path`                             | `//build/config/mac/mac_sdk.gni`               |
 | `mac_sdk`                                       | `mac_sdk_version`                          | `//build/config/mac/mac_sdk.gni`               |
-| `msan` (0/1)                                    | `is_msan` (true/false)                     | (global)                                       |
+| `msan` (0/1)                                    | `is_msan` (true/false)                     | `//build/config/sanitizers/sanitizers.gni`     |
 | `SDKROOT` (Mac)                                 | `sysroot`                                  | `//build/config/sysroot.gni`                   |
 | `sysroot`                                       | `sysroot`                                  | `//build/config/sysroot.gni`                   |
 | `target_arch` ("ia32"/"x64"/"arm"/"mipsel")     | `target_arch` ("x86"/"x64"/"arm"/"mipsel") | (global)                                       |
 | `toolkit_views` (0/1)                           | `toolkit_views`                            | `//build/config/ui.gni`                        |
-| `tsan` (0/1)                                    | `is_tsan` (true/false)                     | (global)                                       |
+| `tsan` (0/1)                                    | `is_tsan` (true/false)                     | `//build/config/sanitizers/sanitizers.gni`     |
 | `windows_sdk_path`                              | `windows_sdk_path`                         | (internal to `//build/config/win/BUILD.gn`)    |
 
 ### Feature flags
@@ -572,7 +572,7 @@ get the same behavior in GN, do:
 
 ```
 if (!is_debug && is_win) {
-  configs -= [ "//build/config/compiler:optimize" ]
+  configs -= [ "//build/config/compiler:default_optimization" ]
   configs += [ "//build/config/compiler:optimize_max" ]
 }
 ```

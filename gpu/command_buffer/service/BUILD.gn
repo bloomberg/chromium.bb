@@ -161,7 +161,7 @@ source_set("service_sources") {
 
   if (is_android && !is_debug) {
     # On Android optimize more since this component can be a bottleneck.
-    configs -= [ "//build/config/compiler:optimize" ]
+    configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 }

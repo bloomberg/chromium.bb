@@ -48,7 +48,7 @@ source_set("base") {
   defines = [ "CC_IMPLEMENTATION=1" ]
 
   if (!is_debug && (is_win || is_android)) {
-    configs -= [ "//build/config/compiler:optimize" ]
+    configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 }
