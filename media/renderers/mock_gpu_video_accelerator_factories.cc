@@ -83,6 +83,8 @@ MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
+  if (fail_to_allocate_gpu_memory_buffer_)
+    return nullptr;
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
       new GpuMemoryBufferImpl(size, format));
 }

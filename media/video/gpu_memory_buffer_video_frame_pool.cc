@@ -226,12 +226,14 @@ void CopyRowsToI420Buffer(int first_row,
                           const base::Closure& done) {
   TRACE_EVENT2("media", "CopyRowsToI420Buffer", "bytes_per_row", bytes_per_row,
                "rows", rows);
-  DCHECK_NE(dest_stride, 0);
-  DCHECK_LE(bytes_per_row, std::abs(dest_stride));
-  DCHECK_LE(bytes_per_row, source_stride);
-  for (int row = first_row; row < first_row + rows; ++row) {
-    memcpy(output + dest_stride * row, source + source_stride * row,
-           bytes_per_row);
+  if (output) {
+    DCHECK_NE(dest_stride, 0);
+    DCHECK_LE(bytes_per_row, std::abs(dest_stride));
+    DCHECK_LE(bytes_per_row, source_stride);
+    for (int row = first_row; row < first_row + rows; ++row) {
+      memcpy(output + dest_stride * row, source + source_stride * row,
+             bytes_per_row);
+    }
   }
   done.Run();
 }
@@ -247,24 +249,27 @@ void CopyRowsToNV12Buffer(int first_row,
                           const base::Closure& done) {
   TRACE_EVENT2("media", "CopyRowsToNV12Buffer", "bytes_per_row", bytes_per_row,
                "rows", rows);
-  DCHECK_NE(dest_stride_y, 0);
-  DCHECK_NE(dest_stride_uv, 0);
-  DCHECK_LE(bytes_per_row, std::abs(dest_stride_y));
-  DCHECK_LE(bytes_per_row, std::abs(dest_stride_uv));
-  DCHECK_EQ(0, first_row % 2);
-  libyuv::I420ToNV12(
-      source_frame->data(VideoFrame::kYPlane) +
-          first_row * source_frame->stride(VideoFrame::kYPlane),
-      source_frame->stride(VideoFrame::kYPlane),
-      source_frame->data(VideoFrame::kUPlane) +
-          first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
-      source_frame->stride(VideoFrame::kUPlane),
-      source_frame->data(VideoFrame::kVPlane) +
-          first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
-      source_frame->stride(VideoFrame::kVPlane),
-      dest_y + first_row * dest_stride_y, dest_stride_y,
-      dest_uv + first_row / 2 * dest_stride_uv, dest_stride_uv,
-      bytes_per_row, rows);
+  if (dest_y && dest_uv) {
+    DCHECK_NE(dest_stride_y, 0);
+    DCHECK_NE(dest_stride_uv, 0);
+    DCHECK_LE(bytes_per_row, std::abs(dest_stride_y));
+    DCHECK_LE(bytes_per_row, std::abs(dest_stride_uv));
+    DCHECK_EQ(0, first_row % 2);
+
+    libyuv::I420ToNV12(
+        source_frame->data(VideoFrame::kYPlane) +
+            first_row * source_frame->stride(VideoFrame::kYPlane),
+        source_frame->stride(VideoFrame::kYPlane),
+        source_frame->data(VideoFrame::kUPlane) +
+            first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
+        source_frame->stride(VideoFrame::kUPlane),
+        source_frame->data(VideoFrame::kVPlane) +
+            first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
+        source_frame->stride(VideoFrame::kVPlane),
+        dest_y + first_row * dest_stride_y, dest_stride_y,
+        dest_uv + first_row / 2 * dest_stride_uv, dest_stride_uv, bytes_per_row,
+        rows);
+  }
   done.Run();
 }
 
@@ -277,20 +282,22 @@ void CopyRowsToUYVYBuffer(int first_row,
                           const base::Closure& done) {
   TRACE_EVENT2("media", "CopyRowsToUYVYBuffer", "bytes_per_row", width * 2,
                "rows", rows);
-  DCHECK_NE(dest_stride, 0);
-  DCHECK_LE(width, std::abs(dest_stride / 2));
-  DCHECK_EQ(0, first_row % 2);
-  libyuv::I420ToUYVY(
-      source_frame->data(VideoFrame::kYPlane) +
-          first_row * source_frame->stride(VideoFrame::kYPlane),
-      source_frame->stride(VideoFrame::kYPlane),
-      source_frame->data(VideoFrame::kUPlane) +
-          first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
-      source_frame->stride(VideoFrame::kUPlane),
-      source_frame->data(VideoFrame::kVPlane) +
-          first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
-      source_frame->stride(VideoFrame::kVPlane),
-      output + first_row * dest_stride, dest_stride, width, rows);
+  if (output) {
+    DCHECK_NE(dest_stride, 0);
+    DCHECK_LE(width, std::abs(dest_stride / 2));
+    DCHECK_EQ(0, first_row % 2);
+    libyuv::I420ToUYVY(
+        source_frame->data(VideoFrame::kYPlane) +
+            first_row * source_frame->stride(VideoFrame::kYPlane),
+        source_frame->stride(VideoFrame::kYPlane),
+        source_frame->data(VideoFrame::kUPlane) +
+            first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
+        source_frame->stride(VideoFrame::kUPlane),
+        source_frame->data(VideoFrame::kVPlane) +
+            first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
+        source_frame->stride(VideoFrame::kVPlane),
+        output + first_row * dest_stride, dest_stride, width, rows);
+  }
   done.Run();
 }
 
@@ -402,14 +409,15 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
     gfx::GpuMemoryBuffer* buffer =
         frame_resources->plane_resources[i].gpu_memory_buffer.get();
-    DCHECK(buffer);
-    DCHECK_EQ(planes_per_copy,
-              gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
-    uint8* dest_buffers[VideoFrame::kMaxPlanes];
-    int dest_strides[VideoFrame::kMaxPlanes];
-    bool rv = buffer->Map(reinterpret_cast<void**>(dest_buffers));
-    DCHECK(rv);
-    buffer->GetStride(dest_strides);
+    uint8* dest_buffers[VideoFrame::kMaxPlanes] = {0};
+    int dest_strides[VideoFrame::kMaxPlanes] = {0};
+    if (buffer) {
+      DCHECK_EQ(planes_per_copy,
+                gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
+      bool rv = buffer->Map(reinterpret_cast<void**>(dest_buffers));
+      DCHECK(rv);
+      buffer->GetStride(dest_strides);
+    }
 
     const int rows = VideoFrame::Rows(i, output_format_, size.height());
     const int rows_per_copy = RowsPerCopy(i, output_format_, size.width());
@@ -468,21 +476,21 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   // Set up the planes creating the mailboxes needed to refer to the textures.
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
     PlaneResource& plane_resource = frame_resources->plane_resources[i];
-    DCHECK(plane_resource.gpu_memory_buffer);
     // Bind the texture and create or rebind the image.
     gles2->BindTexture(texture_target_, plane_resource.texture_id);
 
-    if (!plane_resource.image_id) {
+    if (plane_resource.gpu_memory_buffer && !plane_resource.image_id) {
       const size_t width = VideoFrame::Columns(i, output_format_, size.width());
       const size_t height = VideoFrame::Rows(i, output_format_, size.height());
       plane_resource.image_id = gles2->CreateImageCHROMIUM(
           plane_resource.gpu_memory_buffer->AsClientBuffer(), width, height,
           ImageInternalFormat(output_format_, i));
-    } else {
+    } else if (plane_resource.image_id) {
       gles2->ReleaseTexImage2DCHROMIUM(texture_target_,
                                        plane_resource.image_id);
     }
-    gles2->BindTexImage2DCHROMIUM(texture_target_, plane_resource.image_id);
+    if (plane_resource.image_id)
+      gles2->BindTexImage2DCHROMIUM(texture_target_, plane_resource.image_id);
     mailbox_holders[i] =
         gpu::MailboxHolder(plane_resource.mailbox, texture_target_, 0);
   }

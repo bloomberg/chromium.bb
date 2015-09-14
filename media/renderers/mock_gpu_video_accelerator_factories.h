@@ -61,6 +61,10 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
     video_frame_output_format_ = video_frame_output_format;
   };
 
+  void SetFailToAllocateGpuMemoryBufferForTesting(bool fail) {
+    fail_to_allocate_gpu_memory_buffer_ = fail;
+  }
+
   MOCK_METHOD0(GetGLES2Interface, gpu::gles2::GLES2Interface*());
 
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
@@ -75,6 +79,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   DISALLOW_COPY_AND_ASSIGN(MockGpuVideoAcceleratorFactories);
 
   VideoPixelFormat video_frame_output_format_ = PIXEL_FORMAT_I420;
+
+  bool fail_to_allocate_gpu_memory_buffer_ = false;
 };
 
 }  // namespace media
