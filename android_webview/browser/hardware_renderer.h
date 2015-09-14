@@ -33,9 +33,10 @@ class HardwareRenderer : public cc::DisplayClient,
   ~HardwareRenderer() override;
 
   void DrawGL(bool stencil_enabled,
-              int framebuffer_binding_ext,
               AwDrawGLInfo* draw_info);
   void CommitFrame();
+
+  void SetBackingFrameBufferObject(int framebuffer_binding_ext);
 
  private:
   // cc::DisplayClient overrides.

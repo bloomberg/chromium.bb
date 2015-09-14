@@ -26,7 +26,6 @@ class GL_EXPORT AwGLSurface : public gfx::GLSurface {
   void* GetDisplay() override;
 
   void SetBackingFrameBufferObject(unsigned int fbo);
-  void ResetBackingFrameBufferObject();
 
  protected:
   ~AwGLSurface() override;

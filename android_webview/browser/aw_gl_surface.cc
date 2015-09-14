@@ -41,8 +41,4 @@ void AwGLSurface::SetBackingFrameBufferObject(unsigned int fbo) {
   fbo_ = fbo;
 }
 
-void AwGLSurface::ResetBackingFrameBufferObject() {
-  fbo_ = 0;
-}
-
 }  // namespace android_webview

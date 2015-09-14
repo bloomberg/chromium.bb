@@ -106,7 +106,6 @@ void HardwareRenderer::CommitFrame() {
 }
 
 void HardwareRenderer::DrawGL(bool stencil_enabled,
-                              int framebuffer_binding_ext,
                               AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
 
@@ -175,7 +174,6 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
 
   display_->Resize(viewport);
 
-  gl_surface_->SetBackingFrameBufferObject(framebuffer_binding_ext);
   if (!output_surface_) {
     scoped_refptr<cc::ContextProvider> context_provider =
         AwRenderThreadContextProvider::Create(
@@ -188,12 +186,16 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   output_surface_->SetExternalStencilTest(stencil_enabled);
   display_->SetExternalClip(clip);
   display_->DrawAndSwap();
-  gl_surface_->ResetBackingFrameBufferObject();
 }
 
 void HardwareRenderer::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   shared_renderer_state_->InsertReturnedResourcesOnRT(resources);
+}
+
+void HardwareRenderer::SetBackingFrameBufferObject(
+    int framebuffer_binding_ext) {
+  gl_surface_->SetBackingFrameBufferObject(framebuffer_binding_ext);
 }
 
 }  // namespace android_webview
