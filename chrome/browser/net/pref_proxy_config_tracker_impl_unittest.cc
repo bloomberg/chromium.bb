@@ -13,15 +13,13 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/prefs/pref_service_mock_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "net/proxy/proxy_config_service_common_unittest.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using testing::_;
 using testing::Mock;
@@ -74,20 +72,17 @@ class MockObserver : public net::ProxyConfigService::Observer {
                     net::ProxyConfigService::ConfigAvailability));
 };
 
-template<typename TESTBASE>
-class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
+class PrefProxyConfigTrackerImplTest : public testing::Test {
  protected:
-  PrefProxyConfigTrackerImplTestBase() {}
-
-  virtual void Init(PrefService* pref_service, PrefRegistrySimple* registry) {
-    ASSERT_TRUE(pref_service);
-    PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
+  PrefProxyConfigTrackerImplTest() {
+    pref_service_.reset(new TestingPrefServiceSimple());
+    PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service_->registry());
     fixed_config_.set_pac_url(GURL(kFixedPacUrl));
     delegate_service_ =
         new TestProxyConfigService(fixed_config_,
                                    net::ProxyConfigService::CONFIG_VALID);
     proxy_config_tracker_.reset(new PrefProxyConfigTrackerImpl(
-        pref_service, base::ThreadTaskRunnerHandle::Get()));
+        pref_service_.get(), base::ThreadTaskRunnerHandle::Get()));
     proxy_config_service_ =
         proxy_config_tracker_->CreateTrackingProxyConfigService(
             scoped_ptr<net::ProxyConfigService>(delegate_service_));
@@ -97,7 +92,7 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
     loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() {
+  ~PrefProxyConfigTrackerImplTest() override {
     proxy_config_tracker_->DetachFromPrefService();
     loop_.RunUntilIdle();
     proxy_config_tracker_.reset();
@@ -105,23 +100,13 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
   }
 
   base::MessageLoop loop_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   TestProxyConfigService* delegate_service_; // weak
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   net::ProxyConfig fixed_config_;
 
  private:
   scoped_ptr<PrefProxyConfigTrackerImpl> proxy_config_tracker_;
-};
-
-class PrefProxyConfigTrackerImplTest
-    : public PrefProxyConfigTrackerImplTestBase<testing::Test> {
- protected:
-  void SetUp() override {
-    pref_service_.reset(new TestingPrefServiceSimple());
-    Init(pref_service_.get(), pref_service_->registry());
-  }
-
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
 };
 
 TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {
@@ -376,197 +361,5 @@ TEST_F(PrefProxyConfigTrackerImplTest, ExcludeGooglezipDataReductionProxies) {
                               test.ftp_proxy_info);
   }
 }
-
-// Test parameter object for testing command line proxy configuration.
-struct CommandLineTestParams {
-  // Explicit assignment operator, so testing::TestWithParam works with MSVC.
-  CommandLineTestParams& operator=(const CommandLineTestParams& other) {
-    description = other.description;
-    for (unsigned int i = 0; i < arraysize(switches); i++)
-      switches[i] = other.switches[i];
-    is_null = other.is_null;
-    auto_detect = other.auto_detect;
-    pac_url = other.pac_url;
-    proxy_rules = other.proxy_rules;
-    return *this;
-  }
-
-  // Short description to identify the test.
-  const char* description;
-
-  // The command line to build a ProxyConfig from.
-  struct SwitchValue {
-    const char* name;
-    const char* value;
-  } switches[2];
-
-  // Expected outputs (fields of the ProxyConfig).
-  bool is_null;
-  bool auto_detect;
-  GURL pac_url;
-  net::ProxyRulesExpectation proxy_rules;
-};
-
-void PrintTo(const CommandLineTestParams& params, std::ostream* os) {
-  *os << params.description;
-}
-
-class PrefProxyConfigTrackerImplCommandLineTest
-    : public PrefProxyConfigTrackerImplTestBase<
-          testing::TestWithParam<CommandLineTestParams> > {
- protected:
-  PrefProxyConfigTrackerImplCommandLineTest()
-      : command_line_(base::CommandLine::NO_PROGRAM) {}
-
-  void SetUp() override {
-    for (size_t i = 0; i < arraysize(GetParam().switches); i++) {
-      const char* name = GetParam().switches[i].name;
-      const char* value = GetParam().switches[i].value;
-      if (name && value)
-        command_line_.AppendSwitchASCII(name, value);
-      else if (name)
-        command_line_.AppendSwitch(name);
-    }
-    scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
-    PrefServiceMockFactory factory;
-    factory.SetCommandLine(&command_line_);
-    pref_service_ = factory.Create(registry.get()).Pass();
-    Init(pref_service_.get(), registry.get());
-  }
-
- private:
-  base::CommandLine command_line_;
-  scoped_ptr<PrefService> pref_service_;
-};
-
-TEST_P(PrefProxyConfigTrackerImplCommandLineTest, CommandLine) {
-  net::ProxyConfig config;
-  EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
-            proxy_config_service_->GetLatestProxyConfig(&config));
-
-  if (GetParam().is_null) {
-    EXPECT_EQ(GURL(kFixedPacUrl), config.pac_url());
-  } else {
-    EXPECT_NE(GURL(kFixedPacUrl), config.pac_url());
-    EXPECT_EQ(GetParam().auto_detect, config.auto_detect());
-    EXPECT_EQ(GetParam().pac_url, config.pac_url());
-    EXPECT_TRUE(GetParam().proxy_rules.Matches(config.proxy_rules()));
-  }
-}
-
-static const CommandLineTestParams kCommandLineTestParams[] = {
-  {
-    "Empty command line",
-    // Input
-    { },
-    // Expected result
-    true,                                               // is_null
-    false,                                              // auto_detect
-    GURL(),                                             // pac_url
-    net::ProxyRulesExpectation::Empty(),
-  },
-  {
-    "No proxy",
-    // Input
-    {
-      { switches::kNoProxyServer, NULL },
-    },
-    // Expected result
-    false,                                              // is_null
-    false,                                              // auto_detect
-    GURL(),                                             // pac_url
-    net::ProxyRulesExpectation::Empty(),
-  },
-  {
-    "No proxy with extra parameters.",
-    // Input
-    {
-      { switches::kNoProxyServer, NULL },
-      { switches::kProxyServer, "http://proxy:8888" },
-    },
-    // Expected result
-    false,                                              // is_null
-    false,                                              // auto_detect
-    GURL(),                                             // pac_url
-    net::ProxyRulesExpectation::Empty(),
-  },
-  {
-    "Single proxy.",
-    // Input
-    {
-      { switches::kProxyServer, "http://proxy:8888" },
-    },
-    // Expected result
-    false,                                              // is_null
-    false,                                              // auto_detect
-    GURL(),                                             // pac_url
-    net::ProxyRulesExpectation::Single(
-        "proxy:8888",  // single proxy
-        ""),           // bypass rules
-  },
-  {
-    "Per scheme proxy.",
-    // Input
-    {
-      { switches::kProxyServer, "http=httpproxy:8888;ftp=ftpproxy:8889" },
-    },
-    // Expected result
-    false,                                              // is_null
-    false,                                              // auto_detect
-    GURL(),                                             // pac_url
-    net::ProxyRulesExpectation::PerScheme(
-        "httpproxy:8888",  // http
-        "",                // https
-        "ftpproxy:8889",   // ftp
-        ""),               // bypass rules
-  },
-  {
-    "Per scheme proxy with bypass URLs.",
-    // Input
-    {
-      { switches::kProxyServer, "http=httpproxy:8888;ftp=ftpproxy:8889" },
-      { switches::kProxyBypassList,
-        ".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8" },
-    },
-    // Expected result
-    false,                                              // is_null
-    false,                                              // auto_detect
-    GURL(),                                             // pac_url
-    net::ProxyRulesExpectation::PerScheme(
-        "httpproxy:8888",  // http
-        "",                // https
-        "ftpproxy:8889",   // ftp
-        "*.google.com,foo.com:99,1.2.3.4:22,127.0.0.1/8"),
-  },
-  {
-    "Pac URL",
-    // Input
-    {
-      { switches::kProxyPacUrl, "http://wpad/wpad.dat" },
-    },
-    // Expected result
-    false,                                              // is_null
-    false,                                              // auto_detect
-    GURL("http://wpad/wpad.dat"),                       // pac_url
-    net::ProxyRulesExpectation::Empty(),
-  },
-  {
-    "Autodetect",
-    // Input
-    {
-      { switches::kProxyAutoDetect, NULL },
-    },
-    // Expected result
-    false,                                              // is_null
-    true,                                               // auto_detect
-    GURL(),                                             // pac_url
-    net::ProxyRulesExpectation::Empty(),
-  },
-};
-
-INSTANTIATE_TEST_CASE_P(
-    PrefProxyConfigTrackerImplCommandLineTestInstance,
-    PrefProxyConfigTrackerImplCommandLineTest,
-    testing::ValuesIn(kCommandLineTestParams));
 
 }  // namespace
