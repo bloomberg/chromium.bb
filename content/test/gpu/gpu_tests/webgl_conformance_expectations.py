@@ -154,8 +154,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
-    self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
-               ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=524717)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
+              ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=524717)
 
     # Mac / AMD Failures
     self.Fail('deqp/data/gles2/shaders/conversions.html',
