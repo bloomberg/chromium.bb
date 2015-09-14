@@ -629,6 +629,27 @@ void DeleteRegistryKeyPartial(
   }
 }
 
+base::string16 GuidToSquid(const base::string16& guid) {
+  base::string16 squid;
+  squid.reserve(32);
+  auto input = guid.begin();
+  auto output = std::back_inserter(squid);
+
+  // Reverse-copy relevant characters, skipping separators.
+  std::reverse_copy(input + 0, input + 8, output);
+  std::reverse_copy(input + 9, input + 13, output);
+  std::reverse_copy(input + 14, input + 18, output);
+  std::reverse_copy(input + 19, input + 21, output);
+  std::reverse_copy(input + 21, input + 23, output);
+  std::reverse_copy(input + 24, input + 26, output);
+  std::reverse_copy(input + 26, input + 28, output);
+  std::reverse_copy(input + 28, input + 30, output);
+  std::reverse_copy(input + 30, input + 32, output);
+  std::reverse_copy(input + 32, input + 34, output);
+  std::reverse_copy(input + 34, input + 36, output);
+  return squid;
+}
+
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)
     : is_enabled_(false) {
   HANDLE temp_handle;
