@@ -46,6 +46,7 @@
 #elif defined(USE_OZONE)
 #include "media/ozone/media_ozone_platform.h"
 #elif defined(OS_ANDROID)
+#include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
 
@@ -381,8 +382,8 @@ GpuVideoDecodeAccelerator::CreateAndroidVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_ANDROID)
   decoder.reset(new AndroidVideoDecodeAccelerator(
-      stub_->decoder()->AsWeakPtr(),
-      make_context_current_));
+      stub_->decoder()->AsWeakPtr(), make_context_current_,
+      make_scoped_ptr(new AndroidCopyingBackingStrategy())));
 #endif
   return decoder.Pass();
 }

@@ -15,7 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
-#include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
+#include "content/common/gpu/media/android_video_decode_accelerator_state_provider.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/video/video_decode_accelerator.h"
@@ -25,18 +25,50 @@ class SurfaceTexture;
 }
 
 namespace content {
+
 // A VideoDecodeAccelerator implementation for Android.
 // This class decodes the input encoded stream by using Android's MediaCodec
 // class. http://developer.android.com/reference/android/media/MediaCodec.html
+// It delegates attaching pictures to PictureBuffers to a BackingStrategy, but
+// otherwise handles the work of transferring data to / from MediaCodec.
 class CONTENT_EXPORT AndroidVideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator {
+    : public media::VideoDecodeAccelerator,
+      public AndroidVideoDecodeAcceleratorStateProvider {
  public:
-  // Does not take ownership of |client| which must outlive |*this|.
+  // A BackingStrategy is responsible for making a PictureBuffer's texture
+  // contain the image that a MediaCodec decoder buffer tells it to.
+  class BackingStrategy {
+   public:
+    virtual ~BackingStrategy() {}
+
+    // Notify about the state provider.
+    virtual void SetStateProvider(
+        AndroidVideoDecodeAcceleratorStateProvider*) = 0;
+
+    // Called before the AVDA does any Destroy() work.  This will be
+    // the last call that the BackingStrategy receives.
+    virtual void Cleanup() = 0;
+
+    // Return the number of picture buffers that we can support.
+    virtual uint32 GetNumPictureBuffers() const = 0;
+
+    // Return the GL texture target that the PictureBuffer textures use.
+    virtual uint32 GetTextureTarget() const = 0;
+
+    // Use the provided PictureBuffer to hold the current surface.
+    virtual void AssignCurrentSurfaceToPictureBuffer(
+        int32 codec_buffer_index,
+        const media::PictureBuffer&) = 0;
+  };
+
   AndroidVideoDecodeAccelerator(
       const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
-      const base::Callback<bool(void)>& make_context_current);
+      const base::Callback<bool(void)>& make_context_current,
+      scoped_ptr<BackingStrategy> strategy);
 
-  // media::VideoDecodeAccelerator implementation.
+  ~AndroidVideoDecodeAccelerator() override;
+
+  // Does not take ownership of |client| which must outlive |*this|.
   bool Initialize(media::VideoCodecProfile profile, Client* client) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
@@ -46,6 +78,16 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void Reset() override;
   void Destroy() override;
   bool CanDecodeOnIOThread() override;
+
+  // AndroidVideoDecodeStateProvider
+  const gfx::Size& GetSize() const override;
+  const base::ThreadChecker& ThreadChecker() const override;
+  gfx::SurfaceTexture* GetSurfaceTexture() const override;
+  uint32 GetSurfaceTextureId() const override;
+  gpu::gles2::GLES2Decoder* GetGlDecoder() const override;
+  media::VideoCodecBridge* GetMediaCodec() override;
+  void PostError(const ::tracked_objects::Location& from_here,
+                 media::VideoDecodeAccelerator::Error error) override;
 
   static media::VideoDecodeAccelerator::SupportedProfiles
       GetSupportedProfiles();
@@ -58,13 +100,11 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   static const base::TimeDelta kDecodePollDelay;
 
-  ~AndroidVideoDecodeAccelerator() override;
-
   // Configures |media_codec_| with the given codec parameters from the client.
   bool ConfigureMediaCodec();
 
   // Sends the current picture on the surface to the client.
-  void SendCurrentSurfaceToClient(int32 bitstream_id);
+  void SendCurrentSurfaceToClient(int32 codec_buffer_index, int32 bitstream_id);
 
   // Does pending IO tasks if any. Once this is called, it polls |media_codec_|
   // until it finishes pending tasks. For the polling, |kDecodePollDelay| is
@@ -163,11 +203,11 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Owner of the GL context. Used to restore the context state.
   base::WeakPtr<gpu::gles2::GLES2Decoder> gl_decoder_;
 
-  // Used for copy the texture from |surface_texture_| to picture buffers.
-  scoped_ptr<gpu::CopyTextureCHROMIUMResourceManager> copier_;
-
   // Repeating timer responsible for draining pending IO to the codec.
   base::RepeatingTimer<AndroidVideoDecodeAccelerator> io_timer_;
+
+  // Backing strategy that we'll use to connect PictureBuffers to frames.
+  scoped_ptr<BackingStrategy> strategy_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;

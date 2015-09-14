@@ -796,8 +796,11 @@
         '../media/media.gyp:media',
       ],
       'sources': [
+        'common/gpu/media/android_copying_backing_strategy.cc',
+        'common/gpu/media/android_copying_backing_strategy.h',
         'common/gpu/media/android_video_decode_accelerator.cc',
         'common/gpu/media/android_video_decode_accelerator.h',
+        'common/gpu/media/avda_return_on_failure.h',
       ],
     }],
     ['OS=="android" and enable_webrtc==1', {

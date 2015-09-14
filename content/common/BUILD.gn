@@ -335,8 +335,11 @@ source_set("common") {
 
   if (is_android) {
     sources += [
+      "gpu/media/android_copying_backing_strategy.cc",
+      "gpu/media/android_copying_backing_strategy.h",
       "gpu/media/android_video_decode_accelerator.cc",
       "gpu/media/android_video_decode_accelerator.h",
+      "gpu/media/avda_return_on_failure.h",
     ]
 
     if (enable_webrtc) {

@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "media/base/android/media_codec_bridge.h"
@@ -63,7 +64,8 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     scoped_ptr<MockVideoDecodeAcceleratorClient> client(
         new MockVideoDecodeAcceleratorClient());
     accelerator_.reset(new AndroidVideoDecodeAccelerator(
-        decoder->AsWeakPtr(), base::Bind(&MockMakeContextCurrent)));
+        decoder->AsWeakPtr(), base::Bind(&MockMakeContextCurrent),
+        make_scoped_ptr(new AndroidCopyingBackingStrategy())));
   }
 
   bool Configure(media::VideoCodec codec) {
