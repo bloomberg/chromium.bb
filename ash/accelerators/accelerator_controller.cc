@@ -95,7 +95,8 @@ class DeprecatedAcceleratorNotificationDelegate
   bool HasClickedListener() override { return true; }
 
   void Click() override {
-    Shell::GetInstance()->delegate()->OpenKeyboardShortcutHelpPage();
+    if (!Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked())
+      Shell::GetInstance()->delegate()->OpenKeyboardShortcutHelpPage();
   }
 
  private:
@@ -542,6 +543,10 @@ void HandleKeyboardBrightnessUp(KeyboardBrightnessControlDelegate* delegate,
     delegate->HandleKeyboardBrightnessUp(accelerator);
 }
 
+bool CanHandleLock() {
+  return Shell::GetInstance()->session_state_delegate()->CanLockScreen();
+}
+
 void HandleLock() {
   base::RecordAction(UserMetricsAction("Accel_LockScreen_L"));
   Shell::GetInstance()->session_state_delegate()->LockScreen();
@@ -807,6 +812,31 @@ bool AcceleratorController::AcceleratorPressed(
   DCHECK(it != accelerators_.end());
   AcceleratorAction action = it->second;
   if (CanPerformAction(action, accelerator)) {
+    // Handling the deprecated accelerators (if any) only if action can be
+    // performed.
+    auto itr = actions_with_deprecations_.find(action);
+    if (itr != actions_with_deprecations_.end()) {
+      const DeprecatedAcceleratorData* data = itr->second;
+      if (deprecated_accelerators_.count(accelerator)) {
+        // This accelerator has been deprecated and should be treated according
+        // to its |DeprecatedAcceleratorData|.
+
+        // Record UMA stats.
+        RecordUmaHistogram(data->uma_histogram_name, DEPRECATED_USED);
+
+        // We always display the notification as long as this entry exists.
+        ShowDeprecatedAcceleratorNotification(data->uma_histogram_name,
+                                              data->notification_message_id);
+
+        if (!data->deprecated_enabled)
+          return false;
+      } else {
+        // This is a new accelerator replacing the old deprecated one.
+        // Record UMA stats and proceed normally.
+        RecordUmaHistogram(data->uma_histogram_name, NEW_USED);
+      }
+    }
+
     PerformAction(action, accelerator);
     return ShouldActionConsumeKeyEvent(action);
   }
@@ -900,30 +930,6 @@ bool AcceleratorController::CanPerformAction(
     return false;
   }
 
-  // Handling the deprecated accelerators.
-  auto itr = actions_with_deprecations_.find(action);
-  if (itr != actions_with_deprecations_.end()) {
-    const DeprecatedAcceleratorData* data = itr->second;
-    if (deprecated_accelerators_.count(accelerator)) {
-      // This accelerator has been deprecated and should be treated according
-      // to its |DeprecatedAcceleratorData|.
-
-      // Record UMA stats.
-      RecordUmaHistogram(data->uma_histogram_name, DEPRECATED_USED);
-
-      // We always display the notification as long as this entry exists.
-      ShowDeprecatedAcceleratorNotification(data->uma_histogram_name,
-                                            data->notification_message_id);
-
-      if (!data->deprecated_enabled)
-        return false;
-    } else {
-      // This is a new accelerator replacing the old deprecated one.
-      // Record UMA stats and proceed normally.
-      RecordUmaHistogram(data->uma_histogram_name, NEW_USED);
-    }
-  }
-
   AcceleratorProcessingRestriction restriction =
       GetAcceleratorProcessingRestriction(action);
   if (restriction != RESTRICTION_NONE)
@@ -977,6 +983,8 @@ bool AcceleratorController::CanPerformAction(
       return debug::DebugAcceleratorsEnabled();
     case DISABLE_CAPS_LOCK:
       return CanHandleDisableCapsLock(previous_accelerator);
+    case LOCK_SCREEN:
+      return CanHandleLock();
     case SILENCE_SPOKEN_FEEDBACK:
       return CanHandleSilenceSpokenFeedback();
     case SWITCH_TO_PREVIOUS_USER:
@@ -1033,7 +1041,6 @@ bool AcceleratorController::CanPerformAction(
     case KEYBOARD_BRIGHTNESS_UP:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
-    case LOCK_SCREEN:
     case OPEN_CROSH:
     case OPEN_FILE_MANAGER:
     case OPEN_GET_HELP:
