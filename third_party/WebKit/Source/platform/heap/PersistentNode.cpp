@@ -92,15 +92,19 @@ void PersistentRegion::tracePersistentNodes(Visitor* visitor)
     ASSERT(persistentCount == m_persistentCount);
 }
 
+namespace {
+class GCObject final : public GarbageCollected<GCObject> {
+public:
+    DEFINE_INLINE_TRACE() { }
+};
+}
+
 void CrossThreadPersistentRegion::prepareForThreadStateTermination(ThreadState* threadState)
 {
     // For heaps belonging to a thread that's detaching, any cross-thread persistents
     // pointing into them needs to be disabled. Do that by clearing out the underlying
     // heap reference.
     MutexLocker lock(m_mutex);
-
-    class Object;
-    using GCObject = GarbageCollected<Object>;
 
     // TODO(sof): consider ways of reducing overhead. (e.g., tracking number of active
     // CrossThreadPersistent<>s pointing into the heaps of each ThreadState and use that

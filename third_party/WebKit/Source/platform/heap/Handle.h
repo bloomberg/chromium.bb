@@ -137,11 +137,11 @@ public:
     RawPtr<T> release()
     {
         RawPtr<T> result = m_raw;
-        m_raw = nullptr;
+        assign(nullptr);
         return result;
     }
 
-    void clear() { m_raw = nullptr; }
+    void clear() { assign(nullptr); }
     T& operator*() const { return *m_raw; }
     bool operator!() const { return !m_raw; }
     operator T*() const { return m_raw; }
@@ -152,58 +152,67 @@ public:
     template<typename U>
     PersistentBase& operator=(U* other)
     {
-        m_raw = other;
-        checkPointer();
-        recordBacktrace();
+        assign(other);
         return *this;
     }
 
     PersistentBase& operator=(std::nullptr_t)
     {
-        m_raw = nullptr;
+        assign(nullptr);
         return *this;
     }
 
     PersistentBase& operator=(const PersistentBase& other)
     {
-        m_raw = other;
-        checkPointer();
-        recordBacktrace();
+        assign(other);
         return *this;
     }
 
     template<typename U>
     PersistentBase& operator=(const PersistentBase<U, weaknessConfiguration, crossThreadnessConfiguration>& other)
     {
-        m_raw = other;
-        checkPointer();
-        recordBacktrace();
+        assign(other);
         return *this;
     }
 
     template<typename U>
     PersistentBase& operator=(const Member<U>& other)
     {
-        m_raw = other;
-        checkPointer();
-        recordBacktrace();
+        assign(other);
         return *this;
     }
 
     template<typename U>
     PersistentBase& operator=(const RawPtr<U>& other)
     {
-        m_raw = other;
-        checkPointer();
-        recordBacktrace();
+        assign(other);
         return *this;
     }
 
 
 private:
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
+    void assign(T* ptr)
+    {
+        m_raw = ptr;
+        checkPointer();
+        recordBacktrace();
+        if (m_raw) {
+            if (!m_persistentNode)
+                initialize();
+            return;
+        }
+        if (m_persistentNode && crossThreadnessConfiguration != CrossThreadPersistentConfiguration)
+            uninitialize();
+    }
+
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
     {
+        ASSERT(!m_persistentNode);
+        if (!m_raw)
+            return;
+
         TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>, &PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>::trace>::trampoline;
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
             m_persistentNode = ThreadState::crossThreadPersistentRegion().allocatePersistentNode(this, traceCallback);
@@ -219,6 +228,9 @@ private:
 
     void uninitialize()
     {
+        if (!m_persistentNode)
+            return;
+
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
             ThreadState::crossThreadPersistentRegion().freePersistentNode(m_persistentNode);
         } else {
@@ -228,6 +240,7 @@ private:
             ASSERT(m_state == state);
             state->persistentRegion()->freePersistentNode(m_persistentNode);
         }
+        m_persistentNode = nullptr;
     }
 
     void checkPointer()
@@ -261,9 +274,9 @@ private:
 #endif
     // m_raw is accessed most, so put it at the first field.
     T* m_raw;
-    PersistentNode* m_persistentNode;
+    PersistentNode* m_persistentNode = nullptr;
 #if ENABLE(ASSERT)
-    ThreadState* m_state;
+    ThreadState* m_state = nullptr;
 #endif
 };
 
