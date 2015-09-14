@@ -241,4 +241,16 @@ uint64 QuicFlowController::SendWindowSize() const {
   return send_window_offset_ - bytes_sent_;
 }
 
+void QuicFlowController::UpdateReceiveWindowSize(QuicStreamOffset size) {
+  DVLOG(1) << ENDPOINT << "UpdateReceiveWindowSize for stream " << id_ << ": "
+           << size;
+  if (receive_window_size_ != receive_window_offset_) {
+    LOG(DFATAL) << "receive_window_size_:" << receive_window_size_
+                << " != receive_window_offset:" << receive_window_offset_;
+    return;
+  }
+  receive_window_size_ = size;
+  receive_window_offset_ = size;
+}
+
 }  // namespace net

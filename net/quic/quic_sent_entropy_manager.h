@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE QuicSentEntropyManager {
   // up to |largest_observed| removing packet numbers from |missing_packets|.
   // Must always be called with a monotonically increasing |largest_observed|.
   bool IsValidEntropy(QuicPacketNumber largest_observed,
-                      const PacketNumberSet& missing_packets,
+                      const PacketNumberQueue& missing_packets,
                       QuicPacketEntropyHash entropy_hash);
 
   // Removes unnecessary entries before |packet_number|.

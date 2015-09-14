@@ -722,6 +722,61 @@ struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
   QuicPacketNumber least_unacked;
 };
 
+// A sequence of packet numbers where each number is unique. Intended to be used
+// in a sliding window fashion, where smaller old packet numbers are removed and
+// larger new packet numbers are added, with the occasional random access.
+class NET_EXPORT_PRIVATE PacketNumberQueue {
+ public:
+  PacketNumberQueue();
+  ~PacketNumberQueue();
+
+  using iterator = PacketNumberSet::iterator;
+  using const_iterator = PacketNumberSet::const_iterator;
+
+  // Adds |packet_number| to the set of packets in the queue.
+  void Add(QuicPacketNumber packet_number);
+
+  // Adds packets between [lower, higher) to the set of packets in the queue.
+  void Add(QuicPacketNumber lower, QuicPacketNumber higher);
+
+  // Removes |packet_number| from the set of packets in the queue.
+  void Remove(QuicPacketNumber packet_number);
+
+  // Removes packets with values less than |higher| from the set of packets in
+  // the queue. Returns true if packets were removed.
+  bool RemoveUpTo(QuicPacketNumber higher);
+
+  // Returns true if the queue contains |packet_number|.
+  bool Contains(QuicPacketNumber packet_number) const;
+
+  // Returns true if the queue is empty.
+  bool Empty() const;
+
+  // Returns the minimum packet number stored in the queue. It is undefined
+  // behavior to call this if the queue is empty.
+  QuicPacketNumber Min() const;
+
+  // Returns the maximum packet number stored in the queue. It is undefined
+  // behavior to call this if the queue is empty.
+  QuicPacketNumber Max() const;
+
+  // Returns the number of unique packets stored in the queue.
+  size_t NumPackets() const;
+
+  iterator begin() const;
+  iterator end() const;
+  const_iterator lower_bound(QuicPacketNumber packet_number) const;
+  const_iterator upper_bound(QuicPacketNumber packet_number) const;
+
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os,
+      const PacketNumberQueue& q);
+
+ private:
+  // TODO(jdorfman): Can be optimized using an interval set like data structure.
+  PacketNumberSet packet_numbers_;
+};
+
 struct NET_EXPORT_PRIVATE QuicAckFrame {
   QuicAckFrame();
   ~QuicAckFrame();
@@ -747,10 +802,8 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
   // sent.
   QuicTime::Delta delta_time_largest_observed;
 
-  // TODO(satyamshekhar): Can be optimized using an interval set like data
-  // structure.
   // The set of packets which we're expecting and have not received.
-  PacketNumberSet missing_packets;
+  PacketNumberQueue missing_packets;
 
   // Whether the ack had to be truncated when sent.
   bool is_truncated;
@@ -768,11 +821,6 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
 // Always returns false for packet numbers less than least_unacked.
 bool NET_EXPORT_PRIVATE IsAwaitingPacket(const QuicAckFrame& ack_frame,
                                          QuicPacketNumber packet_number);
-
-// Inserts missing packets between [lower, higher).
-void NET_EXPORT_PRIVATE InsertMissingPacketsBetween(QuicAckFrame* ack_frame,
-                                                    QuicPacketNumber lower,
-                                                    QuicPacketNumber higher);
 
 // Defines for all types of congestion control algorithms that can be used in
 // QUIC. Note that this is separate from the congestion feedback type -

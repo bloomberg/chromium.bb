@@ -43,15 +43,14 @@ TEST_F(QuicSentEntropyManagerTest, IsValidEntropy) {
     entropy_manager_.RecordPacketEntropyHash(i + 1, entropies[i]);
   }
 
-  PacketNumberSet missing_packets;
-  missing_packets.insert(1);
-  missing_packets.insert(4);
-  missing_packets.insert(7);
-  missing_packets.insert(8);
+  PacketNumberQueue missing_packets;
+  missing_packets.Add(1);
+  missing_packets.Add(4);
+  missing_packets.Add(7, 9);
 
   QuicPacketEntropyHash entropy_hash = 0;
   for (size_t i = 0; i < arraysize(entropies); ++i) {
-    if (missing_packets.find(i + 1) == missing_packets.end()) {
+    if (!missing_packets.Contains(i + 1)) {
       entropy_hash ^= entropies[i];
     }
   }
@@ -72,13 +71,12 @@ TEST_F(QuicSentEntropyManagerTest, ClearEntropiesBefore) {
   // still return correct results.
   entropy_manager_.ClearEntropyBefore(5);
 
-  PacketNumberSet missing_packets;
-  missing_packets.insert(7);
-  missing_packets.insert(8);
+  PacketNumberQueue missing_packets;
+  missing_packets.Add(7, 9);
 
   QuicPacketEntropyHash entropy_hash = 0;
   for (size_t i = 0; i < arraysize(entropies); ++i) {
-    if (missing_packets.find(i + 1) == missing_packets.end()) {
+    if (!missing_packets.Contains(i + 1)) {
       entropy_hash ^= entropies[i];
     }
   }

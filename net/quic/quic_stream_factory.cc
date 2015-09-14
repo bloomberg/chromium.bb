@@ -1240,7 +1240,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
       connection_id, addr, helper_.get(), packet_writer_factory,
       true /* owns_writer */, Perspective::IS_CLIENT, server_id.is_https(),
       supported_versions_);
-  connection->set_max_packet_length(max_packet_length_);
+  connection->SetMaxPacketLength(max_packet_length_);
 
   InitializeCachedStateInCryptoConfig(server_id, server_info);
 

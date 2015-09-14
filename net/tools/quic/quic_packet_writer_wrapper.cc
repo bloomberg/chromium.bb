@@ -36,6 +36,11 @@ void QuicPacketWriterWrapper::SetWritable() {
   writer_->SetWritable();
 }
 
+QuicByteCount QuicPacketWriterWrapper::GetMaxPacketSize(
+    const IPEndPoint& peer_address) const {
+  return writer_->GetMaxPacketSize(peer_address);
+}
+
 void QuicPacketWriterWrapper::set_writer(QuicPacketWriter* writer) {
   writer_.reset(writer);
 }

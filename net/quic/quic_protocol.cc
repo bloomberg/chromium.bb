@@ -210,15 +210,7 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
 bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
                       QuicPacketNumber packet_number) {
   return packet_number > ack_frame.largest_observed ||
-         ContainsKey(ack_frame.missing_packets, packet_number);
-}
-
-void InsertMissingPacketsBetween(QuicAckFrame* ack_frame,
-                                 QuicPacketNumber lower,
-                                 QuicPacketNumber higher) {
-  for (QuicPacketNumber i = lower; i < higher; ++i) {
-    ack_frame->missing_packets.insert(i);
-  }
+         ack_frame.missing_packets.Contains(packet_number);
 }
 
 QuicStopWaitingFrame::QuicStopWaitingFrame()
@@ -322,17 +314,86 @@ ostream& operator<<(ostream& os, const QuicStopWaitingFrame& sent_info) {
   return os;
 }
 
+PacketNumberQueue::PacketNumberQueue() {}
+
+PacketNumberQueue::~PacketNumberQueue() {}
+
+void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
+  packet_numbers_.insert(packet_number);
+}
+
+void PacketNumberQueue::Add(QuicPacketNumber lower, QuicPacketNumber higher) {
+  for (QuicPacketNumber packet_number = lower; packet_number < higher;
+       ++packet_number) {
+    Add(packet_number);
+  }
+}
+
+void PacketNumberQueue::Remove(QuicPacketNumber packet_number) {
+  packet_numbers_.erase(packet_number);
+}
+
+bool PacketNumberQueue::RemoveUpTo(QuicPacketNumber higher) {
+  size_t orig_size = packet_numbers_.size();
+  packet_numbers_.erase(packet_numbers_.begin(),
+                        packet_numbers_.lower_bound(higher));
+  return orig_size != packet_numbers_.size();
+}
+
+bool PacketNumberQueue::Contains(QuicPacketNumber packet_number) const {
+  return ContainsKey(packet_numbers_, packet_number);
+}
+
+bool PacketNumberQueue::Empty() const {
+  return packet_numbers_.empty();
+}
+
+QuicPacketNumber PacketNumberQueue::Min() const {
+  DCHECK(!Empty());
+  return *packet_numbers_.begin();
+}
+
+QuicPacketNumber PacketNumberQueue::Max() const {
+  DCHECK(!Empty());
+  return *packet_numbers_.rbegin();
+}
+
+size_t PacketNumberQueue::NumPackets() const {
+  return packet_numbers_.size();
+}
+
+PacketNumberQueue::iterator PacketNumberQueue::begin() const {
+  return packet_numbers_.begin();
+}
+
+PacketNumberQueue::iterator PacketNumberQueue::end() const {
+  return packet_numbers_.end();
+}
+
+PacketNumberQueue::const_iterator PacketNumberQueue::lower_bound(
+    QuicPacketNumber packet_number) const {
+  return packet_numbers_.lower_bound(packet_number);
+}
+
+PacketNumberQueue::const_iterator PacketNumberQueue::upper_bound(
+    QuicPacketNumber packet_number) const {
+  return packet_numbers_.upper_bound(packet_number);
+}
+
+ostream& operator<<(ostream& os, const PacketNumberQueue& q) {
+  for (QuicPacketNumber packet_number : q.packet_numbers_) {
+    os << packet_number << " ";
+  }
+  return os;
+}
+
 ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
   os << "entropy_hash: " << static_cast<int>(ack_frame.entropy_hash)
      << " largest_observed: " << ack_frame.largest_observed
      << " delta_time_largest_observed: "
      << ack_frame.delta_time_largest_observed.ToMicroseconds()
-     << " missing_packets: [ ";
-  for (PacketNumberSet::const_iterator it = ack_frame.missing_packets.begin();
-       it != ack_frame.missing_packets.end(); ++it) {
-    os << *it << " ";
-  }
-  os << " ] is_truncated: " << ack_frame.is_truncated;
+     << " missing_packets: [ " << ack_frame.missing_packets
+     << " ] is_truncated: " << ack_frame.is_truncated;
   os << " revived_packets: [ ";
   for (PacketNumberSet::const_iterator it = ack_frame.revived_packets.begin();
        it != ack_frame.revived_packets.end(); ++it) {

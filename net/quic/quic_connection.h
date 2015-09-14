@@ -457,7 +457,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   const QuicClock* clock() const { return clock_; }
   QuicRandom* random_generator() const { return random_generator_; }
   QuicByteCount max_packet_length() const;
-  void set_max_packet_length(QuicByteCount length);
+  void SetMaxPacketLength(QuicByteCount length);
 
   size_t mtu_probe_count() const { return mtu_probe_count_; }
 
@@ -769,6 +769,13 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   HasRetransmittableData IsRetransmittable(const QueuedPacket& packet);
   bool IsConnectionClose(const QueuedPacket& packet);
+
+  // Set the size of the packet we are targeting while doing path MTU discovery.
+  void SetMtuDiscoveryTarget(QuicByteCount target);
+
+  // Validates the potential maximum packet size, and reduces it if it exceeds
+  // the largest supported by the protocol or the packet writer.
+  QuicByteCount LimitMaxPacketSize(QuicByteCount suggested_max_packet_size);
 
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.

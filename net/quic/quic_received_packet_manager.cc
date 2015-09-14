@@ -148,15 +148,17 @@ void QuicReceivedPacketManager::RecordPacketReceived(
   QuicPacketNumber packet_number = header.packet_packet_number;
   DCHECK(IsAwaitingPacket(packet_number));
 
-  InsertMissingPacketsBetween(&ack_frame_, max(ack_frame_.largest_observed + 1,
-                                               peer_least_packet_awaiting_ack_),
-                              packet_number);
+  // Adds the range of packet numbers from max(largest observed + 1, least
+  // awaiting ack) up to packet_number not including packet_number.
+  ack_frame_.missing_packets.Add(
+      max(ack_frame_.largest_observed + 1, peer_least_packet_awaiting_ack_),
+      packet_number);
 
   if (ack_frame_.largest_observed > packet_number) {
     // We've gotten one of the out of order packets - remove it from our
     // "missing packets" list.
     DVLOG(1) << "Removing " << packet_number << " from missing list";
-    ack_frame_.missing_packets.erase(packet_number);
+    ack_frame_.missing_packets.Remove(packet_number);
 
     // Record how out of order stats.
     ++stats_->packets_reordered;
@@ -186,7 +188,7 @@ void QuicReceivedPacketManager::RecordPacketRevived(
 }
 
 bool QuicReceivedPacketManager::IsMissing(QuicPacketNumber packet_number) {
-  return ContainsKey(ack_frame_.missing_packets, packet_number);
+  return ack_frame_.missing_packets.Contains(packet_number);
 }
 
 bool QuicReceivedPacketManager::IsAwaitingPacket(
@@ -241,11 +243,7 @@ bool QuicReceivedPacketManager::DontWaitForPacketsBefore(
   ack_frame_.revived_packets.erase(
       ack_frame_.revived_packets.begin(),
       ack_frame_.revived_packets.lower_bound(least_unacked));
-  size_t missing_packets_count = ack_frame_.missing_packets.size();
-  ack_frame_.missing_packets.erase(
-      ack_frame_.missing_packets.begin(),
-      ack_frame_.missing_packets.lower_bound(least_unacked));
-  return missing_packets_count != ack_frame_.missing_packets.size();
+  return ack_frame_.missing_packets.RemoveUpTo(least_unacked);
 }
 
 void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
@@ -263,15 +261,14 @@ void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
     }
     peer_least_packet_awaiting_ack_ = stop_waiting.least_unacked;
   }
-  DCHECK(ack_frame_.missing_packets.empty() ||
-         *ack_frame_.missing_packets.begin() >=
-             peer_least_packet_awaiting_ack_);
+  DCHECK(ack_frame_.missing_packets.Empty() ||
+         ack_frame_.missing_packets.Min() >= peer_least_packet_awaiting_ack_);
 }
 
 bool QuicReceivedPacketManager::HasNewMissingPackets() const {
-  return !ack_frame_.missing_packets.empty() &&
-      (ack_frame_.largest_observed -
-       *ack_frame_.missing_packets.rbegin()) <= kMaxPacketsAfterNewMissing;
+  return !ack_frame_.missing_packets.Empty() &&
+         (ack_frame_.largest_observed - ack_frame_.missing_packets.Max()) <=
+             kMaxPacketsAfterNewMissing;
 }
 
 size_t QuicReceivedPacketManager::NumTrackedPackets() const {

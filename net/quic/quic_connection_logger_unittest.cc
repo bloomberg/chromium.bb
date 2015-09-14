@@ -45,7 +45,7 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSentNotChanged) {
   EXPECT_EQ(0u, QuicConnectionLoggerPeer::num_truncated_acks_sent(logger_));
 
   for (QuicPacketNumber i = 0; i < 256; ++i) {
-    frame.missing_packets.insert(i);
+    frame.missing_packets.Add(i);
   }
   logger_.OnFrameAddedToPacket(QuicFrame(&frame));
   EXPECT_EQ(0u, QuicConnectionLoggerPeer::num_truncated_acks_sent(logger_));
@@ -54,7 +54,7 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSentNotChanged) {
 TEST_F(QuicConnectionLoggerTest, TruncatedAcksSent) {
   QuicAckFrame frame;
   for (QuicPacketNumber i = 0; i < 512; i += 2) {
-    frame.missing_packets.insert(i);
+    frame.missing_packets.Add(i);
   }
   logger_.OnFrameAddedToPacket(QuicFrame(&frame));
   EXPECT_EQ(1u, QuicConnectionLoggerPeer::num_truncated_acks_sent(logger_));

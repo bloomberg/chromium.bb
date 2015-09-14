@@ -125,11 +125,8 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
 
   base::ListValue* missing = new base::ListValue();
   dict->Set("missing_packets", missing);
-  const PacketNumberSet& missing_packets = frame->missing_packets;
-  for (PacketNumberSet::const_iterator it = missing_packets.begin();
-       it != missing_packets.end(); ++it) {
-    missing->AppendString(base::Uint64ToString(*it));
-  }
+  for (QuicPacketNumber packet : frame->missing_packets)
+    missing->AppendString(base::Uint64ToString(packet));
 
   base::ListValue* revived = new base::ListValue();
   dict->Set("revived_packets", revived);
@@ -364,24 +361,24 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_ACK_FRAME_SENT,
           base::Bind(&NetLogQuicAckFrameCallback, frame.ack_frame));
-      const PacketNumberSet& missing_packets = frame.ack_frame->missing_packets;
+      const PacketNumberQueue& missing_packets =
+          frame.ack_frame->missing_packets;
       const uint8 max_ranges = std::numeric_limits<uint8>::max();
       // Compute an upper bound on the number of NACK ranges. If the bound
       // is below the max, then it clearly isn't truncated.
-      if (missing_packets.size() < max_ranges ||
-          (*missing_packets.rbegin() - *missing_packets.begin() -
-           missing_packets.size() + 1) < max_ranges) {
+      if (missing_packets.NumPackets() < max_ranges ||
+          (missing_packets.Max() - missing_packets.Min() -
+           missing_packets.NumPackets() + 1) < max_ranges) {
         break;
       }
       size_t num_ranges = 0;
       QuicPacketNumber last_missing = 0;
-      for (PacketNumberSet::const_iterator it = missing_packets.begin();
-           it != missing_packets.end(); ++it) {
-        if (*it != last_missing + 1 && ++num_ranges >= max_ranges) {
+      for (QuicPacketNumber packet : missing_packets) {
+        if (packet != last_missing + 1 && ++num_ranges >= max_ranges) {
           ++num_truncated_acks_sent_;
           break;
         }
-        last_missing = *it;
+        last_missing = packet;
       }
       break;
     }
@@ -557,11 +554,11 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
   if (frame.is_truncated)
     ++num_truncated_acks_received_;
 
-  if (frame.missing_packets.empty())
+  if (frame.missing_packets.Empty())
     return;
 
-  PacketNumberSet missing_packets = frame.missing_packets;
-  PacketNumberSet::const_iterator it =
+  const PacketNumberQueue& missing_packets = frame.missing_packets;
+  PacketNumberQueue::const_iterator it =
       missing_packets.lower_bound(largest_received_missing_packet_number_);
   if (it == missing_packets.end())
     return;
@@ -589,7 +586,7 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
   if (num_consecutive_missing_packets != 0) {
     UpdatePacketGapSentHistogram(num_consecutive_missing_packets);
   }
-  largest_received_missing_packet_number_ = *missing_packets.rbegin();
+  largest_received_missing_packet_number_ = missing_packets.Max();
 }
 
 void QuicConnectionLogger::OnStopWaitingFrame(

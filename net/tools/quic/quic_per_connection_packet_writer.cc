@@ -41,6 +41,11 @@ void QuicPerConnectionPacketWriter::SetWritable() {
   shared_writer_->SetWritable();
 }
 
+QuicByteCount QuicPerConnectionPacketWriter::GetMaxPacketSize(
+    const IPEndPoint& peer_address) const {
+  return shared_writer_->GetMaxPacketSize(peer_address);
+}
+
 }  // namespace tools
 
 }  // namespace net

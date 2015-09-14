@@ -296,6 +296,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // control receive windows.
   void EnableAutoTuneReceiveWindow();
 
+  // Called in OnConfigNegotiated for finch trials to measure performance of
+  // starting with smaller flow control receive windows and auto-tuning.
+  void AdjustInitialFlowControlWindows(size_t stream_window);
+
   // TODO(rtenneti): Temporary while investigating crbug.com/473893
   void CrashIfInvalid() const;
 

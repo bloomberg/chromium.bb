@@ -57,5 +57,10 @@ void QuicSimplePerConnectionPacketWriter::OnWriteComplete(WriteResult result) {
   }
 }
 
+QuicByteCount QuicSimplePerConnectionPacketWriter::GetMaxPacketSize(
+    const IPEndPoint& peer_address) const {
+  return shared_writer_->GetMaxPacketSize(peer_address);
+}
+
 }  // namespace tools
 }  // namespace net

@@ -23,6 +23,7 @@
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
+#include "net/quic/quic_protocol.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/datagram_channel_factory.h"
@@ -77,6 +78,10 @@ class P2PQuicPacketWriter : public net::QuicPacketWriter {
   }
   bool IsWriteBlocked() const override { return write_blocked_; }
   void SetWritable() override { write_blocked_ = false; }
+  net::QuicByteCount GetMaxPacketSize(const net::IPEndPoint& peer_address) const
+      override {
+    return net::kMaxPacketSize;
+  }
 
  private:
   void OnSendComplete(int result){

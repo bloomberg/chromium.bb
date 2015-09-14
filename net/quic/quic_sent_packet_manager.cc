@@ -271,10 +271,10 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
 
 void QuicSentPacketManager::UpdatePacketInformationReceivedByPeer(
     const QuicAckFrame& ack_frame) {
-  if (ack_frame.missing_packets.empty()) {
+  if (ack_frame.missing_packets.Empty()) {
     least_packet_awaited_by_peer_ = ack_frame.largest_observed + 1;
   } else {
-    least_packet_awaited_by_peer_ = *(ack_frame.missing_packets.begin());
+    least_packet_awaited_by_peer_ = ack_frame.missing_packets.Min();
   }
 }
 
@@ -306,7 +306,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       break;
     }
 
-    if (ContainsKey(ack_frame.missing_packets, packet_number)) {
+    if (ack_frame.missing_packets.Contains(packet_number)) {
       // Don't continue to increase the nack count for packets not in flight.
       if (!it->in_flight) {
         continue;

@@ -97,5 +97,10 @@ WriteResult QuicSimpleServerPacketWriter::WritePacket(
   return WriteResult(status, rv);
 }
 
+QuicByteCount QuicSimpleServerPacketWriter::GetMaxPacketSize(
+    const IPEndPoint& peer_address) const {
+  return kMaxPacketSize;
+}
+
 }  // namespace tools
 }  // namespace net

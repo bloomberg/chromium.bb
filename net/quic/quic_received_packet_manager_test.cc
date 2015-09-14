@@ -341,10 +341,10 @@ TEST_F(QuicReceivedPacketManagerTest, RevivedPacket) {
 
   QuicAckFrame ack;
   received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
-  EXPECT_EQ(1u, ack.missing_packets.size());
-  EXPECT_EQ(2u, *ack.missing_packets.begin());
+  EXPECT_EQ(1u, ack.missing_packets.NumPackets());
+  EXPECT_EQ(2u, ack.missing_packets.Min());
   EXPECT_EQ(1u, ack.revived_packets.size());
-  EXPECT_EQ(2u, *ack.missing_packets.begin());
+  EXPECT_EQ(2u, *ack.revived_packets.begin());
 }
 
 TEST_F(QuicReceivedPacketManagerTest, PacketRevivedThenReceived) {
@@ -355,7 +355,7 @@ TEST_F(QuicReceivedPacketManagerTest, PacketRevivedThenReceived) {
 
   QuicAckFrame ack;
   received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
-  EXPECT_TRUE(ack.missing_packets.empty());
+  EXPECT_TRUE(ack.missing_packets.Empty());
   EXPECT_TRUE(ack.revived_packets.empty());
 }
 

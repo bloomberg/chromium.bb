@@ -29,6 +29,7 @@ class QuicDefaultPacketWriter : public QuicPacketWriter {
   bool IsWriteBlockedDataBuffered() const override;
   bool IsWriteBlocked() const override;
   void SetWritable() override;
+  QuicByteCount GetMaxPacketSize(const IPEndPoint& peer_address) const override;
 
   void set_fd(int fd) { fd_ = fd; }
 

@@ -295,7 +295,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
   // Ack 2 but not 1.
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 2;
-  ack_frame.missing_packets.insert(1);
+  ack_frame.missing_packets.Add(1);
   ExpectAck(2);
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
@@ -384,7 +384,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
 
   // Next, NACK packet 2 three times.
   ack_frame.largest_observed = 3;
-  ack_frame.missing_packets.insert(2);
+  ack_frame.missing_packets.Add(2);
   ExpectAck(3);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
@@ -464,7 +464,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   // Ensure packet 2 is lost when 4 is sent and 3 and 4 are acked.
   SendDataPacket(4);
   ack_frame.largest_observed = 4;
-  ack_frame.missing_packets.insert(2);
+  ack_frame.missing_packets.Add(2);
   QuicPacketNumber acked[] = {3, 4};
   ExpectAcksAndLosses(true, acked, arraysize(acked), nullptr, 0);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
@@ -492,7 +492,7 @@ TEST_F(QuicSentPacketManagerTest, LoseButDontRetransmitRevivedPacket) {
   // Ack 2 and 3, and mark 1 as revived.
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 3;
-  ack_frame.missing_packets.insert(1);
+  ack_frame.missing_packets.Add(1);
   ack_frame.revived_packets.insert(1);
   QuicPacketNumber acked[] = {2, 3};
   ExpectAcksAndLosses(true, acked, arraysize(acked), nullptr, 0);
@@ -524,7 +524,7 @@ TEST_F(QuicSentPacketManagerTest, MarkLostThenReviveAndDontRetransmitPacket) {
   // Ack 2, 3, and 4, and expect the 1st to be considered lost.
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 4;
-  ack_frame.missing_packets.insert(1);
+  ack_frame.missing_packets.Add(1);
   QuicPacketNumber acked[] = {2, 3, 4};
   QuicPacketNumber lost[] = {1};
   ExpectAcksAndLosses(true, acked, arraysize(acked), lost, arraysize(lost));
@@ -559,10 +559,7 @@ TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
   // Truncated ack with 4 NACKs, so the first packet is lost.
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 4;
-  ack_frame.missing_packets.insert(1);
-  ack_frame.missing_packets.insert(2);
-  ack_frame.missing_packets.insert(3);
-  ack_frame.missing_packets.insert(4);
+  ack_frame.missing_packets.Add(1, 5);
   ack_frame.is_truncated = true;
 
   QuicPacketNumber lost[] = {1};
@@ -591,7 +588,7 @@ TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
   {
     QuicAckFrame ack_frame;
     ack_frame.largest_observed = 2;
-    ack_frame.missing_packets.insert(1);
+    ack_frame.missing_packets.Add(1);
     ExpectAck(2);
     manager_.OnIncomingAck(ack_frame, clock_.Now());
     EXPECT_TRUE(manager_.IsUnacked(4));
@@ -601,10 +598,7 @@ TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
   {
     QuicAckFrame ack_frame;
     ack_frame.largest_observed = 6;
-    ack_frame.missing_packets.insert(3);
-    ack_frame.missing_packets.insert(4);
-    ack_frame.missing_packets.insert(5);
-    ack_frame.missing_packets.insert(6);
+    ack_frame.missing_packets.Add(3, 7);
     ack_frame.is_truncated = true;
     ExpectAckAndLoss(true, 1, 3);
     manager_.OnIncomingAck(ack_frame, clock_.Now());
@@ -651,7 +645,7 @@ TEST_F(QuicSentPacketManagerTest, GetLeastUnackedAndDiscard) {
   ExpectAck(2);
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 2;
-  ack_frame.missing_packets.insert(1);
+  ack_frame.missing_packets.Add(1);
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
   EXPECT_EQ(1u, manager_.GetLeastUnacked());
@@ -798,8 +792,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   ExpectAck(3);
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 3;
-  ack_frame.missing_packets.insert(1);
-  ack_frame.missing_packets.insert(2);
+  ack_frame.missing_packets.Add(1, 3);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
@@ -878,9 +871,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   RetransmitNextPacket(103);
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 103;
-  for (int i = 0; i < 103; ++i) {
-    ack_frame.missing_packets.insert(i);
-  }
+  ack_frame.missing_packets.Add(0, 103);
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_,
               OnCongestionEvent(true, _, ElementsAre(Pair(103, _)), _));
@@ -927,10 +918,8 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
   ExpectAcksAndLosses(true, acked, arraysize(acked), nullptr, 0);
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 9;
-  ack_frame.missing_packets.insert(1);
-  ack_frame.missing_packets.insert(2);
-  ack_frame.missing_packets.insert(6);
-  ack_frame.missing_packets.insert(7);
+  ack_frame.missing_packets.Add(1, 3);
+  ack_frame.missing_packets.Add(6, 8);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
@@ -994,7 +983,7 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
   ExpectUpdatedRtt(2);
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 2;
-  ack_frame.missing_packets.insert(1);
+  ack_frame.missing_packets.Add(1);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
@@ -1066,8 +1055,7 @@ TEST_F(QuicSentPacketManagerTest,
   // Ensure both packets get discarded when packet 2 is acked.
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 3;
-  ack_frame.missing_packets.insert(1);
-  ack_frame.missing_packets.insert(2);
+  ack_frame.missing_packets.Add(1, 3);
   ExpectUpdatedRtt(3);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
   VerifyUnackedPackets(nullptr, 0);
@@ -1094,9 +1082,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {
   QuicAckFrame ack_frame;
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
   ack_frame.largest_observed = 102;
-  for (int i = 0; i < 102; ++i) {
-    ack_frame.missing_packets.insert(i);
-  }
+  ack_frame.missing_packets.Add(0, 102);
   // Ensure no packets are lost.
   EXPECT_CALL(*send_algorithm_,
               OnCongestionEvent(true, _, ElementsAre(Pair(102, _)),
@@ -1142,9 +1128,7 @@ TEST_F(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
   QuicAckFrame ack_frame;
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
   ack_frame.largest_observed = 102;
-  for (int i = 0; i < 102; ++i) {
-    ack_frame.missing_packets.insert(i);
-  }
+  ack_frame.missing_packets.Add(0, 102);
   // This will include packets in the lost packet map.
   EXPECT_CALL(*send_algorithm_,
               OnCongestionEvent(true, _, ElementsAre(Pair(102, _)),
@@ -1178,7 +1162,7 @@ TEST_F(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckSecond) {
   QuicAckFrame ack_frame;
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
   ack_frame.largest_observed = 2;
-  ack_frame.missing_packets.insert(1);
+  ack_frame.missing_packets.Add(1);
   ExpectAck(2);
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
@@ -1211,8 +1195,7 @@ TEST_F(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   QuicAckFrame ack_frame;
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
   ack_frame.largest_observed = 3;
-  ack_frame.missing_packets.insert(1);
-  ack_frame.missing_packets.insert(2);
+  ack_frame.missing_packets.Add(1, 3);
   ExpectAck(3);
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
@@ -1330,7 +1313,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeSpuriousRTO) {
   // original value and OnRetransmissionTimeout is not called or reverted.
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 2;
-  ack_frame.missing_packets.insert(1);
+  ack_frame.missing_packets.Add(1);
   ExpectAck(2);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -1404,7 +1387,7 @@ TEST_F(QuicSentPacketManagerTest, GetLossDelay) {
       .WillOnce(Return(PacketNumberSet()));
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 2;
-  ack_frame.missing_packets.insert(1);
+  ack_frame.missing_packets.Add(1);
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
   QuicTime timeout(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(10)));

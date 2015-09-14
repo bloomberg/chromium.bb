@@ -425,19 +425,18 @@ void QuicSession::OnConfigNegotiated() {
 
     if (config_.HasReceivedConnectionOptions()) {
       if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {
+        // The following variations change the initial receive flow control
+        // window sizes.
+        if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW5)) {
+          AdjustInitialFlowControlWindows(32 * 1024);
+        }
+        if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW6)) {
+          AdjustInitialFlowControlWindows(64 * 1024);
+        }
+        if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW7)) {
+          AdjustInitialFlowControlWindows(128 * 1024);
+        }
         EnableAutoTuneReceiveWindow();
-      }
-      // The following variations change the initial receive flow control window
-      // size for streams.  For simplicity reasons, do not try to effect
-      // existing streams but only future ones.
-      if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW5)) {
-        config_.SetInitialStreamFlowControlWindowToSend(32 * 1024);
-      }
-      if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW6)) {
-        config_.SetInitialStreamFlowControlWindowToSend(64 * 1024);
-      }
-      if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW7)) {
-        config_.SetInitialStreamFlowControlWindowToSend(128 * 1024);
       }
     }
   }
@@ -456,6 +455,7 @@ void QuicSession::OnConfigNegotiated() {
 }
 
 void QuicSession::EnableAutoTuneReceiveWindow() {
+  DVLOG(1) << ENDPOINT << "Enable auto tune receive windows";
   flow_controller_.set_auto_tune_receive_window(true);
   // Inform all existing streams about the new window.
   for (auto const& kv : static_stream_map_) {
@@ -463,6 +463,33 @@ void QuicSession::EnableAutoTuneReceiveWindow() {
   }
   for (auto const& kv : dynamic_stream_map_) {
     kv.second->flow_controller()->set_auto_tune_receive_window(true);
+  }
+}
+
+void QuicSession::AdjustInitialFlowControlWindows(size_t stream_window) {
+  const float session_window_multiplier =
+      config_.GetInitialStreamFlowControlWindowToSend()
+          ? static_cast<float>(
+                config_.GetInitialSessionFlowControlWindowToSend()) /
+                config_.GetInitialStreamFlowControlWindowToSend()
+          : 1.0;
+  DVLOG(1) << ENDPOINT << "Set stream receive window to " << stream_window;
+  config_.SetInitialStreamFlowControlWindowToSend(stream_window);
+  // Reduce the session window as well, motivation is reducing resource waste
+  // and denial of service vulnerability, as with the stream window.  Session
+  // size is set according to the ratio between session and stream window size
+  // previous to auto-tuning. Note that the ratio may change dynamically, since
+  // auto-tuning acts independently for each flow controller.
+  size_t session_window = session_window_multiplier * stream_window;
+  DVLOG(1) << ENDPOINT << "Set session receive window to " << session_window;
+  config_.SetInitialSessionFlowControlWindowToSend(session_window);
+  flow_controller_.UpdateReceiveWindowSize(session_window);
+  // Inform all existing streams about the new window.
+  for (auto const& kv : static_stream_map_) {
+    kv.second->flow_controller()->UpdateReceiveWindowSize(stream_window);
+  }
+  for (auto const& kv : dynamic_stream_map_) {
+    kv.second->flow_controller()->UpdateReceiveWindowSize(stream_window);
   }
 }
 

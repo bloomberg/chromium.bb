@@ -58,7 +58,7 @@ QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
   QuicAckFrame ack = MakeAckFrame(2 * num_nack_ranges + least_unacked);
   // Add enough missing packets to get num_nack_ranges nack ranges.
   for (QuicPacketNumber i = 1; i < 2 * num_nack_ranges; i += 2) {
-    ack.missing_packets.insert(least_unacked + i);
+    ack.missing_packets.Add(least_unacked + i);
   }
   return ack;
 }
@@ -383,6 +383,8 @@ QuicCryptoClientStream* TestQuicSpdyClientSession::GetCryptoStream() {
 }
 
 MockPacketWriter::MockPacketWriter() {
+  ON_CALL(*this, GetMaxPacketSize(_))
+      .WillByDefault(testing::Return(kMaxPacketSize));
 }
 
 MockPacketWriter::~MockPacketWriter() {

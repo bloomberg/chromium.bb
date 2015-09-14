@@ -1723,10 +1723,9 @@ TEST_P(QuicFramerTest, AckFrameTwoTimestamp) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame.entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame.largest_observed);
-  ASSERT_EQ(1u, frame.missing_packets.size());
+  ASSERT_EQ(1u, frame.missing_packets.NumPackets());
   ASSERT_EQ(2u, frame.received_packet_times.size());
-  PacketNumberSet::const_iterator missing_iter = frame.missing_packets.begin();
-  EXPECT_EQ(UINT64_C(0x0123456789ABE), *missing_iter);
+  EXPECT_EQ(UINT64_C(0x0123456789ABE), frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
   const size_t kLargestObservedOffset = kReceivedEntropyOffset +
@@ -1840,10 +1839,9 @@ TEST_P(QuicFramerTest, AckFrameOneTimestamp) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame.entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame.largest_observed);
-  ASSERT_EQ(1u, frame.missing_packets.size());
+  ASSERT_EQ(1u, frame.missing_packets.NumPackets());
   ASSERT_EQ(1u, frame.received_packet_times.size());
-  PacketNumberSet::const_iterator missing_iter = frame.missing_packets.begin();
-  EXPECT_EQ(UINT64_C(0x0123456789ABE), *missing_iter);
+  EXPECT_EQ(UINT64_C(0x0123456789ABE), frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
   const size_t kLargestObservedOffset =
@@ -1943,9 +1941,8 @@ TEST_P(QuicFramerTest, AckFrame) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame.entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame.largest_observed);
-  ASSERT_EQ(1u, frame.missing_packets.size());
-  PacketNumberSet::const_iterator missing_iter = frame.missing_packets.begin();
-  EXPECT_EQ(UINT64_C(0x0123456789ABE), *missing_iter);
+  ASSERT_EQ(1u, frame.missing_packets.NumPackets());
+  EXPECT_EQ(UINT64_C(0x0123456789ABE), frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
   const size_t kLargestObservedOffset = kReceivedEntropyOffset +
@@ -2042,9 +2039,8 @@ TEST_P(QuicFramerTest, AckFrameRevivedPackets) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame.entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame.largest_observed);
-  ASSERT_EQ(1u, frame.missing_packets.size());
-  PacketNumberSet::const_iterator missing_iter = frame.missing_packets.begin();
-  EXPECT_EQ(UINT64_C(0x0123456789ABE), *missing_iter);
+  ASSERT_EQ(1u, frame.missing_packets.NumPackets());
+  EXPECT_EQ(UINT64_C(0x0123456789ABE), frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
   const size_t kLargestObservedOffset = kReceivedEntropyOffset +
@@ -2135,7 +2131,7 @@ TEST_P(QuicFramerTest, AckFrameNoNacks) {
   QuicAckFrame* frame = visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame->entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame->largest_observed);
-  ASSERT_EQ(0u, frame->missing_packets.size());
+  ASSERT_TRUE(frame->missing_packets.Empty());
 
   // Verify that the packet re-serializes identically.
   QuicFrames frames;
@@ -2201,13 +2197,9 @@ TEST_P(QuicFramerTest, AckFrame500Nacks) {
   EXPECT_EQ(0xBA, frame->entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame->largest_observed);
   EXPECT_EQ(0u, frame->revived_packets.size());
-  ASSERT_EQ(500u, frame->missing_packets.size());
-  PacketNumberSet::const_iterator first_missing_iter =
-      frame->missing_packets.begin();
-  EXPECT_EQ(UINT64_C(0x0123456789ABE) - 499, *first_missing_iter);
-  PacketNumberSet::const_reverse_iterator last_missing_iter =
-      frame->missing_packets.rbegin();
-  EXPECT_EQ(UINT64_C(0x0123456789ABE), *last_missing_iter);
+  ASSERT_EQ(500u, frame->missing_packets.NumPackets());
+  EXPECT_EQ(UINT64_C(0x0123456789ABE) - 499, frame->missing_packets.Min());
+  EXPECT_EQ(UINT64_C(0x0123456789ABE), frame->missing_packets.Max());
 
   // Verify that the packet re-serializes identically.
   QuicFrames frames;
@@ -3347,7 +3339,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacket) {
   ack_frame.entropy_hash = 0x43;
   ack_frame.largest_observed = UINT64_C(0x770123456789ABF);
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
-  ack_frame.missing_packets.insert(UINT64_C(0x770123456789ABE));
+  ack_frame.missing_packets.Add(UINT64_C(0x770123456789ABE));
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&ack_frame));
@@ -3414,7 +3406,7 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameLargePacket) {
   ack_frame.largest_observed = 2 * 300;
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
   for (size_t i = 1; i < 2 * 300; i += 2) {
-    ack_frame.missing_packets.insert(i);
+    ack_frame.missing_packets.Add(i);
   }
 
   QuicFrames frames;
@@ -3525,7 +3517,7 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameSmallPacket) {
   ack_frame.largest_observed = 2 * 300;
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
   for (size_t i = 1; i < 2 * 300; i += 2) {
-    ack_frame.missing_packets.insert(i);
+    ack_frame.missing_packets.Add(i);
   }
 
   QuicFrames frames;
@@ -4272,13 +4264,9 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_TRUE(processed_ack_frame.is_truncated);
   EXPECT_EQ(510u, processed_ack_frame.largest_observed);
-  ASSERT_EQ(255u, processed_ack_frame.missing_packets.size());
-  PacketNumberSet::const_iterator missing_iter =
-      processed_ack_frame.missing_packets.begin();
-  EXPECT_EQ(1u, *missing_iter);
-  PacketNumberSet::const_reverse_iterator last_missing_iter =
-      processed_ack_frame.missing_packets.rbegin();
-  EXPECT_EQ(509u, *last_missing_iter);
+  ASSERT_EQ(255u, processed_ack_frame.missing_packets.NumPackets());
+  EXPECT_EQ(1u, processed_ack_frame.missing_packets.Min());
+  EXPECT_EQ(509u, processed_ack_frame.missing_packets.Max());
 }
 
 TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
@@ -4312,13 +4300,9 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_TRUE(processed_ack_frame.is_truncated);
   EXPECT_EQ(476u, processed_ack_frame.largest_observed);
-  ASSERT_EQ(238u, processed_ack_frame.missing_packets.size());
-  PacketNumberSet::const_iterator missing_iter =
-      processed_ack_frame.missing_packets.begin();
-  EXPECT_EQ(1u, *missing_iter);
-  PacketNumberSet::const_reverse_iterator last_missing_iter =
-      processed_ack_frame.missing_packets.rbegin();
-  EXPECT_EQ(475u, *last_missing_iter);
+  ASSERT_EQ(238u, processed_ack_frame.missing_packets.NumPackets());
+  EXPECT_EQ(1u, processed_ack_frame.missing_packets.Min());
+  EXPECT_EQ(475u, processed_ack_frame.missing_packets.Max());
 }
 
 TEST_P(QuicFramerTest, CleanTruncation) {
@@ -4333,9 +4317,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
 
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 201;
-  for (uint64 i = 1; i < ack_frame.largest_observed; ++i) {
-    ack_frame.missing_packets.insert(i);
-  }
+  ack_frame.missing_packets.Add(1, ack_frame.largest_observed);
 
   // Create a packet with just the ack.
   QuicFrame frame;

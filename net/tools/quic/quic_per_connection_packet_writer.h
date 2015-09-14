@@ -33,6 +33,7 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
   bool IsWriteBlockedDataBuffered() const override;
   bool IsWriteBlocked() const override;
   void SetWritable() override;
+  QuicByteCount GetMaxPacketSize(const IPEndPoint& peer_address) const override;
 
  private:
   QuicPacketWriter* shared_writer_;  // Not owned.

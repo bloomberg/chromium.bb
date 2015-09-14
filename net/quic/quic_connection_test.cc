@@ -66,6 +66,9 @@ const QuicPacketEntropyHash kTestEntropyHash = 76;
 
 const int kDefaultRetransmissionTimeMs = 500;
 
+const IPEndPoint kPeerAddress = IPEndPoint(Loopback6(), /*port=*/12345);
+const IPEndPoint kSelfAddress = IPEndPoint(Loopback6(), /*port=*/443);
+
 // TaggingEncrypter appends kTagSize bytes of |tag| to the end of each message.
 class TaggingEncrypter : public QuicEncrypter {
  public:
@@ -232,7 +235,7 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
 class TestPacketWriter : public QuicPacketWriter {
  public:
-  TestPacketWriter(QuicVersion version, MockClock *clock)
+  TestPacketWriter(QuicVersion version, MockClock* clock)
       : version_(version),
         framer_(SupportedVersions(version_)),
         last_packet_size_(0),
@@ -244,8 +247,8 @@ class TestPacketWriter : public QuicPacketWriter {
         use_tagging_decrypter_(false),
         packets_write_attempts_(0),
         clock_(clock),
-        write_pause_time_delta_(QuicTime::Delta::Zero()) {
-  }
+        write_pause_time_delta_(QuicTime::Delta::Zero()),
+        max_packet_size_(kMaxPacketSize) {}
 
   // QuicPacketWriter interface
   WriteResult WritePacket(const char* buffer,
@@ -287,6 +290,11 @@ class TestPacketWriter : public QuicPacketWriter {
   bool IsWriteBlocked() const override { return write_blocked_; }
 
   void SetWritable() override { write_blocked_ = false; }
+
+  QuicByteCount GetMaxPacketSize(
+      const IPEndPoint& /*peer_address*/) const override {
+    return max_packet_size_;
+  }
 
   void BlockOnNextWrite() { block_on_next_write_ = true; }
 
@@ -367,6 +375,10 @@ class TestPacketWriter : public QuicPacketWriter {
     framer_.SetSupportedVersions(versions);
   }
 
+  void set_max_packet_size(QuicByteCount max_packet_size) {
+    max_packet_size_ = max_packet_size;
+  }
+
  private:
   QuicVersion version_;
   SimpleQuicFramer framer_;
@@ -382,6 +394,7 @@ class TestPacketWriter : public QuicPacketWriter {
   // If non-zero, the clock will pause during WritePacket for this amount of
   // time.
   QuicTime::Delta write_pause_time_delta_;
+  QuicByteCount max_packet_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPacketWriter);
 };
@@ -662,7 +675,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         writer_(new TestPacketWriter(version(), &clock_)),
         factory_(writer_.get()),
         connection_(connection_id_,
-                    IPEndPoint(),
+                    kPeerAddress,
                     helper_.get(),
                     factory_,
                     Perspective::IS_CLIENT,
@@ -749,7 +762,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     SerializedPacket serialized_packet =
         peer_creator_.SerializeAllFrames(frames, buffer, kMaxPacketSize);
     scoped_ptr<QuicEncryptedPacket> encrypted(serialized_packet.packet);
-    connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+    connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
     return serialized_packet.entropy_hash;
   }
 
@@ -769,7 +782,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     char buffer[kMaxPacketSize];
     scoped_ptr<QuicEncryptedPacket> encrypted(
         framer_.EncryptPayload(level, number, *packet, buffer, kMaxPacketSize));
-    connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+    connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
     return encrypted->length();
   }
 
@@ -779,7 +792,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     char buffer[kMaxPacketSize];
     scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
         ENCRYPTION_NONE, number, *packet, buffer, kMaxPacketSize));
-    connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+    connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
   }
 
   size_t ProcessFecProtectedPacket(QuicPacketNumber number,
@@ -844,7 +857,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
         ENCRYPTION_NONE, number, *fec_packet, buffer, kMaxPacketSize));
 
-    connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+    connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
     return encrypted->length();
   }
 
@@ -960,15 +973,15 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
 
   // Explicitly nack a packet.
   void NackPacket(QuicPacketNumber missing, QuicAckFrame* frame) {
-    frame->missing_packets.insert(missing);
+    frame->missing_packets.Add(missing);
     frame->entropy_hash ^=
         QuicConnectionPeer::PacketEntropy(&connection_, missing);
   }
 
   // Undo nacking a packet within the frame.
   void AckPacket(QuicPacketNumber arrived, QuicAckFrame* frame) {
-    EXPECT_THAT(frame->missing_packets, Contains(arrived));
-    frame->missing_packets.erase(arrived);
+    EXPECT_TRUE(frame->missing_packets.Contains(arrived));
+    frame->missing_packets.Remove(arrived);
     frame->entropy_hash ^=
         QuicConnectionPeer::PacketEntropy(&connection_, arrived);
   }
@@ -1046,7 +1059,7 @@ TEST_P(QuicConnectionTest, MaxPacketSize) {
 
 TEST_P(QuicConnectionTest, SmallerServerMaxPacketSize) {
   QuicConnectionId connection_id = 42;
-  TestConnection connection(connection_id, IPEndPoint(), helper_.get(),
+  TestConnection connection(connection_id, kPeerAddress, helper_.get(),
                             factory_, Perspective::IS_SERVER, version());
   EXPECT_EQ(Perspective::IS_SERVER, connection.perspective());
   EXPECT_EQ(1000u, connection.max_packet_length());
@@ -1056,7 +1069,7 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   connection_.set_perspective(Perspective::IS_SERVER);
-  connection_.set_max_packet_length(1000);
+  connection_.SetMaxPacketLength(1000);
 
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
@@ -1075,9 +1088,63 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
 
   framer_.set_version(version());
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
 
   EXPECT_EQ(kMaxPacketSize, connection_.max_packet_length());
+}
+
+TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSizeWhileWriterLimited) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  const QuicByteCount lower_max_packet_size = 1240;
+  writer_->set_max_packet_size(lower_max_packet_size);
+  connection_.set_perspective(Perspective::IS_SERVER);
+  connection_.SetMaxPacketLength(1000);
+  EXPECT_EQ(1000u, connection_.max_packet_length());
+
+  QuicPacketHeader header;
+  header.public_header.connection_id = connection_id_;
+  header.public_header.version_flag = true;
+  header.packet_packet_number = 1;
+
+  QuicFrames frames;
+  QuicPaddingFrame padding;
+  frames.push_back(QuicFrame(&frame1_));
+  frames.push_back(QuicFrame(&padding));
+  scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
+      ENCRYPTION_NONE, 12, *packet, buffer, kMaxPacketSize));
+  EXPECT_EQ(kMaxPacketSize, encrypted->length());
+
+  framer_.set_version(version());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
+
+  // Here, the limit imposed by the writer is lower than the size of the packet
+  // received, so the writer max packet size is used.
+  EXPECT_EQ(lower_max_packet_size, connection_.max_packet_length());
+}
+
+TEST_P(QuicConnectionTest, LimitMaxPacketSizeByWriter) {
+  const QuicByteCount lower_max_packet_size = 1240;
+  writer_->set_max_packet_size(lower_max_packet_size);
+
+  static_assert(lower_max_packet_size < kDefaultMaxPacketSize,
+                "Default maximum packet size is too low");
+  connection_.SetMaxPacketLength(kDefaultMaxPacketSize);
+
+  EXPECT_EQ(lower_max_packet_size, connection_.max_packet_length());
+}
+
+TEST_P(QuicConnectionTest, LimitMaxPacketSizeByWriterForNewConnection) {
+  const QuicConnectionId connection_id = 17;
+  const QuicByteCount lower_max_packet_size = 1240;
+  writer_->set_max_packet_size(lower_max_packet_size);
+  TestConnection connection(connection_id, kPeerAddress, helper_.get(),
+                            factory_, Perspective::IS_CLIENT, version());
+  EXPECT_EQ(Perspective::IS_CLIENT, connection.perspective());
+  EXPECT_EQ(lower_max_packet_size, connection.max_packet_length());
 }
 
 TEST_P(QuicConnectionTest, PacketsInOrder) {
@@ -1085,15 +1152,15 @@ TEST_P(QuicConnectionTest, PacketsInOrder) {
 
   ProcessPacket(1);
   EXPECT_EQ(1u, outgoing_ack()->largest_observed);
-  EXPECT_EQ(0u, outgoing_ack()->missing_packets.size());
+  EXPECT_TRUE(outgoing_ack()->missing_packets.Empty());
 
   ProcessPacket(2);
   EXPECT_EQ(2u, outgoing_ack()->largest_observed);
-  EXPECT_EQ(0u, outgoing_ack()->missing_packets.size());
+  EXPECT_TRUE(outgoing_ack()->missing_packets.Empty());
 
   ProcessPacket(3);
   EXPECT_EQ(3u, outgoing_ack()->largest_observed);
-  EXPECT_EQ(0u, outgoing_ack()->missing_packets.size());
+  EXPECT_TRUE(outgoing_ack()->missing_packets.Empty());
 }
 
 TEST_P(QuicConnectionTest, PacketsOutOfOrder) {
@@ -1658,7 +1725,7 @@ TEST_P(QuicConnectionTest, FECSending) {
                                       PACKET_8BYTE_CONNECTION_ID,
                                       PACKET_1BYTE_PACKET_NUMBER, IN_FEC_GROUP,
                                       &payload_length);
-  connection_.set_max_packet_length(length);
+  connection_.SetMaxPacketLength(length);
 
   if (generator_->fec_send_policy() == FEC_ALARM_TRIGGER) {
     // Send 4 protected data packets. FEC packet is not sent.
@@ -1683,7 +1750,7 @@ TEST_P(QuicConnectionTest, FECQueueing) {
   size_t length = GetPacketLengthForOneStream(
       connection_.version(), kIncludeVersion, PACKET_8BYTE_CONNECTION_ID,
       PACKET_1BYTE_PACKET_NUMBER, IN_FEC_GROUP, &payload_length);
-  connection_.set_max_packet_length(length);
+  connection_.SetMaxPacketLength(length);
   EXPECT_TRUE(creator_->IsFecEnabled());
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
@@ -3420,6 +3487,52 @@ TEST_P(QuicConnectionTest, MtuDiscoveryFailed) {
   EXPECT_EQ(kMtuDiscoveryAttempts, connection_.mtu_probe_count());
 }
 
+// Tests whether MTU discovery works when the writer has a limit on how large a
+// packet can be.
+TEST_P(QuicConnectionTest, MtuDiscoveryWriterLimited) {
+  EXPECT_TRUE(connection_.connected());
+
+  const QuicByteCount mtu_limit = kMtuDiscoveryTargetPacketSizeHigh - 1;
+  writer_->set_max_packet_size(mtu_limit);
+  connection_.EnablePathMtuDiscovery(send_algorithm_);
+
+  // Send enough packets so that the next one triggers path MTU discovery.
+  for (QuicPacketCount i = 0; i < kPacketsBetweenMtuProbesBase - 1; i++) {
+    SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
+    ASSERT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  }
+
+  // Trigger the probe.
+  SendStreamDataToPeer(3, "!", kPacketsBetweenMtuProbesBase,
+                       /*fin=*/false, nullptr);
+  ASSERT_TRUE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  QuicByteCount probe_size;
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&probe_size), Return(true)));
+  connection_.GetMtuDiscoveryAlarm()->Fire();
+  EXPECT_EQ(mtu_limit, probe_size);
+
+  const QuicPacketCount probe_sequence_number =
+      kPacketsBetweenMtuProbesBase + 1;
+  ASSERT_EQ(probe_sequence_number, creator_->packet_number());
+
+  // Acknowledge all packets sent so far.
+  QuicAckFrame probe_ack = InitAckFrame(probe_sequence_number);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  ProcessAckPacket(&probe_ack);
+  EXPECT_EQ(mtu_limit, connection_.max_packet_length());
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
+
+  // Send more packets, and ensure that none of them sets the alarm.
+  for (QuicPacketCount i = 0; i < 4 * kPacketsBetweenMtuProbesBase; i++) {
+    SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
+    ASSERT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  }
+
+  EXPECT_EQ(1u, connection_.mtu_probe_count());
+}
+
 TEST_P(QuicConnectionTest, NoMtuDiscoveryAfterConnectionClosed) {
   EXPECT_TRUE(connection_.connected());
 
@@ -3564,7 +3677,7 @@ TEST_P(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   size_t length = GetPacketLengthForOneStream(
       connection_.version(), kIncludeVersion, PACKET_8BYTE_CONNECTION_ID,
       PACKET_1BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP, &payload_length);
-  connection_.set_max_packet_length(length);
+  connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_,
@@ -3589,7 +3702,7 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
                                       PACKET_8BYTE_CONNECTION_ID,
                                       PACKET_1BYTE_PACKET_NUMBER,
                                       NOT_IN_FEC_GROUP, &payload_length);
-  connection_.set_max_packet_length(length);
+  connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(7);
@@ -3872,7 +3985,7 @@ TEST_P(QuicConnectionTest, PublicReset) {
   scoped_ptr<QuicEncryptedPacket> packet(
       framer_.BuildPublicResetPacket(header));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PUBLIC_RESET, true));
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *packet);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *packet);
 }
 
 TEST_P(QuicConnectionTest, GoAway) {
@@ -3909,7 +4022,7 @@ TEST_P(QuicConnectionTest, ZeroBytePacket) {
   // Don't close the connection for zero byte packets.
   EXPECT_CALL(visitor_, OnConnectionClosed(_, _)).Times(0);
   QuicEncryptedPacket encrypted(nullptr, 0);
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, encrypted);
 }
 
 TEST_P(QuicConnectionTest, MissingPacketsBeforeLeastUnacked) {
@@ -3918,7 +4031,7 @@ TEST_P(QuicConnectionTest, MissingPacketsBeforeLeastUnacked) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   QuicStopWaitingFrame frame = InitStopWaitingFrame(4);
   ProcessStopWaitingPacket(&frame);
-  EXPECT_TRUE(outgoing_ack()->missing_packets.empty());
+  EXPECT_TRUE(outgoing_ack()->missing_packets.Empty());
 }
 
 TEST_P(QuicConnectionTest, ReceivedEntropyHashCalculation) {
@@ -4027,7 +4140,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
 
   framer_.set_version(version());
   connection_.set_perspective(Perspective::IS_SERVER);
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
   EXPECT_TRUE(writer_->version_negotiation_packet() != nullptr);
 
   size_t num_versions = arraysize(kSupportedQuicVersions);
@@ -4061,7 +4174,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
   framer_.set_version(version());
   connection_.set_perspective(Perspective::IS_SERVER);
   BlockOnNextWrite();
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
   EXPECT_EQ(0u, writer_->last_packet_size());
   EXPECT_TRUE(connection_.HasQueuedData());
 
@@ -4102,7 +4215,7 @@ TEST_P(QuicConnectionTest,
   connection_.set_perspective(Perspective::IS_SERVER);
   BlockOnNextWrite();
   writer_->set_is_write_blocked_data_buffered(true);
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
   EXPECT_EQ(0u, writer_->last_packet_size());
   EXPECT_FALSE(connection_.HasQueuedData());
 }
@@ -4126,7 +4239,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.BuildVersionNegotiationPacket(
           header.public_header, supported_versions));
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
 
   // Now force another packet.  The connection should transition into
   // NEGOTIATED_VERSION state and tell the packet creator to StopSendingVersion.
@@ -4139,7 +4252,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
                                          kMaxPacketSize));
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
 
   ASSERT_FALSE(QuicPacketCreatorPeer::SendVersionInPacket(creator_));
 }
@@ -4163,7 +4276,7 @@ TEST_P(QuicConnectionTest, BadVersionNegotiation) {
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.BuildVersionNegotiationPacket(
           header.public_header, supported_versions));
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
 }
 
 TEST_P(QuicConnectionTest, CheckSendStats) {
@@ -4277,7 +4390,7 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
 }
 
 TEST_P(QuicConnectionTest, SelectMutualVersion) {
@@ -4622,9 +4735,9 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
 }
 
 TEST_P(QuicConnectionTest, Pacing) {
-  TestConnection server(connection_id_, IPEndPoint(), helper_.get(), factory_,
+  TestConnection server(connection_id_, kSelfAddress, helper_.get(), factory_,
                         Perspective::IS_SERVER, version());
-  TestConnection client(connection_id_, IPEndPoint(), helper_.get(), factory_,
+  TestConnection client(connection_id_, kPeerAddress, helper_.get(), factory_,
                         Perspective::IS_CLIENT, version());
   EXPECT_FALSE(client.sent_packet_manager().using_pacing());
   EXPECT_FALSE(server.sent_packet_manager().using_pacing());

@@ -91,7 +91,8 @@ struct TestParams {
              bool use_fec,
              bool client_supports_stateless_rejects,
              bool server_uses_stateless_rejects_if_peer_supported,
-             QuicTag congestion_control_tag)
+             QuicTag congestion_control_tag,
+             bool auto_tune_flow_control_window)
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
@@ -99,7 +100,8 @@ struct TestParams {
         client_supports_stateless_rejects(client_supports_stateless_rejects),
         server_uses_stateless_rejects_if_peer_supported(
             server_uses_stateless_rejects_if_peer_supported),
-        congestion_control_tag(congestion_control_tag) {}
+        congestion_control_tag(congestion_control_tag),
+        auto_tune_flow_control_window(auto_tune_flow_control_window) {}
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ server_supported_versions: "
@@ -113,7 +115,9 @@ struct TestParams {
        << p.server_uses_stateless_rejects_if_peer_supported;
     os << " use_fec: " << p.use_fec;
     os << " congestion_control_tag: "
-       << QuicUtils::TagToString(p.congestion_control_tag) << " }";
+       << QuicUtils::TagToString(p.congestion_control_tag);
+    os << " auto_tune_flow_control_window: " << p.auto_tune_flow_control_window
+       << " }";
     return os;
   }
 
@@ -124,6 +128,7 @@ struct TestParams {
   bool client_supports_stateless_rejects;
   bool server_uses_stateless_rejects_if_peer_supported;
   QuicTag congestion_control_tag;
+  bool auto_tune_flow_control_window;
 };
 
 // Constructs various test permutations.
@@ -157,28 +162,30 @@ vector<TestParams> GetTestParams() {
         for (bool client_supports_stateless_rejects : {true, false}) {
           for (bool server_uses_stateless_rejects_if_peer_supported :
                {true, false}) {
-            CHECK(!client_versions.empty());
-            // Add an entry for server and client supporting all versions.
-            params.push_back(
-                TestParams(client_versions, all_supported_versions,
-                           client_versions.front(), use_fec,
-                           client_supports_stateless_rejects,
-                           server_uses_stateless_rejects_if_peer_supported,
-                           congestion_control_tag));
+            for (bool auto_tune_flow_control_window : {true, false}) {
+              CHECK(!client_versions.empty());
+              // Add an entry for server and client supporting all versions.
+              params.push_back(TestParams(
+                  client_versions, all_supported_versions,
+                  client_versions.front(), use_fec,
+                  client_supports_stateless_rejects,
+                  server_uses_stateless_rejects_if_peer_supported,
+                  congestion_control_tag, auto_tune_flow_control_window));
 
-            // Test client supporting all versions and server supporting 1
-            // version. Simulate an old server and exercise version downgrade in
-            // the client. Protocol negotiation should occur. Skip the i = 0
-            // case because it is essentially the same as the default case.
-            for (const QuicVersion version : client_versions) {
-              QuicVersionVector server_supported_versions;
-              server_supported_versions.push_back(version);
-              params.push_back(
-                  TestParams(client_versions, server_supported_versions,
-                             server_supported_versions.front(), use_fec,
-                             client_supports_stateless_rejects,
-                             server_uses_stateless_rejects_if_peer_supported,
-                             congestion_control_tag));
+              // Test client supporting all versions and server supporting 1
+              // version. Simulate an old server and exercise version downgrade
+              // in the client. Protocol negotiation should occur. Skip the i =
+              // 0 case because it is essentially the same as the default case.
+              for (const QuicVersion version : client_versions) {
+                QuicVersionVector server_supported_versions;
+                server_supported_versions.push_back(version);
+                params.push_back(TestParams(
+                    client_versions, server_supported_versions,
+                    server_supported_versions.front(), use_fec,
+                    client_supports_stateless_rejects,
+                    server_uses_stateless_rejects_if_peer_supported,
+                    congestion_control_tag, auto_tune_flow_control_window));
+              }
             }
           }
         }
@@ -313,6 +320,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     }
     if (GetParam().client_supports_stateless_rejects) {
       copt.push_back(kSREJ);
+    }
+    if (GetParam().auto_tune_flow_control_window) {
+      copt.push_back(kAFCW);
+      copt.push_back(kIFW5);
     }
     client_config_.SetConnectionOptionsToSend(copt);
 
@@ -462,6 +473,14 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   bool BothSidesSupportStatelessRejects() {
     return (GetParam().server_uses_stateless_rejects_if_peer_supported &&
             GetParam().client_supports_stateless_rejects);
+  }
+
+  void ExpectFlowControlsSynced(QuicFlowController* client,
+                                QuicFlowController* server) {
+    EXPECT_EQ(QuicFlowControllerPeer::SendWindowSize(client),
+              QuicFlowControllerPeer::ReceiveWindowSize(server));
+    EXPECT_EQ(QuicFlowControllerPeer::ReceiveWindowSize(client),
+              QuicFlowControllerPeer::SendWindowSize(server));
   }
 
   bool initialized_;
@@ -1438,8 +1457,10 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
   set_client_initial_stream_flow_control_receive_window(kClientStreamIFCW);
   set_client_initial_session_flow_control_receive_window(kClientSessionIFCW);
 
-  const uint32 kServerStreamIFCW = 654321;
-  const uint32 kServerSessionIFCW = 765432;
+  uint32 kServerStreamIFCW =
+      GetParam().auto_tune_flow_control_window ? 32 * 1024 : 654321;
+  uint32 kServerSessionIFCW =
+      GetParam().auto_tune_flow_control_window ? 48 * 1024 : 765432;
   set_server_initial_stream_flow_control_receive_window(kServerStreamIFCW);
   set_server_initial_session_flow_control_receive_window(kServerSessionIFCW);
 
@@ -1487,8 +1508,10 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
 TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   // The special headers and crypto streams should be subject to per-stream flow
   // control limits, but should not be subject to connection level flow control.
-  const uint32 kStreamIFCW = 123456;
-  const uint32 kSessionIFCW = 234567;
+  const uint32 kStreamIFCW =
+      GetParam().auto_tune_flow_control_window ? 32 * 1024 : 123456;
+  const uint32 kSessionIFCW =
+      GetParam().auto_tune_flow_control_window ? 48 * 1024 : 234567;
   set_client_initial_stream_flow_control_receive_window(kStreamIFCW);
   set_client_initial_session_flow_control_receive_window(kSessionIFCW);
   set_server_initial_stream_flow_control_receive_window(kStreamIFCW);
@@ -1532,6 +1555,47 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
       session->flow_controller();
   EXPECT_EQ(kSessionIFCW, QuicFlowControllerPeer::ReceiveWindowSize(
       server_connection_flow_controller));
+  server_thread_->Resume();
+}
+
+TEST_P(EndToEndTest, FlowControlsSynced) {
+  const uint32 kClientIFCW = 64 * 1024;
+  const uint32 kServerIFCW = 1024 * 1024;
+  const float kSessionToStreamRatio = 1.5;
+  set_client_initial_stream_flow_control_receive_window(kClientIFCW);
+  set_client_initial_session_flow_control_receive_window(kSessionToStreamRatio *
+                                                         kClientIFCW);
+  set_server_initial_stream_flow_control_receive_window(kServerIFCW);
+  set_server_initial_session_flow_control_receive_window(kSessionToStreamRatio *
+                                                         kServerIFCW);
+
+  ASSERT_TRUE(Initialize());
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  server_thread_->Pause();
+  QuicSpdySession* const client_session = client_->client()->session();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  QuicSpdySession* server_session = dispatcher->session_map().begin()->second;
+
+  ExpectFlowControlsSynced(client_session->flow_controller(),
+                           server_session->flow_controller());
+  ExpectFlowControlsSynced(
+      QuicSessionPeer::GetCryptoStream(client_session)->flow_controller(),
+      QuicSessionPeer::GetCryptoStream(server_session)->flow_controller());
+  ExpectFlowControlsSynced(
+      QuicSpdySessionPeer::GetHeadersStream(client_session)->flow_controller(),
+      QuicSpdySessionPeer::GetHeadersStream(server_session)->flow_controller());
+
+  EXPECT_EQ(static_cast<float>(QuicFlowControllerPeer::ReceiveWindowSize(
+                client_session->flow_controller())) /
+                QuicFlowControllerPeer::ReceiveWindowSize(
+                    QuicSpdySessionPeer::GetHeadersStream(client_session)
+                        ->flow_controller()),
+            kSessionToStreamRatio);
+
   server_thread_->Resume();
 }
 

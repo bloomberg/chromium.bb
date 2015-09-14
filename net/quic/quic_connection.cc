@@ -207,7 +207,7 @@ class MtuDiscoveryAckListener : public QuicAckNotifier::DelegateInterface {
                          QuicTime::Delta /*delta_largest_observed*/) override {
     // Since the probe was successful, increase the maximum packet size to that.
     if (probe_size_ > connection_->max_packet_length()) {
-      connection_->set_max_packet_length(probe_size_);
+      connection_->SetMaxPacketLength(probe_size_);
     }
   }
 
@@ -327,9 +327,11 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   stats_.connection_creation_time = clock_->ApproximateNow();
   sent_packet_manager_.set_network_change_visitor(this);
-  if (perspective_ == Perspective::IS_SERVER) {
-    set_max_packet_length(kDefaultServerMaxPacketSize);
-  }
+  // Allow the packet writer to potentially reduce the packet size to a value
+  // even smaller than kDefaultMaxPacketSize.
+  SetMaxPacketLength(perspective_ == Perspective::IS_SERVER
+                         ? kDefaultServerMaxPacketSize
+                         : kDefaultMaxPacketSize);
 }
 
 QuicConnection::~QuicConnection() {
@@ -381,10 +383,10 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   }
 
   if (config.HasClientSentConnectionOption(kMTUH, perspective_)) {
-    mtu_discovery_target_ = kMtuDiscoveryTargetPacketSizeHigh;
+    SetMtuDiscoveryTarget(kMtuDiscoveryTargetPacketSizeHigh);
   }
   if (config.HasClientSentConnectionOption(kMTUL, perspective_)) {
-    mtu_discovery_target_ = kMtuDiscoveryTargetPacketSizeLow;
+    SetMtuDiscoveryTarget(kMtuDiscoveryTargetPacketSizeLow);
   }
 }
 
@@ -746,8 +748,8 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     if (incoming_ack.is_truncated) {
       should_last_packet_instigate_acks_ = true;
     }
-    if (!incoming_ack.missing_packets.empty() &&
-        GetLeastUnacked() > *incoming_ack.missing_packets.begin()) {
+    if (!incoming_ack.missing_packets.Empty() &&
+        GetLeastUnacked() > incoming_ack.missing_packets.Min()) {
       ++stop_waiting_count_;
     } else {
       stop_waiting_count_ = 0;
@@ -831,20 +833,20 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
-  if (!incoming_ack.missing_packets.empty() &&
-      *incoming_ack.missing_packets.rbegin() > incoming_ack.largest_observed) {
+  if (!incoming_ack.missing_packets.Empty() &&
+      incoming_ack.missing_packets.Max() > incoming_ack.largest_observed) {
     DLOG(ERROR) << ENDPOINT << "Peer sent missing packet: "
-                << *incoming_ack.missing_packets.rbegin()
+                << incoming_ack.missing_packets.Max()
                 << " which is greater than largest observed: "
                 << incoming_ack.largest_observed;
     return false;
   }
 
-  if (!incoming_ack.missing_packets.empty() &&
-      *incoming_ack.missing_packets.begin() <
+  if (!incoming_ack.missing_packets.Empty() &&
+      incoming_ack.missing_packets.Min() <
           sent_packet_manager_.least_packet_awaited_by_peer()) {
     DLOG(ERROR) << ENDPOINT << "Peer sent missing packet: "
-                << *incoming_ack.missing_packets.begin()
+                << incoming_ack.missing_packets.Min()
                 << " which is smaller than least_packet_awaited_by_peer_: "
                 << sent_packet_manager_.least_packet_awaited_by_peer();
     return false;
@@ -859,7 +861,7 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
   }
 
   for (QuicPacketNumber revived_packet : incoming_ack.revived_packets) {
-    if (!ContainsKey(incoming_ack.missing_packets, revived_packet)) {
+    if (!incoming_ack.missing_packets.Contains(revived_packet)) {
       DLOG(ERROR) << ENDPOINT
                   << "Peer specified revived packet which was not missing.";
       return false;
@@ -905,7 +907,9 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnRstStreamFrame(frame);
   }
-  DVLOG(1) << ENDPOINT << "Stream reset with error "
+  DVLOG(1) << ENDPOINT
+           << "RST_STREAM_FRAME received for stream: " << frame.stream_id
+           << " with error: "
            << QuicUtils::StreamErrorToString(frame.error_code);
   if (FLAGS_quic_process_frames_inline) {
     visitor_->OnRstStream(frame);
@@ -922,9 +926,9 @@ bool QuicConnection::OnConnectionCloseFrame(
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
-  DVLOG(1) << ENDPOINT << "Connection " << connection_id()
-           << " closed with error "
-           << QuicUtils::ErrorToString(frame.error_code)
+  DVLOG(1) << ENDPOINT << "CONNECTION_CLOSE_FRAME received for connection: "
+           << connection_id()
+           << " with error: " << QuicUtils::ErrorToString(frame.error_code)
            << " " << frame.error_details;
   if (FLAGS_quic_process_frames_inline) {
     CloseConnection(frame.error_code, true);
@@ -939,9 +943,10 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnGoAwayFrame(frame);
   }
-  DVLOG(1) << ENDPOINT << "Go away received with error "
-           << QuicUtils::ErrorToString(frame.error_code)
-           << " and reason:" << frame.reason_phrase;
+  DVLOG(1) << ENDPOINT << "GOAWAY_FRAME received with last good stream: "
+           << frame.last_good_stream_id
+           << " and error: " << QuicUtils::ErrorToString(frame.error_code)
+           << " and reason: " << frame.reason_phrase;
 
   goaway_received_ = true;
   if (FLAGS_quic_process_frames_inline) {
@@ -958,8 +963,9 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnWindowUpdateFrame(frame);
   }
-  DVLOG(1) << ENDPOINT << "WindowUpdate received for stream: "
-           << frame.stream_id << " with byte offset: " << frame.byte_offset;
+  DVLOG(1) << ENDPOINT
+           << "WINDOW_UPDATE_FRAME received for stream: " << frame.stream_id
+           << " with byte offset: " << frame.byte_offset;
   if (FLAGS_quic_process_frames_inline) {
     visitor_->OnWindowUpdateFrame(frame);
     should_last_packet_instigate_acks_ = true;
@@ -974,8 +980,8 @@ bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnBlockedFrame(frame);
   }
-  DVLOG(1) << ENDPOINT << "Blocked frame received for stream: "
-           << frame.stream_id;
+  DVLOG(1) << ENDPOINT
+           << "BLOCKED_FRAME received for stream: " << frame.stream_id;
   if (FLAGS_quic_process_frames_inline) {
     visitor_->OnBlockedFrame(frame);
     should_last_packet_instigate_acks_ = true;
@@ -1191,8 +1197,8 @@ void QuicConnection::UpdateStopWaitingCount() {
 
   // If the peer is still waiting for a packet that we are no longer planning to
   // send, send an ack to raise the high water mark.
-  if (!last_ack_frames_.back().missing_packets.empty() &&
-      GetLeastUnacked() > *last_ack_frames_.back().missing_packets.begin()) {
+  if (!last_ack_frames_.back().missing_packets.Empty() &&
+      GetLeastUnacked() > last_ack_frames_.back().missing_packets.Min()) {
     ++stop_waiting_count_;
   } else {
     stop_waiting_count_ = 0;
@@ -1417,6 +1423,14 @@ void QuicConnection::CheckForAddressMigration(
     self_ip_changed_ = (self_address.address() != self_address_.address());
     self_port_changed_ = (self_address.port() != self_address_.port());
   }
+
+  // TODO(vasilvv): reset maximum packet size on connection migration. Whenever
+  // the connection is migrated, it usually ends up being on a different path,
+  // with possibly smaller MTU.  This means the max packet size has to be reset
+  // and MTU discovery mechanism re-initialized.  The main reason the code does
+  // not do it now is that the retransmission code currently cannot deal with
+  // the case when it needs to resend a packet created with larger MTU (see
+  // b/22172803).
 }
 
 void QuicConnection::OnCanWrite() {
@@ -1491,7 +1505,7 @@ bool QuicConnection::ProcessValidatedPacket() {
   if (perspective_ == Perspective::IS_SERVER &&
       encryption_level_ == ENCRYPTION_NONE &&
       last_size_ > packet_generator_.GetMaxPacketLength()) {
-    set_max_packet_length(last_size_);
+    SetMaxPacketLength(last_size_);
   }
   return true;
 }
@@ -2143,8 +2157,9 @@ QuicByteCount QuicConnection::max_packet_length() const {
   return packet_generator_.GetMaxPacketLength();
 }
 
-void QuicConnection::set_max_packet_length(QuicByteCount length) {
-  return packet_generator_.SetMaxPacketLength(length, /*force=*/false);
+void QuicConnection::SetMaxPacketLength(QuicByteCount length) {
+  return packet_generator_.SetMaxPacketLength(LimitMaxPacketSize(length),
+                                              /*force=*/false);
 }
 
 bool QuicConnection::HasQueuedData() const {
@@ -2374,7 +2389,41 @@ bool QuicConnection::IsConnectionClose(const QueuedPacket& packet) {
   return false;
 }
 
+void QuicConnection::SetMtuDiscoveryTarget(QuicByteCount target) {
+  mtu_discovery_target_ = LimitMaxPacketSize(target);
+}
+
+QuicByteCount QuicConnection::LimitMaxPacketSize(
+    QuicByteCount suggested_max_packet_size) {
+  if (FLAGS_quic_allow_oversized_packets_for_test) {
+    return suggested_max_packet_size;
+  }
+
+  if (!FLAGS_quic_limit_mtu_by_writer) {
+    return suggested_max_packet_size;
+  }
+
+  if (peer_address_.address().empty()) {
+    LOG(DFATAL) << "Attempted to use a connection without a valid peer address";
+    return suggested_max_packet_size;
+  }
+
+  const QuicByteCount writer_limit = writer_->GetMaxPacketSize(peer_address());
+
+  QuicByteCount max_packet_size = suggested_max_packet_size;
+  if (max_packet_size > writer_limit) {
+    max_packet_size = writer_limit;
+  }
+  if (max_packet_size > kMaxPacketSize) {
+    max_packet_size = kMaxPacketSize;
+  }
+  return max_packet_size;
+}
+
 void QuicConnection::SendMtuDiscoveryPacket(QuicByteCount target_mtu) {
+  // Currently, this limit is ensured by the caller.
+  DCHECK_EQ(target_mtu, LimitMaxPacketSize(target_mtu));
+
   // Create a listener for the new probe.  The ownership of the listener is
   // transferred to the AckNotifierManager.  The notifier will get destroyed
   // before the connection (because it's stored in one of the connection's

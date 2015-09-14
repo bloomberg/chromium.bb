@@ -48,7 +48,7 @@ QuicClientSession* QuicClientBase::CreateQuicClientSession(
   session_.reset(
       new QuicClientSession(config_, connection, server_id_, &crypto_config_));
   if (initial_max_packet_length_ != 0) {
-    session()->connection()->set_max_packet_length(initial_max_packet_length_);
+    session()->connection()->SetMaxPacketLength(initial_max_packet_length_);
   }
   return session_.get();
 }

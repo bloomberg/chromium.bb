@@ -64,15 +64,15 @@ QuicPacketEntropyHash QuicSentEntropyManager::GetCumulativeEntropy(
 
 bool QuicSentEntropyManager::IsValidEntropy(
     QuicPacketNumber largest_observed,
-    const PacketNumberSet& missing_packets,
+    const PacketNumberQueue& missing_packets,
     QuicPacketEntropyHash entropy_hash) {
   DCHECK_GE(largest_observed, last_valid_entropy_.packet_number);
   // Ensure the largest and smallest packet numbers are in range.
   if (largest_observed > GetLargestPacketWithEntropy()) {
     return false;
   }
-  if (!missing_packets.empty() &&
-      *missing_packets.begin() < GetSmallestPacketWithEntropy()) {
+  if (!missing_packets.Empty() &&
+      missing_packets.Min() < GetSmallestPacketWithEntropy()) {
     return false;
   }
   // First the entropy for largest_observed packet number should be updated.
@@ -80,9 +80,8 @@ bool QuicSentEntropyManager::IsValidEntropy(
 
   // Now XOR out all the missing entropies.
   QuicPacketEntropyHash expected_entropy_hash = last_valid_entropy_.entropy;
-  for (PacketNumberSet::const_iterator it = missing_packets.begin();
-       it != missing_packets.end(); ++it) {
-    expected_entropy_hash ^= GetPacketEntropy(*it);
+  for (QuicPacketNumber packet : missing_packets) {
+    expected_entropy_hash ^= GetPacketEntropy(packet);
   }
   DLOG_IF(WARNING, entropy_hash != expected_entropy_hash)
       << "Invalid entropy hash: " << static_cast<int>(entropy_hash)

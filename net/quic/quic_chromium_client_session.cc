@@ -202,8 +202,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   IPEndPoint address;
   if (socket && socket->GetLocalAddress(&address) == OK &&
       address.GetFamily() == ADDRESS_FAMILY_IPV6) {
-    connection->set_max_packet_length(connection->max_packet_length() -
-                                      kAdditionalOverheadForIPv6);
+    connection->SetMaxPacketLength(connection->max_packet_length() -
+                                   kAdditionalOverheadForIPv6);
   }
 }
 

@@ -41,5 +41,10 @@ void QuicDefaultPacketWriter::SetWritable() {
   write_blocked_ = false;
 }
 
+QuicByteCount QuicDefaultPacketWriter::GetMaxPacketSize(
+    const IPEndPoint& peer_address) const {
+  return kMaxPacketSize;
+}
+
 }  // namespace tools
 }  // namespace net

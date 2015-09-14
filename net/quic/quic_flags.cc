@@ -80,3 +80,6 @@ bool FLAGS_send_goaway_after_client_migration = true;
 // Close the connection instead of attempting to write a packet out of sequence
 // number order.
 bool FLAGS_quic_close_connection_out_of_order_sending = true;
+
+// Allow QUIC packet writer to limit the MTU of the connection.
+bool FLAGS_quic_limit_mtu_by_writer = true;

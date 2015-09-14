@@ -101,7 +101,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   QuicVersion GetQuicVersionFromConnectionId(QuicConnectionId connection_id);
 
   // The number of connections on the time-wait list.
-  size_t num_connections() const { return connection_id_map_.size(); }
+  size_t num_connections() const { return num_connections_; }
 
  protected:
   virtual QuicEncryptedPacket* BuildPublicReset(
@@ -189,6 +189,12 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
   // Interface that manages blocked writers.
   QuicServerSessionVisitor* visitor_;
+
+  // Number of connection IDs in |connection_id_map_|. According to b/23531792,
+  // cost of size() of linked_hash_map is linear instead of constant, and a
+  // separate counter is maintained so that cost of num_connections() is
+  // constant. TODO(b/23531792): Remove this counter.
+  size_t num_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicTimeWaitListManager);
 };

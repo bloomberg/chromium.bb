@@ -984,10 +984,10 @@ uint8 QuicFramer::GetSequenceNumberFlags(
 QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
     const QuicAckFrame& frame) {
   AckFrameInfo ack_info;
-  if (frame.missing_packets.empty()) {
+  if (frame.missing_packets.Empty()) {
     return ack_info;
   }
-  DCHECK_GE(frame.largest_observed, *frame.missing_packets.rbegin());
+  DCHECK_GE(frame.largest_observed, frame.missing_packets.Max());
   size_t cur_range_length = 0;
   PacketNumberSet::const_iterator iter = frame.missing_packets.begin();
   QuicPacketNumber last_missing = *iter;
@@ -1361,9 +1361,8 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
       set_detailed_error("Unable to read missing packet number range.");
       return false;
     }
-    for (size_t j = 0; j <= range_length; ++j) {
-      ack_frame->missing_packets.insert(last_packet_number - j);
-    }
+    ack_frame->missing_packets.Add(last_packet_number - range_length,
+                                   last_packet_number + 1);
     // Subtract an extra 1 to ensure ranges are represented efficiently and
     // can't overlap by 1 packet number.  This allows a missing_delta of 0
     // to represent an adjacent nack range.
@@ -2063,7 +2062,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
 
   PacketNumberSet::const_iterator iter = frame.revived_packets.begin();
   for (int i = 0; i < num_revived_packets; ++i, ++iter) {
-    LOG_IF(DFATAL, !ContainsKey(frame.missing_packets, *iter));
+    LOG_IF(DFATAL, !frame.missing_packets.Contains(*iter));
     if (!AppendPacketSequenceNumber(largest_observed_length,
                                     *iter, writer)) {
       return false;

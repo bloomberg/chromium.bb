@@ -78,4 +78,9 @@ void QuicDefaultPacketWriter::OnWriteComplete(int rv) {
   connection_->OnCanWrite();
 }
 
+QuicByteCount QuicDefaultPacketWriter::GetMaxPacketSize(
+    const IPEndPoint& peer_address) const {
+  return kMaxPacketSize;
+}
+
 }  // namespace net
