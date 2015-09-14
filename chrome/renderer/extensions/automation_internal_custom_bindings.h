@@ -148,8 +148,8 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   v8::Local<v8::Value> CreateV8String(const std::string& str);
 
   // Handle accessibility events from the browser process.
-  void OnAccessibilityEvent(
-      const ExtensionMsg_AccessibilityEventParams& params);
+  void OnAccessibilityEvent(const ExtensionMsg_AccessibilityEventParams& params,
+                            bool is_active_profile);
 
   // AXTreeDelegate implementation.
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
@@ -167,6 +167,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   base::hash_map<int, TreeCache*> tree_id_to_tree_cache_map_;
   base::hash_map<ui::AXTree*, TreeCache*> axtree_to_tree_cache_map_;
   scoped_refptr<AutomationMessageFilter> message_filter_;
+  bool is_active_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };

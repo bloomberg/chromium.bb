@@ -14,6 +14,12 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/session/session_state_observer.h"
+#endif
+
+class Profile;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -24,7 +30,12 @@ namespace extensions {
 
 struct AutomationListener;
 
-class AutomationEventRouter : public content::NotificationObserver {
+class AutomationEventRouter
+    : public content::NotificationObserver
+#if defined(OS_CHROMEOS)
+    , public ash::SessionStateObserver
+#endif
+{
  public:
   static AutomationEventRouter* GetInstance();
 
@@ -32,14 +43,16 @@ class AutomationEventRouter : public content::NotificationObserver {
   // wants to receive automation events from the accessibility tree indicated
   // by |source_ax_tree_id|. Automation events are forwarded from now on
   // until the listener process dies.
-  void RegisterListenerForOneTree(int listener_process_id,
+  void RegisterListenerForOneTree(const ExtensionId& extension_id,
+                                  int listener_process_id,
                                   int listener_routing_id,
                                   int source_ax_tree_id);
 
   // Indicates that the listener at |listener_process_id|, |listener_routing_id|
   // wants to receive automation events from all accessibility trees because
   // it has Desktop permission.
-  void RegisterListenerWithDesktopPermission(int listener_process_id,
+  void RegisterListenerWithDesktopPermission(const ExtensionId& extension_id,
+                                             int listener_process_id,
                                              int listener_routing_id);
 
   void DispatchAccessibilityEvent(
@@ -56,16 +69,19 @@ class AutomationEventRouter : public content::NotificationObserver {
     AutomationListener();
     ~AutomationListener();
 
+    ExtensionId extension_id;
     int routing_id;
     int process_id;
     bool desktop;
     std::set<int> tree_ids;
+    bool is_active_profile;
   };
 
   AutomationEventRouter();
   ~AutomationEventRouter() override;
 
   void Register(
+      const ExtensionId& extension_id,
       int listener_process_id,
       int listener_routing_id,
       int source_ax_tree_id,
@@ -76,8 +92,31 @@ class AutomationEventRouter : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+#if defined(OS_CHROMEOS)
+  // SessionStateObserver overrides:
+  void ActiveUserChanged(const std::string& user_id) override;
+#endif
+
+  // Called when the user switches profiles or when a listener is added
+  // or removed. The purpose is to ensure that multiple instances of the
+  // same extension running in different profiles don't interfere with one
+  // another, so in that case only the one associated with the active profile
+  // is marked as active.
+  //
+  // This is needed on Chrome OS because ChromeVox loads into the login profile
+  // in addition to the active profile.  If a similar fix is needed on other
+  // platforms, we'd need an equivalent of SessionStateObserver that works
+  // everywhere.
+  void UpdateActiveProfile();
+
   content::NotificationRegistrar registrar_;
   std::vector<AutomationListener> listeners_;
+
+  Profile* active_profile_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
+#endif
 
   friend struct base::DefaultSingletonTraits<AutomationEventRouter>;
 

@@ -100,7 +100,8 @@ private:
 };
 
 AutomationInternalCustomBindings::AutomationInternalCustomBindings(
-    ScriptContext* context) : ObjectBackedNativeHandler(context) {
+    ScriptContext* context)
+    : ObjectBackedNativeHandler(context), is_active_profile_(true) {
   // It's safe to use base::Unretained(this) here because these bindings
   // will only be called on a valid AutomationInternalCustomBindings instance
   // and none of the functions have any side effects.
@@ -518,7 +519,9 @@ v8::Local<v8::Value> AutomationInternalCustomBindings::CreateV8String(
 //
 
 void AutomationInternalCustomBindings::OnAccessibilityEvent(
-    const ExtensionMsg_AccessibilityEventParams& params) {
+    const ExtensionMsg_AccessibilityEventParams& params,
+    bool is_active_profile) {
+  is_active_profile_ = is_active_profile;
   int tree_id = params.tree_id;
   TreeCache* cache;
   auto iter = tree_id_to_tree_cache_map_.find(tree_id);
@@ -533,11 +536,16 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
     cache = iter->second;
   }
 
+  // Update the internal state whether it's the active profile or not.
   cache->location_offset = params.location_offset;
   if (!cache->tree.Unserialize(params.update)) {
     LOG(ERROR) << cache->tree.error();
     return;
   }
+
+  // Don't send the event if it's not the active profile.
+  if (!is_active_profile)
+    return;
 
   v8::HandleScope handle_scope(GetIsolate());
   v8::Context::Scope context_scope(context()->v8_context());
@@ -616,6 +624,10 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
     api::automation::TreeChangeType change_type,
     ui::AXTree* tree,
     ui::AXNode* node) {
+  // Don't send tree change events when it's not the active profile.
+  if (!is_active_profile_)
+    return;
+
   auto iter = axtree_to_tree_cache_map_.find(tree);
   if (iter == axtree_to_tree_cache_map_.end())
     return;

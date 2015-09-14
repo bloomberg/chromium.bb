@@ -92,8 +92,9 @@ IPC_STRUCT_END()
 
 // Forward an accessibility message to an extension process where an
 // extension is using the automation API to listen for accessibility events.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_AccessibilityEvent,
-                    ExtensionMsg_AccessibilityEventParams)
+IPC_MESSAGE_ROUTED2(ExtensionMsg_AccessibilityEvent,
+                    ExtensionMsg_AccessibilityEventParams,
+                    bool /* is_active_profile */)
 
 // Messages sent from the renderer to the browser.
 

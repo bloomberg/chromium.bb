@@ -10,6 +10,7 @@
 
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/automation_internal.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -34,27 +35,43 @@ AutomationEventRouter::AutomationEventRouter() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  active_profile_ = ProfileManager::GetLastUsedProfile();
+
+#if defined(OS_CHROMEOS)
+  session_state_observer_.reset(new ash::ScopedSessionStateObserver(this));
+#endif
 }
 
 AutomationEventRouter::~AutomationEventRouter() {
 }
 
 void AutomationEventRouter::RegisterListenerForOneTree(
+    const ExtensionId& extension_id,
     int listener_process_id,
     int listener_routing_id,
     int source_ax_tree_id) {
-  Register(listener_process_id, listener_routing_id, source_ax_tree_id, false);
+  Register(extension_id,
+           listener_process_id,
+           listener_routing_id,
+           source_ax_tree_id,
+           false);
 }
 
 void AutomationEventRouter::RegisterListenerWithDesktopPermission(
+    const ExtensionId& extension_id,
     int listener_process_id,
     int listener_routing_id) {
-  Register(listener_process_id, listener_routing_id, 0, true);
+  Register(extension_id,
+           listener_process_id,
+           listener_routing_id,
+           0  /* desktop tree ID */,
+           true);
 }
 
 void AutomationEventRouter::DispatchAccessibilityEvent(
     const ExtensionMsg_AccessibilityEventParams& params) {
   for (const auto& listener : listeners_) {
+    // Skip listeners that don't want to listen to this tree.
     if (!listener.desktop &&
         listener.tree_ids.find(params.tree_id) == listener.tree_ids.end()) {
       continue;
@@ -63,7 +80,8 @@ void AutomationEventRouter::DispatchAccessibilityEvent(
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
     rph->Send(new ExtensionMsg_AccessibilityEvent(listener.routing_id,
-                                                  params));
+                                                  params,
+                                                  listener.is_active_profile));
   }
 }
 
@@ -87,6 +105,7 @@ AutomationEventRouter::AutomationListener::~AutomationListener() {
 }
 
 void AutomationEventRouter::Register(
+    const ExtensionId& extension_id,
     int listener_process_id,
     int listener_routing_id,
     int ax_tree_id,
@@ -103,11 +122,13 @@ void AutomationEventRouter::Register(
   // Add a new entry if we don't have one with that process and routing id.
   if (iter == listeners_.end()) {
     AutomationListener listener;
+    listener.extension_id = extension_id;
     listener.routing_id = listener_routing_id;
     listener.process_id = listener_process_id;
     listener.desktop = desktop;
     listener.tree_ids.insert(ax_tree_id);
     listeners_.push_back(listener);
+    UpdateActiveProfile();
     return;
   }
 
@@ -139,6 +160,38 @@ void AutomationEventRouter::Observe(
             return item.process_id == process_id;
           }),
       listeners_.end());
+  UpdateActiveProfile();
+}
+
+#if defined(OS_CHROMEOS)
+void AutomationEventRouter::ActiveUserChanged(const std::string& user_id) {
+  active_profile_ = ProfileManager::GetLastUsedProfile();
+  UpdateActiveProfile();
+}
+#endif
+
+void AutomationEventRouter::UpdateActiveProfile() {
+  for (auto& listener : listeners_) {
+#if defined(OS_CHROMEOS)
+    int extension_id_count = 0;
+    for (const auto& listener2 : listeners_) {
+      if (listener2.extension_id == listener.extension_id)
+        extension_id_count++;
+    }
+    content::RenderProcessHost* rph =
+        content::RenderProcessHost::FromID(listener.process_id);
+
+    // The purpose of is_active_profile is to ensure different instances of
+    // the same extension running in different profiles don't interfere with
+    // one another. If an automation extension is only running in one profile,
+    // always mark it as active. If it's running in two or more profiles,
+    // only mark one as active.
+    listener.is_active_profile = (extension_id_count == 1 ||
+                                  rph->GetBrowserContext() == active_profile_);
+#else
+    listener.is_active_profile = true;
+#endif
+  }
 }
 
 }  // namespace extensions

@@ -276,6 +276,7 @@ AutomationInternalEnableTabFunction::Run() {
 
   // This gets removed when the extension process dies.
   AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
+      extension_id(),
       source_process_id(),
       params->args.routing_id,
       ax_tree_id);
@@ -387,6 +388,7 @@ AutomationInternalEnableDesktopFunction::Run() {
 
   // This gets removed when the extension process dies.
   AutomationEventRouter::GetInstance()->RegisterListenerWithDesktopPermission(
+      extension_id(),
       source_process_id(),
       params->routing_id);
 
