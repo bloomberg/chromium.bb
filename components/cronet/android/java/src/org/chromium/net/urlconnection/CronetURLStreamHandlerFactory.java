@@ -42,23 +42,21 @@ import java.net.URLStreamHandlerFactory;
  */
 public class CronetURLStreamHandlerFactory
         implements URLStreamHandlerFactory {
-    private final Context mContext;
     private final UrlRequestContext mRequestContext;
 
     /**
      * Creates a {@link CronetURLStreamHandlerFactory} to handle HTTP and HTTPS
      * traffic.
      * @param context application context.
-     * @param config the configuration to be used, or {@code null} in which case
-     *         the default configuration will be used.
+     * @param config the configuration to be used.
+     * @throws NullPointerException if config is null.
      */
     public CronetURLStreamHandlerFactory(Context context,
             UrlRequestContextConfig config) {
-        mContext = context;
         if (config == null) {
-            config = new UrlRequestContextConfig().enableQUIC(true);
+            throw new NullPointerException("UrlRequestContextConfig is null.");
         }
-        mRequestContext = UrlRequestContext.createContext(mContext, config);
+        mRequestContext = UrlRequestContext.createContext(context, config);
     }
 
     /**
