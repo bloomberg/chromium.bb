@@ -1116,6 +1116,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setMainFrameClipsContent(!prefs.record_whole_document);
   settings->setShrinksViewportContentToFit(true);
   settings->setUseMobileViewportStyle(true);
+  settings->setAutoplayExperimentMode(
+      blink::WebString::fromUTF8(prefs.autoplay_experiment_mode));
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);

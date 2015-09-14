@@ -61,7 +61,8 @@ CONTENT_EXPORT extern const char kCommonScript[];
 //
 // Adding new values to this class probably involves updating
 // blink::WebSettings, content/common/view_messages.h, browser/tab_contents/
-// render_view_host_delegate_helper.cc, and browser/profiles/profile.cc.
+// render_view_host_delegate_helper.cc, browser/profiles/profile.cc,
+// and content/public/common/common_param_traits_macros.h
 struct CONTENT_EXPORT WebPreferences {
   ScriptFontFamilyMap standard_font_family_map;
   ScriptFontFamilyMap fixed_font_family_map;
@@ -211,6 +212,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool ignore_main_frame_overflow_hidden_quirk;
   bool report_screen_size_in_physical_pixels_quirk;
   bool record_whole_document;
+  std::string autoplay_experiment_mode;
 #endif
 
   // Default (used if the page or UA doesn't override these) values for page

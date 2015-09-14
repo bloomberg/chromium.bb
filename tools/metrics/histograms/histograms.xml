@@ -65488,6 +65488,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4"
       label="Autoplay enabled through a user-gesture triggered load() call."/>
   <int value="5" label="Autoplay disabled by sandbox flags."/>
+  <int value="6" label="Gesture requirement overridden during initial load."/>
+  <int value="7" label="Gesture requirement overridden in play()."/>
+  <int value="8"
+      label="Gesture req. overridden after scroll for deferred attribute."/>
+  <int value="9"
+      label="Gesture req. overridden after scroll for deferred play()."/>
+  <int value="10" label="play() call failed due to gesture requirement."/>
+  <int value="11" label="Any playback started."/>
+  <int value="12" label="Any playback paused."/>
+  <int value="13" label="Any playback bailed out."/>
 </enum>
 
 <enum name="MediaGalleriesUsageType" type="int">

@@ -455,6 +455,11 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
       switches::kDisableGestureRequirementForMediaPlayback) &&
           (autoplay_group_name.empty() || autoplay_group_name != "Enabled");
+
+  // Handle autoplay gesture override experiment.
+  // Note that anything but a well-formed string turns the experiment off.
+  prefs.autoplay_experiment_mode = base::FieldTrialList::FindFullName(
+      "MediaElementGestureOverrideExperiment");
 #endif
 
   prefs.touch_enabled = ui::AreTouchEventsEnabled();
