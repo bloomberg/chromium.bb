@@ -54,10 +54,7 @@ class WebContentsEntry : public content::WebContentsObserver {
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  void DocumentOnLoadCompletedInMainFrame() override;
   void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
-  void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
 
  private:
   // Defines a callback for WebContents::ForEachFrame() to create a
@@ -174,20 +171,6 @@ void WebContentsEntry::DidNavigateMainFrame(
   itr->second->UpdateTitle();
 }
 
-void WebContentsEntry::DocumentOnLoadCompletedInMainFrame() {
-  // Note: Requesting the task to update its favicon, in any earlier occurring
-  // event than this one, may not work properly. We also need to listen to
-  // WebContentsObserver::DidUpdateFaviconURL().
-  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
-  if (itr == tasks_by_frames_.end()) {
-    // TODO(afakhry): Validate whether this actually happens in practice.
-    NOTREACHED();
-    return;
-  }
-
-  itr->second->UpdateFavicon();
-}
-
 void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
                                    bool explicit_set) {
   auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
@@ -198,18 +181,6 @@ void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
   }
 
   itr->second->UpdateTitle();
-}
-
-void WebContentsEntry::DidUpdateFaviconURL(
-    const std::vector<content::FaviconURL>& candidates) {
-  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
-  if (itr == tasks_by_frames_.end()) {
-    // TODO(afakhry): Validate whether this actually happens in practice.
-    NOTREACHED();
-    return;
-  }
-
-  itr->second->UpdateFavicon();
 }
 
 void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {

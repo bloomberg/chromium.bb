@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_RENDERER_TASK_H_
 
 #include "chrome/browser/task_management/providers/task.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "content/public/browser/navigation_entry.h"
 
 class ProcessResourceUsage;
@@ -19,7 +20,8 @@ namespace task_management {
 
 // Defines an abstract base class for various types of renderer process tasks
 // such as background contents, tab contents, ... etc.
-class RendererTask : public Task {
+class RendererTask : public Task,
+                     public favicon::FaviconDriverObserver {
  public:
   RendererTask(const base::string16& title,
                const gfx::ImageSkia* icon,
@@ -34,8 +36,8 @@ class RendererTask : public Task {
   virtual void UpdateTitle() = 0;
 
   // An abstract method that will be called when the event
-  // WebContentsObserver::DocumentOnLoadCompletedInMainFrame() occurs, so that
-  // concrete tasks can update their favicons.
+  // FaviconDriverObserver::OnFaviconUpdated() occurs, so that concrete tasks
+  // can update their favicons.
   virtual void UpdateFavicon() = 0;
 
   // task_management::Task:
@@ -49,6 +51,11 @@ class RendererTask : public Task {
   int64 GetV8MemoryUsed() const override;
   bool ReportsWebCacheStats() const override;
   blink::WebCache::ResourceTypeStats GetWebCacheStats() const override;
+
+  // favicon::FaviconDriverObserver:
+  void OnFaviconAvailable(const gfx::Image& image) override;
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        bool icon_url_changed) override;
 
  protected:
   // Returns the title of the given |web_contents|.

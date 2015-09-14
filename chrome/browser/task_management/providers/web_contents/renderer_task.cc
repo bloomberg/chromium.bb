@@ -78,9 +78,17 @@ RendererTask::RendererTask(const base::string16& title,
   // All renderer tasks are capable of reporting network usage, so the default
   // invalid value of -1 doesn't apply here.
   OnNetworkBytesRead(0);
+
+  // Tag the web_contents with a |ContentFaviconDriver| (if needed) so that
+  // we can use it to observe favicons changes.
+  favicon::CreateContentFaviconDriverForWebContents(web_contents);
+  favicon::ContentFaviconDriver::FromWebContents(web_contents)->AddObserver(
+      this);
 }
 
 RendererTask::~RendererTask() {
+  favicon::ContentFaviconDriver::FromWebContents(web_contents())->
+      RemoveObserver(this);
 }
 
 void RendererTask::Activate() {
@@ -136,6 +144,14 @@ bool RendererTask::ReportsWebCacheStats() const {
 
 blink::WebCache::ResourceTypeStats RendererTask::GetWebCacheStats() const {
   return webcache_stats_;
+}
+
+void RendererTask::OnFaviconAvailable(const gfx::Image& image) {
+}
+
+void RendererTask::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                                    bool icon_url_changed) {
+  UpdateFavicon();
 }
 
 // static
