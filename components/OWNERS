@@ -67,7 +67,7 @@ per-file data_reduction_proxy*=bengr@chromium.org
 per-file data_reduction_proxy*=marq@chromium.org
 per-file data_reduction_proxy*=bolian@chromium.org
 per-file data_reduction_proxy*=sclittle@chromium.org
-per-file data_reduction_proxy*=jeremyim@chromium.org
+per-file data_reduction_proxy*=megjablon@chromium.org
 
 per-file data_use_measurement*=sclittle@chromium.org
 per-file data_use_measurement*=bengr@chromium.org
@@ -219,7 +219,6 @@ per-file plugins.gypi=tommycli@chromium.org
 
 per-file precache*=bengr@chromium.org
 per-file precache*=sclittle@chromium.org
-per-file precache*=jeremyim@chromium.org
 
 per-file printing*=alekseys@chromium.org
 per-file printing*=gene@chromium.org

@@ -5577,7 +5577,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.ConfigFetchLostBytesCL">
-  <owner>jeremyim@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     Size of the response body. This is the actual number of bytes received,
@@ -5588,7 +5587,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.ConfigFetchLostBytesDiff">
-  <owner>jeremyim@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     The difference between the size specified in the X-Original-Content-Length
@@ -5601,7 +5599,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.ConfigFetchLostBytesOCL">
-  <owner>jeremyim@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     Size specified in the X-Original-Content-Length header. If this header is
@@ -5613,7 +5610,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.ConfigService.AuthExpired"
     enum="BooleanExpired">
-  <owner>jeremyim@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     Total number of authentication required responses received from the Data
@@ -5623,7 +5619,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess">
-  <owner>jeremyim@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     The number of failed attempts when retrieving the configuration from the
@@ -5633,7 +5628,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.ConfigService.FetchLatency"
     units="milliseconds">
-  <owner>jeremyim@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     Time from when the Data Reduction Proxy configuration request starts until
@@ -5643,7 +5637,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.ConfigService.FetchResponseCode"
     enum="HttpResponseCode">
-  <owner>jeremyim@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     Count per HttpResponseCode when attempting to retrieve the Data Reduction
@@ -5877,7 +5870,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.SecureProxyCheck.Latency"
     units="milliseconds">
-  <owner>jeremyim@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     Time from when the Data Reduction Proxy secure proxy check starts until it
@@ -25022,7 +25014,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/21/2015. No longer tracked.
   </obsolete>
-  <owner>jeremyim@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
   <summary>
     Counts of specific error codes returned when opening an SSL connection for
     an endpoint which is eligible for fastradio padding.
