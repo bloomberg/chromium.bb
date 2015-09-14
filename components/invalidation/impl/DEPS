@@ -1,7 +1,6 @@
 include_rules = [
   "+components/invalidation/public",
 
-  "+components/data_use_measurement/core",
   "+components/gcm_driver",
   "+components/keyed_service",
   "+components/pref_registry",

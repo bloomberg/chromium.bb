@@ -16,7 +16,6 @@
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
         '../third_party/smhasher/smhasher.gyp:cityhash',
-        'data_use_measurement_core',
         'metrics',
         'variations',
       ],

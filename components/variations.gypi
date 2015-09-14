@@ -99,7 +99,6 @@
         '../base/base.gyp:base_prefs',
         '../net/net.gyp:net',
         '../ui/base/ui_base.gyp:ui_base',
-        'data_use_measurement_core',
         'metrics',
         'network_time',
         'pref_registry',

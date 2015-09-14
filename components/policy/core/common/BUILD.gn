@@ -134,7 +134,6 @@ source_set("common") {
     deps = [
       "//base:prefs",
       "//base/third_party/dynamic_annotations",
-      "//components/data_use_measurement/core",
       "//components/json_schema",
       "//components/policy",
       "//google_apis",

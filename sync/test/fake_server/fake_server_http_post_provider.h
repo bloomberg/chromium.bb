@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -71,9 +70,7 @@ class FakeServerHttpPostProviderFactory
   ~FakeServerHttpPostProviderFactory() override;
 
   // HttpPostProviderFactory:
-  void Init(
-      const std::string& user_agent,
-      const syncer::BindToTrackerCallback& bind_to_tracker_callback) override;
+  void Init(const std::string& user_agent) override;
   syncer::HttpPostProviderInterface* Create() override;
   void Destroy(syncer::HttpPostProviderInterface* http) override;
 

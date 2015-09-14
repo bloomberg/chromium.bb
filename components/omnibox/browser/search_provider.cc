@@ -18,7 +18,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -864,8 +863,6 @@ scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
 
   scoped_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(id, suggest_url, net::URLFetcher::GET, this);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher.get(), data_use_measurement::DataUseUserData::OMNIBOX);
   fetcher->SetRequestContext(client()->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   // Add Chrome experiment state to the request headers.

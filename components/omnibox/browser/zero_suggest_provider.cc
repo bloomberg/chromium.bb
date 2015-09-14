@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -320,8 +319,6 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
     const int kFetcherID = 1;
     fetcher_ = net::URLFetcher::Create(kFetcherID, suggest_url,
                                        net::URLFetcher::GET, this);
-    data_use_measurement::DataUseUserData::AttachToFetcher(
-        fetcher_.get(), data_use_measurement::DataUseUserData::OMNIBOX);
     fetcher_->SetRequestContext(client()->GetRequestContext());
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     // Add Chrome experiment state to the request headers.

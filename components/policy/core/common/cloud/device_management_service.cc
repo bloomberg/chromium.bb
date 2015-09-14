@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -464,8 +463,6 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(kURLFetcherID, job->GetURL(server_url),
                               net::URLFetcher::POST, this).release();
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::POLICY);
   job->ConfigureRequest(fetcher);
   pending_jobs_[fetcher] = job;
   fetcher->Start();

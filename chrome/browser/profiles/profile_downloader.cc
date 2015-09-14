@@ -23,7 +23,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -286,9 +285,6 @@ void ProfileDownloader::FetchImageData() {
   VLOG(1) << "Fetching profile image from " << image_url_with_size;
   profile_image_fetcher_ = net::URLFetcher::Create(
       GURL(image_url_with_size), net::URLFetcher::GET, this);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      profile_image_fetcher_.get(),
-      data_use_measurement::DataUseUserData::PROFILE_DOWNLOADER);
   profile_image_fetcher_->SetRequestContext(
       delegate_->GetBrowserProfile()->GetRequestContext());
   profile_image_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

@@ -30,32 +30,6 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "Suggestions";
     case NOT_TAGGED:
       return "NotTagged";
-    case TRANSLATE:
-      return "Translate";
-    case SYNC:
-      return "Sync";
-    case OMNIBOX:
-      return "Omnibox";
-    case INVALIDATION:
-      return "Invalidation";
-    case RAPPOR:
-      return "Rappor";
-    case VARIATIONS:
-      return "Variations";
-    case UMA:
-      return "UMA";
-    case DOMAIN_RELIABILITY:
-      return "DomainReliability";
-    case PROFILE_DOWNLOADER:
-      return "ProfileDownloader";
-    case GOOGLE_URL_TRACKER:
-      return "GoogleURLTracker";
-    case AUTOFILL:
-      return "Autofill";
-    case POLICY:
-      return "Policy";
-    case SPELL_CHECKER:
-      return "SpellChecker";
   }
   return "INVALID";
 }

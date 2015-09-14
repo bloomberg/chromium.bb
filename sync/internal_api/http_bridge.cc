@@ -161,11 +161,8 @@ HttpBridgeFactory::~HttpBridgeFactory() {
   cancelation_signal_->UnregisterHandler(this);
 }
 
-void HttpBridgeFactory::Init(
-    const std::string& user_agent,
-    const BindToTrackerCallback& bind_to_tracker_callback) {
+void HttpBridgeFactory::Init(const std::string& user_agent) {
   user_agent_ = user_agent;
-  bind_to_tracker_callback_ = bind_to_tracker_callback;
 }
 
 HttpPostProviderInterface* HttpBridgeFactory::Create() {
@@ -177,9 +174,8 @@ HttpPostProviderInterface* HttpBridgeFactory::Create() {
   // we've been asked to shut down.
   CHECK(request_context_getter_.get());
 
-  scoped_refptr<HttpBridge> http =
-      new HttpBridge(user_agent_, request_context_getter_,
-                     network_time_update_callback_, bind_to_tracker_callback_);
+  scoped_refptr<HttpBridge> http = new HttpBridge(
+      user_agent_, request_context_getter_, network_time_update_callback_);
   http->AddRef();
   return http.get();
 }
@@ -208,15 +204,14 @@ HttpBridge::URLFetchState::~URLFetchState() {}
 HttpBridge::HttpBridge(
     const std::string& user_agent,
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-    const NetworkTimeUpdateCallback& network_time_update_callback,
-    const BindToTrackerCallback& bind_to_tracker_callback)
+    const NetworkTimeUpdateCallback& network_time_update_callback)
     : created_on_loop_(base::MessageLoop::current()),
       user_agent_(user_agent),
       http_post_completed_(false, false),
       request_context_getter_(context_getter),
       network_task_runner_(request_context_getter_->GetNetworkTaskRunner()),
-      network_time_update_callback_(network_time_update_callback),
-      bind_to_tracker_callback_(bind_to_tracker_callback) {}
+      network_time_update_callback_(network_time_update_callback) {
+}
 
 HttpBridge::~HttpBridge() {
 }
@@ -318,8 +313,6 @@ void HttpBridge::MakeAsynchronousPost() {
   fetch_state_.url_poster =
       net::URLFetcher::Create(url_for_request_, net::URLFetcher::POST, this)
           .release();
-  if (!bind_to_tracker_callback_.is_null())
-    bind_to_tracker_callback_.Run(fetch_state_.url_poster);
   fetch_state_.url_poster->SetRequestContext(request_context_getter_.get());
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
 

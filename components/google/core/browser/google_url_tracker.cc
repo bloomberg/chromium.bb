@@ -11,7 +11,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_util.h"
@@ -164,9 +163,6 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   already_fetched_ = true;
   fetcher_ = net::URLFetcher::Create(fetcher_id_, GURL(kSearchDomainCheckURL),
                                      net::URLFetcher::GET, this);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(),
-      data_use_measurement::DataUseUserData::GOOGLE_URL_TRACKER);
   ++fetcher_id_;
   // We don't want this fetch to set new entries in the cache or cookies, lest
   // we alarm the user.

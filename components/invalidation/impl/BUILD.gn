@@ -68,7 +68,6 @@ source_set("impl") {
     "//base",
     "//base:i18n",
     "//base:prefs",
-    "//components/data_use_measurement/core",
     "//components/gcm_driver",
     "//components/keyed_service/core",
     "//components/pref_registry",

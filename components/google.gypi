@@ -13,7 +13,6 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'components_strings.gyp:components_strings',
-        'data_use_measurement_core',
         'keyed_service_core',
         'pref_registry',
         'url_formatter/url_formatter.gyp:url_formatter',

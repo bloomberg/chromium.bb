@@ -54,8 +54,7 @@ class SYNC_EXPORT_PRIVATE HttpBridge
  public:
   HttpBridge(const std::string& user_agent,
              const scoped_refptr<net::URLRequestContextGetter>& context,
-             const NetworkTimeUpdateCallback& network_time_update_callback,
-             const BindToTrackerCallback& bind_to_tracker_callback);
+             const NetworkTimeUpdateCallback& network_time_update_callback);
 
   // HttpPostProvider implementation.
   void SetExtraRequestHeaders(const char* headers) override;
@@ -181,10 +180,6 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   // Callback for updating network time.
   NetworkTimeUpdateCallback network_time_update_callback_;
 
-  // A callback to tag Sync request to be able to record data use of this
-  // service by data_use_measurement component.
-  BindToTrackerCallback bind_to_tracker_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };
 
@@ -199,8 +194,7 @@ class SYNC_EXPORT HttpBridgeFactory : public HttpPostProviderFactory,
   ~HttpBridgeFactory() override;
 
   // HttpPostProviderFactory:
-  void Init(const std::string& user_agent,
-            const BindToTrackerCallback& bind_to_tracker_callback) override;
+  void Init(const std::string& user_agent) override;
   HttpPostProviderInterface* Create() override;
   void Destroy(HttpPostProviderInterface* http) override;
 
@@ -221,10 +215,6 @@ class SYNC_EXPORT HttpBridgeFactory : public HttpPostProviderFactory,
   NetworkTimeUpdateCallback network_time_update_callback_;
 
   CancelationSignal* const cancelation_signal_;
-
-  // A callback to tag Sync request to be able to record data use of this
-  // service by data_use_measurement component.
-  BindToTrackerCallback bind_to_tracker_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpBridgeFactory);
 };

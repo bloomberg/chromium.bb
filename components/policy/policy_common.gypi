@@ -23,7 +23,6 @@
         '../third_party/re2/re2.gyp:re2',
         '../url/url.gyp:url_lib',
         'cloud_policy_proto',
-        'data_use_measurement_core',
         'json_schema',
         'policy',
       ],

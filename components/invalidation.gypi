@@ -54,7 +54,6 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
-        'data_use_measurement_core',
         'gcm_driver',
         'keyed_service_core',
         'pref_registry',

@@ -9,7 +9,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -78,8 +77,6 @@ class DomainReliabilityUploaderImpl
     net::URLFetcher* fetcher =
         net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this)
             .release();
-    data_use_measurement::DataUseUserData::AttachToFetcher(
-        fetcher, data_use_measurement::DataUseUserData::DOMAIN_RELIABILITY);
     fetcher->SetRequestContext(url_request_context_getter_.get());
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);

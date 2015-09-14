@@ -17,7 +17,6 @@
         '../url/url.gyp:url_lib',
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
-        'data_use_measurement_core',
         'infobars_core',
         'language_usage_metrics',
         'pref_registry',

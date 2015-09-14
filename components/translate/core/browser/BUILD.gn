@@ -41,7 +41,6 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//components/data_use_measurement/core",
     "//components/language_usage_metrics",
     "//components/resources:components_resources",
     "//components/strings",

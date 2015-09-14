@@ -14,7 +14,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/http_bridge.h"
-#include "sync/internal_api/public/http_post_provider_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/zlib.h"
 
@@ -145,8 +144,9 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
       fake_default_request_context_getter_->AddRef();
     }
     HttpBridge* bridge =
-        new HttpBridge(kUserAgent, fake_default_request_context_getter_,
-                       NetworkTimeUpdateCallback(), BindToTrackerCallback());
+        new HttpBridge(kUserAgent,
+                       fake_default_request_context_getter_,
+                       NetworkTimeUpdateCallback());
     return bridge;
   }
 
@@ -207,15 +207,11 @@ class ShuntedHttpBridge : public HttpBridge {
   // If |never_finishes| is true, the simulated request never actually
   // returns.
   ShuntedHttpBridge(net::URLRequestContextGetter* baseline_context_getter,
-                    MAYBE_SyncHttpBridgeTest* test,
-                    bool never_finishes)
+                    MAYBE_SyncHttpBridgeTest* test, bool never_finishes)
       : HttpBridge(kUserAgent,
                    baseline_context_getter,
-                   NetworkTimeUpdateCallback(),
-                   BindToTrackerCallback()),
-        test_(test),
-        never_finishes_(never_finishes) {}
-
+                   NetworkTimeUpdateCallback()),
+        test_(test), never_finishes_(never_finishes) { }
  protected:
   void MakeAsynchronousPost() override {
     ASSERT_TRUE(base::MessageLoop::current() == test_->GetIOThreadLoop());
@@ -583,7 +579,7 @@ void HttpBridgeRunOnSyncThread(
       new syncer::HttpBridgeFactory(baseline_context_getter,
                                     NetworkTimeUpdateCallback(),
                                     factory_cancelation_signal));
-  bridge_factory->Init("test", BindToTrackerCallback());
+  bridge_factory->Init("test");
   *bridge_factory_out = bridge_factory.get();
 
   HttpPostProviderInterface* bridge = bridge_factory->Create();
@@ -677,7 +673,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, EarlyAbortFactory) {
 
   // Sync thread: Finally run the posted task, only to find that our
   // HttpBridgeFactory has been neutered.  Should not crash.
-  factory->Init("TestUserAgent", BindToTrackerCallback());
+  factory->Init("TestUserAgent");
 
   // At this point, attempting to use the factory would trigger a crash.  Both
   // this test and the real world code should make sure this never happens.
