@@ -2603,6 +2603,10 @@
             'input/TouchActionUtil.h',
         ],
         'webcore_html_files': [
+            'html/AutoplayExperimentConfig.cpp',
+            'html/AutoplayExperimentConfig.h',
+            'html/AutoplayExperimentHelper.cpp',
+            'html/AutoplayExperimentHelper.h',
             'html/ClassList.cpp',
             'html/ClassList.h',
             'html/CrossOriginAttribute.cpp',

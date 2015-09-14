@@ -1,0 +1,48 @@
+<script src=media-file.js></script>
+<script src=video-test.js></script>
+<script>
+
+function runTest()
+{
+    function prepareVideo(parent)
+    {
+        var video = document.createElement("video");
+        video.src = findMediaFile("video", "content/test");
+        video.autoplay = true;
+        parent.appendChild(video);
+
+        return video;
+    }
+
+    function didPlaybackStart(element)
+    {
+        return !element.paused || element.ended;
+    }
+
+    var parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    // Require a user gesture, but override it for muted videos.
+    internals.settings.setMediaPlaybackRequiresUserGesture(true);
+    internals.settings.setAutoplayExperimentMode("enabled-forvideo-ifmuted");
+
+    var videoShouldPlay = prepareVideo(parent);
+    var videoShouldNotPlay = prepareVideo(parent);
+
+    // Pause() will clear the autoplaying flag, which should also prevent the
+    // gesture override experiment from autoplaying.
+    videoShouldNotPlay.pause();
+
+    // Mute them both, and see if only one starts.
+    videoShouldPlay.muted = true;
+    videoShouldNotPlay.muted = true;
+    logResult(didPlaybackStart(videoShouldPlay), "First video should play");
+    logResult(!didPlaybackStart(videoShouldNotPlay), "Second video should not play");
+    testRunner.notifyDone();
+}
+
+</script>
+<p>Test that the autoplay experiment doesn't play media once the media
+is no longer eligible for autoplay.</p>
+<body onLoad="runTest()">
+</body>

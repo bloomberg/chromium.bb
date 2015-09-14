@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/GenericEventQueue.h"
+#include "core/html/AutoplayExperimentHelper.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/track/TextTrack.h"
 #include "platform/Supplementable.h"
@@ -140,6 +141,8 @@ public:
     TimeRanges* seekable() const;
     bool ended() const;
     bool autoplay() const;
+    enum class RecordMetricsBehavior { DoNotRecord, DoRecord };
+    bool shouldAutoplay(const RecordMetricsBehavior = RecordMetricsBehavior::DoNotRecord);
     bool loop() const;
     void setLoop(bool);
     void play();
@@ -386,7 +389,13 @@ private:
     // This does not check user gesture restrictions.
     void playInternal();
 
-    void gesturelessInitialPlayHalted();
+    // If we are about to enter a paused state, call this to record
+    // autoplay metrics.  If we were already in a stopped state, then
+    // this does nothing.
+    void recordMetricsIfPausing();
+    // Could stopping at this point be considered a bailout of playback?
+    // (as in, "The user really didn't want to play this").
+    bool isBailout() const;
     void autoplayMediaEncountered();
     void allowVideoRendering();
 
@@ -424,6 +433,8 @@ private:
 
     void setAllowHiddenVolumeControls(bool);
 
+    void recordAutoplayMetric(AutoplayMetrics);
+
     WebMediaPlayer::CORSMode corsMode() const;
 
     // Returns the "direction of playback" value as specified in the HTML5 spec.
@@ -442,6 +453,12 @@ private:
     // Sets the selected/enabled tracks if they aren't set before we initially
     // transition to HAVE_METADATA.
     void selectInitialTracksIfNecessary();
+
+    // Return true if and only if we require a user gesture before letting
+    // the media play.
+    bool isUserGestureRequiredForPlay() const;
+    void removeUserGestureRequirement();
+    void setInitialPlayWithoutUserGestures(bool);
 
     void audioTracksTimerFired(Timer<HTMLMediaElement>*);
 
@@ -544,7 +561,7 @@ private:
     bool m_remoteRoutesAvailable : 1;
     bool m_playingRemotely : 1;
     bool m_isFinalizing : 1;
-    bool m_initialPlayWithoutUserGestures : 1;
+    bool m_initialPlayWithoutUserGesture : 1;
     bool m_autoplayMediaCounted : 1;
     // Whether this element is in overlay fullscreen mode.
     bool m_inOverlayFullscreenVideo : 1;
@@ -617,6 +634,9 @@ private:
 
     friend class Internals;
     friend class TrackDisplayUpdateScope;
+    friend class AutoplayExperimentHelper;
+
+    AutoplayExperimentHelper m_autoplayHelper;
 
     static URLRegistry* s_mediaStreamRegistry;
 };

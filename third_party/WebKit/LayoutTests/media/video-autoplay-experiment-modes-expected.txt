@@ -1,0 +1,64 @@
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+END OF TEST
+  Check if the autoplay gesture override experiment works.  There are a lot
+  of config options, so this test just runs all of them.
+
+  The "results" table contains one row per config tested.
+  == Test Inputs ==
+  #      - config number, in case you'd like to run just one.
+  Flags  - autoplay experiment setting being tested.
+               a      - "foraudio"
+               v      - "forvideo"
+               M      - "ifmuted"
+               p      - "playmuted"
+               m      - "ifmobile"
+               For example, EM means "enabled-ifmuted".
+  Type   - audio or video element?
+               audio  - 
+#	Flags	Type	Play w/	Mute	Mobile	Played?	Muted?
+0		video	none	no	no	no	-
+1		audio	none	no	no	no	-
+2	v	video	none	no	no	no	-
+3	v	audio	none	no	no	no	-
+4	vM	video	none	no	no	no	-
+5	vM	audio	none	no	no	no	-
+6	vp	video	none	no	no	no	-
+7	vp	audio	none	no	no	no	-
+8	a	video	none	no	no	no	-
+9	a	audio	none	no	no	no	-
+12		video	attr	no	no	no	-
+13		audio	attr	no	no	no	-
+14	v	video	attr	no	no	played	unmuted
+15	v	audio	attr	no	no	no	-
+16	vM	video	attr	no	no	no	-
+17	vM	audio	attr	no	no	no	-
+18	vp	video	attr	no	no	played	muted
+19	vp	audio	attr	no	no	no	-
+20	a	video	attr	no	no	no	-
+21	a	audio	attr	no	no	played	unmuted
+22	vm	video	attr	no	no	no	-
+24		video	play()	no	no	no	-
+25		audio	play()	no	no	no	-
+26	v	video	play()	no	no	played	unmuted
+27	v	audio	play()	no	no	no	-
+28	vM	video	play()	no	no	no	-
+29	vM	audio	play()	no	no	no	-
+30	vp	video	play()	no	no	played	muted
+31	vp	audio	play()	no	no	no	-
+32	a	video	play()	no	no	no	-
+33	a	audio	play()	no	no	played	unmuted
+40	vM	video	none	yes	no	no	-
+41	vM	audio	none	yes	no	no	-
+52	vM	video	attr	yes	no	played	muted
+53	vM	audio	attr	yes	no	no	-
+64	vM	video	play()	yes	no	played	muted
+65	vM	audio	play()	yes	no	no	-
+86	v	video	attr	no	yes	played	unmuted
+94	vm	video	attr	no	yes	played	unmuted

@@ -579,6 +579,11 @@ void WebSettingsImpl::setAsynchronousSpellCheckingEnabled(bool enabled)
     m_settings->setAsynchronousSpellCheckingEnabled(enabled);
 }
 
+void WebSettingsImpl::setAutoplayExperimentMode(const WebString& mode)
+{
+    m_settings->setAutoplayExperimentMode(mode);
+}
+
 void WebSettingsImpl::setUnifiedTextCheckerEnabled(bool enabled)
 {
     m_settings->setUnifiedTextCheckerEnabled(enabled);

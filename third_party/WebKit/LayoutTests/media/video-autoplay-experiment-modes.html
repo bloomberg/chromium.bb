@@ -1,0 +1,247 @@
+<html>
+<video autoplay controls></video>
+<script src=media-file.js></script>
+<script src=video-test.js></script>
+<body>
+<pre>
+  Check if the autoplay gesture override experiment works.  There are a lot
+  of config options, so this test just runs all of them.
+
+  The "results" table contains one row per config tested.
+  == Test Inputs ==
+  #      - config number, in case you'd like to run just one.
+  Flags  - autoplay experiment setting being tested.
+               a      - "foraudio"
+               v      - "forvideo"
+               M      - "ifmuted"
+               p      - "playmuted"
+               m      - "ifmobile"
+               For example, EM means "enabled-ifmuted".
+  Type   - audio or video element?
+               audio  - <audio>
+               video  - <video>
+  Play w/- how is play requested?
+               none   - play is not requested.
+               attr   - autoplay attribute is set on the element.
+               play() - play() called after media is ready to play.
+  Mute   - how is media muted?
+               no   - media is not muted.
+               yes  - muted attribute is set on the element.
+  Mobile - is page optimized for mobile?
+               no   - page is not optimized for mobile.
+               yes  - page is optimized for mobile.
+
+  == Test Outputs ==
+  Played? - did playback start by the conclusion of the test?
+  Muted?  - was the media muted?  If the media didn't play, then this is
+            reported as "-".
+
+</pre>
+<table id="results">
+<tr>
+<td>#</td>
+<td>Flags</td>
+<td>Type</td>
+<td>Play w/</td>
+<td>Mute</td>
+<td>Mobile</td>
+<td>Played?</td>
+<td>Muted?</td>
+</tr>
+</table>
+</body>
+
+<script>
+
+// Starting configuration number.  This should be zero normally.
+var configNumber = 0;
+
+var mediaFile = findMediaFile("video", "content/test");
+var onscreenParent = document.createElement("div");
+document.body.insertBefore(onscreenParent, document.body.firstChild);
+// When we remove the meta tag from the document, we put it here.
+var isOptimizedForMobile = false;
+
+function didPlaybackStart(video)
+{
+    // We say that the video started if it's not paused or if it played and
+    // already ended.
+    return !video.paused || video.ended;
+}
+
+function becomeOptimizedForMobile(enable)
+{
+    // If we're in the right state already, then return;
+    if (enable == isOptimizedForMobile)
+        return;
+
+    if (!enable) {
+        // We can't transition out of optimized for mobile.
+        console.log("becomeOptimizedForMobile: test is broken -- cannot un-enable mobile");
+        endTest();
+    } else {
+        // This only works once.
+        mobileMetaTag = document.createElement('meta');
+        mobileMetaTag.name = "viewport";
+        mobileMetaTag.content = "width=device-width";
+        document.head.appendChild(mobileMetaTag);
+        isOptimizedForMobile = true;
+    }
+}
+
+function addResultsRow(spec)
+{
+    // Add a row to the results table.
+    var row = document.getElementById("results").insertRow();
+    var td = row.insertCell();
+
+    // Add experiment number
+    row.insertCell().innerText = (""+spec.experimentNumber);
+
+    // Process experiment type specially.
+    var type = spec.experimentType;
+    var smallType = "";
+    smallType += (type.indexOf("-forvideo")>-1)?"v":"";
+    smallType += (type.indexOf("-foraudio")>-1)?"a":"";
+    smallType += (type.indexOf("-ifmuted")>-1)?"M":"";
+    smallType += (type.indexOf("-playmuted")>-1)?"p":"";
+    smallType += (type.indexOf("-ifmobile")>-1)?"m":"";
+    row.insertCell().innerText = smallType;
+
+    // Add remaining fields.
+    var fields = [ "elementType", "autoplayType", "mutedType", "mobileType",
+        "played", "muted"];
+    for(idx in fields)
+        row.insertCell().innerText = spec[fields[idx]].substring(0,7);
+}
+
+function configureElementViaScript(element, spec)
+{
+    if(spec.autoplayType == "play()")
+        element.play();
+}
+
+function queueNextExperiment()
+{
+    // Start the next config, but let the event queue drain.
+    setTimeout(runNextConfig, 0);
+}
+
+function checkElementStatus(element)
+{
+    // Update the spec with the results.
+    var didStart = didPlaybackStart(element);
+    element.spec.played = didStart ? "played" : "no";
+    element.spec.muted = didStart ? (element.muted ? "muted" : "unmuted") : "-";
+
+    addResultsRow(element.spec);
+    element.remove();
+
+    queueNextExperiment();
+}
+
+function runOneConfig(spec)
+{
+    internals.settings.setAutoplayExperimentMode(spec.experimentType);
+
+    // Create, configure, and attach a media element.
+    var element = document.createElement(spec.elementType);
+    element.controls = true;
+
+    onscreenParent.appendChild(element);
+
+    // Set any attributes before canPlayThrough.
+    if (spec.mutedType == "yes")
+        element.muted = true;
+    if (spec.autoplayType == "attr")
+        element.autoplay = true;
+    becomeOptimizedForMobile(spec.mobileType == "yes");
+
+    // Record the spec in the element, so that we can display the
+    // results later.
+    element.spec = spec;
+
+    // Wait for canplaythrough before continuing, so that the media
+    // might actually be playing.
+    element.addEventListener("canplaythrough", function()
+    {
+        // Now that we can play, if we're supposed to play / mute via js do so.
+        configureElementViaScript(element, spec);
+
+        // Record the results.
+        checkElementStatus(element);
+    });
+
+    // Set the source, which will eventually lead to canPlayThrough.
+    element.src = mediaFile;
+}
+
+var experimentTypes = [
+    "none",
+    "enabled-forvideo",
+    "enabled-forvideo-ifmuted",
+    "enabled-forvideo-playmuted",
+    "enabled-foraudio",
+    "enabled-forvideo-ifmobile",
+];
+var elementTypes = ["video", "audio"];
+var autoplayTypes = ["none", "attr", "play()"];
+var mutedTypes = ["no", "yes"];
+// mobileTypes must always start with no, since we cannot un-optimize the page.
+var mobileTypes = ["no", "yes"];
+
+function runNextConfig()
+{
+    // Convert configNumber into a spec, and run it.
+    var exp = configNumber;
+
+    // Convert this experiment number into settings.
+    var spec = {};
+    spec.elementType = elementTypes[exp % elementTypes.length];
+    exp = Math.floor(exp / elementTypes.length);
+    spec.experimentType = experimentTypes[exp % experimentTypes.length];
+    exp = Math.floor(exp / experimentTypes.length);
+    spec.autoplayType = autoplayTypes[exp % autoplayTypes.length];
+    exp = Math.floor(exp / autoplayTypes.length);
+    spec.mutedType = mutedTypes[exp % mutedTypes.length];
+    exp = Math.floor(exp / mutedTypes.length);
+    // Mobile must always change last, so that all the "no" cases precede
+    // all the "yes" cases, since we can't switch the doc back to "not
+    // optimized for mobile".
+    spec.mobileType = mobileTypes[exp % mobileTypes.length];
+    exp = Math.floor(exp / mobileTypes.length);
+    spec.experimentNumber = configNumber;
+
+    // Return null if configNumber was larger than the highest experiment.
+    if (exp > 0)
+        endTest();
+
+    configNumber++;
+
+    // To keep the test fast, skip a few combinations.
+    var skip = false;
+    if (spec.experimentType.indexOf("-ifmuted") == -1 && spec.mutedType != "no")
+        skip = true;
+
+    // Only allow basic combinations for the mobile case.  We just want to
+    // test video with autoplay, no mute options when testing -ifmobile.
+    // Similarly, if we're setting the page to be optimied for mobile, then
+    // require that we're one of those tests.
+    if ((spec.mobileType == "yes" || spec.experimentType.indexOf("-ifmobile")>0)
+        && (spec.elementType != "video" || spec.autoplayType != "attr"
+            || spec.mutedType != "no"
+            || (spec.experimentType != "enabled-forvideo"
+                && spec.experimentType != "enabled-forvideo-ifmobile")))
+        skip = true;
+
+    if (skip)
+        queueNextExperiment();
+    else
+        runOneConfig(spec);
+}
+
+window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+runNextConfig();
+
+</script>
+</html>
