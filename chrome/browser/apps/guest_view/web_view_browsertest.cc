@@ -2244,9 +2244,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestAlertDialog) {
   TestHelper("testAlertDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
-#if defined(OS_MACOSX) || !defined(NDEBUG)
-// http://crbug.com/530660 for failure on Mac OS,
-// http://crbug.com/530593 for failure on Debug build.
+#if defined(OS_MACOSX)
+// http://crbug.com/530660
 #define MAYBE_TestConfirmDialog\
     DISABLED_TestConfirmDialog
 #else
@@ -2257,56 +2256,23 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TestConfirmDialog) {
   TestHelper("testConfirmDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
-#if !defined(NDEBUG)
-// Test is failing in debug: https://crbug.com/530593
-#define MAYBE_Dialog_TestConfirmDialogCancel \
-    DISABLED_Dialog_TestConfirmDialogCancel
-#else
-#define MAYBE_Dialog_TestConfirmDialogCancel \
-    Dialog_TestConfirmDialogCancel
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Dialog_TestConfirmDialogCancel) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogCancel) {
   TestHelper("testConfirmDialogCancel", "web_view/dialog", NO_TEST_SERVER);
 }
 
-#if !defined(NDEBUG)
-// Test is failing in debug: https://crbug.com/530593
-#define MAYBE_Dialog_TestConfirmDialogDefaultCancel \
-    DISABLED_Dialog_TestConfirmDialogDefaultCancel
-#else
-#define MAYBE_Dialog_TestConfirmDialogDefaultCancel \
-    Dialog_TestConfirmDialogDefaultCancel
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       MAYBE_Dialog_TestConfirmDialogDefaultCancel) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
   TestHelper("testConfirmDialogDefaultCancel",
              "web_view/dialog",
              NO_TEST_SERVER);
 }
 
-#if !defined(NDEBUG)
-// Test is failing in debug: https://crbug.com/530593
-#define MAYBE_Dialog_TestConfirmDialogDefaultGCCancel \
-    DISABLED_Dialog_TestConfirmDialogDefaultGCCancel
-#else
-#define MAYBE_Dialog_TestConfirmDialogDefaultGCCancel \
-    Dialog_TestConfirmDialogDefaultGCCancel
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Dialog_TestConfirmDialogDefaultGCCancel) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
   TestHelper("testConfirmDialogDefaultGCCancel",
              "web_view/dialog",
              NO_TEST_SERVER);
 }
 
-#if !defined(NDEBUG)
-// Test is failing in debug: https://crbug.com/530593
-#define MAYBE_Dialog_TestPromptDialog \
-    DISABLED_Dialog_TestPromptDialog
-#else
-#define MAYBE_Dialog_TestPromptDialog \
-    Dialog_TestPromptDialog
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Dialog_TestPromptDialog) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestPromptDialog) {
   TestHelper("testPromptDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
