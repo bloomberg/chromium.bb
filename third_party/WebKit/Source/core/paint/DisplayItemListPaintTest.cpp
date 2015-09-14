@@ -30,7 +30,7 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
@@ -42,7 +42,7 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
@@ -63,7 +63,7 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(firstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
@@ -79,7 +79,7 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(newFirstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
@@ -98,7 +98,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
 
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 6,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 6,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -109,7 +109,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret
     div.focus();
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 7,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 7,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -131,7 +131,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
 
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 6,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 6,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -146,7 +146,7 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 7,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 7,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),

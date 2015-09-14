@@ -47,7 +47,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
     EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(rootDisplayItemList().displayItems()[0]).picture());
 }
@@ -58,7 +58,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
     LayoutRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
@@ -70,20 +70,20 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().newDisplayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 2,
         TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground))),
         TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground))));
 
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
@@ -134,7 +134,7 @@ TEST_F(LayoutObjectDrawingRecorderTestForSlimmingPaintV2, PaintOffsetCache)
     }
 
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure we cannot use the cache with a new paint offset.
@@ -149,7 +149,7 @@ TEST_F(LayoutObjectDrawingRecorderTestForSlimmingPaintV2, PaintOffsetCache)
     }
 
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure the old paint offset cannot be used.
@@ -158,7 +158,7 @@ TEST_F(LayoutObjectDrawingRecorderTestForSlimmingPaintV2, PaintOffsetCache)
     // Ensure the new paint offset can be used.
     EXPECT_TRUE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground, newPaintOffset));
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 1,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 

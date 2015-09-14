@@ -36,7 +36,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromContainers));
 
@@ -44,7 +44,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST_BASE(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromContainers));
 }

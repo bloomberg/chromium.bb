@@ -57,10 +57,12 @@ private:
 
         RenderingTest::SetUp();
         enableCompositing();
+        GraphicsLayer::setDrawDebugRedFillForTesting(false);
     }
 
     void TearDown() override
     {
+        GraphicsLayer::setDrawDebugRedFillForTesting(true);
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
@@ -83,7 +85,7 @@ public:
 #define TRACE_DISPLAY_ITEMS(i, expected, actual)
 #endif
 
-#define EXPECT_DISPLAY_LIST_BASE(actual, expectedSize, ...) \
+#define EXPECT_DISPLAY_LIST(actual, expectedSize, ...) \
     do { \
         EXPECT_EQ((size_t)expectedSize, actual.size()); \
         if (expectedSize != actual.size()) \
@@ -95,22 +97,6 @@ public:
             EXPECT_EQ(expected[index].type(), actual[index].type()); \
         } \
     } while (false);
-
-#ifndef NDEBUG
-#define EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(actual, expectedSizeWithoutFill, ...) \
-    EXPECT_DISPLAY_LIST_BASE( \
-        actual, expectedSizeWithoutFill + 1, \
-        TestDisplayItem(*layoutView().layer()->graphicsLayerBacking(), DisplayItem::DebugRedFill), \
-        __VA_ARGS__)
-#define EXPECT_DISPLAY_LIST_WITH_CACHED_RED_FILL_IN_DEBUG(actual, expectedSizeWithoutFill, ...) \
-    EXPECT_DISPLAY_LIST_BASE( \
-        actual, expectedSizeWithoutFill + 1, \
-        TestDisplayItem(*layoutView().layer()->graphicsLayerBacking(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::DebugRedFill)), \
-        __VA_ARGS__)
-#else
-#define EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG EXPECT_DISPLAY_LIST_BASE
-#define EXPECT_DISPLAY_LIST_WITH_CACHED_RED_FILL_IN_DEBUG EXPECT_DISPLAY_LIST_BASE
-#endif
 
 } // namespace blink
 

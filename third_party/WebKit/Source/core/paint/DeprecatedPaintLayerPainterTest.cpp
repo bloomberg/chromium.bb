@@ -31,7 +31,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
     DeprecatedPaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 13,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -49,7 +49,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 100px; background-color: green");
     updateLifecyclePhasesToPaintForSlimmingPaintV2Clean(LayoutRect::infiniteRect());
 
-    EXPECT_DISPLAY_LIST_WITH_CACHED_RED_FILL_IN_DEBUG(rootDisplayItemList().newDisplayItems(), 10,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 10,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::BoxDecorationBackground)),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -63,7 +63,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
 
     compositeForSlimmingPaintV2();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 13,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -80,12 +80,12 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
 
     // Repeated painting should just generate the root cached subsequence.
     updateLifecyclePhasesToPaintForSlimmingPaintV2Clean();
-    EXPECT_DISPLAY_LIST_WITH_CACHED_RED_FILL_IN_DEBUG(rootDisplayItemList().newDisplayItems(), 1,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 1,
         TestDisplayItem(rootLayer, DisplayItem::CachedSubsequence));
 
     compositeForSlimmingPaintV2();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 13,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -126,7 +126,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInt
     // Container2 is partly (including its stacking chidren) in the interest rect;
     // Content2 is out of the interest rect and output nothing;
     // Container3 is fully in the interest rect.
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 14,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 14,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -149,7 +149,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInt
     // Container3 becomes out of the interest rect and outputs nothing.
     updateLifecyclePhasesToPaintForSlimmingPaintV2Clean(LayoutRect(0, 100, 300, 300));
 
-    EXPECT_DISPLAY_LIST_WITH_CACHED_RED_FILL_IN_DEBUG(rootDisplayItemList().newDisplayItems(), 9,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 9,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::BoxDecorationBackground)),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
@@ -162,7 +162,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInt
 
     compositeForSlimmingPaintV2();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 11,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 11,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),
         TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
