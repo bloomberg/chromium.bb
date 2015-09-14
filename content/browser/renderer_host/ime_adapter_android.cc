@@ -50,6 +50,7 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
     int modifiers,
     long time_ms,
     int key_code,
+    int scan_code,
     bool is_system_key,
     int unicode_char) {
   blink::WebInputEvent::Type type = blink::WebInputEvent::Undefined;
@@ -60,7 +61,7 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
   else
     NOTREACHED() << "Invalid Android key event action: " << action;
   return NativeWebKeyboardEvent(java_key_event, type, modifiers,
-      time_ms / 1000.0, key_code, unicode_char, is_system_key);
+      time_ms / 1000.0, key_code, scan_code, unicode_char, is_system_key);
 }
 
 }  // anonymous namespace
@@ -130,7 +131,7 @@ bool ImeAdapterAndroid::SendSyntheticKeyEvent(JNIEnv*,
                                               int modifiers,
                                               int text) {
   NativeWebKeyboardEvent event(static_cast<blink::WebInputEvent::Type>(type),
-                               modifiers, time_ms / 1000.0, key_code,
+                               modifiers, time_ms / 1000.0, key_code, 0,
                                text, false /* is_system_key */);
   rwhva_->SendKeyEvent(event);
   return true;
@@ -140,10 +141,11 @@ bool ImeAdapterAndroid::SendKeyEvent(JNIEnv* env, jobject,
                                      jobject original_key_event,
                                      int action, int modifiers,
                                      long time_ms, int key_code,
-                                     bool is_system_key, int unicode_char) {
+                                     int scan_code, bool is_system_key,
+                                     int unicode_char) {
   NativeWebKeyboardEvent event = NativeWebKeyboardEventFromKeyEvent(
           env, original_key_event, action, modifiers,
-          time_ms, key_code, is_system_key, unicode_char);
+          time_ms, key_code, scan_code, is_system_key, unicode_char);
   bool key_down_text_insertion =
       event.type == blink::WebInputEvent::RawKeyDown && event.text[0];
   // If we are going to follow up with a synthetic Char event, then that's the
@@ -155,7 +157,8 @@ bool ImeAdapterAndroid::SendKeyEvent(JNIEnv* env, jobject,
     // Send a Char event, but without an os_event since we don't want to
     // roundtrip back to java such synthetic event.
     NativeWebKeyboardEvent char_event(blink::WebInputEvent::Char, modifiers,
-                                      time_ms / 1000.0, key_code, unicode_char,
+                                      time_ms / 1000.0, key_code, scan_code,
+                                      unicode_char,
                                       is_system_key);
     char_event.skip_in_browser = key_down_text_insertion;
     rwhva_->SendKeyEvent(char_event);

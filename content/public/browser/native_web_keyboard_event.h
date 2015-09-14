@@ -31,6 +31,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
                          int modifiers,
                          double time_secs,
                          int keycode,
+                         int scancode,
                          int unicode_character,
                          bool is_system_key);
   // Takes ownership of android_key_event.
@@ -39,6 +40,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
                          int modifiers,
                          double time_secs,
                          int keycode,
+                         int scancode,
                          int unicode_character,
                          bool is_system_key);
 #else

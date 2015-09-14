@@ -40,6 +40,7 @@ class WebKeyboardEventBuilder {
                                        int modifiers,
                                        double time_sec,
                                        int keycode,
+                                       int scancode,
                                        int unicode_character,
                                        bool is_system_key);
 };

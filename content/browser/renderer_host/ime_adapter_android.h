@@ -34,7 +34,8 @@ class ImeAdapterAndroid {
                     jobject original_key_event,
                     int action, int meta_state,
                     long event_time, int key_code,
-                    bool is_system_key, int unicode_text);
+                    int scan_code, bool is_system_key,
+                    int unicode_text);
   // |event_type| is a value of WebInputEvent::Type.
   bool SendSyntheticKeyEvent(JNIEnv*,
                              jobject,

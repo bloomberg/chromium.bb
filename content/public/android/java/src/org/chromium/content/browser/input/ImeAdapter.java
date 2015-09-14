@@ -514,7 +514,7 @@ public class ImeAdapter {
         mViewEmbedder.onImeEvent();
         return nativeSendKeyEvent(mNativeImeAdapterAndroid, event, event.getAction(),
                 getModifiers(event.getMetaState()), event.getEventTime(), event.getKeyCode(),
-                             /*isSystemKey=*/false, event.getUnicodeChar());
+                             event.getScanCode(), /*isSystemKey=*/false, event.getUnicodeChar());
     }
 
     boolean sendSyntheticKeyEvent(int eventType, long timestampMs, int keyCode, int modifiers,
@@ -611,8 +611,8 @@ public class ImeAdapter {
             int eventType, long timestampMs, int keyCode, int modifiers, int unicodeChar);
 
     private native boolean nativeSendKeyEvent(long nativeImeAdapterAndroid, KeyEvent event,
-            int action, int modifiers, long timestampMs, int keyCode, boolean isSystemKey,
-            int unicodeChar);
+            int action, int modifiers, long timestampMs, int keyCode, int scanCode,
+            boolean isSystemKey, int unicodeChar);
 
     private static native void nativeAppendUnderlineSpan(long underlinePtr, int start, int end);
 
