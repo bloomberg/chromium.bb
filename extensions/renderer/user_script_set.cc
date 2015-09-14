@@ -211,7 +211,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   if (injector->CanExecuteOnFrame(
           injection_host.get(),
           web_frame,
-          -1 /* Content scripts are not tab-specific. */) ==
+          tab_id) ==
       PermissionsData::ACCESS_DENIED) {
     return injection.Pass();
   }
@@ -225,8 +225,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
         injector.Pass(),
         render_frame,
         injection_host.Pass(),
-        run_location,
-        tab_id));
+        run_location));
   }
   return injection.Pass();
 }

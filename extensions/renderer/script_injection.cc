@@ -15,6 +15,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/host_id.h"
 #include "extensions/renderer/dom_activity_logger.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_groups.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_injection_callback.h"
@@ -97,13 +98,11 @@ ScriptInjection::ScriptInjection(
     scoped_ptr<ScriptInjector> injector,
     content::RenderFrame* render_frame,
     scoped_ptr<const InjectionHost> injection_host,
-    UserScript::RunLocation run_location,
-    int tab_id)
+    UserScript::RunLocation run_location)
     : injector_(injector.Pass()),
       render_frame_(render_frame),
       injection_host_(injection_host.Pass()),
       run_location_(run_location),
-      tab_id_(tab_id),
       request_id_(kInvalidRequestId),
       complete_(false),
       did_inject_js_(false),
@@ -135,19 +134,12 @@ ScriptInjection::InjectionResult ScriptInjection::TryToInject(
 
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   switch (injector_->CanExecuteOnFrame(
-      injection_host_.get(), web_frame, tab_id_)) {
+      injection_host_.get(), web_frame,
+      ExtensionFrameHelper::Get(render_frame_)->tab_id())) {
     case PermissionsData::ACCESS_DENIED:
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return INJECTION_FINISHED;  // We're done.
     case PermissionsData::ACCESS_WITHHELD:
-      // Note: we don't consider ACCESS_WITHHELD for child frames because there
-      // is nowhere to surface a request for a child frame.
-      // TODO(devlin): We should ask for permission somehow. crbug.com/491402.
-      if (web_frame->parent()) {
-        NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
-        return INJECTION_FINISHED;
-      }
-
       SendInjectionMessage(true /* request permission */);
       return INJECTION_WAITING;  // Wait around for permission.
     case PermissionsData::ACCESS_ALLOWED:

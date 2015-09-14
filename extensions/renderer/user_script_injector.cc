@@ -154,42 +154,42 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
     const InjectionHost* injection_host,
     blink::WebLocalFrame* web_frame,
     int tab_id) const {
+  if (script_->consumer_instance_type() ==
+          UserScript::ConsumerInstanceType::WEBVIEW) {
+    int routing_id = content::RenderView::FromWebView(web_frame->top()->view())
+                        ->GetRoutingID();
+
+    RoutingInfoKey key(routing_id, script_->id());
+
+    RoutingInfoMap& map = g_routing_info_map.Get();
+    auto iter = map.find(key);
+
+    bool allowed = false;
+    if (iter != map.end()) {
+      allowed = iter->second;
+    } else {
+      // Send a SYNC IPC message to the browser to check if this is allowed.
+      // This is not ideal, but is mitigated by the fact that this is only done
+      // for webviews, and then only once per host.
+      // TODO(hanxi): Find a more efficient way to do this.
+      content::RenderThread::Get()->Send(
+          new ExtensionsGuestViewHostMsg_CanExecuteContentScriptSync(
+              routing_id, script_->id(), &allowed));
+      map.insert(std::pair<RoutingInfoKey, bool>(key, allowed));
+    }
+
+    return allowed ? PermissionsData::ACCESS_ALLOWED
+                   : PermissionsData::ACCESS_DENIED;
+  }
+
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       web_frame, web_frame->document().url(), script_->match_about_blank());
-  PermissionsData::AccessType can_execute = injection_host->CanExecuteOnFrame(
+
+  return injection_host->CanExecuteOnFrame(
       effective_document_url,
       content::RenderFrame::FromWebFrame(web_frame),
       tab_id,
       is_declarative_);
-  if (script_->consumer_instance_type() !=
-          UserScript::ConsumerInstanceType::WEBVIEW ||
-      can_execute == PermissionsData::ACCESS_DENIED)
-    return can_execute;
-
-  int routing_id = content::RenderView::FromWebView(web_frame->top()->view())
-                      ->GetRoutingID();
-
-  RoutingInfoKey key(routing_id, script_->id());
-
-  RoutingInfoMap& map = g_routing_info_map.Get();
-  auto iter = map.find(key);
-
-  bool allowed = false;
-  if (iter != map.end()) {
-    allowed = iter->second;
-  } else {
-    // Send a SYNC IPC message to the browser to check if this is allowed. This
-    // is not ideal, but is mitigated by the fact that this is only done for
-    // webviews, and then only once per host.
-    // TODO(hanxi): Find a more efficient way to do this.
-    content::RenderThread::Get()->Send(
-        new ExtensionsGuestViewHostMsg_CanExecuteContentScriptSync(
-            routing_id, script_->id(), &allowed));
-    map.insert(std::pair<RoutingInfoKey, bool>(key, allowed));
-  }
-
-  return allowed ? PermissionsData::ACCESS_ALLOWED
-                 : PermissionsData::ACCESS_DENIED;
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(

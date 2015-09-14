@@ -615,4 +615,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   EXPECT_TRUE(listener.was_satisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       DontInjectContentScriptsInBackgroundPages) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  // Load two extensions, one with an iframe to a.com in its background page,
+  // the other, a content script for a.com. The latter should never be able to
+  // inject the script, because scripts aren't allowed to run on foreign
+  // extensions' pages.
+  base::FilePath data_dir = test_data_dir_.AppendASCII("content_scripts");
+  ExtensionTestMessageListener iframe_loaded_listener("iframe loaded", false);
+  ExtensionTestMessageListener content_script_listener("script injected",
+                                                       false);
+  LoadExtension(data_dir.AppendASCII("script_a_com"));
+  LoadExtension(data_dir.AppendASCII("background_page_iframe"));
+  iframe_loaded_listener.WaitUntilSatisfied();
+  EXPECT_FALSE(content_script_listener.was_satisfied());
+}
+
 }  // namespace extensions

@@ -413,8 +413,7 @@ void ScriptInjectionManager::HandleExecuteCode(
           new ProgrammaticScriptInjector(params, render_frame)),
       render_frame,
       injection_host.Pass(),
-      static_cast<UserScript::RunLocation>(params.run_at),
-      ExtensionFrameHelper::Get(render_frame)->tab_id()));
+      static_cast<UserScript::RunLocation>(params.run_at)));
 
   FrameStatusMap::const_iterator iter = frame_statuses_.find(render_frame);
   UserScript::RunLocation run_location =

@@ -53,8 +53,7 @@ class ScriptInjection {
   ScriptInjection(scoped_ptr<ScriptInjector> injector,
                   content::RenderFrame* render_frame,
                   scoped_ptr<const InjectionHost> injection_host,
-                  UserScript::RunLocation run_location,
-                  int tab_id);
+                  UserScript::RunLocation run_location);
   ~ScriptInjection();
 
   // Try to inject the script at the |current_location|. This returns
@@ -116,9 +115,6 @@ class ScriptInjection {
 
   // The location in the document load at which we inject the script.
   UserScript::RunLocation run_location_;
-
-  // The tab id associated with the frame.
-  int tab_id_;
 
   // This injection's request id. This will be -1 unless the injection is
   // currently waiting on permission.
