@@ -179,14 +179,16 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     @Override
     protected void onStop() {
         if (mEnhancedBookmarksModel.doesBookmarkExist(mBookmarkId)) {
+            final String title = mTitleEditText.getTrimmedText();
+            final String url = mUrlEditText.getTrimmedText();
+
             if (!mTitleEditText.isEmpty()) {
-                mEnhancedBookmarksModel.setBookmarkTitle(
-                        mBookmarkId, mTitleEditText.getTrimmedText());
+                mEnhancedBookmarksModel.setBookmarkTitle(mBookmarkId, title);
             }
 
             if (!mUrlEditText.isEmpty()
                     && mEnhancedBookmarksModel.getBookmarkById(mBookmarkId).isUrlEditable()) {
-                String fixedUrl = UrlUtilities.fixupUrl(mUrlEditText.getTrimmedText());
+                String fixedUrl = UrlUtilities.fixupUrl(url);
                 if (fixedUrl != null) mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, fixedUrl);
             }
         }
