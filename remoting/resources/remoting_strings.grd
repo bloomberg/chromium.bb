@@ -147,12 +147,12 @@
       <output filename="remoting/android/res/values-fi/remoting_strings.xml" lang="fi" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-tl/remoting_strings.xml" lang="fil" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-fr/remoting_strings.xml" lang="fr" type="android" context="android_java"/>
-      <output filename="remoting/android/res/values-he/remoting_strings.xml" lang="he" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-hi/remoting_strings.xml" lang="hi" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-hr/remoting_strings.xml" lang="hr" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-hu/remoting_strings.xml" lang="hu" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-in/remoting_strings.xml" lang="id" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-it/remoting_strings.xml" lang="it" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-iw/remoting_strings.xml" lang="he" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-ja/remoting_strings.xml" lang="ja" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-ko/remoting_strings.xml" lang="ko" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-lt/remoting_strings.xml" lang="lt" type="android" context="android_java"/>
@@ -180,9 +180,10 @@
 
   </outputs>
   <translations>
-    <!-- TODO(kelvinp): Add a file entry for each of the newly added locales once the xtb files are checked-in (See crbug.com/427712). -->
+    <file lang="am" path="remoting_strings_am.xtb"/>
     <file lang="ar" path="remoting_strings_ar.xtb"/>
     <file lang="bg" path="remoting_strings_bg.xtb"/>
+    <file lang="bn" path="remoting_strings_bn.xtb"/>
     <file lang="ca" path="remoting_strings_ca.xtb"/>
     <file lang="cs" path="remoting_strings_cs.xtb"/>
     <file lang="da" path="remoting_strings_da.xtb"/>
@@ -192,9 +193,11 @@
     <file lang="es" path="remoting_strings_es.xtb"/>
     <file lang="es-419" path="remoting_strings_es-419.xtb"/>
     <file lang="et" path="remoting_strings_et.xtb"/>
+    <file lang="fa" path="remoting_strings_fa.xtb"/>
     <file lang="fi" path="remoting_strings_fi.xtb"/>
     <file lang="fil" path="remoting_strings_fil.xtb"/>
     <file lang="fr" path="remoting_strings_fr.xtb"/>
+    <file lang="gu" path="remoting_strings_gu.xtb"/>
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file lang="he" path="remoting_strings_iw.xtb"/>
     <file lang="hi" path="remoting_strings_hi.xtb"/>
@@ -203,9 +206,13 @@
     <file lang="id" path="remoting_strings_id.xtb"/>
     <file lang="it" path="remoting_strings_it.xtb"/>
     <file lang="ja" path="remoting_strings_ja.xtb"/>
+    <file lang="kn" path="remoting_strings_kn.xtb"/>
     <file lang="ko" path="remoting_strings_ko.xtb"/>
     <file lang="lt" path="remoting_strings_lt.xtb"/>
     <file lang="lv" path="remoting_strings_lv.xtb"/>
+    <file lang="ml" path="remoting_strings_ml.xtb"/>
+    <file lang="mr" path="remoting_strings_mr.xtb"/>
+    <file lang="ms" path="remoting_strings_ms.xtb"/>
     <file lang="no" path="remoting_strings_no.xtb"/>
     <file lang="nl" path="remoting_strings_nl.xtb"/>
     <file lang="pl" path="remoting_strings_pl.xtb"/>
@@ -217,6 +224,9 @@
     <file lang="sl" path="remoting_strings_sl.xtb"/>
     <file lang="sr" path="remoting_strings_sr.xtb"/>
     <file lang="sv" path="remoting_strings_sv.xtb"/>
+    <file lang="sw" path="remoting_strings_sw.xtb"/>
+    <file lang="ta" path="remoting_strings_ta.xtb"/>
+    <file lang="te" path="remoting_strings_te.xtb"/>
     <file lang="th" path="remoting_strings_th.xtb"/>
     <file lang="tr" path="remoting_strings_tr.xtb"/>
     <file lang="uk" path="remoting_strings_uk.xtb"/>

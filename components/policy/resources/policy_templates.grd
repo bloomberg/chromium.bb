@@ -258,6 +258,7 @@ templates and will be translated for each locale. -->
     <file path="policy_templates_es.xtb" lang="es" />
     <file path="policy_templates_es-419.xtb" lang="es-419" />
     <file path="policy_templates_et.xtb" lang="et" />
+    <file path="policy_templates_fa.xtb" lang="fa" />
     <file path="policy_templates_fi.xtb" lang="fi" />
     <file path="policy_templates_fil.xtb" lang="fil" />
     <file path="policy_templates_fr.xtb" lang="fr" />
