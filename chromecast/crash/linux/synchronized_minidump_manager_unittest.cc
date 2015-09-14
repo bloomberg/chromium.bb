@@ -181,7 +181,7 @@ void produce_dumps(SynchronizedMinidumpManagerSimple& producer, int num_dumps) {
 void consume_dumps(FakeSynchronizedMinidumpUploader& consumer, int num_dumps) {
   for (int i = 0; i < num_dumps; ++i) {
     ASSERT_EQ(0, consumer.DoWorkLocked());
-    ASSERT_EQ(true, consumer.can_upload_return_val());
+    ASSERT_TRUE(consumer.can_upload_return_val());
   }
 }
 
@@ -464,7 +464,7 @@ TEST_F(SynchronizedMinidumpManagerTest, Upload_FailsWhenTooManyRecentDumps) {
 
   // Should fail with too many dumps
   ASSERT_EQ(0, uploader.DoWorkLocked());
-  ASSERT_EQ(false, uploader.can_upload_return_val());
+  ASSERT_FALSE(uploader.can_upload_return_val());
 }
 
 TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
@@ -487,7 +487,7 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
 
     // Should fail with too many dumps
     ASSERT_EQ(0, uploader.DoWorkLocked());
-    ASSERT_EQ(false, uploader.can_upload_return_val());
+    ASSERT_FALSE(uploader.can_upload_return_val());
 
     int64 period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
 
@@ -495,7 +495,7 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
     produce_dumps(producer, 1);
     SetRatelimitPeriodStart(metadata_.value(), now - period / 2);
     ASSERT_EQ(0, uploader.DoWorkLocked());
-    ASSERT_EQ(false, uploader.can_upload_return_val());
+    ASSERT_FALSE(uploader.can_upload_return_val());
 
     // Set period starting time to trigger a reset
     SetRatelimitPeriodStart(metadata_.value(), now - period);
