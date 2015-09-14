@@ -163,6 +163,12 @@ TEST_P(GLES2DecoderWithShaderTest,
   const uint32 kBucketId = 123;
   GetTransformFeedbackVaryingsCHROMIUM cmd;
   cmd.Init(client_program_id_, kBucketId);
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId,
+                           GL_TRANSFORM_FEEDBACK_BUFFER_MODE,
+                           _))
+      .WillOnce(SetArgPointee<2>(GL_INTERLEAVED_ATTRIBS))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgPointee<2>(GL_TRUE))
       .RetiresOnSaturation();
@@ -179,6 +185,8 @@ TEST_P(GLES2DecoderWithShaderTest,
       bucket->GetDataAs<TransformFeedbackVaryingsHeader*>(
           0, sizeof(TransformFeedbackVaryingsHeader));
   EXPECT_TRUE(header != NULL);
+  EXPECT_EQ(static_cast<uint32_t>(GL_INTERLEAVED_ATTRIBS),
+            header->transform_feedback_buffer_mode);
   EXPECT_EQ(0u, header->num_transform_feedback_varyings);
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));

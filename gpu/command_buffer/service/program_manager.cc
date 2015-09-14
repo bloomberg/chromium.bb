@@ -1620,8 +1620,13 @@ bool Program::GetTransformFeedbackVaryings(
   uint32_t header_size = sizeof(TransformFeedbackVaryingsHeader);
   bucket->SetSize(header_size);  // In case we fail.
 
+  GLenum transform_feedback_buffer_mode = 0;
+  GLint param = 0;
+  glGetProgramiv(program, GL_TRANSFORM_FEEDBACK_BUFFER_MODE, &param);
+  transform_feedback_buffer_mode = static_cast<GLenum>(param);
+
   uint32_t num_transform_feedback_varyings = 0;
-  GLint param = GL_FALSE;
+  param = GL_FALSE;
   // We assume program is a valid program service id.
   glGetProgramiv(program, GL_LINK_STATUS, &param);
   if (param == GL_TRUE) {
@@ -1630,6 +1635,9 @@ bool Program::GetTransformFeedbackVaryings(
     num_transform_feedback_varyings = static_cast<uint32_t>(param);
   }
   if (num_transform_feedback_varyings == 0) {
+    TransformFeedbackVaryingsHeader* header =
+        bucket->GetDataAs<TransformFeedbackVaryingsHeader*>(0, header_size);
+    header->transform_feedback_buffer_mode = transform_feedback_buffer_mode;
     return true;
   }
 
@@ -1683,6 +1691,7 @@ bool Program::GetTransformFeedbackVaryings(
   DCHECK(data);
 
   // Copy over data for the header and entries.
+  header->transform_feedback_buffer_mode = transform_feedback_buffer_mode;
   header->num_transform_feedback_varyings = num_transform_feedback_varyings;
   memcpy(entries, &varyings[0], entry_size);
 

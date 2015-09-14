@@ -181,6 +181,7 @@ struct TransformFeedbackVaryingInfo {
 
 // The format of the bucket filled out by GetTransformFeedbackVaryingsCHROMIUM
 struct TransformFeedbackVaryingsHeader {
+  uint32_t transform_feedback_buffer_mode;
   uint32_t num_transform_feedback_varyings;
   // TransformFeedbackVaryingInfo varyings[num_transform_feedback_varyings];
 };

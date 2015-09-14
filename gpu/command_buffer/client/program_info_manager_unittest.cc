@@ -148,6 +148,7 @@ class ProgramInfoManagerTest : public testing::Test {
     // The names needs to be of size 4*k-1 to avoid padding in the struct Data.
     // This is a testing only problem.
     const char* kName[] = { "cow", "chicken" };
+    data->header.transform_feedback_buffer_mode = GL_SEPARATE_ATTRIBS;
     data->header.num_transform_feedback_varyings = 2;
     data->entry[0].size = 1;
     data->entry[0].type = GL_FLOAT_VEC2;
@@ -265,6 +266,11 @@ TEST_F(ProgramInfoManagerTest, UpdateES3TransformFeedbackVaryings) {
   EXPECT_TRUE(program_->IsCached(
       ProgramInfoManager::kES3TransformFeedbackVaryings));
 
+  GLint transform_feedback_buffer_mode = 0;
+  EXPECT_TRUE(program_->GetProgramiv(
+      GL_TRANSFORM_FEEDBACK_BUFFER_MODE, &transform_feedback_buffer_mode));
+  EXPECT_EQ(data.header.transform_feedback_buffer_mode,
+            static_cast<uint32_t>(transform_feedback_buffer_mode));
   GLint transform_feedback_varying_count = 0;
   EXPECT_TRUE(program_->GetProgramiv(
       GL_TRANSFORM_FEEDBACK_VARYINGS, &transform_feedback_varying_count));

@@ -1238,6 +1238,12 @@ TEST_F(ProgramManagerWithShaderTest,
   ASSERT_TRUE(program != NULL);
   // The program's previous link failed.
   EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId,
+                           GL_TRANSFORM_FEEDBACK_BUFFER_MODE,
+                           _))
+      .WillOnce(SetArgPointee<2>(GL_INTERLEAVED_ATTRIBS))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*(gl_.get()),
               GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgPointee<2>(GL_FALSE))
       .RetiresOnSaturation();
@@ -1248,7 +1254,15 @@ TEST_F(ProgramManagerWithShaderTest,
           0, sizeof(TransformFeedbackVaryingsHeader));
   EXPECT_TRUE(header != NULL);
   EXPECT_EQ(0u, header->num_transform_feedback_varyings);
-  // Zero uniform blocks.
+  EXPECT_EQ(static_cast<uint32_t>(GL_INTERLEAVED_ATTRIBS),
+            header->transform_feedback_buffer_mode);
+  // Zero transform feedback blocks.
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId,
+                           GL_TRANSFORM_FEEDBACK_BUFFER_MODE,
+                           _))
+      .WillOnce(SetArgPointee<2>(GL_SEPARATE_ATTRIBS))
+      .RetiresOnSaturation();
   EXPECT_CALL(*(gl_.get()),
               GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgPointee<2>(GL_TRUE))
@@ -1263,6 +1277,8 @@ TEST_F(ProgramManagerWithShaderTest,
   header = bucket.GetDataAs<TransformFeedbackVaryingsHeader*>(
       0, sizeof(TransformFeedbackVaryingsHeader));
   EXPECT_TRUE(header != NULL);
+  EXPECT_EQ(static_cast<uint32_t>(GL_SEPARATE_ATTRIBS),
+            header->transform_feedback_buffer_mode);
   EXPECT_EQ(0u, header->num_transform_feedback_varyings);
 }
 
@@ -1281,6 +1297,7 @@ TEST_F(ProgramManagerWithShaderTest,
   // The names needs to be of size 4*k-1 to avoid padding in the struct Data.
   // This is a testing only problem.
   const char* kName[] = { "cow", "chicken" };
+  data.header.transform_feedback_buffer_mode = GL_INTERLEAVED_ATTRIBS;
   data.header.num_transform_feedback_varyings = 2;
   data.entry[0].size = 1;
   data.entry[0].type = GL_FLOAT_VEC2;
@@ -1293,6 +1310,13 @@ TEST_F(ProgramManagerWithShaderTest,
   memcpy(data.name0, kName[0], arraysize(data.name0));
   memcpy(data.name1, kName[1], arraysize(data.name1));
 
+
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId,
+                           GL_TRANSFORM_FEEDBACK_BUFFER_MODE,
+                           _))
+      .WillOnce(SetArgPointee<2>(GL_INTERLEAVED_ATTRIBS))
+      .RetiresOnSaturation();
   EXPECT_CALL(*(gl_.get()),
               GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgPointee<2>(GL_TRUE))

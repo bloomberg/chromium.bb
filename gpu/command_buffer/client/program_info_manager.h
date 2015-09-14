@@ -222,6 +222,7 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     bool cached_es3_transform_feedback_varyings_;
 
     uint32_t transform_feedback_varying_max_length_;
+    GLenum transform_feedback_buffer_mode_;
 
     // TransformFeedback varyings by index.
     std::vector<TransformFeedbackVarying> transform_feedback_varyings_;

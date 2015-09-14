@@ -84,6 +84,7 @@ ProgramInfoManager::Program::Program()
       active_uniform_block_max_name_length_(0),
       cached_es3_transform_feedback_varyings_(false),
       transform_feedback_varying_max_length_(0),
+      transform_feedback_buffer_mode_(0),
       cached_es3_uniformsiv_(false) {
 }
 
@@ -207,6 +208,9 @@ bool ProgramInfoManager::Program::GetProgramiv(
       return true;
     case GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH:
       *params = static_cast<GLint>(transform_feedback_varying_max_length_);
+      return true;
+    case GL_TRANSFORM_FEEDBACK_BUFFER_MODE:
+      *params = static_cast<GLint>(transform_feedback_buffer_mode_);
       return true;
     default:
       NOTREACHED();
@@ -494,6 +498,7 @@ void ProgramInfoManager::Program::UpdateES3TransformFeedbackVaryings(
     // This should only happen on a lost context.
     return;
   }
+  DCHECK_EQ(0u, transform_feedback_buffer_mode_);
   DCHECK_EQ(0u, transform_feedback_varyings_.size());
   DCHECK_EQ(0u, transform_feedback_varying_max_length_);
 
@@ -505,6 +510,7 @@ void ProgramInfoManager::Program::UpdateES3TransformFeedbackVaryings(
       LocalGetAs<const TransformFeedbackVaryingsHeader*>(
           result, 0, header_size);
   DCHECK(header);
+  transform_feedback_buffer_mode_ = header->transform_feedback_buffer_mode;
   if (header->num_transform_feedback_varyings == 0) {
     DCHECK_EQ(result.size(), header_size);
     // TODO(zmo): Here we can't tell if no TransformFeedback varyings are
@@ -657,6 +663,7 @@ bool ProgramInfoManager::GetProgramiv(
     case GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH:
       type = kES3UniformBlocks;
       break;
+    case GL_TRANSFORM_FEEDBACK_BUFFER_MODE:
     case GL_TRANSFORM_FEEDBACK_VARYINGS:
     case GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH:
       type = kES3TransformFeedbackVaryings;
