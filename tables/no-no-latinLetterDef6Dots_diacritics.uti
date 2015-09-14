@@ -359,6 +359,7 @@ lowercase  ẚ  4-1     # Latin Small Letter a with Right Half Ring
 lowercase  ⱱ  4-1236  # Latin Small Letter V with Right Hook
 uplow Ǻǻ 4-1          # Latin Letter a with Ring Above and Acute
 #uplow Åå 4-1          # Latin Letter a with Ring Above
+lowercase e̊ 4-1          # Latin Letter e with Ring Above
 uplow Ůů 4-136        # Latin Letter U with Ring Above
 lowercase  ẘ  4-2456  # Latin Small Letter W with Ring Above
 lowercase  ẙ  4-13456 # Latin Small Letter Y with Ring Above
