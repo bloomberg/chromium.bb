@@ -4,7 +4,6 @@
 
 #include "content/browser/frame_host/render_frame_message_filter.h"
 
-#include "base/threading/worker_pool.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -14,10 +13,8 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/common/content_constants.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "net/base/keygen_handler.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -299,7 +296,6 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_CookiesEnabled, OnCookiesEnabled)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLose3DContext, OnDidLose3DContext)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_Keygen, OnKeygen)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_LoadFont, OnLoadFont)
 #elif defined(OS_WIN)
@@ -459,65 +455,6 @@ void RenderFrameMessageFilter::OnDidLose3DContext(
 
   GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
       top_origin_url, guilt);
-}
-
-void RenderFrameMessageFilter::OnKeygen(uint32 key_size_index,
-                                        const std::string& challenge_string,
-                                        const GURL& url,
-                                        IPC::Message* reply_msg) {
-  // Map displayed strings indicating level of keysecurity in the <keygen>
-  // menu to the key size in bits. (See SSLKeyGeneratorChromium.cpp in WebCore.)
-  int key_size_in_bits;
-  switch (key_size_index) {
-    case 0:
-      key_size_in_bits = 2048;
-      break;
-    case 1:
-      key_size_in_bits = 1024;
-      break;
-    default:
-      DCHECK(false) << "Illegal key_size_index " << key_size_index;
-      FrameHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
-      Send(reply_msg);
-      return;
-  }
-
-  resource_context_->CreateKeygenHandler(
-      key_size_in_bits,
-      challenge_string,
-      url,
-      base::Bind(&RenderFrameMessageFilter::PostKeygenToWorkerThread,
-                 this, reply_msg));
-}
-
-void RenderFrameMessageFilter::PostKeygenToWorkerThread(
-    IPC::Message* reply_msg,
-    scoped_ptr<net::KeygenHandler> keygen_handler) {
-  VLOG(1) << "Dispatching keygen task to worker pool.";
-  // Dispatch to worker pool, so we do not block the IO thread.
-  if (!base::WorkerPool::PostTask(
-           FROM_HERE,
-           base::Bind(&RenderFrameMessageFilter::OnKeygenOnWorkerThread,
-                      this,
-                      base::Passed(&keygen_handler),
-                      reply_msg),
-           true)) {
-    NOTREACHED() << "Failed to dispatch keygen task to worker pool";
-    FrameHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
-    Send(reply_msg);
-  }
-}
-
-void RenderFrameMessageFilter::OnKeygenOnWorkerThread(
-    scoped_ptr<net::KeygenHandler> keygen_handler,
-    IPC::Message* reply_msg) {
-  DCHECK(reply_msg);
-
-  // Generate a signed public key and challenge, then send it back.
-  FrameHostMsg_Keygen::WriteReplyParams(
-      reply_msg,
-      keygen_handler->GenKeyAndSignChallenge());
-  Send(reply_msg);
 }
 
 #if defined(OS_MACOSX)

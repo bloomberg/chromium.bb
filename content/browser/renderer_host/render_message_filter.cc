@@ -32,6 +32,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/host_shared_bitmap_manager.h"
+#include "content/common/render_process_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_context.h"
@@ -50,6 +51,7 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_log_event.h"
 #include "net/base/io_buffer.h"
+#include "net/base/keygen_handler.h"
 #include "net/base/mime_util.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_cache.h"
@@ -71,6 +73,7 @@ namespace {
 
 const uint32 kFilteredMessageClasses[] = {
   ChildProcessMsgStart,
+  RenderProcessMsgStart,
   ViewMsgStart,
 };
 
@@ -162,6 +165,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
         OnAllocateLockedDiscardableSharedMemory)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
                         OnDeletedDiscardableSharedMemory)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_Keygen, OnKeygen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
@@ -488,6 +492,65 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
     memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(url, kPriority, expected_response_time, buf.get(),
                        data.size());
+}
+
+void RenderMessageFilter::OnKeygen(uint32 key_size_index,
+                                   const std::string& challenge_string,
+                                   const GURL& url,
+                                   IPC::Message* reply_msg) {
+  // Map displayed strings indicating level of keysecurity in the <keygen>
+  // menu to the key size in bits. (See SSLKeyGeneratorChromium.cpp in WebCore.)
+  int key_size_in_bits;
+  switch (key_size_index) {
+    case 0:
+      key_size_in_bits = 2048;
+      break;
+    case 1:
+      key_size_in_bits = 1024;
+      break;
+    default:
+      DCHECK(false) << "Illegal key_size_index " << key_size_index;
+      RenderProcessHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
+      Send(reply_msg);
+      return;
+  }
+
+  resource_context_->CreateKeygenHandler(
+      key_size_in_bits,
+      challenge_string,
+      url,
+      base::Bind(
+          &RenderMessageFilter::PostKeygenToWorkerThread, this, reply_msg));
+}
+
+void RenderMessageFilter::PostKeygenToWorkerThread(
+    IPC::Message* reply_msg,
+    scoped_ptr<net::KeygenHandler> keygen_handler) {
+  VLOG(1) << "Dispatching keygen task to worker pool.";
+  // Dispatch to worker pool, so we do not block the IO thread.
+  if (!base::WorkerPool::PostTask(
+           FROM_HERE,
+           base::Bind(&RenderMessageFilter::OnKeygenOnWorkerThread,
+                      this,
+                      base::Passed(&keygen_handler),
+                      reply_msg),
+           true)) {
+    NOTREACHED() << "Failed to dispatch keygen task to worker pool";
+    RenderProcessHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
+    Send(reply_msg);
+  }
+}
+
+void RenderMessageFilter::OnKeygenOnWorkerThread(
+    scoped_ptr<net::KeygenHandler> keygen_handler,
+    IPC::Message* reply_msg) {
+  DCHECK(reply_msg);
+
+  // Generate a signed public key and challenge, then send it back.
+  RenderProcessHostMsg_Keygen::WriteReplyParams(
+      reply_msg,
+      keygen_handler->GenKeyAndSignChallenge());
+  Send(reply_msg);
 }
 
 void RenderMessageFilter::OnMediaLogEvents(

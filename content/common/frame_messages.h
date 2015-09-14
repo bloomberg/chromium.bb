@@ -1164,15 +1164,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,
                     std::string /* security_origin */,
                     GURL /* target URL */)
 
-// Asks the browser process to generate a keypair for grabbing a client
-// certificate from a CA (<keygen> tag), and returns the signed public
-// key and challenge string.
-IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_Keygen,
-                            uint32 /* key size index */,
-                            std::string /* challenge string */,
-                            GURL /* URL of requestor */,
-                            std::string /* signed public key and challenge */)
-
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 
 // Message to show/hide a popup menu using native controls.

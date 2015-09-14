@@ -42,6 +42,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/mime_registry_messages.h"
+#include "content/common/render_process_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_registry.h"
@@ -819,7 +820,7 @@ blink::WebString RendererBlinkPlatformImpl::signedPublicKeyAndChallengeString(
     const blink::WebString& challenge,
     const blink::WebURL& url) {
   std::string signed_public_key;
-  RenderThread::Get()->Send(new FrameHostMsg_Keygen(
+  RenderThread::Get()->Send(new RenderProcessHostMsg_Keygen(
       static_cast<uint32>(key_size_index),
       challenge.utf8(),
       GURL(url),
