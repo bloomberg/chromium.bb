@@ -8,8 +8,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
 
@@ -19,6 +22,8 @@ import org.chromium.content.browser.PositionObserver;
 import org.chromium.ui.touch_selection.TouchHandleOrientation;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * View that displays a selection or insertion handle for text editing.
@@ -116,6 +121,9 @@ public class PopupTouchHandleDrawable extends View {
         mContainer.setSplitTouchEnabled(true);
         mContainer.setClippingEnabled(false);
         mContainer.setAnimationStyle(0);
+        mContainer.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+        mContainer.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        setWindowLayoutType(mContainer, WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
         mAlpha = 1.f;
         mVisible = getVisibility() == VISIBLE;
         mParentPositionListener = new PositionObserver.Listener() {
@@ -124,6 +132,21 @@ public class PopupTouchHandleDrawable extends View {
                 updateParentPosition(x, y);
             }
         };
+    }
+
+    private static void setWindowLayoutType(PopupWindow window, int layoutType) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            window.setWindowLayoutType(layoutType);
+            return;
+        }
+
+        try {
+            Method setWindowLayoutTypeMethod =
+                    PopupWindow.class.getMethod("setWindowLayoutType", int.class);
+            setWindowLayoutTypeMethod.invoke(window, layoutType);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+                | RuntimeException e) {
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
