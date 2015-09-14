@@ -57,6 +57,17 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         inflateMenu(R.menu.eb_action_bar_menu);
         if (DeviceFormFactor.isTablet(context)) getMenu().removeItem(R.id.close_menu_id);
         setOnMenuItemClickListener(this);
+
+        if (OfflinePageBridge.isEnabled()) {
+            getMenu().findItem(R.id.search_menu_id).setTitle(
+                    R.string.offline_pages_action_bar_search);
+            getMenu().findItem(R.id.selection_mode_edit_menu_id).setTitle(
+                    R.string.offline_pages_edit_item);
+            getMenu().findItem(R.id.selection_mode_move_menu_id).setTitle(
+                    R.string.offline_pages_action_bar_move);
+            getMenu().findItem(R.id.selection_mode_delete_menu_id).setTitle(
+                    R.string.offline_pages_action_bar_delete);
+        }
     }
 
     @Override

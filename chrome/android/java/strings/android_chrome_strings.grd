@@ -1853,6 +1853,15 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
 
       <!-- Offline pages -->
+      <message name="IDS_OFFLINE_PAGES_ACTION_BAR_DELETE" desc="Button text to delete the saved web pages that are being selected [CHAR-LIMIT=32]">
+        Delete saved pages
+      </message>
+      <message name="IDS_OFFLINE_PAGES_ACTION_BAR_MOVE" desc="Button text to move the saved web pages that are being selected [CHAR-LIMIT=32]">
+        Move saved pages
+      </message>
+      <message name="IDS_OFFLINE_PAGES_ACTION_BAR_SEARCH" desc="Button text to search among the saved web pages [CHAR-LIMIT=32]">
+        Search saved pages
+      </message>
       <message name="IDS_OFFLINE_PAGES_ALL_ITEMS" desc="Title button and text for showing the list of web pages that have been saved/bookmarked. [CHAR-LIMIT=32]">
         All saved pages
       </message>
