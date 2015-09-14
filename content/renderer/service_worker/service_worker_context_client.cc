@@ -685,12 +685,7 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
       dispatcher->CreateRegistration(info, attrs));
 
-  // WebServiceWorkerContextProxy::setRegistration cannot receive
-  // WebPassOwnPtr<WebServiceWorkerRegistrationImpl> yet, so pass a leaky handle
-  // for now.
-  // TODO(nhiroki): Make WebServiceWorkerContextProxy::setRegistration receive
-  // WebPassOwnPtr.
-  proxy_->setRegistration(registration->CreateLeakyHandle());
+  proxy_->setRegistration(registration->CreateHandle());
 }
 
 void ServiceWorkerContextClient::OnActivateEvent(int request_id) {
