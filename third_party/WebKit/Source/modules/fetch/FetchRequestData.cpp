@@ -64,14 +64,12 @@ FetchRequestData* FetchRequestData::cloneExceptBody()
 FetchRequestData* FetchRequestData::clone(ExecutionContext* executionContext)
 {
     FetchRequestData* request = FetchRequestData::cloneExceptBody();
-    if (m_buffer->hasBody()) {
+    if (m_buffer) {
         OwnPtr<FetchDataConsumerHandle> dest1, dest2;
         // TODO(yhirano): unlock the buffer.
         DataConsumerTee::create(executionContext, m_buffer->lock(executionContext), &dest1, &dest2);
         m_buffer = new BodyStreamBuffer(dest1.release());
         request->m_buffer = new BodyStreamBuffer(dest2.release());
-    } else {
-        m_buffer = new BodyStreamBuffer;
     }
     return request;
 }
@@ -80,7 +78,7 @@ FetchRequestData* FetchRequestData::pass(ExecutionContext* executionContext)
 {
     FetchRequestData* request = FetchRequestData::cloneExceptBody();
     request->m_buffer = m_buffer;
-    m_buffer = new BodyStreamBuffer;
+    m_buffer = nullptr;
     return request;
 }
 
@@ -98,7 +96,6 @@ FetchRequestData::FetchRequestData()
     , m_credentials(WebURLRequest::FetchCredentialsModeOmit)
     , m_redirect(WebURLRequest::FetchRedirectModeFollow)
     , m_responseTainting(BasicTainting)
-    , m_buffer(new BodyStreamBuffer)
 {
 }
 

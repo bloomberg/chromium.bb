@@ -22,16 +22,11 @@ namespace blink {
 class EncodedFormData;
 class ExecutionContext;
 
-// A BodyStreamBuffer constructed with a null handle is said to have null body.
-// One can observe if a buffer has null body by calling |hasBody| function.
-// |stream| function returns a non-null stream even when the buffer has null
-// body.
 class MODULES_EXPORT BodyStreamBuffer final : public GarbageCollectedFinalized<BodyStreamBuffer>, public UnderlyingSource, public WebDataConsumerHandle::Client {
     WTF_MAKE_NONCOPYABLE(BodyStreamBuffer);
     USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
 public:
-    BodyStreamBuffer() : BodyStreamBuffer(nullptr) {}
-    // |handle| can be null, but cannot be locked.
+    // |handle| cannot be null and cannot be locked.
     explicit BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> /* handle */);
 
     ReadableByteStream* stream() { return m_stream; }
@@ -40,8 +35,7 @@ public:
     PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
     PassRefPtr<EncodedFormData> drainAsFormData();
 
-    // Callable only when not locked. Returns a non-null handle even when
-    // having null body.
+    // Callable only when not locked. Returns a non-null handle.
     // Note: There is a case that calling |lock| doesn't make the buffer
     // locked. |unlock| should be called even in such cases when a user finishes
     // to use the returned handle, in order to maintain hasPendingActivity().
@@ -51,7 +45,6 @@ public:
     void startLoading(ExecutionContext*, FetchDataLoader*, FetchDataLoader::Client* /* client */);
 
     bool isLocked() const { return m_stream->isLocked(); }
-    bool hasBody() const { return m_hasBody; }
     bool hasPendingActivity() const { return isLocked() || m_lockLevel > 0; }
 
     // UnderlyingSource
@@ -90,7 +83,6 @@ private:
     // although we should return true for hasPendingActivity() when someone
     // calls |startLoading| but the loding is not yet done.
     unsigned m_lockLevel;
-    const bool m_hasBody;
     bool m_streamNeedsMore;
 };
 

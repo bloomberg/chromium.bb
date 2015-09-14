@@ -27,7 +27,7 @@ function decode(chunks) {
 }
 
 test(function() {
-    var response = new Response(new Blob());
+    var response = new Response();
     assert_equals(response.type, 'default',
                   'Default Response.type should be \'default\'');
     assert_equals(response.url, '', 'Response.url should be the empty string');
@@ -49,6 +49,10 @@ test(function() {
                   'Response.statusText should be readonly');
     response.ok = false;
     assert_true(response.ok, 'Response.ok must be readonly');
+    assert_equals(response.body, null, 'Response with null body');
+    var cloned = response.clone();
+    assert_equals(response.body, null, 'Cloning a null body response: src');
+    assert_equals(cloned.body, null, 'Closing a null body response: dest');
   }, 'Response default value test');
 
 test(function() {
@@ -229,15 +233,6 @@ test(function() {
   }, 'Response throw error test');
 
 promise_test(function(t) {
-    var res = new Response();
-    return consume(res.body.getReader()).then(function(chunks) {
-        return decode(chunks);
-      }).then(function(text) {
-        assert_equals(text, '');
-      });
-  }, 'Read empty response\'s content');
-
-promise_test(function(t) {
     var res = new Response('hello');
     return consume(res.body.getReader()).then(function(chunks) {
         return decode(chunks);
@@ -262,6 +257,34 @@ promise_test(function(t) {
         assert_equals(r, '');
       });
   }, 'Cancel body stream on Response');
+
+promise_test(function(t) {
+    return new Response().text().then(text => {
+        assert_equals(text.constructor, String);
+        assert_equals(text, '');
+      });
+  }, 'call text() on null body response');
+
+promise_test(function(t) {
+    return new Response().arrayBuffer().then(buffer => {
+        assert_equals(buffer.constructor, ArrayBuffer);
+        assert_equals(buffer.byteLength, 0);
+      });
+  }, 'call arrayBuffer() on null body response');
+
+promise_test(function(t) {
+    return new Response().blob().then(blob => {
+        assert_equals(blob.constructor, Blob);
+        assert_equals(blob.size, 0);
+        assert_equals(blob.type, '');
+      });
+  }, 'call blob() on null body response');
+
+promise_test(function(t) {
+    return new Response().json().then(unreached_rejection(t), e => {
+        assert_equals(e.constructor, SyntaxError);
+      });
+  }, 'call json() on null body response');
 
 promise_test(function(t) {
     // TODO(yhirano): In the current implementation, The body stream always

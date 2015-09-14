@@ -354,6 +354,8 @@ bool Response::hasPendingActivity() const
 {
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return false;
+    if (!internalBodyBuffer())
+        return false;
     if (internalBodyBuffer()->hasPendingActivity())
         return true;
     return Body::hasPendingActivity();
@@ -385,7 +387,7 @@ Response::Response(ExecutionContext* context, FetchResponseData* response, Heade
 
 bool Response::hasBody() const
 {
-    return m_response->internalBuffer()->hasBody();
+    return m_response->internalBuffer();
 }
 
 String Response::mimeType() const

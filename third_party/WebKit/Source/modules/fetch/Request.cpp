@@ -277,7 +277,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     // spec. See https://github.com/whatwg/fetch/issues/61 for details.
     if (inputRequest) {
         // "1. Set |input|'s body to null."
-        inputRequest->m_request->setBuffer(new BodyStreamBuffer);
+        inputRequest->m_request->setBuffer(nullptr);
         // "2. Set |input|'s used flag."
         inputRequest->setBodyPassed();
     }
@@ -527,7 +527,7 @@ FetchRequestData* Request::passRequestData()
 
 bool Request::hasBody() const
 {
-    return bodyBuffer()->hasBody();
+    return bodyBuffer();
 }
 
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const

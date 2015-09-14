@@ -475,7 +475,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     }
 
     if (m_request->method() != "GET" && m_request->method() != "HEAD") {
-        if (m_request->buffer()->hasBody()) {
+        if (m_request->buffer()) {
             request.setHTTPBody(m_request->buffer()->drainAsFormData());
         }
     }

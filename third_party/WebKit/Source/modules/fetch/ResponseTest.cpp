@@ -147,13 +147,11 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseOpaque)
 
 void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
 {
-    if (!response->bodyBuffer())
-        FAIL() << "bodyBuffer() must not be null.";
     BodyStreamBuffer* originalInternal = response->internalBodyBuffer();
     if (checkResponseBodyStreamBuffer) {
         EXPECT_EQ(response->bodyBuffer(), originalInternal);
     } else {
-        EXPECT_FALSE(response->bodyBuffer()->hasBody());
+        EXPECT_FALSE(response->bodyBuffer());
     }
 
     TrackExceptionState exceptionState;
@@ -166,8 +164,8 @@ void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
         FAIL() << "internalBodyBuffer() must not be null.";
     EXPECT_TRUE(response->internalBodyBuffer());
     EXPECT_TRUE(clonedResponse->internalBodyBuffer());
-    EXPECT_TRUE(response->internalBodyBuffer()->hasBody());
-    EXPECT_TRUE(clonedResponse->internalBodyBuffer()->hasBody());
+    EXPECT_TRUE(response->internalBodyBuffer());
+    EXPECT_TRUE(clonedResponse->internalBodyBuffer());
     EXPECT_NE(response->internalBodyBuffer(), originalInternal);
     EXPECT_NE(clonedResponse->internalBodyBuffer(), originalInternal);
     EXPECT_NE(response->internalBodyBuffer(), clonedResponse->internalBodyBuffer());
@@ -175,8 +173,8 @@ void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
         EXPECT_EQ(response->bodyBuffer(), response->internalBodyBuffer());
         EXPECT_EQ(clonedResponse->bodyBuffer(), clonedResponse->internalBodyBuffer());
     } else {
-        EXPECT_FALSE(response->bodyBuffer()->hasBody());
-        EXPECT_FALSE(clonedResponse->bodyBuffer()->hasBody());
+        EXPECT_FALSE(response->bodyBuffer());
+        EXPECT_FALSE(clonedResponse->bodyBuffer());
     }
     DataConsumerHandleTestUtil::MockFetchDataLoaderClient* client1 = new DataConsumerHandleTestUtil::MockFetchDataLoaderClient();
     DataConsumerHandleTestUtil::MockFetchDataLoaderClient* client2 = new DataConsumerHandleTestUtil::MockFetchDataLoaderClient();
