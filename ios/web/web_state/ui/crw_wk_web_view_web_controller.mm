@@ -471,18 +471,17 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     [self loadRequest:[self requestForCurrentNavigationItem]];
   };
 
-  // If there is no corresponding WKBackForwardListItem, fall back to
-  // the standard loading mechanism.
+  // If there is no corresponding WKBackForwardListItem, or the item is not in
+  // the current WKWebView's back-forward list, navigating using WKWebView API
+  // is not possible. In this case, fall back to the default navigation
+  // mechanism.
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
-  if (!holder->back_forward_list_item()) {
+  if (!holder->back_forward_list_item() ||
+      ![self isBackForwardListItemValid:holder->back_forward_list_item()]) {
     defaultNavigationBlock();
     return;
   }
-
-  // The current back-forward list item MUST be in the WKWebView's back-forward
-  // list to be valid.
-  DCHECK([self isBackForwardListItemValid:holder->back_forward_list_item()]);
 
   ProceduralBlock webViewNavigationBlock = ^{
     // If the current navigation URL is the same as the URL of the visible
