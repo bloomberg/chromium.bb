@@ -103,11 +103,12 @@ public class ShareHelper {
                     sTargetChosenReceiveAction = activity.getPackageName() + "/"
                             + TargetChosenReceiver.class.getName() + "_ACTION";
                 }
+                Context context = activity.getApplicationContext();
                 if (sLastRegisteredReceiver != null) {
-                    activity.unregisterReceiver(sLastRegisteredReceiver);
+                    context.unregisterReceiver(sLastRegisteredReceiver);
                 }
                 sLastRegisteredReceiver = new TargetChosenReceiver();
-                activity.registerReceiver(
+                context.registerReceiver(
                         sLastRegisteredReceiver, new IntentFilter(sTargetChosenReceiveAction));
             }
 
@@ -126,7 +127,7 @@ public class ShareHelper {
         public void onReceive(Context context, Intent intent) {
             synchronized (LOCK) {
                 if (sLastRegisteredReceiver != this) return;
-                context.unregisterReceiver(sLastRegisteredReceiver);
+                context.getApplicationContext().unregisterReceiver(sLastRegisteredReceiver);
                 sLastRegisteredReceiver = null;
             }
             if (!intent.hasExtra(EXTRA_RECEIVER_TOKEN)
