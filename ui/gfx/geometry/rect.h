@@ -18,7 +18,6 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
@@ -56,11 +55,6 @@ class GFX_EXPORT Rect {
   // Construct an equivalent CoreGraphics object.
   CGRect ToCGRect() const;
 #endif
-
-  operator RectF() const {
-    return RectF(static_cast<float>(x()), static_cast<float>(y()),
-                 static_cast<float>(width()), static_cast<float>(height()));
-  }
 
   int x() const { return origin_.x(); }
   void set_x(int x) { origin_.set_x(x); }
