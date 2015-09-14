@@ -12,6 +12,7 @@
 #include "net/android/keystore.h"
 #include "net/android/network_change_notifier_android.h"
 #include "net/android/network_library.h"
+#include "net/android/traffic_stats.h"
 #include "net/cert/x509_util_android.h"
 #include "net/proxy/proxy_config_service_android.h"
 
@@ -27,6 +28,7 @@ static base::android::RegistrationMethod kNetRegisteredMethods[] = {
     {"AndroidPrivateKey", RegisterAndroidPrivateKey},
     {"AndroidKeyStore", RegisterKeyStore},
     {"AndroidNetworkLibrary", RegisterNetworkLibrary},
+    {"AndroidTrafficStats", traffic_stats::Register},
     {"GURLUtils", RegisterGURLUtils},
     {"HttpAuthNegotiateAndroid", HttpAuthNegotiateAndroid::Register},
     {"NetworkChangeNotifierAndroid", NetworkChangeNotifierAndroid::Register},

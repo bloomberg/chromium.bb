@@ -70,6 +70,7 @@ java_cpp_enum("net_android_java_enums_srcjar") {
     "../base/network_change_notifier.h",
     "cert_verify_result_android.h",
     "keystore.h",
+    "traffic_stats.cc",
   ]
   outputs = [
     "org/chromium/net/CertificateMimeType.java",
@@ -77,6 +78,7 @@ java_cpp_enum("net_android_java_enums_srcjar") {
     "org/chromium/net/ConnectionSubtype.java",
     "org/chromium/net/ConnectionType.java",
     "org/chromium/net/PrivateKeyType.java",
+    "org/chromium/net/TrafficStatsError.java",
   ]
 }
 

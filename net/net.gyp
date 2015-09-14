@@ -1352,6 +1352,7 @@
             'android/java/src/org/chromium/net/AndroidKeyStore.java',
             'android/java/src/org/chromium/net/AndroidNetworkLibrary.java',
             'android/java/src/org/chromium/net/AndroidPrivateKey.java',
+            'android/java/src/org/chromium/net/AndroidTrafficStats.java',
             'android/java/src/org/chromium/net/GURLUtils.java',
             'android/java/src/org/chromium/net/HttpNegotiateAuthenticator.java',
             'android/java/src/org/chromium/net/NetStringUtil.java',
@@ -1391,6 +1392,7 @@
             'net_errors_java',
             'private_key_types_java',
             'remote_android_keystore_aidl',
+            'traffic_stats_error_java',
           ],
           'includes': [ '../build/java.gypi' ],
         },
@@ -1485,6 +1487,14 @@
           'type': 'none',
           'variables': {
             'source_file': 'android/keystore.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'traffic_stats_error_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'android/traffic_stats.cc',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
