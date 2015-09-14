@@ -18,6 +18,8 @@ from chromite.cli import command
 # Needed for the dev.host.lib import below.
 sys.path.insert(0, os.path.join(constants.SOURCE_ROOT, 'src', 'platform'))
 
+MAJOR_PAYLOAD_VERSION_CHROMEOS = 1
+MAJOR_PAYLOAD_VERSION_BRILLO = 2
 
 def DisplayValue(key, value):
   """Print out a key, value pair with values left-aligned."""
@@ -85,9 +87,15 @@ Example:
   def _DisplayManifest(self):
     """Show information from the payload manifest."""
     manifest = self.payload.manifest
-    DisplayValue('Number of operations', len(manifest.install_operations))
-    DisplayValue('Number of kernel ops',
-                 len(manifest.kernel_install_operations))
+    if self.payload.header.version == MAJOR_PAYLOAD_VERSION_BRILLO:
+      DisplayValue('Number of partitions', len(manifest.partitions))
+      for partition in manifest.partitions:
+        DisplayValue('  Number of "%s" ops' % partition.partition_name,
+                     len(partition.operations))
+    else:
+      DisplayValue('Number of operations', len(manifest.install_operations))
+      DisplayValue('Number of kernel ops',
+                   len(manifest.kernel_install_operations))
     DisplayValue('Block size', manifest.block_size)
     DisplayValue('Minor version', manifest.minor_version)
 
@@ -162,8 +170,12 @@ Example:
     read_blocks = 0
     written_blocks = 0
     num_write_seeks = 0
-    for operations in (manifest.install_operations,
-                       manifest.kernel_install_operations):
+    if self.payload.header.version == MAJOR_PAYLOAD_VERSION_BRILLO:
+      partitions_operations = [part.operations for part in manifest.partitions]
+    else:
+      partitions_operations = [manifest.install_operations,
+                               manifest.kernel_install_operations]
+    for operations in partitions_operations:
       last_ext = None
       for curr_op in operations:
         read_blocks += sum([ext.num_blocks for ext in curr_op.src_extents])
@@ -207,7 +219,12 @@ Example:
       self._DisplayStats(self.payload.manifest)
     if self.options.list_ops:
       print()
-      self._DisplayOps('Install operations',
-                       self.payload.manifest.install_operations)
-      self._DisplayOps('Kernel install operations',
-                       self.payload.manifest.kernel_install_operations)
+      if self.payload.header.version == MAJOR_PAYLOAD_VERSION_BRILLO:
+        for partition in self.payload.manifest.partitions:
+          self._DisplayOps('%s install operations' % partition.partition_name,
+                           partition.operations)
+      else:
+        self._DisplayOps('Install operations',
+                         self.payload.manifest.install_operations)
+        self._DisplayOps('Kernel install operations',
+                         self.payload.manifest.kernel_install_operations)
