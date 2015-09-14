@@ -1628,6 +1628,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoUniform3iv(GLint fake_location, GLsizei count, const GLint* value);
   void DoUniform4iv(GLint fake_location, GLsizei count, const GLint* value);
 
+  void DoUniform1ui(GLint fake_location, GLuint v0);
+  void DoUniform1uiv(GLint fake_location, GLsizei count, const GLuint* value);
+  void DoUniform2uiv(GLint fake_location, GLsizei count, const GLuint* value);
+  void DoUniform3uiv(GLint fake_location, GLsizei count, const GLuint* value);
+  void DoUniform4uiv(GLint fake_location, GLsizei count, const GLuint* value);
+
   // Wrappers for glUniformfv because some drivers don't correctly accept
   // bool uniforms.
   void DoUniform1fv(GLint fake_location, GLsizei count, const GLfloat* value);
@@ -6967,6 +6973,21 @@ void GLES2DecoderImpl::DoUniform1iv(
   glUniform1iv(real_location, count, value);
 }
 
+void GLES2DecoderImpl::DoUniform1uiv(
+    GLint fake_location, GLsizei count, const GLuint *value) {
+  GLenum type = 0;
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform1uiv",
+                                   Program::kUniform1ui,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
+    return;
+  }
+  glUniform1uiv(real_location, count, value);
+}
+
 void GLES2DecoderImpl::DoUniform1fv(
     GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
@@ -7077,6 +7098,21 @@ void GLES2DecoderImpl::DoUniform2iv(
   glUniform2iv(real_location, count, value);
 }
 
+void GLES2DecoderImpl::DoUniform2uiv(
+    GLint fake_location, GLsizei count, const GLuint* value) {
+  GLenum type = 0;
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform2uiv",
+                                   Program::kUniform2ui,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
+    return;
+  }
+  glUniform2uiv(real_location, count, value);
+}
+
 void GLES2DecoderImpl::DoUniform3iv(
     GLint fake_location, GLsizei count, const GLint* value) {
   GLenum type = 0;
@@ -7092,6 +7128,21 @@ void GLES2DecoderImpl::DoUniform3iv(
   glUniform3iv(real_location, count, value);
 }
 
+void GLES2DecoderImpl::DoUniform3uiv(
+    GLint fake_location, GLsizei count, const GLuint* value) {
+  GLenum type = 0;
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform3uiv",
+                                   Program::kUniform3ui,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
+    return;
+  }
+  glUniform3uiv(real_location, count, value);
+}
+
 void GLES2DecoderImpl::DoUniform4iv(
     GLint fake_location, GLsizei count, const GLint* value) {
   GLenum type = 0;
@@ -7105,6 +7156,21 @@ void GLES2DecoderImpl::DoUniform4iv(
     return;
   }
   glUniform4iv(real_location, count, value);
+}
+
+void GLES2DecoderImpl::DoUniform4uiv(
+    GLint fake_location, GLsizei count, const GLuint* value) {
+  GLenum type = 0;
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform4uiv",
+                                   Program::kUniform4ui,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
+    return;
+  }
+  glUniform4uiv(real_location, count, value);
 }
 
 void GLES2DecoderImpl::DoUniformMatrix2fv(

@@ -560,7 +560,13 @@ void TestHelper::SetupExpectationsForClearingUniforms(
     case GL_SAMPLER_EXTERNAL_OES:
     case GL_SAMPLER_3D_OES:
     case GL_SAMPLER_2D_RECT_ARB:
+    case GL_SAMPLER_2D_ARRAY:
       EXPECT_CALL(*gl, Uniform1iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_UNSIGNED_INT:
+      EXPECT_CALL(*gl, Uniform1uiv(info.real_location, info.size, _))
           .Times(1)
           .RetiresOnSaturation();
       break;
@@ -570,15 +576,30 @@ void TestHelper::SetupExpectationsForClearingUniforms(
           .Times(1)
           .RetiresOnSaturation();
       break;
+    case GL_UNSIGNED_INT_VEC2:
+      EXPECT_CALL(*gl, Uniform2uiv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
     case GL_INT_VEC3:
     case GL_BOOL_VEC3:
       EXPECT_CALL(*gl, Uniform3iv(info.real_location, info.size, _))
           .Times(1)
           .RetiresOnSaturation();
       break;
+    case GL_UNSIGNED_INT_VEC3:
+      EXPECT_CALL(*gl, Uniform3uiv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
     case GL_INT_VEC4:
     case GL_BOOL_VEC4:
       EXPECT_CALL(*gl, Uniform4iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_UNSIGNED_INT_VEC4:
+      EXPECT_CALL(*gl, Uniform4uiv(info.real_location, info.size, _))
           .Times(1)
           .RetiresOnSaturation();
       break;

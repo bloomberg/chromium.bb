@@ -534,23 +534,47 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const char* kUniform1Name;
   static const char* kUniform2Name;
   static const char* kUniform3Name;
+  static const char* kUniform4Name;
+  static const char* kUniform5Name;
+  static const char* kUniform6Name;
+  static const char* kUniform7Name;
   static const GLint kUniform1Size = 1;
   static const GLint kUniform2Size = 3;
   static const GLint kUniform3Size = 2;
+  static const GLint kUniform4Size = 1;
+  static const GLint kUniform5Size = 1;
+  static const GLint kUniform6Size = 1;
+  static const GLint kUniform7Size = 1;
   static const GLint kUniform1RealLocation = 3;
   static const GLint kUniform2RealLocation = 10;
   static const GLint kUniform2ElementRealLocation = 12;
   static const GLint kUniform3RealLocation = 20;
+  static const GLint kUniform4RealLocation = 22;
+  static const GLint kUniform5RealLocation = 30;
+  static const GLint kUniform6RealLocation = 32;
+  static const GLint kUniform7RealLocation = 44;
   static const GLint kUniform1FakeLocation = 0;               // These are
   static const GLint kUniform2FakeLocation = 1;               // hardcoded
   static const GLint kUniform2ElementFakeLocation = 0x10001;  // to match
   static const GLint kUniform3FakeLocation = 2;               // ProgramManager.
+  static const GLint kUniform4FakeLocation = 3;               //
+  static const GLint kUniform5FakeLocation = 4;               //
+  static const GLint kUniform6FakeLocation = 5;               //
+  static const GLint kUniform7FakeLocation = 6;               //
   static const GLint kUniform1DesiredLocation = -1;
   static const GLint kUniform2DesiredLocation = -1;
   static const GLint kUniform3DesiredLocation = -1;
+  static const GLint kUniform4DesiredLocation = -1;
+  static const GLint kUniform5DesiredLocation = -1;
+  static const GLint kUniform6DesiredLocation = -1;
+  static const GLint kUniform7DesiredLocation = -1;
   static const GLenum kUniform1Type = GL_SAMPLER_2D;
   static const GLenum kUniform2Type = GL_INT_VEC2;
   static const GLenum kUniform3Type = GL_FLOAT_VEC3;
+  static const GLenum kUniform4Type = GL_UNSIGNED_INT;
+  static const GLenum kUniform5Type = GL_UNSIGNED_INT_VEC2;
+  static const GLenum kUniform6Type = GL_UNSIGNED_INT_VEC3;
+  static const GLenum kUniform7Type = GL_UNSIGNED_INT_VEC4;
   static const GLenum kUniformSamplerExternalType = GL_SAMPLER_EXTERNAL_OES;
   static const GLenum kUniformCubemapType = GL_SAMPLER_CUBE;
   static const GLint kInvalidUniformLocation = 30;

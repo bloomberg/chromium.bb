@@ -1450,20 +1450,40 @@ const GLint GLES2DecoderTestBase::kMaxUniformLength;
 const GLint GLES2DecoderTestBase::kUniform1Size;
 const GLint GLES2DecoderTestBase::kUniform2Size;
 const GLint GLES2DecoderTestBase::kUniform3Size;
+const GLint GLES2DecoderTestBase::kUniform4Size;
+const GLint GLES2DecoderTestBase::kUniform5Size;
+const GLint GLES2DecoderTestBase::kUniform6Size;
+const GLint GLES2DecoderTestBase::kUniform7Size;
 const GLint GLES2DecoderTestBase::kUniform1RealLocation;
 const GLint GLES2DecoderTestBase::kUniform2RealLocation;
 const GLint GLES2DecoderTestBase::kUniform2ElementRealLocation;
 const GLint GLES2DecoderTestBase::kUniform3RealLocation;
+const GLint GLES2DecoderTestBase::kUniform4RealLocation;
+const GLint GLES2DecoderTestBase::kUniform5RealLocation;
+const GLint GLES2DecoderTestBase::kUniform6RealLocation;
+const GLint GLES2DecoderTestBase::kUniform7RealLocation;
 const GLint GLES2DecoderTestBase::kUniform1FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform2FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform2ElementFakeLocation;
 const GLint GLES2DecoderTestBase::kUniform3FakeLocation;
+const GLint GLES2DecoderTestBase::kUniform4FakeLocation;
+const GLint GLES2DecoderTestBase::kUniform5FakeLocation;
+const GLint GLES2DecoderTestBase::kUniform6FakeLocation;
+const GLint GLES2DecoderTestBase::kUniform7FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform1DesiredLocation;
 const GLint GLES2DecoderTestBase::kUniform2DesiredLocation;
 const GLint GLES2DecoderTestBase::kUniform3DesiredLocation;
+const GLint GLES2DecoderTestBase::kUniform4DesiredLocation;
+const GLint GLES2DecoderTestBase::kUniform5DesiredLocation;
+const GLint GLES2DecoderTestBase::kUniform6DesiredLocation;
+const GLint GLES2DecoderTestBase::kUniform7DesiredLocation;
 const GLenum GLES2DecoderTestBase::kUniform1Type;
 const GLenum GLES2DecoderTestBase::kUniform2Type;
 const GLenum GLES2DecoderTestBase::kUniform3Type;
+const GLenum GLES2DecoderTestBase::kUniform4Type;
+const GLenum GLES2DecoderTestBase::kUniform5Type;
+const GLenum GLES2DecoderTestBase::kUniform6Type;
+const GLenum GLES2DecoderTestBase::kUniform7Type;
 const GLenum GLES2DecoderTestBase::kUniformCubemapType;
 const GLint GLES2DecoderTestBase::kInvalidUniformLocation;
 const GLint GLES2DecoderTestBase::kBadUniformIndex;
@@ -1476,6 +1496,10 @@ const char* GLES2DecoderTestBase::kAttrib3Name = "attrib3";
 const char* GLES2DecoderTestBase::kUniform1Name = "uniform1";
 const char* GLES2DecoderTestBase::kUniform2Name = "uniform2[0]";
 const char* GLES2DecoderTestBase::kUniform3Name = "uniform3[0]";
+const char* GLES2DecoderTestBase::kUniform4Name = "uniform4";
+const char* GLES2DecoderTestBase::kUniform5Name = "uniform5";
+const char* GLES2DecoderTestBase::kUniform6Name = "uniform6";
+const char* GLES2DecoderTestBase::kUniform7Name = "uniform7";
 
 void GLES2DecoderTestBase::SetupDefaultProgram() {
   {
@@ -1494,6 +1518,18 @@ void GLES2DecoderTestBase::SetupDefaultProgram() {
       { kUniform3Name, kUniform3Size, kUniform3Type,
         kUniform3FakeLocation, kUniform3RealLocation,
         kUniform3DesiredLocation },
+      { kUniform4Name, kUniform4Size, kUniform4Type,
+        kUniform4FakeLocation, kUniform4RealLocation,
+        kUniform4DesiredLocation },
+      { kUniform5Name, kUniform5Size, kUniform5Type,
+        kUniform5FakeLocation, kUniform5RealLocation,
+        kUniform5DesiredLocation },
+      { kUniform6Name, kUniform6Size, kUniform6Type,
+        kUniform6FakeLocation, kUniform6RealLocation,
+        kUniform6DesiredLocation },
+      { kUniform7Name, kUniform7Size, kUniform7Type,
+        kUniform7FakeLocation, kUniform7RealLocation,
+        kUniform7DesiredLocation },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                 client_program_id_, kServiceProgramId,
@@ -1528,6 +1564,18 @@ void GLES2DecoderTestBase::SetupCubemapProgram() {
       { kUniform3Name, kUniform3Size, kUniform3Type,
         kUniform3FakeLocation, kUniform3RealLocation,
         kUniform3DesiredLocation, },
+      { kUniform4Name, kUniform4Size, kUniform4Type,
+        kUniform4FakeLocation, kUniform4RealLocation,
+        kUniform4DesiredLocation, },
+      { kUniform5Name, kUniform5Size, kUniform5Type,
+        kUniform5FakeLocation, kUniform5RealLocation,
+        kUniform5DesiredLocation },
+      { kUniform6Name, kUniform6Size, kUniform6Type,
+        kUniform6FakeLocation, kUniform6RealLocation,
+        kUniform6DesiredLocation },
+      { kUniform7Name, kUniform7Size, kUniform7Type,
+        kUniform7FakeLocation, kUniform7RealLocation,
+        kUniform7DesiredLocation },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                 client_program_id_, kServiceProgramId,
@@ -1562,6 +1610,18 @@ void GLES2DecoderTestBase::SetupSamplerExternalProgram() {
       { kUniform3Name, kUniform3Size, kUniform3Type,
         kUniform3FakeLocation, kUniform3RealLocation,
         kUniform3DesiredLocation, },
+      { kUniform4Name, kUniform4Size, kUniform4Type,
+        kUniform4FakeLocation, kUniform4RealLocation,
+        kUniform4DesiredLocation, },
+      { kUniform5Name, kUniform5Size, kUniform5Type,
+        kUniform5FakeLocation, kUniform5RealLocation,
+        kUniform5DesiredLocation },
+      { kUniform6Name, kUniform6Size, kUniform6Type,
+        kUniform6FakeLocation, kUniform6RealLocation,
+        kUniform6DesiredLocation },
+      { kUniform7Name, kUniform7Size, kUniform7Type,
+        kUniform7FakeLocation, kUniform7RealLocation,
+        kUniform7DesiredLocation },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                 client_program_id_, kServiceProgramId,

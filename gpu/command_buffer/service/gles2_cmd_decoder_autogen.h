@@ -3066,7 +3066,7 @@ error::Error GLES2DecoderImpl::HandleUniform1ui(uint32_t immediate_data_size,
   GLuint temp[1] = {
       x,
   };
-  glUniform1uiv(location, 1, &temp[0]);
+  DoUniform1uiv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -3092,7 +3092,7 @@ error::Error GLES2DecoderImpl::HandleUniform1uivImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform1uiv(location, count, v);
+  DoUniform1uiv(location, count, v);
   return error::kNoError;
 }
 
@@ -3187,7 +3187,7 @@ error::Error GLES2DecoderImpl::HandleUniform2ui(uint32_t immediate_data_size,
   GLuint temp[2] = {
       x, y,
   };
-  glUniform2uiv(location, 1, &temp[0]);
+  DoUniform2uiv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -3213,7 +3213,7 @@ error::Error GLES2DecoderImpl::HandleUniform2uivImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform2uiv(location, count, v);
+  DoUniform2uiv(location, count, v);
   return error::kNoError;
 }
 
@@ -3311,7 +3311,7 @@ error::Error GLES2DecoderImpl::HandleUniform3ui(uint32_t immediate_data_size,
   GLuint temp[3] = {
       x, y, z,
   };
-  glUniform3uiv(location, 1, &temp[0]);
+  DoUniform3uiv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -3337,7 +3337,7 @@ error::Error GLES2DecoderImpl::HandleUniform3uivImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform3uiv(location, count, v);
+  DoUniform3uiv(location, count, v);
   return error::kNoError;
 }
 
@@ -3438,7 +3438,7 @@ error::Error GLES2DecoderImpl::HandleUniform4ui(uint32_t immediate_data_size,
   GLuint temp[4] = {
       x, y, z, w,
   };
-  glUniform4uiv(location, 1, &temp[0]);
+  DoUniform4uiv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -3464,7 +3464,7 @@ error::Error GLES2DecoderImpl::HandleUniform4uivImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform4uiv(location, count, v);
+  DoUniform4uiv(location, count, v);
   return error::kNoError;
 }
 

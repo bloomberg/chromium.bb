@@ -144,17 +144,30 @@ Program::UniformInfo::UniformInfo(GLsizei _size,
       accepts_api_type = kUniform4i;
       break;
 
+    case GL_UNSIGNED_INT:
+      accepts_api_type = kUniform1ui;
+      break;
+    case GL_UNSIGNED_INT_VEC2:
+      accepts_api_type = kUniform2ui;
+      break;
+    case GL_UNSIGNED_INT_VEC3:
+      accepts_api_type = kUniform3ui;
+      break;
+    case GL_UNSIGNED_INT_VEC4:
+      accepts_api_type = kUniform4ui;
+      break;
+
     case GL_BOOL:
-      accepts_api_type = kUniform1i | kUniform1f;
+      accepts_api_type = kUniform1i | kUniform1ui | kUniform1f;
       break;
     case GL_BOOL_VEC2:
-      accepts_api_type = kUniform2i | kUniform2f;
+      accepts_api_type = kUniform2i | kUniform2ui | kUniform2f;
       break;
     case GL_BOOL_VEC3:
-      accepts_api_type = kUniform3i | kUniform3f;
+      accepts_api_type = kUniform3i | kUniform3ui | kUniform3f;
       break;
     case GL_BOOL_VEC4:
-      accepts_api_type = kUniform4i | kUniform4f;
+      accepts_api_type = kUniform4i | kUniform4ui | kUniform4f;
       break;
 
     case GL_FLOAT:
@@ -185,8 +198,10 @@ Program::UniformInfo::UniformInfo(GLsizei _size,
     case GL_SAMPLER_CUBE:
     case GL_SAMPLER_3D_OES:
     case GL_SAMPLER_EXTERNAL_OES:
+    case GL_SAMPLER_2D_ARRAY:
       accepts_api_type = kUniform1i;
       break;
+
     default:
       NOTREACHED() << "Unhandled UniformInfo type " << type;
       break;

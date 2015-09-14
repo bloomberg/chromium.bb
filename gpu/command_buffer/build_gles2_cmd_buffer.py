@@ -3481,11 +3481,14 @@ _FUNCTION_INFO = {
   'Uniform1ui': {
     'type': 'PUTXn',
     'count': 1,
+    'unit_test': False,
     'unsafe': True,
   },
   'Uniform1uiv': {
     'type': 'PUTn',
     'count': 1,
+    'decoder_func': 'DoUniform1uiv',
+    'unit_test': False,
     'unsafe': True,
   },
   'Uniform2i': {'type': 'PUTXn', 'count': 2},
@@ -3503,11 +3506,14 @@ _FUNCTION_INFO = {
   'Uniform2ui': {
     'type': 'PUTXn',
     'count': 2,
+    'unit_test': False,
     'unsafe': True,
   },
   'Uniform2uiv': {
     'type': 'PUTn',
     'count': 2,
+    'decoder_func': 'DoUniform2uiv',
+    'unit_test': False,
     'unsafe': True,
   },
   'Uniform3i': {'type': 'PUTXn', 'count': 3},
@@ -3525,11 +3531,14 @@ _FUNCTION_INFO = {
   'Uniform3ui': {
     'type': 'PUTXn',
     'count': 3,
+    'unit_test': False,
     'unsafe': True,
   },
   'Uniform3uiv': {
     'type': 'PUTn',
     'count': 3,
+    'decoder_func': 'DoUniform3uiv',
+    'unit_test': False,
     'unsafe': True,
   },
   'Uniform4i': {'type': 'PUTXn', 'count': 4},
@@ -3547,11 +3556,14 @@ _FUNCTION_INFO = {
   'Uniform4ui': {
     'type': 'PUTXn',
     'count': 4,
+    'unit_test': False,
     'unsafe': True,
   },
   'Uniform4uiv': {
     'type': 'PUTn',
     'count': 4,
+    'decoder_func': 'DoUniform4uiv',
+    'unit_test': False,
     'unsafe': True,
   },
   'UniformMatrix2fv': {
@@ -7732,13 +7744,7 @@ class PUTXnHandler(ArrayArgTypeHandler):
 
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    code = """  %(type)s temp[%(count)s] = { %(values)s};"""
-    if func.IsUnsafe():
-      code += """
-  gl%(name)sv(%(location)s, 1, &temp[0]);
-"""
-    else:
-      code += """
+    code = """  %(type)s temp[%(count)s] = { %(values)s};
   Do%(name)sv(%(location)s, 1, &temp[0]);
 """
     values = ""
