@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tab.Tab;
@@ -47,20 +45,62 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         private final SparseArray<String> mVisibilityCallsMap = new SparseArray<String>();
         private boolean mIsReleaseAllModerateBindingsCalled;
 
-        boolean isInForeground(int pid) {
-            return mProcessInForegroundMap.get(pid);
+        void assertIsInForeground(final int pid) {
+            try {
+                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mProcessInForegroundMap.get(pid);
+                    }
+                }));
+            } catch (InterruptedException ie) {
+                fail();
+            }
         }
 
-        boolean isInBackground(int pid) {
-            return !mProcessInForegroundMap.get(pid);
+        void assertIsInBackground(final int pid) {
+            try {
+                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return !mProcessInForegroundMap.get(pid);
+                    }
+                }));
+            } catch (InterruptedException ie) {
+                fail();
+            }
         }
 
-        boolean setInForegroundWasCalled(int pid) {
-            return mProcessInForegroundMap.indexOfKey(pid) >= 0;
+        void assertSetInForegroundWasCalled(String message, final int pid) {
+            try {
+                assertTrue(message, CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mProcessInForegroundMap.indexOfKey(pid) >= 0;
+                    }
+                }));
+            } catch (InterruptedException ie) {
+                fail();
+            }
+        }
+
+        void assertIsReleaseAllModerateBindingsCalled() {
+            try {
+                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mIsReleaseAllModerateBindingsCalled;
+                    }
+                }));
+            } catch (InterruptedException ie) {
+                fail();
+            }
         }
 
         String getVisibilityCalls(int pid) {
-            return mVisibilityCallsMap.get(pid);
+            synchronized (mVisibilityCallsMap) {
+                return mVisibilityCallsMap.get(pid);
+            }
         }
 
         boolean isReleaseAllModerateBindingsCalled() {
@@ -69,23 +109,29 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         @Override
         public void addNewConnection(int pid, ChildProcessConnection connection) {
-            mVisibilityCallsMap.put(pid, "");
+            synchronized (mVisibilityCallsMap) {
+                mVisibilityCallsMap.put(pid, "");
+            }
         }
 
         @Override
         public void setInForeground(int pid, boolean inForeground) {
             mProcessInForegroundMap.put(pid, inForeground);
 
-            if (inForeground) {
-                mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "FG;");
-            } else {
-                mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "BG;");
+            synchronized (mVisibilityCallsMap) {
+                if (inForeground) {
+                    mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "FG;");
+                } else {
+                    mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "BG;");
+                }
             }
         }
 
         @Override
         public void determinedVisibility(int pid) {
-            mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "DETERMINED;");
+            synchronized (mVisibilityCallsMap) {
+                mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "DETERMINED;");
+            }
         }
 
         @Override
@@ -177,19 +223,19 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
 
                 // Verify that the renderer of the foreground tab was signalled as visible.
-                assertTrue(mBindingManager.isInForeground(
-                        tabs[0].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInForeground(
+                        tabs[0].getContentViewCore().getCurrentRenderProcessId());
                 // Verify that the renderer of the tab loaded in background was signalled as not
                 // visible.
-                assertTrue(mBindingManager.isInBackground(
-                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInBackground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
 
                 // Select tabs[1] and verify that the renderer visibility was flipped.
                 TabModelUtils.setIndex(getActivity().getCurrentTabModel(), indexOf(tabs[1]));
-                assertTrue(mBindingManager.isInBackground(
-                        tabs[0].getContentViewCore().getCurrentRenderProcessId()));
-                assertTrue(mBindingManager.isInForeground(
-                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInBackground(
+                        tabs[0].getContentViewCore().getCurrentRenderProcessId());
+                mBindingManager.assertIsInForeground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
             }
         });
     }
@@ -248,12 +294,12 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
 
                 // Verify that the renderer of the foreground tab was signalled as visible.
-                assertTrue(mBindingManager.isInForeground(
-                        tabs[0].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInForeground(
+                        tabs[0].getContentViewCore().getCurrentRenderProcessId());
                 // Verify that the renderer of the tab loaded in background was signalled as not
                 // visible.
-                assertTrue(mBindingManager.isInBackground(
-                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInBackground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
             }
         });
 
@@ -286,23 +332,18 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                     }
                 }));
 
-        assertTrue("isInForeground() was not called for the process.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mBindingManager.setInForegroundWasCalled(
-                                tabs[1].getContentViewCore().getCurrentRenderProcessId());
-                    }
-                }));
+        mBindingManager.assertSetInForegroundWasCalled(
+                "isInForeground() was not called for the process.",
+                tabs[1].getContentViewCore().getCurrentRenderProcessId());
 
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Verify the visibility of the renderers.
-                assertTrue(mBindingManager.isInBackground(
-                        tabs[0].getContentViewCore().getCurrentRenderProcessId()));
-                assertTrue(mBindingManager.isInForeground(
-                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInBackground(
+                        tabs[0].getContentViewCore().getCurrentRenderProcessId());
+                mBindingManager.assertIsInForeground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
             }
         });
     }
@@ -357,34 +398,27 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                     }
                 }));
 
-        assertTrue("isInForeground() was not called for the process.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mBindingManager.setInForegroundWasCalled(
-                                tab.getContentViewCore().getCurrentRenderProcessId());
-                    }
-                }));
+        mBindingManager.assertSetInForegroundWasCalled(
+                "isInForeground() was not called for the process.",
+                tab.getContentViewCore().getCurrentRenderProcessId());
 
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Verify the visibility of the renderer.
-                assertTrue(mBindingManager.isInForeground(
-                        tab.getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInForeground(
+                        tab.getContentViewCore().getCurrentRenderProcessId());
             }
         });
     }
 
     /**
-     * Ensures correctness of the visibilityDetermined() calls, that should be always preceded by
-     * setInForeground().
-     *
-     * Bug: https://crbug.com/474543
-     * @LargeTest
-     * @Feature({"ProcessManagement"})
+     * Ensures correctness of the visibilityDetermined() calls, that would be generally preceded by
+     * setInForeground(), but it can't be guaranteed because they are triggered from different
+     * threads.
      */
-    @FlakyTest
+    @LargeTest
+    @Feature({"ProcessManagement"})
     public void testVisibilityDetermined() throws InterruptedException {
         // Create a tab in foreground and wait until it is loaded.
         final Tab fgTab = ThreadUtils.runOnUiThreadBlockingNoException(
@@ -417,7 +451,12 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         //  - BG - setInForeground(false) - when the renderer is created for uncommited frame
         //  - FG - setInForeground(true) - when the frame is swapped in on commit
         //  - DETERMINED - visibilityDetermined() - after the navigation is committed
-        assertEquals("BG;FG;DETERMINED;", mBindingManager.getVisibilityCalls(secondNavigationPid));
+        // Or BG -> DETERMINED -> FG is also possible because setInForeground() and
+        // visibilityDetermined() are triggered from different threads.
+        mBindingManager.assertIsInForeground(secondNavigationPid);
+        String visibilityCalls = mBindingManager.getVisibilityCalls(secondNavigationPid);
+        assertTrue(visibilityCalls, "BG;FG;DETERMINED;".equals(visibilityCalls)
+                        || "BG;DETERMINED;FG;".equals(visibilityCalls));
 
         // Open a tab in the background and load it.
         final Tab bgTab = ThreadUtils.runOnUiThreadBlockingNoException(
@@ -478,13 +517,11 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         });
         ChromeTabUtils.waitForTabPageLoaded(tabs[2], "about:blank");
         // At this point all the sanboxed services are allocated.
-        assertTrue(mBindingManager.isReleaseAllModerateBindingsCalled());
+        mBindingManager.assertIsReleaseAllModerateBindingsCalled();
     }
 
-    // @LargeTest
-    // @Feature({"ProcessManagement"})
-    // Appears to be flaky, see crbug/529920
-    @DisabledTest
+    @LargeTest
+    @Feature({"ProcessManagement"})
     public void testRestoreSharedRenderer() throws Exception {
         loadUrl(TestHttpServerClient.getUrl(SHARED_RENDERER_PAGE_PATH));
 
@@ -496,6 +533,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
             @Override
             public boolean isSatisfied() {
                 return getActivity().getCurrentTabModel().getCount() == 2
+                        && tabs[0] != getActivity().getActivityTab()
                         && getActivity()
                                    .getActivityTab()
                                    .getContentViewCore()
@@ -511,8 +549,8 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
             @Override
             public void run() {
                 // Verify the visibility of the renderer.
-                assertTrue(mBindingManager.isInForeground(
-                        tabs[0].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInForeground(
+                        tabs[0].getContentViewCore().getCurrentRenderProcessId());
             }
         });
 
@@ -543,24 +581,19 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                     }
                 }));
 
-        assertTrue("setInForeground() was not called for the process.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mBindingManager.setInForegroundWasCalled(
-                                tabs[1].getContentViewCore().getCurrentRenderProcessId());
-                    }
-                }));
+        mBindingManager.assertSetInForegroundWasCalled(
+                "setInForeground() was not called for the process.",
+                tabs[1].getContentViewCore().getCurrentRenderProcessId());
 
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Verify the visibility of the renderer.
-                assertTrue(mBindingManager.isInForeground(
-                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInForeground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
                 tabs[1].hide();
-                assertTrue(mBindingManager.isInBackground(
-                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInBackground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
             }
         });
     }

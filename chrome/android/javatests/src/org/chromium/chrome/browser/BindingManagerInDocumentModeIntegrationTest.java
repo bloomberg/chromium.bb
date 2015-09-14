@@ -41,20 +41,62 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         private final SparseArray<String> mVisibilityCallsMap = new SparseArray<String>();
         private boolean mIsReleaseAllModerateBindingsCalled;
 
-        boolean isInForeground(int pid) {
-            return mProcessInForegroundMap.get(pid);
+        void assertIsInForeground(final int pid) {
+            try {
+                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mProcessInForegroundMap.get(pid);
+                    }
+                }));
+            } catch (InterruptedException ie) {
+                fail();
+            }
         }
 
-        boolean isInBackground(int pid) {
-            return !isInForeground(pid);
+        void assertIsInBackground(final int pid) {
+            try {
+                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return !mProcessInForegroundMap.get(pid);
+                    }
+                }));
+            } catch (InterruptedException ie) {
+                fail();
+            }
         }
 
-        boolean wasSetInForegroundCalled(int pid) {
-            return mProcessInForegroundMap.indexOfKey(pid) >= 0;
+        void assertSetInForegroundWasCalled(String message, final int pid) {
+            try {
+                assertTrue(message, CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mProcessInForegroundMap.indexOfKey(pid) >= 0;
+                    }
+                }));
+            } catch (InterruptedException ie) {
+                fail();
+            }
+        }
+
+        void assertIsReleaseAllModerateBindingsCalled() {
+            try {
+                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mIsReleaseAllModerateBindingsCalled;
+                    }
+                }));
+            } catch (InterruptedException ie) {
+                fail();
+            }
         }
 
         String getVisibilityCalls(int pid) {
-            return mVisibilityCallsMap.get(pid);
+            synchronized (mVisibilityCallsMap) {
+                return mVisibilityCallsMap.get(pid);
+            }
         }
 
         boolean isReleaseAllModerateBindingsCalled() {
@@ -63,23 +105,29 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
 
         @Override
         public void addNewConnection(int pid, ChildProcessConnection connection) {
-            mVisibilityCallsMap.put(pid, "");
+            synchronized (mVisibilityCallsMap) {
+                mVisibilityCallsMap.put(pid, "");
+            }
         }
 
         @Override
         public void setInForeground(int pid, boolean inForeground) {
             mProcessInForegroundMap.put(pid, inForeground);
 
-            if (inForeground) {
-                mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "FG;");
-            } else {
-                mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "BG;");
+            synchronized (mVisibilityCallsMap) {
+                if (inForeground) {
+                    mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "FG;");
+                } else {
+                    mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "BG;");
+                }
             }
         }
 
         @Override
         public void determinedVisibility(int pid) {
-            mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "DETERMINED;");
+            synchronized (mVisibilityCallsMap) {
+                mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "DETERMINED;");
+            }
         }
 
         @Override
@@ -137,32 +185,22 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
                 assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
 
                 // Verify that the renderer of the foreground tab was signalled as visible.
-                assertTrue(mBindingManager.isInForeground(
-                        tabs[0].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInForeground(
+                        tabs[0].getContentViewCore().getCurrentRenderProcessId());
                 // Verify that the renderer of the tab loaded in background was signalled as not
                 // visible.
-                assertTrue(mBindingManager.isInBackground(
-                        tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInBackground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
             }
         });
 
         switchToTab((DocumentTab) tabs[1]);
 
         // Verify that the renderer visibility was flipped.
-        assertTrue("Renderer wasn't in background", CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mBindingManager.isInBackground(
-                        tabs[0].getContentViewCore().getCurrentRenderProcessId());
-            }
-        }));
-        assertTrue("Renderer wasn't in foreground", CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mBindingManager.isInForeground(
-                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
-            }
-        }));
+        mBindingManager.assertIsInBackground(
+                tabs[0].getContentViewCore().getCurrentRenderProcessId());
+        mBindingManager.assertIsInForeground(
+                tabs[1].getContentViewCore().getCurrentRenderProcessId());
     }
 
     /**
@@ -205,21 +243,16 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
                     }
                 }));
 
-        assertTrue("isInForeground() was not called for the process.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mBindingManager.wasSetInForegroundCalled(
-                                tab.getContentViewCore().getCurrentRenderProcessId());
-                    }
-                }));
+        mBindingManager.assertSetInForegroundWasCalled(
+                "isInForeground() was not called for the process.",
+                tab.getContentViewCore().getCurrentRenderProcessId());
 
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Verify the visibility of the renderer.
-                assertTrue(mBindingManager.isInForeground(
-                        tab.getContentViewCore().getCurrentRenderProcessId()));
+                mBindingManager.assertIsInForeground(
+                        tab.getContentViewCore().getCurrentRenderProcessId());
             }
         });
     }
@@ -255,7 +288,12 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         //  - BG - setInForeground(false) - when the renderer is created for uncommited frame
         //  - FG - setInForeground(true) - when the frame is swapped in on commit
         //  - DETERMINED - visibilityDetermined() - after the navigation is committed
-        assertEquals("BG;FG;DETERMINED;", mBindingManager.getVisibilityCalls(secondNavigationPid));
+        // Or BG -> DETERMINED -> FG is also possible because setInForeground() and
+        // visibilityDetermined() are triggered from different threads.
+        mBindingManager.assertIsInForeground(secondNavigationPid);
+        String visibilityCalls = mBindingManager.getVisibilityCalls(secondNavigationPid);
+        assertTrue(visibilityCalls, "BG;FG;DETERMINED;".equals(visibilityCalls)
+                        || "BG;DETERMINED;FG;".equals(visibilityCalls));
 
         // Open a tab in the background and load it.
         final Tab bgTab = ChromeApplication.getDocumentTabModelSelector().getTabById(
@@ -283,7 +321,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
 
         launchViaViewIntent(false, URL_1, "Page 1");
         // At this point all the sanboxed services are allocated.
-        assertTrue(mBindingManager.isReleaseAllModerateBindingsCalled());
+        mBindingManager.assertIsReleaseAllModerateBindingsCalled();
     }
 
     @Override
