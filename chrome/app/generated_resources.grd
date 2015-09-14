@@ -3766,6 +3766,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_TASK_MANAGER_TAB_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito Tab row (may not be visible if incognito is not open)">
           Incognito Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
         </message>
+        <message name="IDS_TASK_MANAGER_BACKGROUND_APP_PREFIX" desc="The prefix for a Task Manager background app task representing a BackgroundContents">
+          Background App: <ph name="BACKGROUND_APP_URL">$1<ex>http://www.google.com</ex></ph>
+        </message>
         <message name="IDS_TASK_MANAGER_BACKGROUND_PREFIX" desc="The prefix for a Task Manager background page row">
           Background Page: <ph name="BACKGROUND_PAGE_URL">$1<ex>http://www.google.com</ex></ph>
         </message>

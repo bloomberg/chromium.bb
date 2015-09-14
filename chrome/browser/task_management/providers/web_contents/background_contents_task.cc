@@ -49,7 +49,7 @@ base::string16 AdjustAndLocalizeTitle(const base::string16& title,
 
   // Ensure that the string has the appropriate direction markers.
   base::i18n::AdjustStringForLocaleDirection(&localized_title);
-  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX,
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_APP_PREFIX,
                                     localized_title);
 }
 
