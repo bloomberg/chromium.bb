@@ -52,9 +52,6 @@ enum EAbsoluteURLs { DoNotResolveURLs, ResolveAllURLs, ResolveNonLocalURLs };
 enum class ConvertBlocksToInlines { NotConvert, Convert };
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralRange& context, const String& text);
-// TODO(yosin) We should get rid of |createFragmentFromText()| with |Range| for
-// Oilpan.
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text);
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document&, const String& markup, const String& baseURL, ParserContentPolicy = AllowScriptingContent);
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document&, const String& markup, unsigned fragmentStart, unsigned fragmentEnd, const String& baseURL, ParserContentPolicy);
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String&, Element*, ParserContentPolicy, const char* method, ExceptionState&);

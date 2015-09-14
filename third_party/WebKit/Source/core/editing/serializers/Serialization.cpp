@@ -454,11 +454,6 @@ static bool shouldPreserveNewline(const EphemeralRange& range)
     return false;
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text)
-{
-    return createFragmentFromText(EphemeralRange(context), text);
-}
-
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralRange& context, const String& text)
 {
     if (context.isNull())
