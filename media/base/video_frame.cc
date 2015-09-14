@@ -390,7 +390,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
   const gfx::Size coded_size(CVImageBufferGetEncodedSize(cv_pixel_buffer));
   const gfx::Rect visible_rect(CVImageBufferGetCleanRect(cv_pixel_buffer));
   const gfx::Size natural_size(CVImageBufferGetDisplaySize(cv_pixel_buffer));
-  const StorageType storage = STORAGE_UNOWNED_MEMORY;
+  const StorageType storage = STORAGE_OPAQUE;
 
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
     DLOG(ERROR) << __FUNCTION__ << " Invalid config."
