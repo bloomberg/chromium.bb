@@ -10,7 +10,7 @@
 #if defined(OS_WIN)
 #include "net/udp/udp_socket_win.h"
 #elif defined(OS_POSIX)
-#include "net/udp/udp_socket_libevent.h"
+#include "net/udp/udp_socket_posix.h"
 #endif
 
 namespace net {
@@ -38,7 +38,7 @@ namespace net {
 #if defined(OS_WIN)
 typedef UDPSocketWin UDPSocket;
 #elif defined(OS_POSIX)
-typedef UDPSocketLibevent UDPSocket;
+typedef UDPSocketPosix UDPSocket;
 #endif
 
 }  // namespace net

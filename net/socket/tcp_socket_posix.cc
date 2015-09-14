@@ -24,8 +24,8 @@
 #include "net/base/net_util.h"
 #include "net/base/network_activity_monitor.h"
 #include "net/base/network_change_notifier.h"
-#include "net/socket/socket_libevent.h"
 #include "net/socket/socket_net_log_params.h"
+#include "net/socket/socket_posix.h"
 
 // If we don't have a definition for TCPI_OPT_SYN_DATA, create one.
 #ifndef TCPI_OPT_SYN_DATA
@@ -146,8 +146,7 @@ void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled) {
 #endif
 }
 
-TCPSocketLibevent::TCPSocketLibevent(NetLog* net_log,
-                                     const NetLog::Source& source)
+TCPSocketPosix::TCPSocketPosix(NetLog* net_log, const NetLog::Source& source)
     : use_tcp_fastopen_(false),
       tcp_fastopen_write_attempted_(false),
       tcp_fastopen_connected_(false),
@@ -158,22 +157,22 @@ TCPSocketLibevent::TCPSocketLibevent(NetLog* net_log,
                       source.ToEventParametersCallback());
 }
 
-TCPSocketLibevent::~TCPSocketLibevent() {
+TCPSocketPosix::~TCPSocketPosix() {
   net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
   Close();
 }
 
-int TCPSocketLibevent::Open(AddressFamily family) {
+int TCPSocketPosix::Open(AddressFamily family) {
   DCHECK(!socket_);
-  socket_.reset(new SocketLibevent);
+  socket_.reset(new SocketPosix);
   int rv = socket_->Open(ConvertAddressFamily(family));
   if (rv != OK)
     socket_.reset();
   return rv;
 }
 
-int TCPSocketLibevent::AdoptConnectedSocket(int socket_fd,
-                                            const IPEndPoint& peer_address) {
+int TCPSocketPosix::AdoptConnectedSocket(int socket_fd,
+                                         const IPEndPoint& peer_address) {
   DCHECK(!socket_);
 
   SockaddrStorage storage;
@@ -183,14 +182,14 @@ int TCPSocketLibevent::AdoptConnectedSocket(int socket_fd,
     return ERR_ADDRESS_INVALID;
   }
 
-  socket_.reset(new SocketLibevent);
+  socket_.reset(new SocketPosix);
   int rv = socket_->AdoptConnectedSocket(socket_fd, storage);
   if (rv != OK)
     socket_.reset();
   return rv;
 }
 
-int TCPSocketLibevent::Bind(const IPEndPoint& address) {
+int TCPSocketPosix::Bind(const IPEndPoint& address) {
   DCHECK(socket_);
 
   SockaddrStorage storage;
@@ -200,14 +199,14 @@ int TCPSocketLibevent::Bind(const IPEndPoint& address) {
   return socket_->Bind(storage);
 }
 
-int TCPSocketLibevent::Listen(int backlog) {
+int TCPSocketPosix::Listen(int backlog) {
   DCHECK(socket_);
   return socket_->Listen(backlog);
 }
 
-int TCPSocketLibevent::Accept(scoped_ptr<TCPSocketLibevent>* tcp_socket,
-                              IPEndPoint* address,
-                              const CompletionCallback& callback) {
+int TCPSocketPosix::Accept(scoped_ptr<TCPSocketPosix>* tcp_socket,
+                           IPEndPoint* address,
+                           const CompletionCallback& callback) {
   DCHECK(tcp_socket);
   DCHECK(!callback.is_null());
   DCHECK(socket_);
@@ -217,15 +216,15 @@ int TCPSocketLibevent::Accept(scoped_ptr<TCPSocketLibevent>* tcp_socket,
 
   int rv = socket_->Accept(
       &accept_socket_,
-      base::Bind(&TCPSocketLibevent::AcceptCompleted,
-                 base::Unretained(this), tcp_socket, address, callback));
+      base::Bind(&TCPSocketPosix::AcceptCompleted, base::Unretained(this),
+                 tcp_socket, address, callback));
   if (rv != ERR_IO_PENDING)
     rv = HandleAcceptCompleted(tcp_socket, address, rv);
   return rv;
 }
 
-int TCPSocketLibevent::Connect(const IPEndPoint& address,
-                               const CompletionCallback& callback) {
+int TCPSocketPosix::Connect(const IPEndPoint& address,
+                            const CompletionCallback& callback) {
   DCHECK(socket_);
 
   if (!logging_multiple_connect_attempts_)
@@ -245,15 +244,15 @@ int TCPSocketLibevent::Connect(const IPEndPoint& address,
     return OK;
   }
 
-  int rv = socket_->Connect(storage,
-                            base::Bind(&TCPSocketLibevent::ConnectCompleted,
-                                       base::Unretained(this), callback));
+  int rv =
+      socket_->Connect(storage, base::Bind(&TCPSocketPosix::ConnectCompleted,
+                                           base::Unretained(this), callback));
   if (rv != ERR_IO_PENDING)
     rv = HandleConnectCompleted(rv);
   return rv;
 }
 
-bool TCPSocketLibevent::IsConnected() const {
+bool TCPSocketPosix::IsConnected() const {
   if (!socket_)
     return false;
 
@@ -267,21 +266,21 @@ bool TCPSocketLibevent::IsConnected() const {
   return socket_->IsConnected();
 }
 
-bool TCPSocketLibevent::IsConnectedAndIdle() const {
+bool TCPSocketPosix::IsConnectedAndIdle() const {
   // TODO(wtc): should we also handle the TCP FastOpen case here,
   // as we do in IsConnected()?
   return socket_ && socket_->IsConnectedAndIdle();
 }
 
-int TCPSocketLibevent::Read(IOBuffer* buf,
-                            int buf_len,
-                            const CompletionCallback& callback) {
+int TCPSocketPosix::Read(IOBuffer* buf,
+                         int buf_len,
+                         const CompletionCallback& callback) {
   DCHECK(socket_);
   DCHECK(!callback.is_null());
 
   int rv = socket_->Read(
       buf, buf_len,
-      base::Bind(&TCPSocketLibevent::ReadCompleted,
+      base::Bind(&TCPSocketPosix::ReadCompleted,
                  // Grab a reference to |buf| so that ReadCompleted() can still
                  // use it when Read() completes, as otherwise, this transfers
                  // ownership of buf to socket.
@@ -291,14 +290,14 @@ int TCPSocketLibevent::Read(IOBuffer* buf,
   return rv;
 }
 
-int TCPSocketLibevent::Write(IOBuffer* buf,
-                             int buf_len,
-                             const CompletionCallback& callback) {
+int TCPSocketPosix::Write(IOBuffer* buf,
+                          int buf_len,
+                          const CompletionCallback& callback) {
   DCHECK(socket_);
   DCHECK(!callback.is_null());
 
   CompletionCallback write_callback =
-      base::Bind(&TCPSocketLibevent::WriteCompleted,
+      base::Bind(&TCPSocketPosix::WriteCompleted,
                  // Grab a reference to |buf| so that WriteCompleted() can still
                  // use it when Write() completes, as otherwise, this transfers
                  // ownership of buf to socket.
@@ -316,7 +315,7 @@ int TCPSocketLibevent::Write(IOBuffer* buf,
   return rv;
 }
 
-int TCPSocketLibevent::GetLocalAddress(IPEndPoint* address) const {
+int TCPSocketPosix::GetLocalAddress(IPEndPoint* address) const {
   DCHECK(address);
 
   if (!socket_)
@@ -333,7 +332,7 @@ int TCPSocketLibevent::GetLocalAddress(IPEndPoint* address) const {
   return OK;
 }
 
-int TCPSocketLibevent::GetPeerAddress(IPEndPoint* address) const {
+int TCPSocketPosix::GetPeerAddress(IPEndPoint* address) const {
   DCHECK(address);
 
   if (!IsConnected())
@@ -350,12 +349,12 @@ int TCPSocketLibevent::GetPeerAddress(IPEndPoint* address) const {
   return OK;
 }
 
-int TCPSocketLibevent::SetDefaultOptionsForServer() {
+int TCPSocketPosix::SetDefaultOptionsForServer() {
   DCHECK(socket_);
   return SetAddressReuse(true);
 }
 
-void TCPSocketLibevent::SetDefaultOptionsForClient() {
+void TCPSocketPosix::SetDefaultOptionsForClient() {
   DCHECK(socket_);
 
   // This mirrors the behaviour on Windows. See the comment in
@@ -381,7 +380,7 @@ void TCPSocketLibevent::SetDefaultOptionsForClient() {
 #endif
 }
 
-int TCPSocketLibevent::SetAddressReuse(bool allow) {
+int TCPSocketPosix::SetAddressReuse(bool allow) {
   DCHECK(socket_);
 
   // SO_REUSEADDR is useful for server sockets to bind to a recently unbound
@@ -405,31 +404,31 @@ int TCPSocketLibevent::SetAddressReuse(bool allow) {
   return OK;
 }
 
-int TCPSocketLibevent::SetReceiveBufferSize(int32 size) {
+int TCPSocketPosix::SetReceiveBufferSize(int32 size) {
   DCHECK(socket_);
   int rv = setsockopt(socket_->socket_fd(), SOL_SOCKET, SO_RCVBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
   return (rv == 0) ? OK : MapSystemError(errno);
 }
 
-int TCPSocketLibevent::SetSendBufferSize(int32 size) {
+int TCPSocketPosix::SetSendBufferSize(int32 size) {
   DCHECK(socket_);
   int rv = setsockopt(socket_->socket_fd(), SOL_SOCKET, SO_SNDBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
   return (rv == 0) ? OK : MapSystemError(errno);
 }
 
-bool TCPSocketLibevent::SetKeepAlive(bool enable, int delay) {
+bool TCPSocketPosix::SetKeepAlive(bool enable, int delay) {
   DCHECK(socket_);
   return SetTCPKeepAlive(socket_->socket_fd(), enable, delay);
 }
 
-bool TCPSocketLibevent::SetNoDelay(bool no_delay) {
+bool TCPSocketPosix::SetNoDelay(bool no_delay) {
   DCHECK(socket_);
   return SetTCPNoDelay(socket_->socket_fd(), no_delay);
 }
 
-void TCPSocketLibevent::Close() {
+void TCPSocketPosix::Close() {
   socket_.reset();
 
   // Record and reset TCP FastOpen state.
@@ -444,11 +443,11 @@ void TCPSocketLibevent::Close() {
   tcp_fastopen_status_ = TCP_FASTOPEN_STATUS_UNKNOWN;
 }
 
-bool TCPSocketLibevent::UsingTCPFastOpen() const {
+bool TCPSocketPosix::UsingTCPFastOpen() const {
   return use_tcp_fastopen_;
 }
 
-void TCPSocketLibevent::EnableTCPFastOpenIfSupported() {
+void TCPSocketPosix::EnableTCPFastOpenIfSupported() {
   if (!IsTCPFastOpenSupported())
     return;
 
@@ -462,11 +461,11 @@ void TCPSocketLibevent::EnableTCPFastOpenIfSupported() {
     tcp_fastopen_status_ = TCP_FASTOPEN_PREVIOUSLY_FAILED;
 }
 
-bool TCPSocketLibevent::IsValid() const {
+bool TCPSocketPosix::IsValid() const {
   return socket_ != NULL && socket_->socket_fd() != kInvalidSocket;
 }
 
-void TCPSocketLibevent::StartLoggingMultipleConnectAttempts(
+void TCPSocketPosix::StartLoggingMultipleConnectAttempts(
     const AddressList& addresses) {
   if (!logging_multiple_connect_attempts_) {
     logging_multiple_connect_attempts_ = true;
@@ -476,7 +475,7 @@ void TCPSocketLibevent::StartLoggingMultipleConnectAttempts(
   }
 }
 
-void TCPSocketLibevent::EndLoggingMultipleConnectAttempts(int net_error) {
+void TCPSocketPosix::EndLoggingMultipleConnectAttempts(int net_error) {
   if (logging_multiple_connect_attempts_) {
     LogConnectEnd(net_error);
     logging_multiple_connect_attempts_ = false;
@@ -485,21 +484,20 @@ void TCPSocketLibevent::EndLoggingMultipleConnectAttempts(int net_error) {
   }
 }
 
-void TCPSocketLibevent::AcceptCompleted(
-    scoped_ptr<TCPSocketLibevent>* tcp_socket,
-    IPEndPoint* address,
-    const CompletionCallback& callback,
-    int rv) {
+void TCPSocketPosix::AcceptCompleted(scoped_ptr<TCPSocketPosix>* tcp_socket,
+                                     IPEndPoint* address,
+                                     const CompletionCallback& callback,
+                                     int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   callback.Run(HandleAcceptCompleted(tcp_socket, address, rv));
 }
 
-int TCPSocketLibevent::HandleAcceptCompleted(
-    scoped_ptr<TCPSocketLibevent>* tcp_socket,
+int TCPSocketPosix::HandleAcceptCompleted(
+    scoped_ptr<TCPSocketPosix>* tcp_socket,
     IPEndPoint* address,
     int rv) {
   if (rv == OK)
-    rv = BuildTcpSocketLibevent(tcp_socket, address);
+    rv = BuildTcpSocketPosix(tcp_socket, address);
 
   if (rv == OK) {
     net_log_.EndEvent(NetLog::TYPE_TCP_ACCEPT,
@@ -511,9 +509,8 @@ int TCPSocketLibevent::HandleAcceptCompleted(
   return rv;
 }
 
-int TCPSocketLibevent::BuildTcpSocketLibevent(
-    scoped_ptr<TCPSocketLibevent>* tcp_socket,
-    IPEndPoint* address) {
+int TCPSocketPosix::BuildTcpSocketPosix(scoped_ptr<TCPSocketPosix>* tcp_socket,
+                                        IPEndPoint* address) {
   DCHECK(accept_socket_);
 
   SockaddrStorage storage;
@@ -523,19 +520,18 @@ int TCPSocketLibevent::BuildTcpSocketLibevent(
     return ERR_ADDRESS_INVALID;
   }
 
-  tcp_socket->reset(new TCPSocketLibevent(net_log_.net_log(),
-                                          net_log_.source()));
+  tcp_socket->reset(new TCPSocketPosix(net_log_.net_log(), net_log_.source()));
   (*tcp_socket)->socket_.reset(accept_socket_.release());
   return OK;
 }
 
-void TCPSocketLibevent::ConnectCompleted(const CompletionCallback& callback,
-                                         int rv) const {
+void TCPSocketPosix::ConnectCompleted(const CompletionCallback& callback,
+                                      int rv) const {
   DCHECK_NE(ERR_IO_PENDING, rv);
   callback.Run(HandleConnectCompleted(rv));
 }
 
-int TCPSocketLibevent::HandleConnectCompleted(int rv) const {
+int TCPSocketPosix::HandleConnectCompleted(int rv) const {
   // Log the end of this attempt (and any OS error it threw).
   if (rv != OK) {
     net_log_.EndEvent(NetLog::TYPE_TCP_CONNECT_ATTEMPT,
@@ -554,12 +550,12 @@ int TCPSocketLibevent::HandleConnectCompleted(int rv) const {
   return rv;
 }
 
-void TCPSocketLibevent::LogConnectBegin(const AddressList& addresses) const {
+void TCPSocketPosix::LogConnectBegin(const AddressList& addresses) const {
   net_log_.BeginEvent(NetLog::TYPE_TCP_CONNECT,
                       addresses.CreateNetLogCallback());
 }
 
-void TCPSocketLibevent::LogConnectEnd(int net_error) const {
+void TCPSocketPosix::LogConnectEnd(int net_error) const {
   if (net_error != OK) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_CONNECT, net_error);
     return;
@@ -581,14 +577,14 @@ void TCPSocketLibevent::LogConnectEnd(int net_error) const {
                                                       storage.addr_len));
 }
 
-void TCPSocketLibevent::ReadCompleted(const scoped_refptr<IOBuffer>& buf,
-                                      const CompletionCallback& callback,
-                                      int rv) {
+void TCPSocketPosix::ReadCompleted(const scoped_refptr<IOBuffer>& buf,
+                                   const CompletionCallback& callback,
+                                   int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   callback.Run(HandleReadCompleted(buf.get(), rv));
 }
 
-int TCPSocketLibevent::HandleReadCompleted(IOBuffer* buf, int rv) {
+int TCPSocketPosix::HandleReadCompleted(IOBuffer* buf, int rv) {
   if (tcp_fastopen_write_attempted_ && !tcp_fastopen_connected_) {
     // A TCP FastOpen connect-with-write was attempted. This read was a
     // subsequent read, which either succeeded or failed. If the read
@@ -618,14 +614,14 @@ int TCPSocketLibevent::HandleReadCompleted(IOBuffer* buf, int rv) {
   return rv;
 }
 
-void TCPSocketLibevent::WriteCompleted(const scoped_refptr<IOBuffer>& buf,
-                                       const CompletionCallback& callback,
-                                       int rv) {
+void TCPSocketPosix::WriteCompleted(const scoped_refptr<IOBuffer>& buf,
+                                    const CompletionCallback& callback,
+                                    int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   callback.Run(HandleWriteCompleted(buf.get(), rv));
 }
 
-int TCPSocketLibevent::HandleWriteCompleted(IOBuffer* buf, int rv) {
+int TCPSocketPosix::HandleWriteCompleted(IOBuffer* buf, int rv) {
   if (rv < 0) {
     if (tcp_fastopen_write_attempted_ && !tcp_fastopen_connected_) {
       // TCP FastOpen connect-with-write was attempted, and the write failed
@@ -648,10 +644,9 @@ int TCPSocketLibevent::HandleWriteCompleted(IOBuffer* buf, int rv) {
   return rv;
 }
 
-int TCPSocketLibevent::TcpFastOpenWrite(
-    IOBuffer* buf,
-    int buf_len,
-    const CompletionCallback& callback) {
+int TCPSocketPosix::TcpFastOpenWrite(IOBuffer* buf,
+                                     int buf_len,
+                                     const CompletionCallback& callback) {
   SockaddrStorage storage;
   int rv = socket_->GetPeerAddress(&storage);
   if (rv != OK)
@@ -710,7 +705,7 @@ int TCPSocketLibevent::TcpFastOpenWrite(
   return socket_->WaitForWrite(buf, buf_len, callback);
 }
 
-void TCPSocketLibevent::UpdateTCPFastOpenStatusAfterRead() {
+void TCPSocketPosix::UpdateTCPFastOpenStatusAfterRead() {
   DCHECK(tcp_fastopen_status_ == TCP_FASTOPEN_FAST_CONNECT_RETURN ||
          tcp_fastopen_status_ == TCP_FASTOPEN_SLOW_CONNECT_RETURN);
 
@@ -751,8 +746,7 @@ void TCPSocketLibevent::UpdateTCPFastOpenStatusAfterRead() {
   }
 }
 
-bool TCPSocketLibevent::GetEstimatedRoundTripTime(
-    base::TimeDelta* out_rtt) const {
+bool TCPSocketPosix::GetEstimatedRoundTripTime(base::TimeDelta* out_rtt) const {
   DCHECK(out_rtt);
   if (!socket_)
     return false;

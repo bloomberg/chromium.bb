@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "net/base/net_errors.h"
-#include "net/socket/socket_libevent.h"
+#include "net/socket/socket_posix.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
 
 namespace net {
@@ -20,12 +20,12 @@ namespace {
 
 // Intended for use as SetterCallbacks in Accept() helper methods.
 void SetStreamSocket(scoped_ptr<StreamSocket>* socket,
-                     scoped_ptr<SocketLibevent> accepted_socket) {
+                     scoped_ptr<SocketPosix> accepted_socket) {
   socket->reset(new UnixDomainClientSocket(accepted_socket.Pass()));
 }
 
 void SetSocketDescriptor(SocketDescriptor* socket,
-                         scoped_ptr<SocketLibevent> accepted_socket) {
+                         scoped_ptr<SocketPosix> accepted_socket) {
   *socket = accepted_socket->ReleaseConnectedSocket();
 }
 
@@ -78,7 +78,7 @@ int UnixDomainServerSocket::ListenWithAddressAndPort(
     return ERR_ADDRESS_INVALID;
   }
 
-  scoped_ptr<SocketLibevent> socket(new SocketLibevent);
+  scoped_ptr<SocketPosix> socket(new SocketPosix);
   int rv = socket->Open(AF_UNIX);
   DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv != OK)

@@ -425,7 +425,7 @@ int TCPSocketWin::Connect(const IPEndPoint& address,
   // completed and failed. Although it is allowed to connect the same |socket_|
   // again after a connection attempt failed on Windows, it results in
   // unspecified behavior according to POSIX. Therefore, we make it behave in
-  // the same way as TCPSocketLibevent.
+  // the same way as TCPSocketPosix.
   DCHECK(!peer_address_ && !core_.get());
 
   if (!logging_multiple_connect_attempts_)

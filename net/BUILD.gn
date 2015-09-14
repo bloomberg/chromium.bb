@@ -336,15 +336,7 @@ if (!enable_mdns) {
 }
 
 if (is_win) {
-  net_shared_sources -= [
-    "http/http_auth_handler_ntlm_portable.cc",
-    "socket/socket_libevent.cc",
-    "socket/socket_libevent.h",
-    "socket/tcp_socket_libevent.cc",
-    "socket/tcp_socket_libevent.h",
-    "udp/udp_socket_libevent.cc",
-    "udp/udp_socket_libevent.h",
-  ]
+  net_shared_sources -= [ "http/http_auth_handler_ntlm_portable.cc" ]
 } else {  # !is_win
   net_shared_sources -= [
     "base/winsock_init.cc",

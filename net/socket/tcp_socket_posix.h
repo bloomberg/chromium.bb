@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_TCP_SOCKET_LIBEVENT_H_
-#define NET_SOCKET_TCP_SOCKET_LIBEVENT_H_
+#ifndef NET_SOCKET_TCP_SOCKET_POSIX_H_
+#define NET_SOCKET_TCP_SOCKET_POSIX_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -20,12 +20,12 @@ namespace net {
 class AddressList;
 class IOBuffer;
 class IPEndPoint;
-class SocketLibevent;
+class SocketPosix;
 
-class NET_EXPORT TCPSocketLibevent {
+class NET_EXPORT TCPSocketPosix {
  public:
-  TCPSocketLibevent(NetLog* net_log, const NetLog::Source& source);
-  virtual ~TCPSocketLibevent();
+  TCPSocketPosix(NetLog* net_log, const NetLog::Source& source);
+  virtual ~TCPSocketPosix();
 
   int Open(AddressFamily family);
   // Takes ownership of |socket_fd|.
@@ -34,7 +34,7 @@ class NET_EXPORT TCPSocketLibevent {
   int Bind(const IPEndPoint& address);
 
   int Listen(int backlog);
-  int Accept(scoped_ptr<TCPSocketLibevent>* socket,
+  int Accept(scoped_ptr<TCPSocketPosix>* socket,
              IPEndPoint* address,
              const CompletionCallback& callback);
 
@@ -162,15 +162,15 @@ class NET_EXPORT TCPSocketLibevent {
     TCP_FASTOPEN_MAX_VALUE
   };
 
-  void AcceptCompleted(scoped_ptr<TCPSocketLibevent>* tcp_socket,
+  void AcceptCompleted(scoped_ptr<TCPSocketPosix>* tcp_socket,
                        IPEndPoint* address,
                        const CompletionCallback& callback,
                        int rv);
-  int HandleAcceptCompleted(scoped_ptr<TCPSocketLibevent>* tcp_socket,
+  int HandleAcceptCompleted(scoped_ptr<TCPSocketPosix>* tcp_socket,
                             IPEndPoint* address,
                             int rv);
-  int BuildTcpSocketLibevent(scoped_ptr<TCPSocketLibevent>* tcp_socket,
-                             IPEndPoint* address);
+  int BuildTcpSocketPosix(scoped_ptr<TCPSocketPosix>* tcp_socket,
+                          IPEndPoint* address);
 
   void ConnectCompleted(const CompletionCallback& callback, int rv) const;
   int HandleConnectCompleted(int rv) const;
@@ -193,8 +193,8 @@ class NET_EXPORT TCPSocketLibevent {
   // Called after the first read completes on a TCP FastOpen socket.
   void UpdateTCPFastOpenStatusAfterRead();
 
-  scoped_ptr<SocketLibevent> socket_;
-  scoped_ptr<SocketLibevent> accept_socket_;
+  scoped_ptr<SocketPosix> socket_;
+  scoped_ptr<SocketPosix> accept_socket_;
 
   // Enables experimental TCP FastOpen option.
   bool use_tcp_fastopen_;
@@ -212,9 +212,9 @@ class NET_EXPORT TCPSocketLibevent {
 
   BoundNetLog net_log_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPSocketLibevent);
+  DISALLOW_COPY_AND_ASSIGN(TCPSocketPosix);
 };
 
 }  // namespace net
 
-#endif  // NET_SOCKET_TCP_SOCKET_LIBEVENT_H_
+#endif  // NET_SOCKET_TCP_SOCKET_POSIX_H_

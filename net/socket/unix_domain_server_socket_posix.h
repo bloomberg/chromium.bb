@@ -19,7 +19,7 @@
 
 namespace net {
 
-class SocketLibevent;
+class SocketPosix;
 
 // Unix Domain Server Socket Implementation. Supports abstract namespaces on
 // Linux and Android.
@@ -68,7 +68,7 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
   // A callback to wrap the setting of the out-parameter to Accept().
   // This allows the internal machinery of that call to be implemented in
   // a manner that's agnostic to the caller's desired output.
-  typedef base::Callback<void(scoped_ptr<SocketLibevent>)> SetterCallback;
+  typedef base::Callback<void(scoped_ptr<SocketPosix>)> SetterCallback;
 
   int DoAccept(const SetterCallback& setter_callback,
                const CompletionCallback& callback);
@@ -77,11 +77,11 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
                        int rv);
   bool AuthenticateAndGetStreamSocket(const SetterCallback& setter_callback);
 
-  scoped_ptr<SocketLibevent> listen_socket_;
+  scoped_ptr<SocketPosix> listen_socket_;
   const AuthCallback auth_callback_;
   const bool use_abstract_namespace_;
 
-  scoped_ptr<SocketLibevent> accept_socket_;
+  scoped_ptr<SocketPosix> accept_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocket);
 };

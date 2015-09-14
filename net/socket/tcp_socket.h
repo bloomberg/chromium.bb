@@ -11,7 +11,7 @@
 #if defined(OS_WIN)
 #include "net/socket/tcp_socket_win.h"
 #elif defined(OS_POSIX)
-#include "net/socket/tcp_socket_libevent.h"
+#include "net/socket/tcp_socket_posix.h"
 #endif
 
 namespace net {
@@ -25,7 +25,7 @@ namespace net {
 #if defined(OS_WIN)
 typedef TCPSocketWin TCPSocket;
 #elif defined(OS_POSIX)
-typedef TCPSocketLibevent TCPSocket;
+typedef TCPSocketPosix TCPSocket;
 #endif
 
 // Check if TCP FastOpen is supported by the OS.

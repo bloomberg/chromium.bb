@@ -116,7 +116,7 @@ class StreamListenSocket :
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
   WaitState wait_state_;
-  // The socket's libevent wrapper.
+  // The socket's posix wrapper.
   base::MessageLoopForIO::FileDescriptorWatcher watcher_;
 #endif
 

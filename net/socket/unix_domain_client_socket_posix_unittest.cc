@@ -14,7 +14,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "net/socket/socket_libevent.h"
+#include "net/socket/socket_posix.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -182,7 +182,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithSocketDescriptor) {
   // to be sure it hasn't gotten accidentally closed.
   SockaddrStorage addr;
   ASSERT_TRUE(UnixDomainClientSocket::FillAddress(socket_path_, false, &addr));
-  scoped_ptr<SocketLibevent> adopter(new SocketLibevent);
+  scoped_ptr<SocketPosix> adopter(new SocketPosix);
   adopter->AdoptConnectedSocket(client_socket_fd, addr);
   UnixDomainClientSocket rewrapped_socket(adopter.Pass());
   EXPECT_TRUE(rewrapped_socket.IsConnected());
@@ -281,7 +281,7 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromClient) {
   // Connection closed by peer.
   EXPECT_EQ(0 /* EOF */, read_callback.WaitForResult());
   // Note that read callback won't be called when the connection is closed
-  // locally before the peer closes it. SocketLibevent just clears callbacks.
+  // locally before the peer closes it. SocketPosix just clears callbacks.
 }
 
 TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
@@ -314,7 +314,7 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
   // Connection closed by peer.
   EXPECT_EQ(0 /* EOF */, read_callback.WaitForResult());
   // Note that read callback won't be called when the connection is closed
-  // locally before the peer closes it. SocketLibevent just clears callbacks.
+  // locally before the peer closes it. SocketPosix just clears callbacks.
 }
 
 TEST_F(UnixDomainClientSocketTest, ReadAfterWrite) {

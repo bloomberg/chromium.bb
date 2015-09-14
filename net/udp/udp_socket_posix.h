@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_UDP_UDP_SOCKET_LIBEVENT_H_
-#define NET_UDP_UDP_SOCKET_LIBEVENT_H_
+#ifndef NET_UDP_UDP_SOCKET_POSIX_H_
+#define NET_UDP_UDP_SOCKET_POSIX_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,13 +22,13 @@
 
 namespace net {
 
-class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
+class NET_EXPORT UDPSocketPosix : public base::NonThreadSafe {
  public:
-  UDPSocketLibevent(DatagramSocket::BindType bind_type,
-                    const RandIntCallback& rand_int_cb,
-                    net::NetLog* net_log,
-                    const net::NetLog::Source& source);
-  virtual ~UDPSocketLibevent();
+  UDPSocketPosix(DatagramSocket::BindType bind_type,
+                 const RandIntCallback& rand_int_cb,
+                 net::NetLog* net_log,
+                 const net::NetLog::Source& source);
+  virtual ~UDPSocketPosix();
 
   // Opens the socket.
   // Returns a net error code.
@@ -184,7 +184,7 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
 
   class ReadWatcher : public base::MessageLoopForIO::Watcher {
    public:
-    explicit ReadWatcher(UDPSocketLibevent* socket) : socket_(socket) {}
+    explicit ReadWatcher(UDPSocketPosix* socket) : socket_(socket) {}
 
     // MessageLoopForIO::Watcher methods
 
@@ -193,14 +193,14 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
     void OnFileCanWriteWithoutBlocking(int /* fd */) override {}
 
    private:
-    UDPSocketLibevent* const socket_;
+    UDPSocketPosix* const socket_;
 
     DISALLOW_COPY_AND_ASSIGN(ReadWatcher);
   };
 
   class WriteWatcher : public base::MessageLoopForIO::Watcher {
    public:
-    explicit WriteWatcher(UDPSocketLibevent* socket) : socket_(socket) {}
+    explicit WriteWatcher(UDPSocketPosix* socket) : socket_(socket) {}
 
     // MessageLoopForIO::Watcher methods
 
@@ -209,7 +209,7 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
     void OnFileCanWriteWithoutBlocking(int /* fd */) override;
 
    private:
-    UDPSocketLibevent* const socket_;
+    UDPSocketPosix* const socket_;
 
     DISALLOW_COPY_AND_ASSIGN(WriteWatcher);
   };
@@ -274,7 +274,7 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
   mutable scoped_ptr<IPEndPoint> local_address_;
   mutable scoped_ptr<IPEndPoint> remote_address_;
 
-  // The socket's libevent wrappers
+  // The socket's posix wrappers
   base::MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
   base::MessageLoopForIO::FileDescriptorWatcher write_socket_watcher_;
 
@@ -300,9 +300,9 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
 
   BoundNetLog net_log_;
 
-  DISALLOW_COPY_AND_ASSIGN(UDPSocketLibevent);
+  DISALLOW_COPY_AND_ASSIGN(UDPSocketPosix);
 };
 
 }  // namespace net
 
-#endif  // NET_UDP_UDP_SOCKET_LIBEVENT_H_
+#endif  // NET_UDP_UDP_SOCKET_POSIX_H_

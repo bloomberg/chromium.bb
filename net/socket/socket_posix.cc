@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/socket_libevent.h"
+#include "net/socket/socket_posix.h"
 
 #include <errno.h>
 #include <netinet/in.h>
@@ -53,18 +53,17 @@ int MapConnectError(int os_error) {
 
 }  // namespace
 
-SocketLibevent::SocketLibevent()
+SocketPosix::SocketPosix()
     : socket_fd_(kInvalidSocket),
       read_buf_len_(0),
       write_buf_len_(0),
-      waiting_connect_(false) {
-}
+      waiting_connect_(false) {}
 
-SocketLibevent::~SocketLibevent() {
+SocketPosix::~SocketPosix() {
   Close();
 }
 
-int SocketLibevent::Open(int address_family) {
+int SocketPosix::Open(int address_family) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(kInvalidSocket, socket_fd_);
   DCHECK(address_family == AF_INET ||
@@ -89,8 +88,8 @@ int SocketLibevent::Open(int address_family) {
   return OK;
 }
 
-int SocketLibevent::AdoptConnectedSocket(SocketDescriptor socket,
-                                         const SockaddrStorage& address) {
+int SocketPosix::AdoptConnectedSocket(SocketDescriptor socket,
+                                      const SockaddrStorage& address) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(kInvalidSocket, socket_fd_);
 
@@ -106,14 +105,14 @@ int SocketLibevent::AdoptConnectedSocket(SocketDescriptor socket,
   return OK;
 }
 
-SocketDescriptor SocketLibevent::ReleaseConnectedSocket() {
+SocketDescriptor SocketPosix::ReleaseConnectedSocket() {
   StopWatchingAndCleanUp();
   SocketDescriptor socket_fd = socket_fd_;
   socket_fd_ = kInvalidSocket;
   return socket_fd;
 }
 
-int SocketLibevent::Bind(const SockaddrStorage& address) {
+int SocketPosix::Bind(const SockaddrStorage& address) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
 
@@ -126,7 +125,7 @@ int SocketLibevent::Bind(const SockaddrStorage& address) {
   return OK;
 }
 
-int SocketLibevent::Listen(int backlog) {
+int SocketPosix::Listen(int backlog) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
   DCHECK_LT(0, backlog);
@@ -140,8 +139,8 @@ int SocketLibevent::Listen(int backlog) {
   return OK;
 }
 
-int SocketLibevent::Accept(scoped_ptr<SocketLibevent>* socket,
-                           const CompletionCallback& callback) {
+int SocketPosix::Accept(scoped_ptr<SocketPosix>* socket,
+                        const CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
   DCHECK(accept_callback_.is_null());
@@ -164,8 +163,8 @@ int SocketLibevent::Accept(scoped_ptr<SocketLibevent>* socket,
   return ERR_IO_PENDING;
 }
 
-int SocketLibevent::Connect(const SockaddrStorage& address,
-                            const CompletionCallback& callback) {
+int SocketPosix::Connect(const SockaddrStorage& address,
+                         const CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
   DCHECK(!waiting_connect_);
@@ -189,7 +188,7 @@ int SocketLibevent::Connect(const SockaddrStorage& address,
   return ERR_IO_PENDING;
 }
 
-bool SocketLibevent::IsConnected() const {
+bool SocketPosix::IsConnected() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (socket_fd_ == kInvalidSocket || waiting_connect_)
@@ -206,7 +205,7 @@ bool SocketLibevent::IsConnected() const {
   return true;
 }
 
-bool SocketLibevent::IsConnectedAndIdle() const {
+bool SocketPosix::IsConnectedAndIdle() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (socket_fd_ == kInvalidSocket || waiting_connect_)
@@ -224,9 +223,9 @@ bool SocketLibevent::IsConnectedAndIdle() const {
   return true;
 }
 
-int SocketLibevent::Read(IOBuffer* buf,
-                         int buf_len,
-                         const CompletionCallback& callback) {
+int SocketPosix::Read(IOBuffer* buf,
+                      int buf_len,
+                      const CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
   DCHECK(!waiting_connect_);
@@ -252,9 +251,9 @@ int SocketLibevent::Read(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int SocketLibevent::Write(IOBuffer* buf,
-                          int buf_len,
-                          const CompletionCallback& callback) {
+int SocketPosix::Write(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
   DCHECK(!waiting_connect_);
@@ -269,9 +268,9 @@ int SocketLibevent::Write(IOBuffer* buf,
   return rv;
 }
 
-int SocketLibevent::WaitForWrite(IOBuffer* buf,
-                                 int buf_len,
-                                 const CompletionCallback& callback) {
+int SocketPosix::WaitForWrite(IOBuffer* buf,
+                              int buf_len,
+                              const CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
   DCHECK(write_callback_.is_null());
@@ -292,7 +291,7 @@ int SocketLibevent::WaitForWrite(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int SocketLibevent::GetLocalAddress(SockaddrStorage* address) const {
+int SocketPosix::GetLocalAddress(SockaddrStorage* address) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(address);
 
@@ -301,7 +300,7 @@ int SocketLibevent::GetLocalAddress(SockaddrStorage* address) const {
   return OK;
 }
 
-int SocketLibevent::GetPeerAddress(SockaddrStorage* address) const {
+int SocketPosix::GetPeerAddress(SockaddrStorage* address) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(address);
 
@@ -312,7 +311,7 @@ int SocketLibevent::GetPeerAddress(SockaddrStorage* address) const {
   return OK;
 }
 
-void SocketLibevent::SetPeerAddress(const SockaddrStorage& address) {
+void SocketPosix::SetPeerAddress(const SockaddrStorage& address) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // |peer_address_| will be non-NULL if Connect() has been called. Unless
   // Close() is called to reset the internal state, a second call to Connect()
@@ -325,12 +324,12 @@ void SocketLibevent::SetPeerAddress(const SockaddrStorage& address) {
   peer_address_.reset(new SockaddrStorage(address));
 }
 
-bool SocketLibevent::HasPeerAddress() const {
+bool SocketPosix::HasPeerAddress() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return peer_address_ != NULL;
 }
 
-void SocketLibevent::Close() {
+void SocketPosix::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   StopWatchingAndCleanUp();
@@ -342,7 +341,7 @@ void SocketLibevent::Close() {
   }
 }
 
-void SocketLibevent::OnFileCanReadWithoutBlocking(int fd) {
+void SocketPosix::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(!accept_callback_.is_null() || !read_callback_.is_null());
   if (!accept_callback_.is_null()) {
     AcceptCompleted();
@@ -351,7 +350,7 @@ void SocketLibevent::OnFileCanReadWithoutBlocking(int fd) {
   }
 }
 
-void SocketLibevent::OnFileCanWriteWithoutBlocking(int fd) {
+void SocketPosix::OnFileCanWriteWithoutBlocking(int fd) {
   DCHECK(!write_callback_.is_null());
   if (waiting_connect_) {
     ConnectCompleted();
@@ -360,7 +359,7 @@ void SocketLibevent::OnFileCanWriteWithoutBlocking(int fd) {
   }
 }
 
-int SocketLibevent::DoAccept(scoped_ptr<SocketLibevent>* socket) {
+int SocketPosix::DoAccept(scoped_ptr<SocketPosix>* socket) {
   SockaddrStorage new_peer_address;
   int new_socket = HANDLE_EINTR(accept(socket_fd_,
                                        new_peer_address.addr,
@@ -368,7 +367,7 @@ int SocketLibevent::DoAccept(scoped_ptr<SocketLibevent>* socket) {
   if (new_socket < 0)
     return MapAcceptError(errno);
 
-  scoped_ptr<SocketLibevent> accepted_socket(new SocketLibevent);
+  scoped_ptr<SocketPosix> accepted_socket(new SocketPosix);
   int rv = accepted_socket->AdoptConnectedSocket(new_socket, new_peer_address);
   if (rv != OK)
     return rv;
@@ -377,7 +376,7 @@ int SocketLibevent::DoAccept(scoped_ptr<SocketLibevent>* socket) {
   return OK;
 }
 
-void SocketLibevent::AcceptCompleted() {
+void SocketPosix::AcceptCompleted() {
   DCHECK(accept_socket_);
   int rv = DoAccept(accept_socket_);
   if (rv == ERR_IO_PENDING)
@@ -389,7 +388,7 @@ void SocketLibevent::AcceptCompleted() {
   base::ResetAndReturn(&accept_callback_).Run(rv);
 }
 
-int SocketLibevent::DoConnect() {
+int SocketPosix::DoConnect() {
   int rv = HANDLE_EINTR(connect(socket_fd_,
                                 peer_address_->addr,
                                 peer_address_->addr_len));
@@ -397,12 +396,12 @@ int SocketLibevent::DoConnect() {
   return rv == 0 ? OK : MapConnectError(errno);
 }
 
-void SocketLibevent::ConnectCompleted() {
+void SocketPosix::ConnectCompleted() {
   // Get the error that connect() completed with.
   int os_error = 0;
   socklen_t len = sizeof(os_error);
   if (getsockopt(socket_fd_, SOL_SOCKET, SO_ERROR, &os_error, &len) == 0) {
-    // TCPSocketLibevent expects errno to be set.
+    // TCPSocketPosix expects errno to be set.
     errno = os_error;
   }
 
@@ -416,12 +415,12 @@ void SocketLibevent::ConnectCompleted() {
   base::ResetAndReturn(&write_callback_).Run(rv);
 }
 
-int SocketLibevent::DoRead(IOBuffer* buf, int buf_len) {
+int SocketPosix::DoRead(IOBuffer* buf, int buf_len) {
   int rv = HANDLE_EINTR(read(socket_fd_, buf->data(), buf_len));
   return rv >= 0 ? rv : MapSystemError(errno);
 }
 
-void SocketLibevent::ReadCompleted() {
+void SocketPosix::ReadCompleted() {
   int rv = DoRead(read_buf_.get(), read_buf_len_);
   if (rv == ERR_IO_PENDING)
     return;
@@ -433,12 +432,12 @@ void SocketLibevent::ReadCompleted() {
   base::ResetAndReturn(&read_callback_).Run(rv);
 }
 
-int SocketLibevent::DoWrite(IOBuffer* buf, int buf_len) {
+int SocketPosix::DoWrite(IOBuffer* buf, int buf_len) {
   int rv = HANDLE_EINTR(write(socket_fd_, buf->data(), buf_len));
   return rv >= 0 ? rv : MapSystemError(errno);
 }
 
-void SocketLibevent::WriteCompleted() {
+void SocketPosix::WriteCompleted() {
   int rv = DoWrite(write_buf_.get(), write_buf_len_);
   if (rv == ERR_IO_PENDING)
     return;
@@ -450,7 +449,7 @@ void SocketLibevent::WriteCompleted() {
   base::ResetAndReturn(&write_callback_).Run(rv);
 }
 
-void SocketLibevent::StopWatchingAndCleanUp() {
+void SocketPosix::StopWatchingAndCleanUp() {
   bool ok = accept_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
   ok = read_socket_watcher_.StopWatchingFileDescriptor();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_SOCKET_LIBEVENT_H_
-#define NET_SOCKET_SOCKET_LIBEVENT_H_
+#ifndef NET_SOCKET_SOCKET_POSIX_H_
+#define NET_SOCKET_SOCKET_POSIX_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -23,11 +23,10 @@ class IPEndPoint;
 
 // Socket class to provide asynchronous read/write operations on top of the
 // posix socket api. It supports AF_INET, AF_INET6, and AF_UNIX addresses.
-class NET_EXPORT_PRIVATE SocketLibevent
-    : public base::MessageLoopForIO::Watcher {
+class NET_EXPORT_PRIVATE SocketPosix : public base::MessageLoopForIO::Watcher {
  public:
-  SocketLibevent();
-  ~SocketLibevent() override;
+  SocketPosix();
+  ~SocketPosix() override;
 
   // Opens a socket and returns net::OK if |address_family| is AF_INET, AF_INET6
   // or AF_UNIX. Otherwise, it does DCHECK() and returns a net error.
@@ -41,7 +40,7 @@ class NET_EXPORT_PRIVATE SocketLibevent
   int Bind(const SockaddrStorage& address);
 
   int Listen(int backlog);
-  int Accept(scoped_ptr<SocketLibevent>* socket,
+  int Accept(scoped_ptr<SocketPosix>* socket,
              const CompletionCallback& callback);
 
   // Connects socket. On non-ERR_IO_PENDING error, sets errno and returns a net
@@ -62,7 +61,7 @@ class NET_EXPORT_PRIVATE SocketLibevent
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
 
-  // Waits for next write event. This is called by TCPsocketLibevent for TCP
+  // Waits for next write event. This is called by TCPSocketPosix for TCP
   // fastopen after sending first data. Returns ERR_IO_PENDING if it starts
   // waiting for write event successfully. Otherwise, returns a net error code.
   // It must not be called after Write() because Write() calls it internally.
@@ -84,7 +83,7 @@ class NET_EXPORT_PRIVATE SocketLibevent
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  int DoAccept(scoped_ptr<SocketLibevent>* socket);
+  int DoAccept(scoped_ptr<SocketPosix>* socket);
   void AcceptCompleted();
 
   int DoConnect();
@@ -101,7 +100,7 @@ class NET_EXPORT_PRIVATE SocketLibevent
   SocketDescriptor socket_fd_;
 
   base::MessageLoopForIO::FileDescriptorWatcher accept_socket_watcher_;
-  scoped_ptr<SocketLibevent>* accept_socket_;
+  scoped_ptr<SocketPosix>* accept_socket_;
   CompletionCallback accept_callback_;
 
   base::MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
@@ -124,9 +123,9 @@ class NET_EXPORT_PRIVATE SocketLibevent
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(SocketLibevent);
+  DISALLOW_COPY_AND_ASSIGN(SocketPosix);
 };
 
 }  // namespace net
 
-#endif  // NET_SOCKET_SOCKET_LIBEVENT_H_
+#endif  // NET_SOCKET_SOCKET_POSIX_H_
