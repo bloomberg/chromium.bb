@@ -151,7 +151,8 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureInEachVideoFormatInSequence) {
         format == media::PIXEL_FORMAT_YV24 ||
         format == media::PIXEL_FORMAT_ARGB ||
         format == media::PIXEL_FORMAT_XRGB ||
-        format == media::PIXEL_FORMAT_MJPEG) {
+        format == media::PIXEL_FORMAT_MJPEG ||
+        format == media::PIXEL_FORMAT_MT21) {
       continue;
     }
 #if !defined(OS_LINUX) && !defined(OS_WIN)

@@ -73942,6 +73942,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="RGB24"/>
   <int value="13" label="RGB32"/>
   <int value="14" label="MJPEG"/>
+  <int value="15" label="MT21"/>
 </enum>
 
 <enum name="VideoPlayerCastAPIExtensionStatus" type="int">

@@ -542,6 +542,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_RGB24:
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_UNKNOWN:
       NOTREACHED();
   }

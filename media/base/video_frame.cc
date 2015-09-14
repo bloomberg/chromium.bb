@@ -89,6 +89,7 @@ static gfx::Size SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_YV12A:
         case PIXEL_FORMAT_NV12:
         case PIXEL_FORMAT_NV21:
+        case PIXEL_FORMAT_MT21:
           return gfx::Size(2, 2);
 
         case PIXEL_FORMAT_UNKNOWN:
@@ -133,7 +134,8 @@ static int BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_YUY2:
       return 2;
     case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_NV21: {
+    case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_MT21: {
       static const int bytes_per_element[] = {1, 2};
       DCHECK_LT(plane, arraysize(bytes_per_element));
       return bytes_per_element[plane];
@@ -177,7 +179,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 14,
+  static_assert(PIXEL_FORMAT_MAX == 15,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -528,6 +530,7 @@ size_t VideoFrame::NumPlanes(VideoPixelFormat format) {
       return 1;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_MT21:
       return 2;
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YV12:

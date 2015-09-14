@@ -337,6 +337,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_RGB24:
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_UNKNOWN:
       frame_ready_cb.Run(video_frame);
       return;

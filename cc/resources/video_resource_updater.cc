@@ -62,6 +62,7 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
     case media::PIXEL_FORMAT_RGB24:
     case media::PIXEL_FORMAT_RGB32:
     case media::PIXEL_FORMAT_MJPEG:
+    case media::PIXEL_FORMAT_MT21:
     case media::PIXEL_FORMAT_UNKNOWN:
       break;
   }
