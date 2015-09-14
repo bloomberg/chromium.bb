@@ -29,7 +29,6 @@ protected:
 private:
     void SetUp() override
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
     }
     void TearDown() override

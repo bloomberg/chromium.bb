@@ -449,8 +449,7 @@ bool LayoutTheme::controlStateChanged(LayoutObject& o, ControlState state) const
         return false;
 
     o.setShouldDoFullPaintInvalidation();
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        o.invalidateDisplayItemClientForNonCompositingDescendants();
+    o.invalidateDisplayItemClientForNonCompositingDescendants();
     return true;
 }
 

@@ -246,7 +246,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
     // gets the same layout after changing position property, although no
     // re-raster (rect-based invalidation) is needed, display items should
     // still update their paint offset.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && oldStyle) {
+    if (oldStyle) {
         bool newStyleIsFixedPosition = style()->position() == FixedPosition;
         bool oldStyleIsFixedPosition = oldStyle->position() == FixedPosition;
         if (newStyleIsFixedPosition != oldStyleIsFixedPosition)
@@ -368,8 +368,6 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
 
 void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper& displayItemClient) const
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-
     if (layer()->groupedMapping()) {
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
             squashingLayer->invalidateDisplayItemClient(displayItemClient);

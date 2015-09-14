@@ -28,7 +28,6 @@ protected:
 private:
     void SetUp() override
     {
-        ASSERT_TRUE(RuntimeEnabledFeatures::slimmingPaintEnabled());
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
 
         RenderingTest::SetUp();

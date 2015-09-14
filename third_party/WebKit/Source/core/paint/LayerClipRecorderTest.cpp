@@ -21,8 +21,7 @@ namespace {
 class LayerClipRecorderTest : public RenderingTest {
 public:
     LayerClipRecorderTest()
-        : m_layoutView(nullptr)
-        , m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
+        : m_layoutView(nullptr) { }
 
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
@@ -31,21 +30,14 @@ protected:
 private:
     void SetUp() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
-
         RenderingTest::SetUp();
         enableCompositing();
 
         m_layoutView = document().view()->layoutView();
         ASSERT_TRUE(m_layoutView);
     }
-    void TearDown() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
-    }
 
     LayoutView* m_layoutView;
-    bool m_originalSlimmingPaintEnabled;
 };
 
 void drawEmptyClip(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase)

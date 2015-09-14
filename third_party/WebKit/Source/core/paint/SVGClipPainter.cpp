@@ -59,13 +59,9 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     Path clipPath;
     if (m_clip.asPath(animatedLocalTransform, targetBoundingBox, clipPath)) {
         clipperState = ClipperAppliedPath;
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            if (!context->displayItemList()->displayItemConstructionIsDisabled())
-                context->displayItemList()->createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
-        } else {
-            BeginClipPathDisplayItem clipPathDisplayItem(target, clipPath);
-            clipPathDisplayItem.replay(*context);
-        }
+        ASSERT(context->displayItemList());
+        if (!context->displayItemList()->displayItemConstructionIsDisabled())
+            context->displayItemList()->createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
         return true;
     }
 
@@ -104,16 +100,12 @@ void SVGClipPainter::finishEffect(const LayoutObject& target, GraphicsContext* c
     switch (clipperState) {
     case ClipperAppliedPath:
         // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            if (!context->displayItemList()->displayItemConstructionIsDisabled()) {
-                if (context->displayItemList()->lastDisplayItemIsNoopBegin())
-                    context->displayItemList()->removeLastDisplayItem();
-                else
-                    context->displayItemList()->createAndAppend<EndClipPathDisplayItem>(target);
-            }
-        } else {
-            EndClipPathDisplayItem endClipPathDisplayItem(target);
-            endClipPathDisplayItem.replay(*context);
+        ASSERT(context->displayItemList());
+        if (!context->displayItemList()->displayItemConstructionIsDisabled()) {
+            if (context->displayItemList()->lastDisplayItemIsNoopBegin())
+                context->displayItemList()->removeLastDisplayItem();
+            else
+                context->displayItemList()->createAndAppend<EndClipPathDisplayItem>(target);
         }
         break;
     case ClipperAppliedMask:

@@ -93,7 +93,7 @@ void LayoutSVGResourceFilter::removeClientFromCache(LayoutObject* client, bool m
         m_filter.remove(client);
 
     // If the filter has a cached subtree, invalidate the associated display item.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && markForInvalidation && filterCached)
+    if (markForInvalidation && filterCached)
         markClientForInvalidation(client, PaintInvalidation);
 
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);

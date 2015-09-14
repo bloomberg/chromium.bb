@@ -244,7 +244,7 @@ void LayoutView::layout()
 
     layoutContent();
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && layoutOverflowRect() != oldLayoutOverflowRect) {
+    if (layoutOverflowRect() != oldLayoutOverflowRect) {
         // The document element paints the viewport background, so we need to invalidate it when
         // layout overflow changes.
         // FIXME: Improve viewport background styling/invalidation/painting. crbug.com/475115
@@ -385,8 +385,7 @@ void LayoutView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidatio
         const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
         DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            invalidateDisplayItemClients(paintInvalidationContainer);
+        invalidateDisplayItemClients(paintInvalidationContainer);
     }
     LayoutBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }

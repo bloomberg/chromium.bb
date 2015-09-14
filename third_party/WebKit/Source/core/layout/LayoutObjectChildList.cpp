@@ -192,8 +192,7 @@ void LayoutObjectChildList::invalidatePaintOnRemoval(const LayoutObject& oldChil
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
     const LayoutBoxModelObject& paintInvalidationContainer = *oldChild.containerForPaintInvalidation();
     oldChild.invalidatePaintUsingContainer(paintInvalidationContainer, oldChild.previousPaintInvalidationRectIncludingCompositedScrolling(paintInvalidationContainer), PaintInvalidationLayoutObjectRemoval);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        oldChild.invalidateDisplayItemClients(paintInvalidationContainer);
+    oldChild.invalidateDisplayItemClients(paintInvalidationContainer);
 }
 
 } // namespace blink

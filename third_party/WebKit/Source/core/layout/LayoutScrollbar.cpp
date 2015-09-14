@@ -200,7 +200,7 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy)
             if (box->isLayoutBlock())
                 toLayoutBlock(box)->notifyScrollbarThicknessChanged();
             box->setChildNeedsLayout();
-            if (RuntimeEnabledFeatures::slimmingPaintEnabled() && m_scrollableArea)
+            if (m_scrollableArea)
                 m_scrollableArea->invalidateScrollCorner(m_scrollableArea->scrollCornerRect());
         }
     }
@@ -365,9 +365,6 @@ int LayoutScrollbar::minimumThumbLength()
 void LayoutScrollbar::invalidateRect(const IntRect& rect)
 {
     Scrollbar::invalidateRect(rect);
-
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return;
 
     // FIXME: invalidate only the changed part.
     if (LayoutBox* owningLayoutObject = this->owningLayoutObject()) {

@@ -8,7 +8,6 @@
 #include "core/layout/ClipRect.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/DeprecatedPaintLayer.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -29,14 +28,10 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
         collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, roundedRects);
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        m_graphicsContext.displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
-    } else {
-        ClipDisplayItem clipDisplayItem(layoutObject, m_clipType, snappedClipRect, roundedRects);
-        clipDisplayItem.replay(graphicsContext);
-    }
+    ASSERT(m_graphicsContext.displayItemList());
+    if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
+        return;
+    m_graphicsContext.displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
 }
 
 static bool inContainingBlockChain(DeprecatedPaintLayer* startLayer, DeprecatedPaintLayer* endLayer)
@@ -80,16 +75,12 @@ void LayerClipRecorder::collectRoundedRectClips(DeprecatedPaintLayer& paintLayer
 
 LayerClipRecorder::~LayerClipRecorder()
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_graphicsContext.displayItemList());
-        if (!m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled()) {
-            if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
-                m_graphicsContext.displayItemList()->removeLastDisplayItem();
-            else
-                m_graphicsContext.displayItemList()->createAndAppend<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
-        }
-    } else {
-        m_graphicsContext.restore();
+    ASSERT(m_graphicsContext.displayItemList());
+    if (!m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled()) {
+        if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
+            m_graphicsContext.displayItemList()->removeLastDisplayItem();
+        else
+            m_graphicsContext.displayItemList()->createAndAppend<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
     }
 }
 

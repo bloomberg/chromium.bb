@@ -958,7 +958,7 @@ void LayoutTableCell::collectBorderValues(LayoutTable::CollapsedBorderValues& bo
 
     // In slimming paint mode, we need to invalidate all cells with collapsed border changed.
     // FIXME: Need a way to invalidate/repaint the borders only. crbug.com/451090#c5.
-    if (changed && RuntimeEnabledFeatures::slimmingPaintEnabled())
+    if (changed)
         invalidateDisplayItemClient(*this);
 
     addBorderStyle(borderValues, startBorder);

@@ -52,7 +52,7 @@ bool ScrollbarTheme::gMockScrollbarsEnabled = false;
 
 static inline bool shouldPaintScrollbarPart(const IntRect& partRect, const IntRect& damageRect)
 {
-    return (RuntimeEnabledFeatures::slimmingPaintEnabled() && !partRect.isEmpty()) || damageRect.intersects(partRect);
+    return (!partRect.isEmpty()) || damageRect.intersects(partRect);
 }
 
 bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
@@ -83,8 +83,7 @@ bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* gra
     IntRect thumbRect;
     IntRect endTrackRect;
     IntRect trackPaintRect = trackRect(scrollbar, true);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(trackPaintRect))
-        scrollMask |= TrackBGPart;
+    scrollMask |= TrackBGPart;
     bool thumbPresent = hasThumb(scrollbar);
     if (thumbPresent) {
         IntRect track = trackRect(scrollbar);

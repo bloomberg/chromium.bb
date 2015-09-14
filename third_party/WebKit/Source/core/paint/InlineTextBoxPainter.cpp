@@ -83,7 +83,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     // The text clip phase already has a DrawingRecorder. Text clips are initiated only in BoxPainter::paintLayerExtended, which is already
     // within a DrawingRecorder.
     Optional<DrawingRecorder> drawingRecorder;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && paintInfo.phase != PaintPhaseTextClip) {
+    if (paintInfo.phase != PaintPhaseTextClip) {
         if (DrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase)))
             return;
         LayoutRect paintRect(logicalVisualOverflow);

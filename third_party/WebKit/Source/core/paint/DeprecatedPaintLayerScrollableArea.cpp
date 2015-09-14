@@ -247,15 +247,13 @@ void DeprecatedPaintLayerScrollableArea::invalidateScrollCornerRect(const IntRec
         // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
         DisablePaintInvalidationStateAsserts disabler;
         m_scrollCorner->invalidatePaintRectangle(LayoutRect(rect));
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            box().invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
-    } else if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        box().invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
+    } else {
         box().invalidateDisplayItemClient(box());
     }
     if (m_resizer) {
         m_resizer->invalidatePaintRectangle(LayoutRect(rect));
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            box().invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_resizer);
+        box().invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_resizer);
     }
 }
 
@@ -443,10 +441,7 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
     // Just schedule a full paint invalidation of our object.
     // FIXME: This invalidation will be unnecessary in slimming paint phase 2.
     if (requiresPaintInvalidation) {
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            box().setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-        else
-            box().setShouldDoFullPaintInvalidation();
+        box().setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
         frameView->setFrameTimingRequestsDirty(true);
     }
 
@@ -1058,12 +1053,10 @@ void DeprecatedPaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrol
     if (m_vBar)
         m_vBar->styleChanged();
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        // These are valid because we want to invalidate display item clients on the current backing.
-        DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-        DisableCompositingQueryAsserts compositingAssertDisabler;
-        invalidateScrollCorner(scrollCornerRect());
-    }
+    // These are valid because we want to invalidate display item clients on the current backing.
+    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
+    DisableCompositingQueryAsserts compositingAssertDisabler;
+    invalidateScrollCorner(scrollCornerRect());
 
     // Force an update since we know the scrollbars have changed things.
     if (box().document().hasAnnotatedRegions())
@@ -1093,12 +1086,10 @@ void DeprecatedPaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollb
     if (m_vBar)
         m_vBar->styleChanged();
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        // These are valid because we want to invalidate display item clients on the current backing.
-        DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-        DisableCompositingQueryAsserts compositingAssertDisabler;
-        invalidateScrollCorner(scrollCornerRect());
-    }
+    // These are valid because we want to invalidate display item clients on the current backing.
+    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
+    DisableCompositingQueryAsserts compositingAssertDisabler;
+    invalidateScrollCorner(scrollCornerRect());
 
     // Force an update since we know the scrollbars have changed things.
     if (box().document().hasAnnotatedRegions())

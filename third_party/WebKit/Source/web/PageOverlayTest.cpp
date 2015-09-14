@@ -122,7 +122,6 @@ public:
 private:
     bool m_oldValue;
 };
-using SlimmingPaintScope = RuntimeFeatureChange<&RuntimeEnabledFeatures::slimmingPaintEnabled, RuntimeEnabledFeatures::setSlimmingPaintEnabled>;
 
 class MockCanvas : public SkCanvas {
 public:
@@ -150,44 +149,24 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
 
     GraphicsLayer* graphicsLayer = pageOverlay->graphicsLayer();
     WebRect rect(0, 0, viewportWidth, viewportHeight);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        // If slimming paint is on, we paint the layer with a null canvas to get
-        // a display list, and then replay that onto the mock canvas for
-        // examination. This is about as close to the real path as we can easily
-        // get.
-        GraphicsContext graphicsContext(graphicsLayer->displayItemList());
-        graphicsLayer->paint(graphicsContext, rect);
 
-        graphicsContext.beginRecording(IntRect(rect));
-        graphicsLayer->displayItemList()->commitNewDisplayItemsAndReplay(graphicsContext);
-        graphicsContext.endRecording()->playback(&canvas);
-    } else {
-        OwnPtr<GraphicsContext> graphicsContext = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
-        graphicsLayer->paint(*graphicsContext, rect);
-    }
+    // Paint the layer with a null canvas to get a display list, and then
+    // replay that onto the mock canvas for examination.
+    GraphicsContext graphicsContext(graphicsLayer->displayItemList());
+    graphicsLayer->paint(graphicsContext, rect);
+
+    graphicsContext.beginRecording(IntRect(rect));
+    graphicsLayer->displayItemList()->commitNewDisplayItemsAndReplay(graphicsContext);
+    graphicsContext.endRecording()->playback(&canvas);
 }
 
-TEST_F(PageOverlayTest, SimpleCanvasOverlay_AcceleratedCompositing_NoSlimmingPaint)
+TEST_F(PageOverlayTest, SimpleCanvasOverlay_AcceleratedCompositing)
 {
-    SlimmingPaintScope slimmingPaintEnabled(false);
     runPageOverlayTestWithAcceleratedCompositing<SimpleCanvasOverlay>();
 }
 
-TEST_F(PageOverlayTest, SimpleCanvasOverlay_AcceleratedCompositing_SlimmingPaint)
+TEST_F(PageOverlayTest, PrivateGraphicsContextOverlay_AcceleratedCompositing)
 {
-    SlimmingPaintScope slimmingPaintEnabled(true);
-    runPageOverlayTestWithAcceleratedCompositing<SimpleCanvasOverlay>();
-}
-
-TEST_F(PageOverlayTest, PrivateGraphicsContextOverlay_AcceleratedCompositing_NoSlimmingPaint)
-{
-    SlimmingPaintScope slimmingPaintEnabled(false);
-    runPageOverlayTestWithAcceleratedCompositing<PrivateGraphicsContextOverlay>();
-}
-
-TEST_F(PageOverlayTest, PrivateGraphicsContextOverlay_AcceleratedCompositing_SlimmingPaint)
-{
-    SlimmingPaintScope slimmingPaintEnabled(true);
     runPageOverlayTestWithAcceleratedCompositing<PrivateGraphicsContextOverlay>();
 }
 

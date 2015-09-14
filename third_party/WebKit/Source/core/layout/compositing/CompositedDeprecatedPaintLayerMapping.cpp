@@ -2047,8 +2047,6 @@ void CompositedDeprecatedPaintLayerMapping::setContentsNeedDisplayInRect(const L
 
 void CompositedDeprecatedPaintLayerMapping::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-
     // FIXME: need to split out paint invalidations for the background.
     // FIXME: need to distinguish invalidations for different layers (e.g. the main layer and scrolling layer). crbug.com/416535.
     ApplyToGraphicsLayers(this, [&displayItemClient](GraphicsLayer* layer) {
@@ -2139,28 +2137,18 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
         // FIXME: Combine similar code here and LayerClipRecorder.
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
         {
-            if (context->displayItemList()) {
-                ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-                if (!context->displayItemList()->displayItemConstructionIsDisabled())
-                    context->displayItemList()->createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
-            } else {
-                ClipDisplayItem clipDisplayItem(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
-                clipDisplayItem.replay(*context);
-            }
+            ASSERT(context->displayItemList());
+            if (!context->displayItemList()->displayItemConstructionIsDisabled())
+                context->displayItemList()->createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
         }
         DeprecatedPaintLayerPainter(*paintInfo.paintLayer).paintLayer(context, paintingInfo, paintLayerFlags);
         {
-            if (context->displayItemList()) {
-                ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-                if (!context->displayItemList()->displayItemConstructionIsDisabled()) {
-                    if (context->displayItemList()->lastDisplayItemIsNoopBegin())
-                        context->displayItemList()->removeLastDisplayItem();
-                    else
-                        context->displayItemList()->createAndAppend<EndClipDisplayItem>(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
-                }
-            } else {
-                EndClipDisplayItem endClipDisplayItem(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
-                endClipDisplayItem.replay(*context);
+            ASSERT(context->displayItemList());
+            if (!context->displayItemList()->displayItemConstructionIsDisabled()) {
+                if (context->displayItemList()->lastDisplayItemIsNoopBegin())
+                    context->displayItemList()->removeLastDisplayItem();
+                else
+                    context->displayItemList()->createAndAppend<EndClipDisplayItem>(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
             }
         }
     }

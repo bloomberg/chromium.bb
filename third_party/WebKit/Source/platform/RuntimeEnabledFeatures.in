@@ -152,10 +152,9 @@ ShadowRootClosedMode status=experimental
 ShadowRootDelegatesFocus status=experimental
 SharedArrayBuffer
 SharedWorker status=stable
-SlimmingPaint status=stable
-SlimmingPaintV2 depends_on=SlimmingPaint
-SlimmingPaintUnderInvalidationChecking depends_on=SlimmingPaint
-SlimmingPaintStrictCullRectClipping depends_on=SlimmingPaint
+SlimmingPaintV2
+SlimmingPaintUnderInvalidationChecking
+SlimmingPaintStrictCullRectClipping
 StackedCSSPropertyAnimations status=experimental
 StyleSharing status=stable
 StyleMatchedPropertiesCache status=stable

@@ -28,7 +28,6 @@
 
 #include "SkImageFilter.h"
 #include "SkMatrix44.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -298,7 +297,6 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
     incrementPaintCount();
 #ifndef NDEBUG
     if (m_displayItemList && contentsOpaque() && s_drawDebugRedFill) {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
         FloatRect rect(FloatPoint(), size());
         if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::DebugRedFill)) {
             DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);
@@ -496,9 +494,6 @@ void GraphicsLayer::trackPaintInvalidationObject(const String& objectDebugString
     // because constructing the debug string will be costly.
     ASSERT(isTrackingPaintInvalidations());
 
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return;
-
     paintInvalidationTrackingMap().add(this, PaintInvalidationTrackingInfo()).storedValue->value.invalidationObjects.append(objectDebugString);
 }
 
@@ -676,7 +671,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
             }
         }
 
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled() && (flags & LayerTreeIncludesPaintInvalidationObjects)) {
+        if (flags & LayerTreeIncludesPaintInvalidationObjects) {
             Vector<String>& clients = it->value.invalidationObjects;
             if (!clients.isEmpty()) {
                 RefPtr<JSONArray> clientsJSON = adoptRef(new JSONArray);
@@ -799,10 +794,8 @@ void GraphicsLayer::setSize(const FloatSize& size)
 
 #ifndef NDEBUG
     // The red debug fill needs to be invalidated if the layer resizes.
-    if (m_displayItemList) {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+    if (m_displayItemList)
         m_displayItemList->invalidateUntracked(displayItemClient());
-    }
 #endif
 }
 
@@ -978,11 +971,9 @@ void GraphicsLayer::setNeedsDisplay()
         for (size_t i = 0; i < m_linkHighlights.size(); ++i)
             m_linkHighlights[i]->invalidate();
 
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            displayItemList()->invalidateAll();
-            if (isTrackingPaintInvalidations())
-                trackPaintInvalidationObject("##ALL##");
-        }
+        displayItemList()->invalidateAll();
+        if (isTrackingPaintInvalidations())
+            trackPaintInvalidationObject("##ALL##");
     }
 }
 
@@ -1001,7 +992,6 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
 
 void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     displayItemList()->invalidate(displayItemClient);
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject(displayItemClient.debugName());
@@ -1157,8 +1147,6 @@ void GraphicsLayer::didScroll()
 
 DisplayItemList* GraphicsLayer::displayItemList()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return 0;
     if (!m_displayItemList)
         m_displayItemList = DisplayItemList::create();
     return m_displayItemList.get();

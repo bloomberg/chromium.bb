@@ -34,9 +34,6 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
         return;
     }
 
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !absRect.intersects(damageRect))
-        return;
-
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, scrollableArea().box(), DisplayItem::Resizer, paintOffset))
         return;
 
@@ -183,9 +180,6 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
         ScrollbarPainter::paintIntoRect(scrollableArea().scrollCorner(), context, paintOffset, LayoutRect(absRect));
         return;
     }
-
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !absRect.intersects(damageRect))
-        return;
 
     // We don't want to paint white if we have overlay scrollbars, since we need
     // to see what is behind it.

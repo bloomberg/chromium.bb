@@ -50,22 +50,13 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
             return;
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_paintInfo.context->displayItemList());
-        if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
-            m_clipType = m_paintInfo.displayItemTypeForClipping();
-            Vector<FloatRoundedRect> roundedRects;
-            if (hasBorderRadius)
-                roundedRects.append(clipRoundedRect);
-            m_paintInfo.context->displayItemList()->createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
-        }
-    } else {
+    ASSERT(m_paintInfo.context->displayItemList());
+    if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
         m_clipType = m_paintInfo.displayItemTypeForClipping();
         Vector<FloatRoundedRect> roundedRects;
         if (hasBorderRadius)
             roundedRects.append(clipRoundedRect);
-        ClipDisplayItem clipDisplayItem(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
-        clipDisplayItem.replay(*paintInfo.context);
+        m_paintInfo.context->displayItemList()->createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
     }
 }
 
@@ -75,18 +66,12 @@ BoxClipper::~BoxClipper()
         return;
 
     ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()));
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_paintInfo.context->displayItemList());
-        if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
-            if (m_paintInfo.context->displayItemList()->lastDisplayItemIsNoopBegin())
-                m_paintInfo.context->displayItemList()->removeLastDisplayItem();
-            else
-                m_paintInfo.context->displayItemList()->createAndAppend<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
-        }
-    } else {
-        EndClipDisplayItem endClipDisplayItem(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
-        endClipDisplayItem.replay(*m_paintInfo.context);
+    ASSERT(m_paintInfo.context->displayItemList());
+    if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
+        if (m_paintInfo.context->displayItemList()->lastDisplayItemIsNoopBegin())
+            m_paintInfo.context->displayItemList()->removeLastDisplayItem();
+        else
+            m_paintInfo.context->displayItemList()->createAndAppend<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
     }
 }
 

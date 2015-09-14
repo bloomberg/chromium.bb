@@ -58,9 +58,6 @@ void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const 
 
 LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return LayoutRect();
-
     // Use the visual overflow rect here, because it will include overflow introduced by the theme.
     LayoutRect bounds = m_layoutBox.visualOverflowRect();
     bounds.moveBy(paintOffset);
@@ -422,8 +419,6 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
         // First figure out how big the mask has to be. It should be no bigger than what we need
         // to actually render, so we should intersect the dirty rect with the border box of the background.
         maskRect = pixelSnappedIntRect(rect);
-        if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-            maskRect.intersect(paintInfo.rect);
 
         // We draw the background into a separate layer, to be later masked with yet another layer
         // holding the text content.
@@ -453,9 +448,6 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
         bool boxShadowShouldBeAppliedToBackground = obj.boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
         bool backgroundImageOccludesBackgroundColor = shouldPaintBackgroundImage && isFillLayerOpaque(bgLayer, obj);
         if (boxShadowShouldBeAppliedToBackground || !backgroundImageOccludesBackgroundColor)  {
-            if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !boxShadowShouldBeAppliedToBackground)
-                backgroundRect.intersect(paintInfo.rect);
-
             GraphicsContextStateSaver shadowStateSaver(*context, boxShadowShouldBeAppliedToBackground);
             if (boxShadowShouldBeAppliedToBackground)
                 BoxPainter::applyBoxShadowForBackground(context, obj);
@@ -585,13 +577,8 @@ bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext*
 
 bool BoxPainter::shouldAntialiasLines(GraphicsContext* context)
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return true;
-    // FIXME: We may want to not antialias when scaled by an integral value,
-    // and we may want to antialias when translated by a non-integral value.
-    // FIXME: See crbug.com/382491. getCTM does not include scale factors applied at raster time, such
-    // as device zoom.
-    return !context->getCTM().isIdentityOrTranslationOrFlipped();
+    // TODO(pdr): Remove this function.
+    return true;
 }
 
 bool BoxPainter::allCornersClippedOut(const FloatRoundedRect& border, const IntRect& intClipRect)

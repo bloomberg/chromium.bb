@@ -401,7 +401,6 @@ inline static void invalidateDisplayItemClientForStartOfContinuationsIfNeeded(co
 void LayoutBlock::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
 {
     LayoutBox::invalidateDisplayItemClients(paintInvalidationContainer);
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     invalidateDisplayItemClientForStartOfContinuationsIfNeeded(*this);
 }
 

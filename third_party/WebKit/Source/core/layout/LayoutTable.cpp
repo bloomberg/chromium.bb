@@ -1399,23 +1399,21 @@ PaintInvalidationReason LayoutTable::invalidatePaintIfNeeded(PaintInvalidationSt
 
 void LayoutTable::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        // Table cells paint background from the containing column group, column, section and row.
-        // If background of any of them changed, we need to invalidate all affected cells.
-        // Here use shouldDoFullPaintInvalidation() as a broader condition of background change.
-        for (LayoutObject* section = firstChild(); section; section = section->nextSibling()) {
-            if (!section->isTableSection())
-                continue;
-            for (LayoutTableRow* row = toLayoutTableSection(section)->firstRow(); row; row = row->nextRow()) {
-                for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
-                    LayoutTableCol* column = colElement(cell->col());
-                    LayoutTableCol* columnGroup = column ? column->enclosingColumnGroup() : 0;
-                    if ((columnGroup && columnGroup->shouldDoFullPaintInvalidation())
-                        || (column && column->shouldDoFullPaintInvalidation())
-                        || section->shouldDoFullPaintInvalidation()
-                        || row->shouldDoFullPaintInvalidation())
-                        cell->invalidateDisplayItemClient(*cell);
-                }
+    // Table cells paint background from the containing column group, column, section and row.
+    // If background of any of them changed, we need to invalidate all affected cells.
+    // Here use shouldDoFullPaintInvalidation() as a broader condition of background change.
+    for (LayoutObject* section = firstChild(); section; section = section->nextSibling()) {
+        if (!section->isTableSection())
+            continue;
+        for (LayoutTableRow* row = toLayoutTableSection(section)->firstRow(); row; row = row->nextRow()) {
+            for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
+                LayoutTableCol* column = colElement(cell->col());
+                LayoutTableCol* columnGroup = column ? column->enclosingColumnGroup() : 0;
+                if ((columnGroup && columnGroup->shouldDoFullPaintInvalidation())
+                    || (column && column->shouldDoFullPaintInvalidation())
+                    || section->shouldDoFullPaintInvalidation()
+                    || row->shouldDoFullPaintInvalidation())
+                    cell->invalidateDisplayItemClient(*cell);
             }
         }
     }

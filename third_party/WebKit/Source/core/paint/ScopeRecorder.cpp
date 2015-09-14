@@ -6,7 +6,6 @@
 #include "core/paint/ScopeRecorder.h"
 
 #include "core/layout/LayoutObject.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 
@@ -15,18 +14,12 @@ namespace blink {
 ScopeRecorder::ScopeRecorder(GraphicsContext& context)
     : m_displayItemList(context.displayItemList())
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return;
-
     ASSERT(m_displayItemList);
     m_displayItemList->beginScope();
 }
 
 ScopeRecorder::~ScopeRecorder()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return;
-
     m_displayItemList->endScope();
 }
 

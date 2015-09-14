@@ -26,15 +26,10 @@ GraphicsContext* SVGFilterRecordingContext::beginContent(FilterData* filterData)
 
     GraphicsContext* context = paintingContext();
 
-    // For slimming paint we need to create a new context so the contents of the
-    // filter can be drawn and cached.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        m_displayItemList = DisplayItemList::create();
-        m_context = adoptPtr(new GraphicsContext(m_displayItemList.get()));
-        context = m_context.get();
-    } else {
-        context->beginRecording(filterData->filter->filterRegion());
-    }
+    // Create a new context so the contents of the filter can be drawn and cached.
+    m_displayItemList = DisplayItemList::create();
+    m_context = adoptPtr(new GraphicsContext(m_displayItemList.get()));
+    context = m_context.get();
 
     filterData->m_state = FilterData::RecordingContent;
     return context;
@@ -50,23 +45,18 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 
     GraphicsContext* context = paintingContext();
 
-    // For slimming paint we need to use the context that contains the filtered
-    // content.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_displayItemList);
-        ASSERT(m_context);
-        context = m_context.get();
-        context->beginRecording(filterData->filter->filterRegion());
-        m_displayItemList->commitNewDisplayItemsAndReplay(*context);
-    }
+    // Use the context that contains the filtered content.
+    ASSERT(m_displayItemList);
+    ASSERT(m_context);
+    context = m_context.get();
+    context->beginRecording(filterData->filter->filterRegion());
+    m_displayItemList->commitNewDisplayItemsAndReplay(*context);
 
     sourceGraphic->setPicture(context->endRecording());
 
     // Content is cached by the source graphic so temporaries can be freed.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        m_displayItemList = nullptr;
-        m_context = nullptr;
-    }
+    m_displayItemList = nullptr;
+    m_context = nullptr;
 
     filterData->m_state = FilterData::ReadyToPaint;
 }

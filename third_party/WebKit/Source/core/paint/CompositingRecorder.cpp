@@ -27,30 +27,20 @@ CompositingRecorder::~CompositingRecorder()
 
 void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(graphicsContext.displayItemList());
-        if (graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        graphicsContext.displayItemList()->createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity, bounds, colorFilter);
-    } else {
-        BeginCompositingDisplayItem compositingDisplayItem(client, xferMode, opacity, bounds, colorFilter);
-        compositingDisplayItem.replay(graphicsContext);
-    }
+    ASSERT(graphicsContext.displayItemList());
+    if (graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
+        return;
+    graphicsContext.displayItemList()->createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity, bounds, colorFilter);
 }
 
 void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client)
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(graphicsContext.displayItemList());
-        if (!graphicsContext.displayItemList()->displayItemConstructionIsDisabled()) {
-            if (graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
-                graphicsContext.displayItemList()->removeLastDisplayItem();
-            else
-                graphicsContext.displayItemList()->createAndAppend<EndCompositingDisplayItem>(client);
-        }
-    } else {
-        EndCompositingDisplayItem endCompositingDisplayItem(client);
-        endCompositingDisplayItem.replay(graphicsContext);
+    ASSERT(graphicsContext.displayItemList());
+    if (!graphicsContext.displayItemList()->displayItemConstructionIsDisabled()) {
+        if (graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
+            graphicsContext.displayItemList()->removeLastDisplayItem();
+        else
+            graphicsContext.displayItemList()->createAndAppend<EndCompositingDisplayItem>(client);
     }
 }
 

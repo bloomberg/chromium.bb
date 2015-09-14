@@ -25,13 +25,8 @@ public:
         if (containingContext && containingContext->contextDisabled())
             disabledMode = GraphicsContext::FullyDisabled;
 
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            m_displayItemList = DisplayItemList::create();
-            m_context = adoptPtr(new GraphicsContext(m_displayItemList.get(), disabledMode, metaData));
-        } else {
-            m_context = GraphicsContext::deprecatedCreateWithCanvas(nullptr, disabledMode, metaData);
-            m_context->beginRecording(m_bounds);
-        }
+        m_displayItemList = DisplayItemList::create();
+        m_context = adoptPtr(new GraphicsContext(m_displayItemList.get(), disabledMode, metaData));
 
         if (containingContext) {
             m_context->setDeviceScaleFactor(containingContext->deviceScaleFactor());
@@ -43,9 +38,6 @@ public:
 
     PassRefPtr<const SkPicture> endRecording()
     {
-        if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-            return m_context->endRecording();
-
         m_context->beginRecording(m_bounds);
         m_displayItemList->commitNewDisplayItemsAndReplay(*m_context);
         return m_context->endRecording();

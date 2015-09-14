@@ -5,7 +5,6 @@
 #ifndef DisplayItemCacheSkipper_h
 #define DisplayItemCacheSkipper_h
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 
@@ -16,13 +15,11 @@ public:
     DisplayItemCacheSkipper(GraphicsContext& context)
         : m_context(context)
     {
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            context.displayItemList()->beginSkippingCache();
+        context.displayItemList()->beginSkippingCache();
     }
     ~DisplayItemCacheSkipper()
     {
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            m_context.displayItemList()->endSkippingCache();
+        m_context.displayItemList()->endSkippingCache();
     }
 
 private:

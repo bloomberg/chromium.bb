@@ -26,14 +26,12 @@ namespace blink {
 
 const DisplayItems& DisplayItemList::displayItems() const
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     ASSERT(m_newDisplayItems.isEmpty());
     return m_currentDisplayItems;
 }
 
 bool DisplayItemList::lastDisplayItemIsNoopBegin() const
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     if (m_newDisplayItems.isEmpty())
         return false;
 
@@ -43,7 +41,6 @@ bool DisplayItemList::lastDisplayItemIsNoopBegin() const
 
 void DisplayItemList::removeLastDisplayItem()
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     if (m_newDisplayItems.isEmpty())
         return;
 
@@ -61,7 +58,6 @@ void DisplayItemList::removeLastDisplayItem()
 
 void DisplayItemList::processNewItem(DisplayItem& displayItem)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     ASSERT(!m_constructionDisabled);
     ASSERT(!skippingCache() || !displayItem.isCached());
 
@@ -120,7 +116,6 @@ void DisplayItemList::invalidate(const DisplayItemClientWrapper& client)
 
 void DisplayItemList::invalidateUntracked(DisplayItemClient client)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     // Can only be called during layout/paintInvalidation, not during painting.
     ASSERT(m_newDisplayItems.isEmpty());
     updateValidlyCachedClientsIfNeeded();
@@ -129,7 +124,6 @@ void DisplayItemList::invalidateUntracked(DisplayItemClient client)
 
 void DisplayItemList::invalidateAll()
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     // Can only be called during layout/paintInvalidation, not during painting.
     ASSERT(m_newDisplayItems.isEmpty());
     m_currentDisplayItems.clear();

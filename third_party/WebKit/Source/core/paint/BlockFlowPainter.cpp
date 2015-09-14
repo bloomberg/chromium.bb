@@ -56,11 +56,8 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
     LayoutUnit lastLeft = m_layoutBlockFlow.logicalLeftSelectionOffset(&m_layoutBlockFlow, lastTop);
     LayoutUnit lastRight = m_layoutBlockFlow.logicalRightSelectionOffset(&m_layoutBlockFlow, lastTop);
 
-    LayoutRect bounds;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        bounds = m_layoutBlockFlow.visualOverflowRect();
-        bounds.moveBy(paintOffset);
-    }
+    LayoutRect bounds = m_layoutBlockFlow.visualOverflowRect();
+    bounds.moveBy(paintOffset);
 
     // Only create a DrawingRecorder and ClipScope if skipRecording is false. This logic is needed
     // because selectionGaps(...) needs to be called even when we do not record.

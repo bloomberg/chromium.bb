@@ -625,12 +625,7 @@ void BoxBorderPainter::paintBorder(const PaintInfo& info, const LayoutRect& rect
             graphicsContext->clipOutRoundedRect(m_inner);
     }
 
-    bool antialias =
-        RuntimeEnabledFeatures::slimmingPaintEnabled()
-        || m_visibleEdgeCount == 1
-        || BoxPainter::shouldAntialiasLines(graphicsContext);
-
-    const ComplexBorderInfo borderInfo(*this, antialias);
+    const ComplexBorderInfo borderInfo(*this, true);
     paintOpacityGroup(graphicsContext, borderInfo, 0, 1);
 }
 

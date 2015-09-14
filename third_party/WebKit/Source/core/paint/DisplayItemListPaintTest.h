@@ -16,8 +16,7 @@ namespace blink {
 
 class DisplayItemListPaintTest : public RenderingTest {
 public:
-    DisplayItemListPaintTest()
-        : m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
+    DisplayItemListPaintTest() { }
 
 protected:
     LayoutView& layoutView() { return *document().layoutView(); }
@@ -26,18 +25,9 @@ protected:
 private:
     void SetUp() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
-
         RenderingTest::SetUp();
         enableCompositing();
     }
-
-    void TearDown() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
-    }
-
-    bool m_originalSlimmingPaintEnabled;
 };
 
 // Slimming paint v2 has subtly different behavior on some paint tests. This
@@ -63,7 +53,6 @@ protected:
 private:
     void SetUp() override
     {
-        ASSERT_TRUE(RuntimeEnabledFeatures::slimmingPaintEnabled());
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
 
         RenderingTest::SetUp();

@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/paint/ScrollRecorder.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/ScrollDisplayItem.h"
@@ -17,31 +16,20 @@ ScrollRecorder::ScrollRecorder(GraphicsContext& context, const DisplayItemClient
     , m_beginItemType(DisplayItem::paintPhaseToScrollType(phase))
     , m_context(context)
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_context.displayItemList());
-        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        m_context.displayItemList()->createAndAppend<BeginScrollDisplayItem>(m_client, m_beginItemType, currentOffset);
-    } else {
-        BeginScrollDisplayItem scrollDisplayItem(m_client, m_beginItemType, currentOffset);
-        scrollDisplayItem.replay(m_context);
-    }
+    ASSERT(m_context.displayItemList());
+    if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+        return;
+    m_context.displayItemList()->createAndAppend<BeginScrollDisplayItem>(m_client, m_beginItemType, currentOffset);
 }
 
 ScrollRecorder::~ScrollRecorder()
 {
-    DisplayItem::Type endItemType = DisplayItem::scrollTypeToEndScrollType(m_beginItemType);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_context.displayItemList());
-        if (!m_context.displayItemList()->displayItemConstructionIsDisabled()) {
-            if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
-                m_context.displayItemList()->removeLastDisplayItem();
-            else
-                m_context.displayItemList()->createAndAppend<EndScrollDisplayItem>(m_client, endItemType);
-        }
-    } else {
-        EndScrollDisplayItem endScrollDisplayItem(m_client, endItemType);
-        endScrollDisplayItem.replay(m_context);
+    ASSERT(m_context.displayItemList());
+    if (!m_context.displayItemList()->displayItemConstructionIsDisabled()) {
+        if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
+            m_context.displayItemList()->removeLastDisplayItem();
+        else
+            m_context.displayItemList()->createAndAppend<EndScrollDisplayItem>(m_client, DisplayItem::scrollTypeToEndScrollType(m_beginItemType));
     }
 }
 

@@ -27,7 +27,6 @@
 #include "config.h"
 #include "platform/graphics/GraphicsContext.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/ColorSpace.h"
@@ -49,32 +48,6 @@
 #include "wtf/MathExtras.h"
 
 namespace blink {
-
-class GraphicsContext::RecordingState {
-    WTF_MAKE_FAST_ALLOCATED(GraphicsContext::RecordingState);
-    WTF_MAKE_NONCOPYABLE(RecordingState);
-public:
-    static PassOwnPtr<RecordingState> Create(SkCanvas* canvas, const SkMatrix& matrix)
-    {
-        // Slimmming Paint uses m_pictureRecorder on GraphicsContext instead.
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
-        return adoptPtr(new RecordingState(canvas, matrix));
-    }
-
-    SkPictureRecorder& recorder() { return m_recorder; }
-    SkCanvas* canvas() const { return m_savedCanvas; }
-    const SkMatrix& matrix() const { return m_savedMatrix; }
-
-private:
-    explicit RecordingState(SkCanvas* canvas, const SkMatrix& matrix)
-        : m_savedCanvas(canvas)
-        , m_savedMatrix(matrix)
-    { }
-
-    SkPictureRecorder m_recorder;
-    SkCanvas* m_savedCanvas;
-    const SkMatrix m_savedMatrix;
-};
 
 GraphicsContext::GraphicsContext(DisplayItemList* displayItemList, DisabledMode disableContextOrPainting, SkMetaData* metaData)
     : GraphicsContext(nullptr, displayItemList, disableContextOrPainting, metaData)
@@ -125,7 +98,6 @@ GraphicsContext::~GraphicsContext()
         ASSERT(!m_paintStateIndex);
         ASSERT(!m_paintState->saveCount());
         ASSERT(!m_layerCount);
-        ASSERT(m_recordingStateStack.isEmpty());
         ASSERT(!saveCount());
     }
 #endif
@@ -279,24 +251,6 @@ void GraphicsContext::clearDrawLooper()
     mutableState()->clearDrawLooper();
 }
 
-SkMatrix GraphicsContext::getTotalMatrix() const
-{
-    ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
-
-    if (contextDisabled() || !m_canvas)
-        return SkMatrix::I();
-
-    ASSERT(m_canvas);
-
-    if (!isRecording())
-        return m_canvas->getTotalMatrix();
-
-    SkMatrix totalMatrix = m_recordingStateStack.last()->matrix();
-    totalMatrix.preConcat(m_canvas->getTotalMatrix());
-
-    return totalMatrix;
-}
-
 SkColorFilter* GraphicsContext::colorFilter() const
 {
     return immutableState()->colorFilter();
@@ -360,17 +314,7 @@ void GraphicsContext::beginRecording(const FloatRect& bounds)
     if (contextDisabled())
         return;
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        m_canvas = m_pictureRecorder.beginRecording(bounds, 0);
-        if (m_hasMetaData)
-            skia::getMetaData(*m_canvas) = m_metaData;
-        return;
-    }
-
-    m_recordingStateStack.append(
-        RecordingState::Create(m_canvas, getTotalMatrix()));
-
-    m_canvas = m_recordingStateStack.last()->recorder().beginRecording(bounds, 0);
+    m_canvas = m_pictureRecorder.beginRecording(bounds, 0);
     if (m_hasMetaData)
         skia::getMetaData(*m_canvas) = m_metaData;
 }
@@ -380,30 +324,15 @@ PassRefPtr<const SkPicture> GraphicsContext::endRecording()
     if (contextDisabled())
         return nullptr;
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        RefPtr<const SkPicture> picture = adoptRef(m_pictureRecorder.endRecordingAsPicture());
-        m_canvas = m_originalCanvas;
-        ASSERT(picture);
-        return picture.release();
-    }
-
-    ASSERT(!m_recordingStateStack.isEmpty());
-    RecordingState* recording = m_recordingStateStack.last().get();
-    RefPtr<const SkPicture> picture = adoptRef(recording->recorder().endRecordingAsPicture());
-    m_canvas = recording->canvas();
-
-    m_recordingStateStack.removeLast();
-
+    RefPtr<const SkPicture> picture = adoptRef(m_pictureRecorder.endRecordingAsPicture());
+    m_canvas = m_originalCanvas;
     ASSERT(picture);
     return picture.release();
 }
 
 bool GraphicsContext::isRecording() const
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return m_canvas != m_originalCanvas;
-
-    return !m_recordingStateStack.isEmpty();
+    return m_canvas != m_originalCanvas;
 }
 
 void GraphicsContext::drawPicture(const SkPicture* picture)
@@ -1274,22 +1203,6 @@ void GraphicsContext::setURLFragmentForRect(const String& destName, const IntRec
 
     SkAutoDataUnref skDestName(SkData::NewWithCString(destName.utf8().data()));
     SkAnnotateLinkToDestination(m_canvas, rect, skDestName.get());
-}
-
-AffineTransform GraphicsContext::getCTM() const
-{
-    ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
-
-    if (contextDisabled())
-        return AffineTransform();
-
-    SkMatrix m = getTotalMatrix();
-    return AffineTransform(SkScalarToDouble(m.getScaleX()),
-                           SkScalarToDouble(m.getSkewY()),
-                           SkScalarToDouble(m.getSkewX()),
-                           SkScalarToDouble(m.getScaleY()),
-                           SkScalarToDouble(m.getTranslateX()),
-                           SkScalarToDouble(m.getTranslateY()));
 }
 
 void GraphicsContext::concatCTM(const AffineTransform& affine)

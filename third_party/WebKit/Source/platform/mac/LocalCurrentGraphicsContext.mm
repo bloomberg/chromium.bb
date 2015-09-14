@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "platform/RuntimeEnabledFeatures.h"
+
 #include "platform/mac/LocalCurrentGraphicsContext.h"
 #include "platform/mac/ThemeMac.h"
 
@@ -50,7 +50,7 @@ LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(SkCanvas* canvas, float
     m_savedCanvas = canvas;
     canvas->save();
 
-    bool clipToInterest = interestRect && RuntimeEnabledFeatures::slimmingPaintEnabled() && !interestRect->contains(m_inflatedDirtyRect);
+    bool clipToInterest = interestRect && !interestRect->contains(m_inflatedDirtyRect);
     if (clipToInterest) {
         IntRect clippedBounds(m_inflatedDirtyRect);
         clippedBounds.intersect(*interestRect);

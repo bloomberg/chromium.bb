@@ -16,9 +16,6 @@ namespace blink {
 
 bool DrawingRecorder::useCachedDrawingIfPossible(GraphicsContext& context, const DisplayItemClientWrapper& client, DisplayItem::Type type)
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return false;
-
     ASSERT(context.displayItemList());
     ASSERT(DisplayItem::isDrawingType(type));
 
@@ -37,13 +34,10 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
 #if ENABLE(ASSERT)
-    , m_displayItemPosition(RuntimeEnabledFeatures::slimmingPaintEnabled() ? m_context.displayItemList()->newDisplayItems().size() : 0)
+    , m_displayItemPosition(m_context.displayItemList()->newDisplayItems().size())
     , m_underInvalidationCheckingMode(DrawingDisplayItem::CheckPicture)
 #endif
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return;
-
     ASSERT(context.displayItemList());
     if (context.displayItemList()->displayItemConstructionIsDisabled())
         return;
@@ -79,9 +73,6 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
 
 DrawingRecorder::~DrawingRecorder()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return;
-
     ASSERT(m_context.displayItemList());
     if (m_context.displayItemList()->displayItemConstructionIsDisabled())
         return;

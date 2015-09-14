@@ -1092,10 +1092,6 @@ void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidation
 
     TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation.debugName().ascii());
 
-    // In slimming paint mode we do per-object invalidation.
-    if (m_doFullPaintInvalidation && !RuntimeEnabledFeatures::slimmingPaintEnabled())
-        layoutView()->compositor()->fullyInvalidatePaint();
-
     rootForPaintInvalidation.invalidateTreeIfNeeded(paintInvalidationState);
 
     // Invalidate the paint of the frameviews scrollbars if needed
@@ -1361,13 +1357,12 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     // We need full invalidation during slow scrolling. For slimming paint, full invalidation
     // of the LayoutView is not enough. We also need to invalidate all of the objects.
     // FIXME: Find out what are enough to invalidate in slow path scrolling. crbug.com/451090#9.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(layoutView());
-        if (contentsInCompositedLayer())
-            layoutView()->layer()->compositedDeprecatedPaintLayerMapping()->setContentsNeedDisplay();
-        else
-            layoutView()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-    }
+    ASSERT(layoutView());
+    if (contentsInCompositedLayer())
+        layoutView()->layer()->compositedDeprecatedPaintLayerMapping()->setContentsNeedDisplay();
+    else
+        layoutView()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+
 
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
@@ -3027,8 +3022,7 @@ void FrameView::setHasHorizontalScrollbar(bool hasBar)
             cache->handleScrollbarUpdate(this);
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        invalidateScrollCorner(scrollCornerRect());
+    invalidateScrollCorner(scrollCornerRect());
 }
 
 void FrameView::setHasVerticalScrollbar(bool hasBar)
@@ -3056,8 +3050,7 @@ void FrameView::setHasVerticalScrollbar(bool hasBar)
             cache->handleScrollbarUpdate(this);
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        invalidateScrollCorner(scrollCornerRect());
+    invalidateScrollCorner(scrollCornerRect());
 }
 
 void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode verticalMode,
@@ -3715,7 +3708,7 @@ bool FrameView::isScrollCornerVisible() const
 void FrameView::invalidateScrollCornerRect(const IntRect& rect)
 {
     invalidateRect(rect);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && m_scrollCorner)
+    if (m_scrollCorner)
         layoutView()->invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
 }
 

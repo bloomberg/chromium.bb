@@ -204,33 +204,7 @@ void PrintContextTest::testBasicLinkTarget()
     // SkAnnotation API.
 }
 
-class PrintContextTestWithSlimmingPaint : public PrintContextTest {
-public:
-    PrintContextTestWithSlimmingPaint()
-        : m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
-
-protected:
-    void SetUp() override
-    {
-        PrintContextTest::SetUp();
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
-    }
-    void TearDown() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
-        PrintContextTest::TearDown();
-    }
-
-private:
-    bool m_originalSlimmingPaintEnabled;
-};
-
 TEST_F(PrintContextTest, LinkTarget)
-{
-    testBasicLinkTarget();
-}
-
-TEST_F(PrintContextTestWithSlimmingPaint, LinkTargetBasic)
 {
     testBasicLinkTarget();
 }
