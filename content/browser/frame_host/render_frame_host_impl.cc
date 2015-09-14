@@ -41,6 +41,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/wake_lock/wake_lock_service_context.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -1581,6 +1582,20 @@ void RenderFrameHostImpl::RegisterMojoServices() {
                    base::Unretained(geolocation_service_context),
                    base::Bind(&RenderFrameHostImpl::DidUseGeolocationPermission,
                               base::Unretained(this))));
+  }
+
+  WakeLockServiceContext* wake_lock_service_context =
+      delegate_ ? delegate_->GetWakeLockServiceContext() : nullptr;
+  if (wake_lock_service_context) {
+    int frame_id = frame_tree_node()->frame_tree_node_id();
+
+    // WakeLockServiceContext is owned by WebContentsImpl so it will outlive
+    // this RenderFrameHostImpl, hence a raw pointer can be bound to service
+    // factory callback.
+    GetServiceRegistry()->AddService<WakeLockService>(
+        base::Bind(&WakeLockServiceContext::CreateService,
+                   base::Unretained(wake_lock_service_context),
+                   frame_id));
   }
 
   if (!permission_service_context_)
