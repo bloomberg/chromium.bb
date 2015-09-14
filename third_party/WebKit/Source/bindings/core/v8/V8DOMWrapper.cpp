@@ -146,4 +146,15 @@ void V8WrapperInstantiationScope::securityCheck(v8::Isolate* isolate, v8::Local<
     }
 }
 
+void V8WrapperInstantiationScope::convertException()
+{
+    v8::Isolate* isolate = m_context->GetIsolate();
+    // TODO(jochen): Currently, Location is the only object for which we can reach this code path. Should be generalized.
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "Location", isolate->GetCurrentContext()->Global(), isolate);
+    LocalDOMWindow* callingWindow = callingDOMWindow(isolate);
+    DOMWindow* targetWindow = toFrameIfNotDetached(m_context)->domWindow();
+    exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(callingWindow), targetWindow->crossDomainAccessErrorMessage(callingWindow));
+    exceptionState.throwIfNeeded();
+}
+
 } // namespace blink
