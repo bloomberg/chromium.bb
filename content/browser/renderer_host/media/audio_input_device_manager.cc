@@ -213,6 +213,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
     input_params.channel_layout = params.channel_layout();
     input_params.frames_per_buffer = params.frames_per_buffer();
     input_params.effects = params.effects();
+    input_params.mic_positions = params.mic_positions();
 
     // Add preferred output device information if a matching output device
     // exists.

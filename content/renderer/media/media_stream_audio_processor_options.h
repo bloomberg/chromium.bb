@@ -9,13 +9,13 @@
 
 #include "base/files/file.h"
 #include "content/common/content_export.h"
+#include "content/public/common/media_stream_request.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 
 namespace webrtc {
 
-class AudioFrame;
 class EchoCancellation;
 class MediaConstraintsInterface;
 class TypingDetection;
@@ -139,13 +139,11 @@ void EnableAutomaticGainControl(AudioProcessing* audio_processing);
 void GetAecStats(webrtc::EchoCancellation* echo_cancellation,
                  webrtc::AudioProcessorInterface::AudioProcessorStats* stats);
 
-// Parses the microphone array geometry from |geometry_string| formatted as
-// "x1 y1 z1 ... xn yn zn" for an n-microphone array. See
-// switches::kMicrophonePositions for more detail.
-//
-// Returns a zero-sized vector if |geometry_string| isn't a parseable geometry.
-CONTENT_EXPORT std::vector<webrtc::Point> ParseArrayGeometry(
-    const std::string& geometry_string);
+// Returns the array geometry from the media constraints if existing and
+// otherwise that provided by the input device.
+CONTENT_EXPORT std::vector<webrtc::Point> GetArrayGeometryPreferringConstraints(
+    const MediaAudioConstraints& audio_constraints,
+    const MediaStreamDevice::AudioDeviceParameters& input_params);
 
 }  // namespace content
 

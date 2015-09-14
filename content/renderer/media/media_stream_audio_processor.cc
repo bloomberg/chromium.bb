@@ -20,10 +20,6 @@
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -91,31 +87,6 @@ bool IsBeamformingEnabled(const MediaAudioConstraints& audio_constraints) {
   return base::FieldTrialList::FindFullName("ChromebookBeamforming") ==
              "Enabled" ||
          audio_constraints.GetProperty(MediaAudioConstraints::kGoogBeamforming);
-}
-
-void ConfigureBeamforming(webrtc::Config* config,
-                          const std::string& geometry_str) {
-  std::vector<webrtc::Point> geometry = ParseArrayGeometry(geometry_str);
-#if defined(OS_CHROMEOS)
-  if (geometry.empty()) {
-    const std::string& board = base::SysInfo::GetLsbReleaseBoard();
-    if (board.find("nyan_kitty") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.03f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.03f, 0.f, 0.f));
-    } else if (board.find("peach_pi") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.025f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.025f, 0.f, 0.f));
-    } else if (board.find("samus") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.032f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.032f, 0.f, 0.f));
-    } else if (board.find("swanky") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.026f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.026f, 0.f, 0.f));
-    }
-  }
-#endif
-  config->Set<webrtc::Beamforming>(
-      new webrtc::Beamforming(geometry.size() > 1, geometry));
 }
 
 }  // namespace
@@ -271,7 +242,7 @@ class MediaStreamAudioFifo {
 
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::WebMediaConstraints& constraints,
-    int effects,
+    const MediaStreamDevice::AudioDeviceParameters& input_params,
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       playout_data_source_(playout_data_source),
@@ -280,7 +251,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       stopped_(false) {
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
-  InitializeAudioProcessingModule(constraints, effects);
+  InitializeAudioProcessingModule(constraints, input_params);
 
   aec_dump_message_filter_ = AecDumpMessageFilter::Get();
   // In unit tests not creating a message filter, |aec_dump_message_filter_|
@@ -455,11 +426,12 @@ void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
-    const blink::WebMediaConstraints& constraints, int effects) {
+    const blink::WebMediaConstraints& constraints,
+    const MediaStreamDevice::AudioDeviceParameters& input_params) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(!audio_processing_);
 
-  MediaAudioConstraints audio_constraints(constraints, effects);
+  MediaAudioConstraints audio_constraints(constraints, input_params.effects);
 
   // Audio mirroring can be enabled even though audio processing is otherwise
   // disabled.
@@ -511,9 +483,12 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (IsDelayAgnosticAecEnabled())
     config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
   if (goog_beamforming) {
-    ConfigureBeamforming(&config,
-                         audio_constraints.GetPropertyAsString(
-                             MediaAudioConstraints::kGoogArrayGeometry));
+    const auto& geometry =
+        GetArrayGeometryPreferringConstraints(audio_constraints, input_params);
+
+    // Only enable beamforming if we have at least two mics.
+    config.Set<webrtc::Beamforming>(
+        new webrtc::Beamforming(geometry.size() > 1, geometry));
   }
 
   // Create and configure the webrtc::AudioProcessing.
@@ -603,7 +578,7 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   // 10 ms chunks regardless, while WebAudio sinks want less, and we're assuming
   // we can identify WebAudio sinks by the input chunk size. Less fragile would
   // be to have the sink actually tell us how much it wants (as in the above
-  // TODO).
+  // todo).
   int processing_frames = input_format.sample_rate() / 100;
   int output_frames = output_sample_rate / 100;
   if (!audio_processing_ && input_format.frames_per_buffer() < output_frames) {

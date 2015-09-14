@@ -185,13 +185,6 @@ source_set("audio") {
     deps += [ "//media/base/android:media_jni_headers" ]
   }
 
-  if (is_openbsd) {
-    sources += [
-      "openbsd/audio_manager_openbsd.cc",
-      "openbsd/audio_manager_openbsd.h",
-    ]
-  }
-
   if (is_linux) {
     sources += [ "linux/audio_manager_linux.cc" ]
   }

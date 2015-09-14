@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
+#include "media/audio/point.h"
 #include "media/base/audio_bus.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
@@ -86,6 +87,8 @@ class MEDIA_EXPORT AudioParameters {
                   int bits_per_sample,
                   int frames_per_buffer);
 
+  ~AudioParameters();
+
   // Re-initializes all members.
   void Reset(Format format,
              ChannelLayout channel_layout,
@@ -148,8 +151,13 @@ class MEDIA_EXPORT AudioParameters {
   void set_effects(int effects) { effects_ = effects; }
   int effects() const { return effects_; }
 
-  AudioParameters(const AudioParameters&) = default;
-  AudioParameters& operator=(const AudioParameters&) = default;
+  void set_mic_positions(const std::vector<Point>& mic_positions) {
+    mic_positions_ = mic_positions;
+  }
+  const std::vector<Point>& mic_positions() const { return mic_positions_; }
+
+  AudioParameters(const AudioParameters&);
+  AudioParameters& operator=(const AudioParameters&);
 
  private:
   Format format_;                 // Format of the stream.
@@ -160,6 +168,19 @@ class MEDIA_EXPORT AudioParameters {
   int bits_per_sample_;           // Number of bits per sample.
   int frames_per_buffer_;         // Number of frames in a buffer.
   int effects_;                   // Bitmask using PlatformEffectsMask.
+
+  // Microphone positions using Cartesian coordinates:
+  // x: the horizontal dimension, with positive to the right from the camera's
+  //    perspective.
+  // y: the depth dimension, with positive forward from the camera's
+  //    perspective.
+  // z: the vertical dimension, with positive upwards.
+  //
+  // Usually, the center of the microphone array will be treated as the origin
+  // (often the position of the camera).
+  //
+  // An empty vector indicates unknown positions.
+  std::vector<Point> mic_positions_;
 };
 
 // Comparison is useful when AudioParameters is used with std structures.

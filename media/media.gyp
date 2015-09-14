@@ -161,8 +161,6 @@
         'audio/mac/audio_manager_mac.h',
         'audio/null_audio_sink.cc',
         'audio/null_audio_sink.h',
-        'audio/openbsd/audio_manager_openbsd.cc',
-        'audio/openbsd/audio_manager_openbsd.h',
         'audio/pulse/audio_manager_pulse.cc',
         'audio/pulse/audio_manager_pulse.h',
         'audio/pulse/pulse_input.cc',
@@ -780,12 +778,7 @@
             ['exclude', '_alsa\\.(h|cc)$'],
           ],
         }],
-        ['OS!="openbsd"', {
-          'sources!': [
-            'audio/openbsd/audio_manager_openbsd.cc',
-            'audio/openbsd/audio_manager_openbsd.h',
-          ],
-        }, {  # else: openbsd==1
+        ['OS=="openbsd"', {
           'sources!': [
             'capture/video/linux/v4l2_capture_delegate_multi_plane.cc',
             'capture/video/linux/v4l2_capture_delegate_multi_plane.h',
@@ -1502,6 +1495,7 @@
           'audio/audio_parameters_unittest.cc',
           'audio/audio_power_monitor_unittest.cc',
           'audio/fake_audio_worker_unittest.cc',
+          'audio/point_unittest.cc',
           'audio/simple_sources_unittest.cc',
           'audio/virtual_audio_input_stream_unittest.cc',
           'audio/virtual_audio_output_stream_unittest.cc',
@@ -1651,6 +1645,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
       ],
       'defines': [
         'MEDIA_IMPLEMENTATION',

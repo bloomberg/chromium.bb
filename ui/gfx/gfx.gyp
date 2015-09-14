@@ -527,6 +527,8 @@
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        'gfx',
+        'gfx_geometry',
       ],
       'conditions': [
         ['OS == "mac"', {

@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "media/audio/audio_parameters.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -125,18 +126,14 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
   // Contains properties that match directly with those with the same name
   // in media::AudioParameters.
-  struct AudioDeviceParameters {
-    AudioDeviceParameters()
-        : sample_rate(), channel_layout(), frames_per_buffer(), effects() {
-    }
+  // TODO(ajm): Remove this type and use media::AudioParameters directly.
+  struct CONTENT_EXPORT AudioDeviceParameters {
+    AudioDeviceParameters();
+    AudioDeviceParameters(int sample_rate,
+                          int channel_layout,
+                          int frames_per_buffer);
 
-    AudioDeviceParameters(int sample_rate, int channel_layout,
-        int frames_per_buffer)
-        : sample_rate(sample_rate),
-          channel_layout(channel_layout),
-          frames_per_buffer(frames_per_buffer),
-          effects() {
-    }
+    ~AudioDeviceParameters();
 
     // Preferred sample rate in samples per second for the device.
     int sample_rate;
@@ -154,6 +151,8 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
     // See media::AudioParameters::PlatformEffectsMask.
     int effects;
+
+    std::vector<media::Point> mic_positions;
   };
 
   // These below two member variables are valid only when the type of device is

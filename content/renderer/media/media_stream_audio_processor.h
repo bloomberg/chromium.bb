@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/aec_dump_message_filter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
@@ -52,9 +53,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
   // |playout_data_source| won't be used.
-  MediaStreamAudioProcessor(const blink::WebMediaConstraints& constraints,
-                            int effects,
-                            WebRtcPlayoutDataSource* playout_data_source);
+  MediaStreamAudioProcessor(
+      const blink::WebMediaConstraints& constraints,
+      const MediaStreamDevice::AudioDeviceParameters& input_params,
+      WebRtcPlayoutDataSource* playout_data_source);
 
   // Called when the format of the capture data has changed.
   // Called on the main render thread. The caller is responsible for stopping
@@ -125,7 +127,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
-      const blink::WebMediaConstraints& constraints, int effects);
+      const blink::WebMediaConstraints& constraints,
+      const MediaStreamDevice::AudioDeviceParameters& input_params);
 
   // Helper to initialize the capture converter.
   void InitializeCaptureFifo(const media::AudioParameters& input_format);

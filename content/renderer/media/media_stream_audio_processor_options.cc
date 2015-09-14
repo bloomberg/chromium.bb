@@ -65,6 +65,8 @@ struct {
   { MediaAudioConstraints::kGoogHighpassFilter, true },
   { MediaAudioConstraints::kGoogTypingNoiseDetection, true },
   { MediaAudioConstraints::kGoogExperimentalNoiseSuppression, false },
+  // Beamforming will only be enabled if we are also provided with a
+  // multi-microphone geometry.
   { MediaAudioConstraints::kGoogBeamforming, false },
   { kMediaStreamAudioHotword, false },
 };
@@ -97,6 +99,19 @@ DelayBasedEchoQuality EchoDelayFrequencyToQuality(float delay_frequency) {
     return DELAY_BASED_ECHO_QUALITY_SPURIOUS;
   else
     return DELAY_BASED_ECHO_QUALITY_BAD;
+}
+
+webrtc::Point WebrtcPointFromMediaPoint(const media::Point& point) {
+  return webrtc::Point(point.x(), point.y(), point.z());
+}
+
+std::vector<webrtc::Point> WebrtcPointsFromMediaPoints(
+    const std::vector<media::Point>& points) {
+  std::vector<webrtc::Point> webrtc_points;
+  webrtc_points.reserve(webrtc_points.size());
+  for (const auto& point : points)
+    webrtc_points.push_back(WebrtcPointFromMediaPoint(point));
+  return webrtc_points;
 }
 
 }  // namespace
@@ -377,36 +392,19 @@ void GetAecStats(webrtc::EchoCancellation* echo_cancellation,
   }
 }
 
-CONTENT_EXPORT std::vector<webrtc::Point> ParseArrayGeometry(
-    const std::string& geometry_string) {
-  const auto& tokens =
-      base::SplitString(geometry_string, base::kWhitespaceASCII,
-                        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  std::vector<webrtc::Point> geometry;
-  if (tokens.size() < 3 || tokens.size() % 3 != 0) {
-    LOG(ERROR) << "Malformed geometry string: " << geometry_string;
-    return geometry;
-  }
+std::vector<webrtc::Point> GetArrayGeometryPreferringConstraints(
+    const MediaAudioConstraints& audio_constraints,
+    const MediaStreamDevice::AudioDeviceParameters& input_params) {
+  const std::string constraints_geometry =
+      audio_constraints.GetPropertyAsString(
+          MediaAudioConstraints::kGoogArrayGeometry);
 
-  std::vector<float> float_tokens;
-  float_tokens.reserve(tokens.size());
-  for (const auto& token : tokens) {
-    double float_token;
-    if (!base::StringToDouble(token, &float_token)) {
-      LOG(ERROR) << "Unable to convert token=" << token
-                 << " to double from geometry string: " << geometry_string;
-      return geometry;
-    }
-    float_tokens.push_back(float_token);
-  }
-
-  geometry.reserve(float_tokens.size() / 3);
-  for (size_t i = 0; i < float_tokens.size(); i += 3) {
-    geometry.push_back(webrtc::Point(float_tokens[i + 0], float_tokens[i + 1],
-                                     float_tokens[i + 2]));
-  }
-
-  return geometry;
+  // Give preference to the audio constraint over the device-supplied mic
+  // positions. This is mainly for testing purposes.
+  return WebrtcPointsFromMediaPoints(
+      constraints_geometry.empty()
+          ? input_params.mic_positions
+          : media::ParsePointsFromString(constraints_geometry));
 }
 
 }  // namespace content

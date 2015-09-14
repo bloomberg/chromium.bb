@@ -16,6 +16,9 @@ TEST(AudioParameters, Constructor_Default) {
   ChannelLayout expected_channel_layout = CHANNEL_LAYOUT_NONE;
   int expected_rate = 0;
   int expected_samples = 0;
+  AudioParameters::PlatformEffectsMask expected_effects =
+      AudioParameters::NO_EFFECTS;
+  std::vector<Point> expected_mic_positions;
 
   AudioParameters params;
 
@@ -25,6 +28,8 @@ TEST(AudioParameters, Constructor_Default) {
   EXPECT_EQ(expected_channel_layout, params.channel_layout());
   EXPECT_EQ(expected_rate, params.sample_rate());
   EXPECT_EQ(expected_samples, params.frames_per_buffer());
+  EXPECT_EQ(expected_effects, params.effects());
+  EXPECT_EQ(expected_mic_positions, params.mic_positions());
 }
 
 TEST(AudioParameters, Constructor_ParameterValues) {

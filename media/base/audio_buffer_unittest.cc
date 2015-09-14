@@ -202,13 +202,8 @@ TEST(AudioBufferTest, FrameSize) {
                             kTimestamp);
   EXPECT_EQ(16, buffer->frame_count());  // 2 channels of 8-bit data
 
-  buffer = AudioBuffer::CopyFrom(kSampleFormatF32,
-                                 CHANNEL_LAYOUT_4_0,
-                                 4,
-                                 kSampleRate,
-                                 2,
-                                 data,
-                                 kTimestamp);
+  buffer = AudioBuffer::CopyFrom(kSampleFormatF32, CHANNEL_LAYOUT_4_0, 4,
+                                 kSampleRate, 2, data, kTimestamp);
   EXPECT_EQ(2, buffer->frame_count());  // now 4 channels of 32-bit data
 }
 

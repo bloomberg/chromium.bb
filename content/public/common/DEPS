@@ -1,5 +1,8 @@
 specific_include_rules = {
   ".*\.cc": [
     "+content/common",
+  ],
+  "media_stream_request.h": [
+    "+media/audio/audio_parameters.h",
   ]
 }

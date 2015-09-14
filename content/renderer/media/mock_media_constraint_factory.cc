@@ -23,7 +23,7 @@ MockMediaConstraintFactory::~MockMediaConstraintFactory() {
 }
 
 blink::WebMediaConstraints
-MockMediaConstraintFactory::CreateWebMediaConstraints() {
+MockMediaConstraintFactory::CreateWebMediaConstraints() const {
   blink::WebVector<blink::WebMediaConstraint> mandatory(mandatory_);
   blink::WebVector<blink::WebMediaConstraint> optional(optional_);
   blink::WebMediaConstraints constraints;

@@ -135,9 +135,9 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
       user_buffer_size : kDefaultInputBufferSize;
 
   // TODO(xians): add support for querying native channel layout for pulse.
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      GetNativeSampleRate(), 16, buffer_size);
+  return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                         CHANNEL_LAYOUT_STEREO, GetNativeSampleRate(), 16,
+                         buffer_size);
 }
 
 AudioOutputStream* AudioManagerPulse::MakeLinearOutputStream(

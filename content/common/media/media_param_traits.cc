@@ -9,6 +9,7 @@
 #include "content/common/media/video_capture_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/audio_parameters.h"
+#include "media/audio/point.h"
 #include "media/base/limits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
@@ -27,6 +28,7 @@ void ParamTraits<AudioParameters>::Write(Message* m,
   WriteParam(m, p.frames_per_buffer());
   WriteParam(m, p.channels());
   WriteParam(m, p.effects());
+  WriteParam(m, p.mic_positions());
 }
 
 bool ParamTraits<AudioParameters>::Read(const Message* m,
@@ -35,12 +37,14 @@ bool ParamTraits<AudioParameters>::Read(const Message* m,
   AudioParameters::Format format;
   ChannelLayout channel_layout;
   int sample_rate, bits_per_sample, frames_per_buffer, channels, effects;
+  std::vector<media::Point> mic_positions;
 
   if (!ReadParam(m, iter, &format) || !ReadParam(m, iter, &channel_layout) ||
       !ReadParam(m, iter, &sample_rate) ||
       !ReadParam(m, iter, &bits_per_sample) ||
       !ReadParam(m, iter, &frames_per_buffer) ||
-      !ReadParam(m, iter, &channels) || !ReadParam(m, iter, &effects)) {
+      !ReadParam(m, iter, &channels) || !ReadParam(m, iter, &effects) ||
+      !ReadParam(m, iter, &mic_positions)) {
     return false;
   }
 
@@ -48,6 +52,7 @@ bool ParamTraits<AudioParameters>::Read(const Message* m,
                          frames_per_buffer);
   params.set_channels_for_discrete(channels);
   params.set_effects(effects);
+  params.set_mic_positions(mic_positions);
 
   *r = params;
   return r->IsValid();

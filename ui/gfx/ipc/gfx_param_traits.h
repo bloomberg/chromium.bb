@@ -18,6 +18,7 @@ class SkBitmap;
 namespace gfx {
 class Point;
 class PointF;
+class Point3F;
 class Range;
 class Rect;
 class RectF;
@@ -40,6 +41,14 @@ struct GFX_IPC_EXPORT ParamTraits<gfx::Point> {
 template <>
 struct GFX_IPC_EXPORT ParamTraits<gfx::PointF> {
   typedef gfx::PointF param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct GFX_IPC_EXPORT ParamTraits<gfx::Point3F> {
+  typedef gfx::Point3F param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

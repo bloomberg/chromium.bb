@@ -23,28 +23,66 @@
 #undef max
 
 namespace media {
+namespace {
 
-static void AddDefaultDevice(AudioDeviceNames* device_names) {
-  DCHECK(device_names->empty());
+// Maximum number of output streams that can be open simultaneously.
+const int kMaxOutputStreams = 50;
 
+// Default sample rate for input and output streams.
+const int kDefaultSampleRate = 48000;
+
+// Define bounds for the output buffer size.
+const int kMinimumOutputBufferSize = 512;
+const int kMaximumOutputBufferSize = 8192;
+
+// Default input buffer size.
+const int kDefaultInputBufferSize = 1024;
+
+void AddDefaultDevice(AudioDeviceNames* device_names) {
   // Cras will route audio from a proper physical device automatically.
   device_names->push_back(
       AudioDeviceName(AudioManagerBase::kDefaultDeviceName,
                       AudioManagerBase::kDefaultDeviceId));
 }
 
-// Maximum number of output streams that can be open simultaneously.
-static const int kMaxOutputStreams = 50;
+// Returns the AudioDeviceName of the virtual device with beamforming on.
+AudioDeviceName BeamformingOnDeviceName() {
+  // TODO(ajm): Replace these strings with properly localized ones.
+  // (crbug.com/497001)
+  static const char kBeamformingOnNameSuffix[] = " (pick up just one person)";
+  static const char kBeamformingOnIdSuffix[] = "-beamforming";
 
-// Default sample rate for input and output streams.
-static const int kDefaultSampleRate = 48000;
+  return AudioDeviceName(
+      std::string(AudioManagerBase::kDefaultDeviceName) +
+          kBeamformingOnNameSuffix,
+      std::string(AudioManagerBase::kDefaultDeviceId) + kBeamformingOnIdSuffix);
+}
 
-// Define bounds for the output buffer size.
-static const int kMinimumOutputBufferSize = 512;
-static const int kMaximumOutputBufferSize = 8192;
+// Returns the AudioDeviceName of the virtual device with beamforming off.
+AudioDeviceName BeamformingOffDeviceName() {
+  static const char kBeamformingOffNameSuffix[] = " (pick up everything)";
+  return AudioDeviceName(std::string(AudioManagerBase::kDefaultDeviceName) +
+                             kBeamformingOffNameSuffix,
+                         AudioManagerBase::kDefaultDeviceId);
+}
 
-// Default input buffer size.
-static const int kDefaultInputBufferSize = 1024;
+// Returns a mic positions string if the machine has a beamforming capable
+// internal mic and otherwise an empty string.
+std::string MicPositions() {
+  // Get the list of devices from CRAS. An internal mic with a non-empty
+  // positions field indicates the machine has a beamforming capable mic array.
+  chromeos::AudioDeviceList devices;
+  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+  for (const auto& device : devices) {
+    if (device.type == chromeos::AUDIO_TYPE_INTERNAL_MIC) {
+      // There should be only one internal mic device.
+      return device.mic_positions;
+    }
+  }
+  return "";
+}
+
+}  // namespace
 
 bool AudioManagerCras::HasAudioOutputDevices() {
   return true;
@@ -62,7 +100,9 @@ bool AudioManagerCras::HasAudioInputDevices() {
 
 AudioManagerCras::AudioManagerCras(AudioLogFactory* audio_log_factory)
     : AudioManagerBase(audio_log_factory),
-      has_keyboard_mic_(false) {
+      has_keyboard_mic_(false),
+      beamforming_on_device_name_(BeamformingOnDeviceName()),
+      beamforming_off_device_name_(BeamformingOffDeviceName()) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 }
 
@@ -76,11 +116,24 @@ void AudioManagerCras::ShowAudioInputSettings() {
 
 void AudioManagerCras::GetAudioInputDeviceNames(
     AudioDeviceNames* device_names) {
-  AddDefaultDevice(device_names);
+  DCHECK(device_names->empty());
+
+  mic_positions_ = ParsePointsFromString(MicPositions());
+  // At least two mic positions indicates we have a beamforming capable mic
+  // array. Add the virtual beamforming device to the list. When this device is
+  // queried through GetInputStreamParameters, provide the cached mic positions.
+  if (mic_positions_.size() > 1) {
+    device_names->push_back(beamforming_on_device_name_);
+    device_names->push_back(beamforming_off_device_name_);
+  } else {
+    AddDefaultDevice(device_names);
+  }
 }
 
 void AudioManagerCras::GetAudioOutputDeviceNames(
     AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+
   AddDefaultDevice(device_names);
 }
 
@@ -91,16 +144,16 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
   int user_buffer_size = GetUserBufferSize();
   int buffer_size = user_buffer_size ?
       user_buffer_size : kDefaultInputBufferSize;
-  AudioParameters::PlatformEffectsMask effects =
-      has_keyboard_mic_ ? AudioParameters::KEYBOARD_MIC
-                        : AudioParameters::NO_EFFECTS;
 
   // TODO(hshi): Fine-tune audio parameters based on |device_id|. The optimal
   // parameters for the loopback stream may differ from the default.
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          CHANNEL_LAYOUT_STEREO, kDefaultSampleRate, 16,
                          buffer_size);
-  params.set_effects(effects);
+  if (has_keyboard_mic_)
+    params.set_effects(AudioParameters::KEYBOARD_MIC);
+  if (device_id == beamforming_on_device_name_.unique_id)
+    params.set_mic_positions(mic_positions_);
   return params;
 }
 

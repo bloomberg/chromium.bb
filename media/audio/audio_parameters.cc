@@ -21,6 +21,11 @@ AudioParameters::AudioParameters(Format format,
         frames_per_buffer);
 }
 
+AudioParameters::~AudioParameters() {}
+
+AudioParameters::AudioParameters(const AudioParameters&) = default;
+AudioParameters& AudioParameters::operator=(const AudioParameters&) = default;
+
 void AudioParameters::Reset(Format format,
                             ChannelLayout channel_layout,
                             int sample_rate,
@@ -33,6 +38,7 @@ void AudioParameters::Reset(Format format,
   bits_per_sample_ = bits_per_sample;
   frames_per_buffer_ = frames_per_buffer;
   effects_ = NO_EFFECTS;
+  mic_positions_.clear();
 }
 
 bool AudioParameters::IsValid() const {
@@ -54,7 +60,8 @@ std::string AudioParameters::AsHumanReadableString() const {
     << " channels: " << channels() << " sample_rate: " << sample_rate()
     << " bits_per_sample: " << bits_per_sample()
     << " frames_per_buffer: " << frames_per_buffer()
-    << " effects: " << effects();
+    << " effects: " << effects()
+    << " mic_positions: " << PointsToString(mic_positions_);
   return s.str();
 }
 
@@ -77,13 +84,12 @@ base::TimeDelta AudioParameters::GetBufferDuration() const {
 }
 
 bool AudioParameters::Equals(const AudioParameters& other) const {
-  return format_ == other.format() &&
-         sample_rate_ == other.sample_rate() &&
+  return format_ == other.format() && sample_rate_ == other.sample_rate() &&
          channel_layout_ == other.channel_layout() &&
          channels_ == other.channels() &&
          bits_per_sample_ == other.bits_per_sample() &&
          frames_per_buffer_ == other.frames_per_buffer() &&
-         effects_ == other.effects();
+         effects_ == other.effects() && mic_positions_ == other.mic_positions_;
 }
 
 }  // namespace media

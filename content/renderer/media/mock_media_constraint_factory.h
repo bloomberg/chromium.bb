@@ -17,7 +17,7 @@ class MockMediaConstraintFactory {
   MockMediaConstraintFactory();
   ~MockMediaConstraintFactory();
 
-  blink::WebMediaConstraints CreateWebMediaConstraints();
+  blink::WebMediaConstraints CreateWebMediaConstraints() const;
   void AddMandatory(const std::string& key, int value);
   void AddMandatory(const std::string& key, double value);
   void AddMandatory(const std::string& key, const std::string& value);
