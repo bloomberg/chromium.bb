@@ -69,8 +69,9 @@ UserPolicySigninService::~UserPolicySigninService() {}
 
 void UserPolicySigninService::RegisterForPolicy(
     const std::string& username,
+    const std::string& account_id,
     const PolicyRegistrationCallback& callback) {
-  RegisterForPolicyInternal(username, "", callback);
+  RegisterForPolicyInternal(username, account_id, "", callback);
 }
 
 #if !defined(OS_ANDROID)
@@ -78,7 +79,7 @@ void UserPolicySigninService::RegisterForPolicyWithAccessToken(
     const std::string& username,
     const std::string& access_token,
     const PolicyRegistrationCallback& callback) {
-  RegisterForPolicyInternal(username, access_token, callback);
+  RegisterForPolicyInternal(username, "", access_token, callback);
 }
 
 // static
@@ -89,6 +90,7 @@ std::vector<std::string> UserPolicySigninService::GetScopes() {
 
 void UserPolicySigninService::RegisterForPolicyInternal(
     const std::string& username,
+    const std::string& account_id,
     const std::string& access_token,
     const PolicyRegistrationCallback& callback) {
   // Create a new CloudPolicyClient for fetching the DMToken.
@@ -109,11 +111,9 @@ void UserPolicySigninService::RegisterForPolicyInternal(
 
   if (access_token.empty()) {
     registration_helper_->StartRegistration(
-        oauth2_token_service_,
-        username,
+        oauth2_token_service_, account_id,
         base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
-                   base::Unretained(this),
-                   base::Passed(&policy_client),
+                   base::Unretained(this), base::Passed(&policy_client),
                    callback));
   } else {
 #if defined(OS_ANDROID)

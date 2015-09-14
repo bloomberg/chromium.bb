@@ -187,15 +187,13 @@ void StartFetchingAccountInfoFor(JNIEnv* env,
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   const std::string email =
       base::android::ConvertJavaStringToUTF8(env, jemail);
-  // TODO(rogerta): the java code will need to pass in the gaia-id
-  // of the account instead of the email when chrome uses gaia-id as key.
-  DCHECK_EQ(AccountTrackerService::MIGRATION_NOT_STARTED,
-            AccountTrackerServiceFactory::GetForProfile(profile)->
-                GetMigrationState());
-  AccountInfoRetriever* retriever =
-      new AccountInfoRetriever(
-          profile, gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)), email,
-          image_side_pixels, is_pre_signin);
+  AccountTrackerService* account_tracker_service =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+
+  AccountInfoRetriever* retriever = new AccountInfoRetriever(
+      profile,
+      account_tracker_service->FindAccountInfoByEmail(email).account_id, email,
+      image_side_pixels, is_pre_signin);
   retriever->Start();
 }
 

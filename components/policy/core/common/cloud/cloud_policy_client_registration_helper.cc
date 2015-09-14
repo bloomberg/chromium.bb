@@ -170,7 +170,7 @@ void CloudPolicyClientRegistrationHelper::StartRegistration(
     OAuth2TokenService* token_service,
     const std::string& account_id,
     const base::Closure& callback) {
-  DVLOG(1) << "Starting registration process with username";
+  DVLOG(1) << "Starting registration process with account_id";
   DCHECK(!client_->is_registered());
   callback_ = callback;
   client_->AddObserver(this);

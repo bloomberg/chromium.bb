@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
+import android.app.Activity;
+import android.content.Context;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
@@ -45,6 +47,7 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        mapAccountNamesToIds();
         super.setUp();
         ApplicationData.clearAppData(getInstrumentation().getTargetContext());
         loadNativeLibraryAndInitBrowserProcess();
@@ -58,12 +61,60 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
         mChromeSigninController = ChromeSigninController.get(mContext);
         mChromeSigninController.setSignedInAccountName(null);
 
+        // Seed test accounts to AccountTrackerService.
+        seedAccountTrackerService(mContext);
+
         // Get a reference to the service.
         mOAuth2TokenService = getOAuth2TokenServiceOnUiThread();
 
         // Set up observer.
         mObserver = new TestObserver();
         addObserver(mObserver);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mChromeSigninController.setSignedInAccountName(null);
+                mOAuth2TokenService.validateAccounts(mContext, false);
+            }
+        });
+        super.tearDown();
+    }
+
+    private void mapAccountNamesToIds() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
+                    @Override
+                    public String getAccountId(Context ctx, String accountName) {
+                        return "gaia-id-" + accountName;
+                    }
+
+                    @Override
+                    public boolean canBeUsed(Context ctx, Activity activity) {
+                        return true;
+                    }
+                });
+            }
+        });
+    }
+
+    private void seedAccountTrackerService(final Context context) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                AccountIdProvider provider = AccountIdProvider.getInstance();
+                String[] accountNames = {TEST_ACCOUNT1.name, TEST_ACCOUNT2.name};
+                String[] accountIds = {provider.getAccountId(context, accountNames[0]),
+                        provider.getAccountId(context, accountNames[1])};
+                AccountTrackerService.get(context).syncForceRefreshForTest(
+                        accountIds, accountNames);
+            }
+        });
     }
 
     /**
@@ -129,7 +180,7 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
 
         // When removed, an observer should not be called.
         mOAuth2TokenService.removeObserver(mObserver);
-        mOAuth2TokenService.fireRefreshTokenRevoked(TEST_ACCOUNT1);
+        mOAuth2TokenService.fireRefreshTokenRevoked(TEST_ACCOUNT2);
         assertEquals(1, mObserver.getRevokedCallCount());
 
         // No other observer interface method should ever have been called.
@@ -254,6 +305,9 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
 
         // Add another account.
         mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+
+        // Seed AccountTrackerService again since accounts changed after last validation.
+        seedAccountTrackerService(mContext);
 
         // Re-run validation.
         mOAuth2TokenService.validateAccounts(mContext, false);

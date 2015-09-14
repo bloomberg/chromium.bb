@@ -49,12 +49,12 @@ ProfileOAuth2TokenServiceFactory*
 
 KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_ANDROID)
   OAuth2TokenServiceDelegateAndroid* delegate =
-      new OAuth2TokenServiceDelegateAndroid();
-  delegate->Initialize();
+      new OAuth2TokenServiceDelegateAndroid(
+          AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile));
 #else
-  Profile* profile = static_cast<Profile*>(context);
   MutableProfileOAuth2TokenServiceDelegate* delegate =
       new MutableProfileOAuth2TokenServiceDelegate(
           ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),

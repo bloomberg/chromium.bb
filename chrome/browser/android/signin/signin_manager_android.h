@@ -42,12 +42,7 @@ class SigninManagerAndroid {
 
   // Indicates that the user has made the choice to sign-in. |username|
   // contains the email address of the account to use as primary.
-  // |accountIds| and |accoundNames| are two arrays of equal length: one
-  // containing strings of stable account ids and the other containing
-  // strings of account names (or emails).  An account id corresponds
-  // with the account name at the same position in the array.
-  void OnSignInCompleted(JNIEnv* env, jobject obj, jstring username,
-                         jobjectArray accountIds, jobjectArray accountNames);
+  void OnSignInCompleted(JNIEnv* env, jobject obj, jstring username);
 
   void SignOut(JNIEnv* env, jobject obj);
 

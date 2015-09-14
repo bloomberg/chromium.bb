@@ -108,6 +108,8 @@ class AccountTrackerService : public KeyedService,
                               const std::string& email);
   void SeedAccountInfo(AccountInfo info);
 
+  void RemoveAccount(const std::string& account_id);
+
   AccountIdMigrationState GetMigrationState();
   void SetMigrationDone();
   static AccountIdMigrationState GetMigrationState(PrefService* pref_service);

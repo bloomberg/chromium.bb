@@ -107,6 +107,8 @@ public class SigninHelper {
 
     private final SigninManager mSigninManager;
 
+    private final AccountTrackerService mAccountTrackerService;
+
     private final OAuth2TokenService mOAuth2TokenService;
 
     private final SyncController mSyncController;
@@ -124,12 +126,18 @@ public class SigninHelper {
         mContext = context;
         mProfileSyncService = ProfileSyncService.get();
         mSigninManager = SigninManager.get(mContext);
+        mAccountTrackerService = AccountTrackerService.get(mContext);
         mOAuth2TokenService = OAuth2TokenService.getForProfile(Profile.getLastUsedProfile());
         mSyncController = SyncController.get(context);
         mChromeSigninController = ChromeSigninController.get(mContext);
     }
 
     public void validateAccountSettings(boolean accountsChanged) {
+        if (accountsChanged) {
+            // Account details have changed so inform AccountTrackerService refresh itself.
+            mAccountTrackerService.forceRefresh();
+        }
+
         Account syncAccount = mChromeSigninController.getSignedInUser();
         if (syncAccount == null) {
             if (SigninManager.getAndroidSigninPromoExperimentGroup() < 0) return;

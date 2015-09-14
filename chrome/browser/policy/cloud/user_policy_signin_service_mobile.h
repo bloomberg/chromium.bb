@@ -44,9 +44,12 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // Registers a CloudPolicyClient for fetching policy for |username|.
   // This requests an OAuth2 token for the services involved, and contacts
   // the policy service if the account has management enabled.
+  // |account_id| is the obfuscated identitifcation of |username| to get OAuth2
+  // token services.
   // |callback| is invoked once we have registered this device to fetch policy,
   // or once it is determined that |username| is not a managed account.
   void RegisterForPolicy(const std::string& username,
+                         const std::string& account_id,
                          const PolicyRegistrationCallback& callback);
 
 #if !defined(OS_ANDROID)
@@ -65,10 +68,10 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
 #endif
 
  private:
-  void RegisterForPolicyInternal(
-      const std::string& username,
-      const std::string& access_token,
-      const PolicyRegistrationCallback& callback);
+  void RegisterForPolicyInternal(const std::string& username,
+                                 const std::string& account_id,
+                                 const std::string& access_token,
+                                 const PolicyRegistrationCallback& callback);
 
   void CallPolicyRegistrationCallback(scoped_ptr<CloudPolicyClient> client,
                                       PolicyRegistrationCallback callback);

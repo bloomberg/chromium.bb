@@ -676,7 +676,8 @@ public class AccountManagementFragment extends PreferenceFragment
 
         final int imageSidePixels =
                 context.getResources().getDimensionPixelOffset(R.dimen.user_picture_size);
-        ProfileDownloader.startFetchingAccountInfoFor(profile, accountName, imageSidePixels, false);
+        ProfileDownloader.startFetchingAccountInfoFor(
+                context, profile, accountName, imageSidePixels, false);
     }
 
     /**

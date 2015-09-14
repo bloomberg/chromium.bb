@@ -127,7 +127,9 @@ class UserPolicySigninServiceTest : public testing::Test {
 #endif
     service->RegisterForPolicy(
         kTestUser,
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+        kTestGaiaId,
+#else
         "mock_oauth_token",
 #endif
         base::Bind(&UserPolicySigninServiceTest::OnRegisterCompleted,

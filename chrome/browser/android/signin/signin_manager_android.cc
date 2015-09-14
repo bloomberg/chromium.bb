@@ -104,7 +104,9 @@ void SigninManagerAndroid::CheckPolicyBeforeSignIn(JNIEnv* env,
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   service->RegisterForPolicy(
-      base::android::ConvertJavaStringToUTF8(env, username),
+      username_, AccountTrackerServiceFactory::GetForProfile(profile_)
+                     ->FindAccountInfoByEmail(username_)
+                     .account_id,
       base::Bind(&SigninManagerAndroid::OnPolicyRegisterDone,
                  weak_factory_.GetWeakPtr()));
 #else
@@ -143,31 +145,8 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj) {
 
 void SigninManagerAndroid::OnSignInCompleted(JNIEnv* env,
                                              jobject obj,
-                                             jstring username,
-                                             jobjectArray accountIds,
-                                             jobjectArray accountNames) {
+                                             jstring username) {
   DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted";
-  // Seed the account tracker with id/email information if provided.
-  DCHECK(accountIds && accountNames);
-  std::vector<std::string> gaia_ids;
-  std::vector<std::string> emails;
-  base::android::AppendJavaStringArrayToStringVector(env, accountIds,
-                                                     &gaia_ids);
-  base::android::AppendJavaStringArrayToStringVector(env, accountNames,
-                                                     &emails);
-  DCHECK_EQ(emails.size(), gaia_ids.size());
-  DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: seeding "
-           << emails.size() << " accounts";
-
-  AccountTrackerService* tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
-  for (size_t i = 0; i < emails.size(); ++i) {
-    DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: seeding"
-             << " gaia_id=" << gaia_ids[i] << " email=" << emails[i];
-    if (!gaia_ids[i].empty() && !emails[i].empty())
-      tracker->SeedAccountInfo(gaia_ids[i], emails[i]);
-  }
-
   SigninManagerFactory::GetForProfile(profile_)->OnExternalSigninCompleted(
       base::android::ConvertJavaStringToUTF8(env, username));
 }

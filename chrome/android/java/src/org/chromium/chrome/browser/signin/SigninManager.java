@@ -11,7 +11,6 @@ import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -43,8 +42,7 @@ import javax.annotation.Nullable;
  * <p/>
  * See chrome/browser/signin/signin_manager_android.h for more details.
  */
-public class SigninManager {
-
+public class SigninManager implements AccountTrackerService.OnSystemAccountsSeededListener {
     public static final String CONFIRM_MANAGED_SIGNIN_DIALOG_TAG =
             "confirm_managed_signin_dialog_tag";
 
@@ -97,6 +95,8 @@ public class SigninManager {
 
     private ConfirmManagedSigninFragment mPolicyConfirmationDialog;
 
+    private boolean mHasPendingSignin = false;
+
     private boolean mSigninAllowedByPolicy;
 
     /**
@@ -143,28 +143,6 @@ public class SigninManager {
     }
 
     /**
-     * Structure used to pass account ids and names from a background async task to the
-     * foreground post execute function.  This structure contains two arrays of the same
-     * length: one containing strings of stable account ids and the other containing
-     * strings of account names (or emails).  An account id corresponds with the account
-     * name at the same position in the array.
-     */
-    private static class AccountIdsAndNames {
-        public final String[] mAccountIds;
-        public final String[] mAccountNames;
-
-        public AccountIdsAndNames(String[] accountIds, String[] accountNames) {
-            // Make sure that both arrays arguments are either null or have the same length.
-            assert (accountIds == null) == (accountNames == null);
-            if (accountIds != null && accountNames != null) {
-                assert accountIds.length == accountNames.length;
-            }
-            mAccountIds = accountIds;
-            mAccountNames = accountNames;
-        }
-    }
-
-    /**
      * A helper method for retrieving the application-wide SigninManager.
      * <p/>
      * Can only be accessed on the main thread.
@@ -192,6 +170,7 @@ public class SigninManager {
         mSigninNotificationController = new SigninNotificationController(
                 mContext, controller, AccountManagementFragment.class);
         ChromeSigninController.get(mContext).addListener(mSigninNotificationController);
+        AccountTrackerService.get(mContext).addSystemAccountsSeededListener(this);
     }
 
     /**
@@ -265,6 +244,28 @@ public class SigninManager {
     }
 
     /**
+    * Continue pending sign in after system accounts have been seeded into AccountTrackerService.
+    */
+    @Override
+    public void onSystemAccountsSeedingComplete() {
+        if (mHasPendingSignin) {
+            mHasPendingSignin = false;
+            doSignIn();
+        }
+    }
+
+    /**
+    * Clear pending sign in when system accounts in AccountTrackerService were refreshed.
+    */
+    @Override
+    public void onSystemAccountsForceRefreshed() {
+        if (mHasPendingSignin) {
+            mHasPendingSignin = false;
+            cancelSignIn();
+        }
+    }
+
+    /**
      * Starts the sign-in flow, and executes the callback when ready to proceed.
      * <p/>
      * This method checks with the native side whether the account has management enabled, and may
@@ -295,28 +296,32 @@ public class SigninManager {
 
         notifySignInAllowedChanged();
 
-        if (!AccountIdProvider.getInstance().canBeUsed(mContext, mSignInActivity)) {
-            Log.d(TAG, "Deferring the sign-in process as Google Play services is unavailable");
+        if (!AccountTrackerService.get(mContext).isSystemAccountsSeeded()) {
+            mHasPendingSignin = true;
             return;
         }
 
-        if (!nativeShouldLoadPolicyForUser(account.name)) {
+        doSignIn();
+    }
+
+    private void doSignIn() {
+        if (!nativeShouldLoadPolicyForUser(mSignInAccount.name)) {
             // Proceed with the sign-in flow without checking for policy if it can be determined
             // that this account can't have management enabled based on the username.
-            doSignIn();
+            finishSignIn();
             return;
         }
 
         Log.d(TAG, "Checking if account has policy management enabled");
         // This will call back to onPolicyCheckedBeforeSignIn.
-        nativeCheckPolicyBeforeSignIn(mNativeSigninManagerAndroid, account.name);
+        nativeCheckPolicyBeforeSignIn(mNativeSigninManagerAndroid, mSignInAccount.name);
     }
 
     @CalledByNative
     private void onPolicyCheckedBeforeSignIn(String managementDomain) {
         if (managementDomain == null) {
             Log.d(TAG, "Account doesn't have policy");
-            doSignIn();
+            finishSignIn();
             return;
         }
 
@@ -366,43 +371,17 @@ public class SigninManager {
     private void onPolicyFetchedBeforeSignIn() {
         // Policy has been fetched for the user and is being enforced; features like sync may now
         // be disabled by policy, and the rest of the sign-in flow can be resumed.
-        doSignIn();
+        finishSignIn();
     }
 
-    private void doSignIn() {
-        Log.d(TAG, "Committing the sign-in process now");
-        assert mSignInAccount != null;
-
-        // Get mapping from account names to account ids.
-        final AccountIdProvider provider = AccountIdProvider.getInstance();
-        new AsyncTask<Void, Void, AccountIdsAndNames>() {
-            @Override
-            public AccountIdsAndNames doInBackground(Void... params) {
-                Log.d(TAG, "Getting id/email mapping");
-                String[] accountNames = OAuth2TokenService.getSystemAccounts(mContext);
-                assert accountNames.length > 0;
-                String[] accountIds = new String[accountNames.length];
-                for (int i = 0; i < accountIds.length; ++i) {
-                    accountIds[i] = provider.getAccountId(mContext, accountNames[i]);
-                }
-                return new AccountIdsAndNames(accountIds, accountNames);
-            }
-            @Override
-            public void onPostExecute(AccountIdsAndNames accountIdsAndNames) {
-                finishSignIn(accountIdsAndNames);
-            }
-        }.execute();
-    }
-
-    private void finishSignIn(AccountIdsAndNames accountIdsAndNames) {
+    private void finishSignIn() {
         if (mSignInAccount == null) {
             Log.w(TAG, "Sign in request was canceled; aborting finishSignIn().");
             return;
         }
 
         // Tell the native side that sign-in has completed.
-        nativeOnSignInCompleted(mNativeSigninManagerAndroid, mSignInAccount.name,
-                                accountIdsAndNames.mAccountIds, accountIdsAndNames.mAccountNames);
+        nativeOnSignInCompleted(mNativeSigninManagerAndroid, mSignInAccount.name);
 
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in natively and crashes.
@@ -456,6 +435,8 @@ public class SigninManager {
         } else {
             onSignOutDone();
         }
+
+        AccountTrackerService.get(mContext).forceRefresh();
     }
 
     /**
@@ -628,8 +609,7 @@ public class SigninManager {
     private native void nativeCheckPolicyBeforeSignIn(
             long nativeSigninManagerAndroid, String username);
     private native void nativeFetchPolicyBeforeSignIn(long nativeSigninManagerAndroid);
-    private native void nativeOnSignInCompleted(long nativeSigninManagerAndroid, String username,
-                                                String[] accountIds, String[] accountNames);
+    private native void nativeOnSignInCompleted(long nativeSigninManagerAndroid, String username);
     private native void nativeSignOut(long nativeSigninManagerAndroid);
     private native String nativeGetManagementDomain(long nativeSigninManagerAndroid);
     private native void nativeWipeProfileData(long nativeSigninManagerAndroid);
