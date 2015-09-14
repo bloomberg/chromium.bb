@@ -652,9 +652,29 @@ public:
     virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return nullptr; }
     bool isColumnSpanAll() const { return style()->columnSpan() == ColumnSpanAll && spannerPlaceholder(); }
 
-    // Returns the object containing this one. Can be different from parent for positioned elements.
-    // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
-    // is true if the layoutObject returned is an ancestor of paintInvalidationContainer.
+    // This function returns the containing block of the object.
+    // Due to CSS being inconsistent, a containing block can be a relatively
+    // positioned inline, thus we can't return a LayoutBlock from this function.
+    //
+    // This method is extremely similar to containingBlock(), but with a few
+    // notable exceptions.
+    // (1) It can be used on orphaned subtrees, i.e., it can be called safely
+    // even when the object is not part of the primary document subtree yet.
+    // (2) For normal flow elements, it just returns the parent.
+    // (3) For absolute positioned elements, it will return a relative
+    // positioned inline. containingBlock() simply skips relpositioned inlines
+    // and lets an enclosing block handle the layout of the positioned object.
+    // This does mean that computePositionedLogicalWidth and
+    // computePositionedLogicalHeight have to use container().
+    //
+    // This function should be used for any invalidation as it would correctly
+    // walk the containing block chain. See e.g. markContainerChainForLayout.
+    // It is also used for correctly sizing absolutely positioned elements
+    // (point 3 above).
+    //
+    // If |paintInvalidationContainer| and |paintInvalidationContainerSkipped|
+    // are not null, on return *paintInvalidationContainerSkipped is true if
+    // the layoutObject returned is an ancestor of |paintInvalidationContainer|.
     LayoutObject* container(const LayoutBoxModelObject* paintInvalidationContainer = nullptr, bool* paintInvalidationContainerSkipped = nullptr) const;
     LayoutObject* containerCrossingFrameBoundaries() const;
     LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer = nullptr, bool* paintInvalidationContainerSkipped = nullptr) const;
@@ -781,7 +801,26 @@ public:
 
     void firstLineStyleDidChange(const ComputedStyle& oldStyle, const ComputedStyle& newStyle);
 
-    // returns the containing block level element for this element.
+    // This function returns an enclosing non-anonymous LayoutBlock for this
+    // element.
+    // This function is not always returning the containing block as defined by
+    // CSS. In particular:
+    // - if the CSS containing block is a relatively positioned inline,
+    // the function returns the inline's enclosing non-anonymous LayoutBlock.
+    // This means that a LayoutInline would be skipped (expected as it's not a
+    // LayoutBlock) but so would be an inline LayoutTable or LayoutBlockFlow.
+    // TODO(jchaffraix): Is that REALLY what we want here?
+    // - if the CSS containing block is anonymous, we find its enclosing
+    // non-anonymous LayoutBlock.
+    // Note that in the previous examples, the returned LayoutBlock has no
+    // logical relationship to the original element.
+    //
+    // LayoutBlocks are the one that handle laying out positioned elements,
+    // thus this function is important during layout, to insert the positioned
+    // elements into the correct LayoutBlock.
+    //
+    // See container() for the function that returns the containing block.
+    // See LayoutBlock.h for some extra explanations on containing blocks.
     LayoutBlock* containingBlock() const;
 
     bool canContainFixedPositionObjects() const

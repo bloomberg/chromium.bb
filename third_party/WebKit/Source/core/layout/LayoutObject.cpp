@@ -2325,15 +2325,6 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidat
     if (paintInvalidationContainerSkipped)
         *paintInvalidationContainerSkipped = false;
 
-    // This method is extremely similar to containingBlock(), but with a few notable
-    // exceptions.
-    // (1) It can be used on orphaned subtrees, i.e., it can be called safely even when
-    // the object is not part of the primary document subtree yet.
-    // (2) For normal flow elements, it just returns the parent.
-    // (3) For absolute positioned elements, it will return a relative positioned inline.
-    // containingBlock() simply skips relpositioned inlines and lets an enclosing block handle
-    // the layout of the positioned object.  This does mean that computePositionedLogicalWidth and
-    // computePositionedLogicalHeight have to use container().
     LayoutObject* o = parent();
 
     if (isTextOrSVGChild())

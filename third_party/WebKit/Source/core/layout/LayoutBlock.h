@@ -65,11 +65,21 @@ enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 // elements. They are used to determine the sizing as well
 // as the positioning of the LayoutObjects.
 //
-// Out-of-flow positioned elements are laid out by their
-// containing blocks so LayoutBlock keeps track of them
-// through |gPositionedDescendantsMap| (see LayoutBlock.cpp).
-// See LayoutBlock::layoutPositionedObjects() for the logic
-// to lay them out.
+// LayoutBlock is the class that handles out-of-flow positioned elements in
+// Blink, in particular for layout (see layoutPositionedObjects()). That's why
+// LayoutBlock keeps track of them through |gPositionedDescendantsMap| (see
+// LayoutBlock.cpp).
+// Note that this is a design decision made in Blink that doesn't reflect CSS:
+// CSS allows relatively positioned inlines (LayoutInline) to be containing
+// blocks, but they don't have the logic to handle out-of-flow positioned
+// objects. This induces some complexity around choosing an enclosing
+// LayoutBlock (for inserting out-of-flow objects during layout) vs the CSS
+// containing block (for sizing, invalidation).
+//
+//
+// ***** WHO LAYS OUT OUT-OF-FLOW POSITIONED OBJECTS? *****
+// A positioned object gets inserted into an enclosing LayoutBlock's positioned
+// map. This is determined by LayoutObject::containingBlock().
 //
 //
 // ***** HANDLING OUT-OF-FLOW POSITIONED OBJECTS *****
