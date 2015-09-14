@@ -14,6 +14,7 @@
 #include "mandoline/ui/desktop_ui/browser_commands.h"
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
+#include "mandoline/ui/desktop_ui/toolbar_view.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
@@ -71,7 +72,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
     : app_(app),
       host_client_binding_(this),
       manager_(manager),
-      omnibox_launcher_(nullptr),
+      toolbar_view_(nullptr),
       progress_bar_(nullptr),
       root_(nullptr),
       content_(nullptr),
@@ -105,6 +106,31 @@ void BrowserWindow::Close() {
     mojo::ScopedViewPtr::DeleteViewOrViewManager(root_);
   else
     delete this;
+}
+
+void BrowserWindow::ShowOmnibox() {
+  if (!omnibox_.get()) {
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:omnibox");
+    omnibox_connection_ = app_->ConnectToApplication(request.Pass());
+    omnibox_connection_->AddService<ViewEmbedder>(this);
+    omnibox_connection_->ConnectToService(&omnibox_);
+    omnibox_connection_->SetRemoteServiceProviderConnectionErrorHandler(
+      [this]() {
+        // This will cause the connection to be re-established the next time
+        // we come through this codepath.
+        omnibox_.reset();
+    });
+  }
+  omnibox_->ShowForURL(mojo::String::From(current_url_.spec()));
+}
+
+void BrowserWindow::GoBack() {
+  web_view_.web_view()->GoBack();
+}
+
+void BrowserWindow::GoForward() {
+  web_view_.web_view()->GoForward();
 }
 
 BrowserWindow::~BrowserWindow() {
@@ -146,6 +172,10 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
                         mojo::KEYBOARD_CODE_L, mojo::EVENT_FLAGS_CONTROL_DOWN);
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::NEW_WINDOW),
                         mojo::KEYBOARD_CODE_N, mojo::EVENT_FLAGS_CONTROL_DOWN);
+  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_BACK),
+                        mojo::KEYBOARD_CODE_LEFT, mojo::EVENT_FLAGS_ALT_DOWN);
+  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
+                        mojo::KEYBOARD_CODE_RIGHT, mojo::EVENT_FLAGS_ALT_DOWN);
 
   // Now that we're ready, load the default url.
   LoadURL(default_url_);
@@ -189,6 +219,12 @@ void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
     case BrowserCommand::FOCUS_OMNIBOX:
       ShowOmnibox();
       break;
+    case BrowserCommand::GO_BACK:
+      GoBack();
+      break;
+    case BrowserCommand::GO_FORWARD:
+      GoForward();
+      break;
     default:
       NOTREACHED();
       break;
@@ -208,6 +244,14 @@ void BrowserWindow::LoadingStateChanged(bool is_loading) {
 
 void BrowserWindow::ProgressChanged(double progress) {
   progress_bar_->SetProgress(progress);
+}
+
+void BrowserWindow::BackForwardChanged(
+    web_view::mojom::ButtonState back_button,
+    web_view::mojom::ButtonState forward_button) {
+  toolbar_view_->SetBackForwardEnabled(
+      back_button == web_view::mojom::ButtonState::BUTTON_STATE_ENABLED,
+      forward_button == web_view::mojom::ButtonState::BUTTON_STATE_ENABLED);
 }
 
 void BrowserWindow::TitleChanged(const mojo::String& title) {
@@ -232,7 +276,7 @@ void BrowserWindow::Embed(mojo::URLRequestPtr request) {
   bool changed = current_url_ != gurl;
   current_url_ = gurl;
   if (changed)
-    omnibox_launcher_->SetText(base::UTF8ToUTF16(current_url_.spec()));
+    toolbar_view_->SetOmniboxText(base::UTF8ToUTF16(current_url_.spec()));
 
   web_view_.web_view()->LoadRequest(request.Pass());
 }
@@ -258,17 +302,13 @@ void BrowserWindow::Layout(views::View* host) {
   float inverse_device_pixel_ratio =
       1.0f / root_->viewport_metrics().device_pixel_ratio;
 
-  gfx::Rect omnibox_launcher_bounds = gfx::ScaleToEnclosingRect(
+  gfx::Rect toolbar_bounds = gfx::ScaleToEnclosingRect(
       bounds_in_physical_pixels, inverse_device_pixel_ratio);
-  omnibox_launcher_bounds.Inset(10, 10, 10,
-                                omnibox_launcher_bounds.height() - 40);
-  omnibox_launcher_->SetBoundsRect(omnibox_launcher_bounds);
+  toolbar_bounds.Inset(10, 10, 10, toolbar_bounds.height() - 40);
+  toolbar_view_->SetBoundsRect(toolbar_bounds);
 
-  gfx::Rect progress_bar_bounds(omnibox_launcher_bounds.x(),
-                                omnibox_launcher_bounds.bottom() + 2,
-                                omnibox_launcher_bounds.width(),
-                                5);
-  progress_bar_->SetBoundsRect(progress_bar_bounds);
+  gfx::Rect progress_bar_bounds(toolbar_bounds.x(), toolbar_bounds.bottom() + 2,
+                                toolbar_bounds.width(), 5);
 
   // The content view bounds are in physical pixels.
   mojo::Rect content_bounds_mojo;
@@ -283,16 +323,6 @@ void BrowserWindow::Layout(views::View* host) {
   omnibox_view_->SetBounds(
       mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(
           bounds_in_physical_pixels));
-
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserWindow, views::ButtonListener implementation:
-
-void BrowserWindow::ButtonPressed(views::Button* sender,
-                                  const ui::Event& event) {
-  DCHECK_EQ(sender, omnibox_launcher_);
-  ShowOmnibox();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -310,11 +340,9 @@ void BrowserWindow::Init(mojo::View* root) {
   views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
   widget_delegate->GetContentsView()->set_background(
     views::Background::CreateSolidBackground(0xFFDDDDDD));
-  omnibox_launcher_ =
-      new views::LabelButton(this, base::ASCIIToUTF16("Open Omnibox"));
+  toolbar_view_ = new ToolbarView(this);
   progress_bar_ = new ProgressView;
-
-  widget_delegate->GetContentsView()->AddChildView(omnibox_launcher_);
+  widget_delegate->GetContentsView()->AddChildView(toolbar_view_);
   widget_delegate->GetContentsView()->AddChildView(progress_bar_);
   widget_delegate->GetContentsView()->SetLayoutManager(this);
 
@@ -328,23 +356,6 @@ void BrowserWindow::Init(mojo::View* root) {
   widget->Init(params);
   widget->Show();
   root_->SetFocus();
-}
-
-void BrowserWindow::ShowOmnibox() {
-  if (!omnibox_.get()) {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:omnibox");
-    omnibox_connection_ = app_->ConnectToApplication(request.Pass());
-    omnibox_connection_->AddService<ViewEmbedder>(this);
-    omnibox_connection_->ConnectToService(&omnibox_);
-    omnibox_connection_->SetRemoteServiceProviderConnectionErrorHandler(
-      [this]() {
-        // This will cause the connection to be re-established the next time
-        // we come through this codepath.
-        omnibox_.reset();
-    });
-  }
-  omnibox_->ShowForURL(mojo::String::From(current_url_.spec()));
 }
 
 void BrowserWindow::EmbedOmnibox() {

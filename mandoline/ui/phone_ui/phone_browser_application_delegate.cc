@@ -115,6 +115,13 @@ void PhoneBrowserApplicationDelegate::ProgressChanged(double progress) {
   // ...
 }
 
+
+void PhoneBrowserApplicationDelegate::BackForwardChanged(
+    web_view::mojom::ButtonState back_button,
+    web_view::mojom::ButtonState forward_button) {
+  // ...
+}
+
 void PhoneBrowserApplicationDelegate::TitleChanged(const mojo::String& title) {
   // ...
 }

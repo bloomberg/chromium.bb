@@ -123,6 +123,9 @@ void TestRunnerApplicationDelegate::TopLevelNavigate(
 
 void TestRunnerApplicationDelegate::LoadingStateChanged(bool is_loading) {}
 void TestRunnerApplicationDelegate::ProgressChanged(double progress) {}
+void TestRunnerApplicationDelegate::BackForwardChanged(
+    mojom::ButtonState back_button,
+    mojom::ButtonState forward_button) {}
 void TestRunnerApplicationDelegate::TitleChanged(const mojo::String& title) {}
 
 ////////////////////////////////////////////////////////////////////////////////

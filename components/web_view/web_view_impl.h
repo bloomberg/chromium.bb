@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/web_view/frame_devtools_agent_delegate.h"
@@ -21,10 +22,11 @@ class ApplicationImpl;
 namespace web_view {
 
 class Frame;
-class FrameTree;
 class FrameDevToolsAgent;
+class FrameTree;
 class HTMLMessageEvent;
 class PendingWebViewLoad;
+class URLRequestCloneable;
 
 class WebViewImpl : public mojom::WebView,
                     public mojo::ViewTreeDelegate,
@@ -43,11 +45,18 @@ class WebViewImpl : public mojom::WebView,
   // See description above |pending_load_| for details.
   void OnLoad();
 
+  // Actually performs the load and tells our delegate the state of the
+  // forward/back list is. This is the shared implementation between
+  // LoadRequest() and Go{Back,Forward}().
+  void LoadRequestImpl(mojo::URLRequestPtr request);
+
   // Overridden from WebView:
   void LoadRequest(mojo::URLRequestPtr request) override;
   void GetViewTreeClient(
       mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client)
           override;
+  void GoBack() override;
+  void GoForward() override;
 
   // Overridden from mojo::ViewTreeDelegate:
   void OnEmbed(mojo::View* root) override;
@@ -88,6 +97,15 @@ class WebViewImpl : public mojom::WebView,
   scoped_ptr<PendingWebViewLoad> pending_load_;
 
   scoped_ptr<FrameDevToolsAgent> devtools_agent_;
+
+  // It would be nice if mojo::URLRequest were cloneable; however, its use of
+  // ScopedDataPipieConsumerHandle means that it isn't.
+  ScopedVector<URLRequestCloneable> back_list_;
+  ScopedVector<URLRequestCloneable> forward_list_;
+
+  // The request which is either currently loading or completed. Added to
+  // |back_list_| or |forward_list_| on further navigation.
+  scoped_ptr<URLRequestCloneable> current_page_request_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewImpl);
 };
