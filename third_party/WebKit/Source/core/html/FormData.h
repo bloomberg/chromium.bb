@@ -82,8 +82,8 @@ public:
     class Entry;
     const HeapVector<Member<const Entry>>& entries() const { return m_entries; }
     size_t size() const { return m_entries.size(); }
-    void append(const String& key, int value);
-    void append(const String& key, Blob*, const String& filename = String());
+    void append(const String& name, int value);
+    void append(const String& name, Blob*, const String& filename = String());
     String decode(const CString& data) const;
 
     PassRefPtr<EncodedFormData> encodeFormData(EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
@@ -107,21 +107,21 @@ private:
 // Entry objects are immutable.
 class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
 public:
-    Entry(const CString& key, const CString& data) : m_key(key), m_data(data) { }
-    Entry(const CString& key, Blob* blob, const String& filename) : m_key(key), m_blob(blob), m_filename(filename) { }
+    Entry(const CString& name, const CString& value) : m_name(name), m_value(value) { }
+    Entry(const CString& name, Blob* blob, const String& filename) : m_name(name), m_blob(blob), m_filename(filename) { }
     DECLARE_TRACE();
 
     bool isString() const { return !m_blob; }
     bool isFile() const { return m_blob; }
-    const CString& key() const { return m_key; }
-    const CString& data() const { return m_data; }
+    const CString& name() const { return m_name; }
+    const CString& value() const { return m_value; }
     Blob* blob() const { return m_blob.get(); }
     File* file() const;
     const String& filename() const { return m_filename; }
 
 private:
-    const CString m_key;
-    const CString m_data;
+    const CString m_name;
+    const CString m_value;
     const Member<Blob> m_blob;
     const String m_filename;
 };

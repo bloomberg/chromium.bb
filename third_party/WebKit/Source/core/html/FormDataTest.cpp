@@ -20,8 +20,8 @@ TEST(FormDataTest, opacityGet)
     EXPECT_EQ("value1", result.getAsUSVString());
 
     const FormData::Entry& entry = *fd->entries()[0];
-    EXPECT_STREQ("name1", entry.key().data());
-    EXPECT_STREQ("value1", entry.data().data());
+    EXPECT_STREQ("name1", entry.name().data());
+    EXPECT_STREQ("value1", entry.value().data());
 
     fd->makeOpaque();
 
@@ -32,8 +32,8 @@ TEST(FormDataTest, opacityGet)
 
     // Internal interface should be uneffected.
     const FormData::Entry& entry2 = *fd->entries()[0];
-    EXPECT_STREQ("name1", entry2.key().data());
-    EXPECT_STREQ("value1", entry2.data().data());
+    EXPECT_STREQ("name1", entry2.name().data());
+    EXPECT_STREQ("value1", entry2.value().data());
 }
 
 TEST(FormDataTest, opacityGetAll)
