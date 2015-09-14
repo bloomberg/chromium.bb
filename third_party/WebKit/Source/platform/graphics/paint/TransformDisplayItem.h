@@ -27,7 +27,6 @@ private:
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
 
-private:
     const AffineTransform m_transform;
 };
 

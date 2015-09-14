@@ -27,6 +27,10 @@ public:
     const TransformationMatrix& transform() const { return m_transform; }
 
 private:
+#ifndef NDEBUG
+    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
+#endif
+
     const TransformationMatrix m_transform;
 };
 
