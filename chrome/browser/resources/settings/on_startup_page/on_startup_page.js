@@ -37,17 +37,15 @@ Polymer({
       notify: true,
     },
 
-    prefValue: {
-      type: Number,
+    prefValues_: {
+      readOnly: true,
+      type: Object,
+      value: {
+        OPEN_NEW_TAB: 5,
+        CONTINUE: 1,
+        OPEN_SPECIFIC: 4,
+      },
     }
-  },
-
-  observers: [
-    'prefValueChanged(prefValue)',
-  ],
-
-  prefValueChanged: function(prefValue) {
-    this.set('prefs.session.restore_on_startup.value', parseInt(prefValue));
   },
 
   /** @private */
