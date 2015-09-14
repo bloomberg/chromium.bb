@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/threading/thread_checker.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/renderer/module_system.h"
@@ -32,7 +33,13 @@ class RenderFrame;
 namespace extensions {
 class Extension;
 
-// Extensions wrapper for a v8 context.
+// Extensions wrapper for a v8::Context.
+//
+// v8::Contexts can be constructed on any thread, and must only be accessed or
+// destroyed that thread.
+//
+// Note that ScriptContexts bound to worker threads will not have the full
+// functionality as those bound to the main RenderThread.
 class ScriptContext : public RequestSender::Source {
  public:
   using RunScriptExceptionHandler = base::Callback<void(const v8::TryCatch&)>;
@@ -131,10 +138,16 @@ class ScriptContext : public RequestSender::Source {
   // of WebDocument::securityOrigin():
   //  - The URL can change (e.g. pushState) but the origin cannot. Luckily it
   //    appears as though callers don't make security decisions based on the
-  //    result of GetURL() so it's not a problem... yet.
+  //    result of url() so it's not a problem... yet.
   //  - Origin is the correct check to be making.
   //  - It might let us remove the about:blank resolving?
-  GURL GetURL() const;
+  const GURL& url() const { return url_; }
+
+  // Sets the URL of this ScriptContext. Usually this will automatically be set
+  // on construction, unless this isn't constructed with enough information to
+  // determine the URL (e.g. frame was null).
+  // TODO(kalman): Make this a constructor parameter (as an origin).
+  void set_url(const GURL& url) { url_ = url; }
 
   // Returns whether the API |api| or any part of the API could be
   // available in this context without taking into account the context's
@@ -162,7 +175,9 @@ class ScriptContext : public RequestSender::Source {
                           const std::string& error) override;
 
   // Grants a set of content capabilities to this context.
-  void SetContentCapabilities(const APIPermissionSet& permissions);
+  void set_content_capabilities(const APIPermissionSet& capabilities) {
+    content_capabilities_ = capabilities;
+  }
 
   // Indicates if this context has an effective API permission either by being
   // a context for an extension which has that permission, or by being a web
@@ -235,6 +250,8 @@ class ScriptContext : public RequestSender::Source {
   GURL url_;
 
   scoped_ptr<Runner> runner_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptContext);
 };

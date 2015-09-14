@@ -418,7 +418,7 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
   g_worker_client_tls.Pointer()->Set(NULL);
 
   GetContentClient()->renderer()->WillDestroyServiceWorkerContextOnWorkerThread(
-      script_url_);
+      context, script_url_);
 }
 
 void ServiceWorkerContextClient::workerContextDestroyed() {

@@ -17,7 +17,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/grit/content_resources.h"
@@ -91,6 +90,7 @@
 #include "extensions/renderer/v8_context_native_handler.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "extensions/renderer/wake_event_page.h"
+#include "extensions/renderer/worker_script_context_set.h"
 #include "grit/extensions_renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -192,38 +192,8 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
   }
 };
 
-class ServiceWorkerScriptContextSet {
- public:
-  ServiceWorkerScriptContextSet() {}
-  ~ServiceWorkerScriptContextSet() {}
-
-  void Insert(const GURL& url, scoped_ptr<ScriptContext> context) {
-    base::AutoLock lock(lock_);
-    scoped_ptr<ScriptContext> existing = script_contexts_.take_and_erase(url);
-    // This should be CHECK(!existing), but can't until these ScriptContexts
-    // are keyed on v8::Contexts rather than URLs. See crbug.com/525965.
-    if (existing)
-      existing->Invalidate();
-    script_contexts_.set(url, context.Pass());
-  }
-
-  void Remove(const GURL& url) {
-    base::AutoLock lock(lock_);
-    scoped_ptr<ScriptContext> context = script_contexts_.take_and_erase(url);
-    CHECK(context);
-    context->Invalidate();
-  }
-
- private:
-  base::ScopedPtrMap<GURL, scoped_ptr<ScriptContext>> script_contexts_;
-
-  mutable base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptContextSet);
-};
-
-base::LazyInstance<ServiceWorkerScriptContextSet>
-    g_service_worker_script_context_set = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<WorkerScriptContextSet> g_worker_script_context_set =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -255,7 +225,7 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   user_script_set_manager_observer_.Add(user_script_set_manager_.get());
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
-  WakeEventPage::Get()->Init(content::RenderThread::Get());
+  WakeEventPage::Get()->Init(RenderThread::Get());
 }
 
 Dispatcher::~Dispatcher() {
@@ -374,15 +344,36 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(url);
 
-  if (!extension)
+  if (!extension) {
+    // TODO(kalman): This is no good. Instead we need to either:
+    //
+    // - Hold onto the v8::Context and create the ScriptContext and install
+    //   our bindings when this extension is loaded.
+    // - Deal with there being an extension ID (url.host()) but no
+    //   extension associated with it, then document that getBackgroundClient
+    //   may fail if the extension hasn't loaded yet.
+    //
+    // The former is safer, but is unfriendly to caching (e.g. session restore).
+    // It seems to contradict the service worker idiom.
+    //
+    // The latter is friendly to caching, but running extension code without an
+    // installed extension makes me nervous, and means that we won't be able to
+    // expose arbitrary (i.e. capability-checked) extension APIs to service
+    // workers. We will probably need to relax some assertions - we just need
+    // to find them.
+    //
+    // Perhaps this could be solved with our own event on the service worker
+    // saying that an extension is ready, and documenting that extension APIs
+    // won't work before that event has fired?
     return;
+  }
 
   ScriptContext* context = new ScriptContext(
       v8_context, nullptr, extension, Feature::SERVICE_WORKER_CONTEXT,
       extension, Feature::SERVICE_WORKER_CONTEXT);
+  context->set_url(url);
 
-  g_service_worker_script_context_set.Get().Insert(url,
-                                                   make_scoped_ptr(context));
+  g_worker_script_context_set.Get().Insert(make_scoped_ptr(context));
 
   v8::Isolate* isolate = context->isolate();
 
@@ -429,11 +420,12 @@ void Dispatcher::WillReleaseScriptContext(
 
 // static
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
+    v8::Local<v8::Context> v8_context,
     const GURL& url) {
   if (url.SchemeIs(kExtensionScheme) ||
       url.SchemeIs(kExtensionResourceScheme)) {
     // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
-    g_service_worker_script_context_set.Get().Remove(url);
+    g_worker_script_context_set.Get().Remove(v8_context, url);
   }
 }
 
@@ -892,7 +884,7 @@ void Dispatcher::WebKitInitialized() {
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
   if (set_idle_notifications_) {
-    forced_idle_timer_.reset(new base::RepeatingTimer<content::RenderThread>);
+    forced_idle_timer_.reset(new base::RepeatingTimer<RenderThread>);
     forced_idle_timer_->Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kMaxExtensionIdleHandlerDelayMs),
@@ -1435,7 +1427,7 @@ bool Dispatcher::IsRuntimeAvailableToContext(ScriptContext* context) {
        *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
     ExternallyConnectableInfo* info = static_cast<ExternallyConnectableInfo*>(
         extension->GetManifestData(manifest_keys::kExternallyConnectable));
-    if (info && info->matches.MatchesURL(context->GetURL()))
+    if (info && info->matches.MatchesURL(context->url()))
       return true;
   }
   return false;
@@ -1447,13 +1439,13 @@ void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
        *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
     const ContentCapabilitiesInfo& info =
         ContentCapabilitiesInfo::Get(extension.get());
-    if (info.url_patterns.MatchesURL(context->GetURL())) {
+    if (info.url_patterns.MatchesURL(context->url())) {
       APIPermissionSet new_permissions;
       APIPermissionSet::Union(permissions, info.permissions, &new_permissions);
       permissions = new_permissions;
     }
   }
-  context->SetContentCapabilities(permissions);
+  context->set_content_capabilities(permissions);
 }
 
 void Dispatcher::PopulateSourceMap() {

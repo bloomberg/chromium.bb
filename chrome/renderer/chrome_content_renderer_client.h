@@ -156,7 +156,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       const GURL& url) override;
-  void WillDestroyServiceWorkerContextOnWorkerThread(const GURL& url) override;
+  void WillDestroyServiceWorkerContextOnWorkerThread(
+      v8::Local<v8::Context> context,
+      const GURL& url) override;
 #if defined(ENABLE_EXTENSIONS)
   // Takes ownership.
   void SetExtensionDispatcherForTest(

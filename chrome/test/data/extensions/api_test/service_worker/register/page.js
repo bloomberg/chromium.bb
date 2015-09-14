@@ -14,6 +14,9 @@ chrome.test.runTests([
       // Registration was successful
       log('ServiceWorker registration successful with scope: ',
           registration.scope);
+      // This resolves once there's an active worker at this scope.
+      return navigator.serviceWorker.ready;
+    }).then(function() {
       chrome.test.succeed();
     }).catch(function(err) {
       // registration failed :(

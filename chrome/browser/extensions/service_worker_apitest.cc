@@ -48,8 +48,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, CannotRegisterServiceWorkersOnDev) {
       listener.message());
 }
 
-// Disabled: crbug.com/529516.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_ServiceWorkerFetchEvent) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, ServiceWorkerFetchEvent) {
   RunExtensionTest("service_worker/fetch");
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -73,8 +72,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_ServiceWorkerFetchEvent) {
 
 // Binding that was created on the v8::Context of the worker for testing
 // purposes should bind an object to chrome.
-// Disabled: crbug.com/529516.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_ServiceWorkerChromeBinding) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, ServiceWorkerChromeBinding) {
   ASSERT_TRUE(RunExtensionTest("service_worker/bindings")) << message_;
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -96,8 +94,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_ServiceWorkerChromeBinding) {
   EXPECT_EQ("object", output);
 }
 
-// Disabled: crbug.com/529516.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_GetBackgroundClient) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, GetBackgroundClient) {
   ASSERT_TRUE(RunExtensionTest("service_worker/background_client")) << message_;
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

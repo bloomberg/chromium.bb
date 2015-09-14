@@ -136,6 +136,7 @@ bool ScriptContext::IsSandboxedPage(const GURL& url) {
 }
 
 void ScriptContext::Invalidate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(is_valid_);
   is_valid_ = false;
 
@@ -159,14 +160,17 @@ void ScriptContext::Invalidate() {
 }
 
 void ScriptContext::AddInvalidationObserver(const base::Closure& observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   invalidate_observers_.push_back(observer);
 }
 
 const std::string& ScriptContext::GetExtensionID() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return extension_.get() ? extension_->id() : base::EmptyString();
 }
 
 content::RenderFrame* ScriptContext::GetRenderFrame() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (web_frame_)
     return content::RenderFrame::FromWebFrame(web_frame_);
   return NULL;
@@ -176,6 +180,7 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
     const v8::Local<v8::Function>& function,
     int argc,
     v8::Local<v8::Value> argv[]) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   v8::EscapableHandleScope handle_scope(isolate());
   v8::Context::Scope scope(v8_context());
 
@@ -195,11 +200,13 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
 
 v8::Local<v8::Value> ScriptContext::CallFunction(
     const v8::Local<v8::Function>& function) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return CallFunction(function, 0, nullptr);
 }
 
 Feature::Availability ScriptContext::GetAvailability(
     const std::string& api_name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Hack: Hosted apps should have the availability of messaging APIs based on
   // the URL of the page (which might have access depending on some extension
   // with externally_connectable), not whether the app has access to messaging
@@ -209,12 +216,13 @@ Feature::Availability ScriptContext::GetAvailability(
       (api_name == "runtime.connect" || api_name == "runtime.sendMessage")) {
     extension = NULL;
   }
-  return ExtensionAPI::GetSharedInstance()->IsAvailable(
-      api_name, extension, context_type_, GetURL());
+  return ExtensionAPI::GetSharedInstance()->IsAvailable(api_name, extension,
+                                                        context_type_, url());
 }
 
 void ScriptContext::DispatchEvent(const char* event_name,
                                   v8::Local<v8::Array> args) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   v8::HandleScope handle_scope(isolate());
   v8::Context::Scope context_scope(v8_context());
 
@@ -225,24 +233,24 @@ void ScriptContext::DispatchEvent(const char* event_name,
 }
 
 void ScriptContext::DispatchOnUnloadEvent() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   v8::HandleScope handle_scope(isolate());
   v8::Context::Scope context_scope(v8_context());
   module_system_->CallModuleMethod("unload_event", "dispatch");
 }
 
 std::string ScriptContext::GetContextTypeDescription() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return GetContextTypeDescriptionString(context_type_);
 }
 
 std::string ScriptContext::GetEffectiveContextTypeDescription() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return GetContextTypeDescriptionString(effective_context_type_);
 }
 
-GURL ScriptContext::GetURL() const {
-  return url_;
-}
-
 bool ScriptContext::IsAnyFeatureAvailableToContext(const Feature& api) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return ExtensionAPI::GetSharedInstance()->IsAnyFeatureAvailableToContext(
       api, extension(), context_type(), GetDataSourceURLForFrame(web_frame()));
 }
@@ -292,13 +300,17 @@ GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebFrame* frame,
   return document_url;
 }
 
-ScriptContext* ScriptContext::GetContext() { return this; }
+ScriptContext* ScriptContext::GetContext() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return this;
+}
 
 void ScriptContext::OnResponseReceived(const std::string& name,
                                        int request_id,
                                        bool success,
                                        const base::ListValue& response,
                                        const std::string& error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   v8::HandleScope handle_scope(isolate());
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
@@ -319,16 +331,13 @@ void ScriptContext::OnResponseReceived(const std::string& name,
       << *v8::String::Utf8Value(retval);
 }
 
-void ScriptContext::SetContentCapabilities(
-    const APIPermissionSet& permissions) {
-  content_capabilities_ = permissions;
-}
-
 bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (effective_extension_.get()) {
     return effective_extension_->permissions_data()->HasAPIPermission(
         permission);
-  } else if (context_type() == Feature::WEB_PAGE_CONTEXT) {
+  }
+  if (context_type() == Feature::WEB_PAGE_CONTEXT) {
     // Only web page contexts may be granted content capabilities. Other
     // contexts are either privileged WebUI or extensions with their own set of
     // permissions.
@@ -339,6 +348,7 @@ bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {
 }
 
 bool ScriptContext::HasAccessOrThrowError(const std::string& name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Theoretically[1] we could end up with bindings being injected into
   // sandboxed frames, for example content scripts. Don't let them execute API
   // functions.
@@ -371,6 +381,7 @@ bool ScriptContext::HasAccessOrThrowError(const std::string& name) {
 }
 
 std::string ScriptContext::GetDebugString() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return base::StringPrintf(
       "  extension id:           %s\n"
       "  frame:                  %p\n"
@@ -379,37 +390,37 @@ std::string ScriptContext::GetDebugString() const {
       "  effective extension id: %s\n"
       "  effective context type: %s",
       extension_.get() ? extension_->id().c_str() : "(none)", web_frame_,
-      GetURL().spec().c_str(), GetContextTypeDescription().c_str(),
+      url_.spec().c_str(), GetContextTypeDescription().c_str(),
       effective_extension_.get() ? effective_extension_->id().c_str()
                                  : "(none)",
       GetEffectiveContextTypeDescription().c_str());
 }
 
 std::string ScriptContext::GetStackTraceAsString() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   v8::Local<v8::StackTrace> stack_trace =
       v8::StackTrace::CurrentStackTrace(isolate(), 10);
   if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
     return "    <no stack trace>";
-  } else {
-    std::string result;
-    for (int i = 0; i < stack_trace->GetFrameCount(); ++i) {
-      v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(i);
-      CHECK(!frame.IsEmpty());
-      result += base::StringPrintf(
-          "\n    at %s (%s:%d:%d)",
-          ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
-          ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
-          frame->GetLineNumber(),
-          frame->GetColumn());
-    }
-    return result;
   }
+  std::string result;
+  for (int i = 0; i < stack_trace->GetFrameCount(); ++i) {
+    v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(i);
+    CHECK(!frame.IsEmpty());
+    result += base::StringPrintf(
+        "\n    at %s (%s:%d:%d)",
+        ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
+        ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
+        frame->GetLineNumber(), frame->GetColumn());
+  }
+  return result;
 }
 
 v8::Local<v8::Value> ScriptContext::RunScript(
     v8::Local<v8::String> name,
     v8::Local<v8::String> code,
     const RunScriptExceptionHandler& exception_handler) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   v8::EscapableHandleScope handle_scope(isolate());
   v8::Context::Scope context_scope(v8_context());
 

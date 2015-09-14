@@ -100,7 +100,9 @@ class Dispatcher : public content::RenderProcessObserver,
                                 int world_id);
 
   // Runs on a different thread and should not use any member variables.
-  static void WillDestroyServiceWorkerContextOnWorkerThread(const GURL& url);
+  static void WillDestroyServiceWorkerContextOnWorkerThread(
+      v8::Local<v8::Context> v8_context,
+      const GURL& url);
 
   void DidCreateDocumentElement(blink::WebLocalFrame* frame);
 

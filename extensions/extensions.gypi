@@ -1003,6 +1003,8 @@
       'renderer/wake_event_page.h',
       'renderer/web_ui_injection_host.cc',
       'renderer/web_ui_injection_host.h',
+      'renderer/worker_script_context_set.cc',
+      'renderer/worker_script_context_set.h',
     ],
     'extensions_utility_sources': [
       'utility/unpacker.cc',

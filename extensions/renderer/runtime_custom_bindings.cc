@@ -65,7 +65,7 @@ void RuntimeCustomBindings::OpenChannelToExtension(
     info.source_id = extension->id();
 
   info.target_id = *v8::String::Utf8Value(args[0]);
-  info.source_url = context()->GetURL();
+  info.source_url = context()->url();
   std::string channel_name = *v8::String::Utf8Value(args[1]);
   bool include_tls_channel_id =
       args.Length() > 2 ? args[2]->BooleanValue() : false;
@@ -83,8 +83,7 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
       FeatureProvider::GetPermissionFeatures()
           ->GetFeature("nativeMessaging")
           ->IsAvailableToContext(context()->extension(),
-                                 context()->context_type(),
-                                 context()->GetURL());
+                                 context()->context_type(), context()->url());
   if (!availability.is_available())
     return;
 
