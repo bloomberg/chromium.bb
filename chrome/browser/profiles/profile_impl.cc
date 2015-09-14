@@ -52,6 +52,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
@@ -905,8 +906,8 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
   if (!otr_prefs_) {
     // The new ExtensionPrefStore is ref_counted and the new PrefService
     // stores a reference so that we do not leak memory here.
-    otr_prefs_.reset(prefs_->CreateIncognitoPrefService(
-        CreateExtensionPrefStore(this, true)));
+    otr_prefs_.reset(CreateIncognitoPrefServiceSyncable(
+        prefs_.get(), CreateExtensionPrefStore(this, true)));
   }
   return otr_prefs_.get();
 }

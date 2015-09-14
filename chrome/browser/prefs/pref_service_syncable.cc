@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/overlay_user_pref_store.h"
@@ -15,7 +16,6 @@
 #include "base/value_conversions.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
-#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 PrefServiceSyncable::PrefServiceSyncable(
@@ -38,9 +38,8 @@ PrefServiceSyncable::PrefServiceSyncable(
   priority_pref_sync_associator_.SetPrefService(this);
 
   // Let PrefModelAssociators know about changes to preference values.
-  pref_value_store->set_callback(
-      base::Bind(&PrefServiceSyncable::ProcessPrefChange,
-                 base::Unretained(this)));
+  pref_value_store->set_callback(base::Bind(
+      &PrefServiceSyncable::ProcessPrefChange, base::Unretained(this)));
 
   // Add already-registered syncable preferences to PrefModelAssociator.
   for (PrefRegistry::const_iterator it = pref_registry->begin();
@@ -65,12 +64,14 @@ PrefServiceSyncable::~PrefServiceSyncable() {
 }
 
 PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
-    PrefStore* incognito_extension_prefs) {
+    PrefStore* incognito_extension_pref_store,
+    const std::vector<const char*>& overlay_pref_names) {
   pref_service_forked_ = true;
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
   OverlayUserPrefStore* incognito_pref_store =
       new OverlayUserPrefStore(user_pref_store_.get());
-  PrefsTabHelper::InitIncognitoUserPrefStore(incognito_pref_store);
+  for (const char* overlay_pref_name : overlay_pref_names)
+    incognito_pref_store->RegisterOverlayPref(overlay_pref_name);
 
   scoped_refptr<user_prefs::PrefRegistrySyncable> forked_registry =
       static_cast<user_prefs::PrefRegistrySyncable*>(
@@ -79,7 +80,7 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
       pref_notifier,
       pref_value_store_->CloneAndSpecialize(NULL,  // managed
                                             NULL,  // supervised_user
-                                            incognito_extension_prefs,
+                                            incognito_extension_pref_store,
                                             NULL,  // command_line_prefs
                                             incognito_pref_store,
                                             NULL,  // recommended
@@ -134,9 +135,8 @@ void PrefServiceSyncable::UpdateCommandLinePrefStore(
   PrefService::UpdateCommandLinePrefStore(cmd_line_store);
 }
 
-void PrefServiceSyncable::AddSyncedPrefObserver(
-    const std::string& name,
-    SyncedPrefObserver* observer) {
+void PrefServiceSyncable::AddSyncedPrefObserver(const std::string& name,
+                                                SyncedPrefObserver* observer) {
   pref_sync_associator_.AddSyncedPrefObserver(name, observer);
   priority_pref_sync_associator_.AddSyncedPrefObserver(name, observer);
 }
@@ -154,8 +154,7 @@ void PrefServiceSyncable::AddRegisteredSyncablePreference(
   DCHECK(FindPreference(path));
   if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) {
     pref_sync_associator_.RegisterPref(path.c_str());
-  } else if (flags &
-             user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF) {
+  } else if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF) {
     priority_pref_sync_associator_.RegisterPref(path.c_str());
   }
 }

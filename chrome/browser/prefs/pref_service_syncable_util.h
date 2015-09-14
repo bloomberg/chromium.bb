@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_UTIL_H_
 
 class PrefServiceSyncable;
+class PrefStore;
 class Profile;
 
 // PrefServiceSyncable is a PrefService with added integration for
@@ -19,5 +20,13 @@ class Profile;
 // version) from a Profile.
 PrefServiceSyncable* PrefServiceSyncableFromProfile(Profile* profile);
 PrefServiceSyncable* PrefServiceSyncableIncognitoFromProfile(Profile* profile);
+
+// Creates an incognito copy of |pref_service| that shares most prefs but uses
+// a fresh non-persistent overlay for the user pref store and an individual
+// extension pref store (to cache the effective extension prefs for incognito
+// windows).
+PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
+    PrefServiceSyncable* pref_service,
+    PrefStore* incognito_extension_pref_store);
 
 #endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_UTIL_H_

@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -197,7 +198,8 @@ void TestExtensionPrefs::AddExtension(Extension* extension) {
 }
 
 PrefService* TestExtensionPrefs::CreateIncognitoPrefService() const {
-  return pref_service_->CreateIncognitoPrefService(
+  return CreateIncognitoPrefServiceSyncable(
+      pref_service_.get(),
       new ExtensionPrefStore(extension_pref_value_map_.get(), true));
 }
 

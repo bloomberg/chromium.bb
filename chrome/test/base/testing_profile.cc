@@ -33,6 +33,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -744,7 +745,8 @@ void TestingProfile::CreateIncognitoPrefService() {
   DCHECK(!testing_prefs_);
   // Simplified version of ProfileImpl::GetOffTheRecordPrefs(). Note this
   // leaves testing_prefs_ unset.
-  prefs_.reset(original_profile_->prefs_->CreateIncognitoPrefService(NULL));
+  prefs_.reset(CreateIncognitoPrefServiceSyncable(
+      original_profile_->prefs_.get(), NULL));
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
 

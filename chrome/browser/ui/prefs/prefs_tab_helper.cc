@@ -491,19 +491,6 @@ PrefsTabHelper::~PrefsTabHelper() {
 }
 
 // static
-void PrefsTabHelper::InitIncognitoUserPrefStore(
-    OverlayUserPrefStore* pref_store) {
-  // List of keys that cannot be changed in the user prefs file by the incognito
-  // profile.  All preferences that store information about the browsing history
-  // or behavior of the user should have this property.
-  pref_store->RegisterOverlayPref(prefs::kBrowserWindowPlacement);
-  pref_store->RegisterOverlayPref(prefs::kSaveFileDefaultDirectory);
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  pref_store->RegisterOverlayPref(proxy_config::prefs::kProxy);
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-}
-
-// static
 void PrefsTabHelper::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   WebPreferences pref_defaults;

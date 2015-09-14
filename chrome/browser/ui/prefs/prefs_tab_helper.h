@@ -31,7 +31,6 @@ class PrefsTabHelper : public content::NotificationObserver,
  public:
   ~PrefsTabHelper() override;
 
-  static void InitIncognitoUserPrefStore(OverlayUserPrefStore* pref_store);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static void GetServiceInstance();
 

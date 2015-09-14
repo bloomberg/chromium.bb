@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_H_
 #define CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_H_
 
+#include <vector>
+
+#include "base/callback_forward.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/synced_pref_observer.h"
@@ -23,22 +26,23 @@ class PrefServiceSyncable : public PrefService {
  public:
   // You may wish to use PrefServiceFactory or one of its subclasses
   // for simplified construction.
-  PrefServiceSyncable(
-      PrefNotifierImpl* pref_notifier,
-      PrefValueStore* pref_value_store,
-      PersistentPrefStore* user_prefs,
-      user_prefs::PrefRegistrySyncable* pref_registry,
-      base::Callback<void(PersistentPrefStore::PrefReadError)>
-          read_error_callback,
-      bool async);
+  PrefServiceSyncable(PrefNotifierImpl* pref_notifier,
+                      PrefValueStore* pref_value_store,
+                      PersistentPrefStore* user_prefs,
+                      user_prefs::PrefRegistrySyncable* pref_registry,
+                      base::Callback<void(PersistentPrefStore::PrefReadError)>
+                          read_error_callback,
+                      bool async);
   ~PrefServiceSyncable() override;
 
   // Creates an incognito copy of the pref service that shares most pref stores
   // but uses a fresh non-persistent overlay for the user pref store and an
   // individual extension pref store (to cache the effective extension prefs for
-  // incognito windows).
+  // incognito windows). |overlay_pref_names| is a list of preference names
+  // whose changes will not be persisted by the returned incognito pref service.
   PrefServiceSyncable* CreateIncognitoPrefService(
-      PrefStore* incognito_extension_prefs);
+      PrefStore* incognito_extension_pref_store,
+      const std::vector<const char*>& overlay_pref_names);
 
   // Returns true if preferences state has synchronized with the remote
   // preferences. If true is returned it can be assumed the local preferences
