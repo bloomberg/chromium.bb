@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.customtabs.CustomTabsIntent;
@@ -74,9 +75,13 @@ public class CustomTabIntentDataProvider {
             "android.support.customtabs.extra.TINT_ACTION_BUTTON";
 
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
-    private static final String BUNDLE_PACKAGE_NAME = "android:packageName";
-    private static final String BUNDLE_ENTER_ANIMATION_RESOURCE = "android:animEnterRes";
-    private static final String BUNDLE_EXIT_ANIMATION_RESOURCE = "android:animExitRes";
+    private static final String ANIMATION_BUNDLE_PREFIX =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? "android:activity." : "android:";
+    private static final String BUNDLE_PACKAGE_NAME = ANIMATION_BUNDLE_PREFIX + "packageName";
+    private static final String BUNDLE_ENTER_ANIMATION_RESOURCE =
+            ANIMATION_BUNDLE_PREFIX + "animEnterRes";
+    private static final String BUNDLE_EXIT_ANIMATION_RESOURCE =
+            ANIMATION_BUNDLE_PREFIX + "animExitRes";
     private final IBinder mSession;
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
