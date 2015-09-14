@@ -74,7 +74,7 @@ public:
 
     ScriptPromise skipWaiting(ScriptState*);
 
-    void setRegistration(WebServiceWorkerRegistration::Handle*);
+    void setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle>);
 
     // EventTarget
     bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;

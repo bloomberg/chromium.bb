@@ -81,7 +81,7 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 {
 }
 
-void ServiceWorkerGlobalScopeProxy::setRegistration(WebServiceWorkerRegistration::Handle* handle)
+void ServiceWorkerGlobalScopeProxy::setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
 {
     ASSERT(m_workerGlobalScope);
     m_workerGlobalScope->setRegistration(handle);

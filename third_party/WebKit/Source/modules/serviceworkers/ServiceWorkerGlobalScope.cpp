@@ -154,10 +154,8 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
     return promise;
 }
 
-void ServiceWorkerGlobalScope::setRegistration(WebServiceWorkerRegistration::Handle* handleRaw)
+void ServiceWorkerGlobalScope::setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
 {
-    ASSERT(handleRaw);
-    OwnPtr<WebServiceWorkerRegistration::Handle> handle = adoptPtr(handleRaw);
     if (!executionContext())
         return;
     m_registration = ServiceWorkerRegistration::create(executionContext(), handle.release());
