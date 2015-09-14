@@ -618,9 +618,12 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
     LayoutUnit overrideContainingBlockContentLogicalWidth = gridAreaBreadthForChild(child, ForColumns, columnTracks);
     if (child.hasRelativeLogicalHeight() || oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth) {
         layoutScope.setNeedsLayout(&child, LayoutInvalidationReason::GridChanged);
-        // We need to clear the stretched height to properly compute logical height during layout.
-        child.clearOverrideLogicalContentHeight();
     }
+
+    bool hasOverrideHeight = child.hasOverrideLogicalContentHeight();
+    // We need to clear the stretched height to properly compute logical height during layout.
+    if (hasOverrideHeight && child.needsLayout())
+        child.clearOverrideLogicalContentHeight();
 
     child.setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
     // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
@@ -629,7 +632,7 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
         child.setOverrideContainingBlockContentLogicalHeight(-1);
     child.layoutIfNeeded();
     // If the child was stretched we should use its intrinsic height.
-    return (child.hasOverrideLogicalContentHeight() ? childIntrinsicHeight(child) : child.logicalHeight()) + child.marginLogicalHeight();
+    return (hasOverrideHeight ? childIntrinsicHeight(child) : child.logicalHeight()) + child.marginLogicalHeight();
 }
 
 LayoutUnit LayoutGrid::minSizeForChild(LayoutBox& child, GridTrackSizingDirection direction, Vector<GridTrack>& columnTracks)
