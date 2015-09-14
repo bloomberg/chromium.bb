@@ -115,10 +115,10 @@ cvox.TabsApiHandler.prototype = {
       }
       if (tab.status == 'loading') {
         this.lastActiveTabLoaded_ = false;
-        this.earcons_.playEarcon(cvox.Earcon.BUSY_PROGRESS_LOOP);
+        this.earcons_.playEarcon(cvox.Earcon.PAGE_START_LOADING);
       } else if (!this.lastActiveTabLoaded_) {
         this.lastActiveTabLoaded_ = true;
-        this.earcons_.playEarcon(cvox.Earcon.TASK_SUCCESS);
+        this.earcons_.playEarcon(cvox.Earcon.PAGE_FINISH_LOADING);
       }
     }.bind(this));
   },

@@ -469,6 +469,6 @@ cvox.DescriptionUtil.getMathDescription = function(node) {
   if (cvox.ChromeVox.verbosity == cvox.VERBOSITY_VERBOSE) {
     ret[ret.length - 1].annotation = 'math';
   }
-  ret[0].pushEarcon(cvox.Earcon.SPECIAL_CONTENT);
+  ret[0].pushEarcon(cvox.Earcon.MATH);
   return ret;
 };

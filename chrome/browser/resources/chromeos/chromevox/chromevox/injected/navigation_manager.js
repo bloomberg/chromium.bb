@@ -449,11 +449,11 @@ cvox.NavigationManager.prototype.getDescription = function() {
 
   // Earcons.
   if (this.skipped_) {
-    earcons.push(cvox.Earcon.PARAGRAPH_BREAK);
+    earcons.push(cvox.Earcon.SKIP);
     this.skipped_ = false;
   }
   if (this.recovered_) {
-    earcons.push(cvox.Earcon.FONT_CHANGE);
+    earcons.push(cvox.Earcon.RECOVER_FOCUS);
     this.recovered_ = false;
   }
   if (this.pageEnd_) {

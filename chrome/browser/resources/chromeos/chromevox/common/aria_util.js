@@ -931,7 +931,7 @@ cvox.AriaUtil.getEarcon = function(node) {
     case 'textbox':
       return cvox.Earcon.EDITABLE_TEXT;
     case 'listitem':
-      return cvox.Earcon.BULLET;
+      return cvox.Earcon.LIST_ITEM;
     case 'link':
       return cvox.Earcon.LINK;
   }

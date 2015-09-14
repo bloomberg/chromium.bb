@@ -275,13 +275,10 @@ if (typeof(goog) != 'undefined' && goog.require) {
     * Valid names are:
     *   ALERT_MODAL
     *   ALERT_NONMODAL
-    *   BULLET
-    *   BUSY_PROGRESS_LOOP
     *   BUTTON
     *   CHECK_OFF
     *   CHECK_ON
     *   EDITABLE_TEXT
-    *   FONT_CHANGE
     *   INVALID_KEYPRESS
     *   LINK
     *   LISTBOX
@@ -289,8 +286,9 @@ if (typeof(goog) != 'undefined' && goog.require) {
     *   OBJECT_CLOSE
     *   OBJECT_OPEN
     *   OBJECT_SELECT
-    *   PARAGRAPH_BREAK
-    *   TASK_SUCCESS
+    *   PAGE_START_LOADING
+    *   RECOVER_FOCUS
+    *   SKIP
     *   WRAP
     *   WRAP_EDGE
     * This list may expand over time.
