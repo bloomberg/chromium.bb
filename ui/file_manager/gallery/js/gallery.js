@@ -139,7 +139,7 @@ function Gallery(volumeManager) {
       this.errorBanner_,
       this.dataModel_,
       this.selectionModel_,
-      this.changeCurrentMode_.bind(this, this.slideMode_));
+      this.onChangeToSlideMode_.bind(this));
   this.thumbnailMode_.hide();
 
   this.slideMode_ = new SlideMode(this.container_,
@@ -452,6 +452,17 @@ Gallery.prototype.onModeSwitchButtonClicked_ = function(event) {
 };
 
 /**
+ * Change to slide mode.
+ * @private
+ */
+Gallery.prototype.onChangeToSlideMode_ = function() {
+  if (this.modeSwitchButton_.disabled)
+    return;
+
+  this.changeCurrentMode_(this.slideMode_);
+};
+
+/**
  * Change current mode.
  * @param {!(SlideMode|ThumbnailMode)} mode Target mode.
  * @param {Event=} opt_event Event that caused this call.
@@ -696,18 +707,23 @@ Gallery.prototype.onKeyDown_ = function(event) {
       break;
 
     case 'U+004D':  // 'm' switches between Slide and Mosaic mode.
-      this.toggleMode_(undefined, event);
+      if (!this.modeSwitchButton_.disabled)
+        this.toggleMode_(undefined, event);
       break;
 
     case 'U+0056':  // 'v'
     case 'MediaPlayPause':
-      this.slideMode_.startSlideshow(SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
+      if (!this.slideshowButton_.disabled) {
+        this.slideMode_.startSlideshow(
+            SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
+      }
       break;
 
     case 'U+007F':  // Delete
     case 'Shift-U+0033':  // Shift+'3' (Delete key might be missing).
     case 'U+0044':  // 'd'
-      this.delete_();
+      if (!this.deleteButton_.disabled)
+        this.delete_();
       break;
 
     case 'U+001B':  // Escape
