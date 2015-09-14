@@ -57,8 +57,6 @@ class PhoneBrowserApplicationDelegate :
   void TopLevelNavigate(mojo::URLRequestPtr request) override;
   void LoadingStateChanged(bool is_loading) override;
   void ProgressChanged(double progress) override;
-  void BackForwardChanged(web_view::mojom::ButtonState back_button,
-                          web_view::mojom::ButtonState forward_button) override;
   void TitleChanged(const mojo::String& title) override;
 
   // Overridden from mojo::InterfaceFactory<LaunchHandler>:

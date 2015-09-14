@@ -7,11 +7,6 @@ module web_view.mojom;
 import "network/public/interfaces/url_loader.mojom";
 import "components/view_manager/public/interfaces/view_tree.mojom";
 
-enum ButtonState {
-  ENABLED,
-  DISABLED,
-};
-
 interface WebViewClient {
   // Page-generated request for a top level frame navigation.
   TopLevelNavigate(mojo.URLRequest request);
@@ -19,7 +14,6 @@ interface WebViewClient {
   // Loading and progress notifications.
   LoadingStateChanged(bool is_loading);
   ProgressChanged(double progress);
-  BackForwardChanged(ButtonState back_button, ButtonState forward_button);
 
   // TODO(beng): also forward text direction.
   TitleChanged(string? title);
@@ -31,10 +25,6 @@ interface WebView {
 
   // Provide a ViewTreeClient for this specific WebView.
   GetViewTreeClient(mojo.ViewTreeClient& view_tree_client);
-
-  // Moves forward and backward.
-  GoBack();
-  GoForward();
 };
 
 interface WebViewFactory {

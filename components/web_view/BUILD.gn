@@ -29,8 +29,6 @@ source_set("lib") {
     "frame_utils.h",
     "pending_web_view_load.cc",
     "pending_web_view_load.h",
-    "url_request_cloneable.cc",
-    "url_request_cloneable.h",
     "web_view_application_delegate.cc",
     "web_view_application_delegate.h",
     "web_view_impl.cc",

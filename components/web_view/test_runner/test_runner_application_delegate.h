@@ -52,8 +52,6 @@ class TestRunnerApplicationDelegate
   void TopLevelNavigate(mojo::URLRequestPtr request) override;
   void LoadingStateChanged(bool is_loading) override;
   void ProgressChanged(double progress) override;
-  void BackForwardChanged(mojom::ButtonState back_button,
-                          mojom::ButtonState forward_button) override;
   void TitleChanged(const mojo::String& title) override;
 
   // LayoutTestRunner:
