@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router_mojo_test.h"
@@ -17,11 +18,13 @@
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "media/base/gmock_callback_support.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -295,8 +298,11 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer1));
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer2));
 
+  EXPECT_CALL(issue_observer1, OnIssueUpdated(nullptr));
   EXPECT_CALL(issue_observer2, OnIssueUpdated(nullptr));
+
   router()->ClearIssue(issue->id());
+
   router()->UnregisterIssuesObserver(&issue_observer1);
   interfaces::IssuePtr mojo_issue2 = CreateMojoIssue("title 2");
   const Issue& expected_issue2 = mojo_issue2.To<Issue>();
@@ -520,6 +526,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   mojo_messages_2[0]->message = "foo";
   observer.reset();
   mojo_callback_2.Run(mojo_messages_2.Pass(), false);
+  EXPECT_CALL(mock_media_route_provider_, StopListeningForRouteMessages(_));
   ProcessEventLoop();
 }
 
@@ -588,6 +595,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   observer1.reset();
   observer2.reset();
   mojo_callback_2.Run(mojo_messages_2.Pass(), false);
+  EXPECT_CALL(mock_media_route_provider_, StopListeningForRouteMessages(_));
   ProcessEventLoop();
 }
 
@@ -633,80 +641,117 @@ TEST_F(MediaRouterMojoImplTest, QueuedWhileAsleep) {
   ProcessEventLoop();
 }
 
-// Temporarily disabled until the issues with extension system teardown
-// are addressed.
-// TODO(kmarshall): Re-enable this test. (http://crbug.com/490468)
-TEST(MediaRouterMojoExtensionTest, DISABLED_DeferredBindingAndSuspension) {
-  base::MessageLoop message_loop(mojo::common::MessagePumpMojo::Create());
+class MediaRouterMojoExtensionTest : public ::testing::Test {
+ public:
+  MediaRouterMojoExtensionTest()
+    : process_manager_(nullptr),
+      message_loop_(mojo::common::MessagePumpMojo::Create())
+  {}
 
-  // Set up a mock ProcessManager instance.
-  TestingProfile profile;
-  extensions::ProcessManagerFactory::GetInstance()->SetTestingFactory(
-      &profile, &TestProcessManager::Create);
-  TestProcessManager* process_manager = static_cast<TestProcessManager*>(
-      extensions::ProcessManager::Get(&profile));
+  ~MediaRouterMojoExtensionTest() override {}
 
-  // Create MR and its proxy, so that it can be accessed through Mojo.
-  MediaRouterMojoImpl media_router(process_manager);
-  interfaces::MediaRouterPtr media_router_proxy;
+ protected:
+  void SetUp() override {
+    profile_.reset(new TestingProfile);
+    // Set up a mock ProcessManager instance.
+    extensions::ProcessManagerFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), &TestProcessManager::Create);
+    process_manager_ = static_cast<TestProcessManager*>(
+        extensions::ProcessManager::Get(profile_.get()));
+    DCHECK(process_manager_);
 
-  // Create a client object and its Mojo proxy.
-  testing::StrictMock<MockMediaRouteProvider> mock_media_route_provider;
-  interfaces::MediaRouteProviderPtr media_route_provider_proxy;
+    // Create MR and its proxy, so that it can be accessed through Mojo.
+    media_router_.reset(new MediaRouterMojoImpl(process_manager_));
+    ProcessEventLoop();
+  }
 
+  void TearDown() override {
+    profile_.reset();
+    // Explicitly delete the TestingBrowserProcess before |message_loop_|.
+    // This allows it to do cleanup before |message_loop_| goes away.
+    TestingBrowserProcess::DeleteInstance();
+  }
+
+  // Constructs bindings so that |media_router_| delegates calls to
+  // |mojo_media_router_|, which are then handled by
+  // |mock_media_route_provider_service_|.
+  void BindMediaRouteProvider() {
+    binding_.reset(new mojo::Binding<interfaces::MediaRouteProvider>(
+        &mock_media_route_provider_,
+        mojo::GetProxy(&media_route_provider_proxy_)));
+    media_router_->BindToMojoRequest(mojo::GetProxy(&media_router_proxy_),
+                                     kExtensionId);
+  }
+
+  void ResetMediaRouteProvider() {
+    binding_.reset();
+    media_router_->BindToMojoRequest(mojo::GetProxy(&media_router_proxy_),
+                                     kExtensionId);
+  }
+
+  void RegisterMediaRouteProvider() {
+    media_router_proxy_->RegisterMediaRouteProvider(
+      media_route_provider_proxy_.Pass(),
+      base::Bind(&RegisterMediaRouteProviderHandler::Invoke,
+                 base::Unretained(&provide_handler_)));
+  }
+
+  void ProcessEventLoop() {
+    message_loop_.RunUntilIdle();
+  }
+
+ protected:
+  scoped_ptr<MediaRouterMojoImpl> media_router_;
+  RegisterMediaRouteProviderHandler provide_handler_;
+  TestProcessManager* process_manager_;
+  testing::StrictMock<MockMediaRouteProvider> mock_media_route_provider_;
+  interfaces::MediaRouterPtr media_router_proxy_;
+
+ private:
+  scoped_ptr<TestingProfile> profile_;
+  base::MessageLoop message_loop_;
+  interfaces::MediaRouteProviderPtr media_route_provider_proxy_;
+  scoped_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoExtensionTest);
+};
+
+TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
   // CloseRoute is called before *any* extension has connected.
   // It should be queued.
-  media_router.CloseRoute(kRouteId);
+  media_router_->CloseRoute(kRouteId);
 
-  // Construct bindings so that |media_router| delegates calls to
-  // |mojo_media_router|, which are then handled by
-  // |mock_media_route_provider_service|.
-  scoped_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding(
-      new mojo::Binding<interfaces::MediaRouteProvider>(
-          &mock_media_route_provider,
-          mojo::GetProxy(&media_route_provider_proxy)));
-  media_router.BindToMojoRequest(mojo::GetProxy(&media_router_proxy),
-                                 kExtensionId);
+  BindMediaRouteProvider();
 
   // |mojo_media_router| signals its readiness to the MR by registering
   // itself via RegisterMediaRouteProvider().
   // Now that the |media_router| and |mojo_media_router| are fully initialized,
   // the queued CloseRoute() call should be executed.
-  RegisterMediaRouteProviderHandler provide_handler;
-  EXPECT_CALL(provide_handler, Invoke(testing::Not("")));
-  EXPECT_CALL(*process_manager, IsEventPageSuspended(kExtensionId))
+  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")));
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
       .WillOnce(Return(false));
-  EXPECT_CALL(mock_media_route_provider, CloseRoute(mojo::String(kRouteId)));
-  media_router_proxy->RegisterMediaRouteProvider(
-      media_route_provider_proxy.Pass(),
-      base::Bind(&RegisterMediaRouteProviderHandler::Invoke,
-                 base::Unretained(&provide_handler)));
-  message_loop.RunUntilIdle();
+  EXPECT_CALL(mock_media_route_provider_, CloseRoute(mojo::String(kRouteId)));
+  RegisterMediaRouteProvider();
+  ProcessEventLoop();
 
   // Extension is suspended and re-awoken.
-  binding.reset();
-  media_router.BindToMojoRequest(mojo::GetProxy(&media_router_proxy),
-                                 kExtensionId);
-  EXPECT_CALL(*process_manager, IsEventPageSuspended(kExtensionId))
+  ResetMediaRouteProvider();
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
       .WillOnce(Return(true));
-  EXPECT_CALL(*process_manager, WakeEventPage(kExtensionId, _))
+  EXPECT_CALL(*process_manager_, WakeEventPage(kExtensionId, _))
       .WillOnce(testing::DoAll(media::RunCallback<1>(true), Return(true)));
-  media_router.CloseRoute(kRouteId2);
-  message_loop.RunUntilIdle();
+  media_router_->CloseRoute(kRouteId2);
+  ProcessEventLoop();
 
   // RegisterMediaRouteProvider() is called.
   // The queued CloseRoute(kRouteId2) call should be executed.
-  EXPECT_CALL(provide_handler, Invoke(testing::Not("")));
-  EXPECT_CALL(*process_manager, IsEventPageSuspended(kExtensionId))
+  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")));
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
       .WillOnce(Return(false));
-  EXPECT_CALL(mock_media_route_provider, CloseRoute(mojo::String(kRouteId2)));
-  binding.reset(new mojo::Binding<interfaces::MediaRouteProvider>(
-      &mock_media_route_provider, mojo::GetProxy(&media_route_provider_proxy)));
-  media_router_proxy->RegisterMediaRouteProvider(
-      media_route_provider_proxy.Pass(),
-      base::Bind(&RegisterMediaRouteProviderHandler::Invoke,
-                 base::Unretained(&provide_handler)));
-  message_loop.RunUntilIdle();
+  EXPECT_CALL(mock_media_route_provider_, CloseRoute(mojo::String(kRouteId2)));
+  BindMediaRouteProvider();
+  RegisterMediaRouteProvider();
+  ProcessEventLoop();
 }
 
 }  // namespace media_router

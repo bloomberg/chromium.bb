@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/media_router_mojo_test.h"
 
-#include "base/run_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 
 namespace media_router {
 namespace {
@@ -25,9 +25,9 @@ MockMediaRouteProvider::~MockMediaRouteProvider() {
 }
 
 MediaRouterMojoTest::MediaRouterMojoTest()
-    : message_loop_(mojo::common::MessagePumpMojo::Create()),
-      extension_id_("ext-123"),
-      mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)) {
+    : extension_id_("ext-123"),
+      mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)),
+      message_loop_(mojo::common::MessagePumpMojo::Create()) {
   mock_media_router_->set_instance_id_for_test(kInstanceId);
 }
 
@@ -53,14 +53,12 @@ void MediaRouterMojoTest::ConnectProviderManagerService() {
 void MediaRouterMojoTest::SetUp() {
   ON_CALL(mock_event_page_tracker_, IsEventPageSuspended(extension_id_))
       .WillByDefault(testing::Return(false));
-
   ConnectProviderManagerService();
-
   message_loop_.RunUntilIdle();
 }
 
 void MediaRouterMojoTest::ProcessEventLoop() {
-  base::RunLoop().RunUntilIdle();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace media_router

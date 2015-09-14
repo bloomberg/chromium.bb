@@ -12,7 +12,6 @@
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -20,6 +19,7 @@
 namespace media_router {
 
 class MediaRouterMojoImpl;
+class MessagePump;
 
 // Tests the API call flow between the MediaRouterMojoImpl and the Media Router
 // Mojo service in both directions.
@@ -47,10 +47,10 @@ class MediaRouterMojoTest : public ::testing::Test {
   media_router::interfaces::MediaRouterPtr media_router_proxy_;
 
  private:
-  base::MessageLoop message_loop_;
   std::string extension_id_;
   scoped_ptr<MediaRouterMojoImpl> mock_media_router_;
   scoped_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoTest);
 };

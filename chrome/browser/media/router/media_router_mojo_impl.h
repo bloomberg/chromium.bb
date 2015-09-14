@@ -92,6 +92,7 @@ class MediaRouterMojoImpl : public MediaRouter,
 
  private:
   friend class MediaRouterFactory;
+  friend class MediaRouterMojoExtensionTest;
   friend class MediaRouterMojoTest;
 
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
