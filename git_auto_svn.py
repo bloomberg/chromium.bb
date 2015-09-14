@@ -22,7 +22,8 @@ import subprocess2
 
 from git_common import run as run_git
 from git_common import run_stream_with_retcode as run_git_stream_with_retcode
-from git_common import set_config, root, ROOT
+from git_common import set_config, root, ROOT, current_branch
+from git_common import upstream as get_upstream
 from git_footers import get_footer_svn_id
 
 
@@ -57,7 +58,24 @@ def main(argv):
       description='Automatically set up git-svn for a repo mirrored from svn.')
   parser.parse_args(argv)
 
-  upstream = root()
+  upstreams = []
+  # Always configure the upstream trunk.
+  upstreams.append(root())
+  # Optionally configure whatever upstream branch might be currently checked
+  # out. This is needed for work on svn-based branches, otherwise git-svn gets
+  # very confused and tries to relate branch commits back to trunk, making a big
+  # mess of the codereview patches, and generating all kinds of spurious errors
+  # about the repo being in some sort of bad state.
+  curr_upstream = get_upstream(current_branch())
+  # There will be no upstream if the checkout is in detached HEAD.
+  if curr_upstream:
+    upstreams.append(curr_upstream)
+  for upstream in upstreams:
+    config_svn(upstream)
+  return 0
+
+
+def config_svn(upstream):
   svn_id = get_footer_svn_id(upstream)
   assert svn_id, 'No valid git-svn-id footer found on %s.' % upstream
   print 'Found git-svn-id footer %s on %s' % (svn_id, upstream)
@@ -86,14 +104,14 @@ def main(argv):
   assert svn_repo is not None, 'Unable to find svn repo for %s' % svn_id
   print 'Found upstream svn repo %s and path %s' % (svn_repo, svn_path)
 
-  set_config('svn-remote.svn.url', svn_repo)
-  set_config('svn-remote.svn.fetch',
-             '%s:refs/remotes/%s' % (svn_path, upstream))
+  run_git('config', '--local', '--replace-all', 'svn-remote.svn.url', svn_repo)
+  run_git('config', '--local', '--replace-all', 'svn-remote.svn.fetch',
+          '%s:refs/remotes/%s' % (svn_path, upstream),
+          'refs/remotes/%s$' % upstream)
   print 'Configured metadata, running "git svn fetch". This may take some time.'
   with run_git_stream_with_retcode('svn', 'fetch') as stdout:
     for line in stdout.xreadlines():
       print line.strip()
-  return 0
 
 
 if __name__ == '__main__':
