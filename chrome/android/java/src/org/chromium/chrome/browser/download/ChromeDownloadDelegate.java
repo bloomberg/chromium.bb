@@ -12,10 +12,12 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.text.TextUtils;
-import android.util.Log;
+import android.util.Pair;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -44,11 +46,12 @@ import java.io.File;
  */
 public class ChromeDownloadDelegate
         implements ContentViewDownloadDelegate, InfoBarListeners.Confirm {
+    private static final String TAG = "cr.Download";
+
     // The application context.
     private final Context mContext;
     private final Tab mTab;
     private final TabModelSelector mTabModelSelector;
-    private static final String LOGTAG = "ChromeDownloadDelegate";
 
     // Pending download request for a dangerous file.
     private DownloadInfo mPendingRequest;
@@ -64,7 +67,27 @@ public class ChromeDownloadDelegate
         } else if (confirm) {
             // User confirmed the download.
             if (mPendingRequest.isGETRequest()) {
-                enqueueDownloadManagerRequest(mPendingRequest);
+                final DownloadInfo info = mPendingRequest;
+                new AsyncTask<Void, Void, Pair<String, String>>() {
+                    @Override
+                    protected Pair<String, String> doInBackground(Void... params) {
+                        Pair<String, String> result = getDownloadDirectoryNameAndFullPath();
+                        String fullDirPath = result.second;
+                        return doesFileAlreadyExists(fullDirPath, info) ? result : null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Pair<String, String> result) {
+                        if (result != null) {
+                            // File already exists.
+                            String dirName = result.first;
+                            String fullDirPath = result.second;
+                            launchDownloadInfoBar(info, dirName, fullDirPath);
+                        } else {
+                            enqueueDownloadManagerRequest(info);
+                        }
+                    }
+                }.execute();
             } else {
                 DownloadInfo newDownloadInfo = DownloadInfo.Builder.fromDownloadInfo(
                         mPendingRequest).setIsSuccessful(true).build();
@@ -107,15 +130,6 @@ public class ChromeDownloadDelegate
         mTab = tab;
         mTabModelSelector = tabModelSelector;
         mPendingRequest = null;
-    }
-
-    /**
-     * Return the download path of a file.
-     * @param fileName Name of the file.
-     * @return path of the saved file.
-     */
-    protected String downloadPath(String fileName) {
-        return mContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) + "/" + fileName;
     }
 
     /**
@@ -191,7 +205,7 @@ public class ChromeDownloadDelegate
      *
      * @param downloadInfo Information about the download.
      */
-    protected void onDownloadStartNoStream(DownloadInfo downloadInfo) {
+    protected void onDownloadStartNoStream(final DownloadInfo downloadInfo) {
         final String newMimeType = remapGenericMimeType(
                 downloadInfo.getMimeType(),
                 downloadInfo.getUrl(),
@@ -202,34 +216,61 @@ public class ChromeDownloadDelegate
         final File file = new File(path);
         final String fileName = file.getName();
 
-        if (!checkExternalStorageAndNotify(downloadPath(fileName))) {
-            return;
-        }
-        String url = sanitizeDownloadUrl(downloadInfo);
-        if (url == null) return;
-        DownloadInfo newInfo = DownloadInfo.Builder.fromDownloadInfo(downloadInfo)
-                .setUrl(url)
-                .setMimeType(newMimeType).setDescription(url)
-                .setFileName(fileName).setIsGETRequest(true).build();
+        new AsyncTask<Void, Void, Object[]>() {
+            @Override
+            protected Object[] doInBackground(Void... params) {
+                // Check to see if we have an SDCard.
+                String status = Environment.getExternalStorageState();
+                Pair<String, String> result = getDownloadDirectoryNameAndFullPath();
+                String dirName = result.first;
+                String fullDirPath = result.second;
+                boolean fileExists = doesFileAlreadyExists(fullDirPath, downloadInfo);
 
-        // TODO(acleung): This is a temp fix to disable auto downloading if flash files.
-        // We want to avoid downloading flash files when it is linked as an iframe.
-        // The proper fix would be to let chrome knows which frame originated the request.
-        if ("application/x-shockwave-flash".equals(newInfo.getMimeType())) return;
+                return new Object[] {status, dirName, fullDirPath, fileExists};
+            }
 
-        if (isDangerousFile(fileName, newMimeType)) {
-            confirmDangerousDownload(newInfo);
-        } else {
-            // Not a dangerous file, proceed.
-            enqueueDownloadManagerRequest(newInfo);
-        }
+            @Override
+            protected void onPostExecute(Object[] result) {
+                String externalStorageState = (String) result[0];
+                String dirName = (String) result[1];
+                String fullDirPath = (String) result[2];
+                Boolean fileExists = (Boolean) result[3];
+                if (!checkExternalStorageAndNotify(fullDirPath, externalStorageState)) {
+                    return;
+                }
+                String url = sanitizeDownloadUrl(downloadInfo);
+                if (url == null) return;
+                DownloadInfo newInfo = DownloadInfo.Builder.fromDownloadInfo(downloadInfo)
+                                               .setUrl(url)
+                                               .setMimeType(newMimeType)
+                                               .setDescription(url)
+                                               .setFileName(fileName)
+                                               .setIsGETRequest(true)
+                                               .build();
+
+                // TODO(acleung): This is a temp fix to disable auto downloading if flash files.
+                // We want to avoid downloading flash files when it is linked as an iframe.
+                // The proper fix would be to let chrome knows which frame originated the request.
+                if ("application/x-shockwave-flash".equals(newInfo.getMimeType())) return;
+
+                if (isDangerousFile(fileName, newMimeType)) {
+                    confirmDangerousDownload(newInfo);
+                } else {
+                    // Not a dangerous file, proceed.
+                    if (fileExists) {
+                        launchDownloadInfoBar(newInfo, dirName, fullDirPath);
+                    } else {
+                        enqueueDownloadManagerRequest(newInfo);
+                    }
+                }
+            }
+        }.execute();
     }
 
     /**
      * Sanitize the URL for the download item.
      *
      * @param downloadInfo Information about the download.
-     * @param sanitized URL to be downloaded, or null if the url cannot be sanitized.
      */
     protected String sanitizeDownloadUrl(DownloadInfo downloadInfo) {
         return downloadInfo.getUrl();
@@ -273,42 +314,41 @@ public class ChromeDownloadDelegate
     }
 
     /**
-     * Launch an info bar if the file name already exists for the download.
-     * @param info The information of the file we are about to download.
-     * @return Whether an info bar has been launched or not.
-     */
-    private boolean launchInfoBarIfFileExists(final DownloadInfo info) {
-        // Checks if file exists.
-        final String fileName = info.getFileName();
-        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (!dir.mkdir() && !dir.isDirectory()) return false;
-        String dirName = dir.getName();
-        final File file = new File(dir, info.getFileName());
-        String fullDirPath = file.getParent();
-        if (!file.exists()) return false;
-        if (TextUtils.isEmpty(fileName) || TextUtils.isEmpty(dirName)
-                || TextUtils.isEmpty(fullDirPath)) {
-            return false;
-        }
-
-        nativeLaunchDownloadOverwriteInfoBar(
-                this, mTab, info, info.getFileName(), dirName, fullDirPath);
-        return true;
-    }
-
-    /**
-     * Sends the download request to Android download manager.
+     * Return a pair of directory name and its full path. Note that we create the directory if
+     * it does not already exist.
      *
-     * @param info Download information about the download.
+     * @return A pair of directory name and its full path. A pair of <null, null> will be returned
+     * in case of an error.
      */
-    protected void enqueueDownloadManagerRequest(final DownloadInfo info) {
-        if (!launchInfoBarIfFileExists(info)) {
-            enqueueDownloadManagerRequestInternal(info);
+    private static Pair<String, String> getDownloadDirectoryNameAndFullPath() {
+        assert !ThreadUtils.runningOnUiThread();
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (!dir.mkdir() && !dir.isDirectory()) return new Pair<>(null, null);
+        String dirName = dir.getName();
+        String fullDirPath = dir.getPath();
+        return new Pair<>(dirName, fullDirPath);
+    }
+
+    private static boolean doesFileAlreadyExists(String dirPath, final DownloadInfo info) {
+        assert !ThreadUtils.runningOnUiThread();
+        final String fileName = info.getFileName();
+        final File file = new File(dirPath, fileName);
+        return file != null && file.exists();
+    }
+
+    private static void deleteFileForOverwrite(DownloadInfo info) {
+        assert !ThreadUtils.runningOnUiThread();
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (!dir.isDirectory()) return;
+        final File file = new File(dir, info.getFileName());
+        if (!file.delete()) {
+            Log.e(TAG, "Failed to delete a file: " + info.getFileName());
         }
     }
 
     /**
-     * Enqueue download manager request, only from native side.
+     * Enqueue download manager request, only from native side. Note that at this point
+     * we don't need to show an infobar even when the file already exists.
      *
      * @param overwrite Whether or not we will overwrite the file.
      * @param downloadInfo The download info.
@@ -316,55 +356,67 @@ public class ChromeDownloadDelegate
      */
     @CalledByNative
     private boolean enqueueDownloadManagerRequestFromNative(
-            boolean overwrite, DownloadInfo downloadInfo) {
-        // Android DownloadManager does not have an overwriting option.
-        // We remove the file here instead.
-        if (overwrite) deleteFileForOverwrite(downloadInfo);
-        return enqueueDownloadManagerRequestInternal(downloadInfo);
-    }
+            final boolean overwrite, final DownloadInfo downloadInfo) {
+        if (overwrite) {
+            // Android DownloadManager does not have an overwriting option.
+            // We remove the file here instead.
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                public Void doInBackground(Void... params) {
+                    deleteFileForOverwrite(downloadInfo);
+                    return null;
+                }
 
-    private void deleteFileForOverwrite(DownloadInfo info) {
-        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (!dir.isDirectory()) return;
-        final File file = new File(dir, info.getFileName());
-        if (!file.delete()) {
-            Log.e(LOGTAG, "Failed to delete a file." + info.getFileName());
+                @Override
+                public void onPostExecute(Void args) {
+                    enqueueDownloadManagerRequest(downloadInfo);
+                }
+            }.execute();
+        } else {
+            enqueueDownloadManagerRequest(downloadInfo);
         }
+        return closeBlankTab();
     }
 
-    private boolean enqueueDownloadManagerRequestInternal(final DownloadInfo info) {
+    private void launchDownloadInfoBar(DownloadInfo info, String dirName, String fullDirPath) {
+        nativeLaunchDownloadOverwriteInfoBar(
+                ChromeDownloadDelegate.this, mTab, info, info.getFileName(), dirName, fullDirPath);
+    }
+
+    /**
+     * Enqueue a request to download a file using Android DownloadManager.
+     *
+     * @param info Download information about the download.
+     */
+    private void enqueueDownloadManagerRequest(final DownloadInfo info) {
         DownloadManagerService.getDownloadManagerService(
                 mContext.getApplicationContext()).enqueueDownloadManagerRequest(info, true);
-        return closeBlankTab();
     }
 
     /**
      * Check the external storage and notify user on error.
      *
-     * @param fileName Name of the download file.
+     * @param fullDirPath The dir path to download a file. Normally this is external storage.
+     * @param externalStorageStatus The status of the external storage.
+     * @return Whether external storage is ok for downloading.
      */
-    protected boolean checkExternalStorageAndNotify(String fileName) {
-        if (fileName != null && fileName.startsWith("null")) {
+    private boolean checkExternalStorageAndNotify(
+            String fullDirPath, String externalStorageStatus) {
+        if (fullDirPath == null) {
             alertDownloadFailure(R.string.download_no_sdcard_dlg_title);
             return false;
         }
-
-        // Check to see if we have an SDCard
-        String status = Environment.getExternalStorageState();
-        if (!status.equals(Environment.MEDIA_MOUNTED)) {
+        if (!externalStorageStatus.equals(Environment.MEDIA_MOUNTED)) {
             int title;
-
             // Check to see if the SDCard is busy, same as the music app
-            if (status.equals(Environment.MEDIA_SHARED)) {
+            if (externalStorageStatus.equals(Environment.MEDIA_SHARED)) {
                 title = R.string.download_sdcard_busy_dlg_title;
             } else {
                 title = R.string.download_no_sdcard_dlg_title;
             }
-
             alertDownloadFailure(title);
             return false;
         }
-
         return true;
     }
 
@@ -467,10 +519,10 @@ public class ChromeDownloadDelegate
         new AsyncTask<Void, Void, Void>() {
             @Override
             public Void doInBackground(Void... params) {
-                Log.d(LOGTAG, "Discarding download:" + filepath);
+                Log.d(TAG, "Discarding download: " + filepath);
                 File file = new File(filepath);
                 if (file.exists() && !file.delete()) {
-                    Log.e(LOGTAG, "Error discarding file: " + filepath);
+                    Log.e(TAG, "Error discarding file: " + filepath);
                 }
                 return null;
             }
