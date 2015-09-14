@@ -102,13 +102,18 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mForwardVector = new float[3];
     }
 
-    // This can be called on any thread.
-    public void attachRedrawCallback() {
-        JniInterface.provideRedrawCallback(new Runnable() {
-            @Override
+    private void initializeRedrawCallback() {
+        mActivity.runOnUiThread(new Runnable() {
             public void run() {
-                mDesktop.reloadTexture();
-                mCursor.reloadTexture();
+                JniInterface.provideRedrawCallback(new Runnable() {
+                    @Override
+                    public void run() {
+                        mDesktop.reloadTexture();
+                        mCursor.reloadTexture();
+                    }
+                });
+
+                JniInterface.redrawGraphics();
             }
         });
     }
@@ -129,7 +134,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mPhotosphere = new Photosphere(mActivity);
         mCursor = new Cursor();
 
-        attachRedrawCallback();
+        initializeRedrawCallback();
     }
 
     @Override
@@ -177,8 +182,8 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mProjectionMatrix = eye.getPerspective(Z_NEAR, Z_FAR);
 
         drawDesktop();
-        drawMenuBar();
         drawPhotosphere();
+        drawMenuBar();
         drawCursor();
     }
 
