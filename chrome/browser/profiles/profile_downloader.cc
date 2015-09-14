@@ -229,10 +229,14 @@ void ProfileDownloader::StartFetchingImage() {
         ->FetchUserInfoBeforeSignin(account_id_);
   }
 
-  if (account_info_.IsValid())
+  if (account_info_.IsValid()) {
+    // FetchImageData might call the delegate's OnProfileDownloadSuccess
+    // synchronously, causing |this| to be deleted so there should not be more
+    // code after it.
     FetchImageData();
-  else
+  } else {
     waiting_for_account_info_ = true;
+  }
 }
 
 void ProfileDownloader::StartFetchingOAuth2AccessToken() {
@@ -385,8 +389,11 @@ void ProfileDownloader::OnAccountUpdated(const AccountInfo& info) {
     // If the StartFetchingImage was called before we had valid info, the
     // downloader has been waiting so we need to fetch the image data now.
     if (waiting_for_account_info_) {
-      FetchImageData();
       waiting_for_account_info_ = false;
+      // FetchImageData might call the delegate's OnProfileDownloadSuccess
+      // synchronously, causing |this| to be deleted so there should not be more
+      // code after it.
+      FetchImageData();
     }
   }
 }
