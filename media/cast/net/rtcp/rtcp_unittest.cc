@@ -213,7 +213,7 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
               rtcp_for_sender_.current_round_trip_time());
 #ifdef SENDER_PROVIDES_REPORT_BLOCK
     EXPECT_EQ(expected_rtt_according_to_receiver,
-              rtcp_for_receiver_.current_round_trip_time();
+              rtcp_for_receiver_.current_round_trip_time());
 #endif
 
     // In the next iteration of this loop, after the receiver gets the sender
