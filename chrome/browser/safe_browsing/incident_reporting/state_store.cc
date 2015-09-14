@@ -64,12 +64,9 @@ void StateStore::Transaction::ClearForType(IncidentType type) {
 }
 
 void StateStore::Transaction::ClearAll() {
-  if (pref_update_)
-    pref_update_.reset();
-  if (store_->incidents_sent_) {
-    store_->incidents_sent_ = nullptr;
-    store_->profile_->GetPrefs()->ClearPref(prefs::kSafeBrowsingIncidentsSent);
-  }
+  // Clear the preference if it exists and contains any values.
+  if (store_->incidents_sent_ && !store_->incidents_sent_->empty())
+    GetPrefDict()->Clear();
 }
 
 base::DictionaryValue* StateStore::Transaction::GetPrefDict() {
