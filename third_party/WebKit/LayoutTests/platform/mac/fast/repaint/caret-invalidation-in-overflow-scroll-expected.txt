@@ -6,8 +6,8 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [407, 10, 4, 15],
-        [404, 10, 4, 15]
+        [406, 10, 4, 15],
+        [403, 10, 4, 15]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='inner-editor'",

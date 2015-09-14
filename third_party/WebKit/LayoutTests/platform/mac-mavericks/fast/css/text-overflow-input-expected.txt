@@ -128,15 +128,15 @@ layer at (144,71) size 100x13 scrollWidth 295
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (144,71) size 100x13
   LayoutBlockFlow {DIV} at (0,0) size 100x13
-layer at (267,71) size 117x13 scrollWidth 295
+layer at (267,71) size 117x13 scrollWidth 296
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 296x13
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (400,71) size 100x13 scrollWidth 295
+layer at (400,71) size 100x13 scrollWidth 296
   LayoutBlockFlow {DIV} at (0,0) size 100x13
     LayoutText {#text} at (0,0) size 296x13
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (523,71) size 117x13 scrollWidth 339
+layer at (523,71) size 117x13 scrollWidth 340
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 340x13
       text run at (0,0) width 340: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
@@ -176,15 +176,15 @@ layer at (144,143) size 100x13 scrollWidth 295
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (144,143) size 100x13
   LayoutBlockFlow {DIV} at (0,0) size 100x13
-layer at (267,143) size 117x13 scrollWidth 295
+layer at (267,143) size 117x13 scrollWidth 296
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 296x13
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (400,143) size 100x13 scrollWidth 295
+layer at (400,143) size 100x13 scrollWidth 296
   LayoutBlockFlow {DIV} at (0,0) size 100x13
     LayoutText {#text} at (0,0) size 296x13
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (523,143) size 117x13 scrollWidth 339
+layer at (523,143) size 117x13 scrollWidth 340
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 340x13
       text run at (0,0) width 340: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
@@ -218,7 +218,7 @@ layer at (257,215) size 117x13 scrollWidth 295
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (257,215) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (384,215) size 117x13 scrollWidth 295
+layer at (384,215) size 117x13 scrollWidth 296
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 296x13
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
@@ -228,7 +228,7 @@ layer at (281,234) size 117x13 scrollWidth 295
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (281,234) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (408,234) size 117x13 scrollWidth 295
+layer at (408,234) size 117x13 scrollWidth 296
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 296x13
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"

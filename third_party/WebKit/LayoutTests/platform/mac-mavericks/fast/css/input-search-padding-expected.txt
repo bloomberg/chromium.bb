@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         LayoutFlexibleBox {DIV} at (6,1) size 210x23
           LayoutBlockFlow {DIV} at (0,11.50) size 6x0
           LayoutBlockFlow {DIV} at (6,0) size 189x23
-layer at (17,11) size 400x47 scrollWidth 408
+layer at (17,11) size 400x47 scrollWidth 409
   LayoutBlockFlow {DIV} at (0,0) size 400x47
     LayoutText {#text} at (0,0) size 408x47
       text run at (0,0) width 408: "value jgq not clipped"
