@@ -115,11 +115,6 @@ interface EnhancedBookmarkDelegate {
     void closeSearchUI();
 
     /**
-     * Closes the EnhancedBookmark Activity on Phone. Does nothing on tablet.
-     */
-    void finishActivityOnPhone();
-
-    /**
      * Add an observer to enhanced bookmark UI changes.
      */
     void addUIObserver(EnhancedBookmarkUIObserver observer);

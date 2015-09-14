@@ -280,4 +280,13 @@ public class EnhancedBookmarkUtils {
             ApiCompatibilityUtils.setTaskDescription(activity, description, null, 0);
         }
     }
+
+    /**
+     * Closes the EnhancedBookmark Activity on Phone. Does nothing on tablet.
+     */
+    public static void finishActivityOnPhone(Context context) {
+        if (context instanceof EnhancedBookmarkActivity) {
+            ((Activity) context).finish();
+        }
+    }
 }

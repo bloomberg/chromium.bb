@@ -422,7 +422,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             RecordHistogram.recordEnumeratedHistogram("Stars.LaunchLocation", launchLocation,
                     LaunchLocation.COUNT);
             EnhancedBookmarkUtils.openBookmark(mActivity, url);
-            finishActivityOnPhone();
+            EnhancedBookmarkUtils.finishActivityOnPhone(mActivity);
         }
     }
 
@@ -436,14 +436,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     public void closeSearchUI() {
         if (mSearchView.getVisibility() != View.VISIBLE) return;
         mViewSwitcher.showPrevious();
-    }
-
-    @Override
-    public void finishActivityOnPhone() {
-        Activity activity = mActivity;
-        if (activity instanceof EnhancedBookmarkActivity) {
-            activity.finish();
-        }
     }
 
     @Override

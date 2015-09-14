@@ -91,12 +91,11 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
-        EnhancedBookmarksModel model = mDelegate.getModel();
         if (menuItem.getItemId() == R.id.edit_menu_id) {
             EnhancedBookmarkAddEditFolderActivity.startEditFolderActivity(getContext(),
                     mCurrentFolder.getId());
         } else if (menuItem.getItemId() == R.id.close_menu_id) {
-            mDelegate.finishActivityOnPhone();
+            EnhancedBookmarkUtils.finishActivityOnPhone(getContext());
             return true;
         } else if (menuItem.getItemId() == R.id.search_menu_id) {
             mDelegate.openSearchUI();
@@ -104,7 +103,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         } else if (menuItem.getItemId() == R.id.selection_mode_edit_menu_id) {
             List<BookmarkId> list = mDelegate.getSelectedBookmarks();
             assert list.size() == 1;
-            BookmarkItem item = model.getBookmarkById(list.get(0));
+            BookmarkItem item = mDelegate.getModel().getBookmarkById(list.get(0));
             if (item.isFolder()) {
                 EnhancedBookmarkAddEditFolderActivity.startEditFolderActivity(getContext(),
                         item.getId());
