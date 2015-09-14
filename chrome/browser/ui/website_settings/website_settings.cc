@@ -309,12 +309,8 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
 
   show_info_bar_ = true;
 
-// TODO(markusheintz): This is a temporary hack to fix issue:
-// http://crbug.com/144203.
-#if defined(OS_MACOSX)
   // Refresh the UI to reflect the new setting.
   PresentSitePermissions();
-#endif
 }
 
 void WebsiteSettings::OnSiteDataAccessed() {

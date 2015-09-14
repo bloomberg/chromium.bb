@@ -538,6 +538,14 @@ void WebsiteSettingsPopupView::SetCookieInfo(
 
 void WebsiteSettingsPopupView::SetPermissionInfo(
     const PermissionInfoList& permission_info_list) {
+  // When a permission is changed, WebsiteSettings::OnSitePermissionChanged()
+  // calls this method with updated permissions. However, PermissionSelectorView
+  // will have already updated its state, so it's already reflected in the UI.
+  // In addition, if a permission is set to the default setting, WebsiteSettings
+  // removes it from |permission_info_list|, but the button should remain.
+  if (permissions_content_)
+    return;
+
   permissions_content_ = new views::View();
   views::GridLayout* layout = new views::GridLayout(permissions_content_);
   permissions_content_->SetLayoutManager(layout);

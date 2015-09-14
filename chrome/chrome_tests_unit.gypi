@@ -1347,6 +1347,7 @@
     'chrome_unit_tests_views_sources': [
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc',
+      'browser/ui/views/website_settings/website_settings_popup_view_unittest.cc',
     ],
     # Views unit_tests for everywhere but ChromeOS.
     'chrome_unit_tests_views_non_chromeos_sources': [

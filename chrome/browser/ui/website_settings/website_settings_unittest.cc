@@ -181,12 +181,7 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.
-// TODO(markusheintz): This is a temporary hack to fix issue: http://crbug.com/144203.
-#if defined(OS_MACOSX)
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(7);
-#else
-  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(1);
-#endif
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
@@ -240,13 +235,7 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged_Fullscreen) {
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.
-  // TODO(markusheintz): This is a temporary hack to fix issue:
-  // http://crbug.com/144203.
-#if defined(OS_MACOSX)
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(3);
-#else
-  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(1);
-#endif
 
   // Execute code under tests.
   website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_FULLSCREEN,
@@ -420,15 +409,7 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
 
-  // SetPermissionInfo() is called once initially, and then again every time
-  // OnSitePermissionChanged() is called.
-  // TODO(markusheintz): This is a temporary hack to fix issue:
-  // http://crbug.com/144203.
-#if defined(OS_MACOSX)
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(2);
-#else
-  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(1);
-#endif
 
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));

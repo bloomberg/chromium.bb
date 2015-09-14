@@ -26,6 +26,10 @@ struct SSLStatus;
 class WebContents;
 }
 
+namespace test {
+class WebsiteSettingsPopupViewTestApi;
+}
+
 namespace views {
 class LabelButton;
 class Link;
@@ -55,6 +59,8 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   static bool IsPopupShowing();
 
  private:
+  friend class test::WebsiteSettingsPopupViewTestApi;
+
   WebsiteSettingsPopupView(views::View* anchor_view,
                            gfx::NativeView parent_window,
                            Profile* profile,
