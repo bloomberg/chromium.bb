@@ -146,13 +146,10 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length)
         document()->cachedImage()->appendData(data, length);
     }
 
-    if (!document())
-        return;
-
-    // Make sure the image layoutObject gets created because we need the layoutObject
-    // to read the aspect ratio. See crbug.com/320244
-    document()->updateLayoutTreeIfNeeded();
-    document()->imageUpdated();
+    // TODO(esprehn): These null checks on Document don't make sense, document()
+    // will ASSERT if it was null. Do these want to check isDetached() ?
+    if (document())
+        document()->imageUpdated();
 }
 
 void ImageDocumentParser::finish()
@@ -177,6 +174,8 @@ void ImageDocumentParser::finish()
         document()->imageUpdated();
     }
 
+    // TODO(esprehn): These null checks on Document don't make sense, document()
+    // will ASSERT if it was null. Do these want to check isDetached() ?
     if (document())
         document()->finishedParsing();
 }
@@ -224,6 +223,9 @@ void ImageDocument::createDocumentStructure(bool loadingMultipartContent)
 
     RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
     body->setAttribute(styleAttr, "margin: 0px;");
+
+    if (frame())
+        frame()->loader().client()->dispatchWillInsertBody();
 
     m_imageElement = HTMLImageElement::create(*this);
     m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");
@@ -315,6 +317,7 @@ void ImageDocument::imageUpdated()
     if (m_imageSizeIsKnown)
         return;
 
+    updateLayoutTreeIfNeeded();
     if (!m_imageElement->cachedImage() || m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this)).isEmpty())
         return;
 
@@ -324,9 +327,6 @@ void ImageDocument::imageUpdated()
         // Force resizing of the image
         windowSizeChanged(ScaleOnlyUnzoomedDocument);
     }
-
-    // Update layout as soon as image size is known. This enables large image files to render progressively or to animate.
-    updateLayout();
 }
 
 void ImageDocument::restoreImageSize(ScaleType type)

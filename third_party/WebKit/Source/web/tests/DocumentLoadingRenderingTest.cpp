@@ -176,6 +176,24 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterParsingSvg)
     EXPECT_FALSE(m_layerTreeView.deferCommits());
 }
 
+TEST_F(DocumentLoadingRenderingTest, ShouldResumeImmediatelyForImageDocuments)
+{
+    SimRequest mainResource("https://example.com/test.png", "image/png");
+
+    loadURL("https://example.com/test.png");
+
+    mainResource.start();
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Not really a valid image but enough for the test. ImageDocuments should
+    // resume painting as soon as the first bytes arrive.
+    mainResource.write("image data");
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+
+    mainResource.finish();
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+}
+
 TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded)
 {
     SimRequest mainResource("https://example.com/test.html", "text/html");
