@@ -108,13 +108,19 @@ class OZONE_EXPORT ScreenManager {
                         HardwareDisplayControllers::iterator mirror,
                         const scoped_refptr<DrmDevice>& drm,
                         uint32_t crtc,
-                        uint32_t connector);
+                        uint32_t connector,
+                        const drmModeModeInfo& mode);
+
+  OverlayPlane GetModesetBuffer(HardwareDisplayController* controller,
+                                const gfx::Rect& bounds);
+
+  bool EnableController(HardwareDisplayController* controller);
 
   // Modeset the |controller| using |origin| and |mode|. If there is a window at
   // the controller location, then we'll re-use the current buffer.
-  bool EnableController(HardwareDisplayController* controller,
-                        const gfx::Point& origin,
-                        const drmModeModeInfo& mode);
+  bool ModesetController(HardwareDisplayController* controller,
+                         const gfx::Point& origin,
+                         const drmModeModeInfo& mode);
 
   DrmWindow* FindWindowAt(const gfx::Rect& bounds) const;
 

@@ -148,8 +148,9 @@ TEST_F(ScreenManagerTest, CheckChangingMode) {
   gfx::Rect new_bounds(0, 0, new_mode.hdisplay, new_mode.vdisplay);
   EXPECT_TRUE(screen_manager_->GetDisplayController(new_bounds));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
-  drmModeModeInfo mode =
-      screen_manager_->GetDisplayController(new_bounds)->get_mode();
+  drmModeModeInfo mode = screen_manager_->GetDisplayController(new_bounds)
+                             ->crtc_controllers()[0]
+                             ->mode();
   EXPECT_EQ(new_mode.vdisplay, mode.vdisplay);
   EXPECT_EQ(new_mode.hdisplay, mode.hdisplay);
 }

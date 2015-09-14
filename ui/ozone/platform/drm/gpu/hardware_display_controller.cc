@@ -27,7 +27,6 @@ HardwareDisplayController::HardwareDisplayController(
     scoped_ptr<CrtcController> controller,
     const gfx::Point& origin)
     : origin_(origin),
-      mode_(controller->mode()),
       is_disabled_(controller->is_disabled()) {
   AddCrtc(controller.Pass());
 }
@@ -46,7 +45,20 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
     status &= crtc_controllers_[i]->Modeset(primary, mode);
 
   is_disabled_ = false;
-  mode_ = mode;
+
+  return status;
+}
+
+bool HardwareDisplayController::Enable(const OverlayPlane& primary) {
+  TRACE_EVENT0("drm", "HDC::Enable");
+  DCHECK(primary.buffer.get());
+  bool status = true;
+  for (size_t i = 0; i < crtc_controllers_.size(); ++i) {
+    status &=
+        crtc_controllers_[i]->Modeset(primary, crtc_controllers_[i]->mode());
+  }
+
+  is_disabled_ = false;
 
   return status;
 }
@@ -214,7 +226,9 @@ bool HardwareDisplayController::IsDisabled() const {
 }
 
 gfx::Size HardwareDisplayController::GetModeSize() const {
-  return gfx::Size(mode_.hdisplay, mode_.vdisplay);
+  // If there are multiple CRTCs they should all have the same size.
+  return gfx::Size(crtc_controllers_[0]->mode().hdisplay,
+                   crtc_controllers_[0]->mode().vdisplay);
 }
 
 uint64_t HardwareDisplayController::GetTimeOfLastFlip() const {

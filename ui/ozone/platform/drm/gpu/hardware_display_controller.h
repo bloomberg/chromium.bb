@@ -98,6 +98,9 @@ class OZONE_EXPORT HardwareDisplayController {
   // framebuffer for |primary| with |mode|.
   bool Modeset(const OverlayPlane& primary, drmModeModeInfo mode);
 
+  // Performs a CRTC configuration re-using the modes from the CRTCs.
+  bool Enable(const OverlayPlane& primary);
+
   // Disables the CRTC.
   void Disable();
 
@@ -147,8 +150,6 @@ class OZONE_EXPORT HardwareDisplayController {
   gfx::Point origin() const { return origin_; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
 
-  const drmModeModeInfo& get_mode() const { return mode_; };
-
   uint64_t GetTimeOfLastFlip() const;
 
   const std::vector<CrtcController*>& crtc_controllers() const {
@@ -167,9 +168,6 @@ class OZONE_EXPORT HardwareDisplayController {
 
   // Location of the controller on the screen.
   gfx::Point origin_;
-
-  // The mode used by the last modesetting operation.
-  drmModeModeInfo mode_;
 
   bool is_disabled_;
 
