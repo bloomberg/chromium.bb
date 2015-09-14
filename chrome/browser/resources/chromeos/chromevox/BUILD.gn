@@ -141,6 +141,8 @@ run_jsbundler("chromevox_copied_files") {
       chromevox_assets_gypi_values.chromevox_assets_chromevox_background_keymaps
   sources += chromevox_assets_gypi_values.chromevox_assets_chromevox_background_mathmaps_functions
   sources += chromevox_assets_gypi_values.chromevox_assets_chromevox_background_mathmaps_symbols
+  sources +=
+      chromevox_assets_gypi_values.chromevox_assets_cvox2_background_earcons
   sources += [
     "chromevox/background/background.html",
     "chromevox/background/kbexplorer.html",

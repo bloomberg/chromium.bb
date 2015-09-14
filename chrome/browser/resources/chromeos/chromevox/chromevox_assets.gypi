@@ -76,6 +76,14 @@
       'chromevox/background/mathmaps/symbols/math_whitespace.json',
       'chromevox/background/mathmaps/symbols/other_stars.json',
     ],
+    'chromevox_assets_cvox2_background_earcons': [
+      'cvox2/background/earcons/control.wav',
+      'cvox2/background/earcons/selection_reverse.wav',
+      'cvox2/background/earcons/selection.wav',
+      'cvox2/background/earcons/skim.wav',
+      'cvox2/background/earcons/small_room_2.wav',
+      'cvox2/background/earcons/static.wav',
+    ],
   },
   'targets': [
     {
@@ -110,6 +118,12 @@
           'destination': '<(chromevox_dest_dir)/chromevox/background/mathmaps/symbols',
           'files': [
             '<@(chromevox_assets_chromevox_background_mathmaps_symbols)',
+          ],
+        },
+        {
+          'destination': '<(chromevox_dest_dir)/cvox2/background/earcons',
+          'files': [
+            '<@(chromevox_assets_cvox2_background_earcons)',
           ],
         },
       ],

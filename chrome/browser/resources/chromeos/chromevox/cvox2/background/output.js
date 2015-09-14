@@ -10,6 +10,7 @@ goog.provide('Output');
 goog.provide('Output.EventType');
 
 goog.require('AutomationUtil.Dir');
+goog.require('EarconEngine');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cursors.Unit');
