@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -218,6 +219,8 @@ void RealPanWalletClient::OnGetTokenFailure(
 void RealPanWalletClient::CreateRequest() {
   request_ = net::URLFetcher::Create(0, GetUnmaskCardRequestUrl(),
                                      net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      request_.get(), data_use_measurement::DataUseUserData::AUTOFILL);
   request_->SetRequestContext(context_getter_.get());
   request_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DISABLE_CACHE);

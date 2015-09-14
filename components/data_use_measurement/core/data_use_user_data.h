@@ -26,6 +26,19 @@ class DataUseUserData : public base::SupportsUserData::Data {
   enum ServiceName {
     NOT_TAGGED,
     SUGGESTIONS,
+    TRANSLATE,
+    SYNC,
+    OMNIBOX,
+    INVALIDATION,
+    RAPPOR,
+    VARIATIONS,
+    UMA,
+    DOMAIN_RELIABILITY,
+    PROFILE_DOWNLOADER,
+    GOOGLE_URL_TRACKER,
+    AUTOFILL,
+    POLICY,
+    SPELL_CHECKER,
   };
 
   explicit DataUseUserData(ServiceName service_name);

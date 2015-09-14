@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_xml_parser.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/net/variations_http_header_provider.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -183,6 +184,8 @@ bool AutofillDownloadManager::StartRequest(
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(fetcher_id_for_unittest_++, request_url,
                               net::URLFetcher::POST, this).release();
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher, data_use_measurement::DataUseUserData::AUTOFILL);
   url_fetchers_[fetcher] = request_data;
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->SetRequestContext(request_context);

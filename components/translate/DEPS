@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/data_use_measurement/core",
   "+components/infobars",
   "+components/language_usage_metrics",
   "+components/pref_registry",

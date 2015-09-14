@@ -40,7 +40,9 @@ class TestHttpBridgeFactory : public syncer::HttpPostProviderFactory {
   ~TestHttpBridgeFactory() override;
 
   // syncer::HttpPostProviderFactory:
-  void Init(const std::string& user_agent) override;
+  void Init(
+      const std::string& user_agent,
+      const syncer::BindToTrackerCallback& bind_to_tracker_callback) override;
   syncer::HttpPostProviderInterface* Create() override;
   void Destroy(syncer::HttpPostProviderInterface* http) override;
 };

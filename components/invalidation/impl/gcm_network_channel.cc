@@ -19,6 +19,7 @@
 #include "google/cacheinvalidation/channel_common.pb.h"
 #include "google/cacheinvalidation/types.pb.h"
 #endif
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/impl/gcm_network_channel.h"
 #include "components/invalidation/impl/gcm_network_channel_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -211,6 +212,8 @@ void GCMNetworkChannel::OnGetTokenComplete(
   DVLOG(2) << "Got access token, sending message";
   fetcher_ = net::URLFetcher::Create(BuildUrl(registration_id_),
                                      net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_.get(), data_use_measurement::DataUseUserData::INVALIDATION);
   fetcher_->SetRequestContext(request_context_getter_.get());
   const std::string auth_header("Authorization: Bearer " + access_token_);
   fetcher_->AddExtraRequestHeader(auth_header);

@@ -15,6 +15,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -451,6 +452,9 @@ void VariationsService::DoActualFetch() {
 
   pending_seed_request_ = net::URLFetcher::Create(0, variations_server_url_,
                                                   net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      pending_seed_request_.get(),
+      data_use_measurement::DataUseUserData::VARIATIONS);
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(client_->GetURLRequestContext());

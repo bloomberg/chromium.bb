@@ -4,12 +4,14 @@
 
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync_driver/invalidation_adapter.h"
@@ -38,6 +40,10 @@ namespace syncer {
 class InternalComponentsFactory;
 }  // namespace syncer
 
+namespace net {
+class URLFetcher;
+}
+
 namespace {
 
 // Enums for UMAs.
@@ -48,6 +54,11 @@ enum SyncBackendInitState {
     FIRST_SETUP_RESTORED_TYPES,
     SYNC_BACKEND_INIT_STATE_COUNT
 };
+
+void BindFetcherToDataTracker(net::URLFetcher* fetcher) {
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher, data_use_measurement::DataUseUserData::SYNC);
+}
 
 }  // namespace
 
@@ -425,7 +436,8 @@ void SyncBackendHostCore::DoInitialize(
 
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
-  options->http_bridge_factory->Init(options->sync_user_agent);
+  options->http_bridge_factory->Init(options->sync_user_agent,
+                                     base::Bind(&BindFetcherToDataTracker));
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.

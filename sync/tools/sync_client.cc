@@ -34,6 +34,7 @@
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/internal_api/public/http_bridge.h"
+#include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory_impl.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/sync_manager.h"
@@ -405,7 +406,7 @@ int SyncClientMain(int argc, char* argv[]) {
       new HttpBridgeFactory(context_getter.get(),
                             base::Bind(&StubNetworkTimeUpdateCallback),
                             &factory_cancelation_signal));
-  post_factory->Init(kUserAgent);
+  post_factory->Init(kUserAgent, BindToTrackerCallback());
   // Used only when committing bookmarks, so it's okay to leave this
   // as NULL.
   ExtensionsActivity* extensions_activity = NULL;

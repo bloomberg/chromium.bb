@@ -115,6 +115,7 @@ static_library("net") {
   ]
   deps = [
     "//base",
+    "//components/data_use_measurement/core",
     "//net",
     "//url",
   ]

@@ -12,6 +12,7 @@ source_set("service") {
   deps = [
     "//base",
     "//base:prefs",
+    "//components/data_use_measurement/core",
     "//components/metrics",
     "//components/network_time",
     "//components/pref_registry",

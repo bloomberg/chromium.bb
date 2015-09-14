@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
@@ -173,6 +174,8 @@ void ExternalPolicyDataFetcherBackend::StartJob(
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(++last_fetch_id_, job->url, net::URLFetcher::GET,
                               this).release();
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher, data_use_measurement::DataUseUserData::POLICY);
   fetcher->SetRequestContext(request_context_.get());
   fetcher->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
                         net::LOAD_DO_NOT_SAVE_COOKIES |

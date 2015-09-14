@@ -67,6 +67,7 @@ component("domain_reliability") {
   deps = [
     ":bake_in_configs",
     "//base",
+    "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//content/public/browser",
     "//net",
