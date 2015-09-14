@@ -39,6 +39,11 @@ FontLoader::FontLoader(mojo::ApplicationImpl* application_impl) {
 
 FontLoader::~FontLoader() {}
 
+void FontLoader::Shutdown() {
+  thread_->Stop();
+  thread_ = nullptr;
+}
+
 bool FontLoader::matchFamilyName(const char family_name[],
                                  SkTypeface::Style requested,
                                  FontIdentity* out_font_identifier,

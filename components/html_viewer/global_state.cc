@@ -72,6 +72,15 @@ GlobalState::~GlobalState() {
     renderer_scheduler_->Shutdown();
     blink::shutdown();
   }
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  if (font_loader_.get()) {
+    SkFontConfigInterface::SetGlobal(nullptr);
+    // FontLoader is ref counted. We need to explicitly shutdown the background
+    // thread, otherwise the background thread may be shutdown after the app is
+    // torn down, when we're in a bad state.
+    font_loader_->Shutdown();
+  }
+#endif
 }
 
 void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
@@ -92,7 +101,8 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   }
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-  SkFontConfigInterface::SetGlobal(new font_service::FontLoader(app_));
+  font_loader_ = skia::AdoptRef(new font_service::FontLoader(app_));
+  SkFontConfigInterface::SetGlobal(font_loader_.get());
 #endif
 
   ui_init_.reset(

@@ -37,6 +37,9 @@ class FontLoader : public SkFontConfigInterface,
   explicit FontLoader(mojo::ApplicationImpl* application_impl);
   ~FontLoader() override;
 
+  // Shuts down the background thread.
+  void Shutdown();
+
   // SkFontConfigInterface:
   bool matchFamilyName(const char family_name[],
                        SkTypeface::Style requested,
