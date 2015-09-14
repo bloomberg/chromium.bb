@@ -40,7 +40,6 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
         paintRect.setX(paintRect.x() + xOff);
     }
 
-    // TODO(chrishtr): pixel-snapping here is likely wrong.
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutFieldset, paintInfo.phase, paintRect, paintOffset);
     BoxDecorationData boxDecorationData(m_layoutFieldset);
 

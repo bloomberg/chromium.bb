@@ -167,8 +167,7 @@ void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, co
         if (shouldClip) {
             LayoutRect clipRect(paintRect.location(), m_layoutTableCell.size());
             clipRect.expand(m_layoutTableCell.borderInsets());
-            // TODO(chrishtr): should this be pixel-snapped?
-            paintInfo.context->clip(FloatRect(clipRect));
+            paintInfo.context->clip(pixelSnappedIntRect(clipRect));
         }
         BoxPainter(m_layoutTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, SkXfermode::kSrcOver_Mode, backgroundObject);
     }

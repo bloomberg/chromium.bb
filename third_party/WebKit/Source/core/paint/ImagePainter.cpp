@@ -16,11 +16,11 @@
 #include "core/layout/TextRunConstructor.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/FloatClipRecorder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
 
@@ -105,11 +105,10 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         LayoutRect paintRect = m_layoutImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
 
-        Optional<FloatClipRecorder> clipRecorder;
+        Optional<ClipRecorder> clipRecorder;
         if (!contentRect.contains(paintRect)) {
-            // TODO(chrishtr): this should be pixel-snapped.
             // TODO(fmalita): can we get rid of this clip and adjust the image src/dst rect instead?
-            clipRecorder.emplace(*context, m_layoutImage, paintInfo.phase, FloatRect(contentRect));
+            clipRecorder.emplace(*context, m_layoutImage, paintInfo.displayItemTypeForClipping(), contentRect);
         }
 
         if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase, paintOffset))

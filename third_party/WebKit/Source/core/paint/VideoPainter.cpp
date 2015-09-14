@@ -9,11 +9,11 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/paint/FloatClipRecorder.h"
 #include "core/paint/ImagePainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
 
@@ -33,10 +33,9 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutRect contentRect = m_layoutVideo.contentBoxRect();
     contentRect.moveBy(paintOffset);
 
-    Optional<FloatClipRecorder> clipRecorder;
+    Optional<ClipRecorder> clipRecorder;
     if (!contentRect.contains(rect)) {
-        // TODO(chrishtr): this should be pixel-snapped.
-        clipRecorder.emplace(*context, m_layoutVideo, paintInfo.phase, FloatRect(contentRect));
+        clipRecorder.emplace(*context, m_layoutVideo, paintInfo.displayItemTypeForClipping(), contentRect);
     }
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutVideo, paintInfo.phase, paintOffset))
