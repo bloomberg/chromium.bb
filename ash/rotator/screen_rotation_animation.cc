@@ -61,6 +61,9 @@ void ScreenRotationAnimation::OnGetTarget(TargetValue* target) const {
 }
 
 void ScreenRotationAnimation::OnAbort(ui::LayerAnimationDelegate* delegate) {
+  TargetValue target_value;
+  OnGetTarget(&target_value);
+  delegate->SetTransformFromAnimation(target_value.transform);
 }
 
 }  // namespace ash
