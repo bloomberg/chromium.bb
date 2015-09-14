@@ -35,11 +35,9 @@ class RuleIteratorBinary : public RuleIterator {
 
 }  // namespace
 
-BinaryValueMap::BinaryValueMap() {
-  for (bool& enabled : is_enabled_) {
-    enabled = true;
-  }
-}
+BinaryValueMap::BinaryValueMap() {}
+
+BinaryValueMap::~BinaryValueMap() {}
 
 RuleIterator* BinaryValueMap::GetRuleIterator(
     ContentSettingsType content_type,
@@ -59,7 +57,10 @@ void BinaryValueMap::SetContentSettingDisabled(ContentSettingsType content_type,
 
 bool BinaryValueMap::IsContentSettingEnabled(
     ContentSettingsType content_type) const {
-  return is_enabled_[content_type];
+  auto it = is_enabled_.find(content_type);
+  if (it == is_enabled_.end())
+    return true;
+  return it->second;
 }
 
 }  // namespace content_settings

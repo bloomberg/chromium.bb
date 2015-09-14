@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_BINARY_VALUE_MAP_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_BINARY_VALUE_MAP_H_
 
+#include <map>
+
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
@@ -22,6 +24,7 @@ class RuleIterator;
 class BinaryValueMap {
  public:
   BinaryValueMap();
+  ~BinaryValueMap();
 
   RuleIterator* GetRuleIterator(ContentSettingsType content_type,
                                 const ResourceIdentifier& resource_identifier,
@@ -31,7 +34,7 @@ class BinaryValueMap {
   bool IsContentSettingEnabled(ContentSettingsType content_type) const;
 
  private:
-  bool is_enabled_[CONTENT_SETTINGS_NUM_TYPES];
+  std::map<ContentSettingsType, bool> is_enabled_;
 };
 
 }  // namespace content_settings

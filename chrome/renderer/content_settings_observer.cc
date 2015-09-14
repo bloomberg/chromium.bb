@@ -215,8 +215,9 @@ void ContentSettingsObserver::DidBlockContentType(
     ContentSettingsType settings_type,
     const base::string16& details) {
   // Send multiple ContentBlocked messages if details are provided.
-  if (!content_blocked_[settings_type] || !details.empty()) {
-    content_blocked_[settings_type] = true;
+  bool& blocked = content_blocked_[settings_type];
+  if (!blocked || !details.empty()) {
+    blocked = true;
     Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type,
                                               details));
   }
@@ -650,8 +651,7 @@ void ContentSettingsObserver::OnRequestFileSystemAccessAsyncResponse(
 }
 
 void ContentSettingsObserver::ClearBlockedContentSettings() {
-  for (size_t i = 0; i < arraysize(content_blocked_); ++i)
-    content_blocked_[i] = false;
+  content_blocked_.clear();
   cached_storage_permissions_.clear();
   cached_script_permissions_.clear();
 }

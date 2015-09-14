@@ -145,7 +145,7 @@ class ContentSettingsObserver
   const RendererContentSettingRules* content_setting_rules_;
 
   // Stores if images, scripts, and plugins have actually been blocked.
-  bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
+  std::map<ContentSettingsType, bool> content_blocked_;
 
   // Caches the result of AllowStorage.
   typedef std::pair<GURL, bool> StoragePermissionsKey;
