@@ -532,7 +532,8 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
                                   counter, counter_max);
         break;
       default:
-        NOTREACHED();
+        // The default clause is expected to reach when new enum types are
+        // added.
         break;
     }
   }
@@ -555,7 +556,9 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
                                  value);
         break;
       default:
-        NOTREACHED();
+        // The default clause is expected to reach when new enum types are
+        // added.
+        break;
     }
   }
 };
