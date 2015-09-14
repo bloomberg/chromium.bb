@@ -209,7 +209,7 @@ chrome.runtime.onConnect.addListener(function(devToolsConnection) {
     // add the listener
     devToolsConnection.onMessage.addListener(devToolsListener);
 
-    devToolsConnection.onDisconnect(function() {
+    devToolsConnection.onDisconnect.addListener(function() {
          devToolsConnection.onMessage.removeListener(devToolsListener);
     });
 }
