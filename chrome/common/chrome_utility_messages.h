@@ -15,7 +15,6 @@
 #include "base/strings/string16.h"
 #include "base/tuple.h"
 #include "base/values.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,6 +23,7 @@
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"
 #include "chrome/common/safe_browsing/protobuf_message_param_traits.h"
+#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #endif
 
 // Singly-included section for typedefs.
