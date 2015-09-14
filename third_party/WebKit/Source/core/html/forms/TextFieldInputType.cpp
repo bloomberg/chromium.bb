@@ -477,7 +477,7 @@ void TextFieldInputType::appendToFormData(FormData& formData, bool isMultipart) 
     InputType::appendToFormData(formData, isMultipart);
     const AtomicString& dirnameAttrValue = element().fastGetAttribute(dirnameAttr);
     if (!dirnameAttrValue.isNull())
-        formData.appendData(dirnameAttrValue, element().directionForFormData());
+        formData.append(dirnameAttrValue, element().directionForFormData());
 }
 
 String TextFieldInputType::convertFromVisibleValue(const String& visibleValue) const

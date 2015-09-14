@@ -105,7 +105,7 @@ void HTMLKeygenElement::appendToFormData(FormData& formData, bool)
         return;
     String value = Platform::current()->signedPublicKeyAndChallengeString(shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document().baseURL());
     if (!value.isNull())
-        formData.appendData(name(), value);
+        formData.append(name(), value);
 }
 
 const AtomicString& HTMLKeygenElement::formControlType() const

@@ -56,7 +56,7 @@ const AtomicString& SubmitInputType::formControlType() const
 void SubmitInputType::appendToFormData(FormData& formData, bool) const
 {
     if (element().isActivatedSubmit())
-        formData.appendData(element().name(), element().valueWithDefault());
+        formData.append(element().name(), element().valueWithDefault());
 }
 
 bool SubmitInputType::supportsRequired() const

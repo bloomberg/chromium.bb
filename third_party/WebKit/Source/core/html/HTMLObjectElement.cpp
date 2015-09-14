@@ -432,7 +432,7 @@ void HTMLObjectElement::appendToFormData(FormData& formData, bool)
         return;
     String value;
     if (toPluginView(widget)->getFormValue(value))
-        formData.appendData(name(), value);
+        formData.append(name(), value);
 }
 
 HTMLFormElement* HTMLObjectElement::formOwner() const

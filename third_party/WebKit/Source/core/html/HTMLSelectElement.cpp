@@ -1171,7 +1171,7 @@ void HTMLSelectElement::appendToFormData(FormData& formData, bool)
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
         if (isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected() && !toHTMLOptionElement(*element).isDisabledFormControl())
-            formData.appendData(name, toHTMLOptionElement(*element).value());
+            formData.append(name, toHTMLOptionElement(*element).value());
     }
 }
 

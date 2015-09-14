@@ -103,7 +103,7 @@ DEFINE_TRACE(FormData)
 
 void FormData::append(const String& name, const String& value)
 {
-    appendData(name, value);
+    m_entries.append(new Entry(encodeAndNormalize(name), encodeAndNormalize(value)));
 }
 
 void FormData::append(ExecutionContext* context, const String& name, Blob* blob, const String& filename)
@@ -123,7 +123,7 @@ void FormData::append(ExecutionContext* context, const String& name, Blob* blob,
     } else {
         UseCounter::count(context, UseCounter::FormDataAppendNull);
     }
-    appendBlob(name, blob, filename);
+    append(name, blob, filename);
 }
 
 void FormData::deleteEntry(const String& name)
@@ -223,17 +223,12 @@ void FormData::setEntry(const Entry* entry)
         m_entries.append(entry);
 }
 
-void FormData::appendData(const String& key, const String& value)
+void FormData::append(const String& key, int value)
 {
-    m_entries.append(new Entry(encodeAndNormalize(key), encodeAndNormalize(value)));
+    append(key, String::number(value));
 }
 
-void FormData::appendData(const String& key, int value)
-{
-    appendData(key, String::number(value));
-}
-
-void FormData::appendBlob(const String& key, Blob* blob, const String& filename)
+void FormData::append(const String& key, Blob* blob, const String& filename)
 {
     m_entries.append(new Entry(encodeAndNormalize(key), blob, filename));
 }

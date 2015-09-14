@@ -119,19 +119,19 @@ void FileInputType::appendToFormData(FormData& formData, bool isMultipart) const
         // submission of file inputs, and Firefox doesn't add "name=" query
         // parameter.
         for (unsigned i = 0; i < numFiles; ++i)
-            formData.appendData(element().name(), fileList->item(i)->name());
+            formData.append(element().name(), fileList->item(i)->name());
         return;
     }
 
     // If no filename at all is entered, return successful but empty.
     // Null would be more logical, but Netscape posts an empty file. Argh.
     if (numFiles == 0) {
-        formData.appendBlob(element().name(), File::create(""));
+        formData.append(element().name(), File::create(""));
         return;
     }
 
     for (unsigned i = 0; i < numFiles; ++i)
-        formData.appendBlob(element().name(), fileList->item(i));
+        formData.append(element().name(), fileList->item(i));
 }
 
 bool FileInputType::valueMissing(const String& value) const

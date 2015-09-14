@@ -82,11 +82,8 @@ public:
     class Entry;
     const HeapVector<Member<const Entry>>& entries() const { return m_entries; }
     size_t size() const { return m_entries.size(); }
-    // TODO(tkent): Rename appendFoo functions to |append| for consistency with
-    // public function.
-    void appendData(const String& key, const String& value);
-    void appendData(const String& key, int value);
-    void appendBlob(const String& key, Blob*, const String& filename = String());
+    void append(const String& key, int value);
+    void append(const String& key, Blob*, const String& filename = String());
     String decode(const CString& data) const;
 
     PassRefPtr<EncodedFormData> encodeFormData(EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);

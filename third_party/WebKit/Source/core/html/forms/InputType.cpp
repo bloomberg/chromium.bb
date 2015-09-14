@@ -169,7 +169,7 @@ bool InputType::isFormDataAppendable() const
 
 void InputType::appendToFormData(FormData& formData, bool) const
 {
-    formData.appendData(element().name(), element().value());
+    formData.append(element().name(), element().value());
 }
 
 String InputType::resultForDialogSubmit() const

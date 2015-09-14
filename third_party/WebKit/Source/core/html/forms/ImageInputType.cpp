@@ -70,18 +70,18 @@ void ImageInputType::appendToFormData(FormData& formData, bool) const
         return;
     const AtomicString& name = element().name();
     if (name.isEmpty()) {
-        formData.appendData("x", m_clickLocation.x());
-        formData.appendData("y", m_clickLocation.y());
+        formData.append("x", m_clickLocation.x());
+        formData.append("y", m_clickLocation.y());
         return;
     }
 
     DEFINE_STATIC_LOCAL(String, dotXString, (".x"));
     DEFINE_STATIC_LOCAL(String, dotYString, (".y"));
-    formData.appendData(name + dotXString, m_clickLocation.x());
-    formData.appendData(name + dotYString, m_clickLocation.y());
+    formData.append(name + dotXString, m_clickLocation.x());
+    formData.append(name + dotYString, m_clickLocation.y());
 
     if (!element().value().isEmpty())
-        formData.appendData(name, element().value());
+        formData.append(name, element().value());
 }
 
 String ImageInputType::resultForDialogSubmit() const

@@ -100,7 +100,7 @@ void HiddenInputType::setValue(const String& sanitizedValue, bool, TextFieldEven
 void HiddenInputType::appendToFormData(FormData& formData, bool isMultipartForm) const
 {
     if (equalIgnoringCase(element().name(), "_charset_")) {
-        formData.appendData(element().name(), String(formData.encoding().name()));
+        formData.append(element().name(), String(formData.encoding().name()));
         return;
     }
     InputType::appendToFormData(formData, isMultipartForm);

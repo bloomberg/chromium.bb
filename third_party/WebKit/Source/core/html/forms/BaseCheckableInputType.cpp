@@ -55,7 +55,7 @@ void BaseCheckableInputType::restoreFormControlState(const FormControlState& sta
 void BaseCheckableInputType::appendToFormData(FormData& formData, bool) const
 {
     if (element().checked())
-        formData.appendData(element().name(), element().value());
+        formData.append(element().name(), element().value());
 }
 
 void BaseCheckableInputType::handleKeydownEvent(KeyboardEvent* event)

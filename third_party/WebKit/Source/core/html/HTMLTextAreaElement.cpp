@@ -213,11 +213,11 @@ void HTMLTextAreaElement::appendToFormData(FormData& formData, bool)
     document().updateLayout();
 
     const String& text = (m_wrap == HardWrap) ? valueWithHardLineBreaks() : value();
-    formData.appendData(name(), text);
+    formData.append(name(), text);
 
     const AtomicString& dirnameAttrValue = fastGetAttribute(dirnameAttr);
     if (!dirnameAttrValue.isNull())
-        formData.appendData(dirnameAttrValue, directionForFormData());
+        formData.append(dirnameAttrValue, directionForFormData());
 }
 
 void HTMLTextAreaElement::resetImpl()

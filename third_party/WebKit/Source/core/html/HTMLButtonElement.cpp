@@ -177,7 +177,7 @@ void HTMLButtonElement::setActivatedSubmit(bool flag)
 void HTMLButtonElement::appendToFormData(FormData& formData, bool)
 {
     if (m_type == SUBMIT && !name().isEmpty() && m_isActivatedSubmit)
-        formData.appendData(name(), value());
+        formData.append(name(), value());
 }
 
 void HTMLButtonElement::accessKeyAction(bool sendMouseEvents)
