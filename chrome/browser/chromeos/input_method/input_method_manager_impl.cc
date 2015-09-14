@@ -1092,10 +1092,18 @@ scoped_refptr<InputMethodManager::State> InputMethodManagerImpl::CreateNewState(
     Profile* profile) {
   StateImpl* new_state = new StateImpl(this, profile);
 
-  // Active IM should be set to owner's default.
+  // Active IM should be set to owner/user's default.
   PrefService* prefs = g_browser_process->local_state();
-  const std::string initial_input_method_id =
-      prefs->GetString(chromeos::language_prefs::kPreferredKeyboardLayout);
+  PrefService* user_prefs = profile ? profile->GetPrefs() : nullptr;
+  std::string initial_input_method_id;
+  if (user_prefs) {
+    initial_input_method_id =
+        user_prefs->GetString(prefs::kLanguageCurrentInputMethod);
+  }
+  if (initial_input_method_id.empty()) {
+    initial_input_method_id =
+        prefs->GetString(chromeos::language_prefs::kPreferredKeyboardLayout);
+  }
 
   const InputMethodDescriptor* descriptor =
       GetInputMethodUtil()->GetInputMethodDescriptorFromId(
