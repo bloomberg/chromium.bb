@@ -12,4 +12,5 @@ plugin processes that can support multiple types of sandboxed content, such as
 HTML, Pepper, or NaCl.
 
 Local Modifications:
-None.
+This library has been forked from the Mojo repository and will be moved out of
+third_party soon.
