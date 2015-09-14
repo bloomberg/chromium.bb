@@ -72,17 +72,6 @@
 
 namespace blink {
 
-// TODO(nhiroki): Remove after two-sided patches land (http://crbug.com/523904)
-class HandleImpl : public WebServiceWorkerRegistration::Handle {
-public:
-    explicit HandleImpl(WebPassOwnPtr<WebServiceWorkerRegistration> registration)
-        : m_registration(registration.release()) { ASSERT(m_registration); }
-    virtual WebServiceWorkerRegistration* registration() { return m_registration.get(); }
-
-private:
-    OwnPtr<WebServiceWorkerRegistration> m_registration;
-};
-
 PassOwnPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
 {
     return adoptPtr(new ServiceWorkerGlobalScopeProxy(embeddedWorker, document, client));
@@ -90,11 +79,6 @@ PassOwnPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 {
-}
-
-WebServiceWorkerRegistration::Handle* ServiceWorkerGlobalScopeProxy::createHandle(WebPassOwnPtr<WebServiceWorkerRegistration> registration)
-{
-    return new HandleImpl(registration);
 }
 
 void ServiceWorkerGlobalScopeProxy::setRegistration(WebServiceWorkerRegistration::Handle* handle)

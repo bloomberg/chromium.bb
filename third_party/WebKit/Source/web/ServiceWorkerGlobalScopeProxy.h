@@ -71,7 +71,6 @@ public:
     ~ServiceWorkerGlobalScopeProxy() override;
 
     // WebServiceWorkerContextProxy overrides:
-    WebServiceWorkerRegistration::Handle* createHandle(WebPassOwnPtr<WebServiceWorkerRegistration>) override;
     void setRegistration(WebServiceWorkerRegistration::Handle*) override;
     void dispatchActivateEvent(int) override;
     void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) override;

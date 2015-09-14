@@ -52,12 +52,10 @@ class WebServiceWorkerContextProxy {
 public:
     virtual ~WebServiceWorkerContextProxy() { }
 
-    // TODO(nhiroki): Remove after two-sided patches land.
-    // (http://crbug.com/523904).
-    void setRegistration(WebServiceWorkerRegistration* registration) { setRegistration(createHandle(adoptWebPtr(registration))); }
-    virtual WebServiceWorkerRegistration::Handle* createHandle(WebPassOwnPtr<WebServiceWorkerRegistration>) = 0;
-
+    // TODO(nhiroki): This should receive WebPassOwnPtr to clarify ownership
+    // transfer.
     virtual void setRegistration(WebServiceWorkerRegistration::Handle*) = 0;
+
     virtual void dispatchActivateEvent(int eventID) = 0;
     // FIXME: This needs to pass the active service worker info.
     virtual void dispatchInstallEvent(int installEventID) = 0;

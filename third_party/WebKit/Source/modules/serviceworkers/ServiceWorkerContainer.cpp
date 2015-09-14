@@ -58,29 +58,11 @@
 
 namespace blink {
 
-// TODO(nhiroki): Remove after two-sided patches land (http://crbug.com/523904)
-class HandleImpl : public WebServiceWorkerRegistration::Handle {
-public:
-    explicit HandleImpl(WebPassOwnPtr<WebServiceWorkerRegistration> registration)
-        : m_registration(registration.release()) { }
-    explicit HandleImpl(PassOwnPtr<WebServiceWorkerRegistration> registration)
-        : m_registration(registration) { }
-    virtual WebServiceWorkerRegistration* registration() { return m_registration.get(); }
-
-private:
-    OwnPtr<WebServiceWorkerRegistration> m_registration;
-};
-
 class RegistrationCallback : public WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks {
 public:
     explicit RegistrationCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
     ~RegistrationCallback() override { }
-
-    WebPassOwnPtr<WebServiceWorkerRegistration::Handle> createHandle(WebPassOwnPtr<WebServiceWorkerRegistration> registration) override
-    {
-        return adoptWebPtr(new HandleImpl(registration));
-    }
 
     void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
     {
@@ -106,12 +88,6 @@ public:
     explicit GetRegistrationCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
     ~GetRegistrationCallback() override { }
-
-    WebPassOwnPtr<WebServiceWorkerRegistration::Handle> createHandle(WebPassOwnPtr<WebServiceWorkerRegistration> webPassRegistration) override
-    {
-        OwnPtr<WebServiceWorkerRegistration> registration = webPassRegistration.release();
-        return adoptWebPtr(registration ? new HandleImpl(registration.release()) : nullptr);
-    }
 
     void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> webPassHandle) override
     {
@@ -144,17 +120,6 @@ public:
         : m_resolver(resolver) { }
     ~GetRegistrationsCallback() override { }
 
-    WebPassOwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>> createHandles(WebPassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webPassRegistrations) override
-    {
-        OwnPtr<WebVector<WebServiceWorkerRegistration*>> registrations = webPassRegistrations.release();
-        WebVector<WebServiceWorkerRegistration::Handle*>* handles(new WebVector<WebServiceWorkerRegistration::Handle*>(registrations->size()));
-        for (size_t i = 0; i < registrations->size(); ++i) {
-            WebServiceWorkerRegistration* registration = (*registrations)[i];
-            (*handles)[i] = new HandleImpl(adoptWebPtr(registration));
-        }
-        return adoptWebPtr(handles);
-    }
-
     void onSuccess(WebPassOwnPtr<WebVector<WebServiceWorkerRegistration::Handle*>> webPassRegistrations) override
     {
         Vector<OwnPtr<WebServiceWorkerRegistration::Handle>> handles;
@@ -185,11 +150,6 @@ public:
     explicit GetRegistrationForReadyCallback(ReadyProperty* ready)
         : m_ready(ready) { }
     ~GetRegistrationForReadyCallback() override { }
-
-    WebPassOwnPtr<WebServiceWorkerRegistration::Handle> createHandle(WebPassOwnPtr<WebServiceWorkerRegistration> registration) override
-    {
-        return adoptWebPtr(new HandleImpl(registration));
-    }
 
     void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
     {
