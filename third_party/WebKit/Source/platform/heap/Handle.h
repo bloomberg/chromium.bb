@@ -1155,20 +1155,18 @@ public:
         m_keepAlive.clear();
     }
 
-    typedef OwnPtr<Persistent<Self>> (SelfKeepAlive::*UnspecifiedBoolType);
+    typedef Persistent<Self> (SelfKeepAlive::*UnspecifiedBoolType);
     operator UnspecifiedBoolType() const { return m_keepAlive ? &SelfKeepAlive::m_keepAlive : 0; }
 
 private:
     void assign(Self* self)
     {
-        ASSERT(!m_keepAlive || m_keepAlive->get() == self);
-        if (!m_keepAlive)
-            m_keepAlive = adoptPtr(new Persistent<Self>);
-        *m_keepAlive = self;
+        ASSERT(!m_keepAlive || m_keepAlive.get() == self);
+        m_keepAlive = self;
     }
 
     GC_PLUGIN_IGNORE("420515")
-    OwnPtr<Persistent<Self>> m_keepAlive;
+    Persistent<Self> m_keepAlive;
 };
 
 template<typename T>
