@@ -49,7 +49,7 @@ var test = function()
     ];
 
     // Reset filter to accept all records.
-    InspectorTest.timelineModel()._recordFilter = new WebInspector.TimelineModel.Filter();
+    InspectorTest.timelineModel()._eventFilter = new WebInspector.TimelineModel.Filter();
     InspectorTest.timelineModel().setEventsForTest(testData);
 
     InspectorTest.addResult("DFS preorder:");

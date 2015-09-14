@@ -39,7 +39,7 @@ function test()
             // Filter out InjectedScript function call because they happen out of sync.
             if (!presentationRecord.coalesced()
                 && record.type() !== "GCEvent"
-                && (record.type() !== "FunctionCall" || record.data().scriptName)) {
+                && (record.type() !== "FunctionCall" || record.traceEvent().args["data"].scriptName)) {
                 InspectorTest.addResult(prefix + record.type());
                 childPrefix = childPrefix + "    ";
             }
