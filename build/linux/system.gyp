@@ -571,27 +571,6 @@
         },
       ],
     }],
-    ['ozone_platform_gbm==1', {
-      'targets': [
-        {
-          'target_name': 'gbm',
-          'type': 'none',
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags gbm)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other gbm)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l gbm)',
-            ],
-          },
-        },
-      ],
-    }],
     ['ozone_platform_drm==1 or ozone_platform_gbm==1', {
       'targets': [
         {

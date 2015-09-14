@@ -348,6 +348,7 @@ v8.log
 /third_party/lss
 /third_party/mesa/src
 /third_party/mingw-w64
+/third_party/minigbm/src
 /third_party/mkl
 /third_party/mocha
 /third_party/mockito/src

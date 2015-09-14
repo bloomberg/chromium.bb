@@ -162,10 +162,6 @@ if (ozone_platform_drm) {
 }
 
 if (ozone_platform_gbm) {
-  pkg_config("libgbm") {
-    packages = [ "gbm" ]
-  }
-
   source_set("gbm") {
     sources = [
       "common/client_native_pixmap_factory_gbm.cc",
@@ -190,14 +186,12 @@ if (ozone_platform_gbm) {
       ":drm_common",
       "//base",
       "//skia",
+      "//third_party/minigbm",
       "//ui/events/ozone:events_ozone_evdev",
       "//ui/events/ozone:events_ozone_layout",
     ]
 
-    public_configs = [
-      ":libgbm",
-      "//third_party/khronos:khronos_headers",
-    ]
+    public_configs = [ "//third_party/khronos:khronos_headers" ]
 
     defines = []
 

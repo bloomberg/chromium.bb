@@ -413,6 +413,10 @@ deps_os = {
     # ANGLE uses dEQP for GPU testing
     'src/third_party/deqp/src':
      Var('deqp_url') + '@' + Var('deqp_revision'),
+
+    # Graphics buffer allocator for Chrome OS.
+    'src/third_party/minigbm/src':
+     Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + 'f9d2ab79a15a1bb6a1307f3b608964c81c27791b',
   },
   'android': {
     'src/third_party/android_protobuf/src':
