@@ -13,7 +13,6 @@ the Polymer project:
 -polymer core + externs
 -Iron elements and their dependencies
 -Paper elements and their dependencies
--more-routing
 See bower.json for a full list of components.
 
 The version can be found in header of polymer/polymer.js. The license can
