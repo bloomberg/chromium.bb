@@ -8,6 +8,7 @@ executable("tls_edit") {
   ]
   deps = [
     "//build/config/nacl:nacl_base",
+    "//build/config/sanitizers:deps",
     "//native_client/src/shared/platform:platform",
     "//native_client/src/trusted/validator_ragel:rdfa_validator",
   ]
