@@ -1189,10 +1189,12 @@ FileTransferController.prototype.canPasteOrDrop_ =
 /**
  * Execute paste command.
  *
+ * @param {DirectoryEntry|FakeEntry} destinationEntry
  * @return {boolean}  Returns true, the paste is success. Otherwise, returns
  *     false.
  */
-FileTransferController.prototype.queryPasteCommandEnabled = function() {
+FileTransferController.prototype.queryPasteCommandEnabled = function(
+    destinationEntry) {
   if (!this.isDocumentWideEvent_()) {
     return false;
   }
@@ -1201,8 +1203,7 @@ FileTransferController.prototype.queryPasteCommandEnabled = function() {
   // should be used.
   var result;
   this.simulateCommand_('paste', function(event) {
-    result = this.canPasteOrDrop_(event.clipboardData,
-                                  this.directoryModel_.getCurrentDirEntry());
+    result = this.canPasteOrDrop_(event.clipboardData, destinationEntry);
   }.bind(this));
   return result;
 };

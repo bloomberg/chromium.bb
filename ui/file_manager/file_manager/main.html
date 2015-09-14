@@ -157,8 +157,10 @@
 
     <cr-menu id="directory-tree-context-menu" class="chrome-menu" >
       <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
-      <cr-menu-item command="#copy"></cr-menu-item>
-      <cr-menu-item command="#cut"></cr-menu-item>
+      <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
+      <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
+      <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
+      <hr visibleif="full-page">
       <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"></cr-menu-item>
     </cr-menu>
 

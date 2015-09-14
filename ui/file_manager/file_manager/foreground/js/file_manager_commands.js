@@ -789,8 +789,11 @@ CommandHandler.COMMANDS_['paste'] = /** @type {Command} */ ({
    */
   canExecute: function(event, fileManager) {
     var fileTransferController = fileManager.fileTransferController;
-    event.canExecute = (fileTransferController &&
-        fileTransferController.queryPasteCommandEnabled());
+
+    event.canExecute = !!fileTransferController &&
+        fileTransferController.queryPasteCommandEnabled(
+            fileManager.directoryModel.getCurrentDirEntry());
+
     // Hide this command if only one folder is selected.
     event.command.setHidden(!!CommandUtil.getOnlyOneSelectedDirectory(
         fileManager.getSelection()));
@@ -807,15 +810,18 @@ CommandHandler.COMMANDS_['paste-into-folder'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    var selection = fileManager.getSelection();
-    var dest = CommandUtil.getOnlyOneSelectedDirectory(selection);
-    if (!dest) return;
+    var entries = CommandUtil.getCommandEntries(event.target);
+    if (entries.length !== 1 || !entries[0].isDirectory ||
+        !CommandUtil.shouldShowMenuItemForEntry(
+            fileManager.volumeManager, entries[0])) {
+      return;
+    }
 
     // This handler tweaks the Event object for 'paste' event so that
     // the FileTransferController can distinguish this 'paste-into-folder'
     // command and know the destination directory.
     var handler = function(inEvent) {
-      inEvent.destDirectory = dest;
+      inEvent.destDirectory = entries[0];
     };
     fileManager.document.addEventListener('paste', handler, true);
     fileManager.document.execCommand('paste');
@@ -826,12 +832,22 @@ CommandHandler.COMMANDS_['paste-into-folder'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
+    var entries = CommandUtil.getCommandEntries(event.target);
+
+    // Show this item only when one directory is selected.
+    if (entries.length !== 1 || !entries[0].isDirectory ||
+        !CommandUtil.shouldShowMenuItemForEntry(
+            fileManager.volumeManager, entries[0])) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
     var fileTransferController = fileManager.fileTransferController;
-    event.canExecute = (fileTransferController &&
-        fileTransferController.queryPasteCommandEnabled());
-    // Hide this command unless only one folder is selected.
-    event.command.setHidden(!CommandUtil.getOnlyOneSelectedDirectory(
-        fileManager.getSelection()));
+    var directoryEntry = /** @type {DirectoryEntry|FakeEntry} */ (entries[0]);
+    event.canExecute = !!fileTransferController &&
+        fileTransferController.queryPasteCommandEnabled(directoryEntry);
+    event.command.setHidden(false);
   }
 });
 
