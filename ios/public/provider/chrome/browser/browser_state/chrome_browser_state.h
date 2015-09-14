@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "ios/web/public/browser_state.h"
 
-class HostContentSettingsMap;
 class PrefService;
 
 namespace base {
@@ -60,9 +59,6 @@ class ChromeBrowserState : public web::BrowserState {
 
   // Retrieves a pointer to the PrefService that manages the preferences.
   virtual PrefService* GetPrefs() = 0;
-
-  // Returns the Hostname <-> Content settings map for the ChromeBrowserState.
-  virtual HostContentSettingsMap* GetHostContentSettingsMap() = 0;
 
  protected:
   ChromeBrowserState() {}

@@ -20,6 +20,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
+#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
@@ -121,12 +122,14 @@ bool SigninClientImpl::AreSigninCookiesAllowed() {
 
 void SigninClientImpl::AddContentSettingsObserver(
     content_settings::Observer* observer) {
-  browser_state_->GetHostContentSettingsMap()->AddObserver(observer);
+  ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state_)
+      ->AddObserver(observer);
 }
 
 void SigninClientImpl::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
-  browser_state_->GetHostContentSettingsMap()->RemoveObserver(observer);
+  ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state_)
+      ->RemoveObserver(observer);
 }
 
 scoped_ptr<SigninClient::CookieChangedSubscription>

@@ -179,6 +179,8 @@
         'browser/component_updater/ios_component_updater_configurator.h',
         'browser/content_settings/cookie_settings_factory.cc',
         'browser/content_settings/cookie_settings_factory.h',
+        'browser/content_settings/host_content_settings_map_factory.cc',
+        'browser/content_settings/host_content_settings_map_factory.h',
         'browser/crash_loop_detection_util.h',
         'browser/crash_loop_detection_util.mm',
         'browser/crash_report/breakpad_helper.h',
