@@ -15,6 +15,7 @@ from __future__ import print_function
 
 import ConfigParser
 import json
+import operator
 import os
 import shutil
 import socket
@@ -236,6 +237,12 @@ def _FilterForUnsignedImageArchives(artifacts):
 def _FilterForImageType(artifacts, image_type):
   """Return only images for given |image_type|."""
   return [i for i in artifacts if i.image_type == image_type]
+
+
+def _FilterForValidImageType(artifacts):
+  """Return only images with image types that paygen supports."""
+  v = gspaths.ChromeosReleases.UNSIGNED_IMAGE_TYPES
+  return reduce(operator.add, [_FilterForImageType(artifacts, x) for x in v])
 
 
 def _FilterForTest(artifacts):
@@ -506,6 +513,9 @@ class _PaygenBuild(object):
 
     # Unparsable URIs will result in Nones; filter them out.
     images = [i for i in images if i]
+
+    # We only care about recovery and test image types, ignore all others.
+    images = _FilterForValidImageType(images)
 
     self._ValidateExpectedBuildImages(build, images)
 

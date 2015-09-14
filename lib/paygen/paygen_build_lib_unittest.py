@@ -1630,7 +1630,7 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
                                  image_channel='nplusone-channel',
                                  image_version='1.2.4', uri=uri_npo,
                                  **base_image_params)
-    expected_result = [expected_basic, expected_premp, expected_npo]
+    expected_result = [expected_npo, expected_basic, expected_premp]
 
     self._TestDiscoverArtifacts(
         os.path.join(uri_base, 'chromeos_*_foo-board_*_*_*.bin'),
