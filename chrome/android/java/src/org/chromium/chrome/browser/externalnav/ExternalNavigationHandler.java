@@ -254,6 +254,7 @@ public class ExternalNavigationHandler {
         boolean canResolveActivity = false;
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/527415
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
         try {
             canResolveActivity = mDelegate.canResolveActivity(intent);
         } finally {
