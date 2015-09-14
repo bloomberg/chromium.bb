@@ -116,6 +116,7 @@ CORE_EXPORT VisiblePositionInComposedTree previousPositionOf(const VisiblePositi
 // words
 CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition&, EWordSide = RightWordIfOnBoundary);
 CORE_EXPORT VisiblePosition endOfWord(const VisiblePosition&, EWordSide = RightWordIfOnBoundary);
+CORE_EXPORT VisiblePositionInComposedTree endOfWord(const VisiblePositionInComposedTree&, EWordSide = RightWordIfOnBoundary);
 VisiblePosition previousWordPosition(const VisiblePosition&);
 VisiblePosition nextWordPosition(const VisiblePosition&);
 VisiblePosition rightWordPosition(const VisiblePosition&, bool skipsSpaceWhenMovingRight);

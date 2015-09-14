@@ -856,9 +856,10 @@ static unsigned endWordBoundary(const UChar* characters, unsigned length, unsign
     return findWordEndBoundary(characters, length, offset);
 }
 
-VisiblePosition endOfWord(const VisiblePosition& c, EWordSide side)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> endOfWordAlgorithm(const VisiblePositionTemplate<Strategy>& c, EWordSide side)
 {
-    VisiblePosition p = c;
+    VisiblePositionTemplate<Strategy> p = c;
     if (side == LeftWordIfOnBoundary) {
         if (isStartOfParagraph(c))
             return c;
@@ -871,6 +872,16 @@ VisiblePosition endOfWord(const VisiblePosition& c, EWordSide side)
     }
 
     return nextBoundary(p, endWordBoundary);
+}
+
+VisiblePosition endOfWord(const VisiblePosition& c, EWordSide side)
+{
+    return endOfWordAlgorithm<EditingStrategy>(c, side);
+}
+
+VisiblePositionInComposedTree endOfWord(const VisiblePositionInComposedTree& c, EWordSide side)
+{
+    return endOfWordAlgorithm<EditingInComposedTreeStrategy>(c, side);
 }
 
 static unsigned previousWordPositionBoundary(const UChar* characters, unsigned length, unsigned offset, BoundarySearchContextAvailability mayHaveMoreContext, bool& needMoreContext)
