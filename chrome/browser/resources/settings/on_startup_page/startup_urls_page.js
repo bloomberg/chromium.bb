@@ -29,50 +29,6 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * Route for the page.
-     */
-    route: {
-      type: String,
-      value: ''
-    },
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: true,
-      readOnly: true
-    },
-
-    /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'startup-urls',
-      readOnly: true
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: loadTimeData.getString('onStartupSetPages'),
-      readOnly: true
-    },
-
-    /**
-     * Name of the 'core-icon' to be shown in the settings-page-header.
-     */
-    icon: {
-      type: String,
-      value: 'image:brightness-1',
-      readOnly: true
-    },
-
     newUrl: {
       type: String,
     },
@@ -82,10 +38,6 @@ Polymer({
       type: Array,
       value: function() { return []; }
     },
-  },
-
-  attached: function() {
-    this.savedUrlList = this.prefs.session.startup_urls.value.slice();
   },
 
   /** @private */

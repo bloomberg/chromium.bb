@@ -30,49 +30,10 @@ Polymer({
     },
 
     /**
-     * Route for the page.
+     * The current active route.
      */
-    route: String,
-
-    /**
-     * Whether the page is a subpage.
-     */
-    subpage: {
-      type: Boolean,
-      value: false,
-      readOnly: true,
-    },
-
-    /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'on-startup',
-      readOnly: true,
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() {
-        return loadTimeData.getString('onStartup');
-      },
-    },
-
-    /**
-     * Name of the 'iron-icon' to show.
-     */
-    icon: {
-      type: String,
-      value: 'image:brightness-1',
-      readOnly: true,
-    },
-
-    inSubpage: {
-      type: Boolean,
+    currentRoute: {
+      type: Object,
       notify: true,
     },
 
@@ -85,10 +46,6 @@ Polymer({
     'prefValueChanged(prefValue)',
   ],
 
-  attached: function() {
-    this.prefValue = this.prefs.session.restore_on_startup.value;
-  },
-
   prefValueChanged: function(prefValue) {
     this.set('prefs.session.restore_on_startup.value', parseInt(prefValue));
   },
@@ -100,6 +57,6 @@ Polymer({
 
   /** @private */
   onSetPagesTap_: function() {
-    this.$.pages.navigateTo('startup-urls');
+    this.$.pages.setSubpageChain(['startup-urls']);
   },
 });

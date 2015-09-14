@@ -91,6 +91,13 @@ Polymer({
       subpageTitles: [],
     },
     {
+      url: '/startup',
+      page: 'basic',
+      section: 'on-startup',
+      subpage: ['startup-urls'],
+      subpageTitles: ['onStartupSetPages'],
+    },
+    {
       url: '/searchEngines',
       page: 'basic',
       section: 'search',

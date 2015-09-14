@@ -1,16 +1,19 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 
 <dom-module id="cr-settings-on-startup-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <cr-settings-animated-pages id="pages" in-subpage="{{inSubpage}}">
-      <neon-animatable id="main">
+    <cr-settings-animated-pages id="pages" current-route="{{currentRoute}}"
+        section="on-startup">
+      <neon-animatable id="">
         <div id="locationLabel" i18n-content="onStartup"></div>
         <div>
           <paper-radio-group selected="{{prefValue}}">
