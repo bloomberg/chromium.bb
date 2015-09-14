@@ -58,7 +58,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host_impl.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/wake_lock/wake_lock_service_context.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/generic_handler.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -413,8 +412,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #if defined(ENABLE_BROWSER_CDMS)
   media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
 #endif
-
-  wake_lock_service_context_.reset(new WakeLockServiceContext(this));
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -2060,10 +2057,6 @@ RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
 
 GeolocationServiceContext* WebContentsImpl::GetGeolocationServiceContext() {
   return geolocation_service_context_.get();
-}
-
-WakeLockServiceContext* WebContentsImpl::GetWakeLockServiceContext() {
-  return wake_lock_service_context_.get();
 }
 
 void WebContentsImpl::OnShowValidationMessage(

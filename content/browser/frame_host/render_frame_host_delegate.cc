@@ -66,10 +66,6 @@ RenderFrameHostDelegate::GetGeolocationServiceContext() {
   return NULL;
 }
 
-WakeLockServiceContext* RenderFrameHostDelegate::GetWakeLockServiceContext() {
-  return nullptr;
-}
-
 bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
     RenderFrameHost* target_rfh,
     SiteInstance* source_site_instance) const {

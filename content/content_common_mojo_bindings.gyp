@@ -20,9 +20,8 @@
           'common/process_control.mojom',
           'common/render_frame_setup.mojom',
           'common/service_port_service.mojom',
-          'common/service_worker/embedded_worker_setup.mojom',
           'common/vr_service.mojom',
-          'common/wake_lock_service.mojom',
+          'common/service_worker/embedded_worker_setup.mojom',
 
           # NOTE: Sources duplicated in
           # //content/public/common/BUILD.gn:mojo_bindings.

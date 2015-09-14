@@ -63,7 +63,6 @@ class WebMediaPlayer;
 class WebPresentationClient;
 class WebPushClient;
 class WebSecurityOrigin;
-class WebWakeLockClient;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -115,7 +114,6 @@ class RenderWidget;
 class RenderWidgetFullscreenPepper;
 class ScreenOrientationDispatcher;
 class UserMediaClientImpl;
-class WakeLockDispatcher;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FrameReplicationState;
@@ -512,7 +510,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                    unsigned long long requested_size,
                                    blink::WebStorageQuotaCallbacks callbacks);
   virtual void willOpenWebSocket(blink::WebSocketHandle* handle);
-  virtual blink::WebWakeLockClient* wakeLockClient();
   virtual blink::WebGeolocationClient* geolocationClient();
   virtual blink::WebPushClient* pushClient();
   virtual blink::WebPresentationClient* presentationClient();
@@ -992,8 +989,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // The devtools agent for this frame; only created for main frame and
   // local roots.
   DevToolsAgent* devtools_agent_;
-
-  WakeLockDispatcher* wakelock_dispatcher_;
 
   // The geolocation dispatcher attached to this frame, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;

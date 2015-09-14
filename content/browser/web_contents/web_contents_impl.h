@@ -66,7 +66,6 @@ class SavePackage;
 class ScreenOrientationDispatcherHost;
 class SiteInstance;
 class TestWebContents;
-class WakeLockServiceContext;
 class WebContentsAudioMuter;
 class WebContentsDelegate;
 class WebContentsImpl;
@@ -422,7 +421,6 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
   GeolocationServiceContext* GetGeolocationServiceContext() override;
-  WakeLockServiceContext* GetWakeLockServiceContext() override;
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode() override;
   bool ShouldRouteMessageEvent(
@@ -1284,8 +1282,6 @@ class CONTENT_EXPORT WebContentsImpl
   bool last_dialog_suppressed_;
 
   scoped_ptr<GeolocationServiceContext> geolocation_service_context_;
-
-  scoped_ptr<WakeLockServiceContext> wake_lock_service_context_;
 
   scoped_ptr<ScreenOrientationDispatcherHost>
       screen_orientation_dispatcher_host_;
