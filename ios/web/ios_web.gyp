@@ -130,6 +130,8 @@
         'net/cookie_notification_bridge.mm',
         'net/crw_cert_policy_cache.h',
         'net/crw_cert_policy_cache.mm',
+        'net/crw_cert_verification_controller.h',
+        'net/crw_cert_verification_controller.mm',
         'net/crw_request_tracker_delegate.h',
         'net/crw_url_verifying_protocol_handler.h',
         'net/crw_url_verifying_protocol_handler.mm',

@@ -19,6 +19,10 @@
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/navigation/web_load_params.h"
+#import "ios/web/net/crw_cert_verification_controller.h"
+#include "ios/web/public/cert_store.h"
+#include "ios/web/public/navigation_item.h"
+#include "ios/web/public/ssl_status.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
@@ -36,18 +40,12 @@
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
-#import "ios/web/webui/crw_web_ui_manager.h"
-#import "net/base/mac/url_conversions.h"
-#include "url/url_constants.h"
-
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-#include "ios/web/public/cert_store.h"
-#include "ios/web/public/navigation_item.h"
-#include "ios/web/public/ssl_status.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
+#import "ios/web/webui/crw_web_ui_manager.h"
 #include "net/cert/x509_certificate.h"
+#import "net/base/mac/url_conversions.h"
 #include "net/ssl/ssl_info.h"
-#endif
+#include "url/url_constants.h"
 
 namespace {
 // Extracts Referer value from WKNavigationAction request header.
@@ -135,6 +133,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // CRWWebUIManager object for loading WebUI pages.
   base::scoped_nsobject<CRWWebUIManager> _webUIManager;
+
+  // Controller used for certs verification to help with blocking requests with
+  // bad SSL cert, presenting SSL interstitials and determining SSL status for
+  // Navigation Items.
+  base::scoped_nsobject<CRWCertVerificationController>
+      _certVerificationController;
 
   // Whether the pending navigation has been directly cancelled in
   // |decidePolicyForNavigationAction| or |decidePolicyForNavigationResponse|.
@@ -293,7 +297,14 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 #pragma mark CRWWebController public methods
 
 - (instancetype)initWithWebState:(scoped_ptr<web::WebStateImpl>)webState {
-  return [super initWithWebState:webState.Pass()];
+  DCHECK(webState);
+  web::BrowserState* browserState = webState->GetBrowserState();
+  self = [super initWithWebState:webState.Pass()];
+  if (self) {
+    _certVerificationController.reset([[CRWCertVerificationController alloc]
+        initWithBrowserState:browserState]);
+  }
+  return self;
 }
 
 - (BOOL)keyboardDisplayRequiresUserAction {
@@ -333,6 +344,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // TODO(eugenebut): implement dialogs/windows suppression using
   // WKNavigationDelegate methods where possible.
   [super setPageDialogOpenPolicy:policy];
+}
+
+- (void)close {
+  [_certVerificationController shutDown];
+  [super close];
 }
 
 #pragma mark -
@@ -1344,8 +1360,22 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                     completionHandler:
         (void (^)(NSURLSessionAuthChallengeDisposition disposition,
                   NSURLCredential *credential))completionHandler {
-  NOTIMPLEMENTED();
-  completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+  if (![challenge.protectionSpace.authenticationMethod
+          isEqual:NSURLAuthenticationMethodServerTrust]) {
+    completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+    return;
+  }
+
+  SecTrustRef trust = challenge.protectionSpace.serverTrust;
+  scoped_refptr<net::X509Certificate> cert = web::CreateCertFromTrust(trust);
+  [_certVerificationController
+      decidePolicyForCert:cert
+                     host:challenge.protectionSpace.host
+        completionHandler:^(web::CertAcceptPolicy policy,
+                            net::CertStatus status) {
+          completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace,
+                            nil);
+        }];
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
