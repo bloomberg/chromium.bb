@@ -25,6 +25,8 @@ enum DriveSyncErrorType {
   DRIVE_SYNC_ERROR_DELETE_WITHOUT_PERMISSION,
   // Google Drive is temporary unavailable.
   DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
+  // There is no server space to sync a file.
+  DRIVE_SYNC_ERROR_NO_SERVER_SPACE,
   // Errors other than above ones. No fallback is provided for the error.
   DRIVE_SYNC_ERROR_MISC,
 };

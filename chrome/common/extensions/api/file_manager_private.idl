@@ -122,6 +122,8 @@ enum DriveSyncErrorType {
   delete_without_permission,
   // Google Drive is temporarily unavailable.
   service_unavailable,
+  // There is no server space to sync a file.
+  no_server_space,
   // Miscellaneous errors other than listed above.
   misc
 };

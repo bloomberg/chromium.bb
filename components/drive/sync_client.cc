@@ -442,6 +442,10 @@ void SyncClient::OnTaskComplete(SyncType type,
       operation_delegate_->OnDriveSyncError(
           file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE, local_id);
       break;
+    case FILE_ERROR_NO_SERVER_SPACE:
+      operation_delegate_->OnDriveSyncError(
+          file_system::DRIVE_SYNC_ERROR_NO_SERVER_SPACE, local_id);
+      break;
     default:
       operation_delegate_->OnDriveSyncError(
           file_system::DRIVE_SYNC_ERROR_MISC, local_id);

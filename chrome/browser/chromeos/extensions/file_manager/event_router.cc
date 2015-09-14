@@ -691,6 +691,9 @@ void EventRouter::OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
       event.type =
           file_manager_private::DRIVE_SYNC_ERROR_TYPE_SERVICE_UNAVAILABLE;
       break;
+    case drive::file_system::DRIVE_SYNC_ERROR_NO_SERVER_SPACE:
+      event.type = file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_SERVER_SPACE;
+      break;
     case drive::file_system::DRIVE_SYNC_ERROR_MISC:
       event.type =
           file_manager_private::DRIVE_SYNC_ERROR_TYPE_MISC;

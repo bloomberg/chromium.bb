@@ -588,6 +588,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_SYNC_MISC_ERROR" desc="File Manager status message shown when the drive sync is failed because of miscellaneous errors.">
     Google Drive was unable to sync "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" right now. Google Drive will try again later.
   </message>
+  <message name="IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE" desc="File Manager status message shown when the drive sync is failed because it runs out the space in Google Drive server.">
+    "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" was not uploaded. There is not enough free space in your Google Drive.
+  </message>
   <message name="IDS_FILE_BROWSER_SHARE_ERROR" desc="File Manager error message when sharing a file or a directory on Drive fails because of internet connection problems.">
     Sharing failed. Check your connection and try again later.
   </message>
