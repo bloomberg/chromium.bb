@@ -12,11 +12,9 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/session_types.h"
 
-class Profile;
 class TabRestoreService;
 class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;
@@ -71,7 +69,6 @@ class TabRestoreServiceHelper {
   // |time_factory| and |observer|. Note that |observer| can also be NULL.
   TabRestoreServiceHelper(TabRestoreService* tab_restore_service,
                           Observer* observer,
-                          Profile* profile,
                           sessions::TabRestoreServiceClient* client,
                           TimeFactory* time_factory);
 
@@ -87,12 +84,12 @@ class TabRestoreServiceHelper {
   const Entries& entries() const;
   std::vector<content::WebContents*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
-      chrome::HostDesktopType host_desktop_type);
+      int host_desktop_type);
   Tab* RemoveTabEntryById(SessionID::id_type id);
   std::vector<content::WebContents*> RestoreEntryById(
       TabRestoreServiceDelegate* delegate,
       SessionID::id_type id,
-      chrome::HostDesktopType host_desktop_type,
+      int host_desktop_type,
       WindowOpenDisposition disposition);
 
   // Notifies observers the tabs have changed.
@@ -134,16 +131,16 @@ class TabRestoreServiceHelper {
   // tab. If |delegate| is NULL, this creates a new window for the entry. This
   // returns the TabRestoreServiceDelegate into which the tab was restored.
   // |disposition| will be respected, but if it is UNKNOWN then the tab's
-  // original attributes will be respected instead. If a new browser needs to be
-  // created for this tab, it will be created on the desktop specified by
-  // |host_desktop_type|. If present, |contents| will be populated with the
-  // WebContents of the restored tab.
-  TabRestoreServiceDelegate* RestoreTab(
-      const Tab& tab,
-      TabRestoreServiceDelegate* delegate,
-      chrome::HostDesktopType host_desktop_type,
-      WindowOpenDisposition disposition,
-      content::WebContents** contents);
+  // original attributes will be respected instead. If a new
+  // TabRestoreServiceDelegate needs to be created for this tab,
+  // |host_desktop_type| will be passed to
+  // TabRestoreServiceClient::CreateTabRestoreServiceDelegate(). If present,
+  // |contents| will be populated with the WebContents of the restored tab.
+  TabRestoreServiceDelegate* RestoreTab(const Tab& tab,
+                                        TabRestoreServiceDelegate* delegate,
+                                        int host_desktop_type,
+                                        WindowOpenDisposition disposition,
+                                        content::WebContents** contents);
 
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based
@@ -173,8 +170,6 @@ class TabRestoreServiceHelper {
   TabRestoreService* const tab_restore_service_;
 
   Observer* const observer_;
-
-  Profile* const profile_;
 
   sessions::TabRestoreServiceClient* client_;
 

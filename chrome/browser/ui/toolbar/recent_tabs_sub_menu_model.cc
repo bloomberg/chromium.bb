@@ -15,12 +15,12 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/grit/generated_resources.h"
@@ -293,7 +293,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
   TabRestoreServiceDelegate* delegate =
-      TabRestoreServiceDelegate::FindDelegateForWebContents(
+      BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser_->tab_strip_model()->GetActiveWebContents());
   if (IsTabModelCommandId(command_id)) {
     TabNavigationItems* tab_items = NULL;

@@ -21,12 +21,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -452,7 +452,7 @@ bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
 
   bool is_window = is_window_entry(entries.front());
   TabRestoreServiceDelegate* delegate =
-      TabRestoreServiceDelegate::FindDelegateForWebContents(
+      BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<content::WebContents*> contents =
       tab_restore_service->RestoreMostRecentEntry(delegate, host_desktop_type);
@@ -492,7 +492,7 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
   }
 
   TabRestoreServiceDelegate* delegate =
-      TabRestoreServiceDelegate::FindDelegateForWebContents(
+      BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<content::WebContents*> contents =
       tab_restore_service->RestoreEntryById(delegate,

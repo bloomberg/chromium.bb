@@ -11,7 +11,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_id.h"
@@ -154,12 +153,13 @@ class TabRestoreService : public KeyedService {
 
   // Restores the most recently closed entry. Does nothing if there are no
   // entries to restore. If the most recently restored entry is a tab, it is
-  // added to |delegate|. If a new browser needs to be created for this entry,
-  // it will be created on the desktop specified by |host_desktop_type|. Returns
-  // the WebContents of the restored tab(s).
+  // added to |delegate|. |host_desktop_type| is a value that is opaque to this
+  // class and will be used only to pass back to the embedder via
+  // TabRestoreServiceClient if necessary. Returns the WebContents of the
+  // restored tab(s).
   virtual std::vector<content::WebContents*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
-      chrome::HostDesktopType host_desktop_type) = 0;
+      int host_desktop_type) = 0;
 
   // Removes the Tab with id |id| from the list and returns it; ownership is
   // passed to the caller.
@@ -169,13 +169,14 @@ class TabRestoreService : public KeyedService {
   // this does nothing. If |delegate| is NULL, this creates a new window for the
   // entry. |disposition| is respected, but the attributes (tabstrip index,
   // browser window) of the tab when it was closed will be respected if
-  // disposition is UNKNOWN. If a new browser needs to be created for this
-  // entry, it will be created on the desktop specified by |host_desktop_type|.
-  // Returns the WebContents of the restored tab(s).
+  // disposition is UNKNOWN.  |host_desktop_type| is a value that is opaque to
+  // this class and will be used only to pass back to the embedder via
+  // TabRestoreServiceClient if necessary.  Returns the WebContents of the
+  // restored tab(s).
   virtual std::vector<content::WebContents*> RestoreEntryById(
       TabRestoreServiceDelegate* delegate,
       SessionID::id_type id,
-      chrome::HostDesktopType host_desktop_type,
+      int host_desktop_type,
       WindowOpenDisposition disposition) = 0;
 
   // Loads the tabs and previous session. This does nothing if the tabs

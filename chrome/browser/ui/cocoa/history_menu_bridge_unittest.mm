@@ -30,7 +30,6 @@ class MockTRS : public PersistentTabRestoreService {
  public:
   MockTRS(Profile* profile)
       : PersistentTabRestoreService(
-            profile,
             make_scoped_ptr(new ChromeTabRestoreServiceClient(profile)),
             nullptr) {}
   MOCK_CONST_METHOD0(entries, const TabRestoreService::Entries&());

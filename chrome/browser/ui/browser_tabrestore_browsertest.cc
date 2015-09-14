@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
   bool has_tab_restore_service = !!service;
   ASSERT_TRUE(has_tab_restore_service);
   TabRestoreServiceDelegate* delegate =
-      TabRestoreServiceDelegate::FindDelegateForWebContents(
+      BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   bool has_tab_restore_delegate = !!delegate;
   ASSERT_TRUE(has_tab_restore_delegate);

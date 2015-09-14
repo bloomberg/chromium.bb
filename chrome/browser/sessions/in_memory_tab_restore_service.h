@@ -26,7 +26,6 @@ class InMemoryTabRestoreService : public TabRestoreService {
   // current time. The TabRestoreService does not take ownership of
   // |time_factory|.
   InMemoryTabRestoreService(
-      Profile* profile,
       scoped_ptr<sessions::TabRestoreServiceClient> client,
       TimeFactory* time_factory);
 
@@ -42,12 +41,12 @@ class InMemoryTabRestoreService : public TabRestoreService {
   const Entries& entries() const override;
   std::vector<content::WebContents*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
-      chrome::HostDesktopType host_desktop_type) override;
+      int host_desktop_type) override;
   Tab* RemoveTabEntryById(SessionID::id_type id) override;
   std::vector<content::WebContents*> RestoreEntryById(
       TabRestoreServiceDelegate* delegate,
       SessionID::id_type id,
-      chrome::HostDesktopType host_desktop_type,
+      int host_desktop_type,
       WindowOpenDisposition disposition) override;
   void LoadTabsFromLastSession() override;
   bool IsLoaded() const override;

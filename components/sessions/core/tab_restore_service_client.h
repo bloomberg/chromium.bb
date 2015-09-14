@@ -15,11 +15,18 @@ class CancelableTaskTracker;
 class SequencedWorkerPool;
 }
 
+// TODO(blundell): Remove all references to WebContents from
+// TabRestoreServiceClient and get rid of this. crbug.com/530174
+namespace content {
+class WebContents;
+}
+
 namespace sessions {
 struct SessionWindow;
 }
 
 class GURL;
+class TabRestoreServiceDelegate;
 
 namespace sessions {
 
@@ -35,6 +42,33 @@ typedef base::Callback<void(ScopedVector<SessionWindow>, SessionID::id_type)>
 class TabRestoreServiceClient {
  public:
   virtual ~TabRestoreServiceClient() {}
+
+  // Creates a TabRestoreServiceDelegate instance that is associated with
+  // |host_desktop_type| and |app_name|. May return nullptr (e.g., if the
+  // embedder does not support TabRestoreServiceDelegate functionality).
+  // Note that |host_desktop_type| is opaque to the component; the only values
+  // that will be passed here are those that have been passed *in* to the
+  // component from the embedder via TabRestoreService.
+  virtual TabRestoreServiceDelegate* CreateTabRestoreServiceDelegate(
+      int host_desktop_type,
+      const std::string& app_name) = 0;
+
+  // Returns the TabRestoreServiceDelegate instance that is associated with
+  // |contents|, or null if there is no such instance.
+  // TODO(blundell): Replace the usage of WebContents here with the cross-
+  // platform interface that will abstract it. crbug.com/530174
+  virtual TabRestoreServiceDelegate*
+  FindTabRestoreServiceDelegateForWebContents(
+      const content::WebContents* contents) = 0;
+
+  // Returns the TabRestoreServiceDelegate instance that is associated with
+  // |desired_id| and |host_desktop_type|, or null if there is no such instance.
+  // Note that |host_desktop_type| is opaque to the component; the only values
+  // that will be passed here are those that have been passed *in* to the
+  // component from the embedder via TabRestoreService.
+  virtual TabRestoreServiceDelegate* FindTabRestoreServiceDelegateWithID(
+      SessionID::id_type desired_id,
+      int host_desktop_type) = 0;
 
   // Returns whether a given URL should be tracked for restoring.
   virtual bool ShouldTrackURLForRestore(const GURL& url) = 0;

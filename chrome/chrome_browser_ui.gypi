@@ -77,7 +77,6 @@
       'browser/ui/android/tab_model/tab_model_jni_bridge.h',
       'browser/ui/android/tab_model/tab_model_list.cc',
       'browser/ui/android/tab_model/tab_model_list.h',
-      'browser/ui/android/tab_restore_service_delegate_android.cc',
       'browser/ui/android/website_settings_popup_android.cc',
       'browser/ui/android/website_settings_popup_android.h',
       'browser/ui/android/window_android_helper.cc',

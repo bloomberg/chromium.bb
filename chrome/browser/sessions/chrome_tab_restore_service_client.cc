@@ -18,6 +18,10 @@
 #include "extensions/common/extension_set.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#endif
+
 namespace {
 
 void RecordAppLaunch(Profile* profile, const GURL& url) {
@@ -40,6 +44,47 @@ ChromeTabRestoreServiceClient::ChromeTabRestoreServiceClient(Profile* profile)
     : profile_(profile) {}
 
 ChromeTabRestoreServiceClient::~ChromeTabRestoreServiceClient() {}
+
+TabRestoreServiceDelegate*
+ChromeTabRestoreServiceClient::CreateTabRestoreServiceDelegate(
+    int host_desktop_type,
+    const std::string& app_name) {
+#if defined(OS_ANDROID)
+  // Android does not support TabRestoreServiceDelegate, as tab persistence
+  // is implemented on the Java side.
+  return nullptr;
+#else
+  return BrowserTabRestoreServiceDelegate::Create(
+      profile_, static_cast<chrome::HostDesktopType>(host_desktop_type),
+      app_name);
+#endif
+}
+
+TabRestoreServiceDelegate*
+ChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateForWebContents(
+    const content::WebContents* contents) {
+#if defined(OS_ANDROID)
+  // Android does not support TabRestoreServiceDelegate, as tab persistence
+  // is implemented on the Java side.
+  return nullptr;
+#else
+  return BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(contents);
+#endif
+}
+
+TabRestoreServiceDelegate*
+ChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateWithID(
+    SessionID::id_type desired_id,
+    int host_desktop_type) {
+#if defined(OS_ANDROID)
+  // Android does not support TabRestoreServiceDelegate, as tab persistence
+  // is implemented on the Java side.
+  return nullptr;
+#else
+  return BrowserTabRestoreServiceDelegate::FindDelegateWithID(
+      desired_id, static_cast<chrome::HostDesktopType>(host_desktop_type));
+#endif
+}
 
 bool ChromeTabRestoreServiceClient::ShouldTrackURLForRestore(const GURL& url) {
   return ::ShouldTrackURLForRestore(url);

@@ -81,7 +81,6 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     time_factory_ = new PersistentTabRestoreTimeFactory();
     service_.reset(new PersistentTabRestoreService(
-        profile(),
         make_scoped_ptr(new ChromeTabRestoreServiceClient(profile())),
         time_factory_));
   }
@@ -122,7 +121,6 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     content::RunAllBlockingPoolTasksUntilIdle();
     service_.reset();
     service_.reset(new PersistentTabRestoreService(
-        profile(),
         make_scoped_ptr(new ChromeTabRestoreServiceClient(profile())),
         time_factory_));
     SynchronousLoadTabsFromLastSession();

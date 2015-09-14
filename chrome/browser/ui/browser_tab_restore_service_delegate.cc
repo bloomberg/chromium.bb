@@ -81,10 +81,8 @@ void BrowserTabRestoreServiceDelegate::CloseTab() {
   chrome::CloseTab(browser_);
 }
 
-// Implementations of TabRestoreServiceDelegate static methods
-
 // static
-TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
+TabRestoreServiceDelegate* BrowserTabRestoreServiceDelegate::Create(
     Profile* profile,
     chrome::HostDesktopType host_desktop_type,
     const std::string& app_name) {
@@ -106,14 +104,14 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
 
 // static
 TabRestoreServiceDelegate*
-    TabRestoreServiceDelegate::FindDelegateForWebContents(
-        const WebContents* contents) {
+BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
+    const WebContents* contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   return browser ? browser->tab_restore_service_delegate() : NULL;
 }
 
 // static
-TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateWithID(
+TabRestoreServiceDelegate* BrowserTabRestoreServiceDelegate::FindDelegateWithID(
     SessionID::id_type desired_id,
     chrome::HostDesktopType host_desktop_type) {
   Browser* browser = chrome::FindBrowserWithID(desired_id);

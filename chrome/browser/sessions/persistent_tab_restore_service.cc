@@ -926,12 +926,11 @@ void PersistentTabRestoreService::Delegate::RemoveEntryByID(
 // PersistentTabRestoreService -------------------------------------------------
 
 PersistentTabRestoreService::PersistentTabRestoreService(
-    Profile* profile,
     scoped_ptr<sessions::TabRestoreServiceClient> client,
     TimeFactory* time_factory)
     : client_(client.Pass()),
       delegate_(new Delegate(client_.get())),
-      helper_(this, delegate_.get(), profile, client_.get(), time_factory) {
+      helper_(this, delegate_.get(), client_.get(), time_factory) {
   delegate_->set_tab_restore_service_helper(&helper_);
 }
 
@@ -974,7 +973,7 @@ const TabRestoreService::Entries& PersistentTabRestoreService::entries() const {
 std::vector<content::WebContents*>
 PersistentTabRestoreService::RestoreMostRecentEntry(
     TabRestoreServiceDelegate* delegate,
-    chrome::HostDesktopType host_desktop_type) {
+    int host_desktop_type) {
   return helper_.RestoreMostRecentEntry(delegate, host_desktop_type);
 }
 
@@ -984,11 +983,11 @@ TabRestoreService::Tab* PersistentTabRestoreService::RemoveTabEntryById(
 }
 
 std::vector<content::WebContents*>
-    PersistentTabRestoreService::RestoreEntryById(
-      TabRestoreServiceDelegate* delegate,
-      SessionID::id_type id,
-      chrome::HostDesktopType host_desktop_type,
-      WindowOpenDisposition disposition) {
+PersistentTabRestoreService::RestoreEntryById(
+    TabRestoreServiceDelegate* delegate,
+    SessionID::id_type id,
+    int host_desktop_type,
+    WindowOpenDisposition disposition) {
   return helper_.RestoreEntryById(delegate, id, host_desktop_type, disposition);
 }
 
