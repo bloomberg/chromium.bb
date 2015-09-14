@@ -119,8 +119,6 @@ bool AccountFetcherService::IsAllUserInfoFetched() const {
 
 void AccountFetcherService::FetchUserInfoBeforeSignin(
     const std::string& account_id) {
-  LOG(WARNING) << "Fetching account info before signin for account id: "
-               << account_id;
   RefreshAccountInfo(account_id, false);
 }
 

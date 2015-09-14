@@ -223,15 +223,15 @@ void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
   account_info_ = account_tracker_service_->GetAccountInfo(account_id_);
 
-  if (account_info_.IsValid())
-    FetchImageData();
-  else
-    waiting_for_account_info_ = true;
-
   if (delegate_->IsPreSignin()) {
     AccountFetcherServiceFactory::GetForProfile(delegate_->GetBrowserProfile())
         ->FetchUserInfoBeforeSignin(account_id_);
   }
+
+  if (account_info_.IsValid())
+    FetchImageData();
+  else
+    waiting_for_account_info_ = true;
 }
 
 void ProfileDownloader::StartFetchingOAuth2AccessToken() {
@@ -302,12 +302,6 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string data;
   source->GetResponseAsString(&data);
-  LOG(WARNING) << "Profile image URL fetch for image at "
-               << source->GetURL().possibly_invalid_spec()
-               << " completed with status: "
-               << source->GetStatus().status()
-               << " and response code: " << source->GetResponseCode()
-               << " data size: " << data.size();
   bool network_error =
       source->GetStatus().status() != net::URLRequestStatus::SUCCESS;
   if (network_error || source->GetResponseCode() != 200) {
@@ -322,6 +316,7 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
         ProfileDownloaderDelegate::SERVICE_ERROR);
   } else {
     profile_image_fetcher_.reset();
+    VLOG(1) << "Decoding the image...";
     ImageDecoder::Start(this, data);
   }
 }
