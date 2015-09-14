@@ -203,20 +203,38 @@ int VideoCaptureController::RemoveClient(
   return session_id;
 }
 
-void VideoCaptureController::PauseOrResumeClient(
+void VideoCaptureController::PauseClient(
     VideoCaptureControllerID id,
-    VideoCaptureControllerEventHandler* event_handler,
-    bool pause) {
+    VideoCaptureControllerEventHandler* event_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::PauseOrResumeClient, id "
-           << id << ", " << pause;
+  DVLOG(1) << "VideoCaptureController::PauseClient, id " << id;
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
   if (!client)
     return;
 
-  DLOG_IF(WARNING, client->paused == pause) << "Redundant client configuration";
-  client->paused = pause;
+  DLOG_IF(WARNING, client->paused) << "Redundant client configuration";
+
+  client->paused = true;
+}
+
+bool VideoCaptureController::ResumeClient(
+    VideoCaptureControllerID id,
+    VideoCaptureControllerEventHandler* event_handler) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1) << "VideoCaptureController::ResumeClient, id " << id;
+
+  ControllerClient* client = FindClient(id, event_handler, controller_clients_);
+  if (!client)
+    return false;
+
+  if (!client->paused) {
+    DVLOG(1) << "Calling resume on unpaused client";
+    return false;
+  }
+
+  client->paused = false;
+  return true;
 }
 
 void VideoCaptureController::StopSession(int session_id) {

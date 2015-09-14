@@ -530,20 +530,17 @@ void VideoCaptureManager::PauseCaptureForClient(
   DeviceEntry* entry = GetDeviceEntryForController(controller);
   if (!entry) {
     NOTREACHED();
-    return;
+    DVLOG(1) << "Got Null entry while pausing capture";
   }
 
-  // We only pause the MEDIA_DEVICE_VIDEO_CAPTURE entry to release camera to
-  // system.
+  // Do not pause Content Video Capture devices, e.g. Tab or Screen capture.
   if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
     return;
 
-  controller->PauseOrResumeClient(client_id, client_handler, true);
-  if (controller->GetActiveClientCount() != 0)
-    return;
-
-  // There is no more client, release the camera.
-  DoStopDevice(entry);
+  controller->PauseClient(client_id, client_handler);
+  // Release the capture device if there are no more clients.
+  if (!controller->GetActiveClientCount())
+    DoStopDevice(entry);
 }
 
 void VideoCaptureManager::ResumeCaptureForClient(
@@ -559,14 +556,17 @@ void VideoCaptureManager::ResumeCaptureForClient(
   DeviceEntry* entry = GetDeviceEntryForController(controller);
   if (!entry) {
     NOTREACHED();
-    return;
+    DVLOG(1) << "Got Null entry while resuming capture";
   }
 
-  // We only pause/resume the MEDIA_DEVICE_VIDEO_CAPTURE entry.
+  // Do not resume Content Video Capture devices, e.g. Tab or Screen capture.
   if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
     return;
 
-  controller->PauseOrResumeClient(client_id, client_handler, false);
+  // We can't resume a capturing client, which will crash with Camera2 API.
+  // Refer to crbug/514740 for more details.
+  if (!controller->ResumeClient(client_id, client_handler))
+    return;
   if (controller->GetActiveClientCount() != 1)
     return;
 

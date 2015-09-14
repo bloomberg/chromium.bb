@@ -90,10 +90,13 @@ class CONTENT_EXPORT VideoCaptureController {
   int RemoveClient(VideoCaptureControllerID id,
                    VideoCaptureControllerEventHandler* event_handler);
 
-  // Pause or resume the video capture for specified client.
-  void PauseOrResumeClient(VideoCaptureControllerID id,
-                           VideoCaptureControllerEventHandler* event_handler,
-                           bool pause);
+  // Pause the video capture for specified client.
+  void PauseClient(VideoCaptureControllerID id,
+                   VideoCaptureControllerEventHandler* event_handler);
+  // Resume the video capture for specified client.
+  // Returns true if the client will be resumed.
+  bool ResumeClient(VideoCaptureControllerID id,
+                    VideoCaptureControllerEventHandler* event_handler);
 
   int GetClientCount() const;
 

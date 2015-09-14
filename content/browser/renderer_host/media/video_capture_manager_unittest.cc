@@ -131,6 +131,26 @@ class VideoCaptureManagerTest : public testing::Test {
     controllers_.erase(client_id);
   }
 
+  void ResumeClient(int session_id, int client_id) {
+    ASSERT_EQ(1u, controllers_.count(client_id));
+    media::VideoCaptureParams params;
+    params.requested_format = media::VideoCaptureFormat(
+        gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
+
+    vcm_->ResumeCaptureForClient(
+        session_id,
+        params,
+        controllers_[client_id],
+        client_id,
+        frame_observer_.get());
+  }
+
+  void PauseClient(VideoCaptureControllerID client_id) {
+    ASSERT_EQ(1u, controllers_.count(client_id));
+    vcm_->PauseCaptureForClient(controllers_[client_id], client_id,
+                               frame_observer_.get());
+  }
+
   int next_client_id_;
   std::map<VideoCaptureControllerID, VideoCaptureController*> controllers_;
   scoped_refptr<VideoCaptureManager> vcm_;
@@ -505,6 +525,37 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   StopClient(client_id);
 
   // Wait to check callbacks before removing the listener
+  message_loop_->RunUntilIdle();
+  vcm_->Unregister();
+}
+
+// Try to open, start, pause and resume a device.
+TEST_F(VideoCaptureManagerTest, PauseAndResume) {
+  StreamDeviceInfoArray devices;
+
+  InSequence s;
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .WillOnce(SaveArg<1>(&devices));
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
+
+  // Wait to get device callback.
+  message_loop_->RunUntilIdle();
+
+  int video_session_id = vcm_->Open(devices.front());
+  VideoCaptureControllerID client_id = StartClient(video_session_id, true);
+
+  // Resume client a second time should cause no problem.
+  PauseClient(client_id);
+  ResumeClient(video_session_id, client_id);
+  ResumeClient(video_session_id, client_id);
+
+  StopClient(client_id);
+  vcm_->Close(video_session_id);
+
+  // Wait to check callbacks before removing the listener.
   message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
