@@ -428,12 +428,14 @@ class Command;
 // invoked causes all fullscreen modes to exit.
 //
 // ----------------------------------------------------------------------------
-// There are 2 "styles" of omnibox sliding.
+// There are 3 "styles" of omnibox sliding.
 // + OMNIBOX_TABS_PRESENT: Both the omnibox and the tabstrip are present.
 // Moving the cursor to the top causes the menubar to appear, and everything
 // else to slide down.
 // + OMNIBOX_TABS_HIDDEN: Both tabstrip and omnibox are hidden. Moving cursor
 // to top shows tabstrip, omnibox, and menu bar.
+// + OMNIBOX_TABS_NONE: Both tabstrip and omnibox are hidden. Moving cursor
+// to top causes the menubar to appear, but not the tabstrip and omnibox.
 //
 // The omnibox sliding styles are used in conjunction with the fullscreen APIs.
 // There is exactly 1 sliding style active at a time. The sliding is mangaged

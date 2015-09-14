@@ -18,6 +18,8 @@ namespace fullscreen_mac {
 enum SlidingStyle {
   OMNIBOX_TABS_PRESENT = 0,  // Tab strip and omnibox both visible.
   OMNIBOX_TABS_HIDDEN,       // Tab strip and omnibox both hidden.
+  OMNIBOX_TABS_NONE,         // Tab strip and omnibox both hidden and never
+                             // shown.
 };
 }  // namespace fullscreen_mac
 
