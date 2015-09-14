@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 
-#include "platform/image-decoders/FastSharedBufferReader.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -97,12 +96,8 @@ bool BMPImageDecoder::processFileHeader(size_t& imgDataOffset)
     ASSERT(!m_decodedOffset);
     if (m_data->size() < sizeOfFileHeader)
         return false;
-
-    char buffer[sizeOfFileHeader];
-    FastSharedBufferReader fastReader(m_data);
-    const char* fileHeader = fastReader.getConsecutiveData(0, sizeOfFileHeader, buffer);
-    const uint16_t fileType = (fileHeader[0] << 8) | static_cast<uint8_t>(fileHeader[1]);
-    imgDataOffset = BMPImageReader::readUint32(&fileHeader[10]);
+    const uint16_t fileType = (m_data->data()[0] << 8) | static_cast<uint8_t>(m_data->data()[1]);
+    imgDataOffset = readUint32(10);
     m_decodedOffset = sizeOfFileHeader;
 
     // See if this is a bitmap filetype we understand.

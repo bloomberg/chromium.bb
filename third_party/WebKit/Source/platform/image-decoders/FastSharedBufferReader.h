@@ -46,8 +46,6 @@ class PLATFORM_EXPORT FastSharedBufferReader {
 public:
     FastSharedBufferReader(PassRefPtr<SharedBuffer> data);
 
-    void setData(PassRefPtr<SharedBuffer>);
-
     // Returns a consecutive buffer that carries the data starting
     // at |dataPosition| with |length| bytes.
     // This method returns a pointer to a memory segment stored in

@@ -31,10 +31,9 @@
 #ifndef BMPImageReader_h
 #define BMPImageReader_h
 
-#include "platform/image-decoders/FastSharedBufferReader.h"
+#include <stdint.h>
 #include "platform/image-decoders/ImageDecoder.h"
 #include "wtf/CPU.h"
-#include <stdint.h>
 
 namespace blink {
 
@@ -43,16 +42,26 @@ namespace blink {
 class PLATFORM_EXPORT BMPImageReader {
     WTF_MAKE_FAST_ALLOCATED(BMPImageReader);
 public:
-    // Read a value from |buffer|, converting to an int assuming little
-    // endianness
-    static inline uint16_t readUint16(const char* buffer)
+    // Read a value from |data[offset]|, converting from little to native
+    // endianness.
+    static inline uint16_t readUint16(SharedBuffer* data, int offset)
     {
-        return *reinterpret_cast<const uint16_t*>(buffer);
+        uint16_t result;
+        memcpy(&result, &data->data()[offset], 2);
+    #if CPU(BIG_ENDIAN)
+        result = ((result & 0xff) << 8) | ((result & 0xff00) >> 8);
+    #endif
+        return result;
     }
 
-    static inline uint32_t readUint32(const char* buffer)
+    static inline uint32_t readUint32(SharedBuffer* data, int offset)
     {
-        return *reinterpret_cast<const uint32_t*>(buffer);
+        uint32_t result;
+        memcpy(&result, &data->data()[offset], 4);
+    #if CPU(BIG_ENDIAN)
+        result = ((result & 0xff) << 24) | ((result & 0xff00) << 8) | ((result & 0xff0000) >> 8) | ((result & 0xff000000) >> 24);
+    #endif
+        return result;
     }
 
     // |parent| is the decoder that owns us.
@@ -62,11 +71,7 @@ public:
     BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool isInICO);
 
     void setBuffer(ImageFrame* buffer) { m_buffer = buffer; }
-    void setData(SharedBuffer* data)
-    {
-        m_data = data;
-        m_fastReader.setData(data);
-    }
+    void setData(SharedBuffer* data) { m_data = data; }
 
     // Does the actual decoding.  If |onlySize| is true, decoding only
     // progresses as far as necessary to get the image size.  Returns
@@ -119,23 +124,14 @@ private:
         uint8_t rgbRed;
     };
 
-    inline uint8_t readUint8(size_t offset) const
-    {
-        return m_fastReader.getOneByte(m_decodedOffset + offset);
-    }
-
     inline uint16_t readUint16(int offset) const
     {
-        char buffer[2];
-        const char* data = m_fastReader.getConsecutiveData(m_decodedOffset + offset, 2, buffer);
-        return readUint16(data);
+        return readUint16(m_data.get(), m_decodedOffset + offset);
     }
 
     inline uint32_t readUint32(int offset) const
     {
-        char buffer[4];
-        const char* data = m_fastReader.getConsecutiveData(m_decodedOffset + offset, 4, buffer);
-        return readUint32(data);
+        return readUint32(m_data.get(), m_decodedOffset + offset);
     }
 
     // Determines the size of the BMP info header.  Returns true if the size
@@ -202,24 +198,25 @@ private:
     // the pixel data will actually be set.
     inline uint32_t readCurrentPixel(int bytesPerPixel) const
     {
-        // We need at most 4 bytes, starting at m_decodedOffset + offset.
-        char buffer[4];
         const int offset = m_coord.x() * bytesPerPixel;
-        const char* encodedPixel = m_fastReader.getConsecutiveData(m_decodedOffset + offset, bytesPerPixel, buffer);
         switch (bytesPerPixel) {
         case 2:
-            return readUint16(encodedPixel);
+            return readUint16(offset);
 
         case 3: {
             // It doesn't matter that we never set the most significant byte
-            // of the return value, the caller won't read it.
+            // of the return value here in little-endian mode, the caller
+            // won't read it.
             uint32_t pixel;
-            memcpy(&pixel, encodedPixel, 3);
+            memcpy(&pixel, &m_data->data()[m_decodedOffset + offset], 3);
+    #if CPU(BIG_ENDIAN)
+            pixel = ((pixel & 0xff00) << 8) | ((pixel & 0xff0000) >> 8) | ((pixel & 0xff000000) >> 24);
+    #endif
             return pixel;
         }
 
         case 4:
-            return readUint32(encodedPixel);
+            return readUint32(offset);
 
         default:
             ASSERT_NOT_REACHED();
@@ -286,7 +283,6 @@ private:
 
     // The file to decode.
     RefPtr<SharedBuffer> m_data;
-    FastSharedBufferReader m_fastReader;
 
     // An index into |m_data| representing how much we've already decoded.
     size_t m_decodedOffset;

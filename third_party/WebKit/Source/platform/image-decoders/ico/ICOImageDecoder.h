@@ -85,14 +85,12 @@ private:
 
     inline uint16_t readUint16(int offset) const
     {
-        // TODO (scroggo): This consolidates the data, meaning unnecessary copies.
-        return BMPImageReader::readUint16(&m_data->data()[m_decodedOffset + offset]);
+        return BMPImageReader::readUint16(m_data.get(), m_decodedOffset + offset);
     }
 
     inline uint32_t readUint32(int offset) const
     {
-        // TODO (scroggo): This consolidates the data, meaning unnecessary copies.
-        return BMPImageReader::readUint32(&m_data->data()[m_decodedOffset + offset]);
+        return BMPImageReader::readUint32(m_data.get(), m_decodedOffset + offset);
     }
 
     // If the desired PNGImageDecoder exists, gives it the appropriate data.
