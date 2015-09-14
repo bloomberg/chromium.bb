@@ -75,6 +75,10 @@ def IsBCArch(arch):
   return IsBiasedBCArch(arch) or arch == 'le32'
 
 
+def IsNonSFIArch(arch):
+  return arch.endswith('-nonsfi')
+
+
 # Return the target arch recognized by the compiler (e.g. i686) from an arch
 # string which might be a biased-bitcode-style arch (e.g. i686_bc)
 def TargetArch(bias_arch):
@@ -99,8 +103,7 @@ def BiasedBitcodeTargetFlag(bias_arch):
       'x86_64': ('x86_64-unknown-nacl',           []),
       'i686':   ('i686-unknown-nacl',             []),
       'arm':    ('armv7-unknown-nacl-gnueabihf',  ['-mfloat-abi=hard']),
-      # MIPS doesn't use biased bitcode:
-      'mips32': ('le32-unknown-nacl',             []),
+      'mipsel': ('mipsel-unknown-nacl',           []),
   }
   return ['--target=%s' % flagmap[arch][0]] + flagmap[arch][1]
 
@@ -111,7 +114,7 @@ def TranslatorArchToBiasArch(arch):
              'x86-64': 'x86_64',
              'arm': 'arm',
              'arm-nonsfi': 'arm',
-             'mips32': 'mips32'}
+             'mips32': 'mipsel'}
   return archmap[arch]
 
 def TargetLibCflags(bias_arch):
@@ -139,11 +142,36 @@ def NewlibIsystemCflags(bias_arch):
     command.path.join('%(' + GSDJoin('abs_newlib', include_arch) +')s',
                       TripleFromArch(include_arch), 'include')])
 
+
 def LibCxxCflags(bias_arch):
   # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
   # pthread otherwise.
   return ' '.join([TargetLibCflags(bias_arch), NewlibIsystemCflags(bias_arch),
                    '-DHAS_THREAD_LOCAL=1', '-D__ARM_DWARF_EH__'])
+
+
+def NativeTargetFlag(bias_arch):
+  arch = TargetArch(bias_arch)
+  flagmap = {
+      # Arch  Target                      Extra flags.
+      'x86_64': ('x86_64-linux-gnu',        []),
+      'i686':   ('i686-linux-gnu',          []),
+      'arm':    ('armv7a-linux-gnueabihf',  []),
+      'mipsel': ('mipsel-linux-gnu',        []),
+  }
+  return ['--target=%s' % flagmap[arch][0]] + flagmap[arch][1]
+
+
+def NonSFITargetLibCflags(bias_arch):
+  flags = '-D__native_client_nonsfi__ -fPIC -nostdinc '
+  flags += ' '.join([
+    '-isystem',
+    command.path.join('%(abs_target_lib_compiler)s',
+                      'lib', 'clang', CLANG_VER, 'include')])
+  if bias_arch == 'i686':
+    flags += ' -malign-double -mllvm -mtls-use-call'
+  flags += ' ' + ' '.join(NativeTargetFlag(bias_arch))
+  return flags
 
 
 # Build a single object file for the target.
@@ -162,15 +190,16 @@ def BuildTargetObjectCmd(source, output, bias_arch, output_dir='%(cwd)s',
 # Build a single object file as native code for the translator.
 def BuildTargetTranslatorCmd(sourcefile, output, arch, extra_flags=[],
                              source_dir='%(src)s', output_dir='%(cwd)s'):
+  bias_arch = TranslatorArchToBiasArch(arch)
+  flags = ['-Wall', '-Werror', '-O3', '-integrated-as', '-c'] + extra_flags
+  if IsNonSFIArch(arch):
+    flags.extend(NonSFITargetLibCflags(bias_arch).split())
   return command.Command(
-    [PnaclTool('clang', msys=False),
-     '--pnacl-allow-native', '--pnacl-allow-translate', '-Wall', '-Werror',
-     '-arch', arch, '--pnacl-bias=' + arch, '-O3',
+    [PnaclTool('clang', arch=bias_arch, msys=False)] + flags +
      # TODO(dschuff): this include breaks the input encapsulation for build
      # rules.
-     '-I%(top_srcdir)s/..','-c'] +
+     ['-I%(top_srcdir)s/..'] +
     NewlibIsystemCflags('le32').split() +
-    extra_flags +
     [command.path.join(source_dir, sourcefile),
      '-o', command.path.join(output_dir, output)])
 
@@ -196,9 +225,8 @@ def BuildLibgccEhCmd(sourcefile, output, arch, no_nacl_gcc):
   # For ARM, LLVM does work and we use it to avoid dealing with the fact that
   # arm-nacl-gcc uses different libgcc support functions than PNaCl.
   if arch in ('arm', 'mips32'):
-    cc = PnaclTool('clang', msys=False)
-    flags_naclcc = ['-arch', arch, '--pnacl-bias=' + arch,
-                    '--pnacl-allow-translate', '--pnacl-allow-native']
+    cc = PnaclTool('clang', arch=TranslatorArchToBiasArch(arch), msys=False)
+    flags_naclcc = []
   else:
     if no_nacl_gcc:
       return command.WriteData('', output)
@@ -675,6 +703,11 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
         os.path.join('%(output)s', 'libgcc.a'))]
   else:
     clang_deps = []
+    extra_flags = []
+    if IsNonSFIArch(arch):
+      extra_flags.extend(NonSFITargetLibCflags(bias_arch).split())
+    else:
+      extra_flags.extend(BiasedBitcodeTargetFlag(bias_arch))
     libcrt_platform_string_cmds = [BuildTargetTranslatorCmd(
         'string.c', 'string.o', arch, ['-std=c99'],
         source_dir='%(newlib_subset)s')]
@@ -683,12 +716,9 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
         command.Command(MakeCommand() + [
             '-C', '%(abs_compiler_rt_src)s', 'ProjObjRoot=%(cwd)s',
             'VERBOSE=1',
-            'CC=' + PnaclTool('clang'), 'clang_nacl',
-            'EXTRA_CFLAGS=' + (
-                NewlibIsystemCflags('le32') +
-                ' --pnacl-allow-translate -arch ' + arch +
-                ' --pnacl-bias=' + arch + ' ' +
-                ' '.join(BiasedBitcodeTargetFlag(bias_arch)))]),
+            'CC=' + PnaclTool('clang', arch=bias_arch), 'clang_nacl',
+            'EXTRA_CFLAGS=' + (NewlibIsystemCflags('le32') + ' ' +
+                ' '.join(extra_flags))]),
         command.Copy(os.path.join(
                 'clang_nacl',
                 'full-' + bias_arch.replace('i686', 'i386')

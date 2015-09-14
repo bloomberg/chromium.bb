@@ -11,7 +11,7 @@ binutils=c030c3cc99f3843affcf339afb01fc94a87a5487
 #
 # Three lines avoid merge conflicts.
 #
-clang=1756cbb411142589b67bd7437ed7156c6b5042b6
+clang=605ea9bc25022747e435e57ee7b578e1fc220a63
 #
 # Three lines avoid merge conflicts.
 #
@@ -39,7 +39,7 @@ llvm_test_suite=6438a2b505fa29f82eb850aed1785db1738b971c
 #
 # Three lines avoid merge conflicts.
 #
-compiler_rt=37d8c21cfedc885d411580669c82574120cccdd4
+compiler_rt=9ded361c356ebc38a115e8134b8f7ca4f1d61eb0
 #
 # Three lines avoid merge conflicts.
 #
