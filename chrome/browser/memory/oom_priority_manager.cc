@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/tabs/tab_discard_state.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_constants.h"
@@ -95,7 +96,7 @@ int FindTabStripModelById(int64 target_web_contents_id, TabStripModel** model) {
 // OomPriorityManager
 
 OomPriorityManager::OomPriorityManager()
-    : discard_count_(0), recent_tab_discard_(false) {
+    : discard_count_(0), recent_tab_discard_(false), discard_once_(false) {
 #if defined(OS_CHROMEOS)
   delegate_.reset(new OomPriorityManagerDelegate);
 #endif
@@ -105,7 +106,8 @@ OomPriorityManager::~OomPriorityManager() {
   Stop();
 }
 
-void OomPriorityManager::Start() {
+void OomPriorityManager::Start(bool discard_once) {
+  discard_once_ = discard_once;
   if (!update_timer_.IsRunning()) {
     update_timer_.Start(FROM_HERE,
                         TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),
@@ -178,7 +180,8 @@ bool OomPriorityManager::DiscardTab() {
   for (TabStatsList::const_reverse_iterator stats_rit = stats.rbegin();
        stats_rit != stats.rend(); ++stats_rit) {
     int64 least_important_tab_id = stats_rit->tab_contents_id;
-    if (DiscardTabById(least_important_tab_id))
+    if (CanDiscardTab(least_important_tab_id) &&
+        DiscardTabById(least_important_tab_id))
       return true;
   }
   return false;
@@ -191,13 +194,13 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
   if (idx == -1)
     return false;
 
-  // Can't discard tabs that are already discarded or active.
-  if (model->IsTabDiscarded(idx) || (model->active_index() == idx))
+  // Can't discard active tabs
+  if (model->active_index() == idx)
     return false;
 
-  // We also ignore tabs that are playing audio as it's too distruptive to
-  // the user experience.
-  if (model->GetWebContentsAt(idx)->WasRecentlyAudible())
+  WebContents* web_contents = model->GetWebContentsAt(idx);
+  // Can't discard tabs that are already discarded.
+  if (TabDiscardState::IsDiscarded(web_contents))
     return false;
 
   VLOG(1) << "Discarding tab " << idx << " id " << target_web_contents_id;
@@ -425,7 +428,8 @@ void OomPriorityManager::AddTabStats(BrowserList* browser_list,
         stats.is_playing_audio = contents->WasRecentlyAudible();
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
-        stats.is_discarded = model->IsTabDiscarded(i);
+        stats.is_discarded = TabDiscardState::IsDiscarded(contents);
+        stats.discard_count = TabDiscardState::DiscardCount(contents);
         stats.last_active = contents->GetLastActiveTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.child_process_host_id = contents->GetRenderProcessHost()->GetID();
@@ -455,6 +459,27 @@ void OomPriorityManager::OnMemoryPressure(
   }
   // TODO(skuhne): If more memory pressure levels are introduced, we might
   // consider to call PurgeBrowserMemory() before CRITICAL is reached.
+}
+
+bool OomPriorityManager::CanDiscardTab(int64 target_web_contents_id) const {
+  TabStripModel* model;
+  int idx = FindTabStripModelById(target_web_contents_id, &model);
+
+  if (idx == -1)
+    return false;
+
+  WebContents* web_contents = model->GetWebContentsAt(idx);
+  // We do not discard tabs that are playing audio as it's too distruptive to
+  // the user experience.
+  if (web_contents->WasRecentlyAudible())
+    return false;
+
+  // We also make sure not to discard a previously discarded tab if that's the
+  // desired behavior.
+  if (discard_once_ && TabDiscardState::DiscardCount(web_contents) > 0)
+    return false;
+
+  return true;
 }
 
 }  // namespace memory

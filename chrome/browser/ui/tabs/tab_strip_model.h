@@ -318,10 +318,6 @@ class TabStripModel {
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
-  // Returns true if the WebContents at |index| has been discarded to
-  // save memory.  See DiscardWebContentsAt() for details.
-  bool IsTabDiscarded(int index) const;
-
   // Returns the index of the first tab that is not a pinned tab. This returns
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
   // pinned tabs.

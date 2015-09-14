@@ -47190,6 +47190,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.Discarding.DiscardCount" units="Discards">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Metric to track the number of discards tabs have gone through. Each time a
+    tab is discarded, this histogram is recorded. Therefore, this metric is
+    cumulative, ie. as a tab gets discarded over and over, it gets a hit in each
+    bin (1, 2, 3...).
+  </summary>
+</histogram>
+
 <histogram name="Tab.EvictedTabWasActive" enum="Boolean">
   <owner>lliabraa@chromium.org</owner>
   <summary>

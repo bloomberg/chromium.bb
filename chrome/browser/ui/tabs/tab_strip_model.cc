@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
+#include "chrome/browser/ui/tabs/tab_discard_state.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -46,6 +47,11 @@ enum UMATabDiscarding {
 void RecordUMATabDiscarding(UMATabDiscarding event) {
   UMA_HISTOGRAM_ENUMERATION("Tab.Discarding", event,
                             UMA_TAB_DISCARDING_TAB_DISCARDING_MAX);
+}
+
+// Records the number of discards that a tab has been through.
+void RecordUMADiscardCount(int discard_count) {
+  UMA_HISTOGRAM_COUNTS("Tab.Discarding.DiscardCount", discard_count);
 }
 
 // Returns true if the specified transition is one of the types that cause the
@@ -169,8 +175,6 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   void set_pinned(bool value) { pinned_ = value; }
   bool blocked() const { return blocked_; }
   void set_blocked(bool value) { blocked_ = value; }
-  bool discarded() const { return discarded_; }
-  void set_discarded(bool value) { discarded_ = value; }
 
  private:
   // Make sure that if someone deletes this WebContents out from under us, it
@@ -218,9 +222,6 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   // Is the tab interaction blocked by a modal dialog?
   bool blocked_;
 
-  // Has the tab data been discarded to save memory?
-  bool discarded_;
-
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
 
@@ -233,9 +234,7 @@ TabStripModel::WebContentsData::WebContentsData(TabStripModel* tab_strip_model,
       opener_(NULL),
       reset_group_on_select_(false),
       pinned_(false),
-      blocked_(false),
-      discarded_(false) {
-}
+      blocked_(false) {}
 
 void TabStripModel::WebContentsData::SetWebContents(WebContents* contents) {
   contents_ = contents;
@@ -253,7 +252,7 @@ void TabStripModel::WebContentsData::WebContentsDestroyed() {
 }
 
 void TabStripModel::WebContentsData::DidStartLoading() {
-  set_discarded(false);
+  TabDiscardState::SetDiscardState(contents_, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -401,13 +400,17 @@ WebContents* TabStripModel::DiscardWebContentsAt(int index) {
 
   // Make sure we persist the last active time property.
   null_contents->SetLastActiveTime(old_contents->GetLastActiveTime());
+  // Copy over the discard count.
+  TabDiscardState::CopyState(old_contents, null_contents);
 
   // Replace the tab we're discarding with the null version.
   ReplaceWebContentsAt(index, null_contents);
   // Mark the tab so it will reload when we click.
-  if (!contents_data_[index]->discarded()) {
-    contents_data_[index]->set_discarded(true);
+  if (!TabDiscardState::IsDiscarded(null_contents)) {
+    TabDiscardState::SetDiscardState(null_contents, true);
+    TabDiscardState::IncrementDiscardCount(null_contents);
     RecordUMATabDiscarding(UMA_TAB_DISCARDING_DISCARD_TAB);
+    RecordUMADiscardCount(TabDiscardState::DiscardCount(null_contents));
     if (is_playing_audio)
       RecordUMATabDiscarding(UMA_TAB_DISCARDING_DISCARD_TAB_AUDIO);
   }
@@ -730,10 +733,6 @@ bool TabStripModel::IsTabPinned(int index) const {
 
 bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked();
-}
-
-bool TabStripModel::IsTabDiscarded(int index) const {
-  return contents_data_[index]->discarded();
 }
 
 int TabStripModel::IndexOfFirstNonPinnedTab() const {
@@ -1327,13 +1326,7 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
                          active_index(),
                          reason));
     in_notify_ = false;
-    // Activating a discarded tab reloads it, so it is no longer discarded.
-    if (contents_data_[active_index()]->discarded()) {
-      contents_data_[active_index()]->set_discarded(false);
-      RecordUMATabDiscarding(UMA_TAB_DISCARDING_SWITCH_TO_DISCARDED_TAB);
-    } else {
-      RecordUMATabDiscarding(UMA_TAB_DISCARDING_SWITCH_TO_LOADED_TAB);
-    }
+    TabDiscardState::SetDiscardState(new_contents, false);
   }
 }
 

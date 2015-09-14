@@ -529,6 +529,8 @@ std::vector<std::string> GetHtmlTabDescriptorsForDiscardPage() {
                                 chrome::kChromeUIDiscardsURL,
                                 kAboutDiscardsRunCommand, it->tab_contents_id);
     }
+    str += base::StringPrintf("&nbsp;&nbsp;(%d discards this session)",
+                              it->discard_count);
     titles.push_back(str);
   }
   return titles;

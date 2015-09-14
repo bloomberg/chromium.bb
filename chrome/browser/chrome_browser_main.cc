@@ -1152,13 +1152,15 @@ void ChromeBrowserMainParts::PreBrowserStart() {
   // On CrOS, it is always enabled. On other platforms, it's behind a flag for
   // now.
 #if defined(OS_CHROMEOS)
-  g_browser_process->GetOomPriorityManager()->Start();
+  g_browser_process->GetOomPriorityManager()->Start(false);
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   const std::string group_name =
       base::FieldTrialList::FindFullName("AutomaticTabDiscarding");
   if (parsed_command_line().HasSwitch(switches::kEnableTabDiscarding) ||
       base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE)) {
-    g_browser_process->GetOomPriorityManager()->Start();
+    bool enabled_once = base::StartsWith(group_name, "Enabled_Once",
+                                         base::CompareCase::SENSITIVE);
+    g_browser_process->GetOomPriorityManager()->Start(enabled_once);
   }
 #endif
 }

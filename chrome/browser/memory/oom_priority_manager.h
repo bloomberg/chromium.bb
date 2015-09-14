@@ -53,7 +53,9 @@ class OomPriorityManager {
   // See member comment.
   bool recent_tab_discard() const { return recent_tab_discard_; }
 
-  void Start();
+  // If |discard_once| is set, tabs that get discarded once will never get
+  // discarded again.
+  void Start(bool discard_once);
   void Stop();
 
   // Returns the list of the stats for all renderers. Must be called on the UI
@@ -113,6 +115,11 @@ class OomPriorityManager {
   // that need to be run periodically (see comment in implementation).
   void UpdateTimerCallback();
 
+  // Goes through a list of checks to see if a tab is allowed to be discarded by
+  // the automatic tab discarding mechanism. Note that this is not used when
+  // discarding a particular tab from about:discards.
+  bool CanDiscardTab(int64 target_web_contents_id) const;
+
   static bool CompareTabStats(TabStats first, TabStats second);
 
   // Called by the memory pressure listener when the memory pressure rises.
@@ -146,6 +153,9 @@ class OomPriorityManager {
   // Whether a tab discard event has occurred during the last time interval,
   // used for statistics normalized by usage.
   bool recent_tab_discard_;
+
+  // Whether we ever only discard a tab once.
+  bool discard_once_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<OomPriorityManagerDelegate> delegate_;
