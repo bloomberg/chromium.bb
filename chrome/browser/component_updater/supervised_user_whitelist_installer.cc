@@ -9,6 +9,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
@@ -20,17 +21,22 @@
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/default_component_installer.h"
 #include "components/crx_file/id_util.h"
+#include "components/safe_json/json_sanitizer.h"
 
 namespace component_updater {
 
 namespace {
+
+const char kSanitizedWhitelistExtension[] = ".json";
 
 const char kWhitelist[] = "whitelist";
 const char kFile[] = "file";
@@ -38,8 +44,8 @@ const char kFile[] = "file";
 const char kClients[] = "clients";
 const char kName[] = "name";
 
-base::FilePath GetWhitelistPath(const base::DictionaryValue& manifest,
-                                const base::FilePath& install_dir) {
+base::FilePath GetRawWhitelistPath(const base::DictionaryValue& manifest,
+                                   const base::FilePath& install_dir) {
   const base::DictionaryValue* whitelist_dict = nullptr;
   if (!manifest.GetDictionary(kWhitelist, &whitelist_dict))
     return base::FilePath();
@@ -51,34 +57,122 @@ base::FilePath GetWhitelistPath(const base::DictionaryValue& manifest,
   return install_dir.Append(whitelist_file);
 }
 
+base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
+  base::FilePath base_dir;
+  PathService::Get(chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS, &base_dir);
+  return base_dir.empty()
+             ? base::FilePath()
+             : base_dir.AppendASCII(crx_id + kSanitizedWhitelistExtension);
+}
+
+void OnWhitelistSanitizationError(const base::FilePath& whitelist,
+                                  const std::string& error) {
+  LOG(WARNING) << "Invalid whitelist " << whitelist.value() << ": " << error;
+}
+
+void OnWhitelistSanitizationResult(
+    const std::string& crx_id,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const base::Closure& callback,
+    const std::string& result) {
+  const base::FilePath sanitized_whitelist_path =
+      GetSanitizedWhitelistPath(crx_id);
+  const base::FilePath install_directory = sanitized_whitelist_path.DirName();
+  if (!base::DirectoryExists(install_directory)) {
+    if (!base::CreateDirectory(install_directory)) {
+      PLOG(ERROR) << "Could't create directory " << install_directory.value();
+      return;
+    }
+  }
+
+  const int size = result.size();
+  if (base::WriteFile(sanitized_whitelist_path, result.data(), size) != size) {
+    PLOG(ERROR) << "Couldn't write file " << sanitized_whitelist_path.value();
+    return;
+  }
+  task_runner->PostTask(FROM_HERE, callback);
+}
+
+void CheckForSanitizedWhitelistOnTaskRunner(
+    const std::string& crx_id,
+    const base::FilePath& whitelist_path,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const base::Closure& callback) {
+  if (base::PathExists(GetSanitizedWhitelistPath(crx_id))) {
+    task_runner->PostTask(FROM_HERE, callback);
+    return;
+  }
+
+  std::string unsafe_json;
+  if (!base::ReadFileToString(whitelist_path, &unsafe_json)) {
+    PLOG(ERROR) << "Couldn't read file " << whitelist_path.value();
+    return;
+  }
+
+  safe_json::JsonSanitizer::Sanitize(
+      unsafe_json,
+      base::Bind(&OnWhitelistSanitizationResult, crx_id, task_runner, callback),
+      base::Bind(&OnWhitelistSanitizationError, whitelist_path));
+}
+
 void RemoveUnregisteredWhitelistsOnTaskRunner(
     const std::set<std::string>& registered_whitelists) {
   base::FilePath base_dir;
   PathService::Get(DIR_SUPERVISED_USER_WHITELISTS, &base_dir);
-  if (base_dir.empty())
-    return;
+  if (!base_dir.empty()) {
+    base::FileEnumerator file_enumerator(base_dir, false,
+                                         base::FileEnumerator::DIRECTORIES);
+    for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
+         path = file_enumerator.Next()) {
+      const std::string crx_id = path.BaseName().MaybeAsASCII();
 
-  std::vector<base::FilePath> paths;
-  base::FileEnumerator file_enumerator(base_dir, false,
-                                       base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
-       path = file_enumerator.Next()) {
-    const std::string crx_id = path.BaseName().MaybeAsASCII();
+      // Ignore folders that don't have valid CRX ID names. These folders are
+      // not managed by the component installer, so do not try to remove them.
+      if (!crx_file::id_util::IdIsValid(crx_id))
+        continue;
 
-    // Ignore folders that don't have valid CRX ID names. These folders are not
-    // managed by the component installer, so do not try to remove them.
-    if (!crx_file::id_util::IdIsValid(crx_id))
-      continue;
+      // Ignore folders that correspond to registered whitelists.
+      if (registered_whitelists.count(crx_id) > 0)
+        continue;
 
-    // Ignore folders that correspond to registered whitelists.
-    if (registered_whitelists.count(crx_id) > 0)
-      continue;
+      base::RecordAction(
+          base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall"));
 
-    base::RecordAction(
-        base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall"));
+      if (!base::DeleteFile(path, true))
+        DPLOG(ERROR) << "Couldn't delete " << path.value();
+    }
+  }
 
-    if (!base::DeleteFile(path, true))
-      DLOG(ERROR) << "Couldn't delete " << path.value();
+  PathService::Get(chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS, &base_dir);
+  if (!base_dir.empty()) {
+    base::FilePath pattern(FILE_PATH_LITERAL("*"));
+    pattern = pattern.AppendASCII(kSanitizedWhitelistExtension);
+    base::FileEnumerator file_enumerator(
+        base_dir, false, base::FileEnumerator::FILES, pattern.value());
+    for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
+         path = file_enumerator.Next()) {
+      // Ignore files that don't have valid CRX ID names. These files are not
+      // managed by the component installer, so do not try to remove them.
+      const std::string filename = path.BaseName().MaybeAsASCII();
+      DCHECK(base::EndsWith(filename, kSanitizedWhitelistExtension,
+                            base::CompareCase::SENSITIVE));
+
+      const std::string crx_id = filename.substr(
+          filename.size() - strlen(kSanitizedWhitelistExtension));
+
+      if (!crx_file::id_util::IdIsValid(crx_id))
+        continue;
+
+      // Ignore files that correspond to registered whitelists.
+      if (registered_whitelists.count(crx_id) > 0)
+        continue;
+
+      base::RecordAction(
+          base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall"));
+
+      if (!base::DeleteFile(path, true))
+        DPLOG(ERROR) << "Couldn't delete " << path.value();
+    }
   }
 }
 
@@ -118,7 +212,7 @@ bool SupervisedUserWhitelistComponentInstallerTraits::VerifyInstallation(
     const base::FilePath& install_dir) const {
   // Check whether the whitelist exists at the path specified by the manifest.
   // This does not check whether the whitelist is wellformed.
-  return base::PathExists(GetWhitelistPath(manifest, install_dir));
+  return base::PathExists(GetRawWhitelistPath(manifest, install_dir));
 }
 
 bool SupervisedUserWhitelistComponentInstallerTraits::CanAutoUpdate() const {
@@ -128,14 +222,15 @@ bool SupervisedUserWhitelistComponentInstallerTraits::CanAutoUpdate() const {
 bool SupervisedUserWhitelistComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  return true;
+  // Delete the existing sanitized whitelist.
+  return base::DeleteFile(GetSanitizedWhitelistPath(crx_id_), false);
 }
 
 void SupervisedUserWhitelistComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     scoped_ptr<base::DictionaryValue> manifest) {
-  callback_.Run(GetWhitelistPath(*manifest, install_dir));
+  callback_.Run(GetRawWhitelistPath(*manifest, install_dir));
 }
 
 base::FilePath
@@ -172,8 +267,9 @@ class SupervisedUserWhitelistInstallerImpl
                                    const std::string& client_id,
                                    const std::string& crx_id);
 
-  void OnWhitelistReady(const std::string& crx_id,
-                        const base::FilePath& whitelist_path);
+  void OnRawWhitelistReady(const std::string& crx_id,
+                           const base::FilePath& whitelist_path);
+  void OnSanitizedWhitelistReady(const std::string& crx_id);
 
   // SupervisedUserWhitelistInstaller overrides:
   void RegisterComponents() override;
@@ -221,7 +317,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponent(
   scoped_ptr<ComponentInstallerTraits> traits(
       new SupervisedUserWhitelistComponentInstallerTraits(
           crx_id, name,
-          base::Bind(&SupervisedUserWhitelistInstallerImpl::OnWhitelistReady,
+          base::Bind(&SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady,
                      weak_ptr_factory_.GetWeakPtr(), crx_id)));
   scoped_refptr<DefaultComponentInstaller> installer(
       new DefaultComponentInstaller(traits.Pass()));
@@ -233,7 +329,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterNewComponent(
     const std::string& name) {
   RegisterComponent(
       crx_id, name,
-      base::Bind(&SupervisedUserWhitelistInstallerImpl::TriggerComponentUpdate,
+      base::Bind(&SupervisedUserWhitelistInstaller::TriggerComponentUpdate,
                  &cus_->GetOnDemandUpdater(), crx_id));
 }
 
@@ -254,17 +350,32 @@ bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
     return removed;
 
   pref_dict->RemoveWithoutPathExpansion(crx_id, nullptr);
-  const bool result = cus_->UnregisterComponent(crx_id);
+  bool result = cus_->UnregisterComponent(crx_id);
+  DCHECK(result);
+
+  result = base::DeleteFile(GetSanitizedWhitelistPath(crx_id), false);
   DCHECK(result);
 
   return removed;
 }
 
-void SupervisedUserWhitelistInstallerImpl::OnWhitelistReady(
+void SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady(
     const std::string& crx_id,
     const base::FilePath& whitelist_path) {
-  for (const auto& callback : callbacks_)
-    callback.Run(crx_id, whitelist_path);
+  cus_->GetSequencedTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &CheckForSanitizedWhitelistOnTaskRunner, crx_id, whitelist_path,
+          base::ThreadTaskRunnerHandle::Get(),
+          base::Bind(
+              &SupervisedUserWhitelistInstallerImpl::OnSanitizedWhitelistReady,
+              weak_ptr_factory_.GetWeakPtr(), crx_id)));
+}
+
+void SupervisedUserWhitelistInstallerImpl::OnSanitizedWhitelistReady(
+    const std::string& crx_id) {
+  for (const WhitelistReadyCallback& callback : callbacks_)
+    callback.Run(crx_id, GetSanitizedWhitelistPath(crx_id));
 }
 
 void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {

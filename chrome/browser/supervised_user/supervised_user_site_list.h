@@ -68,11 +68,8 @@ class SupervisedUserSiteList
   explicit SupervisedUserSiteList(const base::ListValue& sites);
   ~SupervisedUserSiteList();
 
-  // Static private so they can access the private constructor.
-  static void ParseJson(const base::FilePath& path,
-                        const SupervisedUserSiteList::LoadedCallback& callback,
-                        const std::string& json);
-  static void OnJsonParseSucceeded(
+  // Static private so it can access the private constructor.
+  static void OnJsonLoaded(
       const base::FilePath& path,
       base::TimeTicks start_time,
       const SupervisedUserSiteList::LoadedCallback& callback,

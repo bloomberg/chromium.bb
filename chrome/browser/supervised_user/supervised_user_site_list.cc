@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -25,15 +24,18 @@ const char kWhitelistKey[] = "whitelist";
 
 namespace {
 
-std::string ReadFileOnBlockingThread(const base::FilePath& path) {
+scoped_ptr<base::Value> ReadFileOnBlockingThread(const base::FilePath& path) {
   SCOPED_UMA_HISTOGRAM_TIMER("ManagedUsers.Whitelist.ReadDuration");
-  std::string contents;
-  base::ReadFileToString(path, &contents);
-  return contents;
-}
-
-void HandleError(const base::FilePath& path, const std::string& error) {
-  LOG(ERROR) << "Couldn't load site list " << path.value() << ": " << error;
+  JSONFileValueDeserializer deserializer(path);
+  int error_code;
+  std::string error_msg;
+  scoped_ptr<base::Value> value(
+      deserializer.Deserialize(&error_code, &error_msg));
+  if (!value) {
+    LOG(ERROR) << "Couldn't load site list " << path.value() << ": "
+               << error_msg;
+  }
+  return value.Pass();
 }
 
 // Takes a DictionaryValue entry from the JSON file and fills the whitelist
@@ -106,10 +108,11 @@ void SupervisedUserSiteList::Load(const base::FilePath& path,
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool()
           ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
-      FROM_HERE,
-      base::Bind(&ReadFileOnBlockingThread, path),
-      base::Bind(&SupervisedUserSiteList::ParseJson, path, callback));
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+          .get(),
+      FROM_HERE, base::Bind(&ReadFileOnBlockingThread, path),
+      base::Bind(&SupervisedUserSiteList::OnJsonLoaded, path,
+                 base::TimeTicks::Now(), callback));
 }
 
 SupervisedUserSiteList::SupervisedUserSiteList(const base::ListValue& sites) {
@@ -131,24 +134,14 @@ SupervisedUserSiteList::~SupervisedUserSiteList() {
 }
 
 // static
-void SupervisedUserSiteList::ParseJson(
-    const base::FilePath& path,
-    const SupervisedUserSiteList::LoadedCallback& callback,
-    const std::string& json) {
-  // TODO(bauerb): Use JSONSanitizer to sanitize whitelists on installation
-  // instead of using the expensive SafeJsonParser on every load.
-  safe_json::SafeJsonParser::Parse(
-      json, base::Bind(&SupervisedUserSiteList::OnJsonParseSucceeded, path,
-                       base::TimeTicks::Now(), callback),
-      base::Bind(&HandleError, path));
-}
-
-// static
-void SupervisedUserSiteList::OnJsonParseSucceeded(
+void SupervisedUserSiteList::OnJsonLoaded(
     const base::FilePath& path,
     base::TimeTicks start_time,
     const SupervisedUserSiteList::LoadedCallback& callback,
     scoped_ptr<base::Value> value) {
+  if (!value)
+    return;
+
   if (!start_time.is_null()) {
     UMA_HISTOGRAM_TIMES("ManagedUsers.Whitelist.JsonParseDuration",
                         base::TimeTicks::Now() - start_time);
