@@ -54,7 +54,7 @@ bool GrabViewSnapshot(gfx::NativeView view,
 
   base::scoped_nsobject<NSBitmapImageRep> rep(
       [[NSBitmapImageRep alloc] initWithCGImage:windowSnapshot]);
-  NSData* data = [rep representationUsingType:NSPNGFileType properties:nil];
+  NSData* data = [rep representationUsingType:NSPNGFileType properties:@{}];
   const unsigned char* buf = static_cast<const unsigned char*>([data bytes]);
   NSUInteger length = [data length];
   if (buf == NULL || length == 0)

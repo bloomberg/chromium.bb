@@ -27,10 +27,10 @@
   NSArray* subviews = [[self superview] subviews];
 
   NSUInteger selfIndex = [subviews indexOfObject:self];
-  DCHECK_NE(NSNotFound, selfIndex);
+  DCHECK(NSNotFound != selfIndex);
 
   NSUInteger otherIndex = [subviews indexOfObject:otherView];
-  DCHECK_NE(NSNotFound, otherIndex);
+  DCHECK(NSNotFound != otherIndex);
 
   return selfIndex < otherIndex;
 }

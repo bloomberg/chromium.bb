@@ -52,7 +52,7 @@ NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
                                                   kCGMouseButtonCenter);
     // Also specify the modifiers for the middle click case. This makes this
     // test resilient to external modifiers being pressed.
-    CGEventSetFlags(cg_event, modifiers);
+    CGEventSetFlags(cg_event, static_cast<CGEventFlags>(modifiers));
     NSEvent* event = [NSEvent eventWithCGEvent:cg_event];
     CFRelease(cg_event);
     return event;
