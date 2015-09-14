@@ -10,7 +10,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
-#include "components/view_manager/public/cpp/view.h"
+#include "components/mus/public/cpp/view.h"
 #include "mojo/cc/context_provider_mojo.h"
 #include "mojo/cc/output_surface_mojo.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"

@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/view_manager",
+  "+components/mus",
   "+components/web_view/public",
   "+mandoline/services",
   "+mojo/application",

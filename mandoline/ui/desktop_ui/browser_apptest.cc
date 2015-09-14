@@ -7,7 +7,7 @@
 #include "mandoline/ui/browser/browser.h"
 
 #include "base/run_loop.h"
-#include "components/view_manager/public/cpp/view.h"
+#include "components/mus/public/cpp/view.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"

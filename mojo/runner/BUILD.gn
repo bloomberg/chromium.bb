@@ -53,7 +53,7 @@ source_set("mojo_runner_lib") {
 
     deps += [
       ":jni_headers",
-      "//components/view_manager",
+      "//components/mus",
       "//mojo/shell",
       "//ui/gl",
       "//ui/platform_window/android",
@@ -174,7 +174,7 @@ source_set("lib") {
     deps += [
       ":jni_headers",
       ":run_android_application_function",
-      "//components/view_manager/gles2",
+      "//components/mus/gles2",
       "//mojo/application/public/cpp:content_handler",
     ]
   }
@@ -304,8 +304,8 @@ if (is_android) {
       ":bootstrap",
       ":bootstrap_java",
       "//components/clipboard:apptests",
+      "//components/mus:apptests",
       "//components/resource_provider:apptests",
-      "//components/view_manager:apptests",
       "//mojo/services/network:apptests",
     ]
 

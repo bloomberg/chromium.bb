@@ -25,8 +25,8 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/view_manager/public/cpp",
-    "//components/view_manager/public/interfaces",
+    "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
     "//mandoline/ui/desktop_ui/public/interfaces",

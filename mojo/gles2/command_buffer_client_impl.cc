@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/process/process_handle.h"
-#include "components/view_manager/gles2/command_buffer_type_conversions.h"
-#include "components/view_manager/gles2/mojo_buffer_backing.h"
-#include "components/view_manager/gles2/mojo_gpu_memory_buffer.h"
+#include "components/mus/gles2/command_buffer_type_conversions.h"
+#include "components/mus/gles2/mojo_buffer_backing.h"
+#include "components/mus/gles2/mojo_gpu_memory_buffer.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 

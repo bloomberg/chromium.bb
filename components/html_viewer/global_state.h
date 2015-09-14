@@ -9,9 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "components/html_viewer/discardable_memory_allocator.h"
+#include "components/mus/gles2/mojo_gpu_memory_buffer_manager.h"
+#include "components/mus/gles2/raster_thread_helper.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
-#include "components/view_manager/gles2/mojo_gpu_memory_buffer_manager.h"
-#include "components/view_manager/gles2/raster_thread_helper.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mojo {

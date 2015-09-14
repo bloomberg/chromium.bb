@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "components/html_viewer/html_frame_tree_manager_observer.h"
-#include "components/view_manager/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/view_observer.h"
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"

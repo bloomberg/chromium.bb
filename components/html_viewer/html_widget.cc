@@ -8,7 +8,7 @@
 #include "components/html_viewer/ime_controller.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
-#include "components/view_manager/public/cpp/view.h"
+#include "components/mus/public/cpp/view.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebSettings.h"

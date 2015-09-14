@@ -11,7 +11,7 @@ test("mojo_surfaces_lib_unittests") {
     "//base/test:test_support",
     "//cc",
     "//cc/surfaces",
-    "//components/view_manager/public/interfaces",
+    "//components/mus/public/interfaces",
     "//gpu",
     "//mojo/converters/geometry",
     "//mojo/converters/surfaces",

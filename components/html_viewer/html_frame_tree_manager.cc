@@ -16,7 +16,7 @@
 #include "components/html_viewer/html_frame.h"
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/html_frame_tree_manager_observer.h"
-#include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/web_view/web_view_switches.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"

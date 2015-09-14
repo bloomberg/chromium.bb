@@ -3,7 +3,7 @@ include_rules = [
   "+cc/quads",
   "+cc/resources",
   "+cc/surfaces",
-  "+components/view_manager/public",
+  "+components/mus/public",
   "+gpu/command_buffer/common/mailbox.h",
   "+gpu/command_buffer/common/mailbox_holder.h",
   "+third_party/skia/include",

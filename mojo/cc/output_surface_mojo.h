@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_id.h"
-#include "components/view_manager/public/cpp/view_surface.h"
-#include "components/view_manager/public/cpp/view_surface_client.h"
+#include "components/mus/public/cpp/view_surface.h"
+#include "components/mus/public/cpp/view_surface_client.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {

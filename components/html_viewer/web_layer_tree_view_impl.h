@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
-#include "components/view_manager/public/interfaces/gpu.mojom.h"
+#include "components/mus/public/interfaces/gpu.mojom.h"
 #include "mojo/cc/output_surface_mojo.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 

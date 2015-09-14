@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/cpp/view_observer.h"
-#include "components/view_manager/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/view_tree_delegate.h"
 #include "components/web_view/frame_devtools_agent_delegate.h"
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"

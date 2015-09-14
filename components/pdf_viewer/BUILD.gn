@@ -13,10 +13,10 @@ mojo_native_application("pdf_viewer") {
 
   deps = [
     "//base",
+    "//components/mus/public/interfaces",
+    "//components/mus/public/cpp",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
-    "//components/view_manager/public/interfaces",
-    "//components/view_manager/public/cpp",
     "//gpu",
     "//mojo/application/public/cpp",
     "//mojo/common",
@@ -36,8 +36,8 @@ mojo_native_application("pdf_viewer") {
 
   data_deps = [
     "//components/clipboard",
+    "//components/mus",
     "//components/resource_provider",
-    "//components/view_manager",
     "//mojo/services/network:network",
   ]
 }

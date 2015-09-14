@@ -3,7 +3,7 @@ include_rules = [
   "+components/filesystem",
   "+components/font_service",
   "+components/resource_provider",
-  "+components/view_manager",
+  "+components/mus",
   "+components/web_view",
   "+mojo/application",
   "+mojo/common",

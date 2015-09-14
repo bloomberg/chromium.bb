@@ -4,7 +4,7 @@
 
 module mandoline;
 
-import "components/view_manager/public/interfaces/view_tree.mojom";
+import "components/mus/public/interfaces/view_tree.mojom";
 
 // TODO(beng): Could this be generalized as a "Chooser" with a specific type??
 

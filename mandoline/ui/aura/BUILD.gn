@@ -20,7 +20,7 @@ source_set("aura") {
   ]
 
   public_deps = [
-    "//components/view_manager/public/cpp",
+    "//components/mus/public/cpp",
   ]
   deps = [
     "//base",
@@ -28,11 +28,11 @@ source_set("aura") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/surfaces",
+    "//components/mus/gles2:lib",
+    "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
-    "//components/view_manager/gles2:lib",
-    "//components/view_manager/public/cpp",
-    "//components/view_manager/public/interfaces",
     "//skia",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",

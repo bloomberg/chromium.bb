@@ -60,8 +60,8 @@ source_set("sources") {
   if (!is_android) {
     sources += [ "application_delegate_factory_notandroid.cc" ]
     deps += [
+      "//components/mus:lib",
       "//components/resource_provider:lib",
-      "//components/view_manager:lib",
       "//mojo/services/network:lib",
     ]
   }
@@ -74,7 +74,7 @@ source_set("sources") {
 
   if (use_aura) {
     deps += [
-      "//components/view_manager/public/cpp",
+      "//components/mus/public/cpp",
       "//mandoline/ui/desktop_ui:lib",
       "//mandoline/ui/omnibox:lib",
     ]

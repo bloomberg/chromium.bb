@@ -8,7 +8,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
-#include "components/view_manager/public/cpp/view_surface.h"
+#include "components/mus/public/cpp/view_surface.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mojo {

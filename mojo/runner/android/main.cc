@@ -20,7 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "components/view_manager/android_loader.h"
+#include "components/mus/android_loader.h"
 #include "jni/ShellMain_jni.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/runner/android/android_handler_loader.h"

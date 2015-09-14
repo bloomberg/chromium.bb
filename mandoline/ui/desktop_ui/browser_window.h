@@ -5,9 +5,9 @@
 #ifndef MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 #define MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 
-#include "components/view_manager/public/cpp/view_tree_connection.h"
-#include "components/view_manager/public/cpp/view_tree_delegate.h"
-#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "components/web_view/public/cpp/web_view.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "mandoline/ui/aura/aura_init.h"

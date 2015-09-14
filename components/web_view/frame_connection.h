@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"

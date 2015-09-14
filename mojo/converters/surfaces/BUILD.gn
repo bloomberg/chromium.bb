@@ -28,7 +28,7 @@ component("surfaces") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//components/view_manager/public/interfaces",
+    "//components/mus/public/interfaces",
     "//gpu",
     "//ui/gfx/geometry",
     "//mojo/environment:chromium",

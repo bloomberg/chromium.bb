@@ -18,7 +18,7 @@ source_set("headers") {
 
   public_deps = [
     "//base",
-    "//components/view_manager/public/interfaces",
+    "//components/mus/public/interfaces",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
@@ -51,8 +51,8 @@ source_set("gles2") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//components/view_manager/gles2:lib",
-    "//components/view_manager/public/interfaces",
+    "//components/mus/gles2:lib",
+    "//components/mus/public/interfaces",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",

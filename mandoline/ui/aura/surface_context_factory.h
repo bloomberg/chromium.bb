@@ -5,8 +5,8 @@
 #ifndef MANDOLINE_UI_AURA_SURFACE_CONTEXT_FACTORY_H_
 #define MANDOLINE_UI_AURA_SURFACE_CONTEXT_FACTORY_H_
 
-#include "components/view_manager/gles2/mojo_gpu_memory_buffer_manager.h"
-#include "components/view_manager/gles2/raster_thread_helper.h"
+#include "components/mus/gles2/mojo_gpu_memory_buffer_manager.h"
+#include "components/mus/gles2/raster_thread_helper.h"
 #include "mandoline/ui/aura/surface_binding.h"
 #include "ui/compositor/compositor.h"
 

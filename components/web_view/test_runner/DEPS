@@ -1,7 +1,7 @@
 include_rules = [
   "+components/html_viewer/public",
+  "+components/mus/public",
   "+components/test_runner",
-  "+components/view_manager/public",
   "+components/web_view/public",
   "+mojo/application/public",
   "+mojo/runner",

@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/cpp/types.h"
-#include "components/view_manager/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/types.h"
+#include "components/mus/public/cpp/view_observer.h"
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 

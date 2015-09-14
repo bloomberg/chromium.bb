@@ -5,7 +5,7 @@
 #ifndef MANDOLINE_UI_AURA_NATIVE_WIDGET_VIEW_MANAGER_H_
 #define MANDOLINE_UI_AURA_NATIVE_WIDGET_VIEW_MANAGER_H_
 
-#include "components/view_manager/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/view_observer.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace aura {

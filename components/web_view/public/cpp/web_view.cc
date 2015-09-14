@@ -4,7 +4,7 @@
 
 #include "components/web_view/public/cpp/web_view.h"
 
-#include "components/view_manager/public/cpp/view.h"
+#include "components/mus/public/cpp/view.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
 namespace web_view {

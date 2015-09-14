@@ -4,8 +4,8 @@
 
 #include "mandoline/services/core_services/application_delegate_factory.h"
 
+#include "components/mus/view_manager_app.h"
 #include "components/resource_provider/resource_provider_app.h"
-#include "components/view_manager/view_manager_app.h"
 #include "mojo/services/network/network_service_delegate.h"
 
 namespace core_services {

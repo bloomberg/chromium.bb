@@ -6,7 +6,7 @@
 
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_text_input_type_converters.h"
-#include "components/view_manager/public/cpp/view.h"
+#include "components/mus/public/cpp/view.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 

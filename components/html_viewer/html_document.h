@@ -15,7 +15,7 @@
 #include "components/html_viewer/ax_provider_impl.h"
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
-#include "components/view_manager/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/cpp/view_tree_delegate.h"
 #include "components/web_view/public/interfaces/frame_tree.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/interface_factory.h"

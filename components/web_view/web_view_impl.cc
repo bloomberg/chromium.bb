@@ -6,9 +6,9 @@
 
 #include "base/command_line.h"
 #include "components/devtools_service/public/cpp/switches.h"
-#include "components/view_manager/public/cpp/scoped_view_ptr.h"
-#include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/scoped_view_ptr.h"
+#include "components/mus/public/cpp/view.h"
+#include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/web_view/frame.h"
 #include "components/web_view/frame_connection.h"
 #include "components/web_view/frame_devtools_agent.h"

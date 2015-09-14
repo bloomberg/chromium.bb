@@ -6,7 +6,7 @@
 #define MANDOLINE_UI_AURA_WINDOW_TREE_HOST_MOJO_H_
 
 #include "base/macros.h"
-#include "components/view_manager/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/view_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"

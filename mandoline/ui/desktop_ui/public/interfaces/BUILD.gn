@@ -14,7 +14,7 @@ mojom("interfaces") {
   import_dirs = [ "//mojo/services" ]
 
   deps = [
-    "//components/view_manager/public/interfaces",
+    "//components/mus/public/interfaces",
     "//mojo/application/public/interfaces",
     "//mojo/services/network/public/interfaces",
     "//ui/mojo/events:interfaces",

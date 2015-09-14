@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/view_manager/gles2",
-  "+components/view_manager/public",
+  "+components/mus/gles2",
+  "+components/mus/public",
   "+gpu",
 ]

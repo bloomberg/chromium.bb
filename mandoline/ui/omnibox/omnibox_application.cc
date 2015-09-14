@@ -6,9 +6,9 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/view_tree_delegate.h"
 #include "components/url_formatter/url_fixer.h"
-#include "components/view_manager/public/cpp/view_tree_connection.h"
-#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mandoline/ui/aura/aura_init.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"

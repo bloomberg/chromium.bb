@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "cc/layers/layer.h"
-#include "components/view_manager/public/cpp/view.h"
+#include "components/mus/public/cpp/view.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 

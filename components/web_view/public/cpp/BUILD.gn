@@ -10,7 +10,7 @@ source_set("cpp") {
 
   deps = [
     "//base",
-    "//components/view_manager/public/cpp",
+    "//components/mus/public/cpp",
     "//components/web_view/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/converters/geometry",

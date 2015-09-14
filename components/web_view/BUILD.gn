@@ -41,9 +41,9 @@ source_set("lib") {
     "//components/clipboard/public/interfaces",
     "//components/devtools_service/public/cpp",
     "//components/devtools_service/public/interfaces",
+    "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//components/resource_provider/public/interfaces",
-    "//components/view_manager/public/cpp",
-    "//components/view_manager/public/interfaces",
     "//components/web_view/test_runner/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/interfaces",
@@ -103,9 +103,9 @@ mojo_native_application("apptests") {
     ":test_support",
     "//base",
     "//base/test:test_config",
-    "//components/view_manager/public/cpp",
-    "//components/view_manager/public/cpp/tests:test_support",
-    "//components/view_manager/public/interfaces",
+    "//components/mus/public/cpp",
+    "//components/mus/public/cpp/tests:test_support",
+    "//components/mus/public/interfaces",
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
     "//mojo/application/public/cpp:sources",
@@ -116,5 +116,5 @@ mojo_native_application("apptests") {
     "//url:url",
   ]
 
-  data_deps = [ "//components/view_manager" ]
+  data_deps = [ "//components/mus" ]
 }

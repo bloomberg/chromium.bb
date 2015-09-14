@@ -4,7 +4,7 @@
 
 #include "mandoline/ui/aura/window_tree_host_mojo.h"
 
-#include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/mus/public/cpp/view_tree_connection.h"
 #include "mandoline/ui/aura/input_method_mandoline.h"
 #include "mandoline/ui/aura/surface_context_factory.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"

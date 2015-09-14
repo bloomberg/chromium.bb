@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/cpp/view_observer.h"
-#include "components/view_manager/public/cpp/view_tree_delegate.h"
-#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/cpp/view_observer.h"
+#include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "components/web_view/public/cpp/web_view.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 // TODO(beng): move this file somewhere common.

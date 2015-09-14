@@ -147,12 +147,12 @@ source_set("lib") {
     "//components/html_viewer/public/interfaces",
     "//components/message_port",
     "//components/mime_util",
+    "//components/mus/gles2:lib",
+    "//components/mus/public/interfaces",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
     "//components/scheduler:scheduler",
     "//components/startup_metric_utils",
-    "//components/view_manager/gles2:lib",
-    "//components/view_manager/public/interfaces",
     "//components/webcrypto",
     "//components/web_view:switches",
     "//components/web_view/public/interfaces",
@@ -193,7 +193,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//components/view_manager/public/cpp",
+    "//components/mus/public/cpp",
     "//third_party/WebKit/public:blink",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
@@ -208,7 +208,7 @@ source_set("lib") {
 
   data_deps = [
     "//components/clipboard",
-    "//components/view_manager",
+    "//components/mus",
     "//mojo/services/network:network",
     "//mojo/services/tracing",
   ]
@@ -333,9 +333,9 @@ mojo_native_application("apptests") {
   deps = [
     "//base",
     "//components/html_viewer/public/interfaces",
+    "//components/mus/public/cpp",
+    "//components/mus/public/cpp/tests:test_support",
     "//components/scheduler",
-    "//components/view_manager/public/cpp",
-    "//components/view_manager/public/cpp/tests:test_support",
     "//components/web_view:lib",
     "//components/web_view:test_support",
     "//components/web_view/public/interfaces",
@@ -349,7 +349,7 @@ mojo_native_application("apptests") {
 
   data_deps = [
     ":html_viewer",
-    "//components/view_manager",
+    "//components/mus",
   ]
 
   if (is_linux && !is_android) {

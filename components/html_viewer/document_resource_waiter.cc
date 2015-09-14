@@ -7,7 +7,7 @@
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
-#include "components/view_manager/public/cpp/view.h"
+#include "components/mus/public/cpp/view.h"
 
 using web_view::ViewConnectType;
 

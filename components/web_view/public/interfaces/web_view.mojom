@@ -4,8 +4,8 @@
 
 module web_view.mojom;
 
+import "components/mus/public/interfaces/view_tree.mojom";
 import "network/public/interfaces/url_loader.mojom";
-import "components/view_manager/public/interfaces/view_tree.mojom";
 
 interface WebViewClient {
   // Page-generated request for a top level frame navigation.

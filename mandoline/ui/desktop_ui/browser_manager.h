@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
+#include "components/mus/public/interfaces/view_tree_host.mojom.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"

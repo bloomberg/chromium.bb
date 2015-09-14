@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 #define COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 
-#include "components/view_manager/public/interfaces/view_tree.mojom.h"
+#include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/web_view/frame.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 

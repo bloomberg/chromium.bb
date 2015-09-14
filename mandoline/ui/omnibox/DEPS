@@ -1,6 +1,6 @@
 include_rules = [
+  "+components/mus/public",
   "+components/url_formatter",
-  "+components/view_manager/public",
   "+mojo/application",
   "+mojo/common",
   "+mojo/converters",
