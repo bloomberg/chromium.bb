@@ -39,7 +39,7 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromNSImage(
   base::scoped_nsobject<NSBitmapImageRep> ns_bitmap(
       [[NSBitmapImageRep alloc] initWithCGImage:cg_image]);
   NSData* ns_data = [ns_bitmap representationUsingType:NSPNGFileType
-                                            properties:nil];
+                                            properties:@{}];
   const unsigned char* bytes =
       static_cast<const unsigned char*>([ns_data bytes]);
   scoped_refptr<base::RefCountedBytes> refcounted_bytes(
