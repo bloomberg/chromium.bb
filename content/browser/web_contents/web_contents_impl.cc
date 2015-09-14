@@ -171,6 +171,14 @@ void NotifyCacheOnIO(
 bool CollectSites(BrowserContext* context,
                   std::set<GURL>* sites,
                   FrameTreeNode* node) {
+  // Record about:blank as a real (process-having) site only if the SiteInstance
+  // is unassigned. Do not otherwise depend on the siteinstance's site URL,
+  // since its value reflects the current process model, and this function
+  // should behave identically across all process models.
+  if (node->current_url() == GURL(url::kAboutBlankURL) &&
+      node->current_frame_host()->GetSiteInstance()->HasSite()) {
+    return true;
+  }
   sites->insert(SiteInstance::GetSiteForURL(context, node->current_url()));
   return true;
 }

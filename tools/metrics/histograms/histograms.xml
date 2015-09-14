@@ -43809,6 +43809,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteIsolation.IsolateExtensionsProcessCountEstimate">
+  <owner>nick@chromium.org</owner>
+  <summary>
+    The upper bound of the predicted renderer process count if we isolated only
+    Chrome extensions, subject to the process limit.  Recorded once per UMA
+    ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateExtensionsProcessCountLowerBound">
+  <owner>nick@chromium.org</owner>
+  <summary>
+    The lower bound of the predicted renderer process count if we isolated only
+    Chrome extensions, subject to the process limit. Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateExtensionsProcessCountNoLimit">
+  <owner>nick@chromium.org</owner>
+  <summary>
+    The predicted renderer process count if we isolated only Chrome extensions
+    and if there were no process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateExtensionsTotalProcessCountEstimate">
+  <owner>nick@chromium.org</owner>
+  <summary>
+    The predicted total process count if we isolated only Chrome extensions,
+    subject to the process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.IsolateHttpsSitesProcessCountEstimate">
   <owner>creis@chromium.org</owner>
   <summary>

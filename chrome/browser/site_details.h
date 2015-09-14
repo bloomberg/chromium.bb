@@ -11,7 +11,32 @@
 #include "content/public/browser/web_contents.h"
 
 // Maps an ID representing each BrowsingInstance to a set of site URLs.
-typedef base::hash_map<int32, std::set<GURL> > BrowsingInstanceSiteMap;
+typedef base::hash_map<int32, std::set<GURL>> BrowsingInstanceSiteMap;
+
+// This enum represents various alternative process model policies that we want
+// to evaluate. We'll estimate the process cost of each scenario.
+enum IsolationScenarioType {
+  ISOLATE_ALL_SITES,
+  ISOLATE_HTTPS_SITES,
+  ISOLATE_EXTENSIONS,
+  ISOLATION_SCENARIO_LAST = ISOLATE_EXTENSIONS
+};
+
+// Contains the state required to estimate the process count under a particular
+// process model. We have one of these per IsolationScenarioType.
+struct IsolationScenario {
+  IsolationScenario();
+  ~IsolationScenario();
+
+  void CollectSiteInfoForScenario(content::SiteInstance* primary,
+                                  const GURL& site);
+  void GetProcessCountEstimate();
+  void GetProcessCountLowerBound();
+
+  IsolationScenarioType policy;
+  std::set<GURL> sites;
+  BrowsingInstanceSiteMap browsing_instance_site_map;
+};
 
 // Information about the sites and SiteInstances in each BrowsingInstance, for
 // use in estimating the number of processes needed for various process models.
@@ -19,14 +44,14 @@ struct SiteData {
   SiteData();
   ~SiteData();
 
-  std::set<GURL> sites;
-  std::set<GURL> https_sites;
+  // One IsolationScenario object per IsolationScenarioType.
+  IsolationScenario scenarios[ISOLATION_SCENARIO_LAST + 1];
+
+  // Global list of all SiteInstances, used for de-duping related instances.
   std::vector<content::SiteInstance*> instances;
-  BrowsingInstanceSiteMap instance_site_map;
-  BrowsingInstanceSiteMap instance_https_site_map;
 };
 
-// Maps a BrowserContext to information about the SiteInstances it contains.
+// Maps a BrowserContext to information about the sites it contains.
 typedef base::hash_map<content::BrowserContext*, SiteData>
     BrowserContextSiteDataMap;
 
