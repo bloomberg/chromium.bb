@@ -476,7 +476,7 @@ static void handleMetaViewport(const String& attributeValue, CachedDocumentParam
         return;
     ViewportDescription description(ViewportDescription::ViewportMeta);
     HTMLMetaElement::getViewportDescriptionFromContentAttribute(attributeValue, description, nullptr, documentParameters->viewportMetaZeroValuesQuirk);
-    FloatSize initialViewport(documentParameters->mediaValues->viewportHeight(), documentParameters->mediaValues->viewportWidth());
+    FloatSize initialViewport(documentParameters->mediaValues->deviceWidth(), documentParameters->mediaValues->deviceHeight());
     PageScaleConstraints constraints = description.resolve(initialViewport, documentParameters->defaultViewportMinWidth);
     MediaValuesCached* cachedMediaValues = static_cast<MediaValuesCached*>(documentParameters->mediaValues.get());
     cachedMediaValues->setViewportHeight(constraints.layoutSize.height());

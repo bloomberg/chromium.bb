@@ -110,8 +110,8 @@ protected:
         MediaValuesCached::MediaValuesCachedData data;
         data.viewportWidth = 500;
         data.viewportHeight = 600;
-        data.deviceWidth = 500;
-        data.deviceHeight = 500;
+        data.deviceWidth = 700;
+        data.deviceHeight = 800;
         data.devicePixelRatio = 2.0;
         data.colorBitsPerComponent = 24;
         data.monochromeBitsPerComponent = 0;
@@ -212,6 +212,28 @@ TEST_F(HTMLPreloadScannerTest, testImagesWithViewport)
         {"http://example.test", "<img sizes='50vw' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' src='bla.gif'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
         {"http://example.test", "<img srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' src='bla.gif' sizes='50vw'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
         {"http://example.test", "<img srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+    };
+
+    for (const auto& testCase : testCases)
+        test(testCase);
+}
+
+TEST_F(HTMLPreloadScannerTest, testImagesWithViewportDeviceWidth)
+{
+    TestCase testCases[] = {
+        {"http://example.test", "<meta name=viewport content='width=device-width'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img src='bla.gif'>", "bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif'>", "bla.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 1x'>", "bla2.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 0.5x'>", "bla.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 160w'>", "bla2.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 160w, bla3.gif 250w'>", "bla3.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w'>", "bla4.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img src='bla.gif' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' sizes='50vw'>", "bla4.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img src='bla.gif' sizes='50vw' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w'>", "bla4.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img sizes='50vw' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' src='bla.gif'>", "bla4.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' src='bla.gif' sizes='50vw'>", "bla4.gif", "http://example.test/", Resource::Image, 350},
+        {"http://example.test", "<img srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla4.gif", "http://example.test/", Resource::Image, 350},
     };
 
     for (const auto& testCase : testCases)
