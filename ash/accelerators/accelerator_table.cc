@@ -308,7 +308,10 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   NEXT_IME,
   PREVIOUS_IME,
   PRINT_UI_HIERARCHIES,
-  ROTATE_WINDOW,
+  ROTATE_SCREEN,
+  SCALE_UI_UP,
+  SCALE_UI_DOWN,
+  SCALE_UI_RESET,
   SHOW_SYSTEM_TRAY_BUBBLE,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_PARTIAL_SCREENSHOT,
