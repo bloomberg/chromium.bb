@@ -380,6 +380,7 @@ interface Notification
     getter onclose
     getter onerror
     getter onshow
+    getter requireInteraction
     getter silent
     getter tag
     getter title
