@@ -21,6 +21,7 @@ static_library("browser") {
   deps = [
     "//base",
     "//base:prefs",
+    "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/strings",

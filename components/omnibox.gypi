@@ -24,6 +24,7 @@
         'component_metrics_proto',
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
+        'data_use_measurement_core',
         'history_core_browser',
         'keyed_service_core',
         'omnibox_common',

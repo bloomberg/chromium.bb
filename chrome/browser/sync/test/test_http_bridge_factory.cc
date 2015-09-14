@@ -31,7 +31,9 @@ TestHttpBridgeFactory::TestHttpBridgeFactory() {}
 
 TestHttpBridgeFactory::~TestHttpBridgeFactory() {}
 
-void TestHttpBridgeFactory::Init(const std::string& user_agent) {}
+void TestHttpBridgeFactory::Init(
+    const std::string& user_agent,
+    const syncer::BindToTrackerCallback& bind_to_tracker_callback) {}
 
 syncer::HttpPostProviderInterface* TestHttpBridgeFactory::Create() {
   return new TestHttpBridge();

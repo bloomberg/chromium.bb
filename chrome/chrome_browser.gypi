@@ -3121,6 +3121,7 @@
         '../components/components.gyp:content_settings_core_common',
         '../components/components.gyp:crx_file',
         '../components/components.gyp:data_reduction_proxy_core_browser',
+        '../components/components.gyp:data_use_measurement_core',
         '../components/components.gyp:domain_reliability',
         '../components/components.gyp:enhanced_bookmarks',
         '../components/components.gyp:favicon_base',

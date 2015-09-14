@@ -142,6 +142,7 @@ source_set("browser") {
     "//base:i18n",
     "//base:prefs",
     "//components/autofill/core/common",
+    "//components/data_use_measurement/core",
     "//components/infobars/core",
     "//components/keyed_service/core",
     "//components/os_crypt",

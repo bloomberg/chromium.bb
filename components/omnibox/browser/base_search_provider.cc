@@ -7,6 +7,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -59,6 +60,8 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
   deletion_fetcher_ =
       net::URLFetcher::Create(BaseSearchProvider::kDeletionURLFetcherID, url,
                               net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      deletion_fetcher_.get(), data_use_measurement::DataUseUserData::OMNIBOX);
   deletion_fetcher_->SetRequestContext(request_context);
   deletion_fetcher_->Start();
 }

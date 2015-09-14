@@ -7,9 +7,16 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "sync/base/sync_export.h"
 
+namespace net {
+class URLFetcher;
+}
+
 namespace syncer {
+
+typedef base::Callback<void(net::URLFetcher*)> BindToTrackerCallback;
 
 class HttpPostProviderInterface;
 
@@ -21,7 +28,8 @@ class SYNC_EXPORT HttpPostProviderFactory {
  public:
   virtual ~HttpPostProviderFactory() {}
 
-  virtual void Init(const std::string& user_agent) = 0;
+  virtual void Init(const std::string& user_agent,
+                    const BindToTrackerCallback& bind_to_tracker_callback) = 0;
 
   // Obtain a new HttpPostProviderInterface instance, owned by caller.
   virtual HttpPostProviderInterface* Create() = 0;

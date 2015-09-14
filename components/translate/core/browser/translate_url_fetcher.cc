@@ -4,6 +4,7 @@
 
 #include "components/translate/core/browser/translate_url_fetcher.h"
 
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -46,6 +47,8 @@ bool TranslateURLFetcher::Request(
   callback_ = callback;
 
   fetcher_ = net::URLFetcher::Create(id_, url_, net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_.get(), data_use_measurement::DataUseUserData::TRANSLATE);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetRequestContext(

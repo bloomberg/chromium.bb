@@ -99,6 +99,7 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'component_metrics_proto',
+        'data_use_measurement_core',
         'metrics',
       ],
       'sources': [

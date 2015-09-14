@@ -51,7 +51,9 @@ class BlockingHttpPost : public HttpPostProviderInterface {
 class BlockingHttpPostFactory : public HttpPostProviderFactory {
  public:
   ~BlockingHttpPostFactory() override {}
-  void Init(const std::string& user_agent) override {}
+  void Init(const std::string& user_agent,
+            const BindToTrackerCallback& bind_to_tracker_callback) override {}
+
   HttpPostProviderInterface* Create() override {
     return new BlockingHttpPost();
   }
