@@ -759,10 +759,8 @@ class ChunkDemuxerTest : public ::testing::Test {
       return false;
 
     // Append the whole bear1 file.
-    // TODO(wolenetz/acolwell): Remove this extra SetDuration expectation once
-    // the files are fixed to have the correct duration in their init segments,
-    // and the CreateInitDoneCB() call, above, is fixed to used that duration.
-    // See http://crbug.com/354284.
+    // Expect duration adjustment since actual duration differs slightly from
+    // duration in the init segment.
     EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
     AppendData(bear1->data(), bear1->data_size());
     // Last audio frame has timestamp 2721 and duration 24 (estimated from max
@@ -1986,9 +1984,8 @@ TEST_F(ChunkDemuxerTest, WebMFile_AudioAndVideo) {
     {kSkip, kSkip},
   };
 
-  // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
-  // ParseWebMFile() call's expected duration, below, once the file is fixed to
-  // have the correct duration in the init segment. See http://crbug.com/354284.
+  // Expect duration adjustment since actual duration differs slightly from
+  // duration in the init segment.
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240.webm", buffer_timestamps,
@@ -2024,9 +2021,8 @@ TEST_F(ChunkDemuxerTest, WebMFile_AudioOnly) {
     {kSkip, kSkip},
   };
 
-  // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
-  // ParseWebMFile() call's expected duration, below, once the file is fixed to
-  // have the correct duration in the init segment. See http://crbug.com/354284.
+  // Expect duration adjustment since actual duration differs slightly from
+  // duration in the init segment.
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240-audio-only.webm", buffer_timestamps,
@@ -2044,9 +2040,8 @@ TEST_F(ChunkDemuxerTest, WebMFile_VideoOnly) {
     {kSkip, kSkip},
   };
 
-  // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
-  // ParseWebMFile() call's expected duration, below, once the file is fixed to
-  // have the correct duration in the init segment. See http://crbug.com/354284.
+  // Expect duration adjustment since actual duration differs slightly from
+  // duration in the init segment.
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2736)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240-video-only.webm", buffer_timestamps,
@@ -3562,10 +3557,8 @@ TEST_F(ChunkDemuxerTest, AppendWindow_AudioConfigUpdateRemovesPreroll) {
 
   // Set the append window such that the first file is completely before the
   // append window.
-  // TODO(wolenetz/acolwell): Update this duration once the files are fixed to
-  // have the correct duration in their init segments, and the
-  // CreateInitDoneCB() call, above, is fixed to used that duration. See
-  // http://crbug.com/354284.
+  // Expect duration adjustment since actual duration differs slightly from
+  // duration in the init segment.
   const base::TimeDelta duration_1 = base::TimeDelta::FromMilliseconds(2746);
   append_window_start_for_next_append_ = duration_1;
 
