@@ -828,11 +828,12 @@ static unsigned startWordBoundary(const UChar* characters, unsigned length, unsi
     return start;
 }
 
-VisiblePosition startOfWord(const VisiblePosition& c, EWordSide side)
+template <typename Strategy>
+static VisiblePositionTemplate<Strategy> startOfWordAlgorithm(const VisiblePositionTemplate<Strategy>& c, EWordSide side)
 {
-    // FIXME: This returns a null VP for c at the start of the document
-    // and side == LeftWordIfOnBoundary
-    VisiblePosition p = c;
+    // TODO(yosin) This returns a null VP for c at the start of the document
+    // and |side| == |LeftWordIfOnBoundary|
+    VisiblePositionTemplate<Strategy> p = c;
     if (side == RightWordIfOnBoundary) {
         // at paragraph end, the startofWord is the current position
         if (isEndOfParagraph(c))
@@ -843,6 +844,16 @@ VisiblePosition startOfWord(const VisiblePosition& c, EWordSide side)
             return c;
     }
     return previousBoundary(p, startWordBoundary);
+}
+
+VisiblePosition startOfWord(const VisiblePosition& c, EWordSide side)
+{
+    return startOfWordAlgorithm<EditingStrategy>(c, side);
+}
+
+VisiblePositionInComposedTree startOfWord(const VisiblePositionInComposedTree& c, EWordSide side)
+{
+    return startOfWordAlgorithm<EditingInComposedTreeStrategy>(c, side);
 }
 
 static unsigned endWordBoundary(const UChar* characters, unsigned length, unsigned offset, BoundarySearchContextAvailability mayHaveMoreContext, bool& needMoreContext)

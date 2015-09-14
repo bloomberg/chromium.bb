@@ -892,4 +892,41 @@ TEST_F(VisibleUnitsTest, startOfSentence)
     EXPECT_EQ(PositionInComposedTree(three, 0), startOfSentence(createVisiblePositionInComposedTree(*four, 1)).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, startOfWord)
+{
+    const char* bodyContent = "<a id=host><b id=one>1</b> <b id=two>22</b></a><i id=three>333</i>";
+    const char* shadowContent = "<p><u id=four>44444</u><content select=#two></content><span id=space> </span><content select=#one></content><u id=five>55555</u></p>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+    Node* four = shadowRoot->getElementById("four")->firstChild();
+    Node* five = shadowRoot->getElementById("five")->firstChild();
+    Node* space = shadowRoot->getElementById("space")->firstChild();
+
+    EXPECT_EQ(Position(one, 0), startOfWord(createVisiblePositionInDOMTree(*one, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*one, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), startOfWord(createVisiblePositionInDOMTree(*one, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(space, 1), startOfWord(createVisiblePositionInComposedTree(*one, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), startOfWord(createVisiblePositionInDOMTree(*two, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*two, 0)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), startOfWord(createVisiblePositionInDOMTree(*two, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*two, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(one, 0), startOfWord(createVisiblePositionInDOMTree(*three, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*three, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(four, 0), startOfWord(createVisiblePositionInDOMTree(*four, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*four, 1)).deepEquivalent());
+
+    EXPECT_EQ(Position(space, 1), startOfWord(createVisiblePositionInDOMTree(*five, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(space, 1), startOfWord(createVisiblePositionInComposedTree(*five, 1)).deepEquivalent());
+}
+
 } // namespace blink
