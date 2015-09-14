@@ -63,8 +63,8 @@ LOAD_FLAG(MAIN_FRAME, 1 << 12)
 // and is (in theory) not intended for the current frame.
 LOAD_FLAG(PREFETCH, 1 << 13)
 
-// Indicates that this is a load that ignores limits and should complete
-// immediately.
+// Indicates that this load could cause deadlock if it has to wait for another
+// request. Overrides socket limits. Must always be used with MAXIMUM_PRIORITY.
 LOAD_FLAG(IGNORE_LIMITS, 1 << 14)
 
 // Indicates that the operation is somewhat likely to be due to an
