@@ -3625,7 +3625,9 @@
     { "name": "vulnerability.ch", "include_subdomains": true, "mode": "force-https" },
     { "name": "xiaolan.me", "include_subdomains": true, "mode": "force-https" },
     { "name": "xiaoxiao.im", "include_subdomains": true, "mode": "force-https" },
-    { "name": "hana.ondemand.com", "include_subdomains": true, "mode": "force-https" }
+    { "name": "hana.ondemand.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "fastmail.com", "mode": "force-https" },
+    { "name": "www.fastmail.com", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
