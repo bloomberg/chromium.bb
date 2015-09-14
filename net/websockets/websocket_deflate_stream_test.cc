@@ -16,6 +16,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/websockets/websocket_deflate_parameters.h"
 #include "net/websockets/websocket_deflate_predictor.h"
 #include "net/websockets/websocket_deflater.h"
 #include "net/websockets/websocket_frame.h"
@@ -222,12 +223,15 @@ class WebSocketDeflateStreamTest : public ::testing::Test {
   // Initialize deflate_stream_ with the given parameters.
   void Initialize(WebSocketDeflater::ContextTakeOverMode mode,
                   int window_bits) {
+    WebSocketDeflateParameters parameters;
+    if (mode == WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT) {
+      parameters.SetClientNoContextTakeOver();
+    }
+    parameters.SetClientMaxWindowBits(window_bits);
     mock_stream_ = new testing::StrictMock<MockWebSocketStream>;
     predictor_ = new WebSocketDeflatePredictorMock;
     deflate_stream_.reset(new WebSocketDeflateStream(
-        scoped_ptr<WebSocketStream>(mock_stream_),
-        mode,
-        window_bits,
+        scoped_ptr<WebSocketStream>(mock_stream_), parameters,
         scoped_ptr<WebSocketDeflatePredictor>(predictor_)));
   }
 

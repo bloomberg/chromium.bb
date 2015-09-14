@@ -563,58 +563,7 @@ TEST_F(WebSocketStreamCreateExtensionTest, OnlyOnePerMessageDeflateAllowed) {
       failure_message());
 }
 
-// permessage-deflate parameters may not be duplicated.
-TEST_F(WebSocketStreamCreateExtensionTest, NoDuplicateParameters) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; client_no_context_takeover; "
-      "client_no_context_takeover");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received duplicate permessage-deflate extension parameter "
-      "client_no_context_takeover",
-      failure_message());
-}
-
-// permessage-deflate parameters must start with "client_" or "server_"
-TEST_F(WebSocketStreamCreateExtensionTest, BadParameterPrefix) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; absurd_no_context_takeover");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received an unexpected permessage-deflate extension parameter",
-      failure_message());
-}
-
-// permessage-deflate parameters must be either *_no_context_takeover or
-// *_max_window_bits
-TEST_F(WebSocketStreamCreateExtensionTest, BadParameterSuffix) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; client_max_content_bits=5");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received an unexpected permessage-deflate extension parameter",
-      failure_message());
-}
-
-// *_no_context_takeover parameters must not have an argument
-TEST_F(WebSocketStreamCreateExtensionTest, BadParameterValue) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; client_no_context_takeover=true");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received invalid client_no_context_takeover parameter",
-      failure_message());
-}
-
-// *_max_window_bits must have an argument
+// client_max_window_bits must have an argument
 TEST_F(WebSocketStreamCreateExtensionTest, NoMaxWindowBitsArgument) {
   CreateAndConnectWithExtensions("permessage-deflate; client_max_window_bits");
   EXPECT_FALSE(stream_);
@@ -625,65 +574,8 @@ TEST_F(WebSocketStreamCreateExtensionTest, NoMaxWindowBitsArgument) {
       failure_message());
 }
 
-// *_max_window_bits must be an integer
-TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueInteger) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; server_max_window_bits=banana");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received invalid server_max_window_bits parameter",
-      failure_message());
-}
-
-// *_max_window_bits must be >= 8
-TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueTooSmall) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; server_max_window_bits=7");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received invalid server_max_window_bits parameter",
-      failure_message());
-}
-
-// *_max_window_bits must be <= 15
-TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueTooBig) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; client_max_window_bits=16");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received invalid client_max_window_bits parameter",
-      failure_message());
-}
-
-// *_max_window_bits must not start with 0
-TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueStartsWithZero) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; client_max_window_bits=08");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received invalid client_max_window_bits parameter",
-      failure_message());
-}
-
-// *_max_window_bits must not start with +
-TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueStartsWithPlus) {
-  CreateAndConnectWithExtensions(
-      "permessage-deflate; server_max_window_bits=+9");
-  EXPECT_FALSE(stream_);
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ(
-      "Error during WebSocket handshake: Error in permessage-deflate: "
-      "Received invalid server_max_window_bits parameter",
-      failure_message());
-}
+// Other cases for permessage-deflate parameters are tested in
+// websocket_deflate_parameters_test.cc.
 
 // TODO(ricea): Check that WebSocketDeflateStream is initialised with the
 // arguments from the server. This is difficult because the data written to the

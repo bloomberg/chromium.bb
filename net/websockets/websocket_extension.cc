@@ -4,6 +4,7 @@
 
 #include "net/websockets/websocket_extension.h"
 
+#include <map>
 #include <string>
 
 #include "base/logging.h"
@@ -33,11 +34,15 @@ WebSocketExtension::~WebSocketExtension() {}
 bool WebSocketExtension::Equals(const WebSocketExtension& other) const {
   if (name_ != other.name_) return false;
   if (parameters_.size() != other.parameters_.size()) return false;
-  for (size_t i = 0; i < other.parameters_.size(); ++i) {
-    if (!parameters_[i].Equals(other.parameters_[i]))
-      return false;
+
+  std::multimap<std::string, std::string> this_parameters, other_parameters;
+  for (const auto& p : parameters_) {
+    this_parameters.insert(std::make_pair(p.name(), p.value()));
   }
-  return true;
+  for (const auto& p : other.parameters_) {
+    other_parameters.insert(std::make_pair(p.name(), p.value()));
+  }
+  return this_parameters == other_parameters;
 }
 
 }  // namespace net

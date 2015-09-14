@@ -21,6 +21,7 @@ class GURL;
 
 namespace net {
 
+class WebSocketDeflateParameters;
 class WebSocketDeflatePredictor;
 
 // WebSocketDeflateStream is a WebSocketStream subclass.
@@ -40,8 +41,7 @@ class WebSocketDeflatePredictor;
 class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
  public:
   WebSocketDeflateStream(scoped_ptr<WebSocketStream> stream,
-                         WebSocketDeflater::ContextTakeOverMode mode,
-                         int client_window_bits,
+                         const WebSocketDeflateParameters& params,
                          scoped_ptr<WebSocketDeflatePredictor> predictor);
   ~WebSocketDeflateStream() override;
 
