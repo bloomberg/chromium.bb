@@ -6,12 +6,29 @@
 
 #include <windows.h>
 
+#include "crypto/random.h"
+
 namespace IPC {
 namespace internal {
 
+namespace {
+
+// In order to prevent mutually untrusted processes from stealing resources from
+// one another, the nonce must be secret. This generates a 128-bit,
+// cryptographicaly-strong random number.
+BrokerableAttachment::AttachmentId GenerateAttachementId() {
+  BrokerableAttachment::AttachmentId result;
+  crypto::RandBytes(result.nonce, BrokerableAttachment::kNonceSize);
+  return result;
+}
+
+}  // namespace
+
 HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle,
                                          HandleWin::Permissions permissions)
-    : handle_(handle), permissions_(permissions) {}
+    : BrokerableAttachment(GenerateAttachementId(), true),
+      handle_(handle),
+      permissions_(permissions) {}
 
 HandleAttachmentWin::HandleAttachmentWin(const WireFormat& wire_format)
     : BrokerableAttachment(wire_format.attachment_id, false),

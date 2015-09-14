@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "crypto/random.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_channel_reader.h"
@@ -17,9 +18,17 @@ namespace internal {
 
 namespace {
 
+BrokerableAttachment::AttachmentId GenerateAttachementId() {
+  BrokerableAttachment::AttachmentId result;
+  crypto::RandBytes(result.nonce, BrokerableAttachment::kNonceSize);
+  return result;
+}
+
 class MockAttachment : public BrokerableAttachment {
  public:
-  MockAttachment(int internal_state) : internal_state_(internal_state) {}
+  MockAttachment(int internal_state)
+      : BrokerableAttachment(GenerateAttachementId(), true),
+        internal_state_(internal_state) {}
   MockAttachment(BrokerableAttachment::AttachmentId id)
       : BrokerableAttachment(id, true), internal_state_(-1) {}
 

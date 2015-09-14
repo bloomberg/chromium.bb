@@ -112,8 +112,12 @@ component("ipc") {
 
     # TODO(viettrungluu): Needed for base/lazy_instance.h, which is suspect.
     "//base/third_party/dynamic_annotations",
-    "//crypto:crypto",
   ]
+
+  if (is_win) {
+    # On windows HandleAttachmentWin needs to generate random IDs.
+    deps += [ "//crypto" ]
+  }
 }
 
 # TODO(GYP): crbug.com/360936. Get this to build and run on Android.
@@ -168,6 +172,7 @@ if (!is_android) {
       "//base:i18n",
       "//base/test:run_all_unittests",
       "//base/test:test_support",
+      "//crypto",
       "//testing/gtest",
     ]
   }

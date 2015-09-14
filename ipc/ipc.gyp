@@ -20,7 +20,6 @@
         '../base/base.gyp:base',
         # TODO(viettrungluu): Needed for base/lazy_instance.h, which is suspect.
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../crypto/crypto.gyp:crypto',
       ],
       # TODO(gregoryd): direct_dependent_settings should be shared with the
       # 64-bit target, but it doesn't work due to a bug in gyp
@@ -29,6 +28,13 @@
           '..',
         ],
       },
+      'conditions': [
+        ['OS == "win"', {
+          'dependencies': [
+            '../crypto/crypto.gyp:crypto',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'ipc_tests',
@@ -39,6 +45,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
+        '../crypto/crypto.gyp:crypto',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
