@@ -35,8 +35,8 @@ const char kMetadataName[] = "metadata";
 const char kMinidumpSubdir[] = "minidumps";
 
 // A trivial implementation of SynchronizedMinidumpManager, which does no work
-// to the
-// minidump and exposes its protected members for testing.
+// to the minidump and exposes its protected members for testing. This simply
+// adds an entry to the lockfile.
 class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
  public:
   SynchronizedMinidumpManagerSimple()
@@ -76,6 +76,36 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
 void DoWorkLockedTask(SynchronizedMinidumpManagerSimple* manager) {
   manager->DoWorkLocked();
 }
+
+// Simple SynchronizedMinidumpManager consumer. Checks if a dump can be uploaded
+// then removes it from the lockfile.
+class FakeSynchronizedMinidumpUploader : public SynchronizedMinidumpManager {
+ public:
+  FakeSynchronizedMinidumpUploader()
+      : SynchronizedMinidumpManager(), can_upload_return_val_(false) {}
+  ~FakeSynchronizedMinidumpUploader() override {}
+
+  int DoWorkLocked() { return AcquireLockAndDoWork(); }
+
+  // SynchronizedMinidumpManager implementation:
+  int DoWork() override {
+    can_upload_return_val_ = CanUploadDump();
+
+    if (RemoveEntryFromLockFile(0) < 0)
+      return -1;
+
+    if (IncrementNumDumpsInCurrentPeriod() < 0)
+      return -1;
+
+    return 0;
+  }
+
+  // Accessors for testing.
+  bool can_upload_return_val() { return can_upload_return_val_; }
+
+ private:
+  bool can_upload_return_val_;
+};
 
 class SleepySynchronizedMinidumpManagerSimple
     : public SynchronizedMinidumpManagerSimple {
@@ -137,6 +167,23 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
  private:
   scoped_ptr<base::ScopedPathOverride> path_override_;
 };
+
+// Have |producer| generate |num_dumps| while checking there are no errors.
+void produce_dumps(SynchronizedMinidumpManagerSimple& producer, int num_dumps) {
+  for (int i = 0; i < num_dumps; ++i) {
+    ASSERT_EQ(0, producer.DoWorkLocked());
+    ASSERT_EQ(0, producer.add_entry_return_code());
+  }
+}
+
+// Have |consumer| remove and process |num_dumps| while checking there are no
+// errors.
+void consume_dumps(FakeSynchronizedMinidumpUploader& consumer, int num_dumps) {
+  for (int i = 0; i < num_dumps; ++i) {
+    ASSERT_EQ(0, consumer.DoWorkLocked());
+    ASSERT_EQ(true, consumer.can_upload_return_val());
+  }
+}
 
 }  // namespace
 
@@ -384,72 +431,78 @@ TEST_F(SynchronizedMinidumpManagerTest,
 }
 
 TEST_F(SynchronizedMinidumpManagerTest,
-       AddEntryFailsWhenTooManyRecentDumpsPresent) {
+       Upload_SucceedsWhenDumpLimitsNotExceeded) {
   // Sample parameters.
   time_t now = time(0);
   MinidumpParams params;
   params.process_name = "process";
 
-  SynchronizedMinidumpManagerSimple manager;
-  manager.SetDumpInfoToWrite(
+  FakeSynchronizedMinidumpUploader uploader;
+  SynchronizedMinidumpManagerSimple producer;
+  producer.SetDumpInfoToWrite(
       make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
 
-  for (int i = 0; i < SynchronizedMinidumpManager::kMaxLockfileDumps; ++i) {
-    // Adding these should succeed
-    ASSERT_EQ(0, manager.DoWorkLocked());
-    ASSERT_EQ(0, manager.add_entry_return_code());
-  }
-
-  ASSERT_EQ(0, manager.DoWorkLocked());
-
-  // This one should fail
-  ASSERT_GT(0, manager.add_entry_return_code());
+  const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
+  produce_dumps(producer, max_dumps);
+  consume_dumps(uploader, max_dumps);
 }
 
-TEST_F(SynchronizedMinidumpManagerTest,
-       AddEntryFailsWhenRatelimitPeriodExceeded) {
+TEST_F(SynchronizedMinidumpManagerTest, Upload_FailsWhenTooManyRecentDumps) {
   // Sample parameters.
   time_t now = time(0);
   MinidumpParams params;
   params.process_name = "process";
 
-  SynchronizedMinidumpManagerSimple manager;
-  manager.SetDumpInfoToWrite(
+  FakeSynchronizedMinidumpUploader uploader;
+  SynchronizedMinidumpManagerSimple producer;
+  producer.SetDumpInfoToWrite(
       make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
 
-  // Multiple iters to make sure period resets work correctly
-  for (int iter = 0; iter < 3; ++iter) {
-    time_t now = time(nullptr);
+  const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
+  produce_dumps(producer, max_dumps + 1);
+  consume_dumps(uploader, max_dumps);
 
-    // Write dump logs to the lockfile.
-    size_t too_many_recent_dumps =
-        SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
-    for (size_t i = 0; i < too_many_recent_dumps; ++i) {
-      // Adding these should succeed
-      ASSERT_EQ(0, manager.DoWorkLocked());
-      ASSERT_EQ(0, manager.add_entry_return_code());
+  // Should fail with too many dumps
+  ASSERT_EQ(0, uploader.DoWorkLocked());
+  ASSERT_EQ(false, uploader.can_upload_return_val());
+}
 
-      // Clear dumps so we don't reach max dumps in lockfile
-      ASSERT_TRUE(ClearDumps(lockfile_.value()));
-    }
+TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
+  // Sample parameters.
+  time_t now = time(0);
+  MinidumpParams params;
+  params.process_name = "process";
 
-    ASSERT_EQ(0, manager.DoWorkLocked());
+  FakeSynchronizedMinidumpUploader uploader;
+  SynchronizedMinidumpManagerSimple producer;
+  producer.SetDumpInfoToWrite(
+      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+
+  const int iters = 3;
+  const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
+
+  for (int i = 0; i < iters; ++i) {
+    produce_dumps(producer, max_dumps + 1);
+    consume_dumps(uploader, max_dumps);
+
     // Should fail with too many dumps
-    ASSERT_GT(0, manager.add_entry_return_code());
+    ASSERT_EQ(0, uploader.DoWorkLocked());
+    ASSERT_EQ(false, uploader.can_upload_return_val());
 
     int64 period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
 
     // Half period shouldn't trigger reset
+    produce_dumps(producer, 1);
     SetRatelimitPeriodStart(metadata_.value(), now - period / 2);
-    ASSERT_EQ(0, manager.DoWorkLocked());
-    ASSERT_GT(0, manager.add_entry_return_code());
+    ASSERT_EQ(0, uploader.DoWorkLocked());
+    ASSERT_EQ(false, uploader.can_upload_return_val());
 
     // Set period starting time to trigger a reset
     SetRatelimitPeriodStart(metadata_.value(), now - period);
   }
 
-  ASSERT_EQ(0, manager.DoWorkLocked());
-  ASSERT_EQ(0, manager.add_entry_return_code());
+  produce_dumps(producer, 1);
+  consume_dumps(uploader, 1);
 }
 
 }  // namespace chromecast

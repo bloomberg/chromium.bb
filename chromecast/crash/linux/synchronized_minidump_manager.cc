@@ -122,16 +122,6 @@ int SetRatelimitPeriodDumps(base::Value* metadata, int period_dumps) {
   return 0;
 }
 
-// Increment the number of dumps in the current ratelimit period in deserialized
-// |metadata| by |increment|. Returns 0 on success, < 0 on error.
-int IncrementCurrentPeriodDumps(base::Value* metadata, int increment) {
-  DCHECK_GE(increment, 0);
-  int last_dumps = GetRatelimitPeriodDumps(metadata);
-  RCHECK(last_dumps >= 0, -1);
-
-  return SetRatelimitPeriodDumps(metadata, last_dumps + increment);
-}
-
 // Returns true if |metadata| contains valid metadata, false otherwise.
 bool ValidateMetadata(base::Value* metadata) {
   RCHECK(metadata, false);
@@ -146,8 +136,6 @@ bool ValidateMetadata(base::Value* metadata) {
 }
 
 }  // namespace
-
-const int SynchronizedMinidumpManager::kMaxLockfileDumps = 5;
 
 // One day
 const int SynchronizedMinidumpManager::kRatelimitPeriodSeconds = 24 * 3600;
@@ -338,12 +326,6 @@ int SynchronizedMinidumpManager::AddEntryToLockFile(const DumpInfo& dump_info) {
     return -1;
   }
 
-  if (!CanWriteDumps(1)) {
-    LOG(ERROR) << "Can't Add Dump: Ratelimited";
-    return -1;
-  }
-
-  IncrementCurrentPeriodDumps(metadata_.get(), 1);
   dumps_->Append(dump_info.GetAsValue());
 
   return 0;
@@ -391,14 +373,15 @@ int SynchronizedMinidumpManager::SetCurrentDumps(
   return 0;
 }
 
-bool SynchronizedMinidumpManager::CanWriteDumps(int num_dumps) {
-  const auto dumps(GetDumps());
+int SynchronizedMinidumpManager::IncrementNumDumpsInCurrentPeriod() {
+  DCHECK(metadata_);
+  int last_dumps = GetRatelimitPeriodDumps(metadata_.get());
+  RCHECK(last_dumps >= 0, -1);
 
-  // If no more dumps can be written, return false.
-  if (static_cast<int>(dumps.size()) + num_dumps > kMaxLockfileDumps)
-    return false;
+  return SetRatelimitPeriodDumps(metadata_.get(), last_dumps + 1);
+}
 
-  // If too many dumps have been written recently, return false.
+bool SynchronizedMinidumpManager::CanUploadDump() {
   time_t cur_time = time(nullptr);
   time_t period_start = GetRatelimitPeriodStart(metadata_.get());
   int period_dumps_count = GetRatelimitPeriodDumps(metadata_.get());
@@ -417,7 +400,7 @@ bool SynchronizedMinidumpManager::CanWriteDumps(int num_dumps) {
     SetRatelimitPeriodDumps(metadata_.get(), period_dumps_count);
   }
 
-  return period_dumps_count + num_dumps <= kRatelimitPeriodMaxDumps;
+  return period_dumps_count < kRatelimitPeriodMaxDumps;
 }
 
 }  // namespace chromecast

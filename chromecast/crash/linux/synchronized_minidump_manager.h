@@ -46,9 +46,6 @@ namespace chromecast {
 //
 class SynchronizedMinidumpManager {
  public:
-  // Max number of dumps allowed in lockfile.
-  static const int kMaxLockfileDumps;
-
   // Length of a ratelimit period in seconds.
   static const int kRatelimitPeriodSeconds;
 
@@ -100,6 +97,15 @@ class SynchronizedMinidumpManager {
   // clean lingering dump files.
   int GetNumDumps(bool delete_all_dumps);
 
+  // Increment the number of dumps in the current ratelimit period.
+  // Returns 0 on success, < 0 on error.
+  int IncrementNumDumpsInCurrentPeriod();
+
+  // Returns true when dumps uploaded in current rate limit period is less than
+  // |kRatelimitPeriodMaxDumps|. Resets rate limit period if period time has
+  // elapsed.
+  bool CanUploadDump();
+
   // If true, the flock on the lockfile will be nonblocking.
   bool non_blocking_;
 
@@ -126,13 +132,6 @@ class SynchronizedMinidumpManager {
 
   // Release the lock file with the associated *fd*.
   void ReleaseLockFile();
-
-  // Returns true if |num_dumps| can be written to the lockfile. We can write
-  // the dumps if the number of dumps in the lockfile after |num_dumps| is added
-  // is less than or equal to |kMaxLockfileDumps| and the number of dumps in the
-  // current ratelimit period after |num_dumps| is added is less than or equal
-  // to |kRatelimitPeriodMaxDumps|.
-  bool CanWriteDumps(int num_dumps);
 
   const std::string lockfile_path_;
   const std::string metadata_path_;
