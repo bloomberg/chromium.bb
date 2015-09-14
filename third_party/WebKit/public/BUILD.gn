@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/WebKit/Source/config.gni")
 import("//tools/grit/grit_rule.gni")
 
 if (is_android) {
@@ -644,6 +645,12 @@ grit("resources") {
     "grit/blink_resources.h",
     "blink_resources.pak",
   ]
+  if (use_concatenated_impulse_responses) {
+    grit_flags = [
+      "-D",
+      "use_concatenated_impulse_responses",
+    ]
+  }
 }
 
 # GYP version: WebKit/public/blink_resources.gyp:blink_image_resources
