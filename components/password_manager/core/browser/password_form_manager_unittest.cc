@@ -264,17 +264,19 @@ class PasswordFormManagerTest : public testing::Test {
 
   void SimulateMatchingPhase(PasswordFormManager* p,
                              ResultOfSimulatedMatching result) {
-    // TODO(vabr): This should use the mock store instead of private methods of
-    // PasswordFormManager.
-    // Roll up the state to mock out the matching phase.
-    p->state_ = PasswordFormManager::POST_MATCHING_PHASE;
-    if (result == RESULT_NO_MATCH)
+    const PasswordStore::AuthorizationPromptPolicy auth_policy =
+        PasswordStore::DISALLOW_PROMPT;
+    EXPECT_CALL(*mock_store(), GetLogins(p->observed_form(), auth_policy, p));
+    p->FetchMatchingLoginsFromPasswordStore(auth_policy);
+    if (result == RESULT_NO_MATCH) {
+      p->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
       return;
+    }
 
     scoped_ptr<PasswordForm> match(new PasswordForm(saved_match_));
-    p->preferred_match_ = match.get();
-    base::string16 username = match->username_value;
-    p->best_matches_.insert(username, match.Pass());
+    ScopedVector<PasswordForm> result_form;
+    result_form.push_back(match.Pass());
+    p->OnGetPasswordStoreResults(result_form.Pass());
   }
 
   // Save saved_match() for observed_form() where |observed_form_data|,
@@ -395,7 +397,9 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   EXPECT_TRUE(
       form_manager()->pending_credentials().new_password_element.empty());
   EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+}
 
+TEST_F(PasswordFormManagerTest, TestAdditionalLogin) {
   // Now, suppose the user re-visits the site and wants to save an additional
   // login for the site with a new username. In this case, the matching phase
   // will yield the previously saved login.
@@ -403,8 +407,12 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   // Set up the new login.
   base::string16 new_user = ASCIIToUTF16("newuser");
   base::string16 new_pass = ASCIIToUTF16("newpass");
+
+  PasswordForm credentials = *observed_form();
   credentials.username_value = new_user;
   credentials.password_value = new_pass;
+  credentials.preferred = true;
+
   form_manager()->ProvisionallySave(
       credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 

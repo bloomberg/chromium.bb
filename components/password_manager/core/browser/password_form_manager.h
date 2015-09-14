@@ -228,8 +228,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void WipeStoreCopyIfOutdated();
 
  private:
-  friend class PasswordFormManagerTest;
-
   // ManagerAction - What does the manager do with this form? Either it
   // fills it, or it doesn't. If it doesn't fill it, that's either
   // because it has no match, or it is blacklisted, or it is disabled
