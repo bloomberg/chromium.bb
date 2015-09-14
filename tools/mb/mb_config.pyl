@@ -51,6 +51,8 @@
     'swarming_msan_gyp_release_trybot': ['swarming', 'chromeos', 'msan', 'gyp', 'release_trybot'],
     'swarming_deterministic_gyp_release_bot': ['swarming', 'deterministic', 'gyp', 'release_bot'],
     'swarming_gpu_tests_gn_release_trybot': ['swarming', 'gpu_tests', 'gn', 'release_trybot'],
+    'swarming_gpu_tests_gyp_debug_trybot': ['swarming', 'gpu_tests', 'gyp', 'debug_trybot'],
+    'swarming_gpu_tests_gyp_release_trybot': ['swarming', 'gpu_tests', 'gyp', 'release_trybot'],
     'swarming_gn_release_bot': ['swarming', 'gn', 'release_bot'],
     'swarming_gyp_debug_bot': ['swarming', 'gyp', 'debug_bot'],
     'swarming_gyp_debug_bot_no_symbols_x86': ['swarming', 'gyp', 'debug_bot', 'no_symbols', 'x86'],
@@ -370,6 +372,10 @@
       'android_blink_compile_rel': 'android_gyp_release_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_bot',
       'linux_chromium_gn_rel': 'gn_release_bot',
+    },
+    'tryserver.chromium.angle': {
+      'linux_angle_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
+      'linux_angle_dbg_ng': 'swarming_gpu_tests_gyp_debug_trybot',
     },
     'tryserver.chromium.linux': {
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
