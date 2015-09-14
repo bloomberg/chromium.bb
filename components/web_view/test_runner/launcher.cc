@@ -6,15 +6,18 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "mojo/runner/context.h"
 #include "url/gurl.h"
 
 namespace web_view {
 
 int LaunchTestRunner(int argc, char** argv) {
+  base::FilePath shell_dir;
+  PathService::Get(base::DIR_MODULE, &shell_dir);
   // We want the runner::Context to outlive the MessageLoop so that pipes are
   // all gracefully closed / error-out before we try to shut the Context down.
-  mojo::runner::Context shell_context;
+  mojo::runner::Context shell_context(shell_dir);
   {
     base::MessageLoop message_loop;
     if (!shell_context.Init()) {

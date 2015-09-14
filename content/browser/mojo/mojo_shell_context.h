@@ -26,14 +26,13 @@ namespace content {
 
 // MojoShellContext hosts the browser's ApplicationManager, coordinating
 // app registration and interconnection.
-class CONTENT_EXPORT MojoShellContext
-    : public NON_EXPORTED_BASE(mojo::shell::ApplicationManager::Delegate) {
+class CONTENT_EXPORT MojoShellContext {
  public:
   using StaticApplicationMap =
       std::map<GURL, base::Callback<scoped_ptr<mojo::ApplicationDelegate>()>>;
 
   MojoShellContext();
-  ~MojoShellContext() override;
+  ~MojoShellContext();
 
   // Connects an application at |url| and gets a handle to its exposed services.
   // This is only intended for use in browser code that's not part of some Mojo
@@ -60,13 +59,6 @@ class CONTENT_EXPORT MojoShellContext
       mojo::ServiceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
       const mojo::Shell::ConnectToApplicationCallback& callback);
-
-  // mojo::shell::ApplicationManager::Delegate:
-  GURL ResolveMappings(const GURL& url) override;
-  GURL ResolveMojoURL(const GURL& url) override;
-  bool CreateFetcher(
-      const GURL& url,
-      const mojo::shell::Fetcher::FetchCallback& loader_callback) override;
 
   static base::LazyInstance<scoped_ptr<Proxy>> proxy_;
 

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/runner/context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +44,9 @@ class TestChildProcessHost : public ChildProcessHost {
 // Just tests starting the child process and joining it (without starting an
 // app).
 TEST(ChildProcessHostTest, MAYBE_StartJoin) {
-  Context context;
+  base::FilePath shell_dir;
+  PathService::Get(base::DIR_MODULE, &shell_dir);
+  Context context(shell_dir);
   base::MessageLoop message_loop(
       scoped_ptr<base::MessagePump>(new common::MessagePumpMojo()));
   context.Init();

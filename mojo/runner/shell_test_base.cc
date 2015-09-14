@@ -30,7 +30,7 @@ void QuitIfRunning() {
 
 }  // namespace
 
-ShellTestBase::ShellTestBase() {
+ShellTestBase::ShellTestBase() : shell_context_(GetTestAppFilePath()) {
 }
 
 ShellTestBase::~ShellTestBase() {
@@ -38,7 +38,6 @@ ShellTestBase::~ShellTestBase() {
 
 void ShellTestBase::SetUp() {
   CHECK(shell_context_.Init());
-  SetUpTestApplications();
 }
 
 void ShellTestBase::TearDown() {
@@ -61,15 +60,10 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
 }
 
 #if !defined(OS_ANDROID)
-void ShellTestBase::SetUpTestApplications() {
-  // Set the URLResolver origin to be the same as the base file path for
-  // local files. This is primarily for test convenience, so that references
-  // to unknown mojo: URLs that do not have specific local file or custom
-  // mappings registered on the URL resolver are treated as shared libraries.
-  base::FilePath service_dir;
-  CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
-  shell_context_.url_resolver()->SetMojoBaseURL(
-      util::FilePathToFileURL(service_dir));
+base::FilePath ShellTestBase::GetTestAppFilePath() const {
+  base::FilePath shell_dir;
+  PathService::Get(base::DIR_MODULE, &shell_dir);
+  return shell_dir;
 }
 #endif
 

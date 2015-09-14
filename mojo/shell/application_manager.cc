@@ -13,14 +13,12 @@
 #include "base/trace_event/trace_event.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/shell/application_fetcher.h"
 #include "mojo/shell/application_instance.h"
 #include "mojo/shell/content_handler_connection.h"
 #include "mojo/shell/fetcher.h"
-#include "mojo/shell/local_fetcher.h"
-#include "mojo/shell/network_fetcher.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
-#include "mojo/shell/update_fetcher.h"
 
 namespace mojo {
 namespace shell {
@@ -52,11 +50,12 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
          manager_->identity_to_instance_.end();
 }
 
-ApplicationManager::ApplicationManager(Delegate* delegate)
-    : delegate_(delegate),
-      disable_cache_(false),
+ApplicationManager::ApplicationManager(scoped_ptr<ApplicationFetcher> fetcher)
+    : fetcher_(fetcher.Pass()),
       content_handler_id_counter_(0u),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  fetcher_->SetApplicationManager(this);
+}
 
 ApplicationManager::~ApplicationManager() {
   URLToContentHandlerMap url_to_content_handler(url_to_content_handler_);
@@ -104,15 +103,7 @@ void ApplicationManager::ConnectToApplication(
   DCHECK(original_url.is_valid());
   DCHECK(original_url_request);
 
-  // We check both the mapped and resolved urls for existing instances because
-  // external applications can be registered for the unresolved mojo:foo urls.
-
-  GURL mapped_url = delegate_->ResolveMappings(original_url);
-  params->SetURLInfo(mapped_url);
-  if (ConnectToRunningApplication(&params))
-    return;
-
-  GURL resolved_url = delegate_->ResolveMojoURL(mapped_url);
+  GURL resolved_url = fetcher_->ResolveURL(original_url);
   params->SetURLInfo(resolved_url);
   if (ConnectToRunningApplication(&params))
     return;
@@ -121,18 +112,9 @@ void ApplicationManager::ConnectToApplication(
   // NOTE: Set URL info using |original_url_request| instead of |original_url|
   // because it may contain more information (e.g., it is a POST request).
   params->SetURLInfo(original_url_request.Pass());
-  if (ConnectToApplicationWithLoader(&params, mapped_url,
-                                     GetLoaderForURL(mapped_url))) {
-    return;
-  }
-
-  if (ConnectToApplicationWithLoader(&params, resolved_url,
-                                     GetLoaderForURL(resolved_url))) {
-    return;
-  }
-
-  if (ConnectToApplicationWithLoader(&params, resolved_url,
-                                     default_loader_.get())) {
+  ApplicationLoader* loader = GetLoaderForURL(resolved_url);
+  if (loader) {
+    ConnectToApplicationWithLoader(&params, resolved_url, loader);
     return;
   }
 
@@ -140,56 +122,7 @@ void ApplicationManager::ConnectToApplication(
   auto callback =
       base::Bind(&ApplicationManager::HandleFetchCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&params));
-
-  if (delegate_->CreateFetcher(
-          resolved_url,
-          base::Bind(callback, NativeApplicationCleanup::DONT_DELETE))) {
-    return;
-  }
-
-  if (resolved_url.SchemeIsFile()) {
-    // LocalFetcher uses the network service to infer MIME types from URLs.
-    // Skip this for mojo URLs to avoid recursively loading the network service.
-    if (!network_service_ && !original_url.SchemeIs("mojo"))
-      ConnectToService(GURL("mojo:network_service"), &network_service_);
-    new LocalFetcher(
-        network_service_.get(), resolved_url,
-        GetBaseURLAndQuery(resolved_url, nullptr),
-        base::Bind(callback, NativeApplicationCleanup::DONT_DELETE));
-    return;
-  }
-
-  if (mapped_url.SchemeIs("mojo") &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseUpdater)) {
-    ConnectToService(GURL("mojo:updater"), &updater_);
-    new UpdateFetcher(
-        mapped_url, updater_.get(),
-        base::Bind(callback, NativeApplicationCleanup::DONT_DELETE));
-    return;
-  }
-
-  if (!url_loader_factory_)
-    ConnectToService(GURL("mojo:network_service"), &url_loader_factory_);
-
-  const NativeApplicationCleanup cleanup =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDontDeleteOnDownload)
-          ? NativeApplicationCleanup::DONT_DELETE
-          : NativeApplicationCleanup::DELETE;
-
-  if (original_url.SchemeIs("mojo")) {
-    // Use the resolved mojo URL in the request to support origin mapping, etc.
-    URLRequestPtr resolved_url_request(URLRequest::New());
-    resolved_url_request->url = resolved_url.spec();
-    new NetworkFetcher(disable_cache_, resolved_url_request.Pass(),
-                       url_loader_factory_.get(),
-                       base::Bind(callback, cleanup));
-    return;
-  }
-
-  new NetworkFetcher(disable_cache_, original_url_request.Pass(),
-                     url_loader_factory_.get(), base::Bind(callback, cleanup));
+  fetcher_->FetchRequest(original_url_request.Pass(), callback);
 }
 
 bool ApplicationManager::ConnectToRunningApplication(
@@ -203,18 +136,14 @@ bool ApplicationManager::ConnectToRunningApplication(
   return true;
 }
 
-bool ApplicationManager::ConnectToApplicationWithLoader(
+void ApplicationManager::ConnectToApplicationWithLoader(
     scoped_ptr<ConnectToApplicationParams>* params,
     const GURL& resolved_url,
     ApplicationLoader* loader) {
-  if (!loader)
-    return false;
-
   if (!(*params)->app_url().SchemeIs("mojo"))
     (*params)->SetURLInfo(resolved_url);
 
   loader->Load(resolved_url, RegisterInstance(params->Pass(), nullptr));
-  return true;
 }
 
 InterfaceRequest<Application> ApplicationManager::RegisterInstance(
@@ -248,7 +177,6 @@ ApplicationInstance* ApplicationManager::GetApplicationInstance(
 
 void ApplicationManager::HandleFetchCallback(
     scoped_ptr<ConnectToApplicationParams> params,
-    NativeApplicationCleanup cleanup,
     scoped_ptr<Fetcher> fetcher) {
   if (!fetcher) {
     // Network error. Drop |params| to tell the requestor.
@@ -300,6 +228,8 @@ void ApplicationManager::HandleFetchCallback(
   // If the response begins with a #!mojo <content-handler-url>, use it.
   GURL content_handler_url;
   std::string shebang;
+  // TODO(beng): it seems like some delegate should/would want to have a say in
+  //             configuring the qualifier also.
   bool enable_multi_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMultiprocess);
 
@@ -385,14 +315,13 @@ void ApplicationManager::HandleFetchCallback(
                   base::Bind(&ApplicationManager::RunNativeApplication,
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Passed(request.Pass()), start_sandboxed,
-                             options, cleanup, base::Passed(fetcher.Pass())));
+                             options, base::Passed(fetcher.Pass())));
 }
 
 void ApplicationManager::RunNativeApplication(
     InterfaceRequest<Application> application_request,
     bool start_sandboxed,
     const NativeRunnerFactory::Options& options,
-    NativeApplicationCleanup cleanup,
     scoped_ptr<Fetcher> fetcher,
     const base::FilePath& path,
     bool path_exists) {
@@ -411,7 +340,8 @@ void ApplicationManager::RunNativeApplication(
                path.AsUTF8Unsafe());
   NativeRunner* runner = native_runner_factory_->Create(options).release();
   native_runners_.push_back(runner);
-  runner->Start(path, start_sandboxed, cleanup, application_request.Pass(),
+  runner->Start(path, start_sandboxed, NativeApplicationCleanup::DONT_DELETE,
+                application_request.Pass(),
                 base::Bind(&ApplicationManager::CleanupRunner,
                            weak_ptr_factory_.GetWeakPtr(), runner));
 }
@@ -484,8 +414,7 @@ void ApplicationManager::SetNativeOptionsForURL(
     const GURL& url) {
   DCHECK(!url.has_query());  // Precondition.
   // Apply mappings and resolution to get the resolved URL.
-  GURL resolved_url =
-      delegate_->ResolveMojoURL(delegate_->ResolveMappings(url));
+  GURL resolved_url = fetcher_->ResolveURL(url);
   DCHECK(!resolved_url.has_query());  // Still shouldn't have query.
   // TODO(vtl): We should probably also remove/disregard the query string (and
   // maybe canonicalize in other ways).
@@ -501,7 +430,7 @@ ApplicationLoader* ApplicationManager::GetLoaderForURL(const GURL& url) {
   auto scheme_it = scheme_to_loader_.find(url.scheme());
   if (scheme_it != scheme_to_loader_.end())
     return scheme_it->second;
-  return nullptr;
+  return default_loader_.get();
 }
 
 void ApplicationManager::OnApplicationInstanceError(

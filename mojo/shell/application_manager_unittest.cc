@@ -15,6 +15,7 @@
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/shell/application_fetcher.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/fetcher.h"
@@ -455,15 +456,13 @@ class Tester : public ApplicationDelegate,
   ScopedVector<TestAImpl> a_bindings_;
 };
 
-class TestDelegate : public ApplicationManager::Delegate {
+class TestApplicationFetcher : public ApplicationFetcher {
  public:
-  TestDelegate()
+  TestApplicationFetcher()
       : create_test_fetcher_(false),
         fetcher_url_("xxx"),
         mime_type_(kTestMimeType) {}
-  ~TestDelegate() override {}
-
-  void AddMapping(const GURL& from, const GURL& to) { mappings_[from] = to; }
+  ~TestApplicationFetcher() override {}
 
   void set_create_test_fetcher(bool create_test_fetcher) {
     create_test_fetcher_ = create_test_fetcher;
@@ -474,37 +473,29 @@ class TestDelegate : public ApplicationManager::Delegate {
   void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
 
   // ApplicationManager::Delegate
-  GURL ResolveMappings(const GURL& url) override {
-    auto it = mappings_.find(url);
-    if (it != mappings_.end())
-      return it->second;
-    return url;
-  }
-  GURL ResolveMojoURL(const GURL& url) override {
-    GURL mapped_url = ResolveMappings(url);
+  void SetApplicationManager(ApplicationManager* manager) override {}
+  GURL ResolveURL(const GURL& url) override {
+    GURL resolved_url = url;
     // The shell automatically map mojo URLs.
-    if (mapped_url.scheme() == "mojo") {
+    if (resolved_url.scheme() == "mojo") {
       url::Replacements<char> replacements;
       replacements.SetScheme("file", url::Component(0, 4));
-      mapped_url = mapped_url.ReplaceComponents(replacements);
+      resolved_url = resolved_url.ReplaceComponents(replacements);
     }
-    return mapped_url;
+    return resolved_url;
   }
-  bool CreateFetcher(const GURL& url,
-                     const Fetcher::FetchCallback& loader_callback) override {
-    if (!create_test_fetcher_)
-      return false;
-    new TestMimeTypeFetcher(loader_callback, fetcher_url_, mime_type_);
-    return true;
+  void FetchRequest(URLRequestPtr request,
+                    const Fetcher::FetchCallback& loader_callback) override {
+    if (create_test_fetcher_)
+      new TestMimeTypeFetcher(loader_callback, fetcher_url_, mime_type_);
   }
 
  private:
-  std::map<GURL, GURL> mappings_;
   bool create_test_fetcher_;
   GURL fetcher_url_;
   std::string mime_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestApplicationFetcher);
 };
 
 class ApplicationManagerTest : public testing::Test {
@@ -514,7 +505,8 @@ class ApplicationManagerTest : public testing::Test {
   ~ApplicationManagerTest() override {}
 
   void SetUp() override {
-    application_manager_.reset(new ApplicationManager(&test_delegate_));
+    application_manager_.reset(new ApplicationManager(
+        make_scoped_ptr(new TestApplicationFetcher)));
     test_loader_ = new TestApplicationLoader;
     test_loader_->set_context(&context_);
     application_manager_->set_default_loader(
@@ -543,7 +535,6 @@ class ApplicationManagerTest : public testing::Test {
 
  protected:
   base::ShadowingAtExitManager at_exit_;
-  TestDelegate test_delegate_;
   TestApplicationLoader* test_loader_;
   TesterContext tester_context_;
   TestContext context_;
@@ -559,33 +550,6 @@ TEST_F(ApplicationManagerTest, Basic) {
   EXPECT_EQ(std::string("test"), context_.last_test_string);
 }
 
-// Confirm that url mappings are respected.
-TEST_F(ApplicationManagerTest, URLMapping) {
-  ApplicationManager am(&test_delegate_);
-  GURL test_url("test:test");
-  GURL test_url2("test:test2");
-  test_delegate_.AddMapping(test_url, test_url2);
-  TestApplicationLoader* loader = new TestApplicationLoader;
-  loader->set_context(&context_);
-  am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader), test_url2);
-  {
-    // Connect to the mapped url
-    TestServicePtr test_service;
-    am.ConnectToService(test_url, &test_service);
-    TestClient test_client(test_service.Pass());
-    test_client.Test("test");
-    loop_.Run();
-  }
-  {
-    // Connect to the target url
-    TestServicePtr test_service;
-    am.ConnectToService(test_url2, &test_service);
-    TestClient test_client(test_service.Pass());
-    test_client.Test("test");
-    loop_.Run();
-  }
-}
-
 TEST_F(ApplicationManagerTest, ClientError) {
   test_client_->Test("test");
   EXPECT_TRUE(HasRunningInstanceForURL(GURL(kTestURLString)));
@@ -599,7 +563,7 @@ TEST_F(ApplicationManagerTest, ClientError) {
 
 TEST_F(ApplicationManagerTest, Deletes) {
   {
-    ApplicationManager am(&test_delegate_);
+    ApplicationManager am(make_scoped_ptr(new TestApplicationFetcher));
     TestApplicationLoader* default_loader = new TestApplicationLoader;
     default_loader->set_context(&context_);
     TestApplicationLoader* url_loader1 = new TestApplicationLoader;
@@ -743,41 +707,6 @@ TEST_F(ApplicationManagerTest, NoServiceNoLoad) {
   EXPECT_TRUE(c.encountered_error());
 }
 
-TEST_F(ApplicationManagerTest, MappedURLsShouldNotCauseDuplicateLoad) {
-  test_delegate_.AddMapping(GURL("foo:foo2"), GURL("foo:foo"));
-  // 1 because ApplicationManagerTest connects once at startup.
-  EXPECT_EQ(1, test_loader_->num_loads());
-
-  TestServicePtr test_service;
-  application_manager_->ConnectToService(GURL("foo:foo"), &test_service);
-  EXPECT_EQ(2, test_loader_->num_loads());
-
-  TestServicePtr test_service2;
-  application_manager_->ConnectToService(GURL("foo:foo2"), &test_service2);
-  EXPECT_EQ(2, test_loader_->num_loads());
-
-  TestServicePtr test_service3;
-  application_manager_->ConnectToService(GURL("bar:bar"), &test_service2);
-  EXPECT_EQ(3, test_loader_->num_loads());
-}
-
-TEST_F(ApplicationManagerTest, MappedURLsShouldWorkWithLoaders) {
-  TestApplicationLoader* custom_loader = new TestApplicationLoader;
-  TestContext context;
-  custom_loader->set_context(&context);
-  application_manager_->SetLoaderForURL(make_scoped_ptr(custom_loader),
-                                        GURL("mojo:foo"));
-  test_delegate_.AddMapping(GURL("mojo:foo2"), GURL("mojo:foo"));
-
-  TestServicePtr test_service;
-  application_manager_->ConnectToService(GURL("mojo:foo2"), &test_service);
-  EXPECT_EQ(1, custom_loader->num_loads());
-  custom_loader->set_context(nullptr);
-
-  EXPECT_TRUE(HasRunningInstanceForURL(GURL("mojo:foo2")));
-  EXPECT_FALSE(HasRunningInstanceForURL(GURL("mojo:foo")));
-}
-
 TEST_F(ApplicationManagerTest, TestQueryWithLoaders) {
   TestApplicationLoader* url_loader = new TestApplicationLoader;
   TestApplicationLoader* scheme_loader = new TestApplicationLoader;
@@ -821,9 +750,10 @@ TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
   const GURL requestor_url("http://requestor.url");
   TestContext test_context;
   base::MessageLoop loop;
-  TestDelegate test_delegate;
-  test_delegate.set_create_test_fetcher(true);
-  ApplicationManager application_manager(&test_delegate);
+  scoped_ptr<TestApplicationFetcher> test_application_fetcher(
+      new TestApplicationFetcher);
+  test_application_fetcher->set_create_test_fetcher(true);
+  ApplicationManager application_manager(test_application_fetcher.Pass());
   application_manager.set_default_loader(nullptr);
   application_manager.RegisterContentHandler(kTestMimeType,
                                              content_handler_url);
@@ -886,10 +816,11 @@ TEST(ApplicationManagerTest2,
   const GURL content_handler_url("http://test.content.handler");
   const GURL requestor_url("http://requestor.url");
   TestContext test_context;
-  TestDelegate test_delegate;
-  test_delegate.set_fetcher_url(GURL("test:test"));
-  test_delegate.set_create_test_fetcher(true);
-  ApplicationManager application_manager(&test_delegate);
+  scoped_ptr<TestApplicationFetcher> test_application_fetcher(
+      new TestApplicationFetcher);
+  test_application_fetcher->set_fetcher_url(GURL("test:test"));
+  test_application_fetcher->set_create_test_fetcher(true);
+  ApplicationManager application_manager(test_application_fetcher.Pass());
   application_manager.set_default_loader(nullptr);
   application_manager.RegisterContentHandler(kTestMimeType,
                                              content_handler_url);
@@ -944,10 +875,11 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
   const GURL content_handler_url("http://test.content.handler");
   const GURL requestor_url("http://requestor.url");
   TestContext test_context;
-  TestDelegate test_delegate;
-  test_delegate.set_fetcher_url(GURL("test:test"));
-  test_delegate.set_create_test_fetcher(true);
-  ApplicationManager application_manager(&test_delegate);
+  TestApplicationFetcher* test_application_fetcher = new TestApplicationFetcher;
+  test_application_fetcher->set_fetcher_url(GURL("test:test"));
+  test_application_fetcher->set_create_test_fetcher(true);
+  ApplicationManager application_manager(
+      make_scoped_ptr(test_application_fetcher));
   application_manager.set_default_loader(nullptr);
   application_manager.RegisterContentHandler(kTestMimeType,
                                              content_handler_url);
@@ -979,8 +911,8 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
 
   const std::string mime_type2("test/mime-type2");
   const GURL content_handler_url2("http://test.content2.handler");
-  test_delegate.set_fetcher_url(GURL("test2:test2"));
-  test_delegate.set_mime_type(mime_type2);
+  test_application_fetcher->set_fetcher_url(GURL("test2:test2"));
+  test_application_fetcher->set_mime_type(mime_type2);
   application_manager.RegisterContentHandler(mime_type2, content_handler_url2);
 
   TestApplicationLoader* content_handler_loader2 = new TestApplicationLoader;
