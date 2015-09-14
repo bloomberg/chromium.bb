@@ -98,9 +98,9 @@ public:
     {
         // Process all queued debugger commands. WorkerThread is certainly
         // alive if this task is being executed.
-        m_thread->willEnterNestedLoop();
-        while (MessageQueueMessageReceived == m_thread->runDebuggerTask(WorkerThread::DontWaitForMessage)) { }
-        m_thread->didLeaveNestedLoop();
+        m_thread->willRunDebuggerTasks();
+        while (WorkerThread::TaskReceived == m_thread->runDebuggerTask(WorkerThread::DontWaitForTask)) { }
+        m_thread->didRunDebuggerTasks();
     }
 
 private:
@@ -234,13 +234,13 @@ void WorkerInspectorController::workerContextInitialized(bool shouldPauseOnStart
 void WorkerInspectorController::pauseOnStart()
 {
     m_paused = true;
-    MessageQueueWaitResult result;
-    m_workerGlobalScope->thread()->willEnterNestedLoop();
+    WorkerThread::TaskQueueResult result;
+    m_workerGlobalScope->thread()->willRunDebuggerTasks();
     do {
         result = m_workerGlobalScope->thread()->runDebuggerTask();
     // Keep waiting until execution is resumed.
-    } while (result == MessageQueueMessageReceived && m_paused);
-    m_workerGlobalScope->thread()->didLeaveNestedLoop();
+    } while (result == WorkerThread::TaskReceived && m_paused);
+    m_workerGlobalScope->thread()->didRunDebuggerTasks();
 }
 
 DEFINE_TRACE(WorkerInspectorController)

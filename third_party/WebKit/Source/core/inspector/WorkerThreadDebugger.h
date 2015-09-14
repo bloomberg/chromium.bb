@@ -50,7 +50,6 @@ public:
     static int contextGroupId();
 
 private:
-
     V8DebuggerListener* getDebugListenerForContext(v8::Local<v8::Context>);
     void runMessageLoopOnPause(v8::Local<v8::Context>);
     void quitMessageLoopOnPause();

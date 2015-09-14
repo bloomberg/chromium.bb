@@ -99,7 +99,7 @@ void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId, co
 
 static void runDebuggerTaskForWorker(WorkerThread* workerThread)
 {
-    workerThread->runDebuggerTask(WorkerThread::DontWaitForMessage);
+    workerThread->runDebuggerTask(WorkerThread::DontWaitForTask);
 }
 
 void WorkerInspectorProxy::addDebuggerTaskForWorker(const WebTraceLocation& location, PassOwnPtr<WebTaskRunner::Task> task)

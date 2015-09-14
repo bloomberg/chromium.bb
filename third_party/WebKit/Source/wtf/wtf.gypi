@@ -82,7 +82,6 @@
             'MainThread.cpp',
             'MainThread.h',
             'MathExtras.h',
-            'MessageQueue.h',
             'NonCopyingSort.h',
             'Noncopyable.h',
             'NotFound.h',

@@ -35,7 +35,6 @@
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/v8/V8DebuggerListener.h"
 #include "core/workers/WorkerThread.h"
-#include "wtf/MessageQueue.h"
 #include <v8.h>
 
 namespace blink {
@@ -65,13 +64,13 @@ int WorkerThreadDebugger::contextGroupId()
 
 void WorkerThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context>)
 {
-    MessageQueueWaitResult result;
-    m_workerThread->willEnterNestedLoop();
+    WorkerThread::TaskQueueResult result;
+    m_workerThread->willRunDebuggerTasks();
     do {
         result = m_workerThread->runDebuggerTask();
     // Keep waiting until execution is resumed.
-    } while (result == MessageQueueMessageReceived && debugger()->isPaused());
-    m_workerThread->didLeaveNestedLoop();
+    } while (result == WorkerThread::TaskReceived && debugger()->isPaused());
+    m_workerThread->didRunDebuggerTasks();
 }
 
 void WorkerThreadDebugger::quitMessageLoopOnPause()
