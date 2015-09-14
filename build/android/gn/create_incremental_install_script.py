@@ -54,6 +54,9 @@ def main(args):
   parser.add_argument('--script-output-path',
                       help='Output path for executable script.',
                       required=True)
+  parser.add_argument('--output-directory',
+                      help='Path to the root build directory.',
+                      default='.')
   parser.add_argument('--apk-path',
                       help='Path to the .apk to install.',
                       required=True)
@@ -76,6 +79,7 @@ def main(args):
   incremental_install_path = relativize(incremental_install_path)
 
   incremental_install_path_args = [
+      ('--output-directory', relativize(options.output_directory)),
       (None, relativize(options.apk_path)),
   ]
   if options.lib_dir:

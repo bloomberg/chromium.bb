@@ -39,6 +39,8 @@ def main():
                       action='store_true',
                       default=False,
                       help='Remove the app and all side-loaded files.')
+  parser.add_argument('--output-directory',
+                      help='Path to the root build directory.')
   parser.add_argument('--no-threading',
                       action='store_true',
                       default=False,
@@ -55,6 +57,8 @@ def main():
   logging.basicConfig(format='%(asctime)s (%(thread)d) %(message)s')
   run_tests_helper.SetLogLevel(args.verbose_count)
   constants.SetBuildType('Debug')
+  if args.output_directory:
+    constants.SetOutputDirectory(args.output_directory)
 
   if args.device:
     # Retries are annoying when commands fail for legitimate reasons. Might want
