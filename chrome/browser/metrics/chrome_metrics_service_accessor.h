@@ -59,6 +59,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
   friend class extensions::FileManagerPrivateIsUMAEnabledFunction;
   friend class ::FlashDOMHandler;
+  friend class StackSamplingConfiguration;
   friend class system_logs::ChromeInternalLogSource;
   friend class UmaSessionStats;
   friend class options::BrowserOptionsHandler;

@@ -807,6 +807,8 @@
       'browser/speech/tts_platform.cc',
       'browser/speech/tts_platform.h',
       'browser/speech/tts_win.cc',
+      'browser/stack_sampling_configuration.cc',
+      'browser/stack_sampling_configuration.h',
       'browser/status_icons/status_icon.cc',
       'browser/status_icons/status_icon.h',
       'browser/status_icons/status_icon_menu_model.cc',

@@ -550,16 +550,6 @@ void LaunchDevToolsHandlerIfNeeded(const base::CommandLine& command_line) {
   }
 }
 
-base::StackSamplingProfiler::SamplingParams GetStartupSamplingParams() {
-  // Sample at 10Hz for 30 seconds.
-  base::StackSamplingProfiler::SamplingParams params;
-  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-  params.bursts = 1;
-  params.samples_per_burst = 300;
-  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-  return params;
-}
-
 }  // namespace
 
 namespace chrome_browser {
@@ -590,7 +580,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       browser_field_trials_(parameters.command_line),
       sampling_profiler_(
           base::PlatformThread::CurrentId(),
-          GetStartupSamplingParams(),
+          sampling_profiler_config_.GetSamplingParams(),
           metrics::CallStackProfileMetricsProvider::GetProfilerCallback(
               metrics::CallStackProfileMetricsProvider::Params(
                   metrics::CallStackProfileMetricsProvider::PROCESS_STARTUP,
@@ -600,12 +590,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       notify_result_(ProcessSingleton::PROCESS_NONE),
       local_state_(NULL),
       restart_last_session_(false) {
-  const version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::UNKNOWN ||
-      channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
+  if (sampling_profiler_config_.IsProfilerEnabled())
     sampling_profiler_.Start();
-  }
 
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
@@ -740,6 +726,10 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
       // Don't enable instrumentation.
       break;
   }
+
+  // Register a synthetic field trial for the sampling profiler configuration
+  // that was already chosen.
+  sampling_profiler_config_.RegisterSyntheticFieldTrial();
 }
 
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
