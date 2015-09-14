@@ -159,7 +159,8 @@ CORE_EXPORT VisiblePositionInComposedTree logicalStartOfLine(const VisiblePositi
 // it for shadow tree.
 CORE_EXPORT VisiblePosition logicalEndOfLine(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInComposedTree logicalEndOfLine(const VisiblePositionInComposedTree&);
-bool isLogicalEndOfLine(const VisiblePosition&);
+CORE_EXPORT bool isLogicalEndOfLine(const VisiblePosition&);
+CORE_EXPORT bool isLogicalEndOfLine(const VisiblePositionInComposedTree&);
 VisiblePosition leftBoundaryOfLine(const VisiblePosition&, TextDirection);
 VisiblePosition rightBoundaryOfLine(const VisiblePosition&, TextDirection);
 

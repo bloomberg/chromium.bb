@@ -1217,9 +1217,20 @@ bool isEndOfLine(const VisiblePositionInComposedTree& p)
     return isEndOfLineAlgorithm<EditingInComposedTreeStrategy>(p);
 }
 
-bool isLogicalEndOfLine(const VisiblePosition& p)
+template <typename Strategy>
+static bool isLogicalEndOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& p)
 {
     return p.isNotNull() && p.deepEquivalent() == logicalEndOfLine(p).deepEquivalent();
+}
+
+bool isLogicalEndOfLine(const VisiblePosition& p)
+{
+    return isLogicalEndOfLineAlgorithm<EditingStrategy>(p);
+}
+
+bool isLogicalEndOfLine(const VisiblePositionInComposedTree& p)
+{
+    return isLogicalEndOfLineAlgorithm<EditingInComposedTreeStrategy>(p);
 }
 
 static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, LayoutUnit lineDirectionPoint)
