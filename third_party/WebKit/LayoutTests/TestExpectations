@@ -72,14 +72,6 @@ crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Image
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/461179 css1/formatting_model/inline_elements.html [ NeedsRebaseline ]
-crbug.com/461179 fast/box-shadow/box-shadow.html [ NeedsRebaseline ]
-crbug.com/461179 fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ NeedsRebaseline ]
-crbug.com/461179 fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ NeedsRebaseline ]
-crbug.com/461179 fast/forms/suggestion-picker/month-suggestion-picker-appearance-rtl.html [ NeedsRebaseline ]
-crbug.com/461179 fast/inline/inline-box-background-repeat-x.html [ NeedsRebaseline ]
-crbug.com/461179 fast/writing-mode/box-shadow-horizontal-bt.html [ NeedsRebaseline ]
-
 # Times out on the windows trybot.
 crbug.com/481269 [ Win ] fast/dom/gc-treescope.html [ Pass Timeout ]
 
