@@ -95,4 +95,8 @@ component("boringssl") {
   } else {
     defines += [ "OPENSSL_NO_ASM" ]
   }
+
+  if (is_nacl) {
+    deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
+  }
 }

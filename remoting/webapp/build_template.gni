@@ -5,6 +5,7 @@
 # Keep in sync with 'remoting_webapp' target in remoting/remoting_client.gypi.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/features.gni")
 import("//build/util/version.gni")
 import("//remoting/remoting_locales.gni")
 import("//remoting/remoting_options.gni")
@@ -183,6 +184,17 @@ template("desktop_remoting_webapp") {
       "$target_gen_dir/credits.html",
     ]
 
+    if (enable_pnacl) {
+      pexe_dir = get_label_info(
+              "//remoting/client/plugin:remoting_client_plugin_newlib(//build/toolchain/nacl:newlib_pnacl)",
+              "root_out_dir")
+
+      extra_files += [ "$pexe_dir/remoting_client_plugin_newlib.pexe" ]
+      if (is_debug) {
+        extra_files += [ "$pexe_dir/remoting_client_plugin_newlib.pexe.debug" ]
+      }
+    }
+
     inputs = [ rebase_path("crd/manifest.json.jinja2", root_build_dir) ] +
              remoting_version_files +
              rebase_path(remoting_webapp_crd_files, root_build_dir) +
@@ -201,6 +213,12 @@ template("desktop_remoting_webapp") {
       "//remoting/resources",
       "//remoting/webapp:credits",
     ]
+
+    if (enable_pnacl) {
+      deps += [
+        "//remoting/client/plugin:remoting_client_plugin_newlib(//build/toolchain/nacl:newlib_pnacl)",
+      ]
+    }
 
     # Create a file that contains a list of all the resource files needed
     # to build the webapp. This is needed to avoid problems on platforms that

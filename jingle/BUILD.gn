@@ -24,6 +24,14 @@ if (enable_webrtc || !is_android) {
     ]
 
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+    if (is_nacl) {
+      sources -= [
+        "glue/chrome_async_socket.cc",
+        "glue/proxy_resolving_client_socket.cc",
+        "glue/xmpp_client_socket_factory.cc",
+      ]
+    }
   }
 
   # A library for sending and receiving peer-issued notifications.

@@ -266,6 +266,10 @@ static_library("libjingle") {
     cflags = [ "/wd4005" ]
   }
 
+  if (is_nacl) {
+    deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
+  }
+
   configs += [ ":jingle_unexported_configs" ]
   public_configs = [ ":jingle_public_configs" ]
   all_dependent_configs = [ ":jingle_all_dependent_configs" ]

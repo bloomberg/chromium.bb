@@ -273,6 +273,7 @@
       'client/plugin/pepper_cursor_setter.h',
       'client/plugin/pepper_input_handler.cc',
       'client/plugin/pepper_input_handler.h',
+      'client/plugin/pepper_module.cc',
       'client/plugin/pepper_mouse_locker.cc',
       'client/plugin/pepper_mouse_locker.h',
       'client/plugin/pepper_network_manager.cc',

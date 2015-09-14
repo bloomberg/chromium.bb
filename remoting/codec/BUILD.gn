@@ -16,12 +16,32 @@ source_set("codec") {
     "//media",
     "//media:shared_memory_support",
     "//remoting/proto",
-    "//remoting/resources",
     "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/opus",
-    "//third_party/webrtc/modules/desktop_capture",
+    "//third_party/webrtc/modules/desktop_capture:primitives",
   ]
+
+  if (is_nacl) {
+    deps -= [
+      "//media",
+      "//media:shared_memory_support",
+    ]
+    sources -= [
+      "audio_encoder.h",
+      "audio_encoder_opus.cc",
+      "audio_encoder_opus.h",
+      "audio_encoder_verbatim.cc",
+      "audio_encoder_verbatim.h",
+      "video_encoder.h",
+      "video_encoder_helper.cc",
+      "video_encoder_helper.h",
+      "video_encoder_verbatim.cc",
+      "video_encoder_verbatim.h",
+      "video_encoder_vpx.cc",
+      "video_encoder_vpx.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {

@@ -5,9 +5,13 @@
 import("//remoting/remoting_srcs.gni")
 
 source_set("client") {
+  # Disabled the source filters because there are _mac files that need to
+  # be compiled on all platforms.
+  set_sources_assignment_filter([])
   sources = rebase_path(remoting_srcs_gypi_values.remoting_client_sources,
                         ".",
                         "//remoting")
+  set_sources_assignment_filter(sources_assignment_filter)
 
   configs += [
     "//build/config/compiler:wexit_time_destructors",
@@ -19,13 +23,23 @@ source_set("client") {
     "//remoting/codec",
     "//remoting/protocol",
     "//third_party/libyuv",
-    "//third_party/webrtc/modules/desktop_capture",
+    "//third_party/webrtc/modules/desktop_capture:primitives",
   ]
+
+  if (is_nacl) {
+    sources -= [
+      "client_status_logger.cc",
+      "server_log_entry_client.cc",
+    ]
+  }
 }
 
 source_set("unit_tests") {
   testonly = true
 
+  # Disabled the source filters because there are _mac files that need to
+  # be compiled on all platforms.
+  set_sources_assignment_filter([])
   sources = [
     "audio_player_unittest.cc",
     "client_status_logger_unittest.cc",
@@ -37,6 +51,7 @@ source_set("unit_tests") {
     "software_video_renderer_unittest.cc",
     "touch_input_scaler_unittest.cc",
   ]
+  set_sources_assignment_filter(sources_assignment_filter)
 
   configs += [ "//remoting:version" ]
 

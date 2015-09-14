@@ -19,9 +19,10 @@ declare_args() {
 
 # True when we're using OpenSSL for representing certificates. When targeting
 # Android, the platform certificate library is used for certificate
-# verification. On other targets, this flag also enables OpenSSL for certificate
-# verification, but this configuration is unsupported.
-use_openssl_certs = is_android
+# verification. On NaCl, verification isn't supported. On other targets, this
+# flag also enables OpenSSL for certificate verification, but this configuration
+# is unsupported.
+use_openssl_certs = is_android || is_nacl
 
 # True if NSS is used for certificate verification. Note that this is
 # independent from use_openssl. It is possible to use OpenSSL for the crypto

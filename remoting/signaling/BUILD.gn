@@ -26,6 +26,14 @@ source_set("signaling") {
     "//net",
     "//remoting/base",
   ]
+
+  if (is_nacl) {
+    sources -= [
+      "log_to_server.cc",
+      "server_log_entry.cc",
+      "xmpp_signal_strategy.cc",
+    ]
+  }
 }
 
 source_set("test_support") {
